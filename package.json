@@ -28,10 +28,6 @@
     "realtime"
   ],
   "license": "Apache-2.0",
-  "main": "./dist/lib/index.js",
-  "jsnext:main": "./dist/es/index.js",
-  "module": "./dist/es/index.js",
-  "types": "./dist/types/index.d.ts",
   "sideEffects": false,
   "scripts": {
     "postinstall": "node scripts/postinstall.js || echo \"ignore\"",
@@ -135,6 +131,179 @@
   "pre-commit": [
     "lint"
   ],
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "require": "./dist/es/index.js",
+      "import": "./dist/lib/index.js"
+    },
+    "./attachments": {
+      "types": "./dist/types/plugins/attachments.d.ts",
+      "require": "./dist/es/plugins/attachments.js",
+      "import": "./dist/lib/plugins/attachments.js"
+    },
+    "./backup": {
+      "types": "./dist/types/plugins/backup/index.d.ts",
+      "require": "./dist/es/plugins/backup.js",
+      "import": "./dist/lib/plugins/backup.js"
+    },
+    "./cleanup": {
+      "types": "./dist/types/plugins/cleanup/index.d.ts",
+      "require": "./dist/es/plugins/cleanup/index.js",
+      "import": "./dist/lib/plugins/cleanup/index.js"
+    },
+    "./crdt": {
+      "types": "./dist/types/plugins/crdt/index.d.ts",
+      "require": "./dist/es/plugins/crdt/index.js",
+      "import": "./dist/lib/plugins/crdt/index.js"
+    },
+    "./dev-mode": {
+      "types": "./dist/types/plugins/dev-mode/index.d.ts",
+      "require": "./dist/es/plugins/dev-mode/index.js",
+      "import": "./dist/lib/plugins/dev-mode/index.js"
+    },
+    "./dexie": {
+      "types": "./dist/types/plugins/dexie/index.d.ts",
+      "require": "./dist/es/plugins/dexie/index.js",
+      "import": "./dist/lib/plugins/dexie/index.js"
+    },
+    "./electron": {
+      "types": "./dist/types/plugins/electron/index.d.ts",
+      "require": "./dist/es/plugins/electron/index.js",
+      "import": "./dist/lib/plugins/electron/index.js"
+    },
+    "./encryption": {
+      "types": "./dist/types/plugins/encryption.d.ts",
+      "require": "./dist/es/plugins/encryption.js",
+      "import": "./dist/lib/plugins/encryption.js"
+    },
+    "./flutter": {
+      "types": "./dist/types/plugins/flutter/index.d.ts",
+      "require": "./dist/es/plugins/flutter/index.js",
+      "import": "./dist/lib/plugins/flutter/index.js"
+    },
+    "./foundationdb": {
+      "types": "./dist/types/plugins/foundationdb/index.d.ts",
+      "require": "./dist/es/plugins/foundationdb/index.js",
+      "import": "./dist/lib/plugins/foundationdb/index.js"
+    },
+    "./json-dump": {
+      "types": "./dist/types/plugins/json-dump.d.ts",
+      "require": "./dist/es/plugins/json-dump.js",
+      "import": "./dist/lib/plugins/json-dump.js"
+    },
+    "./key-compression": {
+      "types": "./dist/types/plugins/key-compression.d.ts",
+      "require": "./dist/es/plugins/key-compression.js",
+      "import": "./dist/lib/plugins/key-compression.js"
+    },
+    "./leader-election": {
+      "types": "./dist/types/plugins/leader-election.d.ts",
+      "require": "./dist/es/plugins/leader-election.js",
+      "import": "./dist/lib/plugins/leader-election.js"
+    },
+    "./local-documents": {
+      "types": "./dist/types/plugins/local-documents/index.d.ts",
+      "require": "./dist/es/plugins/local-documents/index.js",
+      "import": "./dist/lib/plugins/local-documents/index.js"
+    },
+    "./lokijs": {
+      "types": "./dist/types/plugins/lokijs/index.d.ts",
+      "require": "./dist/es/plugins/lokijs/index.js",
+      "import": "./dist/lib/plugins/lokijs/index.js"
+    },
+    "./memory": {
+      "types": "./dist/types/plugins/memory/index.d.ts",
+      "require": "./dist/es/plugins/memory/index.js",
+      "import": "./dist/lib/plugins/memory/index.js"
+    },
+    "./migration": {
+      "types": "./dist/types/plugins/migration/index.d.ts",
+      "require": "./dist/es/plugins/migration/index.js",
+      "import": "./dist/lib/plugins/migration/index.js"
+    },
+    "./pouchdb": {
+      "types": "./dist/types/plugins/pouchdb/index.d.ts",
+      "require": "./dist/es/plugins/pouchdb/index.js",
+      "import": "./dist/lib/plugins/pouchdb/index.js"
+    },
+    "./query-builder:": {
+      "types": "./dist/types/plugins/query-builder/index.d.ts",
+      "require": "./dist/es/plugins/query-builder/index.js",
+      "import": "./dist/lib/plugins/query-builder/index.js"
+    },
+    "./replication": {
+      "types": "./dist/types/plugins/replication/index.d.ts",
+      "require": "./dist/es/plugins/replication/index.js",
+      "import": "./dist/lib/plugins/replication/index.js"
+    },
+    "./replication-couchdb": {
+      "types": "./dist/types/plugins/replication-couchdb.d.ts",
+      "require": "./dist/es/plugins/replication-couchdb.js",
+      "import": "./dist/lib/plugins/replication-couchdb.js"
+    },
+    "./replication-couchdb-new": {
+      "types": "./dist/types/plugins/replication-couchdb-new/index.d.ts",
+      "require": "./dist/es/plugins/replication-couchdb-new/index.js",
+      "import": "./dist/lib/plugins/replication-couchdb-new/index.js"
+    },
+    "./replication-firestore": {
+      "types": "./dist/types/plugins/replication-firestore/index.d.ts",
+      "require": "./dist/es/plugins/replication-firestore/index.js",
+      "import": "./dist/lib/plugins/replication-firestore/index.js"
+    },
+    "./replication-graphql": {
+      "types": "./dist/types/plugins/replication-graphql/index.d.ts",
+      "require": "./dist/es/plugins/replication-graphql/index.js",
+      "import": "./dist/lib/plugins/replication-graphql/index.js"
+    },
+    "./replication-p2p": {
+      "types": "./dist/types/plugins/replication-p2p/index.d.ts",
+      "require": "./dist/es/plugins/replication-p2p/index.js",
+      "import": "./dist/lib/plugins/replication-p2p/index.js"
+    },
+    "./replication-websocket": {
+      "types": "./dist/types/plugins/replication-websocket/index.d.ts",
+      "require": "./dist/es/plugins/replication-websocket/index.js",
+      "import": "./dist/lib/plugins/replication-websocket/index.js"
+    },
+    "./server-couchdb": {
+      "types": "./dist/types/plugins/server-couchdb.d.ts",
+      "require": "./dist/es/plugins/server-couchdb.js",
+      "import": "./dist/lib/plugins/server-couchdb.js"
+    },
+    "./storage-remote": {
+      "types": "./dist/types/plugins/storage-remote/index.d.ts",
+      "require": "./dist/es/plugins/storage-remote/index.js",
+      "import": "./dist/lib/plugins/storage-remote/index.js"
+    },
+    "./update": {
+      "types": "./dist/types/plugins/update.d.ts",
+      "require": "./dist/es/plugins/update.js",
+      "import": "./dist/lib/plugins/update.js"
+    },
+    "./validate-ajv": {
+      "types": "./dist/types/plugins/validate-ajv.d.ts",
+      "require": "./dist/es/plugins/validate-ajv.js",
+      "import": "./dist/lib/plugins/validate-ajv.js"
+    },
+    "./validate-is-my-json-valid": {
+      "types": "./dist/types/plugins/validate-is-my-json-valid.d.ts",
+      "require": "./dist/es/plugins/validate-is-my-json-valid.js",
+      "import": "./dist/lib/plugins/validate-is-my-json-valid.js"
+    },
+    "./validation-z-schema": {
+      "types": "./dist/types/plugins/validation-z-schema.d.ts",
+      "require": "./dist/es/plugins/validation-z-schema.js",
+      "import": "./dist/lib/plugins/validation-z-schema.js"
+    },
+    "./worker": {
+      "types": "./dist/types/plugins/worker/index.d.ts",
+      "require": "./dist/es/plugins/worker/index.js",
+      "import": "./dist/lib/plugins/worker/index.js"
+    }
+  },
   "peerDependencies": {
     "rxjs": "^7.5.7"
   },
