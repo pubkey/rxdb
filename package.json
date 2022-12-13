@@ -131,7 +131,6 @@
   "pre-commit": [
     "lint"
   ],
-  "type": "module",
   "exports": {
     ".": {
       "types": "./dist/types/index.d.ts",
