@@ -259,7 +259,7 @@
     "karma-opera-launcher": "1.0.0",
     "karma-safari-launcher": "1.0.0",
     "karma-sourcemap-loader": "0.3.8",
-    "karma-spec-reporter": "0.0.34",
+    "karma-spec-reporter": "0.0.35",
     "karma-webpack": "5.0.0",
     "leveldown": "6.1.1",
     "madge": "5.0.1",
