@@ -2256,7 +2256,7 @@
                                 
                                 <h1 id="sharedworker-rxstorage">SharedWorker RxStorage</h1>
 <p>The SharedWorker <a href="rx-storage.html">RxStorage</a> uses the <a href="https://developer.mozilla.org/en-US/docs/Web/API/SharedWorker" target="_blank">SharedWorker API</a> to run the storage inside of a separate JavaScript process <strong>in browsers</strong>. Compared to a normal <a href="rx-storage-worker.html">WebWorker</a>, the SharedWorker is created exactly once, even when there are multiple browser tabs opened. Because of having exactly one worker, multiple performance optimizations can be done because the storage itself does not have to handle multiple opened database connections.</p>
-<p><strong>NOTICE:</strong> This plugin is part of <a href="premium.html">RxDB premium</a>. It is not part of the default RxDB module.</p>
+<p><strong>NOTICE:</strong> This plugin is part of <a href="https://rxdb.info/premium.html" target="_blank">RxDB premium</a>. It is not part of the default RxDB module.</p>
 <h2 id="usage">Usage</h2>
 <h3 id="on-the-sharedworker-process">On the SharedWorker process</h3>
 <p>In the worker process JavaScript file, you have wrap the original RxStorage with <code>getRxStorageIndexedDB()</code>.</p>
@@ -2309,7 +2309,7 @@ exposeSharedWorkerRxStorage({
 <h2 id="pre-build-workers">Pre-build workers</h2>
 <p>The <code>shared-worker.js</code> must be a self containing JavaScript file that contains all dependencies in a bundle.
 To make it easier for you, RxDB ships with pre-bundles worker files that are ready to use.
-You can find them in the folder <code>node_modules/rxdb-premium/dist/workers</code> after you have installed the <a href="premium.html">RxDB Premium Plugin</a>. From there you can copy them to a location where it can be served from the webserver and then use their path to create the <code>RxDatabase</code></p>
+You can find them in the folder <code>node_modules/rxdb-premium/dist/workers</code> after you have installed the <a href="https://rxdb.info/premium.html" target="_blank">RxDB Premium Plugin</a>. From there you can copy them to a location where it can be served from the webserver and then use their path to create the <code>RxDatabase</code></p>
 <pre><code class="lang-ts"><span class="hljs-keyword">import</span> {
     createRxDatabase
 } from <span class="hljs-string">&apos;rxdb&apos;</span>;
