@@ -20,11 +20,11 @@ It has the special behavior of loading all data into memory at app start and the
 
 A storage that stores the data in as plain data in the memory of the JavaScript process. Really fast and can be used in all environments. [Read more](./rx-storage-memory.md)
 
-### IndexedDB [[premium](./premium.html)]
+### IndexedDB [[premium](https://rxdb.info/premium.html)]
 
 The IndexedDB `RxStorage` is based on plain IndexedDB. This has the best performance of all other non-in-memory storage, when RxDB is used inside of a browser. [Read more](./rx-storage-indexeddb.md)
 
-### SQLite [[premium](./premium.html)]
+### SQLite [[premium](https://rxdb.info/premium.html)]
 
 The SQLite storage has the best performance when RxDB is used on **Node.js**, **Electron**, **React Native**, **Cordova** or **Capacitor**. [Read more](./rx-storage-sqlite.md)
 
@@ -42,7 +42,7 @@ The PouchDB RxStorage is based on the [PouchDB](https://github.com/pouchdb/pouch
 
 The worker RxStorage is a wrapper around any other RxStorage which allows to run the storage in a WebWorker (in browsers) or a Worker Thread (in Node.js). By doing so, you can take CPU load from the main process and move it into the worker's process which can improve the perceived performance of your application. [Read more](./rx-storage-worker.md)
 
-### SharedWorker [[premium](./premium.html)]
+### SharedWorker [[premium](https://rxdb.info/premium.html)]
 
 The worker RxStorage is a wrapper around any other RxStorage which allows to run the storage in a SharedWorker (only in browsers). By doing so, you can take CPU load from the main process and move it into the worker's process which can improve the perceived performance of your application. [Read more](./rx-storage-worker.md)
 
@@ -50,16 +50,16 @@ The worker RxStorage is a wrapper around any other RxStorage which allows to run
 ### Remote
 The Remote RxStorage is made to use a remote storage and communicate with it over an asynchronous message channel. The remote part could be on another JavaScript process or even on a different host machine. [Read more](./rx-storage-remote.md)
 
-### Sharding [[premium](./premium.html)]
+### Sharding [[premium](https://rxdb.info/premium.html)]
 
 On some `RxStorage` implementations (like IndexedDB), a huge performance improvement can be done by sharding the documents into multiple database instances. With the sharding plugin you can wrap any other `RxStorage` into a sharded storage. [Read more](./rx-storage-sharding.md)
 
-### Memory Synced [[premium](./premium.html)]
+### Memory Synced [[premium](https://rxdb.info/premium.html)]
 
 The memory synced [RxStorage](./rx-storage.md) is a wrapper around any other RxStorage. The wrapper creates an in-memory storage that is used for query and write operations. This memory instance is replicated with the underlying storage for persistence.
 The main reason to use this is to improve initial page load and query/write times. This is mostly useful in browser based applications. [Read more](./rx-storage-memory-synced.md)
 
-### Localstorage Meta Optimizer [[premium](./premium.html)]
+### Localstorage Meta Optimizer [[premium](https://rxdb.info/premium.html)]
 
 The [RxStorage](./rx-storage.md) Localstorage Meta Optimizer is a wrapper around any other RxStorage. The wrapper uses the original RxStorage for normal collection documents. But to optimize the initial page load time, it uses `localstorage` to store the plain key-value metadata that RxDB needs to create databases and collections. This plugin can only be used in browsers. [Read more](./rx-storage-localstorage-meta-optimizer.md)
 

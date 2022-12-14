@@ -5,7 +5,7 @@ For example on [slow IndexedDB](./slow-indexeddb.md), a performance gain of **30
 
 The sharding plugin works as a wrapper around any other `RxStorage`. The sharding plugin will automatically create multiple shards per storage instance and it will merge and split read and write calls to it.
 
-**NOTICE:** The sharding plugin is part of [RxDB premium](./premium.html). It is not part of the default RxDB module.
+**NOTICE:** The sharding plugin is part of [RxDB premium](https://rxdb.info/premium.html). It is not part of the default RxDB module.
 
 ## Using the sharding plugin
 
