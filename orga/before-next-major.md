@@ -116,3 +116,11 @@ can make problems. We should enforce people using strings as operators instead.
 ## Set `hasPersistence=true` on memory storage
 
 This will make testing easier. The memory storage should keep data in memory, even when the last instance has been closed.
+
+## Do not use hash for revisions
+
+Atm the _rev field is filled with a hash of the documents data. This is not the best solution becuase:
+- Hashing in JavaScript is slow, not running hashes on insert improves performance by about 33%
+- When 2 clients do the exact same write to the document, it is not clear from comparing the document states because they will have the exact same hash which makes some conflict resultion strategies impossible to implement.
+
+Instead we should just use the RxDatabase.token together with the revision height.
