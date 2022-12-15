@@ -122,7 +122,7 @@ We should unify the naming so that each of the methods has an atomic and a non-a
 
 ## Refactor the Worker plugin to use the remote storage
 
-The (worker plugin)[https://rxdb.info/rx-storage-worker.html] is using threads.js atm. Instead we should use the [remote worker plugin](https://rxdb.info/rx-storage-remote.html). Also the worker plugin is a pure performance optimization, so it will move to the premium packages.
+The [worker plugin](https://rxdb.info/rx-storage-worker.html) is using threads.js atm. Instead we should use the [remote worker plugin](https://rxdb.info/rx-storage-remote.html). Also the worker plugin is a pure performance optimization, so it will move to the premium packages.
 
 ## Refactor data-migrator
 
