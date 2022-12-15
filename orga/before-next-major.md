@@ -119,6 +119,10 @@ Instead we should just use the RxDatabase.token together with the revision heigh
 
 ## Rename document mutation functions
 
+Related: https://github.com/pubkey/rxdb/issues/4180
+
 Atm the naming of the document mutation methods is confusing.
 For example `update()` works completely different to `atomicUpdate()` and so on.
 We should unify the naming so that each of the methods has an atomic and a non-atomic way to run.
+
+## Remove the deprecated PouchDB RxStorage
