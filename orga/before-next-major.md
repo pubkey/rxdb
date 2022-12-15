@@ -3,15 +3,8 @@
 This list contains things that have to be done but will create breaking changes.
 
 
-## Refactor data-migrator
 
- - The current implemetation does not use pouchdb's bulkDocs which is much faster.
- - This could have been done in much less code which would be easier to understand.
- - Migration strategies should be defined [like in WatermelonDB](https://nozbe.github.io/WatermelonDB/Advanced/Migrations.html) with a `toVersion` version field. We should also add a `fromVersion` field so people could implement performance shortcuts by directly jumping several versions. The current migration strategies use the array index as `toVersion` which is confusing.
- 
-
-
-## Make RxDcouments immutable
+## Make RxDocuments immutable
 At the current version of RxDB, RxDocuments mutate themself when they recieve ChangeEvents from the database.
 For example when you have a document where `name = 'foo'` and some update changes the state to `name = 'bar'` in the database, then the previous javascript-object will change its own property to the have `doc.name === 'bar'`.
 This feature is great when you use a RxDocument with some change-detection like in angular or vue templates. You can use document properties directly in the template and all updates will be reflected in the view, without having to use observables or subscriptions.
@@ -126,3 +119,11 @@ For example `update()` works completely different to `atomicUpdate()` and so on.
 We should unify the naming so that each of the methods has an atomic and a non-atomic way to run.
 
 ## Remove the deprecated PouchDB RxStorage
+
+## Refactor data-migrator
+
+ - The current implemetation does not use pouchdb's bulkDocs which is much faster.
+ - This could have been done in much less code which would be easier to understand.
+ - Migration strategies should be defined [like in WatermelonDB](https://nozbe.github.io/WatermelonDB/Advanced/Migrations.html) with a `toVersion` version field. We should also add a `fromVersion` field so people could implement performance shortcuts by directly jumping several versions. The current migration strategies use the array index as `toVersion` which is confusing.
+ 
+
