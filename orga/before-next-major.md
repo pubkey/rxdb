@@ -3,15 +3,6 @@
 This list contains things that have to be done but will create breaking changes.
 
 
-### Rewrite prototype-merge
-
-Each collection creates its own constructor for RxDocuments.
-This has a performance-benefit over using the Proxy-API which is also not supported in IE11.
-To create the constructor, the collection merges prototypes from RxDocument, RxSchema and the ORM-functions.
-The current implementation of this prototype-merging is very complicated and has hacky workarrounds to work with vue-devtools.
-We should rewrite it to a single pure function that returns the constructor.
-Instead of merging the prototype into a single object, we should chain them together.
-
 ### Refactor data-migrator
 
  - The current implemetation does not use pouchdb's bulkDocs which is much faster.
