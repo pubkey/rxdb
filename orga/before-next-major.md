@@ -3,7 +3,7 @@
 This list contains things that have to be done but will create breaking changes.
 
 
-### Refactor data-migrator
+## Refactor data-migrator
 
  - The current implemetation does not use pouchdb's bulkDocs which is much faster.
  - This could have been done in much less code which would be easier to understand.
