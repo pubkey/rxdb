@@ -12,6 +12,13 @@ import {
     RxStorageInstanceMemory
 } from './rx-storage-instance-memory';
 
+/**
+ * Keep the state even when the storage instance is closed.
+ * This makes it easier to use the memory storage
+ * to test filesystem-like and multiInstance behaviors.
+ */
+const COLLECTION_STATES = new Map();
+
 export function getRxStorageMemory(
     settings: RxStorageMemorySettings = {}
 ): RxStorageMemory {
@@ -19,7 +26,7 @@ export function getRxStorageMemory(
     const storage: RxStorageMemory = {
         name: 'memory',
         statics: RxStorageDexieStatics,
-        collectionStates: new Map(),
+        collectionStates: COLLECTION_STATES,
         createStorageInstance<RxDocType>(
             params: RxStorageInstanceCreationParams<RxDocType, RxStorageMemoryInstanceCreationOptions>
         ): Promise<RxStorageInstanceMemory<RxDocType>> {

@@ -1,22 +1,12 @@
 import {
     startRxStorageRemoteWebsocketServer
 } from '../../plugins/storage-remote';
-import {
-    getRxStorageLoki
-} from '../../plugins/lokijs';
-
-
-/**
- * Use the lokijs storage because the memory storage
- * has set hasPersistence:false
- */
-const storage = getRxStorageLoki({
-});
+import { getRxStorageMemory } from '../../plugins/memory';
 
 export async function startRemoteStorageServer(port: number) {
     const server = await startRxStorageRemoteWebsocketServer({
         port,
-        storage
+        storage: getRxStorageMemory()
     });
     return server;
 }

@@ -72,7 +72,6 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
 
     public readonly primaryPath: StringKeys<RxDocumentData<RxDocType>>;
     public closed = false;
-    private changes$: Subject<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, RxStorageDefaultCheckpoint>> = new Subject();
 
     constructor(
         public readonly storage: RxStorageMemory,
@@ -165,7 +164,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
                 id: lastState[this.primaryPath],
                 lwt: lastState._meta.lwt
             };
-            this.changes$.next(categorized.eventBulk);
+            this.internals.changes$.next(categorized.eventBulk);
         }
         return Promise.resolve(ret);
     }
@@ -398,7 +397,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
 
     changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, RxStorageDefaultCheckpoint>> {
         ensureNotRemoved(this);
-        return this.changes$.asObservable();
+        return this.internals.changes$.asObservable();
     }
 
     async remove(): Promise<void> {
@@ -416,15 +415,8 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
             return Promise.reject(new Error('already closed'));
         }
         this.closed = true;
-        this.changes$.complete();
 
         this.internals.refCount = this.internals.refCount - 1;
-        if (this.internals.refCount === 0) {
-            this.storage.collectionStates.delete(
-                getMemoryCollectionKey(this.databaseName, this.collectionName)
-            );
-        }
-
         return PROMISE_RESOLVE_VOID;
     }
 
@@ -451,7 +443,8 @@ export function createMemoryStorageInstance<RxDocType>(
             documents: new Map(),
             attachments: params.schema.attachments ? new Map() : undefined as any,
             byIndex: {},
-            conflictResultionTasks$: new Subject()
+            conflictResultionTasks$: new Subject(),
+            changes$: new Subject()
         };
         addIndexesToInternalsState(internals, params.schema);
         storage.collectionStates.set(collectionKey, internals);

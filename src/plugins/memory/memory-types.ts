@@ -1,10 +1,13 @@
 import { Subject } from 'rxjs';
 import type {
     DexiePreparedQuery,
+    EventBulk,
     RxAttachmentWriteData,
     RxConflictResultionTask,
     RxDocumentData,
-    RxStorage
+    RxStorage,
+    RxStorageChangeEvent,
+    RxStorageDefaultCheckpoint
 } from '../../types';
 
 export type RxStorageMemorySettings = {};
@@ -64,6 +67,7 @@ export type MemoryStorageInternals<RxDocType> = {
      * so that we can inject own tasks during tests.
      */
     conflictResultionTasks$: Subject<RxConflictResultionTask<RxDocType>>;
+    changes$: Subject<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, RxStorageDefaultCheckpoint>>;
 };
 
 export type DocWithIndexString<RxDocType> = {

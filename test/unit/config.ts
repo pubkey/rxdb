@@ -111,7 +111,7 @@ export function setDefaultStorage(storageKey: string) {
                         storage: getRxStorageMemory()
                     };
                 },
-                hasPersistence: false,
+                hasPersistence: true,
                 hasMultiInstance: false,
                 hasCouchDBReplication: false,
                 hasAttachments: true,

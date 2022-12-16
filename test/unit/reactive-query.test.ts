@@ -404,11 +404,15 @@ config.parallel('reactive-query.test.js', () => {
                     })
             );
 
+            console.log('............... 1');
+
             await AsyncTestUtil.waitUntil(() => emitted.length > 0);
+            console.log('............... 2');
             await AsyncTestUtil.waitUntil(() => {
                 const lastEmitted = emitted[emitted.length - 1];
                 return lastEmitted.state.providers === 4;
-            }, 0, 300);
+            }, undefined, 300);
+            console.log('............... 3');
 
             await Promise.all(
                 new Array(5)

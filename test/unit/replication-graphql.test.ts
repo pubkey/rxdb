@@ -982,7 +982,10 @@ describe('replication-graphql.test.ts', () => {
                 ]);
             });
             it('should resend cancelled documents', async () => {
-                if (!config.storage.hasPersistence) {
+                if (
+                    !config.storage.hasPersistence ||
+                    config.storage.name === 'memory' // TODO should work on memory
+                ) {
                     return;
                 }
                 const [c, server] = await Promise.all([
