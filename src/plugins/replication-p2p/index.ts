@@ -216,7 +216,7 @@ export class RxP2PReplicationPool<RxDocType> {
         this.masterReplicationHandler = rxStorageInstanceToReplicationHandler(
             collection.storageInstance,
             collection.conflictHandler,
-            collection.database.hashFunction
+            collection.database.token,
         );
     }
 

@@ -14,3 +14,4 @@ export class DocCache<T> {
         return this._map.delete(id);
     }
 }
+

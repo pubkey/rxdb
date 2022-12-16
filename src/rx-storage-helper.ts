@@ -588,8 +588,7 @@ export function getWrappedStorageInstance<
          * stored into the storage, use this.originalStorageInstance.bulkWrite() instead.
          */
         data._rev = createRevision(
-            database.hashFunction,
-            data,
+            database.token,
             writeRow.previous
         );
 
@@ -656,8 +655,7 @@ export function getWrappedStorageInstance<
                                         error.writeRow.document,
                                         {
                                             _rev: createRevision(
-                                                database.hashFunction,
-                                                error.writeRow.document,
+                                                database.token,
                                                 error.documentInDb
                                             )
                                         }

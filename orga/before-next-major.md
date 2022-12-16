@@ -101,7 +101,7 @@ can make problems. We should enforce people using strings as operators instead.
 
 This will make testing easier. The memory storage should keep data in memory, even when the last instance has been closed.
 
-## Do not use hash for revisions
+## Do not use hash for revisions [DONE]
 
 Atm the _rev field is filled with a hash of the documents data. This is not the best solution becuase:
 - Hashing in JavaScript is slow, not running hashes on insert improves performance by about 33%
@@ -130,4 +130,12 @@ The [worker plugin](https://rxdb.info/rx-storage-worker.html) is using threads.j
  - This could have been done in much less code which would be easier to understand.
  - Migration strategies should be defined [like in WatermelonDB](https://nozbe.github.io/WatermelonDB/Advanced/Migrations.html) with a `toVersion` version field. We should also add a `fromVersion` field so people could implement performance shortcuts by directly jumping several versions. The current migration strategies use the array index as `toVersion` which is confusing.
  
+## Use plain json errors inside of RxError parameters
 
+Atm, printing a RxError gives not information about the inner errors because it looks like:
+
+```
+"errors": [
+            {}
+        ],
+```

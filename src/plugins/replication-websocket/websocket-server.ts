@@ -80,7 +80,7 @@ export function startWebsocketServer(options: WebsocketServerOptions): Websocket
             handler = rxStorageInstanceToReplicationHandler(
                 collection.storageInstance,
                 collection.conflictHandler,
-                database.hashFunction
+                database.token
             );
             replicationHandlerByCollection.set(collectionName, handler);
         }

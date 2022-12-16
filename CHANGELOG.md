@@ -3,6 +3,8 @@
 
 <!-- CHANGELOG NEWEST -->
 
+- Do not use hash for revisions
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

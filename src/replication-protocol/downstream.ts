@@ -14,12 +14,10 @@ import type {
     DocumentsWithCheckpoint
 } from '../types';
 import {
-    createRevision,
     ensureNotFalsy,
     flatClone,
     getDefaultRevision,
     getDefaultRxDocumentMeta,
-    now,
     parseRevision,
     PROMISE_RESOLVE_FALSE,
     PROMISE_RESOLVE_VOID
@@ -366,20 +364,6 @@ export function startReplicationDownstream<RxDocType, CheckpointType = any>(
                                 _rev: getDefaultRevision(),
                                 _attachments: {}
                             });
-
-
-                        /**
-                         * TODO for unknown reason we need
-                         * to manually set the lwt and the _rev here
-                         * to fix the pouchdb tests. This is not required for
-                         * the other RxStorage implementations which means something is wrong.
-                         */
-                        newForkState._meta.lwt = now();
-                        newForkState._rev = (masterState as any)._rev ? (masterState as any)._rev : createRevision(
-                            state.input.hashFunction,
-                            newForkState,
-                            forkStateFullDoc
-                        );
 
                         /**
                          * If the remote works with revisions,

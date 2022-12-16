@@ -147,8 +147,7 @@ export async function removeCollectionStorages(
             writeDoc._deleted = true;
             writeDoc._meta.lwt = now();
             writeDoc._rev = createRevision(
-                hashFunction,
-                writeDoc,
+                databaseInstanceToken,
                 doc
             );
             return {

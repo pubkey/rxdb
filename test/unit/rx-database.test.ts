@@ -156,17 +156,8 @@ config.parallel('rx-database.test.js', () => {
                         return fastUnsecureHash(i) + 'xxx';
                     }
                 });
-
-                const cols = await db.addCollections({
-                    human: {
-                        schema: schemas.human
-                    }
-                });
-                const collection: RxCollection<schemas.HumanDocumentType> = cols.human;
-                const doc = await collection.insert(schemaObjects.human());
-                const rev = doc.toJSON(true)._rev;
-                assert.ok(rev.endsWith('xxx'));
-
+                const hash = db.hashFunction('foobar');
+                assert.ok(hash.endsWith('xxx'));
                 db.destroy();
             });
         });
@@ -296,6 +287,9 @@ config.parallel('rx-database.test.js', () => {
                 db2.destroy();
             });
             it('should not do a write to the internalStore when creating a previous existing collection', async () => {
+                if (!config.storage.hasMultiInstance) {
+                    return;
+                }
                 const name = randomCouchString(10);
                 const collectionName = 'foobar';
                 const db1 = await createRxDatabase({
@@ -324,6 +318,7 @@ config.parallel('rx-database.test.js', () => {
                     );
                     return result.documents;
                 }
+
                 const storeDocsBefore = await getStoreDocs(db1);
                 await db1.destroy();
 

@@ -140,8 +140,7 @@ export function getMetaWriteRow<RxDocType>(
         newMeta
     );
     newMeta._rev = createRevision(
-        state.input.hashFunction,
-        newMeta,
+        state.input.identifier,
         previous
     );
     return {

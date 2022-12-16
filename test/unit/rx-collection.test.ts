@@ -1427,12 +1427,8 @@ describe('rx-collection.test.ts', () => {
         });
         config.parallel('.bulkUpsert()', () => {
             it('insert and update', async () => {
-                console.log('---- 0');
-
                 const c = await humansCollection.create(0);
                 const amount = 5;
-
-                console.log('---- 1');
 
                 // insert
                 await c.bulkUpsert(
@@ -1440,7 +1436,6 @@ describe('rx-collection.test.ts', () => {
                 );
                 let allDocs = await c.find().exec();
                 assert.strictEqual(allDocs.length, 5);
-                console.log('---- 2');
 
                 // update
                 const docsData = allDocs.map(d => {
@@ -1448,13 +1443,10 @@ describe('rx-collection.test.ts', () => {
                     data.age = 100;
                     return data;
                 });
-                console.log('---- 3');
                 await c.bulkUpsert(docsData);
                 allDocs = await c.find().exec();
                 assert.strictEqual(allDocs.length, 5);
                 allDocs.forEach(d => assert.strictEqual(d.age, 100));
-                console.log('---- 4');
-
                 c.database.destroy();
             });
         });

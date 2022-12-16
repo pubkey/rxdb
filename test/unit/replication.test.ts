@@ -67,7 +67,7 @@ describe('replication.test.js', () => {
         const helper = rxStorageInstanceToReplicationHandler(
             remoteCollection.storageInstance,
             remoteCollection.database.conflictHandler as any,
-            remoteCollection.database.hashFunction
+            remoteCollection.database.token
         );
         const handler: ReplicationPullHandler<TestDocType, CheckpointType> = async (
             latestPullCheckpoint: CheckpointType | null,
@@ -84,7 +84,7 @@ describe('replication.test.js', () => {
         const helper = rxStorageInstanceToReplicationHandler(
             remoteCollection.storageInstance,
             remoteCollection.conflictHandler,
-            remoteCollection.database.hashFunction
+            remoteCollection.database.token
         );
         const handler: ReplicationPushHandler<TestDocType> = async (
             rows: RxReplicationWriteToMasterRow<TestDocType>[]

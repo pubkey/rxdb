@@ -1,12 +1,10 @@
 import type {
     BlobBuffer,
     DeepReadonlyObject,
-    HashFunction,
     MaybeReadonly,
     PlainJsonError,
     RxDocumentData,
     RxDocumentMeta,
-    RxDocumentWriteData,
     RxError,
     RxTypeError,
     StringKeys
@@ -455,53 +453,13 @@ export function getHeightOfRevision(revision: string): number {
  * Creates the next write revision for a given document.
  */
 export function createRevision<RxDocType>(
-    hashFunction: HashFunction,
-    docData: RxDocumentWriteData<RxDocType> & {
-        /**
-         * Passing a revision is optional here,
-         * because it is anyway not needed to calculate
-         * the new revision.
-         */
-        _rev?: string;
-    },
+    databaseInstanceToken: string,
     previousDocData?: RxDocumentData<RxDocType>
 ): string {
-
     const previousRevision = previousDocData ? previousDocData._rev : null;
     const previousRevisionHeigth = previousRevision ? parseRevision(previousRevision).height : 0;
     const newRevisionHeight = previousRevisionHeigth + 1;
-
-
-    const docWithoutRev: any = Object.assign({}, docData, {
-        _rev: undefined,
-        _rev_tree: undefined,
-        /**
-         * All _meta properties MUST NOT be part of the
-         * revision hash.
-         * Plugins might temporarily store data in the _meta
-         * field and strip it away when the document is replicated
-         * or written to another storage.
-         */
-        _meta: undefined
-    });
-
-    /**
-     * The revision height must be part of the hash
-     * as the last parameter of the document data.
-     * This is required to ensure we never ever create
-     * two different document states that have the same revision
-     * hash. Even writing the exact same document data
-     * must have to result in a different hash so that
-     * the replication can known if the state just looks equal
-     * or if it is really exactly the equal state in data and time.
-     */
-    delete docWithoutRev._rev;
-    docWithoutRev._rev = previousDocData ? newRevisionHeight : 1;
-
-    const diggestString = JSON.stringify(docWithoutRev);
-
-    const revisionHash = hashFunction(diggestString);
-    return newRevisionHeight + '-' + revisionHash;
+    return newRevisionHeight + '-' + databaseInstanceToken;
 }
 
 

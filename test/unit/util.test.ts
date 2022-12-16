@@ -105,38 +105,6 @@ describe('util.test.js', () => {
         //     });
         // });
     });
-    describe('.createRevision()', () => {
-        it('should return the same values for the same document data', () => {
-            const hash1 = createRevision(
-                defaultHashFunction,
-                {
-                    foo: 'bar',
-                    bar: 'foo',
-                    _deleted: false,
-                    _attachments: {},
-                    _meta: {
-                        lwt: 1
-                    }
-                } as any
-            );
-            const hash2 = createRevision(
-                defaultHashFunction,
-                {
-                    foo: 'bar',
-                    bar: 'foo',
-                    // _rev_tree and _rev must be ignored from hashing
-                    _rev: '1-asdf',
-                    _rev_tree: 'foobar',
-                    _deleted: false,
-                    _attachments: {},
-                    _meta: {
-                        lwt: 1
-                    }
-                }
-            );
-            assert.strictEqual(hash1, hash2);
-        });
-    });
     describe('.sortObject()', () => {
         it('should sort when regex in object', () => {
             const obj = {

@@ -310,8 +310,7 @@ export class RxDatabaseBase<
                 {
                     name: collectionName,
                     schema,
-                    database: this,
-
+                    database: this
                 }
             );
 
