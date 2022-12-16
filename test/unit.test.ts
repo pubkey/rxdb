@@ -57,7 +57,6 @@ import './unit/replication-couchdb-new.test';
 import './unit/replication-websocket.test';
 import './unit/replication-p2p.test';
 import './unit/crdt.test';
-import './unit/server-couchdb.test';
 import './unit/population.test';
 import './unit/leader-election.test';
 import './unit/backup.test';
