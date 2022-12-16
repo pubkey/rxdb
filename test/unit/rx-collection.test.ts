@@ -46,7 +46,6 @@ import { enableKeyCompression, HumanDocumentType } from '../helper/schemas';
 import { RxDocumentData } from '../../src/types';
 
 describe('rx-collection.test.ts', () => {
-    addPouchPlugin(require('pouchdb-adapter-memory'));
     async function getDb(): Promise<RxDatabase> {
         return await createRxDatabase({
             name: randomCouchString(10),
