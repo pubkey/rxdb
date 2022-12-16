@@ -466,8 +466,7 @@ describe('rx-document.test.js', () => {
             });
             it('should retry on conflict errors', async () => {
                 if (
-                    !config.storage.hasPersistence ||
-                    config.storage.name === 'memory' // TODO this causes a CPU 100% on memory
+                    !config.storage.hasPersistence
                 ) {
                     return;
                 }
@@ -501,10 +500,12 @@ describe('rx-document.test.js', () => {
                 console.log('---- 2');
                 await Promise.all([
                     doc.atomicUpdate((d: any) => {
+                        console.log(' RR 1');
                         d.firstName = 'foobar1';
                         return d;
                     }),
                     doc2.atomicUpdate((d: any) => {
+                        console.log(' RR 2');
                         d.firstName = 'foobar2';
                         return d;
                     })
