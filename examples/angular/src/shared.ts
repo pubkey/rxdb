@@ -1,4 +1,4 @@
-export const COUCHDB_PORT = 10101;
+export const WEBSOCKET_PORT = 10101;
 
 
 export const DATABASE_NAME = 'db';

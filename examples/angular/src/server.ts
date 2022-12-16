@@ -9,9 +9,12 @@ import {
 } from 'rxdb';
 
 import {
-    addPouchPlugin,
-    getRxStoragePouch
-} from 'rxdb/plugins/pouchdb';
+    getRxStorageMemory
+} from 'rxdb/plugins/memory';
+
+import {
+    startWebsocketServer
+} from 'rxdb/plugins/replication-websocket';
 
 // rxdb plugins
 import { RxDBServerCouchDBPlugin } from 'rxdb/plugins/server-couchdb';
@@ -19,14 +22,10 @@ addRxPlugin(RxDBServerCouchDBPlugin);
 import { wrappedValidateAjvStorage } from 'rxdb/plugins/validate-ajv';
 
 
-// add the memory-adapter
-import * as MemoryAdapter from 'pouchdb-adapter-memory';
-addPouchPlugin(MemoryAdapter);
-
 import { HERO_SCHEMA } from './app/schemas/hero.schema';
 import {
     HERO_COLLECTION_NAME,
-    COUCHDB_PORT,
+    WEBSOCKET_PORT,
     DATABASE_NAME
 } from './shared';
 import type { RxHeroesDatabase } from './app/RxDB';
@@ -38,7 +37,7 @@ async function run() {
     const db = await createRxDatabase<RxHeroesDatabase>({
         name: DATABASE_NAME,
         storage: wrappedValidateAjvStorage({
-            storage: getRxStoragePouch('memory')
+            storage: getRxStorageMemory()
         })
     });
 
@@ -63,20 +62,13 @@ async function run() {
 
 
     // start server
-    const { app, server } = await db.serverCouchDB({
-        path: '/' + DATABASE_NAME, // (optional)
-        port: COUCHDB_PORT,  // (optional)
-        cors: true,   // (optional), enable CORS-headers
-        startServer: true, // (optional), start express server
-        // options of the pouchdb express server
-        pouchdbExpressOptions: {
-            inMemoryConfig: true, // do not write a config.json
-            logPath: '/tmp/rxdb-angular-server-log.txt' // save logs in tmp folder
-        }
+    const serverState = await startWebsocketServer({
+        database: db,
+        port: WEBSOCKET_PORT,
+        path: DATABASE_NAME
     });
-
     console.log(
-        '# Started server on http://localhost:' + COUCHDB_PORT + '/' + DATABASE_NAME + '/' + HERO_COLLECTION_NAME
+        '# Started server on http://localhost:' + WEBSOCKET_PORT + '/' + DATABASE_NAME + '/' + HERO_COLLECTION_NAME
     );
 
 

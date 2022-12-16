@@ -34,7 +34,7 @@ The replication has to be started once for each collection that you want to repl
 
 ```ts
 import {
-    syncWebsocketServer
+    replicateWithWebsocketServer
 } from 'rxdb/plugins/replication-websocket';
 
 // start the replication

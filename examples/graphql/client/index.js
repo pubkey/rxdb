@@ -5,18 +5,13 @@ import {
 } from 'rxdb';
 
 import {
-    addPouchPlugin,
-    getRxStoragePouch
-} from 'rxdb/plugins/pouchdb';
+    getRxStorageDexie
+} from 'rxdb/plugins/dexie';
 
 import {
     getRxStorageLoki
 } from 'rxdb/plugins/lokijs';
 const LokiIncrementalIndexedDBAdapter = require('lokijs/src/incremental-indexeddb-adapter');
-
-import {
-    getRxStorageDexie
-} from 'rxdb/plugins/dexie';
 
 import {
     getRxStorageMemory
@@ -26,7 +21,6 @@ import {
     filter
 } from 'rxjs/operators';
 
-addPouchPlugin(require('pouchdb-adapter-idb'));
 import {
     RxDBReplicationGraphQLPlugin,
     pullQueryBuilderFromRxSchema,
@@ -135,10 +129,7 @@ function getStorageKey() {
  */
 function getStorage() {
     const storageKey = getStorageKey();
-
-    if (storageKey === 'pouchdb') {
-        return getRxStoragePouch('idb');
-    } else if (storageKey === 'lokijs') {
+    if (storageKey === 'lokijs') {
         return getRxStorageLoki({
             adapter: new LokiIncrementalIndexedDBAdapter(),
             autosaveInterval: 999999999,

@@ -15,18 +15,21 @@ import {
     addRxPlugin,
     RxStorage
 } from 'rxdb';
+import {
+    replicateWithWebsocketServer
+} from 'rxdb/plugins/replication-websocket';
 
 import {
-    addPouchPlugin, getRxStoragePouch
-} from 'rxdb/plugins/pouchdb';
+    getRxStorageDexie
+} from 'rxdb/plugins/dexie';
+import {
+    getRxStorageMemory
+} from 'rxdb/plugins/memory';
 
 import { RxDBLeaderElectionPlugin } from 'rxdb/plugins/leader-election';
-import { RxDBReplicationCouchDBPlugin } from 'rxdb/plugins/replication-couchdb';
-import * as PouchdbAdapterHttp from 'pouchdb-adapter-http';
-import * as PouchdbAdapterIdb from 'pouchdb-adapter-idb';
 import { wrappedValidateAjvStorage } from 'rxdb/plugins/validate-ajv';
 import {
-    COUCHDB_PORT,
+    WEBSOCKET_PORT,
     HERO_COLLECTION_NAME,
     DATABASE_NAME,
     IS_SERVER_SIDE_RENDERING
@@ -47,7 +50,7 @@ const collectionSettings = {
 };
 
 const syncHost = IS_SERVER_SIDE_RENDERING ? 'localhost' : window.location.hostname;
-const syncURL = 'http://' + syncHost + ':' + COUCHDB_PORT + '/' + DATABASE_NAME;
+const syncURL = 'http://' + syncHost + ':' + WEBSOCKET_PORT + '/' + DATABASE_NAME;
 console.log('syncURL: ' + syncURL);
 
 
@@ -67,18 +70,8 @@ function doSync(): boolean {
  * Loads RxDB plugins
  */
 async function loadRxDBPlugins(): Promise<void> {
-    addRxPlugin(RxDBReplicationCouchDBPlugin);
-    // http-adapter is always needed for replication with the node-server
-    addPouchPlugin(PouchdbAdapterHttp);
-
     if (IS_SERVER_SIDE_RENDERING) {
-        // for server side rendering, import the memory adapter
-        const PouchdbAdapterMemory = require('pouchdb-adapter-' + 'memory');
-        addPouchPlugin(PouchdbAdapterMemory);
     } else {
-        // else, use indexeddb
-        addPouchPlugin(PouchdbAdapterIdb);
-
         // then we also need the leader election
         addRxPlugin(RxDBLeaderElectionPlugin);
     }
@@ -109,7 +102,7 @@ async function _create(): Promise<RxHeroesDatabase> {
     await loadRxDBPlugins();
 
 
-    let storage: RxStorage<any, any> = getRxStoragePouch(IS_SERVER_SIDE_RENDERING ? 'memory' : 'idb');
+    let storage: RxStorage<any, any> = IS_SERVER_SIDE_RENDERING ? getRxStorageMemory() : getRxStorageDexie();
     if (isDevMode()) {
         // we use the schema-validation only in dev-mode
         // this validates each document if it is matching the jsonschema
@@ -166,19 +159,16 @@ async function _create(): Promise<RxHeroesDatabase> {
     // sync with server
     if (doSync()) {
         console.log('DatabaseService: sync');
-        const collectionUrl = syncURL + '/' + HERO_COLLECTION_NAME;
-
         if (IS_SERVER_SIDE_RENDERING) {
             /**
              * For server side rendering,
              * we just run a one-time replication to ensure the client has the same data as the server.
              */
             console.log('DatabaseService: await initial replication to ensure SSR has all data');
-            const firstReplication = await db.hero.syncCouchDB({
-                remote: collectionUrl,
-                options: {
-                    live: false
-                }
+            const firstReplication = await replicateWithWebsocketServer({
+                collection: db.hero,
+                url: syncURL,
+                live: false
             });
             await firstReplication.awaitInitialReplication();
         }
@@ -186,11 +176,10 @@ async function _create(): Promise<RxHeroesDatabase> {
         /**
          * we start a live replication which also sync the ongoing changes
          */
-        await db.hero.syncCouchDB({
-            remote: collectionUrl,
-            options: {
-                live: true
-            }
+         const ongoingReplication = await replicateWithWebsocketServer({
+            collection: db.hero,
+            url: syncURL,
+            live: true
         });
     }
 

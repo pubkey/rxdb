@@ -13,7 +13,7 @@ import {
 
 import heroSchema from '../schemas/Hero.schema';
 
-import { addPouchPlugin, getRxStoragePouch } from 'rxdb/plugins/pouchdb';
+import { getRxStorageDexie } from 'rxdb/plugins/dexie';
 
 // import modules
 import { RxDBDevModePlugin } from 'rxdb/plugins/dev-mode';
@@ -32,14 +32,6 @@ addRxPlugin(RxDBLeaderElectionPlugin);
 import { RxDBReplicationCouchDBPlugin } from 'rxdb/plugins/replication-couchdb';
 addRxPlugin(RxDBReplicationCouchDBPlugin);
 
-// always needed for replication with the node-server
-import * as PouchdbAdapterHttp from 'pouchdb-adapter-http';
-addPouchPlugin(PouchdbAdapterHttp);
-
-import * as PouchdbAdapterIdb from 'pouchdb-adapter-idb';
-addPouchPlugin(PouchdbAdapterIdb);
-const useAdapter = 'idb';
-
 console.log('hostname: ' + window.location.hostname);
 const syncURL = 'http://' + window.location.hostname + ':10101/';
 
@@ -52,7 +44,7 @@ export async function createDatabase(): Promise<Plugin> {
   const db = await createRxDatabase<RxHeroesCollections>({
     name: 'heroes',
     storage: wrappedValidateAjvStorage({
-      storage: getRxStoragePouch(useAdapter)
+      storage: getRxStorageDexie()
     })
     // password: 'myLongAndStupidPassword' // no password needed
   });
