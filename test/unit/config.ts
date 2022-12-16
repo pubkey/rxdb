@@ -8,10 +8,6 @@ import {
 import * as path from 'path';
 import parallel from 'mocha.parallel';
 import type { RxTestStorage } from '../../';
-import {
-    getRxStoragePouch,
-    addPouchPlugin
-} from '../../plugins/pouchdb';
 import { getRxStorageLoki } from '../../plugins/lokijs';
 import {
     getRxStorageDexie,
@@ -105,43 +101,6 @@ export function setDefaultStorage(storageKey: string) {
     }
 
     switch (storageKey) {
-        case 'pouchdb':
-            config.storage = {
-                name: storageKey,
-                getStorage: () => {
-                    if (config.platform.name === 'node') {
-                        addPouchPlugin(require('pouchdb-adapter-memory'));
-                        return getRxStoragePouch('memory');
-                    } else {
-                        // TODO use idb when performance is fixed
-                        addPouchPlugin(require('pouchdb-adapter-memory'));
-                        return getRxStoragePouch('memory');
-                    }
-                },
-                getPerformanceStorage() {
-                    if (config.platform.name === 'node') {
-                        // Node.js
-                        addPouchPlugin(require('pouchdb-adapter-leveldb'));
-                        return {
-                            storage: getRxStoragePouch('leveldb'),
-                            description: 'pouchdb+leveldb'
-                        };
-                    } else {
-                        // browser
-                        addPouchPlugin(require('pouchdb-adapter-idb'));
-                        return {
-                            storage: getRxStoragePouch('idb'),
-                            description: 'pouchdb+idb'
-                        };
-                    }
-                },
-                hasPersistence: true,
-                hasMultiInstance: true,
-                hasCouchDBReplication: true,
-                hasAttachments: true,
-                hasRegexSupport: true
-            };
-            break;
         case 'memory':
             config.storage = {
                 name: storageKey,

@@ -354,41 +354,6 @@ describe('typings.test.js', function () {
                 `;
                 await transpileCode(code);
             });
-            it('use underlying pouchdb', async () => {
-                const code = codeBase + `
-                    (async() => {
-                        const myDb: RxDatabase = await createRxDatabase({
-                            name: 'mydb',
-                            storage: getRxStorageMemory(),
-                            multiInstance: false,
-                            ignoreDuplicate: false,
-                            options: {
-                                foo1: 'bar1'
-                            }
-                        });
-                        const mySchema: RxJsonSchema<any> = ${JSON.stringify(schemas.human)};
-                        type docType = {
-                                foo: string
-                        };
-                        const cols = await myDb.addCollections({
-                            humans: {
-                                schema: mySchema,
-                                autoMigrate: false,
-                                options: {
-                                    foo2: 'bar2'
-                                }
-                            }
-                        });
-                        const myCollection: RxCollection<docType> = cols.humans;
-                        const result = await myCollection.storageInstance.internals.pouch.put({
-                            _id: 'foobar',
-                            foo: 'bar'
-                        });
-                        const docs = await myCollection.storageInstance.internals.pouch.allDocs();
-                    })();
-                `;
-                await transpileCode(code);
-            });
         });
         describe('negative', () => {
             it('should not allow wrong collection-settings', async () => {
