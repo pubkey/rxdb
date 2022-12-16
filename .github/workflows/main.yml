@@ -694,11 +694,6 @@ jobs:
       - name: build
         working-directory: ./examples/graphql
         run: npm run build
-      - name: test test:pouchdb
-        uses: GabrielBB/xvfb-action@v1.6
-        with:
-          working-directory: ./examples/graphql
-          run: npm run test:pouchdb
       - name: test test:lokijs
         uses: GabrielBB/xvfb-action@v1.6
         with:

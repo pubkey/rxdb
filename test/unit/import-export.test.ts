@@ -88,6 +88,9 @@ config.parallel('import-export.test.js', () => {
             });
             describe('negative', () => {
                 it('should not import if schema is different', async () => {
+                    if (!config.storage.hasMultiInstance) {
+                        return;
+                    }
                     const col = await humansCollection.createMultiInstance('pref1', 5);
                     const json = await col.exportJSON();
                     const differentSchemaCol = await humansCollection.createNested();

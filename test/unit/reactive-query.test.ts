@@ -322,7 +322,10 @@ config.parallel('reactive-query.test.js', () => {
             col.database.destroy();
         });
         it('ISSUE emitted-order not correct when doing many atomicUpserts', async () => {
-            if (!config.storage.hasPersistence) {
+            if (
+                !config.storage.hasPersistence ||
+                !config.storage.hasMultiInstance
+            ) {
                 return;
             }
             const crawlStateSchema = {
@@ -362,6 +365,10 @@ config.parallel('reactive-query.test.js', () => {
                 }
             });
 
+            console.log(':::::::::::::::::::::::::::::::::::');
+            console.log(':::::::::::::::::::::::::::::::::::');
+            console.log(':::::::::::::::::::::::::::::::::::');
+
             const emitted: any[] = [];
             const sub = db.crawlstate
                 .findOne('registry').$
@@ -392,6 +399,7 @@ config.parallel('reactive-query.test.js', () => {
                 return d2;
             };
 
+            console.log('--------------------0');
             await Promise.all(
                 new Array(5)
                     .fill(0)
@@ -423,6 +431,7 @@ config.parallel('reactive-query.test.js', () => {
                     }))
                     .map(data => db2.crawlstate.atomicUpsert(data))
             );
+            console.log('............... 4');
 
             await AsyncTestUtil.waitUntil(() => {
                 if (!emitted.length) return false;

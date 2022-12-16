@@ -9,10 +9,8 @@ import {
     heroSchema
 } from './Schema';
 import { RxDBLeaderElectionPlugin } from 'rxdb/plugins/leader-election';
-import { RxDBReplicationCouchDBPlugin } from 'rxdb/plugins/replication-couchdb';
 
 addRxPlugin(RxDBLeaderElectionPlugin);
-addRxPlugin(RxDBReplicationCouchDBPlugin);
 
 const syncURL = 'http://' + window.location.hostname + ':10102/';
 console.log('host: ' + syncURL);
