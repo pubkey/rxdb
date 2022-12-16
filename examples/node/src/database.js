@@ -25,7 +25,7 @@ const heroSchema = {
         name: {
             type: 'string',
             primary: true,
-            maxLenght: 100
+            maxLength: 100
         },
         color: {
             type: 'string'
