@@ -354,7 +354,10 @@ config.parallel('primary.test.js', () => {
     });
     describe('issues', () => {
         it('#3546 Compound primary key migration throws "Value of primary key(s) cannot be changed"', async () => {
-            if (!config.storage.hasPersistence) {
+            if (
+                !config.storage.hasPersistence ||
+                ['lokijs', 'remote'].includes(config.storage.name)
+            ) {
                 return;
             }
             // create a schema
