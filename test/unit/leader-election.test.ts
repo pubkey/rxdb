@@ -16,6 +16,9 @@ import {
 } from '../../plugins/leader-election';
 
 describe('leader-election.test.js', () => {
+    if (!config.storage.hasMultiInstance) {
+        return;
+    }
     addRxPlugin(RxDBLeaderElectionPlugin);
     config.parallel('.die()', () => {
         it('other instance applies on death of leader', async () => {
