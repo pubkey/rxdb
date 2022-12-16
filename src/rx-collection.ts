@@ -60,9 +60,7 @@ import {
 
 import type {
     KeyFunctionMap,
-    RxCouchDBReplicationState,
     MigrationState,
-    SyncOptions,
     RxCollection,
     RxDatabase,
     RxQuery,
@@ -759,13 +757,6 @@ export class RxCollectionBase<
 
     insertCRDT(_updateObj: CRDTEntry<any> | CRDTEntry<any>[]): RxDocument<RxDocumentType, OrmMethods> {
         throw pluginMissing('crdt');
-    }
-
-    /**
-     * sync with a CouchDB endpoint
-     */
-    syncCouchDB(_syncOptions: SyncOptions): RxCouchDBReplicationState {
-        throw pluginMissing('replication');
     }
 
     /**

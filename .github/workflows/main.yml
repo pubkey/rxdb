@@ -73,12 +73,6 @@ jobs:
       
       - name: build
         run: npm run build
-
-      - name: npm run test:node:pouchdb
-        run: npm run test:node:pouchdb
-
-      - name: npm run test:fast:pouchdb
-        run: npm run test:fast:pouchdb
         
       - name: node example
         working-directory: ./examples/node
@@ -86,17 +80,6 @@ jobs:
           npm install
           npm run test
 
-      - name: npm run test:browser:pouchdb
-        uses: GabrielBB/xvfb-action@v1
-        with:
-          run: npm run test:browser:pouchdb
-
-      - name: performance test
-        uses: GabrielBB/xvfb-action@v1
-        with:
-          run: npm run test:performance:pouchdb:browser
-
-      - run: npm run test:performance:pouchdb:node
 
   # run the node tests for the LokiJS RxStorage
   storage-lokijs:
@@ -831,23 +814,6 @@ jobs:
         run: |
           npm install
           npm test
-
-  test-multiple-times-pouchdb:
-    runs-on: ubuntu-20.04
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set node version
-        uses: actions/setup-node@v3
-        with:
-          node-version-file: '.nvmrc'
-      - name: prepare RxDB core
-        run: |
-          npm install
-          npm run build
-       # in the past we had tests that failed randomly
-       # to prevent this we run the tests in fast-mode 10 times
-      - name: unit tests 10 times
-        run: for i in `seq 10`; do npm run test:fast:pouchdb; done
 
   test-multiple-times-lokijs:
     runs-on: ubuntu-20.04

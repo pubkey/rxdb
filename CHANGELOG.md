@@ -3,7 +3,9 @@
 
 <!-- CHANGELOG NEWEST -->
 
-- Do not use hash for revisions
+- CHANGE Do not use hash for revisions but use database instance token instead.
+- Remove the deprecated PouchDB RxStorage.
+
 
 <!-- ADD new changes here! -->
 

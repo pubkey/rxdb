@@ -99,7 +99,6 @@
     "test:performance": "npm run build && npm run test:performance:pouchdb:node && npm run test:performance:pouchdb:browser && npm run test:performance:lokijs && npm run test:performance:dexie && npm run test:performance:memory:browser && npm run test:performance:memory:node && npm run test:performance:foundationdb",
     "couch:start": "docker run -d -p 5984:5984 --rm --name rxdb-couchdb couchdb:2.1.1",
     "couch:stop": "docker rm -f rxdb-couchdb",
-    "test:couchdb": "npm run transpile && cross-env DEFAULT_STORAGE=pouchdb mocha --config ./config/.mocharc.js ./test_tmp/couch-db-integration.test.js",
     "dockertest": "docker run -it -v $(pwd):/usr/src/app markadams/chromium-xvfb-js:latest-onbuild",
     "profile": "npm run transpile && rm -f isolate-* && cross-env STORAGE=pouchdb NODE_ENV=fast NODE_PROF=true mocha --config ./config/.mocharc.js ./test_tmp/performance.test.js --v8-prof --expose-gc && node scripts/profile.js",
     "clear": "rimraf -rf test_tmp/ && rimraf -rf dist/ && rimraf .transpile_state.json",

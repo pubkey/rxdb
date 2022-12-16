@@ -1,8 +1,0 @@
-{
-  "name": "rxdb-plugin-pouchdb",
-  "main": "../../dist/lib/plugins/pouchdb/index.js",
-  "jsnext:main": "../../dist/es/plugins/pouchdb/index.js",
-  "module": "../../dist/es/plugins/pouchdb/index.js",
-  "types": "../../dist/types/plugins/pouchdb/index.d.ts",
-  "sideEffects": false
-}

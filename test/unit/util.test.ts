@@ -9,12 +9,10 @@ import {
     sortObject,
     now,
     blobBufferUtil,
-    createRevision,
     sortDocumentsByLastWriteTime,
     RxDocumentData,
     ensureInteger,
     objectPathMonad,
-    defaultHashFunction,
     b64DecodeUnicode,
     b64EncodeUnicode,
     batchArray

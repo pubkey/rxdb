@@ -9,14 +9,8 @@ import {
     randomCouchString,
     RxDatabase,
     isRxDatabaseFirstTimeInstantiated,
-    fastUnsecureHash,
-    RxCollection
+    fastUnsecureHash
 } from '../../';
-
-
-import {
-    getPouchLocation
-} from '../../plugins/pouchdb';
 
 import AsyncTestUtil from 'async-test-util';
 import * as schemas from '../helper/schemas';
@@ -584,23 +578,6 @@ config.parallel('rx-database.test.js', () => {
             assert.strictEqual(hasLocal, null);
 
             await db2.remove();
-        });
-    });
-    describe('ISSUES', () => {
-        it('#677 wrong pouch-location when path as collection-name', () => {
-            const pouchPathNormal = getPouchLocation(
-                'mydb',
-                'humans',
-                5
-            );
-            assert.strictEqual(pouchPathNormal, 'mydb-rxdb-5-humans');
-
-            const pouchPath = getPouchLocation(
-                'mydb',
-                'subfolder/humans',
-                5
-            );
-            assert.strictEqual(pouchPath, 'subfolder/mydb-rxdb-5-humans');
         });
     });
 });

@@ -1,6 +1,5 @@
 import './unit/init.test';
 import './unit/util.test';
-import './unit/pouch-db-integration.test';
 import './unit/adapter-check.test';
 
 
