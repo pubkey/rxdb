@@ -93,9 +93,9 @@ export async function createDatabase(): Promise<Plugin> {
 
   // sync with server
   console.log('DatabaseService: sync');
-  await db.heroes.syncCouchDB({
-    remote: syncURL + '/hero',
-  });
+  // await db.heroes.syncCouchDB({
+  //   remote: syncURL + '/hero',
+  // });
 
   return {
     install(app: any) {

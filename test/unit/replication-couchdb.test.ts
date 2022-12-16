@@ -17,16 +17,16 @@ import {
 
 import {
     mergeUrlQueryParams,
-    RxCouchDBNewReplicationState,
-    RxDBReplicationCouchDBNewPlugin
-} from '../../plugins/replication-couchdb-new';
+    RxCouchDBReplicationState,
+    RxDBReplicationCouchDBPlugin
+} from '../../plugins/replication-couchdb';
 
 import { PouchAllDocsResponse } from '../../src/types';
 import { filter, firstValueFrom } from 'rxjs';
 import { waitUntil } from 'async-test-util';
 import { ensureCollectionsHaveEqualState } from '../helper/test-util';
 
-describe('replication-couchdb-new.test.ts', () => {
+describe('replication-couchdb.test.ts', () => {
     if (
         !config.platform.isNode() ||
         !config.storage.hasPersistence
@@ -34,7 +34,7 @@ describe('replication-couchdb-new.test.ts', () => {
         return;
     }
     const SpawnServer = require('../helper/spawn-server');
-    addRxPlugin(RxDBReplicationCouchDBNewPlugin);
+    addRxPlugin(RxDBReplicationCouchDBPlugin);
 
     async function getAllServerDocs(serverUrl: string) {
         const url = serverUrl + '_all_docs?' + mergeUrlQueryParams({ include_docs: true });
@@ -43,7 +43,7 @@ describe('replication-couchdb-new.test.ts', () => {
         return result.rows.map(row => row.doc);
     }
 
-    function ensureReplicationHasNoErrors(replicationState: RxCouchDBNewReplicationState<any>) {
+    function ensureReplicationHasNoErrors(replicationState: RxCouchDBReplicationState<any>) {
         /**
          * We do not have to unsubscribe because the observable will cancel anyway.
          */
@@ -58,7 +58,7 @@ describe('replication-couchdb-new.test.ts', () => {
     }
 
     async function syncOnce(collection: RxCollection, server: any) {
-        const replicationState = collection.syncCouchDBNew({
+        const replicationState = collection.syncCouchDB({
             url: server.url,
             live: false,
             pull: {},
@@ -219,8 +219,8 @@ describe('replication-couchdb-new.test.ts', () => {
         async function syncLive<RxDocType>(
             collection: RxCollection<RxDocType>,
             server: any
-        ): Promise<RxCouchDBNewReplicationState<RxDocType>> {
-            const replicationState = collection.syncCouchDBNew({
+        ): Promise<RxCouchDBReplicationState<RxDocType>> {
+            const replicationState = collection.syncCouchDB({
                 url: server.url,
                 live: true,
                 pull: {},

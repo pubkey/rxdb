@@ -6,6 +6,7 @@
 - CHANGE Do not use hash for revisions but use database instance token instead.
 - Remove the deprecated PouchDB RxStorage.
 - CHANGE (memory RxStorage) do not clean up database state on closing of the storage, only on `remove()`.
+- REMOVE old `replication-couchdb` plugin. Rename `replication-couchdb-new` to `replication-couchdb`.
 
 
 <!-- ADD new changes here! -->

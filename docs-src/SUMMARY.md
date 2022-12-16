@@ -45,7 +45,6 @@
     * [Creation](./rx-collection.md#creating-a-collection)
         * [name](./rx-collection.md#name)
         * [schema](./rx-collection.md#schema)
-        * [pouchSettings](./rx-collection.md#pouchSettings)
         * [ORM-functions](./rx-collection.md#orm-functions)
         * [Migration](./rx-collection.md#Migration)
     * [Functions](./rx-collection.md#functions)
@@ -127,16 +126,13 @@
     * [RxStorage Sharding](./rx-storage-sharding.md)
     * [RxStorage Localstorage Meta Optimizer](./rx-storage-localstorage-meta-optimizer.md)
     * [RxStorage Electron IpcRenderer & IpcMain](./electron.md#rxstorage-electron-ipcrenderer--ipcmain)
-    * [RxStorage PouchDB](./rx-storage-pouchdb.md)
-    * [PouchDB Adapters](./adapters.md)
 
 * [Replication](./replication.md)
     * [Replication GraphQL](./replication-graphql.md)
     * [Replication Websocket](./replication-websocket.md)
-    * [Replication CouchDB (new)](./replication-couchdb-new.md)
+    * [Replication CouchDB](./replication-couchdb.md)
     * [Replication P2P](./replication-p2p.md)
     * [Replication Firestore](./replication-firestore.md)
-    * [Replication CouchDB/PouchDB](./replication-couchdb.md)
 
 * [Cleanup](./cleanup.md)
 

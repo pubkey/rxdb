@@ -94,9 +94,9 @@ import type {
     RxGraphQLReplicationState
 } from './plugins/replication-graphql';
 import type {
-    RxCouchDBNewReplicationState,
-    SyncOptionsCouchDBNew
-} from './plugins/replication-couchdb-new';
+    RxCouchDBReplicationState,
+    SyncOptionsCouchDB
+} from './plugins/replication-couchdb';
 import type {
     SyncOptionsP2P,
     RxP2PReplicationPool
@@ -766,8 +766,8 @@ export class RxCollectionBase<
         throw pluginMissing('replication-graphql');
     }
 
-    syncCouchDBNew(_syncOptions: SyncOptionsCouchDBNew<RxDocumentType>): RxCouchDBNewReplicationState<RxDocumentType> {
-        throw pluginMissing('replication-couchdb-new');
+    syncCouchDB(_syncOptions: SyncOptionsCouchDB<RxDocumentType>): RxCouchDBReplicationState<RxDocumentType> {
+        throw pluginMissing('replication-couchdb');
     }
 
     syncP2P(_syncOptions: SyncOptionsP2P<RxDocumentType>): RxP2PReplicationPool<RxDocumentType> {

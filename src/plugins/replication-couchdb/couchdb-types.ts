@@ -10,7 +10,7 @@ export type CouchDBCheckpointType = {
 };
 
 export type FetchMethodType = typeof fetch;
-export type SyncOptionsCouchDBNew<RxDocType> = Omit<
+export type SyncOptionsCouchDB<RxDocType> = Omit<
 ReplicationOptions<RxDocType, any>,
 'pull' | 'push' | 'replicationIdentifier' | 'collection'
 > & {

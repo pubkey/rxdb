@@ -256,9 +256,9 @@ Note that importing will fire events for each inserted document.
 This method allows you to replicate data between other RxCollections, pouchdb instances or remote servers which support the couchdb-sync-protocol.
 Full documentation on how to use replication is [here](./replication-couchdb.md).
 
-### syncCouchDBNew()
-This method allows you to replicate data between a `RxCollection` and a CouchDB endpoint. Compared to `syncCouchDB()`, `syncCouchDBNew()` does not require to use the PouchDB [RxStorage](./rx-storage.md).
-Full documentation on how to use replication is [here](./replication-couchdb-new.md).
+### syncCouchDB()
+This method allows you to replicate data between a `RxCollection` and a CouchDB endpoint. Compared to `syncCouchDB()`, `syncCouchDB()` does not require to use the PouchDB [RxStorage](./rx-storage.md).
+Full documentation on how to use replication is [here](./replication-couchdb.md).
 
 
 ### syncGraphQL()

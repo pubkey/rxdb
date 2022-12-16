@@ -1,5 +1,5 @@
 /**
- * this plugin adds the RxCollection.syncCouchDBNew()-function to rxdb
+ * this plugin adds the RxCollection.syncCouchDB()-function to rxdb
  * you can use it to sync collections with a remote CouchDB endpoint.
  */
 import {
@@ -33,7 +33,7 @@ import { Subject } from 'rxjs';
 import type {
     CouchDBCheckpointType,
     FetchMethodType,
-    SyncOptionsCouchDBNew
+    SyncOptionsCouchDB
 } from './couchdb-types';
 import {
     couchDBDocToRxDocData,
@@ -45,7 +45,7 @@ import {
 export * from './couchdb-helper';
 export * from './couchdb-types';
 
-export class RxCouchDBNewReplicationState<RxDocType> extends RxReplicationState<RxDocType, CouchDBCheckpointType> {
+export class RxCouchDBReplicationState<RxDocType> extends RxReplicationState<RxDocType, CouchDBCheckpointType> {
     constructor(
         public readonly url: string,
         public fetch: FetchMethodType,
@@ -70,9 +70,9 @@ export class RxCouchDBNewReplicationState<RxDocType> extends RxReplicationState<
     }
 }
 
-export function syncCouchDBNew<RxDocType>(
+export function syncCouchDB<RxDocType>(
     this: RxCollection<RxDocType>,
-    options: SyncOptionsCouchDBNew<RxDocType>
+    options: SyncOptionsCouchDB<RxDocType>
 ) {
     options = flatClone(options);
     if (!options.url.endsWith('/')) {
@@ -179,7 +179,7 @@ export function syncCouchDBNew<RxDocType>(
         };
     }
 
-    const replicationState = new RxCouchDBNewReplicationState<RxDocType>(
+    const replicationState = new RxCouchDBReplicationState<RxDocType>(
         options.url,
         options.fetch ? options.fetch : fetch,
         COUCHDB_NEW_REPLICATION_PLUGIN_IDENTITY_PREFIX + fastUnsecureHash(options.url),
@@ -241,15 +241,15 @@ export function syncCouchDBNew<RxDocType>(
 }
 
 
-export const RxDBReplicationCouchDBNewPlugin: RxPlugin = {
-    name: 'replication-couchdb-new',
+export const RxDBReplicationCouchDBPlugin: RxPlugin = {
+    name: 'replication-couchdb',
     init() {
         addRxPlugin(RxDBLeaderElectionPlugin);
     },
     rxdb: true,
     prototypes: {
         RxCollection: (proto: any) => {
-            proto.syncCouchDBNew = syncCouchDBNew;
+            proto.syncCouchDB = syncCouchDB;
         }
     }
 };
