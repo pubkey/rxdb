@@ -16,8 +16,9 @@ import {
     RxStorage
 } from 'rxdb';
 import {
-    replicateWithWebsocketServer
-} from 'rxdb/plugins/replication-websocket';
+    RxDBReplicationCouchDBPlugin
+} from 'rxdb/plugins/replication-couchdb';
+addRxPlugin(RxDBReplicationCouchDBPlugin);
 
 import {
     getRxStorageDexie
@@ -29,7 +30,7 @@ import {
 import { RxDBLeaderElectionPlugin } from 'rxdb/plugins/leader-election';
 import { wrappedValidateAjvStorage } from 'rxdb/plugins/validate-ajv';
 import {
-    WEBSOCKET_PORT,
+    SYNC_PORT,
     HERO_COLLECTION_NAME,
     DATABASE_NAME,
     IS_SERVER_SIDE_RENDERING
@@ -50,7 +51,7 @@ const collectionSettings = {
 };
 
 const syncHost = IS_SERVER_SIDE_RENDERING ? 'localhost' : window.location.hostname;
-const syncURL = 'http://' + syncHost + ':' + WEBSOCKET_PORT + '/' + DATABASE_NAME;
+const syncURL = 'http://' + syncHost + ':' + SYNC_PORT + '/' + HERO_COLLECTION_NAME;
 console.log('syncURL: ' + syncURL);
 
 
@@ -165,10 +166,11 @@ async function _create(): Promise<RxHeroesDatabase> {
              * we just run a one-time replication to ensure the client has the same data as the server.
              */
             console.log('DatabaseService: await initial replication to ensure SSR has all data');
-            const firstReplication = await replicateWithWebsocketServer({
-                collection: db.hero as any,
+            const firstReplication = await db.hero.syncCouchDB({
                 url: syncURL,
-                live: false
+                live: false,
+                pull: {},
+                push: {}
             });
             await firstReplication.awaitInitialReplication();
         }
@@ -176,10 +178,11 @@ async function _create(): Promise<RxHeroesDatabase> {
         /**
          * we start a live replication which also sync the ongoing changes
          */
-         const ongoingReplication = await replicateWithWebsocketServer({
-            collection: db.hero as any,
+        const ongoingReplication = await db.hero.syncCouchDB({
             url: syncURL,
-            live: true
+            live: true,
+            pull: {},
+            push: {}
         });
     }
 

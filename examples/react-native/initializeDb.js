@@ -4,12 +4,12 @@ import { RxDBDevModePlugin } from 'rxdb/plugins/dev-mode';
 import { RxDBMigrationPlugin } from 'rxdb/plugins/migration'
 import { RxDBUpdatePlugin } from 'rxdb/plugins/update'
 import { RxDBQueryBuilderPlugin } from 'rxdb/plugins/query-builder'
-import { RxDBReplicationCouchDBNewPlugin } from 'rxdb/plugins/replication-couchdb-new'
+import { RxDBReplicationCouchDBPlugin } from 'rxdb/plugins/replication-couchdb'
 
 addRxPlugin(RxDBMigrationPlugin)
 addRxPlugin(RxDBUpdatePlugin)
 addRxPlugin(RxDBQueryBuilderPlugin)
-addRxPlugin(RxDBReplicationCouchDBNewPlugin)
+addRxPlugin(RxDBReplicationCouchDBPlugin)
 
 import schema from './src/Schema';
 
@@ -58,7 +58,7 @@ const initialize = async () => {
 
     try {
         console.log('Start sync...');
-        const replicationState = db[HeroesCollectionName].syncCouchDBNew({
+        const replicationState = db[HeroesCollectionName].syncCouchDB({
             url: `${syncURL}/${HeroesCollectionName}/`,
             fetch: fetch,
             pull: {},
