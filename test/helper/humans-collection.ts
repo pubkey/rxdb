@@ -11,10 +11,6 @@ import {
     randomCouchString
 } from '../../';
 
-import {
-    addPouchPlugin
-} from '../../plugins/pouchdb';
-
 import { MigrationStrategies, RxAttachmentCreator, RxStorage } from '../../src/types';
 import { HumanDocumentType } from './schemas';
 
@@ -430,8 +426,6 @@ export async function createMigrationCollection(
 export async function createRelated(
     name = randomCouchString(10)
 ): Promise<RxCollection<schemaObjects.RefHumanDocumentType>> {
-    addPouchPlugin(require('pouchdb-adapter-memory'));
-
     const db = await createRxDatabase<{ human: RxCollection<schemaObjects.RefHumanDocumentType>; }>({
         name,
         storage: config.storage.getStorage(),
