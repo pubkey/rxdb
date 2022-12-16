@@ -643,6 +643,9 @@ describe('rx-query.test.ts', () => {
             col.database.destroy();
         });
         it('exec from other database-instance', async () => {
+            if (!config.storage.hasPersistence) {
+                return;
+            }
             const dbName = randomCouchString(10);
             const schema = schemas.averageSchema();
             const db = await createRxDatabase({
@@ -910,21 +913,6 @@ describe('rx-query.test.ts', () => {
                 }
             });
             const col = cols.humans;
-
-            await col.storageInstance.internals.pouch.createIndex({
-                name: 'idx-rxdb-info',
-                ddoc: 'idx-rxdb-info',
-                index: {
-                    fields: ['info']
-                }
-            });
-            await col.storageInstance.internals.pouch.createIndex({
-                name: 'idx-rxdb-info.title',
-                ddoc: 'idx-rxdb-info.title',
-                index: {
-                    fields: ['info.title']
-                }
-            });
 
             await col.insert({
                 id: '1',

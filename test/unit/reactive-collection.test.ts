@@ -17,6 +17,7 @@ import {
     first
 } from 'rxjs/operators';
 import { HumanDocumentType } from '../helper/schemas';
+import { firstValueFrom } from 'rxjs';
 
 config.parallel('reactive-collection.test.js', () => {
     describe('.insert()', () => {
@@ -34,8 +35,9 @@ config.parallel('reactive-collection.test.js', () => {
                 });
                 const c = cols[colName];
 
+                const changeEventPromise = firstValueFrom(c.$.pipe(first()));
                 c.insert(schemaObjects.human());
-                const changeEvent: RxChangeEvent<HumanDocumentType> = await c.$.pipe(first()).toPromise() as any;
+                const changeEvent = await changeEventPromise;
                 assert.strictEqual(changeEvent.collectionName, colName);
                 assert.strictEqual(typeof changeEvent.documentId, 'string');
                 assert.ok(changeEvent.documentData);

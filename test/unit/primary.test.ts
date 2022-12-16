@@ -354,6 +354,9 @@ config.parallel('primary.test.js', () => {
     });
     describe('issues', () => {
         it('#3546 Compound primary key migration throws "Value of primary key(s) cannot be changed"', async () => {
+            if (!config.storage.hasPersistence) {
+                return;
+            }
             // create a schema
             const getSchema = (version: number) => {
                 const ret: RxJsonSchema<any> = {

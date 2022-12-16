@@ -321,7 +321,10 @@ config.parallel('reactive-query.test.js', () => {
             sub.unsubscribe();
             col.database.destroy();
         });
-        it('ISSUE emitted-order working when doing many atomicUpserts', async () => {
+        it('ISSUE emitted-order not correct when doing many atomicUpserts', async () => {
+            if (!config.storage.hasPersistence) {
+                return;
+            }
             const crawlStateSchema = {
                 version: 0,
                 type: 'object',

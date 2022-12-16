@@ -4,11 +4,8 @@ const {
     addRxPlugin
 } = require('../../../');
 const {
-    addPouchPlugin,
-    getRxStoragePouch
-} = require('../../../plugins/pouchdb');
-addPouchPlugin(require('pouchdb-adapter-node-websql'));
-addPouchPlugin(require('pouchdb-adapter-http'));
+    getRxStorageMemory
+} = require('../../../plugins/memory');
 
 const { RxDBQueryBuilderPlugin } = require('../../../plugins/query-builder');
 addRxPlugin(RxDBQueryBuilderPlugin);
@@ -40,7 +37,7 @@ const heroSchema = {
 const create = async () => {
     const database = await createRxDatabase({
         name: 'heroesdb',
-        storage: getRxStoragePouch('websql'),
+        storage: getRxStorageMemory(),
         password: 'myLongAndStupidPassword',
         multiInstance: true
     });

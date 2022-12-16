@@ -34,15 +34,13 @@ import {
     parseRevision
 } from '../../';
 
-import { wrappedKeyCompressionStorage } from '../../plugins/key-compression';
-
 import { RxDBUpdatePlugin } from '../../plugins/update';
 addRxPlugin(RxDBUpdatePlugin);
 import { RxDBMigrationPlugin } from '../../plugins/migration';
 addRxPlugin(RxDBMigrationPlugin);
 
 import { firstValueFrom } from 'rxjs';
-import { enableKeyCompression, HumanDocumentType } from '../helper/schemas';
+import { HumanDocumentType } from '../helper/schemas';
 import { RxDocumentData } from '../../src/types';
 
 describe('rx-collection.test.ts', () => {
@@ -83,75 +81,6 @@ describe('rx-collection.test.ts', () => {
                     });
                     const collection = db.collections.human;
                     assert.ok(isRxCollection(collection));
-                    db.destroy();
-                });
-                it('should create compound-indexes (keyCompression: false)', async () => {
-                    const db = await createRxDatabase({
-                        name: randomCouchString(10),
-                        storage: config.storage.getStorage(),
-                    });
-                    const schemaJSON = clone(schemas.compoundIndex);
-                    schemaJSON.keyCompression = false;
-
-                    await db.addCollections({
-                        human: {
-                            schema: schemaJSON
-                        }
-                    });
-                    const collection = db.collections.human;
-                    const indexes = await collection.storageInstance.internals.pouch.getIndexes();
-                    assert.strictEqual(indexes.indexes.length, 2);
-                    const lastIndexDefFields = indexes.indexes[1].def.fields;
-                    assert.deepStrictEqual(
-                        lastIndexDefFields,
-                        [
-                            { 'age': 'asc' },
-                            { 'passportCountry': 'asc' },
-                            // the primaryKey index will always be added by RxDB
-                            { _id: 'asc' }
-                        ]
-                    );
-                    db.destroy();
-                });
-                it('should create compound-indexes (keyCompression: true)', async () => {
-                    const db = await createRxDatabase({
-                        name: randomCouchString(10),
-                        storage: wrappedKeyCompressionStorage({
-                            storage: config.storage.getStorage()
-                        })
-                    });
-                    await db.addCollections({
-                        human: {
-                            schema: enableKeyCompression(schemas.compoundIndex)
-                        }
-                    });
-                    const collection = db.collections.human;
-                    const indexes = await collection.storageInstance.internals.pouch.getIndexes();
-                    assert.strictEqual(indexes.indexes.length, 2);
-                    const lastIndexDefFields = indexes.indexes[1].def.fields;
-                    assert.deepStrictEqual(
-                        lastIndexDefFields, [
-                        { 'age': 'asc' },
-                        { '|a': 'asc' },
-                        // the primaryKey index will always be added by RxDB
-                        { _id: 'asc' }
-                    ]
-                    );
-                    db.destroy();
-                });
-                it('should have the version-number in the pouchdb-prefix', async () => {
-                    const db = await createRxDatabase({
-                        name: randomCouchString(10),
-                        storage: config.storage.getStorage(),
-                    });
-                    await db.addCollections({
-                        human: {
-                            schema: schemas.human
-                        }
-                    });
-                    const collection = db.collections.human;
-                    assert.deepStrictEqual(schemas.human.version, 0);
-                    assert.ok(collection.storageInstance.internals.pouch.name.includes('-' + schemas.human.version + '-'));
                     db.destroy();
                 });
                 it('should not forget the options', async () => {
@@ -622,56 +551,6 @@ describe('rx-collection.test.ts', () => {
                         assert.strictEqual(docs.length, 20);
                         assert.ok(ensureNotFalsy(docs[0]._data.age) <= ensureNotFalsy(docs[1]._data.age));
                         c.database.destroy();
-                    });
-                    it('sort by non-top-level-key as index (no keycompression)', async () => {
-                        const db = await createRxDatabase({
-                            name: randomCouchString(10),
-                            storage: config.storage.getStorage(),
-                        });
-                        const schemaObj = clone(schemas.humanSubIndex);
-                        schemaObj.keyCompression = false;
-                        await db.addCollections({
-                            human: {
-                                schema: schemaObj
-                            }
-                        });
-                        const collection = db.human;
-                        const objects = new Array(10).fill(0).map(() => {
-                            return {
-                                passportId: randomCouchString(10),
-                                other: {
-                                    age: randomNumber(10, 50)
-                                }
-                            };
-                        });
-                        await Promise.all(objects.map(o => collection.insert(o)));
-
-                        // do it manually
-                        const all = await collection.storageInstance.internals.pouch.find({
-                            selector: {
-                                'other.age': {
-                                    '$gt': 0
-                                }
-                            },
-                            sort: [
-                                { 'other.age': 'asc' },
-                                { _id: 'asc' }
-                            ]
-                        });
-                        assert.strictEqual(all.docs.length, 10);
-
-                        // with RxQuery
-                        const query = collection.find().sort({
-                            'other.age': 'asc'
-                        });
-                        const docs = await query.exec();
-
-                        let lastAge = 0;
-                        docs.forEach((doc: any) => {
-                            assert.ok(doc.other.age >= lastAge);
-                            lastAge = doc.other.age;
-                        });
-                        db.destroy();
                     });
                     it('sort by non-top-level-key as index (with keycompression)', async () => {
                         if (config.storage.name === 'lokijs') {
@@ -2125,25 +2004,6 @@ describe('rx-collection.test.ts', () => {
                 .eq('Bob')
                 .exec();
             assert.strictEqual(myDocument.score, 100);
-            db.destroy();
-        });
-        it('auto_compaction not works on collection-level https://gitter.im/pubkey/rxdb?at=5c42f3dd0721b912a5a4366b', async () => {
-            const db = await createRxDatabase({
-                name: randomCouchString(10),
-                storage: config.storage.getStorage()
-            });
-
-            // test with auto_compaction
-            const collections = await db.addCollections({
-                human_compact: {
-                    schema: schemas.primaryHuman,
-                    instanceCreationOptions: {
-                        auto_compaction: true
-                    }
-                }
-            });
-            const collection = collections.human_compact;
-            assert.ok(collection.storageInstance.internals.pouch.auto_compaction);
             db.destroy();
         });
         it('#939 creating a collection mutates the given parameters-object', async () => {

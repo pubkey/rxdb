@@ -420,7 +420,9 @@ describe('rx-document.test.js', () => {
                 db.destroy();
             });
             it('should be persistent when re-creating the database', async () => {
-                if (!config.platform.isNode()) return;
+                if (!config.storage.hasPersistence) {
+                    return;
+                }
                 // use a 'slow' adapter because memory might be to fast
                 const dbName = config.rootPath + 'test_tmp/' + randomCouchString(10);
                 const db = await createRxDatabase({
@@ -463,6 +465,9 @@ describe('rx-document.test.js', () => {
                 db2.destroy();
             });
             it('should retry on conflict errors', async () => {
+                if (!config.storage.hasPersistence) {
+                    return;
+                }
                 const dbName = randomCouchString(10);
                 const db = await createRxDatabase({
                     name: dbName,
