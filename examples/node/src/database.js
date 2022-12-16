@@ -4,10 +4,6 @@ const {
     addRxPlugin
 } = require('../../../');
 const {
-    RxDBReplicationCouchDBPlugin
-} = require('../../../plugins/replication-couchdb');
-addRxPlugin(RxDBReplicationCouchDBPlugin);
-const {
     addPouchPlugin,
     getRxStoragePouch
 } = require('../../../plugins/pouchdb');
@@ -40,7 +36,6 @@ const heroSchema = {
     required: ['color']
 };
 
-const SYNC_URL = 'http://localhost:10102/';
 
 const create = async () => {
     const database = await createRxDatabase({
@@ -62,9 +57,10 @@ const create = async () => {
             }
         }
     });
-    database.collections.heroes.syncCouchDB({
-        remote: SYNC_URL + 'hero/'
-    });
+    // const SYNC_URL = 'http://localhost:10102/';
+    // database.collections.heroes.syncCouchDB({
+    //     remote: SYNC_URL + 'hero/'
+    // });
     return database;
 };
 
