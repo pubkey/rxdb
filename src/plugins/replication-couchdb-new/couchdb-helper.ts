@@ -1,5 +1,5 @@
-import { WithDeleted } from '../../types';
-import { pouchSwapIdToPrimary } from '../pouchdb';
+import type { RxDocumentData, StringKeys, WithDeleted } from '../../types';
+import { flatClone } from '../../util';
 import { URLQueryParams } from './couchdb-types';
 
 
@@ -19,10 +19,45 @@ export function couchDBDocToRxDocData<RxDocType>(
     primaryPath: string,
     couchDocData: any
 ): WithDeleted<RxDocType> {
-    const doc = pouchSwapIdToPrimary(primaryPath, couchDocData);
+    const doc = couchSwapIdToPrimary(primaryPath, couchDocData);
 
     // ensure deleted flag is set.
     doc._deleted = !!doc._deleted;
 
     return doc;
+}
+
+
+export function couchSwapIdToPrimary<T>(
+    primaryKey: StringKeys<RxDocumentData<T>>,
+    docData: any
+): any {
+    if (primaryKey === '_id' || docData[primaryKey]) {
+        return docData;
+    }
+    docData = flatClone(docData);
+    docData[primaryKey] = docData._id;
+    delete docData._id;
+
+    return docData;
+}
+
+/**
+ * Swaps the primaryKey of the document
+ * to the _id property.
+ */
+export function couchSwapPrimaryToId<RxDocType>(
+    primaryKey: StringKeys<RxDocumentData<RxDocType>>,
+    docData: any
+): RxDocType & { _id: string; } {
+    // optimisation shortcut
+    if (primaryKey === '_id') {
+        return docData;
+    }
+
+    const idValue = docData[primaryKey];
+    const ret = flatClone(docData);
+    delete ret[primaryKey];
+    ret._id = idValue;
+    return ret;
 }

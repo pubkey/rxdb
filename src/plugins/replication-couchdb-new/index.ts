@@ -38,9 +38,9 @@ import type {
 import {
     couchDBDocToRxDocData,
     COUCHDB_NEW_REPLICATION_PLUGIN_IDENTITY_PREFIX,
-    mergeUrlQueryParams
+    mergeUrlQueryParams,
+    couchSwapPrimaryToId
 } from './couchdb-helper';
-import { pouchSwapPrimaryToId } from '../pouchdb';
 
 export * from './couchdb-helper';
 export * from './couchdb-types';
@@ -135,7 +135,7 @@ export function syncCouchDBNew<RxDocType>(
                         if (row.assumedMasterState) {
                             (sendDoc as any)._rev = ensureNotFalsy((row.assumedMasterState as any)._rev);
                         }
-                        return pouchSwapPrimaryToId(collection.schema.primaryPath, sendDoc);
+                        return couchSwapPrimaryToId(collection.schema.primaryPath, sendDoc);
                     })
                 };
 

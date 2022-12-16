@@ -19,7 +19,6 @@ export * from './util';
 // plugins
 export * from './plugins/replication';
 export * from './plugins/replication-graphql';
-export * from './plugins/replication-couchdb';
 export * from './plugins/replication';
 export * from './plugins/local-documents';
 export * from './plugins/server-couchdb';
