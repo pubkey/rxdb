@@ -9,12 +9,10 @@ import {
     createRxDatabase,
     randomCouchString,
     promiseWait,
-    _collectionNamePrimary,
     clone,
     getHeightOfRevision,
     blobBufferUtil,
     lastOfArray,
-    normalizeMangoQuery,
     RxStorageInstance,
     now,
     addRxPlugin
@@ -25,7 +23,6 @@ import {
     getBatchOfOldCollection,
     migrateDocumentData,
     _migrateDocuments,
-    deleteOldCollection,
     migrateOldCollection,
     migratePromise
 } from '../../plugins/migration';

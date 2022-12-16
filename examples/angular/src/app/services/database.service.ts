@@ -166,7 +166,7 @@ async function _create(): Promise<RxHeroesDatabase> {
              */
             console.log('DatabaseService: await initial replication to ensure SSR has all data');
             const firstReplication = await replicateWithWebsocketServer({
-                collection: db.hero,
+                collection: db.hero as any,
                 url: syncURL,
                 live: false
             });
@@ -177,7 +177,7 @@ async function _create(): Promise<RxHeroesDatabase> {
          * we start a live replication which also sync the ongoing changes
          */
          const ongoingReplication = await replicateWithWebsocketServer({
-            collection: db.hero,
+            collection: db.hero as any,
             url: syncURL,
             live: true
         });

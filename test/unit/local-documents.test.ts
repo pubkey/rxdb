@@ -23,12 +23,6 @@ import {
     first
 } from 'rxjs/operators';
 
-
-let leveldown: any;
-if (config.platform.isNode()) {
-    leveldown = require('leveldown');
-}
-
 declare type TestDocType = {
     foo: string;
 };
