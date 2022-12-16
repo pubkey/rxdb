@@ -7,7 +7,7 @@ import config from './unit/config';
 import AsyncTestUtil from 'async-test-util';
 import * as path from 'path';
 
-const pouchdbPluginPath = path.join(config.rootPath, 'plugins/pouchdb');
+const memoryPluginPath = path.join(config.rootPath, 'plugins/memory');
 
 describe('typings.test.js', function () {
     this.timeout(120 * 1000); // tests can take very long on slow devices like the CI
@@ -27,13 +27,8 @@ describe('typings.test.js', function () {
             blobBufferUtil
         } from '${config.rootPath}';
         import {
-            addPouchPlugin,
-            getRxStoragePouch
-        } from '${pouchdbPluginPath}';
-        import * as PouchMemAdapter from 'pouchdb-adapter-memory';
-        addPouchPlugin(PouchMemAdapter);
-        const PouchHttpAdapter = require('pouchdb-adapter-http');
-        addPouchPlugin(PouchHttpAdapter);
+            getRxStorageMemory
+        } from '${memoryPluginPath}';
 
         type DefaultDocType = {
             passportId: string;
@@ -102,16 +97,6 @@ describe('typings.test.js', function () {
             assert.ok(thrown);
         });
     });
-    config.parallel('import', () => {
-        it('import * with strict:true', async () => {
-            const code = `
-                import { addPouchPlugin } from '${pouchdbPluginPath}';
-                import * as PouchMemAdapter from 'pouchdb-adapter-memory';
-                addPouchPlugin(PouchMemAdapter);
-            `;
-            await transpileCode(code);
-        });
-    });
     config.parallel('database', () => {
         describe('positive', () => {
             it('should create the database and use its methods', async () => {
@@ -119,7 +104,7 @@ describe('typings.test.js', function () {
                     (async() => {
                         const databaseCreator: RxDatabaseCreator = {
                             name: 'mydb',
-                            storage: getRxStoragePouch('memory'),
+                            storage: getRxStorageMemory(),
                             multiInstance: false,
                             ignoreDuplicate: false
                         };
@@ -170,7 +155,7 @@ describe('typings.test.js', function () {
                             hero: RxCollection;
                         }>({
                             name: 'heroes',
-                            storage: getRxStoragePouch('memory')
+                            storage: getRxStorageMemory()
                         });
                         const col: RxCollection = db.hero;
                         await db.destroy();
@@ -184,7 +169,7 @@ describe('typings.test.js', function () {
                 const brokenCode = codeBase + `
                     const databaseCreator: RxDatabaseCreator = {
                         name: 'mydb',
-                        storage: getRxStoragePouch('memory'),
+                        storage: getRxStorageMemory(),
                         multiInstance: false,
                         ignoreDuplicate: false,
                         foo: 'bar'
@@ -236,7 +221,7 @@ describe('typings.test.js', function () {
                     (async() => {
                         const databaseCreator: RxDatabaseCreator = {
                             name: 'mydb',
-                            storage: getRxStoragePouch('memory'),
+                            storage: getRxStorageMemory(),
                             multiInstance: false,
                             ignoreDuplicate: false
                         };
@@ -259,7 +244,7 @@ describe('typings.test.js', function () {
                     (async() => {
                         const databaseCreator: RxDatabaseCreator = {
                             name: 'mydb',
-                            storage: getRxStoragePouch('memory'),
+                            storage: getRxStorageMemory(),
                             multiInstance: false,
                             ignoreDuplicate: false
                         };
@@ -294,7 +279,7 @@ describe('typings.test.js', function () {
                     (async() => {
                         const myDb: RxDatabase = await createRxDatabase({
                             name: 'mydb',
-                            storage: getRxStoragePouch('memory'),
+                            storage: getRxStorageMemory(),
                             multiInstance: false,
                             ignoreDuplicate: false
                         });
@@ -315,7 +300,7 @@ describe('typings.test.js', function () {
                     (async() => {
                         const myDb: RxDatabase = await createRxDatabase({
                             name: 'mydb',
-                            storage: getRxStoragePouch('memory'),
+                            storage: getRxStorageMemory(),
                             multiInstance: false,
                             ignoreDuplicate: false
                         });
@@ -345,7 +330,7 @@ describe('typings.test.js', function () {
                     (async() => {
                         const myDb: RxDatabase = await createRxDatabase({
                             name: 'mydb',
-                            storage: getRxStoragePouch('memory'),
+                            storage: getRxStorageMemory(),
                             multiInstance: false,
                             ignoreDuplicate: false,
                             options: {
@@ -374,7 +359,7 @@ describe('typings.test.js', function () {
                     (async() => {
                         const myDb: RxDatabase = await createRxDatabase({
                             name: 'mydb',
-                            storage: getRxStoragePouch('memory'),
+                            storage: getRxStorageMemory(),
                             multiInstance: false,
                             ignoreDuplicate: false,
                             options: {
@@ -411,7 +396,7 @@ describe('typings.test.js', function () {
                     (async() => {
                         const myDb: RxDatabase = await createRxDatabase({
                             name: 'mydb',
-                            storage: getRxStoragePouch('memory'),
+                            storage: getRxStorageMemory(),
                             multiInstance: false,
                             ignoreDuplicate: false
                         });
@@ -440,7 +425,7 @@ describe('typings.test.js', function () {
                 (async() => {
                     const myDb: RxDatabase = await createRxDatabase({
                         name: 'mydb',
-                        storage: getRxStoragePouch('memory'),
+                        storage: getRxStorageMemory(),
                         multiInstance: false,
                         ignoreDuplicate: false
                     });
