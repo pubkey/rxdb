@@ -1129,62 +1129,6 @@ describe('rx-query.test.ts', () => {
 
             c2.database.destroy();
         });
-        it('#724 find() does not find all matching documents', async () => {
-            const db = await createRxDatabase({
-                name: randomCouchString(10),
-                storage: config.storage.getStorage(),
-            });
-            const schema: RxJsonSchema<{ roomId: string; sessionId: string; }> = {
-                version: 0,
-                primaryKey: 'roomId',
-                type: 'object',
-                properties: {
-                    roomId: {
-                        type: 'string',
-                        maxLength: 100
-                    },
-                    sessionId: {
-                        type: 'string'
-                    }
-                }
-            };
-            const collections = await db.addCollections({
-                roomsession: {
-                    schema
-                }
-            });
-            const roomsession = collections.roomsession;
-            const roomId = 'roomId';
-            const sessionId = 'sessionID';
-            await roomsession.insert({
-                roomId,
-                sessionId
-            });
-
-            const foundByRoomId = await roomsession.findOne({
-                selector: {
-                    roomId
-                }
-            }).exec();
-            const foundByRoomAndSessionId = await roomsession.findOne({
-                selector: {
-                    roomId,
-                    sessionId
-                }
-            }).exec();
-            const foundBySessionId = await roomsession.findOne({
-                selector: {
-                    sessionId
-                }
-            }).exec();
-
-            assert(foundByRoomId !== null); // fail
-            assert(foundByRoomAndSessionId !== null); // fail
-            assert(foundBySessionId !== null); // pass
-            assert(foundBySessionId.roomId === roomId && foundBySessionId.sessionId === sessionId); // pass
-
-            db.destroy();
-        });
         it('#815 Allow null value for strings', async () => {
             if (config.storage.name !== 'pouchdb') {
                 return;
