@@ -12,11 +12,6 @@ import {
 } from '../../';
 
 import {
-    getRxStoragePouch
-} from '../../plugins/pouchdb';
-
-
-import {
     RxDBLeaderElectionPlugin
 } from '../../plugins/leader-election';
 
@@ -169,7 +164,7 @@ describe('leader-election.test.js', () => {
         it('non-multiInstance should always be leader', async () => {
             const db = await createRxDatabase({
                 name: randomCouchString(10),
-                storage: getRxStoragePouch('memory'),
+                storage: config.storage.getStorage(),
                 multiInstance: false
             });
             // setTimeout(() => db.destroy(), dbLifetime);

@@ -16,10 +16,6 @@ import {
 } from '../../';
 
 import {
-    getRxStoragePouch
-} from '../../plugins/pouchdb';
-
-import {
     first
 } from 'rxjs/operators';
 import type {
@@ -164,7 +160,7 @@ config.parallel('reactive-document.test.js', () => {
             it('final fields cannot be observed', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    storage: getRxStoragePouch('memory'),
+                    storage: config.storage.getStorage(),
                 });
                 const cols = await db.addCollections({
                     humans: {
@@ -188,7 +184,7 @@ config.parallel('reactive-document.test.js', () => {
         it('#3434 event data must not be mutateable', async () => {
             const db = await createRxDatabase({
                 name: randomCouchString(10),
-                storage: getRxStoragePouch('memory'),
+                storage: config.storage.getStorage(),
                 eventReduce: true,
                 ignoreDuplicate: true
             });

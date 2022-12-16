@@ -22,7 +22,6 @@ import { RxDocumentWriteData } from '../../src/types';
 import {
     wrappedKeyEncryptionStorage
 } from '../../plugins/encryption';
-import { addPouchPlugin, getRxStoragePouch } from '../../plugins/pouchdb';
 
 const STATIC_FILE_SERVER_URL = 'http://localhost:18001/';
 
@@ -850,15 +849,6 @@ config.parallel('attachments.test.ts', () => {
             db.destroy();
         });
         it('#4107 reproduce 412 pouchdb error', async () => {
-            if (config.isNotOneOfTheseStorages(['pouchdb'])) {
-                return;
-            }
-            let pouchAdapter = 'memory';
-            if (!config.platform.isNode()) {
-                addPouchPlugin(require('pouchdb-adapter-idb'));
-                pouchAdapter = 'idb';
-            }
-
             const attName = 'red_dot_1px_image';
             const redDotBase64 =
                 'data:image/bmp;base64,Qk06AAAAAAAAADYAAAAoAAAAAQAAAAEAAAABABgAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAJBztAA==';
@@ -904,7 +894,7 @@ config.parallel('attachments.test.ts', () => {
 
             // create an encrypted storage
             const encryptedPouchStorage = wrappedKeyEncryptionStorage({
-                storage: getRxStoragePouch(pouchAdapter),
+                storage: config.storage.getStorage(),
             });
 
             // create a database

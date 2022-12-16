@@ -14,11 +14,8 @@ import {
 } from '../../';
 
 import {
-    addPouchPlugin,
-    getRxStoragePouch
-} from '../../plugins/pouchdb';
-
-addPouchPlugin(require('pouchdb-adapter-memory'));
+    getRxStorageMemory
+} from '../../plugins/memory';
 
 const schema: RxJsonSchema<{ passportId: string; firstName: string; lastName: string; }> = {
     title: 'human schema',
@@ -48,14 +45,14 @@ config.parallel('core.node.js', () => {
         it('create database', async () => {
             const db = await createRxDatabase({
                 name: randomCouchString(10),
-                storage: getRxStoragePouch('memory'),
+                storage: getRxStorageMemory(),
             });
             db.destroy();
         });
         it('create collection', async () => {
             const db = await createRxDatabase({
                 name: randomCouchString(10),
-                storage: getRxStoragePouch('memory'),
+                storage: getRxStorageMemory(),
             });
             await db.addCollections({
                 humans: {
@@ -69,7 +66,7 @@ config.parallel('core.node.js', () => {
         it('insert and find a document', async () => {
             const db = await createRxDatabase({
                 name: randomCouchString(10),
-                storage: getRxStoragePouch('memory'),
+                storage: getRxStorageMemory(),
             });
             await db.addCollections({
                 humans: {

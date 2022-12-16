@@ -34,11 +34,6 @@ import {
     parseRevision
 } from '../../';
 
-import {
-    addPouchPlugin,
-    getRxStoragePouch
-} from '../../plugins/pouchdb';
-
 import { wrappedKeyCompressionStorage } from '../../plugins/key-compression';
 
 import { RxDBUpdatePlugin } from '../../plugins/update';
@@ -92,10 +87,9 @@ describe('rx-collection.test.ts', () => {
                     db.destroy();
                 });
                 it('should create compound-indexes (keyCompression: false)', async () => {
-                    addPouchPlugin(require('pouchdb-adapter-memory'));
                     const db = await createRxDatabase({
                         name: randomCouchString(10),
-                        storage: getRxStoragePouch('memory'),
+                        storage: config.storage.getStorage(),
                     });
                     const schemaJSON = clone(schemas.compoundIndex);
                     schemaJSON.keyCompression = false;
@@ -124,7 +118,7 @@ describe('rx-collection.test.ts', () => {
                     const db = await createRxDatabase({
                         name: randomCouchString(10),
                         storage: wrappedKeyCompressionStorage({
-                            storage: getRxStoragePouch('memory')
+                            storage: config.storage.getStorage()
                         })
                     });
                     await db.addCollections({
@@ -149,7 +143,7 @@ describe('rx-collection.test.ts', () => {
                 it('should have the version-number in the pouchdb-prefix', async () => {
                     const db = await createRxDatabase({
                         name: randomCouchString(10),
-                        storage: getRxStoragePouch('memory'),
+                        storage: config.storage.getStorage(),
                     });
                     await db.addCollections({
                         human: {
@@ -633,7 +627,7 @@ describe('rx-collection.test.ts', () => {
                     it('sort by non-top-level-key as index (no keycompression)', async () => {
                         const db = await createRxDatabase({
                             name: randomCouchString(10),
-                            storage: getRxStoragePouch('memory'),
+                            storage: config.storage.getStorage(),
                         });
                         const schemaObj = clone(schemas.humanSubIndex);
                         schemaObj.keyCompression = false;
@@ -1698,11 +1692,9 @@ describe('rx-collection.test.ts', () => {
                 it('should work when inserting on a slow storage', async () => {
                     if (!config.platform.isNode()) return;
                     // use a 'slow' adapter because memory might be to fast
-                    const leveldown = require('leveldown');
-                    addPouchPlugin(require('pouchdb-adapter-leveldb'));
                     const db = await createRxDatabase({
                         name: config.rootPath + 'test_tmp/' + randomCouchString(10),
-                        storage: getRxStoragePouch(leveldown),
+                        storage: config.storage.getStorage(),
                     });
                     const collections = await db.addCollections({
                         human: {
@@ -2139,7 +2131,7 @@ describe('rx-collection.test.ts', () => {
         it('auto_compaction not works on collection-level https://gitter.im/pubkey/rxdb?at=5c42f3dd0721b912a5a4366b', async () => {
             const db = await createRxDatabase({
                 name: randomCouchString(10),
-                storage: getRxStoragePouch('memory')
+                storage: config.storage.getStorage()
             });
 
             // test with auto_compaction

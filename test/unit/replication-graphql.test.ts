@@ -32,11 +32,6 @@ import {
 } from '../../';
 
 import {
-    addPouchPlugin,
-    getRxStoragePouch
-} from '../../plugins/pouchdb';
-
-import {
     RxDBReplicationGraphQLPlugin,
     graphQLSchemaFromRxSchema,
     pullQueryBuilderFromRxSchema,
@@ -175,7 +170,6 @@ describe('replication-graphql.test.ts', () => {
             return;
         }
         const REQUIRE_FUN = require;
-        addPouchPlugin(REQUIRE_FUN('pouchdb-adapter-http'));
         const SpawnServer: GraphQLServerModule = REQUIRE_FUN('../helper/graphql-server');
         const { createClient } = REQUIRE_FUN('graphql-ws');
         const ERROR_URL = 'http://localhost:15898/foobar';
@@ -2371,7 +2365,7 @@ describe('replication-graphql.test.ts', () => {
                 const dbName = randomCouchString(10);
                 const db = await createRxDatabase({
                     name: dbName,
-                    storage: getRxStoragePouch('idb'),
+                    storage: config.storage.getStorage(),
                     multiInstance: true,
                     eventReduce: true,
                     ignoreDuplicate: true
@@ -2415,7 +2409,7 @@ describe('replication-graphql.test.ts', () => {
                 // which will trigger an auto push
                 const db2 = await createRxDatabase({
                     name: dbName,
-                    storage: getRxStoragePouch('idb'),
+                    storage: config.storage.getStorage(),
                     multiInstance: true,
                     eventReduce: true,
                     ignoreDuplicate: true

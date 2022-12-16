@@ -15,10 +15,6 @@ import {
     randomCouchString,
     ensureNotFalsy,
 } from '../../';
-import {
-    getRxStoragePouch
-} from '../../plugins/pouchdb';
-
 
 import { firstValueFrom } from 'rxjs';
 
@@ -524,10 +520,9 @@ describe('rx-query.test.ts', () => {
                 return;
             }
             // use a 'slow' adapter because memory might be to fast
-            const leveldown = require('leveldown');
             const db = await createRxDatabase({
                 name: config.rootPath + 'test_tmp/' + randomCouchString(10),
-                storage: getRxStoragePouch(leveldown),
+                storage: config.storage.getStorage(),
             });
             const cols = await db.addCollections({
                 humans: {
@@ -653,7 +648,7 @@ describe('rx-query.test.ts', () => {
             const db = await createRxDatabase({
                 name: dbName,
                 eventReduce: true,
-                storage: getRxStoragePouch('memory'),
+                storage: config.storage.getStorage(),
             });
             const cols = await db.addCollections({
                 human: {
@@ -673,7 +668,7 @@ describe('rx-query.test.ts', () => {
 
             const db2 = await createRxDatabase({
                 name: dbName,
-                storage: getRxStoragePouch('memory'),
+                storage: config.storage.getStorage(),
                 eventReduce: true,
                 ignoreDuplicate: true
             });
@@ -907,7 +902,7 @@ describe('rx-query.test.ts', () => {
             };
             const db = await createRxDatabase({
                 name: randomCouchString(10),
-                storage: getRxStoragePouch('memory'),
+                storage: config.storage.getStorage(),
             });
             const cols = await db.addCollections({
                 humans: {
@@ -1149,7 +1144,7 @@ describe('rx-query.test.ts', () => {
         it('#724 find() does not find all matching documents', async () => {
             const db = await createRxDatabase({
                 name: randomCouchString(10),
-                storage: getRxStoragePouch('memory'),
+                storage: config.storage.getStorage(),
             });
             const schema: RxJsonSchema<{ roomId: string; sessionId: string; }> = {
                 version: 0,
@@ -1237,7 +1232,7 @@ describe('rx-query.test.ts', () => {
             // create a database
             const db = await createRxDatabase({
                 name,
-                storage: getRxStoragePouch('memory'),
+                storage: config.storage.getStorage(),
                 eventReduce: true,
                 ignoreDuplicate: true
             });
@@ -1312,7 +1307,7 @@ describe('rx-query.test.ts', () => {
             };
             const db = await createRxDatabase({
                 name: randomCouchString(10),
-                storage: getRxStoragePouch('memory'),
+                storage: config.storage.getStorage(),
                 eventReduce: true,
                 ignoreDuplicate: true
             });
@@ -1418,7 +1413,7 @@ describe('rx-query.test.ts', () => {
         it('gitter: mutating find-params causes different results', async () => {
             const db = await createRxDatabase({
                 name: randomCouchString(10),
-                storage: getRxStoragePouch('memory'),
+                storage: config.storage.getStorage(),
                 eventReduce: false
             });
             const schema = clone(schemas.human);
@@ -1486,7 +1481,7 @@ describe('rx-query.test.ts', () => {
             } as const;
             const db = await createRxDatabase({
                 name: randomCouchString(10),
-                storage: getRxStoragePouch('memory'),
+                storage: config.storage.getStorage(),
                 eventReduce: true,
                 ignoreDuplicate: true
             });

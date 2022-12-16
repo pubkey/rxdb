@@ -13,9 +13,6 @@ import {
     getFromObjectOrThrow,
     RxJsonSchema
 } from '../../';
-import {
-    getRxStoragePouch
-} from '../../plugins/pouchdb';
 import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';
 import * as humansCollection from '../helper/humans-collection';
@@ -268,7 +265,7 @@ config.parallel('primary.test.js', () => {
         async function getCompositePrimaryCollection(): Promise<RxCollection<HumanWithCompositePrimary>> {
             const db = await createRxDatabase<{ human: RxCollection<HumanWithCompositePrimary>; }>({
                 name: randomCouchString(10),
-                storage: getRxStoragePouch('memory'),
+                storage: config.storage.getStorage(),
                 ignoreDuplicate: true
             });
             await db.addCollections({
@@ -397,7 +394,7 @@ config.parallel('primary.test.js', () => {
             // create a database
             const db = await createRxDatabase({
                 name,
-                storage: getRxStoragePouch('memory'),
+                storage: config.storage.getStorage(),
                 eventReduce: true,
                 ignoreDuplicate: true,
             });
@@ -417,7 +414,7 @@ config.parallel('primary.test.js', () => {
 
             const dbInOtherTab = await createRxDatabase({
                 name,
-                storage: getRxStoragePouch('memory'),
+                storage: config.storage.getStorage(),
                 eventReduce: true,
                 ignoreDuplicate: true,
             });

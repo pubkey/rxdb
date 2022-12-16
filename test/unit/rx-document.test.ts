@@ -18,10 +18,6 @@ import {
     blobBufferUtil
 } from '../../';
 
-import {
-    getRxStoragePouch
-} from '../../plugins/pouchdb';
-
 
 import { RxDBAttachmentsPlugin } from '../../plugins/attachments';
 addRxPlugin(RxDBAttachmentsPlugin);
@@ -72,7 +68,7 @@ describe('rx-document.test.js', () => {
             it('should get a prototype with all orm-methods', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    storage: getRxStoragePouch('memory'),
+                    storage: config.storage.getStorage(),
                 });
                 const cols = await db.addCollections({
                     humans: {
@@ -100,7 +96,7 @@ describe('rx-document.test.js', () => {
             it('should get a valid prototype', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    storage: getRxStoragePouch('memory'),
+                    storage: config.storage.getStorage(),
                 });
                 const cols = await db.addCollections({
                     humans: {
@@ -288,7 +284,7 @@ describe('rx-document.test.js', () => {
             it('should throw when final field is modified', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    storage: getRxStoragePouch('memory'),
+                    storage: config.storage.getStorage(),
                 });
                 const cols = await db.addCollections({
                     humans: {
@@ -390,10 +386,9 @@ describe('rx-document.test.js', () => {
                     return;
                 }
                 // use a 'slow' adapter because memory might be to fast
-                const leveldown = require('leveldown');
                 const db = await createRxDatabase({
                     name: config.rootPath + 'test_tmp/' + randomCouchString(10),
-                    storage: getRxStoragePouch(leveldown),
+                    storage: config.storage.getStorage(),
                 });
                 const cols = await db.addCollections({
                     humans: {
@@ -427,12 +422,10 @@ describe('rx-document.test.js', () => {
             it('should be persistent when re-creating the database', async () => {
                 if (!config.platform.isNode()) return;
                 // use a 'slow' adapter because memory might be to fast
-                const leveldown = require('leveldown');
-
                 const dbName = config.rootPath + 'test_tmp/' + randomCouchString(10);
                 const db = await createRxDatabase({
                     name: dbName,
-                    storage: getRxStoragePouch(leveldown),
+                    storage: config.storage.getStorage(),
                 });
                 const cols = await db.addCollections({
                     humans: {
@@ -454,7 +447,7 @@ describe('rx-document.test.js', () => {
                 // same again
                 const db2 = await createRxDatabase({
                     name: dbName,
-                    storage: getRxStoragePouch(leveldown),
+                    storage: config.storage.getStorage(),
                 });
                 const cols2 = await db2.addCollections({
                     humans: {
@@ -473,7 +466,7 @@ describe('rx-document.test.js', () => {
                 const dbName = randomCouchString(10);
                 const db = await createRxDatabase({
                     name: dbName,
-                    storage: getRxStoragePouch('memory'),
+                    storage: config.storage.getStorage(),
                 });
 
                 const cols = await db.addCollections({
@@ -485,7 +478,7 @@ describe('rx-document.test.js', () => {
                 const doc = await c.insert(schemaObjects.simpleHuman());
                 const db2 = await createRxDatabase({
                     name: dbName,
-                    storage: getRxStoragePouch('memory'),
+                    storage: config.storage.getStorage(),
                     ignoreDuplicate: true
                 });
                 const cols2 = await db2.addCollections({
@@ -515,7 +508,7 @@ describe('rx-document.test.js', () => {
             it('should throw when final field is modified', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    storage: getRxStoragePouch('memory'),
+                    storage: config.storage.getStorage(),
                 });
                 const cols = await db.addCollections({
                     humans: {
@@ -640,7 +633,7 @@ describe('rx-document.test.js', () => {
         it('should not return _attachments if not wanted', async () => {
             const db = await createRxDatabase({
                 name: randomCouchString(10),
-                storage: getRxStoragePouch('memory'),
+                storage: config.storage.getStorage(),
                 multiInstance: false,
                 ignoreDuplicate: true
             });
@@ -834,7 +827,7 @@ describe('rx-document.test.js', () => {
         it('#76 - deepEqual does not work correctly for Arrays', async () => {
             const db = await createRxDatabase({
                 name: randomCouchString(10),
-                storage: getRxStoragePouch('memory'),
+                storage: config.storage.getStorage(),
             });
             const cols = await await db.addCollections({
                 heroes: {
@@ -866,7 +859,7 @@ describe('rx-document.test.js', () => {
         it('#646 Skip defining getter and setter when property not defined in schema', async () => {
             const db = await createRxDatabase({
                 name: randomCouchString(10),
-                storage: getRxStoragePouch('memory'),
+                storage: config.storage.getStorage(),
             });
             const schema = {
                 version: 0,

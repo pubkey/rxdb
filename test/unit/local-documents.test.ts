@@ -14,11 +14,6 @@ import {
     RxCollection
 } from '../../';
 
-import {
-    addPouchPlugin,
-    getRxStoragePouch
-} from '../../plugins/pouchdb';
-
 
 import { RxDBLocalDocumentsPlugin } from '../../plugins/local-documents';
 addRxPlugin(RxDBLocalDocumentsPlugin);
@@ -574,8 +569,8 @@ config.parallel('local-documents.test.js', () => {
             const myCollection = await humansCollection.create(0);
             await myCollection.upsertLocal(
                 'foobar', {
-                    foo: 'bar'
-                }
+                foo: 'bar'
+            }
             );
 
             const emitted: any[] = [];
@@ -666,7 +661,9 @@ config.parallel('local-documents.test.js', () => {
             db.destroy();
         });
         it('local documents not persistent on db restart', async () => {
-            addPouchPlugin(require('pouchdb-adapter-leveldb'));
+            if (!config.storage.hasPersistence) {
+                return;
+            }
             if (!config.platform.isNode()) {
                 return;
             }
@@ -679,7 +676,7 @@ config.parallel('local-documents.test.js', () => {
 
             const db = await createRxDatabase({
                 name: dbName,
-                storage: getRxStoragePouch(leveldown),
+                storage: config.storage.getStorage(),
                 multiInstance: false,
                 localDocuments: true
             });
@@ -697,7 +694,7 @@ config.parallel('local-documents.test.js', () => {
 
             const db2 = await createRxDatabase({
                 name: dbName,
-                storage: getRxStoragePouch(leveldown),
+                storage: config.storage.getStorage(),
                 multiInstance: false,
                 localDocuments: true
             });
@@ -726,7 +723,7 @@ config.parallel('local-documents.test.js', () => {
             const dbName: string = config.rootPath + 'test_tmp/' + randomCouchString(10);
             const db = await createRxDatabase({
                 name: dbName,
-                storage: getRxStoragePouch('leveldb'),
+                storage: config.storage.getStorage(),
                 multiInstance: false,
                 localDocuments: true
             });

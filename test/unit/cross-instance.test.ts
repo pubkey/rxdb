@@ -22,7 +22,6 @@ import {
 import * as schemas from './../helper/schemas';
 import * as schemaObjects from './../helper/schema-objects';
 import * as humansCollection from './../helper/humans-collection';
-import { getRxStoragePouch } from '../../plugins/pouchdb';
 import { HumanDocumentType } from './../helper/schemas';
 import {
     wrappedKeyEncryptionStorage
@@ -46,13 +45,13 @@ config.parallel('cross-instance.test.js', () => {
             const name = randomCouchString(10);
             const db = await createRxDatabase({
                 name,
-                storage: getRxStoragePouch('memory'),
+                storage: config.storage.getStorage(),
                 multiInstance: true,
                 ignoreDuplicate: true
             });
             const db2 = await createRxDatabase({
                 name,
-                storage: getRxStoragePouch('memory'),
+                storage: config.storage.getStorage(),
                 multiInstance: true,
                 ignoreDuplicate: true
             });

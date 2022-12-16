@@ -17,10 +17,6 @@ import {
 } from '../../';
 
 import {
-    getRxStoragePouch
-} from '../../plugins/pouchdb';
-
-import {
     filter,
     map,
     first
@@ -344,7 +340,7 @@ config.parallel('reactive-query.test.js', () => {
             const name = randomCouchString(10);
             const db = await createRxDatabase({
                 name,
-                storage: getRxStoragePouch('memory'),
+                storage: config.storage.getStorage(),
                 ignoreDuplicate: true
             });
             await db.addCollections({
@@ -354,7 +350,7 @@ config.parallel('reactive-query.test.js', () => {
             });
             const db2 = await createRxDatabase({
                 name,
-                storage: getRxStoragePouch('memory'),
+                storage: config.storage.getStorage(),
                 ignoreDuplicate: true
             });
             await db2.addCollections({
@@ -448,7 +444,7 @@ config.parallel('reactive-query.test.js', () => {
                 const name = randomCouchString(10);
                 const db = await createRxDatabase({
                     name,
-                    storage: getRxStoragePouch('memory'),
+                    storage: config.storage.getStorage(),
                     ignoreDuplicate: true
                 });
                 const collections = await db.addCollections({

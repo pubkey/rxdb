@@ -11,10 +11,6 @@ import {
     RxChangeEvent
 } from '../../';
 
-import {
-    getRxStoragePouch,
-} from '../../plugins/pouchdb';
-
 
 import AsyncTestUtil from 'async-test-util';
 import {
@@ -28,7 +24,7 @@ config.parallel('reactive-collection.test.js', () => {
             it('should get a valid event on insert', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    storage: getRxStoragePouch('memory'),
+                    storage: config.storage.getStorage(),
                 });
                 const colName = 'foobar';
                 const cols = await db.addCollections({
@@ -52,7 +48,7 @@ config.parallel('reactive-collection.test.js', () => {
             it('should fire on bulk insert', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    storage: getRxStoragePouch('memory'),
+                    storage: config.storage.getStorage(),
                 });
                 const collections = await db.addCollections({
                     human: {
