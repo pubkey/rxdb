@@ -3,23 +3,6 @@
 This file contains a list with things that should be implemented in the future. If you want to create a PR with one of these things, please create an issue before starting your work, so we can prevent duplication.
 
 
-## default and custom [conflict-strategies](https://pouchdb.com/guides/conflicts.html)
-Pouchdb requires the developer to solve [conflicts manually](https://pouchdb.com/guides/conflicts.html).
-
-A solution is to introduce a new keyword to the RxSchema conflictStrategy
-
-Here it is describe what should happen when a document-conflict happens.
-
-There should be the following default-strategies:
-
-- first-insert-wins
-- last-insert-wins
-- lexical-ordering of the documents-hash
-- It should also be possible to define custom resolution-strategies.
-- equal [strategy as rethinkdb](https://rethinkdb.com/api/javascript/insert/) (as RxDB.plugin)
-
-
-
 ## Full Text Search
 
 Add a plugin with full-text-search like

@@ -3,24 +3,8 @@
 This list contains things that have to be done but will create breaking changes.
 
 
-### Rewrite prototype-merge
 
-Each collection creates its own constructor for RxDocuments.
-This has a performance-benefit over using the Proxy-API which is also not supported in IE11.
-To create the constructor, the collection merges prototypes from RxDocument, RxSchema and the ORM-functions.
-The current implementation of this prototype-merging is very complicated and has hacky workarrounds to work with vue-devtools.
-We should rewrite it to a single pure function that returns the constructor.
-Instead of merging the prototype into a single object, we should chain them together.
-
-### Refactor data-migrator
-
- - The current implemetation does not use pouchdb's bulkDocs which is much faster.
- - This could have been done in much less code which would be easier to understand.
- - Migration strategies should be defined [like in WatermelonDB](https://nozbe.github.io/WatermelonDB/Advanced/Migrations.html) with a `toVersion` version field. We should also add a `fromVersion` field so people could implement performance shortcuts by directly jumping several versions. The current migration strategies use the array index as `toVersion` which is confusing.
- 
-
-
-## Make RxDcouments immutable
+## Make RxDocuments immutable
 At the current version of RxDB, RxDocuments mutate themself when they recieve ChangeEvents from the database.
 For example when you have a document where `name = 'foo'` and some update changes the state to `name = 'bar'` in the database, then the previous javascript-object will change its own property to the have `doc.name === 'bar'`.
 This feature is great when you use a RxDocument with some change-detection like in angular or vue templates. You can use document properties directly in the template and all updates will be reflected in the view, without having to use observables or subscriptions.
@@ -128,6 +112,22 @@ Instead we should just use the RxDatabase.token together with the revision heigh
 
 ## Rename document mutation functions
 
+Related: https://github.com/pubkey/rxdb/issues/4180
+
 Atm the naming of the document mutation methods is confusing.
 For example `update()` works completely different to `atomicUpdate()` and so on.
 We should unify the naming so that each of the methods has an atomic and a non-atomic way to run.
+
+## Remove the deprecated PouchDB RxStorage
+
+## Refactor the Worker plugin to use the remote storage
+
+The [worker plugin](https://rxdb.info/rx-storage-worker.html) is using threads.js atm. Instead we should use the [remote worker plugin](https://rxdb.info/rx-storage-remote.html). Also the worker plugin is a pure performance optimization, so it will move to the premium packages.
+
+## Refactor data-migrator
+
+ - The current implemetation does not use pouchdb's bulkDocs which is much faster.
+ - This could have been done in much less code which would be easier to understand.
+ - Migration strategies should be defined [like in WatermelonDB](https://nozbe.github.io/WatermelonDB/Advanced/Migrations.html) with a `toVersion` version field. We should also add a `fromVersion` field so people could implement performance shortcuts by directly jumping several versions. The current migration strategies use the array index as `toVersion` which is confusing.
+ 
+
