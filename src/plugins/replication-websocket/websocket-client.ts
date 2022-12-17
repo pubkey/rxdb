@@ -158,6 +158,7 @@ export async function replicateWithWebsocketServer<RxDocType, CheckpointType>(
     const replicationState = replicateRxCollection<RxDocType, CheckpointType>({
         collection: options.collection,
         replicationIdentifier: 'websocket-' + options.url,
+        live: options.live,
         pull: {
             batchSize: options.batchSize,
             stream$: messages$.pipe(

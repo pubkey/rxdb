@@ -16,9 +16,8 @@ import {
     RxStorage
 } from 'rxdb';
 import {
-    RxDBReplicationCouchDBPlugin
-} from 'rxdb/plugins/replication-couchdb';
-addRxPlugin(RxDBReplicationCouchDBPlugin);
+    syncWebsocketServer
+} from 'rxdb/plugins/replication-websocket';
 
 import {
     getRxStorageDexie
@@ -36,7 +35,9 @@ import {
     IS_SERVER_SIDE_RENDERING
 } from '../../shared';
 import { HERO_SCHEMA, RxHeroDocumentType } from '../schemas/hero.schema';
-
+import {
+    replicateWithWebsocketServer
+} from 'rxdb/plugins/replication-websocket';
 
 const collectionSettings = {
     [HERO_COLLECTION_NAME]: {
@@ -51,7 +52,7 @@ const collectionSettings = {
 };
 
 const syncHost = IS_SERVER_SIDE_RENDERING ? 'localhost' : window.location.hostname;
-const syncURL = 'http://' + syncHost + ':' + SYNC_PORT + '/' + HERO_COLLECTION_NAME;
+const syncURL = 'ws://' + syncHost + ':' + SYNC_PORT + '/' + DATABASE_NAME;
 console.log('syncURL: ' + syncURL);
 
 
@@ -166,11 +167,10 @@ async function _create(): Promise<RxHeroesDatabase> {
              * we just run a one-time replication to ensure the client has the same data as the server.
              */
             console.log('DatabaseService: await initial replication to ensure SSR has all data');
-            const firstReplication = await db.hero.syncCouchDB({
-                url: syncURL,
-                live: false,
-                pull: {},
-                push: {}
+            const firstReplication = await replicateWithWebsocketServer({
+                collection: db.hero,
+                url: syncURL
+                live: false
             });
             await firstReplication.awaitInitialReplication();
         }
@@ -178,11 +178,10 @@ async function _create(): Promise<RxHeroesDatabase> {
         /**
          * we start a live replication which also sync the ongoing changes
          */
-        const ongoingReplication = await db.hero.syncCouchDB({
-            url: syncURL,
-            live: true,
-            pull: {},
-            push: {}
+        const ongoingReplication = await replicateWithWebsocketServer({
+            collection: db.hero,
+            url: syncURL
+            live: true
         });
     }
 
