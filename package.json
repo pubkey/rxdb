@@ -210,7 +210,7 @@
     "cors": "2.8.5",
     "browserify": "17.0.0",
     "child-process-promise": "2.2.1",
-    "concurrently": "7.5.0",
+    "concurrently": "7.6.0",
     "convert-hrtime": "3.0.0",
     "copy-webpack-plugin": "11.0.0",
     "cross-env": "7.0.3",

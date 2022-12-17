@@ -23,7 +23,7 @@
   },
   "devDependencies": {
     "local-web-server": "5.2.1",
-    "concurrently": "7.5.0",
+    "concurrently": "7.6.0",
     "async-test-util": "2.0.0",
     "css-loader": "6.7.2",
     "testcafe": "1.20.1",
