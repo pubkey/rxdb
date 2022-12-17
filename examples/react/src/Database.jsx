@@ -8,8 +8,11 @@ import {
 import {
     heroSchema
 } from './Schema';
-import { RxDBLeaderElectionPlugin } from 'rxdb/plugins/leader-election';
 
+import { RxDBReplicationCouchDBPlugin } from 'rxdb/plugins/replication-couchdb';
+addRxPlugin(RxDBReplicationCouchDBPlugin);
+
+import { RxDBLeaderElectionPlugin } from 'rxdb/plugins/leader-election';
 addRxPlugin(RxDBLeaderElectionPlugin);
 
 const syncURL = 'http://' + window.location.hostname + ':10102/';
@@ -61,9 +64,26 @@ const _create = async () => {
     });
 
     // sync
+
     console.log('DatabaseService: sync');
+    await Promise.all(
+        Object.values(db.collections).map(async (col) => {
+            try {
+                // create the CouchDB database
+                await fetch(
+                    syncURL + col.name + '/',
+                    {
+                        method: 'PUT'
+                    }
+                );
+            } catch (err) { }
+        })
+    );
     Object.values(db.collections).map(col => col.name).map(colName => db[colName].syncCouchDB({
-        remote: syncURL + colName + '/'
+        url: syncURL + colName + '/',
+        live: true,
+        pull: {},
+        push: {}
     }));
 
     return db;

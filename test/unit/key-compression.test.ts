@@ -65,7 +65,7 @@ config.parallel('key-compression.test.js', () => {
     });
     describe('integration into pouchDB', () => {
         it('should have saved a compressed document', async () => {
-            // TODO write test that check on the underlaying storage
+            // TODO write test that check on the underlying storage
             // if (config.storage.name !== 'pouchdb') {
             //     return;
             // }

@@ -169,7 +169,7 @@ async function _create(): Promise<RxHeroesDatabase> {
             console.log('DatabaseService: await initial replication to ensure SSR has all data');
             const firstReplication = await replicateWithWebsocketServer({
                 collection: db.hero as any,
-                url: syncURL
+                url: syncURL,
                 live: false
             });
             await firstReplication.awaitInitialReplication();
@@ -180,7 +180,7 @@ async function _create(): Promise<RxHeroesDatabase> {
          */
         const ongoingReplication = await replicateWithWebsocketServer({
             collection: db.hero as any,
-            url: syncURL
+            url: syncURL,
             live: true
         });
     }
