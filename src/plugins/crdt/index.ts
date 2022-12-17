@@ -20,7 +20,8 @@ import {
     clone,
     ensureNotFalsy,
     now,
-    objectPathMonad
+    objectPathMonad,
+    toArray
 } from '../../util';
 import modifyjs from 'modifyjs';
 import {
@@ -51,7 +52,7 @@ export async function updateCRDT<RxDocType>(
     return this.atomicUpdate((docData, rxDoc) => {
         const crdtDocField: CRDTDocumentField<RxDocType> = clone(objectPath.get(docData as any, crdtOptions.field));
         const operation: CRDTOperation<RxDocType> = {
-            body: Array.isArray(entry) ? entry : [entry],
+            body: toArray(entry),
             creator: storageToken,
             time: now()
         };

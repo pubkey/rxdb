@@ -100,15 +100,3 @@ export type RxTestStorage = {
 
 
 export type HashFunction = (input: string) => string;
-
-
-/**
- * Use to have a transferable error object
- * in plain json instead of a JavaScript Error instance.
- */
-export type PlainJsonError = {
-    name: string;
-    message: string;
-    stack?: string;
-    rxdb?: true;
-};

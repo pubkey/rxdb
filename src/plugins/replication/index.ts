@@ -31,10 +31,12 @@ import type {
 } from '../../types';
 import {
     ensureNotFalsy,
+    errorToPlainJson,
     fastUnsecureHash,
     flatClone,
     PROMISE_RESOLVE_FALSE,
-    PROMISE_RESOLVE_TRUE
+    PROMISE_RESOLVE_TRUE,
+    toArray
 } from '../../util';
 import {
     awaitRxStorageReplicationFirstInSync,
@@ -203,7 +205,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                         } catch (err: any | Error | Error[]) {
                             const emitError = newRxError('RC_PULL', {
                                 checkpoint,
-                                errors: Array.isArray(err) ? err : [err],
+                                errors: toArray(err).map(er => errorToPlainJson(er)),
                                 direction: 'pull'
                             });
                             this.subjects.error.next(emitError);
@@ -277,7 +279,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                         } catch (err: any | Error | Error[] | RxError) {
                             const emitError = (err as RxError).rxdb ? err : newRxError('RC_PUSH', {
                                 pushRows: rows,
-                                errors: Array.isArray(err) ? err : [err],
+                                errors: toArray(err).map(er => errorToPlainJson(er)),
                                 direction: 'push'
                             });
                             this.subjects.error.next(emitError);

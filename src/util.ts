@@ -337,6 +337,10 @@ export function shuffleArray<T>(arr: T[]): T[] {
     return arr.sort(() => (Math.random() - 0.5));
 }
 
+export function toArray<T>(input: T | T[] | Readonly<T> | Readonly<T[]>): T[] {
+    return Array.isArray(input) ? (input as any[]).slice(0) : [input];
+}
+
 /**
  * Split array with items into smaller arrays with items
  * @link https://stackoverflow.com/a/7273794/3443137
@@ -819,8 +823,11 @@ export function errorToPlainJson(err: Error | TypeError | RxError | RxTypeError)
     const ret: PlainJsonError = {
         name: err.name,
         message: err.message,
-        stack: err.stack,
-        rxdb: (err as any).rxdb
+        rxdb: (err as any).rxdb,
+        parameters: (err as RxError).parameters,
+        code: (err as RxError).code,
+        // stack must be last to make it easier to read the json in a console.
+        stack: err.stack
     };
     return ret;
 }

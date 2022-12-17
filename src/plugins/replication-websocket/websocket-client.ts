@@ -7,8 +7,10 @@ import {
 import ReconnectingWebSocket from 'reconnecting-websocket';
 import IsomorphicWebSocket from 'isomorphic-ws';
 import {
+    errorToPlainJson,
     getFromMapOrThrow,
-    randomCouchString
+    randomCouchString,
+    toArray
 } from '../../util';
 import {
     filter,
@@ -99,7 +101,7 @@ export async function getWebSocket(
         const error$ = new Subject<any>();
         wsClient.onerror = (err) => {
             const emitError = newRxError('RC_STREAM', {
-                errors: Array.isArray(err) ? err as any : [err],
+                errors: toArray(err).map((er: any) => errorToPlainJson(er)),
                 direction: 'pull'
             });
             error$.next(emitError);

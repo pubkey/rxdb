@@ -9,7 +9,8 @@ import type {
 import {
     firstPropertyNameOfObject,
     flatClone,
-    isMaybeReadonlyArray
+    isMaybeReadonlyArray,
+    toArray
 } from './util';
 
 /**
@@ -58,7 +59,7 @@ export function normalizeMangoQuery<RxDocType>(
      * the primaryKey is inside of it.
      */
     if (normalizedMangoQuery.index) {
-        const indexAr = Array.isArray(normalizedMangoQuery.index) ? normalizedMangoQuery.index.slice(0) : [normalizedMangoQuery.index];
+        const indexAr = toArray(normalizedMangoQuery.index);
         if (!indexAr.includes(primaryKey)) {
             indexAr.push(primaryKey);
         }

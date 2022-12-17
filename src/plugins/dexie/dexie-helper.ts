@@ -10,7 +10,7 @@ import type {
 } from '../../types';
 import { Dexie } from 'dexie';
 import { DexieSettings } from '../../types';
-import { flatClone } from '../../util';
+import { flatClone, toArray } from '../../util';
 import { newRxError } from '../../rx-error';
 import { getPrimaryFieldOfPrimaryKey, getSchemaByObjectPath } from '../../rx-schema-helper';
 
@@ -135,7 +135,7 @@ export function ensureNoBooleanIndex(schema: RxJsonSchema<any>) {
     }
     const checkedFields = new Set<string>();
     schema.indexes.forEach(index => {
-        const fields = Array.isArray(index) ? index : [];
+        const fields = toArray(index);
         fields.forEach(field => {
             if (checkedFields.has(field)) {
                 return;
@@ -246,7 +246,7 @@ export function getDexieStoreSchema(
     // add other indexes
     if (rxJsonSchema.indexes) {
         rxJsonSchema.indexes.forEach(index => {
-            const arIndex = Array.isArray(index) ? index : [index];
+            const arIndex = toArray(index);
             parts.push(arIndex);
         });
     }

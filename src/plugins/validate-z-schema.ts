@@ -36,7 +36,7 @@ export function getValidator(
                 message
             }));
             throw newRxError('VD2', {
-                errors: formattedZSchemaErrors,
+                validationErrors: formattedZSchemaErrors,
                 document: docData,
                 schema
             });

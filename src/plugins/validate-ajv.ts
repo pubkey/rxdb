@@ -27,7 +27,7 @@ export function getValidator(
         const isValid = validator(docData);
         if (!isValid) {
             throw newRxError('VD2', {
-                errors: validator.errors as any,
+                validationErrors: validator.errors as any,
                 document: docData,
                 schema
             });

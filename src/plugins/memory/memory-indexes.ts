@@ -1,6 +1,7 @@
 import { getIndexableStringMonad } from '../../custom-index';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
 import type { RxDocumentData, RxJsonSchema } from '../../types';
+import { toArray } from '../../util';
 import type { MemoryStorageInternals } from './memory-types';
 
 export function addIndexesToInternalsState<RxDocType>(
@@ -8,7 +9,7 @@ export function addIndexesToInternalsState<RxDocType>(
     schema: RxJsonSchema<RxDocumentData<RxDocType>>
 ) {
     const primaryPath = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
-    const useIndexes: string[][] = !schema.indexes ? [] : schema.indexes.map(row => Array.isArray(row) ? row.slice(0) : [row]) as any;
+    const useIndexes: string[][] = !schema.indexes ? [] : schema.indexes.map(row => toArray(row)) as any;
 
     // we need this as default index
     useIndexes.push([

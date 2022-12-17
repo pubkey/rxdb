@@ -5,6 +5,7 @@ import {
 import { RxPlugin } from './rx-plugin';
 import { ERROR_MESSAGES } from '../plugins/dev-mode/error-messages';
 import { RxReplicationWriteToMasterRow } from './replication-protocol';
+import { RxStorageBulkWriteError } from './rx-storage';
 
 type KeyOf<T extends object> = Extract<keyof T, string>;
 export type RxErrorKey = KeyOf<typeof ERROR_MESSAGES>;
@@ -27,8 +28,10 @@ export declare class RxTypeError extends TypeError {
  * this lists all possible parameters
  */
 export interface RxErrorParameters {
-    readonly error?: any;
-    readonly errors?: RxErrorItem[];
+    readonly error?: PlainJsonError;
+    readonly errors?: PlainJsonError[];
+    readonly validationErrors?: RxErrorItem[];
+    readonly writeError?: RxStorageBulkWriteError<any>;
     readonly schemaPath?: string;
     readonly objPath?: string;
     readonly rootPath?: string;
@@ -121,3 +124,16 @@ export interface RxErrorItem {
     readonly field: string;
     readonly message: string;
 }
+
+/**
+ * Use to have a transferable error object
+ * in plain json instead of a JavaScript Error instance.
+ */
+export type PlainJsonError = {
+    name: string;
+    message: string;
+    rxdb?: true;
+    code?: RxErrorKey;
+    parameters?: RxErrorParameters;
+    stack?: string;
+};

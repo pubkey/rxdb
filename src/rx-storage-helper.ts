@@ -126,7 +126,7 @@ export function throwIfIsStorageWriteError<RxDocType>(
             throw newRxError('COL19', {
                 collection: collection.name,
                 id: documentId,
-                error,
+                writeError: error,
                 data: writeData
             });
         } else {

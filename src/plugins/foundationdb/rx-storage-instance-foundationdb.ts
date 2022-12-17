@@ -51,7 +51,8 @@ import {
 } from '../../custom-index';
 import {
     ensureNotFalsy, lastOfArray, now
-    , PROMISE_RESOLVE_VOID
+    , PROMISE_RESOLVE_VOID,
+    toArray
 } from '../../util';
 import { queryFoundationDB } from './foundationdb-query';
 import { INDEX_MAX } from '../../query-planner';
@@ -435,7 +436,7 @@ export function createFoundationDBStorageInstance<RxDocType>(
         const useIndexes = params.schema.indexes ? params.schema.indexes.slice(0) : [];
         useIndexes.push([primaryPath]);
         const useIndexesFinal = useIndexes.map(index => {
-            const indexAr = Array.isArray(index) ? index.slice(0) : [index];
+            const indexAr = toArray(index);
             indexAr.unshift('_deleted');
             return indexAr;
         });

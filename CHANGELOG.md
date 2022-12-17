@@ -8,6 +8,7 @@
 - CHANGE (memory RxStorage) do not clean up database state on closing of the storage, only on `remove()`.
 - REMOVE old `replication-couchdb` plugin. Rename `replication-couchdb-new` to `replication-couchdb`.
 - FIX CouchDB replication: Use correct default fetch method.
+- CHANGE use plain json errors inside of RxError parameters to make debugging easier.
 
 <!-- ADD new changes here! -->
 

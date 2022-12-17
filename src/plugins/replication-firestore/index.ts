@@ -4,6 +4,7 @@
  */
 import {
     ensureNotFalsy,
+    errorToPlainJson,
     fastUnsecureHash,
     flatClone,
     lastOfArray
@@ -341,7 +342,7 @@ export function syncFirestore<RxDocType>(
                 },
                 (error) => {
                     replicationState.subjects.error.next(
-                        newRxError('RC_STREAM', { error })
+                        newRxError('RC_STREAM', { error: errorToPlainJson(error) })
                     );
                 }
             );
