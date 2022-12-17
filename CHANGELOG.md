@@ -7,7 +7,7 @@
 - Remove the deprecated PouchDB RxStorage.
 - CHANGE (memory RxStorage) do not clean up database state on closing of the storage, only on `remove()`.
 - REMOVE old `replication-couchdb` plugin. Rename `replication-couchdb-new` to `replication-couchdb`.
-
+- FIX CouchDB replication: Use correct default fetch method.
 
 <!-- ADD new changes here! -->
 

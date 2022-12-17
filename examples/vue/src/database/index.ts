@@ -33,7 +33,7 @@ import { RxDBReplicationCouchDBPlugin } from 'rxdb/plugins/replication-couchdb';
 addRxPlugin(RxDBReplicationCouchDBPlugin);
 
 console.log('hostname: ' + window.location.hostname);
-// const syncURL = 'http://' + window.location.hostname + ':10101/';
+const syncURL = 'http://' + window.location.hostname + ':10101/';
 
 export function useDatabase(): RxHeroesDatabase {
   return inject(KEY_DATABASE) as RxHeroesDatabase;
@@ -91,11 +91,37 @@ export async function createDatabase(): Promise<Plugin> {
       });
   }, true);
 
-  // sync with server
+  // sync
   console.log('DatabaseService: sync');
-  // await db.heroes.syncCouchDB({
-  //   remote: syncURL + '/hero',
-  // });
+  await Promise.all(
+    Object.values(db.collections).map(async (col) => {
+      try {
+        // create the CouchDB database
+        await fetch(
+          syncURL + col.name + '/',
+          {
+            method: 'PUT'
+          }
+        );
+      } catch (err) { }
+    })
+  );
+  console.log('DatabaseService: sync - start live');
+  Object.values(db.collections).map(col => col.name).map(colName => {
+    const url = syncURL + colName + '/';
+    console.log('url: ' + url);
+    const replicationState = db[colName].syncCouchDB({
+      url,
+      live: true,
+      pull: {},
+      push: {},
+      autoStart: true
+    });
+    replicationState.error$.subscribe(err => {
+      console.log('Got replication error:');
+      console.dir(err);
+    });
+  });
 
   return {
     install(app: any) {

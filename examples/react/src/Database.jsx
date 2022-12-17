@@ -84,7 +84,6 @@ const _create = async () => {
         console.log('url: ' + url);
         const replicationState = db[colName].syncCouchDB({
             url,
-            fetch: window.fetch.bind(window),
             live: true,
             pull: {},
             push: {},
