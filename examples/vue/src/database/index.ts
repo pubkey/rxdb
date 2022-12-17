@@ -109,17 +109,18 @@ export async function createDatabase(): Promise<Plugin> {
     })
   );
   console.log('DatabaseService: sync - start live');
-  Object.values(db.collections).map(col => col.name).map(colName => {
+  Object.values(db.collections).map((col: any) => {
+    const colName = col.name;
     const url = syncURL + colName + '/';
     console.log('url: ' + url);
-    const replicationState = db[colName].syncCouchDB({
+    const replicationState = col.syncCouchDB({
       url,
       live: true,
       pull: {},
       push: {},
       autoStart: true
     });
-    replicationState.error$.subscribe(err => {
+    replicationState.error$.subscribe((err: any) => {
       console.log('Got replication error:');
       console.dir(err);
     });
