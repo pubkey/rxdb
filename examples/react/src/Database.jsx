@@ -64,7 +64,6 @@ const _create = async () => {
     });
 
     // sync
-
     console.log('DatabaseService: sync');
     await Promise.all(
         Object.values(db.collections).map(async (col) => {
@@ -79,12 +78,23 @@ const _create = async () => {
             } catch (err) { }
         })
     );
-    Object.values(db.collections).map(col => col.name).map(colName => db[colName].syncCouchDB({
-        url: syncURL + colName + '/',
-        live: true,
-        pull: {},
-        push: {}
-    }));
+    console.log('DatabaseService: sync - start live');
+    Object.values(db.collections).map(col => col.name).map(colName => {
+        const url = syncURL + colName + '/';
+        console.log('url: ' + url);
+        const replicationState = db[colName].syncCouchDB({
+            url,
+            fetch: window.fetch.bind(window),
+            live: true,
+            pull: {},
+            push: {},
+            autoStart: true
+        });
+        replicationState.error$.subscribe(err => {
+            console.log('Got replication error:');
+            console.dir(err);
+        });
+    });
 
     return db;
 };

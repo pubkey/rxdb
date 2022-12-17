@@ -61,3 +61,18 @@ export function couchSwapPrimaryToId<RxDocType>(
     ret._id = idValue;
     return ret;
 }
+
+
+export function getDefaultFetch() {
+    if (
+        typeof window === 'object' &&
+        (window as any)['fetch']
+    ) {
+        /**
+         * @link https://stackoverflow.com/a/47180009/3443137
+         */
+        return window.fetch.bind(window);
+    } else {
+        return fetch;
+    }
+}

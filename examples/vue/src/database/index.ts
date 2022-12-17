@@ -33,7 +33,7 @@ import { RxDBReplicationCouchDBPlugin } from 'rxdb/plugins/replication-couchdb';
 addRxPlugin(RxDBReplicationCouchDBPlugin);
 
 console.log('hostname: ' + window.location.hostname);
-const syncURL = 'http://' + window.location.hostname + ':10101/';
+// const syncURL = 'http://' + window.location.hostname + ':10101/';
 
 export function useDatabase(): RxHeroesDatabase {
   return inject(KEY_DATABASE) as RxHeroesDatabase;

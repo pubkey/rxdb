@@ -39,7 +39,8 @@ import {
     couchDBDocToRxDocData,
     COUCHDB_NEW_REPLICATION_PLUGIN_IDENTITY_PREFIX,
     mergeUrlQueryParams,
-    couchSwapPrimaryToId
+    couchSwapPrimaryToId,
+    getDefaultFetch
 } from './couchdb-helper';
 
 export * from './couchdb-helper';
@@ -181,7 +182,7 @@ export function syncCouchDB<RxDocType>(
 
     const replicationState = new RxCouchDBReplicationState<RxDocType>(
         options.url,
-        options.fetch ? options.fetch : fetch,
+        options.fetch ? options.fetch : getDefaultFetch(),
         COUCHDB_NEW_REPLICATION_PLUGIN_IDENTITY_PREFIX + fastUnsecureHash(options.url),
         collection,
         replicationPrimitivesPull,
