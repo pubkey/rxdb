@@ -347,7 +347,7 @@ validationImplementations.forEach(
                             document: toRxDocumentData(obj)
                         }], testContext);
                     } catch (err) {
-                        const message = (err as any).parameters.errors[0].message;
+                        const message = (err as any).parameters.validationErrors[0].message;
                         assert.ok(message.includes('dditional'));
                         hasThrown = true;
                     }
@@ -367,7 +367,7 @@ validationImplementations.forEach(
                             document: toRxDocumentData(obj)
                         }], testContext);
                     } catch (err) {
-                        const deepParam = (err as any).parameters.errors[0];
+                        const deepParam = (err as any).parameters.validationErrors[0];
                         assert.ok(
                             JSON.stringify(deepParam).includes('age')
                         );

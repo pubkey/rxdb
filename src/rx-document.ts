@@ -320,7 +320,7 @@ export const basePrototype = {
                             await this._saveData(newData, oldData);
                             done = true;
                         } catch (err: any) {
-                            const useError = err.parameters && err.parameters.error ? err.parameters.error : err;
+                            const useError = err.parameters && err.parameters.writeError ? err.parameters.writeError : err;
                             /**
                              * conflicts cannot happen by just using RxDB in one process
                              * There are two ways they still can appear which is

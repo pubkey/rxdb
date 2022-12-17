@@ -128,9 +128,10 @@ export function newRxTypeError(
  * return false if it is another error.
  */
 export function isBulkWriteConflictError<RxDocType>(
-    err: RxStorageBulkWriteError<RxDocType> | any
+    err?: RxStorageBulkWriteError<RxDocType> | any
 ): RxStorageBulkWriteError<RxDocType> | false {
     if (
+        err &&
         err.status === 409
     ) {
         return err;
