@@ -16,10 +16,6 @@ import {
     RxStorage
 } from 'rxdb';
 import {
-    syncWebsocketServer
-} from 'rxdb/plugins/replication-websocket';
-
-import {
     getRxStorageDexie
 } from 'rxdb/plugins/dexie';
 import {
