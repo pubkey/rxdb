@@ -177,14 +177,16 @@ async function _create(): Promise<RxHeroesDatabase> {
          * For server side rendering,
          * we just run a one-time replication to ensure the client has the same data as the server.
          */
-        console.log('DatabaseService: await initial replication to ensure SSR has all data');
-        const firstReplication = await db.hero.syncCouchDB({
-            url: syncURL + db.hero.name + '/',
-            live: false,
-            pull: {},
-            push: {}
-        });
-        await firstReplication.awaitInitialReplication();
+        if (IS_SERVER_SIDE_RENDERING) {
+            console.log('DatabaseService: await initial replication to ensure SSR has all data');
+            const firstReplication = await db.hero.syncCouchDB({
+                url: syncURL + db.hero.name + '/',
+                live: false,
+                pull: {},
+                push: {}
+            });
+            await firstReplication.awaitInitialReplication();
+        }
 
         /**
          * we start a live replication which also sync the ongoing changes

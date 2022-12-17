@@ -65,7 +65,6 @@ export function getBroadcastChannelReference(
     databaseName: string,
     refObject: any
 ): BroadcastChannel<RxStorageMultiInstanceBroadcastType> {
-    console.log('create BC: ' + databaseInstanceToken);
     let state = BROADCAST_CHANNEL_BY_TOKEN.get(databaseInstanceToken);
     if (!state) {
         state = {
