@@ -188,19 +188,23 @@ async function _create(): Promise<RxHeroesDatabase> {
             await firstReplication.awaitInitialReplication();
         }
 
-        /**
-         * we start a live replication which also sync the ongoing changes
-         */
-        const ongoingReplication = await db.hero.syncCouchDB({
-            url: syncURL + db.hero.name + '/',
-            live: true,
-            pull: {},
-            push: {}
-        });
-        ongoingReplication.error$.subscribe(err => {
-            console.log('Got replication error:');
-            console.dir(err);
-        });
+        // TODO running this in ssr is broken and causes a timeout
+        if (!IS_SERVER_SIDE_RENDERING) {
+            /**
+             * we start a live replication which also sync the ongoing changes
+             */
+            console.log('DatabaseService: start ongoing replication');
+            const ongoingReplication = db.hero.syncCouchDB({
+                url: syncURL + db.hero.name + '/',
+                live: true,
+                pull: {},
+                push: {}
+            });
+            ongoingReplication.error$.subscribe(err => {
+                console.log('Got replication error:');
+                console.dir(err);
+            });
+        }
     }
 
     console.log('DatabaseService: created');

@@ -103,7 +103,9 @@ export async function createDatabase(): Promise<Plugin> {
             method: 'PUT'
           }
         );
-      } catch (err) { }
+      } catch (err) {
+        console.dir(err);
+      }
     })
   );
   console.log('DatabaseService: sync - start live');
