@@ -57,7 +57,7 @@ console.log('syncURL: ' + syncURL);
 
 function doSync(): boolean {
     if (IS_SERVER_SIDE_RENDERING) {
-        return true;
+        return false;
     }
 
     if (global.window.location.hash == '#nosync') {
@@ -173,39 +173,35 @@ async function _create(): Promise<RxHeroesDatabase> {
                 } catch (err) { }
             })
         );
-        if (IS_SERVER_SIDE_RENDERING) {
-            /**
-             * For server side rendering,
-             * we just run a one-time replication to ensure the client has the same data as the server.
-             */
-            console.log('DatabaseService: await initial replication to ensure SSR has all data');
-            const firstReplication = await db.hero.syncCouchDB({
-                url: syncURL + db.hero.name + '/',
-                live: false,
-                pull: {},
-                push: {}
-            });
-            await firstReplication.awaitInitialReplication();
-        }
+        /**
+         * For server side rendering,
+         * we just run a one-time replication to ensure the client has the same data as the server.
+         */
+        console.log('DatabaseService: await initial replication to ensure SSR has all data');
+        const firstReplication = await db.hero.syncCouchDB({
+            url: syncURL + db.hero.name + '/',
+            live: false,
+            pull: {},
+            push: {}
+        });
+        await firstReplication.awaitInitialReplication();
 
-        // TODO running this in ssr is broken and causes a timeout
-        if (!IS_SERVER_SIDE_RENDERING) {
-            /**
-             * we start a live replication which also sync the ongoing changes
-             */
-            console.log('DatabaseService: start ongoing replication');
-            const ongoingReplication = db.hero.syncCouchDB({
-                url: syncURL + db.hero.name + '/',
-                live: true,
-                pull: {},
-                push: {}
-            });
-            ongoingReplication.error$.subscribe(err => {
-                console.log('Got replication error:');
-                console.dir(err);
-            });
-        }
+        /**
+         * we start a live replication which also sync the ongoing changes
+         */
+        console.log('DatabaseService: start ongoing replication');
+        const ongoingReplication = db.hero.syncCouchDB({
+            url: syncURL + db.hero.name + '/',
+            live: true,
+            pull: {},
+            push: {}
+        });
+        ongoingReplication.error$.subscribe(err => {
+            console.log('Got replication error:');
+            console.dir(err);
+        });
     }
+
 
     console.log('DatabaseService: created');
 
