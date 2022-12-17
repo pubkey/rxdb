@@ -197,6 +197,10 @@ async function _create(): Promise<RxHeroesDatabase> {
             pull: {},
             push: {}
         });
+        ongoingReplication.error$.subscribe(err => {
+            console.log('Got replication error:');
+            console.dir(err);
+        });
     }
 
     console.log('DatabaseService: created');

@@ -44,9 +44,9 @@ test.page('http://0.0.0.0:8888/')('insert/edit/remove a hero', async t => {
 
     // set value
     await t
-        .click('.mat-input-element')
+        .click('hero-edit .mat-input-element')
         .pressKey('ctrl+a delete');
-    await t.typeText('.mat-input-element', '11');
+    await t.typeText('hero-edit .mat-input-element', '11');
     await t.click('.submitButton');
     await AsyncTestUtil.wait(100);
 
