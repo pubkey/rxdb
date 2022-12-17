@@ -35,6 +35,9 @@ import {
     replicateWithWebsocketServer
 } from 'rxdb/plugins/replication-websocket';
 
+import { RxDBReplicationCouchDBPlugin } from 'rxdb/plugins/replication-couchdb';
+addRxPlugin(RxDBReplicationCouchDBPlugin);
+
 const collectionSettings = {
     [HERO_COLLECTION_NAME]: {
         schema: HERO_SCHEMA,
@@ -48,7 +51,7 @@ const collectionSettings = {
 };
 
 const syncHost = IS_SERVER_SIDE_RENDERING ? 'localhost' : window.location.hostname;
-const syncURL = 'ws://' + syncHost + ':' + SYNC_PORT + '/' + DATABASE_NAME;
+const syncURL = 'http://' + syncHost + ':' + SYNC_PORT + '/' + DATABASE_NAME;
 console.log('syncURL: ' + syncURL);
 
 
@@ -157,16 +160,30 @@ async function _create(): Promise<RxHeroesDatabase> {
     // sync with server
     if (doSync()) {
         console.log('DatabaseService: sync');
+        await Promise.all(
+            Object.values(db.collections).map(async (col) => {
+                try {
+                    // create the CouchDB database
+                    await fetch(
+                        syncURL + col.name + '/',
+                        {
+                            method: 'PUT'
+                        }
+                    );
+                } catch (err) { }
+            })
+        );
         if (IS_SERVER_SIDE_RENDERING) {
             /**
              * For server side rendering,
              * we just run a one-time replication to ensure the client has the same data as the server.
              */
             console.log('DatabaseService: await initial replication to ensure SSR has all data');
-            const firstReplication = await replicateWithWebsocketServer({
-                collection: db.hero as any,
-                url: syncURL,
-                live: false
+            const firstReplication = await db.hero.syncCouchDB({
+                url: syncURL + db.hero.name + '/',
+                live: false,
+                pull: {},
+                push: {}
             });
             await firstReplication.awaitInitialReplication();
         }
@@ -174,10 +191,11 @@ async function _create(): Promise<RxHeroesDatabase> {
         /**
          * we start a live replication which also sync the ongoing changes
          */
-        const ongoingReplication = await replicateWithWebsocketServer({
-            collection: db.hero as any,
-            url: syncURL,
-            live: true
+        const ongoingReplication = await db.hero.syncCouchDB({
+            url: syncURL + db.hero.name + '/',
+            live: true,
+            pull: {},
+            push: {}
         });
     }
 
