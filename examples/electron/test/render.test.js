@@ -7,7 +7,7 @@ const {
 } = require('rxdb');
 const { RxDBLeaderElectionPlugin } = require('rxdb/plugins/leader-election');
 const { RxDBAttachmentsPlugin } = require('rxdb/plugins/attachments');
-const { getRxStorageDexie } = require('rxdb/plugins/dexie');
+const { getRxStorageMemory } = require('rxdb/plugins/memory');
 
 addRxPlugin(RxDBLeaderElectionPlugin);
 addRxPlugin(RxDBAttachmentsPlugin);
@@ -24,7 +24,7 @@ module.exports = (function () {
             const db = await createRxDatabase({
                 // generate simple random ID to avoid conflicts when running tests at the same time
                 name: 'foobar587' + Math.round(Math.random() * 0xffffff).toString(16),
-                storage: getRxStorageDexie(),
+                storage: getRxStorageMemory(),
                 password: 'myLongAndStupidPassword',
                 multiInstance: true
             });
