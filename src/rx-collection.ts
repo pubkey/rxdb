@@ -119,6 +119,7 @@ import {
     throwIfIsStorageWriteError
 } from './rx-storage-helper';
 import { defaultConflictHandler } from './replication-protocol';
+import { IncrementalWriteQueue } from './incremental-write';
 
 const HOOKS_WHEN = ['pre', 'post'] as const;
 type HookWhenType = typeof HOOKS_WHEN[number];
@@ -139,6 +140,7 @@ export class RxCollectionBase<
      */
     public storageInstance: RxStorageInstance<RxDocumentType, any, InstanceCreationOptions> = {} as any;
     public readonly timeouts: Set<ReturnType<typeof setTimeout>> = new Set();
+    public incrementalWriteQueue: IncrementalWriteQueue<RxDocumentType> = {} as any;
 
     constructor(
         public database: RxDatabase<CollectionsOfDatabase, any, InstanceCreationOptions>,
@@ -204,6 +206,7 @@ export class RxCollectionBase<
     public destroyed = false;
 
     public async prepare(): Promise<void> {
+        this.incrementalWriteQueue = new IncrementalWriteQueue<RxDocumentType>(this as any);
         this.storageInstance = getWrappedStorageInstance(
             this.database,
             this.internalStorageInstance,
@@ -477,12 +480,15 @@ export class RxCollectionBase<
         const insertResult = await this.bulkInsert(insertData);
         let ret = insertResult.success.slice(0);
         const updatedDocs = await Promise.all(
-            insertResult.error.map(error => {
+            insertResult.error.map(async (error) => {
                 const id = error.documentId;
                 const writeData = getFromMapOrThrow(useJsonByDocId, id);
                 const docDataInDb = ensureNotFalsy(error.documentInDb);
                 const doc = createRxDocument(this.asRxCollection, docDataInDb);
-                return doc.atomicUpdate(() => writeData);
+                console.log('_________ 0');
+                const newDoc = await doc.atomicUpdate(() => writeData);
+                console.log('_________ 1');
+                return newDoc;
             })
         );
         ret = ret.concat(updatedDocs);
@@ -973,7 +979,7 @@ function _atomicUpsertUpdate<RxDocType>(
     doc: RxDocumentBase<RxDocType>,
     json: RxDocumentData<RxDocType>
 ): Promise<RxDocumentBase<RxDocType>> {
-    return doc.atomicUpdate((_innerDoc: RxDocumentData<RxDocType>) => {
+    return doc.atomicUpdate((_innerDoc) => {
         return json;
     })
         .then(() => nextTick())

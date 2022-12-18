@@ -18,8 +18,7 @@ import {
     ensureNotFalsy
 } from './util';
 import {
-    newRxError,
-    isBulkWriteConflictError
+    newRxError
 } from './rx-error';
 import {
     runPluginHooks
@@ -32,7 +31,8 @@ import type {
     RxDocumentWriteData,
     RxChangeEvent,
     UpdateQuery,
-    CRDTEntry
+    CRDTEntry,
+    AtomicUpdateFunction
 } from './types';
 import { getDocumentDataOfRxChangeEvent } from './rx-change-event';
 import { overwritable } from './overwritable';
@@ -287,60 +287,14 @@ export const basePrototype = {
      */
     atomicUpdate(
         this: RxDocument,
-        mutationFunction: Function,
+        mutationFunction: AtomicUpdateFunction<any>,
         // used by some plugins that wrap the method
         _context?: string
     ): Promise<RxDocument> {
-        return new Promise((res, rej) => {
-            this._atomicQueue = this
-                ._atomicQueue
-                .then(async () => {
-                    let done = false;
-                    // we need a hacky while loop to stay incide the chain-link of _atomicQueue
-                    // while still having the option to run a retry on conflicts
-                    let oldData = this._dataSync$.getValue();
-                    while (!done) {
-                        // always await because mutationFunction might be async
-                        let newData;
-
-                        try {
-                            newData = await mutationFunction(
-                                clone(oldData),
-                                this
-                            );
-                            if (this.collection) {
-                                newData = this.collection.schema.fillObjectWithDefaults(newData);
-                            }
-                        } catch (err) {
-                            rej(err);
-                            return;
-                        }
-
-                        try {
-                            await this._saveData(newData, oldData);
-                            done = true;
-                        } catch (err: any) {
-                            const useError = err.parameters && err.parameters.writeError ? err.parameters.writeError : err;
-                            /**
-                             * conflicts cannot happen by just using RxDB in one process
-                             * There are two ways they still can appear which is
-                             * replication and multi-tab usage
-                             * Because atomicUpdate has a mutation function,
-                             * we can just re-run the mutation until there is no conflict
-                             */
-                            const isConflict = isBulkWriteConflictError(useError as any);
-                            if (isConflict) {
-                                oldData = ensureNotFalsy(isConflict.documentInDb);
-                                // conflict error -> retrying
-                            } else {
-                                rej(useError);
-                                return;
-                            }
-                        }
-                    }
-                    res(this);
-                });
-        });
+        return this.collection.incrementalWriteQueue.addWrite(
+            this._dataSync$.getValue() as any,
+            mutationFunction
+        ).then(_result => this);
     },
 
 
@@ -351,7 +305,7 @@ export const basePrototype = {
         this: RxDocument<RxDocumentType>,
         patch: Partial<RxDocumentType>
     ): Promise<RxDocument<RxDocumentType>> {
-        return this.atomicUpdate((docData: RxDocumentType) => {
+        return this.atomicUpdate((docData) => {
             Object
                 .entries(patch)
                 .forEach(([k, v]) => {
@@ -379,26 +333,7 @@ export const basePrototype = {
                 document: this
             });
         }
-
-        /**
-         * Meta values must always be merged
-         * instead of overwritten.
-         * This ensures that different plugins do not overwrite
-         * each others meta properties.
-         */
-        newData._meta = Object.assign(
-            {},
-            oldData._meta,
-            newData._meta
-        );
-
-        // ensure modifications are ok
-        if (overwritable.isDevMode()) {
-            this.collection.schema.validateChange(oldData, newData);
-        }
-
-        await this.collection._runHooks('pre', 'save', newData, this);
-
+        await beforeDocumentUpdateWrite(this.collection, newData, oldData);
         const writeResult = await this.collection.storageInstance.bulkWrite([{
             previous: oldData,
             document: newData
@@ -558,4 +493,29 @@ export function createWithConstructor<RxDocType>(
 export function isRxDocument(obj: any): boolean {
     if (typeof obj === 'undefined') return false;
     return !!obj.isInstanceOfRxDocument;
+}
+
+
+export async function beforeDocumentUpdateWrite<RxDocType>(
+    collection: RxCollection<RxDocType>,
+    newData: RxDocumentWriteData<RxDocType>,
+    oldData: RxDocumentData<RxDocType>
+): Promise<any> {
+    /**
+     * Meta values must always be merged
+     * instead of overwritten.
+     * This ensures that different plugins do not overwrite
+     * each others meta properties.
+     */
+    newData._meta = Object.assign(
+        {},
+        oldData._meta,
+        newData._meta
+    );
+
+    // ensure modifications are ok
+    if (overwritable.isDevMode()) {
+        collection.schema.validateChange(oldData, newData);
+    }
+    return collection._runHooks('pre', 'save', newData);
 }
