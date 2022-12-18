@@ -186,7 +186,7 @@
     "socket.io-client": "4.5.3",
     "threads": "1.7.0",
     "unload": "2.3.1",
-    "util": "0.12.4",
+    "util": "0.12.5",
     "ws": "8.8.1",
     "z-schema": "5.0.4"
   },
