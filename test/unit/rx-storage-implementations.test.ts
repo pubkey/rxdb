@@ -324,7 +324,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                  * This ensures that we can continue resolving the conflict
                  * without having to pull the document out of the db first.
                  */
-                assert.ok(ensureNotFalsy(first.documentInDb).value, writeData.value);
+                assert.ok((first as any).documentInDb.value, writeData.value);
 
                 /**
                  * The documentInDb must not have any additional attributes.
@@ -333,7 +333,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                  * These fields must never be leaked to 409 conflict errors
                  */
                 assert.deepStrictEqual(
-                    Object.keys(ensureNotFalsy(first.documentInDb)).sort(),
+                    Object.keys((first as any).documentInDb).sort(),
                     Object.keys(writeData).sort()
                 );
 
