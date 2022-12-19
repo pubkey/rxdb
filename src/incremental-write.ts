@@ -9,6 +9,7 @@ import type {
     RxCollection,
     RxDocumentData,
     RxError,
+    RxStorageBulkWriteResponse,
     StringKeys
 } from './types';
 import {
@@ -121,7 +122,9 @@ export class IncrementalWriteQueue<RxDocType> {
                     });
                 })
         );
-        const writeResult = await this.collection.storageInstance.bulkWrite(writeRows, 'incremental-write');
+        const writeResult: RxStorageBulkWriteResponse<RxDocType> = writeRows.length > 0 ?
+            await this.collection.storageInstance.bulkWrite(writeRows, 'incremental-write') :
+            { error: {}, success: {} };
 
         // process success
         await Promise.all(
