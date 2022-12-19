@@ -84,15 +84,7 @@ export declare interface RxDocumentBase<RxDocType, OrmMethods = {}> {
 
     // attachments
     putAttachment(
-        creator: RxAttachmentCreator,
-        /**
-         * If set to true and data is equal,
-         * operation will be skipped.
-         * This prevents us from upgrading the revision
-         * and causing events in the change stream.
-         * (default = true)
-         */
-        skipIfSame?: boolean
+        creator: RxAttachmentCreator
     ): Promise<RxAttachment<RxDocType, OrmMethods>>;
     getAttachment(id: string): RxAttachment<RxDocType, OrmMethods> | null;
     allAttachments(): RxAttachment<RxDocType, OrmMethods>[];

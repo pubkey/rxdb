@@ -68,16 +68,16 @@ const results = await myRxCollection.findByIds(['foo', 'bar']).exec();
 const results$ = await myRxCollection.findByIds(['foo', 'bar']).$;
 ```
 
-## Remove depricated `skipIfSame` from `putAttachment()`
+## Remove depricated `skipIfSame` from `putAttachment()` [DONE]
 
 
-## Rename `replication-couchdb-new`
+## Rename `replication-couchdb-new` [DONE]
 
 The `replication-couchdb-new` plugin should be called `replication-couchdb` while the previous `replication-couchdb`
 should be called `replication-couchdb-pouchdb`.
 Also rename the method names and variables inside of the plugins.
 
-## Batch up atomic operations
+## Batch up atomic operations [DONE]
 
 If multiple atomic updates are run on the same document at the same time, we should merge them together and do a single database write.
 
@@ -130,7 +130,7 @@ The [worker plugin](https://rxdb.info/rx-storage-worker.html) is using threads.j
  - This could have been done in much less code which would be easier to understand.
  - Migration strategies should be defined [like in WatermelonDB](https://nozbe.github.io/WatermelonDB/Advanced/Migrations.html) with a `toVersion` version field. We should also add a `fromVersion` field so people could implement performance shortcuts by directly jumping several versions. The current migration strategies use the array index as `toVersion` which is confusing.
  
-## Use plain json errors inside of RxError parameters
+## Use plain json errors inside of RxError parameters [DONE]
 
 Atm, printing a RxError gives not information about the inner errors because it looks like:
 
