@@ -19,7 +19,7 @@ import { CRDTEntry } from './plugins/crdt';
 export type RxDocument<RxDocumentType = {}, OrmMethods = {}> = RxDocumentBase<RxDocumentType, OrmMethods> & RxDocumentType & OrmMethods;
 
 declare type AtomicUpdateFunction<RxDocumentType> = (
-    doc: RxDocumentData<RxDocumentType> | RxDocumentType
+    doc: RxDocumentData<RxDocumentType>
 ) => RxDocumentData<RxDocumentType> | Promise<RxDocumentData<RxDocumentType>> | RxDocumentType | Promise<RxDocumentType>;
 
 /**

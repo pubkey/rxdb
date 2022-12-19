@@ -1,4 +1,7 @@
-import { isBulkWriteConflictError, newRxError } from './rx-error';
+import {
+    isBulkWriteConflictError,
+    newRxError
+} from './rx-error';
 import {
     fillWithDefaultSettings,
     getComposedPrimaryKeyOfDocumentData
@@ -13,9 +16,10 @@ import type {
     RxDatabase,
     RxDocumentData,
     RxJsonSchema,
-    RxStorageBulkWriteError,
+    RxStorageWriteError,
     RxStorageInstance,
-    RxStorageStatics
+    RxStorageStatics,
+    RxStorageWriteErrorConflict
 } from './types';
 import {
     clone,
@@ -192,18 +196,18 @@ export async function ensureStorageTokenDocumentExists<Collections extends Colle
     const error = ensureNotFalsy(writeResult.error[STORAGE_TOKEN_DOCUMENT_ID]);
     if (
         error.isError &&
-        (error as RxStorageBulkWriteError<InternalStoreStorageTokenDocType>).status === 409
+        (error as RxStorageWriteError<InternalStoreStorageTokenDocType>).status === 409
     ) {
-        const conflictError = (error as RxStorageBulkWriteError<InternalStoreStorageTokenDocType>);
+        const conflictError = (error as RxStorageWriteErrorConflict<InternalStoreStorageTokenDocType>);
 
 
         if (
             passwordHash &&
-            passwordHash !== ensureNotFalsy(conflictError.documentInDb).data.passwordHash
+            passwordHash !== conflictError.documentInDb.data.passwordHash
         ) {
             throw newRxError('DB1', {
                 passwordHash,
-                existingPasswordHash: ensureNotFalsy(conflictError.documentInDb).data.passwordHash
+                existingPasswordHash: conflictError.documentInDb.data.passwordHash
             });
         }
 

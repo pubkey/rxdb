@@ -52,7 +52,9 @@ import {
     swapDefaultDeletedTodeletedField,
     swapdeletedFieldToDefaultDeleted
 } from './replication-helper';
-import { addConnectedStorageToCollection } from '../../rx-database-internal-store';
+import {
+    addConnectedStorageToCollection
+} from '../../rx-database-internal-store';
 
 
 export const REPLICATION_STATE_BY_COLLECTION: WeakMap<RxCollection, RxReplicationState<any, any>[]> = new WeakMap();
@@ -67,7 +69,6 @@ export class RxReplicationState<RxDocType, CheckpointType> {
         active: new BehaviorSubject<boolean>(false), // true when something is running, false when not
         initialReplicationComplete: new BehaviorSubject<boolean>(false) // true the initial replication-cycle is over
     };
-
 
     readonly received$: Observable<RxDocumentData<RxDocType>> = this.subjects.received.asObservable();
     readonly send$: Observable<WithDeleted<RxDocType>> = this.subjects.send.asObservable();
@@ -97,7 +98,6 @@ export class RxReplicationState<RxDocType, CheckpointType> {
         }
         replicationStates.push(this);
 
-
         // stop the replication when the collection gets destroyed
         this.collection.onDestroy.push(() => this.cancel());
 
@@ -109,7 +109,6 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                 }
             });
         });
-
         const startPromise = new Promise<void>(res => {
             this.callOnStart = res;
         });
@@ -132,9 +131,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
         const pushModifier = this.push && this.push.modifier ? this.push.modifier : DEFAULT_MODIFIER;
 
         const database = this.collection.database;
-
         const metaInstanceCollectionName = this.collection.name + '-rx-replication-' + this.replicationIdentifierHash;
-
         const [metaInstance] = await Promise.all([
             this.collection.database.storage.createStorageInstance({
                 databaseName: database.name,
@@ -151,7 +148,6 @@ export class RxReplicationState<RxDocType, CheckpointType> {
             )
         ]);
         this.metaInstance = metaInstance;
-
 
         this.internalReplicationState = replicateRxStorageInstance({
             pushBatchSize: this.push && this.push.batchSize ? this.push.batchSize : 100,
@@ -187,7 +183,6 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                             documents: []
                         };
                     }
-
                     /**
                      * Retries must be done here in the replication primitives plugin,
                      * because the replication protocol itself has no
@@ -227,7 +222,6 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                     useResult.documents = await Promise.all(
                         useResult.documents.map(d => pullModifier(d))
                     );
-
                     return useResult;
                 },
                 masterWrite: async (
@@ -243,14 +237,12 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                             if (row.assumedMasterState) {
                                 row.assumedMasterState = await pushModifier(row.assumedMasterState);
                             }
-
                             if (this.deletedField !== '_deleted') {
                                 row.newDocumentState = swapDefaultDeletedTodeletedField(this.deletedField, row.newDocumentState) as any;
                                 if (row.assumedMasterState) {
                                     row.assumedMasterState = swapDefaultDeletedTodeletedField(this.deletedField, row.assumedMasterState) as any;
                                 }
                             }
-
                             return row;
                         })
                     );
@@ -286,11 +278,9 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                             await awaitRetry(this.collection, ensureNotFalsy(this.retryTime));
                         }
                     }
-
                     if (this.isStopped()) {
                         return [];
                     }
-
                     const conflicts = ensureNotFalsy(result).map(doc => swapdeletedFieldToDefaultDeleted(this.deletedField, doc));
                     return conflicts;
                 }

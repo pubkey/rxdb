@@ -22,11 +22,13 @@ import type {
     RxDocumentData,
     RxDocumentWriteData,
     RxJsonSchema,
-    RxStorageBulkWriteError,
+    RxStorageWriteError,
     RxStorageChangeEvent,
     RxStorageInstance,
     RxStorageInstanceCreationParams,
-    StringKeys
+    StringKeys,
+    RxStorageWriteErrorConflict,
+    RxStorageWriteErrorAttachment
 } from './types';
 import {
     createRevision,
@@ -119,11 +121,18 @@ export function throwIfIsStorageWriteError<RxDocType>(
     collection: RxCollection<RxDocType>,
     documentId: string,
     writeData: RxDocumentWriteData<RxDocType> | RxDocType,
-    error: RxStorageBulkWriteError<RxDocType> | undefined
+    error: RxStorageWriteError<RxDocType> | undefined
 ) {
     if (error) {
         if (error.status === 409) {
             throw newRxError('COL19', {
+                collection: collection.name,
+                id: documentId,
+                writeError: error,
+                data: writeData
+            });
+        } else if (error.status === 422) {
+            throw newRxError('VD2', {
                 collection: collection.name,
                 id: documentId,
                 writeError: error,
@@ -184,8 +193,8 @@ export function categorizeBulkWriteRows<RxDocType>(
      * each time we use it.
      */
     docsInDb:
-    Map<RxDocumentData<RxDocType>[StringKeys<RxDocType>] | string, RxDocumentData<RxDocType>> |
-    ById<RxDocumentData<RxDocType>>,
+        Map<RxDocumentData<RxDocType>[StringKeys<RxDocType>] | string, RxDocumentData<RxDocType>> |
+        ById<RxDocumentData<RxDocType>>,
     /**
      * The write rows that are passed to
      * RxStorageInstance().bulkWrite().
@@ -196,7 +205,7 @@ export function categorizeBulkWriteRows<RxDocType>(
     const hasAttachments = !!storageInstance.schema.attachments;
     const bulkInsertDocs: BulkWriteRowProcessed<RxDocType>[] = [];
     const bulkUpdateDocs: BulkWriteRowProcessed<RxDocType>[] = [];
-    const errors: ById<RxStorageBulkWriteError<RxDocType>> = {};
+    const errors: ById<RxStorageWriteError<RxDocType>> = {};
     const changedDocumentIds: RxDocType[StringKeys<RxDocType>][] = [];
     const eventBulk: EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, any> = {
         id: randomCouchString(10),
@@ -228,7 +237,7 @@ export function categorizeBulkWriteRows<RxDocType>(
     bulkWriteRows.forEach(writeRow => {
         const id = writeRow.document[primaryPath];
         const documentInDb = docsByIdIsMap ? (docsInDb as any).get(id) : (docsInDb as any)[id];
-        let attachmentError: RxStorageBulkWriteError<RxDocType> | undefined;
+        let attachmentError: RxStorageWriteErrorAttachment<RxDocType> | undefined;
 
         if (!documentInDb) {
             /**
@@ -244,7 +253,8 @@ export function categorizeBulkWriteRows<RxDocType>(
                         documentId: id as any,
                         isError: true,
                         status: 510,
-                        writeRow
+                        writeRow,
+                        attachmentId
                     };
                     errors[id as any] = attachmentError;
                 } else {
@@ -292,7 +302,7 @@ export function categorizeBulkWriteRows<RxDocType>(
                 )
             ) {
                 // is conflict error
-                const err: RxStorageBulkWriteError<RxDocType> = {
+                const err: RxStorageWriteError<RxDocType> = {
                     isError: true,
                     status: 409,
                     documentId: id as any,
@@ -332,10 +342,11 @@ export function categorizeBulkWriteRows<RxDocType>(
                         ) {
                             attachmentError = {
                                 documentId: id as any,
-                                documentInDb: documentInDb,
+                                documentInDb,
                                 isError: true,
                                 status: 510,
-                                writeRow
+                                writeRow,
+                                attachmentId
                             };
                         }
                         return true;
@@ -626,7 +637,7 @@ export function getWrappedStorageInstance<
                  * @link https://github.com/pubkey/rxdb/pull/3839
                  */
                 .then(writeResult => {
-                    const reInsertErrors: RxStorageBulkWriteError<RxDocType>[] = Object
+                    const reInsertErrors: RxStorageWriteErrorConflict<RxDocType>[] = Object
                         .values(writeResult.error)
                         .filter((error) => {
                             if (
@@ -638,7 +649,7 @@ export function getWrappedStorageInstance<
                                 return true;
                             }
                             return false;
-                        });
+                        }) as any;
 
                     if (reInsertErrors.length > 0) {
                         const useWriteResult: typeof writeResult = {

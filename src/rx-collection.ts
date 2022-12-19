@@ -71,7 +71,7 @@ import type {
     MangoQuery,
     MangoQueryNoLimit,
     RxCacheReplacementPolicy,
-    RxStorageBulkWriteError,
+    RxStorageWriteError,
     RxDocumentData,
     RxDocumentWriteData,
     RxStorageInstanceCreationParams,
@@ -319,7 +319,7 @@ export class RxCollectionBase<
         docsData: RxDocumentType[]
     ): Promise<{
         success: RxDocument<RxDocumentType, OrmMethods>[];
-        error: RxStorageBulkWriteError<RxDocumentType>[];
+        error: RxStorageWriteError<RxDocumentType>[];
     }> {
         /**
          * Optimization shortcut,
@@ -392,7 +392,7 @@ export class RxCollectionBase<
         ids: string[]
     ): Promise<{
         success: RxDocument<RxDocumentType, OrmMethods>[];
-        error: RxStorageBulkWriteError<RxDocumentType>[];
+        error: RxStorageWriteError<RxDocumentType>[];
     }> {
         /**
          * Optimization shortcut,
@@ -481,6 +481,12 @@ export class RxCollectionBase<
         let ret = insertResult.success.slice(0);
         const updatedDocs = await Promise.all(
             insertResult.error.map(async (error) => {
+                if (error.status !== 409) {
+                    throw newRxError('VD2', {
+                        collection: this.name,
+                        writeError: error
+                    });
+                }
                 const id = error.documentId;
                 const writeData = getFromMapOrThrow(useJsonByDocId, id);
                 const docDataInDb = ensureNotFalsy(error.documentInDb);

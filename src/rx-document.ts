@@ -496,7 +496,7 @@ export function isRxDocument(obj: any): boolean {
 }
 
 
-export async function beforeDocumentUpdateWrite<RxDocType>(
+export function beforeDocumentUpdateWrite<RxDocType>(
     collection: RxCollection<RxDocType>,
     newData: RxDocumentWriteData<RxDocType>,
     oldData: RxDocumentData<RxDocType>

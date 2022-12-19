@@ -1,12 +1,14 @@
 import { beforeDocumentUpdateWrite } from './rx-document';
-import { isBulkWriteConflictError } from './rx-error';
+import {
+    isBulkWriteConflictError,
+    rxStorageWriteErrorToRxError
+} from './rx-error';
 import type {
     AtomicUpdateFunction,
     BulkWriteRow,
     RxCollection,
     RxDocumentData,
     RxError,
-    RxStorageBulkWriteError,
     StringKeys
 } from './types';
 import {
@@ -17,12 +19,11 @@ import {
     parseRevision
 } from './util';
 
-
 type IncrementalWriteQueueItem<RxDocType> = {
     lastKnownDocumentState: RxDocumentData<RxDocType>;
     modifier: AtomicUpdateFunction<RxDocType>;
     resolve: (d: RxDocumentData<RxDocType>) => void;
-    reject: (error: RxStorageBulkWriteError<RxDocType> | Error | RxError) => void;
+    reject: (error: RxError) => void;
 };
 
 /**
@@ -33,7 +34,6 @@ type IncrementalWriteQueueItem<RxDocType> = {
  * - Run all writes ins a single bulkWrite() call even when there are writes to many documents.
  */
 export class IncrementalWriteQueue<RxDocType> {
-
     public queueByDocId = new Map<string, IncrementalWriteQueueItem<RxDocType>[]>();
     public isRunning: boolean = false;
     public primaryPath: StringKeys<RxDocumentData<RxDocType>>;
@@ -104,25 +104,30 @@ export class IncrementalWriteQueue<RxDocType> {
                         } catch (err: any) {
                             console.log('triggerRun() 1.1 ERROR');
                             item.reject(err);
+                            item.reject = () => { };
+                            item.resolve = () => { };
                         }
                     }
 
                     console.log('triggerRun() 1.1');
-                    let hasThrown: Error | null = null;
-                    await beforeDocumentUpdateWrite(this.collection, newData, oldData)
-                        .catch(err => {
-                            console.log('triggerRun() 1 ERROR');
-                            hasThrown = err;
-                        });
-                    console.log('triggerRun() 1.2');
-                    if (hasThrown) {
-                        items.forEach(item => item.reject(ensureNotFalsy(hasThrown)));
-                    } else {
-                        writeRows.push({
-                            previous: oldData,
-                            document: newData
-                        });
+                    try {
+                        await beforeDocumentUpdateWrite(this.collection, newData, oldData);
+                    } catch (err: any) {
+                        /**
+                         * If the before-hooks fail,
+                         * we reject all of the writes because it is
+                         * not possible to determine which one is to blame.
+                         */
+                        console.log('triggerRun() 1 ERROR');
+                        console.dir(err);
+                        items.forEach(item => item.reject(err));
+                        return;
                     }
+                    console.log('triggerRun() 1.2');
+                    writeRows.push({
+                        previous: oldData,
+                        document: newData
+                    });
                 })
         );
         console.log('writeRows:');
@@ -165,7 +170,8 @@ export class IncrementalWriteQueue<RxDocType> {
                         });
                 } else {
                     // other error -> must be thrown
-                    items.forEach(item => item.reject(error));
+                    const rxError = rxStorageWriteErrorToRxError(error);
+                    items.forEach(item => item.reject(rxError));
                 }
             });
         console.log('triggerRun() 4');

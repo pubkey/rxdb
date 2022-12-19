@@ -67,6 +67,7 @@ export const ERROR_MESSAGES = {
     DB9: 'createRxDatabase(): Adapter not added. Use addPouchPlugin(require(\'pouchdb-adapter-[adaptername]\'));',
     DB10: 'createRxDatabase(): To use leveldown-adapters, you have to add the leveldb-plugin. Use addPouchPlugin(require(\'pouchdb-adapter-leveldb\'));',
     DB11: 'createRxDatabase(): Invalid db-name, folder-paths must not have an ending slash',
+    DB12: 'RxDatabase.addCollections(): could not write to internal store',
 
     // rx-collection
     COL1: 'RxDocument.insert() You cannot insert an existing document',
@@ -88,6 +89,7 @@ export const ERROR_MESSAGES = {
     COL17: 'RxCollection.ORM: statics-name not allowed',
     COL18: 'collection-method not allowed because fieldname is in the schema',
     COL19: 'Document update conflict. When changing a document you must work on the previous revision',
+    COL20: 'Storage write error',
 
     // rx-document.js
     DOC1: 'RxDocument.get$ cannot get observable of in-array fields because order cannot be guessed',

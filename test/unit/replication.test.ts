@@ -25,7 +25,9 @@ import {
     ensureNotFalsy,
     randomCouchString,
     rxStorageInstanceToReplicationHandler,
-    normalizeMangoQuery
+    normalizeMangoQuery,
+    RxError,
+    RxTypeError
 } from '../../';
 
 import {
@@ -200,7 +202,8 @@ describe('replication.test.js', () => {
             remoteCollection.database.destroy();
         });
         it('should not save pulled documents that do not match the schema', async () => {
-            const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 5 });
+            const amount = 5;
+            const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: amount });
 
             /**
              * Use collection with different schema
@@ -227,7 +230,7 @@ describe('replication.test.js', () => {
                     handler: getPushHandler(remoteCollection)
                 }
             });
-            const errors: any[] = [];
+            const errors: (RxError | RxTypeError)[] = [];
             replicationState.error$.subscribe(err => errors.push(err));
             await replicationState.awaitInitialReplication();
 
@@ -237,8 +240,8 @@ describe('replication.test.js', () => {
             assert.strictEqual(docsLocal.length, 0);
 
 
-            assert.strictEqual(errors.length, 1);
-            assert.ok(errors[0].message.includes('does not match schema'));
+            assert.strictEqual(errors.length, amount);
+            assert.ok(JSON.stringify(errors[0].parameters).includes('maximum'));
 
 
             localCollection.database.destroy();

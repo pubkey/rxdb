@@ -4,9 +4,6 @@
  * @link https://github.com/epoberezkin/ajv
  */
 import Ajv from 'ajv';
-import {
-    newRxError
-} from '../rx-error';
 import type {
     RxDocumentData,
     RxJsonSchema
@@ -25,12 +22,10 @@ export function getValidator(
     const validator = ajv.compile(schema);
     return (docData: RxDocumentData<any>) => {
         const isValid = validator(docData);
-        if (!isValid) {
-            throw newRxError('VD2', {
-                validationErrors: validator.errors as any,
-                document: docData,
-                schema
-            });
+        if (isValid) {
+            return [];
+        } else {
+            return validator.errors as any;
         }
     };
 }

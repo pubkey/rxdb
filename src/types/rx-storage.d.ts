@@ -1,6 +1,7 @@
 import type { ChangeEvent } from 'event-reduce-js';
 import { RxChangeEvent } from './rx-change-event';
 import { RxDocumentMeta } from './rx-document';
+import { RxStorageWriteError } from './rx-error';
 import { MangoQuery } from './rx-query';
 import { RxJsonSchema } from './rx-schema';
 import { ById, Override, StringKeys } from './util';
@@ -152,42 +153,7 @@ export type RxAttachmentWriteData = RxAttachmentDataBase & {
 };
 
 
-/**
- * Error that can happer per document when
- * RxStorage.bulkWrite() is called
- */
-export type RxStorageBulkWriteError<RxDocType> = {
 
-    status: number |
-    409 // conflict
-    /**
-     * Before you add any other status code,
-     * check pouchdb/packages/node_modules/pouch-errors/src/index.js
-     * and try to use the same code as PouchDB does.
-     */
-    ;
-
-    /**
-     * set this property to make it easy
-     * to detect if the object is a RxStorageBulkWriteError
-     */
-    isError: true;
-
-    // primary key of the document
-    documentId: string;
-
-    // the original document data that should have been written.
-    writeRow: BulkWriteRow<RxDocType>;
-
-    /**
-     * The error state must contain the
-     * document state in the database.
-     * This ensures that we can continue resolving a conflict
-     * without having to pull the document out of the db first.
-     * Is not set if the error happens on an insert.
-     */
-    documentInDb?: RxDocumentData<RxDocType>;
-};
 
 export type RxStorageBulkWriteResponse<RxDocType> = {
     /**
@@ -200,7 +166,7 @@ export type RxStorageBulkWriteResponse<RxDocType> = {
      * A map that is indexed by the documentId
      * contains all errored writes.
      */
-    error: ById<RxStorageBulkWriteError<RxDocType>>;
+    error: ById<RxStorageWriteError<RxDocType>>;
 };
 
 export type PreparedQuery<DocType> = MangoQuery<DocType> | any;
@@ -342,7 +308,7 @@ export type CategorizeBulkWriteRowsOutput<RxDocType> = {
      * RxStorageInstance().getChangedDocumentsSince().
      */
     changedDocumentIds: RxDocType[StringKeys<RxDocType>][];
-    errors: ById<RxStorageBulkWriteError<RxDocType>>;
+    errors: ById<RxStorageWriteError<RxDocType>>;
     eventBulk: EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, any>;
     attachmentsAdd: {
         documentId: string;
