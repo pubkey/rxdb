@@ -2,6 +2,7 @@ import {
     firstValueFrom,
     filter
 } from 'rxjs';
+import { newRxError } from '../rx-error';
 import { stackCheckpoints } from '../rx-storage-helper';
 import type {
     RxStorageInstanceReplicationState,
@@ -401,6 +402,19 @@ export function startReplicationDownstream<RxDocType, CheckpointType = any>(
                         Object.keys(forkWriteResult.success).forEach((docId) => {
                             state.events.processed.down.next(writeRowsToForkById[docId]);
                             useMetaWriteRows.push(writeRowsToMeta[docId]);
+                        });
+                        Object.values(forkWriteResult.error).forEach(error => {
+                            /**
+                             * We do not have to care about downstream conflict errors here
+                             * because on conflict, it will be solved locally and result in another write.
+                             */
+                            if (error.status === 409) {
+                                return;
+                            }
+                            // other non-conflict errors must be handled
+                            state.events.error.next(newRxError('RC_PULL', {
+                                writeError: error
+                            }));
                         });
                     });
                 }

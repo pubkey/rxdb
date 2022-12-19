@@ -4,9 +4,6 @@
  * @link https://github.com/mafintosh/is-my-json-valid
  */
 import isMyJsonValid from 'is-my-json-valid';
-import {
-    newRxError
-} from '../rx-error';
 import type {
     RxJsonSchema
 } from '../types';
@@ -19,12 +16,10 @@ export function getValidator(
     const validator = isMyJsonValid(schema as any);
     return (docData: any) => {
         const isValid = validator(docData);
-        if (!isValid) {
-            throw newRxError('VD2', {
-                validationErrors: validator.errors,
-                document: docData,
-                schema
-            });
+        if (isValid) {
+            return [];
+        } else {
+            return validator.errors as any;
         }
     };
 }

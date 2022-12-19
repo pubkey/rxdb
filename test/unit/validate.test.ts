@@ -14,7 +14,9 @@ import {
     RxJsonSchema,
     fillWithDefaultSettings,
     now,
-    RxDocumentData
+    RxDocumentData,
+    RxStorageInstance,
+    BulkWriteRow
 } from '../../';
 
 import { wrappedValidateZSchemaStorage } from '../../plugins/validate-z-schema';
@@ -26,27 +28,60 @@ const validationImplementations: {
     key: string;
     implementation: ReturnType<typeof wrappedValidateStorageFactory>;
 }[] = [
-    /*
-         * TODO is-my-json-valid is no longer supported, until this is fixed:
-         * @link https://github.com/mafintosh/is-my-json-valid/pull/192
+        /*
+             * TODO is-my-json-valid is no longer supported, until this is fixed:
+             * @link https://github.com/mafintosh/is-my-json-valid/pull/192
+            {
+                key: 'is-my-json-valid',
+                implementation: wrappedValidateIsMyJsonValidStorage
+            },
+            */
         {
-            key: 'is-my-json-valid',
-            implementation: wrappedValidateIsMyJsonValidStorage
+            key: 'ajv',
+            implementation: wrappedValidateAjvStorage
         },
-        */
-    {
-        key: 'ajv',
-        implementation: wrappedValidateAjvStorage
-    },
-    {
-        key: 'z-schema',
-        implementation: wrappedValidateZSchemaStorage
-    }
-];
+        {
+            key: 'z-schema',
+            implementation: wrappedValidateZSchemaStorage
+        }
+    ];
+
+
 
 validationImplementations.forEach(
     validationImplementation => config.parallel('validate.test.js (' + validationImplementation.key + ') ', () => {
         const testContext = 'validate' + validationImplementation.key;
+        async function assertBulkWriteNoError<RxDocType>(
+            instance: RxStorageInstance<RxDocType, any, any>,
+            writeRows: BulkWriteRow<RxDocType>[],
+        ) {
+            const result = await instance.bulkWrite(writeRows, testContext);
+            assert.deepStrictEqual(result.error, {});
+        }
+        async function assertBulkWriteValidationError<RxDocType>(
+            instance: RxStorageInstance<RxDocType, any, any>,
+            writeRows: BulkWriteRow<RxDocType>[],
+            errorMustContain?: string
+        ) {
+            const result = await instance.bulkWrite(writeRows, testContext);
+            console.log('result:');
+            console.dir(result);
+            assert.deepStrictEqual(result.success, {});
+            const errors = Object.values(result.error);
+            errors.forEach(err => {
+                assert.strictEqual(err.status, 422);
+                if (errorMustContain) {
+                    if (!JSON.stringify(err).includes(errorMustContain)) {
+                        throw new Error(
+                            'error does not include errorMustContain: ' +
+                            errorMustContain +
+                            ' data: ' + JSON.stringify(err)
+                        );
+                    }
+                }
+            });
+        }
+
         const storage = validationImplementation.implementation({
             storage: config.storage.getStorage()
         });
@@ -125,7 +160,6 @@ validationImplementations.forEach(
                         console.dir(err);
                         throw err;
                     }
-
                     await instance.close();
                 });
 
@@ -146,46 +180,52 @@ validationImplementations.forEach(
                     const instance = await getRxStorageInstance(schema);
 
                     // valid
-                    await instance.bulkWrite([{
-                        document: toRxDocumentData({
-                            id: 'abcdö-ä:ü2'
-                        } as any)
-                    }], testContext);
+                    await assertBulkWriteNoError(
+                        instance,
+                        [{
+                            document: toRxDocumentData({
+                                id: 'abcdö-ä:ü2'
+                            } as any)
+                        }]
+                    );
 
                     // non valid
-                    await assertThrows(
-                        () => instance.bulkWrite([{
+                    await assertBulkWriteValidationError(
+                        instance,
+                        [{
                             document: toRxDocumentData({
                                 id: 'a'
                             } as any)
-                        }], testContext),
-                        'RxError',
-                        'VD2'
+                        }]
                     );
                     await instance.close();
                 });
                 it('should work with a schema as nested additionalProperties', async () => {
                     const jsonSchema: any = clone(schemas.heroArray);
-                    jsonSchema.properties.skills.items['additionalProperties'] = {type: 'number'};
+                    jsonSchema.properties.skills.items['additionalProperties'] = { type: 'number' };
                     const instance = await getRxStorageInstance(jsonSchema);
 
                     // valid
-                    await instance.bulkWrite([{
-                        document: toRxDocumentData({
-                            name: 'foobar',
-                            skills: [
-                                {
-                                    name: 'foo',
-                                    damage: 10,
-                                    nonDefinedField: 42
-                                }
-                            ],
-                        })
-                    }], testContext);
+                    await assertBulkWriteNoError(
+                        instance,
+                        [{
+                            document: toRxDocumentData({
+                                name: 'foobar',
+                                skills: [
+                                    {
+                                        name: 'foo',
+                                        damage: 10,
+                                        nonDefinedField: 42
+                                    }
+                                ],
+                            })
+                        }]
+                    );
 
                     // non valid
-                    await assertThrows(
-                        () => instance.bulkWrite([{
+                    await assertBulkWriteValidationError(
+                        instance,
+                        [{
                             document: toRxDocumentData({
                                 name: 'foobar',
                                 skills: [
@@ -196,9 +236,7 @@ validationImplementations.forEach(
                                     }
                                 ],
                             })
-                        }], testContext),
-                        'RxError',
-                        'VD2'
+                        }]
                     );
                     await instance.close();
                 });
@@ -206,14 +244,13 @@ validationImplementations.forEach(
             describe('negative', () => {
                 it('not validate other object', async () => {
                     const instance = await getRxStorageInstance(schemas.human);
-                    await assertThrows(
-                        () => instance.bulkWrite([{
+                    await assertBulkWriteValidationError(
+                        instance,
+                        [{
                             document: toRxDocumentData({
                                 foo: 'bar'
                             } as any)
-                        }], testContext),
-                        'RxError',
-                        'VD2'
+                        }]
                     );
                     await instance.close();
                 });
@@ -222,11 +259,11 @@ validationImplementations.forEach(
                     const obj: any = schemaObjects.human();
                     delete obj.lastName;
 
-                    await assertThrows(
-                        () => instance.bulkWrite([{
+                    await assertBulkWriteValidationError(
+                        instance,
+                        [{
                             document: toRxDocumentData(obj)
-                        }], testContext),
-                        'RxError',
+                        }],
                         'required'
                     );
                     await instance.close();
@@ -236,11 +273,11 @@ validationImplementations.forEach(
                     const obj: any = schemaObjects.human();
                     obj.age = 1000;
 
-                    await assertThrows(
-                        () => instance.bulkWrite([{
+                    await assertBulkWriteValidationError(
+                        instance,
+                        [{
                             document: toRxDocumentData(obj)
-                        }], testContext),
-                        'RxError',
+                        }],
                         'maximum'
                     );
                     await instance.close();
@@ -249,12 +286,11 @@ validationImplementations.forEach(
                     const instance = await getRxStorageInstance(schemas.human);
                     const obj: any = schemaObjects.human();
                     obj['token'] = randomCouchString(5);
-
-                    await assertThrows(
-                        () => instance.bulkWrite([{
+                    await assertBulkWriteValidationError(
+                        instance,
+                        [{
                             document: toRxDocumentData(obj)
-                        }], testContext),
-                        'RxError',
+                        }],
                         'dditional properties'
                     );
                     await instance.close();
@@ -273,11 +309,12 @@ validationImplementations.forEach(
                             }
                         ],
                     };
-                    await assertThrows(
-                        () => instance.bulkWrite([{
+
+                    await assertBulkWriteValidationError(
+                        instance,
+                        [{
                             document: toRxDocumentData(obj)
-                        }], testContext),
-                        'RxError',
+                        }],
                         'dditional properties'
                     );
                     await instance.close();
@@ -286,12 +323,12 @@ validationImplementations.forEach(
                     const instance = await getRxStorageInstance(schemas.primaryHuman);
                     const obj: any = schemaObjects.simpleHuman();
                     obj.passportId = null;
-                    await assertThrows(
-                        () => instance.bulkWrite([{
+                    await assertBulkWriteValidationError(
+                        instance,
+                        [{
                             document: toRxDocumentData(obj)
-                        }], testContext),
-                        'RxError',
-                        'not match'
+                        }],
+                        'passportId'
                     );
                     await instance.close();
                 });
@@ -314,66 +351,60 @@ validationImplementations.forEach(
                     const instance = await getRxStorageInstance(schema);
 
                     // this must work
-                    await instance.bulkWrite([{
-                        document: toRxDocumentData({
-                            id: randomCouchString(12),
-                            childProperty: 'A'
-                        })
-                    }], testContext);
+                    await assertBulkWriteNoError(
+                        instance,
+                        [{
+                            document: toRxDocumentData({
+                                id: randomCouchString(12),
+                                childProperty: 'A' as any
+                            })
+                        }]
+                    );
 
                     // this must not work
-                    await assertThrows(
-                        () => instance.bulkWrite([{
+                    await assertBulkWriteValidationError(
+                        instance,
+                        [{
                             document: toRxDocumentData({
                                 id: randomCouchString(12),
                                 childProperty: 'Z'
                             } as any)
-                        }], testContext),
-                        'RxError',
+                        }],
                         'enum'
                     );
-
                     await instance.close();
                 });
             });
             describe('error layout', () => {
                 it('accessible error-parameters', async () => {
                     const instance = await getRxStorageInstance(schemas.human);
-                    const obj = schemaObjects.human();
+                    const obj = schemaObjects.human('foobar');
                     (obj as any)['foobar'] = 'barfoo';
-                    let hasThrown = false;
-                    try {
-                        await instance.bulkWrite([{
-                            document: toRxDocumentData(obj)
-                        }], testContext);
-                    } catch (err) {
-                        const message = (err as any).parameters.validationErrors[0].message;
-                        assert.ok(message.includes('dditional'));
-                        hasThrown = true;
-                    }
-                    assert.ok(hasThrown);
+
+                    const result = await instance.bulkWrite([{
+                        document: toRxDocumentData(obj)
+                    }], testContext);
+                    const err = result.error['foobar'];
+                    const message = (err as any).validationErrors[0].message;
+                    assert.ok(message.includes('dditional'));
                     await instance.close();
                 });
                 it('final fields should be required', async () => {
                     const instance = await getRxStorageInstance(schemas.humanFinal);
-                    let hasThrown = false;
                     const obj = {
                         passportId: 'foobar',
                         firstName: 'foo',
                         lastName: 'bar'
                     };
-                    try {
-                        await instance.bulkWrite([{
-                            document: toRxDocumentData(obj)
-                        }], testContext);
-                    } catch (err) {
-                        const deepParam = (err as any).parameters.validationErrors[0];
-                        assert.ok(
-                            JSON.stringify(deepParam).includes('age')
-                        );
-                        hasThrown = true;
-                    }
-                    assert.ok(hasThrown);
+
+                    const result = await instance.bulkWrite([{
+                        document: toRxDocumentData(obj)
+                    }], testContext);
+                    const err = result.error['foobar'];
+                    const deepParam = (err as any).validationErrors[0];
+                    assert.ok(
+                        JSON.stringify(deepParam).includes('age')
+                    );
                     await instance.close();
                 });
             });
@@ -485,9 +516,38 @@ validationImplementations.forEach(
                     await assertThrows(
                         () => collection.upsert(obj),
                         'RxError',
-                        'not match'
+                        'dditional properti'
                     );
                     await db.destroy();
+                });
+            });
+            describe('RxDocument.atomicUpdate()', () => {
+                it('should throw when not matching schema', async () => {
+                    const db = await createRxDatabase({
+                        name: randomCouchString(10),
+                        storage
+                    });
+                    const collections = await db.addCollections({
+                        human: {
+                            schema: schemas.human
+                        }
+                    });
+                    const collection = collections.human;
+                    const doc = await collection.insert(schemaObjects.human());
+                    await doc.atomicUpdate((innerDoc: any) => {
+                        innerDoc.age = 50;
+                        return innerDoc;
+                    });
+                    assert.strictEqual(doc.age, 50);
+                    await assertThrows(
+                        () => doc.atomicUpdate((innerDoc: any) => {
+                            innerDoc.age = 'foobar';
+                            return innerDoc;
+                        }),
+                        'RxError',
+                        'schema'
+                    );
+                    db.destroy();
                 });
             });
             describe('RxCollection().atomicUpsert()', () => {
@@ -518,35 +578,6 @@ validationImplementations.forEach(
                         );
                         db.destroy();
                     });
-                });
-            });
-            describe('RxDocument.atomicUpdate()', () => {
-                it('should throw when not matching schema', async () => {
-                    const db = await createRxDatabase({
-                        name: randomCouchString(10),
-                        storage
-                    });
-                    const collections = await db.addCollections({
-                        human: {
-                            schema: schemas.human
-                        }
-                    });
-                    const collection = collections.human;
-                    const doc = await collection.insert(schemaObjects.human());
-                    await doc.atomicUpdate((innerDoc: any) => {
-                        innerDoc.age = 50;
-                        return innerDoc;
-                    });
-                    assert.strictEqual(doc.age, 50);
-                    await assertThrows(
-                        () => doc.atomicUpdate((innerDoc: any) => {
-                            innerDoc.age = 'foobar';
-                            return innerDoc;
-                        }),
-                        'RxError',
-                        'schema'
-                    );
-                    db.destroy();
                 });
             });
             describe('RxDocument.atomicPatch()', () => {

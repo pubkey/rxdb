@@ -332,6 +332,9 @@ export const basePrototype = {
                             if (isConflict) {
                                 oldData = ensureNotFalsy(isConflict.documentInDb);
                                 // conflict error -> retrying
+                            } else if (err.rxdb) {
+                                rej(err);
+                                return;
                             } else {
                                 rej(useError);
                                 return;

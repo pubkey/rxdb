@@ -6,7 +6,8 @@ import { overwritable } from './overwritable';
 import type {
     RxErrorParameters,
     RxErrorKey,
-    RxStorageBulkWriteError
+    RxStorageWriteError,
+    RxStorageWriteErrorConflict
 } from './types';
 
 /**
@@ -128,8 +129,8 @@ export function newRxTypeError(
  * return false if it is another error.
  */
 export function isBulkWriteConflictError<RxDocType>(
-    err?: RxStorageBulkWriteError<RxDocType> | any
-): RxStorageBulkWriteError<RxDocType> | false {
+    err?: RxStorageWriteError<RxDocType> | any
+): RxStorageWriteErrorConflict<RxDocType> | false {
     if (
         err &&
         err.status === 409

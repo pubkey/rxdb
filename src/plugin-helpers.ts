@@ -1,4 +1,5 @@
 import { mergeMap } from 'rxjs/operators';
+import { getPrimaryFieldOfPrimaryKey } from './rx-schema-helper';
 import type {
     BulkWriteRow,
     EventBulk,
@@ -8,11 +9,13 @@ import type {
     RxDocumentWriteData,
     RxJsonSchema,
     RxStorage,
-    RxStorageBulkWriteError,
+    RxStorageWriteError,
     RxStorageBulkWriteResponse,
     RxStorageChangeEvent,
     RxStorageInstance,
-    RxStorageInstanceCreationParams
+    RxStorageInstanceCreationParams,
+    RxValidationError,
+    RxStorageWriteErrorConflict
 } from './types';
 import {
     fastUnsecureHash,
@@ -28,7 +31,11 @@ type WrappedStorageFunction = <Internals, InstanceCreationOptions>(
     }
 ) => RxStorage<Internals, InstanceCreationOptions>;
 
-type ValidatorFunction = (docData: RxDocumentData<any>) => void;
+/**
+ * Returns the validation errors.
+ * If document is fully valid, returns an empty array.
+ */
+type ValidatorFunction = (docData: RxDocumentData<any>) => RxValidationError[];
 
 /**
  * cache the validators by the schema-hash
@@ -77,6 +84,8 @@ export function wrappedValidateStorageFactory(
                     params: RxStorageInstanceCreationParams<RxDocType, any>
                 ) {
                     const instance = await args.storage.createStorageInstance(params);
+                    const primaryPath = getPrimaryFieldOfPrimaryKey(params.schema.primaryKey);
+
                     /**
                      * Lazy initialize the validator
                      * to save initial page load performance.
@@ -94,10 +103,29 @@ export function wrappedValidateStorageFactory(
                         if (!validatorCached) {
                             validatorCached = initValidator(params.schema);
                         }
+                        const errors: RxStorageWriteError<RxDocType>[] = [];
+                        const continueWrites: typeof documentWrites = [];
                         documentWrites.forEach(row => {
-                            validatorCached(row.document);
+                            const documentId: string = row.document[primaryPath] as any;
+                            const validationErrors = validatorCached(row.document);
+                            if (validationErrors.length > 0) {
+                                errors.push({
+                                    status: 422,
+                                    isError: true,
+                                    documentId,
+                                    writeRow: row,
+                                    validationErrors
+                                });
+                            } else {
+                                continueWrites.push(row);
+                            }
                         });
-                        return oldBulkWrite(documentWrites, context);
+                        return oldBulkWrite(continueWrites, context).then(writeResult => {
+                            errors.forEach(validationError => {
+                                writeResult.error[validationError.documentId] = validationError;
+                            });
+                            return writeResult;
+                        });
                     };
 
                     return instance;
@@ -133,12 +161,12 @@ export function wrapRxStorageInstance<RxDocType>(
         return await modifyFromStorage(docData);
     }
     async function errorFromStorage(
-        error: RxStorageBulkWriteError<any>
-    ): Promise<RxStorageBulkWriteError<RxDocType>> {
+        error: RxStorageWriteError<any>
+    ): Promise<RxStorageWriteError<RxDocType>> {
         const ret = flatClone(error);
         ret.writeRow = flatClone(ret.writeRow);
-        if (ret.documentInDb) {
-            ret.documentInDb = await fromStorage(ret.documentInDb);
+        if ((ret as RxStorageWriteErrorConflict<any>).documentInDb) {
+            (ret as RxStorageWriteErrorConflict<any>).documentInDb = await fromStorage((ret as RxStorageWriteErrorConflict<any>).documentInDb);
         }
         if (ret.writeRow.previous) {
             ret.writeRow.previous = await fromStorage(ret.writeRow.previous);

@@ -332,6 +332,12 @@ export class RxDatabaseBase<
         await ensureNoStartupErrors(this);
 
         Object.entries(putDocsResult.error).forEach(([_id, error]) => {
+            if (error.status !== 409) {
+                throw newRxError('DB12', {
+                    database: this.name,
+                    writeError: error
+                });
+            }
             const docInDb: RxDocumentData<InternalStoreCollectionDocType> = ensureNotFalsy(error.documentInDb);
             const collectionName = docInDb.data.name;
             const schema = (schemas as any)[collectionName];
@@ -484,9 +490,9 @@ export class RxDatabaseBase<
     }
 
     get asRxDatabase(): RxDatabase<
-    {},
-    Internals,
-    InstanceCreationOptions
+        {},
+        Internals,
+        InstanceCreationOptions
     > {
         return this as any;
     }
@@ -556,7 +562,7 @@ export function createRxDatabase<
     }: RxDatabaseCreator<Internals, InstanceCreationOptions>
 ): Promise<
     RxDatabase<Collections, Internals, InstanceCreationOptions>
-    > {
+> {
     runPluginHooks('preCreateRxDatabase', {
         storage,
         instanceCreationOptions,
@@ -577,8 +583,8 @@ export function createRxDatabase<
     const databaseInstanceToken = randomCouchString(10);
 
     return createRxDatabaseStorageInstance<
-    Internals,
-    InstanceCreationOptions
+        Internals,
+        InstanceCreationOptions
     >(
         databaseInstanceToken,
         storage,
