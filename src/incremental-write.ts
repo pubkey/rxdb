@@ -64,7 +64,6 @@ export class IncrementalWriteQueue<RxDocType> {
     }
 
     async triggerRun(): Promise<void> {
-        console.log('triggerRun() -1');
         if (
             this.isRunning === true ||
             this.queueByDocId.size === 0
@@ -72,7 +71,6 @@ export class IncrementalWriteQueue<RxDocType> {
             // already running
             return;
         }
-        console.log('triggerRun() 0');
         this.isRunning = true;
         const writeRows: BulkWriteRow<RxDocType>[] = [];
 
@@ -82,8 +80,6 @@ export class IncrementalWriteQueue<RxDocType> {
          */
         const itemsById = this.queueByDocId;
         this.queueByDocId = new Map();
-
-        console.log('triggerRun() 1');
         await Promise.all(
             Array.from(itemsById.entries())
                 .map(async ([_docId, items]) => {
@@ -102,14 +98,12 @@ export class IncrementalWriteQueue<RxDocType> {
                                 clone(newData)
                             ) as any;
                         } catch (err: any) {
-                            console.log('triggerRun() 1.1 ERROR');
                             item.reject(err);
                             item.reject = () => { };
                             item.resolve = () => { };
                         }
                     }
 
-                    console.log('triggerRun() 1.1');
                     try {
                         await beforeDocumentUpdateWrite(this.collection, newData, oldData);
                     } catch (err: any) {
@@ -118,24 +112,16 @@ export class IncrementalWriteQueue<RxDocType> {
                          * we reject all of the writes because it is
                          * not possible to determine which one is to blame.
                          */
-                        console.log('triggerRun() 1 ERROR');
-                        console.dir(err);
                         items.forEach(item => item.reject(err));
                         return;
                     }
-                    console.log('triggerRun() 1.2');
                     writeRows.push({
                         previous: oldData,
                         document: newData
                     });
                 })
         );
-        console.log('writeRows:');
-        console.dir(writeRows);
         const writeResult = await this.collection.storageInstance.bulkWrite(writeRows, 'incremental-write');
-        console.log('writeResult:');
-        console.dir(writeResult);
-        console.log('triggerRun() 2');
 
         // process success
         await Promise.all(
@@ -147,7 +133,6 @@ export class IncrementalWriteQueue<RxDocType> {
                     items.forEach(item => item.resolve(result));
                 })
         );
-        console.log('triggerRun() 3');
 
         // process errors
         Array
@@ -174,8 +159,6 @@ export class IncrementalWriteQueue<RxDocType> {
                     items.forEach(item => item.reject(rxError));
                 }
             });
-        console.log('triggerRun() 4');
-
         this.isRunning = false;
 
         /**
