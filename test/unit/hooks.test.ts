@@ -189,8 +189,8 @@ config.parallel('hooks.test.js', () => {
                     await c.insert(human);
                     const doc = await c.findOne(human.passportId).exec(true);
                     let count = 0;
-                    c.preSave(function (data, instance) {
-                        assert.ok(isRxDocument(instance));
+                    c.preSave(function (data) {
+                        assert.ok(data);
                         count++;
                     }, false);
                     await doc.atomicPatch({ firstName: 'foobar' });
@@ -203,8 +203,8 @@ config.parallel('hooks.test.js', () => {
                     await c.insert(human);
                     const doc = await c.findOne(human.passportId).exec(true);
                     let count = 0;
-                    c.preSave(function (data, instance) {
-                        assert.ok(isRxDocument(instance));
+                    c.preSave(function (data) {
+                        assert.ok(data);
                         count++;
                     }, true);
                     await doc.atomicPatch({ firstName: 'foobar' });
@@ -273,8 +273,8 @@ config.parallel('hooks.test.js', () => {
                     await c.insert(human);
                     const doc = await c.findOne(human.passportId).exec(true);
                     let count = 0;
-                    c.postSave(function (data, instance) {
-                        assert.ok(isRxDocument(instance));
+                    c.postSave(function (data) {
+                        assert.ok(data);
                         count++;
                     }, false);
                     await doc.atomicPatch({ firstName: 'foobar' });
@@ -287,8 +287,8 @@ config.parallel('hooks.test.js', () => {
                     await c.insert(human);
                     const doc = await c.findOne(human.passportId).exec(true);
                     let count = 0;
-                    c.postSave(function (data, instance) {
-                        assert.ok(isRxDocument(instance));
+                    c.postSave(function (data) {
+                        assert.ok(data);
                         count++;
                     }, true);
                     await doc.atomicPatch({ firstName: 'foobar' });

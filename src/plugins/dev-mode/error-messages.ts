@@ -89,6 +89,7 @@ export const ERROR_MESSAGES = {
     COL17: 'RxCollection.ORM: statics-name not allowed',
     COL18: 'collection-method not allowed because fieldname is in the schema',
     COL19: 'Document update conflict. When changing a document you must work on the previous revision',
+    COL20: 'Storage write error',
 
     // rx-document.js
     DOC1: 'RxDocument.get$ cannot get observable of in-array fields because order cannot be guessed',

@@ -49,7 +49,7 @@ export async function updateCRDT<RxDocType>(
     const crdtOptions = ensureNotFalsy(jsonSchema.crdt);
     const storageToken = await this.collection.database.storageToken;
 
-    return this.atomicUpdate((docData, rxDoc) => {
+    return this.atomicUpdate((docData) => {
         const crdtDocField: CRDTDocumentField<RxDocType> = clone(objectPath.get(docData as any, crdtOptions.field));
         const operation: CRDTOperation<RxDocType> = {
             body: toArray(entry),
@@ -65,8 +65,7 @@ export async function updateCRDT<RxDocType>(
         crdtDocField.operations.push(lastAr);
         crdtDocField.hash = hashCRDTOperations(this.collection.database.hashFunction, crdtDocField);
 
-        let newDocData: WithDeleted<RxDocType> = clone(rxDoc.toJSON()) as any;
-        newDocData._deleted = rxDoc._data._deleted;
+        let newDocData: WithDeleted<RxDocType> = clone(docData) as any;
         newDocData = runOperationOnDocument(
             this.collection.database.storage.statics,
             this.collection.schema.jsonSchema,
@@ -77,9 +76,9 @@ export async function updateCRDT<RxDocType>(
 
         // add other internal fields
         const fullDocData: RxDocumentData<RxDocType> = Object.assign({
-            _attachments: rxDoc._data._attachments,
-            _meta: rxDoc._data._meta,
-            _rev: rxDoc._data._rev
+            _attachments: docData._attachments,
+            _meta: docData._meta,
+            _rev: docData._rev
         }, newDocData);
 
         return fullDocData;

@@ -1307,7 +1307,7 @@ describe('rx-collection.test.ts', () => {
                     new Array(amount).fill(0).map(() => schemaObjects.human())
                 );
                 let allDocs = await c.find().exec();
-                assert.strictEqual(allDocs.length, 5);
+                assert.strictEqual(allDocs.length, amount);
 
                 // update
                 const docsData = allDocs.map(d => {
@@ -1317,7 +1317,7 @@ describe('rx-collection.test.ts', () => {
                 });
                 await c.bulkUpsert(docsData);
                 allDocs = await c.find().exec();
-                assert.strictEqual(allDocs.length, 5);
+                assert.strictEqual(allDocs.length, amount);
                 allDocs.forEach(d => assert.strictEqual(d.age, 100));
                 c.database.destroy();
             });
