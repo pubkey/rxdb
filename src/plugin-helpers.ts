@@ -120,7 +120,7 @@ export function wrappedValidateStorageFactory(
                                 continueWrites.push(row);
                             }
                         });
-                        const writePromise: Promise<RxStorageBulkWriteResponse<RxDocType>> = documentWrites.length > 0 ? oldBulkWrite(continueWrites, context) : Promise.resolve({ error: {}, success: {} });
+                        const writePromise: Promise<RxStorageBulkWriteResponse<RxDocType>> = continueWrites.length > 0 ? oldBulkWrite(continueWrites, context) : Promise.resolve({ error: {}, success: {} });
                         return writePromise.then(writeResult => {
                             errors.forEach(validationError => {
                                 writeResult.error[validationError.documentId] = validationError;
