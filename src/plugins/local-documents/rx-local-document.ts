@@ -32,10 +32,11 @@ import {
     flatClone,
     getDefaultRevision,
     getDefaultRxDocumentMeta,
+    getFromMapOrThrow,
     getFromObjectOrThrow,
     RXJS_SHARE_REPLAY_DEFAULTS
 } from '../../util';
-import { getLocalDocStateByParent } from './local-documents-helper';
+import { getLocalDocStateByParent, LOCAL_DOC_STATE_BY_PARENT_RESOLVED } from './local-documents-helper';
 
 const RxDocumentParent = createRxDocumentConstructor() as any;
 
@@ -81,6 +82,11 @@ const RxLocalDocumentPrototype: any = {
             distinctUntilChanged((prev, curr) => prev._rev === curr._rev),
             shareReplay(RXJS_SHARE_REPLAY_DEFAULTS)
         );
+    },
+    getLatest(this: RxLocalDocument<any>): RxLocalDocument<any> {
+        const state = getFromMapOrThrow(LOCAL_DOC_STATE_BY_PARENT_RESOLVED, this.parent);
+        const latestDocData = state.docCache.getLatestDocumentData(this.primary);
+        return state.docCache.getCachedRxDocument(latestDocData) as any;
     },
     get(this: RxDocument, objPath: string) {
         objPath = 'data.' + objPath;

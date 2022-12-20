@@ -21,7 +21,8 @@ import type {
 import { randomCouchString } from '../../util';
 import { createRxLocalDocument } from './rx-local-document';
 
-const LOCAL_DOC_STATE_BY_PARENT: WeakMap<LocalDocumentParent, Promise<LocalDocumentState>> = new WeakMap();
+export const LOCAL_DOC_STATE_BY_PARENT: WeakMap<LocalDocumentParent, Promise<LocalDocumentState>> = new WeakMap();
+export const LOCAL_DOC_STATE_BY_PARENT_RESOLVED: WeakMap<LocalDocumentParent, LocalDocumentState> = new WeakMap();
 
 
 export function createLocalDocStateByParent(parent: LocalDocumentParent): void {
@@ -79,13 +80,15 @@ export function createLocalDocStateByParent(parent: LocalDocumentParent): void {
         });
         parent._subs.push(subLocalDocs);
 
-        return {
+        const state = {
             database,
             parent,
             storageInstance,
             docCache,
             incrementalWriteQueue
         };
+        LOCAL_DOC_STATE_BY_PARENT_RESOLVED.set(parent, state);
+        return state;
     })();
     LOCAL_DOC_STATE_BY_PARENT.set(parent, statePromise);
 }

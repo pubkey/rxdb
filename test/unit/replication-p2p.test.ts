@@ -169,13 +169,13 @@ describe('replication-p2p.test.ts', () => {
 
             // update
             const doc = await c1.findOne().exec(true);
-            await doc.atomicPatch({ age: 100 });
+            await doc.getLatest().atomicPatch({ age: 100 });
             await awaitCollectionsInSync([c1, c2]);
-            assert.strictEqual(doc.age, 100);
+            assert.strictEqual(doc.getLatest().age, 100);
             await wait(100);
 
             // delete
-            await doc.remove();
+            await doc.getLatest().remove();
             await awaitCollectionsInSync([c1, c2]);
             await wait(100);
 

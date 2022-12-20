@@ -77,8 +77,6 @@ config.parallel('local-documents.test.js', () => {
                 });
                 const doc = await c.getLocal('foobar');
                 assert.ok(doc);
-                console.log('---------');
-                console.dir(doc);
                 assert.strictEqual(doc.get('foo'), 'bar');
                 c.database.destroy();
             });
@@ -337,7 +335,7 @@ config.parallel('local-documents.test.js', () => {
 
             await doc1.atomicPatch({ foo: 'bar2' });
             await waitUntil(() => {
-                return ensureNotFalsy(doc2).get('foo') === 'bar2';
+                return ensureNotFalsy(doc2).getLatest().get('foo') === 'bar2';
             }, 1000, 50);
 
             db.destroy();
@@ -448,7 +446,7 @@ config.parallel('local-documents.test.js', () => {
             const doc2 = await c2.humans.getLocal<TestDocType>('foobar');
             await doc1.atomicPatch({ foo: 'bar2' });
 
-            await waitUntil(() => doc2 && doc2.toJSON().data.foo === 'bar2');
+            await waitUntil(() => doc2 && doc2.getLatest().toJSON().data.foo === 'bar2');
             await waitUntil(() => {
                 return emitted.length >= 2;
             });
@@ -550,14 +548,14 @@ config.parallel('local-documents.test.js', () => {
             });
             await doc.atomicPatch({ age: 50 });
 
-            await AsyncTestUtil.waitUntil(() => (doc2 as any).age === 50);
+            await AsyncTestUtil.waitUntil(() => (doc2 as any).getLatest().age === 50);
             await AsyncTestUtil.wait(20);
             assert.strictEqual(ensureNotFalsy(localDoc2).get('age'), 10);
             await localDoc.atomicPatch({ age: 66, foo: 'bar' });
 
-            await AsyncTestUtil.waitUntil(() => ensureNotFalsy(localDoc2).get('age') === 66);
+            await AsyncTestUtil.waitUntil(() => ensureNotFalsy(localDoc2).getLatest().get('age') === 66);
             await AsyncTestUtil.wait(20);
-            assert.strictEqual(ensureNotFalsy(doc2).get('age'), 50);
+            assert.strictEqual(ensureNotFalsy(doc2).getLatest().get('age'), 50);
 
             db.destroy();
             db2.destroy();

@@ -929,7 +929,6 @@ describe('rx-collection.test.ts', () => {
                     const c = await humansCollection.create(1);
                     const query = c.find();
                     const removed = await query.remove();
-                    console.dir(removed.map(d => d.toJSON()));
                     assert.strictEqual(removed.length, 1);
                     removed.forEach(doc => {
                         assert.ok(isRxDocument(doc));

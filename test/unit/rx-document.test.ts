@@ -319,23 +319,17 @@ describe('rx-document.test.js', () => {
             it('run one update', async () => {
                 const c = await humansCollection.createNested(1);
                 let doc = await c.findOne().exec(true);
-                console.log('................................');
                 doc = await doc.atomicUpdate((innerDoc: any) => {
                     innerDoc.firstName = 'foobar';
                     return innerDoc;
                 });
                 assert.strictEqual('foobar', doc.firstName);
 
-                console.log('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX');
                 /**
                  * Running a totally new query must return the
                  * exact same document instance as atomicUpdate() did.
                  */
                 const doc2 = await c.findOne().exec(true);
-
-                console.log('docs:');
-                console.dir(doc.toJSON(true));
-                console.dir(doc2.toJSON(true));
                 assert.ok(doc === doc2);
 
                 c.database.destroy();
@@ -513,24 +507,19 @@ describe('rx-document.test.js', () => {
                         schema: schemas.primaryHuman
                     }
                 });
-                console.log('---- 1');
                 const c2 = cols2.humans;
                 const doc2 = await c2.findOne().exec(true);
 
-                console.log('---- 2');
                 await Promise.all([
                     doc.atomicUpdate((d: any) => {
-                        console.log(' RR 1');
                         d.firstName = 'foobar1';
                         return d;
                     }),
                     doc2.atomicUpdate((d: any) => {
-                        console.log(' RR 2');
                         d.firstName = 'foobar2';
                         return d;
                     })
                 ]);
-                console.log('---- 3');
 
                 db.destroy();
                 db2.destroy();

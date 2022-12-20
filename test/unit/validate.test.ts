@@ -64,8 +64,6 @@ validationImplementations.forEach(
             errorMustContain?: string
         ) {
             const result = await instance.bulkWrite(writeRows, testContext);
-            console.log('result:');
-            console.dir(result);
             assert.deepStrictEqual(result.success, {});
             const errors = Object.values(result.error);
             errors.forEach(err => {
