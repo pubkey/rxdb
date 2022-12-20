@@ -51,7 +51,7 @@ declare type FinalizationRegistryValue = {
 /**
  * The DocumentCache stores RxDocument objects
  * by their primary key and revision.
- * This is usefull on client side applications where
+ * This is useful on client side applications where
  * it is not known how much memory can be used, so
  * we de-duplicate RxDocument states to save memory.
  * To not fill up the memory with old document states, the DocumentCache

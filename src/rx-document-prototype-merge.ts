@@ -91,7 +91,7 @@ export function getRxDocumentConstructor<RxDocType, ORM>(
  * Create a RxDocument-instance from the jsonData
  * and the prototype merge.
  * You should never call this method directly,
- * instead you should get the docuemnt from collection._docCache.getCachedRxDocument().
+ * instead you should get the document from collection._docCache.getCachedRxDocument().
  */
 export function createNewRxDocument<RxDocType, ORM>(
     rxCollection: RxCollection<RxDocType, ORM>,
