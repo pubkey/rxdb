@@ -12,7 +12,6 @@ import {
     pluginMissing,
     ensureNotFalsy,
     getFromMapOrThrow,
-    clone,
     PROMISE_RESOLVE_FALSE,
     PROMISE_RESOLVE_VOID,
     RXJS_SHARE_REPLAY_DEFAULTS,

@@ -533,8 +533,8 @@ validationImplementations.forEach(
                         }
                     });
                     const collection = collections.human;
-                    const doc = await collection.insert(schemaObjects.human());
-                    await doc.atomicUpdate((innerDoc: any) => {
+                    let doc = await collection.insert(schemaObjects.human());
+                    doc = await doc.atomicUpdate((innerDoc: any) => {
                         innerDoc.age = 50;
                         return innerDoc;
                     });

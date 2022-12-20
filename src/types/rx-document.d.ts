@@ -9,17 +9,23 @@ import {
     RxAttachment,
     RxAttachmentCreator
 } from './rx-attachment';
-import { RxDocumentData } from './rx-storage';
+import { RxDocumentData, WithDeleted } from './rx-storage';
 import { RxChangeEvent } from './rx-change-event';
-import { DeepReadonly, PlainJsonValue } from './util';
+import { DeepReadonly, MaybePromise, PlainJsonValue } from './util';
 import { UpdateQuery } from './plugins/update';
 import { CRDTEntry } from './plugins/crdt';
 
 export type RxDocument<RxDocumentType = {}, OrmMethods = {}> = RxDocumentBase<RxDocumentType, OrmMethods> & RxDocumentType & OrmMethods;
 
-declare type AtomicUpdateFunction<RxDocumentType> = (
-    doc: RxDocumentData<RxDocumentType>
-) => RxDocumentData<RxDocumentType> | Promise<RxDocumentData<RxDocumentType>> | RxDocumentType | Promise<RxDocumentType>;
+
+/**
+ * The public facing atomic update function.
+ * It only gets the document parts as input, that
+ * are mutateable by the user.
+ */
+export type AtomicUpdateFunction<RxDocumentType> = (
+    doc: WithDeleted<RxDocumentType>
+) => MaybePromise<WithDeleted<RxDocumentType>> | MaybePromise<RxDocumentType>;
 
 /**
  * Meta data that is attached to each document by RxDB.

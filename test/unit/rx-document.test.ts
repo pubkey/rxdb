@@ -933,9 +933,9 @@ describe('rx-document.test.js', () => {
         });
         it('#830 should return a rejected promise when already deleted', async () => {
             const c = await humansCollection.createPrimary(1);
-            const doc = await c.findOne().exec(true);
+            let doc = await c.findOne().exec(true);
             assert.ok(doc);
-            await doc.remove();
+            doc = await doc.remove();
             assert.ok(doc.deleted);
             const ret = doc.remove();
             if (!ret) {
@@ -951,13 +951,12 @@ describe('rx-document.test.js', () => {
         });
         it('#1325 populate should return null when value is falsy', async () => {
             const collection = await humansCollection.createRelated();
-            const doc = await collection.findOne({
+            let doc = await collection.findOne({
                 selector: {
                     bestFriend: { $exists: true }
                 }
             }).exec(true);
-
-            await doc.update({
+            doc = await doc.update({
                 $set: {
                     bestFriend: ''
                 }

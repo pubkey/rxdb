@@ -6,23 +6,34 @@ import {
 import type {
     AtomicUpdateFunction,
     BulkWriteRow,
+    MaybePromise,
     RxCollection,
     RxDocumentData,
+    RxDocumentWriteData,
     RxError,
     RxStorageBulkWriteResponse,
-    StringKeys
+    StringKeys,
+    WithDeleted
 } from './types';
 import {
     clone,
     ensureNotFalsy,
     getFromMapOrFill,
     getFromMapOrThrow,
-    parseRevision
+    parseRevision,
+    stripMetaDataFromDocument
 } from './util';
+
+
+
+export type IncrementalWriteModifier<RxDocType> = (
+    doc: RxDocumentData<RxDocType>
+) => MaybePromise<RxDocumentData<RxDocType>> | MaybePromise<RxDocumentWriteData<RxDocType>>;
+
 
 type IncrementalWriteQueueItem<RxDocType> = {
     lastKnownDocumentState: RxDocumentData<RxDocType>;
-    modifier: AtomicUpdateFunction<RxDocType>;
+    modifier: IncrementalWriteModifier<RxDocType>;
     resolve: (d: RxDocumentData<RxDocType>) => void;
     reject: (error: RxError) => void;
 };
@@ -47,7 +58,7 @@ export class IncrementalWriteQueue<RxDocType> {
 
     addWrite(
         lastKnownDocumentState: RxDocumentData<RxDocType>,
-        modifier: AtomicUpdateFunction<RxDocType>
+        modifier: IncrementalWriteModifier<RxDocType>
     ): Promise<RxDocumentData<RxDocType>> {
         const docId: string = lastKnownDocumentState[this.primaryPath] as any;
         const ar = getFromMapOrFill(this.queueByDocId, docId, () => []);
@@ -173,6 +184,29 @@ export class IncrementalWriteQueue<RxDocType> {
     }
 }
 
+
+export function incrementalModifierFromPublicToInternal<RxDocType>(
+    publicModifier: AtomicUpdateFunction<RxDocType>
+): IncrementalWriteModifier<RxDocType> {
+    const ret = async (docData: RxDocumentData<RxDocType>) => {
+        const withoutMeta: WithDeleted<RxDocType> = stripMetaDataFromDocument(docData) as any;
+        withoutMeta._deleted = docData._deleted;
+        const modified = await publicModifier(withoutMeta);
+        const reattachedMeta: RxDocumentData<RxDocType> = Object.assign({}, modified, {
+            _meta: docData._meta,
+            _attachments: docData._attachments,
+            _rev: docData._rev,
+            _deleted: typeof (modified as WithDeleted<RxDocType>)._deleted !== 'undefined' ?
+                (modified as WithDeleted<RxDocType>)._deleted :
+                docData._deleted
+        });
+        if (typeof reattachedMeta._deleted === 'undefined') {
+            reattachedMeta._deleted = false;
+        }
+        return reattachedMeta;
+    };
+    return ret;
+}
 
 
 export function findNewestOfDocumentStates<RxDocType>(

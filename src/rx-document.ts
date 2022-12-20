@@ -38,6 +38,7 @@ import { getDocumentDataOfRxChangeEvent } from './rx-change-event';
 import { overwritable } from './overwritable';
 import { getSchemaByObjectPath } from './rx-schema-helper';
 import { throwIfIsStorageWriteError } from './rx-storage-helper';
+import { incrementalModifierFromPublicToInternal } from './incremental-write';
 
 export const basePrototype = {
     get primaryPath() {
@@ -257,7 +258,7 @@ export const basePrototype = {
     ): Promise<RxDocument> {
         return this.collection.incrementalWriteQueue.addWrite(
             this._data,
-            mutationFunction
+            incrementalModifierFromPublicToInternal(mutationFunction)
         ).then(result => this.collection._docCache.getCachedRxDocument(result));
     },
 
