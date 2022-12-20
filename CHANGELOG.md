@@ -10,6 +10,7 @@
 - FIX CouchDB replication: Use correct default fetch method.
 - CHANGE use plain json errors inside of RxError parameters to make debugging easier.
 - CHANGE crunch multiple incremental (aka 'atomic') operations into a single database write. Also batch writes to multiple documents into a single write.
+- CHANGE Make RxDocuments immutable
 
 <!-- ADD new changes here! -->
 
