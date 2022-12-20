@@ -448,14 +448,6 @@ export function createWithConstructor<RxDocType>(
     collection: RxCollection<RxDocType>,
     jsonData: RxDocumentData<RxDocType>
 ): RxDocument<RxDocType> | null {
-    const primary: string = jsonData[collection.schema.primaryPath] as any;
-    if (
-        primary &&
-        primary.startsWith('_design')
-    ) {
-        return null;
-    }
-
     const doc = new constructor(collection, jsonData);
     runPluginHooks('createRxDocument', doc);
     return doc;

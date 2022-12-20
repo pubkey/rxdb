@@ -96,10 +96,10 @@ export function getRxDocumentConstructor(
 /**
  * Create a RxDocument-instance from the jsonData
  * and the prototype merge.
- * If the document already exists in the _docCache,
- * return that instead to ensure we have no duplicates.
+ * You should never call this method directly,
+ * instead you should get the docuemnt from collection._docCache.getCachedRxDocument().
  */
-export function createRxDocument<RxDocType, ORM>(
+export function createNewRxDocument<RxDocType, ORM>(
     rxCollection: RxCollection<RxDocType, ORM>,
     docData: RxDocumentData<RxDocType>
 ): RxDocument<RxDocType, ORM> {
@@ -113,17 +113,6 @@ export function createRxDocument<RxDocType, ORM>(
     return doc as any;
 }
 
-/**
- * create RxDocument from the docs-array
- */
-export function createRxDocuments<DT, OM>(
-    rxCollection: RxCollection,
-    docsJSON: any[]
-): RxDocument<DT, OM>[] {
-    return docsJSON.map(
-        json => createRxDocument<DT, OM>(rxCollection as any, json)
-    );
-}
 
 /**
  * returns the prototype-object

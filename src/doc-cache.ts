@@ -100,19 +100,21 @@ export class DocumentCache<RxDocType, OrmMethods> {
      */
     public getCachedRxDocument(docData: RxDocumentData<RxDocType>) {
         const docId: string = (docData as any)[this.primaryPath];
+        console.log('-------------- getCachedRxDocument() ' + docId);
         const revisionHeight = parseRevision(docData._rev).height;
-        const cacheItem = getFromMapOrFill(
+        const cacheItem = getFromMapOrFill<string, CacheItem<RxDocType, OrmMethods>>(
             this.cacheItemByDocId,
             docId,
-            () => ({
-                documentByRevisionHeight: new Map(),
-                latestDoc: docData
-            })
+            () => getNewCacheItem<RxDocType, OrmMethods>(docData)
         );
 
-        const cachedRxDocumentWeakRef: WeakRef<RxDocument<RxDocType, OrmMethods>> = cacheItem.documentByRevisionHeight.get(revisionHeight);
+        const cachedRxDocumentWeakRef: WeakRef<RxDocument<RxDocType, OrmMethods>> | undefined = cacheItem.documentByRevisionHeight.get(revisionHeight);
         let cachedRxDocument = cachedRxDocumentWeakRef ? cachedRxDocumentWeakRef.deref() : undefined;
+        console.dir(cachedRxDocument);
         if (!cachedRxDocument) {
+            console.log('getCachedRxDocument() ' + docId + ' not in cache');
+            console.dir(cacheItem.documentByRevisionHeight);
+
             docData = overwritable.deepFreezeWhenDevMode(docData) as any;
             cachedRxDocument = this.documentCreator(docData) as RxDocument<RxDocType, OrmMethods>;
             cacheItem.documentByRevisionHeight.set(revisionHeight, new WeakRef(cachedRxDocument));
@@ -120,6 +122,8 @@ export class DocumentCache<RxDocType, OrmMethods> {
                 docId,
                 revisionHeight
             });
+        } else {
+            console.log('getCachedRxDocument() ' + docId + ' is in cache');
         }
         return cachedRxDocument;
     }
@@ -138,4 +142,13 @@ export class DocumentCache<RxDocType, OrmMethods> {
             return cacheItem.latestDoc;
         }
     }
+}
+
+
+function getNewCacheItem<RxDocType, OrmMethods>(docData: RxDocumentData<RxDocType>): CacheItem<RxDocType, OrmMethods> {
+    console.log('getNewCacheItem()');
+    return {
+        documentByRevisionHeight: new Map(),
+        latestDoc: docData
+    };
 }

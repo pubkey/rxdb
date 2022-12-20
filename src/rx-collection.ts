@@ -17,8 +17,7 @@ import {
     PROMISE_RESOLVE_VOID,
     RXJS_SHARE_REPLAY_DEFAULTS,
     getDefaultRxDocumentMeta,
-    getDefaultRevision,
-    nextTick
+    getDefaultRevision
 } from './util';
 import {
     fillObjectDataBeforeInsert,
@@ -111,7 +110,7 @@ import {
 } from './rx-schema';
 
 import {
-    createRxDocument
+    createNewRxDocument
 } from './rx-document-prototype-merge';
 import {
     getWrappedStorageInstance,
@@ -221,7 +220,7 @@ export class RxCollectionBase<
         this._docCache = new DocumentCache(
             this.schema.primaryPath,
             this.$.pipe(filter(cE => !cE.isLocal)),
-            docData => createRxDocument(this.asRxCollection, docData)
+            docData => createNewRxDocument(this.asRxCollection, docData)
         );
 
         /**
@@ -351,10 +350,7 @@ export class RxCollectionBase<
         // create documents
         const successDocData: RxDocumentData<RxDocumentType>[] = Object.values(results.success);
         const rxDocuments: any[] = successDocData
-            .map((writtenDocData) => {
-                const doc = createRxDocument(this as any, writtenDocData);
-                return doc;
-            });
+            .map((writtenDocData) => this._docCache.getCachedRxDocument(writtenDocData));
 
         if (this.hasHooks('post', 'insert')) {
             await Promise.all(
@@ -394,8 +390,9 @@ export class RxCollectionBase<
         const rxDocumentMap = await this.findByIds(ids);
         const docsData: RxDocumentData<RxDocumentType>[] = [];
         const docsMap: Map<string, RxDocumentData<RxDocumentType>> = new Map();
+        console.dir(Array.from(rxDocumentMap.values()));
         Array.from(rxDocumentMap.values()).forEach(rxDocument => {
-            const data: RxDocumentData<RxDocumentType> = clone(rxDocument.toJSON(true)) as any;
+            const data: RxDocumentData<RxDocumentType> = rxDocument.toMutableJSON(true) as any;
             docsData.push(data);
             docsMap.set(rxDocument.primary, data);
         });
@@ -433,9 +430,7 @@ export class RxCollectionBase<
             })
         );
 
-        const rxDocuments: any[] = successIds.map(id => {
-            return rxDocumentMap.get(id);
-        });
+        const rxDocuments = successIds.map(id => getFromMapOrThrow(rxDocumentMap, id));
 
         return {
             success: rxDocuments,
@@ -476,7 +471,7 @@ export class RxCollectionBase<
                 const id = error.documentId;
                 const writeData = getFromMapOrThrow(useJsonByDocId, id);
                 const docDataInDb = ensureNotFalsy(error.documentInDb);
-                const doc = createRxDocument(this.asRxCollection, docDataInDb);
+                const doc = this._docCache.getCachedRxDocument(docDataInDb);
                 console.log('_________ 0');
                 const newDoc = await doc.atomicUpdate(() => writeData);
                 console.log('_________ 1');
@@ -601,14 +596,14 @@ export class RxCollectionBase<
     async findByIds(
         ids: string[]
     ): Promise<Map<string, RxDocument<RxDocumentType, OrmMethods>>> {
-
-        const ret = new Map();
+        const ret = new Map<string, RxDocument<RxDocumentType, OrmMethods>>();
         const mustBeQueried: string[] = [];
 
         // first try to fill from docCache
         ids.forEach(id => {
-            const doc = this._docCache.getLatestDocumentDataIfExists(id);
-            if (doc) {
+            const docData = this._docCache.getLatestDocumentDataIfExists(id);
+            if (docData) {
+                const doc = this._docCache.getCachedRxDocument(docData);
                 ret.set(id, doc);
             } else {
                 mustBeQueried.push(id);
@@ -619,7 +614,7 @@ export class RxCollectionBase<
         if (mustBeQueried.length > 0) {
             const docs = await this.storageInstance.findDocumentsById(mustBeQueried, false);
             Object.values(docs).forEach(docData => {
-                const doc = createRxDocument<RxDocumentType, OrmMethods>(this as any, docData);
+                const doc = this._docCache.getCachedRxDocument(docData);
                 ret.set(doc.primary, doc);
             });
         }
@@ -707,10 +702,7 @@ export class RxCollectionBase<
                                 const op = rxChangeEvent.operation;
                                 if (op === 'INSERT' || op === 'UPDATE') {
                                     resultHasChanged = true;
-                                    const rxDocument = createRxDocument(
-                                        this.asRxCollection,
-                                        rxChangeEvent.documentData
-                                    );
+                                    const rxDocument = this._docCache.getCachedRxDocument(rxChangeEvent.documentData);
                                     ensureNotFalsy(currentValue).set(docId, rxDocument);
                                 } else {
                                     if (ensureNotFalsy(currentValue).has(docId)) {

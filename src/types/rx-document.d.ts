@@ -55,7 +55,7 @@ export declare interface RxDocumentBase<RxDocType, OrmMethods = {}> {
     revision: string;
     _atomicQueue: Promise<any>;
     $emit(cE: RxChangeEvent<RxDocType>): void;
-    _saveData(newData: any, oldData: any): Promise<void>;
+    _saveData(newData: any, oldData: any): Promise<RxDocument<RxDocType, OrmMethods>>;
     // /internal things
 
     get$(path: string): Observable<any>;
