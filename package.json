@@ -188,7 +188,7 @@
     "unload": "2.3.1",
     "util": "0.12.5",
     "ws": "8.8.1",
-    "z-schema": "5.0.4"
+    "z-schema": "5.0.5"
   },
   "devDependencies": {
     "@babel/cli": "7.19.3",
