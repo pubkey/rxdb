@@ -72,11 +72,11 @@ export class RxAttachment {
 
     remove(): Promise<void> {
         this.doc._atomicQueue = this.doc._atomicQueue
-            .then(async () => {
+            .then(() => {
                 const docWriteData: RxDocumentWriteData<{}> = flatCloneDocWithMeta(this.doc._data);
                 docWriteData._attachments = flatClone(docWriteData._attachments);
                 delete docWriteData._attachments[this.id];
-                const writeResult: RxDocumentData<any> = await writeSingle(
+                return writeSingle(
                     this.doc.collection.storageInstance,
                     {
                         previous: flatClone(this.doc._data), // TODO do we need a flatClone here?
@@ -84,12 +84,6 @@ export class RxAttachment {
                     },
                     'attachment-remove'
                 );
-
-                const newData = flatClone(this.doc._data);
-                newData._rev = writeResult._rev;
-                newData._attachments = writeResult._attachments;
-                this.doc._dataSync$.next(newData);
-
             });
         return this.doc._atomicQueue;
     }
@@ -170,12 +164,6 @@ export async function putAttachment(
                 attachmentDataOfId,
                 this
             );
-
-            const newData = flatClone(this._data);
-            newData._rev = writeResult._rev;
-            newData._attachments = writeResult._attachments;
-            this._dataSync$.next(newData);
-
             return attachment;
         });
     return this._atomicQueue;
@@ -189,7 +177,7 @@ export function getAttachment(
     id: string
 ): RxAttachment | null {
     ensureSchemaSupportsAttachments(this);
-    const docData: any = this._dataSync$.getValue();
+    const docData: any = this._data;
     if (!docData._attachments || !docData._attachments[id])
         return null;
 
@@ -209,7 +197,7 @@ export function allAttachments(
     this: RxDocument
 ): RxAttachment[] {
     ensureSchemaSupportsAttachments(this);
-    const docData: any = this._dataSync$.getValue();
+    const docData: any = this._data;
 
     // if there are no attachments, the field is missing
     if (!docData._attachments) {

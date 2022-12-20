@@ -1,6 +1,5 @@
 import {
-    Observable,
-    BehaviorSubject
+    Observable
 } from 'rxjs';
 
 import {
@@ -44,14 +43,13 @@ export declare interface RxDocumentBase<RxDocType, OrmMethods = {}> {
     collection: RxCollection<RxDocType, OrmMethods>;
     readonly deleted: boolean;
 
-    readonly $: Observable<DeepReadonly<any>>;
+    readonly $: Observable<DeepReadonly<RxDocumentData<RxDocType>>>;
     readonly deleted$: Observable<boolean>;
 
     readonly primary: string;
     readonly allAttachments$: Observable<RxAttachment<RxDocType, OrmMethods>[]>;
 
     // internal things
-    _dataSync$: BehaviorSubject<DeepReadonly<RxDocType>>;
     _data: RxDocumentData<RxDocType>;
     primaryPath: string;
     revision: string;
@@ -76,7 +74,6 @@ export declare interface RxDocumentBase<RxDocType, OrmMethods = {}> {
     update(updateObj: UpdateQuery<RxDocType>): Promise<any>;
     updateCRDT(updateObj: CRDTEntry<RxDocType> | CRDTEntry<RxDocType>[]): Promise<any>;
     remove(): Promise<boolean>;
-    _handleChangeEvent(cE: any): void;
 
     // only for temporary documents
     set(objPath: string, value: any): RxDocument<RxDocType, OrmMethods>;

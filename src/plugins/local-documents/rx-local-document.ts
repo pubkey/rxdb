@@ -1,13 +1,11 @@
 import objectPath from 'object-path';
-import { distinctUntilChanged, map } from 'rxjs/operators';
+import { distinctUntilChanged, filter, map } from 'rxjs/operators';
 import { overwritable } from '../../overwritable';
 import { basePrototype, createRxDocumentConstructor } from '../../rx-document';
 import { isBulkWriteConflictError, newRxError, newRxTypeError } from '../../rx-error';
 import { writeSingle } from '../../rx-storage-helper';
 import type {
     LocalDocumentAtomicUpdateFunction,
-    LocalDocumentState,
-    RxChangeEvent,
     RxCollection,
     RxDatabase,
     RxDocument,
@@ -31,8 +29,7 @@ class RxLocalDocumentClass<DocData = any> extends RxDocumentParent {
     constructor(
         public readonly id: string,
         jsonData: DocData,
-        public readonly parent: RxCollection | RxDatabase,
-        public readonly state: LocalDocumentState
+        public readonly parent: RxCollection | RxDatabase
     ) {
         super(null, jsonData);
     }
@@ -48,27 +45,6 @@ const RxLocalDocumentPrototype: any = {
     //
     // overwrites
     //
-
-    _handleChangeEvent(
-        this: any,
-        changeEvent: RxChangeEvent<RxLocalDocumentData>
-    ) {
-        if (changeEvent.documentId !== this.primary) {
-            return;
-        }
-        switch (changeEvent.operation) {
-            case 'UPDATE':
-                this._dataSync$.next(changeEvent.documentData);
-                break;
-            case 'DELETE':
-                // remove from docCache to assure new upserted RxDocuments will be a new instance
-                const docCache = this.state.docCache;
-                docCache.delete(this.primary);
-                this._dataSync$.next(changeEvent.documentData);
-                break;
-        }
-    },
-
     get allAttachments$() {
         // this is overwritten here because we cannot re-set getters on the prototype
         throw newRxError('LD1', {
@@ -82,10 +58,10 @@ const RxLocalDocumentPrototype: any = {
         return this.id;
     },
     get $() {
-        return (this as RxDocument)._dataSync$.asObservable();
-    },
-    $emit(this: any, changeEvent: RxChangeEvent<RxLocalDocumentData>) {
-        return this.parent.$emit(changeEvent);
+        const _this: RxLocalDocumentClass = this as any;
+        return _this.parent.$.pipe(
+            filter(changeEvent => changeEvent.isLocal)
+        );
     },
     get(this: RxDocument, objPath: string) {
         objPath = 'data.' + objPath;
@@ -106,16 +82,17 @@ const RxLocalDocumentPrototype: any = {
     get$(this: RxDocument, objPath: string) {
         objPath = 'data.' + objPath;
 
-        if (objPath.includes('.item.')) {
-            throw newRxError('LD3', {
-                objPath
-            });
+        if (overwritable.isDevMode()) {
+            if (objPath.includes('.item.')) {
+                throw newRxError('LD3', {
+                    objPath
+                });
+            }
+            if (objPath === this.primaryPath) {
+                throw newRxError('LD4');
+            }
         }
-        if (objPath === this.primaryPath) {
-            throw newRxError('LD4');
-        }
-
-        return this._dataSync$
+        return this.$
             .pipe(
                 map(data => objectPath.get(data, objPath)),
                 distinctUntilChanged()
@@ -172,7 +149,7 @@ const RxLocalDocumentPrototype: any = {
     },
     async _saveData(this: RxLocalDocument<any>, newData: RxDocumentData<RxLocalDocumentData>) {
         const state = await getLocalDocStateByParent(this.parent);
-        const oldData: RxDocumentData<RxLocalDocumentData> = this._dataSync$.getValue() as any;
+        const oldData: RxDocumentData<RxLocalDocumentData> = this._data;
         newData.id = (this as any).id;
         return state.storageInstance.bulkWrite([{
             previous: oldData,
@@ -247,14 +224,11 @@ const _init = () => {
 
 
 export function createRxLocalDocument<DocData>(
-    id: string,
     data: RxDocumentData<RxLocalDocumentData<DocData>>,
-    parent: any,
-    state: LocalDocumentState
+    parent: any
 ): RxLocalDocument<DocData> {
     _init();
-    const newDoc = new RxLocalDocumentClass(id, data, parent, state);
+    const newDoc = new RxLocalDocumentClass(data.id, data, parent);
     newDoc.__proto__ = RxLocalDocumentPrototype;
-    state.docCache.set(id, newDoc as any);
     return newDoc as any;
 }

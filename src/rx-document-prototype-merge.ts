@@ -103,21 +103,11 @@ export function createRxDocument<RxDocType, ORM>(
     rxCollection: RxCollection<RxDocType, ORM>,
     docData: RxDocumentData<RxDocType>
 ): RxDocument<RxDocType, ORM> {
-    const primary: string = docData[rxCollection.schema.primaryPath] as any;
-
-    // return from cache if exists
-    const cacheDoc = rxCollection._docCache.get(primary);
-    if (cacheDoc) {
-        return cacheDoc as any;
-    }
-
     const doc = createRxDocumentWithConstructor(
         getRxDocumentConstructor(rxCollection as any),
         rxCollection as any,
         overwritable.deepFreezeWhenDevMode(docData as any)
     );
-
-    rxCollection._docCache.set(primary, doc as any);
     rxCollection._runHooksSync('post', 'create', docData, doc);
     runPluginHooks('postCreateRxDocument', doc);
     return doc as any;

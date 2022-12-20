@@ -37,7 +37,7 @@ import type {
     DataMigrator
 } from './plugins/migration';
 import {
-    DocCache
+    DocumentCache
 } from './doc-cache';
 import {
     QueryCache,
@@ -188,7 +188,7 @@ export class RxCollectionBase<
     } = {} as any;
     public _subs: Subscription[] = [];
 
-    public _docCache: DocCache<RxDocument<RxDocumentType, OrmMethods>> = new DocCache();
+    public _docCache: DocumentCache<RxDocumentType, OrmMethods> = {} as any;
 
     public _queryCache: QueryCache = createQueryCache();
     public $: Observable<RxChangeEvent<RxDocumentType>> = {} as any;
@@ -218,6 +218,11 @@ export class RxCollectionBase<
             mergeMap(changeEventBulk => changeEventBulk.events),
         );
         this._changeEventBuffer = createChangeEventBuffer(this.asRxCollection);
+        this._docCache = new DocumentCache(
+            this.schema.primaryPath,
+            this.$.pipe(filter(cE => !cE.isLocal)),
+            docData => createRxDocument(this.asRxCollection, docData)
+        );
 
         /**
          * Instead of resolving the EventBulk array here and spit it into
@@ -243,25 +248,6 @@ export class RxCollectionBase<
             this.database.$emit(changeEventBulk);
         });
         this._subs.push(subDocs);
-
-        /**
-         * When a write happens to the collection
-         * we find the changed document in the docCache
-         * and tell it that it has to change its data.
-         */
-        this._subs.push(
-            this.$
-                .pipe(
-                    filter((cE: RxChangeEvent<RxDocumentType>) => !cE.isLocal)
-                )
-                .subscribe(cE => {
-                    // when data changes, send it to RxDocument in docCache
-                    const doc = this._docCache.get(cE.documentId);
-                    if (doc) {
-                        doc._handleChangeEvent(cE);
-                    }
-                })
-        );
 
         /**
          * Resolve the conflict tasks
@@ -622,7 +608,7 @@ export class RxCollectionBase<
 
         // first try to fill from docCache
         ids.forEach(id => {
-            const doc = this._docCache.get(id);
+            const doc = this._docCache.getLatestDocumentDataIfExists(id);
             if (doc) {
                 ret.set(id, doc);
             } else {
@@ -998,13 +984,13 @@ function _atomicUpsertUpdate<RxDocType>(
  * ensures that the given document exists
  * @return promise that resolves with new doc and flag if inserted
  */
-function _atomicUpsertEnsureRxDocumentExists(
-    rxCollection: RxCollection,
+function _atomicUpsertEnsureRxDocumentExists<RxDocType>(
+    rxCollection: RxCollection<RxDocType>,
     primary: string,
     json: any
 ): Promise<
     {
-        doc: RxDocument;
+        doc: RxDocument<RxDocType>;
         inserted: boolean;
     }
 > {
@@ -1012,10 +998,10 @@ function _atomicUpsertEnsureRxDocumentExists(
      * Optimisation shortcut,
      * first try to find the document in the doc-cache
      */
-    const docFromCache = rxCollection._docCache.get(primary);
-    if (docFromCache) {
+    const docDataFromCache = rxCollection._docCache.getLatestDocumentDataIfExists(primary);
+    if (docDataFromCache) {
         return Promise.resolve({
-            doc: docFromCache,
+            doc: rxCollection._docCache.getCachedRxDocument(docDataFromCache),
             inserted: false
         });
     }

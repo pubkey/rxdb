@@ -1,21 +1,22 @@
 import objectPath from 'object-path';
 import {
-    Observable,
-    BehaviorSubject
+    Observable
 } from 'rxjs';
 import {
     distinctUntilChanged,
-    map
+    filter,
+    map,
+    shareReplay,
+    startWith
 } from 'rxjs/operators';
 import {
     clone,
     trimDots,
-    getHeightOfRevision,
     pluginMissing,
     flatClone,
     PROMISE_RESOLVE_NULL,
-    PROMISE_RESOLVE_VOID,
-    ensureNotFalsy
+    ensureNotFalsy,
+    RXJS_SHARE_REPLAY_DEFAULTS
 } from './util';
 import {
     newRxError
@@ -29,7 +30,6 @@ import type {
     RxCollection,
     RxDocumentData,
     RxDocumentWriteData,
-    RxChangeEvent,
     UpdateQuery,
     CRDTEntry,
     AtomicUpdateFunction
@@ -40,24 +40,6 @@ import { getSchemaByObjectPath } from './rx-schema-helper';
 import { throwIfIsStorageWriteError } from './rx-storage-helper';
 
 export const basePrototype = {
-
-    /**
-     * TODO
-     * instead of appliying the _this-hack
-     * we should make these accessors functions instead of getters.
-     */
-    get _data() {
-        const _this: RxDocument = this as any;
-        /**
-         * Might be undefined when vuejs-devtools are used
-         * @link https://github.com/pubkey/rxdb/issues/1126
-         */
-        if (!_this.isInstanceOfRxDocument) {
-            return undefined;
-        }
-
-        return _this._dataSync$.getValue();
-    },
     get primaryPath() {
         const _this: RxDocument = this as any;
         if (!_this.isInstanceOfRxDocument) {
@@ -101,67 +83,49 @@ export const basePrototype = {
      */
     get $(): Observable<any> {
         const _this: RxDocument = this as any;
-        return _this._dataSync$.asObservable().pipe(
-            map(docData => overwritable.deepFreezeWhenDevMode(docData))
+        return _this.collection.$.pipe(
+            filter(changeEvent => changeEvent.documentId === this.primary),
+            map(changeEvent => getDocumentDataOfRxChangeEvent(changeEvent)),
+            startWith(_this.collection._docCache.getLatestDocumentData(this.primary)),
+            distinctUntilChanged((prev, curr) => prev._rev === curr._rev),
+            shareReplay(RXJS_SHARE_REPLAY_DEFAULTS)
         );
-    },
-
-    _handleChangeEvent(this: RxDocument, changeEvent: RxChangeEvent<any>) {
-        if (changeEvent.documentId !== this.primary) {
-            return;
-        }
-
-        // ensure that new _rev is higher then current
-        const docData = getDocumentDataOfRxChangeEvent(changeEvent);
-        const newRevNr = getHeightOfRevision(docData._rev);
-        const currentRevNr = getHeightOfRevision(this._data._rev);
-        if (currentRevNr > newRevNr) return;
-
-        switch (changeEvent.operation) {
-            case 'INSERT':
-                break;
-            case 'UPDATE':
-                this._dataSync$.next(changeEvent.documentData);
-                break;
-            case 'DELETE':
-                // remove from docCache to assure new upserted RxDocuments will be a new instance
-                this.collection._docCache.delete(this.primary);
-                this._dataSync$.next(changeEvent.documentData);
-                break;
-        }
     },
 
     /**
      * returns observable of the value of the given path
      */
     get$(this: RxDocument, path: string): Observable<any> {
-        if (path.includes('.item.')) {
-            throw newRxError('DOC1', {
+        if (overwritable.isDevMode()) {
+            if (path.includes('.item.')) {
+                throw newRxError('DOC1', {
+                    path
+                });
+            }
+
+            if (path === this.primaryPath) {
+                throw newRxError('DOC2');
+            }
+
+            // final fields cannot be modified and so also not observed
+            if (this.collection.schema.finalFields.includes(path)) {
+                throw newRxError('DOC3', {
+                    path
+                });
+            }
+
+            const schemaObj = getSchemaByObjectPath(
+                this.collection.schema.jsonSchema,
                 path
-            });
+            );
+            if (!schemaObj) {
+                throw newRxError('DOC4', {
+                    path
+                });
+            }
         }
 
-        if (path === this.primaryPath)
-            throw newRxError('DOC2');
-
-        // final fields cannot be modified and so also not observed
-        if (this.collection.schema.finalFields.includes(path)) {
-            throw newRxError('DOC3', {
-                path
-            });
-        }
-
-        const schemaObj = getSchemaByObjectPath(
-            this.collection.schema.jsonSchema,
-            path
-        );
-        if (!schemaObj) {
-            throw newRxError('DOC4', {
-                path
-            });
-        }
-
-        return this._dataSync$
+        return this.$
             .pipe(
                 map(data => objectPath.get(data, path)),
                 distinctUntilChanged()
@@ -292,7 +256,7 @@ export const basePrototype = {
         _context?: string
     ): Promise<RxDocument> {
         return this.collection.incrementalWriteQueue.addWrite(
-            this._dataSync$.getValue() as any,
+            this._data,
             mutationFunction
         ).then(_result => this);
     },
@@ -386,14 +350,12 @@ export function createRxDocumentConstructor(proto = basePrototype) {
     const constructor = function RxDocumentConstructor(
         this: RxDocument,
         collection: RxCollection,
-        jsonData: any
+        docData: RxDocumentData<any>
     ) {
         this.collection = collection;
 
         // assume that this is always equal to the doc-data in the database
-        this._dataSync$ = new BehaviorSubject(jsonData);
-
-        this._atomicQueue = PROMISE_RESOLVE_VOID;
+        this._data = docData;
 
         /**
          * because of the prototype-merge,

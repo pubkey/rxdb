@@ -1,5 +1,5 @@
 import { filter } from 'rxjs/operators';
-import { DocCache } from '../../doc-cache';
+import { DocumentCache } from '../../doc-cache';
 import { newRxError } from '../../rx-error';
 import { fillWithDefaultSettings } from '../../rx-schema-helper';
 import {
@@ -14,11 +14,11 @@ import type {
     RxDatabase,
     RxDocumentData,
     RxJsonSchema,
-    RxLocalDocument,
     RxLocalDocumentData,
     RxStorage
 } from '../../types';
 import { randomCouchString } from '../../util';
+import { createRxLocalDocument } from './rx-local-document';
 
 const LOCAL_DOC_STATE_BY_PARENT: WeakMap<LocalDocumentParent, Promise<LocalDocumentState>> = new WeakMap();
 
@@ -40,22 +40,13 @@ export function createLocalDocStateByParent(parent: LocalDocumentParent): void {
             storageInstance,
             RX_LOCAL_DOCUMENT_SCHEMA
         );
-        const docCache = new DocCache<RxLocalDocument<any, any>>();
-
-        /**
-         * Update cached local documents on events.
-         */
-        const sub = parent.$
-            .pipe(
+        const docCache = new DocumentCache<RxLocalDocumentData, {}>(
+            'id',
+            parent.$.pipe(
                 filter(cE => (cE as RxChangeEvent<any>).isLocal)
-            )
-            .subscribe((cE: RxChangeEvent<any>) => {
-                const doc = docCache.get(cE.documentId);
-                if (doc) {
-                    doc._handleChangeEvent(cE);
-                }
-            });
-        parent._subs.push(sub);
+            ),
+            docData => createRxLocalDocument(docData, parent) as any
+        );
 
         /**
          * Emit the changestream into the collections change stream
