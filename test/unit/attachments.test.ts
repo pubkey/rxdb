@@ -442,7 +442,7 @@ config.parallel('attachments.test.ts', () => {
                 type: 'image/png'
             });
 
-            const attachment = ensureNotFalsy(doc.getAttachment('image'));
+            const attachment = ensureNotFalsy(doc.getLatest().getAttachment('image'));
             const refetchedBlob = await attachment.getData();
 
             await renderImageBlob(refetchedBlob as Blob);
