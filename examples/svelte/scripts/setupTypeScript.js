@@ -25,7 +25,7 @@ packageJSON.devDependencies = Object.assign(packageJSON.devDependencies, {
   "svelte-check": "^2.0.0",
   "svelte-preprocess": "^4.0.0",
   "@rollup/plugin-typescript": "^8.0.0",
-  "typescript": "^4.0.0",
+  "typescript": "4.9.4",
   "tslib": "^2.0.0",
   "@tsconfig/svelte": "^2.0.0"
 })
