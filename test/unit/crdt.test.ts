@@ -167,9 +167,8 @@ config.parallel('crdt.test.js', () => {
                     $set: writeData
                 }
             });
-            assert.strictEqual(doc2.age, 2);
-
-            assert.ok(doc1 === doc2);
+            assert.ok(doc1 !== doc2);
+            assert.strictEqual(doc2.latest().age, 2);
 
             collection.database.destroy();
         });
@@ -183,7 +182,7 @@ config.parallel('crdt.test.js', () => {
             const docsAfter = await collection.find().exec();
             assert.deepStrictEqual(docsAfter.map(d => d.toJSON(true)), []);
 
-            const secondOp = ensureNotFalsy(doc.toJSON()).crdts?.operations[1][0];
+            const secondOp = ensureNotFalsy(doc.latest().toJSON()).crdts?.operations[1][0];
             assert.ok(secondOp);
             assert.strictEqual(secondOp.body[0].ifMatch?.$set?._deleted, true);
 
@@ -203,7 +202,7 @@ config.parallel('crdt.test.js', () => {
                 10
             );
 
-            const secondOp = ensureNotFalsy(doc.toJSON()).crdts?.operations[1][0];
+            const secondOp = ensureNotFalsy(doc.latest().toJSON()).crdts?.operations[1][0];
             assert.ok(secondOp);
             assert.strictEqual(secondOp.body[0].ifMatch?.$set?.age, 10);
 
