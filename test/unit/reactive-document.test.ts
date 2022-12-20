@@ -218,7 +218,7 @@ config.parallel('reactive-document.test.js', () => {
                 return state;
             });
 
-            assert.strictEqual(person.latest().age, 50);
+            assert.strictEqual(person.getLatest().age, 50);
             assert.ok(hasThrown);
 
             db.destroy();

@@ -62,7 +62,6 @@ export class DocumentCache<RxDocType, OrmMethods> {
     public cacheItemByDocId = new Map<string, CacheItem<RxDocType, OrmMethods>>();
     private registry = new FinalizationRegistry<FinalizationRegistryValue>(docMeta => {
         const docId = docMeta.docId;
-        console.log('FinalizationRegistry: ' + docId);
         const cacheItem = this.cacheItemByDocId.get(docId);
         if (cacheItem) {
             cacheItem.documentByRevisionHeight.delete(docMeta.revisionHeight);

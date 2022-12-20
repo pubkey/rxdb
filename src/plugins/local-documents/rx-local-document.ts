@@ -222,7 +222,6 @@ export function createRxLocalDocument<DocData>(
     _init();
     const newDoc = new RxLocalDocumentClass(data.id, data, parent);
     Object.setPrototypeOf(newDoc, RxLocalDocumentPrototype);
-    console.dir(RxLocalDocumentPrototype);
     newDoc.prototype = RxLocalDocumentPrototype;
     return newDoc as any;
 }

@@ -127,8 +127,8 @@ config.parallel('replication-websocket.test.ts', () => {
 
 
         // DELETE
-        await serverDoc.latest().remove();
-        await clientDoc.latest().remove();
+        await serverDoc.getLatest().remove();
+        await clientDoc.getLatest().remove();
         await replicationState.awaitInSync();
         const deletedServer = await remoteCollection.findOne().exec();
         const deletedClient = await localCollection.findOne().exec();

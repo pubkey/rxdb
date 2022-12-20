@@ -65,7 +65,7 @@ export declare interface RxDocumentBase<RxDocType, OrmMethods = {}> {
     // /internal things
 
     // Returns the latest state of the document
-    latest(): RxDocument<RxDocType, OrmMethods>;
+    getLatest(): RxDocument<RxDocType, OrmMethods>;
 
 
     get$(path: string): Observable<any>;

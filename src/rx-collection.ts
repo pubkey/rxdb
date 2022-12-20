@@ -395,7 +395,6 @@ export class RxCollectionBase<
         const rxDocumentMap = await this.findByIds(ids);
         const docsData: RxDocumentData<RxDocumentType>[] = [];
         const docsMap: Map<string, RxDocumentData<RxDocumentType>> = new Map();
-        console.dir(Array.from(rxDocumentMap.values()));
         Array.from(rxDocumentMap.values()).forEach(rxDocument => {
             const data: RxDocumentData<RxDocumentType> = rxDocument.toMutableJSON(true) as any;
             docsData.push(data);
@@ -477,9 +476,7 @@ export class RxCollectionBase<
                 const writeData = getFromMapOrThrow(useJsonByDocId, id);
                 const docDataInDb = ensureNotFalsy(error.documentInDb);
                 const doc = this._docCache.getCachedRxDocument(docDataInDb);
-                console.log('_________ 0');
                 const newDoc = await doc.atomicUpdate(() => writeData);
-                console.log('_________ 1');
                 return newDoc;
             })
         );

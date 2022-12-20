@@ -79,7 +79,7 @@ export const basePrototype = {
         return _this._data._deleted;
     },
 
-    latest(this: RxDocument) {
+    getLatest(this: RxDocument): RxDocument {
        const latestDocData = this.collection._docCache.getLatestDocumentData(this.primary);
        return this.collection._docCache.getCachedRxDocument(latestDocData);
     },

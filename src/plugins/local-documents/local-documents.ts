@@ -81,7 +81,6 @@ export function upsertLocal<DocData extends Record<string, any> = any>(
 }
 
 export async function getLocal<DocData = any>(this: any, id: string): Promise<RxLocalDocument<DocData> | null> {
-    console.log('getLocal()::::');
     const state = await getLocalDocStateByParent(this);
     const docCache = state.docCache;
 
@@ -99,9 +98,6 @@ export async function getLocal<DocData = any>(this: any, id: string): Promise<Rx
             if (!docData) {
                 return null;
             }
-
-
-            console.log('!!!!!!!!!!AA');
             return state.docCache.getCachedRxDocument(docData) as any;
         });
 }
