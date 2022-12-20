@@ -12,7 +12,8 @@ import * as schemaObjects from '../helper/schema-objects';
 import {
     createRxDatabase,
     randomCouchString,
-    promiseWait
+    promiseWait,
+    ensureNotFalsy
 } from '../../';
 
 import {
@@ -54,8 +55,8 @@ config.parallel('reactive-document.test.js', () => {
                 assert.strictEqual(changeEvent.previousDocumentData.firstName, oldName);
 
 
-                assert.strictEqual(docDataAfter.passportId, doc.primary);
-                assert.strictEqual(docDataAfter.passportId, doc.primary);
+                assert.strictEqual(ensureNotFalsy(docDataAfter).passportId, doc.primary);
+                assert.strictEqual(ensureNotFalsy(docDataAfter).passportId, doc.primary);
                 colSub.unsubscribe();
                 c.database.destroy();
             });
