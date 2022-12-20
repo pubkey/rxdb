@@ -109,7 +109,7 @@ console.log(myDocument.name); // 'Steve'
 ```
 
 
-### latest()
+### getLatest()
 
 Returns the latest known state of the `RxDocument`.
 
@@ -118,7 +118,7 @@ const myDocument = await myCollection.findOne('foobar').exec();
 const docAfterEdit = await myDocument.atomicPatch({
   age: 10
 });
-const latestDoc = myDocument.latest();
+const latestDoc = myDocument.getLatest();
 console.log(docAfterEdit === latestDoc); // > true
 ```
 
