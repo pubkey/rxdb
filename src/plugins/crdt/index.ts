@@ -116,7 +116,7 @@ export async function insertCRDT<RxDocType>(
     crdtDocField.hash = hashCRDTOperations(this.database.hashFunction, crdtDocField);
 
     const result = await this.insert(insertData).catch(async (err: RxError) => {
-        if (err.code === 'COL19') {
+        if (err.code === 'CONFLICT') {
             // was a conflict, update document instead of inserting
             const doc = await this.findOne(err.parameters.id).exec(true);
             return doc.updateCRDT(entry);

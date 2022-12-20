@@ -125,7 +125,7 @@ export function throwIfIsStorageWriteError<RxDocType>(
 ) {
     if (error) {
         if (error.status === 409) {
-            throw newRxError('COL19', {
+            throw newRxError('CONFLICT', {
                 collection: collection.name,
                 id: documentId,
                 writeError: error,

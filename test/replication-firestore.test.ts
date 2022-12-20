@@ -163,7 +163,7 @@ describe('replication-firstore.test.js', () => {
             assert.strictEqual(serverDoc.age, 100);
 
             // delete one
-            await doc.remove();
+            await doc.getLatest().remove();
             await replicationState.awaitInSync();
             docsOnServer = await getAllDocsOfFirestore(firestoreState);
             // must still have 3 because there are no hard deletes
@@ -254,7 +254,7 @@ describe('replication-firstore.test.js', () => {
             /**
              * Must have kept the master state c2
              */
-            assert.strictEqual(doc1.firstName, 'c2');
+            assert.strictEqual(doc1.getLatest().firstName, 'c2');
 
             c1.database.destroy();
             c2.database.destroy();

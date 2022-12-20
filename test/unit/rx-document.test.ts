@@ -229,7 +229,7 @@ describe('rx-document.test.js', () => {
                 await AsyncTestUtil.assertThrows(
                     () => doc.remove(),
                     'RxError',
-                    'COL19'
+                    'CONFLICT'
                 );
                 c.database.destroy();
             });
