@@ -515,8 +515,7 @@ export class RxCollectionBase<
             .then(() => _atomicUpsertEnsureRxDocumentExists(this as any, primary as any, useJson))
             .then((wasInserted) => {
                 if (!wasInserted.inserted) {
-                    return _atomicUpsertUpdate(wasInserted.doc, useJson)
-                        .then(() => wasInserted.doc);
+                    return _atomicUpsertUpdate(wasInserted.doc, useJson);
                 } else {
                     return wasInserted.doc;
                 }
@@ -973,11 +972,7 @@ function _atomicUpsertUpdate<RxDocType>(
 ): Promise<RxDocumentBase<RxDocType>> {
     return doc.atomicUpdate((_innerDoc) => {
         return json;
-    })
-        .then(() => nextTick())
-        .then(() => {
-            return doc;
-        });
+    });
 }
 
 /**

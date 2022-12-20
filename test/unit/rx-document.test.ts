@@ -160,9 +160,8 @@ describe('rx-document.test.js', () => {
             });
             it('should update the data of the RxDocument instance', async () => {
                 const c = await humansCollection.create(1);
-                const doc = await c.findOne().exec(true);
-                await doc.remove();
-
+                let doc = await c.findOne().exec(true);
+                doc = await doc.remove();
                 assert.strictEqual(doc.toJSON(true)._deleted, true);
                 c.database.destroy();
             });
@@ -207,28 +206,29 @@ describe('rx-document.test.js', () => {
                 const c = await humansCollection.create(5);
                 const docs = await c.find().exec();
                 assert.ok(docs.length > 1);
-                const first = docs[0];
+                let first = docs[0];
 
-                await first.atomicPatch({ firstName: 'foobar' });
-
+                first = await first.atomicPatch({ firstName: 'foobar' });
                 await first.remove();
+
                 const docsAfter = await c.find().exec();
                 docsAfter.map(doc => {
-                    if (doc._data.passportId === first._data.passportId)
+                    if (doc._data.passportId === first._data.passportId) {
                         throw new Error('still here after remove()');
+                    }
                 });
                 c.database.destroy();
             });
         });
         describe('negative', () => {
-            it('delete doc twice', async () => {
+            it('delete doc twice should cause a conflict', async () => {
                 const c = await humansCollection.create(5);
                 const doc: any = await c.findOne().exec();
                 await doc.remove();
                 await AsyncTestUtil.assertThrows(
                     () => doc.remove(),
                     'RxError',
-                    'already'
+                    'COL19'
                 );
                 c.database.destroy();
             });
@@ -266,15 +266,16 @@ describe('rx-document.test.js', () => {
             });
             it('$inc a value with a mongo like query', async () => {
                 const c = await humansCollection.create(1);
-                const doc: any = await c.findOne().exec(true);
+                let doc: any = await c.findOne().exec(true);
                 const agePrev = doc.age;
-                await doc.update({
+                doc = await doc.update({
                     $inc: {
                         age: 1
                     }
                 });
                 assert.strictEqual(doc.age, agePrev + 1);
-                await doc.save;
+
+                // check again via query
                 const updatedDoc: any = await c.findOne().exec(true);
                 assert.strictEqual(updatedDoc.age, agePrev + 1);
                 c.database.destroy();
@@ -322,8 +323,13 @@ describe('rx-document.test.js', () => {
                     innerDoc.firstName = 'foobar';
                     return innerDoc;
                 });
-                assert.strictEqual('foobar', doc.firstName);
-                assert.ok(doc === returnedDoc);
+                assert.strictEqual('foobar', returnedDoc.firstName);
+                assert.ok(doc !== returnedDoc);
+
+
+                const doc2 = await c.findOne().exec(true);
+                assert.ok(returnedDoc === doc2);
+
                 c.database.destroy();
             });
             it('run two updates (last write wins)', async () => {

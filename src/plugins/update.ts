@@ -11,7 +11,7 @@ import type {
     UpdateQuery
 } from '../types';
 
-export function update(this: RxDocument, updateObj: any) {
+export function update<RxDocType>(this: RxDocument<RxDocType>, updateObj: UpdateQuery<RxDocType>): Promise<RxDocument<RxDocType>> {
     const oldDocData = this._data;
     const newDocData = modifyjs(oldDocData, updateObj);
     return this._saveData(newDocData, oldDocData);

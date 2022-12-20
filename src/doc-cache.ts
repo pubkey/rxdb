@@ -3,7 +3,11 @@ import type {
     RxDocument,
     RxDocumentData
 } from './types';
-import { getFromMapOrFill, getFromMapOrThrow, parseRevision } from './util';
+import {
+    getFromMapOrFill,
+    getFromMapOrThrow,
+    parseRevision
+} from './util';
 import {
     overwritable
 } from './overwritable';
@@ -55,7 +59,7 @@ declare type FinalizationRegistryValue = {
  * @link https://caniuse.com/?search=weakref
  */
 export class DocumentCache<RxDocType, OrmMethods> {
-    private cacheItemByDocId = new Map<string, CacheItem<RxDocType, OrmMethods>>();
+    public cacheItemByDocId = new Map<string, CacheItem<RxDocType, OrmMethods>>();
     private registry = new FinalizationRegistry<FinalizationRegistryValue>(docMeta => {
         const docId = docMeta.docId;
         console.log('FinalizationRegistry: ' + docId);
@@ -109,7 +113,8 @@ export class DocumentCache<RxDocType, OrmMethods> {
         const cachedRxDocumentWeakRef: WeakRef<RxDocument<RxDocType, OrmMethods>> = cacheItem.documentByRevisionHeight.get(revisionHeight);
         let cachedRxDocument = cachedRxDocumentWeakRef ? cachedRxDocumentWeakRef.deref() : undefined;
         if (!cachedRxDocument) {
-            cachedRxDocument = overwritable.deepFreezeWhenDevMode(this.documentCreator(docData)) as RxDocument<RxDocType, OrmMethods>;
+            docData = overwritable.deepFreezeWhenDevMode(docData) as any;
+            cachedRxDocument = this.documentCreator(docData) as RxDocument<RxDocType, OrmMethods>;
             cacheItem.documentByRevisionHeight.set(revisionHeight, new WeakRef(cachedRxDocument));
             this.registry.register(cachedRxDocument, {
                 docId,

@@ -409,19 +409,16 @@ export class RxQueryBase<
      * @return promise with deleted documents
      */
     remove(): Promise<RxQueryResult> {
-        let ret: any;
         return this
             .exec()
             .then(docs => {
-                ret = docs;
                 if (Array.isArray(docs)) {
                     // TODO use a bulk operation instead of running .remove() on each document
                     return Promise.all(docs.map(doc => doc.remove()));
                 } else {
                     return (docs as any).remove();
                 }
-            })
-            .then(() => ret);
+            });
     }
 
 

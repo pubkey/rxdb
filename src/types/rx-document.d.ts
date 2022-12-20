@@ -71,9 +71,9 @@ export declare interface RxDocumentBase<RxDocType, OrmMethods = {}> {
      */
     atomicPatch(patch: Partial<RxDocType>): Promise<RxDocument<RxDocType, OrmMethods>>;
 
-    update(updateObj: UpdateQuery<RxDocType>): Promise<any>;
-    updateCRDT(updateObj: CRDTEntry<RxDocType> | CRDTEntry<RxDocType>[]): Promise<any>;
-    remove(): Promise<boolean>;
+    update(updateObj: UpdateQuery<RxDocType>): Promise<RxDocument<RxDocType, OrmMethods>>;
+    updateCRDT(updateObj: CRDTEntry<RxDocType> | CRDTEntry<RxDocType>[]): Promise<RxDocument<RxDocType, OrmMethods>>;
+    remove(): Promise<RxDocument<RxDocType, OrmMethods>>;
 
     // only for temporary documents
     set(objPath: string, value: any): RxDocument<RxDocType, OrmMethods>;

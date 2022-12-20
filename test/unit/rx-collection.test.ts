@@ -925,6 +925,20 @@ describe('rx-collection.test.ts', () => {
                 });
             });
             config.parallel('.remove()', () => {
+                it('should remove one document', async () => {
+                    const c = await humansCollection.create(1);
+                    const query = c.find();
+                    const removed = await query.remove();
+                    console.dir(removed.map(d => d.toJSON()));
+                    assert.strictEqual(removed.length, 1);
+                    removed.forEach(doc => {
+                        assert.ok(isRxDocument(doc));
+                        assert.strictEqual(doc.deleted, true);
+                    });
+                    const docsAfter = await c.find().exec();
+                    assert.strictEqual(docsAfter.length, 0);
+                    c.database.destroy();
+                });
                 it('should remove all documents', async () => {
                     const c = await humansCollection.create(10);
                     const query = c.find();
@@ -1386,21 +1400,12 @@ describe('rx-collection.test.ts', () => {
                     db.destroy();
                 });
                 it('overwrite deleted', async () => {
-                    const db = await createRxDatabase({
-                        name: randomCouchString(10),
-                        storage: config.storage.getStorage()
-                    });
-                    const collections = await db.addCollections({
-                        human: {
-                            schema: schemas.primaryHuman
-                        }
-                    });
-                    const collection = collections.human;
+                    const collection = await humansCollection.createPrimary(1);
                     const objData = schemaObjects.simpleHuman();
 
-                    const doc = await collection.insert(objData);
 
-                    await doc.atomicPatch({
+                    let doc = await collection.insert(objData);
+                    doc = await doc.atomicPatch({
                         firstName: 'alice'
                     });
                     await doc.remove();
@@ -1420,7 +1425,7 @@ describe('rx-collection.test.ts', () => {
                     const parsedRev = parseRevision(docAfter.toJSON(true)._rev);
                     assert.strictEqual(parsedRev.height, 4);
 
-                    db.destroy();
+                    collection.database.destroy();
                 });
             });
             describe('negative', () => {
@@ -1472,7 +1477,12 @@ describe('rx-collection.test.ts', () => {
                         c.atomicUpsert(docData),
                         c.atomicUpsert(docData)
                     ]);
-                    assert.ok(docs[0] === docs[1]);
+
+                    /**
+                     * Should not be equal because one doc state was inserted
+                     * and the other was updated.
+                     */
+                    assert.ok(docs[0] !== docs[1]);
                     assert.ok(isRxDocument(docs[0]));
                     c.database.destroy();
                 });
@@ -1484,7 +1494,7 @@ describe('rx-collection.test.ts', () => {
                         c.atomicUpsert(docData),
                         c.atomicUpsert(docData)
                     ]);
-                    assert.ok(docs[0] === docs[1]);
+                    assert.ok(docs[0] !== docs[1]);
                     assert.ok(isRxDocument(docs[0]));
                     c.database.destroy();
                 });
@@ -1512,7 +1522,7 @@ describe('rx-collection.test.ts', () => {
                             })
                     );
                     assert.strictEqual(t, amount);
-                    assert.ok(docs[0] === docs[1]);
+                    assert.ok(docs[0] !== docs[1]);
                     assert.ok(isRxDocument(docs[0]));
 
                     c.database.destroy();
@@ -1550,7 +1560,7 @@ describe('rx-collection.test.ts', () => {
                         c.atomicUpsert(docData),
                         c.atomicUpsert(docData)
                     ]);
-                    assert.ok(docs[0] === docs[1]);
+                    assert.ok(docs[0] !== docs[1]);
                     assert.ok(isRxDocument(docs[0]));
                     c.database.destroy();
                 });
@@ -1851,7 +1861,7 @@ describe('rx-collection.test.ts', () => {
                 const ids = docs.map(d => d.primary);
 
                 // clear docCache
-                ids.forEach(id => c._docCache.delete(id));
+                ids.forEach(id => c._docCache.cacheItemByDocId.delete(id));
 
                 const res = await c.findByIds(ids);
                 assert.strictEqual(res.size, 5);

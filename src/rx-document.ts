@@ -15,8 +15,8 @@ import {
     pluginMissing,
     flatClone,
     PROMISE_RESOLVE_NULL,
-    ensureNotFalsy,
-    RXJS_SHARE_REPLAY_DEFAULTS
+    RXJS_SHARE_REPLAY_DEFAULTS,
+    getFromObjectOrThrow
 } from './util';
 import {
     newRxError
@@ -258,7 +258,7 @@ export const basePrototype = {
         return this.collection.incrementalWriteQueue.addWrite(
             this._data,
             mutationFunction
-        ).then(_result => this);
+        ).then(result => this.collection._docCache.getCachedRxDocument(result));
     },
 
 
@@ -283,11 +283,11 @@ export const basePrototype = {
      * saves the new document-data
      * and handles the events
      */
-    async _saveData<RxDocumentType>(
-        this: RxDocument<RxDocumentType>,
-        newData: RxDocumentWriteData<RxDocumentType>,
-        oldData: RxDocumentData<RxDocumentType>
-    ): Promise<void> {
+    async _saveData<RxDocType>(
+        this: RxDocument<RxDocType>,
+        newData: RxDocumentWriteData<RxDocType>,
+        oldData: RxDocumentData<RxDocType>
+    ): Promise<RxDocument<RxDocType>> {
         newData = flatClone(newData);
 
         // deleted documents cannot be changed
@@ -306,7 +306,10 @@ export const basePrototype = {
         const isError = writeResult.error[this.primary];
         throwIfIsStorageWriteError(this.collection, this.primary, newData, isError);
 
-        return this.collection._runHooks('post', 'save', newData, this);
+        await this.collection._runHooks('post', 'save', newData, this);
+        return this.collection._docCache.getCachedRxDocument(
+            getFromObjectOrThrow(writeResult.success, this.primary)
+        );
     },
 
     /**
@@ -324,6 +327,7 @@ export const basePrototype = {
         }
 
         const deletedData = flatClone(this._data);
+        let removedDocData: RxDocumentData<any>;
         return collection._runHooks('pre', 'remove', deletedData, this)
             .then(async () => {
                 deletedData._deleted = true;
@@ -334,12 +338,17 @@ export const basePrototype = {
                 }], 'rx-document-remove');
                 const isError = writeResult.error[this.primary];
                 throwIfIsStorageWriteError(collection, this.primary, deletedData, isError);
-                return ensureNotFalsy(writeResult.success[this.primary]);
+                return getFromObjectOrThrow(writeResult.success, this.primary);
             })
-            .then(() => {
+            .then((removed) => {
+                removedDocData = removed;
                 return this.collection._runHooks('post', 'remove', deletedData, this);
             })
-            .then(() => this);
+            .then(() => {
+                console.log('AAAAAAAAAAA');
+                console.dir(removedDocData);
+                return this.collection._docCache.getCachedRxDocument(removedDocData);
+            });
     },
     destroy() {
         throw newRxError('DOC14');
