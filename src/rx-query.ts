@@ -459,10 +459,10 @@ export function tunnelQueryCache<RxDocumentType, RxQueryResult>(
     return rxQuery.collection._queryCache.getByQuery(rxQuery as any);
 }
 
-export function createRxQuery(
+export function createRxQuery<RxDocType>(
     op: RxQueryOP,
     queryObj: MangoQuery,
-    collection: RxCollection
+    collection: RxCollection<RxDocType>
 ) {
     runPluginHooks('preCreateRxQuery', {
         op,
@@ -470,7 +470,7 @@ export function createRxQuery(
         collection
     });
 
-    let ret = new RxQueryBase(op, queryObj, collection);
+    let ret = new RxQueryBase<RxDocType>(op, queryObj, collection);
 
     // ensure when created with same params, only one is created
     ret = tunnelQueryCache(ret);

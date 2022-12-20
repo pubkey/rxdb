@@ -67,7 +67,7 @@ export const basePrototype = {
         if (!_this.isInstanceOfRxDocument) {
             return undefined;
         }
-        return _this._dataSync$.pipe(
+        return _this.$.pipe(
             map((d: any) => d._deleted)
         );
     },
@@ -79,12 +79,18 @@ export const basePrototype = {
         return _this._data._deleted;
     },
 
+    latest(this: RxDocument) {
+       const latestDocData = this.collection._docCache.getLatestDocumentData(this.primary);
+       return this.collection._docCache.getCachedRxDocument(latestDocData);
+    },
+
     /**
      * returns the observable which emits the plain-data of this document
      */
-    get $(): Observable<any> {
+    get $(): Observable<RxDocumentData<any>> {
         const _this: RxDocument = this as any;
         return _this.collection.$.pipe(
+            filter(changeEvent => !changeEvent.isLocal),
             filter(changeEvent => changeEvent.documentId === this.primary),
             map(changeEvent => getDocumentDataOfRxChangeEvent(changeEvent)),
             startWith(_this.collection._docCache.getLatestDocumentData(this.primary)),
@@ -346,8 +352,6 @@ export const basePrototype = {
                 return this.collection._runHooks('post', 'remove', deletedData, this);
             })
             .then(() => {
-                console.log('AAAAAAAAAAA');
-                console.dir(removedDocData);
                 return this.collection._docCache.getCachedRxDocument(removedDocData);
             });
     },

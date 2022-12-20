@@ -1,5 +1,6 @@
 import { filter } from 'rxjs/operators';
 import { DocumentCache } from '../../doc-cache';
+import { IncrementalWriteQueue } from '../../incremental-write';
 import { newRxError } from '../../rx-error';
 import { fillWithDefaultSettings } from '../../rx-schema-helper';
 import {
@@ -48,6 +49,13 @@ export function createLocalDocStateByParent(parent: LocalDocumentParent): void {
             docData => createRxLocalDocument(docData, parent) as any
         );
 
+        const incrementalWriteQueue = new IncrementalWriteQueue(
+            storageInstance,
+            'id',
+            () => { },
+            () => { }
+        );
+
         /**
          * Emit the changestream into the collections change stream
          */
@@ -75,7 +83,8 @@ export function createLocalDocStateByParent(parent: LocalDocumentParent): void {
             database,
             parent,
             storageInstance,
-            docCache
+            docCache,
+            incrementalWriteQueue
         };
     })();
     LOCAL_DOC_STATE_BY_PARENT.set(parent, statePromise);

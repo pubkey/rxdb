@@ -118,6 +118,7 @@ import {
 } from './rx-storage-helper';
 import { defaultConflictHandler } from './replication-protocol';
 import { IncrementalWriteQueue } from './incremental-write';
+import { beforeDocumentUpdateWrite } from './rx-document';
 
 const HOOKS_WHEN = ['pre', 'post'] as const;
 type HookWhenType = typeof HOOKS_WHEN[number];
@@ -204,11 +205,16 @@ export class RxCollectionBase<
     public destroyed = false;
 
     public async prepare(): Promise<void> {
-        this.incrementalWriteQueue = new IncrementalWriteQueue<RxDocumentType>(this as any);
         this.storageInstance = getWrappedStorageInstance(
             this.database,
             this.internalStorageInstance,
             this.schema.jsonSchema
+        );
+        this.incrementalWriteQueue = new IncrementalWriteQueue<RxDocumentType>(
+            this.storageInstance,
+            this.schema.primaryPath,
+            (newData, oldData) => beforeDocumentUpdateWrite(this as any, newData, oldData),
+            result => this._runHooks('post', 'save', result)
         );
 
         this.$ = this.database.eventBulks$.pipe(
@@ -532,7 +538,7 @@ export class RxCollectionBase<
             queryObj = _getDefaultQuery();
         }
 
-        const query = createRxQuery('find', queryObj, this.asRxCollection);
+        const query = createRxQuery('find', queryObj, this as any);
         return query as any;
     }
 
@@ -562,7 +568,7 @@ export class RxCollectionBase<
             }
 
             (queryObj as any).limit = 1;
-            query = createRxQuery('findOne', queryObj, this.asRxCollection);
+            query = createRxQuery<RxDocumentType>('findOne', queryObj, this as any);
         }
 
         if (
@@ -584,7 +590,7 @@ export class RxCollectionBase<
         if (!queryObj) {
             queryObj = _getDefaultQuery();
         }
-        const query = createRxQuery('count', queryObj, this.asRxCollection);
+        const query = createRxQuery('count', queryObj, this as any);
         return query as any;
     }
 

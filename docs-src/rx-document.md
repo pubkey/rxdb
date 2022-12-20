@@ -109,6 +109,21 @@ console.log(myDocument.name); // 'Steve'
 ```
 
 
+### latest()
+
+Returns the latest known state of the `RxDocument`.
+
+```js
+const myDocument = await myCollection.findOne('foobar').exec();
+const docAfterEdit = await myDocument.atomicPatch({
+  age: 10
+});
+const latestDoc = myDocument.latest();
+console.log(docAfterEdit === latestDoc); // > true
+```
+
+
+
 ### Observe $
 Calling this will return an [rxjs-Observable](http://reactivex.io/rxjs/manual/overview.html#observable) which emits all change-Events belonging to this document.
 

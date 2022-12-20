@@ -22,67 +22,61 @@ import {
 } from './hooks';
 import { overwritable } from './overwritable';
 
-// caches
-const protoForCollection: WeakMap<RxCollection, any> = new WeakMap();
-const constructorForCollection: WeakMap<RxCollection, any> = new WeakMap();
+const constructorForCollection = new WeakMap();
 
 export function getDocumentPrototype(
     rxCollection: RxCollection
 ): any {
-    if (!protoForCollection.has(rxCollection)) {
-        const schemaProto = rxCollection.schema.getDocumentPrototype();
-        const ormProto = getDocumentOrmPrototype(rxCollection);
-        const baseProto = basePrototype;
-        const proto = {};
-        [
-            schemaProto,
-            ormProto,
-            baseProto
-        ].forEach(obj => {
-            const props = Object.getOwnPropertyNames(obj);
-            props.forEach(key => {
-                const desc: any = Object.getOwnPropertyDescriptor(obj, key);
+    const schemaProto = rxCollection.schema.getDocumentPrototype();
+    const ormProto = getDocumentOrmPrototype(rxCollection);
+    const baseProto = basePrototype;
+    const proto = {};
+    [
+        schemaProto,
+        ormProto,
+        baseProto
+    ].forEach(obj => {
+        const props = Object.getOwnPropertyNames(obj);
+        props.forEach(key => {
+            const desc: any = Object.getOwnPropertyDescriptor(obj, key);
 
 
-                /**
-                 * When enumerable is true, it will show on console.dir(instance)
-                 * To not pollute the output, only getters and methods are enumerable
-                 */
-                let enumerable = true;
-                if (
-                    key.startsWith('_') ||
-                    key.endsWith('_') ||
-                    key.startsWith('$') ||
-                    key.endsWith('$')
-                ) enumerable = false;
+            /**
+             * When enumerable is true, it will show on console.dir(instance)
+             * To not pollute the output, only getters and methods are enumerable
+             */
+            let enumerable = true;
+            if (
+                key.startsWith('_') ||
+                key.endsWith('_') ||
+                key.startsWith('$') ||
+                key.endsWith('$')
+            ) enumerable = false;
 
-                if (typeof desc.value === 'function') {
-                    // when getting a function, we automatically do a .bind(this)
-                    Object.defineProperty(proto, key, {
-                        get() {
-                            return desc.value.bind(this);
-                        },
-                        enumerable,
-                        configurable: false
-                    });
+            if (typeof desc.value === 'function') {
+                // when getting a function, we automatically do a .bind(this)
+                Object.defineProperty(proto, key, {
+                    get() {
+                        return desc.value.bind(this);
+                    },
+                    enumerable,
+                    configurable: false
+                });
 
-                } else {
-                    desc.enumerable = enumerable;
-                    desc.configurable = false;
-                    if (desc.writable)
-                        desc.writable = false;
-                    Object.defineProperty(proto, key, desc);
-                }
-            });
+            } else {
+                desc.enumerable = enumerable;
+                desc.configurable = false;
+                if (desc.writable)
+                    desc.writable = false;
+                Object.defineProperty(proto, key, desc);
+            }
         });
-        protoForCollection.set(rxCollection, proto);
-
-    }
-    return protoForCollection.get(rxCollection);
+    });
+    return proto;
 }
 
-export function getRxDocumentConstructor(
-    rxCollection: RxCollection
+export function getRxDocumentConstructor<RxDocType, ORM>(
+    rxCollection: RxCollection<RxDocType, ORM>
 ) {
     if (!constructorForCollection.has(rxCollection)) {
         const ret = createRxDocumentConstructor(
@@ -104,7 +98,7 @@ export function createNewRxDocument<RxDocType, ORM>(
     docData: RxDocumentData<RxDocType>
 ): RxDocument<RxDocType, ORM> {
     const doc = createRxDocumentWithConstructor(
-        getRxDocumentConstructor(rxCollection as any),
+        getRxDocumentConstructor(rxCollection),
         rxCollection as any,
         overwritable.deepFreezeWhenDevMode(docData as any)
     );

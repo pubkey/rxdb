@@ -65,23 +65,14 @@ export async function updateCRDT<RxDocType>(
         crdtDocField.operations.push(lastAr);
         crdtDocField.hash = hashCRDTOperations(this.collection.database.hashFunction, crdtDocField);
 
-        let newDocData: WithDeleted<RxDocType> = clone(docData) as any;
-        newDocData = runOperationOnDocument(
+        docData = runOperationOnDocument(
             this.collection.database.storage.statics,
             this.collection.schema.jsonSchema,
-            newDocData,
+            docData,
             operation
         );
-        objectPath.set(newDocData, crdtOptions.field, crdtDocField);
-
-        // add other internal fields
-        const fullDocData: RxDocumentData<RxDocType> = Object.assign({
-            _attachments: docData._attachments,
-            _meta: docData._meta,
-            _rev: docData._rev
-        }, newDocData);
-
-        return fullDocData;
+        objectPath.set(docData, crdtOptions.field, crdtDocField);
+        return docData;
     }, RX_CRDT_CONTEXT);
 }
 

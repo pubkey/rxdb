@@ -207,7 +207,7 @@ config.parallel('reactive-document.test.js', () => {
             person.$.subscribe(data => {
                 try {
                     // mutating the document data is not allowed and should throw
-                    delete data['_rev'];
+                    delete (data as any)['_rev'];
                 } catch (err) {
                     hasThrown = true;
                 }
@@ -218,7 +218,7 @@ config.parallel('reactive-document.test.js', () => {
                 return state;
             });
 
-            assert.strictEqual(person.age, 50);
+            assert.strictEqual(person.latest().age, 50);
             assert.ok(hasThrown);
 
             db.destroy();

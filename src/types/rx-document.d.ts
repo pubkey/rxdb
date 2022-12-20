@@ -64,6 +64,10 @@ export declare interface RxDocumentBase<RxDocType, OrmMethods = {}> {
     _saveData(newData: any, oldData: any): Promise<RxDocument<RxDocType, OrmMethods>>;
     // /internal things
 
+    // Returns the latest state of the document
+    latest(): RxDocument<RxDocType, OrmMethods>;
+
+
     get$(path: string): Observable<any>;
     get(objPath: string): DeepReadonly<any>;
     populate(objPath: string): Promise<RxDocument<RxDocType, OrmMethods> | any | null>;

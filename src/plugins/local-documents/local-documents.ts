@@ -75,19 +75,22 @@ export function upsertLocal<DocData extends Record<string, any> = any>(
                 // update existing
                 return existing.atomicUpdate(() => {
                     return data;
-                }).then(() => existing);
+                });
             }
         });
 }
 
 export async function getLocal<DocData = any>(this: any, id: string): Promise<RxLocalDocument<DocData> | null> {
+    console.log('getLocal()::::');
     const state = await getLocalDocStateByParent(this);
     const docCache = state.docCache;
 
     // check in doc-cache
     const found = docCache.getLatestDocumentDataIfExists(id);
     if (found) {
-        return Promise.resolve(found as any);
+        return Promise.resolve(
+            docCache.getCachedRxDocument(found) as any
+        );
     }
 
     // if not found, check in storage instance
@@ -96,6 +99,9 @@ export async function getLocal<DocData = any>(this: any, id: string): Promise<Rx
             if (!docData) {
                 return null;
             }
+
+
+            console.log('!!!!!!!!!!AA');
             return state.docCache.getCachedRxDocument(docData) as any;
         });
 }

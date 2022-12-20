@@ -98,7 +98,7 @@ export class DocumentCache<RxDocType, OrmMethods> {
      * Get the RxDocument from the cache
      * and create a new one if not exits before.
      */
-    public getCachedRxDocument(docData: RxDocumentData<RxDocType>) {
+    public getCachedRxDocument(docData: RxDocumentData<RxDocType>): RxDocument<RxDocType, OrmMethods> {
         const docId: string = (docData as any)[this.primaryPath];
         console.log('-------------- getCachedRxDocument() ' + docId);
         const revisionHeight = parseRevision(docData._rev).height;

@@ -1,4 +1,3 @@
-import { beforeDocumentUpdateWrite } from './rx-document';
 import {
     isBulkWriteConflictError,
     rxStorageWriteErrorToRxError
@@ -7,11 +6,11 @@ import type {
     AtomicUpdateFunction,
     BulkWriteRow,
     MaybePromise,
-    RxCollection,
     RxDocumentData,
     RxDocumentWriteData,
     RxError,
     RxStorageBulkWriteResponse,
+    RxStorageInstance,
     StringKeys,
     WithDeleted
 } from './types';
@@ -48,13 +47,15 @@ type IncrementalWriteQueueItem<RxDocType> = {
 export class IncrementalWriteQueue<RxDocType> {
     public queueByDocId = new Map<string, IncrementalWriteQueueItem<RxDocType>[]>();
     public isRunning: boolean = false;
-    public primaryPath: StringKeys<RxDocumentData<RxDocType>>;
 
     constructor(
-        public readonly collection: RxCollection<RxDocType>
-    ) {
-        this.primaryPath = collection.schema.primaryPath;
-    }
+        public readonly storageInstance: RxStorageInstance<RxDocType, any, any>,
+        public readonly primaryPath: StringKeys<RxDocumentData<RxDocType>>,
+        // can be used to run hooks etc.
+        public readonly preWrite: (newData: RxDocumentData<RxDocType>, oldData: RxDocumentData<RxDocType>) => MaybePromise<void>,
+        public readonly postWrite: (docData: RxDocumentData<RxDocType>) => void
+
+    ) { }
 
     addWrite(
         lastKnownDocumentState: RxDocumentData<RxDocType>,
@@ -117,7 +118,7 @@ export class IncrementalWriteQueue<RxDocType> {
                     }
 
                     try {
-                        await beforeDocumentUpdateWrite(this.collection, newData, oldData);
+                        await this.preWrite(newData, oldData);
                     } catch (err: any) {
                         /**
                          * If the before-hooks fail,
@@ -134,7 +135,7 @@ export class IncrementalWriteQueue<RxDocType> {
                 })
         );
         const writeResult: RxStorageBulkWriteResponse<RxDocType> = writeRows.length > 0 ?
-            await this.collection.storageInstance.bulkWrite(writeRows, 'incremental-write') :
+            await this.storageInstance.bulkWrite(writeRows, 'incremental-write') :
             { error: {}, success: {} };
 
         // process success
@@ -142,7 +143,7 @@ export class IncrementalWriteQueue<RxDocType> {
             Array
                 .from(Object.entries(writeResult.success))
                 .map(([docId, result]) => {
-                    this.collection._runHooks('post', 'save', result);
+                    this.postWrite(result);
                     const items = getFromMapOrThrow(itemsById, docId);
                     items.forEach(item => item.resolve(result));
                 })

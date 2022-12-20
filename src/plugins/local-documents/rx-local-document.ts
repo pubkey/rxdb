@@ -1,8 +1,22 @@
 import objectPath from 'object-path';
-import { distinctUntilChanged, filter, map } from 'rxjs/operators';
+import { Observable } from 'rxjs';
+import {
+    distinctUntilChanged,
+    filter,
+    map,
+    shareReplay,
+    startWith
+} from 'rxjs/operators';
 import { overwritable } from '../../overwritable';
-import { basePrototype, createRxDocumentConstructor } from '../../rx-document';
-import { isBulkWriteConflictError, newRxError, newRxTypeError } from '../../rx-error';
+import { getDocumentDataOfRxChangeEvent } from '../../rx-change-event';
+import {
+    basePrototype,
+    createRxDocumentConstructor
+} from '../../rx-document';
+import {
+    newRxError,
+    newRxTypeError
+} from '../../rx-error';
 import { writeSingle } from '../../rx-storage-helper';
 import type {
     LocalDocumentAtomicUpdateFunction,
@@ -15,11 +29,11 @@ import type {
     RxLocalDocumentData
 } from '../../types';
 import {
-    clone,
     flatClone,
     getDefaultRevision,
     getDefaultRxDocumentMeta,
-    getFromObjectOrThrow
+    getFromObjectOrThrow,
+    RXJS_SHARE_REPLAY_DEFAULTS
 } from '../../util';
 import { getLocalDocStateByParent } from './local-documents-helper';
 
@@ -57,10 +71,15 @@ const RxLocalDocumentPrototype: any = {
     get primary() {
         return this.id;
     },
-    get $() {
+    get $(): Observable<RxDocumentData<RxLocalDocumentData>> {
         const _this: RxLocalDocumentClass = this as any;
         return _this.parent.$.pipe(
-            filter(changeEvent => changeEvent.isLocal)
+            filter(changeEvent => changeEvent.isLocal),
+            filter(changeEvent => changeEvent.documentId === this.primary),
+            map(changeEvent => getDocumentDataOfRxChangeEvent(changeEvent)),
+            startWith(this._data),
+            distinctUntilChanged((prev, curr) => prev._rev === curr._rev),
+            shareReplay(RXJS_SHARE_REPLAY_DEFAULTS)
         );
     },
     get(this: RxDocument, objPath: string) {
@@ -98,44 +117,19 @@ const RxLocalDocumentPrototype: any = {
                 distinctUntilChanged()
             );
     },
-    atomicUpdate(mutationFunction: LocalDocumentAtomicUpdateFunction<any>) {
-        return new Promise((res, rej) => {
-            this._atomicQueue = this._atomicQueue
-                .then(async () => {
-                    let done = false;
-                    // we need a hacky while loop to stay incide the chain-link of _atomicQueue
-                    // while still having the option to run a retry on conflicts
-                    while (!done) {
-                        const oldDocData = this._dataSync$.getValue();
-                        const newData = await mutationFunction(clone(oldDocData.data), this);
-                        try {
-                            // always await because mutationFunction might be async
+    async atomicUpdate<DocData>(
+        this: RxLocalDocument<any, DocData>,
+        mutationFunction: LocalDocumentAtomicUpdateFunction<any>
+    ) {
+        const state = await getLocalDocStateByParent(this.parent);
 
-                            const newDocData = flatClone(oldDocData);
-                            newDocData.data = newData;
-
-                            await this._saveData(newDocData, oldDocData);
-                            done = true;
-                        } catch (err) {
-                            /**
-                             * conflicts cannot happen by just using RxDB in one process
-                             * There are two ways they still can appear which is
-                             * replication and multi-tab usage
-                             * Because atomicUpdate has a mutation function,
-                             * we can just re-run the mutation until there is no conflict
-                             */
-                            const isConflict = isBulkWriteConflictError(err as any);
-                            if (isConflict) {
-                                // conflict error -> retrying
-                            } else {
-                                rej(err);
-                                return;
-                            }
-                        }
-                    }
-                    res(this);
-                });
-        });
+        return state.incrementalWriteQueue.addWrite(
+            this._data as any,
+            async (docData) => {
+                docData.data = await mutationFunction(docData.data, this);
+                return docData;
+            }
+        ).then(result => state.docCache.getCachedRxDocument(result as any));
     },
     atomicPatch(patch: Partial<any>) {
         return this.atomicUpdate((docData: any) => {
@@ -165,10 +159,10 @@ const RxLocalDocumentPrototype: any = {
             });
     },
 
-    async remove(this: any): Promise<void> {
+    async remove(this: RxLocalDocument<any>): Promise<RxLocalDocument<any>> {
         const state = await getLocalDocStateByParent(this.parent);
         const writeData: RxDocumentWriteData<RxLocalDocumentData> = {
-            id: this.id,
+            id: this._data.id,
             data: {},
             _deleted: true,
             _meta: getDefaultRxDocumentMeta(),
@@ -179,9 +173,7 @@ const RxLocalDocumentPrototype: any = {
             previous: this._data,
             document: writeData
         }, 'local-document-remove')
-            .then(() => {
-                this.state.docCache.delete(this.id);
-            });
+            .then((writeResult) => state.docCache.getCachedRxDocument(writeResult) as any);
     }
 };
 
@@ -229,6 +221,8 @@ export function createRxLocalDocument<DocData>(
 ): RxLocalDocument<DocData> {
     _init();
     const newDoc = new RxLocalDocumentClass(data.id, data, parent);
-    newDoc.__proto__ = RxLocalDocumentPrototype;
+    Object.setPrototypeOf(newDoc, RxLocalDocumentPrototype);
+    console.dir(RxLocalDocumentPrototype);
+    newDoc.prototype = RxLocalDocumentPrototype;
     return newDoc as any;
 }
