@@ -142,9 +142,8 @@ config.parallel('crdt.test.js', () => {
                     $set: Object.assign({}, writeData, { firstName: 'foobar' })
                 }
             });
-            assert.strictEqual(doc2.firstName, 'foobar');
-
-            assert.ok(doc1 === doc2);
+            assert.ok(doc1 !== doc2);
+            assert.strictEqual(doc2.latest().firstName, 'foobar');
 
             collection.database.destroy();
         });

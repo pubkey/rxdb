@@ -100,7 +100,6 @@ export class DocumentCache<RxDocType, OrmMethods> {
      */
     public getCachedRxDocument(docData: RxDocumentData<RxDocType>): RxDocument<RxDocType, OrmMethods> {
         const docId: string = (docData as any)[this.primaryPath];
-        console.log('-------------- getCachedRxDocument() ' + docId);
         const revisionHeight = parseRevision(docData._rev).height;
         const cacheItem = getFromMapOrFill<string, CacheItem<RxDocType, OrmMethods>>(
             this.cacheItemByDocId,
@@ -112,9 +111,6 @@ export class DocumentCache<RxDocType, OrmMethods> {
         let cachedRxDocument = cachedRxDocumentWeakRef ? cachedRxDocumentWeakRef.deref() : undefined;
         console.dir(cachedRxDocument);
         if (!cachedRxDocument) {
-            console.log('getCachedRxDocument() ' + docId + ' not in cache');
-            console.dir(cacheItem.documentByRevisionHeight);
-
             docData = overwritable.deepFreezeWhenDevMode(docData) as any;
             cachedRxDocument = this.documentCreator(docData) as RxDocument<RxDocType, OrmMethods>;
             cacheItem.documentByRevisionHeight.set(revisionHeight, new WeakRef(cachedRxDocument));
@@ -122,8 +118,6 @@ export class DocumentCache<RxDocType, OrmMethods> {
                 docId,
                 revisionHeight
             });
-        } else {
-            console.log('getCachedRxDocument() ' + docId + ' is in cache');
         }
         return cachedRxDocument;
     }

@@ -166,14 +166,14 @@ describe('replication-couchdb.test.ts', () => {
             let serverDocs = await getAllServerDocs(server.url);
             assert.strictEqual(serverDocs.length, 2);
 
-            await doc1.remove();
+            await doc1.latest().remove();
             await syncAll(c, c2, server);
             serverDocs = await getAllServerDocs(server.url);
             assert.strictEqual(serverDocs.length, 1);
 
             await ensureCollectionsHaveEqualState(c, c2);
 
-            await doc2.remove();
+            await doc2.latest().remove();
             await syncAll(c, c2, server);
             serverDocs = await getAllServerDocs(server.url);
             assert.strictEqual(serverDocs.length, 0);
@@ -206,7 +206,7 @@ describe('replication-couchdb.test.ts', () => {
                 /**
                  * Must have kept the master state c2
                  */
-                assert.strictEqual(doc1.firstName, 'c2');
+                assert.strictEqual(doc1.latest().firstName, 'c2');
 
                 c1.database.destroy();
                 c2.database.destroy();
