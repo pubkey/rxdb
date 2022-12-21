@@ -14,8 +14,14 @@ import config from './config';
 
 import {
     createRxDatabase,
-    randomCouchString
+    randomCouchString,
+    addRxPlugin
 } from '../../';
+import { RxDBQueryBuilderPlugin } from '../../plugins/query-builder';
+import { replicateRxCollection } from '../../src/plugins/replication';
+import { lastOfArray } from 'event-reduce-js';
+import { Subject } from 'rxjs';
+import { RxReplicationPullStreamItem } from '../../src';
 
 describe('bug-report.test.js', () => {
     it('should fail because it reproduces the bug', async () => {
@@ -23,13 +29,13 @@ describe('bug-report.test.js', () => {
         /**
          * If your test should only run in nodejs or only run in the browser,
          * you should comment in the return operator and adapt the if statement.
-         */
-        if (
-            !config.platform.isNode() // runs only in node
-            // config.platform.isNode() // runs only in the browser
-        ) {
-            // return;
-        }
+        //  */
+        // if (
+        //     // !config.platform.isNode() // runs only in node
+        //     // config.platform.isNode() // runs only in the browser
+        // ) {
+        //     // return;
+        // }
 
         if (!config.storage.hasMultiInstance) {
             return;
@@ -37,31 +43,46 @@ describe('bug-report.test.js', () => {
 
         // create a schema
         const mySchema = {
-            version: 0,
-            primaryKey: 'passportId',
+            title: 'test',
             type: 'object',
+            version: 0,
+            primaryKey: {
+                key: 'id',
+                fields: ['userId', 'projectId'],
+                separator: '|'
+            },
             properties: {
-                passportId: {
+                id: {
                     type: 'string',
-                    maxLength: 100
+                    maxLength: 73
                 },
-                firstName: {
-                    type: 'string'
+                userId: {
+                    type: 'string',
+                    final: true,
+                    maxLength: 36
                 },
-                lastName: {
-                    type: 'string'
+                projectId: {
+                    type: 'string',
+                    final: true,
+                    maxLength: 36
                 },
-                age: {
-                    type: 'integer',
-                    minimum: 0,
-                    maximum: 150
+                updatedAt: {
+                    type: 'string',
+                    format: 'date-time'
                 }
-            }
+            },
+            required: [
+                'id',
+                'userId',
+                'projectId',
+                'updatedAt'
+            ]
         };
-
+        // addRxPlugin(RxQuery)
         // generate a random database-name
         const name = randomCouchString(10);
 
+        addRxPlugin(RxDBQueryBuilderPlugin);
         // create a database
         const db = await createRxDatabase({
             name,
@@ -82,10 +103,9 @@ describe('bug-report.test.js', () => {
 
         // insert a document
         await collections.mycollection.insert({
-            passportId: 'foobar',
-            firstName: 'Bob',
-            lastName: 'Kelso',
-            age: 56
+            userId: '2ef7bf4a-d03d-4b3c-acc3-4237532c3fc7',
+            projectId: '50f739af-8b11-4b0c-bf8d-c03fad94555a',
+            updatedAt: new Date().toISOString()
         });
 
         /**
@@ -98,7 +118,8 @@ describe('bug-report.test.js', () => {
             eventReduce: true,
             ignoreDuplicate: true
         });
-        // create a collection
+
+        // create a collection with a composite primary key
         const collectionInOtherTab = await dbInOtherTab.addCollections({
             mycollection: {
                 schema: mySchema
@@ -108,15 +129,52 @@ describe('bug-report.test.js', () => {
         // find the document in the other tab
         const myDocument = await collectionInOtherTab.mycollection
             .findOne()
-            .where('firstName')
-            .eq('Bob')
+            .where('userId')
+            .eq('2ef7bf4a-d03d-4b3c-acc3-4237532c3fc7')
             .exec();
 
         /*
-         * assert things,
-         * here your tests should fail to show that there is a bug
+         * when inserting documents everything works fine,
          */
-        assert.strictEqual(myDocument.age, 56);
+        assert.strictEqual(myDocument.id, '2ef7bf4a-d03d-4b3c-acc3-4237532c3fc7|50f739af-8b11-4b0c-bf8d-c03fad94555a');
+
+        type CheckpointType = {
+            id: string;
+            updatedAt: string;
+        };
+        let fetched = false;
+
+        const pullStream$ = new Subject<RxReplicationPullStreamItem<any, CheckpointType>>();
+
+        replicateRxCollection({
+            replicationIdentifier: 'replicate-' + name,
+            collection: db.collections.mycollection,
+            pull: {
+                async handler(lastCheckpoint: CheckpointType) {
+                    const docs = (fetched) ? [] : [{
+                        userId: '627b696f-6c1f-4aac-9d60-c876fb0b175c',
+                        projectId: 'b1ebbec0-58c4-4364-9b4b-a32665276c0f',
+                        updatedAt: new Date().toISOString()
+                    }];
+
+                    fetched = true;
+
+                    const lastDoc = lastOfArray(docs);
+                    return {
+                        documents: docs,
+                        checkpoint: !lastDoc
+                            ? lastCheckpoint
+                            : {
+                                id: lastDoc.userId + '|' + lastDoc.projectId,
+                                updatedAt: lastDoc.updatedAt
+                            }
+                    };
+                },
+                batchSize: 1,
+                stream$: pullStream$.asObservable()
+            },
+        });
+
 
         // you can also wait for events
         const emitted = [];
