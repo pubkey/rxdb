@@ -659,6 +659,24 @@ config.parallel('rx-schema.test.js', () => {
                     const hash2 = schema2.hash;
                     assert.strictEqual(hash1, hash2);
                 });
+                /**
+                 * The order could contain meaning so having a different order
+                 * should result in a different hash.
+                 * Also sorting is not equal on all JavaScript runtimes,
+                 * so by not re-ordering we can ensure deterministic hashing.
+                 * @link https://github.com/pubkey/rxdb/pull/4005
+                 */
+                it('#4005 should respect the sort order', () => {
+                    const schema1 = createRxSchema(Object.assign({}, schemas.humanDefault, {
+                        indexes: ['firstName', 'lastName']
+                    }));
+                    const schema2 = createRxSchema(Object.assign({}, schemas.humanDefault, {
+                        indexes: ['lastName', 'firstName']
+                    }));
+                    const hash1 = schema1.hash;
+                    const hash2 = schema2.hash;
+                    assert.ok(hash1 !== hash2);
+                });
             });
         });
         describe('.validateChange()', () => {

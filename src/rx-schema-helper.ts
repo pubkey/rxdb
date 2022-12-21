@@ -10,7 +10,14 @@ import type {
     RxStorageDefaultCheckpoint,
     StringKeys
 } from './types';
-import { clone, flatClone, isMaybeReadonlyArray, RX_META_LWT_MINIMUM, sortObject, trimDots } from './util';
+import {
+    clone,
+    flatClone,
+    isMaybeReadonlyArray,
+    RX_META_LWT_MINIMUM,
+    sortObject,
+    trimDots
+} from './util';
 
 /**
  * Helper function to create a valid RxJsonSchema
@@ -127,24 +134,7 @@ export function getComposedPrimaryKeyOfDocumentData<RxDocType>(
  * @return RxJsonSchema - ordered and filled
  */
 export function normalizeRxJsonSchema<T>(jsonSchema: RxJsonSchema<T>): RxJsonSchema<T> {
-    // TODO do we need the deep clone() here?
-    const normalizedSchema: RxJsonSchema<T> = sortObject(clone(jsonSchema));
-
-    // indexes must NOT be sorted because sort order is important here.
-    if (jsonSchema.indexes) {
-        normalizedSchema.indexes = Array.from(jsonSchema.indexes);
-    }
-
-    // primaryKey.fields must NOT be sorted because sort order is important here.
-    if (
-        typeof normalizedSchema.primaryKey === 'object' &&
-        typeof jsonSchema.primaryKey === 'object'
-    ) {
-        normalizedSchema.primaryKey.fields = jsonSchema.primaryKey.fields;
-    }
-
-
-
+    const normalizedSchema: RxJsonSchema<T> = sortObject(jsonSchema, true);
     return normalizedSchema;
 }
 

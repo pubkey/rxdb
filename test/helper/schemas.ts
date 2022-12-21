@@ -79,10 +79,12 @@ export const humanDefault: RxJsonSchema<HumanDocumentType> = overwritable.deepFr
             maxLength: 100
         },
         firstName: {
-            type: 'string'
+            type: 'string',
+            maxLength: 100
         },
         lastName: {
-            type: 'string'
+            type: 'string',
+            maxLength: 100
         },
         age: {
             description: 'age in years',

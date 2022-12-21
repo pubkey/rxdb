@@ -15,6 +15,7 @@
 - REMOVE deprecated `babel-plugin-transform-async-to-promises` plugin.
 - CHANGE `RxCollection.findByIds()` now returns a `RxQuery`.
 - REMOVED `RxCollection.findByIds$`, use `RxCollection.findByIds().$` instead.
+- FIX schema hashing should respect the sort order [#4005](https://github.com/pubkey/rxdb/pull/4005)
 
 <!-- ADD new changes here! -->
 
