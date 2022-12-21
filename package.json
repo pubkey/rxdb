@@ -33,6 +33,101 @@
   "module": "./dist/es/index.js",
   "types": "./dist/types/index.d.ts",
   "sideEffects": false,
+  "exports": {
+    ".": {
+      "node": "./dist/lib/index.js",
+      "default": "./dist/es/index.js"
+    },
+     "./plugins/backup": {
+      "node": "./dist/lib/plugins/backup/index.js",
+      "default": "./dist/es/plugins/backup/index.js"
+    },
+     "./plugins/cleanup": {
+      "node": "./dist/lib/plugins/cleanup/index.js",
+      "default": "./dist/es/plugins/cleanup/index.js"
+    },
+    "./plugins/crdt": {
+      "node": "./dist/lib/plugins/cdrt/index.js",
+      "default": "./dist/es/plugins/cdrt/index.js"
+    },
+    "./plugins/dev-move": {
+      "node": "./dist/lib/plugins/dev-mode/index.js",
+      "default": "./dist/es/plugins/dev-mode/index.js"
+    },
+    "./plugins/dexie": {
+      "node": "./dist/lib/plugins/dexie/index.js",
+      "default": "./dist/es/plugins/dexie/index.js"
+    },
+    "./plugins/electron": {
+      "node": "./dist/lib/plugins/electron/index.js",
+      "default": "./dist/es/plugins/electron/index.js"
+    },
+    "./plugins/flutter": {
+      "node": "./dist/lib/plugins/flutter/index.js",
+      "default": "./dist/es/plugins/flutter/index.js"
+    },
+    "./plugins/foundationdb": {
+      "node": "./dist/lib/plugins/foundationdb/index.js",
+      "default": "./dist/es/plugins/foundationdb/index.js"
+    },
+    "./plugins/local-documents": {
+      "node": "./dist/lib/plugins/local-documents/index.js",
+      "default": "./dist/es/plugins/local-documents/index.js"
+    },
+    "./plugins/lokijs": {
+      "node": "./dist/lib/plugins/lokijs/index.js",
+      "default": "./dist/es/plugins/lokijs/index.js"
+    },
+    "./plugins/memory": {
+      "node": "./dist/lib/plugins/memory/index.js",
+      "default": "./dist/es/plugins/memory/index.js"
+    },
+    "./plugins/migration": {
+      "node": "./dist/lib/plugins/migration/index.js",
+      "default": "./dist/es/plugins/migration/index.js"
+    },
+    "./plugins/pouchdb": {
+      "node": "./dist/lib/plugins/pouchdb/index.js",
+      "default": "./dist/es/plugins/pouchdb/index.js"
+    },
+    "./plugins/query-builder": {
+      "node": "./dist/lib/plugins/query-builder/index.js",
+      "default": "./dist/es/plugins/query-builder/index.js"
+    },
+    "./plugins/replication": {
+      "node": "./dist/lib/plugins/replication/index.js",
+      "default": "./dist/es/plugins/replication/index.js"
+    },
+    "./plugins/replication-couchdb-new": {
+      "node": "./dist/lib/plugins/replication-couchdb-new/index.js",
+      "default": "./dist/es/plugins/replication-couchdb-new/index.js"
+    },
+    "./plugins/replication-firestore": {
+      "node": "./dist/lib/plugins/replication-firestore/index.js",
+      "default": "./dist/es/plugins/replication-firestore/index.js"
+    },
+    "./plugins/replication-graphql": {
+      "node": "./dist/lib/plugins/replication-graphql/index.js",
+      "default": "./dist/es/plugins/replication-graphql/index.js"
+    },
+    "./plugins/replication-p2p": {
+      "node": "./dist/lib/plugins/replication-p2p/index.js",
+      "default": "./dist/es/plugins/replication-p2p/index.js"
+    },
+    "./plugins/replication-websocket": {
+      "node": "./dist/lib/plugins/replication-websocket/index.js",
+      "default": "./dist/es/plugins/replication-websocket/index.js"
+    },
+    "./plugins/storage-remote": {
+      "node": "./dist/lib/plugins/storage-remote/index.js",
+      "default": "./dist/es/plugins/storage-remote/index.js"
+    },
+    "./plugins/worker": {
+      "node": "./dist/lib/plugins/worker/index.js",
+      "default": "./dist/es/plugins/worker/index.js"
+    },
+    "./package.json": "./package.json"
+  },
   "scripts": {
     "postinstall": "node scripts/postinstall.js || echo \"ignore\"",
     "test": "npm run test:node && npm run test:browser",
