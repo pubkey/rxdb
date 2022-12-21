@@ -12,6 +12,7 @@
 - CHANGE crunch multiple incremental (aka 'atomic') operations into a single database write. Also batch writes to multiple documents into a single write.
 - CHANGE Make RxDocuments immutable
 - ADD `RxDocument.getLatest()`
+- REMOVE deprecated `babel-plugin-transform-async-to-promises` plugin.
 
 <!-- ADD new changes here! -->
 
