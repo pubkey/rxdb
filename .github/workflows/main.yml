@@ -349,7 +349,7 @@ jobs:
         # uses: DevExpress/testcafe-action@latest
         uses: GabrielBB/xvfb-action@v1
         with:
-          working-directory: ./examples/angular #optional
+          working-directory: ./examples/angular
           run: npm run test:build
 
       - name: angular test ssr
