@@ -201,6 +201,7 @@ async function _create(): Promise<RxHeroesDatabase> {
         ongoingReplication.error$.subscribe(err => {
             console.log('Got replication error:');
             console.dir(err);
+            console.error(err);
         });
     }
 

@@ -5,11 +5,11 @@ import AsyncTestUtil from 'async-test-util';
 
 console.log('open page');
 
-fixture `Example page`
-    .page `http://localhost:8888/`;
+fixture`Example page`
+    .page`http://0.0.0.0:8888/`;
 
 
-test.page('http://localhost:8888/')('insert/edit/remove a hero', async t => {
+test.page('http://0.0.0.0:8888/')('insert/edit/remove a hero', async t => {
     // clear previous heroes
     const heroElements = Selector('.hero-list-component mat-list-item');
     const amount = heroElements.count;
@@ -60,7 +60,7 @@ test.page('http://localhost:8888/')('insert/edit/remove a hero', async t => {
 });
 
 
-test.page('http://localhost:8888/multitab.html?frames=2')('multitab: insert hero and check other tab', async t => {
+test.page('http://0.0.0.0:8888/multitab.html?frames=2')('multitab: insert hero and check other tab', async t => {
 
     await t.switchToIframe('#frame_0');
 
@@ -85,11 +85,12 @@ test.page('http://localhost:8888/multitab.html?frames=2')('multitab: insert hero
 });
 
 const tabsAmount = 4;
-test.page('http://localhost:8888/multitab.html?frames=' + tabsAmount)('leader-election: Exact one tab should become leader', async t => {
+test.page('http://0.0.0.0:8888/multitab.html?frames=' + tabsAmount)('leader-election: Exact one tab should become leader', async t => {
 
     // wait until last tab loaded
     await t.switchToIframe('#frame_' + (tabsAmount - 1));
     await AsyncTestUtil.wait(1000);
+    console.log('insert !!!');
     const heroNameInput = Selector('.hero-insert-component #insert-name');
     await t.typeText(heroNameInput, 'foobar');
     await t.switchToMainWindow();
@@ -97,6 +98,7 @@ test.page('http://localhost:8888/multitab.html?frames=' + tabsAmount)('leader-el
     // wait until at least one becomes leader
     let currentLeader = null;
     await AsyncTestUtil.waitUntil(async () => {
+        console.log('await leader once!');
         let ret = false;
         for (let i = 0; i < tabsAmount; i++) {
             await t.switchToIframe('#frame_' + i);
@@ -108,7 +110,7 @@ test.page('http://localhost:8888/multitab.html?frames=' + tabsAmount)('leader-el
             await t.switchToMainWindow();
         }
         return ret;
-    });
+    }, 10 * 1000, 100);
 
     await AsyncTestUtil.wait(200); // w8 a bit
     // ensure still only one is leader
