@@ -173,7 +173,7 @@ export const basePrototype = {
         }
 
         if (schemaObj.type === 'array') {
-            return refCollection.findByIds(value).then(res => {
+            return refCollection.findByIds(value).exec().then(res => {
                 const valuesIterator = res.values();
                 return Array.from(valuesIterator) as any;
             });

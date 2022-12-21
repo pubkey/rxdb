@@ -1,8 +1,6 @@
 import {
     filter,
-    startWith,
-    mergeMap,
-    shareReplay
+    mergeMap
 } from 'rxjs/operators';
 
 import {
@@ -14,7 +12,6 @@ import {
     getFromMapOrThrow,
     PROMISE_RESOLVE_FALSE,
     PROMISE_RESOLVE_VOID,
-    RXJS_SHARE_REPLAY_DEFAULTS,
     getDefaultRxDocumentMeta,
     getDefaultRevision
 } from './util';
@@ -392,7 +389,7 @@ export class RxCollectionBase<
             };
         }
 
-        const rxDocumentMap = await this.findByIds(ids);
+        const rxDocumentMap = await this.findByIds(ids).exec();
         const docsData: RxDocumentData<RxDocumentType>[] = [];
         const docsMap: Map<string, RxDocumentData<RxDocumentType>> = new Map();
         Array.from(rxDocumentMap.values()).forEach(rxDocument => {
@@ -595,138 +592,18 @@ export class RxCollectionBase<
      * find a list documents by their primary key
      * has way better performance then running multiple findOne() or a find() with a complex $or-selected
      */
-    async findByIds(
+    findByIds(
         ids: string[]
-    ): Promise<Map<string, RxDocument<RxDocumentType, OrmMethods>>> {
-        const ret = new Map<string, RxDocument<RxDocumentType, OrmMethods>>();
-        const mustBeQueried: string[] = [];
-
-        // first try to fill from docCache
-        ids.forEach(id => {
-            const docData = this._docCache.getLatestDocumentDataIfExists(id);
-            if (docData) {
-                const doc = this._docCache.getCachedRxDocument(docData);
-                ret.set(id, doc);
-            } else {
-                mustBeQueried.push(id);
-            }
-        });
-
-        // find everything which was not in docCache
-        if (mustBeQueried.length > 0) {
-            const docs = await this.storageInstance.findDocumentsById(mustBeQueried, false);
-            Object.values(docs).forEach(docData => {
-                const doc = this._docCache.getCachedRxDocument(docData);
-                ret.set(doc.primary, doc);
-            });
-        }
-        return ret;
-    }
-
-    /**
-     * like this.findByIds but returns an observable
-     * that always emits the current state
-     */
-    findByIds$(
-        ids: string[]
-    ): Observable<Map<string, RxDocument<RxDocumentType, OrmMethods>>> {
-        let currentValue: Map<string, RxDocument<RxDocumentType, OrmMethods>> | null = null;
-        let lastChangeEvent: number = -1;
-
-        /**
-         * Ensure we do not process events in parallel
-         */
-        let queue: Promise<any> = PROMISE_RESOLVE_VOID;
-
-        const initialPromise = this.findByIds(ids).then(docsMap => {
-            lastChangeEvent = this._changeEventBuffer.counter;
-            currentValue = docsMap;
-        });
-        let firstEmitDone = false;
-
-        return this.$.pipe(
-            startWith(null),
-            /**
-             * Optimization shortcut.
-             * Do not proceed if the emitted RxChangeEvent
-             * is not relevant for the query.
-             */
-            filter(changeEvent => {
-                if (
-                    // first emit has no event
-                    changeEvent &&
-                    (
-                        // local documents are not relevant for the query
-                        changeEvent.isLocal ||
-                        // document of the change is not in the ids list.
-                        !ids.includes(changeEvent.documentId)
-                    )
-                ) {
-                    return false;
-                } else {
-                    return true;
+    ): RxQuery<RxDocumentType, Map<string, RxDocument<RxDocumentType, OrmMethods>>> {
+        const mangoQuery: MangoQuery<RxDocumentType> = {
+            selector: {
+                [this.schema.primaryPath]: {
+                    $in: ids.slice(0)
                 }
-            }),
-            mergeMap(() => initialPromise),
-            /**
-             * Because shareReplay with refCount: true
-             * will often subscribe/unsusbscribe
-             * we always ensure that we handled all missed events
-             * since the last subscription.
-             */
-            mergeMap(() => {
-                queue = queue.then(async () => {
-                    /**
-                     * We first have to clone the Map
-                     * to ensure we do not create side effects by mutating
-                     * a Map that has already been returned before.
-                     */
-                    currentValue = new Map(ensureNotFalsy(currentValue));
-                    const missedChangeEvents = this._changeEventBuffer.getFrom(lastChangeEvent + 1);
-                    lastChangeEvent = this._changeEventBuffer.counter;
-                    if (missedChangeEvents === null) {
-                        /**
-                         * changeEventBuffer is of bounds -> we must re-execute over the database
-                         * because we cannot calculate the new results just from the events.
-                         */
-                        const newResult = await this.findByIds(ids);
-                        lastChangeEvent = this._changeEventBuffer.counter;
-                        return newResult;
-                    } else {
-                        let resultHasChanged = false;
-                        missedChangeEvents
-                            .forEach(rxChangeEvent => {
-                                const docId = rxChangeEvent.documentId;
-                                if (!ids.includes(docId)) {
-                                    // document is not relevant for the result set
-                                    return;
-                                }
-                                const op = rxChangeEvent.operation;
-                                if (op === 'INSERT' || op === 'UPDATE') {
-                                    resultHasChanged = true;
-                                    const rxDocument = this._docCache.getCachedRxDocument(rxChangeEvent.documentData);
-                                    ensureNotFalsy(currentValue).set(docId, rxDocument);
-                                } else {
-                                    if (ensureNotFalsy(currentValue).has(docId)) {
-                                        resultHasChanged = true;
-                                        ensureNotFalsy(currentValue).delete(docId);
-                                    }
-                                }
-                            });
-
-                        // nothing happened that affects the result -> do not emit
-                        if (!resultHasChanged && firstEmitDone) {
-                            return false as any;
-                        }
-                    }
-                    firstEmitDone = true;
-                    return currentValue;
-                });
-                return queue;
-            }),
-            filter(x => !!x),
-            shareReplay(RXJS_SHARE_REPLAY_DEFAULTS)
-        );
+            }
+        };
+        const query = createRxQuery('findByIds', mangoQuery, this as any);
+        return query as any;
     }
 
     /**

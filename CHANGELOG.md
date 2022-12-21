@@ -13,6 +13,8 @@
 - CHANGE Make RxDocuments immutable
 - ADD `RxDocument.getLatest()`
 - REMOVE deprecated `babel-plugin-transform-async-to-promises` plugin.
+- CHANGE `RxCollection.findByIds()` now returns a `RxQuery`.
+- REMOVED `RxCollection.findByIds$`, use `RxCollection.findByIds().$` instead.
 
 <!-- ADD new changes here! -->
 
