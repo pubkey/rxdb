@@ -6,10 +6,10 @@ import AsyncTestUtil from 'async-test-util';
 console.log('open page');
 
 fixture `Example page`
-    .page `http://0.0.0.0:8888/`;
+    .page `http://localhost:8888/`;
 
 
-test.page('http://0.0.0.0:8888/')('insert/edit/remove a hero', async t => {
+test.page('http://localhost:8888/')('insert/edit/remove a hero', async t => {
     // clear previous heroes
     const heroElements = Selector('.hero-list-component mat-list-item');
     const amount = heroElements.count;
@@ -60,7 +60,7 @@ test.page('http://0.0.0.0:8888/')('insert/edit/remove a hero', async t => {
 });
 
 
-test.page('http://0.0.0.0:8888/multitab.html?frames=2')('multitab: insert hero and check other tab', async t => {
+test.page('http://localhost:8888/multitab.html?frames=2')('multitab: insert hero and check other tab', async t => {
 
     await t.switchToIframe('#frame_0');
 
@@ -85,7 +85,7 @@ test.page('http://0.0.0.0:8888/multitab.html?frames=2')('multitab: insert hero a
 });
 
 const tabsAmount = 4;
-test.page('http://0.0.0.0:8888/multitab.html?frames=' + tabsAmount)('leader-election: Exact one tab should become leader', async t => {
+test.page('http://localhost:8888/multitab.html?frames=' + tabsAmount)('leader-election: Exact one tab should become leader', async t => {
 
     // wait until last tab loaded
     await t.switchToIframe('#frame_' + (tabsAmount - 1));

@@ -307,7 +307,7 @@ jobs:
       - run: npm run test:performance:foundationdb
 
   angular:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v2
       #- name: install dependencies
@@ -347,7 +347,7 @@ jobs:
 
       - name: angular test
         # uses: DevExpress/testcafe-action@latest
-        uses: GabrielBB/xvfb-action@v1
+        uses: GabrielBB/xvfb-action@v1.6
         with:
           working-directory: ./examples/angular
           run: npm run test:build
