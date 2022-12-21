@@ -255,13 +255,15 @@ config.parallel('reactive-query.test.js', () => {
             const doc = await c.findOne().exec(true);
             const docId = doc.primary;
 
-            assert.deepStrictEqual(c2._docCache.get(docId), undefined);
+            // should not be in cache
+            assert.deepStrictEqual(c2._docCache.getLatestDocumentDataIfExists(docId), undefined);
 
             const results = [];
             const sub = c2.find().$.subscribe(docs => results.push(docs));
             await AsyncTestUtil.waitUntil(() => results.length >= 1);
 
-            assert.strictEqual((c2._docCache.get(docId) as any).primary, docId);
+            // should be in cache now
+            assert.strictEqual((c2._docCache.getLatestDocumentData(docId) as any).passportId, docId);
 
             sub.unsubscribe();
             c.database.destroy();
@@ -365,10 +367,6 @@ config.parallel('reactive-query.test.js', () => {
                 }
             });
 
-            console.log(':::::::::::::::::::::::::::::::::::');
-            console.log(':::::::::::::::::::::::::::::::::::');
-            console.log(':::::::::::::::::::::::::::::::::::');
-
             const emitted: any[] = [];
             const sub = db.crawlstate
                 .findOne('registry').$
@@ -399,7 +397,6 @@ config.parallel('reactive-query.test.js', () => {
                 return d2;
             };
 
-            console.log('--------------------0');
             await Promise.all(
                 new Array(5)
                     .fill(0)
@@ -412,15 +409,11 @@ config.parallel('reactive-query.test.js', () => {
                     })
             );
 
-            console.log('............... 1');
-
             await AsyncTestUtil.waitUntil(() => emitted.length > 0);
-            console.log('............... 2');
             await AsyncTestUtil.waitUntil(() => {
                 const lastEmitted = emitted[emitted.length - 1];
                 return lastEmitted.state.providers === 4;
             }, undefined, 300);
-            console.log('............... 3');
 
             await Promise.all(
                 new Array(5)
@@ -431,7 +424,6 @@ config.parallel('reactive-query.test.js', () => {
                     }))
                     .map(data => db2.crawlstate.atomicUpsert(data))
             );
-            console.log('............... 4');
 
             await AsyncTestUtil.waitUntil(() => {
                 if (!emitted.length) return false;

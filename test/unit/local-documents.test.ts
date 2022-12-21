@@ -109,14 +109,14 @@ config.parallel('local-documents.test.js', () => {
         describe('.atomicPatch()', () => {
             it('should modify the data', async () => {
                 const c = await humansCollection.create(0);
-                const doc = await c.upsertLocal<LocalDocType>(
+                let doc = await c.upsertLocal<LocalDocType>(
                     'foobar',
                     {
                         foo: 'bar'
                     }
                 );
 
-                await doc.atomicPatch({
+                doc = await doc.atomicPatch({
                     added: 'foo'
                 });
 
@@ -129,11 +129,11 @@ config.parallel('local-documents.test.js', () => {
         describe('.atomicUpdate()', () => {
             it('should modify the data', async () => {
                 const c = await humansCollection.create(0);
-                const doc: RxLocalDocument<RxCollection<any>, LocalDocType> = await c.upsertLocal<LocalDocType>('foobar', {
+                let doc: RxLocalDocument<RxCollection<any>, LocalDocType> = await c.upsertLocal<LocalDocType>('foobar', {
                     foo: 'bar'
                 });
 
-                await doc.atomicUpdate(data => {
+                doc = await doc.atomicUpdate(data => {
                     data.added = 'foo';
                     return data;
                 });
@@ -236,7 +236,7 @@ config.parallel('local-documents.test.js', () => {
                 assert.strictEqual(doc.get('foo'), 'bar');
                 c.database.destroy();
             });
-            it('should update when exists', async () => {
+            it('should update if the document already exists', async () => {
                 const c = await humansCollection.create(0);
                 const doc = await c.upsertLocal('foobar', {
                     foo: 'bar'
@@ -245,8 +245,8 @@ config.parallel('local-documents.test.js', () => {
                     foo: 'bar2'
                 });
 
-                assert.ok(doc === doc2);
-                assert.strictEqual(doc.get('foo'), 'bar2');
+                assert.strictEqual(doc2.get('foo'), 'bar2');
+                assert.ok(doc !== doc2);
                 c.database.destroy();
             });
             /**
@@ -262,10 +262,13 @@ config.parallel('local-documents.test.js', () => {
                 const docSub = doc.$.subscribe(x => {
                     emitted.push(x);
                 });
+                await waitUntil(() => emitted.length === 1);
+
                 await c.upsertLocal('foobar', {
                     foo: 'barTwo',
                 });
 
+                console.dir(emitted);
                 assert.strictEqual(emitted.length, 2);
                 // first 'barOne' is emitted because.$ is a BehaviorSubject
                 assert.strictEqual(emitted[0].data.foo, 'barOne');
@@ -286,7 +289,7 @@ config.parallel('local-documents.test.js', () => {
             });
             await doc.remove();
             const doc2 = await c.getLocal('foobar');
-            assert.strictEqual(doc2, null);
+            assert.ok(ensureNotFalsy(doc2).deleted);
             c.database.destroy();
         });
     });
@@ -332,7 +335,7 @@ config.parallel('local-documents.test.js', () => {
 
             await doc1.atomicPatch({ foo: 'bar2' });
             await waitUntil(() => {
-                return ensureNotFalsy(doc2).get('foo') === 'bar2';
+                return ensureNotFalsy(doc2).getLatest().get('foo') === 'bar2';
             }, 1000, 50);
 
             db.destroy();
@@ -443,7 +446,7 @@ config.parallel('local-documents.test.js', () => {
             const doc2 = await c2.humans.getLocal<TestDocType>('foobar');
             await doc1.atomicPatch({ foo: 'bar2' });
 
-            await waitUntil(() => doc2 && doc2.toJSON().data.foo === 'bar2');
+            await waitUntil(() => doc2 && doc2.getLatest().toJSON().data.foo === 'bar2');
             await waitUntil(() => {
                 return emitted.length >= 2;
             });
@@ -545,14 +548,14 @@ config.parallel('local-documents.test.js', () => {
             });
             await doc.atomicPatch({ age: 50 });
 
-            await AsyncTestUtil.waitUntil(() => (doc2 as any).age === 50);
+            await AsyncTestUtil.waitUntil(() => (doc2 as any).getLatest().age === 50);
             await AsyncTestUtil.wait(20);
             assert.strictEqual(ensureNotFalsy(localDoc2).get('age'), 10);
             await localDoc.atomicPatch({ age: 66, foo: 'bar' });
 
-            await AsyncTestUtil.waitUntil(() => ensureNotFalsy(localDoc2).get('age') === 66);
+            await AsyncTestUtil.waitUntil(() => ensureNotFalsy(localDoc2).getLatest().get('age') === 66);
             await AsyncTestUtil.wait(20);
-            assert.strictEqual(ensureNotFalsy(doc2).get('age'), 50);
+            assert.strictEqual(ensureNotFalsy(doc2).getLatest().get('age'), 50);
 
             db.destroy();
             db2.destroy();

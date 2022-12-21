@@ -277,14 +277,14 @@ describe('replication.test.js', () => {
             const docData = schemaObjects.humanWithTimestamp({
                 id
             });
-            const doc = await localCollection.insert(docData);
+            let doc = await localCollection.insert(docData);
             await waitUntil(async () => {
                 const remoteDoc = await docsRemoteQuery.exec();
                 return !!remoteDoc;
             });
 
             // UPDATE
-            await doc.atomicPatch({
+            doc = await doc.atomicPatch({
                 age: 100
             });
             await waitUntil(async () => {

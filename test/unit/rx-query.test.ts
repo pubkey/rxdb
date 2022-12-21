@@ -302,7 +302,7 @@ describe('rx-query.test.ts', () => {
                 throw new Error('doc missing');
             }
 
-            const docDataObject = doc._dataSync$.getValue();
+            const docDataObject = doc._data;
             const inQueryCacheObject = ensureNotFalsy(query._result).docsData[0];
 
             assert.ok(

@@ -136,7 +136,7 @@ config.parallel('attachments.test.ts', () => {
         });
         it('should insert two attachments', async () => {
             const c = await humansCollection.createAttachments(1);
-            const doc = await c.findOne().exec(true);
+            let doc = await c.findOne().exec(true);
             await doc.putAttachment({
                 id: 'cat.txt',
                 data: blobBufferUtil.createBlobBuffer('meow', 'text/plain'),
@@ -148,6 +148,7 @@ config.parallel('attachments.test.ts', () => {
                 type: 'text/plain'
             });
 
+            doc = await c.findOne().exec(true);
             const catAttachment = doc.getAttachment('cat.txt');
             const stringCat = await ensureNotFalsy(catAttachment).getStringData();
             assert.strictEqual(stringCat, 'meow');
@@ -192,26 +193,27 @@ config.parallel('attachments.test.ts', () => {
     describe('.getAttachment()', () => {
         it('should get the attachment', async () => {
             const c = await humansCollection.createAttachments(1);
-            const doc = await c.findOne().exec(true);
+            let doc = await c.findOne().exec(true);
             await doc.putAttachment({
                 id: 'cat.txt',
                 data: blobBufferUtil.createBlobBuffer('meow I am a kitty with a knife', 'text/plain'),
                 type: 'text/plain'
             });
+            doc = await c.findOne().exec(true);
             const attachment: any = doc.getAttachment('cat.txt');
             assert.ok(attachment);
             c.database.destroy();
         });
         it('should find the attachment after another doc-update', async () => {
             const c = await humansCollection.createAttachments(1);
-            const doc = await c.findOne().exec(true);
+            let doc = await c.findOne().exec(true);
             await doc.putAttachment({
                 id: 'cat.txt',
                 data: blobBufferUtil.createBlobBuffer('meow I am a kitty with a knife', 'text/plain'),
                 type: 'text/plain'
             });
 
-            await doc.atomicPatch({
+            doc = await doc.atomicPatch({
                 age: 7
             });
 
@@ -268,7 +270,7 @@ config.parallel('attachments.test.ts', () => {
         });
         it('should remove all attachments when a document gets deleted', async () => {
             const c = await humansCollection.createAttachments(1);
-            const doc = await c.findOne().exec(true);
+            let doc = await c.findOne().exec(true);
             const attachmentId = 'cat.txt';
             await doc.putAttachment({
                 id: attachmentId,
@@ -277,6 +279,7 @@ config.parallel('attachments.test.ts', () => {
             });
             await c.storageInstance.getAttachmentData(doc.primary, attachmentId);
 
+            doc = await c.findOne().exec(true);
             await doc.remove();
             let hasThrown = false;
             try {
@@ -292,13 +295,14 @@ config.parallel('attachments.test.ts', () => {
     describe('RxAttachment.getData()', () => {
         it('should get the data', async () => {
             const c = await humansCollection.createAttachments(1);
-            const doc = await c.findOne().exec(true);
+            let doc = await c.findOne().exec(true);
             const dat = AsyncTestUtil.randomString(100) + ' ' + AsyncTestUtil.randomString(100);
             await doc.putAttachment({
                 id: 'cat.txt',
                 data: blobBufferUtil.createBlobBuffer(dat, 'text/plain'),
                 type: 'text/plain'
             });
+            doc = await c.findOne().exec(true);
             const attachment: any = doc.getAttachment('cat.txt');
             const data = await attachment.getData();
             const dataString = await blobBufferUtil.toString(data);
@@ -309,13 +313,14 @@ config.parallel('attachments.test.ts', () => {
     describe('RxAttachment.getStringData()', () => {
         it('should get the data as string', async () => {
             const c = await humansCollection.createAttachments(1);
-            const doc = await c.findOne().exec(true);
+            let doc = await c.findOne().exec(true);
             const dat = AsyncTestUtil.randomString(100) + ' ' + AsyncTestUtil.randomString(100);
             await doc.putAttachment({
                 id: 'cat.txt',
                 data: blobBufferUtil.createBlobBuffer(dat, 'text/plain'),
                 type: 'text/plain'
             });
+            doc = await c.findOne().exec(true);
             const attachment: any = doc.getAttachment('cat.txt');
             const data = await attachment.getStringData();
             assert.strictEqual(data, dat);
@@ -325,18 +330,20 @@ config.parallel('attachments.test.ts', () => {
     describe('RxAttachment.remove()', () => {
         it('should remove the attachment', async () => {
             const c = await humansCollection.createAttachments(1);
-            const doc = await c.findOne().exec(true);
+            let doc = await c.findOne().exec(true);
             await doc.putAttachment({
                 id: 'cat.txt',
                 data: blobBufferUtil.createBlobBuffer('meow I am a kitty with a knife', 'text/plain'),
                 type: 'text/plain'
             });
+            doc = await c.findOne().exec(true);
             const attachment: any = doc.getAttachment('cat.txt');
             assert.ok(attachment);
 
             await attachment.remove();
 
             // ensure it does not exist
+            doc = await c.findOne().exec(true);
             const shouldBeNull = doc.getAttachment('cat.txt');
             assert.strictEqual(null, shouldBeNull);
 
@@ -346,7 +353,7 @@ config.parallel('attachments.test.ts', () => {
     describe('.allAttachments()', () => {
         it('should find all attachments', async () => {
             const c = await humansCollection.createAttachments(1);
-            const doc = await c.findOne().exec(true);
+            let doc = await c.findOne().exec(true);
             await Promise.all(
                 new Array(10)
                     .fill(0)
@@ -356,21 +363,22 @@ config.parallel('attachments.test.ts', () => {
                         type: 'text/plain'
                     }))
             );
+            doc = await c.findOne().exec(true);
             const attachments = doc.allAttachments();
             assert.strictEqual(attachments.length, 10);
             c.database.destroy();
         });
         it('should lazy-load the data for the attachment', async () => {
             const c = await humansCollection.createAttachments(1);
-            const doc = await c.findOne().exec(true);
+            let doc = await c.findOne().exec(true);
             await doc.putAttachment({
                 id: 'janosch.txt',
                 data: blobBufferUtil.createBlobBuffer('foo bar', 'text/plain'),
                 type: 'text/plain'
             });
+            doc = await c.findOne().exec(true);
             const attachments = doc.allAttachments();
             const attachment = attachments[0];
-
             const data = await attachment.getData();
             const dataString = await blobBufferUtil.toString(data);
             assert.deepStrictEqual(dataString, 'foo bar');
@@ -434,7 +442,7 @@ config.parallel('attachments.test.ts', () => {
                 type: 'image/png'
             });
 
-            const attachment = ensureNotFalsy(doc.getAttachment('image'));
+            const attachment = ensureNotFalsy(doc.getLatest().getAttachment('image'));
             const refetchedBlob = await attachment.getData();
 
             await renderImageBlob(refetchedBlob as Blob);
@@ -923,11 +931,7 @@ config.parallel('attachments.test.ts', () => {
             });
 
             // find the document in the other tab
-            const myDocument = await db.mycollection
-                .findOne()
-                .where('firstName')
-                .eq('Bob')
-                .exec();
+            let myDocument = await db.mycollection.findOne().exec(true);
 
             /*
              * assert things,
@@ -945,9 +949,10 @@ config.parallel('attachments.test.ts', () => {
                 type: blob.type,
             });
             assert.ok(attachment);
+            myDocument = await db.mycollection.findOne().exec(true);
 
             // trying update document later and getting Error "A pre-existing attachment stub wasn't found" because digest mismatch
-            await myDocument.update({
+            myDocument = await myDocument.update({
                 $set: {
                     age: 60,
                 },

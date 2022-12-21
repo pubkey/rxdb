@@ -4,6 +4,7 @@
  */
 import {
     ensureNotFalsy,
+    errorToPlainJson,
     fastUnsecureHash,
     flatClone
 } from '../../util';
@@ -216,8 +217,13 @@ export function syncCouchDB<RxDocType>(
                     let jsonResponse: PouchdbChangesResult;
                     try {
                         jsonResponse = await (await replicationState.fetch(url)).json();
-                    } catch (err) {
-                        pullStream$.error(err);
+                    } catch (err: any) {
+                        pullStream$.error(newRxError('RC_STREAM', {
+                            args: { url },
+                            error: errorToPlainJson(err)
+                        }));
+                        // await next tick here otherwise we could go in to a 100% CPU blocking cycle.
+                        await this.promiseWait(0);
                         continue;
                     }
                     const documents: WithDeleted<RxDocType>[] = jsonResponse.results

@@ -748,6 +748,13 @@ export function getDefaultRevision(): string {
     return '';
 }
 
+export function stripMetaDataFromDocument<RxDocType>(docData: RxDocumentData<RxDocType>): RxDocType {
+    return Object.assign({}, docData, {
+        _meta: undefined,
+        _deleted: undefined,
+        _rev: undefined
+    });
+}
 
 export function getSortDocumentsByLastWriteTimeComparator<RxDocType>(primaryPath: string) {
     return (a: RxDocumentData<RxDocType>, b: RxDocumentData<RxDocType>) => {

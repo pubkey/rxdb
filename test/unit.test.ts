@@ -33,7 +33,6 @@ import './unit/validate.test';
 import './unit/attachments.test';
 import './unit/encryption.test';
 import './unit/rx-query.test';
-import './unit/primary.test';
 import './unit/local-documents.test';
 import './unit/change-event-buffer.test';
 import './unit/reactive-query.test';

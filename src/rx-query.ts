@@ -43,10 +43,6 @@ import type {
     RxDocumentWriteData,
     RxDocumentData
 } from './types';
-
-import {
-    createRxDocuments
-} from './rx-document-prototype-merge';
 import { calculateNewResults } from './event-reduce';
 import { triggerCacheReplacement } from './query-cache';
 import type { QueryMatcher } from 'event-reduce-js';
@@ -208,7 +204,7 @@ export class RxQueryBase<
      * set the new result-data as result-docs of the query
      * @param newResultData json-docs that were received from pouchdb
      */
-    _setResultData(newResultData: RxDocumentData<RxDocType[]> | number): void {
+    _setResultData(newResultData: RxDocumentData<RxDocType>[] | number): void {
 
         if (typeof newResultData === 'number') {
             this._result = {
@@ -221,23 +217,17 @@ export class RxQueryBase<
             return;
         }
 
-        const docs = createRxDocuments<RxDocType, {}>(
-            this.collection,
-            newResultData
-        );
+        const docs = newResultData.map(docData => this.collection._docCache.getCachedRxDocument(docData));
 
         /**
          * Instead of using the newResultData in the result cache,
          * we directly use the objects that are stored in the RxDocument
          * to ensure we do not store the same data twice and fill up the memory.
          */
-        const primPath = this.collection.schema.primaryPath;
         const docsDataMap = new Map();
         const docsData = docs.map(doc => {
-            const docData: RxDocumentData<RxDocType> = doc._dataSync$.getValue() as any;
-            const id: string = docData[primPath] as any;
-            docsDataMap.set(id, docData);
-            return docData;
+            docsDataMap.set(doc.primary, doc._data);
+            return doc._data;
         });
 
         this._result = {
@@ -409,19 +399,16 @@ export class RxQueryBase<
      * @return promise with deleted documents
      */
     remove(): Promise<RxQueryResult> {
-        let ret: any;
         return this
             .exec()
             .then(docs => {
-                ret = docs;
                 if (Array.isArray(docs)) {
                     // TODO use a bulk operation instead of running .remove() on each document
                     return Promise.all(docs.map(doc => doc.remove()));
                 } else {
                     return (docs as any).remove();
                 }
-            })
-            .then(() => ret);
+            });
     }
 
 
@@ -472,10 +459,10 @@ export function tunnelQueryCache<RxDocumentType, RxQueryResult>(
     return rxQuery.collection._queryCache.getByQuery(rxQuery as any);
 }
 
-export function createRxQuery(
+export function createRxQuery<RxDocType>(
     op: RxQueryOP,
     queryObj: MangoQuery,
-    collection: RxCollection
+    collection: RxCollection<RxDocType>
 ) {
     runPluginHooks('preCreateRxQuery', {
         op,
@@ -483,7 +470,7 @@ export function createRxQuery(
         collection
     });
 
-    let ret = new RxQueryBase(op, queryObj, collection);
+    let ret = new RxQueryBase<RxDocType>(op, queryObj, collection);
 
     // ensure when created with same params, only one is created
     ret = tunnelQueryCache(ret);

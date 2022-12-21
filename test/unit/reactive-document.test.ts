@@ -12,7 +12,8 @@ import * as schemaObjects from '../helper/schema-objects';
 import {
     createRxDatabase,
     randomCouchString,
-    promiseWait
+    promiseWait,
+    ensureNotFalsy
 } from '../../';
 
 import {
@@ -54,8 +55,8 @@ config.parallel('reactive-document.test.js', () => {
                 assert.strictEqual(changeEvent.previousDocumentData.firstName, oldName);
 
 
-                assert.strictEqual(docDataAfter.passportId, doc.primary);
-                assert.strictEqual(docDataAfter.passportId, doc.primary);
+                assert.strictEqual(ensureNotFalsy(docDataAfter).passportId, doc.primary);
+                assert.strictEqual(ensureNotFalsy(docDataAfter).passportId, doc.primary);
                 colSub.unsubscribe();
                 c.database.destroy();
             });
@@ -207,7 +208,7 @@ config.parallel('reactive-document.test.js', () => {
             person.$.subscribe(data => {
                 try {
                     // mutating the document data is not allowed and should throw
-                    delete data['_rev'];
+                    delete (data as any)['_rev'];
                 } catch (err) {
                     hasThrown = true;
                 }
@@ -218,7 +219,7 @@ config.parallel('reactive-document.test.js', () => {
                 return state;
             });
 
-            assert.strictEqual(person.age, 50);
+            assert.strictEqual(person.getLatest().age, 50);
             assert.ok(hasThrown);
 
             db.destroy();

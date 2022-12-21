@@ -9,6 +9,7 @@
             height: 30%;
             min-height: 500px;
         }
+
     </style>
 </head>
 
@@ -16,20 +17,28 @@
 
 
     <script>
-        window.removeFrame = function() {
+        window.removeFrame = function () {
             var id = document.querySelector('#removeId').value;
             var frame = document.querySelector('#frame_' + id);
             console.log(frame);
             frame.parentNode.removeChild(frame);
         }
     </script>
-    <input type="number" id="removeId" />
-    <input type="submit" id="submit" onclick="removeFrame();" />
+    <input
+        type="number"
+        id="removeId"
+    />
+    <input
+        type="submit"
+        id="submit"
+        onclick="removeFrame();"
+    />
 
     <script>
         var amount = parseInt(window.location.search.split('=')[1], 10);
-        if (isNaN(amount))
+        if (isNaN(amount)) {
             amount = 2;
+        }
         console.log(amount);
         var t = 0;
         while (t < amount) {

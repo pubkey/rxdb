@@ -64,8 +64,6 @@ validationImplementations.forEach(
             errorMustContain?: string
         ) {
             const result = await instance.bulkWrite(writeRows, testContext);
-            console.log('result:');
-            console.dir(result);
             assert.deepStrictEqual(result.success, {});
             const errors = Object.values(result.error);
             errors.forEach(err => {
@@ -533,8 +531,8 @@ validationImplementations.forEach(
                         }
                     });
                     const collection = collections.human;
-                    const doc = await collection.insert(schemaObjects.human());
-                    await doc.atomicUpdate((innerDoc: any) => {
+                    let doc = await collection.insert(schemaObjects.human());
+                    doc = await doc.atomicUpdate((innerDoc: any) => {
                         innerDoc.age = 50;
                         return innerDoc;
                     });

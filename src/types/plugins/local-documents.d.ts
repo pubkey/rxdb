@@ -1,4 +1,5 @@
-import { DocCache } from '../../doc-cache';
+import { DocumentCache } from '../../doc-cache';
+import { IncrementalWriteQueue } from '../../incremental-write';
 import { RxCollection } from '../rx-collection';
 import { RxDatabase } from '../rx-database';
 import { RxDocumentBase } from '../rx-document';
@@ -10,7 +11,8 @@ export type LocalDocumentState = {
     database: RxDatabase;
     parent: LocalDocumentParent;
     storageInstance: RxStorageInstance<RxLocalDocumentData, any, any>;
-    docCache: DocCache<RxLocalDocument<any, any>>;
+    docCache: DocumentCache<RxLocalDocumentData, {}>;
+    incrementalWriteQueue: IncrementalWriteQueue<RxLocalDocumentData>;
 };
 export type RxLocalDocumentData<
     Data = {

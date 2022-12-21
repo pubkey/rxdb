@@ -12,13 +12,11 @@ import {
     pluginMissing,
     ensureNotFalsy,
     getFromMapOrThrow,
-    clone,
     PROMISE_RESOLVE_FALSE,
     PROMISE_RESOLVE_VOID,
     RXJS_SHARE_REPLAY_DEFAULTS,
     getDefaultRxDocumentMeta,
-    getDefaultRevision,
-    nextTick
+    getDefaultRevision
 } from './util';
 import {
     fillObjectDataBeforeInsert,
@@ -37,7 +35,7 @@ import type {
     DataMigrator
 } from './plugins/migration';
 import {
-    DocCache
+    DocumentCache
 } from './doc-cache';
 import {
     QueryCache,
@@ -111,7 +109,7 @@ import {
 } from './rx-schema';
 
 import {
-    createRxDocument
+    createNewRxDocument
 } from './rx-document-prototype-merge';
 import {
     getWrappedStorageInstance,
@@ -120,6 +118,7 @@ import {
 } from './rx-storage-helper';
 import { defaultConflictHandler } from './replication-protocol';
 import { IncrementalWriteQueue } from './incremental-write';
+import { beforeDocumentUpdateWrite } from './rx-document';
 
 const HOOKS_WHEN = ['pre', 'post'] as const;
 type HookWhenType = typeof HOOKS_WHEN[number];
@@ -188,7 +187,7 @@ export class RxCollectionBase<
     } = {} as any;
     public _subs: Subscription[] = [];
 
-    public _docCache: DocCache<RxDocument<RxDocumentType, OrmMethods>> = new DocCache();
+    public _docCache: DocumentCache<RxDocumentType, OrmMethods> = {} as any;
 
     public _queryCache: QueryCache = createQueryCache();
     public $: Observable<RxChangeEvent<RxDocumentType>> = {} as any;
@@ -206,11 +205,16 @@ export class RxCollectionBase<
     public destroyed = false;
 
     public async prepare(): Promise<void> {
-        this.incrementalWriteQueue = new IncrementalWriteQueue<RxDocumentType>(this as any);
         this.storageInstance = getWrappedStorageInstance(
             this.database,
             this.internalStorageInstance,
             this.schema.jsonSchema
+        );
+        this.incrementalWriteQueue = new IncrementalWriteQueue<RxDocumentType>(
+            this.storageInstance,
+            this.schema.primaryPath,
+            (newData, oldData) => beforeDocumentUpdateWrite(this as any, newData, oldData),
+            result => this._runHooks('post', 'save', result)
         );
 
         this.$ = this.database.eventBulks$.pipe(
@@ -218,6 +222,11 @@ export class RxCollectionBase<
             mergeMap(changeEventBulk => changeEventBulk.events),
         );
         this._changeEventBuffer = createChangeEventBuffer(this.asRxCollection);
+        this._docCache = new DocumentCache(
+            this.schema.primaryPath,
+            this.$.pipe(filter(cE => !cE.isLocal)),
+            docData => createNewRxDocument(this.asRxCollection, docData)
+        );
 
         /**
          * Instead of resolving the EventBulk array here and spit it into
@@ -243,25 +252,6 @@ export class RxCollectionBase<
             this.database.$emit(changeEventBulk);
         });
         this._subs.push(subDocs);
-
-        /**
-         * When a write happens to the collection
-         * we find the changed document in the docCache
-         * and tell it that it has to change its data.
-         */
-        this._subs.push(
-            this.$
-                .pipe(
-                    filter((cE: RxChangeEvent<RxDocumentType>) => !cE.isLocal)
-                )
-                .subscribe(cE => {
-                    // when data changes, send it to RxDocument in docCache
-                    const doc = this._docCache.get(cE.documentId);
-                    if (doc) {
-                        doc._handleChangeEvent(cE);
-                    }
-                })
-        );
 
         /**
          * Resolve the conflict tasks
@@ -365,10 +355,7 @@ export class RxCollectionBase<
         // create documents
         const successDocData: RxDocumentData<RxDocumentType>[] = Object.values(results.success);
         const rxDocuments: any[] = successDocData
-            .map((writtenDocData) => {
-                const doc = createRxDocument(this as any, writtenDocData);
-                return doc;
-            });
+            .map((writtenDocData) => this._docCache.getCachedRxDocument(writtenDocData));
 
         if (this.hasHooks('post', 'insert')) {
             await Promise.all(
@@ -409,7 +396,7 @@ export class RxCollectionBase<
         const docsData: RxDocumentData<RxDocumentType>[] = [];
         const docsMap: Map<string, RxDocumentData<RxDocumentType>> = new Map();
         Array.from(rxDocumentMap.values()).forEach(rxDocument => {
-            const data: RxDocumentData<RxDocumentType> = clone(rxDocument.toJSON(true)) as any;
+            const data: RxDocumentData<RxDocumentType> = rxDocument.toMutableJSON(true) as any;
             docsData.push(data);
             docsMap.set(rxDocument.primary, data);
         });
@@ -447,9 +434,7 @@ export class RxCollectionBase<
             })
         );
 
-        const rxDocuments: any[] = successIds.map(id => {
-            return rxDocumentMap.get(id);
-        });
+        const rxDocuments = successIds.map(id => getFromMapOrThrow(rxDocumentMap, id));
 
         return {
             success: rxDocuments,
@@ -490,10 +475,8 @@ export class RxCollectionBase<
                 const id = error.documentId;
                 const writeData = getFromMapOrThrow(useJsonByDocId, id);
                 const docDataInDb = ensureNotFalsy(error.documentInDb);
-                const doc = createRxDocument(this.asRxCollection, docDataInDb);
-                console.log('_________ 0');
+                const doc = this._docCache.getCachedRxDocument(docDataInDb);
                 const newDoc = await doc.atomicUpdate(() => writeData);
-                console.log('_________ 1');
                 return newDoc;
             })
         );
@@ -529,8 +512,7 @@ export class RxCollectionBase<
             .then(() => _atomicUpsertEnsureRxDocumentExists(this as any, primary as any, useJson))
             .then((wasInserted) => {
                 if (!wasInserted.inserted) {
-                    return _atomicUpsertUpdate(wasInserted.doc, useJson)
-                        .then(() => wasInserted.doc);
+                    return _atomicUpsertUpdate(wasInserted.doc, useJson);
                 } else {
                     return wasInserted.doc;
                 }
@@ -553,7 +535,7 @@ export class RxCollectionBase<
             queryObj = _getDefaultQuery();
         }
 
-        const query = createRxQuery('find', queryObj, this.asRxCollection);
+        const query = createRxQuery('find', queryObj, this as any);
         return query as any;
     }
 
@@ -583,7 +565,7 @@ export class RxCollectionBase<
             }
 
             (queryObj as any).limit = 1;
-            query = createRxQuery('findOne', queryObj, this.asRxCollection);
+            query = createRxQuery<RxDocumentType>('findOne', queryObj, this as any);
         }
 
         if (
@@ -605,7 +587,7 @@ export class RxCollectionBase<
         if (!queryObj) {
             queryObj = _getDefaultQuery();
         }
-        const query = createRxQuery('count', queryObj, this.asRxCollection);
+        const query = createRxQuery('count', queryObj, this as any);
         return query as any;
     }
 
@@ -616,14 +598,14 @@ export class RxCollectionBase<
     async findByIds(
         ids: string[]
     ): Promise<Map<string, RxDocument<RxDocumentType, OrmMethods>>> {
-
-        const ret = new Map();
+        const ret = new Map<string, RxDocument<RxDocumentType, OrmMethods>>();
         const mustBeQueried: string[] = [];
 
         // first try to fill from docCache
         ids.forEach(id => {
-            const doc = this._docCache.get(id);
-            if (doc) {
+            const docData = this._docCache.getLatestDocumentDataIfExists(id);
+            if (docData) {
+                const doc = this._docCache.getCachedRxDocument(docData);
                 ret.set(id, doc);
             } else {
                 mustBeQueried.push(id);
@@ -634,7 +616,7 @@ export class RxCollectionBase<
         if (mustBeQueried.length > 0) {
             const docs = await this.storageInstance.findDocumentsById(mustBeQueried, false);
             Object.values(docs).forEach(docData => {
-                const doc = createRxDocument<RxDocumentType, OrmMethods>(this as any, docData);
+                const doc = this._docCache.getCachedRxDocument(docData);
                 ret.set(doc.primary, doc);
             });
         }
@@ -722,10 +704,7 @@ export class RxCollectionBase<
                                 const op = rxChangeEvent.operation;
                                 if (op === 'INSERT' || op === 'UPDATE') {
                                     resultHasChanged = true;
-                                    const rxDocument = createRxDocument(
-                                        this.asRxCollection,
-                                        rxChangeEvent.documentData
-                                    );
+                                    const rxDocument = this._docCache.getCachedRxDocument(rxChangeEvent.documentData);
                                     ensureNotFalsy(currentValue).set(docId, rxDocument);
                                 } else {
                                     if (ensureNotFalsy(currentValue).has(docId)) {
@@ -987,24 +966,20 @@ function _atomicUpsertUpdate<RxDocType>(
 ): Promise<RxDocumentBase<RxDocType>> {
     return doc.atomicUpdate((_innerDoc) => {
         return json;
-    })
-        .then(() => nextTick())
-        .then(() => {
-            return doc;
-        });
+    });
 }
 
 /**
  * ensures that the given document exists
  * @return promise that resolves with new doc and flag if inserted
  */
-function _atomicUpsertEnsureRxDocumentExists(
-    rxCollection: RxCollection,
+function _atomicUpsertEnsureRxDocumentExists<RxDocType>(
+    rxCollection: RxCollection<RxDocType>,
     primary: string,
     json: any
 ): Promise<
     {
-        doc: RxDocument;
+        doc: RxDocument<RxDocType>;
         inserted: boolean;
     }
 > {
@@ -1012,10 +987,10 @@ function _atomicUpsertEnsureRxDocumentExists(
      * Optimisation shortcut,
      * first try to find the document in the doc-cache
      */
-    const docFromCache = rxCollection._docCache.get(primary);
-    if (docFromCache) {
+    const docDataFromCache = rxCollection._docCache.getLatestDocumentDataIfExists(primary);
+    if (docDataFromCache) {
         return Promise.resolve({
-            doc: docFromCache,
+            doc: rxCollection._docCache.getCachedRxDocument(docDataFromCache),
             inserted: false
         });
     }

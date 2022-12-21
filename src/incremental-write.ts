@@ -1,4 +1,3 @@
-import { beforeDocumentUpdateWrite } from './rx-document';
 import {
     isBulkWriteConflictError,
     rxStorageWriteErrorToRxError
@@ -6,23 +5,34 @@ import {
 import type {
     AtomicUpdateFunction,
     BulkWriteRow,
-    RxCollection,
+    MaybePromise,
     RxDocumentData,
+    RxDocumentWriteData,
     RxError,
     RxStorageBulkWriteResponse,
-    StringKeys
+    RxStorageInstance,
+    StringKeys,
+    WithDeleted
 } from './types';
 import {
     clone,
     ensureNotFalsy,
     getFromMapOrFill,
     getFromMapOrThrow,
-    parseRevision
+    parseRevision,
+    stripMetaDataFromDocument
 } from './util';
+
+
+
+export type IncrementalWriteModifier<RxDocType> = (
+    doc: RxDocumentData<RxDocType>
+) => MaybePromise<RxDocumentData<RxDocType>> | MaybePromise<RxDocumentWriteData<RxDocType>>;
+
 
 type IncrementalWriteQueueItem<RxDocType> = {
     lastKnownDocumentState: RxDocumentData<RxDocType>;
-    modifier: AtomicUpdateFunction<RxDocType>;
+    modifier: IncrementalWriteModifier<RxDocType>;
     resolve: (d: RxDocumentData<RxDocType>) => void;
     reject: (error: RxError) => void;
 };
@@ -37,17 +47,19 @@ type IncrementalWriteQueueItem<RxDocType> = {
 export class IncrementalWriteQueue<RxDocType> {
     public queueByDocId = new Map<string, IncrementalWriteQueueItem<RxDocType>[]>();
     public isRunning: boolean = false;
-    public primaryPath: StringKeys<RxDocumentData<RxDocType>>;
 
     constructor(
-        public readonly collection: RxCollection<RxDocType>
-    ) {
-        this.primaryPath = collection.schema.primaryPath;
-    }
+        public readonly storageInstance: RxStorageInstance<RxDocType, any, any>,
+        public readonly primaryPath: StringKeys<RxDocumentData<RxDocType>>,
+        // can be used to run hooks etc.
+        public readonly preWrite: (newData: RxDocumentData<RxDocType>, oldData: RxDocumentData<RxDocType>) => MaybePromise<void>,
+        public readonly postWrite: (docData: RxDocumentData<RxDocType>) => void
+
+    ) { }
 
     addWrite(
         lastKnownDocumentState: RxDocumentData<RxDocType>,
-        modifier: AtomicUpdateFunction<RxDocType>
+        modifier: IncrementalWriteModifier<RxDocType>
     ): Promise<RxDocumentData<RxDocType>> {
         const docId: string = lastKnownDocumentState[this.primaryPath] as any;
         const ar = getFromMapOrFill(this.queueByDocId, docId, () => []);
@@ -106,7 +118,7 @@ export class IncrementalWriteQueue<RxDocType> {
                     }
 
                     try {
-                        await beforeDocumentUpdateWrite(this.collection, newData, oldData);
+                        await this.preWrite(newData, oldData);
                     } catch (err: any) {
                         /**
                          * If the before-hooks fail,
@@ -123,7 +135,7 @@ export class IncrementalWriteQueue<RxDocType> {
                 })
         );
         const writeResult: RxStorageBulkWriteResponse<RxDocType> = writeRows.length > 0 ?
-            await this.collection.storageInstance.bulkWrite(writeRows, 'incremental-write') :
+            await this.storageInstance.bulkWrite(writeRows, 'incremental-write') :
             { error: {}, success: {} };
 
         // process success
@@ -131,7 +143,7 @@ export class IncrementalWriteQueue<RxDocType> {
             Array
                 .from(Object.entries(writeResult.success))
                 .map(([docId, result]) => {
-                    this.collection._runHooks('post', 'save', result);
+                    this.postWrite(result);
                     const items = getFromMapOrThrow(itemsById, docId);
                     items.forEach(item => item.resolve(result));
                 })
@@ -173,6 +185,29 @@ export class IncrementalWriteQueue<RxDocType> {
     }
 }
 
+
+export function incrementalModifierFromPublicToInternal<RxDocType>(
+    publicModifier: AtomicUpdateFunction<RxDocType>
+): IncrementalWriteModifier<RxDocType> {
+    const ret = async (docData: RxDocumentData<RxDocType>) => {
+        const withoutMeta: WithDeleted<RxDocType> = stripMetaDataFromDocument(docData) as any;
+        withoutMeta._deleted = docData._deleted;
+        const modified = await publicModifier(withoutMeta);
+        const reattachedMeta: RxDocumentData<RxDocType> = Object.assign({}, modified, {
+            _meta: docData._meta,
+            _attachments: docData._attachments,
+            _rev: docData._rev,
+            _deleted: typeof (modified as WithDeleted<RxDocType>)._deleted !== 'undefined' ?
+                (modified as WithDeleted<RxDocType>)._deleted :
+                docData._deleted
+        });
+        if (typeof reattachedMeta._deleted === 'undefined') {
+            reattachedMeta._deleted = false;
+        }
+        return reattachedMeta;
+    };
+    return ret;
+}
 
 
 export function findNewestOfDocumentStates<RxDocType>(
