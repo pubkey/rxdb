@@ -4,7 +4,7 @@ This list contains things that have to be done but will create breaking changes.
 
 
 
-## Make RxDocuments immutable
+## Make RxDocuments immutable [DONE]
 At the current version of RxDB, RxDocuments mutate themself when they recieve ChangeEvents from the database.
 For example when you have a document where `name = 'foo'` and some update changes the state to `name = 'bar'` in the database, then the previous javascript-object will change its own property to the have `doc.name === 'bar'`.
 This feature is great when you use a RxDocument with some change-detection like in angular or vue templates. You can use document properties directly in the template and all updates will be reflected in the view, without having to use observables or subscriptions.
