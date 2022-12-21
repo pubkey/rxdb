@@ -30,21 +30,9 @@ const plugins = [
     '@babel/transform-block-scoping',
     '@babel/plugin-transform-member-expression-literals',
     '@babel/transform-property-literals',
-
-    /**
-     * Transpile async/await to promises instead of generators.
-     * This has shown to be 10% smaller build size and also be a bit faster.
-     *
-     */
-    ['babel-plugin-transform-async-to-promises', {
-        /**
-         * TODO use externalHelpers instead of inlineHelpers,
-         * but we have to wait for this bug to be fixed:
-         * @link https://github.com/rpetrich/babel-plugin-transform-async-to-promises/issues/62
-         * @link https://github.com/rpetrich/babel-plugin-transform-async-to-promises/issues/78
-         */
-        externalHelpers: false,
-        inlineHelpers: true
+    '@babel/transform-async-to-generator',
+    '@babel/transform-regenerator', ['@babel/transform-runtime', {
+        'regenerator': true
     }],
 
     ['@babel/transform-runtime', {
