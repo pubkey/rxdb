@@ -688,6 +688,28 @@ jobs:
           working-directory: ./examples/svelte
           run: npm run test
 
+  vite-vanilla-ts:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v2
+      - name: install dependencies
+        run: sudo apt-get update && sudo apt-get install -y chromium-browser
+      - name: Set node version
+        uses: actions/setup-node@v3
+        with:
+          node-version-file: '.nvmrc'
+      - name: prepare RxDB core
+        run: |
+          npm install --legacy-peer-deps
+          npm run build
+          rm -r node_modules
+      - name: vite vanilla ts build
+        working-directory: ./examples/vite-vanilla-ts
+        run: |
+          npm run preinstall
+          npm install --legacy-peer-deps
+          npm run build
+
   graphql:
     runs-on: ubuntu-20.04
     steps:
