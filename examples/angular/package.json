@@ -75,7 +75,7 @@
     "copyfiles": "2.4.1",
     "got": "11.8.6",
     "local-web-server": "5.2.1",
-    "testcafe": "1.20.1",
+    "testcafe": "2.1.0",
     "ts-mocha": "8.0.0",
     "ts-node": "10.9.1",
     "tslint": "6.1.3",
