@@ -52,7 +52,7 @@ The `selector`part of queries is currently not fully typed.
 Hint: We can find out the possible doc field names via https://stackoverflow.com/questions/58434389/typescript-deep-keyof-of-a-nested-object/58436959#58436959
 
 
-## Use normal RxQuery for `findByIds$` and `findByIds`
+## Use normal RxQuery for `findByIds$` and `findByIds` [DONE]
 
 Atm `findByIds$` and `findByIds` are implemented with their own query and observe logic. 
 This is not necessary and confusing for the user.
@@ -61,9 +61,6 @@ Instead we should use a different `RxQuery.op` and use normal `RxQuery` objects 
 The user would call it like normal queries but with a different method input:
 
 ```ts
-const result = await myRxCollection.findById('foo').exec();
-const result$ = await myRxCollection.findById('foo').$;
-
 const results = await myRxCollection.findByIds(['foo', 'bar']).exec();
 const results$ = await myRxCollection.findByIds(['foo', 'bar']).$;
 ```
@@ -81,7 +78,7 @@ Also rename the method names and variables inside of the plugins.
 
 If multiple atomic updates are run on the same document at the same time, we should merge them together and do a single database write.
 
-## Add enum-compression to the key-compressio plugin
+## Add enum-compression to the key-compression plugin
 - Also rename the key-compression plugin to be just called 'compression'
 
 ## Fix migration+replication
