@@ -335,7 +335,10 @@ export class RxReplicationState<RxDocType, CheckpointType> {
     }
 
     isStopped(): boolean {
-        if (this.subjects.canceled.getValue()) {
+        if (
+            this.subjects.canceled.getValue() ||
+            this.collection.destroyed
+        ) {
             return true;
         }
         return false;
