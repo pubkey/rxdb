@@ -40,7 +40,7 @@ This is bad and should not be used. Instead each field must have exactly one typ
 Having mixed types causes many confusion, for example when the type is `['string', 'number']`,
 you could run a query selector like `$gt: 10` where it now is not clear if the string `foobar` is matching or not.
 
-## Ensure the schema hashing works equal across all browsers
+## Ensure the schema hashing works equal across all browsers [DONE]
 
 https://github.com/pubkey/rxdb/pull/4005
 https://github.com/pubkey/rxdb/pull/4005#issuecomment-1264742235
@@ -82,8 +82,7 @@ If multiple atomic updates are run on the same document at the same time, we sho
 - Also rename the key-compression plugin to be just called 'compression'
 
 ## Fix migration+replication
-When the schema is changed a migration runs, the replication plugins will replicate the migrated data. This is mostly not wanted by the user. We should
-add an option to let the user define what should happen after the migration.
+When the schema is changed a migration runs, the replication plugins will replicate the migrated data. This is mostly not wanted by the user. We should add an option to let the user define what should happen after the migration.
 
 ## Prefix storage plugins with `storage-`
 Like the replication plugins, all RxStorage plugins should be prefixed with `storage-` for example `storage-dexie`.

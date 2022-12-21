@@ -11,7 +11,6 @@ import type {
     StringKeys
 } from './types';
 import {
-    clone,
     flatClone,
     isMaybeReadonlyArray,
     RX_META_LWT_MINIMUM,
