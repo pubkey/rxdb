@@ -31,10 +31,7 @@ const plugins = [
     '@babel/plugin-transform-member-expression-literals',
     '@babel/transform-property-literals',
     '@babel/transform-async-to-generator',
-    '@babel/transform-regenerator', ['@babel/transform-runtime', {
-        'regenerator': true
-    }],
-
+    '@babel/transform-regenerator',
     ['@babel/transform-runtime', {
         'regenerator': true
     }],
