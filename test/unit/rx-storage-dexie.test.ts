@@ -17,7 +17,7 @@ import {
     getDexieStoreSchema,
     fromDexieToStorage,
     fromStorageToDexie
-} from '../../plugins/dexie';
+} from '../../plugins/storage-dexie';
 
 import * as schemaObjects from '../helper/schema-objects';
 import {

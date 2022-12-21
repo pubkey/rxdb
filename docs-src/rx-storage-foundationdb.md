@@ -16,7 +16,7 @@ import {
 } from 'rxdb';
 import {
     getRxStorageFoundationDB
-} from 'rxdb/plugins/foundationdb';
+} from 'rxdb/plugins/storage-foundationdb';
 
 const db = await createRxDatabase({
     name: 'exampledb',

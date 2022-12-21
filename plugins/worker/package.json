@@ -1,8 +1,0 @@
-{
-  "name": "rxdb-plugin-worker",
-  "main": "../../dist/lib/plugins/worker/index.js",
-  "jsnext:main": "../../dist/es/plugins/worker/index.js",
-  "module": "../../dist/es/plugins/worker/index.js",
-  "types": "../../dist/types/plugins/worker/index.d.ts",
-  "sideEffects": false
-}

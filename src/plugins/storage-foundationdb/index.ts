@@ -2,7 +2,7 @@ import { ensureRxStorageInstanceParamsAreCorrect } from '../../rx-storage-helper
 import type {
     RxStorageInstanceCreationParams
 } from '../../types';
-import { RxStorageDexieStatics } from '../dexie/dexie-statics';
+import { RxStorageDexieStatics } from '../storage-dexie/dexie-statics';
 import type {
     RxStorageFoundationDB,
     RxStorageFoundationDBInstanceCreationOptions,

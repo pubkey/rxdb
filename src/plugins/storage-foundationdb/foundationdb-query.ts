@@ -8,7 +8,7 @@ import type {
     RxStorageQueryResult
 } from '../../types';
 import { ensureNotFalsy } from '../../util';
-import { RxStorageDexieStatics } from '../dexie';
+import { RxStorageDexieStatics } from '../storage-dexie';
 import { getFoundationDBIndexName } from './foundationdb-helpers';
 import type {
     FoundationDBPreparedQuery

@@ -1,0 +1,8 @@
+{
+  "name": "rxdb-plugin-worker",
+  "main": "../../dist/lib/plugins/storage-worker/index.js",
+  "jsnext:main": "../../dist/es/plugins/storage-worker/index.js",
+  "module": "../../dist/es/plugins/storage-worker/index.js",
+  "types": "../../dist/types/plugins/storage-worker/index.d.ts",
+  "sideEffects": false
+}

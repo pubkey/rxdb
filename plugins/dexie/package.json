@@ -1,8 +1,0 @@
-{
-  "name": "rxdb-plugin-dexie",
-  "main": "../../dist/lib/plugins/dexie/index.js",
-  "jsnext:main": "../../dist/es/plugins/dexie/index.js",
-  "module": "../../dist/es/plugins/dexie/index.js",
-  "types": "../../dist/types/plugins/dexie/index.d.ts",
-  "sideEffects": false
-}

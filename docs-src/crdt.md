@@ -82,7 +82,7 @@ addRxPlugin(RxDDcrdtPlugin);
 
 // create a database
 import { createRxDatabase } from 'rxdb';
-import { getRxStorageDexie } from 'rxdb/plugins/dexie';
+import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
 const myDatabase = await createRxDatabase({
   name: 'heroesdb',
   storage: getRxStorageDexie()

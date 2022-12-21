@@ -7,7 +7,7 @@ import config from './unit/config';
 import AsyncTestUtil from 'async-test-util';
 import * as path from 'path';
 
-const memoryPluginPath = path.join(config.rootPath, 'plugins/memory');
+const memoryPluginPath = path.join(config.rootPath, 'plugins/storage-memory');
 
 describe('typings.test.js', function () {
     this.timeout(120 * 1000); // tests can take very long on slow devices like the CI

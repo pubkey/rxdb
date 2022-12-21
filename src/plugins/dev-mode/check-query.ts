@@ -13,7 +13,7 @@ import { newRxError, newRxTypeError } from '../../rx-error';
 import {
     massageSelector
 } from 'pouchdb-selector-core';
-import { RxStorageDexieStatics } from '../dexie';
+import { RxStorageDexieStatics } from '../storage-dexie';
 
 /**
  * accidentally passing a non-valid object into the query params

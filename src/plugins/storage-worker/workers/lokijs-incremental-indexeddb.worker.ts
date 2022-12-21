@@ -1,5 +1,5 @@
-import { getRxStorageLoki } from '../../lokijs';
-import { wrappedWorkerRxStorage } from '../../worker';
+import { getRxStorageLoki } from '../../storage-lokijs';
+import { wrappedWorkerRxStorage } from '../../storage-worker';
 const LokiIncrementalIndexedDBAdapter = require('lokijs/src/incremental-indexeddb-adapter');
 
 const storage = getRxStorageLoki({

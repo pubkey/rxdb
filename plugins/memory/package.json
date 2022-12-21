@@ -1,8 +1,0 @@
-{
-  "name": "rxdb-plugin-memory",
-  "main": "../../dist/lib/plugins/memory/index.js",
-  "jsnext:main": "../../dist/es/plugins/memory/index.js",
-  "module": "../../dist/es/plugins/memory/index.js",
-  "types": "../../dist/types/plugins/memory/index.d.ts",
-  "sideEffects": false
-}

@@ -12,7 +12,7 @@ import {
 import {
     getRxStorageMemory,
     RxStorageInstanceMemory
-} from '../../plugins/memory';
+} from '../../plugins/storage-memory';
 
 import { HumanDocumentType } from '../helper/schemas';
 

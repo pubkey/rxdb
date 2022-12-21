@@ -37,7 +37,7 @@ import {
     PROMISE_RESOLVE_VOID,
     RX_META_LWT_MINIMUM
 } from '../../util';
-import { RxStorageDexieStatics } from '../dexie/dexie-statics';
+import { RxStorageDexieStatics } from '../storage-dexie/dexie-statics';
 import {
     boundGE,
     boundGT,

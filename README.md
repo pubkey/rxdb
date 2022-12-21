@@ -134,7 +134,7 @@ import {
  * In other JavaScript runtimes, we can use different storages:
  * @link https://rxdb.info/rx-storage.html
  */
-import { getRxStorageDexie } from 'rxdb/plugins/dexie';
+import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
 
 // create a database
 const db = await createRxDatabase({

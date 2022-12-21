@@ -268,7 +268,6 @@ config.parallel('local-documents.test.js', () => {
                     foo: 'barTwo',
                 });
 
-                console.dir(emitted);
                 assert.strictEqual(emitted.length, 2);
                 // first 'barOne' is emitted because.$ is a BehaviorSubject
                 assert.strictEqual(emitted[0].data.foo, 'barOne');

@@ -1,8 +1,0 @@
-{
-  "name": "rxdb-plugin-lokijs",
-  "main": "../../dist/lib/plugins/lokijs/index.js",
-  "jsnext:main": "../../dist/es/plugins/lokijs/index.js",
-  "module": "../../dist/es/plugins/lokijs/index.js",
-  "types": "../../dist/types/plugins/lokijs/index.d.ts",
-  "sideEffects": false
-}

@@ -1,0 +1,8 @@
+{
+  "name": "rxdb-plugin-foundationdb",
+  "main": "../../dist/lib/plugins/storage-foundationdb/index.js",
+  "jsnext:main": "../../dist/es/plugins/storage-foundationdb/index.js",
+  "module": "../../dist/es/plugins/storage-foundationdb/index.js",
+  "types": "../../dist/types/plugins/storage-foundationdb/index.d.ts",
+  "sideEffects": false
+}
