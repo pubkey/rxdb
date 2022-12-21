@@ -278,8 +278,10 @@ export class RxQueryBase<
             ids.forEach(id => {
                 const docData = this.collection._docCache.getLatestDocumentDataIfExists(id);
                 if (docData) {
-                    const doc = this.collection._docCache.getCachedRxDocument(docData);
-                    ret.set(id, doc);
+                    if (!docData._deleted) {
+                        const doc = this.collection._docCache.getCachedRxDocument(docData);
+                        ret.set(id, doc);
+                    }
                 } else {
                     mustBeQueried.push(id);
                 }
