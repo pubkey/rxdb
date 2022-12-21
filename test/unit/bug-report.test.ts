@@ -150,7 +150,7 @@ describe('bug-report.test.js', () => {
             replicationIdentifier: 'replicate-' + name,
             collection: db.collections.mycollection,
             pull: {
-                async handler(lastCheckpoint: CheckpointType) {
+                handler(lastCheckpoint: CheckpointType) {
                     const docs = (fetched) ? [] : [{
                         userId: '627b696f-6c1f-4aac-9d60-c876fb0b175c',
                         projectId: 'b1ebbec0-58c4-4364-9b4b-a32665276c0f',
