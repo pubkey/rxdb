@@ -89,6 +89,7 @@ export class RxQueryBase<
         docsData: RxDocumentData<RxDocType>[];
         // A key->document map, used in the event reduce optimization.
         docsDataMap: Map<string, RxDocType>;
+        docsMap: Map<string, RxDocument<RxDocType>>;
         docs: RxDocument<RxDocType>[];
         count: number;
         /**
@@ -154,6 +155,8 @@ export class RxQueryBase<
                     } else if (this.op === 'findOne') {
                         // findOne()-queries emit RxDocument or null
                         return useResult.docs.length === 0 ? null : useResult.docs[0];
+                    } else if (this.op === 'findByIds') {
+                        return useResult.docsMap;
                     } else {
                         // find()-queries emit RxDocument[]
                         // Flat copy the array so it won't matter if the user modifies it.
@@ -204,19 +207,24 @@ export class RxQueryBase<
      * set the new result-data as result-docs of the query
      * @param newResultData json-docs that were received from pouchdb
      */
-    _setResultData(newResultData: RxDocumentData<RxDocType>[] | number): void {
+    _setResultData(newResultData: RxDocumentData<RxDocType>[] | number | Map<string, RxDocumentData<RxDocType>>): void {
 
         if (typeof newResultData === 'number') {
             this._result = {
                 docsData: [],
+                docsMap: new Map(),
                 docsDataMap: new Map(),
                 count: newResultData,
                 docs: [],
                 time: now()
             };
             return;
+        } else if (newResultData instanceof Map) {
+            newResultData = Array.from((newResultData as Map<string, RxDocumentData<RxDocType>>).values());
         }
 
+        const docsDataMap = new Map();
+        const docsMap = new Map();
         const docs = newResultData.map(docData => this.collection._docCache.getCachedRxDocument(docData));
 
         /**
@@ -224,14 +232,15 @@ export class RxQueryBase<
          * we directly use the objects that are stored in the RxDocument
          * to ensure we do not store the same data twice and fill up the memory.
          */
-        const docsDataMap = new Map();
         const docsData = docs.map(doc => {
             docsDataMap.set(doc.primary, doc._data);
+            docsMap.set(doc.primary, doc);
             return doc._data;
         });
 
         this._result = {
             docsData,
+            docsMap,
             docsDataMap,
             count: docsData.length,
             docs,
@@ -243,25 +252,49 @@ export class RxQueryBase<
      * executes the query on the database
      * @return results-array with document-data
      */
-    _execOverDatabase(): Promise<RxDocumentData<RxDocType>[] | number> {
+    async _execOverDatabase(): Promise<RxDocumentData<RxDocType>[] | number> {
         this._execOverDatabaseCount = this._execOverDatabaseCount + 1;
         this._lastExecStart = now();
 
 
         if (this.op === 'count') {
             const preparedQuery = this.getPreparedQuery();
-            return this.collection.storageInstance.count(preparedQuery).then(result => {
-                if (result.mode === 'slow' && !this.collection.database.allowSlowCount) {
-                    throw newRxError('QU14', {
-                        collection: this.collection,
-                        queryObj: this.mangoQuery
-                    });
-                } else {
-                    return result.count;
-                }
-
-            });
+            const result = await this.collection.storageInstance.count(preparedQuery);
+            if (result.mode === 'slow' && !this.collection.database.allowSlowCount) {
+                throw newRxError('QU14', {
+                    collection: this.collection,
+                    queryObj: this.mangoQuery
+                });
+            } else {
+                return result.count;
+            }
         }
+
+        if (this.op === 'findByIds') {
+            const ids: string[] = ensureNotFalsy(this.mangoQuery.selector)[this.collection.schema.primaryPath].$in;
+            const ret = new Map<string, RxDocument<RxDocType>>();
+            const mustBeQueried: string[] = [];
+            // first try to fill from docCache
+            ids.forEach(id => {
+                const docData = this.collection._docCache.getLatestDocumentDataIfExists(id);
+                if (docData) {
+                    const doc = this.collection._docCache.getCachedRxDocument(docData);
+                    ret.set(id, doc);
+                } else {
+                    mustBeQueried.push(id);
+                }
+            });
+            // everything which was not in docCache must be fetched from the storage
+            if (mustBeQueried.length > 0) {
+                const docs = await this.collection.storageInstance.findDocumentsById(mustBeQueried, false);
+                Object.values(docs).forEach(docData => {
+                    const doc = this.collection._docCache.getCachedRxDocument(docData);
+                    ret.set(doc.primary, doc);
+                });
+            }
+            return ret as any;
+        }
+
 
         const docsPromise = queryCollection<RxDocType>(this as any);
         return docsPromise.then(docs => {
@@ -649,8 +682,14 @@ export async function queryCollection<RxDocType>(
      */
     if (rxQuery.isFindOneByIdQuery) {
         const docId = rxQuery.isFindOneByIdQuery;
-        const docsMap = await collection.storageInstance.findDocumentsById([docId], false);
-        const docData = docsMap[docId];
+
+        // first try to fill from docCache
+        let docData = rxQuery.collection._docCache.getLatestDocumentDataIfExists(docId);
+        if (!docData) {
+            // otherwise get from storage
+            const docsMap = await collection.storageInstance.findDocumentsById([docId], false);
+            docData = docsMap[docId];
+        }
         if (docData) {
             docs.push(docData);
         }

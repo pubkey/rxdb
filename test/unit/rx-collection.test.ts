@@ -1847,7 +1847,7 @@ describe('rx-collection.test.ts', () => {
 
                 const docs = await c.find().exec();
                 const ids = docs.map(d => d.primary);
-                const res = await c.findByIds(ids);
+                const res = await c.findByIds(ids).exec();
 
                 assert.ok(res.has(docs[0].primary));
                 assert.strictEqual(res.size, 5);
@@ -1862,7 +1862,7 @@ describe('rx-collection.test.ts', () => {
                 // clear docCache
                 ids.forEach(id => c._docCache.cacheItemByDocId.delete(id));
 
-                const res = await c.findByIds(ids);
+                const res = await c.findByIds(ids).exec();
                 assert.strictEqual(res.size, 5);
                 c.database.destroy();
             });
@@ -1873,7 +1873,7 @@ describe('rx-collection.test.ts', () => {
             const c = await humansCollection.create(5);
             const docs = await c.find().exec();
             const ids = docs.map(d => d.primary);
-            const res = await firstValueFrom(c.findByIds$(ids));
+            const res = await firstValueFrom(c.findByIds(ids).$);
 
             assert.ok(res);
             assert.ok(res instanceof Map);
@@ -1885,7 +1885,7 @@ describe('rx-collection.test.ts', () => {
 
             const docs = await c.find().exec();
             const ids = docs.map(d => d.primary);
-            const res = await firstValueFrom(c.findByIds$(ids));
+            const res = await firstValueFrom(c.findByIds(ids).$);
 
             assert.ok(res.has(docs[0].primary));
             assert.strictEqual(res.size, 5);
@@ -1897,7 +1897,7 @@ describe('rx-collection.test.ts', () => {
             const docs = await c.find().exec();
             const ids = docs.map(d => d.primary);
             ids.push('foobar');
-            const obs = c.findByIds$(ids);
+            const obs = c.findByIds(ids).$;
             await firstValueFrom(obs);
 
             // check insert
@@ -2094,7 +2094,7 @@ describe('rx-collection.test.ts', () => {
 
             const matchingIds = ['a', 'b', 'c', 'd'];
 
-            const sub = collection.findByIds$(matchingIds).subscribe(data => {
+            const sub = collection.findByIds(matchingIds).$.subscribe(data => {
 
                 const m = new Map();
                 Array
@@ -2164,7 +2164,7 @@ describe('rx-collection.test.ts', () => {
             });
 
             // should have the same result set as running findByIds() once.
-            const singleQueryDocs = await collection.findByIds(matchingIds);
+            const singleQueryDocs = await collection.findByIds(matchingIds).exec();
 
             const lastEmit = lastOfArray(emitted) as Map<string, RxDocumentData<HumanDocumentType>>;
             const singleResultPlain = matchingIds.map(id => getFromMapOrThrow(singleQueryDocs, id).toJSON(true));
