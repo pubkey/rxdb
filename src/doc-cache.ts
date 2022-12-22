@@ -6,7 +6,8 @@ import type {
 import {
     getFromMapOrFill,
     getFromMapOrThrow,
-    parseRevision
+    parseRevision,
+    requestIdlePromise
 } from './util';
 import {
     overwritable
@@ -60,20 +61,30 @@ declare type FinalizationRegistryValue = {
  */
 export class DocumentCache<RxDocType, OrmMethods> {
     public cacheItemByDocId = new Map<string, CacheItem<RxDocType, OrmMethods>>();
-    private registry = new FinalizationRegistry<FinalizationRegistryValue>(docMeta => {
-        const docId = docMeta.docId;
-        const cacheItem = this.cacheItemByDocId.get(docId);
-        if (cacheItem) {
-            cacheItem.documentByRevisionHeight.delete(docMeta.revisionHeight);
-            if (cacheItem.documentByRevisionHeight.size === 0) {
-                /**
-                 * No state of the document is cached anymore,
-                 * so we can clean up.
-                 */
-                this.cacheItemByDocId.delete(docId);
+
+    /**
+     * Some JavaScript runtimes like QuickJS,
+     * so not have a FinalizationRegistry, but they have a WeakRef.
+     * Therefore we need a workaround which cleans up the references
+     * without using the registry.
+     */
+    private registry?: FinalizationRegistry<FinalizationRegistryValue> = typeof FinalizationRegistry === 'function' ?
+        new FinalizationRegistry<FinalizationRegistryValue>(docMeta => {
+            const docId = docMeta.docId;
+            const cacheItem = this.cacheItemByDocId.get(docId);
+            if (cacheItem) {
+                cacheItem.documentByRevisionHeight.delete(docMeta.revisionHeight);
+                if (cacheItem.documentByRevisionHeight.size === 0) {
+                    /**
+                     * No state of the document is cached anymore,
+                     * so we can clean up.
+                     */
+                    this.cacheItemByDocId.delete(docId);
+                }
             }
-        }
-    });
+        }) :
+        undefined;
+    private cleanupQueueAwaiting: boolean = false;
 
     constructor(
         public readonly primaryPath: string,
@@ -112,10 +123,19 @@ export class DocumentCache<RxDocType, OrmMethods> {
             docData = overwritable.deepFreezeWhenDevMode(docData) as any;
             cachedRxDocument = this.documentCreator(docData) as RxDocument<RxDocType, OrmMethods>;
             cacheItem.documentByRevisionHeight.set(revisionHeight, new WeakRef(cachedRxDocument));
-            this.registry.register(cachedRxDocument, {
-                docId,
-                revisionHeight
-            });
+
+            if (this.registry) {
+                this.registry.register(cachedRxDocument, {
+                    docId,
+                    revisionHeight
+                });
+            } else if (!this.cleanupQueueAwaiting) {
+                this.cleanupQueueAwaiting = true;
+                requestIdlePromise().then(() => {
+                    this.cleanupQueueAwaiting = false;
+                    runCleanupWorkaround(this);
+                });
+            }
         }
         return cachedRxDocument;
     }
@@ -142,4 +162,22 @@ function getNewCacheItem<RxDocType, OrmMethods>(docData: RxDocumentData<RxDocTyp
         documentByRevisionHeight: new Map(),
         latestDoc: docData
     };
+}
+
+
+/**
+ * Used when the JavaScript runtime does not
+ * support the FinalizationRegistry API.
+ */
+function runCleanupWorkaround<RxDocType>(docCache: DocumentCache<RxDocType, any>) {
+    Array.from(docCache.cacheItemByDocId.entries()).forEach(([docId, cacheItem]) => {
+        Array.from(cacheItem.documentByRevisionHeight.entries()).forEach(([revH, docRef]) => {
+            if (!docRef.deref()) {
+                cacheItem.documentByRevisionHeight.delete(revH);
+            }
+        });
+        if (cacheItem.documentByRevisionHeight.size === 0) {
+            docCache.cacheItemByDocId.delete(docId);
+        }
+    });
 }
