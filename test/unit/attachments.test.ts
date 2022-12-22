@@ -416,7 +416,7 @@ config.parallel('attachments.test.ts', () => {
 
 
             // the data stored in the storage must be encrypted
-            const lowLevelStorage: RxStorageInstance<HumanDocumentType, any, any> = doc.collection.storageInstance.originalStorageInstance.originalStorageInstance;
+            const lowLevelStorage: RxStorageInstance<HumanDocumentType, any, any> = (doc.collection.storageInstance.originalStorageInstance as any).originalStorageInstance;
             const encryptedData = await lowLevelStorage.getAttachmentData(doc.primary, 'cat.txt');
             const dataStringBase64 = await blobBufferUtil.toString(encryptedData);
             const dataString = b64DecodeUnicode(dataStringBase64);
