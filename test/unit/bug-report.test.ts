@@ -12,15 +12,17 @@ import assert from 'assert';
 import AsyncTestUtil from 'async-test-util';
 import config from './config';
 
+import { lastOfArray } from 'event-reduce-js';
+import { Subject } from 'rxjs';
+
 import {
     createRxDatabase,
     randomCouchString,
     addRxPlugin
 } from '../../';
 import { RxDBQueryBuilderPlugin } from '../../plugins/query-builder';
-import { replicateRxCollection } from '../../src/plugins/replication';
-import { lastOfArray } from 'event-reduce-js';
-import { Subject } from 'rxjs';
+import { RxDBLeaderElectionPlugin } from '../../plugins/leader-election';
+import { replicateRxCollection } from '../../plugins/replication';
 import { RxReplicationPullStreamItem } from '../../src';
 
 describe('bug-report.test.js', () => {
@@ -82,7 +84,11 @@ describe('bug-report.test.js', () => {
         // generate a random database-name
         const name = randomCouchString(10);
 
+        // add plugins
         addRxPlugin(RxDBQueryBuilderPlugin);
+        addRxPlugin(RxDBLeaderElectionPlugin);
+
+
         // create a database
         const db = await createRxDatabase({
             name,
@@ -142,30 +148,31 @@ describe('bug-report.test.js', () => {
             id: string;
             updatedAt: string;
         };
-        let fetched = false;
 
         const pullStream$ = new Subject<RxReplicationPullStreamItem<any, CheckpointType>>();
 
-        replicateRxCollection({
+        let fetched = false;
+        const replicationState = replicateRxCollection({
             replicationIdentifier: 'replicate-' + name,
             collection: db.collections.mycollection,
             pull: {
-                handler(lastCheckpoint: CheckpointType) {
+                // eslint-disable-next-line require-await
+                handler: async (lastCheckpoint) => {
                     const docs = (fetched) ? [] : [{
                         userId: '627b696f-6c1f-4aac-9d60-c876fb0b175c',
                         projectId: 'b1ebbec0-58c4-4364-9b4b-a32665276c0f',
                         updatedAt: new Date().toISOString()
                     }];
-
                     fetched = true;
 
                     const lastDoc = lastOfArray(docs);
+
                     return {
                         documents: docs,
                         checkpoint: !lastDoc
                             ? lastCheckpoint
                             : {
-                                id: lastDoc.userId + '|' + lastDoc.projectId,
+                                id: collections.mycollection.schema.getPrimaryOfDocumentData(lastDoc),
                                 updatedAt: lastDoc.updatedAt
                             }
                     };
@@ -174,6 +181,12 @@ describe('bug-report.test.js', () => {
                 stream$: pullStream$.asObservable()
             },
         });
+
+        replicationState.error$.subscribe((err) => {
+            throw Error(err.message);
+        });
+
+        await replicationState.awaitInitialReplication();
 
 
         // you can also wait for events
