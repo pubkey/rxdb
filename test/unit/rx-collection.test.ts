@@ -661,51 +661,23 @@ describe('rx-collection.test.ts', () => {
                     });
                 });
                 describe('negative', () => {
-                    it('throw when sort is not index', async () => {
-                        if (config.storage.name !== 'pouchdb') {
-                            return;
-                        }
-                        const c = await humansCollection.create();
-                        await c.find().exec();
-                        await AsyncTestUtil.assertThrows(
-                            () => c.find({
-                                selector: {
-                                    age: {
-                                        $gt: 0
-                                    }
-                                }
-                            })
-                                .sort({
-                                    age: 'desc'
-                                })
-                                .exec(),
-                            Error
-                        );
-                        c.database.destroy();
-                    });
                     it('#146 throw when field not in schema (object)', async () => {
-                        if (config.storage.name !== 'pouchdb') {
-                            return;
-                        }
                         const c = await humansCollection.createAgeIndex();
                         await AsyncTestUtil.assertThrows(
                             () => c.find().sort({
                                 foobar: 'desc'
                             }).exec(),
                             'RxError',
-                            'not defined in the schema'
+                            'QU13'
                         );
                         c.database.destroy();
                     });
                     it('#146 throw when field not in schema (string)', async () => {
-                        if (config.storage.name !== 'pouchdb') {
-                            return;
-                        }
                         const c = await humansCollection.createAgeIndex();
                         await AsyncTestUtil.assertThrows(
                             () => c.find().sort('foobar').exec(),
                             'RxError',
-                            'not defined in the schema'
+                            'QU13'
                         );
                         c.database.destroy();
                     });
@@ -822,14 +794,6 @@ describe('rx-collection.test.ts', () => {
                     new Array(config.isFastMode() ? 3 : 10)
                         .fill(0).forEach(() => {
                             it('skip first and limit (storage: ' + config.storage.name + ')', async () => {
-                                /**
-                                 * TODO this test is broken in pouchdb
-                                 * @link https://github.com/pouchdb/pouchdb/pull/8371
-                                 * Check again on the next release.
-                                 */
-                                if (config.storage.name === 'pouchdb') {
-                                    return;
-                                }
                                 const c = await humansCollection.create(5);
                                 const docs = await c.find().sort('passportId').exec();
                                 const second = await c.find().sort('passportId').skip(1).limit(1).exec();
@@ -902,26 +866,6 @@ describe('rx-collection.test.ts', () => {
                     });
                 });
                 describe('negative', () => {
-                    /**
-                     * @link https://docs.cloudant.com/cloudant_query.html#creating-selector-expressions
-                     */
-                    it('regex on primary should throw', async () => {
-                        if (!config.storage.hasRegexSupport) {
-                            return;
-                        }
-
-                        // TODO run this check in dev-mode so it behaves equal on all storage implementations.
-                        if (config.storage.name !== 'pouchdb') {
-                            return;
-                        }
-                        const c = await humansCollection.createPrimary(0);
-                        await AsyncTestUtil.assertThrows(
-                            () => c.find().where('passportId').regex(/Match/).exec(),
-                            'RxError',
-                            'regex'
-                        );
-                        c.database.destroy();
-                    });
                 });
             });
             config.parallel('.remove()', () => {
@@ -1112,10 +1056,6 @@ describe('rx-collection.test.ts', () => {
                     c.database.destroy();
                 });
                 it('unsets fields in all documents', async () => {
-                    // TODO should work on all storage implementations
-                    if (config.storage.name !== 'pouchdb') {
-                        return;
-                    }
                     const c = await humansCollection.create(10);
                     const query = c.find();
                     await query.update({
@@ -1166,11 +1106,6 @@ describe('rx-collection.test.ts', () => {
                     c.database.destroy();
                 });
                 it('find by primary in parallel', async () => {
-                    // TODO should work on all storage implementations
-                    if (config.storage.name !== 'pouchdb') {
-                        return;
-                    }
-
                     const c = await humansCollection.createPrimary(0);
 
                     const docData = schemaObjects.simpleHuman();
@@ -1810,10 +1745,6 @@ describe('rx-collection.test.ts', () => {
             });
             describe('negative', () => {
                 it('should not be possible to use the cleared collection', async () => {
-                    // TODO should work on all storage implementations
-                    if (config.storage.name !== 'pouchdb') {
-                        return;
-                    }
                     const c = await humansCollection.createPrimary(0);
                     await c.remove();
                     await AsyncTestUtil.assertThrows(

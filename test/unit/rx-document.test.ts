@@ -394,12 +394,10 @@ describe('rx-document.test.js', () => {
             });
             it('should work when inserting on a slow storage', async () => {
                 if (
-                    !config.platform.isNode() ||
-                    config.storage.name !== 'pouchdb'
+                    !config.platform.isNode()
                 ) {
                     return;
                 }
-                // use a 'slow' adapter because memory might be to fast
                 const db = await createRxDatabase({
                     name: config.rootPath + 'test_tmp/' + randomCouchString(10),
                     storage: config.storage.getStorage(),
@@ -429,7 +427,7 @@ describe('rx-document.test.js', () => {
                     innerDoc.firstName = 'foobar3';
                     return innerDoc;
                 });
-                assert.strictEqual('foobar3', doc.firstName);
+                assert.strictEqual('foobar3', doc.getLatest().firstName);
 
                 db.destroy();
             });

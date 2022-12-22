@@ -2700,16 +2700,6 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 // clean up the deleted document
                 await storageInstance.cleanup(0);
 
-                if (config.storage.name === 'pouchdb') {
-                    /**
-                     * PouchDB is not able to fully purge a document
-                     * so it makes no sense to check if the deleted document
-                     * was removed on cleanup.
-                     */
-                    await storageInstance.close();
-                    return;
-                }
-
                 const mustNotBeThere = await storageInstance.findDocumentsById(
                     [id],
                     true

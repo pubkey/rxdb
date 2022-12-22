@@ -5,7 +5,6 @@ import {
     isRxCollection,
     isRxDatabase,
     createRxDatabase,
-    createRxSchema,
     randomCouchString,
     RxDatabase,
     isRxDatabaseFirstTimeInstantiated,
@@ -212,46 +211,6 @@ config.parallel('rx-database.test.js', () => {
                 // make sure defineGetter works
                 assert.strictEqual(db.human0, collection);
 
-                db.destroy();
-            });
-            it('the schema-object should be saved in the internal storage instance', async () => {
-                if (config.storage.name !== 'pouchdb') {
-                    return;
-                }
-                const db = await createRxDatabase({
-                    name: randomCouchString(10),
-                    storage: config.storage.getStorage()
-                });
-                await db.addCollections({
-                    human0: {
-                        schema: schemas.human
-                    }
-                });
-                // TODO check storage instance instead of pouchdb
-                const colDoc = await (db.internalStore.internals.pouch as any).get('collection|human0-' + schemas.human.version);
-                const compareSchema = createRxSchema(schemas.human);
-                assert.deepStrictEqual(compareSchema.jsonSchema, colDoc.data.schema);
-                db.destroy();
-            });
-            it('collectionsCollection should contain schema.version', async () => {
-                if (config.storage.name !== 'pouchdb') {
-                    return;
-                }
-                const db = await createRxDatabase({
-                    name: randomCouchString(10),
-                    storage: config.storage.getStorage()
-                });
-                const collections = await db.addCollections({
-                    human: {
-                        schema: schemas.human
-                    }
-                });
-                const collection = collections.human;
-                const version = collection.schema.version;
-                assert.deepStrictEqual(version, 0);
-                // TODO check storage instance instead of pouchdb
-                const internalDoc = await (db.internalStore.internals.pouch as any).get('collection|human-' + version);
-                assert.deepStrictEqual(internalDoc.data.version, version);
                 db.destroy();
             });
             it('create 2 times on same adapter', async () => {

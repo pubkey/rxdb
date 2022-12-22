@@ -514,8 +514,7 @@ describe('rx-query.test.ts', () => {
         });
         it('querying fast should still return the same RxDocument', async () => {
             if (
-                !config.platform.isNode() ||
-                config.storage.name !== 'pouchdb'
+                !config.platform.isNode()
             ) {
                 return;
             }
@@ -807,30 +806,7 @@ describe('rx-query.test.ts', () => {
         });
     });
     config.parallel('issues', () => {
-        it('#267 query for null-fields', async () => {
-            if (config.storage.name !== 'pouchdb') {
-                /**
-                 * This test only runs in pouchdb,
-                 * TODO this should run on every RxStorage because it is a valid mongodb query.
-                 * @link https://docs.mongodb.com/manual/tutorial/query-for-null-fields/#faq-developers-query-for-nulls
-                 */
-                return;
-            }
-            const c = await humansCollection.create(2);
-            const foundDocs = await c.find({
-                selector: {
-                    passportId: null
-                }
-            }).exec();
-            assert.ok(Array.isArray(foundDocs));
-            c.database.destroy();
-        });
         it('#278 queryCache breaks when pointer out of bounds', async () => {
-            if (!config.platform.isNode()) {
-                // dont do this on browsers because firefox takes too long
-                return;
-            }
-
             const c = await humansCollection.createPrimary(0);
 
             // insert some docs
@@ -852,7 +828,6 @@ describe('rx-query.test.ts', () => {
                     .fill(0)
                     .map(() => schemaObjects.human())
             );
-
 
             // re-exec query
             const docs2 = await query.exec();
@@ -952,67 +927,6 @@ describe('rx-query.test.ts', () => {
             assert.strictEqual(foundDocsDesc[0].info.title, 'cctest');
 
             db.destroy();
-        });
-        it('#609 default index on primaryKey when better possible', async () => {
-            if (config.storage.name !== 'pouchdb') {
-                return;
-            }
-
-            const mySchema: RxJsonSchema<{ name: string; passportId: string; }> = {
-                version: 0,
-                keyCompression: false,
-                primaryKey: 'name',
-                type: 'object',
-                properties: {
-                    name: {
-                        type: 'string',
-                        maxLength: 100
-                    },
-                    passportId: {
-                        type: 'string',
-                        maxLength: 100
-                    }
-                },
-                indexes: ['passportId']
-            };
-            const collection = await humansCollection.createBySchema(mySchema);
-
-            await collection.insert({
-                name: 'abc',
-                passportId: 'foobar'
-            });
-
-            // first query, no sort
-            const q1 = collection.findOne({
-                selector: {
-                    passportId: 'foofbar'
-                },
-                /**
-                 * TODO if we do not set a sorting,
-                 * the primaryKey sorting will still be added by RxDb
-                 * which causes PouchDB to pick the wrong index.
-                 * This looks like a pouchdb bug, create a test there.
-                 */
-                sort: [
-                    { passportId: 'asc' }
-                ]
-            });
-            const explained1 = await collection.storageInstance.internals.pouch.explain(q1.getPreparedQuery());
-
-            assert.ok(explained1.index.ddoc);
-            assert.ok(explained1.index.ddoc.startsWith('_design/idx-'));
-
-            // second query, with sort
-            const q2 = collection.findOne({
-                selector: {
-                    passportId: 'foofbar'
-                }
-            }).sort('passportId');
-            const explained2 = await collection.storageInstance.internals.pouch.explain(q2.getPreparedQuery());
-            assert.ok(explained2.index.ddoc);
-            assert.ok(explained2.index.ddoc.startsWith('_design/idx-'));
-
-            collection.database.destroy();
         });
         it('#698 Same query producing a different result', async () => {
             const mySchema: RxJsonSchema<{ id: string; event_id: number; user_id: string; created_at: number; }> = {
@@ -1134,10 +1048,6 @@ describe('rx-query.test.ts', () => {
             c2.database.destroy();
         });
         it('#815 Allow null value for strings', async () => {
-            if (config.storage.name !== 'pouchdb') {
-                return;
-            }
-
             // create a schema
             const mySchema = {
                 version: 0,
@@ -1196,22 +1106,6 @@ describe('rx-query.test.ts', () => {
             const queryOK = collection.find();
             const docsOK = await queryOK.exec();
             assert.strictEqual(docsOK.length, 2);
-
-            const selector = {
-                lastName: null
-            };
-
-            const pouchResult = await collection.storageInstance.internals.pouch.find({
-                selector
-            });
-            const pouchDocs = pouchResult.docs;
-            const query = collection.find({
-                selector
-            });
-            const docs = await query.exec();
-
-            assert.strictEqual(pouchDocs.length, docs.length);
-            assert.strictEqual(pouchDocs[0].firstName, docs[0].firstName);
 
             db.destroy();
         });

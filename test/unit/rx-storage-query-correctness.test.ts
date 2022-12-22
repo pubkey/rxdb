@@ -186,11 +186,7 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
             ['firstName']
         ]),
         queries: [
-            /**
-             * TODO using $gte in pouchdb returns the wrong results,
-             * create an issue at the PouchDB repo.
-             */
-            config.isNotOneOfTheseStorages(['pouchdb']) ? {
+            {
                 info: 'normal $gt',
                 query: {
                     selector: {
@@ -206,7 +202,7 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                     'dd',
                     'ee'
                 ]
-            } : undefined,
+            },
             {
                 info: 'normal $gte',
                 query: {
@@ -242,7 +238,7 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                     'ee'
                 ]
             },
-            config.isNotOneOfTheseStorages(['pouchdb']) ? {
+            {
                 info: 'with string comparison',
                 query: {
                     selector: {
@@ -257,8 +253,8 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                     'dd',
                     'ee'
                 ]
-            } : undefined,
-            config.isNotOneOfTheseStorages(['pouchdb']) ? {
+            },
+            {
                 info: 'compare more then one field',
                 query: {
                     selector: {
@@ -276,7 +272,7 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                     'dd',
                     'ee'
                 ]
-            } : undefined,
+            }
         ]
     });
     testCorrectQueries<schemas.HumanDocumentType>({

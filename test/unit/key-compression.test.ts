@@ -65,7 +65,6 @@ config.parallel('key-compression.test.js', () => {
 
             const storageDocs = await internalInstance.findDocumentsById([docData.passportId], true);
             const storageDoc = storageDocs[docData.passportId];
-            console.dir(storageDoc);
             Object.keys(storageDoc)
                 .filter(key => !key.startsWith('_'))
                 .filter(key => key !== c.schema.primaryPath)
