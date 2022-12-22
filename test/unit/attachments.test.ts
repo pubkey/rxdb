@@ -15,7 +15,9 @@ import {
     MigrationStrategies,
     WithAttachmentsData,
     RxCollection,
-    ensureNotFalsy
+    ensureNotFalsy,
+    b64DecodeUnicode,
+    RxStorageInstance
 } from '../../';
 import { HumanDocumentType } from '../helper/schemas';
 import { RxDocumentWriteData } from '../../src/types';
@@ -405,22 +407,25 @@ config.parallel('attachments.test.ts', () => {
         it('should store the data encrypted', async () => {
             const c = await createEncryptedAttachmentsCollection(1);
             const doc = await c.findOne().exec(true);
+            const insertData = 'foo bar aaa';
             const attachment = await doc.putAttachment({
                 id: 'cat.txt',
-                data: blobBufferUtil.createBlobBuffer('foo bar aaa', 'text/plain'),
+                data: blobBufferUtil.createBlobBuffer(insertData, 'text/plain'),
                 type: 'text/plain'
             });
 
 
             // the data stored in the storage must be encrypted
-            const lowLevelStorage = doc.collection.storageInstance.originalStorageInstance;
+            const lowLevelStorage: RxStorageInstance<HumanDocumentType, any, any> = doc.collection.storageInstance.originalStorageInstance.originalStorageInstance;
             const encryptedData = await lowLevelStorage.getAttachmentData(doc.primary, 'cat.txt');
-            const dataString = await blobBufferUtil.toString(encryptedData);
-            assert.notStrictEqual(dataString, 'foo bar aaa');
+            const dataStringBase64 = await blobBufferUtil.toString(encryptedData);
+            const dataString = b64DecodeUnicode(dataStringBase64);
+            console.dir(dataString);
+            assert.notStrictEqual(dataString, insertData);
 
             // getting the data again must be decrypted
             const data = await attachment.getStringData();
-            assert.strictEqual(data, 'foo bar aaa');
+            assert.strictEqual(data, insertData);
             c.database.destroy();
         });
         it('should be able to render an encrypted stored image attachment', async () => {
