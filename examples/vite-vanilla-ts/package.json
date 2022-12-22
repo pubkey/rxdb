@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "preinstall": "(cd ../../ && npx yarn@1.13.0 pack ../../ --filename ./examples/vite-vanilla-ts/rxdb-local.tgz)",
+    "postinstall:logo": "copyfiles ../../docs-src/files/logo/logo.svg src/ --flat --up",
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
@@ -14,6 +15,7 @@
   "devDependencies": {
     "async-test-util": "^2.0.0",
     "concurrently": "^7.6.0",
+    "copyfiles": "^2.4.1",
     "testcafe": "^2.1.0",
     "typescript": "^4.9.3",
     "vite": "^4.0.0",

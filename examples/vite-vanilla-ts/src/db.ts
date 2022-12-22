@@ -3,7 +3,7 @@ import { getRxStorageDexie } from 'rxdb/plugins/dexie';
 import { wrappedKeyCompressionStorage } from 'rxdb/plugins/key-compression';
 import { RxDBQueryBuilderPlugin } from 'rxdb/plugins/query-builder';
 import { wrappedKeyEncryptionStorage } from 'rxdb/plugins/encryption';
-import { NoteSchema, MyDatabaseCollections } from './schema';
+import { HeroSchema, MyDatabaseCollections } from './schema';
 
 addRxPlugin(RxDBQueryBuilderPlugin);
 
@@ -19,7 +19,7 @@ const _create = async () => {
     multiInstance: true,
     ignoreDuplicate: true,
   });
-  await database.addCollections({ notes: { schema: NoteSchema } });
+  await database.addCollections({ heroes: { schema: HeroSchema } });
   return database;
 };
 

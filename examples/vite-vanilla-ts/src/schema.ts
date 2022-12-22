@@ -3,47 +3,48 @@ import {
     type ExtractDocumentTypeFromTypedRxJsonSchema,
     type RxCollection,
     type RxDatabase,
-    type RxJsonSchema,
+    type RxJsonSchema
 } from 'rxdb';
 
-export const NotesSchemaLiteral = {
-    title: 'note',
-    description: 'an individual note',
-    version: 0,
-    type: 'object',
-    indexes: ['createdAt', 'updatedAt'],
-    primaryKey: 'name',
-    properties: {
-        name: {
-            type: 'string',
-        },
-        body: {
-            type: 'string',
-        },
-        createdAt: {
-            type: 'number',
-        },
-        updatedAt: {
-            type: 'number',
-        },
+export const HeroSchemaLiteral = {
+   title: 'hero',
+  description: 'an individual hero',
+  version: 0,
+  type: 'object',
+  indexes: [
+    'createdAt',
+    'updatedAt'
+  ],
+  primaryKey: 'name',
+  properties: {
+    name: {
+      type: 'string',
     },
-    required: ['name', 'body', 'createdAt', 'updatedAt'],
+    color: {
+      type: 'string'
+    },
+    createdAt: {
+      type: 'number',
+    },
+    updatedAt: {
+      type: 'number',
+    },
+  },
+  required: ['name', 'color','createdAt','updatedAt'],
 } as const;
 
-export const SchemaTyped = toTypedRxJsonSchema(NotesSchemaLiteral);
+export const SchemaTyped = toTypedRxJsonSchema(HeroSchemaLiteral);
 
 // aggregate the document type from the schema
-export type NoteDocType = ExtractDocumentTypeFromTypedRxJsonSchema<
-    typeof SchemaTyped
->;
+export type HeroDocType = ExtractDocumentTypeFromTypedRxJsonSchema<typeof SchemaTyped>;
 
 // create the typed RxJsonSchema from the literal typed object.
-export const NoteSchema: RxJsonSchema<NoteDocType> = SchemaTyped;
+export const HeroSchema: RxJsonSchema<HeroDocType> = SchemaTyped;
 
-type NoteCollection = RxCollection<NoteDocType>;
+type HeroesCollection = RxCollection<HeroDocType>;
 
 export type MyDatabaseCollections = {
-    notes: NoteCollection;
+heroes: HeroesCollection;
 };
 
 export type MyDatabase = RxDatabase<MyDatabaseCollections>;

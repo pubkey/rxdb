@@ -7,13 +7,15 @@
   "plugins": [
     "eslint-plugin-import",
     "eslint-plugin-jsdoc",
-    "@typescript-eslint"    
+    "@typescript-eslint",
+    "testcafe"    
   ],
   "extends": [
     "eslint:recommended",
     "plugin:@typescript-eslint/eslint-recommended",
     "plugin:@typescript-eslint/recommended",
-    "plugin:@typescript-eslint/recommended-requiring-type-checking"
+    "plugin:@typescript-eslint/recommended-requiring-type-checking",
+    "plugin:testcafe/recommended"
   ],
   "parser": "@typescript-eslint/parser",
   "parserOptions": {
