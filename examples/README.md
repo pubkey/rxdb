@@ -19,4 +19,4 @@ supabase             | [done](./supabase/)
 
 Technology           | Third Party Link
 -------------------- | ---------------------
-NativeScript         | [Link](https://github.com/herefishyfish/Nativescript-RxDB)
+NativeScript         | [Link](https://github.com/herefishyfish/nativescript-angular-rxdb-lokijs-demo)
