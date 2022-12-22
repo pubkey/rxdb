@@ -699,9 +699,9 @@ jobs:
             ~/.npm
             ./node_modules
             ./examples/flutter/javascript/node_modules
-          key: ${{ runner.os }}-npm-flutter-x8-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-flutter-x9-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-flutter-x8-
+            ${{ runner.os }}-npm-flutter-x9-
       - name: prepare RxDB core
         run: |
           npm install --legacy-peer-deps
