@@ -6,8 +6,7 @@ import type {
 import {
     getFromMapOrFill,
     getFromMapOrThrow,
-    parseRevision,
-    requestIdlePromise
+    parseRevision
 } from './util';
 import {
     overwritable
@@ -64,9 +63,9 @@ export class DocumentCache<RxDocType, OrmMethods> {
 
     /**
      * Some JavaScript runtimes like QuickJS,
-     * so not have a FinalizationRegistry, but they have a WeakRef.
-     * Therefore we need a workaround which cleans up the references
-     * without using the registry.
+     * so not have a FinalizationRegistry or WeakRef.
+     * Therefore we need a workaround which might waste a lot of memory,
+     * but at least works.
      */
     private registry?: FinalizationRegistry<FinalizationRegistryValue> = typeof FinalizationRegistry === 'function' ?
         new FinalizationRegistry<FinalizationRegistryValue>(docMeta => {
@@ -84,7 +83,6 @@ export class DocumentCache<RxDocType, OrmMethods> {
             }
         }) :
         undefined;
-    private cleanupQueueAwaiting: boolean = false;
 
     constructor(
         public readonly primaryPath: string,
@@ -122,18 +120,12 @@ export class DocumentCache<RxDocType, OrmMethods> {
         if (!cachedRxDocument) {
             docData = overwritable.deepFreezeWhenDevMode(docData) as any;
             cachedRxDocument = this.documentCreator(docData) as RxDocument<RxDocType, OrmMethods>;
-            cacheItem.documentByRevisionHeight.set(revisionHeight, new WeakRef(cachedRxDocument));
+            cacheItem.documentByRevisionHeight.set(revisionHeight, createWeakRefWithFallback(cachedRxDocument));
 
             if (this.registry) {
                 this.registry.register(cachedRxDocument, {
                     docId,
                     revisionHeight
-                });
-            } else if (!this.cleanupQueueAwaiting) {
-                this.cleanupQueueAwaiting = true;
-                requestIdlePromise().then(() => {
-                    this.cleanupQueueAwaiting = false;
-                    runCleanupWorkaround(this);
                 });
             }
         }
@@ -166,18 +158,19 @@ function getNewCacheItem<RxDocType, OrmMethods>(docData: RxDocumentData<RxDocTyp
 
 
 /**
- * Used when the JavaScript runtime does not
- * support the FinalizationRegistry API.
+ * Fallback for JavaScript runtimes that do not support WeakRef.
+ * The fallback will keep the items in cache forever,
+ * but at least works.
  */
-function runCleanupWorkaround<RxDocType>(docCache: DocumentCache<RxDocType, any>) {
-    Array.from(docCache.cacheItemByDocId.entries()).forEach(([docId, cacheItem]) => {
-        Array.from(cacheItem.documentByRevisionHeight.entries()).forEach(([revH, docRef]) => {
-            if (!docRef.deref()) {
-                cacheItem.documentByRevisionHeight.delete(revH);
+const HAS_WEAK_REF = typeof WeakRef === 'function';
+function createWeakRefWithFallback<T extends object>(obj: T): WeakRef<T> {
+    if (HAS_WEAK_REF) {
+        return new WeakRef(obj) as any;
+    } else {
+        return {
+            deref() {
+                return obj;
             }
-        });
-        if (cacheItem.documentByRevisionHeight.size === 0) {
-            docCache.cacheItemByDocId.delete(docId);
-        }
-    });
+        } as any;
+    }
 }
