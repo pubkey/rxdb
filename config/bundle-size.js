@@ -3,7 +3,7 @@ import {
 } from '../';
 import {
     getRxStorageMemory,
-} from '../plugins/memory';
+} from '../plugins/storage-memory';
 
 function run() {
     createRxDatabase({
