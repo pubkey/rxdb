@@ -1744,15 +1744,6 @@ describe('rx-collection.test.ts', () => {
                 });
             });
             describe('negative', () => {
-                it('should not be possible to use the cleared collection', async () => {
-                    const c = await humansCollection.createPrimary(0);
-                    await c.remove();
-                    await AsyncTestUtil.assertThrows(
-                        () => c.find().exec(),
-                        Error
-                    );
-                    c.database.destroy();
-                });
                 it('should not have the collection in the collections-list', async () => {
                     const c = await humansCollection.createPrimary(0);
                     const db = c.database;
