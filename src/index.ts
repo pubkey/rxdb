@@ -195,7 +195,6 @@ export type {
     RxQueryOP,
     RxQueryObject,
     RxQueryOptions,
-    CouchDBServerOptions,
     SyncOptionsGraphQL,
     MigrationStrategy,
     MigrationStrategies,

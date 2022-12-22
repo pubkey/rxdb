@@ -21,7 +21,7 @@ import {
     RxDBReplicationCouchDBPlugin
 } from '../../plugins/replication-couchdb';
 
-import { PouchAllDocsResponse } from '../../src/types';
+import { CouchAllDocsResponse } from '../../src/types';
 import { filter, firstValueFrom } from 'rxjs';
 import { waitUntil } from 'async-test-util';
 import { ensureCollectionsHaveEqualState } from '../helper/test-util';
@@ -39,7 +39,7 @@ describe('replication-couchdb.test.ts', () => {
     async function getAllServerDocs(serverUrl: string) {
         const url = serverUrl + '_all_docs?' + mergeUrlQueryParams({ include_docs: true });
         const response = await fetch(url);
-        const result: PouchAllDocsResponse = await response.json();
+        const result: CouchAllDocsResponse = await response.json();
         return result.rows.map(row => row.doc);
     }
 

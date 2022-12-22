@@ -82,7 +82,7 @@ export type RxTestStorage = {
         storage: RxStorage<any, any>;
         /**
          * A description that describes the storage and setting.
-         * For example 'pouchdb-idb'.
+         * For example 'dexie-native'.
          */
         description: string;
     };

@@ -99,7 +99,7 @@ Then you can assemble the RxStorage and create a database with it:
 
 ```ts
 import { createRxDatabase } from 'rxdb';
-import { getRxStorageDexie } from 'rxdb/plugins/dexie';
+import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
 
 // create database
 const db = await createRxDatabase({

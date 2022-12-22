@@ -1,8 +1,0 @@
-{
-  "name": "rxdb-plugin-foundationdb",
-  "main": "../../dist/lib/plugins/foundationdb/index.js",
-  "jsnext:main": "../../dist/es/plugins/foundationdb/index.js",
-  "module": "../../dist/es/plugins/foundationdb/index.js",
-  "types": "../../dist/types/plugins/foundationdb/index.d.ts",
-  "sideEffects": false
-}

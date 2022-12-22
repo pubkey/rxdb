@@ -1,5 +1,5 @@
-import { getRxStorageDexie } from '../../dexie';
-import { wrappedWorkerRxStorage } from '../../worker';
+import { getRxStorageDexie } from '../../storage-dexie';
+import { wrappedWorkerRxStorage } from '../../storage-worker';
 
 import {
     indexedDB,

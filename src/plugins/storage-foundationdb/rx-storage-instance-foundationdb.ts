@@ -50,13 +50,15 @@ import {
     getStartIndexStringFromUpperBound
 } from '../../custom-index';
 import {
-    ensureNotFalsy, lastOfArray, now
-    , PROMISE_RESOLVE_VOID,
+    ensureNotFalsy,
+    lastOfArray,
+    now,
+    PROMISE_RESOLVE_VOID,
     toArray
 } from '../../util';
 import { queryFoundationDB } from './foundationdb-query';
 import { INDEX_MAX } from '../../query-planner';
-import { attachmentMapKey } from '../memory';
+import { attachmentMapKey } from '../storage-memory';
 
 export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstance<
     RxDocType,

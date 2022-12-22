@@ -17,7 +17,7 @@ The key compression plugin is a wrapper around any other [RxStorage](./rx-storag
 
 ```ts
 import { wrappedKeyCompressionStorage } from 'rxdb/plugins/key-compression';
-import { getRxStorageDexie } from 'rxdb/plugins/dexie';
+import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
 
 const storageWithKeyCompression = wrappedKeyCompressionStorage({
     storage: getRxStorageDexie()

@@ -13,7 +13,7 @@ import {
 
 import heroSchema from '../schemas/Hero.schema';
 
-import { getRxStorageDexie } from 'rxdb/plugins/dexie';
+import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
 
 // import modules
 import { RxDBDevModePlugin } from 'rxdb/plugins/dev-mode';

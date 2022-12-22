@@ -13,8 +13,8 @@ The remote storage communicates over a message channel which has to implement th
 
 ```ts
 // on the client
-import { RxStorageDexieStatics } from 'rxdb/plugins/dexie';
-import { getRxStorageRemote } from 'rxdb/plugins/remote';
+import { RxStorageDexieStatics } from 'rxdb/plugins/storage-dexie';
+import { getRxStorageRemote } from 'rxdb/plugins/storage-remote';
 const storage = getRxStorageRemote({
     identifier: 'my-id',
     statics: RxStorageDexieStatics,
@@ -30,8 +30,8 @@ const myDb = await createRxDatabase({
 
 
 // on the remote
-import { getRxStorageDexie } from 'rxdb/plugins/dexie';
-import { exposeRxStorageRemote } from 'rxdb/plugins/remote';
+import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
+import { exposeRxStorageRemote } from 'rxdb/plugins/storage-remote';
 exposeRxStorageRemote({
     storage: getRxStorageDexie(),
     messages$: new Subject(),
@@ -51,8 +51,8 @@ The remote storage plugin contains helper functions to create a remote storage o
 
 ```ts
 // Create a remote storage Websocket server in Node.js
-import { getRxStorageMemory } from 'rxdb/plugins/memory';
-import { startRxStorageRemoteWebsocketServer } from 'rxdb/plugins/remote';
+import { getRxStorageMemory } from 'rxdb/plugins/storage-memory';
+import { startRxStorageRemoteWebsocketServer } from 'rxdb/plugins/storage-remote';
 const server = await startRxStorageRemoteWebsocketServer({
     port: 8080,
     storage: getRxStorageMemory()
@@ -60,7 +60,7 @@ const server = await startRxStorageRemoteWebsocketServer({
 
 
 // Connect to the remote storage on the client
-import { getRxStorageRemoteWebsocket } from 'rxdb/plugins/remote';
+import { getRxStorageRemoteWebsocket } from 'rxdb/plugins/storage-remote';
 const myDb = await createRxDatabase({
     storage: getRxStorageRemoteWebsocket({
         statics,

@@ -9,7 +9,6 @@ import {
 } from '../rx-database';
 import { Observable } from 'rxjs';
 import { RxStorage } from './rx-storage.interface';
-import { PouchDBExpressServerOptions } from './plugins/server-couchdb';
 import { RxLocalDocument } from './plugins/local-documents';
 import { RxCleanupPolicy } from './plugins/cleanup';
 import { HashFunction } from './util';
@@ -36,15 +35,6 @@ export interface RxDatabaseCreator<Internals = any, InstanceCreationOptions = an
      * By default, count() queries in 'slow' mode are not allowed.
      */
     allowSlowCount?: boolean;
-}
-
-// options for the server-plugin
-export interface CouchDBServerOptions {
-    path?: string;
-    port?: number;
-    cors?: boolean;
-    startServer?: boolean;
-    pouchdbExpressOptions?: PouchDBExpressServerOptions;
 }
 
 export type CollectionsOfDatabase = { [key: string]: RxCollection; };

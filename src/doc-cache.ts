@@ -60,20 +60,29 @@ declare type FinalizationRegistryValue = {
  */
 export class DocumentCache<RxDocType, OrmMethods> {
     public cacheItemByDocId = new Map<string, CacheItem<RxDocType, OrmMethods>>();
-    private registry = new FinalizationRegistry<FinalizationRegistryValue>(docMeta => {
-        const docId = docMeta.docId;
-        const cacheItem = this.cacheItemByDocId.get(docId);
-        if (cacheItem) {
-            cacheItem.documentByRevisionHeight.delete(docMeta.revisionHeight);
-            if (cacheItem.documentByRevisionHeight.size === 0) {
-                /**
-                 * No state of the document is cached anymore,
-                 * so we can clean up.
-                 */
-                this.cacheItemByDocId.delete(docId);
+
+    /**
+     * Some JavaScript runtimes like QuickJS,
+     * so not have a FinalizationRegistry or WeakRef.
+     * Therefore we need a workaround which might waste a lot of memory,
+     * but at least works.
+     */
+    private registry?: FinalizationRegistry<FinalizationRegistryValue> = typeof FinalizationRegistry === 'function' ?
+        new FinalizationRegistry<FinalizationRegistryValue>(docMeta => {
+            const docId = docMeta.docId;
+            const cacheItem = this.cacheItemByDocId.get(docId);
+            if (cacheItem) {
+                cacheItem.documentByRevisionHeight.delete(docMeta.revisionHeight);
+                if (cacheItem.documentByRevisionHeight.size === 0) {
+                    /**
+                     * No state of the document is cached anymore,
+                     * so we can clean up.
+                     */
+                    this.cacheItemByDocId.delete(docId);
+                }
             }
-        }
-    });
+        }) :
+        undefined;
 
     constructor(
         public readonly primaryPath: string,
@@ -111,11 +120,14 @@ export class DocumentCache<RxDocType, OrmMethods> {
         if (!cachedRxDocument) {
             docData = overwritable.deepFreezeWhenDevMode(docData) as any;
             cachedRxDocument = this.documentCreator(docData) as RxDocument<RxDocType, OrmMethods>;
-            cacheItem.documentByRevisionHeight.set(revisionHeight, new WeakRef(cachedRxDocument));
-            this.registry.register(cachedRxDocument, {
-                docId,
-                revisionHeight
-            });
+            cacheItem.documentByRevisionHeight.set(revisionHeight, createWeakRefWithFallback(cachedRxDocument));
+
+            if (this.registry) {
+                this.registry.register(cachedRxDocument, {
+                    docId,
+                    revisionHeight
+                });
+            }
         }
         return cachedRxDocument;
     }
@@ -142,4 +154,23 @@ function getNewCacheItem<RxDocType, OrmMethods>(docData: RxDocumentData<RxDocTyp
         documentByRevisionHeight: new Map(),
         latestDoc: docData
     };
+}
+
+
+/**
+ * Fallback for JavaScript runtimes that do not support WeakRef.
+ * The fallback will keep the items in cache forever,
+ * but at least works.
+ */
+const HAS_WEAK_REF = typeof WeakRef === 'function';
+function createWeakRefWithFallback<T extends object>(obj: T): WeakRef<T> {
+    if (HAS_WEAK_REF) {
+        return new WeakRef(obj) as any;
+    } else {
+        return {
+            deref() {
+                return obj;
+            }
+        } as any;
+    }
 }

@@ -84,7 +84,7 @@ If multiple atomic updates are run on the same document at the same time, we sho
 ## Fix migration+replication
 When the schema is changed a migration runs, the replication plugins will replicate the migrated data. This is mostly not wanted by the user. We should add an option to let the user define what should happen after the migration.
 
-## Prefix storage plugins with `storage-`
+## Prefix storage plugins with `storage-` [DONE]
 Like the replication plugins, all RxStorage plugins should be prefixed with `storage-` for example `storage-dexie`.
 
 ## Require string based `$regex`

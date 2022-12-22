@@ -27,7 +27,7 @@ const {
 addRxPlugin(RxDBLeaderElectionPlugin);
 const {
     getRxStorageMemory
-} = require('../../plugins/memory');
+} = require('../../plugins/storage-memory');
 const {
     replicateRxCollection
 } = require('../../plugins/replication');

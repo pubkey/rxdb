@@ -8,10 +8,10 @@ import {
 
 import {
     getRxStorageDexie
-} from 'rxdb/plugins/dexie';
+} from 'rxdb/plugins/storage-dexie';
 import {
     getRxStorageMemory
-} from 'rxdb/plugins/memory';
+} from 'rxdb/plugins/storage-memory';
 import { wrappedValidateAjvStorage } from 'rxdb/plugins/validate-ajv';
 import { heroSchema } from './hero.schema';
 import { RxHeroesCollections } from './types';
@@ -48,7 +48,7 @@ export async function createDatabase() {
      */
     database.heroes.preInsert((docData) => {
         docData.replicationRevision = createRevision(
-            database.hashFunction,
+            database.token,
             docData as any
         );
         return docData;

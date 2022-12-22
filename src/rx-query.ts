@@ -205,7 +205,7 @@ export class RxQueryBase<
 
     /**
      * set the new result-data as result-docs of the query
-     * @param newResultData json-docs that were received from pouchdb
+     * @param newResultData json-docs that were received from the storage
      */
     _setResultData(newResultData: RxDocumentData<RxDocType>[] | number | Map<string, RxDocumentData<RxDocType>>): void {
 

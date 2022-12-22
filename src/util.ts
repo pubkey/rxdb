@@ -372,24 +372,6 @@ export function removeOneFromArrayIfMatches<T>(ar: T[], condition: (x: T) => boo
     return ar;
 }
 
-
-/**
- * transforms the given adapter into a pouch-compatible object
- */
-export function adapterObject(adapter: any): any {
-    let adapterObj: any = {
-        db: adapter
-    };
-    if (typeof adapter === 'string') {
-        adapterObj = {
-            adapter,
-            db: undefined,
-        };
-    }
-    return adapterObj;
-}
-
-
 function recursiveDeepCopy<T>(o: T | DeepReadonlyObject<T>): T {
     if (!o) return o;
     return deepClone(o, false) as any;

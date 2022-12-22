@@ -18,13 +18,6 @@ import { RxDBCleanupPlugin } from '../../plugins/cleanup';
 addRxPlugin(RxDBCleanupPlugin);
 
 config.parallel('cleanup.test.js', () => {
-    /**
-     * Cleanup does not work on pouchdb because it is not
-     * possible to purge deleted documents there.
-     */
-    if (config.storage.name.includes('pouchdb')) {
-        return;
-    }
     it('should clean up the deleted documents', async () => {
         const db = await createRxDatabase({
             name: randomCouchString(10),

@@ -111,7 +111,8 @@ import {
 import {
     getWrappedStorageInstance,
     storageChangeEventToRxChangeEvent,
-    throwIfIsStorageWriteError
+    throwIfIsStorageWriteError,
+    WrappedRxStorageInstance
 } from './rx-storage-helper';
 import { defaultConflictHandler } from './replication-protocol';
 import { IncrementalWriteQueue } from './incremental-write';
@@ -134,7 +135,7 @@ export class RxCollectionBase<
     /**
      * Stores all 'normal' documents
      */
-    public storageInstance: RxStorageInstance<RxDocumentType, any, InstanceCreationOptions> = {} as any;
+    public storageInstance: WrappedRxStorageInstance<RxDocumentType, any, InstanceCreationOptions> = {} as any;
     public readonly timeouts: Set<ReturnType<typeof setTimeout>> = new Set();
     public incrementalWriteQueue: IncrementalWriteQueue<RxDocumentType> = {} as any;
 

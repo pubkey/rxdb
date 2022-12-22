@@ -14,7 +14,7 @@ import {
 } from 'rxdb';
 import {
     getRxStorageMemory
-} from 'rxdb/plugins/memory';
+} from 'rxdb/plugins/storage-memory';
 
 /**
  * declare types

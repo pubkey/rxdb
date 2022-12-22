@@ -1,6 +1,6 @@
 import { writable } from 'svelte/store';
 import { createRxDatabase, addRxPlugin } from 'rxdb';
-import { getRxStorageDexie } from 'rxdb/plugins/dexie';
+import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
 
 import { RxDBQueryBuilderPlugin } from 'rxdb/plugins/query-builder';
 import { wrappedValidateAjvStorage } from 'rxdb/plugins/validate-ajv';

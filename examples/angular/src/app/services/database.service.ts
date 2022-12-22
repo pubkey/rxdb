@@ -17,10 +17,10 @@ import {
 } from 'rxdb';
 import {
     getRxStorageDexie
-} from 'rxdb/plugins/dexie';
+} from 'rxdb/plugins/storage-dexie';
 import {
     getRxStorageMemory
-} from 'rxdb/plugins/memory';
+} from 'rxdb/plugins/storage-memory';
 
 import { RxDBLeaderElectionPlugin } from 'rxdb/plugins/leader-election';
 import { wrappedValidateAjvStorage } from 'rxdb/plugins/validate-ajv';

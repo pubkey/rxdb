@@ -3,7 +3,7 @@ import {
 } from 'rxdb';
 import {
     getRxStorageLoki
-} from 'rxdb/plugins/lokijs';
+} from 'rxdb/plugins/storage-lokijs';
 import {
     setFlutterRxDatabaseConnector,
     getLokijsAdapterFlutter

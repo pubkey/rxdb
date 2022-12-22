@@ -26,10 +26,10 @@ The main reason to use this is to improve initial page load and query/write time
 
 import {
     getRxStorageIndexedDB
-} from 'rxdb-premium/plugins/indexeddb';
+} from 'rxdb-premium/plugins/storage-indexeddb';
 import {
     getMemorySyncedRxStorage
-} from 'rxdb-premium/plugins/memory-synced';
+} from 'rxdb-premium/plugins/storage-memory-synced';
 
 /**
  * Here we use the IndexedDB RxStorage as persistence storage.

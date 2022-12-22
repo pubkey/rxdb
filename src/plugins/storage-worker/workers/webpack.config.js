@@ -9,12 +9,12 @@ const projectRootPath = path.resolve(
 const babelConfig = require('../../../../babel.config');
 module.exports = {
     entry: {
-        'lokijs-incremental-indexeddb': './src/plugins/worker/workers/lokijs-incremental-indexeddb.worker.ts',
-        'lokijs-indexeddb': './src/plugins/worker/workers/lokijs-indexeddb.worker.ts',
-        'lokijs-memory': './src/plugins/worker/workers/lokijs-memory.worker.ts',
-        'lokijs-fs': './src/plugins/worker/workers/lokijs-fs.worker.ts',
-        'dexie': './src/plugins/worker/workers/dexie.worker.ts',
-        'dexie-memory': './src/plugins/worker/workers/dexie-memory.worker.ts'
+        'lokijs-incremental-indexeddb': './src/plugins/storage-worker/workers/lokijs-incremental-indexeddb.worker.ts',
+        'lokijs-indexeddb': './src/plugins/storage-worker/workers/lokijs-indexeddb.worker.ts',
+        'lokijs-memory': './src/plugins/storage-worker/workers/lokijs-memory.worker.ts',
+        'lokijs-fs': './src/plugins/storage-worker/workers/lokijs-fs.worker.ts',
+        'dexie': './src/plugins/storage-worker/workers/dexie.worker.ts',
+        'dexie-memory': './src/plugins/storage-worker/workers/dexie-memory.worker.ts'
     },
     output: {
         filename: '[name].worker.js',

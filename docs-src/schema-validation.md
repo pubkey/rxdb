@@ -20,7 +20,7 @@ A validation-module that does the schema-validation. This one is using [ajv](htt
 
 ```javascript
 import { wrappedValidateAjvStorage } from 'rxdb/plugins/validate-ajv';
-import { getRxStorageDexie } from 'rxdb/plugins/dexie';
+import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
 
 // wrap the validation around the main RxStorage
 const storage = wrappedValidateAjvStorage({
@@ -39,7 +39,7 @@ Both `is-my-json-valid` and `validate-ajv` use `eval()` to perform validation wh
 
 ```javascript
 import { wrappedValidateZSchemaStorage } from 'rxdb/plugins/validate-z-schema';
-import { getRxStorageDexie } from 'rxdb/plugins/dexie';
+import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
 
 // wrap the validation around the main RxStorage
 const storage = wrappedValidateZSchemaStorage({
@@ -61,7 +61,7 @@ The `validate-is-my-json-valid` plugin uses [is-my-json-valid](https://www.npmjs
 
 ```javascript
 import { wrappedValidateIsMyJsonValidStorage } from 'rxdb/plugins/validate-is-my-json-valid';
-import { getRxStorageDexie } from 'rxdb/plugins/dexie';
+import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
 
 // wrap the validation around the main RxStorage
 const storage = wrappedValidateIsMyJsonValidStorage({

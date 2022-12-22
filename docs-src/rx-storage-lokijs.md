@@ -24,7 +24,7 @@ import {
 } from 'rxdb';
 import {
     getRxStorageLoki
-} from 'rxdb/plugins/lokijs';
+} from 'rxdb/plugins/storage-lokijs';
 
 // in the browser, we want to persist data in IndexedDB, so we use the indexeddb adapter.
 const LokiIncrementalIndexedDBAdapter = require('lokijs/src/incremental-indexeddb-adapter');

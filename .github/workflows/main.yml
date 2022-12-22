@@ -181,9 +181,7 @@ jobs:
         with:
           run: npm run test:browser:remote
 
-  # run the node tests for the LokiJS RxStorage in a different
-  # task to run in parallel.
-  node-dexie-worker:
+  storage-worker-dexie:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
@@ -306,7 +304,7 @@ jobs:
       - run: npm run test:fast:foundationdb
       - run: npm run test:performance:foundationdb
 
-  angular:
+  example-angular:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v2
@@ -447,7 +445,7 @@ jobs:
           ignore_words_file: config/codespellignore.txt
           path: test
 
-  electron:
+  example-electron:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
@@ -475,7 +473,7 @@ jobs:
           working-directory: ./examples/electron
           run: npm run test
 
-  react:
+  example-react:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
@@ -503,7 +501,7 @@ jobs:
           working-directory: ./examples/react
           run: npm run test:build
 
-  react-native-expo:
+  example-react-native-expo:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
@@ -529,7 +527,7 @@ jobs:
           yarn test:bundle
 
 
-  supabase:
+  example-supabase:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
@@ -547,9 +545,9 @@ jobs:
             ./node_modules
             ./examples/supabase/node_modules
           # invalidate cache when any package-lock.json changes
-          key: ${{ runner.os }}-npm-supabase-x1-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-supabase-x2-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-supabase-x1
+            ${{ runner.os }}-npm-supabase-x2
       - name: Cache Docker layers
         uses: actions/cache@v2
         with:
@@ -586,7 +584,7 @@ jobs:
           working-directory: ./examples/supabase
           run: npm run test:dexie
 
-  vue:
+  example-vue:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
@@ -615,7 +613,7 @@ jobs:
           working-directory: ./examples/vue
           run: npm run test
 
-  svelte:
+  example-svelte:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
@@ -643,7 +641,7 @@ jobs:
           working-directory: ./examples/svelte
           run: npm run test
 
-  graphql:
+  example-graphql:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
@@ -677,7 +675,7 @@ jobs:
           working-directory: ./examples/graphql
           run: npm run test:dexie
 
-  test-flutter:
+  example-flutter:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
@@ -699,9 +697,9 @@ jobs:
             ~/.npm
             ./node_modules
             ./examples/flutter/javascript/node_modules
-          key: ${{ runner.os }}-npm-flutter-x8-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-flutter-x9-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-flutter-x8-
+            ${{ runner.os }}-npm-flutter-x9-
       - name: prepare RxDB core
         run: |
           npm install --legacy-peer-deps

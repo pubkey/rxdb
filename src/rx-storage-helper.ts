@@ -509,6 +509,10 @@ export function getUniqueDeterministicEventKey(
 }
 
 
+export type WrappedRxStorageInstance<RxDocumentType, Internals, InstanceCreationOptions> = RxStorageInstance<RxDocumentType, any, InstanceCreationOptions> & {
+    originalStorageInstance: RxStorageInstance<RxDocumentType, Internals, InstanceCreationOptions>;
+};
+
 /**
  * Wraps the normal storageInstance of a RxCollection
  * to ensure that all access is properly using the hooks
@@ -528,7 +532,7 @@ export function getWrappedStorageInstance<
      * before it was mutated by hooks.
      */
     rxJsonSchema: RxJsonSchema<RxDocumentData<RxDocType>>
-): RxStorageInstance<RxDocType, Internals, InstanceCreationOptions> {
+): WrappedRxStorageInstance<RxDocType, Internals, InstanceCreationOptions> {
     overwritable.deepFreezeWhenDevMode(rxJsonSchema);
     const primaryPath = getPrimaryFieldOfPrimaryKey(rxJsonSchema.primaryKey);
 
@@ -609,7 +613,8 @@ export function getWrappedStorageInstance<
         };
     }
 
-    const ret: RxStorageInstance<RxDocType, Internals, InstanceCreationOptions> = {
+    const ret: WrappedRxStorageInstance<RxDocType, Internals, InstanceCreationOptions> = {
+        originalStorageInstance: storageInstance,
         schema: storageInstance.schema,
         internals: storageInstance.internals,
         collectionName: storageInstance.collectionName,
@@ -773,8 +778,6 @@ export function getWrappedStorageInstance<
             });
         }
     };
-
-    (ret as any).originalStorageInstance = storageInstance;
 
     return ret;
 }

@@ -413,11 +413,10 @@ config.parallel('attachments.test.ts', () => {
 
 
             // the data stored in the storage must be encrypted
-            if (config.storage.name === 'pouchdb') {
-                const encryptedData = await doc.collection.storageInstance.internals.pouch.getAttachment(doc.primary, 'cat.txt');
-                const dataString = await blobBufferUtil.toString(encryptedData);
-                assert.notStrictEqual(dataString, 'foo bar aaa');
-            }
+            const lowLevelStorage = doc.collection.storageInstance.originalStorageInstance;
+            const encryptedData = await lowLevelStorage.getAttachmentData(doc.primary, 'cat.txt');
+            const dataString = await blobBufferUtil.toString(encryptedData);
+            assert.notStrictEqual(dataString, 'foo bar aaa');
 
             // getting the data again must be decrypted
             const data = await attachment.getStringData();
@@ -856,7 +855,7 @@ config.parallel('attachments.test.ts', () => {
 
             db.destroy();
         });
-        it('#4107 reproduce 412 pouchdb error', async () => {
+        it('#4107 reproduce 412 error', async () => {
             const attName = 'red_dot_1px_image';
             const redDotBase64 =
                 'data:image/bmp;base64,Qk06AAAAAAAAADYAAAAoAAAAAQAAAAEAAAABABgAAAAAAAQAAAAAAAAAAAAAAAAAAAAAAAAAJBztAA==';
@@ -901,14 +900,14 @@ config.parallel('attachments.test.ts', () => {
             const name = randomCouchString(10);
 
             // create an encrypted storage
-            const encryptedPouchStorage = wrappedKeyEncryptionStorage({
+            const encryptedStorage = wrappedKeyEncryptionStorage({
                 storage: config.storage.getStorage(),
             });
 
             // create a database
             const db = await createRxDatabase({
                 name,
-                storage: encryptedPouchStorage,
+                storage: encryptedStorage,
                 password: 'password',
                 eventReduce: false,
                 multiInstance: true,
