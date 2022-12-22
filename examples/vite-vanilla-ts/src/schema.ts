@@ -44,7 +44,7 @@ export const NoteSchema: RxJsonSchema<NoteDocType> = SchemaTyped;
 type NoteCollection = RxCollection<NoteDocType>;
 
 export type MyDatabaseCollections = {
-notes: NoteCollection
-}
+notes: NoteCollection;
+};
 
 export type MyDatabase = RxDatabase<MyDatabaseCollections>;

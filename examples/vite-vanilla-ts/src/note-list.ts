@@ -1,4 +1,4 @@
-import { db } from "./db";
+import { db } from './db';
 
 export async function setupNoteList({
   noteListElement,
@@ -9,10 +9,10 @@ export async function setupNoteList({
     const db$ = await db();
     db$.notes
       .find()
-      .sort({ updatedAt: "desc" })
+      .sort({ updatedAt: 'desc' })
       .$.subscribe((notes) => {
-        let result = "";
-        noteListElement.innerHTML = "";
+        let result = '';
+        noteListElement.innerHTML = '';
         notes.forEach((note) => {
           result += `<li> ${note.name} - ${note.body} - ${new Date(note.createdAt).toLocaleDateString('en-US')}</li>`;
         });

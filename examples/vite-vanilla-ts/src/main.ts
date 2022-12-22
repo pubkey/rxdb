@@ -1,11 +1,12 @@
-import "./style.css";
-import typescriptLogo from "./typescript.svg";
-import rxdbLogo from "./rxdb.svg";
-import { setupNoteEditor } from "./note-editor";
-import { setupNoteList } from "./note-list";
+/* eslint-disable @typescript-eslint/no-non-null-assertion */
+import './style.css';
+import typescriptLogo from './typescript.svg';
+import rxdbLogo from './rxdb.svg';
+import { setupNoteEditor } from './note-editor';
+import { setupNoteList } from './note-list';
 
 
-document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
+document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
 <div>
   <a href="https://vitejs.dev" target="_blank">
     <img src="/vite.svg" class="logo" alt="Vite logo" />
@@ -30,11 +31,11 @@ document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
 `;
 
 setupNoteEditor({
-  noteNameElement: document.querySelector<HTMLInputElement>("#noteName")!,
-  noteBodyElement: document.querySelector<HTMLInputElement>("#noteBody")!,
-  saveElement: document.querySelector<HTMLButtonElement>("#noteSave")! ,
+  noteNameElement: document.querySelector<HTMLInputElement>('#noteName')!,
+  noteBodyElement: document.querySelector<HTMLInputElement>('#noteBody')!,
+  saveElement: document.querySelector<HTMLButtonElement>('#noteSave')! ,
 });
 
 await setupNoteList({
-  noteListElement: document.querySelector<HTMLUListElement>("#noteList")! 
-})
+  noteListElement: document.querySelector<HTMLUListElement>('#noteList')!
+});

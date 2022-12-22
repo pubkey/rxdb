@@ -1,4 +1,4 @@
-import { db } from "./db";
+import { db } from './db';
 
 export function setupNoteEditor({
   noteNameElement,
@@ -13,8 +13,8 @@ export function setupNoteEditor({
   let noteBody: string;
 
   const resetForm = () => {
-    noteNameElement.value = "";
-    noteBodyElement.value = "";
+    noteNameElement.value = '';
+    noteBodyElement.value = '';
   };
 
   const saveNote = async (name: string, body: string) => {
@@ -29,14 +29,14 @@ export function setupNoteEditor({
       .then(resetForm);
   };
 
-  saveElement.addEventListener("click", () => {
+  saveElement.addEventListener('click', () => {
     noteName = noteNameElement.value;
     noteBody = noteBodyElement.value;
     if (noteName.length > 0 && noteBody.length > 0) {
       saveNote(noteName, noteBody);
     } else {
-      alert("Please fill all the fields");
+      alert('Please fill all the fields');
     }
   });
-  
+
 }
