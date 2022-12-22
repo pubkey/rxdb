@@ -15,3 +15,8 @@ react                | [done](./react)
 svelte               | [done](./svelte)
 vuejs                | [done](./vue)
 supabase             | [done](./supabase/)
+
+
+Technology           | Third Party Link
+-------------------- | ---------------------
+NativeScript         | [Link](https://github.com/herefishyfish/Nativescript-RxDB)
