@@ -114,14 +114,14 @@ myDatabase.humans.find({
 - Update the document
 
 ```ts
-// either via atomicUpdate()
-await myDocument.atomicUpdate(data => {
+// either via incrementalModify()
+await myDocument.incrementalModify(data => {
     data.lastName = 'Carol';
     return data;
 });
 
-// or via atomicPatch()
-await myDocument.atomicPatch({
+// or via incrementalPatch()
+await myDocument.incrementalPatch({
     lastName: 'Carol'
 });
 ```

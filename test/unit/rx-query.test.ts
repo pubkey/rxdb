@@ -589,7 +589,7 @@ describe('rx-query.test.ts', () => {
             await AsyncTestUtil.waitUntil(() => emitted.length === 2);
             assert.strictEqual(query._execOverDatabaseCount, 1);
 
-            await col.atomicUpsert(otherData());
+            await col.incrementalUpsert(otherData());
             await AsyncTestUtil.waitUntil(() => emitted.length === 3);
             assert.strictEqual(query._execOverDatabaseCount, 1);
 
@@ -597,7 +597,7 @@ describe('rx-query.test.ts', () => {
                 new Array(2)
                     .fill(0)
                     .map(() => otherData())
-                    .map(data => col.atomicUpsert(data))
+                    .map(data => col.incrementalUpsert(data))
             );
             await AsyncTestUtil.waitUntil(() => emitted.length === 5);
             assert.strictEqual(query._execOverDatabaseCount, 1);
@@ -606,14 +606,14 @@ describe('rx-query.test.ts', () => {
                 new Array(10)
                     .fill(0)
                     .map(() => otherData())
-                    .map(data => col.atomicUpsert(data))
+                    .map(data => col.incrementalUpsert(data))
             );
             await AsyncTestUtil.waitUntil(() => emitted.length === 15);
             assert.strictEqual(query._execOverDatabaseCount, 1);
 
             col.database.destroy();
         });
-        it('should not make more requests then needed on atomic upsert', async () => {
+        it('should not make more requests then needed on incremental upsert', async () => {
             const col = await humansCollection.createPrimary(0);
             const docData = schemaObjects.simpleHuman();
             let count = 0;
@@ -635,7 +635,7 @@ describe('rx-query.test.ts', () => {
                 new Array(10)
                     .fill(0)
                     .map(() => otherData())
-                    .map(data => col.atomicUpsert(data))
+                    .map(data => col.incrementalUpsert(data))
             );
 
             assert.strictEqual(query._execOverDatabaseCount, 1);

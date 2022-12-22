@@ -32,7 +32,7 @@ import type {
     RxDocumentWriteData,
     UpdateQuery,
     CRDTEntry,
-    AtomicUpdateFunction
+    ModifyFunction
 } from './types';
 import { getDocumentDataOfRxChangeEvent } from './rx-change-event';
 import { overwritable } from './overwritable';
@@ -253,12 +253,12 @@ export const basePrototype = {
 
 
     /**
-     * runs an atomic update over the document
+     * runs an incremental update over the document
      * @param function that takes the document-data and returns a new data-object
      */
-    atomicUpdate(
+    incrementalModify(
         this: RxDocument,
-        mutationFunction: AtomicUpdateFunction<any>,
+        mutationFunction: ModifyFunction<any>,
         // used by some plugins that wrap the method
         _context?: string
     ): Promise<RxDocument> {
@@ -272,11 +272,11 @@ export const basePrototype = {
     /**
      * patches the given properties
      */
-    atomicPatch<RxDocumentType = any>(
+    incrementalPatch<RxDocumentType = any>(
         this: RxDocument<RxDocumentType>,
         patch: Partial<RxDocumentType>
     ): Promise<RxDocument<RxDocumentType>> {
-        return this.atomicUpdate((docData) => {
+        return this.incrementalModify((docData) => {
             Object
                 .entries(patch)
                 .forEach(([k, v]) => {

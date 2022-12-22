@@ -39,7 +39,7 @@ myDocument.get$('name')
     isName = newName;
   });
 
-await myDocument.atomicPatch({name: 'foobar2'});
+await myDocument.incrementalPatch({name: 'foobar2'});
 console.dir(isName); // isName is now 'foobar2'
 ```
 
@@ -56,7 +56,7 @@ All properties of a `RxDocument` are assigned as getters so you can also directl
   // Also usable with observables:
   myDocument.firstName$.subscribe(newName => console.log('name is: ' + newName));
   // > 'name is: Stefe'
-  await myDocument.atomicPatch({firstName: 'Steve'});
+  await myDocument.incrementalPatch({firstName: 'Steve'});
   // > 'name is: Steve'
 ```
 
@@ -82,9 +82,9 @@ await myDocument.update({
 });
 ```
 
-### atomicUpdate()
+### incrementalModify()
 Updates a documents data based on a function that mutates the current data and returns the new value.
-In difference to `update()`, the atomic function cannot lead to 409 write conflicts.
+In difference to `update()`, the incremental function cannot lead to 409 write conflicts.
 
 ```js
 
@@ -93,15 +93,15 @@ const changeFunction = (oldData) => {
     oldData.name = 'foooobarNew';
     return oldData;
 }
-await myDocument.atomicUpdate(changeFunction);
+await myDocument.incrementalModify(changeFunction);
 console.log(myDocument.name); // 'foooobarNew'
 ```
 
-### atomicPatch()
-Works like `atomicUpdate` but overwrites the given attributes over the documents data.
+### incrementalPatch()
+Works like `incrementalModify` but overwrites the given attributes over the documents data.
 
 ```js
-await myDocument.atomicPatch({
+await myDocument.incrementalPatch({
   name: 'Steve',
   age: undefined // setting an attribute to undefined will remove it
 });
@@ -115,7 +115,7 @@ Returns the latest known state of the `RxDocument`.
 
 ```js
 const myDocument = await myCollection.findOne('foobar').exec();
-const docAfterEdit = await myDocument.atomicPatch({
+const docAfterEdit = await myDocument.incrementalPatch({
   age: 10
 });
 const latestDoc = myDocument.getLatest();

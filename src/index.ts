@@ -84,7 +84,7 @@ export type {
     JsonSchemaTypes,
     GraphQLSyncPullOptions,
     GraphQLSyncPushOptions,
-    AtomicUpdateFunction,
+    ModifyFunction,
     CollectionsOfDatabase,
     MangoQuery,
     MangoQueryNoLimit,

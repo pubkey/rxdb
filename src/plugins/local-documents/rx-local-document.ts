@@ -19,7 +19,7 @@ import {
 } from '../../rx-error';
 import { writeSingle } from '../../rx-storage-helper';
 import type {
-    LocalDocumentAtomicUpdateFunction,
+    LocalDocumentModifyFunction,
     RxCollection,
     RxDatabase,
     RxDocument,
@@ -123,9 +123,9 @@ const RxLocalDocumentPrototype: any = {
                 distinctUntilChanged()
             );
     },
-    async atomicUpdate<DocData>(
+    async incrementalModify<DocData>(
         this: RxLocalDocument<any, DocData>,
-        mutationFunction: LocalDocumentAtomicUpdateFunction<any>
+        mutationFunction: LocalDocumentModifyFunction<any>
     ) {
         const state = await getLocalDocStateByParent(this.parent);
 
@@ -137,8 +137,8 @@ const RxLocalDocumentPrototype: any = {
             }
         ).then(result => state.docCache.getCachedRxDocument(result as any));
     },
-    atomicPatch(patch: Partial<any>) {
-        return this.atomicUpdate((docData: any) => {
+    incrementalPatch(patch: Partial<any>) {
+        return this.incrementalModify((docData: any) => {
             Object
                 .entries(patch)
                 .forEach(([k, v]) => {

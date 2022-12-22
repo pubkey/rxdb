@@ -284,7 +284,7 @@ describe('replication.test.js', () => {
             });
 
             // UPDATE
-            doc = await doc.atomicPatch({
+            doc = await doc.incrementalPatch({
                 age: 100
             });
             await waitUntil(async () => {

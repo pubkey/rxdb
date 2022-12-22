@@ -49,7 +49,7 @@ export async function updateCRDT<RxDocType>(
     const crdtOptions = ensureNotFalsy(jsonSchema.crdt);
     const storageToken = await this.collection.database.storageToken;
 
-    return this.atomicUpdate((docData) => {
+    return this.incrementalModify((docData) => {
         const crdtDocField: CRDTDocumentField<RxDocType> = clone(objectPath.get(docData as any, crdtOptions.field));
         const operation: CRDTOperation<RxDocType> = {
             body: toArray(entry),
@@ -365,10 +365,10 @@ export const RxDBcrdtPlugin: RxPlugin = {
                 });
             };
 
-            const oldAtomicPatch = proto.atomicPatch;
-            proto.atomicPatch = function (this: RxDocument, patch: any) {
+            const oldincrementalPatch = proto.incrementalPatch;
+            proto.incrementalPatch = function (this: RxDocument, patch: any) {
                 if (!this.collection.schema.jsonSchema.crdt) {
-                    return oldAtomicPatch.bind(this)(patch);
+                    return oldincrementalPatch.bind(this)(patch);
                 }
                 return this.updateCRDT({
                     ifMatch: {
@@ -376,13 +376,13 @@ export const RxDBcrdtPlugin: RxPlugin = {
                     }
                 });
             };
-            const oldAtomicUpdate = proto.atomicUpdate;
-            proto.atomicUpdate = function (fn: any, context: string) {
+            const oldincrementalModify = proto.incrementalModify;
+            proto.incrementalModify = function (fn: any, context: string) {
                 if (!this.collection.schema.jsonSchema.crdt) {
-                    return oldAtomicUpdate.bind(this)(fn);
+                    return oldincrementalModify.bind(this)(fn);
                 }
                 if (context === RX_CRDT_CONTEXT) {
-                    return oldAtomicUpdate.bind(this)(fn);
+                    return oldincrementalModify.bind(this)(fn);
                 } else {
                     throw newRxError('CRDT2', {
                         id: this.primary,

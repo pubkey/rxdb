@@ -172,7 +172,7 @@ export class RxCollectionBase<
         ) as any;
     }
 
-    public _atomicUpsertQueues: Map<string, Promise<any>> = new Map();
+    public _incrementalUpsertQueues: Map<string, Promise<any>> = new Map();
     // defaults
     public synced: boolean = false;
     public hooks: {
@@ -474,7 +474,7 @@ export class RxCollectionBase<
                 const writeData = getFromMapOrThrow(useJsonByDocId, id);
                 const docDataInDb = ensureNotFalsy(error.documentInDb);
                 const doc = this._docCache.getCachedRxDocument(docDataInDb);
-                const newDoc = await doc.atomicUpdate(() => writeData);
+                const newDoc = await doc.incrementalModify(() => writeData);
                 return newDoc;
             })
         );
@@ -490,9 +490,9 @@ export class RxCollectionBase<
     }
 
     /**
-     * upserts to a RxDocument, uses atomicUpdate if document already exists
+     * upserts to a RxDocument, uses incrementalModify if document already exists
      */
-    atomicUpsert(json: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType, OrmMethods>> {
+    incrementalUpsert(json: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType, OrmMethods>> {
         const useJson = fillObjectDataBeforeInsert(this.schema, json);
         const primary: string = useJson[this.schema.primaryPath] as any;
         if (!primary) {
@@ -502,20 +502,20 @@ export class RxCollectionBase<
         }
 
         // ensure that it won't try 2 parallel runs
-        let queue = this._atomicUpsertQueues.get(primary);
+        let queue = this._incrementalUpsertQueues.get(primary);
         if (!queue) {
             queue = PROMISE_RESOLVE_VOID;
         }
         queue = queue
-            .then(() => _atomicUpsertEnsureRxDocumentExists(this as any, primary as any, useJson))
+            .then(() => _incrementalUpsertEnsureRxDocumentExists(this as any, primary as any, useJson))
             .then((wasInserted) => {
                 if (!wasInserted.inserted) {
-                    return _atomicUpsertUpdate(wasInserted.doc, useJson);
+                    return _incrementalUpsertUpdate(wasInserted.doc, useJson);
                 } else {
                     return wasInserted.doc;
                 }
             });
-        this._atomicUpsertQueues.set(primary, queue);
+        this._incrementalUpsertQueues.set(primary, queue);
         return queue;
     }
 
@@ -838,11 +838,11 @@ function _applyHookFunctions(
     });
 }
 
-function _atomicUpsertUpdate<RxDocType>(
+function _incrementalUpsertUpdate<RxDocType>(
     doc: RxDocumentBase<RxDocType>,
     json: RxDocumentData<RxDocType>
 ): Promise<RxDocumentBase<RxDocType>> {
-    return doc.atomicUpdate((_innerDoc) => {
+    return doc.incrementalModify((_innerDoc) => {
         return json;
     });
 }
@@ -851,7 +851,7 @@ function _atomicUpsertUpdate<RxDocType>(
  * ensures that the given document exists
  * @return promise that resolves with new doc and flag if inserted
  */
-function _atomicUpsertEnsureRxDocumentExists<RxDocType>(
+function _incrementalUpsertEnsureRxDocumentExists<RxDocType>(
     rxCollection: RxCollection<RxDocType>,
     primary: string,
     json: any

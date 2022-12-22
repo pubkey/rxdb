@@ -101,12 +101,12 @@ config.parallel('local-documents.test.js', () => {
             });
         });
     });
-    describe('atomic mutation functions', () => {
+    describe('incremental mutation functions', () => {
         type LocalDocType = {
             foo: string;
             added?: string;
         };
-        describe('.atomicPatch()', () => {
+        describe('.incrementalPatch()', () => {
             it('should modify the data', async () => {
                 const c = await humansCollection.create(0);
                 let doc = await c.upsertLocal<LocalDocType>(
@@ -116,7 +116,7 @@ config.parallel('local-documents.test.js', () => {
                     }
                 );
 
-                doc = await doc.atomicPatch({
+                doc = await doc.incrementalPatch({
                     added: 'foo'
                 });
 
@@ -126,14 +126,14 @@ config.parallel('local-documents.test.js', () => {
                 c.database.destroy();
             });
         });
-        describe('.atomicUpdate()', () => {
+        describe('.incrementalModify()', () => {
             it('should modify the data', async () => {
                 const c = await humansCollection.create(0);
                 let doc: RxLocalDocument<RxCollection<any>, LocalDocType> = await c.upsertLocal<LocalDocType>('foobar', {
                     foo: 'bar'
                 });
 
-                doc = await doc.atomicUpdate(data => {
+                doc = await doc.incrementalModify(data => {
                     data.added = 'foo';
                     return data;
                 });
@@ -332,7 +332,7 @@ config.parallel('local-documents.test.js', () => {
                 return !!doc2;
             });
 
-            await doc1.atomicPatch({ foo: 'bar2' });
+            await doc1.incrementalPatch({ foo: 'bar2' });
             await waitUntil(() => {
                 return ensureNotFalsy(doc2).getLatest().get('foo') === 'bar2';
             }, 1000, 50);
@@ -394,7 +394,7 @@ config.parallel('local-documents.test.js', () => {
                 foo: 'bar'
             });
 
-            await doc1.atomicPatch({ foo: 'bar2' });
+            await doc1.incrementalPatch({ foo: 'bar2' });
 
             await waitUntil(async () => {
                 const doc2 = await db2.getLocal<TestDocType>('foobar');
@@ -443,7 +443,7 @@ config.parallel('local-documents.test.js', () => {
 
             // update on instance #2
             const doc2 = await c2.humans.getLocal<TestDocType>('foobar');
-            await doc1.atomicPatch({ foo: 'bar2' });
+            await doc1.incrementalPatch({ foo: 'bar2' });
 
             await waitUntil(() => doc2 && doc2.getLatest().toJSON().data.foo === 'bar2');
             await waitUntil(() => {
@@ -545,12 +545,12 @@ config.parallel('local-documents.test.js', () => {
                 localDoc2 = await c2.humans.getLocal('foobar');
                 return !!localDoc2;
             });
-            await doc.atomicPatch({ age: 50 });
+            await doc.incrementalPatch({ age: 50 });
 
             await AsyncTestUtil.waitUntil(() => (doc2 as any).getLatest().age === 50);
             await AsyncTestUtil.wait(20);
             assert.strictEqual(ensureNotFalsy(localDoc2).get('age'), 10);
-            await localDoc.atomicPatch({ age: 66, foo: 'bar' });
+            await localDoc.incrementalPatch({ age: 66, foo: 'bar' });
 
             await AsyncTestUtil.waitUntil(() => ensureNotFalsy(localDoc2).getLatest().get('age') === 66);
             await AsyncTestUtil.wait(20);
@@ -644,7 +644,7 @@ config.parallel('local-documents.test.js', () => {
             const grpId = 'foobar';
             const metadata = await boundaryMgmtCol.getLocal('metadata');
 
-            await ensureNotFalsy(metadata).atomicUpdate(docData => {
+            await ensureNotFalsy(metadata).incrementalModify(docData => {
                 docData.selectedBndrPlnId = grpId;
                 return docData;
             });

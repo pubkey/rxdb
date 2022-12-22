@@ -190,11 +190,11 @@ config.parallel('crdt.test.js', () => {
         });
     });
 
-    describe('.atomicPatch()', () => {
+    describe('.incrementalPatch()', () => {
         it('should update the document', async () => {
             const collection = await getCRDTCollection();
             const doc = await collection.insert(schemaObjects.human('foobar', 1));
-            await doc.atomicPatch({
+            await doc.incrementalPatch({
                 age: 10
             });
             assert.strictEqual(
@@ -221,7 +221,7 @@ config.parallel('crdt.test.js', () => {
             const doc = await collection.insert(schemaObjects.human('foobar', 1));
 
             await AsyncTestUtil.assertThrows(
-                () => doc.atomicUpdate(d => d),
+                () => doc.incrementalModify(d => d),
                 'RxError',
                 'CRDT2'
             );

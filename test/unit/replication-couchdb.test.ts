@@ -139,7 +139,7 @@ describe('replication-couchdb.test.ts', () => {
             await syncOnce(c, server);
 
             const doc = await c.findOne().exec(true);
-            await doc.atomicPatch({ firstName: 'foobar' });
+            await doc.incrementalPatch({ firstName: 'foobar' });
             await syncOnce(c, server);
 
             serverDocs = await getAllServerDocs(server.url);
@@ -195,8 +195,8 @@ describe('replication-couchdb.test.ts', () => {
                 const doc2 = await c2.findOne().exec(true);
 
                 // make update on both sides
-                await doc1.atomicPatch({ firstName: 'c1' });
-                await doc2.atomicPatch({ firstName: 'c2' });
+                await doc1.incrementalPatch({ firstName: 'c1' });
+                await doc2.incrementalPatch({ firstName: 'c2' });
 
                 await syncOnce(c2, server);
 

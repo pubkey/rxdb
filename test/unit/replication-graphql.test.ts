@@ -2241,7 +2241,7 @@ describe('replication-graphql.test.ts', () => {
                 // update document
                 const newAge = 1111;
                 const doc = await collection.findOne().exec(true);
-                await doc.atomicPatch({
+                await doc.incrementalPatch({
                     age: newAge,
                     updatedAt: new Date().getTime()
                 });
@@ -2262,7 +2262,7 @@ describe('replication-graphql.test.ts', () => {
                 await db.destroy();
                 await server.close();
             });
-            it('#3856 atomicUpsert not working', async () => {
+            it('#3856 incrementalUpsert not working', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
                     storage: config.storage.getStorage(),
@@ -2313,7 +2313,7 @@ describe('replication-graphql.test.ts', () => {
 
                 // update document
                 const newAge = 1111;
-                await collection.atomicUpsert({
+                await collection.incrementalUpsert({
                     id: testData?.id,
                     age: newAge,
                     name: testData?.name,

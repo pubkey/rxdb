@@ -45,7 +45,7 @@ A local conflict can happen when a write operation assumes a different previous 
 
 When a local conflict appears, RxDB will throw a `409 CONFLICT` error. The calling code must then handle the error properly, depending on the application logic.
 
-Instead of handling local conflicts, in most cases it is easier to ensure that they cannot happen, by using `atomic` database operations like [atomicUpdate()](./rx-document.md), [atomicPatch()](./rx-document.md) or [atomicUpsert()](./rx-collection.md). These write operations have a build in way to handle conflicts by re-applying the mutation functions to the conflicting document state.
+Instead of handling local conflicts, in most cases it is easier to ensure that they cannot happen, by using `incremental` database operations like [incrementalModify()](./rx-document.md), [incrementalPatch()](./rx-document.md) or [incrementalUpsert()](./rx-collection.md). These write operations have a build in way to handle conflicts by re-applying the mutation functions to the conflicting document state.
 
 ## Replication conflicts
 

@@ -536,7 +536,7 @@ describe('typings.test.js', function () {
                 '_rev'
             );
         });
-        it('.atomicUpdate()', async () => {
+        it('.incrementalModify()', async () => {
             const code = codeBase + `
                 (async() => {
                     const myDb: any = {};
@@ -555,7 +555,7 @@ describe('typings.test.js', function () {
                     });
                     const collection: RxCollection<DocType> = myCollections.humans;
                     const doc = await collection.findOne().exec(true);
-                    await doc.atomicUpdate(docData => {
+                    await doc.incrementalModify(docData => {
                         const newData = {
                             age: 23,
                             firstName: 'bar',

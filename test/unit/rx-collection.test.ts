@@ -1125,7 +1125,7 @@ describe('rx-collection.test.ts', () => {
 
                     assert.ok(results[0] === results[1]);
 
-                    await results[0].atomicPatch({ firstName: 'foobar' });
+                    await results[0].incrementalPatch({ firstName: 'foobar' });
 
                     const results2 = await Promise.all([
                         c.findOne(primary).exec(),
@@ -1339,7 +1339,7 @@ describe('rx-collection.test.ts', () => {
 
 
                     let doc = await collection.insert(objData);
-                    doc = await doc.atomicPatch({
+                    doc = await doc.incrementalPatch({
                         firstName: 'alice'
                     });
                     await doc.remove();
@@ -1389,27 +1389,27 @@ describe('rx-collection.test.ts', () => {
                 });
             });
         });
-        describe('.atomicUpsert()', () => {
+        describe('.incrementalUpsert()', () => {
             config.parallel('positive', () => {
                 it('should work in serial', async () => {
                     const c = await humansCollection.createPrimary(0);
                     const docData = schemaObjects.simpleHuman();
                     const primary = docData.passportId;
                     await c.findOne(primary).exec();
-                    await c.atomicUpsert(docData);
+                    await c.incrementalUpsert(docData);
                     await c.findOne(primary).exec();
                     const docData2 = clone(docData);
                     docData.firstName = 'foobar';
 
-                    await c.atomicUpsert(docData2);
+                    await c.incrementalUpsert(docData2);
                     c.database.destroy();
                 });
                 it('should not crash when upserting the same doc in parallel', async () => {
                     const c = await humansCollection.createPrimary(0);
                     const docData = schemaObjects.simpleHuman();
                     const docs = await Promise.all([
-                        c.atomicUpsert(docData),
-                        c.atomicUpsert(docData)
+                        c.incrementalUpsert(docData),
+                        c.incrementalUpsert(docData)
                     ]);
 
                     /**
@@ -1424,9 +1424,9 @@ describe('rx-collection.test.ts', () => {
                     const c = await humansCollection.createPrimary(0);
                     const docData = schemaObjects.simpleHuman();
                     const docs = await Promise.all([
-                        c.atomicUpsert(docData),
-                        c.atomicUpsert(docData),
-                        c.atomicUpsert(docData)
+                        c.incrementalUpsert(docData),
+                        c.incrementalUpsert(docData),
+                        c.incrementalUpsert(docData)
                     ]);
                     assert.ok(docs[0] !== docs[1]);
                     assert.ok(isRxDocument(docs[0]));
@@ -1435,7 +1435,7 @@ describe('rx-collection.test.ts', () => {
                 it('should not crash when upserting the same doc in parallel many times with random waits', async function () {
                     const c = await humansCollection.createPrimary(0);
                     const docData = schemaObjects.simpleHuman();
-                    docData.firstName = 'test-many-atomic-upsert';
+                    docData.firstName = 'test-many-incremental-upsert';
 
                     let t = 0;
                     const amount = config.isFastMode() ? 20 : 200;
@@ -1448,7 +1448,7 @@ describe('rx-collection.test.ts', () => {
                                 upsertData.lastName = idx + '';
                                 const randomWait = randomBoolean() ? wait(randomNumber(0, 30)) : Promise.resolve();
                                 return randomWait
-                                    .then(() => c.atomicUpsert(upsertData))
+                                    .then(() => c.incrementalUpsert(upsertData))
                                     .then(doc => {
                                         t++;
                                         return doc;
@@ -1467,9 +1467,9 @@ describe('rx-collection.test.ts', () => {
                     const docId = docData.passportId;
 
                     await Promise.all([
-                        c.atomicUpsert(docData),
-                        c.atomicUpsert(docData),
-                        c.atomicUpsert(docData)
+                        c.incrementalUpsert(docData),
+                        c.incrementalUpsert(docData),
+                        c.incrementalUpsert(docData)
                     ]);
 
                     const viaStorage = await c.storageInstance.findDocumentsById([docId], true);
@@ -1478,7 +1478,7 @@ describe('rx-collection.test.ts', () => {
 
                     const docData2 = clone(docData);
                     docData2.firstName = 'foobar';
-                    await c.atomicUpsert(docData2);
+                    await c.incrementalUpsert(docData2);
                     const doc = await c.findOne().exec(true);
                     assert.strictEqual(doc.firstName, 'foobar');
 
@@ -1490,9 +1490,9 @@ describe('rx-collection.test.ts', () => {
                     const docData = schemaObjects.simpleHuman();
                     await c.insert(docData);
                     const docs = await Promise.all([
-                        c.atomicUpsert(docData),
-                        c.atomicUpsert(docData),
-                        c.atomicUpsert(docData)
+                        c.incrementalUpsert(docData),
+                        c.incrementalUpsert(docData),
+                        c.incrementalUpsert(docData)
                     ]);
                     assert.ok(docs[0] !== docs[1]);
                     assert.ok(isRxDocument(docs[0]));
@@ -1503,9 +1503,9 @@ describe('rx-collection.test.ts', () => {
                     const docData = schemaObjects.simpleHuman();
                     const order: any[] = [];
                     await Promise.all([
-                        c.atomicUpsert(docData).then(() => order.push(0)),
-                        c.atomicUpsert(docData).then(() => order.push(1)),
-                        c.atomicUpsert(docData).then(() => order.push(2))
+                        c.incrementalUpsert(docData).then(() => order.push(0)),
+                        c.incrementalUpsert(docData).then(() => order.push(1)),
+                        c.incrementalUpsert(docData).then(() => order.push(2))
                     ]);
                     assert.deepStrictEqual(order, [0, 1, 2]);
 
@@ -1526,11 +1526,11 @@ describe('rx-collection.test.ts', () => {
                     const c = collections.human;
 
                     const docData = schemaObjects.simpleHuman();
-                    await c.atomicUpsert(docData);
-                    await c.atomicUpsert(docData);
+                    await c.incrementalUpsert(docData);
+                    await c.incrementalUpsert(docData);
                     const docData2 = clone(docData);
                     docData2.firstName = 'foobar1';
-                    await c.atomicUpsert(docData2);
+                    await c.incrementalUpsert(docData2);
                     const docs = await c.find().exec();
                     assert.strictEqual(docs.length, 1);
                     const doc = await c.findOne().exec();
@@ -1554,15 +1554,15 @@ describe('rx-collection.test.ts', () => {
                     });
                     const collection = collections.nestedhuman;
 
-                    const doc = await collection.atomicUpsert({
+                    const doc = await collection.incrementalUpsert({
                         passportId: 'foobar',
                         firstName: 'foobar2'
                     });
 
                     assert.strictEqual(doc.age, defaultValue);
 
-                    // should also set after atomicUpdate when document exists
-                    const afterUpdate = await collection.atomicUpsert({
+                    // should also set after incrementalModify when document exists
+                    const afterUpdate = await collection.incrementalUpsert({
                         passportId: 'foobar',
                         firstName: 'foobar3'
                     });
@@ -1584,13 +1584,13 @@ describe('rx-collection.test.ts', () => {
                     });
                     const collection = collections.nestedhuman;
 
-                    const doc = await collection.atomicUpsert({
+                    const doc = await collection.incrementalUpsert({
                         passportId: 'foobar',
                         firstName: 'foobar2'
                     });
                     assert.strictEqual(doc.firstName, 'foobar2');
 
-                    const afterUpdate = await collection.atomicUpsert({
+                    const afterUpdate = await collection.incrementalUpsert({
                         passportId: 'foobar'
                     });
                     assert.strictEqual(typeof afterUpdate.firstName, 'undefined');

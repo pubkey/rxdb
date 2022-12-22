@@ -519,7 +519,7 @@ validationImplementations.forEach(
                     await db.destroy();
                 });
             });
-            describe('RxDocument.atomicUpdate()', () => {
+            describe('RxDocument.incrementalModify()', () => {
                 it('should throw when not matching schema', async () => {
                     const db = await createRxDatabase({
                         name: randomCouchString(10),
@@ -532,13 +532,13 @@ validationImplementations.forEach(
                     });
                     const collection = collections.human;
                     let doc = await collection.insert(schemaObjects.human());
-                    doc = await doc.atomicUpdate((innerDoc: any) => {
+                    doc = await doc.incrementalModify((innerDoc: any) => {
                         innerDoc.age = 50;
                         return innerDoc;
                     });
                     assert.strictEqual(doc.age, 50);
                     await assertThrows(
-                        () => doc.atomicUpdate((innerDoc: any) => {
+                        () => doc.incrementalModify((innerDoc: any) => {
                             innerDoc.age = 'foobar';
                             return innerDoc;
                         }),
@@ -548,7 +548,7 @@ validationImplementations.forEach(
                     db.destroy();
                 });
             });
-            describe('RxCollection().atomicUpsert()', () => {
+            describe('RxCollection().incrementalUpsert()', () => {
                 describe('negative', () => {
                     it('should throw when not matching schema', async () => {
                         const db = await createRxDatabase({
@@ -563,14 +563,14 @@ validationImplementations.forEach(
                         const collection = collections.human;
                         const docData = schemaObjects.simpleHuman();
                         await Promise.all([
-                            collection.atomicUpsert(docData),
-                            collection.atomicUpsert(docData),
-                            collection.atomicUpsert(docData)
+                            collection.incrementalUpsert(docData),
+                            collection.incrementalUpsert(docData),
+                            collection.incrementalUpsert(docData)
                         ]);
                         const docData2 = clone(docData);
                         docData2['firstName'] = 1337 as any;
                         await assertThrows(
-                            () => collection.atomicUpsert(docData2),
+                            () => collection.incrementalUpsert(docData2),
                             'RxError',
                             'schema'
                         );
@@ -578,7 +578,7 @@ validationImplementations.forEach(
                     });
                 });
             });
-            describe('RxDocument.atomicPatch()', () => {
+            describe('RxDocument.incrementalPatch()', () => {
                 it('should crash on non document field', async () => {
                     const db = await createRxDatabase({
                         name: randomCouchString(10),
@@ -592,7 +592,7 @@ validationImplementations.forEach(
                     const collection = collections.human;
                     const doc = await collection.insert(schemaObjects.nestedHuman());
                     await assertThrows(
-                        () => doc.atomicPatch({
+                        () => doc.incrementalPatch({
                             foobar: 'foobar'
                         } as any),
                         'RxError'

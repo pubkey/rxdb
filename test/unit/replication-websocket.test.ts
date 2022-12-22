@@ -110,10 +110,10 @@ config.parallel('replication-websocket.test.ts', () => {
 
 
         // UPDATE
-        await clientDoc.atomicPatch({
+        await clientDoc.incrementalPatch({
             name: 'client-edited'
         });
-        await serverDoc.atomicPatch({
+        await serverDoc.incrementalPatch({
             name: 'server-edited'
         });
 
@@ -175,10 +175,10 @@ config.parallel('replication-websocket.test.ts', () => {
         await serverState.close();
 
         // modify on both sides while offline
-        await clientDoc.atomicPatch({
+        await clientDoc.incrementalPatch({
             name: 'client-edited'
         });
-        await serverDoc.atomicPatch({
+        await serverDoc.incrementalPatch({
             name: 'server-edited'
         });
         await wait(100);
@@ -306,7 +306,7 @@ config.parallel('replication-websocket.test.ts', () => {
             id: string
         ) {
             const doc = await collection.findOne(id).exec(true);
-            await doc.atomicPatch({ name: 'updated' });
+            await doc.incrementalPatch({ name: 'updated' });
         }
         await updateDoc(localCollection, 'local1');
         await updateDoc(localDatabase.humans2, 'local2');
