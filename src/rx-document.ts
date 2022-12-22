@@ -320,9 +320,9 @@ export const basePrototype = {
     },
 
     /**
-     * remove the document,
-     * this not not equal to a pouchdb.remove(),
-     * instead we keep the values and only set _deleted: true
+     * Remove the document.
+     * Notice that there is no hard delete,
+     * instead deleted documents get flagged with _deleted=true.
      */
     remove(this: RxDocument): Promise<RxDocument> {
         const collection = this.collection;

@@ -134,7 +134,9 @@ export class RxCollectionBase<
     /**
      * Stores all 'normal' documents
      */
-    public storageInstance: RxStorageInstance<RxDocumentType, any, InstanceCreationOptions> = {} as any;
+    public storageInstance: RxStorageInstance<RxDocumentType, any, InstanceCreationOptions> & {
+        originalStorageInstance: RxStorageInstance<RxDocumentType, any, InstanceCreationOptions>;
+    } = {} as any;
     public readonly timeouts: Set<ReturnType<typeof setTimeout>> = new Set();
     public incrementalWriteQueue: IncrementalWriteQueue<RxDocumentType> = {} as any;
 

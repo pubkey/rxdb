@@ -17,9 +17,9 @@ import type {
     ReplicationPushOptions,
     RxReplicationWriteToMasterRow,
     RxReplicationPullStreamItem,
-    PouchdbChangesResult,
-    PouchBulkDocResultRow,
-    PouchAllDocsResponse
+    CouchdbChangesResult,
+    CouchBulkDocResultRow,
+    CouchAllDocsResponse
 } from '../../types';
 import {
     RxReplicationState, startReplicationOnLeaderShip
@@ -105,7 +105,7 @@ export function syncCouchDB<RxDocType>(
                 });
 
                 const response = await replicationState.fetch(url);
-                const jsonResponse: PouchdbChangesResult = await response.json();
+                const jsonResponse: CouchdbChangesResult = await response.json();
                 const documents: WithDeleted<RxDocType>[] = jsonResponse.results
                     .map(row => couchDBDocToRxDocData(collection.schema.primaryPath, ensureNotFalsy(row.doc)));
                 return {
@@ -151,7 +151,7 @@ export function syncCouchDB<RxDocType>(
                         body: JSON.stringify(body)
                     }
                 );
-                const responseJson: PouchBulkDocResultRow[] = await response.json();
+                const responseJson: CouchBulkDocResultRow[] = await response.json();
 
                 const conflicts = responseJson.filter(row => {
                     const isConflict = row.error === 'conflict';
@@ -170,7 +170,7 @@ export function syncCouchDB<RxDocType>(
                     keys: JSON.stringify(conflicts.map(c => c.id))
                 });
                 const conflictResponse = await replicationState.fetch(getConflictDocsUrl);
-                const conflictResponseJson: PouchAllDocsResponse = await conflictResponse.json();
+                const conflictResponseJson: CouchAllDocsResponse = await conflictResponse.json();
                 const conflictDocsMasterState: WithDeleted<RxDocType>[] = conflictResponseJson.rows
                     .map(r => couchDBDocToRxDocData(collection.schema.primaryPath, r.doc));
 
@@ -214,7 +214,7 @@ export function syncCouchDB<RxDocType>(
                         seq_interval: batchSize
                     });
 
-                    let jsonResponse: PouchdbChangesResult;
+                    let jsonResponse: CouchdbChangesResult;
                     try {
                         jsonResponse = await (await replicationState.fetch(url)).json();
                     } catch (err: any) {

@@ -1,13 +1,15 @@
-import { MangoQuery, MangoQuerySelector, MangoQuerySortPart } from './rx-query';
+import {
+    MangoQuery,
+    MangoQuerySelector,
+    MangoQuerySortPart
+} from './rx-query';
 import { BulkWriteRow } from './rx-storage';
 
 /**
- * this file contains types that are pouchdb-specific
- * most of it is copied from @types/pouchdb
- * because it is outdated and strange
+ * This file contains types that are CouchDB specific
  */
 
-export interface PouchReplicationOptions {
+export interface CouchReplicationOptions {
     live?: boolean;
     retry?: boolean;
     filter?: Function;
@@ -25,10 +27,7 @@ export interface PouchReplicationOptions {
     limit?: number;
 }
 
-/**
- * @link https://pouchdb.com/api.html#changes
- */
-export interface PouchChangesOptionsBase {
+export interface CouchChangesOptionsBase {
     include_docs?: boolean;
     conflicts?: boolean;
     attachments?: boolean;
@@ -47,22 +46,22 @@ export interface PouchChangesOptionsBase {
     style?: string;
 }
 
-export interface PouchChangesOptionsLive extends PouchChangesOptionsBase {
+export interface CouchChangesOptionsLive extends CouchChangesOptionsBase {
     live: true;
 }
 
-export interface PouchChangesOptionsNonLive extends PouchChangesOptionsBase {
+export interface CouchChangesOptionsNonLive extends CouchChangesOptionsBase {
     live: false;
 }
-interface PouchChangesOnChangeEvent {
+interface CouchChangesOnChangeEvent {
     on: (eventName: string, handler: Function) => void;
     off: (eventName: string, handler: Function) => void;
     cancel(): void;
 }
 
-export type PouchWriteError = {
+export type CouchWriteError = {
     /**
-      * status code from pouchdb
+      * status code from couchdb
       * 409 for 'conflict'
     */
     status: number;
@@ -74,10 +73,10 @@ export type PouchWriteError = {
 };
 
 /**
- * possible pouch-settings
- * @link https://pouchdb.com/api.html#create_database
+ * possible couch-settings
+ * @link https://couchdb.com/api.html#create_database
  */
-export interface PouchSettings {
+export interface CouchSettings {
     auto_compaction?: boolean;
     revs_limit?: number;
     ajax?: any;
@@ -91,10 +90,10 @@ export interface PouchSettings {
 }
 
 /**
- * options for pouch.allDocs()
- * @link https://pouchdb.com/api.html#batch_fetch
+ * options for couch.allDocs()
+ * @link https://couchdb.com/api.html#batch_fetch
  */
-export type PouchAllDocsOptions = {
+export type CouchAllDocsOptions = {
     include_docs?: boolean;
     conflicts?: boolean;
     attachments?: boolean;
@@ -114,14 +113,14 @@ export type PouchAllDocsOptions = {
     deleted?: 'ok';
 };
 
-export type PouchSyncHandlerEvents = 'change' | 'paused' | 'active' | 'error' | 'complete';
-export type PouchSyncHandler = {
-    on(ev: PouchSyncHandlerEvents, fn: (el: any) => void): void;
-    off(ev: PouchSyncHandlerEvents, fn: any): void;
+export type CouchSyncHandlerEvents = 'change' | 'paused' | 'active' | 'error' | 'complete';
+export type CouchSyncHandler = {
+    on(ev: CouchSyncHandlerEvents, fn: (el: any) => void): void;
+    off(ev: CouchSyncHandlerEvents, fn: any): void;
     cancel(): void;
 };
 
-export type PouchChangeRow = {
+export type CouchChangeRow = {
     id: string;
     seq: number;
     deleted?: true;
@@ -131,10 +130,10 @@ export type PouchChangeRow = {
     /**
      * only if include_docs === true
      */
-    doc?: PouchChangeDoc;
+    doc?: CouchChangeDoc;
 };
 
-export type PouchAttachmentMeta = {
+export type CouchAttachmentMeta = {
     digest: string;
     content_type: string;
     length: number;
@@ -149,7 +148,7 @@ export type PouchAttachmentMeta = {
 
 export type BlobBuffer = Buffer | Blob;
 
-export type PouchAttachmentWithData = PouchAttachmentMeta & {
+export type CouchAttachmentWithData = CouchAttachmentMeta & {
     /**
      * Base64 string with the data
      * or directly a buffer
@@ -163,7 +162,7 @@ export type PouchAttachmentWithData = PouchAttachmentMeta & {
     stub?: false;
 };
 
-export type PouchChangeDoc = {
+export type CouchChangeDoc = {
     _id: string;
     _rev: string;
     /**
@@ -171,7 +170,7 @@ export type PouchChangeDoc = {
      */
     _deleted?: boolean;
     _attachments: {
-        [attachmentId: string]: PouchAttachmentMeta;
+        [attachmentId: string]: CouchAttachmentMeta;
     };
 };
 
@@ -182,7 +181,7 @@ export type WithAttachments<Data> = Data & {
      * we do NOT have an empty object.
      */
     _attachments?: {
-        [attachmentId: string]: PouchAttachmentMeta;
+        [attachmentId: string]: CouchAttachmentMeta;
     };
 };
 export type WithAttachmentsData<Data> = Data & {
@@ -192,21 +191,21 @@ export type WithAttachmentsData<Data> = Data & {
      * we do NOT have an empty object.
      */
     _attachments?: {
-        [attachmentId: string]: PouchAttachmentWithData;
+        [attachmentId: string]: CouchAttachmentWithData;
     };
 };
 
 
-export type WithPouchMeta<Data> = Data & {
+export type WithCouchMeta<Data> = Data & {
     _rev: string;
     _attachments?: {
-        [attachmentId: string]: PouchAttachmentMeta;
+        [attachmentId: string]: CouchAttachmentMeta;
     };
     _deleted?: boolean;
 };
 
-export type PouchdbChangesResult = {
-    results: PouchChangeRow[];
+export type CouchdbChangesResult = {
+    results: CouchChangeRow[];
     last_seq: number;
 };
 
@@ -215,15 +214,15 @@ declare type Debug = {
     disable(): void;
 };
 
-export type PouchDbSorting = (string | string[] | { [k: string]: 'asc' | 'desc' | 1 | -1; })[];
+export type CouchDbSorting = (string | string[] | { [k: string]: 'asc' | 'desc' | 1 | -1; })[];
 
 // this is not equal to the standard MangoQuery
 // because of different sorting
-export type PouchdbQuery = MangoQuery & {
-    sort?: PouchDbSorting;
+export type CouchdbQuery = MangoQuery & {
+    sort?: CouchDbSorting;
 };
 
-export type PouchBulkDocResultRow = {
+export type CouchBulkDocResultRow = {
     ok: boolean;
     id: string;
     rev: string;
@@ -232,11 +231,11 @@ export type PouchBulkDocResultRow = {
     reason?: string;
 };
 
-export type PouchCheckpoint = {
+export type CouchCheckpoint = {
     sequence: number;
 };
 
-export type PouchBulkDocOptions = {
+export type CouchBulkDocOptions = {
     new_edits?: boolean;
 
     // custom options for RxDB
@@ -250,12 +249,12 @@ export type PouchBulkDocOptions = {
     };
 };
 
-export type PouchMangoQuery<DocType> = MangoQuery<DocType> & {
+export type CouchMangoQuery<DocType> = MangoQuery<DocType> & {
     index: undefined;
     use_index?: string;
 };
 
-export type ExplainedPouchQuery<DocType> = {
+export type ExplainedCouchQuery<DocType> = {
     dbname: string;
     index: {
         ddoc: string | null;
@@ -280,7 +279,7 @@ export type ExplainedPouchQuery<DocType> = {
     skip: number;
 };
 
-export type PouchAllDocsResponse = {
+export type CouchAllDocsResponse = {
     offset: number;
     rows: {
         id: string;
@@ -294,150 +293,3 @@ export type PouchAllDocsResponse = {
     }[];
     total_rows: number;
 };
-
-export declare class PouchDBInstance {
-    constructor(
-        name: string,
-        options: { adapter: string; }
-    );
-    readonly name: string;
-    readonly adapter: string;
-
-    readonly __opts: {
-        db: any | string; // contains the adapter function
-        deterministic_revs: boolean;
-        name: string;
-        adapter: string;
-    };
-
-    static debug: Debug;
-
-    static plugin(p: any): void;
-    static isInstanceOf(instance: any): boolean;
-    info(): Promise<any>;
-
-    allDocs(options?: PouchAllDocsOptions): Promise<PouchAllDocsResponse>;
-
-    bulkDocs(
-        docs: { docs: any[]; } | any[],
-        options?: PouchBulkDocOptions,
-    ): Promise<(PouchBulkDocResultRow | PouchWriteError)[]>;
-
-
-    find<DocumentData>(mangoQuery: PouchdbQuery): Promise<{
-        docs: WithPouchMeta<DocumentData>[];
-    }>;
-    compact(options?: any): Promise<any>;
-    destroy(options?: any): Promise<void>;
-    get(
-        docId: string,
-        options?: any
-    ): Promise<null | ({
-        _id: string;
-    } & any)>;
-    put(
-        doc: any,
-        options?: any,
-    ): Promise<PouchBulkDocResultRow>;
-    remove(
-        doc: any | string,
-        options?: any,
-    ): Promise<any>;
-
-    changes(options?: PouchChangesOptionsNonLive): Promise<PouchdbChangesResult>;
-    changes(options: PouchChangesOptionsLive): PouchChangesOnChangeEvent;
-
-    sync(remoteDb: string | any, options?: PouchReplicationOptions): PouchSyncHandler;
-    replicate(options?: PouchReplicationOptions): PouchSyncHandler;
-
-    close(): Promise<void>;
-    putAttachment(
-        docId: string,
-        attachmentId: string,
-        rev: string,
-        attachment: any,
-        type: string
-    ): Promise<any>;
-    getAttachment(
-        docId: string,
-        attachmentId: string,
-        options?: { rev?: string; },
-    ): Promise<BlobBuffer>;
-    removeAttachment(
-        docId: string,
-        attachmentId: string,
-        rev: string
-    ): Promise<void>;
-
-    /**
-     * @link https://pouchdb.com/api.html#bulk_get
-     */
-    bulkGet(options: {
-        docs: {
-            // ID of the document to fetch
-            id: string;
-            // Revision of the document to fetch. If this is not specified, all available revisions are fetched
-            rev?: string;
-
-            //  I could not find out what this should be
-            atts_since?: any;
-        }[];
-        // Each returned revision body will include its revision history as a _revisions property. Default is false
-        revs?: boolean;
-        // what does this?
-        latest?: boolean;
-        // Include attachment data in the response. Default is false, resulting in only stubs being returned.
-        attachments?: boolean;
-        // Return attachment data as Blobs/Buffers, instead of as base64-encoded strings. Default is false
-        binary?: boolean;
-    }): Promise<{
-        results: {
-            id: string;
-            docs: {
-                ok?: {
-                    _id: string;
-                    _rev: string;
-                    _revisions: {
-                        ids: string[];
-                        start: number;
-                    };
-                };
-                error?: {
-                    error: string;
-                    id: string;
-                    reason: string;
-                    rev: string;
-                };
-            }[];
-        }[];
-    }>;
-
-    revsDiff(diff: any): Promise<any>;
-    explain<DocType = any>(query: PouchMangoQuery<DocType>): Promise<ExplainedPouchQuery<DocType>>;
-
-    getIndexes(): Promise<{
-        indexes: {
-            ddoc: any | null;
-            name: string;
-            type: string;
-            def: {
-                fields: {
-                    [key: string]: 'asc' | 'desc';
-                }[];
-            };
-        }[];
-        total_rows: number;
-    }>;
-
-    createIndex(opts: {
-        name: string;
-        ddoc: string;
-        index: any;
-    }): Promise<void>;
-
-    /**
-     * @link https://pouchdb.com/errors.html#event_emitter_limit
-     */
-    setMaxListeners(maxListenersAmount: number): void;
-    getMaxListeners(): number;
-}

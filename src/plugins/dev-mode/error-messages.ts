@@ -17,8 +17,8 @@ export const ERROR_MESSAGES = {
     UT6: 'schema contains encrypted fields but no encryption handler is used in the storage',
 
     // plugins
-    PL1: 'Given plugin is not RxDB plugin. Pouchdb plugins must be added via addPouchPlugin()',
-    PL2: 'You tried importy a RxDB plugin to pouchdb. Use addRxPlugin() instead.',
+    PL1: 'Given plugin is not RxDB plugin.',
+    // removed in 14.0.0 - PouchDB RxStorage was removed - PL2: 'You tried importy a RxDB plugin to pouchdb. Use addRxPlugin() instead.',
     PL3: 'A plugin with the same name was already added but it was not the exact same JavaScript object',
 
     // pouch-db.js
@@ -64,8 +64,8 @@ export const ERROR_MESSAGES = {
     // removed in 13.0.0 (now part of the encryption plugin) DB7: 'RxDatabase.addCollections(): schema encrypted but no password given',
     DB8: 'RxDatabase.create(): A RxDatabase with the same name and adapter already exists.\n' +
         'Make sure to use this combination only once or set ignoreDuplicate to true if you do this intentional',
-    DB9: 'createRxDatabase(): Adapter not added. Use addPouchPlugin(require(\'pouchdb-adapter-[adaptername]\'));',
-    DB10: 'createRxDatabase(): To use leveldown-adapters, you have to add the leveldb-plugin. Use addPouchPlugin(require(\'pouchdb-adapter-leveldb\'));',
+    // removed in 14.0.0 - PouchDB RxStorage is removed - DB9: 'createRxDatabase(): Adapter not added. Use addPouchPlugin(require(\'pouchdb-adapter-[adaptername]\'));',
+    // removed in 14.0.0 - PouchDB RxStorage is removed DB10: 'createRxDatabase(): To use leveldown-adapters, you have to add the leveldb-plugin. Use addPouchPlugin(require(\'pouchdb-adapter-leveldb\'));',
     DB11: 'createRxDatabase(): Invalid db-name, folder-paths must not have an ending slash',
     DB12: 'RxDatabase.addCollections(): could not write to internal store',
 
@@ -146,7 +146,7 @@ export const ERROR_MESSAGES = {
     // plugins/replication.js
     RC1: 'Replication: already added',
     RC2: 'RxCollection.syncCouchDB() query must be from the same RxCollection',
-    RC3: 'RxCollection.syncCouchDB() Do not use a collection\'s pouchdb as remote, use the collection instead',
+    // removed in 14.0.0 - PouchDB RxStorage is removed RC3: 'RxCollection.syncCouchDB() Do not use a collection\'s pouchdb as remote, use the collection instead',
     RC4: 'RxCouchDBReplicationState.awaitInitialReplication() cannot await initial replication when live: true',
     RC5: 'RxCouchDBReplicationState.awaitInitialReplication() cannot await initial replication if multiInstance because the replication might run on another instance',
     RC6: 'syncFirestore() serverTimestampField MUST NOT be part of the collections schema and MUST NOT be nested.',
@@ -202,8 +202,8 @@ export const ERROR_MESSAGES = {
     VD2: 'object does not match schema',
 
     // plugins/in-memory.js
-    IM1: 'InMemory: Memory-Adapter must be added. Use addPouchPlugin(require(\'pouchdb-adapter-memory\'));',
-    IM2: 'inMemoryCollection.sync(): Do not replicate with the in-memory instance. Replicate with the parent instead',
+    // removed in 14.0.0 - PouchDB RxStorage is removed IM1: 'InMemory: Memory-Adapter must be added. Use addPouchPlugin(require(\'pouchdb-adapter-memory\'));',
+    // removed in 14.0.0 - PouchDB RxStorage is removed IM2: 'inMemoryCollection.sync(): Do not replicate with the in-memory instance. Replicate with the parent instead',
 
     // plugins/server.js
     S1: 'You cannot create collections after calling RxDatabase.server()',

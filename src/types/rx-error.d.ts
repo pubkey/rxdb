@@ -49,7 +49,6 @@ export interface RxErrorParameters {
     readonly path?: string;
     readonly value?: any;
     readonly givenName?: string;
-    readonly pouchDbError?: any;
     readonly fromVersion?: number;
     readonly toVersion?: number;
     readonly version?: number;
