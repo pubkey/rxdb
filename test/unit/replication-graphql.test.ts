@@ -1824,10 +1824,6 @@ describe('replication-graphql.test.ts', () => {
         });
         config.parallel('integrations', () => {
             it('should work with encryption', async () => {
-                if (config.storage.name !== 'pouchdb') {
-                    // TODO
-                    return;
-                }
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
                     storage: wrappedKeyEncryptionStorage({
@@ -1865,17 +1861,9 @@ describe('replication-graphql.test.ts', () => {
                 assert.strictEqual(docs.length, 1);
                 assert.strictEqual(docs[0].name, 'Alice');
 
-                const pouchDocs = await collection.storageInstance.internals.pouch.find({
-                    selector: {}
-                });
-                assert.ok(pouchDocs.docs[0].name !== 'Alice');
-
                 db.destroy();
             });
             it('pull should work with keyCompression', async () => {
-                if (config.storage.name !== 'pouchdb') {
-                    return;
-                }
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
                     storage: wrappedKeyCompressionStorage({
@@ -1911,13 +1899,6 @@ describe('replication-graphql.test.ts', () => {
                 const docs = await collection.find().exec();
                 assert.strictEqual(docs.length, 1);
                 assert.strictEqual(docs[0].name, 'Alice');
-
-                const pouchDocs = await collection.storageInstance.internals.pouch.find({
-                    selector: {}
-                });
-
-                // first key must be compressed
-                assert.ok(Object.keys(pouchDocs.docs[0])[0].startsWith('|'));
 
                 server.close();
                 db.destroy();

@@ -766,28 +766,26 @@ jobs:
   # But this is a bad metric so I destroy it by obfuscating the actual download count.
   # This should never increase the total time of the CI. If this task takes longer then all other tasks,
   # decrease the download calls.
-  download:
-    runs-on: ubuntu-20.04
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set node version
-        uses: actions/setup-node@v3
-        with:
-          node-version-file: '.nvmrc'
-      - name: download X times
-        run: |
-          npm i rxdb --no-optional --skip-installed --ignore-scripts --no-audit
-          npm cache clean --force
-          rm -rf node_modules
-          npm i rxdb --no-optional --skip-installed --ignore-scripts --no-audit
-          npm cache clean --force
-          rm -rf node_modules
-          npm i rxdb --no-optional --skip-installed --ignore-scripts --no-audit
-          npm cache clean --force
-          rm -rf node_modules
-          npm i rxdb --no-optional --skip-installed --ignore-scripts --no-audit
-          npm cache clean --force
-          rm -rf node_modules
-          npm i rxdb --no-optional --skip-installed --ignore-scripts --no-audit
-
-          
+  # download:
+  #   runs-on: ubuntu-20.04
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - name: Set node version
+  #       uses: actions/setup-node@v3
+  #       with:
+  #         node-version-file: '.nvmrc'
+  #     - name: download X times
+  #       run: |
+  #         npm i rxdb --no-optional --skip-installed --ignore-scripts --no-audit
+  #         npm cache clean --force
+  #         rm -rf node_modules
+  #         npm i rxdb --no-optional --skip-installed --ignore-scripts --no-audit
+  #         npm cache clean --force
+  #         rm -rf node_modules
+  #         npm i rxdb --no-optional --skip-installed --ignore-scripts --no-audit
+  #         npm cache clean --force
+  #         rm -rf node_modules
+  #         npm i rxdb --no-optional --skip-installed --ignore-scripts --no-audit
+  #         npm cache clean --force
+  #         rm -rf node_modules
+  #         npm i rxdb --no-optional --skip-installed --ignore-scripts --no-audit

@@ -15,7 +15,8 @@ import {
     lastOfArray,
     RxStorageInstance,
     now,
-    addRxPlugin
+    addRxPlugin,
+    RxCollection
 } from '../../';
 
 import {
@@ -31,6 +32,7 @@ import { EXAMPLE_REVISION_1 } from '../helper/revisions';
 
 import { RxDBMigrationPlugin } from '../../plugins/migration';
 import { RxDBAttachmentsPlugin } from '../../plugins/attachments';
+import { SimpleHumanAgeDocumentType } from '../helper/schema-objects';
 
 
 config.parallel('data-migration.test.ts', () => {
@@ -317,76 +319,28 @@ config.parallel('data-migration.test.ts', () => {
             });
             describe('.remove()', () => {
                 it('should delete the old storage instance with all its content', async () => {
-                    // TODO
-                    // if (!config.storage.name.includes('pouchdb')) {
-                    //     return;
-                    // }
-                    // const dbName = randomCouchString(10);
-                    // const col = await humansCollection.createMigrationCollection(10, {}, dbName);
-                    // const oldCollections = await _getOldCollections(col.getDataMigrator());
-                    // const old = lastOfArray(oldCollections);
-                    // if (!old) {
-                    //     throw new Error('this should never happen');
-                    // }
-
-                    // function pouchCountAllUndeleted(
-                    //     pouchdb: PouchDBInstance
-                    // ): Promise<number> {
-                    //     return pouchdb
-                    //         .allDocs({
-                    //             include_docs: false,
-                    //             attachments: false
-                    //         })
-                    //         .then(docs => (docs.rows as any[])
-                    //             .filter(row => !row.id.startsWith('_design/'))
-                    //             .length
-                    //         );
-                    // }
-
-                    // const undeletedResult = await old.storageInstance.query(
-                    //     col.database.storage.statics.prepareQuery(
-                    //         col.schema.jsonSchema,
-                    //         normalizeMangoQuery(col.schema.jsonSchema, {})
-                    //     )
-                    // );
-                    // const undeleted = undeletedResult.documents;
-                    // const amount = undeleted.length;
-                    // assert.strictEqual(amount, 10);
-
-                    // const pouchLocation = old.storageInstance.internals.pouch.name;
-                    // const checkPouch = new PouchDB(pouchLocation, {
-                    //     adapter: old.storageInstance.internals.pouch.adapter
-                    // });
-                    // const amountPlain = await pouchCountAllUndeleted(checkPouch as any);
-
-                    // assert.strictEqual(amountPlain, 10);
-
-                    // // check that internal doc exists
-                    // let docId = 'collection|' + _collectionNamePrimary(col.name, old.schema.jsonSchema);
-                    // let iDoc = await old.database.internalStore.internals.pouch.get(docId);
-                    // assert.strictEqual(typeof iDoc.data.schemaHash, 'string');
+                    if (!config.storage.hasMultiInstance) {
+                        return;
+                    }
+                    const dbName = randomCouchString(10);
+                    const col = await humansCollection.createMigrationCollection(10, {}, dbName, true);
+                    await col.database.destroy();
 
 
-                    // await deleteOldCollection(old);
-
-                    // // check that all docs deleted
-                    // const checkPouch2 = new PouchDB(pouchLocation, {
-                    //     adapter: old.storageInstance.internals.pouch.adapter
-                    // });
-                    // const amountPlain2 = await pouchCountAllUndeleted(checkPouch2 as any);
-                    // assert.strictEqual(amountPlain2, 0);
-
-                    // // check that internal doc deleted
-                    // let has = true;
-                    // docId = 'collection|' + _collectionNamePrimary(col.name, old.schema.jsonSchema);
-                    // try {
-                    //     iDoc = await old.database.internalStore.internals.pouch.get(docId);
-                    // } catch (e) {
-                    //     has = false;
-                    // }
-                    // assert.strictEqual(has, false);
-                    // oldCollections.forEach(c => c.storageInstance.close().catch(() => { }));
-                    // col.database.destroy();
+                    const db = await createRxDatabase<{ human: RxCollection<SimpleHumanAgeDocumentType>; }>({
+                        name: dbName,
+                        storage: config.storage.getStorage(),
+                        ignoreDuplicate: true
+                    });
+                    const cols = await db.addCollections({
+                        human: {
+                            schema: schemas.simpleHuman,
+                        }
+                    });
+                    const newCollection = cols.human;
+                    const docsAfter = await newCollection.find().exec();
+                    assert.strictEqual(docsAfter.length, 0);
+                    await db.destroy();
                 });
             });
             describe('._migrateDocuments()', () => {
@@ -436,9 +390,6 @@ config.parallel('data-migration.test.ts', () => {
                     await col.database.destroy();
                 });
                 it('should resolve finished when some docs are in the collection', async () => {
-                    if (!config.storage.name.includes('pouchdb')) {
-                        return;
-                    }
                     const col = await humansCollection.createMigrationCollection(10, {
                         3: (doc: any) => {
                             doc.age = parseInt(doc.age, 10);
@@ -447,13 +398,6 @@ config.parallel('data-migration.test.ts', () => {
                     });
                     const oldCollections = await _getOldCollections(col.getDataMigrator());
                     const oldCol = lastOfArray(oldCollections);
-
-                    const docsPrev = await col.storageInstance.internals.pouch.allDocs({
-                        include_docs: false,
-                        attachments: false
-                    });
-                    const preFiltered = docsPrev.rows.filter((doc: any) => !doc.id.startsWith('_design'));
-                    assert.strictEqual(preFiltered.length, 0);
 
                     await migratePromise(oldCol as any);
 
