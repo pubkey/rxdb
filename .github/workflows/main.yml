@@ -547,9 +547,9 @@ jobs:
             ./node_modules
             ./examples/supabase/node_modules
           # invalidate cache when any package-lock.json changes
-          key: ${{ runner.os }}-npm-supabase-x1-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-supabase-x2-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-supabase-x1
+            ${{ runner.os }}-npm-supabase-x2
       - name: Cache Docker layers
         uses: actions/cache@v2
         with:
