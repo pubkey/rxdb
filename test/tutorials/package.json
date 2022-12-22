@@ -7,7 +7,7 @@
   },
   "dependencies": {
     "@types/pouchdb-adapter-memory": "6.1.3",
-    "pouchdb-adapter-memory": "7.2.2",
+    "pouchdb-adapter-memory": "7.3.1",
     "rxdb": "../../"
   },
   "devDependencies": {
