@@ -48,7 +48,7 @@ export async function createDatabase() {
      */
     database.heroes.preInsert((docData) => {
         docData.replicationRevision = createRevision(
-            database.hashFunction,
+            database.token,
             docData as any
         );
         return docData;
