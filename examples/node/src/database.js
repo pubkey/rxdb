@@ -5,7 +5,7 @@ const {
 } = require('../../../');
 const {
     getRxStorageMemory
-} = require('../../../plugins/memory');
+} = require('../../../plugins/storage-memory');
 
 const { RxDBQueryBuilderPlugin } = require('../../../plugins/query-builder');
 addRxPlugin(RxDBQueryBuilderPlugin);

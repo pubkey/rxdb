@@ -2,7 +2,7 @@ const electron = require('electron');
 const path = require('path');
 const { addRxPlugin } = require('rxdb');
 
-const { getRxStorageMemory } = require('rxdb/plugins/memory');
+const { getRxStorageMemory } = require('rxdb/plugins/storage-memory');
 const { exposeIpcMainRxStorage } = require('rxdb/plugins/electron');
 
 const { getDatabase } = require('./shared');

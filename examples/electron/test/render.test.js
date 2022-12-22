@@ -7,7 +7,7 @@ const {
 } = require('rxdb');
 const { RxDBLeaderElectionPlugin } = require('rxdb/plugins/leader-election');
 const { RxDBAttachmentsPlugin } = require('rxdb/plugins/attachments');
-const { getRxStorageMemory } = require('rxdb/plugins/memory');
+const { getRxStorageMemory } = require('rxdb/plugins/storage-memory');
 
 addRxPlugin(RxDBLeaderElectionPlugin);
 addRxPlugin(RxDBAttachmentsPlugin);

@@ -6,16 +6,16 @@ import {
 
 import {
     getRxStorageDexie
-} from 'rxdb/plugins/dexie';
+} from 'rxdb/plugins/storage-dexie';
 
 import {
     getRxStorageLoki
-} from 'rxdb/plugins/lokijs';
+} from 'rxdb/plugins/storage-lokijs';
 const LokiIncrementalIndexedDBAdapter = require('lokijs/src/incremental-indexeddb-adapter');
 
 import {
     getRxStorageMemory
-} from 'rxdb/plugins/memory';
+} from 'rxdb/plugins/storage-memory';
 
 import {
     filter
