@@ -709,7 +709,12 @@ jobs:
           npm run preinstall
           npm install --legacy-peer-deps
           npm run build
-
+      - name: vite vanilla ts test
+        uses: GabrielBB/xvfb-action@v1
+        with:
+          working-directory: ./examples/vite-vanilla-ts
+          run: npm run test
+          
   graphql:
     runs-on: ubuntu-20.04
     steps:

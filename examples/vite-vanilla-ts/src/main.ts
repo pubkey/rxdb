@@ -2,6 +2,7 @@ import "./style.css";
 import typescriptLogo from "./typescript.svg";
 import rxdbLogo from "./rxdb.svg";
 import { setupNoteEditor } from "./note-editor";
+import { setupNoteList } from "./note-list";
 
 
 document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
@@ -23,7 +24,7 @@ document.querySelector<HTMLDivElement>("#app")!.innerHTML = `
     <button id="noteSave">Save Note</button>
   </div>
   <p class="read-the-docs">
-    Click on the Vite and TypeScript logos to learn more
+    Click on the Vite, RxDB and TypeScript logos to learn more
   </p>
 </div>
 `;
@@ -34,3 +35,6 @@ setupNoteEditor({
   saveElement: document.querySelector<HTMLButtonElement>("#noteSave")! ,
 });
 
+await setupNoteList({
+  noteListElement: document.querySelector<HTMLUListElement>("#noteList")! 
+})

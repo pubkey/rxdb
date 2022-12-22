@@ -8,7 +8,7 @@ import { NoteSchema, MyDatabaseCollections } from "./schema";
 addRxPlugin(RxDBQueryBuilderPlugin);
 
 const _create = async () => {
-  const db = await createRxDatabase<MyDatabaseCollections>({
+  const database = await createRxDatabase<MyDatabaseCollections>({
     name: "rxdbdemo",
     storage: wrappedKeyEncryptionStorage({
       storage: wrappedKeyCompressionStorage({
@@ -19,8 +19,8 @@ const _create = async () => {
     multiInstance: true,
     ignoreDuplicate: true,
   });
-  await db.addCollections({ notes: { schema: NoteSchema } });
-  return db;
+  await database.addCollections({ notes: { schema: NoteSchema } });
+  return database;
 };
 
 export const db = () => _create();
