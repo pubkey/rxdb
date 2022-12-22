@@ -17,7 +17,7 @@ vuejs                | [done](./vue)
 supabase             | [done](./supabase/)
 
 
-Third Party Examples:
+## Third Party Examples:
 
 Technology           | Third Party Link
 -------------------- | ---------------------
