@@ -364,7 +364,6 @@ export const basePrototype = {
         return collection._runHooks('pre', 'remove', deletedData, this)
             .then(async () => {
                 deletedData._deleted = true;
-
                 const writeResult = await collection.storageInstance.bulkWrite([{
                     previous: this._data,
                     document: deletedData
