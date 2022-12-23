@@ -382,9 +382,13 @@ export const basePrototype = {
             });
     },
     incrementalRemove(this: RxDocument): Promise<RxDocument> {
-        return this.incrementalModify((docData) => {
+        return this.incrementalModify(async (docData) => {
+            await this.collection._runHooks('pre', 'remove', docData, this);
             docData._deleted = true;
             return docData;
+        }).then(async (newDoc) => {
+            await this.collection._runHooks('post', 'remove', newDoc._data, newDoc);
+            return newDoc;
         });
     },
     destroy() {
