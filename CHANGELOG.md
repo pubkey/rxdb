@@ -2,7 +2,6 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
 - CHANGE Do not use hash for revisions but use database instance token instead.
 - Remove the deprecated PouchDB RxStorage.
 - CHANGE (memory RxStorage) do not clean up database state on closing of the storage, only on `remove()`.
@@ -25,6 +24,7 @@
 - ADD non-incremental `RxDocument` methods `patch()` and `modify()`
 - ADD typings to the query selector
 
+- ADD [Vite Vanilla Typescript Example](https://github.com/pubkey/rxdb/tree/master/examples/vite-vanilla-ts) Thanks [@SebasG22](https://github.com/SebasG22)
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

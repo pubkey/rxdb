@@ -7,7 +7,7 @@
   "plugins": [
     "eslint-plugin-import",
     "eslint-plugin-jsdoc",
-    "@typescript-eslint"    
+    "@typescript-eslint"
   ],
   "extends": [
     "eslint:recommended",
