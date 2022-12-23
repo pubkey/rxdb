@@ -1138,7 +1138,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
         });
         describe('.getQueryMatcher()', () => {
             it('should match the right docs', async () => {
-                const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
+                const storageInstance = await config.storage.getStorage().createStorageInstance<schemas.HumanDocumentType>({
                     databaseInstanceToken: randomCouchString(10),
                     databaseName: randomCouchString(12),
                     collectionName: randomCouchString(12),
@@ -1147,7 +1147,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     multiInstance: false
                 });
 
-                const query: FilledMangoQuery<TestDocType> = {
+                const query: FilledMangoQuery<schemas.HumanDocumentType> = {
                     selector: {
                         age: {
                             $gt: 10,
@@ -1155,9 +1155,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                         }
                     },
                     sort: [
-                        {
-                            _id: 'asc'
-                        }
+                        { _id: 'asc' }
                     ],
                     skip: 0
                 };

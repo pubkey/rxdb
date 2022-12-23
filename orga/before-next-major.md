@@ -46,7 +46,7 @@ https://github.com/pubkey/rxdb/pull/4005
 https://github.com/pubkey/rxdb/pull/4005#issuecomment-1264742235
 
 
-## Add typings to the query selector
+## Add typings to the query selector [DONE]
 
 The `selector`part of queries is currently not fully typed.
 Hint: We can find out the possible doc field names via https://stackoverflow.com/questions/58434389/typescript-deep-keyof-of-a-nested-object/58436959#58436959

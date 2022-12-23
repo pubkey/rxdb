@@ -4,6 +4,7 @@ import type {
 } from 'event-reduce-js';
 import lokijs from 'lokijs';
 import type {
+    FilledMangoQuery,
     LokiDatabaseSettings,
     LokiSettings,
     LokiStorageInternals,
@@ -32,7 +33,7 @@ import { DEFAULT_CHECKPOINT_SCHEMA } from '../../rx-schema-helper';
 export const RxStorageLokiStatics: RxStorageStatics = {
     prepareQuery<RxDocType>(
         _schema: RxJsonSchema<RxDocumentData<RxDocType>>,
-        mutateableQuery: MangoQuery<RxDocType>
+        mutateableQuery: FilledMangoQuery<RxDocType>
     ) {
         mutateableQuery = flatClone(mutateableQuery);
         if (Object.keys(ensureNotFalsy(mutateableQuery.selector)).length > 0) {
@@ -43,11 +44,11 @@ export const RxStorageLokiStatics: RxStorageStatics = {
                     },
                     mutateableQuery.selector
                 ]
-            };
+            } as any;
         } else {
             mutateableQuery.selector = {
                 _deleted: false
-            };
+            } as any;
         }
 
         return mutateableQuery;

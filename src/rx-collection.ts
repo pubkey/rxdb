@@ -601,7 +601,7 @@ export class RxCollectionBase<
                 [this.schema.primaryPath]: {
                     $in: ids.slice(0)
                 }
-            }
+            } as any
         };
         const query = createRxQuery('findByIds', mangoQuery, this as any);
         return query as any;

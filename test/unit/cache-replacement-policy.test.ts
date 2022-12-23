@@ -57,18 +57,18 @@ config.parallel('cache-replacement-policy.test.js', () => {
 
             const noSub = col.find({
                 selector: {
-                    foo: 'bar1'
+                    firstName: 'bar1'
                 }
             });
             const oneSub = col.find({
                 selector: {
-                    foo: 'bar2'
+                    firstName: 'bar2'
                 }
             });
             subs.push(oneSub.$.subscribe());
             const twoSub = col.find({
                 selector: {
-                    foo: 'bar3'
+                    firstName: 'bar3'
                 }
             });
             subs.push(twoSub.$.subscribe());
@@ -76,7 +76,7 @@ config.parallel('cache-replacement-policy.test.js', () => {
 
             const stillOneSub = col.find({
                 selector: {
-                    foo: 'bar4'
+                    firstName: 'bar4'
                 }
             });
             subs.push(stillOneSub.$.subscribe());
@@ -85,7 +85,7 @@ config.parallel('cache-replacement-policy.test.js', () => {
 
             const noMoreSub = col.find({
                 selector: {
-                    foo: 'bar5'
+                    firstName: 'bar5'
                 }
             });
             const removeMe = noMoreSub.$.subscribe();
@@ -147,13 +147,13 @@ config.parallel('cache-replacement-policy.test.js', () => {
             // have one unexecuted
             col.find({
                 selector: {
-                    foo: 'bar'
+                    firstName: 'bar'
                 }
             });
             // have one with subscription
             const sub = col.find({
                 selector: {
-                    foo: 'bar2'
+                    firstName: 'bar2'
                 }
             }).$.subscribe();
 
@@ -168,7 +168,7 @@ config.parallel('cache-replacement-policy.test.js', () => {
             const subs: Subscription[] = new Array(amount).fill(0).map((_v, i) => {
                 return col.find({
                     selector: {
-                        foo: 'bar' + i
+                        firstName: 'bar' + i
                     }
                 }).$.subscribe();
             });
@@ -189,7 +189,7 @@ config.parallel('cache-replacement-policy.test.js', () => {
             new Array(amount).fill(0).map((_v, i) => {
                 return col.find({
                     selector: {
-                        foo: 'bar' + i
+                        firstName: 'bar' + i
                     }
                 });
             });

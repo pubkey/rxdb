@@ -360,46 +360,6 @@ describe('rx-query.test.ts', () => {
             assert.strictEqual(true, q.doesDocumentDataMatch(docData));
             col.database.destroy();
         });
-        it('BUG should not match regex', async () => {
-            if (!config.storage.hasRegexSupport) {
-                return;
-            }
-            const col = await humansCollection.create(0);
-
-
-            // TODO using $and fails, we have to open an issue at the pouchdb repo
-            /*
-           const q = col.find({
-                selector: {
-                    $and: [{
-                        color: {
-                            $regex: new RegExp('f', 'i')
-                        }
-                    }]
-                }
-            });
-            */
-
-            const q = col.find({
-                selector: {
-                    color: {
-                        $regex: new RegExp('f', 'i')
-                    }
-                }
-            });
-
-            const docData = {
-                _id: 'mydoc',
-                color: 'green',
-                hp: 100,
-                maxHP: 767,
-                name: 'asdfsadf',
-                _rev: '1-971bfd0b8749eb33b6aae7f6c0dc2cd4'
-            };
-
-            assert.strictEqual(false, q.doesDocumentDataMatch(docData));
-            col.database.destroy();
-        });
     });
     config.parallel('.exec()', () => {
         it('should throw if top level field is not known to the schema', async () => {
@@ -409,7 +369,7 @@ describe('rx-query.test.ts', () => {
                 () => col.find({
                     selector: {
                         asdfasdfasdf: 'asdf'
-                    }
+                    } as any
                 }).exec(),
                 'RxError',
                 'QU13'
@@ -422,10 +382,10 @@ describe('rx-query.test.ts', () => {
                         $and: [
                             {
                                 asdfasdfasdf: 'asdf'
-                            },
+                            } as any,
                             {
                                 asdfasdfasdf: 'asdf'
-                            }
+                            } as any
                         ]
                     }
                 }).exec(),

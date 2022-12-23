@@ -70,7 +70,7 @@ export class NoSqlQueryBuilderClass<DocType> {
         if ('string' === type) {
             this._path = arguments[0];
             if (2 === arguments.length) {
-                this._conditions[this._path] = arguments[1];
+                (this._conditions as any)[this._path] = arguments[1];
             }
             return this as any;
         }
@@ -92,7 +92,7 @@ export class NoSqlQueryBuilderClass<DocType> {
     equals(val: any): NoSqlQueryBuilder<DocType> {
         this._ensurePath('equals');
         const path = this._path;
-        this._conditions[path] = val;
+        (this._conditions as any)[path] = val;
         return this as any;
     }
 
@@ -103,7 +103,7 @@ export class NoSqlQueryBuilderClass<DocType> {
     eq(val: any): NoSqlQueryBuilder<DocType> {
         this._ensurePath('eq');
         const path = this._path;
-        this._conditions[path] = val;
+        (this._conditions as any)[path] = val;
         return this as any;
     }
 
@@ -167,7 +167,7 @@ export class NoSqlQueryBuilderClass<DocType> {
             path = arguments[0];
         }
 
-        const conds = this._conditions[path] || (this._conditions[path] = {});
+        const conds = (this._conditions as any)[path] || ((this._conditions as any)[path] = {});
         conds.$mod = val;
         return this as any;
     }
@@ -201,7 +201,7 @@ export class NoSqlQueryBuilderClass<DocType> {
             val = arguments[1];
         }
 
-        const conds = this._conditions[path] || (this._conditions[path] = {});
+        const conds = (this._conditions as any)[path] || ((this._conditions as any)[path] = {});
         conds.$exists = val;
         return this as any;
     }
@@ -251,7 +251,7 @@ export class NoSqlQueryBuilderClass<DocType> {
             criteria = criteria._conditions;
         }
 
-        const conds = this._conditions[path] || (this._conditions[path] = {});
+        const conds = (this._conditions as any)[path] || ((this._conditions as any)[path] = {});
         conds.$elemMatch = criteria;
         return this as any;
     }

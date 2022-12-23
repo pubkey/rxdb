@@ -103,7 +103,7 @@ export class RxQueryBase<
 
     constructor(
         public op: RxQueryOP,
-        public mangoQuery: Readonly<MangoQuery>,
+        public mangoQuery: Readonly<MangoQuery<RxDocType>>,
         public collection: RxCollection<RxDocType>
     ) {
         if (!mangoQuery) {
@@ -271,7 +271,7 @@ export class RxQueryBase<
         }
 
         if (this.op === 'findByIds') {
-            const ids: string[] = ensureNotFalsy(this.mangoQuery.selector)[this.collection.schema.primaryPath].$in;
+            const ids: string[] = ensureNotFalsy(this.mangoQuery.selector as any)[this.collection.schema.primaryPath].$in;
             const ret = new Map<string, RxDocument<RxDocType>>();
             const mustBeQueried: string[] = [];
             // first try to fill from docCache
@@ -479,7 +479,7 @@ export class RxQueryBase<
     }
 }
 
-export function _getDefaultQuery(): MangoQuery {
+export function _getDefaultQuery<RxDocType>(): MangoQuery<RxDocType> {
     return {
         selector: {}
     };
@@ -496,7 +496,7 @@ export function tunnelQueryCache<RxDocumentType, RxQueryResult>(
 
 export function createRxQuery<RxDocType>(
     op: RxQueryOP,
-    queryObj: MangoQuery,
+    queryObj: MangoQuery<RxDocType>,
     collection: RxCollection<RxDocType>
 ) {
     runPluginHooks('preCreateRxQuery', {
@@ -722,13 +722,14 @@ export function isFindOneByIdQuery(
         Object.keys(query.selector).length === 1 &&
         query.selector[primaryPath]
     ) {
-        if (typeof query.selector[primaryPath] === 'string') {
-            return query.selector[primaryPath];
+        const value: any = query.selector[primaryPath];
+        if (typeof value === 'string') {
+            return value;
         } else if (
-            Object.keys(query.selector[primaryPath]).length === 1 &&
-            typeof query.selector[primaryPath].$eq === 'string'
+            Object.keys(value).length === 1 &&
+            typeof value.$eq === 'string'
         ) {
-            return query.selector[primaryPath].$eq;
+            return value.$eq;
         }
     }
     return false;

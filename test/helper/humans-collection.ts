@@ -8,10 +8,12 @@ import {
     RxJsonSchema,
     RxCollection,
     RxDatabase,
-    randomCouchString
+    randomCouchString,
+    MigrationStrategies,
+    RxAttachmentCreator,
+    RxStorage
 } from '../../';
 
-import { MigrationStrategies, RxAttachmentCreator, RxStorage } from '../../src/types';
 import { HumanDocumentType } from './schemas';
 
 export async function create(

@@ -47,7 +47,7 @@ export function normalizeMangoQuery<RxDocType>(
             .entries(normalizedMangoQuery.selector)
             .forEach(([field, matcher]) => {
                 if (typeof matcher !== 'object' || matcher === null) {
-                    normalizedMangoQuery.selector[field] = {
+                    (normalizedMangoQuery as any).selector[field] = {
                         $eq: matcher
                     };
                 }

@@ -23,6 +23,7 @@
 - ADD `RxDocument().incrementalUpdate()`
 - ADD `RxDocument.incrementalRemove()`
 - ADD non-incremental `RxDocument` methods `patch()` and `modify()`
+- ADD typings to the query selector
 
 <!-- ADD new changes here! -->
 
