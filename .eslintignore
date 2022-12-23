@@ -17,6 +17,7 @@ examples/vue
 examples/svelte
 examples/react/build
 examples/supabase/
+examples/vite-vanilla-ts
 node_modules
 docs
 docs-src/files/logo/js.build.js
