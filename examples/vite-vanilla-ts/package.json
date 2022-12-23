@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "preinstall": "(cd ../../ && npx yarn@1.13.0 pack ../../ --filename ./examples/vite-vanilla-ts/rxdb-local.tgz)",
+    "postinstall": "npm run postinstall:logo",
     "postinstall:logo": "copyfiles ../../docs-src/files/logo/logo.svg src/ --flat --up",
     "dev": "vite",
     "build": "tsc && vite build",
