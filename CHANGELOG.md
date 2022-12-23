@@ -20,6 +20,9 @@
 - RENAME `atomicUpdate()` to `incrementalModify()`
 - RENAME `atomicPatch()` to `incrementalPatch()`
 - RENAME `atomicUpsert()` to `incrementalUpsert()`
+- ADD `RxDocument().incrementalUpdate()`
+- ADD `RxDocument.incrementalRemove()`
+- ADD non-incremental `RxDocument` methods `patch()` and `modify()`
 
 <!-- ADD new changes here! -->
 

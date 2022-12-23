@@ -74,15 +74,22 @@ export declare interface RxDocumentBase<RxDocType, OrmMethods = {}> {
     /**
      * mutate the document with a function
      */
+    modify(mutationFunction: ModifyFunction<RxDocType>, context?: string): Promise<RxDocument<RxDocType, OrmMethods>>;
     incrementalModify(mutationFunction: ModifyFunction<RxDocType>, context?: string): Promise<RxDocument<RxDocType, OrmMethods>>;
+
     /**
      * patches the given properties
      */
+    patch(patch: Partial<RxDocType>): Promise<RxDocument<RxDocType, OrmMethods>>;
     incrementalPatch(patch: Partial<RxDocType>): Promise<RxDocument<RxDocType, OrmMethods>>;
 
     update(updateObj: UpdateQuery<RxDocType>): Promise<RxDocument<RxDocType, OrmMethods>>;
+    incrementalUpdate(updateObj: UpdateQuery<RxDocType>): Promise<RxDocument<RxDocType, OrmMethods>>;
+
     updateCRDT(updateObj: CRDTEntry<RxDocType> | CRDTEntry<RxDocType>[]): Promise<RxDocument<RxDocType, OrmMethods>>;
+
     remove(): Promise<RxDocument<RxDocType, OrmMethods>>;
+    incrementalRemove(): Promise<RxDocument<RxDocType, OrmMethods>>;
 
     // only for temporary documents
     set(objPath: string, value: any): RxDocument<RxDocType, OrmMethods>;

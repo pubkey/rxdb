@@ -220,8 +220,30 @@ describe('rx-document.test.js', () => {
                 });
                 c.database.destroy();
             });
+            it('incrementalRemove() should not create a conflict', async () => {
+                const c = await humansCollection.create(1);
+                const doc = await c.findOne().exec(true);
+                await doc.patch({ firstName: 'first' });
+                await doc.incrementalRemove();
+
+                const docsAfter = await c.find().exec();
+                assert.strictEqual(docsAfter.length, 0);
+
+                c.database.destroy();
+            });
         });
         describe('negative', () => {
+            it('should throw on conflict', async () => {
+                const c = await humansCollection.create(1);
+                const doc = await c.findOne().exec(true);
+                await doc.remove();
+                await AsyncTestUtil.assertThrows(
+                    () => doc.remove(),
+                    'RxError',
+                    'CONFLICT'
+                );
+                c.database.destroy();
+            });
             it('delete doc twice should cause a conflict', async () => {
                 const c = await humansCollection.create(5);
                 const doc: any = await c.findOne().exec();
@@ -267,7 +289,7 @@ describe('rx-document.test.js', () => {
             });
             it('$inc a value with a mongo like query', async () => {
                 const c = await humansCollection.create(1);
-                let doc: any = await c.findOne().exec(true);
+                let doc = await c.findOne().exec(true);
                 const agePrev = doc.age;
                 doc = await doc.update({
                     $inc: {
@@ -283,6 +305,26 @@ describe('rx-document.test.js', () => {
             });
         });
         describe('negative', () => {
+            it('should throw on conflict', async () => {
+                const c = await humansCollection.create(1);
+                const doc = await c.findOne().exec(true);
+
+                await doc.update({
+                    $set: {
+                        firstName: 'first'
+                    }
+                });
+                await AsyncTestUtil.assertThrows(
+                    () => doc.update({
+                        $set: {
+                            firstName: 'second'
+                        }
+                    }),
+                    'RxError',
+                    'CONFLICT'
+                );
+                c.database.destroy();
+            });
             it('should throw when final field is modified', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
@@ -314,7 +356,7 @@ describe('rx-document.test.js', () => {
             });
         });
     });
-    config.parallel('.incrementalModify()', () => {
+    config.parallel('.modify()', () => {
         describe('positive', () => {
             it('run one update', async () => {
                 const c = await humansCollection.createNested(1);
@@ -524,6 +566,24 @@ describe('rx-document.test.js', () => {
             });
         });
         describe('negative', () => {
+            it('should throw on conflict', async () => {
+                const c = await humansCollection.create(1);
+                const doc = await c.findOne().exec(true);
+
+                await doc.modify(docData => {
+                    docData.firstName = 'first';
+                    return docData;
+                });
+                await AsyncTestUtil.assertThrows(
+                    () => doc.modify(docData => {
+                        docData.firstName = 'second';
+                        return docData;
+                    }),
+                    'RxError',
+                    'CONFLICT'
+                );
+                c.database.destroy();
+            });
             it('should throw when final field is modified', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
@@ -584,7 +644,7 @@ describe('rx-document.test.js', () => {
             });
         });
     });
-    config.parallel('.incrementalPatch()', () => {
+    config.parallel('.patch()', () => {
         describe('positive', () => {
             it('run one update', async () => {
                 const c = await humansCollection.createNested(1);
@@ -610,6 +670,24 @@ describe('rx-document.test.js', () => {
                 });
 
                 assert.strictEqual(doc.mainSkill, undefined);
+                c.database.destroy();
+            });
+        });
+        describe('negative', () => {
+            it('should throw on conflict', async () => {
+                const c = await humansCollection.create(1);
+                const doc = await c.findOne().exec(true);
+
+                await doc.patch({
+                    firstName: 'first'
+                });
+                await AsyncTestUtil.assertThrows(
+                    () => doc.patch({
+                        firstName: 'second'
+                    }),
+                    'RxError',
+                    'CONFLICT'
+                );
                 c.database.destroy();
             });
         });

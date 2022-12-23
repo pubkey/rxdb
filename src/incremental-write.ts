@@ -186,7 +186,7 @@ export class IncrementalWriteQueue<RxDocType> {
 }
 
 
-export function incrementalModifierFromPublicToInternal<RxDocType>(
+export function modifierFromPublicToInternal<RxDocType>(
     publicModifier: ModifyFunction<RxDocType>
 ): IncrementalWriteModifier<RxDocType> {
     const ret = async (docData: RxDocumentData<RxDocType>) => {

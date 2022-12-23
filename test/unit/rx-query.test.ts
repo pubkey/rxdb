@@ -708,7 +708,7 @@ describe('rx-query.test.ts', () => {
         });
         it('isFindOneByIdQuery(): .findOne(documentId) should use RxStorage().findDocumentsById() instead of RxStorage().query()', async () => {
             const c = await humansCollection.create();
-            const docData = schemaObjects.simpleHuman();
+            const docData = schemaObjects.human();
             const docId = 'foobar';
             docData.passportId = docId;
             await c.insert(docData);

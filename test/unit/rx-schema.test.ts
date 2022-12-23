@@ -650,7 +650,7 @@ config.parallel('rx-schema.test.js', () => {
                     const schema = createRxSchema(schemas.human);
                     const hash = schema.hash;
                     assert.strictEqual(typeof hash, 'string');
-                    assert.ok(hash.length > 5);
+                    assert.ok(hash.length >= 5);
                 });
                 it('should normalize one schema with two different orders and generate for each the same hash', () => {
                     const schema1 = createRxSchema(schemas.humanNormalizeSchema1);

@@ -58,7 +58,7 @@ export const humanSchemaLiteral = overwritable.deepFreezeWhenDevMode({
             multipleOf: 1
         }
     },
-    required: ['firstName', 'lastName', 'passportId'],
+    required: ['firstName', 'lastName', 'passportId', 'age'],
     indexes: ['firstName']
 } as const);
 const humanSchemaTyped = toTypedRxJsonSchema(humanSchemaLiteral);

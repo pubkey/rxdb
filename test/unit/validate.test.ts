@@ -396,7 +396,7 @@ validationImplementations.forEach(
                     };
 
                     const result = await instance.bulkWrite([{
-                        document: toRxDocumentData(obj)
+                        document: toRxDocumentData(obj) as any
                     }], testContext);
                     const err = result.error['foobar'];
                     const deepParam = (err as any).validationErrors[0];
