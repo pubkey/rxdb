@@ -1,0 +1,29 @@
+{
+  "name": "vite-vanilla-ts",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "preinstall": "(cd ../../ && npx yarn@1.13.0 pack ../../ --filename ./examples/vite-vanilla-ts/rxdb-local.tgz)",
+    "postinstall": "npm run postinstall:logo",
+    "postinstall:logo": "copyfiles ../../docs-src/files/logo/logo.svg src/ --flat --up",
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "test": "npm run build && concurrently \"npm run preview\" \"npm run test:e2e\" --kill-others --success first",
+    "test:e2e": "testcafe chrome -e test/ --hostname localhost --selector-timeout 8000"
+  },
+  "devDependencies": {
+    "async-test-util": "^2.0.0",
+    "concurrently": "^7.6.0",
+    "copyfiles": "^2.4.1",
+    "testcafe": "^2.1.0",
+    "typescript": "^4.9.3",
+    "vite": "^4.0.0",
+    "vite-plugin-top-level-await": "^1.2.2"
+  },
+  "dependencies": {
+    "rxdb": "^13.15.3",
+    "rxjs": "^7.8.0"
+  }
+}
