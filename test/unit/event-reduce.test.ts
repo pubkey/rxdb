@@ -132,7 +132,7 @@ describe('event-reduce.test.js', () => {
                 const docToUpdate = await col
                     .findOne('6eu7byz49iq9')
                     .exec(true);
-                await docToUpdate.atomicPatch({ age: 50 });
+                await docToUpdate.incrementalPatch({ age: 50 });
             })
         );
 
@@ -280,7 +280,7 @@ describe('event-reduce.test.js', () => {
                         .findOne()
                         .sort('lastName')
                         .exec(true);
-                    await docToUpdate.atomicPatch({ age: 50 });
+                    await docToUpdate.incrementalPatch({ age: 50 });
                 })
             );
 

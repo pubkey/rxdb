@@ -17,7 +17,12 @@
 - REMOVED `RxCollection.findByIds$`, use `RxCollection.findByIds().$` instead.
 - FIX schema hashing should respect the sort order [#4005](https://github.com/pubkey/rxdb/pull/4005)
 - CHANGE Prefix storage plugins with `storage-` like `rxdb/plugins/storage-dexie`.
-
+- RENAME `atomicUpdate()` to `incrementalModify()`
+- RENAME `atomicPatch()` to `incrementalPatch()`
+- RENAME `atomicUpsert()` to `incrementalUpsert()`
+- ADD `RxDocument().incrementalUpdate()`
+- ADD `RxDocument.incrementalRemove()`
+- ADD non-incremental `RxDocument` methods `patch()` and `modify()`
 
 <!-- ADD new changes here! -->
 

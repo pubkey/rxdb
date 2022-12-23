@@ -73,7 +73,7 @@ export function upsertLocal<DocData extends Record<string, any> = any>(
                 return docPromise;
             } else {
                 // update existing
-                return existing.atomicUpdate(() => {
+                return existing.incrementalModify(() => {
                     return data;
                 });
             }

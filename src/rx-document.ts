@@ -32,13 +32,13 @@ import type {
     RxDocumentWriteData,
     UpdateQuery,
     CRDTEntry,
-    AtomicUpdateFunction
+    ModifyFunction
 } from './types';
 import { getDocumentDataOfRxChangeEvent } from './rx-change-event';
 import { overwritable } from './overwritable';
 import { getSchemaByObjectPath } from './rx-schema-helper';
 import { throwIfIsStorageWriteError } from './rx-storage-helper';
-import { incrementalModifierFromPublicToInternal } from './incremental-write';
+import { modifierFromPublicToInternal } from './incremental-write';
 
 export const basePrototype = {
     get primaryPath() {
@@ -80,8 +80,8 @@ export const basePrototype = {
     },
 
     getLatest(this: RxDocument): RxDocument {
-       const latestDocData = this.collection._docCache.getLatestDocumentData(this.primary);
-       return this.collection._docCache.getCachedRxDocument(latestDocData);
+        const latestDocData = this.collection._docCache.getLatestDocumentData(this.primary);
+        return this.collection._docCache.getCachedRxDocument(latestDocData);
     },
 
     /**
@@ -235,6 +235,9 @@ export const basePrototype = {
     update(_updateObj: UpdateQuery<any>) {
         throw pluginMissing('update');
     },
+    incrementalUpdate(_updateObj: UpdateQuery<any>) {
+        throw pluginMissing('update');
+    },
     updateCRDT(_updateObj: CRDTEntry<any> | CRDTEntry<any>[]) {
         throw pluginMissing('crdt');
     },
@@ -251,32 +254,55 @@ export const basePrototype = {
         throw pluginMissing('attachments');
     },
 
+    async modify<RxDocType>(
+        this: RxDocument<RxDocType>,
+        mutationFunction: ModifyFunction<RxDocType>,
+        // used by some plugins that wrap the method
+        _context?: string
+    ): Promise<RxDocument> {
+        const oldData = this._data;
+        const newData: RxDocumentData<RxDocType> = await modifierFromPublicToInternal<RxDocType>(mutationFunction)(oldData) as any;
+        return this._saveData(newData, oldData) as any;
+    },
 
     /**
-     * runs an atomic update over the document
+     * runs an incremental update over the document
      * @param function that takes the document-data and returns a new data-object
      */
-    atomicUpdate(
+    incrementalModify(
         this: RxDocument,
-        mutationFunction: AtomicUpdateFunction<any>,
+        mutationFunction: ModifyFunction<any>,
         // used by some plugins that wrap the method
         _context?: string
     ): Promise<RxDocument> {
         return this.collection.incrementalWriteQueue.addWrite(
             this._data,
-            incrementalModifierFromPublicToInternal(mutationFunction)
+            modifierFromPublicToInternal(mutationFunction)
         ).then(result => this.collection._docCache.getCachedRxDocument(result));
     },
 
+    patch<RxDocType>(
+        this: RxDocument<RxDocType>,
+        patch: Partial<RxDocType>
+    ) {
+        const oldData = this._data;
+        const newData = clone(oldData);
+        Object
+            .entries(patch)
+            .forEach(([k, v]) => {
+                (newData as any)[k] = v;
+            });
+        return this._saveData(newData, oldData);
+    },
 
     /**
      * patches the given properties
      */
-    atomicPatch<RxDocumentType = any>(
+    incrementalPatch<RxDocumentType = any>(
         this: RxDocument<RxDocumentType>,
         patch: Partial<RxDocumentType>
     ): Promise<RxDocument<RxDocumentType>> {
-        return this.atomicUpdate((docData) => {
+        return this.incrementalModify((docData) => {
             Object
                 .entries(patch)
                 .forEach(([k, v]) => {
@@ -338,7 +364,6 @@ export const basePrototype = {
         return collection._runHooks('pre', 'remove', deletedData, this)
             .then(async () => {
                 deletedData._deleted = true;
-
                 const writeResult = await collection.storageInstance.bulkWrite([{
                     previous: this._data,
                     document: deletedData
@@ -354,6 +379,16 @@ export const basePrototype = {
             .then(() => {
                 return this.collection._docCache.getCachedRxDocument(removedDocData);
             });
+    },
+    incrementalRemove(this: RxDocument): Promise<RxDocument> {
+        return this.incrementalModify(async (docData) => {
+            await this.collection._runHooks('pre', 'remove', docData, this);
+            docData._deleted = true;
+            return docData;
+        }).then(async (newDoc) => {
+            await this.collection._runHooks('post', 'remove', newDoc._data, newDoc);
+            return newDoc;
+        });
     },
     destroy() {
         throw newRxError('DOC14');

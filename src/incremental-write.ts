@@ -3,7 +3,7 @@ import {
     rxStorageWriteErrorToRxError
 } from './rx-error';
 import type {
-    AtomicUpdateFunction,
+    ModifyFunction,
     BulkWriteRow,
     MaybePromise,
     RxDocumentData,
@@ -186,8 +186,8 @@ export class IncrementalWriteQueue<RxDocType> {
 }
 
 
-export function incrementalModifierFromPublicToInternal<RxDocType>(
-    publicModifier: AtomicUpdateFunction<RxDocType>
+export function modifierFromPublicToInternal<RxDocType>(
+    publicModifier: ModifyFunction<RxDocType>
 ): IncrementalWriteModifier<RxDocType> {
     const ret = async (docData: RxDocumentData<RxDocType>) => {
         const withoutMeta: WithDeleted<RxDocType> = stripMetaDataFromDocument(docData) as any;

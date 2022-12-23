@@ -73,7 +73,7 @@ export const ERROR_MESSAGES = {
     COL1: 'RxDocument.insert() You cannot insert an existing document',
     COL2: 'RxCollection.insert() fieldName ._id can only be used as primaryKey',
     COL3: 'RxCollection.upsert() does not work without primary',
-    COL4: 'RxCollection.atomicUpsert() does not work without primary',
+    COL4: 'RxCollection.incrementalUpsert() does not work without primary',
     COL5: 'RxCollection.find() if you want to search by _id, use .findOne(_id)',
     COL6: 'RxCollection.findOne() needs a queryObject or string',
     COL7: 'hook must be a function',
@@ -216,7 +216,7 @@ export const ERROR_MESSAGES = {
 
     // plugins/crdt/
     CRDT1: 'CRDT operations cannot be used because the crdt options are not set in the schema.',
-    CRDT2: 'RxDocument.atomicUpdate() cannot be used when CRDTs are activated.',
+    CRDT2: 'RxDocument.incrementalModify() cannot be used when CRDTs are activated.',
     CRDT3: 'To use CRDTs you MUST NOT set a conflictHandler because the default CRDT conflict handler must be used',
 
     // plugins/dexie/

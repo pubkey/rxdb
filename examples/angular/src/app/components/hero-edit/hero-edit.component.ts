@@ -65,7 +65,7 @@ export class HeroEditDialogComponent implements OnInit {
             throw new Error('should never happen');
         }
         try {
-            await this.data.hero.atomicPatch({ hp: this.formValue });
+            await this.data.hero.incrementalPatch({ hp: this.formValue });
             this.dialogRef.close();
         } catch (err) {
             const errorMessage = ensureNotFalsy((err as RxError).parameters.errors)[0].message;

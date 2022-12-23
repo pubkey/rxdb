@@ -122,7 +122,7 @@ config.parallel('reactive-query.test.js', () => {
 
             // change doc so query does not match
             const newPromiseWait = AsyncTestUtil.waitResolveable(500);
-            await doc.atomicPatch({ firstName: 'foobar' });
+            await doc.incrementalPatch({ firstName: 'foobar' });
             await newPromiseWait.promise;
             assert.strictEqual(values.length, 0);
             querySub.unsubscribe();
@@ -235,7 +235,7 @@ config.parallel('reactive-query.test.js', () => {
 
                     // edit+save doc
                     await promiseWait(20);
-                    await lastDoc.atomicPatch({ firstName: 'foobar' });
+                    await lastDoc.incrementalPatch({ firstName: 'foobar' });
                     await promiseWait(100);
 
                     // query must not have emitted because an unrelated document got changed.
@@ -323,7 +323,7 @@ config.parallel('reactive-query.test.js', () => {
             sub.unsubscribe();
             col.database.destroy();
         });
-        it('ISSUE emitted-order not correct when doing many atomicUpserts', async () => {
+        it('ISSUE emitted-order not correct when doing many incrementalUpserts', async () => {
             if (
                 !config.storage.hasPersistence ||
                 !config.storage.hasMultiInstance
@@ -405,7 +405,7 @@ config.parallel('reactive-query.test.js', () => {
                         state: getData()
                     }))
                     .map(data => {
-                        return db2.crawlstate.atomicUpsert(data);
+                        return db2.crawlstate.incrementalUpsert(data);
                     })
             );
 
@@ -422,7 +422,7 @@ config.parallel('reactive-query.test.js', () => {
                         key: 'registry',
                         state: getData()
                     }))
-                    .map(data => db2.crawlstate.atomicUpsert(data))
+                    .map(data => db2.crawlstate.incrementalUpsert(data))
             );
 
             await AsyncTestUtil.waitUntil(() => {

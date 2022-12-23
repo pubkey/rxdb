@@ -40,7 +40,7 @@ config.parallel('reactive-document.test.js', () => {
                     emittedCollection.push(cE);
                 });
 
-                await doc.atomicPatch({ firstName: newName });
+                await doc.incrementalPatch({ firstName: newName });
                 await AsyncTestUtil.waitUntil(() => {
                     const count = emittedCollection.length;
                     if (count > 1) {
@@ -70,7 +70,7 @@ config.parallel('reactive-document.test.js', () => {
                     valueObj.v = newVal;
                 });
                 const setName = randomCouchString(10);
-                await doc.atomicPatch({ firstName: setName });
+                await doc.incrementalPatch({ firstName: setName });
                 await promiseWait(5);
                 assert.strictEqual(valueObj.v, setName);
                 c.database.destroy();
@@ -85,7 +85,7 @@ config.parallel('reactive-document.test.js', () => {
                     valueObj.v = newVal;
                 });
                 const setName = randomCouchString(10);
-                await doc.atomicPatch({
+                await doc.incrementalPatch({
                     mainSkill: {
                         name: setName,
                         level: 10
@@ -102,7 +102,7 @@ config.parallel('reactive-document.test.js', () => {
                 const sub = doc.get$('firstName').subscribe((newVal: any) => v1 = newVal);
                 await promiseWait(5);
 
-                await doc.atomicPatch({ firstName: 'foobar' });
+                await doc.incrementalPatch({ firstName: 'foobar' });
 
                 let v2;
                 doc.get$('firstName').subscribe((newVal: any) => v2 = newVal);
@@ -214,7 +214,7 @@ config.parallel('reactive-document.test.js', () => {
                 }
             });
 
-            await person.atomicUpdate(state => {
+            await person.incrementalModify(state => {
                 state.age = 50;
                 return state;
             });

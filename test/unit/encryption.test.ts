@@ -244,7 +244,7 @@ config.parallel('encryption.test.ts', () => {
             assert.strictEqual(agent.secret, secret);
             const newSecret = randomCouchString(10);
 
-            await doc.atomicPatch({ secret: newSecret });
+            await doc.incrementalPatch({ secret: newSecret });
             const docNew = await c.findOne().exec(true);
             assert.strictEqual(newSecret, docNew.get('secret'));
             c.database.destroy();
@@ -272,7 +272,7 @@ config.parallel('encryption.test.ts', () => {
             assert.strictEqual(agent.secret.name, secret.name);
             assert.strictEqual(agent.secret.subname, secret.subname);
 
-            await doc.atomicPatch({ secret: newSecret });
+            await doc.incrementalPatch({ secret: newSecret });
             const docNew = await c.enchuman.findOne().exec(true);
 
             assert.strictEqual(newSecret.name, docNew.get('secret.name'));

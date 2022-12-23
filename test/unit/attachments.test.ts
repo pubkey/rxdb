@@ -215,7 +215,7 @@ config.parallel('attachments.test.ts', () => {
                 type: 'text/plain'
             });
 
-            doc = await doc.atomicPatch({
+            doc = await doc.incrementalPatch({
                 age: 7
             });
 

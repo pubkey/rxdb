@@ -193,7 +193,7 @@ config.parallel('hooks.test.js', () => {
                         assert.ok(data);
                         count++;
                     }, false);
-                    await doc.atomicPatch({ firstName: 'foobar' });
+                    await doc.incrementalPatch({ firstName: 'foobar' });
                     assert.strictEqual(count, 1);
                     c.database.destroy();
                 });
@@ -207,7 +207,7 @@ config.parallel('hooks.test.js', () => {
                         assert.ok(data);
                         count++;
                     }, true);
-                    await doc.atomicPatch({ firstName: 'foobar' });
+                    await doc.incrementalPatch({ firstName: 'foobar' });
                     assert.strictEqual(count, 1);
                     c.database.destroy();
                 });
@@ -222,7 +222,7 @@ config.parallel('hooks.test.js', () => {
                         hasRun = true;
                     }, false);
 
-                    await doc.atomicPatch({ firstName: 'foobar' });
+                    await doc.incrementalPatch({ firstName: 'foobar' });
                     assert.ok(hasRun);
                     c.database.destroy();
                 });
@@ -237,7 +237,7 @@ config.parallel('hooks.test.js', () => {
                         await promiseWait(10);
                         hasRun = true;
                     }, false);
-                    await doc.atomicPatch({ firstName: 'foobar' });
+                    await doc.incrementalPatch({ firstName: 'foobar' });
                     assert.ok(hasRun);
                     c.database.destroy();
                 });
@@ -254,7 +254,7 @@ config.parallel('hooks.test.js', () => {
 
                     let failC = 0;
                     try {
-                        await doc.atomicPatch({ firstName: 'foobar' });
+                        await doc.incrementalPatch({ firstName: 'foobar' });
                     } catch (e) {
                         failC++;
                     }
@@ -277,7 +277,7 @@ config.parallel('hooks.test.js', () => {
                         assert.ok(data);
                         count++;
                     }, false);
-                    await doc.atomicPatch({ firstName: 'foobar' });
+                    await doc.incrementalPatch({ firstName: 'foobar' });
                     assert.strictEqual(count, 1);
                     c.database.destroy();
                 });
@@ -291,7 +291,7 @@ config.parallel('hooks.test.js', () => {
                         assert.ok(data);
                         count++;
                     }, true);
-                    await doc.atomicPatch({ firstName: 'foobar' });
+                    await doc.incrementalPatch({ firstName: 'foobar' });
                     assert.strictEqual(count, 1);
                     c.database.destroy();
                 });

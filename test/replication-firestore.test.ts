@@ -155,7 +155,7 @@ describe('replication-firstore.test.js', () => {
 
             // update one
             const doc = await collection.findOne().exec(true);
-            await doc.atomicPatch({ age: 100 });
+            await doc.incrementalPatch({ age: 100 });
             await replicationState.awaitInSync();
             docsOnServer = await getAllDocsOfFirestore(firestoreState);
             assert.strictEqual(docsOnServer.length, 3);
@@ -243,8 +243,8 @@ describe('replication-firstore.test.js', () => {
             const doc2 = await c2.findOne().exec(true);
 
             // make update on both sides
-            await doc1.atomicPatch({ firstName: 'c1' });
-            await doc2.atomicPatch({ firstName: 'c2' });
+            await doc1.incrementalPatch({ firstName: 'c1' });
+            await doc2.incrementalPatch({ firstName: 'c2' });
 
             await syncOnce(c2, firestoreState);
 
