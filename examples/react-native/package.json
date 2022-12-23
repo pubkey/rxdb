@@ -13,10 +13,10 @@
   },
   "devDependencies": {
     "@babel/core": "7.19.3",
-    "babel-preset-expo": "9.2.1",
+    "babel-preset-expo": "9.2.2",
     "expo-cli": "6.0.8",
     "jest": "26.6.3",
-    "jest-expo": "47.0.0",
+    "jest-expo": "47.0.1",
     "react-native-gesture-handler": "2.8.0",
     "react-test-renderer": "18.2.0",
     "rimraf": "3.0.2",
@@ -26,7 +26,7 @@
   "dependencies": {
     "buffer": "6.0.3",
     "cross-fetch": "3.1.5",
-    "expo": "47.0.0",
+    "expo": "47.0.9",
     "global": "4.4.0",
     "random-token": "0.0.8",
     "react": "18.1.0",
