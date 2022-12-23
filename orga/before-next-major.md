@@ -93,7 +93,7 @@ Atm people can pass `RegExp` instances to the queries. These cannot be transfere
 can make problems. We should enforce people using strings as operators instead.
 
 
-## Set `hasPersistence=true` on memory storage
+## Set `hasPersistence=true` on memory storage [DONE]
 
 This will make testing easier. The memory storage should keep data in memory, even when the last instance has been closed.
 
@@ -106,7 +106,7 @@ Atm the _rev field is filled with a hash of the documents data. This is not the 
 Instead we should just use the RxDatabase.token together with the revision height.
 
 
-## Rename document mutation functions
+## Rename document mutation functions [DONE]
 
 Related: https://github.com/pubkey/rxdb/issues/4180
 
