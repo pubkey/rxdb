@@ -3,6 +3,7 @@
 
 <!-- CHANGELOG NEWEST -->
 - ADD [Vite Vanilla Typescript Example](https://github.com/pubkey/rxdb/tree/master/examples/vite-vanilla-ts) Thanks [@SebasG22](https://github.com/SebasG22)
+- ADD [Use exports field in package.json](https://github.com/pubkey/rxdb/pull/4196) Thanks [@SebasG22](https://github.com/SebasG22) and [@swnf](https://github.com/swnf)
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

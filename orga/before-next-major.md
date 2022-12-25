@@ -18,6 +18,7 @@ Related: https://discord.com/channels/969553741705539624/994394488694898840/1036
 ## Use exports field in package.json
 
 See [#3422](https://github.com/pubkey/rxdb/issues/3422)
+Fixed in [#4196](https://github.com/pubkey/rxdb/pull/4196)
 
 Use the [exports](https://webpack.js.org/guides/package-exports/) field in the `package.json` instead of the other fields like `main` or `jsnext:main`.
 Also we no longer need a package.json for each plugin in the `/plugins` folder, instead add the plugins to the exports field.
