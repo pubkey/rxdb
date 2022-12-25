@@ -33,6 +33,247 @@
   "module": "./dist/es/index.js",
   "types": "./dist/types/index.d.ts",
   "sideEffects": false,
+  "exports": {
+    ".": {
+      "types": "./dist/types/index.d.ts",
+      "node": "./dist/lib/index.js",
+      "require": "./dist/lib/index.js",
+      "es2015": "./dist/es/index.js",
+      "default": "./dist/es/index.js"
+    },
+     "./plugins/backup": {
+      "types": "./dist/types/plugins/backup/index.d.ts",
+      "node": "./dist/lib/plugins/backup/index.js",
+      "require": "./dist/lib/plugins/backup/index.js",
+      "es2015": "./dist/es/plugins/backup/index.js",
+      "default": "./dist/es/plugins/backup/index.js"
+    },
+     "./plugins/cleanup": {
+      "types": "./dist/types/plugins/cleanup/index.d.ts",
+      "node": "./dist/lib/plugins/cleanup/index.js",
+      "require": "./dist/lib/plugins/cleanup/index.js",
+      "es2015": "./dist/es/plugins/cleanup/index.js",
+      "default": "./dist/es/plugins/cleanup/index.js"
+    },
+    "./plugins/crdt": {
+      "types": "./dist/types/plugins/crdt/index.d.ts",
+      "node": "./dist/lib/plugins/crdt/index.js",
+      "require": "./dist/lib/plugins/crdt/index.js",
+      "es2015": "./dist/es/plugins/crdt/index.js",
+      "default": "./dist/es/plugins/crdt/index.js"
+    },
+    "./plugins/dev-mode": {
+      "types": "./dist/types/plugins/dev-mode/index.d.ts",
+      "node": "./dist/lib/plugins/dev-mode/index.js",
+      "require": "./dist/lib/plugins/dev-mode/index.js",
+      "es2015": "./dist/es/plugins/dev-mode/index.js",
+      "default": "./dist/es/plugins/dev-mode/index.js"
+    },
+    "./plugins/dexie": {
+      "types": "./dist/types/plugins/dexie/index.d.ts",
+      "node": "./dist/lib/plugins/dexie/index.js",
+      "require": "./dist/lib/plugins/dexie/index.js",
+      "es2015": "./dist/es/plugins/dexie/index.js",
+      "default": "./dist/es/plugins/dexie/index.js"
+    },
+    "./plugins/electron": {
+      "types": "./dist/types/plugins/electron/index.d.ts",
+      "node": "./dist/lib/plugins/electron/index.js",
+      "require": "./dist/lib/plugins/electron/index.js",
+      "es2015": "./dist/es/plugins/electron/index.js",
+      "default": "./dist/es/plugins/electron/index.js"
+    },
+    "./plugins/flutter": {
+      "types": "./dist/types/plugins/flutter/index.d.ts",
+      "node": "./dist/lib/plugins/flutter/index.js",
+      "require": "./dist/lib/plugins/flutter/index.js",
+      "es2015": "./dist/es/plugins/flutter/index.js",
+      "default": "./dist/es/plugins/flutter/index.js"
+    },
+    "./plugins/foundationdb": {
+      "types": "./dist/types/plugins/foundationdb/index.d.ts",
+      "node": "./dist/lib/plugins/foundationdb/index.js",
+      "require": "./dist/lib/plugins/foundationdb/index.js",
+      "es2015": "./dist/es/plugins/foundationdb/index.js",
+      "default": "./dist/es/plugins/foundationdb/index.js"
+    },
+    "./plugins/local-documents": {
+      "types": "./dist/types/plugins/local-documents/index.d.ts",
+      "node": "./dist/lib/plugins/local-documents/index.js",
+      "require": "./dist/lib/plugins/local-documents/index.js",
+      "es2015": "./dist/es/plugins/local-documents/index.js",
+      "default": "./dist/es/plugins/local-documents/index.js"
+    },
+    "./plugins/lokijs": {
+      "types": "./dist/types/plugins/lokijs/index.d.ts",
+      "node": "./dist/lib/plugins/lokijs/index.js",
+      "require": "./dist/lib/plugins/lokijs/index.js",
+      "es2015": "./dist/es/plugins/lokijs/index.js",
+      "default": "./dist/es/plugins/lokijs/index.js"
+    },
+    "./plugins/memory": {
+      "types": "./dist/types/plugins/memory/index.d.ts",
+      "node": "./dist/lib/plugins/memory/index.js",
+      "require": "./dist/lib/plugins/memory/index.js",
+      "es2015": "./dist/es/plugins/memory/index.js",
+      "default": "./dist/es/plugins/memory/index.js"
+    },
+    "./plugins/migration": {
+      "types": "./dist/types/plugins/migration/index.d.ts",
+      "node": "./dist/lib/plugins/migration/index.js",
+      "require": "./dist/lib/plugins/migration/index.js",
+      "es2015": "./dist/es/plugins/migration/index.js",
+      "default": "./dist/es/plugins/migration/index.js"
+    },
+    "./plugins/pouchdb": {
+      "types": "./dist/types/plugins/pouchdb/index.d.ts",
+      "node": "./dist/lib/plugins/pouchdb/index.js",
+      "require": "./dist/lib/plugins/pouchdb/index.js",
+      "es2015": "./dist/es/plugins/pouchdb/index.js",
+      "default": "./dist/es/plugins/pouchdb/index.js"
+    },
+    "./plugins/query-builder": {
+      "types": "./dist/types/plugins/query-builder/index.d.ts",
+      "node": "./dist/lib/plugins/query-builder/index.js",
+      "require": "./dist/lib/plugins/query-builder/index.js",
+      "es2015": "./dist/es/plugins/query-builder/index.js",
+      "default": "./dist/es/plugins/query-builder/index.js"
+    },
+    "./plugins/replication": {
+      "types": "./dist/types/plugins/replication/index.d.ts",
+      "node": "./dist/lib/plugins/replication/index.js",
+      "require": "./dist/lib/plugins/replication/index.js",
+      "es2015": "./dist/es/plugins/replication/index.js",
+      "default": "./dist/es/plugins/replication/index.js"
+    },
+    "./plugins/replication-couchdb-new": {
+      "types": "./dist/types/plugins/replication-couchdb-new/index.d.ts",
+      "node": "./dist/lib/plugins/replication-couchdb-new/index.js",
+      "require": "./dist/lib/plugins/replication-couchdb-new/index.js",
+      "es2015": "./dist/es/plugins/replication-couchdb-new/index.js",
+      "default": "./dist/es/plugins/replication-couchdb-new/index.js"
+    },
+    "./plugins/replication-firestore": {
+      "types": "./dist/types/plugins/replication-firestore/index.d.ts",
+      "node": "./dist/lib/plugins/replication-firestore/index.js",
+      "require": "./dist/lib/plugins/replication-firestore/index.js",
+      "es2015": "./dist/es/plugins/replication-firestore/index.js",
+      "default": "./dist/es/plugins/replication-firestore/index.js"
+    },
+    "./plugins/replication-graphql": {
+      "types": "./dist/types/plugins/replication-graphql/index.d.ts",
+      "node": "./dist/lib/plugins/replication-graphql/index.js",
+      "require": "./dist/lib/plugins/replication-graphql/index.js",
+      "es2015": "./dist/es/plugins/replication-graphql/index.js",
+      "default": "./dist/es/plugins/replication-graphql/index.js"
+    },
+    "./plugins/replication-p2p": {
+      "types": "./dist/types/plugins/replication-p2p/index.d.ts",
+      "node": "./dist/lib/plugins/replication-p2p/index.js",
+      "require": "./dist/lib/plugins/replication-p2p/index.js",
+      "es2015": "./dist/es/plugins/replication-p2p/index.js",
+      "default": "./dist/es/plugins/replication-p2p/index.js"
+    },
+    "./plugins/replication-websocket": {
+      "types": "./dist/types/plugins/replication-websocket/index.d.ts",
+      "node": "./dist/lib/plugins/replication-websocket/index.js",
+      "require": "./dist/lib/plugins/replication-websocket/index.js",
+      "es2015": "./dist/es/plugins/replication-websocket/index.js",
+      "default": "./dist/es/plugins/replication-websocket/index.js"
+    },
+    "./plugins/storage-remote": {
+      "types": "./dist/types/plugins/storage-remote/index.d.ts",
+      "node": "./dist/lib/plugins/storage-remote/index.js",
+      "require": "./dist/lib/plugins/storage-remote/index.js",
+      "es2015": "./dist/es/plugins/storage-remote/index.js",
+      "default": "./dist/es/plugins/storage-remote/index.js"
+    },
+    "./plugins/worker": {
+      "types": "./dist/types/plugins/worker/index.d.ts",
+      "node": "./dist/lib/plugins/worker/index.js",
+      "require": "./dist/lib/plugins/worker/index.js",
+      "es2015": "./dist/es/plugins/worker/index.js",
+      "default": "./dist/es/plugins/worker/index.js"
+    },
+    "./plugins/attachments": {
+      "types": "./dist/types/plugins/attachments.d.ts",
+      "node": "./dist/lib/plugins/attachments.js",
+      "require": "./dist/lib/plugins/attachments.js",
+      "es2015": "./dist/es/plugins/attachments.js",
+      "default": "./dist/es/plugins/attachments.js"
+    },
+    "./plugins/encryption": {
+      "types": "./dist/types/plugins/encryption.d.ts",
+      "node": "./dist/lib/plugins/encryption.js",
+      "require": "./dist/lib/plugins/encryption.js",
+      "es2015": "./dist/es/plugins/encryption.js",
+      "default": "./dist/es/plugins/encryption.js"
+    },
+    "./plugins/json-dump": {
+      "types": "./dist/types/plugins/json-dump.d.ts",
+      "node": "./dist/lib/plugins/json-dump.js",
+      "require": "./dist/lib/plugins/json-dump.js",
+      "es2015": "./dist/es/plugins/json-dump.js",
+      "default": "./dist/es/plugins/json-dump.js"
+    },
+    "./plugins/key-compression": {
+      "types": "./dist/types/plugins/key-compression.d.ts",
+      "node": "./dist/lib/plugins/key-compression.js",
+      "require": "./dist/lib/plugins/key-compression.js",
+      "es2015": "./dist/es/plugins/key-compression.js",
+      "default": "./dist/es/plugins/key-compression.js"
+    },
+    "./plugins/leader-election": {
+      "types": "./dist/types/plugins/leader-election.d.ts",
+      "node": "./dist/lib/plugins/leader-election.js",
+      "require": "./dist/lib/plugins/leader-election.js",
+      "es2015": "./dist/es/plugins/leader-election.js",
+      "default": "./dist/es/plugins/leader-election.js"
+    },
+    "./plugins/replication-couchdb": {
+      "types": "./dist/types/plugins/replication-couchdb.d.ts",
+      "node": "./dist/lib/plugins/replication-couchdb.js",
+      "require": "./dist/lib/plugins/replication-couchdb.js",
+      "es2015": "./dist/es/plugins/replication-couchdb.js",
+      "default": "./dist/es/plugins/replication-couchdb.js"
+    },
+    "./plugins/server-couchdb": {
+      "types": "./dist/types/plugins/server-couchdb.d.ts",
+      "node": "./dist/lib/plugins/server-couchdb.js",
+      "require": "./dist/lib/plugins/server-couchdb.js",
+      "es2015": "./dist/es/plugins/server-couchdb.js",
+      "default": "./dist/es/plugins/server-couchdb.js"
+    },
+     "./plugins/update":{
+      "types": "./dist/types/plugins/update.d.ts",
+      "node": "./dist/lib/plugins/update.js",
+      "require": "./dist/lib/plugins/update.js",
+      "es2015": "./dist/es/plugins/update.js",
+      "default": "./dist/es/plugins/update.js" 
+    },
+    "./plugins/validate-ajv": {
+      "types": "./dist/types/plugins/validate-ajv.d.ts",
+      "node": "./dist/lib/plugins/validate-ajv.js",
+      "require": "./dist/lib/plugins/validate-ajv.js",
+      "es2015": "./dist/es/plugins/validate-ajv.js",
+      "default": "./dist/es/plugins/validate-ajv.js"
+    },
+    "./plugins/validate-is-my-json-valid": {
+      "types": "./dist/types/plugins/validate-is-my-json-valid.d.ts",
+      "node": "./dist/lib/plugins/validate-is-my-json-valid.js",
+      "require": "./dist/lib/plugins/validate-is-my-json-valid.js",
+      "es2015": "./dist/es/plugins/validate-is-my-json-valid.js",
+      "default": "./dist/es/plugins/validate-is-my-json-valid.js"
+    },
+    "./plugins/validate-z-schema": {
+      "types": "./dist/types/plugins/validate-z-schema.d.ts",
+      "node": "./dist/lib/plugins/validate-z-schema.js",
+      "require": "./dist/lib/plugins/validate-z-schema.js",
+      "es2015": "./dist/es/plugins/validate-z-schema.js",
+      "default": "./dist/es/plugins/validate-z-schema.js"
+    },   
+    "./package.json": "./package.json"
+  },
   "scripts": {
     "postinstall": "node scripts/postinstall.js || echo \"ignore\"",
     "test": "npm run test:node && npm run test:browser",
