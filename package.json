@@ -41,14 +41,14 @@
       "es2015": "./dist/es/index.js",
       "default": "./dist/es/index.js"
     },
-     "./plugins/backup": {
+    "./plugins/backup": {
       "types": "./dist/types/plugins/backup/index.d.ts",
       "node": "./dist/lib/plugins/backup/index.js",
       "require": "./dist/lib/plugins/backup/index.js",
       "es2015": "./dist/es/plugins/backup/index.js",
       "default": "./dist/es/plugins/backup/index.js"
     },
-     "./plugins/cleanup": {
+    "./plugins/cleanup": {
       "types": "./dist/types/plugins/cleanup/index.d.ts",
       "node": "./dist/lib/plugins/cleanup/index.js",
       "require": "./dist/lib/plugins/cleanup/index.js",
@@ -196,82 +196,82 @@
       "default": "./dist/es/plugins/worker/index.js"
     },
     "./plugins/attachments": {
-      "types": "./dist/types/plugins/attachments.d.ts",
-      "node": "./dist/lib/plugins/attachments.js",
-      "require": "./dist/lib/plugins/attachments.js",
-      "es2015": "./dist/es/plugins/attachments.js",
-      "default": "./dist/es/plugins/attachments.js"
+      "types": "./dist/types/plugins/attachments/index.d.ts",
+      "node": "./dist/lib/plugins/attachments/index.js",
+      "require": "./dist/lib/plugins/attachments/index.js",
+      "es2015": "./dist/es/plugins/attachments/index.js",
+      "default": "./dist/es/plugins/attachments/index.js"
     },
     "./plugins/encryption": {
-      "types": "./dist/types/plugins/encryption.d.ts",
-      "node": "./dist/lib/plugins/encryption.js",
-      "require": "./dist/lib/plugins/encryption.js",
-      "es2015": "./dist/es/plugins/encryption.js",
-      "default": "./dist/es/plugins/encryption.js"
+      "types": "./dist/types/plugins/encryption/index.d.ts",
+      "node": "./dist/lib/plugins/encryption/index.js",
+      "require": "./dist/lib/plugins/encryption/index.js",
+      "es2015": "./dist/es/plugins/encryption/index.js",
+      "default": "./dist/es/plugins/encryption/index.js"
     },
     "./plugins/json-dump": {
-      "types": "./dist/types/plugins/json-dump.d.ts",
-      "node": "./dist/lib/plugins/json-dump.js",
-      "require": "./dist/lib/plugins/json-dump.js",
-      "es2015": "./dist/es/plugins/json-dump.js",
-      "default": "./dist/es/plugins/json-dump.js"
+      "types": "./dist/types/plugins/json-dump/index.d.ts",
+      "node": "./dist/lib/plugins/json-dump/index.js",
+      "require": "./dist/lib/plugins/json-dump/index.js",
+      "es2015": "./dist/es/plugins/json-dump/index.js",
+      "default": "./dist/es/plugins/json-dump/index.js"
     },
     "./plugins/key-compression": {
-      "types": "./dist/types/plugins/key-compression.d.ts",
-      "node": "./dist/lib/plugins/key-compression.js",
-      "require": "./dist/lib/plugins/key-compression.js",
-      "es2015": "./dist/es/plugins/key-compression.js",
-      "default": "./dist/es/plugins/key-compression.js"
+      "types": "./dist/types/plugins/key-compression/index.d.ts",
+      "node": "./dist/lib/plugins/key-compression/index.js",
+      "require": "./dist/lib/plugins/key-compression/index.js",
+      "es2015": "./dist/es/plugins/key-compression/index.js",
+      "default": "./dist/es/plugins/key-compression/index.js"
     },
     "./plugins/leader-election": {
-      "types": "./dist/types/plugins/leader-election.d.ts",
-      "node": "./dist/lib/plugins/leader-election.js",
-      "require": "./dist/lib/plugins/leader-election.js",
-      "es2015": "./dist/es/plugins/leader-election.js",
-      "default": "./dist/es/plugins/leader-election.js"
+      "types": "./dist/types/plugins/leader-election/index.d.ts",
+      "node": "./dist/lib/plugins/leader-election/index.js",
+      "require": "./dist/lib/plugins/leader-election/index.js",
+      "es2015": "./dist/es/plugins/leader-election/index.js",
+      "default": "./dist/es/plugins/leader-election/index.js"
     },
     "./plugins/replication-couchdb": {
-      "types": "./dist/types/plugins/replication-couchdb.d.ts",
-      "node": "./dist/lib/plugins/replication-couchdb.js",
-      "require": "./dist/lib/plugins/replication-couchdb.js",
-      "es2015": "./dist/es/plugins/replication-couchdb.js",
-      "default": "./dist/es/plugins/replication-couchdb.js"
+      "types": "./dist/types/plugins/replication-couchdb/index.d.ts",
+      "node": "./dist/lib/plugins/replication-couchdb/index.js",
+      "require": "./dist/lib/plugins/replication-couchdb/index.js",
+      "es2015": "./dist/es/plugins/replication-couchdb/index.js",
+      "default": "./dist/es/plugins/replication-couchdb/index.js"
     },
     "./plugins/server-couchdb": {
-      "types": "./dist/types/plugins/server-couchdb.d.ts",
-      "node": "./dist/lib/plugins/server-couchdb.js",
-      "require": "./dist/lib/plugins/server-couchdb.js",
-      "es2015": "./dist/es/plugins/server-couchdb.js",
-      "default": "./dist/es/plugins/server-couchdb.js"
+      "types": "./dist/types/plugins/server-couchdb/index.d.ts",
+      "node": "./dist/lib/plugins/server-couchdb/index.js",
+      "require": "./dist/lib/plugins/server-couchdb/index.js",
+      "es2015": "./dist/es/plugins/server-couchdb/index.js",
+      "default": "./dist/es/plugins/server-couchdb/index.js"
     },
-     "./plugins/update":{
-      "types": "./dist/types/plugins/update.d.ts",
-      "node": "./dist/lib/plugins/update.js",
-      "require": "./dist/lib/plugins/update.js",
-      "es2015": "./dist/es/plugins/update.js",
-      "default": "./dist/es/plugins/update.js" 
+    "./plugins/update": {
+      "types": "./dist/types/plugins/update/index.d.ts",
+      "node": "./dist/lib/plugins/update/index.js",
+      "require": "./dist/lib/plugins/update/index.js",
+      "es2015": "./dist/es/plugins/update/index.js",
+      "default": "./dist/es/plugins/update/index.js"
     },
     "./plugins/validate-ajv": {
-      "types": "./dist/types/plugins/validate-ajv.d.ts",
-      "node": "./dist/lib/plugins/validate-ajv.js",
-      "require": "./dist/lib/plugins/validate-ajv.js",
-      "es2015": "./dist/es/plugins/validate-ajv.js",
-      "default": "./dist/es/plugins/validate-ajv.js"
+      "types": "./dist/types/plugins/validate-ajv/index.d.ts",
+      "node": "./dist/lib/plugins/validate-ajv/index.js",
+      "require": "./dist/lib/plugins/validate-ajv/index.js",
+      "es2015": "./dist/es/plugins/validate-ajv/index.js",
+      "default": "./dist/es/plugins/validate-ajv/index.js"
     },
     "./plugins/validate-is-my-json-valid": {
-      "types": "./dist/types/plugins/validate-is-my-json-valid.d.ts",
-      "node": "./dist/lib/plugins/validate-is-my-json-valid.js",
-      "require": "./dist/lib/plugins/validate-is-my-json-valid.js",
-      "es2015": "./dist/es/plugins/validate-is-my-json-valid.js",
-      "default": "./dist/es/plugins/validate-is-my-json-valid.js"
+      "types": "./dist/types/plugins/validate-is-my-json-valid/index.d.ts",
+      "node": "./dist/lib/plugins/validate-is-my-json-valid/index.js",
+      "require": "./dist/lib/plugins/validate-is-my-json-valid/index.js",
+      "es2015": "./dist/es/plugins/validate-is-my-json-valid/index.js",
+      "default": "./dist/es/plugins/validate-is-my-json-valid/index.js"
     },
     "./plugins/validate-z-schema": {
-      "types": "./dist/types/plugins/validate-z-schema.d.ts",
-      "node": "./dist/lib/plugins/validate-z-schema.js",
-      "require": "./dist/lib/plugins/validate-z-schema.js",
-      "es2015": "./dist/es/plugins/validate-z-schema.js",
-      "default": "./dist/es/plugins/validate-z-schema.js"
-    },   
+      "types": "./dist/types/plugins/validate-z-schema/index.d.ts",
+      "node": "./dist/lib/plugins/validate-z-schema/index.js",
+      "require": "./dist/lib/plugins/validate-z-schema/index.js",
+      "es2015": "./dist/es/plugins/validate-z-schema/index.js",
+      "default": "./dist/es/plugins/validate-z-schema/index.js"
+    },
     "./package.json": "./package.json"
   },
   "scripts": {
@@ -352,7 +352,8 @@
     "transpile": "node scripts/transpile.js",
     "build:es": "rimraf -rf dist/es && cross-env NODE_ENV=es6 babel src --out-dir dist/es --source-maps --extensions \".ts,.js\"",
     "build:types": "rimraf -rf ./dist/types && tsc --project ./config/tsconfig.types.json && cp -r ./src/types ./dist/types/types",
-    "build": "npm run clear && concurrently \"npm run transpile\" \"npm run build:workers\" \"npm run build:es\" \"npm run build:types\" && browserify dist/lib/browserify.index.js > dist/rxdb.browserify.js && terser --compress --mangle --output dist/rxdb.browserify.min.js -- dist/rxdb.browserify.js",
+    "build": "npm run clear && concurrently \"npm run transpile\" \"npm run build:workers\" \"npm run build:es\" \"npm run build:types\" \"npm run build:plugins\" && browserify dist/lib/browserify.index.js > dist/rxdb.browserify.js && terser --compress --mangle --output dist/rxdb.browserify.min.js -- dist/rxdb.browserify.js",
+    "build:plugins": "node ./scripts/generate-plugins-package-json.js",
     "build:min": "npm run transpile && browserify dist/lib/browserify.index.js > dist/rxdb.browserify.js && terser --compress --mangle --output dist/rxdb.browserify.min.js -- dist/rxdb.browserify.js",
     "build:workers": "npx webpack build --config ./src/plugins/worker/workers/webpack.config.js",
     "build:webpack": "npm run build && cross-env NODE_ENV=build webpack --config ./config/webpack.config.js",
