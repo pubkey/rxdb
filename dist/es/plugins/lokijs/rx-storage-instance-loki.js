@@ -7,7 +7,7 @@ import { categorizeBulkWriteRows, getNewestOfDocumentStates } from '../../rx-sto
 import { addRxStorageMultiInstanceSupport, removeBroadcastChannelReference } from '../../rx-storage-multiinstance';
 export var createLokiStorageInstance = function createLokiStorageInstance(storage, params, databaseSettings) {
   try {
-    var _temp5 = function _temp5() {
+    var _temp3 = function _temp3() {
       var instance = new RxStorageInstanceLoki(params.databaseInstanceToken, storage, params.databaseName, params.collectionName, params.schema, _internals, params.options, databaseSettings);
       addRxStorageMultiInstanceSupport(RX_STORAGE_NAME_LOKIJS, params, instance, _internals.leaderElector ? _internals.leaderElector.broadcastChannel : undefined);
       if (params.multiInstance) {
@@ -38,7 +38,7 @@ export var createLokiStorageInstance = function createLokiStorageInstance(storag
     };
     var _internals = {};
     var broadcastChannelRefObject = {};
-    var _temp6 = function () {
+    var _temp2 = function () {
       if (params.multiInstance) {
         var leaderElector = getLokiLeaderElector(params.databaseInstanceToken, broadcastChannelRefObject, params.databaseName);
         _internals.leaderElector = leaderElector;
@@ -48,7 +48,7 @@ export var createLokiStorageInstance = function createLokiStorageInstance(storag
         return Promise.resolve(_internals.localState).then(function () {});
       }
     }();
-    return Promise.resolve(_temp6 && _temp6.then ? _temp6.then(_temp5) : _temp5(_temp6));
+    return Promise.resolve(_temp2 && _temp2.then ? _temp2.then(_temp3) : _temp3(_temp2));
   } catch (e) {
     return Promise.reject(e);
   }
@@ -148,7 +148,7 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
   var _proto = RxStorageInstanceLoki.prototype;
   _proto.bulkWrite = function bulkWrite(documentWrites, context) {
     try {
-      var _this3 = this;
+      var _this2 = this;
       if (documentWrites.length === 0) {
         throw newRxError('P2', {
           args: {
@@ -156,9 +156,9 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
           }
         });
       }
-      return Promise.resolve(mustUseLocalState(_this3)).then(function (localState) {
+      return Promise.resolve(mustUseLocalState(_this2)).then(function (localState) {
         if (!localState) {
-          return requestRemoteInstance(_this3, 'bulkWrite', [documentWrites]);
+          return requestRemoteInstance(_this2, 'bulkWrite', [documentWrites]);
         }
         var ret = {
           success: {},
@@ -167,22 +167,22 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
         var docsInDb = new Map();
         var docsInDbWithLokiKey = new Map();
         documentWrites.forEach(function (writeRow) {
-          var id = writeRow.document[_this3.primaryPath];
-          var documentInDb = localState.collection.by(_this3.primaryPath, id);
+          var id = writeRow.document[_this2.primaryPath];
+          var documentInDb = localState.collection.by(_this2.primaryPath, id);
           if (documentInDb) {
             docsInDbWithLokiKey.set(id, documentInDb);
             docsInDb.set(id, stripLokiKey(documentInDb));
           }
         });
-        var categorized = categorizeBulkWriteRows(_this3, _this3.primaryPath, docsInDb, documentWrites, context);
+        var categorized = categorizeBulkWriteRows(_this2, _this2.primaryPath, docsInDb, documentWrites, context);
         ret.error = categorized.errors;
         categorized.bulkInsertDocs.forEach(function (writeRow) {
-          var docId = writeRow.document[_this3.primaryPath];
+          var docId = writeRow.document[_this2.primaryPath];
           localState.collection.insert(flatClone(writeRow.document));
           ret.success[docId] = writeRow.document;
         });
         categorized.bulkUpdateDocs.forEach(function (writeRow) {
-          var docId = writeRow.document[_this3.primaryPath];
+          var docId = writeRow.document[_this2.primaryPath];
           var documentInDbWithLokiKey = getFromMapOrThrow(docsInDbWithLokiKey, docId);
           var writeDoc = Object.assign({}, writeRow.document, {
             $loki: documentInDbWithLokiKey.$loki
@@ -192,12 +192,12 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
         });
         localState.databaseState.saveQueue.addWrite();
         if (categorized.eventBulk.events.length > 0) {
-          var lastState = getNewestOfDocumentStates(_this3.primaryPath, Object.values(ret.success));
+          var lastState = getNewestOfDocumentStates(_this2.primaryPath, Object.values(ret.success));
           categorized.eventBulk.checkpoint = {
-            id: lastState[_this3.primaryPath],
+            id: lastState[_this2.primaryPath],
             lwt: lastState._meta.lwt
           };
-          _this3.changes$.next(categorized.eventBulk);
+          _this2.changes$.next(categorized.eventBulk);
         }
         return ret;
       });
@@ -207,14 +207,14 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
   };
   _proto.findDocumentsById = function findDocumentsById(ids, deleted) {
     try {
-      var _this5 = this;
-      return Promise.resolve(mustUseLocalState(_this5)).then(function (localState) {
+      var _this3 = this;
+      return Promise.resolve(mustUseLocalState(_this3)).then(function (localState) {
         if (!localState) {
-          return requestRemoteInstance(_this5, 'findDocumentsById', [ids, deleted]);
+          return requestRemoteInstance(_this3, 'findDocumentsById', [ids, deleted]);
         }
         var ret = {};
         ids.forEach(function (id) {
-          var documentInDb = localState.collection.by(_this5.primaryPath, id);
+          var documentInDb = localState.collection.by(_this3.primaryPath, id);
           if (documentInDb && (!documentInDb._deleted || deleted)) {
             ret[id] = stripLokiKey(documentInDb);
           }
@@ -227,14 +227,14 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
   };
   _proto.query = function query(preparedQuery) {
     try {
-      var _this7 = this;
-      return Promise.resolve(mustUseLocalState(_this7)).then(function (localState) {
+      var _this4 = this;
+      return Promise.resolve(mustUseLocalState(_this4)).then(function (localState) {
         if (!localState) {
-          return requestRemoteInstance(_this7, 'query', [preparedQuery]);
+          return requestRemoteInstance(_this4, 'query', [preparedQuery]);
         }
         var query = localState.collection.chain().find(preparedQuery.selector);
         if (preparedQuery.sort) {
-          query = query.sort(getLokiSortComparator(_this7.schema, preparedQuery));
+          query = query.sort(getLokiSortComparator(_this4.schema, preparedQuery));
         }
 
         /**
@@ -260,8 +260,8 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
   };
   _proto.count = function count(preparedQuery) {
     try {
-      var _this9 = this;
-      return Promise.resolve(_this9.query(preparedQuery)).then(function (result) {
+      var _this5 = this;
+      return Promise.resolve(_this5.query(preparedQuery)).then(function (result) {
         return {
           count: result.documents.length,
           mode: 'fast'
@@ -276,20 +276,20 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
   };
   _proto.getChangedDocumentsSince = function getChangedDocumentsSince(limit, checkpoint) {
     try {
-      var _this11 = this;
-      return Promise.resolve(mustUseLocalState(_this11)).then(function (localState) {
+      var _this6 = this;
+      return Promise.resolve(mustUseLocalState(_this6)).then(function (localState) {
         if (!localState) {
-          return requestRemoteInstance(_this11, 'getChangedDocumentsSince', [limit, checkpoint]);
+          return requestRemoteInstance(_this6, 'getChangedDocumentsSince', [limit, checkpoint]);
         }
         var sinceLwt = checkpoint ? checkpoint.lwt : RX_META_LWT_MINIMUM;
         var query = localState.collection.chain().find({
           '_meta.lwt': {
             $gte: sinceLwt
           }
-        }).sort(getSortDocumentsByLastWriteTimeComparator(_this11.primaryPath));
+        }).sort(getSortDocumentsByLastWriteTimeComparator(_this6.primaryPath));
         var changedDocs = query.data();
         var first = changedDocs[0];
-        if (checkpoint && first && first[_this11.primaryPath] === checkpoint.id && first._meta.lwt === checkpoint.lwt) {
+        if (checkpoint && first && first[_this6.primaryPath] === checkpoint.id && first._meta.lwt === checkpoint.lwt) {
           changedDocs.shift();
         }
         changedDocs = changedDocs.slice(0, limit);
@@ -299,7 +299,7 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
             return stripLokiKey(docData);
           }),
           checkpoint: lastDoc ? {
-            id: lastDoc[_this11.primaryPath],
+            id: lastDoc[_this6.primaryPath],
             lwt: lastDoc._meta.lwt
           } : checkpoint ? checkpoint : {
             id: '',
@@ -316,10 +316,10 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
   };
   _proto.cleanup = function cleanup(minimumDeletedTime) {
     try {
-      var _this13 = this;
-      return Promise.resolve(mustUseLocalState(_this13)).then(function (localState) {
+      var _this7 = this;
+      return Promise.resolve(mustUseLocalState(_this7)).then(function (localState) {
         if (!localState) {
-          return requestRemoteInstance(_this13, 'cleanup', [minimumDeletedTime]);
+          return requestRemoteInstance(_this7, 'cleanup', [minimumDeletedTime]);
         }
         var deleteAmountPerRun = 10;
         var maxDeletionTime = now() - minimumDeletedTime;
@@ -342,39 +342,39 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
   };
   _proto.close = function close() {
     try {
-      var _this15 = this;
-      if (_this15.closed) {
+      var _this8 = this;
+      if (_this8.closed) {
         return Promise.reject(new Error('already closed'));
       }
-      _this15.closed = true;
-      _this15.changes$.complete();
-      OPEN_LOKIJS_STORAGE_INSTANCES["delete"](_this15);
-      var _temp2 = function () {
-        if (_this15.internals.localState) {
-          return Promise.resolve(_this15.internals.localState).then(function (localState) {
-            return Promise.resolve(getLokiDatabase(_this15.databaseName, _this15.databaseSettings)).then(function (dbState) {
+      _this8.closed = true;
+      _this8.changes$.complete();
+      OPEN_LOKIJS_STORAGE_INSTANCES["delete"](_this8);
+      var _temp = function () {
+        if (_this8.internals.localState) {
+          return Promise.resolve(_this8.internals.localState).then(function (localState) {
+            return Promise.resolve(getLokiDatabase(_this8.databaseName, _this8.databaseSettings)).then(function (dbState) {
               return Promise.resolve(dbState.saveQueue.run()).then(function () {
-                return Promise.resolve(closeLokiCollections(_this15.databaseName, [localState.collection])).then(function () {});
+                return Promise.resolve(closeLokiCollections(_this8.databaseName, [localState.collection])).then(function () {});
               });
             });
           });
         }
       }();
-      return Promise.resolve(_temp2 && _temp2.then ? _temp2.then(function () {}) : void 0);
+      return Promise.resolve(_temp && _temp.then ? _temp.then(function () {}) : void 0);
     } catch (e) {
       return Promise.reject(e);
     }
   };
   _proto.remove = function remove() {
     try {
-      var _this17 = this;
-      return Promise.resolve(mustUseLocalState(_this17)).then(function (localState) {
+      var _this9 = this;
+      return Promise.resolve(mustUseLocalState(_this9)).then(function (localState) {
         if (!localState) {
-          return requestRemoteInstance(_this17, 'remove', []);
+          return requestRemoteInstance(_this9, 'remove', []);
         }
         localState.databaseState.database.removeCollection(localState.collection.name);
         return Promise.resolve(localState.databaseState.saveQueue.run()).then(function () {
-          return _this17.close();
+          return _this9.close();
         });
       });
     } catch (e) {

@@ -175,7 +175,7 @@ export function startReplicationUpstream(state) {
       });
       return Promise.resolve(state.checkpointQueue).then(function (lastCheckpoint) {
         var _interrupt = false;
-        function _temp13() {
+        function _temp11() {
           /**
            * If we had conflicts during the initial sync,
            * it means that we likely have new writes to the fork
@@ -185,18 +185,18 @@ export function startReplicationUpstream(state) {
             var hadConflicts = resolvedPromises.find(function (r) {
               return !!r;
             });
-            var _temp11 = function () {
+            var _temp9 = function () {
               if (hadConflicts) {
                 return Promise.resolve(upstreamInitialSync()).then(function () {});
               } else if (!state.firstSyncDone.up.getValue()) {
                 state.firstSyncDone.up.next(true);
               }
             }();
-            if (_temp11 && _temp11.then) return _temp11.then(function () {});
+            if (_temp9 && _temp9.then) return _temp9.then(function () {});
           });
         }
         var promises = [];
-        var _temp12 = _for(function () {
+        var _temp10 = _for(function () {
           return !_interrupt && !state.events.canceled.getValue();
         }, void 0, function () {
           initialSyncStartTime = timer++;
@@ -209,7 +209,7 @@ export function startReplicationUpstream(state) {
             promises.push(persistToMaster(upResult.documents, ensureNotFalsy(lastCheckpoint)));
           });
         });
-        return _temp12 && _temp12.then ? _temp12.then(_temp13) : _temp13(_temp12);
+        return _temp10 && _temp10.then ? _temp10.then(_temp11) : _temp11(_temp10);
       });
     } catch (e) {
       return Promise.reject(e);
@@ -327,8 +327,8 @@ export function startReplicationUpstream(state) {
           var forkStateById = {};
           return Promise.resolve(Promise.all(docIds.map(function (docId) {
             try {
-              var _temp9 = function _temp9(_state$input$conflict) {
-                if (_temp10 && _state$input$conflict.isEqual ||
+              var _temp8 = function _temp8(_state$input$conflict) {
+                if (_temp7 && _state$input$conflict.isEqual ||
                 /**
                  * If the master works with _rev fields,
                  * we use that to check if our current doc state
@@ -336,7 +336,7 @@ export function startReplicationUpstream(state) {
                  */
 
                 assumedMasterDoc && assumedMasterDoc.docData._rev && parseRevision(fullDocData._rev).height === fullDocData._meta[state.input.identifier]) {
-                  _exit2 = true;
+                  _exit = true;
                   return;
                 }
                 writeRowsToMasterIds.push(docId);
@@ -346,7 +346,7 @@ export function startReplicationUpstream(state) {
                 };
                 writeRowsToMeta[docId] = getMetaWriteRow(state, docData, assumedMasterDoc ? assumedMasterDoc.metaDocument : undefined);
               };
-              var _exit2 = false;
+              var _exit = false;
               var fullDocData = upDocsById[docId];
               forkStateById[docId] = fullDocData;
               var docData = writeDocToDocState(fullDocData);
@@ -357,13 +357,13 @@ export function startReplicationUpstream(state) {
                * fork state, we can assume that the document state is already
                * replicated.
                */
-              var _temp10 = assumedMasterDoc &&
+              var _temp7 = assumedMasterDoc &&
               // if the isResolvedConflict is correct, we do not have to compare the documents.
               assumedMasterDoc.metaDocument.isResolvedConflict !== fullDocData._rev;
-              return Promise.resolve(_temp10 ? Promise.resolve(state.input.conflictHandler({
+              return Promise.resolve(_temp7 ? Promise.resolve(state.input.conflictHandler({
                 realMasterState: assumedMasterDoc.docData,
                 newDocumentState: docData
-              }, 'upstream-check-if-equal')).then(_temp9) : _temp9(_temp10));
+              }, 'upstream-check-if-equal')).then(_temp8) : _temp8(_temp7));
             } catch (e) {
               return Promise.reject(e);
             }

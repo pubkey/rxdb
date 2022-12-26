@@ -242,7 +242,7 @@ function syncFirestore(options) {
     replicationPrimitivesPull = {
       handler: function handler(lastPulledCheckpoint, batchSize) {
         try {
-          var _temp3 = function _temp3() {
+          var _temp2 = function _temp2() {
             if (useDocs.length === 0) {
               return {
                 checkpoint: lastPulledCheckpoint,
@@ -274,7 +274,7 @@ function syncFirestore(options) {
           }
           var mustsReRun = true;
           var useDocs = [];
-          var _temp4 = _for(function () {
+          var _temp = _for(function () {
             return !!mustsReRun;
           }, void 0, function () {
             /**
@@ -310,7 +310,7 @@ function syncFirestore(options) {
               })).then(function () {});
             });
           });
-          return Promise.resolve(_temp4 && _temp4.then ? _temp4.then(_temp3) : _temp3(_temp4));
+          return Promise.resolve(_temp && _temp.then ? _temp.then(_temp2) : _temp2(_temp));
         } catch (e) {
           return Promise.reject(e);
         }
@@ -362,8 +362,8 @@ function syncFirestore(options) {
                   var hasWrite = false;
                   return Promise.resolve(Promise.all(Object.entries(writeRowsById).map(function (_ref2) {
                     try {
-                      var _temp7 = function _temp7(_collection$conflictH) {
-                        if (docInDb && (_writeRow$assumedMast2 || _collection$conflictH.isEqual === false)) {
+                      var _temp4 = function _temp4(_collection$conflictH) {
+                        if (docInDb && (_writeRow$assumedMast || _collection$conflictH.isEqual === false)) {
                           // conflict
                           conflicts.push(docInDb);
                         } else {
@@ -384,24 +384,24 @@ function syncFirestore(options) {
                       var docId = _ref2[0],
                         writeRow = _ref2[1];
                       var docInDb = docsInDbById[docId];
-                      var _writeRow$assumedMast2 = !writeRow.assumedMasterState;
-                      return Promise.resolve(!docInDb || _writeRow$assumedMast2 ? _temp7(docInDb && (_writeRow$assumedMast2 || collection.conflictHandler({
+                      var _writeRow$assumedMast = !writeRow.assumedMasterState;
+                      return Promise.resolve(!docInDb || _writeRow$assumedMast ? _temp4(docInDb && (_writeRow$assumedMast || collection.conflictHandler({
                         newDocumentState: docInDb,
                         realMasterState: writeRow.assumedMasterState
-                      }, 'replication-firestore-push'))) : Promise.resolve(docInDb && (_writeRow$assumedMast2 || collection.conflictHandler({
+                      }, 'replication-firestore-push'))) : Promise.resolve(docInDb && (_writeRow$assumedMast || collection.conflictHandler({
                         newDocumentState: docInDb,
                         realMasterState: writeRow.assumedMasterState
-                      }, 'replication-firestore-push'))).then(_temp7));
+                      }, 'replication-firestore-push'))).then(_temp4));
                     } catch (e) {
                       return Promise.reject(e);
                     }
                   }))).then(function () {
-                    var _temp5 = function () {
+                    var _temp3 = function () {
                       if (hasWrite) {
                         return Promise.resolve(batch.commit()).then(function () {});
                       }
                     }();
-                    if (_temp5 && _temp5.then) return _temp5.then(function () {});
+                    if (_temp3 && _temp3.then) return _temp3.then(function () {});
                   });
                 });
               } catch (e) {

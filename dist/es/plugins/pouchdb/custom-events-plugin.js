@@ -17,7 +17,7 @@ import { getEventKey, pouchChangeRowToChangeEvent, POUCHDB_DESIGN_PREFIX, POUCHD
 export var eventEmitDataToStorageEvents = function eventEmitDataToStorageEvents(pouchDBInstance, primaryPath, emitData) {
   try {
     var ret = [];
-    var _temp12 = function () {
+    var _temp7 = function () {
       if (!emitData.writeOptions.custom && emitData.writeOptions.hasOwnProperty('new_edits') && emitData.writeOptions.new_edits === false) {
         return Promise.resolve(Promise.all(emitData.writeDocs.map(function (writeDoc) {
           try {
@@ -97,7 +97,7 @@ export var eventEmitDataToStorageEvents = function eventEmitDataToStorageEvents(
           }
         }))).then(function () {}); // eslint-disable-next-line brace-style
       } else {
-        var _temp13 = function () {
+        var _temp8 = function () {
           if (!emitData.writeOptions.custom || emitData.writeOptions.custom && !emitData.writeOptions.custom.writeRowById) {
             var writeDocsById = new Map();
             emitData.writeDocs.forEach(function (writeDoc) {
@@ -133,7 +133,7 @@ export var eventEmitDataToStorageEvents = function eventEmitDataToStorageEvents(
                 var id = resultRow.id;
                 var writeRow = getFromMapOrThrow(writeMap, id);
                 return Promise.resolve(writeAttachmentsToAttachments(writeRow.document._attachments)).then(function (attachments) {
-                  function _temp16() {
+                  function _temp11() {
                     if (writeRow.document._deleted && (!writeRow.previous || writeRow.previous._deleted)) {} else {
                       var changeEvent = changeEventToNormal(pouchDBInstance, ensureNotFalsy(emitData.writeOptions.custom).primaryPath, event, emitData.startTime, emitData.endTime);
                       ret.push(changeEvent);
@@ -144,7 +144,7 @@ export var eventEmitDataToStorageEvents = function eventEmitDataToStorageEvents(
                     _rev: resultRow.rev
                   });
                   var event;
-                  var _temp15 = function () {
+                  var _temp10 = function () {
                     if (!writeRow.previous || writeRow.previous._deleted) {
                       // was insert
                       event = {
@@ -154,7 +154,7 @@ export var eventEmitDataToStorageEvents = function eventEmitDataToStorageEvents(
                         previous: null
                       };
                     } else {
-                      var _temp17 = function () {
+                      var _temp12 = function () {
                         if (writeRow.document._deleted) {
                           // was delete
                           // we need to add the new revision to the previous doc
@@ -181,10 +181,10 @@ export var eventEmitDataToStorageEvents = function eventEmitDataToStorageEvents(
                           };
                         }
                       }();
-                      if (_temp17 && _temp17.then) return _temp17.then(function () {});
+                      if (_temp12 && _temp12.then) return _temp12.then(function () {});
                     }
                   }();
-                  return _temp15 && _temp15.then ? _temp15.then(_temp16) : _temp16(_temp15);
+                  return _temp10 && _temp10.then ? _temp10.then(_temp11) : _temp11(_temp10);
                 });
               } catch (e) {
                 return Promise.reject(e);
@@ -192,10 +192,10 @@ export var eventEmitDataToStorageEvents = function eventEmitDataToStorageEvents(
             }))).then(function () {});
           }
         }();
-        if (_temp13 && _temp13.then) return _temp13.then(function () {});
+        if (_temp8 && _temp8.then) return _temp8.then(function () {});
       }
     }();
-    return Promise.resolve(_temp12 && _temp12.then ? _temp12.then(function () {
+    return Promise.resolve(_temp7 && _temp7.then ? _temp7.then(function () {
       return ret;
     }) : ret);
   } catch (e) {
@@ -298,7 +298,7 @@ export function addCustomEventsPluginToPouch() {
   };
   var newBulkDocsInner = function newBulkDocsInner(body, options, callback) {
     try {
-      var _temp8 = function _temp8() {
+      var _temp3 = function _temp3() {
         /**
          * Custom handling if the call came from RxDB (options.custom is set).
          */
@@ -378,7 +378,7 @@ export function addCustomEventsPluginToPouch() {
           var heighestSequence = 0;
           var changesSub;
           var heighestSequencePromise = new Promise(function (res2) {
-            changesSub = _this3.changes({
+            changesSub = _this2.changes({
               since: 'now',
               live: true,
               include_docs: true
@@ -405,7 +405,7 @@ export function addCustomEventsPluginToPouch() {
            */
           var useOptsForOldBulkDocs = flatClone(deeperOptions);
           delete useOptsForOldBulkDocs.custom;
-          callReturn = oldBulkDocs.call(_this3, docs, useOptsForOldBulkDocs, function (err, result) {
+          callReturn = oldBulkDocs.call(_this2, docs, useOptsForOldBulkDocs, function (err, result) {
             if (err) {
               if (callback) {
                 callback(err);
@@ -415,7 +415,7 @@ export function addCustomEventsPluginToPouch() {
             } else {
               return function () {
                 try {
-                  var _temp6 = function _temp6() {
+                  var _temp5 = function _temp5() {
                     result.forEach(function (row) {
                       usePouchResult.push(row);
                     });
@@ -437,7 +437,7 @@ export function addCustomEventsPluginToPouch() {
                         startTime: startTime,
                         endTime: endTime
                       };
-                      eventsPromise = eventEmitDataToStorageEvents(_this3, '_id', emitData).then(function (events) {
+                      eventsPromise = eventEmitDataToStorageEvents(_this2, '_id', emitData).then(function (events) {
                         var eventBulk = {
                           id: randomCouchString(10),
                           events: events,
@@ -446,7 +446,7 @@ export function addCustomEventsPluginToPouch() {
                           },
                           context: options.custom ? options.custom.context : 'pouchdb-internal'
                         };
-                        var emitter = getCustomEventEmitterByPouch(_this3);
+                        var emitter = getCustomEventEmitterByPouch(_this2);
                         emitter.subject.next(eventBulk);
                       });
                     }
@@ -463,7 +463,7 @@ export function addCustomEventsPluginToPouch() {
                     return row.error;
                   });
                   var heighestSequenceInner = -1;
-                  var _temp7 = function () {
+                  var _temp4 = function () {
                     if (!hasError) {
                       return Promise.resolve(heighestSequencePromise).then(function (_heighestSequenceProm) {
                         heighestSequenceInner = _heighestSequenceProm;
@@ -472,7 +472,7 @@ export function addCustomEventsPluginToPouch() {
                       changesSub.cancel();
                     }
                   }();
-                  return Promise.resolve(_temp7 && _temp7.then ? _temp7.then(_temp6) : _temp6(_temp7));
+                  return Promise.resolve(_temp4 && _temp4.then ? _temp4.then(_temp5) : _temp5(_temp4));
                 } catch (e) {
                   return Promise.reject(e);
                 }
@@ -482,7 +482,7 @@ export function addCustomEventsPluginToPouch() {
         });
         return options.custom ? callPromise : callReturn;
       };
-      var _this3 = this;
+      var _this2 = this;
       var startTime = now();
       var runId = i++;
 
@@ -525,9 +525,9 @@ export function addCustomEventsPluginToPouch() {
        * because a new revision was written and we have to emit an event.
        */
       var previousDocsInDb = options.custom ? options.custom.previousDocsInDb : new Map();
-      var _temp9 = function () {
+      var _temp2 = function () {
         if (options.hasOwnProperty('new_edits') && options.new_edits === false) {
-          return Promise.resolve(_this3.bulkGet({
+          return Promise.resolve(_this2.bulkGet({
             docs: docs.map(function (doc) {
               return {
                 id: doc._id
@@ -553,7 +553,7 @@ export function addCustomEventsPluginToPouch() {
             });
             var _temp = function () {
               if (mustRefetchBecauseDeleted.length > 0) {
-                return Promise.resolve(_this3.allDocs({
+                return Promise.resolve(_this2.allDocs({
                   keys: mustRefetchBecauseDeleted,
                   include_docs: true,
                   conflicts: true
@@ -565,7 +565,7 @@ export function addCustomEventsPluginToPouch() {
                       rev: row.value.rev
                     });
                   });
-                  return Promise.resolve(_this3.bulkGet({
+                  return Promise.resolve(_this2.bulkGet({
                     docs: idsWithRevs,
                     revs: true,
                     latest: true
@@ -591,7 +591,7 @@ export function addCustomEventsPluginToPouch() {
           });
         }
       }();
-      return Promise.resolve(_temp9 && _temp9.then ? _temp9.then(_temp8) : _temp8(_temp9));
+      return Promise.resolve(_temp2 && _temp2.then ? _temp2.then(_temp3) : _temp3(_temp2));
     } catch (e) {
       return Promise.reject(e);
     }

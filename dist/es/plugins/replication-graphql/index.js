@@ -144,19 +144,19 @@ export function syncGraphQL(_ref) {
       wsClient.subscribe(query, {
         next: function (streamResponse) {
           try {
-            var _temp5 = function _temp5() {
+            var _temp4 = function _temp4() {
               pullStream$.next(_data);
             };
             var firstField = Object.keys(streamResponse.data)[0];
             var _data = streamResponse.data[firstField];
-            var _temp6 = function () {
+            var _temp3 = function () {
               if (pull.responseModifier) {
                 return Promise.resolve(pull.responseModifier(_data, 'stream')).then(function (_pull$responseModifie2) {
                   _data = _pull$responseModifie2;
                 });
               }
             }();
-            return Promise.resolve(_temp6 && _temp6.then ? _temp6.then(_temp5) : _temp5(_temp6));
+            return Promise.resolve(_temp3 && _temp3.then ? _temp3.then(_temp4) : _temp4(_temp3));
           } catch (e) {
             return Promise.reject(e);
           }

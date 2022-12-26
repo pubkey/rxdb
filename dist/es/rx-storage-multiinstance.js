@@ -99,12 +99,12 @@ providedBroadcastChannel) {
       closed = true;
       sub.unsubscribe();
       broadcastChannel.removeEventListener('message', eventListener);
-      var _temp2 = function () {
+      var _temp = function () {
         if (!providedBroadcastChannel) {
           return Promise.resolve(removeBroadcastChannelReference(instanceCreationParams.databaseInstanceToken, instance)).then(function () {});
         }
       }();
-      return Promise.resolve(_temp2 && _temp2.then ? _temp2.then(function () {
+      return Promise.resolve(_temp && _temp.then ? _temp.then(function () {
         return oldClose();
       }) : oldClose());
     } catch (e) {
@@ -117,12 +117,12 @@ providedBroadcastChannel) {
       closed = true;
       sub.unsubscribe();
       broadcastChannel.removeEventListener('message', eventListener);
-      var _temp4 = function () {
+      var _temp2 = function () {
         if (!providedBroadcastChannel) {
           return Promise.resolve(removeBroadcastChannelReference(instanceCreationParams.databaseInstanceToken, instance)).then(function () {});
         }
       }();
-      return Promise.resolve(_temp4 && _temp4.then ? _temp4.then(function () {
+      return Promise.resolve(_temp2 && _temp2.then ? _temp2.then(function () {
         return oldRemove();
       }) : oldRemove());
     } catch (e) {

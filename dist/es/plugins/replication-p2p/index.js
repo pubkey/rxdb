@@ -7,7 +7,7 @@ import { replicateRxCollection } from '../replication';
 import { isMasterInP2PReplication, sendMessageAndAwaitAnswer } from './p2p-helper';
 export var syncP2P = function syncP2P(options) {
   try {
-    var _temp3 = function _temp3() {
+    var _temp2 = function _temp2() {
       // used to easier debug stuff
       var requestCounter = 0;
       function getRequestId() {
@@ -15,8 +15,8 @@ export var syncP2P = function syncP2P(options) {
         return _collection.database.token + '|' + requestFlag + '|' + count;
       }
       var requestFlag = randomCouchString(10);
-      return Promise.resolve(_this2.database.storageToken).then(function (storageToken) {
-        var pool = new RxP2PReplicationPool(_this2, options, options.connectionHandlerCreator(options));
+      return Promise.resolve(_this.database.storageToken).then(function (storageToken) {
+        var pool = new RxP2PReplicationPool(_this, options, options.connectionHandlerCreator(options));
         pool.subs.push(pool.connectionHandler.error$.subscribe(function (err) {
           return pool.error$.next(err);
         }), pool.connectionHandler.disconnect$.subscribe(function (peer) {
@@ -47,7 +47,7 @@ export var syncP2P = function syncP2P(options) {
               params: []
             })).then(function (tokenResponse) {
               var peerToken = tokenResponse.result;
-              var isMaster = isMasterInP2PReplication(_this2.database.hashFunction, storageToken, peerToken);
+              var isMaster = isMasterInP2PReplication(_this.database.hashFunction, storageToken, peerToken);
               var replicationState;
               if (isMaster) {
                 var masterHandler = pool.masterReplicationHandler;
@@ -92,8 +92,8 @@ export var syncP2P = function syncP2P(options) {
                 pool.subs.push(messageSub);
               } else {
                 replicationState = replicateRxCollection({
-                  replicationIdentifier: [_this2.name, options.topic, peerToken].join('||'),
-                  collection: _this2,
+                  replicationIdentifier: [_this.name, options.topic, peerToken].join('||'),
+                  collection: _this,
                   autoStart: true,
                   deletedField: '_deleted',
                   live: true,
@@ -146,7 +146,7 @@ export var syncP2P = function syncP2P(options) {
         return pool;
       });
     };
-    var _this2 = this;
+    var _this = this;
     // fill defaults
     if (options.pull) {
       if (!options.pull.batchSize) {
@@ -158,13 +158,13 @@ export var syncP2P = function syncP2P(options) {
         options.push.batchSize = 20;
       }
     }
-    var _collection = _this2;
-    var _temp4 = function () {
-      if (_this2.database.multiInstance) {
-        return Promise.resolve(_this2.database.waitForLeadership()).then(function () {});
+    var _collection = _this;
+    var _temp = function () {
+      if (_this.database.multiInstance) {
+        return Promise.resolve(_this.database.waitForLeadership()).then(function () {});
       }
     }();
-    return Promise.resolve(_temp4 && _temp4.then ? _temp4.then(_temp3) : _temp3(_temp4));
+    return Promise.resolve(_temp && _temp.then ? _temp.then(_temp2) : _temp2(_temp));
   } catch (e) {
     return Promise.reject(e);
   }
@@ -176,7 +176,7 @@ export var syncP2P = function syncP2P(options) {
  */
 export var RxP2PReplicationPool = /*#__PURE__*/function () {
   function RxP2PReplicationPool(collection, options, connectionHandler) {
-    var _this3 = this;
+    var _this2 = this;
     this.peerStates$ = new BehaviorSubject(new Map());
     this.canceled = false;
     this.subs = [];
@@ -185,13 +185,13 @@ export var RxP2PReplicationPool = /*#__PURE__*/function () {
     this.options = options;
     this.connectionHandler = connectionHandler;
     this.collection.onDestroy.push(function () {
-      return _this3.cancel();
+      return _this2.cancel();
     });
     this.masterReplicationHandler = rxStorageInstanceToReplicationHandler(collection.storageInstance, collection.conflictHandler, collection.database.hashFunction);
   }
   var _proto = RxP2PReplicationPool.prototype;
   _proto.addPeer = function addPeer(peer, replicationState) {
-    var _this4 = this;
+    var _this3 = this;
     var peerState = {
       peer: peer,
       replicationState: replicationState,
@@ -200,7 +200,7 @@ export var RxP2PReplicationPool = /*#__PURE__*/function () {
     this.peerStates$.next(this.peerStates$.getValue().set(peer, peerState));
     if (replicationState) {
       peerState.subs.push(replicationState.error$.subscribe(function (ev) {
-        return _this4.error$.next(ev);
+        return _this3.error$.next(ev);
       }));
     }
   };
@@ -225,18 +225,18 @@ export var RxP2PReplicationPool = /*#__PURE__*/function () {
   };
   _proto.cancel = function cancel() {
     try {
-      var _this6 = this;
-      if (_this6.canceled) {
+      var _this4 = this;
+      if (_this4.canceled) {
         return Promise.resolve();
       }
-      _this6.canceled = true;
-      _this6.subs.forEach(function (sub) {
+      _this4.canceled = true;
+      _this4.subs.forEach(function (sub) {
         return sub.unsubscribe();
       });
-      Array.from(_this6.peerStates$.getValue().keys()).forEach(function (peer) {
-        _this6.removePeer(peer);
+      Array.from(_this4.peerStates$.getValue().keys()).forEach(function (peer) {
+        _this4.removePeer(peer);
       });
-      return Promise.resolve(_this6.connectionHandler.destroy()).then(function () {});
+      return Promise.resolve(_this4.connectionHandler.destroy()).then(function () {});
     } catch (e) {
       return Promise.reject(e);
     }

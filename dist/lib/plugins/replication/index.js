@@ -246,17 +246,17 @@ var RxReplicationState = /*#__PURE__*/function () {
   var _proto = RxReplicationState.prototype;
   _proto.start = function start() {
     try {
-      var _this3 = this;
-      if (_this3.isStopped()) {
+      var _this2 = this;
+      if (_this2.isStopped()) {
         return Promise.resolve();
       }
 
       // fill in defaults for pull & push
-      var pullModifier = _this3.pull && _this3.pull.modifier ? _this3.pull.modifier : _replicationHelper.DEFAULT_MODIFIER;
-      var pushModifier = _this3.push && _this3.push.modifier ? _this3.push.modifier : _replicationHelper.DEFAULT_MODIFIER;
-      var database = _this3.collection.database;
-      var metaInstanceCollectionName = _this3.collection.name + '-rx-replication-' + _this3.replicationIdentifierHash;
-      return Promise.resolve(Promise.all([_this3.collection.database.storage.createStorageInstance({
+      var pullModifier = _this2.pull && _this2.pull.modifier ? _this2.pull.modifier : _replicationHelper.DEFAULT_MODIFIER;
+      var pushModifier = _this2.push && _this2.push.modifier ? _this2.push.modifier : _replicationHelper.DEFAULT_MODIFIER;
+      var database = _this2.collection.database;
+      var metaInstanceCollectionName = _this2.collection.name + '-rx-replication-' + _this2.replicationIdentifierHash;
+      return Promise.resolve(Promise.all([_this2.collection.database.storage.createStorageInstance({
         databaseName: database.name,
         collectionName: metaInstanceCollectionName,
         databaseInstanceToken: database.token,
@@ -264,30 +264,30 @@ var RxReplicationState = /*#__PURE__*/function () {
         // TODO is this always false?
         options: {},
         schema: _replicationProtocol.RX_REPLICATION_META_INSTANCE_SCHEMA
-      }), (0, _rxDatabaseInternalStore.addConnectedStorageToCollection)(_this3.collection, metaInstanceCollectionName, _replicationProtocol.RX_REPLICATION_META_INSTANCE_SCHEMA)])).then(function (_ref) {
+      }), (0, _rxDatabaseInternalStore.addConnectedStorageToCollection)(_this2.collection, metaInstanceCollectionName, _replicationProtocol.RX_REPLICATION_META_INSTANCE_SCHEMA)])).then(function (_ref) {
         var metaInstance = _ref[0];
         function _temp2() {
-          _this3.callOnStart();
+          _this2.callOnStart();
         }
-        _this3.metaInstance = metaInstance;
-        _this3.internalReplicationState = (0, _replicationProtocol.replicateRxStorageInstance)({
-          pushBatchSize: _this3.push && _this3.push.batchSize ? _this3.push.batchSize : 100,
-          pullBatchSize: _this3.pull && _this3.pull.batchSize ? _this3.pull.batchSize : 100,
-          forkInstance: _this3.collection.storageInstance,
-          metaInstance: _this3.metaInstance,
+        _this2.metaInstance = metaInstance;
+        _this2.internalReplicationState = (0, _replicationProtocol.replicateRxStorageInstance)({
+          pushBatchSize: _this2.push && _this2.push.batchSize ? _this2.push.batchSize : 100,
+          pullBatchSize: _this2.pull && _this2.pull.batchSize ? _this2.pull.batchSize : 100,
+          forkInstance: _this2.collection.storageInstance,
+          metaInstance: _this2.metaInstance,
           hashFunction: database.hashFunction,
-          identifier: 'rx-replication-' + _this3.replicationIdentifierHash,
-          conflictHandler: _this3.collection.conflictHandler,
+          identifier: 'rx-replication-' + _this2.replicationIdentifierHash,
+          conflictHandler: _this2.collection.conflictHandler,
           replicationHandler: {
-            masterChangeStream$: _this3.remoteEvents$.asObservable().pipe((0, _rxjs.mergeMap)(function (ev) {
+            masterChangeStream$: _this2.remoteEvents$.asObservable().pipe((0, _rxjs.mergeMap)(function (ev) {
               try {
                 if (ev === 'RESYNC') {
                   return Promise.resolve(ev);
                 }
                 var useEv = (0, _util.flatClone)(ev);
-                if (_this3.deletedField !== '_deleted') {
+                if (_this2.deletedField !== '_deleted') {
                   useEv.documents = useEv.documents.map(function (doc) {
-                    return (0, _replicationHelper.swapdeletedFieldToDefaultDeleted)(_this3.deletedField, doc);
+                    return (0, _replicationHelper.swapdeletedFieldToDefaultDeleted)(_this2.deletedField, doc);
                   });
                 }
                 return Promise.resolve(Promise.all(useEv.documents.map(function (d) {
@@ -302,17 +302,17 @@ var RxReplicationState = /*#__PURE__*/function () {
             })),
             masterChangesSince: function (checkpoint, batchSize) {
               try {
-                var _temp6 = function _temp6() {
-                  if (_this3.isStopped()) {
+                var _temp5 = function _temp5() {
+                  if (_this2.isStopped()) {
                     return {
                       checkpoint: null,
                       documents: []
                     };
                   }
                   var useResult = (0, _util.flatClone)(result);
-                  if (_this3.deletedField !== '_deleted') {
+                  if (_this2.deletedField !== '_deleted') {
                     useResult.documents = useResult.documents.map(function (doc) {
-                      return (0, _replicationHelper.swapdeletedFieldToDefaultDeleted)(_this3.deletedField, doc);
+                      return (0, _replicationHelper.swapdeletedFieldToDefaultDeleted)(_this2.deletedField, doc);
                     });
                   }
                   return Promise.resolve(Promise.all(useResult.documents.map(function (d) {
@@ -322,7 +322,7 @@ var RxReplicationState = /*#__PURE__*/function () {
                     return useResult;
                   });
                 };
-                if (!_this3.pull) {
+                if (!_this2.pull) {
                   return Promise.resolve({
                     checkpoint: null,
                     documents: []
@@ -336,12 +336,12 @@ var RxReplicationState = /*#__PURE__*/function () {
                  */
                 var done = false;
                 var result = {};
-                var _temp7 = _for(function () {
-                  return !done && !_this3.isStopped();
+                var _temp4 = _for(function () {
+                  return !done && !_this2.isStopped();
                 }, void 0, function () {
                   var _temp3 = _catch(function () {
-                    return Promise.resolve(_this3.pull.handler(checkpoint, batchSize)).then(function (_this3$pull$handler) {
-                      result = _this3$pull$handler;
+                    return Promise.resolve(_this2.pull.handler(checkpoint, batchSize)).then(function (_this2$pull$handler) {
+                      result = _this2$pull$handler;
                       done = true;
                     });
                   }, function (err) {
@@ -350,66 +350,66 @@ var RxReplicationState = /*#__PURE__*/function () {
                       errors: Array.isArray(err) ? err : [err],
                       direction: 'pull'
                     });
-                    _this3.subjects.error.next(emitError);
-                    return Promise.resolve((0, _replicationHelper.awaitRetry)(_this3.collection, (0, _util.ensureNotFalsy)(_this3.retryTime))).then(function () {});
+                    _this2.subjects.error.next(emitError);
+                    return Promise.resolve((0, _replicationHelper.awaitRetry)(_this2.collection, (0, _util.ensureNotFalsy)(_this2.retryTime))).then(function () {});
                   });
                   if (_temp3 && _temp3.then) return _temp3.then(function () {});
                 });
-                return Promise.resolve(_temp7 && _temp7.then ? _temp7.then(_temp6) : _temp6(_temp7));
+                return Promise.resolve(_temp4 && _temp4.then ? _temp4.then(_temp5) : _temp5(_temp4));
               } catch (e) {
                 return Promise.reject(e);
               }
             },
             masterWrite: function (rows) {
               try {
-                if (!_this3.push) {
+                if (!_this2.push) {
                   return Promise.resolve([]);
                 }
                 var done = false;
                 return Promise.resolve(Promise.all(rows.map(function (row) {
                   try {
                     return Promise.resolve(pushModifier(row.newDocumentState)).then(function (_pushModifier) {
-                      function _temp11() {
-                        if (_this3.deletedField !== '_deleted') {
-                          row.newDocumentState = (0, _replicationHelper.swapDefaultDeletedTodeletedField)(_this3.deletedField, row.newDocumentState);
+                      function _temp9() {
+                        if (_this2.deletedField !== '_deleted') {
+                          row.newDocumentState = (0, _replicationHelper.swapDefaultDeletedTodeletedField)(_this2.deletedField, row.newDocumentState);
                           if (row.assumedMasterState) {
-                            row.assumedMasterState = (0, _replicationHelper.swapDefaultDeletedTodeletedField)(_this3.deletedField, row.assumedMasterState);
+                            row.assumedMasterState = (0, _replicationHelper.swapDefaultDeletedTodeletedField)(_this2.deletedField, row.assumedMasterState);
                           }
                         }
                         return row;
                       }
                       row.newDocumentState = _pushModifier;
-                      var _temp10 = function () {
+                      var _temp8 = function () {
                         if (row.assumedMasterState) {
                           return Promise.resolve(pushModifier(row.assumedMasterState)).then(function (_pushModifier2) {
                             row.assumedMasterState = _pushModifier2;
                           });
                         }
                       }();
-                      return _temp10 && _temp10.then ? _temp10.then(_temp11) : _temp11(_temp10);
+                      return _temp8 && _temp8.then ? _temp8.then(_temp9) : _temp9(_temp8);
                     });
                   } catch (e) {
                     return Promise.reject(e);
                   }
                 }))).then(function (useRows) {
                   var _exit = false;
-                  function _temp9(_result2) {
+                  function _temp7(_result2) {
                     if (_exit) return _result2;
-                    if (_this3.isStopped()) {
+                    if (_this2.isStopped()) {
                       return [];
                     }
                     var conflicts = (0, _util.ensureNotFalsy)(result).map(function (doc) {
-                      return (0, _replicationHelper.swapdeletedFieldToDefaultDeleted)(_this3.deletedField, doc);
+                      return (0, _replicationHelper.swapdeletedFieldToDefaultDeleted)(_this2.deletedField, doc);
                     });
                     return conflicts;
                   }
                   var result = null;
-                  var _temp8 = _for(function () {
-                    return !_exit && !done && !_this3.isStopped();
+                  var _temp6 = _for(function () {
+                    return !_exit && !done && !_this2.isStopped();
                   }, void 0, function () {
                     return _catch(function () {
-                      return Promise.resolve(_this3.push.handler(useRows)).then(function (_this3$push$handler) {
-                        result = _this3$push$handler;
+                      return Promise.resolve(_this2.push.handler(useRows)).then(function (_this2$push$handler) {
+                        result = _this2$push$handler;
                         /**
                          * It is a common problem that people have wrongly behaving backend
                          * that do not return an array with the conflicts on push requests.
@@ -433,11 +433,11 @@ var RxReplicationState = /*#__PURE__*/function () {
                         errors: Array.isArray(err) ? err : [err],
                         direction: 'push'
                       });
-                      _this3.subjects.error.next(emitError);
-                      return Promise.resolve((0, _replicationHelper.awaitRetry)(_this3.collection, (0, _util.ensureNotFalsy)(_this3.retryTime))).then(function () {});
+                      _this2.subjects.error.next(emitError);
+                      return Promise.resolve((0, _replicationHelper.awaitRetry)(_this2.collection, (0, _util.ensureNotFalsy)(_this2.retryTime))).then(function () {});
                     });
                   });
-                  return _temp8 && _temp8.then ? _temp8.then(_temp9) : _temp9(_temp8);
+                  return _temp6 && _temp6.then ? _temp6.then(_temp7) : _temp7(_temp6);
                 });
               } catch (e) {
                 return Promise.reject(e);
@@ -445,25 +445,25 @@ var RxReplicationState = /*#__PURE__*/function () {
             }
           }
         });
-        _this3.subs.push(_this3.internalReplicationState.events.error.subscribe(function (err) {
-          _this3.subjects.error.next(err);
-        }), _this3.internalReplicationState.events.processed.down.subscribe(function (row) {
-          return _this3.subjects.received.next(row.document);
-        }), _this3.internalReplicationState.events.processed.up.subscribe(function (writeToMasterRow) {
-          _this3.subjects.send.next(writeToMasterRow.newDocumentState);
-        }), (0, _rxjs.combineLatest)([_this3.internalReplicationState.events.active.down, _this3.internalReplicationState.events.active.up]).subscribe(function (_ref2) {
+        _this2.subs.push(_this2.internalReplicationState.events.error.subscribe(function (err) {
+          _this2.subjects.error.next(err);
+        }), _this2.internalReplicationState.events.processed.down.subscribe(function (row) {
+          return _this2.subjects.received.next(row.document);
+        }), _this2.internalReplicationState.events.processed.up.subscribe(function (writeToMasterRow) {
+          _this2.subjects.send.next(writeToMasterRow.newDocumentState);
+        }), (0, _rxjs.combineLatest)([_this2.internalReplicationState.events.active.down, _this2.internalReplicationState.events.active.up]).subscribe(function (_ref2) {
           var down = _ref2[0],
             up = _ref2[1];
           var isActive = down || up;
-          _this3.subjects.active.next(isActive);
+          _this2.subjects.active.next(isActive);
         }));
-        if (_this3.pull && _this3.pull.stream$ && _this3.live) {
-          _this3.subs.push(_this3.pull.stream$.subscribe({
+        if (_this2.pull && _this2.pull.stream$ && _this2.live) {
+          _this2.subs.push(_this2.pull.stream$.subscribe({
             next: function next(ev) {
-              _this3.remoteEvents$.next(ev);
+              _this2.remoteEvents$.next(ev);
             },
             error: function error(err) {
-              _this3.subjects.error.next(err);
+              _this2.subjects.error.next(err);
             }
           }));
         }
@@ -473,10 +473,10 @@ var RxReplicationState = /*#__PURE__*/function () {
          * and then automatically get canceled.
          */
         var _temp = function () {
-          if (!_this3.live) {
-            return Promise.resolve((0, _replicationProtocol.awaitRxStorageReplicationFirstInSync)(_this3.internalReplicationState)).then(function () {
-              return Promise.resolve((0, _replicationProtocol.awaitRxStorageReplicationInSync)(_this3.internalReplicationState)).then(function () {
-                return Promise.resolve(_this3.cancel()).then(function () {});
+          if (!_this2.live) {
+            return Promise.resolve((0, _replicationProtocol.awaitRxStorageReplicationFirstInSync)(_this2.internalReplicationState)).then(function () {
+              return Promise.resolve((0, _replicationProtocol.awaitRxStorageReplicationInSync)(_this2.internalReplicationState)).then(function () {
+                return Promise.resolve(_this2.cancel()).then(function () {});
               });
             });
           }
@@ -495,9 +495,9 @@ var RxReplicationState = /*#__PURE__*/function () {
   };
   _proto.awaitInitialReplication = function awaitInitialReplication() {
     try {
-      var _this5 = this;
-      return Promise.resolve(_this5.startPromise).then(function () {
-        return (0, _replicationProtocol.awaitRxStorageReplicationFirstInSync)((0, _util.ensureNotFalsy)(_this5.internalReplicationState));
+      var _this3 = this;
+      return Promise.resolve(_this3.startPromise).then(function () {
+        return (0, _replicationProtocol.awaitRxStorageReplicationFirstInSync)((0, _util.ensureNotFalsy)(_this3.internalReplicationState));
       });
     } catch (e) {
       return Promise.reject(e);
@@ -516,17 +516,17 @@ var RxReplicationState = /*#__PURE__*/function () {
   ;
   _proto.awaitInSync = function awaitInSync() {
     try {
-      var _this7 = this;
-      return Promise.resolve(_this7.startPromise).then(function () {
-        return Promise.resolve((0, _replicationProtocol.awaitRxStorageReplicationFirstInSync)((0, _util.ensureNotFalsy)(_this7.internalReplicationState))).then(function () {
+      var _this4 = this;
+      return Promise.resolve(_this4.startPromise).then(function () {
+        return Promise.resolve((0, _replicationProtocol.awaitRxStorageReplicationFirstInSync)((0, _util.ensureNotFalsy)(_this4.internalReplicationState))).then(function () {
           /**
            * Often awaitInSync() is called directly after a document write,
            * like in the unit tests.
            * So we first have to await the idleness to ensure that all RxChangeEvents
            * are processed already.
            */
-          return Promise.resolve(_this7.collection.database.requestIdlePromise()).then(function () {
-            return Promise.resolve((0, _replicationProtocol.awaitRxStorageReplicationInSync)((0, _util.ensureNotFalsy)(_this7.internalReplicationState))).then(function () {
+          return Promise.resolve(_this4.collection.database.requestIdlePromise()).then(function () {
+            return Promise.resolve((0, _replicationProtocol.awaitRxStorageReplicationInSync)((0, _util.ensureNotFalsy)(_this4.internalReplicationState))).then(function () {
               return true;
             });
           });
@@ -543,7 +543,7 @@ var RxReplicationState = /*#__PURE__*/function () {
     this.remoteEvents$.next(ev);
   };
   _proto.cancel = function cancel() {
-    var _this8 = this;
+    var _this5 = this;
     if (this.isStopped()) {
       return _util.PROMISE_RESOLVE_FALSE;
     }
@@ -553,7 +553,7 @@ var RxReplicationState = /*#__PURE__*/function () {
     }
     if (this.metaInstance) {
       promises.push((0, _util.ensureNotFalsy)(this.internalReplicationState).checkpointQueue.then(function () {
-        return (0, _util.ensureNotFalsy)(_this8.metaInstance).close();
+        return (0, _util.ensureNotFalsy)(_this5.metaInstance).close();
       }));
     }
     this.subs.forEach(function (sub) {

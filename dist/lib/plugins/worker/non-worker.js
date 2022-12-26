@@ -20,7 +20,7 @@ var removeWorkerRef = function removeWorkerRef(instance) {
   try {
     var workerState = (0, _util.getFromMapOrThrow)(WORKER_BY_INSTANCE, instance.storage);
     workerState.refs["delete"](instance);
-    var _temp2 = function () {
+    var _temp = function () {
       if (workerState.refs.size === 0) {
         WORKER_BY_INSTANCE["delete"](instance.storage);
         return Promise.resolve(workerState.workerPromise.then(function (worker) {
@@ -28,7 +28,7 @@ var removeWorkerRef = function removeWorkerRef(instance) {
         })).then(function () {});
       }
     }();
-    return Promise.resolve(_temp2 && _temp2.then ? _temp2.then(function () {}) : void 0);
+    return Promise.resolve(_temp && _temp.then ? _temp.then(function () {}) : void 0);
   } catch (e) {
     return Promise.reject(e);
   }
@@ -124,16 +124,16 @@ var RxStorageInstanceWorker = /*#__PURE__*/function () {
   };
   _proto2.close = function close() {
     try {
-      var _this4 = this;
-      if (_this4.closed) {
+      var _this3 = this;
+      if (_this3.closed) {
         return Promise.reject(new Error('already closed'));
       }
-      _this4.closed = true;
-      _this4.subs.forEach(function (sub) {
+      _this3.closed = true;
+      _this3.subs.forEach(function (sub) {
         return sub.unsubscribe();
       });
-      return Promise.resolve(_this4.internals.worker.close(_this4.internals.instanceId)).then(function () {
-        return Promise.resolve(removeWorkerRef(_this4)).then(function () {});
+      return Promise.resolve(_this3.internals.worker.close(_this3.internals.instanceId)).then(function () {
+        return Promise.resolve(removeWorkerRef(_this3)).then(function () {});
       });
     } catch (e) {
       return Promise.reject(e);
@@ -141,10 +141,10 @@ var RxStorageInstanceWorker = /*#__PURE__*/function () {
   };
   _proto2.remove = function remove() {
     try {
-      var _this6 = this;
-      return Promise.resolve(_this6.internals.worker.remove(_this6.internals.instanceId)).then(function () {
-        _this6.closed = true;
-        return Promise.resolve(removeWorkerRef(_this6)).then(function () {});
+      var _this4 = this;
+      return Promise.resolve(_this4.internals.worker.remove(_this4.internals.instanceId)).then(function () {
+        _this4.closed = true;
+        return Promise.resolve(removeWorkerRef(_this4)).then(function () {});
       });
     } catch (e) {
       return Promise.reject(e);
@@ -155,8 +155,8 @@ var RxStorageInstanceWorker = /*#__PURE__*/function () {
   };
   _proto2.resolveConflictResultionTask = function resolveConflictResultionTask(taskSolution) {
     try {
-      var _this8 = this;
-      return Promise.resolve(_this8.internals.worker.resolveConflictResultionTask(_this8.internals.instanceId, taskSolution)).then(function () {});
+      var _this5 = this;
+      return Promise.resolve(_this5.internals.worker.resolveConflictResultionTask(_this5.internals.instanceId, taskSolution)).then(function () {});
     } catch (e) {
       return Promise.reject(e);
     }

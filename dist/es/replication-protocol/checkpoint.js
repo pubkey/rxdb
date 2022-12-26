@@ -157,7 +157,7 @@ function _for(test, update, body) {
 }
 export var setCheckpoint = function setCheckpoint(state, direction, checkpoint) {
   try {
-    var _exit2 = false;
+    var _exit = false;
     var previousCheckpointDoc = state.lastCheckpointDoc[direction];
     return Promise.resolve(function () {
       if (checkpoint &&
@@ -188,7 +188,7 @@ export var setCheckpoint = function setCheckpoint(state, direction, checkpoint) 
         };
         newDoc.id = getComposedPrimaryKeyOfDocumentData(RX_REPLICATION_META_INSTANCE_SCHEMA, newDoc);
         return _for(function () {
-          return !_exit2;
+          return !_exit;
         }, void 0, function () {
           /**
            * Instead of just storign the new checkpoint,
@@ -208,7 +208,7 @@ export var setCheckpoint = function setCheckpoint(state, direction, checkpoint) 
           }], 'replication-set-checkpoint')).then(function (result) {
             if (result.success[newDoc.id]) {
               state.lastCheckpointDoc[direction] = getFromObjectOrThrow(result.success, newDoc.id);
-              _exit2 = true;
+              _exit = true;
             } else {
               var error = getFromObjectOrThrow(result.error, newDoc.id);
               if (error.status !== 409) {

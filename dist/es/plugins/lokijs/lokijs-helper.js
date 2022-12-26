@@ -221,14 +221,14 @@ export var mustUseLocalState = function mustUseLocalState(instance) {
 };
 export var waitUntilHasLeader = function waitUntilHasLeader(leaderElector) {
   try {
-    var _temp13 = _for(function () {
+    var _temp7 = _for(function () {
       return !leaderElector.hasLeader;
     }, void 0, function () {
       return Promise.resolve(leaderElector.applyOnce()).then(function () {
         return Promise.resolve(promiseWait(0)).then(function () {});
       });
     });
-    return Promise.resolve(_temp13 && _temp13.then ? _temp13.then(function () {}) : void 0);
+    return Promise.resolve(_temp7 && _temp7.then ? _temp7.then(function () {}) : void 0);
   } catch (e) {
     return Promise.reject(e);
   }
@@ -239,9 +239,9 @@ export var waitUntilHasLeader = function waitUntilHasLeader(leaderElector) {
  */
 export var handleRemoteRequest = function handleRemoteRequest(instance, msg) {
   try {
-    var _temp9 = function () {
+    var _temp6 = function () {
       if (msg.type === LOKI_BROADCAST_CHANNEL_MESSAGE_TYPE && msg.requestId && msg.databaseName === instance.databaseName && msg.collectionName === instance.collectionName && !msg.response) {
-        var _temp10 = function _temp10() {
+        var _temp5 = function _temp5() {
           var response = {
             response: true,
             requestId: msg.requestId,
@@ -257,7 +257,7 @@ export var handleRemoteRequest = function handleRemoteRequest(instance, msg) {
         var params = msg.params;
         var _result;
         var _isError = false;
-        var _temp11 = _catch(function () {
+        var _temp4 = _catch(function () {
           var _ref2;
           return Promise.resolve((_ref2 = instance)[operation].apply(_ref2, params)).then(function (_operation) {
             _result = _operation;
@@ -267,10 +267,10 @@ export var handleRemoteRequest = function handleRemoteRequest(instance, msg) {
           _isError = true;
           _result = err;
         });
-        return _temp11 && _temp11.then ? _temp11.then(_temp10) : _temp10(_temp11);
+        return _temp4 && _temp4.then ? _temp4.then(_temp5) : _temp5(_temp4);
       }
     }();
-    return Promise.resolve(_temp9 && _temp9.then ? _temp9.then(function () {}) : void 0);
+    return Promise.resolve(_temp6 && _temp6.then ? _temp6.then(function () {}) : void 0);
   } catch (e) {
     return Promise.reject(e);
   }
@@ -367,7 +367,7 @@ export var closeLokiCollections = function closeLokiCollections(databaseName, co
           var collectionName = collection.name;
           delete databaseState.collections[collectionName];
         });
-        var _temp5 = function () {
+        var _temp3 = function () {
           if (Object.keys(databaseState.collections).length === 0) {
             // all collections closed -> also close database
             LOKI_DATABASE_STATE_BY_NAME["delete"](databaseName);
@@ -385,7 +385,7 @@ export var closeLokiCollections = function closeLokiCollections(databaseName, co
             })).then(function () {});
           }
         }();
-        if (_temp5 && _temp5.then) return _temp5.then(function () {});
+        if (_temp3 && _temp3.then) return _temp3.then(function () {});
       });
     });
   } catch (e) {
@@ -454,7 +454,7 @@ export function getLokiDatabase(databaseName, databaseSettings) {
     var hasPersistence = !!databaseSettings.adapter;
     databaseState = function () {
       try {
-        var _temp3 = function _temp3() {
+        var _temp2 = function _temp2() {
           /**
            * Autosave database on process end
            */
@@ -503,7 +503,7 @@ export function getLokiDatabase(databaseName, databaseSettings) {
          * collections are created at the same time, the load-calls do not interfere
          * with each other and cause error logs.
          */
-        var _temp4 = function () {
+        var _temp = function () {
           if (hasPersistence) {
             var loadDatabasePromise = new Promise(function (res, rej) {
               try {
@@ -529,7 +529,7 @@ export function getLokiDatabase(databaseName, databaseSettings) {
             return Promise.resolve(loadDatabasePromise).then(function () {});
           }
         }();
-        return Promise.resolve(_temp4 && _temp4.then ? _temp4.then(_temp3) : _temp3(_temp4));
+        return Promise.resolve(_temp && _temp.then ? _temp.then(_temp2) : _temp2(_temp));
       } catch (e) {
         return Promise.reject(e);
       }

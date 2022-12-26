@@ -75,7 +75,7 @@ validatorKey) {
 export function wrapRxStorageInstance(instance, modifyToStorage, modifyFromStorage) {
   var errorFromStorage = function errorFromStorage(error) {
     try {
-      var _temp5 = function _temp5() {
+      var _temp4 = function _temp4() {
         function _temp2() {
           return Promise.resolve(fromStorage(ret.writeRow.document)).then(function (_fromStorage4) {
             ret.writeRow.document = _fromStorage4;
@@ -93,14 +93,14 @@ export function wrapRxStorageInstance(instance, modifyToStorage, modifyFromStora
       };
       var ret = flatClone(error);
       ret.writeRow = flatClone(ret.writeRow);
-      var _temp6 = function () {
+      var _temp3 = function () {
         if (ret.documentInDb) {
           return Promise.resolve(fromStorage(ret.documentInDb)).then(function (_fromStorage2) {
             ret.documentInDb = _fromStorage2;
           });
         }
       }();
-      return Promise.resolve(_temp6 && _temp6.then ? _temp6.then(_temp5) : _temp5(_temp6));
+      return Promise.resolve(_temp3 && _temp3.then ? _temp3.then(_temp4) : _temp4(_temp3));
     } catch (e) {
       return Promise.reject(e);
     }
@@ -223,12 +223,12 @@ export function wrapRxStorageInstance(instance, modifyToStorage, modifyFromStora
   instance.getChangedDocumentsSince = function (limit, checkpoint) {
     return oldGetChangedDocumentsSince(limit, checkpoint).then(function (result) {
       try {
-        var _result$checkpoint2 = result.checkpoint;
+        var _result$checkpoint = result.checkpoint;
         return Promise.resolve(Promise.all(result.documents.map(function (d) {
           return fromStorage(d);
         }))).then(function (_Promise$all) {
           return {
-            checkpoint: _result$checkpoint2,
+            checkpoint: _result$checkpoint,
             documents: _Promise$all
           };
         });

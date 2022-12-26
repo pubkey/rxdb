@@ -177,7 +177,7 @@ export var queryFoundationDB = function queryFoundationDB(instance, preparedQuer
       var upperBoundString = getStartIndexStringFromUpperBound(instance.schema, indexForName, upperBound, queryPlan.inclusiveEnd);
       return Promise.resolve(dbs.root.doTransaction(function (tx) {
         try {
-          var _interrupt2 = false;
+          var _interrupt = false;
           var innerResult = [];
           var indexTx = tx.at(indexDB.subspace);
           var mainTx = tx.at(dbs.main.subspace);
@@ -187,13 +187,13 @@ export var queryFoundationDB = function queryFoundationDB(instance, preparedQuer
             // streamingMode: StreamingMode.Exact
           });
           var done = false;
-          var _temp2 = _for(function () {
-            return !_interrupt2 && !done;
+          var _temp = _for(function () {
+            return !_interrupt && !done;
           }, void 0, function () {
             return Promise.resolve(range.next()).then(function (next) {
               if (next.done) {
                 done = true;
-                _interrupt2 = true;
+                _interrupt = true;
                 return;
               }
               var docIds = next.value.map(function (row) {
@@ -216,7 +216,7 @@ export var queryFoundationDB = function queryFoundationDB(instance, preparedQuer
               });
             });
           });
-          return Promise.resolve(_temp2 && _temp2.then ? _temp2.then(function () {
+          return Promise.resolve(_temp && _temp.then ? _temp.then(function () {
             return innerResult;
           }) : innerResult);
         } catch (e) {

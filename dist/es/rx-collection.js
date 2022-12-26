@@ -57,48 +57,48 @@ export var RxCollectionBase = /*#__PURE__*/function () {
   var _proto = RxCollectionBase.prototype;
   _proto.prepare = function prepare() {
     try {
-      var _this2 = this;
-      _this2.storageInstance = getWrappedStorageInstance(_this2.database, _this2.internalStorageInstance, _this2.schema.jsonSchema);
-      _this2.$ = _this2.database.eventBulks$.pipe(filter(function (changeEventBulk) {
-        return changeEventBulk.collectionName === _this2.name;
+      var _this = this;
+      _this.storageInstance = getWrappedStorageInstance(_this.database, _this.internalStorageInstance, _this.schema.jsonSchema);
+      _this.$ = _this.database.eventBulks$.pipe(filter(function (changeEventBulk) {
+        return changeEventBulk.collectionName === _this.name;
       }), mergeMap(function (changeEventBulk) {
         return changeEventBulk.events;
       }));
-      _this2._changeEventBuffer = createChangeEventBuffer(_this2.asRxCollection);
+      _this._changeEventBuffer = createChangeEventBuffer(_this.asRxCollection);
 
       /**
        * Instead of resolving the EventBulk array here and spit it into
        * single events, we should fully work with event bulks internally
        * to save performance.
        */
-      return Promise.resolve(_this2.database.storageToken).then(function (databaseStorageToken) {
-        var subDocs = _this2.storageInstance.changeStream().subscribe(function (eventBulk) {
+      return Promise.resolve(_this.database.storageToken).then(function (databaseStorageToken) {
+        var subDocs = _this.storageInstance.changeStream().subscribe(function (eventBulk) {
           var changeEventBulk = {
             id: eventBulk.id,
             internal: false,
-            collectionName: _this2.name,
+            collectionName: _this.name,
             storageToken: databaseStorageToken,
             events: eventBulk.events.map(function (ev) {
-              return storageChangeEventToRxChangeEvent(false, ev, _this2);
+              return storageChangeEventToRxChangeEvent(false, ev, _this);
             }),
-            databaseToken: _this2.database.token,
+            databaseToken: _this.database.token,
             checkpoint: eventBulk.checkpoint,
             context: eventBulk.context
           };
-          _this2.database.$emit(changeEventBulk);
+          _this.database.$emit(changeEventBulk);
         });
-        _this2._subs.push(subDocs);
+        _this._subs.push(subDocs);
 
         /**
          * When a write happens to the collection
          * we find the changed document in the docCache
          * and tell it that it has to change its data.
          */
-        _this2._subs.push(_this2.$.pipe(filter(function (cE) {
+        _this._subs.push(_this.$.pipe(filter(function (cE) {
           return !cE.isLocal;
         })).subscribe(function (cE) {
           // when data changes, send it to RxDocument in docCache
-          var doc = _this2._docCache.get(cE.documentId);
+          var doc = _this._docCache.get(cE.documentId);
           if (doc) {
             doc._handleChangeEvent(cE);
           }
@@ -108,9 +108,9 @@ export var RxCollectionBase = /*#__PURE__*/function () {
          * Resolve the conflict tasks
          * of the RxStorageInstance
          */
-        _this2._subs.push(_this2.storageInstance.conflictResultionTasks().subscribe(function (task) {
-          _this2.conflictHandler(task.input, task.context).then(function (output) {
-            _this2.storageInstance.resolveConflictResultionTask({
+        _this._subs.push(_this.storageInstance.conflictResultionTasks().subscribe(function (task) {
+          _this.conflictHandler(task.input, task.context).then(function (output) {
+            _this.storageInstance.resolveConflictResultionTask({
               id: task.id,
               output: output
             });
@@ -139,12 +139,12 @@ export var RxCollectionBase = /*#__PURE__*/function () {
   };
   _proto.insert = function insert(json) {
     try {
-      var _this4 = this;
+      var _this2 = this;
       // TODO do we need fillObjectDataBeforeInsert() here because it is also run at bulkInsert() later
-      var useJson = fillObjectDataBeforeInsert(_this4.schema, json);
-      return Promise.resolve(_this4.bulkInsert([useJson])).then(function (writeResult) {
+      var useJson = fillObjectDataBeforeInsert(_this2.schema, json);
+      return Promise.resolve(_this2.bulkInsert([useJson])).then(function (writeResult) {
         var isError = writeResult.error[0];
-        throwIfIsStorageWriteError(_this4, useJson[_this4.schema.primaryPath], json, isError);
+        throwIfIsStorageWriteError(_this2, useJson[_this2.schema.primaryPath], json, isError);
         var insertResult = ensureNotFalsy(writeResult.success[0]);
         return insertResult;
       });
@@ -154,10 +154,10 @@ export var RxCollectionBase = /*#__PURE__*/function () {
   };
   _proto.bulkInsert = function bulkInsert(docsData) {
     try {
-      var _temp4 = function _temp4(docs) {
+      var _temp3 = function _temp3(docs) {
         var docsMap = new Map();
         var insertRows = docs.map(function (doc) {
-          docsMap.set(doc[_this6.schema.primaryPath], doc);
+          docsMap.set(doc[_this3.schema.primaryPath], doc);
           var docData = Object.assign(doc, {
             _attachments: {},
             _meta: getDefaultRxDocumentMeta(),
@@ -169,7 +169,7 @@ export var RxCollectionBase = /*#__PURE__*/function () {
           };
           return row;
         });
-        return Promise.resolve(_this6.storageInstance.bulkWrite(insertRows, 'rx-collection-bulk-insert')).then(function (results) {
+        return Promise.resolve(_this3.storageInstance.bulkWrite(insertRows, 'rx-collection-bulk-insert')).then(function (results) {
           function _temp2() {
             return {
               success: rxDocuments,
@@ -179,20 +179,20 @@ export var RxCollectionBase = /*#__PURE__*/function () {
           // create documents
           var successDocData = Object.values(results.success);
           var rxDocuments = successDocData.map(function (writtenDocData) {
-            var doc = createRxDocument(_this6, writtenDocData);
+            var doc = createRxDocument(_this3, writtenDocData);
             return doc;
           });
           var _temp = function () {
-            if (_this6.hasHooks('post', 'insert')) {
+            if (_this3.hasHooks('post', 'insert')) {
               return Promise.resolve(Promise.all(rxDocuments.map(function (doc) {
-                return _this6._runHooks('post', 'insert', docsMap.get(doc.primary), doc);
+                return _this3._runHooks('post', 'insert', docsMap.get(doc.primary), doc);
               }))).then(function () {});
             }
           }();
           return _temp && _temp.then ? _temp.then(_temp2) : _temp2(_temp);
         });
       };
-      var _this6 = this;
+      var _this3 = this;
       /**
        * Optimization shortcut,
        * do nothing when called with an empty array
@@ -204,22 +204,22 @@ export var RxCollectionBase = /*#__PURE__*/function () {
         });
       }
       var useDocs = docsData.map(function (docData) {
-        var useDocData = fillObjectDataBeforeInsert(_this6.schema, docData);
+        var useDocData = fillObjectDataBeforeInsert(_this3.schema, docData);
         return useDocData;
       });
-      var _this5$hasHooks2 = _this6.hasHooks('pre', 'insert');
-      return Promise.resolve(_this5$hasHooks2 ? Promise.resolve(Promise.all(useDocs.map(function (doc) {
-        return _this6._runHooks('pre', 'insert', doc).then(function () {
+      var _this3$hasHooks = _this3.hasHooks('pre', 'insert');
+      return Promise.resolve(_this3$hasHooks ? Promise.resolve(Promise.all(useDocs.map(function (doc) {
+        return _this3._runHooks('pre', 'insert', doc).then(function () {
           return doc;
         });
-      }))).then(_temp4) : _temp4(useDocs));
+      }))).then(_temp3) : _temp3(useDocs));
     } catch (e) {
       return Promise.reject(e);
     }
   };
   _proto.bulkRemove = function bulkRemove(ids) {
     try {
-      var _this8 = this;
+      var _this4 = this;
       /**
        * Optimization shortcut,
        * do nothing when called with an empty array
@@ -230,7 +230,7 @@ export var RxCollectionBase = /*#__PURE__*/function () {
           error: []
         });
       }
-      return Promise.resolve(_this8.findByIds(ids)).then(function (rxDocumentMap) {
+      return Promise.resolve(_this4.findByIds(ids)).then(function (rxDocumentMap) {
         var docsData = [];
         var docsMap = new Map();
         Array.from(rxDocumentMap.values()).forEach(function (rxDocument) {
@@ -239,8 +239,8 @@ export var RxCollectionBase = /*#__PURE__*/function () {
           docsMap.set(rxDocument.primary, data);
         });
         return Promise.resolve(Promise.all(docsData.map(function (doc) {
-          var primary = doc[_this8.schema.primaryPath];
-          return _this8._runHooks('pre', 'remove', doc, rxDocumentMap.get(primary));
+          var primary = doc[_this4.schema.primaryPath];
+          return _this4._runHooks('pre', 'remove', doc, rxDocumentMap.get(primary));
         }))).then(function () {
           var removeDocs = docsData.map(function (doc) {
             var writeDoc = flatClone(doc);
@@ -250,12 +250,12 @@ export var RxCollectionBase = /*#__PURE__*/function () {
               document: writeDoc
             };
           });
-          return Promise.resolve(_this8.storageInstance.bulkWrite(removeDocs, 'rx-collection-bulk-remove')).then(function (results) {
+          return Promise.resolve(_this4.storageInstance.bulkWrite(removeDocs, 'rx-collection-bulk-remove')).then(function (results) {
             var successIds = Object.keys(results.success);
 
             // run hooks
             return Promise.resolve(Promise.all(successIds.map(function (id) {
-              return _this8._runHooks('post', 'remove', docsMap.get(id), rxDocumentMap.get(id));
+              return _this4._runHooks('post', 'remove', docsMap.get(id), rxDocumentMap.get(id));
             }))).then(function () {
               var rxDocuments = successIds.map(function (id) {
                 return rxDocumentMap.get(id);
@@ -278,29 +278,29 @@ export var RxCollectionBase = /*#__PURE__*/function () {
   ;
   _proto.bulkUpsert = function bulkUpsert(docsData) {
     try {
-      var _this10 = this;
+      var _this5 = this;
       var insertData = [];
       var useJsonByDocId = new Map();
       docsData.forEach(function (docData) {
-        var useJson = fillObjectDataBeforeInsert(_this10.schema, docData);
-        var primary = useJson[_this10.schema.primaryPath];
+        var useJson = fillObjectDataBeforeInsert(_this5.schema, docData);
+        var primary = useJson[_this5.schema.primaryPath];
         if (!primary) {
           throw newRxError('COL3', {
-            primaryPath: _this10.schema.primaryPath,
+            primaryPath: _this5.schema.primaryPath,
             data: useJson,
-            schema: _this10.schema.jsonSchema
+            schema: _this5.schema.jsonSchema
           });
         }
         useJsonByDocId.set(primary, useJson);
         insertData.push(useJson);
       });
-      return Promise.resolve(_this10.bulkInsert(insertData)).then(function (insertResult) {
+      return Promise.resolve(_this5.bulkInsert(insertData)).then(function (insertResult) {
         var ret = insertResult.success.slice(0);
         return Promise.resolve(Promise.all(insertResult.error.map(function (error) {
           var id = error.documentId;
           var writeData = getFromMapOrThrow(useJsonByDocId, id);
           var docDataInDb = ensureNotFalsy(error.documentInDb);
-          var doc = createRxDocument(_this10.asRxCollection, docDataInDb);
+          var doc = createRxDocument(_this5.asRxCollection, docDataInDb);
           return doc.atomicUpdate(function () {
             return writeData;
           });
@@ -327,7 +327,7 @@ export var RxCollectionBase = /*#__PURE__*/function () {
    * upserts to a RxDocument, uses atomicUpdate if document already exists
    */;
   _proto.atomicUpsert = function atomicUpsert(json) {
-    var _this11 = this;
+    var _this6 = this;
     var useJson = fillObjectDataBeforeInsert(this.schema, json);
     var primary = useJson[this.schema.primaryPath];
     if (!primary) {
@@ -342,7 +342,7 @@ export var RxCollectionBase = /*#__PURE__*/function () {
       queue = PROMISE_RESOLVE_VOID;
     }
     queue = queue.then(function () {
-      return _atomicUpsertEnsureRxDocumentExists(_this11, primary, useJson);
+      return _atomicUpsertEnsureRxDocumentExists(_this6, primary, useJson);
     }).then(function (wasInserted) {
       if (!wasInserted.inserted) {
         return _atomicUpsertUpdate(wasInserted.doc, useJson).then(function () {
@@ -408,13 +408,13 @@ export var RxCollectionBase = /*#__PURE__*/function () {
    */;
   _proto.findByIds = function findByIds(ids) {
     try {
-      var _this13 = this;
+      var _this7 = this;
       var ret = new Map();
       var mustBeQueried = [];
 
       // first try to fill from docCache
       ids.forEach(function (id) {
-        var doc = _this13._docCache.get(id);
+        var doc = _this7._docCache.get(id);
         if (doc) {
           ret.set(id, doc);
         } else {
@@ -423,17 +423,17 @@ export var RxCollectionBase = /*#__PURE__*/function () {
       });
 
       // find everything which was not in docCache
-      var _temp6 = function () {
+      var _temp4 = function () {
         if (mustBeQueried.length > 0) {
-          return Promise.resolve(_this13.storageInstance.findDocumentsById(mustBeQueried, false)).then(function (docs) {
+          return Promise.resolve(_this7.storageInstance.findDocumentsById(mustBeQueried, false)).then(function (docs) {
             Object.values(docs).forEach(function (docData) {
-              var doc = createRxDocument(_this13, docData);
+              var doc = createRxDocument(_this7, docData);
               ret.set(doc.primary, doc);
             });
           });
         }
       }();
-      return Promise.resolve(_temp6 && _temp6.then ? _temp6.then(function () {
+      return Promise.resolve(_temp4 && _temp4.then ? _temp4.then(function () {
         return ret;
       }) : ret);
     } catch (e) {
@@ -446,7 +446,7 @@ export var RxCollectionBase = /*#__PURE__*/function () {
    */
   ;
   _proto.findByIds$ = function findByIds$(ids) {
-    var _this14 = this;
+    var _this8 = this;
     var currentValue = null;
     var lastChangeEvent = -1;
 
@@ -455,7 +455,7 @@ export var RxCollectionBase = /*#__PURE__*/function () {
      */
     var queue = PROMISE_RESOLVE_VOID;
     var initialPromise = this.findByIds(ids).then(function (docsMap) {
-      lastChangeEvent = _this14._changeEventBuffer.counter;
+      lastChangeEvent = _this8._changeEventBuffer.counter;
       currentValue = docsMap;
     });
     var firstEmitDone = false;
@@ -489,29 +489,29 @@ export var RxCollectionBase = /*#__PURE__*/function () {
     mergeMap(function () {
       queue = queue.then(function () {
         try {
-          var _temp10 = function _temp10(_result) {
-            if (_exit2) return _result;
+          var _temp7 = function _temp7(_result) {
+            if (_exit) return _result;
             firstEmitDone = true;
             return currentValue;
           };
-          var _exit2 = false;
+          var _exit = false;
           /**
            * We first have to clone the Map
            * to ensure we do not create side effects by mutating
            * a Map that has already been returned before.
            */
           currentValue = new Map(ensureNotFalsy(currentValue));
-          var missedChangeEvents = _this14._changeEventBuffer.getFrom(lastChangeEvent + 1);
-          lastChangeEvent = _this14._changeEventBuffer.counter;
-          var _temp11 = function () {
+          var missedChangeEvents = _this8._changeEventBuffer.getFrom(lastChangeEvent + 1);
+          lastChangeEvent = _this8._changeEventBuffer.counter;
+          var _temp6 = function () {
             if (missedChangeEvents === null) {
               /**
                * changeEventBuffer is of bounds -> we must re-execute over the database
                * because we cannot calculate the new results just from the events.
                */
-              return Promise.resolve(_this14.findByIds(ids)).then(function (newResult) {
-                lastChangeEvent = _this14._changeEventBuffer.counter;
-                _exit2 = true;
+              return Promise.resolve(_this8.findByIds(ids)).then(function (newResult) {
+                lastChangeEvent = _this8._changeEventBuffer.counter;
+                _exit = true;
                 return newResult;
               });
             } else {
@@ -525,7 +525,7 @@ export var RxCollectionBase = /*#__PURE__*/function () {
                 var op = rxChangeEvent.operation;
                 if (op === 'INSERT' || op === 'UPDATE') {
                   resultHasChanged = true;
-                  var rxDocument = createRxDocument(_this14.asRxCollection, rxChangeEvent.documentData);
+                  var rxDocument = createRxDocument(_this8.asRxCollection, rxChangeEvent.documentData);
                   ensureNotFalsy(currentValue).set(docId, rxDocument);
                 } else {
                   if (ensureNotFalsy(currentValue).has(docId)) {
@@ -537,13 +537,13 @@ export var RxCollectionBase = /*#__PURE__*/function () {
 
               // nothing happened that affects the result -> do not emit
               if (!resultHasChanged && firstEmitDone) {
-                var _temp12 = false;
-                _exit2 = true;
-                return _temp12;
+                var _temp5 = false;
+                _exit = true;
+                return _temp5;
               }
             }
           }();
-          return Promise.resolve(_temp11 && _temp11.then ? _temp11.then(_temp10) : _temp10(_temp11));
+          return Promise.resolve(_temp6 && _temp6.then ? _temp6.then(_temp7) : _temp7(_temp6));
         } catch (e) {
           return Promise.reject(e);
         }
@@ -689,18 +689,18 @@ export var RxCollectionBase = /*#__PURE__*/function () {
    * so that no running timeouts prevent the exit of the JavaScript process.
    */;
   _proto.promiseWait = function promiseWait(time) {
-    var _this15 = this;
+    var _this9 = this;
     var ret = new Promise(function (res) {
       var timeout = setTimeout(function () {
-        _this15.timeouts["delete"](timeout);
+        _this9.timeouts["delete"](timeout);
         res();
       }, time);
-      _this15.timeouts.add(timeout);
+      _this9.timeouts.add(timeout);
     });
     return ret;
   };
   _proto.destroy = function destroy() {
-    var _this16 = this;
+    var _this10 = this;
     if (this.destroyed) {
       return PROMISE_RESOLVE_FALSE;
     }
@@ -727,11 +727,11 @@ export var RxCollectionBase = /*#__PURE__*/function () {
      * but the change is not added to the changes collection.
      */
     return this.database.requestIdlePromise().then(function () {
-      return Promise.all(_this16.onDestroy.map(function (fn) {
+      return Promise.all(_this10.onDestroy.map(function (fn) {
         return fn();
       }));
     }).then(function () {
-      return _this16.storageInstance.close();
+      return _this10.storageInstance.close();
     }).then(function () {
       /**
        * Unsubscribing must be done AFTER the storageInstance.close()
@@ -739,11 +739,11 @@ export var RxCollectionBase = /*#__PURE__*/function () {
        * otherwise there might be open conflicts to be resolved which
        * will then stuck and never resolve.
        */
-      _this16._subs.forEach(function (sub) {
+      _this10._subs.forEach(function (sub) {
         return sub.unsubscribe();
       });
-      delete _this16.database.collections[_this16.name];
-      return runAsyncPluginHooks('postDestroyRxCollection', _this16).then(function () {
+      delete _this10.database.collections[_this10.name];
+      return runAsyncPluginHooks('postDestroyRxCollection', _this10).then(function () {
         return true;
       });
     });
@@ -754,9 +754,9 @@ export var RxCollectionBase = /*#__PURE__*/function () {
    */;
   _proto.remove = function remove() {
     try {
-      var _this18 = this;
-      return Promise.resolve(_this18.destroy()).then(function () {
-        return Promise.resolve(removeCollectionStorages(_this18.database.storage, _this18.database.internalStore, _this18.database.token, _this18.database.name, _this18.name, _this18.database.hashFunction)).then(function () {});
+      var _this11 = this;
+      return Promise.resolve(_this11.destroy()).then(function () {
+        return Promise.resolve(removeCollectionStorages(_this11.database.storage, _this11.database.internalStore, _this11.database.token, _this11.database.name, _this11.name, _this11.database.hashFunction)).then(function () {});
       });
     } catch (e) {
       return Promise.reject(e);

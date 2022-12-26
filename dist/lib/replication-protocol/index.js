@@ -373,13 +373,13 @@ function rxStorageInstanceToReplicationHandler(instance, conflictHandler, hashFu
               var id = _ref[0],
                 row = _ref[1];
               var masterState = masterDocsState[id];
-              var _temp4 = function () {
+              var _temp3 = function () {
                 if (!masterState) {
                   writeRows.push({
                     document: (0, _helper.docStateToWriteDoc)(hashFunction, row.newDocumentState)
                   });
                 } else {
-                  var _temp5 = function () {
+                  var _temp4 = function () {
                     if (masterState && !row.assumedMasterState) {
                       conflicts.push((0, _helper.writeDocToDocState)(masterState));
                     } else return Promise.resolve(conflictHandler({
@@ -396,10 +396,10 @@ function rxStorageInstanceToReplicationHandler(instance, conflictHandler, hashFu
                       }
                     });
                   }();
-                  if (_temp5 && _temp5.then) return _temp5.then(function () {});
+                  if (_temp4 && _temp4.then) return _temp4.then(function () {});
                 }
               }();
-              return Promise.resolve(_temp4 && _temp4.then ? _temp4.then(function () {}) : void 0);
+              return Promise.resolve(_temp3 && _temp3.then ? _temp3.then(function () {}) : void 0);
             } catch (e) {
               return Promise.reject(e);
             }

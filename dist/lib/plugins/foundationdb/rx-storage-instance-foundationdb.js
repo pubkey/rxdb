@@ -37,8 +37,8 @@ var RxStorageInstanceFoundationDB = /*#__PURE__*/function () {
   var _proto = RxStorageInstanceFoundationDB.prototype;
   _proto.bulkWrite = function bulkWrite(documentWrites, context) {
     try {
-      var _this2 = this;
-      return Promise.resolve(_this2.internals.dbsPromise).then(function (dbs) {
+      var _this = this;
+      return Promise.resolve(_this.internals.dbsPromise).then(function (dbs) {
         var categorized = null;
         return Promise.resolve(dbs.root.doTransaction(function (tx) {
           try {
@@ -47,7 +47,7 @@ var RxStorageInstanceFoundationDB = /*#__PURE__*/function () {
               error: {}
             };
             var ids = documentWrites.map(function (row) {
-              return row.document[_this2.primaryPath];
+              return row.document[_this.primaryPath];
             });
             var mainTx = tx.at(dbs.main.subspace);
             var attachmentTx = tx.at(dbs.attachments.subspace);
@@ -65,12 +65,12 @@ var RxStorageInstanceFoundationDB = /*#__PURE__*/function () {
                 return Promise.reject(e);
               }
             }))).then(function () {
-              categorized = (0, _rxStorageHelper.categorizeBulkWriteRows)(_this2, _this2.primaryPath, docsInDB, documentWrites, context);
+              categorized = (0, _rxStorageHelper.categorizeBulkWriteRows)(_this, _this.primaryPath, docsInDB, documentWrites, context);
               ret.error = categorized.errors;
 
               // INSERTS
               categorized.bulkInsertDocs.forEach(function (writeRow) {
-                var docId = writeRow.document[_this2.primaryPath];
+                var docId = writeRow.document[_this.primaryPath];
                 ret.success[docId] = writeRow.document;
 
                 // insert document data
@@ -85,7 +85,7 @@ var RxStorageInstanceFoundationDB = /*#__PURE__*/function () {
               });
               // UPDATES
               categorized.bulkUpdateDocs.forEach(function (writeRow) {
-                var docId = writeRow.document[_this2.primaryPath];
+                var docId = writeRow.document[_this.primaryPath];
 
                 // overwrite document data
                 mainTx.set(docId, writeRow.document);
@@ -126,12 +126,12 @@ var RxStorageInstanceFoundationDB = /*#__PURE__*/function () {
            * to a document that does not already exist outside of the transaction.
            */
           if ((0, _util.ensureNotFalsy)(categorized).eventBulk.events.length > 0) {
-            var lastState = (0, _rxStorageHelper.getNewestOfDocumentStates)(_this2.primaryPath, Object.values(result.success));
+            var lastState = (0, _rxStorageHelper.getNewestOfDocumentStates)(_this.primaryPath, Object.values(result.success));
             (0, _util.ensureNotFalsy)(categorized).eventBulk.checkpoint = {
-              id: lastState[_this2.primaryPath],
+              id: lastState[_this.primaryPath],
               lwt: lastState._meta.lwt
             };
-            _this2.changes$.next((0, _util.ensureNotFalsy)(categorized).eventBulk);
+            _this.changes$.next((0, _util.ensureNotFalsy)(categorized).eventBulk);
           }
           return result;
         });
@@ -142,8 +142,8 @@ var RxStorageInstanceFoundationDB = /*#__PURE__*/function () {
   };
   _proto.findDocumentsById = function findDocumentsById(ids, withDeleted) {
     try {
-      var _this4 = this;
-      return Promise.resolve(_this4.internals.dbsPromise).then(function (dbs) {
+      var _this2 = this;
+      return Promise.resolve(_this2.internals.dbsPromise).then(function (dbs) {
         return dbs.main.doTransaction(function (tx) {
           try {
             var ret = {};
@@ -174,13 +174,13 @@ var RxStorageInstanceFoundationDB = /*#__PURE__*/function () {
   };
   _proto.count = function count(preparedQuery) {
     try {
-      var _this6 = this;
+      var _this3 = this;
       /**
        * At this point in time (end 2022), FoundationDB does not support
        * range counts. So we have to run a normal query and use the result set length.
        * @link https://github.com/apple/foundationdb/issues/5981
        */
-      return Promise.resolve(_this6.query(preparedQuery)).then(function (result) {
+      return Promise.resolve(_this3.query(preparedQuery)).then(function (result) {
         return {
           count: result.documents.length,
           mode: 'fast'
@@ -192,8 +192,8 @@ var RxStorageInstanceFoundationDB = /*#__PURE__*/function () {
   };
   _proto.getAttachmentData = function getAttachmentData(documentId, attachmentId) {
     try {
-      var _this8 = this;
-      return Promise.resolve(_this8.internals.dbsPromise).then(function (dbs) {
+      var _this4 = this;
+      return Promise.resolve(_this4.internals.dbsPromise).then(function (dbs) {
         return Promise.resolve(dbs.attachments.get((0, _memory.attachmentMapKey)(documentId, attachmentId))).then(function (attachment) {
           return attachment.data;
         });
@@ -204,18 +204,18 @@ var RxStorageInstanceFoundationDB = /*#__PURE__*/function () {
   };
   _proto.getChangedDocumentsSince = function getChangedDocumentsSince(limit, checkpoint) {
     try {
-      var _this10 = this;
+      var _this5 = this;
       var _require = require('foundationdb'),
         keySelector = _require.keySelector,
         StreamingMode = _require.StreamingMode;
-      return Promise.resolve(_this10.internals.dbsPromise).then(function (dbs) {
-        var index = ['_meta.lwt', _this10.primaryPath];
+      return Promise.resolve(_this5.internals.dbsPromise).then(function (dbs) {
+        var index = ['_meta.lwt', _this5.primaryPath];
         var indexName = (0, _foundationdbHelpers.getFoundationDBIndexName)(index);
         var indexMeta = dbs.indexes[indexName];
         var lowerBoundString = '';
         if (checkpoint) {
           var _checkpointPartialDoc;
-          var checkpointPartialDoc = (_checkpointPartialDoc = {}, _checkpointPartialDoc[_this10.primaryPath] = checkpoint.id, _checkpointPartialDoc._meta = {
+          var checkpointPartialDoc = (_checkpointPartialDoc = {}, _checkpointPartialDoc[_this5.primaryPath] = checkpoint.id, _checkpointPartialDoc._meta = {
             lwt: checkpoint.lwt
           }, _checkpointPartialDoc);
           lowerBoundString = indexMeta.getIndexableString(checkpointPartialDoc);
@@ -247,7 +247,7 @@ var RxStorageInstanceFoundationDB = /*#__PURE__*/function () {
           return {
             documents: result,
             checkpoint: lastDoc ? {
-              id: lastDoc[_this10.primaryPath],
+              id: lastDoc[_this5.primaryPath],
               lwt: lastDoc._meta.lwt
             } : checkpoint ? checkpoint : {
               id: '',
@@ -265,13 +265,13 @@ var RxStorageInstanceFoundationDB = /*#__PURE__*/function () {
   };
   _proto.remove = function remove() {
     try {
-      var _this12 = this;
-      return Promise.resolve(_this12.internals.dbsPromise).then(function (dbs) {
+      var _this6 = this;
+      return Promise.resolve(_this6.internals.dbsPromise).then(function (dbs) {
         return Promise.resolve(dbs.root.doTransaction(function (tx) {
           tx.clearRange('', _queryPlanner.INDEX_MAX);
           return _util.PROMISE_RESOLVE_VOID;
         })).then(function () {
-          return _this12.close();
+          return _this6.close();
         });
       });
     } catch (e) {
@@ -280,26 +280,26 @@ var RxStorageInstanceFoundationDB = /*#__PURE__*/function () {
   };
   _proto.cleanup = function cleanup(minimumDeletedTime) {
     try {
-      var _this14 = this;
+      var _this7 = this;
       var _require2 = require('foundationdb'),
         keySelector = _require2.keySelector,
         StreamingMode = _require2.StreamingMode;
       var maxDeletionTime = (0, _util.now)() - minimumDeletedTime;
-      return Promise.resolve(_this14.internals.dbsPromise).then(function (dbs) {
+      return Promise.resolve(_this7.internals.dbsPromise).then(function (dbs) {
         var index = _foundationdbHelpers.CLEANUP_INDEX;
         var indexName = (0, _foundationdbHelpers.getFoundationDBIndexName)(index);
         var indexMeta = dbs.indexes[indexName];
-        var lowerBoundString = (0, _customIndex.getStartIndexStringFromLowerBound)(_this14.schema, index, [true,
+        var lowerBoundString = (0, _customIndex.getStartIndexStringFromLowerBound)(_this7.schema, index, [true,
         /**
          * Do not use 0 here,
          * because 1 is the minimum value for _meta.lwt
          */
         1], false);
-        var upperBoundString = (0, _customIndex.getStartIndexStringFromUpperBound)(_this14.schema, index, [true, maxDeletionTime], true);
+        var upperBoundString = (0, _customIndex.getStartIndexStringFromUpperBound)(_this7.schema, index, [true, maxDeletionTime], true);
         var noMoreUndeleted = true;
         return Promise.resolve(dbs.root.doTransaction(function (tx) {
           try {
-            var batchSize = (0, _util.ensureNotFalsy)(_this14.settings.batchSize);
+            var batchSize = (0, _util.ensureNotFalsy)(_this7.settings.batchSize);
             var indexTx = tx.at(indexMeta.db.subspace);
             var mainTx = tx.at(dbs.main.subspace);
             return Promise.resolve(indexTx.getRangeAll(keySelector.firstGreaterThan(lowerBoundString), upperBoundString, {
@@ -348,13 +348,13 @@ var RxStorageInstanceFoundationDB = /*#__PURE__*/function () {
   };
   _proto.close = function close() {
     try {
-      var _this16 = this;
-      if (_this16.closed) {
+      var _this8 = this;
+      if (_this8.closed) {
         return Promise.reject(new Error('already closed'));
       }
-      _this16.closed = true;
-      _this16.changes$.complete();
-      return Promise.resolve(_this16.internals.dbsPromise).then(function (dbs) {
+      _this8.closed = true;
+      _this8.changes$.complete();
+      return Promise.resolve(_this8.internals.dbsPromise).then(function (dbs) {
         dbs.root.close();
 
         // TODO shouldn't we close the index databases?

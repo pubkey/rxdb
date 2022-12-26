@@ -14,8 +14,8 @@ var _localDocumentsHelper = require("./local-documents-helper");
 var _rxStorageHelper = require("../../rx-storage-helper");
 var getLocal = function getLocal(id) {
   try {
-    var _this5 = this;
-    return Promise.resolve((0, _localDocumentsHelper.getLocalDocStateByParent)(_this5)).then(function (state) {
+    var _this3 = this;
+    return Promise.resolve((0, _localDocumentsHelper.getLocalDocStateByParent)(_this3)).then(function (state) {
       var docCache = state.docCache;
 
       // check in doc-cache
@@ -24,7 +24,7 @@ var getLocal = function getLocal(id) {
         if (!docData) {
           return null;
         }
-        var doc = (0, _rxLocalDocument.createRxLocalDocument)(id, docData, _this5, state);
+        var doc = (0, _rxLocalDocument.createRxLocalDocument)(id, docData, _this3, state);
         return doc;
       })["catch"](function () {
         return null;
@@ -41,8 +41,8 @@ exports.getLocal = getLocal;
  */
 var insertLocal = function insertLocal(id, data) {
   try {
-    var _this2 = this;
-    return Promise.resolve((0, _localDocumentsHelper.getLocalDocStateByParent)(_this2)).then(function (state) {
+    var _this = this;
+    return Promise.resolve((0, _localDocumentsHelper.getLocalDocStateByParent)(_this)).then(function (state) {
       // create new one
       var docData = {
         id: id,
@@ -57,7 +57,7 @@ var insertLocal = function insertLocal(id, data) {
       }, 'local-document-insert').then(function (res) {
         docData = (0, _util.flatClone)(docData);
         docData._rev = res._rev;
-        var newDoc = (0, _rxLocalDocument.createRxLocalDocument)(id, docData, _this2, state);
+        var newDoc = (0, _rxLocalDocument.createRxLocalDocument)(id, docData, _this, state);
         return newDoc;
       });
     });
@@ -71,11 +71,11 @@ var insertLocal = function insertLocal(id, data) {
  */
 exports.insertLocal = insertLocal;
 function upsertLocal(id, data) {
-  var _this3 = this;
+  var _this2 = this;
   return this.getLocal(id).then(function (existing) {
     if (!existing) {
       // create new one
-      var docPromise = _this3.insertLocal(id, data);
+      var docPromise = _this2.insertLocal(id, data);
       return docPromise;
     } else {
       // update existing
@@ -88,7 +88,7 @@ function upsertLocal(id, data) {
   });
 }
 function getLocal$(id) {
-  var _this6 = this;
+  var _this4 = this;
   return this.$.pipe((0, _operators.startWith)(null), (0, _operators.mergeMap)(function (cE) {
     try {
       if (cE) {
@@ -96,7 +96,7 @@ function getLocal$(id) {
           changeEvent: cE
         });
       } else {
-        return Promise.resolve(_this6.getLocal(id)).then(function (doc) {
+        return Promise.resolve(_this4.getLocal(id)).then(function (doc) {
           return {
             doc: doc
           };
@@ -114,7 +114,7 @@ function getLocal$(id) {
             use: false
           });
         } else {
-          return Promise.resolve(_this6.getLocal(id)).then(function (doc) {
+          return Promise.resolve(_this4.getLocal(id)).then(function (doc) {
             return {
               use: true,
               doc: doc

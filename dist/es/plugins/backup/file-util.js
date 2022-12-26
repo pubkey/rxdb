@@ -8,7 +8,7 @@ import { blobBufferUtil, now } from '../../util';
 
 export var writeToFile = function writeToFile(location, data) {
   try {
-    var _temp3 = function _temp3() {
+    var _temp2 = function _temp2() {
       return new Promise(function (res, rej) {
         fs.writeFile(location, data, 'utf-8', function (err) {
           if (err) {
@@ -19,14 +19,14 @@ export var writeToFile = function writeToFile(location, data) {
         });
       });
     };
-    var _temp4 = function () {
+    var _temp = function () {
       if (typeof data !== 'string') {
         return Promise.resolve(blobBufferUtil.toString(data)).then(function (_blobBufferUtil$toStr) {
           data = _blobBufferUtil$toStr;
         });
       }
     }();
-    return Promise.resolve(_temp4 && _temp4.then ? _temp4.then(_temp3) : _temp3(_temp4));
+    return Promise.resolve(_temp && _temp.then ? _temp.then(_temp2) : _temp2(_temp));
   } catch (e) {
     return Promise.reject(e);
   }

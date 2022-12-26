@@ -224,8 +224,8 @@ var RxDatabaseBase = /*#__PURE__*/function () {
    */;
   _proto.removeCollectionDoc = function removeCollectionDoc(name, schema) {
     try {
-      var _this3 = this;
-      return Promise.resolve((0, _rxStorageHelper.getSingleDocument)(_this3.internalStore, (0, _rxDatabaseInternalStore.getPrimaryKeyOfInternalDocument)((0, _rxDatabaseInternalStore._collectionNamePrimary)(name, schema), _rxDatabaseInternalStore.INTERNAL_CONTEXT_COLLECTION))).then(function (doc) {
+      var _this2 = this;
+      return Promise.resolve((0, _rxStorageHelper.getSingleDocument)(_this2.internalStore, (0, _rxDatabaseInternalStore.getPrimaryKeyOfInternalDocument)((0, _rxDatabaseInternalStore._collectionNamePrimary)(name, schema), _rxDatabaseInternalStore.INTERNAL_CONTEXT_COLLECTION))).then(function (doc) {
         if (!doc) {
           throw (0, _rxError.newRxError)('SNH', {
             name: name,
@@ -234,7 +234,7 @@ var RxDatabaseBase = /*#__PURE__*/function () {
         }
         var writeDoc = (0, _rxStorageHelper.flatCloneDocWithMeta)(doc);
         writeDoc._deleted = true;
-        return Promise.resolve(_this3.internalStore.bulkWrite([{
+        return Promise.resolve(_this2.internalStore.bulkWrite([{
           document: writeDoc,
           previous: doc
         }], 'rx-database-remove-collection')).then(function () {});
@@ -252,7 +252,7 @@ var RxDatabaseBase = /*#__PURE__*/function () {
   ;
   _proto.addCollections = function addCollections(collectionCreators) {
     try {
-      var _this5 = this;
+      var _this3 = this;
       var jsonSchemas = {};
       var schemas = {};
       var bulkPutDocs = [];
@@ -267,7 +267,7 @@ var RxDatabaseBase = /*#__PURE__*/function () {
         schemas[collectionName] = schema;
 
         // collection already exists
-        if (_this5.collections[name]) {
+        if (_this3.collections[name]) {
           throw (0, _rxError.newRxError)('DB3', {
             name: name
           });
@@ -295,19 +295,19 @@ var RxDatabaseBase = /*#__PURE__*/function () {
         var useArgs = Object.assign({}, args, {
           name: collectionName,
           schema: schema,
-          database: _this5
+          database: _this3
         });
 
         // run hooks
         var hookData = (0, _util.flatClone)(args);
-        hookData.database = _this5;
+        hookData.database = _this3;
         hookData.name = name;
         (0, _hooks.runPluginHooks)('preCreateRxCollection', hookData);
         useArgs.conflictHandler = hookData.conflictHandler;
         useArgsByCollectionName[collectionName] = useArgs;
       });
-      return Promise.resolve(_this5.internalStore.bulkWrite(bulkPutDocs, 'rx-database-add-collection')).then(function (putDocsResult) {
-        return Promise.resolve(ensureNoStartupErrors(_this5)).then(function () {
+      return Promise.resolve(_this3.internalStore.bulkWrite(bulkPutDocs, 'rx-database-add-collection')).then(function (putDocsResult) {
+        return Promise.resolve(ensureNoStartupErrors(_this3)).then(function () {
           Object.entries(putDocsResult.error).forEach(function (_ref2) {
             var _id = _ref2[0],
               error = _ref2[1];
@@ -317,7 +317,7 @@ var RxDatabaseBase = /*#__PURE__*/function () {
             // collection already exists but has different schema
             if (docInDb.data.schemaHash !== schema.hash) {
               throw (0, _rxError.newRxError)('DB6', {
-                database: _this5.name,
+                database: _this3.name,
                 collection: collectionName,
                 previousSchemaHash: docInDb.data.schemaHash,
                 schemaHash: schema.hash,
@@ -334,11 +334,11 @@ var RxDatabaseBase = /*#__PURE__*/function () {
                 ret[collectionName] = collection;
 
                 // set as getter to the database
-                _this5.collections[collectionName] = collection;
-                if (!_this5[collectionName]) {
-                  Object.defineProperty(_this5, collectionName, {
+                _this3.collections[collectionName] = collection;
+                if (!_this3[collectionName]) {
+                  Object.defineProperty(_this3, collectionName, {
                     get: function get() {
-                      return _this5.collections[collectionName];
+                      return _this3.collections[collectionName];
                     }
                   });
                 }
@@ -409,21 +409,21 @@ var RxDatabaseBase = /*#__PURE__*/function () {
    */;
   _proto.destroy = function destroy() {
     try {
-      var _this7 = this;
-      if (_this7.destroyed) {
+      var _this4 = this;
+      if (_this4.destroyed) {
         return Promise.resolve(_util.PROMISE_RESOLVE_FALSE);
       }
 
       // settings destroyed = true must be the first thing to do.
-      _this7.destroyed = true;
-      return Promise.resolve((0, _hooks.runAsyncPluginHooks)('preDestroyRxDatabase', _this7)).then(function () {
+      _this4.destroyed = true;
+      return Promise.resolve((0, _hooks.runAsyncPluginHooks)('preDestroyRxDatabase', _this4)).then(function () {
         /**
          * Complete the event stream
          * to stop all subscribers who forgot to unsubscribe.
          */
-        _this7.eventBulks$.complete();
+        _this4.eventBulks$.complete();
         DB_COUNT--;
-        _this7._subs.map(function (sub) {
+        _this4._subs.map(function (sub) {
           return sub.unsubscribe();
         });
 
@@ -433,26 +433,26 @@ var RxDatabaseBase = /*#__PURE__*/function () {
          * TODO we should not need the pseudo instance on runtime.
          * we should generate the property list on build time.
          */
-        return _this7.name === 'pseudoInstance' ? _util.PROMISE_RESOLVE_FALSE : _this7.requestIdlePromise().then(function () {
-          return Promise.all(_this7.onDestroy.map(function (fn) {
+        return _this4.name === 'pseudoInstance' ? _util.PROMISE_RESOLVE_FALSE : _this4.requestIdlePromise().then(function () {
+          return Promise.all(_this4.onDestroy.map(function (fn) {
             return fn();
           }));
         })
         // destroy all collections
         .then(function () {
-          return Promise.all(Object.keys(_this7.collections).map(function (key) {
-            return _this7.collections[key];
+          return Promise.all(Object.keys(_this4.collections).map(function (key) {
+            return _this4.collections[key];
           }).map(function (col) {
             return col.destroy();
           }));
         })
         // destroy internal storage instances
         .then(function () {
-          return _this7.internalStore.close();
+          return _this4.internalStore.close();
         })
         // remove combination from USED_COMBINATIONS-map
         .then(function () {
-          return USED_DATABASE_NAMES["delete"](_this7.name);
+          return USED_DATABASE_NAMES["delete"](_this4.name);
         }).then(function () {
           return true;
         });
@@ -467,9 +467,9 @@ var RxDatabaseBase = /*#__PURE__*/function () {
    */
   ;
   _proto.remove = function remove() {
-    var _this8 = this;
+    var _this5 = this;
     return this.destroy().then(function () {
-      return removeRxDatabase(_this8.name, _this8.storage);
+      return removeRxDatabase(_this5.name, _this5.storage);
     });
   };
   (0, _createClass2["default"])(RxDatabaseBase, [{

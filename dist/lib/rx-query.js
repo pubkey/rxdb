@@ -38,7 +38,7 @@ var queryCollection = function queryCollection(rxQuery) {
      * then we do not have to use the slow query() method
      * but instead can use findDocumentsById()
      */
-    var _temp2 = function () {
+    var _temp = function () {
       if (rxQuery.isFindOneByIdQuery) {
         var docId = rxQuery.isFindOneByIdQuery;
         return Promise.resolve(_collection.storageInstance.findDocumentsById([docId], false)).then(function (docsMap) {
@@ -54,7 +54,7 @@ var queryCollection = function queryCollection(rxQuery) {
         });
       }
     }();
-    return Promise.resolve(_temp2 && _temp2.then ? _temp2.then(function () {
+    return Promise.resolve(_temp && _temp.then ? _temp.then(function () {
       return docs;
     }) : docs);
   } catch (e) {

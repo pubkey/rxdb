@@ -25,8 +25,8 @@ export function exposeRxStorageRemote(settings) {
     return msg.method === 'create';
   })).subscribe(function (msg) {
     try {
-      var _temp4 = function _temp4(_result2) {
-        if (_exit2) return _result2;
+      var _temp3 = function _temp3(_result2) {
+        if (_exit) return _result2;
         state.connectionIds.add(msg.connectionId);
         var subs = [];
         /**
@@ -101,7 +101,7 @@ export function exposeRxStorageRemote(settings) {
         }));
         settings.send(createAnswer(msg, 'ok'));
       };
-      var _exit2 = false;
+      var _exit = false;
       var connectionId = msg.connectionId;
       /**
        * Do an isArray check here
@@ -120,9 +120,9 @@ export function exposeRxStorageRemote(settings) {
        */
       var fullName = [params.databaseName, params.collectionName, params.schema.version].join('|');
       var state = instanceByFullName.get(fullName);
-      var _temp5 = function () {
+      var _temp2 = function () {
         if (!state) {
-          var _temp6 = _catch(function () {
+          var _temp = _catch(function () {
             return Promise.resolve(settings.storage.createStorageInstance(params)).then(function (newRxStorageInstance) {
               state = {
                 storageInstance: newRxStorageInstance,
@@ -133,16 +133,16 @@ export function exposeRxStorageRemote(settings) {
             });
           }, function (err) {
             settings.send(createErrorAnswer(msg, err));
-            _exit2 = true;
+            _exit = true;
           });
-          if (_temp6 && _temp6.then) return _temp6.then(function () {});
+          if (_temp && _temp.then) return _temp.then(function () {});
         } else {
           if (!deepEqual(params.schema, state.params.schema)) {
             settings.send(createErrorAnswer(msg, new Error('Remote storage: schema not equal to existing storage')));
           }
         }
       }();
-      return Promise.resolve(_temp5 && _temp5.then ? _temp5.then(_temp4) : _temp4(_temp5));
+      return Promise.resolve(_temp2 && _temp2.then ? _temp2.then(_temp3) : _temp3(_temp2));
     } catch (e) {
       return Promise.reject(e);
     }

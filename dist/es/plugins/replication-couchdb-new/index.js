@@ -316,7 +316,7 @@ export function syncCouchDBNew(options) {
       var batchSize = options.pull && options.pull.batchSize ? options.pull.batchSize : 20;
       (function () {
         try {
-          var _temp4 = _for(function () {
+          var _temp3 = _for(function () {
             return !replicationState.isStopped();
           }, void 0, function () {
             function _temp2() {
@@ -352,7 +352,7 @@ export function syncCouchDBNew(options) {
             });
             return _temp && _temp.then ? _temp.then(_temp2) : _temp2(_temp);
           });
-          return _temp4 && _temp4.then ? _temp4.then(function () {}) : void 0;
+          return _temp3 && _temp3.then ? _temp3.then(function () {}) : void 0;
         } catch (e) {
           Promise.reject(e);
         }

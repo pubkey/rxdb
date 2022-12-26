@@ -95,13 +95,13 @@ export var RxStoragePouch = /*#__PURE__*/function () {
   };
   _proto.createStorageInstance = function createStorageInstance(params) {
     try {
-      var _this2 = this;
+      var _this = this;
       ensureRxStorageInstanceParamsAreCorrect(params);
       var pouchLocation = getPouchLocation(params.databaseName, params.collectionName, params.schema.version);
-      return Promise.resolve(_this2.createPouch(pouchLocation, params.options)).then(function (pouch) {
+      return Promise.resolve(_this.createPouch(pouchLocation, params.options)).then(function (pouch) {
         return Promise.resolve(createIndexesOnPouch(pouch, params.schema)).then(function () {
           var pouchInstanceId = openPouchId(params.databaseInstanceToken, params.databaseName, params.collectionName, params.schema.version);
-          var instance = new RxStorageInstancePouch(_this2, params.databaseName, params.collectionName, params.schema, {
+          var instance = new RxStorageInstancePouch(_this, params.databaseName, params.collectionName, params.schema, {
             pouch: pouch,
             pouchInstanceId: pouchInstanceId
           }, params.options);

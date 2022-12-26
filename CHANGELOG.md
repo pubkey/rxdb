@@ -2,13 +2,17 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- ADD [Vite Vanilla Typescript Example](https://github.com/pubkey/rxdb/tree/master/examples/vite-vanilla-ts) Thanks [@SebasG22](https://github.com/SebasG22)
-- ADD [Use exports field in package.json](https://github.com/pubkey/rxdb/pull/4196) Thanks [@SebasG22](https://github.com/SebasG22) and [@swnf](https://github.com/swnf)
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 13.16.0 (26 December 2022)
+
+- ADD [Vite Vanilla Typescript Example](https://github.com/pubkey/rxdb/tree/master/examples/vite-vanilla-ts) Thanks [@SebasG22](https://github.com/SebasG22)
+- ADD [Use exports field in package.json](https://github.com/pubkey/rxdb/pull/4196) Thanks [@SebasG22](https://github.com/SebasG22) and [@swnf](https://github.com/swnf)
 
 ### 13.15.3 (13 December 2022)
 

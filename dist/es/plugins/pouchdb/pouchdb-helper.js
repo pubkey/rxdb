@@ -24,9 +24,9 @@ export var writeAttachmentsToAttachments = function writeAttachmentsToAttachment
          * so we have to remove the data to have a
          * non-write attachment.
          */
-        var _temp4 = function () {
+        var _temp3 = function () {
           if (obj.data) {
-            var _temp5 = function _temp5(dataAsBase64String) {
+            var _temp2 = function _temp2(dataAsBase64String) {
               return Promise.resolve(hashAttachmentData(dataAsBase64String)).then(function (hash) {
                 var length = getAttachmentSize(dataAsBase64String);
                 ret[key] = {
@@ -42,13 +42,13 @@ export var writeAttachmentsToAttachments = function writeAttachmentsToAttachment
             if (isBuffer) {
               data = new Blob([data]);
             }
-            var _temp6 = typeof data === 'string';
-            return _temp6 ? _temp5(data) : Promise.resolve(blobBufferUtil.toBase64String(data)).then(_temp5);
+            var _temp = typeof data === 'string';
+            return _temp ? _temp2(data) : Promise.resolve(blobBufferUtil.toBase64String(data)).then(_temp2);
           } else {
             ret[key] = obj;
           }
         }();
-        return Promise.resolve(_temp4 && _temp4.then ? _temp4.then(function () {}) : void 0);
+        return Promise.resolve(_temp3 && _temp3.then ? _temp3.then(function () {}) : void 0);
       } catch (e) {
         return Promise.reject(e);
       }

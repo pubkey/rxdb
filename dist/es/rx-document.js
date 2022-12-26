@@ -389,19 +389,19 @@ export var basePrototype = {
     return new Promise(function (res, rej) {
       _this2._atomicQueue = _this2._atomicQueue.then(function () {
         try {
-          var _temp6 = function _temp6(_result3) {
-            if (_exit2) return _result3;
+          var _temp5 = function _temp5(_result3) {
+            if (_exit) return _result3;
             res(_this2);
           };
-          var _exit2 = false;
+          var _exit = false;
           var done = false;
           // we need a hacky while loop to stay incide the chain-link of _atomicQueue
           // while still having the option to run a retry on conflicts
-          var _temp7 = _for(function () {
-            return !_exit2 && !done;
+          var _temp4 = _for(function () {
+            return !_exit && !done;
           }, void 0, function () {
             function _temp3(_result) {
-              if (_exit2) return _result;
+              if (_exit) return _result;
               var _temp = _catch(function () {
                 return Promise.resolve(_this2._saveData(newData, oldData)).then(function () {
                   done = true;
@@ -418,7 +418,7 @@ export var basePrototype = {
                 var isConflict = isBulkWriteConflictError(useError);
                 if (isConflict) {} else {
                   rej(useError);
-                  _exit2 = true;
+                  _exit = true;
                 }
               });
               if (_temp && _temp.then) return _temp.then(function () {});
@@ -435,11 +435,11 @@ export var basePrototype = {
               });
             }, function (err) {
               rej(err);
-              _exit2 = true;
+              _exit = true;
             });
             return _temp2 && _temp2.then ? _temp2.then(_temp3) : _temp3(_temp2);
           });
-          return Promise.resolve(_temp7 && _temp7.then ? _temp7.then(_temp6) : _temp6(_temp7));
+          return Promise.resolve(_temp4 && _temp4.then ? _temp4.then(_temp5) : _temp5(_temp4));
         } catch (e) {
           return Promise.reject(e);
         }
@@ -465,14 +465,14 @@ export var basePrototype = {
    */
   _saveData: function _saveData(newData, oldData) {
     try {
-      var _this4 = this;
+      var _this3 = this;
       newData = flatClone(newData);
 
       // deleted documents cannot be changed
-      if (_this4._data._deleted) {
+      if (_this3._data._deleted) {
         throw newRxError('DOC11', {
-          id: _this4.primary,
-          document: _this4
+          id: _this3.primary,
+          document: _this3
         });
       }
 
@@ -486,16 +486,16 @@ export var basePrototype = {
 
       // ensure modifications are ok
       if (overwritable.isDevMode()) {
-        _this4.collection.schema.validateChange(oldData, newData);
+        _this3.collection.schema.validateChange(oldData, newData);
       }
-      return Promise.resolve(_this4.collection._runHooks('pre', 'save', newData, _this4)).then(function () {
-        return Promise.resolve(_this4.collection.storageInstance.bulkWrite([{
+      return Promise.resolve(_this3.collection._runHooks('pre', 'save', newData, _this3)).then(function () {
+        return Promise.resolve(_this3.collection.storageInstance.bulkWrite([{
           previous: oldData,
           document: newData
         }], 'rx-document-save-data')).then(function (writeResult) {
-          var isError = writeResult.error[_this4.primary];
-          throwIfIsStorageWriteError(_this4.collection, _this4.primary, newData, isError);
-          return _this4.collection._runHooks('post', 'save', newData, _this4);
+          var isError = writeResult.error[_this3.primary];
+          throwIfIsStorageWriteError(_this3.collection, _this3.primary, newData, isError);
+          return _this3.collection._runHooks('post', 'save', newData, _this3);
         });
       });
     } catch (e) {
@@ -508,7 +508,7 @@ export var basePrototype = {
    * instead we keep the values and only set _deleted: true
    */
   remove: function remove() {
-    var _this5 = this;
+    var _this4 = this;
     var collection = this.collection;
     if (this.deleted) {
       return Promise.reject(newRxError('DOC13', {
@@ -521,20 +521,20 @@ export var basePrototype = {
       try {
         deletedData._deleted = true;
         return Promise.resolve(collection.storageInstance.bulkWrite([{
-          previous: _this5._data,
+          previous: _this4._data,
           document: deletedData
         }], 'rx-document-remove')).then(function (writeResult) {
-          var isError = writeResult.error[_this5.primary];
-          throwIfIsStorageWriteError(collection, _this5.primary, deletedData, isError);
-          return ensureNotFalsy(writeResult.success[_this5.primary]);
+          var isError = writeResult.error[_this4.primary];
+          throwIfIsStorageWriteError(collection, _this4.primary, deletedData, isError);
+          return ensureNotFalsy(writeResult.success[_this4.primary]);
         });
       } catch (e) {
         return Promise.reject(e);
       }
     }).then(function () {
-      return _this5.collection._runHooks('post', 'remove', deletedData, _this5);
+      return _this4.collection._runHooks('post', 'remove', deletedData, _this4);
     }).then(function () {
-      return _this5;
+      return _this4;
     });
   },
   destroy: function destroy() {

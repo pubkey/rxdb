@@ -21,9 +21,9 @@ var _modifyjs = _interopRequireDefault(require("modifyjs"));
 var _ = require("../..");
 var insertCRDT = function insertCRDT(entry) {
   try {
-    var _this4 = this;
+    var _this2 = this;
     entry = _.overwritable.deepFreezeWhenDevMode(entry);
-    var jsonSchema = _this4.schema.jsonSchema;
+    var jsonSchema = _this2.schema.jsonSchema;
     if (!jsonSchema.crdt) {
       throw (0, _rxError.newRxError)('CRDT1', {
         schema: jsonSchema,
@@ -31,14 +31,14 @@ var insertCRDT = function insertCRDT(entry) {
       });
     }
     var crdtOptions = (0, _util.ensureNotFalsy)(jsonSchema.crdt);
-    return Promise.resolve(_this4.database.storageToken).then(function (storageToken) {
+    return Promise.resolve(_this2.database.storageToken).then(function (storageToken) {
       var operation = {
         body: Array.isArray(entry) ? entry : [entry],
         creator: storageToken,
         time: (0, _util.now)()
       };
       var insertData = {};
-      insertData = runOperationOnDocument(_this4.database.storage.statics, _this4.schema.jsonSchema, insertData, operation);
+      insertData = runOperationOnDocument(_this2.database.storage.statics, _this2.schema.jsonSchema, insertData, operation);
       var crdtDocField = {
         operations: [],
         hash: ''
@@ -46,12 +46,12 @@ var insertCRDT = function insertCRDT(entry) {
       _objectPath["default"].set(insertData, crdtOptions.field, crdtDocField);
       var lastAr = [operation];
       crdtDocField.operations.push(lastAr);
-      crdtDocField.hash = hashCRDTOperations(_this4.database.hashFunction, crdtDocField);
-      return Promise.resolve(_this4.insert(insertData)["catch"](function (err) {
+      crdtDocField.hash = hashCRDTOperations(_this2.database.hashFunction, crdtDocField);
+      return Promise.resolve(_this2.insert(insertData)["catch"](function (err) {
         try {
           if (err.code === 'COL19') {
             // was a conflict, update document instead of inserting
-            return Promise.resolve(_this4.findOne(err.parameters.id).exec(true)).then(function (doc) {
+            return Promise.resolve(_this2.findOne(err.parameters.id).exec(true)).then(function (doc) {
               return doc.updateCRDT(entry);
             });
           } else {
@@ -69,9 +69,9 @@ var insertCRDT = function insertCRDT(entry) {
 exports.insertCRDT = insertCRDT;
 var updateCRDT = function updateCRDT(entry) {
   try {
-    var _this2 = this;
+    var _this = this;
     entry = _.overwritable.deepFreezeWhenDevMode(entry);
-    var jsonSchema = _this2.collection.schema.jsonSchema;
+    var jsonSchema = _this.collection.schema.jsonSchema;
     if (!jsonSchema.crdt) {
       throw (0, _rxError.newRxError)('CRDT1', {
         schema: jsonSchema,
@@ -79,8 +79,8 @@ var updateCRDT = function updateCRDT(entry) {
       });
     }
     var crdtOptions = (0, _util.ensureNotFalsy)(jsonSchema.crdt);
-    return Promise.resolve(_this2.collection.database.storageToken).then(function (storageToken) {
-      return _this2.atomicUpdate(function (docData, rxDoc) {
+    return Promise.resolve(_this.collection.database.storageToken).then(function (storageToken) {
+      return _this.atomicUpdate(function (docData, rxDoc) {
         var crdtDocField = (0, _util.clone)(_objectPath["default"].get(docData, crdtOptions.field));
         var operation = {
           body: Array.isArray(entry) ? entry : [entry],
@@ -94,10 +94,10 @@ var updateCRDT = function updateCRDT(entry) {
          */
         var lastAr = [operation];
         crdtDocField.operations.push(lastAr);
-        crdtDocField.hash = hashCRDTOperations(_this2.collection.database.hashFunction, crdtDocField);
+        crdtDocField.hash = hashCRDTOperations(_this.collection.database.hashFunction, crdtDocField);
         var newDocData = (0, _util.clone)(rxDoc.toJSON());
         newDocData._deleted = rxDoc._data._deleted;
-        newDocData = runOperationOnDocument(_this2.collection.database.storage.statics, _this2.collection.schema.jsonSchema, newDocData, operation);
+        newDocData = runOperationOnDocument(_this.collection.database.storage.statics, _this.collection.schema.jsonSchema, newDocData, operation);
         _objectPath["default"].set(newDocData, crdtOptions.field, crdtDocField);
 
         // add other internal fields

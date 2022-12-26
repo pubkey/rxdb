@@ -23,13 +23,13 @@ var RxStorageRemote = /*#__PURE__*/function () {
   };
   _proto.createStorageInstance = function createStorageInstance(params) {
     try {
-      var _this2 = this;
-      var requestId = _this2.getRequestId();
-      var waitForOkPromise = (0, _rxjs.firstValueFrom)(_this2.settings.messages$.pipe((0, _rxjs.filter)(function (msg) {
+      var _this = this;
+      var requestId = _this.getRequestId();
+      var waitForOkPromise = (0, _rxjs.firstValueFrom)(_this.settings.messages$.pipe((0, _rxjs.filter)(function (msg) {
         return msg.answerTo === requestId;
       })));
-      _this2.settings.send({
-        connectionId: _this2.getRequestId(),
+      _this.settings.send({
+        connectionId: _this.getRequestId(),
         method: 'create',
         requestId: requestId,
         params: params
@@ -38,7 +38,7 @@ var RxStorageRemote = /*#__PURE__*/function () {
         if (waitForOkResult.error) {
           throw new Error('could not create instance ' + JSON.stringify(waitForOkResult.error));
         }
-        return new RxStorageInstanceRemote(_this2, params.databaseName, params.collectionName, params.schema, {
+        return new RxStorageInstanceRemote(_this, params.databaseName, params.collectionName, params.schema, {
           params: params,
           connectionId: (0, _eventReduceJs.ensureNotFalsy)(waitForOkResult.connectionId)
         }, params.options);
@@ -52,7 +52,7 @@ var RxStorageRemote = /*#__PURE__*/function () {
 exports.RxStorageRemote = RxStorageRemote;
 var RxStorageInstanceRemote = /*#__PURE__*/function () {
   function RxStorageInstanceRemote(storage, databaseName, collectionName, schema, internals, options) {
-    var _this3 = this;
+    var _this2 = this;
     this.changes$ = new _rxjs.Subject();
     this.conflicts$ = new _rxjs.Subject();
     this.subs = [];
@@ -64,32 +64,32 @@ var RxStorageInstanceRemote = /*#__PURE__*/function () {
     this.internals = internals;
     this.options = options;
     this.messages$ = this.storage.settings.messages$.pipe((0, _rxjs.filter)(function (msg) {
-      return msg.connectionId === _this3.internals.connectionId;
+      return msg.connectionId === _this2.internals.connectionId;
     }));
     this.subs.push(this.messages$.subscribe(function (msg) {
       if (msg.method === 'changeStream') {
-        _this3.changes$.next(msg["return"]);
+        _this2.changes$.next(msg["return"]);
       }
       if (msg.method === 'conflictResultionTasks') {
-        _this3.conflicts$.next(msg["return"]);
+        _this2.conflicts$.next(msg["return"]);
       }
     }));
   }
   var _proto2 = RxStorageInstanceRemote.prototype;
   _proto2.requestRemote = function requestRemote(methodName, params) {
     try {
-      var _this5 = this;
-      var requestId = _this5.storage.getRequestId();
-      var responsePromise = (0, _rxjs.firstValueFrom)(_this5.messages$.pipe((0, _rxjs.filter)(function (msg) {
+      var _this3 = this;
+      var requestId = _this3.storage.getRequestId();
+      var responsePromise = (0, _rxjs.firstValueFrom)(_this3.messages$.pipe((0, _rxjs.filter)(function (msg) {
         return msg.answerTo === requestId;
       })));
       var message = {
-        connectionId: _this5.internals.connectionId,
+        connectionId: _this3.internals.connectionId,
         requestId: requestId,
         method: methodName,
         params: params
       };
-      _this5.storage.settings.send(message);
+      _this3.storage.settings.send(message);
       return Promise.resolve(responsePromise).then(function (response) {
         if (response.error) {
           throw new Error('could not requestRemote: ' + JSON.stringify(response.error));
@@ -127,25 +127,25 @@ var RxStorageInstanceRemote = /*#__PURE__*/function () {
   };
   _proto2.close = function close() {
     try {
-      var _this7 = this;
-      if (_this7.closed) {
+      var _this4 = this;
+      if (_this4.closed) {
         return Promise.reject(new Error('already closed'));
       }
-      _this7.closed = true;
-      _this7.subs.forEach(function (sub) {
+      _this4.closed = true;
+      _this4.subs.forEach(function (sub) {
         return sub.unsubscribe();
       });
-      _this7.changes$.complete();
-      return Promise.resolve(_this7.requestRemote('close', [])).then(function () {});
+      _this4.changes$.complete();
+      return Promise.resolve(_this4.requestRemote('close', [])).then(function () {});
     } catch (e) {
       return Promise.reject(e);
     }
   };
   _proto2.remove = function remove() {
     try {
-      var _this9 = this;
-      _this9.closed = true;
-      return Promise.resolve(_this9.requestRemote('remove', [])).then(function () {});
+      var _this5 = this;
+      _this5.closed = true;
+      return Promise.resolve(_this5.requestRemote('remove', [])).then(function () {});
     } catch (e) {
       return Promise.reject(e);
     }
@@ -155,8 +155,8 @@ var RxStorageInstanceRemote = /*#__PURE__*/function () {
   };
   _proto2.resolveConflictResultionTask = function resolveConflictResultionTask(taskSolution) {
     try {
-      var _this11 = this;
-      return Promise.resolve(_this11.requestRemote('resolveConflictResultionTask', [taskSolution])).then(function () {});
+      var _this6 = this;
+      return Promise.resolve(_this6.requestRemote('resolveConflictResultionTask', [taskSolution])).then(function () {});
     } catch (e) {
       return Promise.reject(e);
     }

@@ -308,23 +308,23 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
   };
   _proto.remove = function remove() {
     try {
-      var _this3 = this;
-      ensureNotClosed(_this3);
-      _this3.closed = true;
-      _this3.subs.forEach(function (sub) {
+      var _this2 = this;
+      ensureNotClosed(_this2);
+      _this2.closed = true;
+      _this2.subs.forEach(function (sub) {
         return sub.unsubscribe();
       });
-      _pouchdbHelper.OPEN_POUCHDB_STORAGE_INSTANCES["delete"](_this3);
-      _pouchdbHelper.OPEN_POUCH_INSTANCES["delete"](_this3.internals.pouchInstanceId);
-      return Promise.resolve(_this3.internals.pouch.destroy()).then(function () {});
+      _pouchdbHelper.OPEN_POUCHDB_STORAGE_INSTANCES["delete"](_this2);
+      _pouchdbHelper.OPEN_POUCH_INSTANCES["delete"](_this2.internals.pouchInstanceId);
+      return Promise.resolve(_this2.internals.pouch.destroy()).then(function () {});
     } catch (e) {
       return Promise.reject(e);
     }
   };
   _proto.bulkWrite = function bulkWrite(documentWrites, context) {
     try {
-      var _this5 = this;
-      ensureNotClosed(_this5);
+      var _this3 = this;
+      ensureNotClosed(_this3);
       if (documentWrites.length === 0) {
         throw (0, _rxError.newRxError)('P2', {
           args: {
@@ -354,9 +354,9 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
             args: writeData
           });
         }
-        var primary = writeData.document[_this5.primaryPath];
+        var primary = writeData.document[_this3.primaryPath];
         writeRowById.set(primary, writeData);
-        var storeDocumentData = (0, _pouchdbHelper.rxDocumentDataToPouchDocumentData)(_this5.primaryPath, writeData.document);
+        var storeDocumentData = (0, _pouchdbHelper.rxDocumentDataToPouchDocumentData)(_this3.primaryPath, writeData.document);
         insertDocsById.set(primary, storeDocumentData);
         return storeDocumentData;
       });
@@ -365,12 +365,12 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
         success: {},
         error: {}
       };
-      _this5.nonParallelQueue = _this5.nonParallelQueue.then(function () {
+      _this3.nonParallelQueue = _this3.nonParallelQueue.then(function () {
         try {
-          return Promise.resolve(_this5.internals.pouch.bulkDocs(writeDocs, {
+          return Promise.resolve(_this3.internals.pouch.bulkDocs(writeDocs, {
             new_edits: false,
             custom: {
-              primaryPath: _this5.primaryPath,
+              primaryPath: _this3.primaryPath,
               writeRowById: writeRowById,
               insertDocsById: insertDocsById,
               previousDocsInDb: previousDocsInDb,
@@ -380,7 +380,7 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
             return Promise.all(pouchResult.map(function (resultRow) {
               try {
                 var writeRow = (0, _util.getFromMapOrThrow)(writeRowById, resultRow.id);
-                var _temp4 = function () {
+                var _temp3 = function () {
                   if (resultRow.error) {
                     var previousDoc = (0, _util.getFromMapOrThrow)(previousDocsInDb, resultRow.id);
                     var err = {
@@ -388,20 +388,20 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
                       status: 409,
                       documentId: resultRow.id,
                       writeRow: writeRow,
-                      documentInDb: (0, _pouchdbHelper.pouchDocumentDataToRxDocumentData)(_this5.primaryPath, previousDoc)
+                      documentInDb: (0, _pouchdbHelper.pouchDocumentDataToRxDocumentData)(_this3.primaryPath, previousDoc)
                     };
                     ret.error[resultRow.id] = err;
                   } else {
-                    var _temp5 = function _temp5() {
+                    var _temp2 = function _temp2() {
                       ret.success[resultRow.id] = _pushObj;
                     };
                     var _pushObj = (0, _util.flatClone)(writeRow.document);
-                    _pushObj = (0, _pouchdbHelper.pouchSwapIdToPrimary)(_this5.primaryPath, _pushObj);
+                    _pushObj = (0, _pouchdbHelper.pouchSwapIdToPrimary)(_this3.primaryPath, _pushObj);
                     _pushObj._rev = resultRow.rev;
 
                     // replace the inserted attachments with their diggest
                     _pushObj._attachments = {};
-                    var _temp6 = function () {
+                    var _temp = function () {
                       if (!writeRow.document._attachments) {
                         writeRow.document._attachments = {};
                       } else {
@@ -410,10 +410,10 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
                         });
                       }
                     }();
-                    return _temp6 && _temp6.then ? _temp6.then(_temp5) : _temp5(_temp6);
+                    return _temp && _temp.then ? _temp.then(_temp2) : _temp2(_temp);
                   }
                 }();
-                return Promise.resolve(_temp4 && _temp4.then ? _temp4.then(function () {}) : void 0);
+                return Promise.resolve(_temp3 && _temp3.then ? _temp3.then(function () {}) : void 0);
               } catch (e) {
                 return Promise.reject(e);
               }
@@ -423,7 +423,7 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
           return Promise.reject(e);
         }
       });
-      return Promise.resolve(_this5.nonParallelQueue).then(function () {
+      return Promise.resolve(_this3.nonParallelQueue).then(function () {
         return ret;
       });
     } catch (e) {
@@ -432,12 +432,12 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
   };
   _proto.query = function query(preparedQuery) {
     try {
-      var _this7 = this;
-      ensureNotClosed(_this7);
-      return Promise.resolve(_this7.internals.pouch.find(preparedQuery)).then(function (findResult) {
+      var _this4 = this;
+      ensureNotClosed(_this4);
+      return Promise.resolve(_this4.internals.pouch.find(preparedQuery)).then(function (findResult) {
         var ret = {
           documents: findResult.docs.map(function (pouchDoc) {
-            var useDoc = (0, _pouchdbHelper.pouchDocumentDataToRxDocumentData)(_this7.primaryPath, pouchDoc);
+            var useDoc = (0, _pouchdbHelper.pouchDocumentDataToRxDocumentData)(_this4.primaryPath, pouchDoc);
             return useDoc;
           })
         };
@@ -449,12 +449,12 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
   };
   _proto.count = function count(preparedQuery) {
     try {
-      var _this9 = this;
+      var _this5 = this;
       /**
        * There is no count method in PouchDB,
        * so we have to run a normal query and use the result length.
        */
-      return Promise.resolve(_this9.query(preparedQuery)).then(function (result) {
+      return Promise.resolve(_this5.query(preparedQuery)).then(function (result) {
         return {
           count: result.documents.length,
           mode: 'fast'
@@ -466,9 +466,9 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
   };
   _proto.getAttachmentData = function getAttachmentData(documentId, attachmentId) {
     try {
-      var _this11 = this;
-      ensureNotClosed(_this11);
-      return Promise.resolve(_this11.internals.pouch.getAttachment(documentId, attachmentId)).then(function (attachmentData) {
+      var _this6 = this;
+      ensureNotClosed(_this6);
+      return Promise.resolve(_this6.internals.pouch.getAttachment(documentId, attachmentId)).then(function (attachmentData) {
         /**
          * In Node.js, PouchDB works with Buffers because it is old and Node.js did
          * not support Blob at the time is was coded.
@@ -505,8 +505,8 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
   };
   _proto.getChangedDocumentsSince = function getChangedDocumentsSince(limit, checkpoint) {
     try {
-      var _temp9 = function _temp9() {
-        return Promise.resolve(pouchFindDocumentsById(_this13, changedDocuments.map(function (o) {
+      var _temp5 = function _temp5() {
+        return Promise.resolve(pouchFindDocumentsById(_this7, changedDocuments.map(function (o) {
           return o.id;
         }), true)).then(function (documentsData) {
           if (Object.keys(documentsData).length > 0 && checkpoint && checkpoint.sequence === lastSequence) {
@@ -530,8 +530,8 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
           };
         });
       };
-      var _this13 = this;
-      ensureNotClosed(_this13);
+      var _this7 = this;
+      ensureNotClosed(_this7);
       if (!limit || typeof limit !== 'number') {
         throw new Error('wrong limit');
       }
@@ -550,12 +550,12 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
        * Because PouchDB also returns changes of _design documents,
        * we have to fill up the results with more changes if this happens.
        */
-      var _temp10 = _for(function () {
+      var _temp4 = _for(function () {
         return !!first || skippedDesignDocuments > 0;
       }, void 0, function () {
         first = false;
         skippedDesignDocuments = 0;
-        return Promise.resolve(_this13.internals.pouch.changes(pouchChangesOpts)).then(function (pouchResults) {
+        return Promise.resolve(_this7.internals.pouch.changes(pouchChangesOpts)).then(function (pouchResults) {
           var addChangedDocuments = pouchResults.results.filter(function (row) {
             var isDesignDoc = row.id.startsWith(_pouchdbHelper.POUCHDB_DESIGN_PREFIX);
             if (isDesignDoc) {
@@ -578,7 +578,7 @@ var RxStorageInstancePouch = /*#__PURE__*/function () {
           pouchChangesOpts.limit = skippedDesignDocuments;
         });
       });
-      return Promise.resolve(_temp10 && _temp10.then ? _temp10.then(_temp9) : _temp9(_temp10));
+      return Promise.resolve(_temp4 && _temp4.then ? _temp4.then(_temp5) : _temp5(_temp4));
     } catch (e) {
       return Promise.reject(e);
     }

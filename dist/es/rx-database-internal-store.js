@@ -167,11 +167,11 @@ function _for(test, update, body) {
 }
 export var addConnectedStorageToCollection = function addConnectedStorageToCollection(collection, storageCollectionName, schema) {
   try {
-    var _exit2 = false;
+    var _exit = false;
     var collectionNameWithVersion = _collectionNamePrimary(collection.name, collection.schema.jsonSchema);
     var collectionDocId = getPrimaryKeyOfInternalDocument(collectionNameWithVersion, INTERNAL_CONTEXT_COLLECTION);
     return Promise.resolve(_for(function () {
-      return !_exit2;
+      return !_exit;
     }, void 0, function () {
       return Promise.resolve(getSingleDocument(collection.database.internalStore, collectionDocId)).then(function (collectionDoc) {
         var saveData = clone(ensureNotFalsy(collectionDoc));
@@ -188,7 +188,7 @@ export var addConnectedStorageToCollection = function addConnectedStorageToColle
           return row.collectionName === storageCollectionName && row.schema.version === schema.version;
         });
         if (alreadyThere) {
-          _exit2 = true;
+          _exit = true;
           return;
         }
 

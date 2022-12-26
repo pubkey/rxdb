@@ -254,16 +254,16 @@ var RxLocalDocumentPrototype = {
     return new Promise(function (res, rej) {
       _this2._atomicQueue = _this2._atomicQueue.then(function () {
         try {
-          var _temp4 = function _temp4(_result2) {
-            if (_exit2) return _result2;
+          var _temp3 = function _temp3(_result2) {
+            if (_exit) return _result2;
             res(_this2);
           };
-          var _exit2 = false;
+          var _exit = false;
           var done = false;
           // we need a hacky while loop to stay incide the chain-link of _atomicQueue
           // while still having the option to run a retry on conflicts
-          var _temp5 = _for(function () {
-            return !_exit2 && !done;
+          var _temp2 = _for(function () {
+            return !_exit && !done;
           }, void 0, function () {
             var oldDocData = _this2._dataSync$.getValue();
             return Promise.resolve(mutationFunction(clone(oldDocData.data), _this2)).then(function (newData) {
@@ -286,13 +286,13 @@ var RxLocalDocumentPrototype = {
                 var isConflict = isBulkWriteConflictError(err);
                 if (isConflict) {} else {
                   rej(err);
-                  _exit2 = true;
+                  _exit = true;
                 }
               });
               if (_temp && _temp.then) return _temp.then(function () {});
             });
           });
-          return Promise.resolve(_temp5 && _temp5.then ? _temp5.then(_temp4) : _temp4(_temp5));
+          return Promise.resolve(_temp2 && _temp2.then ? _temp2.then(_temp3) : _temp3(_temp2));
         } catch (e) {
           return Promise.reject(e);
         }
@@ -311,10 +311,10 @@ var RxLocalDocumentPrototype = {
   },
   _saveData: function _saveData(newData) {
     try {
-      var _this4 = this;
-      return Promise.resolve(getLocalDocStateByParent(_this4.parent)).then(function (state) {
-        var oldData = _this4._dataSync$.getValue();
-        newData.id = _this4.id;
+      var _this3 = this;
+      return Promise.resolve(getLocalDocStateByParent(_this3.parent)).then(function (state) {
+        var oldData = _this3._dataSync$.getValue();
+        newData.id = _this3.id;
         return state.storageInstance.bulkWrite([{
           previous: oldData,
           document: newData
@@ -333,10 +333,10 @@ var RxLocalDocumentPrototype = {
   },
   remove: function remove() {
     try {
-      var _this6 = this;
-      return Promise.resolve(getLocalDocStateByParent(_this6.parent)).then(function (state) {
+      var _this4 = this;
+      return Promise.resolve(getLocalDocStateByParent(_this4.parent)).then(function (state) {
         var writeData = {
-          id: _this6.id,
+          id: _this4.id,
           data: {},
           _deleted: true,
           _meta: getDefaultRxDocumentMeta(),
@@ -344,10 +344,10 @@ var RxLocalDocumentPrototype = {
           _attachments: {}
         };
         return writeSingle(state.storageInstance, {
-          previous: _this6._data,
+          previous: _this4._data,
           document: writeData
         }, 'local-document-remove').then(function () {
-          _this6.state.docCache["delete"](_this6.id);
+          _this4.state.docCache["delete"](_this4.id);
         });
       });
     } catch (e) {

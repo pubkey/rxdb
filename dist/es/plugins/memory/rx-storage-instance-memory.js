@@ -135,8 +135,8 @@ export var RxStorageInstanceMemory = /*#__PURE__*/function () {
   };
   _proto.count = function count(preparedQuery) {
     try {
-      var _this4 = this;
-      return Promise.resolve(_this4.query(preparedQuery)).then(function (result) {
+      var _this3 = this;
+      return Promise.resolve(_this3.query(preparedQuery)).then(function (result) {
         return {
           count: result.documents.length,
           mode: 'fast'
@@ -208,11 +208,11 @@ export var RxStorageInstanceMemory = /*#__PURE__*/function () {
   };
   _proto.remove = function remove() {
     try {
-      var _this6 = this;
-      ensureNotRemoved(_this6);
-      _this6.internals.removed = true;
-      _this6.storage.collectionStates["delete"](getMemoryCollectionKey(_this6.databaseName, _this6.collectionName));
-      return Promise.resolve(_this6.close()).then(function () {});
+      var _this4 = this;
+      ensureNotRemoved(_this4);
+      _this4.internals.removed = true;
+      _this4.storage.collectionStates["delete"](getMemoryCollectionKey(_this4.databaseName, _this4.collectionName));
+      return Promise.resolve(_this4.close()).then(function () {});
     } catch (e) {
       return Promise.reject(e);
     }

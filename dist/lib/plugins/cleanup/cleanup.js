@@ -158,13 +158,13 @@ function _for(test, update, body) {
 }
 var runCleanupAfterDelete = function runCleanupAfterDelete(rxCollection, cleanupPolicy) {
   try {
-    var _exit4 = false;
+    var _exit2 = false;
     return Promise.resolve(_for(function () {
-      return !_exit4 && !rxCollection.destroyed;
+      return !_exit2 && !rxCollection.destroyed;
     }, void 0, function () {
       return Promise.resolve(rxCollection.promiseWait(cleanupPolicy.runEach)).then(function () {
         if (rxCollection.destroyed) {
-          _exit4 = true;
+          _exit2 = true;
           return;
         }
         return Promise.resolve(cleanupRxCollection(rxCollection, cleanupPolicy)).then(function () {});
@@ -180,19 +180,19 @@ exports.runCleanupAfterDelete = runCleanupAfterDelete;
  */
 var cleanupRxCollection = function cleanupRxCollection(rxCollection, cleanupPolicy) {
   try {
-    var _exit2 = false;
+    var _exit = false;
     var rxDatabase = rxCollection.database;
     var storageInstance = rxCollection.storageInstance;
 
     // run cleanup() until it returns true
     var isDone = false;
     return Promise.resolve(_for(function () {
-      return !_exit2 && !isDone && !rxCollection.destroyed;
+      return !_exit && !isDone && !rxCollection.destroyed;
     }, void 0, function () {
       function _temp5() {
         return Promise.resolve(rxDatabase.requestIdlePromise()).then(function () {
           if (rxCollection.destroyed) {
-            _exit2 = true;
+            _exit = true;
             return;
           }
           RXSOTRAGE_CLEANUP_QUEUE = RXSOTRAGE_CLEANUP_QUEUE.then(function () {
@@ -209,7 +209,7 @@ var cleanupRxCollection = function cleanupRxCollection(rxCollection, cleanupPoli
       var _temp4 = function () {
         if (cleanupPolicy.awaitReplicationsInSync) {
           var replicationStates = _replication.REPLICATION_STATE_BY_COLLECTION.get(rxCollection);
-          var _temp6 = function () {
+          var _temp3 = function () {
             if (replicationStates) {
               return Promise.resolve(Promise.all(replicationStates.map(function (replicationState) {
                 if (!replicationState.isStopped()) {
@@ -218,7 +218,7 @@ var cleanupRxCollection = function cleanupRxCollection(rxCollection, cleanupPoli
               }))).then(function () {});
             }
           }();
-          if (_temp6 && _temp6.then) return _temp6.then(function () {});
+          if (_temp3 && _temp3.then) return _temp3.then(function () {});
         }
       }();
       return _temp4 && _temp4.then ? _temp4.then(_temp5) : _temp5(_temp4);
