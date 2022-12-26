@@ -25,19 +25,19 @@ import {
     PROMISE_RESOLVE_FALSE,
     PROMISE_RESOLVE_TRUE,
     ensureNotFalsy
-} from '../util';
+} from '../../util';
 import {
     newRxError
-} from '../rx-error';
+} from '../../rx-error';
 import {
     isInstanceOf as isInstanceOfPouchDB,
     addPouchPlugin,
     getPouchDBOfRxCollection
-} from '../plugins/pouchdb';
+} from '../../plugins/pouchdb';
 
 import {
     isRxCollection
-} from '../rx-collection';
+} from '../../rx-collection';
 import type {
     RxCollection,
     PouchSyncHandler,
@@ -45,7 +45,7 @@ import type {
     RxPlugin,
     SyncOptions,
     PouchDBInstance
-} from '../types';
+} from '../../types';
 
 /**
  * Contains all pouchdb instances that

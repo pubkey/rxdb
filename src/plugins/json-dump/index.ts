@@ -5,21 +5,21 @@ import {
     createRxQuery,
     queryCollection,
     _getDefaultQuery
-} from '../rx-query';
+} from '../../rx-query';
 import {
     newRxError
-} from '../rx-error';
+} from '../../rx-error';
 import type {
     RxDatabase,
     RxCollection,
     RxPlugin,
     RxDocumentData
-} from '../types';
+} from '../../types';
 import {
     flatClone,
     getDefaultRevision,
     now
-} from '../util';
+} from '../../util';
 
 function dumpRxDatabase(
     this: RxDatabase,

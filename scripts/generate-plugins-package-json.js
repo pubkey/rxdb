@@ -14,18 +14,21 @@ async function run() {
     const packageJson = require(rootPackageJsonPath);
     const pluginsFolderPath = path.join(__dirname, '../plugins');
 
+    const pluginsSrcFolderPath = path.join(__dirname, '../src/plugins');
+
     // recreate plugins folder
     await rimraf.sync(pluginsFolderPath, {});
     await fs.promises.mkdir(pluginsFolderPath);
 
     // write package.json files
+    const usedPluginNames = new Set();
     const plugins = packageJson.exports;
     Object.keys(plugins)
         .filter(pluginPath => pluginPath !== '.' && pluginPath !== './package.json')
         .forEach((pluginPath) => {
             console.log(pluginPath);
             const pluginName = pluginPath.split('/').pop();
-
+            usedPluginNames.add(pluginName);
 
             // Ensure the configuration is correct and all plugins are defined equally
             const pluginRootConfig = plugins[pluginPath];
@@ -72,6 +75,14 @@ async function run() {
             );
         });
 
+
+    // ensure we did not forget any plugin
+    const pluginsSrc = await fs.promises.readdir(pluginsSrcFolderPath);
+    pluginsSrc.forEach(pluginName => {
+        if (!usedPluginNames.has(pluginName)) {
+            throw new Error('Plugin folders exists but is not defined in package.json: ' + pluginName);
+        }
+    });
 
 }
 run();

@@ -9,7 +9,7 @@ import type {
     RxQuery,
     RxPlugin,
     UpdateQuery
-} from '../types';
+} from '../../types';
 
 export function update(this: RxDocument, updateObj: any) {
     const oldDocData = this._data;

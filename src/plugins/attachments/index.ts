@@ -6,10 +6,10 @@ import {
     blobBufferUtil,
     flatClone,
     PROMISE_RESOLVE_VOID
-} from './../util';
+} from '../../util';
 import {
     newRxError
-} from '../rx-error';
+} from '../../rx-error';
 import type {
     RxDocument,
     RxPlugin,
@@ -20,8 +20,8 @@ import type {
     RxDocumentData,
     RxAttachmentCreator,
     RxAttachmentWriteData
-} from '../types';
-import { flatCloneDocWithMeta, writeSingle } from '../rx-storage-helper';
+} from '../../types';
+import { flatCloneDocWithMeta, writeSingle } from '../../rx-storage-helper';
 
 
 

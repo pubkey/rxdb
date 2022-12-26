@@ -9,24 +9,24 @@ import {
     addPouchPlugin,
     PouchDB,
     RxStoragePouch
-} from '../plugins/pouchdb';
+} from '../../plugins/pouchdb';
 import {
     newRxError
-} from '../rx-error';
+} from '../../rx-error';
 import type {
     PouchDBExpressServerOptions,
     RxDatabase,
     RxPlugin,
     CouchDBServerResponse
-} from '../types';
+} from '../../types';
 
-import { RxDBReplicationCouchDBPlugin } from './replication-couchdb';
+import { RxDBReplicationCouchDBPlugin } from '../replication-couchdb';
 
 import PouchAdapterHttp from 'pouchdb-adapter-http';
-import { adapterObject, addRxPlugin } from '../index';
+import { adapterObject, addRxPlugin } from '../../index';
 import {
     flatClone, PROMISE_RESOLVE_VOID
-} from '../util';
+} from '../../util';
 
 let ExpressPouchDB: any;
 try {

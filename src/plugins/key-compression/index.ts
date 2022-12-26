@@ -20,10 +20,10 @@ import {
 } from 'jsonschema-key-compression';
 import {
     overwritable
-} from '../overwritable';
-import { wrapRxStorageInstance } from '../plugin-helpers';
-import { getPrimaryFieldOfPrimaryKey } from '../rx-schema-helper';
-import { flatCloneDocWithMeta } from '../rx-storage-helper';
+} from '../../overwritable';
+import { wrapRxStorageInstance } from '../../plugin-helpers';
+import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
+import { flatCloneDocWithMeta } from '../../rx-storage-helper';
 
 import type {
     RxJsonSchema,
@@ -35,11 +35,11 @@ import type {
     FilledMangoQuery,
     PreparedQuery,
     RxDocumentWriteData
-} from '../types';
+} from '../../types';
 import {
     flatClone,
     isMaybeReadonlyArray
-} from '../util';
+} from '../../util';
 
 declare type CompressionState = {
     table: CompressionTable;

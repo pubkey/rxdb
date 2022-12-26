@@ -6,11 +6,11 @@
 import isMyJsonValid from 'is-my-json-valid';
 import {
     newRxError
-} from '../rx-error';
+} from '../../rx-error';
 import type {
     RxJsonSchema
-} from '../types';
-import { wrappedValidateStorageFactory } from '../plugin-helpers';
+} from '../../types';
+import { wrappedValidateStorageFactory } from '../../plugin-helpers';
 
 
 export function getValidator(

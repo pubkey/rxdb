@@ -6,9 +6,9 @@
 import ZSchema from 'z-schema';
 import {
     newRxError
-} from '../rx-error';
-import type { RxJsonSchema } from '../types';
-import { wrappedValidateStorageFactory } from '../plugin-helpers';
+} from '../../rx-error';
+import type { RxJsonSchema } from '../../types';
+import { wrappedValidateStorageFactory } from '../../plugin-helpers';
 
 
 export function getValidator(

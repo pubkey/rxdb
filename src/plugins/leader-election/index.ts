@@ -10,15 +10,15 @@ import {
 import {
     getBroadcastChannelReference,
     removeBroadcastChannelReference
-} from '../rx-storage-multiinstance';
+} from '../../rx-storage-multiinstance';
 
 import type {
     RxDatabase,
     RxPlugin
-} from '../types';
+} from '../../types';
 import {
     PROMISE_RESOLVE_TRUE
-} from '../util';
+} from '../../util';
 
 const LEADER_ELECTORS_OF_DB: WeakMap<RxDatabase, LeaderElector> = new WeakMap();
 const LEADER_ELECTOR_BY_BROADCAST_CHANNEL: WeakMap<BroadcastChannel, LeaderElector> = new WeakMap();

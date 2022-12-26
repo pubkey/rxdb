@@ -6,12 +6,12 @@
 import AES from 'crypto-js/aes';
 import * as cryptoEnc from 'crypto-js/enc-utf8';
 import objectPath from 'object-path';
-import { wrapRxStorageInstance } from '../plugin-helpers';
+import { wrapRxStorageInstance } from '../../plugin-helpers';
 import {
     INTERNAL_STORE_SCHEMA_TITLE
-} from '../rx-database-internal-store';
-import { newRxError, newRxTypeError } from '../rx-error';
-import { hasEncryption } from '../rx-storage-helper';
+} from '../../rx-database-internal-store';
+import { newRxError, newRxTypeError } from '../../rx-error';
+import { hasEncryption } from '../../rx-storage-helper';
 import type {
     InternalStoreDocType,
     RxAttachmentWriteData,
@@ -20,14 +20,14 @@ import type {
     RxJsonSchema,
     RxStorage,
     RxStorageInstanceCreationParams
-} from '../types';
+} from '../../types';
 import {
     b64DecodeUnicode,
     b64EncodeUnicode,
     clone,
     ensureNotFalsy,
     flatClone
-} from '../util';
+} from '../../util';
 
 export const MINIMUM_PASSWORD_LENGTH: 8 = 8;
 

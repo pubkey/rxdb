@@ -6,12 +6,12 @@
 import Ajv from 'ajv';
 import {
     newRxError
-} from '../rx-error';
+} from '../../rx-error';
 import type {
     RxDocumentData,
     RxJsonSchema
-} from '../types';
-import { wrappedValidateStorageFactory } from '../plugin-helpers';
+} from '../../types';
+import { wrappedValidateStorageFactory } from '../../plugin-helpers';
 
 
 const ajv = new Ajv({
