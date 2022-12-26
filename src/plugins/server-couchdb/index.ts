@@ -28,15 +28,7 @@ import {
     flatClone, PROMISE_RESOLVE_VOID
 } from '../../util';
 
-let ExpressPouchDB: any;
-try {
-    ExpressPouchDB = require('express-pouchdb');
-} catch (error) {
-    console.error(
-        'Since version 8.4.0 the module \'express-pouchdb\' is not longer delivered with RxDB.\n' +
-        'You can install it with \'npm install express-pouchdb\''
-    );
-}
+import { default as ExpressPouchDB } from 'express-pouchdb';
 
 // we have to clean up after tests so there is no stupid logging
 // @link https://github.com/pouchdb/pouchdb-server/issues/226
@@ -221,9 +213,9 @@ function ensureNoMoreCollections(args: any) {
     if (DBS_WITH_SERVER.has(args.database)) {
         const err = newRxError(
             'S1', {
-                collection: args.name,
-                database: args.database.name
-            }
+            collection: args.name,
+            database: args.database.name
+        }
         );
         throw err;
     }
