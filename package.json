@@ -28,6 +28,7 @@
     "realtime"
   ],
   "license": "Apache-2.0",
+  "type": "module",
   "main": "./dist/lib/index.js",
   "jsnext:main": "./dist/es/index.js",
   "module": "./dist/es/index.js",
