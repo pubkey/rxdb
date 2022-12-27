@@ -9,6 +9,8 @@
 
 <!-- RELEASE BELOW -->
 
+### 13.16.1 (27 December 2022)
+
 ### 13.16.0 (26 December 2022)
 
 - ADD [Vite Vanilla Typescript Example](https://github.com/pubkey/rxdb/tree/master/examples/vite-vanilla-ts) Thanks [@SebasG22](https://github.com/SebasG22)

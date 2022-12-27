@@ -23,7 +23,7 @@ module.exports = {
   mode: 'production',
   cache: {
     type: 'filesystem',
-    cacheDirectory: path.resolve(projectRootPath, 'test_tmp', 'webpack-cache')
+    cacheDirectory: path.resolve(projectRootPath, 'test_tmp', 'webpack-cache-worker')
   },
   devtool: 'source-map',
   module: {
