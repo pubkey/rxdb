@@ -8,7 +8,7 @@ If you are a **single developer** and you use RxDB in your **side project**, you
 ## Open Tasks
 
 
-- Set `"type": "module"` in the `package.json` and fix every problem that occurs with that change.
+- Set `"type": "module"` in the `package.json` and fix every problem that occurs with that change. [related](https://github.com/pubkey/rxdb/pull/4202)
 
 (This list will be regulary updated with new Tasks)
 
