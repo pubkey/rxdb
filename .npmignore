@@ -6,7 +6,6 @@ docs-src/
 orga/
 test/
 test_tmp/
-babel.config.js
 .editorconfig
 .eslintrc.json
 .eslintignore
@@ -23,3 +22,7 @@ config.json
 perf.md
 log.txt
 processed.txt
+
+## Do not ignore the babel.config.js because
+## it is used in other packages like the premium package.
+# babel.config.js

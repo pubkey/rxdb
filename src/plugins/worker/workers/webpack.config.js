@@ -32,7 +32,7 @@ module.exports = {
         cacheDirectory: path.resolve(
             projectRootPath,
             'test_tmp',
-            'webpack-cache'
+            'webpack-cache-worker'
         ),
     },
     devtool: 'source-map',
