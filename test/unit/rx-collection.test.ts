@@ -985,16 +985,20 @@ describe('rx-collection.test.ts', () => {
                 if (!config.storage.hasRegexSupport) {
                     return;
                 }
-
                 describe('positive', () => {
                     it('find the one where the regex matches', async () => {
                         const c = await humansCollection.create(10);
                         const matchHuman = schemaObjects.human();
                         matchHuman.firstName = 'FooMatchBar';
                         await c.insert(matchHuman);
-                        const docs = await c.find()
-                            .where('firstName').regex(/Match/)
-                            .exec();
+                        const query = c.find({
+                            selector: {
+                                firstName: {
+                                    $regex: /Match/
+                                }
+                            }
+                        });
+                        const docs = await query.exec();
                         assert.strictEqual(docs.length, 1);
                         const firstDoc = docs[0];
                         assert.strictEqual(firstDoc.get('firstName'), matchHuman.firstName);

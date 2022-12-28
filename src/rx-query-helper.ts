@@ -7,9 +7,10 @@ import type {
     RxJsonSchema
 } from './types';
 import {
+    clone,
     firstPropertyNameOfObject,
-    flatClone,
-    isMaybeReadonlyArray
+    isMaybeReadonlyArray,
+    regexToNoSQLQueryOperator
 } from './util';
 
 /**
@@ -21,7 +22,7 @@ export function normalizeMangoQuery<RxDocType>(
     mangoQuery: MangoQuery<RxDocType>
 ): FilledMangoQuery<RxDocType> {
     const primaryKey: string = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
-    const normalizedMangoQuery: FilledMangoQuery<RxDocType> = flatClone(mangoQuery) as any;
+    const normalizedMangoQuery: FilledMangoQuery<RxDocType> = clone(mangoQuery) as any;
 
     if (typeof normalizedMangoQuery.skip !== 'number') {
         normalizedMangoQuery.skip = 0;
@@ -30,7 +31,7 @@ export function normalizeMangoQuery<RxDocType>(
     if (!normalizedMangoQuery.selector) {
         normalizedMangoQuery.selector = {};
     } else {
-        normalizedMangoQuery.selector = flatClone(normalizedMangoQuery.selector);
+        normalizedMangoQuery.selector = normalizedMangoQuery.selector;
         /**
          * In mango query, it is possible to have an
          * equals comparison by directly assigning a value
@@ -41,6 +42,10 @@ export function normalizeMangoQuery<RxDocType>(
          * }
          * For normalization, we have to normalize this
          * so our checks can perform properly.
+         *
+         *
+         * TODO this must work recursive with nested queries that
+         * contain multiple selectors via $and or $or etc.
          */
         Object
             .entries(normalizedMangoQuery.selector)

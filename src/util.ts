@@ -11,9 +11,6 @@ import type {
     RxTypeError,
     StringKeys
 } from './types';
-import {
-    default as deepClone
-} from 'clone';
 
 /**
  * Returns an error that indicates that a plugin is missing
@@ -279,8 +276,9 @@ export function sortObject(obj: any, noArraySort = false): any {
     // object
     // array is also of type object
     if (typeof obj === 'object' && !Array.isArray(obj)) {
-        if (obj instanceof RegExp)
+        if (obj instanceof RegExp) {
             return obj;
+        }
 
         const out: any = {};
         Object.keys(obj)
@@ -388,11 +386,44 @@ export function adapterObject(adapter: any): any {
 }
 
 
-function recursiveDeepCopy<T>(o: T | DeepReadonlyObject<T>): T {
-    if (!o) return o;
-    return deepClone(o, false) as any;
+/**
+ * Deep clone a plain json object.
+ * Does not work with recursive stuff
+ * or non-plain-json.
+ * IMPORANT: Performance of this is very important,
+ * do not change it without running performance tests!
+ *
+ * @link https://github.com/zxdong262/deep-copy/blob/master/src/index.ts
+ */
+function deepClone<T>(src: T | DeepReadonlyObject<T>): T {
+    if (!src) {
+        return src;
+    }
+    if (src === null || typeof (src) !== 'object') {
+        return src;
+    }
+    if (Array.isArray(src)) {
+        const ret = new Array(src.length);
+        let i = ret.length;
+        while (i--) {
+            ret[i] = deepClone(src[i]);
+        }
+        return ret as any;
+    }
+    const dest: any = {};
+    // eslint-disable-next-line guard-for-in
+    for (const key in src) {
+        // TODO we should not be required to deep clone RegEx objects,
+        // this must be fixed in RxDB.
+        if (src[key] instanceof RegExp) {
+            dest[key] = src[key];
+        } else {
+            dest[key] = deepClone(src[key]);
+        }
+    }
+    return dest;
 }
-export const clone = recursiveDeepCopy;
+export const clone = deepClone;
 
 /**
  * does a flat copy on the objects,
