@@ -9,8 +9,7 @@ import type {
 import {
     clone,
     firstPropertyNameOfObject,
-    isMaybeReadonlyArray,
-    regexToNoSQLQueryOperator
+    isMaybeReadonlyArray
 } from './util';
 
 /**
