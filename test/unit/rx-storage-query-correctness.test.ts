@@ -18,7 +18,7 @@ import {
 } from '../../plugins/dev-mode';
 import { EXAMPLE_REVISION_1 } from '../helper/revisions';
 import * as schemas from '../helper/schemas';
-import { human, nestedHuman, NestedHumanDocumentType } from '../helper/schema-objects';
+import { HeroArrayDocumentType, human, nestedHuman, NestedHumanDocumentType } from '../helper/schema-objects';
 
 const TEST_CONTEXT = 'rx-storage-query-correctness.test.ts';
 config.parallel('rx-storage-query-correctness.test.ts', () => {
@@ -413,6 +413,82 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                     'aaa'
                 ]
             }
+        ]
+    });
+    testCorrectQueries<HeroArrayDocumentType>({
+        testTitle: '$elemMatch/$size',
+        data: [
+            {
+                name: 'foo1',
+                skills: [
+                    {
+                        name: 'bar1',
+                        damage: 10
+                    },
+                    {
+                        name: 'bar2',
+                        damage: 5
+                    },
+                ],
+            },
+            {
+                name: 'foo2',
+                skills: [
+                    {
+                        name: 'bar3',
+                        damage: 10
+                    },
+                    {
+                        name: 'bar4',
+                        damage: 10
+                    },
+                ],
+            },
+            {
+                name: 'foo3',
+                skills: [
+                    {
+                        name: 'bar5',
+                        damage: 5
+                    },
+                ],
+            }
+        ],
+        schema: schemas.heroArray,
+        queries: [
+            {
+                info: '$elemMatch',
+                query: {
+                    selector: {
+                        skills: {
+                            $elemMatch: {
+                                damage: 5
+                            }
+                        },
+                    },
+                    sort: [{ name: 'asc' }]
+                },
+                selectorSatisfiedByIndex: false,
+                expectedResultDocIds: [
+                    'foo1',
+                    'foo3'
+                ]
+            },
+            {
+                info: '$size',
+                query: {
+                    selector: {
+                        skills: {
+                            $size: 1
+                        },
+                    },
+                    sort: [{ name: 'asc' }]
+                },
+                selectorSatisfiedByIndex: false,
+                expectedResultDocIds: [
+                    'foo3'
+                ]
+            },
         ]
     });
 });

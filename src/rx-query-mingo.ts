@@ -6,6 +6,7 @@ import { $sort, $project } from 'mingo/operators/pipeline';
 import {
     $and,
     $eq,
+    $elemMatch,
     $exists,
     $gt,
     $gte,
@@ -19,6 +20,7 @@ import {
     $not,
     $or,
     $regex,
+    $size,
     $type,
 } from 'mingo/operators/query';
 
@@ -44,6 +46,7 @@ export function getMingoQuery<RxDocType>(
         useOperators(OperatorType.QUERY, {
             $and,
             $eq,
+            $elemMatch,
             $exists,
             $gt,
             $gte,
@@ -57,6 +60,7 @@ export function getMingoQuery<RxDocType>(
             $not,
             $or,
             $regex,
+            $size,
             $type,
         } as any);
         mingoInitDone = true;
