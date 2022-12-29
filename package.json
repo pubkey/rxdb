@@ -389,7 +389,7 @@
     "js-base64": "3.7.3",
     "jsonschema-key-compression": "1.6.1",
     "lokijs": "1.5.12",
-    "mingo": "6.2.0",
+    "mingo": "6.2.1",
     "modifyjs": "0.3.1",
     "object-path": "0.11.8",
     "oblivious-set": "1.1.1",
