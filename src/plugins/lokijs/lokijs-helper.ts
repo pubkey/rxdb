@@ -19,6 +19,7 @@ import { ensureNotFalsy, flatClone, promiseWait, randomCouchString } from '../..
 import { LokiSaveQueue } from './loki-save-queue';
 import type { DeterministicSortComparator } from 'event-reduce-js';
 import { newRxError } from '../../rx-error';
+import objectPath from 'object-path';
 import {
     LeaderElector,
     OnMessageHandler
@@ -224,8 +225,8 @@ export function getLokiSortComparator<RxDocType>(
             const fieldName: string = Object.keys(sortPart)[0];
             const direction: MangoQuerySortDirection = Object.values(sortPart)[0];
             const directionMultiplier = direction === 'asc' ? 1 : -1;
-            const valueA: any = (a as any)[fieldName];
-            const valueB: any = (b as any)[fieldName];
+            const valueA: any = objectPath.get(a as any, fieldName);
+            const valueB: any = objectPath.get(b as any, fieldName);
             if (valueA === valueB) {
                 return false;
             } else {

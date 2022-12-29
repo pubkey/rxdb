@@ -53,6 +53,9 @@ export function getIndexableStringMonad<RxDocType>(
             schema,
             fieldName
         );
+        if (!schemaPart) {
+            throw new Error('not in schema: ' + fieldName);
+        }
         const type = schemaPart.type;
         let parsedLengths: ParsedLengths | undefined;
         if (type === 'number' || type === 'integer') {

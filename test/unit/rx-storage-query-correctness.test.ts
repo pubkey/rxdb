@@ -18,7 +18,7 @@ import {
 } from '../../plugins/dev-mode';
 import { EXAMPLE_REVISION_1 } from '../helper/revisions';
 import * as schemas from '../helper/schemas';
-import { human } from '../helper/schema-objects';
+import { human, nestedHuman, NestedHumanDocumentType } from '../helper/schema-objects';
 
 const TEST_CONTEXT = 'rx-storage-query-correctness.test.ts';
 config.parallel('rx-storage-query-correctness.test.ts', () => {
@@ -366,6 +366,51 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                     'aa',
                     'bb',
                     'cc-looong-id'
+                ]
+            }
+        ]
+    });
+    testCorrectQueries<NestedHumanDocumentType>({
+        testTitle: 'nested properties',
+        data: [
+            nestedHuman({
+                passportId: 'aaa',
+                mainSkill: {
+                    level: 6,
+                    name: 'zzz'
+                }
+            }),
+            nestedHuman({
+                passportId: 'bbb',
+                mainSkill: {
+                    level: 4,
+                    name: 'ttt'
+                }
+            }),
+            nestedHuman({
+                passportId: 'ccc',
+                mainSkill: {
+                    level: 3,
+                    name: 'ccc'
+                }
+            })
+        ],
+        schema: withIndexes(schemas.nestedHuman, [
+            ['mainSkill.level'],
+            ['mainSkill.name']
+        ]),
+        queries: [
+            {
+                info: 'sort by nested mainSkill.name',
+                query: {
+                    selector: {
+                    },
+                    sort: [{ 'mainSkill.name': 'asc' }]
+                },
+                expectedResultDocIds: [
+                    'ccc',
+                    'bbb',
+                    'aaa'
                 ]
             }
         ]

@@ -95,8 +95,8 @@ export interface NestedHumanDocumentType {
         level: number;
     };
 }
-export function nestedHuman(): NestedHumanDocumentType {
-    return {
+export function nestedHuman(partial: Partial<NestedHumanDocumentType> = {}): NestedHumanDocumentType {
+    const defaultObj = {
         passportId: randomString(12),
         firstName: faker.name.firstName(),
         mainSkill: {
@@ -104,6 +104,10 @@ export function nestedHuman(): NestedHumanDocumentType {
             level: 5
         }
     };
+    return Object.assign(
+        defaultObj,
+        partial
+    );
 }
 
 export interface DeepNestedHumanDocumentType {
