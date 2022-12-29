@@ -1,6 +1,5 @@
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -53,7 +52,6 @@ exports.stringifyFilter = stringifyFilter;
 exports.toPromise = toPromise;
 exports.trimDots = trimDots;
 exports.ucfirst = ucfirst;
-var _clone = _interopRequireDefault(require("clone"));
 var _jsBase = require("js-base64");
 /**
  * Returns an error that indicates that a plugin is missing
@@ -295,7 +293,9 @@ function sortObject(obj) {
   // object
   // array is also of type object
   if (typeof obj === 'object' && !Array.isArray(obj)) {
-    if (obj instanceof RegExp) return obj;
+    if (obj instanceof RegExp) {
+      return obj;
+    }
     var out = {};
     Object.keys(obj).sort(function (a, b) {
       return a.localeCompare(b);
@@ -397,11 +397,45 @@ function adapterObject(adapter) {
   }
   return adapterObj;
 }
-function recursiveDeepCopy(o) {
-  if (!o) return o;
-  return (0, _clone["default"])(o, false);
+
+/**
+ * Deep clone a plain json object.
+ * Does not work with recursive stuff
+ * or non-plain-json.
+ * IMPORANT: Performance of this is very important,
+ * do not change it without running performance tests!
+ *
+ * @link https://github.com/zxdong262/deep-copy/blob/master/src/index.ts
+ */
+function deepClone(src) {
+  if (!src) {
+    return src;
+  }
+  if (src === null || typeof src !== 'object') {
+    return src;
+  }
+  if (Array.isArray(src)) {
+    var ret = new Array(src.length);
+    var i = ret.length;
+    while (i--) {
+      ret[i] = deepClone(src[i]);
+    }
+    return ret;
+  }
+  var dest = {};
+  // eslint-disable-next-line guard-for-in
+  for (var key in src) {
+    // TODO we should not be required to deep clone RegEx objects,
+    // this must be fixed in RxDB.
+    if (src[key] instanceof RegExp) {
+      dest[key] = src[key];
+    } else {
+      dest[key] = deepClone(src[key]);
+    }
+  }
+  return dest;
 }
-var clone = recursiveDeepCopy;
+var clone = deepClone;
 
 /**
  * does a flat copy on the objects,

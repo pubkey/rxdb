@@ -1,8 +1,8 @@
-import mingo from 'mingo';
 import { Dexie } from 'dexie';
 import { flatClone } from '../../util';
 import { newRxError } from '../../rx-error';
 import { getPrimaryFieldOfPrimaryKey, getSchemaByObjectPath } from '../../rx-schema-helper';
+import { getMingoQuery } from '../../rx-query-mingo';
 /**
  * Returns all documents in the database.
  * Non-deleted plus deleted ones.
@@ -99,7 +99,7 @@ export function getDexieSortComparator(_schema, query) {
     mingoSortObject[key] = sortDirectionToMingo(direction);
   });
   var fun = function fun(a, b) {
-    var sorted = mingo.find([a, b], {}).sort(mingoSortObject);
+    var sorted = getMingoQuery({}).find([a, b], {}).sort(mingoSortObject);
     var first = sorted.next();
     if (first === a) {
       return -1;

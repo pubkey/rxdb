@@ -1,8 +1,8 @@
-import { Query as MingoQuery } from 'mingo';
 import { getDexieSortComparator } from './dexie-helper';
 import { newRxError } from '../../rx-error';
 import { getQueryPlan } from '../../query-planner';
 import { DEFAULT_CHECKPOINT_SCHEMA } from '../../rx-schema-helper';
+import { getMingoQuery } from '../../rx-query-mingo';
 export var RxStorageDexieStatics = {
   prepareQuery: function prepareQuery(schema, mutateableQuery) {
     if (!mutateableQuery.sort) {
@@ -26,7 +26,7 @@ export var RxStorageDexieStatics = {
   },
   getQueryMatcher: function getQueryMatcher(_schema, preparedQuery) {
     var query = preparedQuery.query;
-    var mingoQuery = new MingoQuery(query.selector);
+    var mingoQuery = getMingoQuery(query.selector);
     var fun = function fun(doc) {
       if (doc._deleted) {
         return false;

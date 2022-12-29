@@ -4,11 +4,11 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.RxStorageDexieStatics = void 0;
-var _mingo = require("mingo");
 var _dexieHelper = require("./dexie-helper");
 var _rxError = require("../../rx-error");
 var _queryPlanner = require("../../query-planner");
 var _rxSchemaHelper = require("../../rx-schema-helper");
+var _rxQueryMingo = require("../../rx-query-mingo");
 var RxStorageDexieStatics = {
   prepareQuery: function prepareQuery(schema, mutateableQuery) {
     if (!mutateableQuery.sort) {
@@ -32,7 +32,7 @@ var RxStorageDexieStatics = {
   },
   getQueryMatcher: function getQueryMatcher(_schema, preparedQuery) {
     var query = preparedQuery.query;
-    var mingoQuery = new _mingo.Query(query.selector);
+    var mingoQuery = (0, _rxQueryMingo.getMingoQuery)(query.selector);
     var fun = function fun(doc) {
       if (doc._deleted) {
         return false;

@@ -96,8 +96,17 @@ export declare function removeOneFromArrayIfMatches<T>(ar: T[], condition: (x: T
  * transforms the given adapter into a pouch-compatible object
  */
 export declare function adapterObject(adapter: any): any;
-declare function recursiveDeepCopy<T>(o: T | DeepReadonlyObject<T>): T;
-export declare const clone: typeof recursiveDeepCopy;
+/**
+ * Deep clone a plain json object.
+ * Does not work with recursive stuff
+ * or non-plain-json.
+ * IMPORANT: Performance of this is very important,
+ * do not change it without running performance tests!
+ *
+ * @link https://github.com/zxdong262/deep-copy/blob/master/src/index.ts
+ */
+declare function deepClone<T>(src: T | DeepReadonlyObject<T>): T;
+export declare const clone: typeof deepClone;
 /**
  * does a flat copy on the objects,
  * is about 3 times faster then using deepClone

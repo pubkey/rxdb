@@ -3,15 +3,17 @@
 
 <!-- CHANGELOG NEWEST -->
 
-- FIX(lokijs) wrong query result when sorting on a nested field.
-- IMPROVE usage of the [mingo query library](https://github.com/kofrasa/mingo) by only adding the operators to the build that are really needed.
-- CHANGE use faster deep clone method.
-
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 13.17.0 (29 December 2022)
+
+- FIX(lokijs) wrong query result when sorting on a nested field.
+- IMPROVE usage of the [mingo query library](https://github.com/kofrasa/mingo) by only adding the operators to the build that are really needed.
+- CHANGE use faster deep clone method.
 
 ### 13.16.1 (27 December 2022)
 

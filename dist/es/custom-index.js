@@ -28,6 +28,9 @@ export function getIndexableStringMonad(schema, index) {
    */
   var fieldNameProperties = index.map(function (fieldName) {
     var schemaPart = getSchemaByObjectPath(schema, fieldName);
+    if (!schemaPart) {
+      throw new Error('not in schema: ' + fieldName);
+    }
     var type = schemaPart.type;
     var parsedLengths;
     if (type === 'number' || type === 'integer') {

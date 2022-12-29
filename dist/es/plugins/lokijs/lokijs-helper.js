@@ -4,6 +4,7 @@ import { add as unloadAdd } from 'unload';
 import { ensureNotFalsy, flatClone, promiseWait, randomCouchString } from '../../util';
 import { LokiSaveQueue } from './loki-save-queue';
 import { newRxError } from '../../rx-error';
+import objectPath from 'object-path';
 import { getBroadcastChannelReference } from '../../rx-storage-multiinstance';
 import { getLeaderElectorByBroadcastChannel } from '../leader-election';
 /**
@@ -551,8 +552,8 @@ export function getLokiSortComparator(_schema, query) {
       var fieldName = Object.keys(sortPart)[0];
       var direction = Object.values(sortPart)[0];
       var directionMultiplier = direction === 'asc' ? 1 : -1;
-      var valueA = a[fieldName];
-      var valueB = b[fieldName];
+      var valueA = objectPath.get(a, fieldName);
+      var valueB = objectPath.get(b, fieldName);
       if (valueA === valueB) {
         return false;
       } else {

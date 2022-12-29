@@ -1,6 +1,5 @@
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -14,11 +13,11 @@ exports.getDexieDbWithTables = getDexieDbWithTables;
 exports.getDexieSortComparator = getDexieSortComparator;
 exports.getDexieStoreSchema = getDexieStoreSchema;
 exports.getDocsInDb = void 0;
-var _mingo = _interopRequireDefault(require("mingo"));
 var _dexie = require("dexie");
 var _util = require("../../util");
 var _rxError = require("../../rx-error");
 var _rxSchemaHelper = require("../../rx-schema-helper");
+var _rxQueryMingo = require("../../rx-query-mingo");
 /**
  * Returns all documents in the database.
  * Non-deleted plus deleted ones.
@@ -121,7 +120,7 @@ function getDexieSortComparator(_schema, query) {
     mingoSortObject[key] = sortDirectionToMingo(direction);
   });
   var fun = function fun(a, b) {
-    var sorted = _mingo["default"].find([a, b], {}).sort(mingoSortObject);
+    var sorted = (0, _rxQueryMingo.getMingoQuery)({}).find([a, b], {}).sort(mingoSortObject);
     var first = sorted.next();
     if (first === a) {
       return -1;
