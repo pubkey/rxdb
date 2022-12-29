@@ -212,17 +212,6 @@ Object.keys(_replicationGraphql).forEach(function (key) {
     }
   });
 });
-var _replicationCouchdb = require("./plugins/replication-couchdb");
-Object.keys(_replicationCouchdb).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  if (key in exports && exports[key] === _replicationCouchdb[key]) return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function get() {
-      return _replicationCouchdb[key];
-    }
-  });
-});
 var _localDocuments = require("./plugins/local-documents");
 Object.keys(_localDocuments).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
@@ -231,17 +220,6 @@ Object.keys(_localDocuments).forEach(function (key) {
     enumerable: true,
     get: function get() {
       return _localDocuments[key];
-    }
-  });
-});
-var _serverCouchdb = require("./plugins/server-couchdb");
-Object.keys(_serverCouchdb).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  if (key in exports && exports[key] === _serverCouchdb[key]) return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function get() {
-      return _serverCouchdb[key];
     }
   });
 });

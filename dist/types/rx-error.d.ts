@@ -1,7 +1,7 @@
 /**
  * here we use custom errors with the additional field 'parameters'
  */
-import type { RxErrorParameters, RxErrorKey, RxStorageBulkWriteError } from './types';
+import type { RxErrorParameters, RxErrorKey, RxStorageWriteError, RxStorageWriteErrorConflict } from './types';
 export declare class RxError extends Error {
     code: RxErrorKey;
     message: string;
@@ -28,4 +28,5 @@ export declare function newRxTypeError(code: RxErrorKey, parameters?: RxErrorPar
  * Returns the error if it is a 409 conflict,
  * return false if it is another error.
  */
-export declare function isBulkWriteConflictError<RxDocType>(err: RxStorageBulkWriteError<RxDocType> | any): RxStorageBulkWriteError<RxDocType> | false;
+export declare function isBulkWriteConflictError<RxDocType>(err?: RxStorageWriteError<RxDocType> | any): RxStorageWriteErrorConflict<RxDocType> | false;
+export declare function rxStorageWriteErrorToRxError(err: RxStorageWriteError<any>): RxError;

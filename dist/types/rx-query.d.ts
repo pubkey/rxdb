@@ -3,7 +3,7 @@ import type { RxCollection, RxDocument, RxQueryOP, RxQuery, MangoQuery, MangoQue
 import type { QueryMatcher } from 'event-reduce-js';
 export declare class RxQueryBase<RxDocType, RxQueryResult = RxDocument<RxDocType>[] | RxDocument<RxDocType>> {
     op: RxQueryOP;
-    mangoQuery: Readonly<MangoQuery>;
+    mangoQuery: Readonly<MangoQuery<RxDocType>>;
     collection: RxCollection<RxDocType>;
     id: number;
     /**
@@ -23,6 +23,7 @@ export declare class RxQueryBase<RxDocType, RxQueryResult = RxDocument<RxDocType
     _result: {
         docsData: RxDocumentData<RxDocType>[];
         docsDataMap: Map<string, RxDocType>;
+        docsMap: Map<string, RxDocument<RxDocType>>;
         docs: RxDocument<RxDocType>[];
         count: number;
         /**
@@ -32,7 +33,7 @@ export declare class RxQueryBase<RxDocType, RxQueryResult = RxDocument<RxDocType
          */
         time: number;
     } | null;
-    constructor(op: RxQueryOP, mangoQuery: Readonly<MangoQuery>, collection: RxCollection<RxDocType>);
+    constructor(op: RxQueryOP, mangoQuery: Readonly<MangoQuery<RxDocType>>, collection: RxCollection<RxDocType>);
     get $(): BehaviorSubject<RxQueryResult>;
     _latestChangeEvent: -1 | number;
     _lastExecStart: number;
@@ -52,9 +53,9 @@ export declare class RxQueryBase<RxDocType, RxQueryResult = RxDocument<RxDocType
     _$?: Observable<RxQueryResult>;
     /**
      * set the new result-data as result-docs of the query
-     * @param newResultData json-docs that were received from pouchdb
+     * @param newResultData json-docs that were received from the storage
      */
-    _setResultData(newResultData: RxDocumentData<RxDocType[]> | number): void;
+    _setResultData(newResultData: RxDocumentData<RxDocType>[] | number | Map<string, RxDocumentData<RxDocType>>): void;
     /**
      * executes the query on the database
      * @return results-array with document-data
@@ -107,12 +108,12 @@ export declare class RxQueryBase<RxDocType, RxQueryResult = RxDocument<RxDocType
     skip(_amount: number | null): RxQuery<RxDocType, RxQueryResult>;
     limit(_amount: number | null): RxQuery<RxDocType, RxQueryResult>;
 }
-export declare function _getDefaultQuery(): MangoQuery;
+export declare function _getDefaultQuery<RxDocType>(): MangoQuery<RxDocType>;
 /**
  * run this query through the QueryCache
  */
 export declare function tunnelQueryCache<RxDocumentType, RxQueryResult>(rxQuery: RxQueryBase<RxDocumentType, RxQueryResult>): RxQuery<RxDocumentType, RxQueryResult>;
-export declare function createRxQuery(op: RxQueryOP, queryObj: MangoQuery, collection: RxCollection): RxQueryBase<any, any>;
+export declare function createRxQuery<RxDocType>(op: RxQueryOP, queryObj: MangoQuery<RxDocType>, collection: RxCollection<RxDocType>): RxQueryBase<RxDocType, RxDocument<RxDocType, {}> | RxDocument<RxDocType, {}>[]>;
 /**
  * Runs the query over the storage instance
  * of the collection.

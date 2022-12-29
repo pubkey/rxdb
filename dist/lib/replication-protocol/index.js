@@ -1,22 +1,25 @@
 "use strict";
 
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 var _exportNames = {
-  awaitRxStorageReplicationIdle: true,
   replicateRxStorageInstance: true,
   awaitRxStorageReplicationFirstInSync: true,
   awaitRxStorageReplicationInSync: true,
+  awaitRxStorageReplicationIdle: true,
   rxStorageInstanceToReplicationHandler: true,
   cancelRxStorageReplication: true
 };
 exports.awaitRxStorageReplicationFirstInSync = awaitRxStorageReplicationFirstInSync;
-exports.awaitRxStorageReplicationIdle = void 0;
+exports.awaitRxStorageReplicationIdle = awaitRxStorageReplicationIdle;
 exports.awaitRxStorageReplicationInSync = awaitRxStorageReplicationInSync;
 exports.cancelRxStorageReplication = cancelRxStorageReplication;
 exports.replicateRxStorageInstance = replicateRxStorageInstance;
 exports.rxStorageInstanceToReplicationHandler = rxStorageInstanceToReplicationHandler;
+var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
+var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 var _rxjs = require("rxjs");
 var _rxSchemaHelper = require("../rx-schema-helper");
 var _util = require("../util");
@@ -92,187 +95,12 @@ Object.keys(_conflicts).forEach(function (key) {
     }
   });
 });
-function _settle(pact, state, value) {
-  if (!pact.s) {
-    if (value instanceof _Pact) {
-      if (value.s) {
-        if (state & 1) {
-          state = value.s;
-        }
-        value = value.v;
-      } else {
-        value.o = _settle.bind(null, pact, state);
-        return;
-      }
-    }
-    if (value && value.then) {
-      value.then(_settle.bind(null, pact, state), _settle.bind(null, pact, 2));
-      return;
-    }
-    pact.s = state;
-    pact.v = value;
-    var observer = pact.o;
-    if (observer) {
-      observer(pact);
-    }
-  }
-}
-var _Pact = /*#__PURE__*/function () {
-  function _Pact() {}
-  _Pact.prototype.then = function (onFulfilled, onRejected) {
-    var result = new _Pact();
-    var state = this.s;
-    if (state) {
-      var callback = state & 1 ? onFulfilled : onRejected;
-      if (callback) {
-        try {
-          _settle(result, 1, callback(this.v));
-        } catch (e) {
-          _settle(result, 2, e);
-        }
-        return result;
-      } else {
-        return this;
-      }
-    }
-    this.o = function (_this) {
-      try {
-        var value = _this.v;
-        if (_this.s & 1) {
-          _settle(result, 1, onFulfilled ? onFulfilled(value) : value);
-        } else if (onRejected) {
-          _settle(result, 1, onRejected(value));
-        } else {
-          _settle(result, 2, value);
-        }
-      } catch (e) {
-        _settle(result, 2, e);
-      }
-    };
-    return result;
-  };
-  return _Pact;
-}();
-function _isSettledPact(thenable) {
-  return thenable instanceof _Pact && thenable.s & 1;
-}
-function _for(test, update, body) {
-  var stage;
-  for (;;) {
-    var shouldContinue = test();
-    if (_isSettledPact(shouldContinue)) {
-      shouldContinue = shouldContinue.v;
-    }
-    if (!shouldContinue) {
-      return result;
-    }
-    if (shouldContinue.then) {
-      stage = 0;
-      break;
-    }
-    var result = body();
-    if (result && result.then) {
-      if (_isSettledPact(result)) {
-        result = result.s;
-      } else {
-        stage = 1;
-        break;
-      }
-    }
-    if (update) {
-      var updateValue = update();
-      if (updateValue && updateValue.then && !_isSettledPact(updateValue)) {
-        stage = 2;
-        break;
-      }
-    }
-  }
-  var pact = new _Pact();
-  var reject = _settle.bind(null, pact, 2);
-  (stage === 0 ? shouldContinue.then(_resumeAfterTest) : stage === 1 ? result.then(_resumeAfterBody) : updateValue.then(_resumeAfterUpdate)).then(void 0, reject);
-  return pact;
-  function _resumeAfterBody(value) {
-    result = value;
-    do {
-      if (update) {
-        updateValue = update();
-        if (updateValue && updateValue.then && !_isSettledPact(updateValue)) {
-          updateValue.then(_resumeAfterUpdate).then(void 0, reject);
-          return;
-        }
-      }
-      shouldContinue = test();
-      if (!shouldContinue || _isSettledPact(shouldContinue) && !shouldContinue.v) {
-        _settle(pact, 1, result);
-        return;
-      }
-      if (shouldContinue.then) {
-        shouldContinue.then(_resumeAfterTest).then(void 0, reject);
-        return;
-      }
-      result = body();
-      if (_isSettledPact(result)) {
-        result = result.v;
-      }
-    } while (!result || !result.then);
-    result.then(_resumeAfterBody).then(void 0, reject);
-  }
-  function _resumeAfterTest(shouldContinue) {
-    if (shouldContinue) {
-      result = body();
-      if (result && result.then) {
-        result.then(_resumeAfterBody).then(void 0, reject);
-      } else {
-        _resumeAfterBody(result);
-      }
-    } else {
-      _settle(pact, 1, result);
-    }
-  }
-  function _resumeAfterUpdate() {
-    if (shouldContinue = test()) {
-      if (shouldContinue.then) {
-        shouldContinue.then(_resumeAfterTest).then(void 0, reject);
-      } else {
-        _resumeAfterTest(shouldContinue);
-      }
-    } else {
-      _settle(pact, 1, result);
-    }
-  }
-}
 /**
  * These files contain the replication protocol.
  * It can be used to replicated RxStorageInstances or RxCollections
  * or even to do a client(s)-server replication.
  */
-var awaitRxStorageReplicationIdle = function awaitRxStorageReplicationIdle(state) {
-  try {
-    return Promise.resolve(awaitRxStorageReplicationFirstInSync(state)).then(function () {
-      var _exit = false;
-      return _for(function () {
-        return !_exit;
-      }, void 0, function () {
-        var _state$streamQueue = state.streamQueue,
-          down = _state$streamQueue.down,
-          up = _state$streamQueue.up;
-        return Promise.resolve(Promise.all([up, down])).then(function () {
-          if (down === state.streamQueue.down && up === state.streamQueue.up) {
-            _exit = true;
-          }
-        });
-        /**
-         * If the Promises have not been reasigned
-         * after awaiting them, we know that the replication
-         * is in idle state at this point in time.
-         */
-      });
-    });
-  } catch (e) {
-    return Promise.reject(e);
-  }
-};
-exports.awaitRxStorageReplicationIdle = awaitRxStorageReplicationIdle;
+
 function replicateRxStorageInstance(input) {
   var checkpointKey = (0, _checkpoint.getCheckpointKey)(input);
   var state = {
@@ -335,7 +163,43 @@ function awaitRxStorageReplicationFirstInSync(state) {
 function awaitRxStorageReplicationInSync(replicationState) {
   return Promise.all([replicationState.streamQueue.up, replicationState.streamQueue.down, replicationState.checkpointQueue]);
 }
-function rxStorageInstanceToReplicationHandler(instance, conflictHandler, hashFunction) {
+function awaitRxStorageReplicationIdle(_x) {
+  return _awaitRxStorageReplicationIdle.apply(this, arguments);
+}
+function _awaitRxStorageReplicationIdle() {
+  _awaitRxStorageReplicationIdle = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee3(state) {
+    var _state$streamQueue, down, up;
+    return _regenerator["default"].wrap(function _callee3$(_context3) {
+      while (1) switch (_context3.prev = _context3.next) {
+        case 0:
+          _context3.next = 2;
+          return awaitRxStorageReplicationFirstInSync(state);
+        case 2:
+          if (!true) {
+            _context3.next = 10;
+            break;
+          }
+          _state$streamQueue = state.streamQueue, down = _state$streamQueue.down, up = _state$streamQueue.up;
+          _context3.next = 6;
+          return Promise.all([up, down]);
+        case 6:
+          if (!(down === state.streamQueue.down && up === state.streamQueue.up)) {
+            _context3.next = 8;
+            break;
+          }
+          return _context3.abrupt("return");
+        case 8:
+          _context3.next = 2;
+          break;
+        case 10:
+        case "end":
+          return _context3.stop();
+      }
+    }, _callee3);
+  }));
+  return _awaitRxStorageReplicationIdle.apply(this, arguments);
+}
+function rxStorageInstanceToReplicationHandler(instance, conflictHandler, databaseInstanceToken) {
   var primaryPath = (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(instance.schema.primaryKey);
   var replicationHandler = {
     masterChangeStream$: instance.changeStream().pipe((0, _rxjs.map)(function (eventBulk) {
@@ -357,75 +221,109 @@ function rxStorageInstanceToReplicationHandler(instance, conflictHandler, hashFu
         };
       });
     },
-    masterWrite: function masterWrite(rows) {
-      try {
-        var rowById = {};
-        rows.forEach(function (row) {
-          var docId = row.newDocumentState[primaryPath];
-          rowById[docId] = row;
-        });
-        var ids = Object.keys(rowById);
-        return Promise.resolve(instance.findDocumentsById(ids, true)).then(function (masterDocsState) {
-          var conflicts = [];
-          var writeRows = [];
-          return Promise.resolve(Promise.all(Object.entries(rowById).map(function (_ref) {
-            try {
-              var id = _ref[0],
-                row = _ref[1];
-              var masterState = masterDocsState[id];
-              var _temp4 = function () {
-                if (!masterState) {
-                  writeRows.push({
-                    document: (0, _helper.docStateToWriteDoc)(hashFunction, row.newDocumentState)
-                  });
-                } else {
-                  var _temp5 = function () {
-                    if (masterState && !row.assumedMasterState) {
-                      conflicts.push((0, _helper.writeDocToDocState)(masterState));
-                    } else return Promise.resolve(conflictHandler({
-                      realMasterState: (0, _helper.writeDocToDocState)(masterState),
-                      newDocumentState: (0, _util.ensureNotFalsy)(row.assumedMasterState)
-                    }, 'rxStorageInstanceToReplicationHandler-masterWrite')).then(function (_conflictHandler) {
-                      if (_conflictHandler.isEqual === true) {
+    masterWrite: function () {
+      var _masterWrite = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee2(rows) {
+        var rowById, ids, masterDocsState, conflicts, writeRows, result;
+        return _regenerator["default"].wrap(function _callee2$(_context2) {
+          while (1) switch (_context2.prev = _context2.next) {
+            case 0:
+              rowById = {};
+              rows.forEach(function (row) {
+                var docId = row.newDocumentState[primaryPath];
+                rowById[docId] = row;
+              });
+              ids = Object.keys(rowById);
+              _context2.next = 5;
+              return instance.findDocumentsById(ids, true);
+            case 5:
+              masterDocsState = _context2.sent;
+              conflicts = [];
+              writeRows = [];
+              _context2.next = 10;
+              return Promise.all(Object.entries(rowById).map( /*#__PURE__*/function () {
+                var _ref2 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(_ref) {
+                  var id, row, masterState;
+                  return _regenerator["default"].wrap(function _callee$(_context) {
+                    while (1) switch (_context.prev = _context.next) {
+                      case 0:
+                        id = _ref[0], row = _ref[1];
+                        masterState = masterDocsState[id];
+                        if (masterState) {
+                          _context.next = 6;
+                          break;
+                        }
+                        writeRows.push({
+                          document: (0, _helper.docStateToWriteDoc)(databaseInstanceToken, row.newDocumentState)
+                        });
+                        _context.next = 18;
+                        break;
+                      case 6:
+                        if (!(masterState && !row.assumedMasterState)) {
+                          _context.next = 10;
+                          break;
+                        }
+                        conflicts.push((0, _helper.writeDocToDocState)(masterState));
+                        _context.next = 18;
+                        break;
+                      case 10:
+                        _context.next = 12;
+                        return conflictHandler({
+                          realMasterState: (0, _helper.writeDocToDocState)(masterState),
+                          newDocumentState: (0, _util.ensureNotFalsy)(row.assumedMasterState)
+                        }, 'rxStorageInstanceToReplicationHandler-masterWrite');
+                      case 12:
+                        _context.t0 = _context.sent.isEqual;
+                        if (!(_context.t0 === true)) {
+                          _context.next = 17;
+                          break;
+                        }
                         writeRows.push({
                           previous: masterState,
-                          document: (0, _helper.docStateToWriteDoc)(hashFunction, row.newDocumentState, masterState)
+                          document: (0, _helper.docStateToWriteDoc)(databaseInstanceToken, row.newDocumentState, masterState)
                         });
-                      } else {
+                        _context.next = 18;
+                        break;
+                      case 17:
                         conflicts.push((0, _helper.writeDocToDocState)(masterState));
-                      }
-                    });
-                  }();
-                  if (_temp5 && _temp5.then) return _temp5.then(function () {});
-                }
-              }();
-              return Promise.resolve(_temp4 && _temp4.then ? _temp4.then(function () {}) : void 0);
-            } catch (e) {
-              return Promise.reject(e);
-            }
-          }))).then(function () {
-            var _temp = function () {
-              if (writeRows.length > 0) {
-                return Promise.resolve(instance.bulkWrite(writeRows, 'replication-master-write')).then(function (result) {
-                  Object.values(result.error).forEach(function (err) {
-                    if (err.status !== 409) {
-                      throw new Error('non conflict error');
-                    } else {
-                      conflicts.push((0, _helper.writeDocToDocState)((0, _util.ensureNotFalsy)(err.documentInDb)));
+                      case 18:
+                      case "end":
+                        return _context.stop();
                     }
-                  });
-                });
+                  }, _callee);
+                }));
+                return function (_x3) {
+                  return _ref2.apply(this, arguments);
+                };
+              }()));
+            case 10:
+              if (!(writeRows.length > 0)) {
+                _context2.next = 15;
+                break;
               }
-            }();
-            return _temp && _temp.then ? _temp.then(function () {
-              return conflicts;
-            }) : conflicts;
-          });
-        });
-      } catch (e) {
-        return Promise.reject(e);
+              _context2.next = 13;
+              return instance.bulkWrite(writeRows, 'replication-master-write');
+            case 13:
+              result = _context2.sent;
+              Object.values(result.error).forEach(function (err) {
+                if (err.status !== 409) {
+                  throw new Error('non conflict error');
+                } else {
+                  conflicts.push((0, _helper.writeDocToDocState)((0, _util.ensureNotFalsy)(err.documentInDb)));
+                }
+              });
+            case 15:
+              return _context2.abrupt("return", conflicts);
+            case 16:
+            case "end":
+              return _context2.stop();
+          }
+        }, _callee2);
+      }));
+      function masterWrite(_x2) {
+        return _masterWrite.apply(this, arguments);
       }
-    }
+      return masterWrite;
+    }()
   };
   return replicationHandler;
 }

@@ -1,6 +1,7 @@
 import type { ChangeEvent } from 'event-reduce-js';
 import { RxChangeEvent } from './rx-change-event';
 import { RxDocumentMeta } from './rx-document';
+import { RxStorageWriteError } from './rx-error';
 import { MangoQuery } from './rx-query';
 import { RxJsonSchema } from './rx-schema';
 import { ById, Override, StringKeys } from './util';
@@ -76,8 +77,7 @@ export type BulkWriteRow<RxDocType> = {
      * The current document state in the storage engine,
      * assumed by the application.
      * Undefined if the document is a new insert.
-     * While with pouchdb we have to practically only provide the previous revision
-     * we here have to send the full previous document data.
+     * Notice that we send the full document data as 'previous', not just the revision.
      * The reason is that to get the previous revision you anyway have to get the full
      * previous document and so it is easier to just send it all to the storage instance.
      * This will later allow us to use something different then the _rev key for conflict detection
@@ -145,49 +145,14 @@ export type RxAttachmentWriteData = RxAttachmentDataBase & {
      * so we anyway have to get the string value out of the BlobBuffer.
      *
      * Also using BlobBuffer has no performance benefit because in some RxStorage implementations,
-     * like PouchDB, it just keeps the transaction open for longer because the BlobBuffer
+     * it just keeps the transaction open for longer because the BlobBuffer
      * has be be read.
      */
     data: string;
 };
 
 
-/**
- * Error that can happer per document when
- * RxStorage.bulkWrite() is called
- */
-export type RxStorageBulkWriteError<RxDocType> = {
 
-    status: number |
-    409 // conflict
-    /**
-     * Before you add any other status code,
-     * check pouchdb/packages/node_modules/pouch-errors/src/index.js
-     * and try to use the same code as PouchDB does.
-     */
-    ;
-
-    /**
-     * set this property to make it easy
-     * to detect if the object is a RxStorageBulkWriteError
-     */
-    isError: true;
-
-    // primary key of the document
-    documentId: string;
-
-    // the original document data that should have been written.
-    writeRow: BulkWriteRow<RxDocType>;
-
-    /**
-     * The error state must contain the
-     * document state in the database.
-     * This ensures that we can continue resolving a conflict
-     * without having to pull the document out of the db first.
-     * Is not set if the error happens on an insert.
-     */
-    documentInDb?: RxDocumentData<RxDocType>;
-};
 
 export type RxStorageBulkWriteResponse<RxDocType> = {
     /**
@@ -200,7 +165,7 @@ export type RxStorageBulkWriteResponse<RxDocType> = {
      * A map that is indexed by the documentId
      * contains all errored writes.
      */
-    error: ById<RxStorageBulkWriteError<RxDocType>>;
+    error: ById<RxStorageWriteError<RxDocType>>;
 };
 
 export type PreparedQuery<DocType> = MangoQuery<DocType> | any;
@@ -342,7 +307,7 @@ export type CategorizeBulkWriteRowsOutput<RxDocType> = {
      * RxStorageInstance().getChangedDocumentsSince().
      */
     changedDocumentIds: RxDocType[StringKeys<RxDocType>][];
-    errors: ById<RxStorageBulkWriteError<RxDocType>>;
+    errors: ById<RxStorageWriteError<RxDocType>>;
     eventBulk: EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, any>;
     attachmentsAdd: {
         documentId: string;

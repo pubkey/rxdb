@@ -1,307 +1,9 @@
+import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
+import _regeneratorRuntime from "@babel/runtime/regenerator";
 import { isBulkWriteConflictError, newRxError } from './rx-error';
 import { fillWithDefaultSettings, getComposedPrimaryKeyOfDocumentData } from './rx-schema-helper';
 import { getSingleDocument, writeSingle } from './rx-storage-helper';
 import { clone, ensureNotFalsy, fastUnsecureHash, getDefaultRevision, getDefaultRxDocumentMeta, randomCouchString } from './util';
-function _catch(body, recover) {
-  try {
-    var result = body();
-  } catch (e) {
-    return recover(e);
-  }
-  if (result && result.then) {
-    return result.then(void 0, recover);
-  }
-  return result;
-} /**
-   * returns the primary for a given collection-data
-   * used in the internal store of a RxDatabase
-   */
-function _settle(pact, state, value) {
-  if (!pact.s) {
-    if (value instanceof _Pact) {
-      if (value.s) {
-        if (state & 1) {
-          state = value.s;
-        }
-        value = value.v;
-      } else {
-        value.o = _settle.bind(null, pact, state);
-        return;
-      }
-    }
-    if (value && value.then) {
-      value.then(_settle.bind(null, pact, state), _settle.bind(null, pact, 2));
-      return;
-    }
-    pact.s = state;
-    pact.v = value;
-    var observer = pact.o;
-    if (observer) {
-      observer(pact);
-    }
-  }
-}
-var _Pact = /*#__PURE__*/function () {
-  function _Pact() {}
-  _Pact.prototype.then = function (onFulfilled, onRejected) {
-    var result = new _Pact();
-    var state = this.s;
-    if (state) {
-      var callback = state & 1 ? onFulfilled : onRejected;
-      if (callback) {
-        try {
-          _settle(result, 1, callback(this.v));
-        } catch (e) {
-          _settle(result, 2, e);
-        }
-        return result;
-      } else {
-        return this;
-      }
-    }
-    this.o = function (_this) {
-      try {
-        var value = _this.v;
-        if (_this.s & 1) {
-          _settle(result, 1, onFulfilled ? onFulfilled(value) : value);
-        } else if (onRejected) {
-          _settle(result, 1, onRejected(value));
-        } else {
-          _settle(result, 2, value);
-        }
-      } catch (e) {
-        _settle(result, 2, e);
-      }
-    };
-    return result;
-  };
-  return _Pact;
-}();
-function _isSettledPact(thenable) {
-  return thenable instanceof _Pact && thenable.s & 1;
-}
-function _for(test, update, body) {
-  var stage;
-  for (;;) {
-    var shouldContinue = test();
-    if (_isSettledPact(shouldContinue)) {
-      shouldContinue = shouldContinue.v;
-    }
-    if (!shouldContinue) {
-      return result;
-    }
-    if (shouldContinue.then) {
-      stage = 0;
-      break;
-    }
-    var result = body();
-    if (result && result.then) {
-      if (_isSettledPact(result)) {
-        result = result.s;
-      } else {
-        stage = 1;
-        break;
-      }
-    }
-    if (update) {
-      var updateValue = update();
-      if (updateValue && updateValue.then && !_isSettledPact(updateValue)) {
-        stage = 2;
-        break;
-      }
-    }
-  }
-  var pact = new _Pact();
-  var reject = _settle.bind(null, pact, 2);
-  (stage === 0 ? shouldContinue.then(_resumeAfterTest) : stage === 1 ? result.then(_resumeAfterBody) : updateValue.then(_resumeAfterUpdate)).then(void 0, reject);
-  return pact;
-  function _resumeAfterBody(value) {
-    result = value;
-    do {
-      if (update) {
-        updateValue = update();
-        if (updateValue && updateValue.then && !_isSettledPact(updateValue)) {
-          updateValue.then(_resumeAfterUpdate).then(void 0, reject);
-          return;
-        }
-      }
-      shouldContinue = test();
-      if (!shouldContinue || _isSettledPact(shouldContinue) && !shouldContinue.v) {
-        _settle(pact, 1, result);
-        return;
-      }
-      if (shouldContinue.then) {
-        shouldContinue.then(_resumeAfterTest).then(void 0, reject);
-        return;
-      }
-      result = body();
-      if (_isSettledPact(result)) {
-        result = result.v;
-      }
-    } while (!result || !result.then);
-    result.then(_resumeAfterBody).then(void 0, reject);
-  }
-  function _resumeAfterTest(shouldContinue) {
-    if (shouldContinue) {
-      result = body();
-      if (result && result.then) {
-        result.then(_resumeAfterBody).then(void 0, reject);
-      } else {
-        _resumeAfterBody(result);
-      }
-    } else {
-      _settle(pact, 1, result);
-    }
-  }
-  function _resumeAfterUpdate() {
-    if (shouldContinue = test()) {
-      if (shouldContinue.then) {
-        shouldContinue.then(_resumeAfterTest).then(void 0, reject);
-      } else {
-        _resumeAfterTest(shouldContinue);
-      }
-    } else {
-      _settle(pact, 1, result);
-    }
-  }
-}
-export var addConnectedStorageToCollection = function addConnectedStorageToCollection(collection, storageCollectionName, schema) {
-  try {
-    var _exit2 = false;
-    var collectionNameWithVersion = _collectionNamePrimary(collection.name, collection.schema.jsonSchema);
-    var collectionDocId = getPrimaryKeyOfInternalDocument(collectionNameWithVersion, INTERNAL_CONTEXT_COLLECTION);
-    return Promise.resolve(_for(function () {
-      return !_exit2;
-    }, void 0, function () {
-      return Promise.resolve(getSingleDocument(collection.database.internalStore, collectionDocId)).then(function (collectionDoc) {
-        var saveData = clone(ensureNotFalsy(collectionDoc));
-        /**
-         * Add array if not exist for backwards compatibility
-         * TODO remove this in 2023
-         */
-        if (!saveData.data.connectedStorages) {
-          saveData.data.connectedStorages = [];
-        }
-
-        // do nothing if already in array
-        var alreadyThere = saveData.data.connectedStorages.find(function (row) {
-          return row.collectionName === storageCollectionName && row.schema.version === schema.version;
-        });
-        if (alreadyThere) {
-          _exit2 = true;
-          return;
-        }
-
-        // otherwise add to array and save
-        saveData.data.connectedStorages.push({
-          collectionName: storageCollectionName,
-          schema: schema
-        });
-        return _catch(function () {
-          return Promise.resolve(writeSingle(collection.database.internalStore, {
-            previous: ensureNotFalsy(collectionDoc),
-            document: saveData
-          }, 'add-connected-storage-to-collection')).then(function () {});
-        }, function (err) {
-          if (!isBulkWriteConflictError(err)) {
-            throw err;
-          }
-        });
-      });
-    }));
-  } catch (e) {
-    return Promise.reject(e);
-  }
-};
-export var ensureStorageTokenDocumentExists = function ensureStorageTokenDocumentExists(rxDatabase) {
-  try {
-    /**
-     * To have less read-write cycles,
-     * we just try to insert a new document
-     * and only fetch the existing one if a conflict happened.
-     */
-    var storageToken = randomCouchString(10);
-    var passwordHash = rxDatabase.password ? fastUnsecureHash(rxDatabase.password) : undefined;
-    var docData = {
-      id: STORAGE_TOKEN_DOCUMENT_ID,
-      context: INTERNAL_CONTEXT_STORAGE_TOKEN,
-      key: STORAGE_TOKEN_DOCUMENT_KEY,
-      data: {
-        token: storageToken,
-        /**
-         * We add the instance token here
-         * to be able to detect if a given RxDatabase instance
-         * is the first instance that was ever created
-         * or if databases have existed earlier on that storage
-         * with the same database name.
-         */
-        instanceToken: rxDatabase.token,
-        passwordHash: passwordHash
-      },
-      _deleted: false,
-      _meta: getDefaultRxDocumentMeta(),
-      _rev: getDefaultRevision(),
-      _attachments: {}
-    };
-    return Promise.resolve(rxDatabase.internalStore.bulkWrite([{
-      document: docData
-    }], 'internal-add-storage-token')).then(function (writeResult) {
-      if (writeResult.success[STORAGE_TOKEN_DOCUMENT_ID]) {
-        return writeResult.success[STORAGE_TOKEN_DOCUMENT_ID];
-      }
-
-      /**
-       * If we get a 409 error,
-       * it means another instance already inserted the storage token.
-       * So we get that token from the database and return that one.
-       */
-      var error = ensureNotFalsy(writeResult.error[STORAGE_TOKEN_DOCUMENT_ID]);
-      if (error.isError && error.status === 409) {
-        var conflictError = error;
-        if (passwordHash && passwordHash !== ensureNotFalsy(conflictError.documentInDb).data.passwordHash) {
-          throw newRxError('DB1', {
-            passwordHash: passwordHash,
-            existingPasswordHash: ensureNotFalsy(conflictError.documentInDb).data.passwordHash
-          });
-        }
-        var storageTokenDocInDb = conflictError.documentInDb;
-        return ensureNotFalsy(storageTokenDocInDb);
-      }
-      throw error;
-    });
-  } catch (e) {
-    return Promise.reject(e);
-  }
-};
-/**
- * Returns all internal documents
- * with context 'collection'
- */
-export var getAllCollectionDocuments = function getAllCollectionDocuments(storageStatics, storageInstance) {
-  try {
-    var getAllQueryPrepared = storageStatics.prepareQuery(storageInstance.schema, {
-      selector: {
-        context: INTERNAL_CONTEXT_COLLECTION
-      },
-      sort: [{
-        id: 'asc'
-      }],
-      skip: 0
-    });
-    return Promise.resolve(storageInstance.query(getAllQueryPrepared)).then(function (queryResult) {
-      var allDocs = queryResult.documents;
-      return allDocs;
-    });
-  } catch (e) {
-    return Promise.reject(e);
-  }
-};
-
-/**
- * to not confuse multiInstance-messages with other databases that have the same
- * name and adapter, but do not share state with this one (for example in-memory-instances),
- * we set a storage-token and use it in the broadcast-channel
- */
 export var INTERNAL_CONTEXT_COLLECTION = 'collection';
 export var INTERNAL_CONTEXT_STORAGE_TOKEN = 'storage-token';
 
@@ -361,8 +63,209 @@ export function getPrimaryKeyOfInternalDocument(key, context) {
     context: context
   });
 }
+
+/**
+ * Returns all internal documents
+ * with context 'collection'
+ */
+export function getAllCollectionDocuments(_x, _x2) {
+  return _getAllCollectionDocuments.apply(this, arguments);
+}
+
+/**
+ * to not confuse multiInstance-messages with other databases that have the same
+ * name and adapter, but do not share state with this one (for example in-memory-instances),
+ * we set a storage-token and use it in the broadcast-channel
+ */
+function _getAllCollectionDocuments() {
+  _getAllCollectionDocuments = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee(storageStatics, storageInstance) {
+    var getAllQueryPrepared, queryResult, allDocs;
+    return _regeneratorRuntime.wrap(function _callee$(_context) {
+      while (1) switch (_context.prev = _context.next) {
+        case 0:
+          getAllQueryPrepared = storageStatics.prepareQuery(storageInstance.schema, {
+            selector: {
+              context: INTERNAL_CONTEXT_COLLECTION
+            },
+            sort: [{
+              id: 'asc'
+            }],
+            skip: 0
+          });
+          _context.next = 3;
+          return storageInstance.query(getAllQueryPrepared);
+        case 3:
+          queryResult = _context.sent;
+          allDocs = queryResult.documents;
+          return _context.abrupt("return", allDocs);
+        case 6:
+        case "end":
+          return _context.stop();
+      }
+    }, _callee);
+  }));
+  return _getAllCollectionDocuments.apply(this, arguments);
+}
 export var STORAGE_TOKEN_DOCUMENT_KEY = 'storageToken';
 export var STORAGE_TOKEN_DOCUMENT_ID = getPrimaryKeyOfInternalDocument(STORAGE_TOKEN_DOCUMENT_KEY, INTERNAL_CONTEXT_STORAGE_TOKEN);
+export function ensureStorageTokenDocumentExists(_x3) {
+  return _ensureStorageTokenDocumentExists.apply(this, arguments);
+}
+function _ensureStorageTokenDocumentExists() {
+  _ensureStorageTokenDocumentExists = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee2(rxDatabase) {
+    var storageToken, passwordHash, docData, writeResult, error, conflictError, storageTokenDocInDb;
+    return _regeneratorRuntime.wrap(function _callee2$(_context2) {
+      while (1) switch (_context2.prev = _context2.next) {
+        case 0:
+          /**
+           * To have less read-write cycles,
+           * we just try to insert a new document
+           * and only fetch the existing one if a conflict happened.
+           */
+          storageToken = randomCouchString(10);
+          passwordHash = rxDatabase.password ? fastUnsecureHash(rxDatabase.password) : undefined;
+          docData = {
+            id: STORAGE_TOKEN_DOCUMENT_ID,
+            context: INTERNAL_CONTEXT_STORAGE_TOKEN,
+            key: STORAGE_TOKEN_DOCUMENT_KEY,
+            data: {
+              token: storageToken,
+              /**
+               * We add the instance token here
+               * to be able to detect if a given RxDatabase instance
+               * is the first instance that was ever created
+               * or if databases have existed earlier on that storage
+               * with the same database name.
+               */
+              instanceToken: rxDatabase.token,
+              passwordHash: passwordHash
+            },
+            _deleted: false,
+            _meta: getDefaultRxDocumentMeta(),
+            _rev: getDefaultRevision(),
+            _attachments: {}
+          };
+          _context2.next = 5;
+          return rxDatabase.internalStore.bulkWrite([{
+            document: docData
+          }], 'internal-add-storage-token');
+        case 5:
+          writeResult = _context2.sent;
+          if (!writeResult.success[STORAGE_TOKEN_DOCUMENT_ID]) {
+            _context2.next = 8;
+            break;
+          }
+          return _context2.abrupt("return", writeResult.success[STORAGE_TOKEN_DOCUMENT_ID]);
+        case 8:
+          /**
+           * If we get a 409 error,
+           * it means another instance already inserted the storage token.
+           * So we get that token from the database and return that one.
+           */
+          error = ensureNotFalsy(writeResult.error[STORAGE_TOKEN_DOCUMENT_ID]);
+          if (!(error.isError && error.status === 409)) {
+            _context2.next = 15;
+            break;
+          }
+          conflictError = error;
+          if (!(passwordHash && passwordHash !== conflictError.documentInDb.data.passwordHash)) {
+            _context2.next = 13;
+            break;
+          }
+          throw newRxError('DB1', {
+            passwordHash: passwordHash,
+            existingPasswordHash: conflictError.documentInDb.data.passwordHash
+          });
+        case 13:
+          storageTokenDocInDb = conflictError.documentInDb;
+          return _context2.abrupt("return", ensureNotFalsy(storageTokenDocInDb));
+        case 15:
+          throw error;
+        case 16:
+        case "end":
+          return _context2.stop();
+      }
+    }, _callee2);
+  }));
+  return _ensureStorageTokenDocumentExists.apply(this, arguments);
+}
+export function addConnectedStorageToCollection(_x4, _x5, _x6) {
+  return _addConnectedStorageToCollection.apply(this, arguments);
+}
+
+/**
+ * returns the primary for a given collection-data
+ * used in the internal store of a RxDatabase
+ */
+function _addConnectedStorageToCollection() {
+  _addConnectedStorageToCollection = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee3(collection, storageCollectionName, schema) {
+    var collectionNameWithVersion, collectionDocId, collectionDoc, saveData, alreadyThere;
+    return _regeneratorRuntime.wrap(function _callee3$(_context3) {
+      while (1) switch (_context3.prev = _context3.next) {
+        case 0:
+          collectionNameWithVersion = _collectionNamePrimary(collection.name, collection.schema.jsonSchema);
+          collectionDocId = getPrimaryKeyOfInternalDocument(collectionNameWithVersion, INTERNAL_CONTEXT_COLLECTION);
+        case 2:
+          if (!true) {
+            _context3.next = 23;
+            break;
+          }
+          _context3.next = 5;
+          return getSingleDocument(collection.database.internalStore, collectionDocId);
+        case 5:
+          collectionDoc = _context3.sent;
+          saveData = clone(ensureNotFalsy(collectionDoc));
+          /**
+           * Add array if not exist for backwards compatibility
+           * TODO remove this in 2023
+           */
+          if (!saveData.data.connectedStorages) {
+            saveData.data.connectedStorages = [];
+          }
+
+          // do nothing if already in array
+          alreadyThere = saveData.data.connectedStorages.find(function (row) {
+            return row.collectionName === storageCollectionName && row.schema.version === schema.version;
+          });
+          if (!alreadyThere) {
+            _context3.next = 11;
+            break;
+          }
+          return _context3.abrupt("return");
+        case 11:
+          // otherwise add to array and save
+          saveData.data.connectedStorages.push({
+            collectionName: storageCollectionName,
+            schema: schema
+          });
+          _context3.prev = 12;
+          _context3.next = 15;
+          return writeSingle(collection.database.internalStore, {
+            previous: ensureNotFalsy(collectionDoc),
+            document: saveData
+          }, 'add-connected-storage-to-collection');
+        case 15:
+          _context3.next = 21;
+          break;
+        case 17:
+          _context3.prev = 17;
+          _context3.t0 = _context3["catch"](12);
+          if (isBulkWriteConflictError(_context3.t0)) {
+            _context3.next = 21;
+            break;
+          }
+          throw _context3.t0;
+        case 21:
+          _context3.next = 2;
+          break;
+        case 23:
+        case "end":
+          return _context3.stop();
+      }
+    }, _callee3, null, [[12, 17]]);
+  }));
+  return _addConnectedStorageToCollection.apply(this, arguments);
+}
 export function _collectionNamePrimary(name, schema) {
   return name + '-' + schema.version;
 }

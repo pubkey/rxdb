@@ -74,7 +74,7 @@ While PouchDB is pretty mature, it has some drawbacks that makes blocks it from 
 Because PouchDB is based on an adapter system for storage, there are two options to use it with React Native:
 
 - Either use the [pouchdb-adapter-react-native-sqlite](https://github.com/craftzdog/pouchdb-react-native) adapter
-- or the [pouchdb-adapter-asyncstorage](pouchdb-adapter-asyncstorage) adapter.
+- or the [pouchdb-adapter-asyncstorage](https://github.com/seigel/pouchdb-react-native) adapter.
 
 Because the `asyncstorage` adapter is no longer maintained, it is recommended to use the `native-sqlite` adapter:
 

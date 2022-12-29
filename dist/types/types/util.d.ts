@@ -82,7 +82,7 @@ export type RxTestStorage = {
         storage: RxStorage<any, any>;
         /**
          * A description that describes the storage and setting.
-         * For example 'pouchdb-idb'.
+         * For example 'dexie-native'.
          */
         description: string;
     };
@@ -100,15 +100,3 @@ export type RxTestStorage = {
 
 
 export type HashFunction = (input: string) => string;
-
-
-/**
- * Use to have a transferable error object
- * in plain json instead of a JavaScript Error instance.
- */
-export type PlainJsonError = {
-    name: string;
-    message: string;
-    stack?: string;
-    rxdb?: true;
-};

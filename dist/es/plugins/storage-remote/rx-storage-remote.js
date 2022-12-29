@@ -1,3 +1,5 @@
+import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
+import _regeneratorRuntime from "@babel/runtime/regenerator";
 import { ensureNotFalsy } from 'event-reduce-js';
 import { firstValueFrom, filter, Subject } from 'rxjs';
 import { randomCouchString } from '../../util';
@@ -14,37 +16,52 @@ export var RxStorageRemote = /*#__PURE__*/function () {
     var newId = this.lastRequestId++;
     return this.requestIdSeed + '|' + newId;
   };
-  _proto.createStorageInstance = function createStorageInstance(params) {
-    try {
-      var _this2 = this;
-      var requestId = _this2.getRequestId();
-      var waitForOkPromise = firstValueFrom(_this2.settings.messages$.pipe(filter(function (msg) {
-        return msg.answerTo === requestId;
-      })));
-      _this2.settings.send({
-        connectionId: _this2.getRequestId(),
-        method: 'create',
-        requestId: requestId,
-        params: params
-      });
-      return Promise.resolve(waitForOkPromise).then(function (waitForOkResult) {
-        if (waitForOkResult.error) {
-          throw new Error('could not create instance ' + JSON.stringify(waitForOkResult.error));
+  _proto.createStorageInstance = /*#__PURE__*/function () {
+    var _createStorageInstance = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee(params) {
+      var requestId, waitForOkPromise, waitForOkResult;
+      return _regeneratorRuntime.wrap(function _callee$(_context) {
+        while (1) switch (_context.prev = _context.next) {
+          case 0:
+            requestId = this.getRequestId();
+            waitForOkPromise = firstValueFrom(this.settings.messages$.pipe(filter(function (msg) {
+              return msg.answerTo === requestId;
+            })));
+            this.settings.send({
+              connectionId: this.getRequestId(),
+              method: 'create',
+              requestId: requestId,
+              params: params
+            });
+            _context.next = 5;
+            return waitForOkPromise;
+          case 5:
+            waitForOkResult = _context.sent;
+            if (!waitForOkResult.error) {
+              _context.next = 8;
+              break;
+            }
+            throw new Error('could not create instance ' + JSON.stringify(waitForOkResult.error));
+          case 8:
+            return _context.abrupt("return", new RxStorageInstanceRemote(this, params.databaseName, params.collectionName, params.schema, {
+              params: params,
+              connectionId: ensureNotFalsy(waitForOkResult.connectionId)
+            }, params.options));
+          case 9:
+          case "end":
+            return _context.stop();
         }
-        return new RxStorageInstanceRemote(_this2, params.databaseName, params.collectionName, params.schema, {
-          params: params,
-          connectionId: ensureNotFalsy(waitForOkResult.connectionId)
-        }, params.options);
-      });
-    } catch (e) {
-      return Promise.reject(e);
+      }, _callee, this);
+    }));
+    function createStorageInstance(_x) {
+      return _createStorageInstance.apply(this, arguments);
     }
-  };
+    return createStorageInstance;
+  }();
   return RxStorageRemote;
 }();
 export var RxStorageInstanceRemote = /*#__PURE__*/function () {
   function RxStorageInstanceRemote(storage, databaseName, collectionName, schema, internals, options) {
-    var _this3 = this;
+    var _this = this;
     this.changes$ = new Subject();
     this.conflicts$ = new Subject();
     this.subs = [];
@@ -56,43 +73,57 @@ export var RxStorageInstanceRemote = /*#__PURE__*/function () {
     this.internals = internals;
     this.options = options;
     this.messages$ = this.storage.settings.messages$.pipe(filter(function (msg) {
-      return msg.connectionId === _this3.internals.connectionId;
+      return msg.connectionId === _this.internals.connectionId;
     }));
     this.subs.push(this.messages$.subscribe(function (msg) {
       if (msg.method === 'changeStream') {
-        _this3.changes$.next(msg["return"]);
+        _this.changes$.next(msg["return"]);
       }
       if (msg.method === 'conflictResultionTasks') {
-        _this3.conflicts$.next(msg["return"]);
+        _this.conflicts$.next(msg["return"]);
       }
     }));
   }
   var _proto2 = RxStorageInstanceRemote.prototype;
-  _proto2.requestRemote = function requestRemote(methodName, params) {
-    try {
-      var _this5 = this;
-      var requestId = _this5.storage.getRequestId();
-      var responsePromise = firstValueFrom(_this5.messages$.pipe(filter(function (msg) {
-        return msg.answerTo === requestId;
-      })));
-      var message = {
-        connectionId: _this5.internals.connectionId,
-        requestId: requestId,
-        method: methodName,
-        params: params
-      };
-      _this5.storage.settings.send(message);
-      return Promise.resolve(responsePromise).then(function (response) {
-        if (response.error) {
-          throw new Error('could not requestRemote: ' + JSON.stringify(response.error));
-        } else {
-          return response["return"];
+  _proto2.requestRemote = /*#__PURE__*/function () {
+    var _requestRemote = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee2(methodName, params) {
+      var requestId, responsePromise, message, response;
+      return _regeneratorRuntime.wrap(function _callee2$(_context2) {
+        while (1) switch (_context2.prev = _context2.next) {
+          case 0:
+            requestId = this.storage.getRequestId();
+            responsePromise = firstValueFrom(this.messages$.pipe(filter(function (msg) {
+              return msg.answerTo === requestId;
+            })));
+            message = {
+              connectionId: this.internals.connectionId,
+              requestId: requestId,
+              method: methodName,
+              params: params
+            };
+            this.storage.settings.send(message);
+            _context2.next = 6;
+            return responsePromise;
+          case 6:
+            response = _context2.sent;
+            if (!response.error) {
+              _context2.next = 11;
+              break;
+            }
+            throw new Error('could not requestRemote: ' + JSON.stringify(response.error));
+          case 11:
+            return _context2.abrupt("return", response["return"]);
+          case 12:
+          case "end":
+            return _context2.stop();
         }
-      });
-    } catch (e) {
-      return Promise.reject(e);
+      }, _callee2, this);
+    }));
+    function requestRemote(_x2, _x3) {
+      return _requestRemote.apply(this, arguments);
     }
-  };
+    return requestRemote;
+  }();
   _proto2.bulkWrite = function bulkWrite(documentWrites, context) {
     return this.requestRemote('bulkWrite', [documentWrites, context]);
   };
@@ -117,42 +148,75 @@ export var RxStorageInstanceRemote = /*#__PURE__*/function () {
   _proto2.cleanup = function cleanup(minDeletedTime) {
     return this.requestRemote('cleanup', [minDeletedTime]);
   };
-  _proto2.close = function close() {
-    try {
-      var _this7 = this;
-      if (_this7.closed) {
-        return Promise.reject(new Error('already closed'));
-      }
-      _this7.closed = true;
-      _this7.subs.forEach(function (sub) {
-        return sub.unsubscribe();
-      });
-      _this7.changes$.complete();
-      return Promise.resolve(_this7.requestRemote('close', [])).then(function () {});
-    } catch (e) {
-      return Promise.reject(e);
+  _proto2.close = /*#__PURE__*/function () {
+    var _close = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee3() {
+      return _regeneratorRuntime.wrap(function _callee3$(_context3) {
+        while (1) switch (_context3.prev = _context3.next) {
+          case 0:
+            if (!this.closed) {
+              _context3.next = 2;
+              break;
+            }
+            return _context3.abrupt("return", Promise.reject(new Error('already closed')));
+          case 2:
+            this.closed = true;
+            this.subs.forEach(function (sub) {
+              return sub.unsubscribe();
+            });
+            this.changes$.complete();
+            _context3.next = 7;
+            return this.requestRemote('close', []);
+          case 7:
+          case "end":
+            return _context3.stop();
+        }
+      }, _callee3, this);
+    }));
+    function close() {
+      return _close.apply(this, arguments);
     }
-  };
-  _proto2.remove = function remove() {
-    try {
-      var _this9 = this;
-      _this9.closed = true;
-      return Promise.resolve(_this9.requestRemote('remove', [])).then(function () {});
-    } catch (e) {
-      return Promise.reject(e);
+    return close;
+  }();
+  _proto2.remove = /*#__PURE__*/function () {
+    var _remove = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee4() {
+      return _regeneratorRuntime.wrap(function _callee4$(_context4) {
+        while (1) switch (_context4.prev = _context4.next) {
+          case 0:
+            this.closed = true;
+            _context4.next = 3;
+            return this.requestRemote('remove', []);
+          case 3:
+          case "end":
+            return _context4.stop();
+        }
+      }, _callee4, this);
+    }));
+    function remove() {
+      return _remove.apply(this, arguments);
     }
-  };
+    return remove;
+  }();
   _proto2.conflictResultionTasks = function conflictResultionTasks() {
     return this.conflicts$;
   };
-  _proto2.resolveConflictResultionTask = function resolveConflictResultionTask(taskSolution) {
-    try {
-      var _this11 = this;
-      return Promise.resolve(_this11.requestRemote('resolveConflictResultionTask', [taskSolution])).then(function () {});
-    } catch (e) {
-      return Promise.reject(e);
+  _proto2.resolveConflictResultionTask = /*#__PURE__*/function () {
+    var _resolveConflictResultionTask = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee5(taskSolution) {
+      return _regeneratorRuntime.wrap(function _callee5$(_context5) {
+        while (1) switch (_context5.prev = _context5.next) {
+          case 0:
+            _context5.next = 2;
+            return this.requestRemote('resolveConflictResultionTask', [taskSolution]);
+          case 2:
+          case "end":
+            return _context5.stop();
+        }
+      }, _callee5, this);
+    }));
+    function resolveConflictResultionTask(_x4) {
+      return _resolveConflictResultionTask.apply(this, arguments);
     }
-  };
+    return resolveConflictResultionTask;
+  }();
   return RxStorageInstanceRemote;
 }();
 export function getRxStorageRemote(settings) {

@@ -1,6 +1,6 @@
 import { LOGICAL_OPERATORS } from './query-planner';
 import { getPrimaryFieldOfPrimaryKey } from './rx-schema-helper';
-import { firstPropertyNameOfObject, flatClone, isMaybeReadonlyArray } from './util';
+import { clone, firstPropertyNameOfObject, toArray, isMaybeReadonlyArray } from './util';
 
 /**
  * Normalize the query to ensure we have all fields set
@@ -8,14 +8,14 @@ import { firstPropertyNameOfObject, flatClone, isMaybeReadonlyArray } from './ut
  */
 export function normalizeMangoQuery(schema, mangoQuery) {
   var primaryKey = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
-  var normalizedMangoQuery = flatClone(mangoQuery);
+  var normalizedMangoQuery = clone(mangoQuery);
   if (typeof normalizedMangoQuery.skip !== 'number') {
     normalizedMangoQuery.skip = 0;
   }
   if (!normalizedMangoQuery.selector) {
     normalizedMangoQuery.selector = {};
   } else {
-    normalizedMangoQuery.selector = flatClone(normalizedMangoQuery.selector);
+    normalizedMangoQuery.selector = normalizedMangoQuery.selector;
     /**
      * In mango query, it is possible to have an
      * equals comparison by directly assigning a value
@@ -26,6 +26,10 @@ export function normalizeMangoQuery(schema, mangoQuery) {
      * }
      * For normalization, we have to normalize this
      * so our checks can perform properly.
+     *
+     *
+     * TODO this must work recursive with nested queries that
+     * contain multiple selectors via $and or $or etc.
      */
     Object.entries(normalizedMangoQuery.selector).forEach(function (_ref) {
       var field = _ref[0],
@@ -43,7 +47,7 @@ export function normalizeMangoQuery(schema, mangoQuery) {
    * the primaryKey is inside of it.
    */
   if (normalizedMangoQuery.index) {
-    var indexAr = Array.isArray(normalizedMangoQuery.index) ? normalizedMangoQuery.index.slice(0) : [normalizedMangoQuery.index];
+    var indexAr = toArray(normalizedMangoQuery.index);
     if (!indexAr.includes(primaryKey)) {
       indexAr.push(primaryKey);
     }

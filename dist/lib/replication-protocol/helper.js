@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.docStateToWriteDoc = docStateToWriteDoc;
 exports.writeDocToDocState = writeDocToDocState;
 var _util = require("../util");
-function docStateToWriteDoc(hashFunction, docState, previous) {
+function docStateToWriteDoc(databaseInstanceToken, docState, previous) {
   var docData = Object.assign({}, docState, {
     _attachments: {},
     _meta: {
@@ -14,7 +14,7 @@ function docStateToWriteDoc(hashFunction, docState, previous) {
     },
     _rev: (0, _util.getDefaultRevision)()
   });
-  docData._rev = (0, _util.createRevision)(hashFunction, docData, previous);
+  docData._rev = (0, _util.createRevision)(databaseInstanceToken, previous);
   return docData;
 }
 function writeDocToDocState(writeDoc) {

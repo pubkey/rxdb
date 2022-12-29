@@ -26,6 +26,10 @@ module.exports = {
         filename: 'webpack.bundle.js'
     },
     stats: {
+        /**
+         * @link https://webpack.js.org/plugins/module-concatenation-plugin/#debugging-optimization-bailouts
+         */
+        optimizationBailout: true,
         warnings: false
     }
 };

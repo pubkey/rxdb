@@ -1,3 +1,5 @@
+import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
+import _regeneratorRuntime from "@babel/runtime/regenerator";
 import { PROMISE_RESOLVE_TRUE } from '../../util';
 import { REPLICATION_STATE_BY_COLLECTION } from '../replication';
 import { DEFAULT_CLEANUP_POLICY } from './cleanup-helper';
@@ -9,264 +11,155 @@ import { DEFAULT_CLEANUP_POLICY } from './cleanup-helper';
  * The cleanup is a background task which should
  * not affect the performance of other, more important tasks.
  */
+var RXSOTRAGE_CLEANUP_QUEUE = PROMISE_RESOLVE_TRUE;
+export function startCleanupForRxCollection(_x) {
+  return _startCleanupForRxCollection.apply(this, arguments);
+}
 
-function _settle(pact, state, value) {
-  if (!pact.s) {
-    if (value instanceof _Pact) {
-      if (value.s) {
-        if (state & 1) {
-          state = value.s;
-        }
-        value = value.v;
-      } else {
-        value.o = _settle.bind(null, pact, state);
-        return;
-      }
-    }
-    if (value && value.then) {
-      value.then(_settle.bind(null, pact, state), _settle.bind(null, pact, 2));
-      return;
-    }
-    pact.s = state;
-    pact.v = value;
-    const observer = pact.o;
-    if (observer) {
-      observer(pact);
-    }
-  }
-}
-var _Pact = /*#__PURE__*/function () {
-  function _Pact() {}
-  _Pact.prototype.then = function (onFulfilled, onRejected) {
-    var result = new _Pact();
-    var state = this.s;
-    if (state) {
-      var callback = state & 1 ? onFulfilled : onRejected;
-      if (callback) {
-        try {
-          _settle(result, 1, callback(this.v));
-        } catch (e) {
-          _settle(result, 2, e);
-        }
-        return result;
-      } else {
-        return this;
-      }
-    }
-    this.o = function (_this) {
-      try {
-        var value = _this.v;
-        if (_this.s & 1) {
-          _settle(result, 1, onFulfilled ? onFulfilled(value) : value);
-        } else if (onRejected) {
-          _settle(result, 1, onRejected(value));
-        } else {
-          _settle(result, 2, value);
-        }
-      } catch (e) {
-        _settle(result, 2, e);
-      }
-    };
-    return result;
-  };
-  return _Pact;
-}();
-function _isSettledPact(thenable) {
-  return thenable instanceof _Pact && thenable.s & 1;
-}
-function _for(test, update, body) {
-  var stage;
-  for (;;) {
-    var shouldContinue = test();
-    if (_isSettledPact(shouldContinue)) {
-      shouldContinue = shouldContinue.v;
-    }
-    if (!shouldContinue) {
-      return result;
-    }
-    if (shouldContinue.then) {
-      stage = 0;
-      break;
-    }
-    var result = body();
-    if (result && result.then) {
-      if (_isSettledPact(result)) {
-        result = result.s;
-      } else {
-        stage = 1;
-        break;
-      }
-    }
-    if (update) {
-      var updateValue = update();
-      if (updateValue && updateValue.then && !_isSettledPact(updateValue)) {
-        stage = 2;
-        break;
-      }
-    }
-  }
-  var pact = new _Pact();
-  var reject = _settle.bind(null, pact, 2);
-  (stage === 0 ? shouldContinue.then(_resumeAfterTest) : stage === 1 ? result.then(_resumeAfterBody) : updateValue.then(_resumeAfterUpdate)).then(void 0, reject);
-  return pact;
-  function _resumeAfterBody(value) {
-    result = value;
-    do {
-      if (update) {
-        updateValue = update();
-        if (updateValue && updateValue.then && !_isSettledPact(updateValue)) {
-          updateValue.then(_resumeAfterUpdate).then(void 0, reject);
-          return;
-        }
-      }
-      shouldContinue = test();
-      if (!shouldContinue || _isSettledPact(shouldContinue) && !shouldContinue.v) {
-        _settle(pact, 1, result);
-        return;
-      }
-      if (shouldContinue.then) {
-        shouldContinue.then(_resumeAfterTest).then(void 0, reject);
-        return;
-      }
-      result = body();
-      if (_isSettledPact(result)) {
-        result = result.v;
-      }
-    } while (!result || !result.then);
-    result.then(_resumeAfterBody).then(void 0, reject);
-  }
-  function _resumeAfterTest(shouldContinue) {
-    if (shouldContinue) {
-      result = body();
-      if (result && result.then) {
-        result.then(_resumeAfterBody).then(void 0, reject);
-      } else {
-        _resumeAfterBody(result);
-      }
-    } else {
-      _settle(pact, 1, result);
-    }
-  }
-  function _resumeAfterUpdate() {
-    if (shouldContinue = test()) {
-      if (shouldContinue.then) {
-        shouldContinue.then(_resumeAfterTest).then(void 0, reject);
-      } else {
-        _resumeAfterTest(shouldContinue);
-      }
-    } else {
-      _settle(pact, 1, result);
-    }
-  }
-}
-export var runCleanupAfterDelete = function runCleanupAfterDelete(rxCollection, cleanupPolicy) {
-  try {
-    var _exit4 = false;
-    return Promise.resolve(_for(function () {
-      return !_exit4 && !rxCollection.destroyed;
-    }, void 0, function () {
-      return Promise.resolve(rxCollection.promiseWait(cleanupPolicy.runEach)).then(function () {
-        if (rxCollection.destroyed) {
-          _exit4 = true;
-          return;
-        }
-        return Promise.resolve(cleanupRxCollection(rxCollection, cleanupPolicy)).then(function () {});
-      });
-    }));
-  } catch (e) {
-    return Promise.reject(e);
-  }
-};
 /**
  * Runs the cleanup for a single RxCollection
  */
-export var cleanupRxCollection = function cleanupRxCollection(rxCollection, cleanupPolicy) {
-  try {
-    var _exit2 = false;
-    var rxDatabase = rxCollection.database;
-    var storageInstance = rxCollection.storageInstance;
-
-    // run cleanup() until it returns true
-    var isDone = false;
-    return Promise.resolve(_for(function () {
-      return !_exit2 && !isDone && !rxCollection.destroyed;
-    }, void 0, function () {
-      function _temp5() {
-        return Promise.resolve(rxDatabase.requestIdlePromise()).then(function () {
-          if (rxCollection.destroyed) {
-            _exit2 = true;
-            return;
+function _startCleanupForRxCollection() {
+  _startCleanupForRxCollection = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee(rxCollection) {
+    var rxDatabase, cleanupPolicy;
+    return _regeneratorRuntime.wrap(function _callee$(_context) {
+      while (1) switch (_context.prev = _context.next) {
+        case 0:
+          rxDatabase = rxCollection.database;
+          cleanupPolicy = Object.assign({}, DEFAULT_CLEANUP_POLICY, rxDatabase.cleanupPolicy ? rxDatabase.cleanupPolicy : {});
+          /**
+           * Wait until minimumDatabaseInstanceAge is reached
+           * or collection is destroyed.
+           */
+          _context.next = 4;
+          return rxCollection.promiseWait(cleanupPolicy.minimumCollectionAge);
+        case 4:
+          if (!rxCollection.destroyed) {
+            _context.next = 6;
+            break;
           }
+          return _context.abrupt("return");
+        case 6:
+          if (!cleanupPolicy.waitForLeadership) {
+            _context.next = 9;
+            break;
+          }
+          _context.next = 9;
+          return rxDatabase.waitForLeadership();
+        case 9:
+          if (!rxCollection.destroyed) {
+            _context.next = 11;
+            break;
+          }
+          return _context.abrupt("return");
+        case 11:
+          _context.next = 13;
+          return cleanupRxCollection(rxCollection, cleanupPolicy);
+        case 13:
+          _context.next = 15;
+          return runCleanupAfterDelete(rxCollection, cleanupPolicy);
+        case 15:
+        case "end":
+          return _context.stop();
+      }
+    }, _callee);
+  }));
+  return _startCleanupForRxCollection.apply(this, arguments);
+}
+export function cleanupRxCollection(_x2, _x3) {
+  return _cleanupRxCollection.apply(this, arguments);
+}
+function _cleanupRxCollection() {
+  _cleanupRxCollection = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee2(rxCollection, cleanupPolicy) {
+    var rxDatabase, storageInstance, isDone, replicationStates;
+    return _regeneratorRuntime.wrap(function _callee2$(_context2) {
+      while (1) switch (_context2.prev = _context2.next) {
+        case 0:
+          rxDatabase = rxCollection.database;
+          storageInstance = rxCollection.storageInstance; // run cleanup() until it returns true
+          isDone = false;
+        case 3:
+          if (!(!isDone && !rxCollection.destroyed)) {
+            _context2.next = 19;
+            break;
+          }
+          if (!cleanupPolicy.awaitReplicationsInSync) {
+            _context2.next = 9;
+            break;
+          }
+          replicationStates = REPLICATION_STATE_BY_COLLECTION.get(rxCollection);
+          if (!replicationStates) {
+            _context2.next = 9;
+            break;
+          }
+          _context2.next = 9;
+          return Promise.all(replicationStates.map(function (replicationState) {
+            if (!replicationState.isStopped()) {
+              return replicationState.awaitInSync();
+            }
+          }));
+        case 9:
+          _context2.next = 11;
+          return rxDatabase.requestIdlePromise();
+        case 11:
+          if (!rxCollection.destroyed) {
+            _context2.next = 13;
+            break;
+          }
+          return _context2.abrupt("return");
+        case 13:
           RXSOTRAGE_CLEANUP_QUEUE = RXSOTRAGE_CLEANUP_QUEUE.then(function () {
             if (rxCollection.destroyed) {
               return true;
             }
             return storageInstance.cleanup(cleanupPolicy.minimumDeletedTime);
           });
-          return Promise.resolve(RXSOTRAGE_CLEANUP_QUEUE).then(function (_RXSOTRAGE_CLEANUP_QU) {
-            isDone = _RXSOTRAGE_CLEANUP_QU;
-          });
-        });
+          _context2.next = 16;
+          return RXSOTRAGE_CLEANUP_QUEUE;
+        case 16:
+          isDone = _context2.sent;
+          _context2.next = 3;
+          break;
+        case 19:
+        case "end":
+          return _context2.stop();
       }
-      var _temp4 = function () {
-        if (cleanupPolicy.awaitReplicationsInSync) {
-          var replicationStates = REPLICATION_STATE_BY_COLLECTION.get(rxCollection);
-          var _temp6 = function () {
-            if (replicationStates) {
-              return Promise.resolve(Promise.all(replicationStates.map(function (replicationState) {
-                if (!replicationState.isStopped()) {
-                  return replicationState.awaitInSync();
-                }
-              }))).then(function () {});
-            }
-          }();
-          if (_temp6 && _temp6.then) return _temp6.then(function () {});
-        }
-      }();
-      return _temp4 && _temp4.then ? _temp4.then(_temp5) : _temp5(_temp4);
-    }));
-  } catch (e) {
-    return Promise.reject(e);
-  }
-};
-export var startCleanupForRxCollection = function startCleanupForRxCollection(rxCollection) {
-  try {
-    var rxDatabase = rxCollection.database;
-    var cleanupPolicy = Object.assign({}, DEFAULT_CLEANUP_POLICY, rxDatabase.cleanupPolicy ? rxDatabase.cleanupPolicy : {});
-
-    /**
-     * Wait until minimumDatabaseInstanceAge is reached
-     * or collection is destroyed.
-     */
-    return Promise.resolve(rxCollection.promiseWait(cleanupPolicy.minimumCollectionAge)).then(function () {
-      function _temp2() {
-        if (rxCollection.destroyed) {
-          return;
-        }
-
-        // initially cleanup the collection
-        return Promise.resolve(cleanupRxCollection(rxCollection, cleanupPolicy)).then(function () {
-          /**
-           * Afterwards we listen to deletes
-           * and only re-run the cleanup after
-           * minimumDeletedTime is reached.
-           */
-          return Promise.resolve(runCleanupAfterDelete(rxCollection, cleanupPolicy)).then(function () {});
-        });
+    }, _callee2);
+  }));
+  return _cleanupRxCollection.apply(this, arguments);
+}
+export function runCleanupAfterDelete(_x4, _x5) {
+  return _runCleanupAfterDelete.apply(this, arguments);
+}
+function _runCleanupAfterDelete() {
+  _runCleanupAfterDelete = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee3(rxCollection, cleanupPolicy) {
+    return _regeneratorRuntime.wrap(function _callee3$(_context3) {
+      while (1) switch (_context3.prev = _context3.next) {
+        case 0:
+          if (rxCollection.destroyed) {
+            _context3.next = 9;
+            break;
+          }
+          _context3.next = 3;
+          return rxCollection.promiseWait(cleanupPolicy.runEach);
+        case 3:
+          if (!rxCollection.destroyed) {
+            _context3.next = 5;
+            break;
+          }
+          return _context3.abrupt("return");
+        case 5:
+          _context3.next = 7;
+          return cleanupRxCollection(rxCollection, cleanupPolicy);
+        case 7:
+          _context3.next = 0;
+          break;
+        case 9:
+        case "end":
+          return _context3.stop();
       }
-      if (rxCollection.destroyed) {
-        return;
-      }
-      var _temp = function () {
-        if (cleanupPolicy.waitForLeadership) {
-          return Promise.resolve(rxDatabase.waitForLeadership()).then(function () {});
-        }
-      }();
-      return _temp && _temp.then ? _temp.then(_temp2) : _temp2(_temp);
-    });
-  } catch (e) {
-    return Promise.reject(e);
-  }
-};
-var RXSOTRAGE_CLEANUP_QUEUE = PROMISE_RESOLVE_TRUE;
+    }, _callee3);
+  }));
+  return _runCleanupAfterDelete.apply(this, arguments);
+}
 //# sourceMappingURL=cleanup.js.map

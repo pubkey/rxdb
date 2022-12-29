@@ -8,18 +8,14 @@
  */
 import type { RxCollection, RxDocument, RxDocumentData } from './types';
 export declare function getDocumentPrototype(rxCollection: RxCollection): any;
-export declare function getRxDocumentConstructor(rxCollection: RxCollection): any;
+export declare function getRxDocumentConstructor<RxDocType, ORM>(rxCollection: RxCollection<RxDocType, ORM>): any;
 /**
  * Create a RxDocument-instance from the jsonData
  * and the prototype merge.
- * If the document already exists in the _docCache,
- * return that instead to ensure we have no duplicates.
+ * You should never call this method directly,
+ * instead you should get the document from collection._docCache.getCachedRxDocument().
  */
-export declare function createRxDocument<RxDocType, ORM>(rxCollection: RxCollection<RxDocType, ORM>, docData: RxDocumentData<RxDocType>): RxDocument<RxDocType, ORM>;
-/**
- * create RxDocument from the docs-array
- */
-export declare function createRxDocuments<DT, OM>(rxCollection: RxCollection, docsJSON: any[]): RxDocument<DT, OM>[];
+export declare function createNewRxDocument<RxDocType, ORM>(rxCollection: RxCollection<RxDocType, ORM>, docData: RxDocumentData<RxDocType>): RxDocument<RxDocType, ORM>;
 /**
  * returns the prototype-object
  * that contains the orm-methods,

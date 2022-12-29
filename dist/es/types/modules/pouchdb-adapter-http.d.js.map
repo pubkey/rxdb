@@ -1,1 +1,0 @@
-{"version":3,"file":"pouchdb-adapter-http.d.js","names":[],"sources":["../../../../src/types/modules/pouchdb-adapter-http.d.ts"],"sourcesContent":["declare module 'pouchdb-adapter-http';\n"],"mappings":""}

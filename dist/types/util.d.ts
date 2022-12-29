@@ -1,4 +1,4 @@
-import type { BlobBuffer, DeepReadonlyObject, HashFunction, MaybeReadonly, PlainJsonError, RxDocumentData, RxDocumentMeta, RxDocumentWriteData, RxError, RxTypeError, StringKeys } from './types';
+import type { BlobBuffer, DeepReadonlyObject, MaybeReadonly, PlainJsonError, RxDocumentData, RxDocumentMeta, RxError, RxTypeError, StringKeys } from './types';
 /**
  * Returns an error that indicates that a plugin is missing
  * We do not throw a RxError because this should not be handled
@@ -83,6 +83,7 @@ export declare function lastOfArray<T>(ar: T[]): T | undefined;
  * shuffle the given array
  */
 export declare function shuffleArray<T>(arr: T[]): T[];
+export declare function toArray<T>(input: T | T[] | Readonly<T> | Readonly<T[]>): T[];
 /**
  * Split array with items into smaller arrays with items
  * @link https://stackoverflow.com/a/7273794/3443137
@@ -93,17 +94,22 @@ export declare function batchArray<T>(array: T[], batchSize: number): T[][];
  */
 export declare function removeOneFromArrayIfMatches<T>(ar: T[], condition: (x: T) => boolean): T[];
 /**
- * transforms the given adapter into a pouch-compatible object
+ * Deep clone a plain json object.
+ * Does not work with recursive stuff
+ * or non-plain-json.
+ * IMPORANT: Performance of this is very important,
+ * do not change it without running performance tests!
+ *
+ * @link https://github.com/zxdong262/deep-copy/blob/master/src/index.ts
  */
-export declare function adapterObject(adapter: any): any;
-declare function recursiveDeepCopy<T>(o: T | DeepReadonlyObject<T>): T;
-export declare const clone: typeof recursiveDeepCopy;
+declare function deepClone<T>(src: T | DeepReadonlyObject<T>): T;
+export declare const clone: typeof deepClone;
 /**
  * does a flat copy on the objects,
  * is about 3 times faster then using deepClone
  * @link https://jsperf.com/object-rest-spread-vs-clone/2
  */
-export declare function flatClone<T>(obj: T | DeepReadonlyObject<T>): T;
+export declare function flatClone<T>(obj: T | DeepReadonlyObject<T> | Readonly<T>): T;
 /**
  * @link https://stackoverflow.com/a/11509718/3443137
  */
@@ -124,14 +130,7 @@ export declare function getHeightOfRevision(revision: string): number;
 /**
  * Creates the next write revision for a given document.
  */
-export declare function createRevision<RxDocType>(hashFunction: HashFunction, docData: RxDocumentWriteData<RxDocType> & {
-    /**
-     * Passing a revision is optional here,
-     * because it is anyway not needed to calculate
-     * the new revision.
-     */
-    _rev?: string;
-}, previousDocData?: RxDocumentData<RxDocType>): string;
+export declare function createRevision<RxDocType>(databaseInstanceToken: string, previousDocData?: RxDocumentData<RxDocType>): string;
 /**
  * Faster way to check the equalness of document lists
  * compared to doing a deep-equal.
@@ -148,6 +147,7 @@ export declare function overwriteGetterForCaching<ValueType = any>(obj: any, get
  */
 export declare function isFolderPath(name: string): boolean;
 export declare function getFromMapOrThrow<K, V>(map: Map<K, V> | WeakMap<any, V>, key: K): V;
+export declare function getFromMapOrFill<K, V>(map: Map<K, V> | WeakMap<any, V>, key: K, fillerFunction: () => V): V;
 export declare function getFromObjectOrThrow<V>(obj: {
     [k: string]: V;
 }, key: string): V;
@@ -217,6 +217,7 @@ export declare function getDefaultRxDocumentMeta(): RxDocumentMeta;
  * while the storage wrapper anyway will overwrite the revision.
  */
 export declare function getDefaultRevision(): string;
+export declare function stripMetaDataFromDocument<RxDocType>(docData: RxDocumentData<RxDocType>): RxDocType;
 export declare function getSortDocumentsByLastWriteTimeComparator<RxDocType>(primaryPath: string): (a: RxDocumentData<RxDocType>, b: RxDocumentData<RxDocType>) => number;
 export declare function sortDocumentsByLastWriteTime<RxDocType>(primaryPath: string, docs: RxDocumentData<RxDocType>[]): RxDocumentData<RxDocType>[];
 /**

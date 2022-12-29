@@ -1,1 +1,0 @@
-{"version":3,"file":"index.js","names":[],"sources":["../../../../src/plugins/worker/index.ts"],"sourcesContent":["export * from './in-worker';\nexport * from './non-worker';\n"],"mappings":"AAAA,cAAc,aAAa;AAC3B,cAAc,cAAc"}

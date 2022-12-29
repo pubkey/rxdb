@@ -1,5 +1,6 @@
 "use strict";
 
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -12,38 +13,14 @@ exports.metaFileLocation = metaFileLocation;
 exports.prepareFolders = prepareFolders;
 exports.setMeta = setMeta;
 exports.writeJsonToFile = writeJsonToFile;
-exports.writeToFile = void 0;
+exports.writeToFile = writeToFile;
+var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
+var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 var fs = _interopRequireWildcard(require("fs"));
 var path = _interopRequireWildcard(require("path"));
 var _util = require("../../util");
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
-var writeToFile = function writeToFile(location, data) {
-  try {
-    var _temp3 = function _temp3() {
-      return new Promise(function (res, rej) {
-        fs.writeFile(location, data, 'utf-8', function (err) {
-          if (err) {
-            rej(err);
-          } else {
-            res();
-          }
-        });
-      });
-    };
-    var _temp4 = function () {
-      if (typeof data !== 'string') {
-        return Promise.resolve(_util.blobBufferUtil.toString(data)).then(function (_blobBufferUtil$toStr) {
-          data = _blobBufferUtil$toStr;
-        });
-      }
-    }();
-    return Promise.resolve(_temp4 && _temp4.then ? _temp4.then(_temp3) : _temp3(_temp4));
-  } catch (e) {
-    return Promise.reject(e);
-  }
-};
-exports.writeToFile = writeToFile;
 /**
  * ensure that the given folder exists
  */
@@ -85,6 +62,40 @@ function prepareFolders(database, options) {
   Object.keys(database.collections).forEach(function (collectionName) {
     ensureFolderExists(path.join(options.directory, collectionName));
   });
+}
+function writeToFile(_x, _x2) {
+  return _writeToFile.apply(this, arguments);
+}
+function _writeToFile() {
+  _writeToFile = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(location, data) {
+    return _regenerator["default"].wrap(function _callee$(_context) {
+      while (1) switch (_context.prev = _context.next) {
+        case 0:
+          if (!(typeof data !== 'string')) {
+            _context.next = 4;
+            break;
+          }
+          _context.next = 3;
+          return _util.blobBufferUtil.toString(data);
+        case 3:
+          data = _context.sent;
+        case 4:
+          return _context.abrupt("return", new Promise(function (res, rej) {
+            fs.writeFile(location, data, 'utf-8', function (err) {
+              if (err) {
+                rej(err);
+              } else {
+                res();
+              }
+            });
+          }));
+        case 5:
+        case "end":
+          return _context.stop();
+      }
+    }, _callee);
+  }));
+  return _writeToFile.apply(this, arguments);
 }
 function writeJsonToFile(location, data) {
   return writeToFile(location, JSON.stringify(data));

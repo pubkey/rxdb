@@ -30,6 +30,8 @@ function messageForError(message, code, parameters) {
 }
 export var RxError = /*#__PURE__*/function (_Error) {
   _inheritsLoose(RxError, _Error);
+  // always true, use this to detect if its an rxdb-error
+
   function RxError(code, message) {
     var _this;
     var parameters = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
@@ -60,6 +62,8 @@ export var RxError = /*#__PURE__*/function (_Error) {
 }( /*#__PURE__*/_wrapNativeSuper(Error));
 export var RxTypeError = /*#__PURE__*/function (_TypeError) {
   _inheritsLoose(RxTypeError, _TypeError);
+  // always true, use this to detect if its an rxdb-error
+
   function RxTypeError(code, message) {
     var _this2;
     var parameters = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
@@ -100,10 +104,22 @@ export function newRxTypeError(code, parameters) {
  * return false if it is another error.
  */
 export function isBulkWriteConflictError(err) {
-  if (err.status === 409) {
+  if (err && err.status === 409) {
     return err;
   } else {
     return false;
   }
+}
+var STORAGE_WRITE_ERROR_CODE_TO_MESSAGE = {
+  409: 'document write conflict',
+  422: 'schema validation error',
+  510: 'attachment data missing'
+};
+export function rxStorageWriteErrorToRxError(err) {
+  return newRxError('COL20', {
+    name: STORAGE_WRITE_ERROR_CODE_TO_MESSAGE[err.status],
+    document: err.documentId,
+    writeError: err
+  });
 }
 //# sourceMappingURL=rx-error.js.map

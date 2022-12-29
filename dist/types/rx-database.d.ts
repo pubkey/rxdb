@@ -1,6 +1,6 @@
 import { IdleQueue } from 'custom-idle-queue';
 import type { LeaderElector } from 'broadcast-channel';
-import type { CollectionsOfDatabase, RxDatabase, RxCollectionCreator, RxCollection, CouchDBServerOptions, RxDumpDatabase, RxDumpDatabaseAny, AllMigrationStates, CouchDBServerResponse, BackupOptions, RxStorage, RxStorageInstance, RxChangeEvent, RxDatabaseCreator, RxChangeEventBulk, RxDocumentData, RxCleanupPolicy, InternalStoreDocType, InternalStoreStorageTokenDocType, RxTypeError, RxError, HashFunction, MaybePromise } from './types';
+import type { CollectionsOfDatabase, RxDatabase, RxCollectionCreator, RxCollection, RxDumpDatabase, RxDumpDatabaseAny, AllMigrationStates, BackupOptions, RxStorage, RxStorageInstance, RxChangeEvent, RxDatabaseCreator, RxChangeEventBulk, RxDocumentData, RxCleanupPolicy, InternalStoreDocType, InternalStoreStorageTokenDocType, RxTypeError, RxError, HashFunction, MaybePromise } from './types';
 import { Subject, Subscription, Observable } from 'rxjs';
 import type { RxBackupState } from './plugins/backup';
 import { ObliviousSet } from 'oblivious-set';
@@ -118,7 +118,6 @@ export declare class RxDatabaseBase<Internals, InstanceCreationOptions, Collecti
      * since data could be encrypted.
      */
     importJSON(_exportedJSON: RxDumpDatabaseAny<Collections>): Promise<void>;
-    serverCouchDB(_options?: CouchDBServerOptions): Promise<CouchDBServerResponse>;
     backup(_options: BackupOptions): RxBackupState;
     leaderElector(): LeaderElector;
     isLeader(): boolean;

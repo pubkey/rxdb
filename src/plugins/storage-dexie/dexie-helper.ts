@@ -1,7 +1,6 @@
 import type {
     DeterministicSortComparator
 } from 'event-reduce-js';
-import mingo from 'mingo';
 import type {
     DexieStorageInternals,
     MangoQuery,
@@ -12,7 +11,11 @@ import { Dexie } from 'dexie';
 import { DexieSettings } from '../../types';
 import { flatClone, toArray } from '../../util';
 import { newRxError } from '../../rx-error';
-import { getPrimaryFieldOfPrimaryKey, getSchemaByObjectPath } from '../../rx-schema-helper';
+import {
+    getPrimaryFieldOfPrimaryKey,
+    getSchemaByObjectPath
+} from '../../rx-schema-helper';
+import { getMingoQuery } from '../../rx-query-mingo';
 
 export const DEXIE_DOCS_TABLE_NAME = 'docs';
 export const DEXIE_DELETED_DOCS_TABLE_NAME = 'deleted-docs';
@@ -116,7 +119,7 @@ export function getDexieSortComparator<RxDocType>(
     });
 
     const fun: DeterministicSortComparator<RxDocType> = (a: RxDocType, b: RxDocType) => {
-        const sorted = mingo.find([a, b], {}).sort(mingoSortObject);
+        const sorted = getMingoQuery({}).find([a, b], {}).sort(mingoSortObject);
         const first = sorted.next();
         if (first === a) {
             return -1;

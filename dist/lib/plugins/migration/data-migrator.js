@@ -4,7 +4,10 @@ var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefau
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.createOldCollection = exports._migrateDocuments = exports._getOldCollections = exports.DataMigrator = void 0;
+exports.DataMigrator = void 0;
+exports._getOldCollections = _getOldCollections;
+exports._migrateDocuments = _migrateDocuments;
+exports.createOldCollection = createOldCollection;
 exports.deleteOldCollection = deleteOldCollection;
 exports.getBatchOfOldCollection = getBatchOfOldCollection;
 exports.getOldCollectionDocs = getOldCollectionDocs;
@@ -14,6 +17,8 @@ exports.migrateOldCollection = migrateOldCollection;
 exports.migratePromise = migratePromise;
 exports.mustMigrate = mustMigrate;
 exports.runStrategyIfNotNull = runStrategyIfNotNull;
+var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
+var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 var _rxjs = require("rxjs");
 var _fastDeepEqual = _interopRequireDefault(require("fast-deep-equal"));
 var _util = require("../../util");
@@ -34,190 +39,6 @@ var _rxQueryHelper = require("../../rx-query-helper");
  * - This could have been done in much less code which would be easier to uderstand
  *
  */
-/**
- * transform documents data and save them to the new collection
- * @return status-action with status and migrated document
- */
-var _migrateDocuments = function _migrateDocuments(oldCollection, documentsData) {
-  try {
-    // run hooks that might mutate documentsData
-    return Promise.resolve(Promise.all(documentsData.map(function (docData) {
-      return (0, _hooks.runAsyncPluginHooks)('preMigrateDocument', {
-        docData: docData,
-        oldCollection: oldCollection
-      });
-    }))).then(function () {
-      // run the migration strategies on each document
-      return Promise.resolve(Promise.all(documentsData.map(function (docData) {
-        return migrateDocumentData(oldCollection, docData);
-      }))).then(function (migratedDocuments) {
-        function _temp3() {
-          // run hooks
-          return Promise.resolve(Promise.all(actions.map(function (action) {
-            return (0, _hooks.runAsyncPluginHooks)('postMigrateDocument', action);
-          }))).then(function () {
-            // remove the documents from the old collection storage instance
-            var bulkDeleteInputData = documentsData.map(function (docData) {
-              var writeDeleted = (0, _util.flatClone)(docData);
-              writeDeleted._deleted = true;
-              writeDeleted._attachments = {};
-              return {
-                previous: docData,
-                document: writeDeleted
-              };
-            });
-            var _temp = function () {
-              if (bulkDeleteInputData.length) {
-                return Promise.resolve(oldCollection.storageInstance.bulkWrite(bulkDeleteInputData, 'data-migrator-delete')).then(function () {});
-              }
-            }();
-            return _temp && _temp.then ? _temp.then(function () {
-              return actions;
-            }) : actions;
-          });
-        }
-        var bulkWriteToStorageInput = [];
-        var actions = [];
-        documentsData.forEach(function (docData, idx) {
-          var migratedDocData = migratedDocuments[idx];
-          var action = {
-            res: null,
-            type: '',
-            migrated: migratedDocData,
-            doc: docData,
-            oldCollection: oldCollection,
-            newestCollection: oldCollection.newestCollection
-          };
-          actions.push(action);
-
-          /**
-           * Determiniticly handle the revision
-           * so migrating the same data on multiple instances
-           * will result in the same output.
-           */
-          if (isDocumentDataWithoutRevisionEqual(docData, migratedDocData)) {
-            /**
-             * Data not changed by migration strategies, keep the same revision.
-             * This ensures that other replicated instances that did not migrate already
-             * will still have the same document.
-             */
-            migratedDocData._rev = docData._rev;
-          } else if (migratedDocData !== null) {
-            /**
-             * data changed, increase revision height
-             * so replicating instances use our new document data
-             */
-            var newHeight = (0, _util.getHeightOfRevision)(docData._rev) + 1;
-            var newRevision = newHeight + '-' + (0, _util.createRevision)(oldCollection.newestCollection.database.hashFunction, migratedDocData);
-            migratedDocData._rev = newRevision;
-          }
-          if (migratedDocData) {
-            /**
-             * save to newest collection
-             * notice that this data also contains the attachments data
-             */
-            var attachmentsBefore = migratedDocData._attachments;
-            var saveData = migratedDocData;
-            saveData._attachments = attachmentsBefore;
-            saveData._meta.lwt = (0, _util.now)();
-            bulkWriteToStorageInput.push(saveData);
-            action.res = saveData;
-            action.type = 'success';
-          } else {
-            /**
-             * Migration strategy returned null
-             * which means we should not migrate this document,
-             * just drop it.
-             */
-            action.type = 'deleted';
-          }
-        });
-
-        /**
-         * Write the documents to the newest collection.
-         * We need to add as revision
-         * because we provide the _rev by our own
-         * to have deterministic revisions in case the migration
-         * runs on multiple nodes which must lead to the equal storage state.
-         */
-        var _temp2 = function () {
-          if (bulkWriteToStorageInput.length) {
-            /**
-             * To ensure that we really keep that revision, we
-             * hackly insert this document via the RxStorageInstance.originalStorageInstance
-             * so that getWrappedStorageInstance() does not overwrite its own revision.
-             */
-            var originalStorageInstance = oldCollection.newestCollection.storageInstance.originalStorageInstance;
-            return Promise.resolve(originalStorageInstance.bulkWrite(bulkWriteToStorageInput.map(function (document) {
-              return {
-                document: document
-              };
-            }), 'data-migrator-import')).then(function () {});
-          }
-        }();
-        return _temp2 && _temp2.then ? _temp2.then(_temp3) : _temp3(_temp2);
-      });
-    });
-  } catch (e) {
-    return Promise.reject(e);
-  }
-};
-/**
- * deletes this.storageInstance and removes it from the database.collectionsCollection
- */
-exports._migrateDocuments = _migrateDocuments;
-/**
- * get an array with OldCollection-instances from all existing old storage-instances
- */
-var _getOldCollections = function _getOldCollections(dataMigrator) {
-  try {
-    return Promise.resolve(getOldCollectionDocs(dataMigrator)).then(function (oldColDocs) {
-      return Promise.all(oldColDocs.map(function (colDoc) {
-        if (!colDoc) {
-          return null;
-        }
-        return createOldCollection(colDoc.data.schema.version, colDoc.data.schema, dataMigrator);
-      }).filter(function (colDoc) {
-        return colDoc !== null;
-      }));
-    });
-  } catch (e) {
-    return Promise.reject(e);
-  }
-};
-/**
- * returns true if a migration is needed
- */
-exports._getOldCollections = _getOldCollections;
-var createOldCollection = function createOldCollection(version, schemaObj, dataMigrator) {
-  try {
-    var database = dataMigrator.newestCollection.database;
-    var storageInstanceCreationParams = {
-      databaseInstanceToken: database.token,
-      databaseName: database.name,
-      collectionName: dataMigrator.newestCollection.name,
-      schema: schemaObj,
-      options: dataMigrator.newestCollection.instanceCreationOptions,
-      multiInstance: database.multiInstance
-    };
-    (0, _hooks.runPluginHooks)('preCreateRxStorageInstance', storageInstanceCreationParams);
-    return Promise.resolve(database.storage.createStorageInstance(storageInstanceCreationParams)).then(function (storageInstance) {
-      var ret = {
-        version: version,
-        dataMigrator: dataMigrator,
-        newestCollection: dataMigrator.newestCollection,
-        database: database,
-        schema: (0, _rxSchema.createRxSchema)(schemaObj, false),
-        storageInstance: storageInstance
-      };
-      ret.storageInstance = (0, _rxStorageHelper.getWrappedStorageInstance)(ret.database, storageInstance, schemaObj);
-      return ret;
-    });
-  } catch (e) {
-    return Promise.reject(e);
-  }
-};
-exports.createOldCollection = createOldCollection;
 var DataMigrator = /*#__PURE__*/function () {
   function DataMigrator(newestCollection, migrationStrategies) {
     this._migrated = false;
@@ -272,18 +93,30 @@ var DataMigrator = /*#__PURE__*/function () {
       return _getOldCollections(_this).then(function (ret) {
         _this.nonMigratedOldCollections = ret;
         _this.allOldCollections = _this.nonMigratedOldCollections.slice(0);
-        var getAllDocuments = function getAllDocuments(storageInstance, schema) {
-          try {
-            var storage = _this.database.storage;
-            var getAllQueryPrepared = storage.statics.prepareQuery(storageInstance.schema, (0, _rxQueryHelper.normalizeMangoQuery)(schema, {}));
-            return Promise.resolve(storageInstance.query(getAllQueryPrepared)).then(function (queryResult) {
-              var allDocs = queryResult.documents;
-              return allDocs;
-            });
-          } catch (e) {
-            return Promise.reject(e);
-          }
-        };
+        var getAllDocuments = /*#__PURE__*/function () {
+          var _ref = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(storageInstance, schema) {
+            var storage, getAllQueryPrepared, queryResult, allDocs;
+            return _regenerator["default"].wrap(function _callee$(_context) {
+              while (1) switch (_context.prev = _context.next) {
+                case 0:
+                  storage = _this.database.storage;
+                  getAllQueryPrepared = storage.statics.prepareQuery(storageInstance.schema, (0, _rxQueryHelper.normalizeMangoQuery)(schema, {}));
+                  _context.next = 4;
+                  return storageInstance.query(getAllQueryPrepared);
+                case 4:
+                  queryResult = _context.sent;
+                  allDocs = queryResult.documents;
+                  return _context.abrupt("return", allDocs);
+                case 7:
+                case "end":
+                  return _context.stop();
+              }
+            }, _callee);
+          }));
+          return function getAllDocuments(_x, _x2) {
+            return _ref.apply(this, arguments);
+          };
+        }();
         var countAll = Promise.all(_this.nonMigratedOldCollections.map(function (oldCol) {
           return getAllDocuments(oldCol.storageInstance, oldCol.schema.jsonSchema).then(function (allDocs) {
             return allDocs.length;
@@ -381,6 +214,47 @@ var DataMigrator = /*#__PURE__*/function () {
   return DataMigrator;
 }();
 exports.DataMigrator = DataMigrator;
+function createOldCollection(_x3, _x4, _x5) {
+  return _createOldCollection.apply(this, arguments);
+}
+function _createOldCollection() {
+  _createOldCollection = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee2(version, schemaObj, dataMigrator) {
+    var database, storageInstanceCreationParams, storageInstance, ret;
+    return _regenerator["default"].wrap(function _callee2$(_context2) {
+      while (1) switch (_context2.prev = _context2.next) {
+        case 0:
+          database = dataMigrator.newestCollection.database;
+          storageInstanceCreationParams = {
+            databaseInstanceToken: database.token,
+            databaseName: database.name,
+            collectionName: dataMigrator.newestCollection.name,
+            schema: schemaObj,
+            options: dataMigrator.newestCollection.instanceCreationOptions,
+            multiInstance: database.multiInstance
+          };
+          (0, _hooks.runPluginHooks)('preCreateRxStorageInstance', storageInstanceCreationParams);
+          _context2.next = 5;
+          return database.storage.createStorageInstance(storageInstanceCreationParams);
+        case 5:
+          storageInstance = _context2.sent;
+          ret = {
+            version: version,
+            dataMigrator: dataMigrator,
+            newestCollection: dataMigrator.newestCollection,
+            database: database,
+            schema: (0, _rxSchema.createRxSchema)(schemaObj, false),
+            storageInstance: storageInstance
+          };
+          ret.storageInstance = (0, _rxStorageHelper.getWrappedStorageInstance)(ret.database, storageInstance, schemaObj);
+          return _context2.abrupt("return", ret);
+        case 9:
+        case "end":
+          return _context2.stop();
+      }
+    }, _callee2);
+  }));
+  return _createOldCollection.apply(this, arguments);
+}
 function getOldCollectionDocs(dataMigrator) {
   var collectionDocKeys = (0, _rxSchema.getPreviousVersions)(dataMigrator.currentSchema.jsonSchema).map(function (version) {
     return dataMigrator.name + '-' + version;
@@ -390,6 +264,42 @@ function getOldCollectionDocs(dataMigrator) {
   }), false).then(function (docsObj) {
     return Object.values(docsObj);
   });
+}
+
+/**
+ * get an array with OldCollection-instances from all existing old storage-instances
+ */
+function _getOldCollections(_x6) {
+  return _getOldCollections2.apply(this, arguments);
+}
+/**
+ * returns true if a migration is needed
+ */
+function _getOldCollections2() {
+  _getOldCollections2 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee3(dataMigrator) {
+    var oldColDocs;
+    return _regenerator["default"].wrap(function _callee3$(_context3) {
+      while (1) switch (_context3.prev = _context3.next) {
+        case 0:
+          _context3.next = 2;
+          return getOldCollectionDocs(dataMigrator);
+        case 2:
+          oldColDocs = _context3.sent;
+          return _context3.abrupt("return", Promise.all(oldColDocs.map(function (colDoc) {
+            if (!colDoc) {
+              return null;
+            }
+            return createOldCollection(colDoc.data.schema.version, colDoc.data.schema, dataMigrator);
+          }).filter(function (colDoc) {
+            return colDoc !== null;
+          })));
+        case 4:
+        case "end":
+          return _context3.stop();
+      }
+    }, _callee3);
+  }));
+  return _getOldCollections2.apply(this, arguments);
 }
 function mustMigrate(dataMigrator) {
   if (dataMigrator.currentSchema.version === 0) {
@@ -413,12 +323,12 @@ function runStrategyIfNotNull(oldCollection, version, docOrNull) {
   }
 }
 function getBatchOfOldCollection(oldCollection, batchSize) {
-  var _ref;
+  var _ref2;
   var storage = oldCollection.database.storage;
   var storageInstance = oldCollection.storageInstance;
   var preparedQuery = storage.statics.prepareQuery(storageInstance.schema, {
     selector: {},
-    sort: [(_ref = {}, _ref[oldCollection.schema.primaryPath] = 'asc', _ref)],
+    sort: [(_ref2 = {}, _ref2[oldCollection.schema.primaryPath] = 'asc', _ref2)],
     limit: batchSize,
     skip: 0
   });
@@ -486,6 +396,149 @@ function isDocumentDataWithoutRevisionEqual(doc1, doc2) {
     _rev: undefined
   });
   return (0, _fastDeepEqual["default"])(doc1NoRev, doc2NoRev);
+}
+
+/**
+ * transform documents data and save them to the new collection
+ * @return status-action with status and migrated document
+ */
+function _migrateDocuments(_x7, _x8) {
+  return _migrateDocuments2.apply(this, arguments);
+}
+/**
+ * deletes this.storageInstance and removes it from the database.collectionsCollection
+ */
+function _migrateDocuments2() {
+  _migrateDocuments2 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee4(oldCollection, documentsData) {
+    var migratedDocuments, bulkWriteToStorageInput, actions, originalStorageInstance, bulkDeleteInputData;
+    return _regenerator["default"].wrap(function _callee4$(_context4) {
+      while (1) switch (_context4.prev = _context4.next) {
+        case 0:
+          _context4.next = 2;
+          return Promise.all(documentsData.map(function (docData) {
+            return (0, _hooks.runAsyncPluginHooks)('preMigrateDocument', {
+              docData: docData,
+              oldCollection: oldCollection
+            });
+          }));
+        case 2:
+          _context4.next = 4;
+          return Promise.all(documentsData.map(function (docData) {
+            return migrateDocumentData(oldCollection, docData);
+          }));
+        case 4:
+          migratedDocuments = _context4.sent;
+          bulkWriteToStorageInput = [];
+          actions = [];
+          documentsData.forEach(function (docData, idx) {
+            var migratedDocData = migratedDocuments[idx];
+            var action = {
+              res: null,
+              type: '',
+              migrated: migratedDocData,
+              doc: docData,
+              oldCollection: oldCollection,
+              newestCollection: oldCollection.newestCollection
+            };
+            actions.push(action);
+
+            /**
+             * Determiniticly handle the revision
+             * so migrating the same data on multiple instances
+             * will result in the same output.
+             */
+            if (isDocumentDataWithoutRevisionEqual(docData, migratedDocData)) {
+              /**
+               * Data not changed by migration strategies, keep the same revision.
+               * This ensures that other replicated instances that did not migrate already
+               * will still have the same document.
+               */
+              migratedDocData._rev = docData._rev;
+            } else if (migratedDocData !== null) {
+              /**
+               * data changed, increase revision height
+               * so replicating instances use our new document data
+               */
+              var newHeight = (0, _util.getHeightOfRevision)(docData._rev) + 1;
+              var newRevision = newHeight + '-' + (0, _util.createRevision)(oldCollection.newestCollection.database.token);
+              migratedDocData._rev = newRevision;
+            }
+            if (migratedDocData) {
+              /**
+               * save to newest collection
+               * notice that this data also contains the attachments data
+               */
+              var attachmentsBefore = migratedDocData._attachments;
+              var saveData = migratedDocData;
+              saveData._attachments = attachmentsBefore;
+              saveData._meta.lwt = (0, _util.now)();
+              bulkWriteToStorageInput.push(saveData);
+              action.res = saveData;
+              action.type = 'success';
+            } else {
+              /**
+               * Migration strategy returned null
+               * which means we should not migrate this document,
+               * just drop it.
+               */
+              action.type = 'deleted';
+            }
+          });
+
+          /**
+           * Write the documents to the newest collection.
+           * We need to add as revision
+           * because we provide the _rev by our own
+           * to have deterministic revisions in case the migration
+           * runs on multiple nodes which must lead to the equal storage state.
+           */
+          if (!bulkWriteToStorageInput.length) {
+            _context4.next = 12;
+            break;
+          }
+          /**
+           * To ensure that we really keep that revision, we
+           * hackly insert this document via the RxStorageInstance.originalStorageInstance
+           * so that getWrappedStorageInstance() does not overwrite its own revision.
+           */
+          originalStorageInstance = oldCollection.newestCollection.storageInstance.originalStorageInstance;
+          _context4.next = 12;
+          return originalStorageInstance.bulkWrite(bulkWriteToStorageInput.map(function (document) {
+            return {
+              document: document
+            };
+          }), 'data-migrator-import');
+        case 12:
+          _context4.next = 14;
+          return Promise.all(actions.map(function (action) {
+            return (0, _hooks.runAsyncPluginHooks)('postMigrateDocument', action);
+          }));
+        case 14:
+          // remove the documents from the old collection storage instance
+          bulkDeleteInputData = documentsData.map(function (docData) {
+            var writeDeleted = (0, _util.flatClone)(docData);
+            writeDeleted._deleted = true;
+            writeDeleted._attachments = {};
+            return {
+              previous: docData,
+              document: writeDeleted
+            };
+          });
+          if (!bulkDeleteInputData.length) {
+            _context4.next = 18;
+            break;
+          }
+          _context4.next = 18;
+          return oldCollection.storageInstance.bulkWrite(bulkDeleteInputData, 'data-migrator-delete');
+        case 18:
+          return _context4.abrupt("return", actions);
+        case 19:
+        case "end":
+          return _context4.stop();
+      }
+    }, _callee4);
+  }));
+  return _migrateDocuments2.apply(this, arguments);
 }
 function deleteOldCollection(oldCollection) {
   return oldCollection.storageInstance.remove().then(function () {

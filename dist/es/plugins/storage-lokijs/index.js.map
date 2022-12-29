@@ -1,0 +1,1 @@
+{"version":3,"file":"index.js","names":[],"sources":["../../../../src/plugins/storage-lokijs/index.ts"],"sourcesContent":["export * from './rx-storage-lokijs';\nexport * from './lokijs-helper';\nexport * from './rx-storage-instance-loki';\n"],"mappings":"AAAA,cAAc,qBAAqB;AACnC,cAAc,iBAAiB;AAC/B,cAAc,4BAA4B"}

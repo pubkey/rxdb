@@ -10,13 +10,12 @@ import type {
     FilledMangoQuery
 } from '../../types';
 import {
-    Query as MingoQuery
-} from 'mingo';
-import {
-    getDexieSortComparator} from './dexie-helper';
+    getDexieSortComparator
+} from './dexie-helper';
 import { newRxError } from '../../rx-error';
 import { getQueryPlan } from '../../query-planner';
 import { DEFAULT_CHECKPOINT_SCHEMA } from '../../rx-schema-helper';
+import { getMingoQuery } from '../../rx-query-mingo';
 
 export const RxStorageDexieStatics: RxStorageStatics = {
     prepareQuery<RxDocType>(
@@ -57,7 +56,7 @@ export const RxStorageDexieStatics: RxStorageStatics = {
         preparedQuery: DexiePreparedQuery<RxDocType>
     ): QueryMatcher<RxDocumentData<RxDocType>> {
         const query = preparedQuery.query;
-        const mingoQuery = new MingoQuery(query.selector);
+        const mingoQuery = getMingoQuery(query.selector);
         const fun: QueryMatcher<RxDocumentData<RxDocType>> = (doc: RxDocumentData<RxDocType>) => {
             if (doc._deleted) {
                 return false;

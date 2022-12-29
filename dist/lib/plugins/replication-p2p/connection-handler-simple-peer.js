@@ -5,6 +5,8 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.getConnectionHandlerSimplePeer = getConnectionHandlerSimplePeer;
+var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
+var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 var _rxjs = require("rxjs");
 var _util = require("../../util");
 var _simplePeer = _interopRequireDefault(require("simple-peer"));
@@ -84,13 +86,24 @@ function getConnectionHandlerSimplePeer(serverUrl, wrtc) {
       disconnect$: disconnect$,
       message$: message$,
       response$: response$,
-      send: function send(peer, message) {
-        try {
-          return Promise.resolve(peer.send(JSON.stringify(message))).then(function () {});
-        } catch (e) {
-          return Promise.reject(e);
+      send: function () {
+        var _send = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(peer, message) {
+          return _regenerator["default"].wrap(function _callee$(_context) {
+            while (1) switch (_context.prev = _context.next) {
+              case 0:
+                _context.next = 2;
+                return peer.send(JSON.stringify(message));
+              case 2:
+              case "end":
+                return _context.stop();
+            }
+          }, _callee);
+        }));
+        function send(_x, _x2) {
+          return _send.apply(this, arguments);
         }
-      },
+        return send;
+      }(),
       destroy: function destroy() {
         socket.close();
         error$.complete();

@@ -13,6 +13,7 @@ export declare type WebsocketClientOptions<RxDocType> = {
     collection: RxCollection<RxDocType>;
     url: string;
     batchSize?: number;
+    live?: boolean;
 } & ClientOptions;
 export declare type WebsocketMessageType = {
     id: string;

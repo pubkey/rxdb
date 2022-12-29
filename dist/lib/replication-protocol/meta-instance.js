@@ -89,7 +89,7 @@ function getMetaWriteRow(state, newMasterDocState, previous, isResolvedConflict)
   newMeta.isResolvedConflict = isResolvedConflict;
   newMeta._meta.lwt = (0, _util.now)();
   newMeta.id = (0, _rxSchemaHelper.getComposedPrimaryKeyOfDocumentData)(RX_REPLICATION_META_INSTANCE_SCHEMA, newMeta);
-  newMeta._rev = (0, _util.createRevision)(state.input.hashFunction, newMeta, previous);
+  newMeta._rev = (0, _util.createRevision)(state.input.identifier, previous);
   return {
     previous: previous,
     document: newMeta

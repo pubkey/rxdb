@@ -294,15 +294,18 @@ export const nestedHuman: RxJsonSchema<NestedHumanDocumentType> = {
             type: 'object',
             properties: {
                 name: {
-                    type: 'string'
+                    type: 'string',
+                    maxLength: 10
                 },
                 level: {
                     type: 'number',
                     minimum: 0,
-                    maximum: 10
+                    maximum: 10,
+                    multipleOf: 1
                 }
             },
-            required: ['name', 'level']
+            required: ['name', 'level'],
+            additionalProperties: false
         }
     },
     required: ['firstName'],

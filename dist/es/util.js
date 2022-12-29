@@ -1,5 +1,5 @@
-import { default as deepClone } from 'clone';
-
+import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
+import _regeneratorRuntime from "@babel/runtime/regenerator";
 /**
  * Returns an error that indicates that a plugin is missing
  * We do not throw a RxError because this should not be handled
@@ -191,14 +191,10 @@ export function ucfirst(str) {
  */
 export function trimDots(str) {
   // start
-  while (str.charAt(0) === '.') {
-    str = str.substr(1);
-  }
+  while (str.charAt(0) === '.') str = str.substr(1);
 
   // end
-  while (str.slice(-1) === '.') {
-    str = str.slice(0, -1);
-  }
+  while (str.slice(-1) === '.') str = str.slice(0, -1);
   return str;
 }
 export function runXTimes(xTimes, fn) {
@@ -240,7 +236,9 @@ export function sortObject(obj) {
   // object
   // array is also of type object
   if (typeof obj === 'object' && !Array.isArray(obj)) {
-    if (obj instanceof RegExp) return obj;
+    if (obj instanceof RegExp) {
+      return obj;
+    }
     var out = {};
     Object.keys(obj).sort(function (a, b) {
       return a.localeCompare(b);
@@ -295,6 +293,9 @@ export function shuffleArray(arr) {
     return Math.random() - 0.5;
   });
 }
+export function toArray(input) {
+  return Array.isArray(input) ? input.slice(0) : [input];
+}
 
 /**
  * Split array with items into smaller arrays with items
@@ -327,25 +328,43 @@ export function removeOneFromArrayIfMatches(ar, condition) {
 }
 
 /**
- * transforms the given adapter into a pouch-compatible object
+ * Deep clone a plain json object.
+ * Does not work with recursive stuff
+ * or non-plain-json.
+ * IMPORANT: Performance of this is very important,
+ * do not change it without running performance tests!
+ *
+ * @link https://github.com/zxdong262/deep-copy/blob/master/src/index.ts
  */
-export function adapterObject(adapter) {
-  var adapterObj = {
-    db: adapter
-  };
-  if (typeof adapter === 'string') {
-    adapterObj = {
-      adapter: adapter,
-      db: undefined
-    };
+function deepClone(src) {
+  if (!src) {
+    return src;
   }
-  return adapterObj;
+  if (src === null || typeof src !== 'object') {
+    return src;
+  }
+  if (Array.isArray(src)) {
+    var ret = new Array(src.length);
+    var i = ret.length;
+    while (i--) {
+      ret[i] = deepClone(src[i]);
+    }
+    return ret;
+  }
+  var dest = {};
+  // eslint-disable-next-line guard-for-in
+  for (var key in src) {
+    // TODO we should not be required to deep clone RegEx objects,
+    // this must be fixed in RxDB.
+    if (src[key] instanceof RegExp) {
+      dest[key] = src[key];
+    } else {
+      dest[key] = deepClone(src[key]);
+    }
+  }
+  return dest;
 }
-function recursiveDeepCopy(o) {
-  if (!o) return o;
-  return deepClone(o, false);
-}
-export var clone = recursiveDeepCopy;
+export var clone = deepClone;
 
 /**
  * does a flat copy on the objects,
@@ -401,38 +420,11 @@ export function getHeightOfRevision(revision) {
 /**
  * Creates the next write revision for a given document.
  */
-export function createRevision(hashFunction, docData, previousDocData) {
+export function createRevision(databaseInstanceToken, previousDocData) {
   var previousRevision = previousDocData ? previousDocData._rev : null;
   var previousRevisionHeigth = previousRevision ? parseRevision(previousRevision).height : 0;
   var newRevisionHeight = previousRevisionHeigth + 1;
-  var docWithoutRev = Object.assign({}, docData, {
-    _rev: undefined,
-    _rev_tree: undefined,
-    /**
-     * All _meta properties MUST NOT be part of the
-     * revision hash.
-     * Plugins might temporarily store data in the _meta
-     * field and strip it away when the document is replicated
-     * or written to another storage.
-     */
-    _meta: undefined
-  });
-
-  /**
-   * The revision height must be part of the hash
-   * as the last parameter of the document data.
-   * This is required to ensure we never ever create
-   * two different document states that have the same revision
-   * hash. Even writing the exact same document data
-   * must have to result in a different hash so that
-   * the replication can known if the state just looks equal
-   * or if it is really exactly the equal state in data and time.
-   */
-  delete docWithoutRev._rev;
-  docWithoutRev._rev = previousDocData ? newRevisionHeight : 1;
-  var diggestString = JSON.stringify(docWithoutRev);
-  var revisionHash = hashFunction(diggestString);
-  return newRevisionHeight + '-' + revisionHash;
+  return newRevisionHeight + '-' + databaseInstanceToken;
 }
 
 /**
@@ -490,6 +482,14 @@ export function getFromMapOrThrow(map, key) {
     throw new Error('missing value from map ' + key);
   }
   return val;
+}
+export function getFromMapOrFill(map, key, fillerFunction) {
+  var value = map.get(key);
+  if (!value) {
+    value = fillerFunction();
+    map.set(key, value);
+  }
+  return value;
 }
 export function getFromObjectOrThrow(obj, key) {
   var val = obj[key];
@@ -581,15 +581,32 @@ export var blobBufferUtil = {
    * depending if we are on node or browser,
    * we have to use Buffer(node) or Blob(browser)
    */
-  createBlobBufferFromBase64: function createBlobBufferFromBase64(base64String, type) {
-    try {
-      return Promise.resolve(fetch("data:" + type + ";base64," + base64String)).then(function (base64Response) {
-        return Promise.resolve(base64Response.blob());
-      });
-    } catch (e) {
-      return Promise.reject(e);
+  createBlobBufferFromBase64: function () {
+    var _createBlobBufferFromBase = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee(base64String, type) {
+      var base64Response, blob;
+      return _regeneratorRuntime.wrap(function _callee$(_context) {
+        while (1) switch (_context.prev = _context.next) {
+          case 0:
+            _context.next = 2;
+            return fetch("data:" + type + ";base64," + base64String);
+          case 2:
+            base64Response = _context.sent;
+            _context.next = 5;
+            return base64Response.blob();
+          case 5:
+            blob = _context.sent;
+            return _context.abrupt("return", blob);
+          case 7:
+          case "end":
+            return _context.stop();
+        }
+      }, _callee);
+    }));
+    function createBlobBufferFromBase64(_x2, _x3) {
+      return _createBlobBufferFromBase.apply(this, arguments);
     }
-  },
+    return createBlobBufferFromBase64;
+  }(),
   isBlobBuffer: function isBlobBuffer(data) {
     if (data instanceof Blob || typeof Buffer !== 'undefined' && Buffer.isBuffer(data)) {
       return true;
@@ -612,28 +629,45 @@ export var blobBufferUtil = {
     }
     return blobBuffer.text();
   },
-  toBase64String: function toBase64String(blobBuffer) {
-    try {
-      if (typeof blobBuffer === 'string') {
-        return Promise.resolve(blobBuffer);
-      }
-
-      /**
-       * in the electron-renderer we have a typed array insteaf of a blob
-       * so we have to transform it.
-       * @link https://github.com/pubkey/rxdb/issues/1371
-       */
-      var blobBufferType = Object.prototype.toString.call(blobBuffer);
-      if (blobBufferType === '[object Uint8Array]') {
-        blobBuffer = new Blob([blobBuffer]);
-      }
-      return Promise.resolve(fetch(URL.createObjectURL(blobBuffer)).then(function (res) {
-        return res.arrayBuffer();
-      })).then(arrayBufferToBase64);
-    } catch (e) {
-      return Promise.reject(e);
+  toBase64String: function () {
+    var _toBase64String = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee2(blobBuffer) {
+      var blobBufferType, arrayBuffer;
+      return _regeneratorRuntime.wrap(function _callee2$(_context2) {
+        while (1) switch (_context2.prev = _context2.next) {
+          case 0:
+            if (!(typeof blobBuffer === 'string')) {
+              _context2.next = 2;
+              break;
+            }
+            return _context2.abrupt("return", blobBuffer);
+          case 2:
+            /**
+             * in the electron-renderer we have a typed array insteaf of a blob
+             * so we have to transform it.
+             * @link https://github.com/pubkey/rxdb/issues/1371
+             */
+            blobBufferType = Object.prototype.toString.call(blobBuffer);
+            if (blobBufferType === '[object Uint8Array]') {
+              blobBuffer = new Blob([blobBuffer]);
+            }
+            _context2.next = 6;
+            return fetch(URL.createObjectURL(blobBuffer)).then(function (res) {
+              return res.arrayBuffer();
+            });
+          case 6:
+            arrayBuffer = _context2.sent;
+            return _context2.abrupt("return", arrayBufferToBase64(arrayBuffer));
+          case 8:
+          case "end":
+            return _context2.stop();
+        }
+      }, _callee2);
+    }));
+    function toBase64String(_x4) {
+      return _toBase64String.apply(this, arguments);
     }
-  },
+    return toBase64String;
+  }(),
   size: function size(blobBuffer) {
     return blobBuffer.size;
   }
@@ -680,6 +714,13 @@ export function getDefaultRevision() {
    * when the revision is not replaced downstream.
    */
   return '';
+}
+export function stripMetaDataFromDocument(docData) {
+  return Object.assign({}, docData, {
+    _meta: undefined,
+    _deleted: undefined,
+    _rev: undefined
+  });
 }
 export function getSortDocumentsByLastWriteTimeComparator(primaryPath) {
   return function (a, b) {
@@ -746,8 +787,11 @@ export function errorToPlainJson(err) {
   var ret = {
     name: err.name,
     message: err.message,
-    stack: err.stack,
-    rxdb: err.rxdb
+    rxdb: err.rxdb,
+    parameters: err.parameters,
+    code: err.code,
+    // stack must be last to make it easier to read the json in a console.
+    stack: err.stack
   };
   return ret;
 }

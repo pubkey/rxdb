@@ -106,18 +106,7 @@ function getComposedPrimaryKeyOfDocumentData(jsonSchema, documentData) {
  * @return RxJsonSchema - ordered and filled
  */
 function normalizeRxJsonSchema(jsonSchema) {
-  // TODO do we need the deep clone() here?
-  var normalizedSchema = (0, _util.sortObject)((0, _util.clone)(jsonSchema));
-
-  // indexes must NOT be sorted because sort order is important here.
-  if (jsonSchema.indexes) {
-    normalizedSchema.indexes = Array.from(jsonSchema.indexes);
-  }
-
-  // primaryKey.fields must NOT be sorted because sort order is important here.
-  if (typeof normalizedSchema.primaryKey === 'object' && typeof jsonSchema.primaryKey === 'object') {
-    normalizedSchema.primaryKey.fields = jsonSchema.primaryKey.fields;
-  }
+  var normalizedSchema = (0, _util.sortObject)(jsonSchema, true);
   return normalizedSchema;
 }
 

@@ -1,3 +1,5 @@
+import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
+import _regeneratorRuntime from "@babel/runtime/regenerator";
 import { Subject } from 'rxjs';
 import { getFromMapOrThrow, PROMISE_RESOLVE_VOID, randomCouchString } from '../../util';
 import { default as Peer } from 'simple-peer';
@@ -78,13 +80,24 @@ export function getConnectionHandlerSimplePeer(serverUrl, wrtc) {
       disconnect$: disconnect$,
       message$: message$,
       response$: response$,
-      send: function send(peer, message) {
-        try {
-          return Promise.resolve(peer.send(JSON.stringify(message))).then(function () {});
-        } catch (e) {
-          return Promise.reject(e);
+      send: function () {
+        var _send = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee(peer, message) {
+          return _regeneratorRuntime.wrap(function _callee$(_context) {
+            while (1) switch (_context.prev = _context.next) {
+              case 0:
+                _context.next = 2;
+                return peer.send(JSON.stringify(message));
+              case 2:
+              case "end":
+                return _context.stop();
+            }
+          }, _callee);
+        }));
+        function send(_x, _x2) {
+          return _send.apply(this, arguments);
         }
-      },
+        return send;
+      }(),
       destroy: function destroy() {
         socket.close();
         error$.complete();

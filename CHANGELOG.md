@@ -24,12 +24,24 @@
 - ADD non-incremental `RxDocument` methods `patch()` and `modify()`
 - ADD typings to the query selector
 
-- ADD [Vite Vanilla Typescript Example](https://github.com/pubkey/rxdb/tree/master/examples/vite-vanilla-ts) Thanks [@SebasG22](https://github.com/SebasG22)
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 13.17.0 (29 December 2022)
+
+- FIX(lokijs) wrong query result when sorting on a nested field.
+- IMPROVE usage of the [mingo query library](https://github.com/kofrasa/mingo) by only adding the operators to the build that are really needed.
+- CHANGE use faster deep clone method.
+
+### 13.16.1 (27 December 2022)
+
+### 13.16.0 (26 December 2022)
+
+- ADD [Vite Vanilla Typescript Example](https://github.com/pubkey/rxdb/tree/master/examples/vite-vanilla-ts) Thanks [@SebasG22](https://github.com/SebasG22)
+- ADD [Use exports field in package.json](https://github.com/pubkey/rxdb/pull/4196) Thanks [@SebasG22](https://github.com/SebasG22) and [@swnf](https://github.com/swnf)
 
 ### 13.15.3 (13 December 2022)
 

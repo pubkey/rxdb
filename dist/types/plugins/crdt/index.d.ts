@@ -1,7 +1,7 @@
 import type { CRDTDocumentField, CRDTEntry, CRDTOperation, HashFunction, JsonSchema, RxConflictHandler, RxDocument, RxDocumentData, RxJsonSchema, RxPlugin, RxStorageStatics, WithDeleted } from '../../types';
 import { RxCollection } from '../..';
 export declare function updateCRDT<RxDocType>(this: RxDocument<RxDocType>, entry: CRDTEntry<RxDocType> | CRDTEntry<RxDocType>[]): Promise<RxDocument<RxDocType, {}>>;
-export declare function insertCRDT<RxDocType>(this: RxCollection<RxDocType>, entry: CRDTEntry<RxDocType> | CRDTEntry<RxDocType>[]): Promise<any>;
+export declare function insertCRDT<RxDocType>(this: RxCollection<RxDocType>, entry: CRDTEntry<RxDocType> | CRDTEntry<RxDocType>[]): Promise<RxDocument<RxDocType, {}>>;
 export declare function sortOperationComparator<RxDocType>(a: CRDTOperation<RxDocType>, b: CRDTOperation<RxDocType>): 1 | -1;
 export declare function hashCRDTOperations(hashFunction: HashFunction, crdts: CRDTDocumentField<any>): string;
 export declare function getCRDTSchemaPart<RxDocType>(): JsonSchema<CRDTDocumentField<RxDocType>>;
