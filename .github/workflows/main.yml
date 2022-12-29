@@ -34,9 +34,9 @@ jobs:
           path: |
             ~/.npm
             ./node_modules
-          key: ${{ runner.os }}-npm-core-x7-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-core-x8-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-core-x7-
+            ${{ runner.os }}-npm-core-x8-
 
       - name: install npm dependencies
         run: npm install
@@ -65,9 +65,9 @@ jobs:
           path: |
             ~/.npm
             ./node_modules
-          key: ${{ runner.os }}-npm-loki-x7-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-loki-x8-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-loki-x7-
+            ${{ runner.os }}-npm-loki-x8-
 
       - name: install npm dependencies
         run: npm install
@@ -109,9 +109,9 @@ jobs:
           path: |
             ~/.npm
             ./node_modules
-          key: ${{ runner.os }}-npm-memory-x7-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-memory-x8-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-memory-x7-
+            ${{ runner.os }}-npm-memory-x8-
 
       - name: install npm dependencies
         run: npm install
@@ -164,9 +164,9 @@ jobs:
           path: |
             ~/.npm
             ./node_modules
-          key: ${{ runner.os }}-npm-remote-x7-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-remote-x8-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-remote-x7-
+            ${{ runner.os }}-npm-remote-x8-
 
       - name: install npm dependencies
         run: npm install
@@ -198,9 +198,9 @@ jobs:
           path: |
             ~/.npm
             ./node_modules
-          key: ${{ runner.os }}-npm-loki-worker-x7-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-loki-worker-x8-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-loki-worker-x7-
+            ${{ runner.os }}-npm-loki-worker-x8-
 
       - name: install npm dependencies
         run: npm install
@@ -238,9 +238,9 @@ jobs:
           path: |
             ~/.npm
             ./node_modules
-          key: ${{ runner.os }}-npm-storage-dexie-x7-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-storage-dexie-x8-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-storage-dexie-x7-
+            ${{ runner.os }}-npm-storage-dexie-x8-
 
       - name: install npm dependencies
         run: npm install
@@ -284,9 +284,9 @@ jobs:
           path: |
             ~/.npm
             ./node_modules
-          key: ${{ runner.os }}-npm-storage-foundationdb-x7-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-storage-foundationdb-x8-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-storage-foundationdb-x7-
+            ${{ runner.os }}-npm-storage-foundationdb-x8-
 
       - name: install FoundationDB client and server
         working-directory: ./scripts
@@ -325,9 +325,9 @@ jobs:
             ./node_modules
             ./examples/angular/node_modules
           # invalidate cache when any package.json changes
-          key: ${{ runner.os }}-npm-angular-x7-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-angular-x8-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-angular-x7-
+            ${{ runner.os }}-npm-angular-x8-
 
       - name: prepare RxDB core
         run: |
@@ -371,9 +371,9 @@ jobs:
           path: |
             ~/.npm
             ./node_modules
-          key: ${{ runner.os }}-npm-test-builds-x7-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-test-builds-x8-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-test-builds-x7-
+            ${{ runner.os }}-npm-test-builds-x8-
 
       - name: prepare RxDB core
         run: |
@@ -404,9 +404,9 @@ jobs:
           path: |
             ~/.npm
             ./node_modules
-          key: ${{ runner.os }}-npm-test-code-style-x7-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-test-code-style-x8-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-test-code-style-x7-
+            ${{ runner.os }}-npm-test-code-style-x8-
 
       - name: prepare RxDB core
         run: |
