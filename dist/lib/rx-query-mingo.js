@@ -26,6 +26,7 @@ function getMingoQuery(selector) {
     (0, _core.useOperators)(_core.OperatorType.QUERY, {
       $and: _query2.$and,
       $eq: _query2.$eq,
+      $elemMatch: _query2.$elemMatch,
       $exists: _query2.$exists,
       $gt: _query2.$gt,
       $gte: _query2.$gte,
@@ -39,6 +40,7 @@ function getMingoQuery(selector) {
       $not: _query2.$not,
       $or: _query2.$or,
       $regex: _query2.$regex,
+      $size: _query2.$size,
       $type: _query2.$type
     });
     mingoInitDone = true;

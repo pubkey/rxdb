@@ -1,7 +1,7 @@
 import { useOperators, OperatorType } from 'mingo/core';
 import { Query } from 'mingo/query';
 import { $sort, $project } from 'mingo/operators/pipeline';
-import { $and, $eq, $exists, $gt, $gte, $in, $lt, $lte, $ne, $nin, $mod, $nor, $not, $or, $regex, $type } from 'mingo/operators/query';
+import { $and, $eq, $elemMatch, $exists, $gt, $gte, $in, $lt, $lte, $ne, $nin, $mod, $nor, $not, $or, $regex, $size, $type } from 'mingo/operators/query';
 var mingoInitDone = false;
 
 /**
@@ -20,6 +20,7 @@ export function getMingoQuery(selector) {
     useOperators(OperatorType.QUERY, {
       $and: $and,
       $eq: $eq,
+      $elemMatch: $elemMatch,
       $exists: $exists,
       $gt: $gt,
       $gte: $gte,
@@ -33,6 +34,7 @@ export function getMingoQuery(selector) {
       $not: $not,
       $or: $or,
       $regex: $regex,
+      $size: $size,
       $type: $type
     });
     mingoInitDone = true;

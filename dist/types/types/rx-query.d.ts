@@ -3,6 +3,13 @@ import {
 } from '../rx-query';
 import { StringKeys } from './util';
 
+/**
+ * The MongoDB query library is huge and we do not need all the operators.
+ * If you add an operator here, make sure that you properly add a test in
+ * the file /test/unit/rx-storage-query-correctness.test.ts
+ *
+ * @link https://github.com/kofrasa/mingo#es6
+ */
 export interface RxQueryOptions<T> {
     $eq?: T;
     $gt?: T;
@@ -17,7 +24,6 @@ export interface RxQueryOptions<T> {
     $type?: 'null' | 'boolean' | 'number' | 'string' | 'array' | 'object';
     $mod?: number;
     $not?: T;
-    $all?: T[];
     $size?: number;
     $elemMatch?: RxQueryOptions<T>;
 }
