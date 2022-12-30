@@ -41,6 +41,9 @@ addRxPlugin(RxDBUpdatePlugin);
 import { RxDBQueryBuilderPlugin } from 'rxdb/plugins/query-builder';
 addRxPlugin(RxDBQueryBuilderPlugin);
 
+import { RxDBLeaderElectionPlugin } from 'rxdb/plugins/leader-election';
+addRxPlugin(RxDBLeaderElectionPlugin);
+
 
 import {
     GRAPHQL_PORT,
