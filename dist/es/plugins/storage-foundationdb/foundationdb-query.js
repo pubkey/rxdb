@@ -1,7 +1,7 @@
 import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
 import _regeneratorRuntime from "@babel/runtime/regenerator";
 import { getStartIndexStringFromLowerBound, getStartIndexStringFromUpperBound } from '../../custom-index';
-import { ensureNotFalsy } from '../../util';
+import { ensureNotFalsy } from '../../plugins/utils';
 import { RxStorageDexieStatics } from '../storage-dexie';
 import { getFoundationDBIndexName } from './foundationdb-helpers';
 export function queryFoundationDB(_x, _x2) {

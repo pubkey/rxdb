@@ -9,7 +9,7 @@ exports.resolveConflictError = resolveConflictError;
 var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
 var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 var _fastDeepEqual = _interopRequireDefault(require("fast-deep-equal"));
-var _util = require("../util");
+var _utils = require("../plugins/utils");
 var defaultConflictHandler = function defaultConflictHandler(i, _context) {
   /**
    * If the documents are deep equal,
@@ -72,12 +72,12 @@ function _resolveConflictError() {
              * Because the resolved conflict is written to the fork,
              * we have to keep/update the forks _meta data, not the masters.
              */
-            _meta: (0, _util.flatClone)(forkState._meta),
-            _rev: (0, _util.getDefaultRevision)(),
-            _attachments: (0, _util.flatClone)(forkState._attachments)
+            _meta: (0, _utils.flatClone)(forkState._meta),
+            _rev: (0, _utils.getDefaultRevision)(),
+            _attachments: (0, _utils.flatClone)(forkState._attachments)
           });
-          resolvedDoc._meta.lwt = (0, _util.now)();
-          resolvedDoc._rev = (0, _util.createRevision)(state.input.identifier, forkState);
+          resolvedDoc._meta.lwt = (0, _utils.now)();
+          resolvedDoc._rev = (0, _utils.createRevision)(state.input.identifier, forkState);
           return _context2.abrupt("return", {
             resolvedDoc: resolvedDoc,
             output: conflictHandlerOutput

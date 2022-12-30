@@ -8,7 +8,7 @@ import { getDocumentDataOfRxChangeEvent } from '../../rx-change-event';
 import { basePrototype, createRxDocumentConstructor } from '../../rx-document';
 import { newRxError, newRxTypeError } from '../../rx-error';
 import { writeSingle } from '../../rx-storage-helper';
-import { flatClone, getDefaultRevision, getDefaultRxDocumentMeta, getFromMapOrThrow, getFromObjectOrThrow, RXJS_SHARE_REPLAY_DEFAULTS } from '../../util';
+import { flatClone, getDefaultRevision, getDefaultRxDocumentMeta, getFromMapOrThrow, getFromObjectOrThrow, RXJS_SHARE_REPLAY_DEFAULTS } from '../../plugins/utils';
 import { getLocalDocStateByParent, LOCAL_DOC_STATE_BY_PARENT_RESOLVED } from './local-documents-helper';
 var RxDocumentParent = createRxDocumentConstructor();
 var RxLocalDocumentClass = /*#__PURE__*/function (_RxDocumentParent) {

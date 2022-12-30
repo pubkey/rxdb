@@ -16,7 +16,7 @@ var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/
 var _rxjs = require("rxjs");
 var _plugin = require("../../plugin");
 var _replicationProtocol = require("../../replication-protocol");
-var _util = require("../../util");
+var _utils = require("../../plugins/utils");
 var _leaderElection = require("../leader-election");
 var _replication = require("../replication");
 var _p2pHelper = require("./p2p-helper");
@@ -94,7 +94,7 @@ function _syncP2P() {
         case 7:
           // used to easier debug stuff
           requestCounter = 0;
-          requestFlag = (0, _util.randomCouchString)(10);
+          requestFlag = (0, _utils.randomCouchString)(10);
           _context6.next = 11;
           return this.database.storageToken;
         case 11:
@@ -204,7 +204,7 @@ function _syncP2P() {
                                     _context3.next = 2;
                                     return (0, _p2pHelper.sendMessageAndAwaitAnswer)(pool.connectionHandler, peer, {
                                       method: 'masterChangesSince',
-                                      params: [lastPulledCheckpoint, (0, _util.ensureNotFalsy)(options.pull).batchSize],
+                                      params: [lastPulledCheckpoint, (0, _utils.ensureNotFalsy)(options.pull).batchSize],
                                       id: getRequestId()
                                     });
                                   case 2:
@@ -309,7 +309,7 @@ var RxP2PReplicationPool = /*#__PURE__*/function () {
     }
   };
   _proto.removePeer = function removePeer(peer) {
-    var peerState = (0, _util.getFromMapOrThrow)(this.peerStates$.getValue(), peer);
+    var peerState = (0, _utils.getFromMapOrThrow)(this.peerStates$.getValue(), peer);
     this.peerStates$.getValue()["delete"](peer);
     this.peerStates$.next(this.peerStates$.getValue());
     peerState.subs.forEach(function (sub) {

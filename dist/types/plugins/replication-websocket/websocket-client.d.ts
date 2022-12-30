@@ -3,7 +3,7 @@ import { WebsocketClientOptions } from './websocket-types';
 import ReconnectingWebSocket from 'reconnecting-websocket';
 import { Subject, BehaviorSubject } from 'rxjs';
 import { RxDatabase, RxError } from '../../types';
-export declare type WebsocketWithRefCount = {
+export type WebsocketWithRefCount = {
     url: string;
     socket: ReconnectingWebSocket;
     refCount: number;

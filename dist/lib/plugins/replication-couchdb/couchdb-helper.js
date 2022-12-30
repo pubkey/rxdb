@@ -9,7 +9,7 @@ exports.couchSwapIdToPrimary = couchSwapIdToPrimary;
 exports.couchSwapPrimaryToId = couchSwapPrimaryToId;
 exports.getDefaultFetch = getDefaultFetch;
 exports.mergeUrlQueryParams = mergeUrlQueryParams;
-var _util = require("../../util");
+var _utils = require("../../plugins/utils");
 var COUCHDB_NEW_REPLICATION_PLUGIN_IDENTITY_PREFIX = 'rxdb-replication-couchdb-';
 exports.COUCHDB_NEW_REPLICATION_PLUGIN_IDENTITY_PREFIX = COUCHDB_NEW_REPLICATION_PLUGIN_IDENTITY_PREFIX;
 function mergeUrlQueryParams(params) {
@@ -34,7 +34,7 @@ function couchSwapIdToPrimary(primaryKey, docData) {
   if (primaryKey === '_id' || docData[primaryKey]) {
     return docData;
   }
-  docData = (0, _util.flatClone)(docData);
+  docData = (0, _utils.flatClone)(docData);
   docData[primaryKey] = docData._id;
   delete docData._id;
   return docData;
@@ -50,7 +50,7 @@ function couchSwapPrimaryToId(primaryKey, docData) {
     return docData;
   }
   var idValue = docData[primaryKey];
-  var ret = (0, _util.flatClone)(docData);
+  var ret = (0, _utils.flatClone)(docData);
   delete ret[primaryKey];
   ret._id = idValue;
   return ret;

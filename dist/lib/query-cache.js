@@ -9,7 +9,7 @@ exports.createQueryCache = createQueryCache;
 exports.defaultCacheReplacementPolicyMonad = exports.defaultCacheReplacementPolicy = void 0;
 exports.triggerCacheReplacement = triggerCacheReplacement;
 exports.uncacheRxQuery = uncacheRxQuery;
-var _util = require("./util");
+var _utils = require("./plugins/utils");
 /**
  * the query-cache makes sure that on every query-state, exactly one instance can exist
  * if you use the same mango-query more then once, it will reuse the first RxQuery
@@ -61,7 +61,7 @@ var defaultCacheReplacementPolicyMonad = function defaultCacheReplacementPolicyM
     if (queryCache._map.size < tryToKeepMax) {
       return;
     }
-    var minUnExecutedLifetime = (0, _util.now)() - unExecutedLifetime;
+    var minUnExecutedLifetime = (0, _utils.now)() - unExecutedLifetime;
     var maybeUncash = [];
     var queriesInCache = Array.from(queryCache._map.values());
     for (var _i = 0, _queriesInCache = queriesInCache; _i < _queriesInCache.length; _i++) {
@@ -112,9 +112,9 @@ function triggerCacheReplacement(rxCollection) {
   /**
    * Do not run directly to not reduce result latency of a new query
    */
-  (0, _util.nextTick)() // wait at least one tick
+  (0, _utils.nextTick)() // wait at least one tick
   .then(function () {
-    return (0, _util.requestIdlePromise)(200);
+    return (0, _utils.requestIdlePromise)(200);
   }) // and then wait for the CPU to be idle
   .then(function () {
     if (!rxCollection.destroyed) {

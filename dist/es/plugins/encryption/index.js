@@ -12,7 +12,7 @@ import { wrapRxStorageInstance } from '../../plugin-helpers';
 import { INTERNAL_STORE_SCHEMA_TITLE } from '../../rx-database-internal-store';
 import { newRxError, newRxTypeError } from '../../rx-error';
 import { hasEncryption } from '../../rx-storage-helper';
-import { b64DecodeUnicode, b64EncodeUnicode, clone, ensureNotFalsy, flatClone } from '../../util';
+import { b64DecodeUnicode, b64EncodeUnicode, clone, ensureNotFalsy, flatClone } from '../../plugins/utils';
 export var MINIMUM_PASSWORD_LENGTH = 8;
 export function encryptString(value, password) {
   var encrypted = AES.encrypt(value, password);

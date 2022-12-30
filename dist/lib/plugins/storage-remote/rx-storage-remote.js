@@ -10,11 +10,11 @@ var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"))
 var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 var _eventReduceJs = require("event-reduce-js");
 var _rxjs = require("rxjs");
-var _util = require("../../util");
+var _utils = require("../../plugins/utils");
 var RxStorageRemote = /*#__PURE__*/function () {
   function RxStorageRemote(settings) {
     this.name = 'remote';
-    this.requestIdSeed = (0, _util.randomCouchString)(10);
+    this.requestIdSeed = (0, _utils.randomCouchString)(10);
     this.lastRequestId = 0;
     this.settings = settings;
     this.statics = settings.statics;

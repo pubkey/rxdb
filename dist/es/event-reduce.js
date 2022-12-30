@@ -1,6 +1,6 @@
 import { calculateActionName, runAction } from 'event-reduce-js';
 import { rxChangeEventToEventReduceChangeEvent } from './rx-change-event';
-import { arrayFilterNotEmpty, clone, ensureNotFalsy } from './util';
+import { arrayFilterNotEmpty, clone, ensureNotFalsy } from './plugins/utils';
 import { normalizeMangoQuery } from './rx-query-helper';
 export function getSortFieldsOfQuery(primaryKey, query) {
   if (!query.sort || query.sort.length === 0) {

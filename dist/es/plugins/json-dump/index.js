@@ -3,7 +3,7 @@
  */
 import { createRxQuery, queryCollection, _getDefaultQuery } from '../../rx-query';
 import { newRxError } from '../../rx-error';
-import { flatClone, getDefaultRevision, now } from '../../util';
+import { flatClone, getDefaultRevision, now } from '../../plugins/utils';
 function dumpRxDatabase(collections) {
   var _this = this;
   var json = {

@@ -2,7 +2,7 @@ import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
 import _regeneratorRuntime from "@babel/runtime/regenerator";
 import { firstValueFrom, filter } from 'rxjs';
 import { stackCheckpoints } from '../rx-storage-helper';
-import { batchArray, ensureNotFalsy, parseRevision, PROMISE_RESOLVE_FALSE } from '../util';
+import { batchArray, ensureNotFalsy, parseRevision, PROMISE_RESOLVE_FALSE } from '../plugins/utils';
 import { getLastCheckpointDoc, setCheckpoint } from './checkpoint';
 import { resolveConflictError } from './conflicts';
 import { writeDocToDocState } from './helper';

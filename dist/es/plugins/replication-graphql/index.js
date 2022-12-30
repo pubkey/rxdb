@@ -6,7 +6,7 @@ import _regeneratorRuntime from "@babel/runtime/regenerator";
  * you can use it to sync collections with a remote graphql endpoint.
  */
 import objectPath from 'object-path';
-import { ensureNotFalsy, fastUnsecureHash } from '../../util';
+import { ensureNotFalsy, fastUnsecureHash } from '../../plugins/utils';
 import { graphQLRequest as _graphQLRequest, GRAPHQL_REPLICATION_PLUGIN_IDENTITY_PREFIX } from './helper';
 import { RxDBLeaderElectionPlugin } from '../leader-election';
 import { RxReplicationState, startReplicationOnLeaderShip } from '../replication';

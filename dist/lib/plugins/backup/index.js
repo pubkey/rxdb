@@ -19,7 +19,7 @@ var path = _interopRequireWildcard(require("path"));
 var _rxjs = require("rxjs");
 var _operators = require("rxjs/operators");
 var _rxError = require("../../rx-error");
-var _util = require("../../util");
+var _utils = require("../../plugins/utils");
 var _fileUtil = require("./file-util");
 Object.keys(_fileUtil).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
@@ -106,7 +106,7 @@ function addToBackupStates(db, state) {
   if (!BACKUP_STATES_BY_DB.has(db)) {
     BACKUP_STATES_BY_DB.set(db, []);
   }
-  var ar = (0, _util.getFromMapOrThrow)(BACKUP_STATES_BY_DB, db);
+  var ar = (0, _utils.getFromMapOrThrow)(BACKUP_STATES_BY_DB, db);
   if (!ar) {
     throw (0, _rxError.newRxError)('SNH');
   }
@@ -116,7 +116,7 @@ var RxBackupState = /*#__PURE__*/function () {
   function RxBackupState(database, options) {
     this.isStopped = false;
     this.subs = [];
-    this.persistRunning = _util.PROMISE_RESOLVE_VOID;
+    this.persistRunning = _utils.PROMISE_RESOLVE_VOID;
     this.initialReplicationDone$ = new _rxjs.BehaviorSubject(false);
     this.internalWriteEvents$ = new _rxjs.Subject();
     this.writeEvents$ = this.internalWriteEvents$.asObservable();
@@ -343,13 +343,13 @@ var RxBackupState = /*#__PURE__*/function () {
   };
   _proto.cancel = function cancel() {
     if (this.isStopped) {
-      return _util.PROMISE_RESOLVE_FALSE;
+      return _utils.PROMISE_RESOLVE_FALSE;
     }
     this.isStopped = true;
     this.subs.forEach(function (sub) {
       return sub.unsubscribe();
     });
-    return _util.PROMISE_RESOLVE_TRUE;
+    return _utils.PROMISE_RESOLVE_TRUE;
   };
   return RxBackupState;
 }();

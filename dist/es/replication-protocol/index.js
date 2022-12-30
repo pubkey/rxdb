@@ -8,7 +8,7 @@ import _regeneratorRuntime from "@babel/runtime/regenerator";
 
 import { BehaviorSubject, combineLatest, filter, firstValueFrom, map, Subject } from 'rxjs';
 import { getPrimaryFieldOfPrimaryKey } from '../rx-schema-helper';
-import { ensureNotFalsy, PROMISE_RESOLVE_VOID } from '../util';
+import { ensureNotFalsy, PROMISE_RESOLVE_VOID } from '../plugins/utils';
 import { getCheckpointKey } from './checkpoint';
 import { startReplicationDownstream } from './downstream';
 import { docStateToWriteDoc, writeDocToDocState } from './helper';

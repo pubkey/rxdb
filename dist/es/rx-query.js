@@ -3,7 +3,7 @@ import _createClass from "@babel/runtime/helpers/createClass";
 import _regeneratorRuntime from "@babel/runtime/regenerator";
 import { BehaviorSubject, firstValueFrom, merge } from 'rxjs';
 import { mergeMap, filter, map, startWith, distinctUntilChanged, shareReplay } from 'rxjs/operators';
-import { sortObject, stringifyFilter, pluginMissing, clone, overwriteGetterForCaching, now, PROMISE_RESOLVE_FALSE, RXJS_SHARE_REPLAY_DEFAULTS, ensureNotFalsy, areRxDocumentArraysEqual } from './util';
+import { sortObject, stringifyFilter, pluginMissing, clone, overwriteGetterForCaching, now, PROMISE_RESOLVE_FALSE, RXJS_SHARE_REPLAY_DEFAULTS, ensureNotFalsy, areRxDocumentArraysEqual } from './plugins/utils';
 import { newRxError } from './rx-error';
 import { runPluginHooks } from './hooks';
 import { calculateNewResults } from './event-reduce';

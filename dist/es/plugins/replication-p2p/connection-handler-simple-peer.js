@@ -1,7 +1,7 @@
 import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
 import _regeneratorRuntime from "@babel/runtime/regenerator";
 import { Subject } from 'rxjs';
-import { getFromMapOrThrow, PROMISE_RESOLVE_VOID, randomCouchString } from '../../util';
+import { getFromMapOrThrow, PROMISE_RESOLVE_VOID, randomCouchString } from '../../plugins/utils';
 import { default as Peer } from 'simple-peer';
 import { newRxError } from '../../rx-error';
 

@@ -6,7 +6,7 @@ import { IncrementalWriteQueue } from '../../incremental-write';
 import { newRxError } from '../../rx-error';
 import { fillWithDefaultSettings } from '../../rx-schema-helper';
 import { getWrappedStorageInstance, storageChangeEventToRxChangeEvent } from '../../rx-storage-helper';
-import { randomCouchString } from '../../util';
+import { randomCouchString } from '../../plugins/utils';
 import { createRxLocalDocument } from './rx-local-document';
 export var LOCAL_DOC_STATE_BY_PARENT = new WeakMap();
 export var LOCAL_DOC_STATE_BY_PARENT_RESOLVED = new WeakMap();

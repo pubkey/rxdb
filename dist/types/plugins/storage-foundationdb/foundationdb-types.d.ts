@@ -1,5 +1,5 @@
 import type { DexiePreparedQuery, EventBulk, RxAttachmentWriteData, RxDocumentData, RxStorage, RxStorageChangeEvent, RxStorageDefaultCheckpoint } from '../../types';
-export declare type RxStorageFoundationDBSettings = {
+export type RxStorageFoundationDBSettings = {
     /**
      * Version of the API of the foundationDB server.
      */
@@ -12,7 +12,7 @@ export declare type RxStorageFoundationDBSettings = {
     clusterFile?: string;
     batchSize?: number;
 };
-export declare type RxStorageFoundationDBInstanceCreationOptions = {
+export type RxStorageFoundationDBInstanceCreationOptions = {
     batchSize?: number;
 };
 /**
@@ -22,16 +22,16 @@ export declare type RxStorageFoundationDBInstanceCreationOptions = {
  * This is because it requires to install the foundationdb client cli
  * which would mean everyone that wants to develop RxDB must have this installed manually.
  */
-export declare type FoundationDBIndexMeta<RxDocType> = {
+export type FoundationDBIndexMeta<RxDocType> = {
     indexName: string;
     index: string[];
     getIndexableString: (doc: RxDocumentData<RxDocType>) => string;
     db: FoundationDBDatabase<string>;
 };
-export declare type FoundationDBConnection = any;
-export declare type FoundationDBDatabase<RxDocType> = any;
-export declare type FoundationDBTransaction<RxDocType> = any;
-export declare type FoundationDBStorageInternals<RxDocType> = {
+export type FoundationDBConnection = any;
+export type FoundationDBDatabase<RxDocType> = any;
+export type FoundationDBTransaction<RxDocType> = any;
+export type FoundationDBStorageInternals<RxDocType> = {
     connection: FoundationDBConnection;
     dbsPromise: Promise<{
         root: FoundationDBDatabase<any>;
@@ -43,5 +43,5 @@ export declare type FoundationDBStorageInternals<RxDocType> = {
         };
     }>;
 };
-export declare type RxStorageFoundationDB = RxStorage<FoundationDBStorageInternals<any>, RxStorageFoundationDBInstanceCreationOptions> & {};
-export declare type FoundationDBPreparedQuery<DocType> = DexiePreparedQuery<DocType>;
+export type RxStorageFoundationDB = RxStorage<FoundationDBStorageInternals<any>, RxStorageFoundationDBInstanceCreationOptions> & {};
+export type FoundationDBPreparedQuery<DocType> = DexiePreparedQuery<DocType>;

@@ -1,6 +1,6 @@
 import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
 import _regeneratorRuntime from "@babel/runtime/regenerator";
-import { PROMISE_RESOLVE_TRUE } from '../../util';
+import { PROMISE_RESOLVE_TRUE } from '../../plugins/utils';
 import { REPLICATION_STATE_BY_COLLECTION } from '../replication';
 import { DEFAULT_CLEANUP_POLICY } from './cleanup-helper';
 

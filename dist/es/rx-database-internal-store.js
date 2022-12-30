@@ -3,7 +3,7 @@ import _regeneratorRuntime from "@babel/runtime/regenerator";
 import { isBulkWriteConflictError, newRxError } from './rx-error';
 import { fillWithDefaultSettings, getComposedPrimaryKeyOfDocumentData } from './rx-schema-helper';
 import { getSingleDocument, writeSingle } from './rx-storage-helper';
-import { clone, ensureNotFalsy, fastUnsecureHash, getDefaultRevision, getDefaultRxDocumentMeta, randomCouchString } from './util';
+import { clone, ensureNotFalsy, fastUnsecureHash, getDefaultRevision, getDefaultRxDocumentMeta, randomCouchString } from './plugins/utils';
 export var INTERNAL_CONTEXT_COLLECTION = 'collection';
 export var INTERNAL_CONTEXT_STORAGE_TOKEN = 'storage-token';
 

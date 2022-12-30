@@ -2,7 +2,7 @@ import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
 import _regeneratorRuntime from "@babel/runtime/regenerator";
 import { mergeMap } from 'rxjs/operators';
 import { getPrimaryFieldOfPrimaryKey } from './rx-schema-helper';
-import { fastUnsecureHash, flatClone, getFromMapOrThrow, requestIdleCallbackIfAvailable } from './util';
+import { fastUnsecureHash, flatClone, getFromMapOrThrow, requestIdleCallbackIfAvailable } from './plugins/utils';
 /**
  * cache the validators by the schema-hash
  * so we can reuse them when multiple collections have the same schema

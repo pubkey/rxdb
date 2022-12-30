@@ -1,5 +1,5 @@
 import { ensureRxStorageInstanceParamsAreCorrect } from '../../rx-storage-helper';
-import { flatClone } from '../../util';
+import { flatClone } from '../../plugins/utils';
 import { RxStorageDexieStatics } from '../storage-dexie/dexie-statics';
 import { createMemoryStorageInstance } from './rx-storage-instance-memory';
 

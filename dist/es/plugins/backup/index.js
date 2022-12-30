@@ -4,7 +4,7 @@ import * as path from 'path';
 import { BehaviorSubject, firstValueFrom, Subject } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
 import { newRxError } from '../../rx-error';
-import { getFromMapOrThrow, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_TRUE, PROMISE_RESOLVE_VOID } from '../../util';
+import { getFromMapOrThrow, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_TRUE, PROMISE_RESOLVE_VOID } from '../../plugins/utils';
 import { clearFolder, deleteFolder, documentFolder, ensureFolderExists, getMeta, prepareFolders, setMeta, writeJsonToFile, writeToFile } from './file-util';
 
 /**

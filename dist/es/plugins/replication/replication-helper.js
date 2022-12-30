@@ -1,4 +1,4 @@
-import { flatClone } from '../../util';
+import { flatClone } from '../../plugins/utils';
 
 // does nothing
 export var DEFAULT_MODIFIER = function DEFAULT_MODIFIER(d) {

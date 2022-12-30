@@ -1,6 +1,6 @@
 import { combineLatest } from 'rxjs';
 import { shareReplay, switchMap } from 'rxjs/operators';
-import { PROMISE_RESOLVE_FALSE, RXJS_SHARE_REPLAY_DEFAULTS } from '../../util';
+import { PROMISE_RESOLVE_FALSE, RXJS_SHARE_REPLAY_DEFAULTS } from '../../plugins/utils';
 import { mustMigrate, DataMigrator } from './data-migrator';
 import { getMigrationStateByDatabase, onDatabaseDestroy } from './migration-state';
 export var DATA_MIGRATOR_BY_COLLECTION = new WeakMap();

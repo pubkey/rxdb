@@ -12,7 +12,7 @@ import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
 import { categorizeBulkWriteRows, getNewestOfDocumentStates } from '../../rx-storage-helper';
 import { CLEANUP_INDEX, getFoundationDBIndexName } from './foundationdb-helpers';
 import { getIndexableStringMonad, getStartIndexStringFromLowerBound, getStartIndexStringFromUpperBound } from '../../custom-index';
-import { ensureNotFalsy, lastOfArray, now, PROMISE_RESOLVE_VOID, toArray } from '../../util';
+import { ensureNotFalsy, lastOfArray, now, PROMISE_RESOLVE_VOID, toArray } from '../../plugins/utils';
 import { queryFoundationDB } from './foundationdb-query';
 import { INDEX_MAX } from '../../query-planner';
 import { attachmentMapKey } from '../storage-memory';

@@ -5,7 +5,7 @@ import { checkMigrationStrategies } from './check-migration-strategies';
 import { ensureCollectionNameValid, ensureDatabaseNameIsValid } from './unallowed-properties';
 import { checkMangoQuery, checkQuery } from './check-query';
 import { newRxError } from '../../rx-error';
-import { deepFreeze } from '../../util';
+import { deepFreeze } from '../../plugins/utils';
 export * from './check-schema';
 export * from './unallowed-properties';
 export * from './check-query';

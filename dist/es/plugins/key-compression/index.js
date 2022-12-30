@@ -10,7 +10,7 @@ import { overwritable } from '../../overwritable';
 import { wrapRxStorageInstance } from '../../plugin-helpers';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
 import { flatCloneDocWithMeta } from '../../rx-storage-helper';
-import { flatClone, isMaybeReadonlyArray } from '../../util';
+import { flatClone, isMaybeReadonlyArray } from '../../plugins/utils';
 /**
  * Cache the compression table and the compressed schema
  * by the storage instance for better performance.

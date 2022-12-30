@@ -11,7 +11,7 @@ var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"))
 var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 var _rxSchemaHelper = require("../rx-schema-helper");
 var _rxStorageHelper = require("../rx-storage-helper");
-var _util = require("../util");
+var _utils = require("../plugins/utils");
 var _metaInstance = require("./meta-instance");
 function getLastCheckpointDoc(_x, _x2) {
   return _getLastCheckpointDoc.apply(this, arguments);
@@ -88,8 +88,8 @@ function _setCheckpoint() {
             _deleted: false,
             _attachments: {},
             data: checkpoint,
-            _meta: (0, _util.getDefaultRxDocumentMeta)(),
-            _rev: (0, _util.getDefaultRevision)()
+            _meta: (0, _utils.getDefaultRxDocumentMeta)(),
+            _rev: (0, _utils.getDefaultRevision)()
           };
           newDoc.id = (0, _rxSchemaHelper.getComposedPrimaryKeyOfDocumentData)(_metaInstance.RX_REPLICATION_META_INSTANCE_SCHEMA, newDoc);
         case 4:
@@ -107,8 +107,8 @@ function _setCheckpoint() {
           if (previousCheckpointDoc) {
             newDoc.data = (0, _rxStorageHelper.stackCheckpoints)([previousCheckpointDoc.data, newDoc.data]);
           }
-          newDoc._meta.lwt = (0, _util.now)();
-          newDoc._rev = (0, _util.createRevision)(state.input.identifier, previousCheckpointDoc);
+          newDoc._meta.lwt = (0, _utils.now)();
+          newDoc._rev = (0, _utils.createRevision)(state.input.identifier, previousCheckpointDoc);
           _context2.next = 10;
           return state.input.metaInstance.bulkWrite([{
             previous: previousCheckpointDoc,
@@ -120,18 +120,18 @@ function _setCheckpoint() {
             _context2.next = 16;
             break;
           }
-          state.lastCheckpointDoc[direction] = (0, _util.getFromObjectOrThrow)(result.success, newDoc.id);
+          state.lastCheckpointDoc[direction] = (0, _utils.getFromObjectOrThrow)(result.success, newDoc.id);
           return _context2.abrupt("return");
         case 16:
-          error = (0, _util.getFromObjectOrThrow)(result.error, newDoc.id);
+          error = (0, _utils.getFromObjectOrThrow)(result.error, newDoc.id);
           if (!(error.status !== 409)) {
             _context2.next = 21;
             break;
           }
           throw error;
         case 21:
-          previousCheckpointDoc = (0, _util.ensureNotFalsy)(error.documentInDb);
-          newDoc._rev = (0, _util.createRevision)(state.input.identifier, previousCheckpointDoc);
+          previousCheckpointDoc = (0, _utils.ensureNotFalsy)(error.documentInDb);
+          newDoc._rev = (0, _utils.createRevision)(state.input.identifier, previousCheckpointDoc);
         case 23:
           _context2.next = 4;
           break;
@@ -144,7 +144,7 @@ function _setCheckpoint() {
   return _setCheckpoint.apply(this, arguments);
 }
 function getCheckpointKey(input) {
-  var hash = (0, _util.fastUnsecureHash)([input.identifier, input.forkInstance.databaseName, input.forkInstance.collectionName].join('||'));
+  var hash = (0, _utils.fastUnsecureHash)([input.identifier, input.forkInstance.databaseName, input.forkInstance.collectionName].join('||'));
   return 'rx-storage-replication-' + hash;
 }
 //# sourceMappingURL=checkpoint.js.map

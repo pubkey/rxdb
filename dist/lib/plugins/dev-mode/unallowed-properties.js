@@ -8,7 +8,7 @@ exports.ensureDatabaseNameIsValid = ensureDatabaseNameIsValid;
 exports.validateDatabaseName = validateDatabaseName;
 var _rxError = require("../../rx-error");
 var _entityProperties = require("./entity-properties");
-var _util = require("../../util");
+var _utils = require("../../plugins/utils");
 /**
  * if the name of a collection
  * clashes with a property of RxDatabase,
@@ -30,7 +30,7 @@ function ensureDatabaseNameIsValid(args) {
    * So we do not allow this.
    * @link https://github.com/pubkey/rxdb/issues/2251
    */
-  if ((0, _util.isFolderPath)(args.name)) {
+  if ((0, _utils.isFolderPath)(args.name)) {
     if (args.name.endsWith('/') || args.name.endsWith('\\')) {
       throw (0, _rxError.newRxError)('DB11', {
         name: args.name
@@ -58,7 +58,7 @@ function validateDatabaseName(name) {
   }
 
   // do not check, if foldername is given
-  if ((0, _util.isFolderPath)(name)) {
+  if ((0, _utils.isFolderPath)(name)) {
     return true;
   }
   if (!name.match(validCouchDBStringRegex)) {

@@ -1,6 +1,6 @@
 import { BehaviorSubject, Observable } from 'rxjs';
 import type { MigrationState, RxCollection, RxDatabase } from '../../types';
-export declare type MigrationStateWithCollection = {
+export type MigrationStateWithCollection = {
     collection: RxCollection;
     state: MigrationState;
 };

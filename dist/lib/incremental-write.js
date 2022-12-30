@@ -10,7 +10,7 @@ exports.modifierFromPublicToInternal = modifierFromPublicToInternal;
 var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
 var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 var _rxError = require("./rx-error");
-var _util = require("./util");
+var _utils = require("./plugins/utils");
 function _createForOfIteratorHelperLoose(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (it) return (it = it.call(o)).next.bind(it); if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; return function () { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
 function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
 function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
@@ -36,7 +36,7 @@ var IncrementalWriteQueue = /*#__PURE__*/function () {
   _proto.addWrite = function addWrite(lastKnownDocumentState, modifier) {
     var _this = this;
     var docId = lastKnownDocumentState[this.primaryPath];
-    var ar = (0, _util.getFromMapOrFill)(this.queueByDocId, docId, function () {
+    var ar = (0, _utils.getFromMapOrFill)(this.queueByDocId, docId, function () {
       return [];
     });
     var ret = new Promise(function (resolve, reject) {
@@ -46,7 +46,7 @@ var IncrementalWriteQueue = /*#__PURE__*/function () {
         resolve: resolve,
         reject: reject
       };
-      (0, _util.ensureNotFalsy)(ar).push(item);
+      (0, _utils.ensureNotFalsy)(ar).push(item);
       _this.triggerRun();
     });
     return ret;
@@ -99,7 +99,7 @@ var IncrementalWriteQueue = /*#__PURE__*/function () {
                        * might throw while it already changed some properties
                        * of the document.
                        */
-                      (0, _util.clone)(newData));
+                      (0, _utils.clone)(newData));
                     case 9:
                       newData = _context.sent;
                       _context.next = 17;
@@ -170,7 +170,7 @@ var IncrementalWriteQueue = /*#__PURE__*/function () {
               var docId = _ref3[0],
                 result = _ref3[1];
               _this2.postWrite(result);
-              var items = (0, _util.getFromMapOrThrow)(itemsById, docId);
+              var items = (0, _utils.getFromMapOrThrow)(itemsById, docId);
               items.forEach(function (item) {
                 return item.resolve(result);
               });
@@ -180,11 +180,11 @@ var IncrementalWriteQueue = /*#__PURE__*/function () {
             Array.from(Object.entries(writeResult.error)).forEach(function (_ref4) {
               var docId = _ref4[0],
                 error = _ref4[1];
-              var items = (0, _util.getFromMapOrThrow)(itemsById, docId);
+              var items = (0, _utils.getFromMapOrThrow)(itemsById, docId);
               var isConflict = (0, _rxError.isBulkWriteConflictError)(error);
               if (isConflict) {
                 // had conflict -> retry afterwards
-                var ar = (0, _util.getFromMapOrFill)(_this2.queueByDocId, docId, function () {
+                var ar = (0, _utils.getFromMapOrFill)(_this2.queueByDocId, docId, function () {
                   return [];
                 });
                 /**
@@ -192,8 +192,8 @@ var IncrementalWriteQueue = /*#__PURE__*/function () {
                  * by maintaining the original order.
                  */
                 items.reverse().forEach(function (item) {
-                  item.lastKnownDocumentState = (0, _util.ensureNotFalsy)(isConflict.documentInDb);
-                  (0, _util.ensureNotFalsy)(ar).unshift(item);
+                  item.lastKnownDocumentState = (0, _utils.ensureNotFalsy)(isConflict.documentInDb);
+                  (0, _utils.ensureNotFalsy)(ar).unshift(item);
                 });
               } else {
                 // other error -> must be thrown
@@ -232,7 +232,7 @@ function modifierFromPublicToInternal(publicModifier) {
       return _regenerator["default"].wrap(function _callee3$(_context3) {
         while (1) switch (_context3.prev = _context3.next) {
           case 0:
-            withoutMeta = (0, _util.stripMetaDataFromDocument)(docData);
+            withoutMeta = (0, _utils.stripMetaDataFromDocument)(docData);
             withoutMeta._deleted = docData._deleted;
             _context3.next = 4;
             return publicModifier(withoutMeta);
@@ -262,9 +262,9 @@ function modifierFromPublicToInternal(publicModifier) {
 }
 function findNewestOfDocumentStates(docs) {
   var newest = docs[0];
-  var newestRevisionHeight = (0, _util.parseRevision)(newest._rev).height;
+  var newestRevisionHeight = (0, _utils.parseRevision)(newest._rev).height;
   docs.forEach(function (doc) {
-    var height = (0, _util.parseRevision)(doc._rev).height;
+    var height = (0, _utils.parseRevision)(doc._rev).height;
     if (height > newestRevisionHeight) {
       newest = doc;
       newestRevisionHeight = height;

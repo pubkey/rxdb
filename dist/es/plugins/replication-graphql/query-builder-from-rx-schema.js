@@ -1,5 +1,5 @@
 import { fillUpOptionals, SPACING } from './graphql-schema-from-rx-schema';
-import { ensureNotFalsy, ucfirst } from '../../util';
+import { ensureNotFalsy, ucfirst } from '../../plugins/utils';
 export function pullQueryBuilderFromRxSchema(collectionName, input) {
   input = fillUpOptionals(input);
   var schema = input.schema;

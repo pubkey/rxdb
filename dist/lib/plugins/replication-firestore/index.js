@@ -14,7 +14,7 @@ exports.syncFirestore = syncFirestore;
 var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
 var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 var _inheritsLoose2 = _interopRequireDefault(require("@babel/runtime/helpers/inheritsLoose"));
-var _util = require("../../util");
+var _utils = require("../../plugins/utils");
 var _firestore = require("firebase/firestore");
 var _leaderElection = require("../leader-election");
 var _replication = require("../replication");
@@ -130,7 +130,7 @@ function syncFirestore(options) {
                           _yield$Promise$all = _context.sent;
                           newerQueryResult = _yield$Promise$all[0];
                           sameTimeQueryResult = _yield$Promise$all[1];
-                          if (!(newerQueryResult.metadata.hasPendingWrites || sameTimeQuery && (0, _util.ensureNotFalsy)(sameTimeQueryResult).metadata.hasPendingWrites)) {
+                          if (!(newerQueryResult.metadata.hasPendingWrites || sameTimeQuery && (0, _utils.ensureNotFalsy)(sameTimeQueryResult).metadata.hasPendingWrites)) {
                             _context.next = 10;
                             break;
                           }
@@ -138,7 +138,7 @@ function syncFirestore(options) {
                         case 10:
                           mustsReRun = false;
                           if (sameTimeQuery) {
-                            useDocs = (0, _util.ensureNotFalsy)(sameTimeQueryResult).docs;
+                            useDocs = (0, _utils.ensureNotFalsy)(sameTimeQueryResult).docs;
                           }
                           missingAmount = batchSize - useDocs.length;
                           if (missingAmount > 0) {
@@ -170,7 +170,7 @@ function syncFirestore(options) {
                   documents: []
                 });
               case 12:
-                lastDoc = (0, _util.ensureNotFalsy)((0, _util.lastOfArray)(useDocs));
+                lastDoc = (0, _utils.ensureNotFalsy)((0, _utils.lastOfArray)(useDocs));
                 documents = useDocs.map(function (row) {
                   return (0, _firestoreHelper.firestoreRowToDocData)(serverTimestampField, primaryPath, row);
                 });
@@ -194,8 +194,8 @@ function syncFirestore(options) {
         }
         return handler;
       }(),
-      batchSize: (0, _util.ensureNotFalsy)(options.pull).batchSize,
-      modifier: (0, _util.ensureNotFalsy)(options.pull).modifier,
+      batchSize: (0, _utils.ensureNotFalsy)(options.pull).batchSize,
+      modifier: (0, _utils.ensureNotFalsy)(options.pull).modifier,
       stream$: pullStream$.asObservable()
     };
   }
@@ -294,7 +294,7 @@ function syncFirestore(options) {
                                     // no conflict
                                     hasWrite = true;
                                     docRef = (0, _firestore.doc)(options.firestore.collection, docId);
-                                    writeDocData = (0, _util.flatClone)(writeRow.newDocumentState);
+                                    writeDocData = (0, _utils.flatClone)(writeRow.newDocumentState);
                                     writeDocData[serverTimestampField] = (0, _firestore.serverTimestamp)();
                                     if (!docInDb) {
                                       // insert
@@ -350,7 +350,7 @@ function syncFirestore(options) {
       modifier: options.push.modifier
     };
   }
-  var replicationState = new RxFirestoreReplicationState(options.firestore, _firestoreHelper.FIRESTORE_REPLICATION_PLUGIN_IDENTITY_PREFIX + (0, _util.fastUnsecureHash)(options.firestore.projectId), collection, replicationPrimitivesPull, replicationPrimitivesPush, options.live, options.retryTime, options.autoStart);
+  var replicationState = new RxFirestoreReplicationState(options.firestore, _firestoreHelper.FIRESTORE_REPLICATION_PLUGIN_IDENTITY_PREFIX + (0, _utils.fastUnsecureHash)(options.firestore.projectId), collection, replicationPrimitivesPull, replicationPrimitivesPush, options.live, options.retryTime, options.autoStart);
 
   /**
    * Use long polling to get live changes for the pull.stream$
@@ -369,7 +369,7 @@ function syncFirestore(options) {
         replicationState.reSync();
       }, function (error) {
         replicationState.subjects.error.next((0, _.newRxError)('RC_STREAM', {
-          error: (0, _util.errorToPlainJson)(error)
+          error: (0, _utils.errorToPlainJson)(error)
         }));
       });
       replicationState.cancel = function () {

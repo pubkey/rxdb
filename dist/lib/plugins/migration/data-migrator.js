@@ -21,7 +21,7 @@ var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"))
 var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 var _rxjs = require("rxjs");
 var _fastDeepEqual = _interopRequireDefault(require("fast-deep-equal"));
-var _util = require("../../util");
+var _utils = require("../../plugins/utils");
 var _rxSchema = require("../../rx-schema");
 var _rxError = require("../../rx-error");
 var _hooks = require("../../hooks");
@@ -130,10 +130,10 @@ var DataMigrator = /*#__PURE__*/function () {
         state.total = totalCount;
         stateSubject.next({
           collection: _this.newestCollection,
-          state: (0, _util.flatClone)(state)
+          state: (0, _utils.flatClone)(state)
         });
         var currentCol = _this.nonMigratedOldCollections.shift();
-        var currentPromise = _util.PROMISE_RESOLVE_VOID;
+        var currentPromise = _utils.PROMISE_RESOLVE_VOID;
         var _loop = function _loop() {
           var migrationState$ = migrateOldCollection(currentCol, batchSize);
           currentPromise = currentPromise.then(function () {
@@ -145,7 +145,7 @@ var DataMigrator = /*#__PURE__*/function () {
                   state.percent = Math.round(state.handled / state.total * 100);
                   stateSubject.next({
                     collection: _this.newestCollection,
-                    state: (0, _util.flatClone)(state)
+                    state: (0, _utils.flatClone)(state)
                   });
                 },
                 error: function error(e) {
@@ -178,7 +178,7 @@ var DataMigrator = /*#__PURE__*/function () {
         state.percent = 100;
         stateSubject.next({
           collection: _this.newestCollection,
-          state: (0, _util.flatClone)(state)
+          state: (0, _utils.flatClone)(state)
         });
         stateSubject.complete();
       });
@@ -192,7 +192,7 @@ var DataMigrator = /*#__PURE__*/function () {
     if (!this._migratePromise) {
       this._migratePromise = mustMigrate(this).then(function (must) {
         if (!must) {
-          return _util.PROMISE_RESOLVE_FALSE;
+          return _utils.PROMISE_RESOLVE_FALSE;
         } else {
           return new Promise(function (res, rej) {
             var state$ = _this2.migrate(batchSize);
@@ -303,7 +303,7 @@ function _getOldCollections2() {
 }
 function mustMigrate(dataMigrator) {
   if (dataMigrator.currentSchema.version === 0) {
-    return _util.PROMISE_RESOLVE_FALSE;
+    return _utils.PROMISE_RESOLVE_FALSE;
   }
   return getOldCollectionDocs(dataMigrator).then(function (oldColDocs) {
     if (oldColDocs.length === 0) {
@@ -315,10 +315,10 @@ function mustMigrate(dataMigrator) {
 }
 function runStrategyIfNotNull(oldCollection, version, docOrNull) {
   if (docOrNull === null) {
-    return _util.PROMISE_RESOLVE_NULL;
+    return _utils.PROMISE_RESOLVE_NULL;
   } else {
     var ret = oldCollection.dataMigrator.migrationStrategies[version](docOrNull, oldCollection);
-    var retPromise = (0, _util.toPromise)(ret);
+    var retPromise = (0, _utils.toPromise)(ret);
     return retPromise;
   }
 }
@@ -334,7 +334,7 @@ function getBatchOfOldCollection(oldCollection, batchSize) {
   });
   return storageInstance.query(preparedQuery).then(function (result) {
     return result.documents.map(function (doc) {
-      doc = (0, _util.flatClone)(doc);
+      doc = (0, _utils.flatClone)(doc);
       return doc;
     });
   });
@@ -352,8 +352,8 @@ function migrateDocumentData(oldCollection, docData) {
    * so we just flat clone it here
    * and attach it to the deep cloned document data.
    */
-  var attachmentsBefore = (0, _util.flatClone)(docData._attachments);
-  var mutateableDocData = (0, _util.clone)(docData);
+  var attachmentsBefore = (0, _utils.flatClone)(docData._attachments);
+  var mutateableDocData = (0, _utils.clone)(docData);
   mutateableDocData._attachments = attachmentsBefore;
   var nextVersion = oldCollection.version + 1;
 
@@ -371,7 +371,7 @@ function migrateDocumentData(oldCollection, docData) {
   }
   return currentPromise.then(function (doc) {
     if (doc === null) {
-      return _util.PROMISE_RESOLVE_NULL;
+      return _utils.PROMISE_RESOLVE_NULL;
     }
 
     /**
@@ -381,7 +381,7 @@ function migrateDocumentData(oldCollection, docData) {
      * TODO remove this in the major version 13.0.0
      */
     if (!doc._meta) {
-      doc._meta = (0, _util.getDefaultRxDocumentMeta)();
+      doc._meta = (0, _utils.getDefaultRxDocumentMeta)();
     }
     return doc;
   });
@@ -459,8 +459,8 @@ function _migrateDocuments2() {
                * data changed, increase revision height
                * so replicating instances use our new document data
                */
-              var newHeight = (0, _util.getHeightOfRevision)(docData._rev) + 1;
-              var newRevision = newHeight + '-' + (0, _util.createRevision)(oldCollection.newestCollection.database.token);
+              var newHeight = (0, _utils.getHeightOfRevision)(docData._rev) + 1;
+              var newRevision = newHeight + '-' + (0, _utils.createRevision)(oldCollection.newestCollection.database.token);
               migratedDocData._rev = newRevision;
             }
             if (migratedDocData) {
@@ -471,7 +471,7 @@ function _migrateDocuments2() {
               var attachmentsBefore = migratedDocData._attachments;
               var saveData = migratedDocData;
               saveData._attachments = attachmentsBefore;
-              saveData._meta.lwt = (0, _util.now)();
+              saveData._meta.lwt = (0, _utils.now)();
               bulkWriteToStorageInput.push(saveData);
               action.res = saveData;
               action.type = 'success';
@@ -516,7 +516,7 @@ function _migrateDocuments2() {
         case 14:
           // remove the documents from the old collection storage instance
           bulkDeleteInputData = documentsData.map(function (docData) {
-            var writeDeleted = (0, _util.flatClone)(docData);
+            var writeDeleted = (0, _utils.flatClone)(docData);
             writeDeleted._deleted = true;
             writeDeleted._attachments = {};
             return {

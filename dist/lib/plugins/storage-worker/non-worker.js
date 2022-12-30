@@ -11,7 +11,7 @@ var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"))
 var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 var _rxjs = require("rxjs");
 var _threads = require("threads");
-var _util = require("../../util");
+var _utils = require("../../plugins/utils");
 /**
  * We have no way to detect if a worker is no longer needed.
  * So we create the worker process on the first RxStorageInstance
@@ -42,7 +42,7 @@ var RxStorageWorker = /*#__PURE__*/function () {
           instanceId: instanceId,
           worker: worker
         }, params.options);
-        (0, _util.ensureNotFalsy)(workerState).refs.add(instance);
+        (0, _utils.ensureNotFalsy)(workerState).refs.add(instance);
         return instance;
       });
     });
@@ -198,7 +198,7 @@ function _removeWorkerRef() {
     return _regenerator["default"].wrap(function _callee4$(_context4) {
       while (1) switch (_context4.prev = _context4.next) {
         case 0:
-          workerState = (0, _util.getFromMapOrThrow)(WORKER_BY_INSTANCE, instance.storage);
+          workerState = (0, _utils.getFromMapOrThrow)(WORKER_BY_INSTANCE, instance.storage);
           workerState.refs["delete"](instance);
           if (!(workerState.refs.size === 0)) {
             _context4.next = 6;

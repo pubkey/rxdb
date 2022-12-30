@@ -8,7 +8,7 @@ import _regeneratorRuntime from "@babel/runtime/regenerator";
  */
 
 import { BehaviorSubject, combineLatest, mergeMap, Subject } from 'rxjs';
-import { ensureNotFalsy, errorToPlainJson, fastUnsecureHash, flatClone, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_TRUE, toArray } from '../../util';
+import { ensureNotFalsy, errorToPlainJson, fastUnsecureHash, flatClone, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_TRUE, toArray } from '../../plugins/utils';
 import { awaitRxStorageReplicationFirstInSync, awaitRxStorageReplicationInSync, cancelRxStorageReplication, replicateRxStorageInstance, RX_REPLICATION_META_INSTANCE_SCHEMA } from '../../replication-protocol';
 import { newRxError } from '../../rx-error';
 import { awaitRetry, DEFAULT_MODIFIER, swapDefaultDeletedTodeletedField, swapdeletedFieldToDefaultDeleted } from './replication-helper';

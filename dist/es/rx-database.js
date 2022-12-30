@@ -2,7 +2,7 @@ import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
 import _createClass from "@babel/runtime/helpers/createClass";
 import _regeneratorRuntime from "@babel/runtime/regenerator";
 import { IdleQueue } from 'custom-idle-queue';
-import { pluginMissing, flatClone, PROMISE_RESOLVE_FALSE, randomCouchString, ensureNotFalsy, getDefaultRevision, getDefaultRxDocumentMeta, defaultHashFunction } from './util';
+import { pluginMissing, flatClone, PROMISE_RESOLVE_FALSE, randomCouchString, ensureNotFalsy, getDefaultRevision, getDefaultRxDocumentMeta, defaultHashFunction } from './plugins/utils';
 import { newRxError } from './rx-error';
 import { createRxSchema } from './rx-schema';
 import { runPluginHooks, runAsyncPluginHooks } from './hooks';

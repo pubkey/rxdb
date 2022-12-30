@@ -1,5 +1,5 @@
 import type { RxDatabase } from '../../types';
-export declare type CreateRxDatabaseFunctionType = (databaseName: string) => Promise<RxDatabase>;
+export type CreateRxDatabaseFunctionType = (databaseName: string) => Promise<RxDatabase>;
 export declare function setFlutterRxDatabaseConnector(createDB: CreateRxDatabaseFunctionType): void;
 /**
  * Create a simple lokijs adapter so that we can persist string via flutter

@@ -7,7 +7,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.LokiSaveQueue = void 0;
 var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
 var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
-var _util = require("../../util");
+var _utils = require("../utils");
 /**
  * The autosave feature of lokijs has strange behaviors
  * and often runs a save in critical moments when other
@@ -25,7 +25,7 @@ var LokiSaveQueue = /*#__PURE__*/function () {
 
   function LokiSaveQueue(lokiDatabase, databaseSettings) {
     this.writesSinceLastRun = 0;
-    this.saveQueue = _util.PROMISE_RESOLVE_VOID;
+    this.saveQueue = _utils.PROMISE_RESOLVE_VOID;
     this.saveQueueC = 0;
     this.lokiDatabase = lokiDatabase;
     this.databaseSettings = databaseSettings;
@@ -51,7 +51,7 @@ var LokiSaveQueue = /*#__PURE__*/function () {
         while (1) switch (_context.prev = _context.next) {
           case 0:
             _context.next = 2;
-            return (0, _util.requestIdlePromise)();
+            return (0, _utils.requestIdlePromise)();
           case 2:
             if (!(_this.writesSinceLastRun === 0)) {
               _context.next = 4;
@@ -60,8 +60,8 @@ var LokiSaveQueue = /*#__PURE__*/function () {
             return _context.abrupt("return");
           case 4:
             _context.next = 6;
-            return (0, _util.requestIdlePromise)().then(function () {
-              return (0, _util.requestIdlePromise)();
+            return (0, _utils.requestIdlePromise)().then(function () {
+              return (0, _utils.requestIdlePromise)();
             });
           case 6:
             if (!(_this.writesSinceLastRun === 0)) {

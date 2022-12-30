@@ -3,7 +3,7 @@ import _regeneratorRuntime from "@babel/runtime/regenerator";
 import { createLokiLocalState } from './rx-storage-instance-loki';
 import lokijs from 'lokijs';
 import { add as unloadAdd } from 'unload';
-import { ensureNotFalsy, flatClone, promiseWait, randomCouchString } from '../../util';
+import { ensureNotFalsy, flatClone, promiseWait, randomCouchString } from '../utils';
 import { LokiSaveQueue } from './loki-save-queue';
 import { newRxError } from '../../rx-error';
 import objectPath from 'object-path';

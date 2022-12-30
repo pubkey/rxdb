@@ -69,7 +69,7 @@ export declare function flatCloneDocWithMeta<RxDocType>(doc: RxDocumentData<RxDo
  * to make it easy to filter out duplicates.
  */
 export declare function getUniqueDeterministicEventKey(storageInstance: RxStorageInstance<any, any, any>, primaryPath: string, writeRow: BulkWriteRow<any>): string;
-export declare type WrappedRxStorageInstance<RxDocumentType, Internals, InstanceCreationOptions> = RxStorageInstance<RxDocumentType, any, InstanceCreationOptions> & {
+export type WrappedRxStorageInstance<RxDocumentType, Internals, InstanceCreationOptions> = RxStorageInstance<RxDocumentType, any, InstanceCreationOptions> & {
     originalStorageInstance: RxStorageInstance<RxDocumentType, Internals, InstanceCreationOptions>;
 };
 /**

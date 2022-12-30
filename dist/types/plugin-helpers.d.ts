@@ -1,13 +1,13 @@
 import { WrappedRxStorageInstance } from './rx-storage-helper';
 import type { RxDocumentData, RxDocumentWriteData, RxJsonSchema, RxStorage, RxStorageInstance, RxValidationError } from './types';
-declare type WrappedStorageFunction = <Internals, InstanceCreationOptions>(args: {
+type WrappedStorageFunction = <Internals, InstanceCreationOptions>(args: {
     storage: RxStorage<Internals, InstanceCreationOptions>;
 }) => RxStorage<Internals, InstanceCreationOptions>;
 /**
  * Returns the validation errors.
  * If document is fully valid, returns an empty array.
  */
-declare type ValidatorFunction = (docData: RxDocumentData<any>) => RxValidationError[];
+type ValidatorFunction = (docData: RxDocumentData<any>) => RxValidationError[];
 /**
  * This factory is used in the validation plugins
  * so that we can reuse the basic storage wrapping code.

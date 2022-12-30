@@ -1,4 +1,4 @@
-import { getFromMapOrFill, getFromMapOrThrow, parseRevision } from './util';
+import { getFromMapOrFill, getFromMapOrThrow, parseRevision } from './plugins/utils';
 import { overwritable } from './overwritable';
 import { getDocumentDataOfRxChangeEvent } from './rx-change-event';
 /**

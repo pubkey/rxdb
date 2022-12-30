@@ -12,9 +12,9 @@ import { RxSchema } from './rx-schema';
 import { WrappedRxStorageInstance } from './rx-storage-helper';
 import { IncrementalWriteQueue } from './incremental-write';
 declare const HOOKS_WHEN: readonly ["pre", "post"];
-declare type HookWhenType = typeof HOOKS_WHEN[number];
+type HookWhenType = typeof HOOKS_WHEN[number];
 declare const HOOKS_KEYS: readonly ["insert", "save", "remove", "create"];
-declare type HookKeyType = typeof HOOKS_KEYS[number];
+type HookKeyType = typeof HOOKS_KEYS[number];
 export declare class RxCollectionBase<InstanceCreationOptions, RxDocumentType = {
     [prop: string]: any;
 }, OrmMethods = {}, StaticMethods = {

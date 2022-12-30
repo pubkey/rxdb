@@ -22,7 +22,7 @@ var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"))
 var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 var _rxjs = require("rxjs");
 var _rxSchemaHelper = require("../rx-schema-helper");
-var _util = require("../util");
+var _utils = require("../plugins/utils");
 var _checkpoint = require("./checkpoint");
 Object.keys(_checkpoint).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
@@ -143,10 +143,10 @@ function replicateRxStorageInstance(input) {
       up: new _rxjs.BehaviorSubject(false)
     },
     streamQueue: {
-      down: _util.PROMISE_RESOLVE_VOID,
-      up: _util.PROMISE_RESOLVE_VOID
+      down: _utils.PROMISE_RESOLVE_VOID,
+      up: _utils.PROMISE_RESOLVE_VOID
     },
-    checkpointQueue: _util.PROMISE_RESOLVE_VOID,
+    checkpointQueue: _utils.PROMISE_RESOLVE_VOID,
     lastCheckpointDoc: {}
   };
   (0, _downstream.startReplicationDownstream)(state);
@@ -206,7 +206,7 @@ function rxStorageInstanceToReplicationHandler(instance, conflictHandler, databa
       var ret = {
         checkpoint: eventBulk.checkpoint,
         documents: eventBulk.events.map(function (event) {
-          return (0, _helper.writeDocToDocState)((0, _util.ensureNotFalsy)(event.documentData));
+          return (0, _helper.writeDocToDocState)((0, _utils.ensureNotFalsy)(event.documentData));
         })
       };
       return ret;
@@ -269,7 +269,7 @@ function rxStorageInstanceToReplicationHandler(instance, conflictHandler, databa
                         _context.next = 12;
                         return conflictHandler({
                           realMasterState: (0, _helper.writeDocToDocState)(masterState),
-                          newDocumentState: (0, _util.ensureNotFalsy)(row.assumedMasterState)
+                          newDocumentState: (0, _utils.ensureNotFalsy)(row.assumedMasterState)
                         }, 'rxStorageInstanceToReplicationHandler-masterWrite');
                       case 12:
                         _context.t0 = _context.sent.isEqual;
@@ -308,7 +308,7 @@ function rxStorageInstanceToReplicationHandler(instance, conflictHandler, databa
                 if (err.status !== 409) {
                   throw new Error('non conflict error');
                 } else {
-                  conflicts.push((0, _helper.writeDocToDocState)((0, _util.ensureNotFalsy)(err.documentInDb)));
+                  conflicts.push((0, _helper.writeDocToDocState)((0, _utils.ensureNotFalsy)(err.documentInDb)));
                 }
               });
             case 15:

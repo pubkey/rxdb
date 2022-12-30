@@ -1,5 +1,5 @@
 import lokijs from 'lokijs';
-import { ensureNotFalsy, flatClone } from '../../util';
+import { ensureNotFalsy, flatClone } from '../utils';
 import { createLokiStorageInstance } from './rx-storage-instance-loki';
 import { getLokiSortComparator, RX_STORAGE_NAME_LOKIJS } from './lokijs-helper';
 import { ensureRxStorageInstanceParamsAreCorrect } from '../../rx-storage-helper';

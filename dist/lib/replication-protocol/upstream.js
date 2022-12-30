@@ -9,7 +9,7 @@ var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"))
 var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 var _rxjs = require("rxjs");
 var _rxStorageHelper = require("../rx-storage-helper");
-var _util = require("../util");
+var _utils = require("../plugins/utils");
 var _checkpoint = require("./checkpoint");
 var _conflicts = require("./conflicts");
 var _helper = require("./helper");
@@ -99,7 +99,7 @@ function startReplicationUpstream(state) {
             return _context4.abrupt("break", 19);
           case 15:
             lastCheckpoint = (0, _rxStorageHelper.stackCheckpoints)([lastCheckpoint, upResult.checkpoint]);
-            promises.push(persistToMaster(upResult.documents, (0, _util.ensureNotFalsy)(lastCheckpoint)));
+            promises.push(persistToMaster(upResult.documents, (0, _utils.ensureNotFalsy)(lastCheckpoint)));
             _context4.next = 8;
             break;
           case 19:
@@ -145,7 +145,7 @@ function startReplicationUpstream(state) {
       var docs = [];
       var checkpoint = {};
       while (openTasks.length > 0) {
-        var taskWithTime = (0, _util.ensureNotFalsy)(openTasks.shift());
+        var taskWithTime = (0, _utils.ensureNotFalsy)(openTasks.shift());
         /**
          * If the task came in before the last time the initial sync fetching
          * has run, we can ignore the task because the initial sync already processed
@@ -159,7 +159,7 @@ function startReplicationUpstream(state) {
         }));
         checkpoint = (0, _rxStorageHelper.stackCheckpoints)([checkpoint, taskWithTime.task.checkpoint]);
       }
-      var promise = docs.length === 0 ? _util.PROMISE_RESOLVE_FALSE : persistToMaster(docs, checkpoint);
+      var promise = docs.length === 0 ? _utils.PROMISE_RESOLVE_FALSE : persistToMaster(docs, checkpoint);
       return promise.then(function () {
         if (openTasks.length === 0) {
           state.events.active.up.next(false);
@@ -169,7 +169,7 @@ function startReplicationUpstream(state) {
       });
     });
   }
-  var persistenceQueue = _util.PROMISE_RESOLVE_FALSE;
+  var persistenceQueue = _utils.PROMISE_RESOLVE_FALSE;
   var nonPersistedFromMaster = {
     docs: {}
   };
@@ -261,7 +261,7 @@ function startReplicationUpstream(state) {
                        * is different from the assumedMasterDoc.
                        */
 
-                      assumedMasterDoc && assumedMasterDoc.docData._rev && (0, _util.parseRevision)(fullDocData._rev).height === fullDocData._meta[state.input.identifier];
+                      assumedMasterDoc && assumedMasterDoc.docData._rev && (0, _utils.parseRevision)(fullDocData._rev).height === fullDocData._meta[state.input.identifier];
                     case 12:
                       if (!_context.t0) {
                         _context.next = 14;
@@ -301,7 +301,7 @@ function startReplicationUpstream(state) {
              * to ensure that replicationHandler.masterWrite() is never
              * called with more documents than what the batchSize limits.
              */
-            writeBatches = (0, _util.batchArray)(writeRowsArray, state.input.pushBatchSize);
+            writeBatches = (0, _utils.batchArray)(writeRowsArray, state.input.pushBatchSize);
             _context3.next = 25;
             return Promise.all(writeBatches.map( /*#__PURE__*/function () {
               var _ref3 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee2(writeBatch) {
@@ -378,7 +378,7 @@ function startReplicationUpstream(state) {
                     document: resolved.resolvedDoc
                   });
                   var assumedMasterDoc = assumedMasterState[docId];
-                  conflictWriteMeta[docId] = (0, _metaInstance.getMetaWriteRow)(state, (0, _util.ensureNotFalsy)(realMasterState), assumedMasterDoc ? assumedMasterDoc.metaDocument : undefined, resolved.resolvedDoc._rev);
+                  conflictWriteMeta[docId] = (0, _metaInstance.getMetaWriteRow)(state, (0, _utils.ensureNotFalsy)(realMasterState), assumedMasterDoc ? assumedMasterDoc.metaDocument : undefined, resolved.resolvedDoc._rev);
                 }
               });
             }));

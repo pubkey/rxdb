@@ -1,6 +1,6 @@
 import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
 import _regeneratorRuntime from "@babel/runtime/regenerator";
-import { createRevision, getDefaultRevision, getDefaultRxDocumentMeta, now } from './util';
+import { createRevision, getDefaultRevision, getDefaultRxDocumentMeta, now } from './plugins/utils';
 import { fillPrimaryKey } from './rx-schema-helper';
 import { runAsyncPluginHooks } from './hooks';
 import { getAllCollectionDocuments } from './rx-database-internal-store';

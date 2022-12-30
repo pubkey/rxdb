@@ -14,7 +14,7 @@ var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"))
 var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 var _objectPath = _interopRequireDefault(require("object-path"));
 var _operators = require("rxjs/operators");
-var _util = require("./util");
+var _utils = require("./plugins/utils");
 var _rxError = require("./rx-error");
 var _hooks = require("./hooks");
 var _rxChangeEvent = require("./rx-change-event");
@@ -78,7 +78,7 @@ var basePrototype = {
       return (0, _rxChangeEvent.getDocumentDataOfRxChangeEvent)(changeEvent);
     }), (0, _operators.startWith)(_this.collection._docCache.getLatestDocumentData(this.primary)), (0, _operators.distinctUntilChanged)(function (prev, curr) {
       return prev._rev === curr._rev;
-    }), (0, _operators.shareReplay)(_util.RXJS_SHARE_REPLAY_DEFAULTS));
+    }), (0, _operators.shareReplay)(_utils.RXJS_SHARE_REPLAY_DEFAULTS));
   },
   /**
    * returns observable of the value of the given path
@@ -118,7 +118,7 @@ var basePrototype = {
     var schemaObj = (0, _rxSchemaHelper.getSchemaByObjectPath)(this.collection.schema.jsonSchema, path);
     var value = this.get(path);
     if (!value) {
-      return _util.PROMISE_RESOLVE_NULL;
+      return _utils.PROMISE_RESOLVE_NULL;
     }
     if (!schemaObj) {
       throw (0, _rxError.newRxError)('DOC5', {
@@ -164,14 +164,14 @@ var basePrototype = {
      * TODO find a way to deep-freeze together with defineGetterSetter
      * so we do not have to do a deep clone here.
      */
-    valueObj = (0, _util.clone)(valueObj);
+    valueObj = (0, _utils.clone)(valueObj);
     defineGetterSetter(this.collection.schema, valueObj, objPath, this);
     return valueObj;
   },
   toJSON: function toJSON() {
     var withMetaFields = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
     if (!withMetaFields) {
-      var data = (0, _util.flatClone)(this._data);
+      var data = (0, _utils.flatClone)(this._data);
       delete data._rev;
       delete data._attachments;
       delete data._deleted;
@@ -183,7 +183,7 @@ var basePrototype = {
   },
   toMutableJSON: function toMutableJSON() {
     var withMetaFields = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
-    return (0, _util.clone)(this.toJSON(withMetaFields));
+    return (0, _utils.clone)(this.toJSON(withMetaFields));
   },
   /**
    * updates document
@@ -191,25 +191,25 @@ var basePrototype = {
    * @param updateObj mongodb-like syntax
    */
   update: function update(_updateObj) {
-    throw (0, _util.pluginMissing)('update');
+    throw (0, _utils.pluginMissing)('update');
   },
   incrementalUpdate: function incrementalUpdate(_updateObj) {
-    throw (0, _util.pluginMissing)('update');
+    throw (0, _utils.pluginMissing)('update');
   },
   updateCRDT: function updateCRDT(_updateObj) {
-    throw (0, _util.pluginMissing)('crdt');
+    throw (0, _utils.pluginMissing)('crdt');
   },
   putAttachment: function putAttachment() {
-    throw (0, _util.pluginMissing)('attachments');
+    throw (0, _utils.pluginMissing)('attachments');
   },
   getAttachment: function getAttachment() {
-    throw (0, _util.pluginMissing)('attachments');
+    throw (0, _utils.pluginMissing)('attachments');
   },
   allAttachments: function allAttachments() {
-    throw (0, _util.pluginMissing)('attachments');
+    throw (0, _utils.pluginMissing)('attachments');
   },
   get allAttachments$() {
-    throw (0, _util.pluginMissing)('attachments');
+    throw (0, _utils.pluginMissing)('attachments');
   },
   modify: function () {
     var _modify = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(mutationFunction,
@@ -250,7 +250,7 @@ var basePrototype = {
   },
   patch: function patch(_patch) {
     var oldData = this._data;
-    var newData = (0, _util.clone)(oldData);
+    var newData = (0, _utils.clone)(oldData);
     Object.entries(_patch).forEach(function (_ref) {
       var k = _ref[0],
         v = _ref[1];
@@ -281,7 +281,7 @@ var basePrototype = {
       return _regenerator["default"].wrap(function _callee2$(_context3) {
         while (1) switch (_context3.prev = _context3.next) {
           case 0:
-            newData = (0, _util.flatClone)(newData);
+            newData = (0, _utils.flatClone)(newData);
 
             // deleted documents cannot be changed
             if (!this._data._deleted) {
@@ -308,7 +308,7 @@ var basePrototype = {
             _context3.next = 12;
             return this.collection._runHooks('post', 'save', newData, this);
           case 12:
-            return _context3.abrupt("return", this.collection._docCache.getCachedRxDocument((0, _util.getFromObjectOrThrow)(writeResult.success, this.primary)));
+            return _context3.abrupt("return", this.collection._docCache.getCachedRxDocument((0, _utils.getFromObjectOrThrow)(writeResult.success, this.primary)));
           case 13:
           case "end":
             return _context3.stop();
@@ -334,7 +334,7 @@ var basePrototype = {
         id: this.primary
       }));
     }
-    var deletedData = (0, _util.flatClone)(this._data);
+    var deletedData = (0, _utils.flatClone)(this._data);
     var removedDocData;
     return collection._runHooks('pre', 'remove', deletedData, this).then( /*#__PURE__*/(0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee3() {
       var writeResult, isError;
@@ -351,7 +351,7 @@ var basePrototype = {
             writeResult = _context4.sent;
             isError = writeResult.error[_this4.primary];
             (0, _rxStorageHelper.throwIfIsStorageWriteError)(collection, _this4.primary, deletedData, isError);
-            return _context4.abrupt("return", (0, _util.getFromObjectOrThrow)(writeResult.success, _this4.primary));
+            return _context4.abrupt("return", (0, _utils.getFromObjectOrThrow)(writeResult.success, _this4.primary));
           case 7:
           case "end":
             return _context4.stop();
@@ -435,7 +435,7 @@ function defineGetterSetter(schema, valueObj) {
   if (typeof pathProperties === 'undefined') return;
   if (pathProperties.properties) pathProperties = pathProperties.properties;
   Object.keys(pathProperties).forEach(function (key) {
-    var fullPath = (0, _util.trimDots)(objPath + '.' + key);
+    var fullPath = (0, _utils.trimDots)(objPath + '.' + key);
 
     // getter - value
     valueObj.__defineGetter__(key, function () {

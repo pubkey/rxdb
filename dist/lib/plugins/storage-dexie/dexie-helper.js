@@ -18,7 +18,7 @@ exports.getDocsInDb = getDocsInDb;
 var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
 var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 var _dexie = require("dexie");
-var _util = require("../../util");
+var _utils = require("../utils");
 var _rxError = require("../../rx-error");
 var _rxSchemaHelper = require("../../rx-schema-helper");
 var _rxQueryMingo = require("../../rx-query-mingo");
@@ -48,7 +48,7 @@ function getDexieDbWithTables(databaseName, collectionName, settings, schema) {
              * so we create one dexie database per RxDB storage instance.
              * @link https://github.com/dexie/Dexie.js/issues/684#issuecomment-373224696
              */
-            useSettings = (0, _util.flatClone)(settings);
+            useSettings = (0, _utils.flatClone)(settings);
             useSettings.autoOpen = false;
             dexieDb = new _dexie.Dexie(dexieDbName, useSettings);
             dexieStoresSettings = (_dexieStoresSettings = {}, _dexieStoresSettings[DEXIE_DOCS_TABLE_NAME] = getDexieStoreSchema(schema), _dexieStoresSettings[DEXIE_CHANGES_TABLE_NAME] = '++sequence, id', _dexieStoresSettings[DEXIE_DELETED_DOCS_TABLE_NAME] = primaryPath + ',_meta.lwt,[_meta.lwt+' + primaryPath + ']', _dexieStoresSettings);
@@ -142,7 +142,7 @@ function ensureNoBooleanIndex(schema) {
   }
   var checkedFields = new Set();
   schema.indexes.forEach(function (index) {
-    var fields = (0, _util.toArray)(index);
+    var fields = (0, _utils.toArray)(index);
     fields.forEach(function (field) {
       if (checkedFields.has(field)) {
         return;
@@ -257,7 +257,7 @@ function getDexieStoreSchema(rxJsonSchema) {
   // add other indexes
   if (rxJsonSchema.indexes) {
     rxJsonSchema.indexes.forEach(function (index) {
-      var arIndex = (0, _util.toArray)(index);
+      var arIndex = (0, _utils.toArray)(index);
       parts.push(arIndex);
     });
   }

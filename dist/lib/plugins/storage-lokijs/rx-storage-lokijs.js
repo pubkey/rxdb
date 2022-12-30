@@ -7,15 +7,15 @@ Object.defineProperty(exports, "__esModule", {
 exports.RxStorageLokiStatics = exports.RxStorageLoki = void 0;
 exports.getRxStorageLoki = getRxStorageLoki;
 var _lokijs = _interopRequireDefault(require("lokijs"));
-var _util = require("../../util");
+var _utils = require("../utils");
 var _rxStorageInstanceLoki = require("./rx-storage-instance-loki");
 var _lokijsHelper = require("./lokijs-helper");
 var _rxStorageHelper = require("../../rx-storage-helper");
 var _rxSchemaHelper = require("../../rx-schema-helper");
 var RxStorageLokiStatics = {
   prepareQuery: function prepareQuery(_schema, mutateableQuery) {
-    mutateableQuery = (0, _util.flatClone)(mutateableQuery);
-    if (Object.keys((0, _util.ensureNotFalsy)(mutateableQuery.selector)).length > 0) {
+    mutateableQuery = (0, _utils.flatClone)(mutateableQuery);
+    if (Object.keys((0, _utils.ensureNotFalsy)(mutateableQuery.selector)).length > 0) {
       mutateableQuery.selector = {
         $and: [{
           _deleted: false
@@ -46,7 +46,7 @@ var RxStorageLokiStatics = {
       if (doc._deleted) {
         return false;
       }
-      var docWithResetDeleted = (0, _util.flatClone)(doc);
+      var docWithResetDeleted = (0, _utils.flatClone)(doc);
       docWithResetDeleted._deleted = !!docWithResetDeleted._deleted;
       var fakeCollection = {
         data: [docWithResetDeleted],

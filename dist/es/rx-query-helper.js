@@ -1,6 +1,6 @@
 import { LOGICAL_OPERATORS } from './query-planner';
 import { getPrimaryFieldOfPrimaryKey } from './rx-schema-helper';
-import { clone, firstPropertyNameOfObject, toArray, isMaybeReadonlyArray } from './util';
+import { clone, firstPropertyNameOfObject, toArray, isMaybeReadonlyArray } from './plugins/utils';
 
 /**
  * Normalize the query to ensure we have all fields set

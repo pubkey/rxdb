@@ -16,7 +16,7 @@ var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/
 var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
 var _rxjs = require("rxjs");
 var _operators = require("rxjs/operators");
-var _util = require("./util");
+var _utils = require("./plugins/utils");
 var _rxError = require("./rx-error");
 var _hooks = require("./hooks");
 var _eventReduce = require("./event-reduce");
@@ -45,7 +45,7 @@ var RxQueryBase = /*#__PURE__*/function () {
   function RxQueryBase(op, mangoQuery, collection) {
     this.id = newQueryID();
     this._execOverDatabaseCount = 0;
-    this._creationTime = (0, _util.now)();
+    this._creationTime = (0, _utils.now)();
     this._lastEnsureEqual = 0;
     this.other = {};
     this.uncached = false;
@@ -54,7 +54,7 @@ var RxQueryBase = /*#__PURE__*/function () {
     this._latestChangeEvent = -1;
     this._lastExecStart = 0;
     this._lastExecEnd = 0;
-    this._ensureEqualQueue = _util.PROMISE_RESOLVE_FALSE;
+    this._ensureEqualQueue = _utils.PROMISE_RESOLVE_FALSE;
     this.op = op;
     this.mangoQuery = mangoQuery;
     this.collection = collection;
@@ -77,7 +77,7 @@ var RxQueryBase = /*#__PURE__*/function () {
         docsDataMap: new Map(),
         count: newResultData,
         docs: [],
-        time: (0, _util.now)()
+        time: (0, _utils.now)()
       };
       return;
     } else if (newResultData instanceof Map) {
@@ -105,7 +105,7 @@ var RxQueryBase = /*#__PURE__*/function () {
       docsDataMap: docsDataMap,
       count: docsData.length,
       docs: docs,
-      time: (0, _util.now)()
+      time: (0, _utils.now)()
     };
   }
 
@@ -123,7 +123,7 @@ var RxQueryBase = /*#__PURE__*/function () {
         while (1) switch (_context.prev = _context.next) {
           case 0:
             this._execOverDatabaseCount = this._execOverDatabaseCount + 1;
-            this._lastExecStart = (0, _util.now)();
+            this._lastExecStart = (0, _utils.now)();
             if (!(this.op === 'count')) {
               _context.next = 12;
               break;
@@ -148,7 +148,7 @@ var RxQueryBase = /*#__PURE__*/function () {
               _context.next = 23;
               break;
             }
-            ids = (0, _util.ensureNotFalsy)(this.mangoQuery.selector)[this.collection.schema.primaryPath].$in;
+            ids = (0, _utils.ensureNotFalsy)(this.mangoQuery.selector)[this.collection.schema.primaryPath].$in;
             ret = new Map();
             mustBeQueried = []; // first try to fill from docCache
             ids.forEach(function (id) {
@@ -180,7 +180,7 @@ var RxQueryBase = /*#__PURE__*/function () {
           case 23:
             docsPromise = queryCollection(this);
             return _context.abrupt("return", docsPromise.then(function (docs) {
-              _this2._lastExecEnd = (0, _util.now)();
+              _this2._lastExecEnd = (0, _utils.now)();
               return docs;
             }));
           case 25:
@@ -239,12 +239,12 @@ var RxQueryBase = /*#__PURE__*/function () {
    * @overwrites itself with the actual value
    */
   _proto.toString = function toString() {
-    var stringObj = (0, _util.sortObject)({
+    var stringObj = (0, _utils.sortObject)({
       op: this.op,
       query: this.mangoQuery,
       other: this.other
     }, true);
-    var value = JSON.stringify(stringObj, _util.stringifyFilter);
+    var value = JSON.stringify(stringObj, _utils.stringifyFilter);
     this.toString = function () {
       return value;
     };
@@ -260,7 +260,7 @@ var RxQueryBase = /*#__PURE__*/function () {
     var hookInput = {
       rxQuery: this,
       // can be mutated by the hooks so we have to deep clone first.
-      mangoQuery: (0, _rxQueryHelper.normalizeMangoQuery)(this.collection.schema.jsonSchema, (0, _util.clone)(this.mangoQuery))
+      mangoQuery: (0, _rxQueryHelper.normalizeMangoQuery)(this.collection.schema.jsonSchema, (0, _utils.clone)(this.mangoQuery))
     };
     (0, _hooks.runPluginHooks)('prePrepareQuery', hookInput);
     var value = this.collection.database.storage.statics.prepareQuery(this.collection.schema.jsonSchema, hookInput.mangoQuery);
@@ -307,23 +307,23 @@ var RxQueryBase = /*#__PURE__*/function () {
    * @overwritten by plugin (optional)
    */
   _proto.update = function update(_updateObj) {
-    throw (0, _util.pluginMissing)('update');
+    throw (0, _utils.pluginMissing)('update');
   }
 
   // we only set some methods of query-builder here
   // because the others depend on these ones
   ;
   _proto.where = function where(_queryObj) {
-    throw (0, _util.pluginMissing)('query-builder');
+    throw (0, _utils.pluginMissing)('query-builder');
   };
   _proto.sort = function sort(_params) {
-    throw (0, _util.pluginMissing)('query-builder');
+    throw (0, _utils.pluginMissing)('query-builder');
   };
   _proto.skip = function skip(_amount) {
-    throw (0, _util.pluginMissing)('query-builder');
+    throw (0, _utils.pluginMissing)('query-builder');
   };
   _proto.limit = function limit(_amount) {
-    throw (0, _util.pluginMissing)('query-builder');
+    throw (0, _utils.pluginMissing)('query-builder');
   };
   (0, _createClass2["default"])(RxQueryBase, [{
     key: "$",
@@ -352,10 +352,10 @@ var RxQueryBase = /*#__PURE__*/function () {
           return _this4._result;
         }),
         // do not run stuff above for each new subscriber, only once.
-        (0, _operators.shareReplay)(_util.RXJS_SHARE_REPLAY_DEFAULTS),
+        (0, _operators.shareReplay)(_utils.RXJS_SHARE_REPLAY_DEFAULTS),
         // do not proceed if result set has not changed.
         (0, _operators.distinctUntilChanged)(function (prev, curr) {
-          if (prev && prev.time === (0, _util.ensureNotFalsy)(curr).time) {
+          if (prev && prev.time === (0, _utils.ensureNotFalsy)(curr).time) {
             return true;
           } else {
             return false;
@@ -368,7 +368,7 @@ var RxQueryBase = /*#__PURE__*/function () {
          * depending on query type
          */
         (0, _operators.map)(function (result) {
-          var useResult = (0, _util.ensureNotFalsy)(result);
+          var useResult = (0, _utils.ensureNotFalsy)(result);
           if (_this4.op === 'count') {
             return useResult.count;
           } else if (_this4.op === 'findOne') {
@@ -406,8 +406,8 @@ var RxQueryBase = /*#__PURE__*/function () {
        * so that it does not contain modifications from the hooks
        * like the key compression.
        */
-      var usePreparedQuery = this.collection.database.storage.statics.prepareQuery(schema, (0, _rxQueryHelper.normalizeMangoQuery)(this.collection.schema.jsonSchema, (0, _util.clone)(this.mangoQuery)));
-      return (0, _util.overwriteGetterForCaching)(this, 'queryMatcher', this.collection.database.storage.statics.getQueryMatcher(schema, usePreparedQuery));
+      var usePreparedQuery = this.collection.database.storage.statics.prepareQuery(schema, (0, _rxQueryHelper.normalizeMangoQuery)(this.collection.schema.jsonSchema, (0, _utils.clone)(this.mangoQuery)));
+      return (0, _utils.overwriteGetterForCaching)(this, 'queryMatcher', this.collection.database.storage.statics.getQueryMatcher(schema, usePreparedQuery));
     }
   }, {
     key: "asRxQuery",
@@ -466,7 +466,7 @@ function _isResultsInSync(rxQuery) {
 function _ensureEqual(rxQuery) {
   // Optimisation shortcut
   if (rxQuery.collection.database.destroyed || _isResultsInSync(rxQuery)) {
-    return _util.PROMISE_RESOLVE_FALSE;
+    return _utils.PROMISE_RESOLVE_FALSE;
   }
   rxQuery._ensureEqualQueue = rxQuery._ensureEqualQueue.then(function () {
     return __ensureEqual(rxQuery);
@@ -479,7 +479,7 @@ function _ensureEqual(rxQuery) {
  * @return true if results have changed
  */
 function __ensureEqual(rxQuery) {
-  rxQuery._lastEnsureEqual = (0, _util.now)();
+  rxQuery._lastEnsureEqual = (0, _utils.now)();
 
   /**
    * Optimisation shortcuts
@@ -489,7 +489,7 @@ function __ensureEqual(rxQuery) {
   rxQuery.collection.database.destroyed ||
   // nothing happened since last run
   _isResultsInSync(rxQuery)) {
-    return _util.PROMISE_RESOLVE_FALSE;
+    return _utils.PROMISE_RESOLVE_FALSE;
   }
   var ret = false;
   var mustReExec = false; // if this becomes true, a whole execution over the database is made
@@ -511,7 +511,7 @@ function __ensureEqual(rxQuery) {
       var runChangeEvents = rxQuery.asRxQuery.collection._changeEventBuffer.reduceByLastOfDoc(missedChangeEvents);
       if (rxQuery.op === 'count') {
         // 'count' query
-        var previousCount = (0, _util.ensureNotFalsy)(rxQuery._result).count;
+        var previousCount = (0, _utils.ensureNotFalsy)(rxQuery._result).count;
         var newCount = previousCount;
         runChangeEvents.forEach(function (cE) {
           var didMatchBefore = cE.previousDocumentData && rxQuery.doesDocumentDataMatch(cE.previousDocumentData);
@@ -557,7 +557,7 @@ function __ensureEqual(rxQuery) {
         }
         return ret;
       }
-      if (!rxQuery._result || !(0, _util.areRxDocumentArraysEqual)(rxQuery.collection.schema.primaryPath, newResultData, rxQuery._result.docsData)) {
+      if (!rxQuery._result || !(0, _utils.areRxDocumentArraysEqual)(rxQuery.collection.schema.primaryPath, newResultData, rxQuery._result.docsData)) {
         ret = true; // true because results changed
         rxQuery._setResultData(newResultData);
       }

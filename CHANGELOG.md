@@ -30,6 +30,10 @@
 
 <!-- RELEASE BELOW -->
 
+### 13.17.1 (30 December 2022)
+
+- FIX Add missing mingo array operators [#4203](https://github.com/pubkey/rxdb/pull/4203) Thanks [@swnf](https://github.com/swnf)
+
 ### 13.17.0 (29 December 2022)
 
 - FIX(lokijs) wrong query result when sorting on a nested field.

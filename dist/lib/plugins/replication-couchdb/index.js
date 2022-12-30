@@ -14,7 +14,7 @@ exports.syncCouchDB = syncCouchDB;
 var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
 var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 var _inheritsLoose2 = _interopRequireDefault(require("@babel/runtime/helpers/inheritsLoose"));
-var _util = require("../../util");
+var _utils = require("../../plugins/utils");
 var _leaderElection = require("../leader-election");
 var _replication = require("../replication");
 var _index = require("../../index");
@@ -71,7 +71,7 @@ var RxCouchDBReplicationState = /*#__PURE__*/function (_RxReplicationState) {
 exports.RxCouchDBReplicationState = RxCouchDBReplicationState;
 function syncCouchDB(options) {
   var _this2 = this;
-  options = (0, _util.flatClone)(options);
+  options = (0, _utils.flatClone)(options);
   if (!options.url.endsWith('/')) {
     options.url = options.url + '/';
   }
@@ -108,7 +108,7 @@ function syncCouchDB(options) {
               case 6:
                 jsonResponse = _context.sent;
                 documents = jsonResponse.results.map(function (row) {
-                  return (0, _couchdbHelper.couchDBDocToRxDocData)(collection.schema.primaryPath, (0, _util.ensureNotFalsy)(row.doc));
+                  return (0, _couchdbHelper.couchDBDocToRxDocData)(collection.schema.primaryPath, (0, _utils.ensureNotFalsy)(row.doc));
                 });
                 return _context.abrupt("return", {
                   documents: documents,
@@ -127,8 +127,8 @@ function syncCouchDB(options) {
         }
         return handler;
       }(),
-      batchSize: (0, _util.ensureNotFalsy)(options.pull).batchSize,
-      modifier: (0, _util.ensureNotFalsy)(options.pull).modifier,
+      batchSize: (0, _utils.ensureNotFalsy)(options.pull).batchSize,
+      modifier: (0, _utils.ensureNotFalsy)(options.pull).modifier,
       stream$: pullStream$.asObservable()
     };
   }
@@ -147,9 +147,9 @@ function syncCouchDB(options) {
                 url = options.url + '_bulk_docs?' + (0, _couchdbHelper.mergeUrlQueryParams)({});
                 body = {
                   docs: rows.map(function (row) {
-                    var sendDoc = (0, _util.flatClone)(row.newDocumentState);
+                    var sendDoc = (0, _utils.flatClone)(row.newDocumentState);
                     if (row.assumedMasterState) {
-                      sendDoc._rev = (0, _util.ensureNotFalsy)(row.assumedMasterState._rev);
+                      sendDoc._rev = (0, _utils.ensureNotFalsy)(row.assumedMasterState._rev);
                     }
                     return (0, _couchdbHelper.couchSwapPrimaryToId)(collection.schema.primaryPath, sendDoc);
                   })
@@ -218,7 +218,7 @@ function syncCouchDB(options) {
       modifier: options.push.modifier
     };
   }
-  var replicationState = new RxCouchDBReplicationState(options.url, options.fetch ? options.fetch : (0, _couchdbHelper.getDefaultFetch)(), _couchdbHelper.COUCHDB_NEW_REPLICATION_PLUGIN_IDENTITY_PREFIX + (0, _util.fastUnsecureHash)(options.url), collection, replicationPrimitivesPull, replicationPrimitivesPush, options.live, options.retryTime, options.autoStart);
+  var replicationState = new RxCouchDBReplicationState(options.url, options.fetch ? options.fetch : (0, _couchdbHelper.getDefaultFetch)(), _couchdbHelper.COUCHDB_NEW_REPLICATION_PLUGIN_IDENTITY_PREFIX + (0, _utils.fastUnsecureHash)(options.url), collection, replicationPrimitivesPull, replicationPrimitivesPush, options.live, options.retryTime, options.autoStart);
 
   /**
    * Use long polling to get live changes for the pull.stream$
@@ -264,7 +264,7 @@ function syncCouchDB(options) {
                 args: {
                   url: _url
                 },
-                error: (0, _util.errorToPlainJson)(_context3.t0)
+                error: (0, _utils.errorToPlainJson)(_context3.t0)
               }));
               // await next tick here otherwise we could go in to a 100% CPU blocking cycle.
               _context3.next = 16;
@@ -273,7 +273,7 @@ function syncCouchDB(options) {
               return _context3.abrupt("continue", 0);
             case 17:
               documents = jsonResponse.results.map(function (row) {
-                return (0, _couchdbHelper.couchDBDocToRxDocData)(collection.schema.primaryPath, (0, _util.ensureNotFalsy)(row.doc));
+                return (0, _couchdbHelper.couchDBDocToRxDocData)(collection.schema.primaryPath, (0, _utils.ensureNotFalsy)(row.doc));
               });
               since = jsonResponse.last_seq;
               pullStream$.next({

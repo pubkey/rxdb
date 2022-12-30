@@ -18,7 +18,7 @@ var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/
 var _rxError = require("../../rx-error");
 var _fastDeepEqual = _interopRequireDefault(require("fast-deep-equal"));
 var _objectPath = _interopRequireDefault(require("object-path"));
-var _util = require("../../util");
+var _utils = require("../../plugins/utils");
 var _modifyjs = _interopRequireDefault(require("modifyjs"));
 var _ = require("../..");
 function updateCRDT(_x) {
@@ -42,17 +42,17 @@ function _updateCRDT() {
             queryObj: entry
           });
         case 4:
-          crdtOptions = (0, _util.ensureNotFalsy)(jsonSchema.crdt);
+          crdtOptions = (0, _utils.ensureNotFalsy)(jsonSchema.crdt);
           _context3.next = 7;
           return this.collection.database.storageToken;
         case 7:
           storageToken = _context3.sent;
           return _context3.abrupt("return", this.incrementalModify(function (docData) {
-            var crdtDocField = (0, _util.clone)(_objectPath["default"].get(docData, crdtOptions.field));
+            var crdtDocField = (0, _utils.clone)(_objectPath["default"].get(docData, crdtOptions.field));
             var operation = {
-              body: (0, _util.toArray)(entry),
+              body: (0, _utils.toArray)(entry),
               creator: storageToken,
-              time: (0, _util.now)()
+              time: (0, _utils.now)()
             };
 
             /**
@@ -95,7 +95,7 @@ function _insertCRDT() {
             queryObj: entry
           });
         case 4:
-          crdtOptions = (0, _util.ensureNotFalsy)(jsonSchema.crdt);
+          crdtOptions = (0, _utils.ensureNotFalsy)(jsonSchema.crdt);
           _context5.next = 7;
           return this.database.storageToken;
         case 7:
@@ -103,7 +103,7 @@ function _insertCRDT() {
           operation = {
             body: Array.isArray(entry) ? entry : [entry],
             creator: storageToken,
-            time: (0, _util.now)()
+            time: (0, _utils.now)()
           };
           insertData = {};
           insertData = runOperationOnDocument(this.database.storage.statics, this.schema.jsonSchema, insertData, operation);
@@ -163,7 +163,7 @@ function runOperationOnDocument(storageStatics, schema, docData, operation) {
     var isMatching;
     if (entryPart.selector) {
       var preparedQuery = storageStatics.prepareQuery(schema, {
-        selector: (0, _util.ensureNotFalsy)(entryPart.selector),
+        selector: (0, _utils.ensureNotFalsy)(entryPart.selector),
         sort: [],
         skip: 0
       });
@@ -286,7 +286,7 @@ function rebuildFromCRDT(storageStatics, schema, docData, crdts) {
   var base = {
     _deleted: false
   };
-  _objectPath["default"].set(base, (0, _util.ensureNotFalsy)(schema.crdt).field, crdts);
+  _objectPath["default"].set(base, (0, _utils.ensureNotFalsy)(schema.crdt).field, crdts);
   crdts.operations.forEach(function (operations) {
     operations.forEach(function (op) {
       base = runOperationOnDocument(storageStatics, schema, base, op);
@@ -295,9 +295,9 @@ function rebuildFromCRDT(storageStatics, schema, docData, crdts) {
   return base;
 }
 function getCRDTConflictHandler(hashFunction, storageStatics, schema) {
-  var crdtOptions = (0, _util.ensureNotFalsy)(schema.crdt);
+  var crdtOptions = (0, _utils.ensureNotFalsy)(schema.crdt);
   var crdtField = crdtOptions.field;
-  var getCRDTValue = (0, _util.objectPathMonad)(crdtField);
+  var getCRDTValue = (0, _utils.objectPathMonad)(crdtField);
   var conflictHandler = function conflictHandler(i, _context) {
     var newDocCrdt = getCRDTValue(i.newDocumentState);
     var masterDocCrdt = getCRDTValue(i.realMasterState);
@@ -390,9 +390,9 @@ var RxDBcrdtPlugin = {
         if (!collection.schema.jsonSchema.crdt) {
           return;
         }
-        var crdtOptions = (0, _util.ensureNotFalsy)(collection.schema.jsonSchema.crdt);
+        var crdtOptions = (0, _utils.ensureNotFalsy)(collection.schema.jsonSchema.crdt);
         var crdtField = crdtOptions.field;
-        var getCrdt = (0, _util.objectPathMonad)(crdtOptions.field);
+        var getCrdt = (0, _utils.objectPathMonad)(crdtOptions.field);
 
         /**
          * In dev-mode we have to ensure that all document writes
@@ -403,7 +403,7 @@ var RxDBcrdtPlugin = {
           var bulkWriteBefore = collection.storageInstance.bulkWrite.bind(collection.storageInstance);
           collection.storageInstance.bulkWrite = function (writes, context) {
             writes.forEach(function (write) {
-              var newDocState = (0, _util.clone)(write.document);
+              var newDocState = (0, _utils.clone)(write.document);
               var crdts = getCrdt(newDocState);
               var rebuild = rebuildFromCRDT(collection.database.storage.statics, collection.schema.jsonSchema, newDocState, crdts);
               function docWithoutMeta(doc) {
@@ -464,7 +464,7 @@ var RxDBcrdtPlugin = {
                             $set: setMe
                           }
                         }],
-                        time: (0, _util.now)()
+                        time: (0, _utils.now)()
                       }]],
                       hash: ''
                     };

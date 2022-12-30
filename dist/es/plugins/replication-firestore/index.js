@@ -5,7 +5,7 @@ import _regeneratorRuntime from "@babel/runtime/regenerator";
  * this plugin adds the RxCollection.syncCouchDB()-function to rxdb
  * you can use it to sync collections with a remote CouchDB endpoint.
  */
-import { ensureNotFalsy, errorToPlainJson, fastUnsecureHash, flatClone, lastOfArray } from '../../util';
+import { ensureNotFalsy, errorToPlainJson, fastUnsecureHash, flatClone, lastOfArray } from '../../plugins/utils';
 import { doc, query, where, orderBy, limit, getDocs, onSnapshot, runTransaction, writeBatch, serverTimestamp, waitForPendingWrites, documentId } from 'firebase/firestore';
 import { RxDBLeaderElectionPlugin } from '../leader-election';
 import { RxReplicationState, startReplicationOnLeaderShip } from '../replication';

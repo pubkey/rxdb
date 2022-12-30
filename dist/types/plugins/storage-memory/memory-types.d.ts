@@ -1,14 +1,14 @@
 import { Subject } from 'rxjs';
 import type { DexiePreparedQuery, EventBulk, RxAttachmentWriteData, RxConflictResultionTask, RxDocumentData, RxStorage, RxStorageChangeEvent, RxStorageDefaultCheckpoint } from '../../types';
-export declare type RxStorageMemorySettings = {};
-export declare type RxStorageMemoryInstanceCreationOptions = {};
-export declare type RxStorageMemory = RxStorage<MemoryStorageInternals<any>, RxStorageMemoryInstanceCreationOptions> & {
+export type RxStorageMemorySettings = {};
+export type RxStorageMemoryInstanceCreationOptions = {};
+export type RxStorageMemory = RxStorage<MemoryStorageInternals<any>, RxStorageMemoryInstanceCreationOptions> & {
     /**
      * State by collectionKey
      */
     collectionStates: Map<string, MemoryStorageInternals<any>>;
 };
-export declare type MemoryStorageInternalsByIndex<RxDocType> = {
+export type MemoryStorageInternalsByIndex<RxDocType> = {
     index: string[];
     docsWithIndex: DocWithIndexString<RxDocType>[];
     getIndexableString: (docData: RxDocumentData<RxDocType>) => string;
@@ -17,7 +17,7 @@ export declare type MemoryStorageInternalsByIndex<RxDocType> = {
  * The internals are shared between multiple storage instances
  * that have been created with the same [databaseName+collectionName] combination.
  */
-export declare type MemoryStorageInternals<RxDocType> = {
+export type MemoryStorageInternals<RxDocType> = {
     /**
      * We re-use the memory state when multiple instances
      * are created with the same params.
@@ -56,9 +56,9 @@ export declare type MemoryStorageInternals<RxDocType> = {
     conflictResultionTasks$: Subject<RxConflictResultionTask<RxDocType>>;
     changes$: Subject<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, RxStorageDefaultCheckpoint>>;
 };
-export declare type DocWithIndexString<RxDocType> = {
+export type DocWithIndexString<RxDocType> = {
     id: string;
     doc: RxDocumentData<RxDocType>;
     indexString: string;
 };
-export declare type MemoryPreparedQuery<DocType> = DexiePreparedQuery<DocType>;
+export type MemoryPreparedQuery<DocType> = DexiePreparedQuery<DocType>;

@@ -1,9 +1,9 @@
 import { ById, ReplicationOptions, ReplicationPullOptions, ReplicationPushOptions } from '../../types';
-export declare type CouchDBCheckpointType = {
+export type CouchDBCheckpointType = {
     sequence: number;
 };
-export declare type FetchMethodType = typeof fetch;
-export declare type SyncOptionsCouchDB<RxDocType> = Omit<ReplicationOptions<RxDocType, any>, 'pull' | 'push' | 'replicationIdentifier' | 'collection'> & {
+export type FetchMethodType = typeof fetch;
+export type SyncOptionsCouchDB<RxDocType> = Omit<ReplicationOptions<RxDocType, any>, 'pull' | 'push' | 'replicationIdentifier' | 'collection'> & {
     url: string;
     /**
      * Here you can set a custom fetch method
@@ -19,4 +19,4 @@ export declare type SyncOptionsCouchDB<RxDocType> = Omit<ReplicationOptions<RxDo
     };
     push?: Omit<ReplicationPushOptions<RxDocType>, 'handler'>;
 };
-export declare type URLQueryParams = ById<string | number | undefined | boolean>;
+export type URLQueryParams = ById<string | number | undefined | boolean>;

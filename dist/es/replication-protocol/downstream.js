@@ -3,7 +3,7 @@ import _regeneratorRuntime from "@babel/runtime/regenerator";
 import { firstValueFrom, filter } from 'rxjs';
 import { newRxError } from '../rx-error';
 import { stackCheckpoints } from '../rx-storage-helper';
-import { ensureNotFalsy, flatClone, getDefaultRevision, getDefaultRxDocumentMeta, parseRevision, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_VOID } from '../util';
+import { ensureNotFalsy, flatClone, getDefaultRevision, getDefaultRxDocumentMeta, parseRevision, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_VOID } from '../plugins/utils';
 import { getLastCheckpointDoc, setCheckpoint } from './checkpoint';
 import { writeDocToDocState } from './helper';
 import { getAssumedMasterState, getMetaWriteRow } from './meta-instance';

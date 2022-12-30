@@ -13,7 +13,7 @@ var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/
 var _replication = require("../replication");
 var _reconnectingWebsocket = _interopRequireDefault(require("reconnecting-websocket"));
 var _isomorphicWs = _interopRequireDefault(require("isomorphic-ws"));
-var _util = require("../../util");
+var _utils = require("../../plugins/utils");
 var _rxjs = require("rxjs");
 var _rxError = require("../../rx-error");
 /**
@@ -79,8 +79,8 @@ function _getWebSocket() {
             error$ = new _rxjs.Subject();
             wsClient.onerror = function (err) {
               var emitError = (0, _rxError.newRxError)('RC_STREAM', {
-                errors: (0, _util.toArray)(err).map(function (er) {
-                  return (0, _util.errorToPlainJson)(er);
+                errors: (0, _utils.toArray)(err).map(function (er) {
+                  return (0, _utils.errorToPlainJson)(er);
                 }),
                 direction: 'pull'
               });
@@ -113,7 +113,7 @@ function _getWebSocket() {
 }
 function removeWebSocketRef(url, database) {
   var cacheKey = url + '|||' + database.token;
-  var obj = (0, _util.getFromMapOrThrow)(WEBSOCKET_BY_CACHE_KEY, cacheKey);
+  var obj = (0, _utils.getFromMapOrThrow)(WEBSOCKET_BY_CACHE_KEY, cacheKey);
   obj.refCount = obj.refCount - 1;
   if (obj.refCount === 0) {
     WEBSOCKET_BY_CACHE_KEY["delete"](cacheKey);
@@ -141,7 +141,7 @@ function _replicateWithWebsocketServer() {
           wsClient = socketState.socket;
           messages$ = socketState.message$;
           requestCounter = 0;
-          requestFlag = (0, _util.randomCouchString)(10);
+          requestFlag = (0, _utils.randomCouchString)(10);
           replicationState = (0, _replication.replicateRxCollection)({
             collection: options.collection,
             replicationIdentifier: 'websocket-' + options.url,

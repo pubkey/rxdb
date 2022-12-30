@@ -13,7 +13,7 @@ var _rxSchemaHelper = require("../../rx-schema-helper");
 var _rxStorageHelper = require("../../rx-storage-helper");
 var _foundationdbHelpers = require("./foundationdb-helpers");
 var _customIndex = require("../../custom-index");
-var _util = require("../../util");
+var _utils = require("../../plugins/utils");
 var _foundationdbQuery = require("./foundationdb-query");
 var _queryPlanner = require("../../query-planner");
 var _storageMemory = require("../storage-memory");
@@ -121,7 +121,7 @@ var RxStorageInstanceFoundationDB = /*#__PURE__*/function () {
 
                         // update secondary indexes
                         Object.values(dbs.indexes).forEach(function (indexMeta) {
-                          var oldIndexString = indexMeta.getIndexableString((0, _util.ensureNotFalsy)(writeRow.previous));
+                          var oldIndexString = indexMeta.getIndexableString((0, _utils.ensureNotFalsy)(writeRow.previous));
                           var newIndexString = indexMeta.getIndexableString(writeRow.document);
                           if (oldIndexString !== newIndexString) {
                             var indexTx = tx.at(indexMeta.db.subspace);
@@ -161,13 +161,13 @@ var RxStorageInstanceFoundationDB = /*#__PURE__*/function () {
              * Otherwise an observable changestream might cause a read
              * to a document that does not already exist outside of the transaction.
              */
-            if ((0, _util.ensureNotFalsy)(categorized).eventBulk.events.length > 0) {
+            if ((0, _utils.ensureNotFalsy)(categorized).eventBulk.events.length > 0) {
               lastState = (0, _rxStorageHelper.getNewestOfDocumentStates)(this.primaryPath, Object.values(result.success));
-              (0, _util.ensureNotFalsy)(categorized).eventBulk.checkpoint = {
+              (0, _utils.ensureNotFalsy)(categorized).eventBulk.checkpoint = {
                 id: lastState[this.primaryPath],
                 lwt: lastState._meta.lwt
               };
-              this.changes$.next((0, _util.ensureNotFalsy)(categorized).eventBulk);
+              this.changes$.next((0, _utils.ensureNotFalsy)(categorized).eventBulk);
             }
             return _context3.abrupt("return", result);
           case 9:
@@ -360,7 +360,7 @@ var RxStorageInstanceFoundationDB = /*#__PURE__*/function () {
             }());
           case 11:
             result = _context10.sent;
-            lastDoc = (0, _util.lastOfArray)(result);
+            lastDoc = (0, _utils.lastOfArray)(result);
             return _context10.abrupt("return", {
               documents: result,
               checkpoint: lastDoc ? {
@@ -398,7 +398,7 @@ var RxStorageInstanceFoundationDB = /*#__PURE__*/function () {
             _context11.next = 5;
             return dbs.root.doTransaction(function (tx) {
               tx.clearRange('', _queryPlanner.INDEX_MAX);
-              return _util.PROMISE_RESOLVE_VOID;
+              return _utils.PROMISE_RESOLVE_VOID;
             });
           case 5:
             return _context11.abrupt("return", this.close());
@@ -421,7 +421,7 @@ var RxStorageInstanceFoundationDB = /*#__PURE__*/function () {
         while (1) switch (_context13.prev = _context13.next) {
           case 0:
             _require2 = require('foundationdb'), keySelector = _require2.keySelector, StreamingMode = _require2.StreamingMode;
-            maxDeletionTime = (0, _util.now)() - minimumDeletedTime;
+            maxDeletionTime = (0, _utils.now)() - minimumDeletedTime;
             _context13.next = 4;
             return this.internals.dbsPromise;
           case 4:
@@ -444,7 +444,7 @@ var RxStorageInstanceFoundationDB = /*#__PURE__*/function () {
                 return _regenerator["default"].wrap(function _callee12$(_context12) {
                   while (1) switch (_context12.prev = _context12.next) {
                     case 0:
-                      batchSize = (0, _util.ensureNotFalsy)(_this2.settings.batchSize);
+                      batchSize = (0, _utils.ensureNotFalsy)(_this2.settings.batchSize);
                       indexTx = tx.at(indexMeta.db.subspace);
                       mainTx = tx.at(dbs.main.subspace);
                       _context12.next = 5;
@@ -505,7 +505,7 @@ var RxStorageInstanceFoundationDB = /*#__PURE__*/function () {
     return new _rxjs.Subject().asObservable();
   };
   _proto.resolveConflictResultionTask = function resolveConflictResultionTask(_taskSolution) {
-    return _util.PROMISE_RESOLVE_VOID;
+    return _utils.PROMISE_RESOLVE_VOID;
   };
   _proto.close = /*#__PURE__*/function () {
     var _close = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee14() {
@@ -568,7 +568,7 @@ function createFoundationDBStorageInstance(storage, params, settings) {
           useIndexes = params.schema.indexes ? params.schema.indexes.slice(0) : [];
           useIndexes.push([primaryPath]);
           useIndexesFinal = useIndexes.map(function (index) {
-            var indexAr = (0, _util.toArray)(index);
+            var indexAr = (0, _utils.toArray)(index);
             indexAr.unshift('_deleted');
             return indexAr;
           }); // used for `getChangedDocumentsSince()`

@@ -4,7 +4,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.DocumentCache = void 0;
-var _util = require("./util");
+var _utils = require("./plugins/utils");
 var _overwritable = require("./overwritable");
 var _rxChangeEvent = require("./rx-change-event");
 /**
@@ -66,8 +66,8 @@ var DocumentCache = /*#__PURE__*/function () {
   var _proto = DocumentCache.prototype;
   _proto.getCachedRxDocument = function getCachedRxDocument(docData) {
     var docId = docData[this.primaryPath];
-    var revisionHeight = (0, _util.parseRevision)(docData._rev).height;
-    var cacheItem = (0, _util.getFromMapOrFill)(this.cacheItemByDocId, docId, function () {
+    var revisionHeight = (0, _utils.parseRevision)(docData._rev).height;
+    var cacheItem = (0, _utils.getFromMapOrFill)(this.cacheItemByDocId, docId, function () {
       return getNewCacheItem(docData);
     });
     var cachedRxDocumentWeakRef = cacheItem.documentByRevisionHeight.get(revisionHeight);
@@ -90,7 +90,7 @@ var DocumentCache = /*#__PURE__*/function () {
    * Throws if not exists
    */;
   _proto.getLatestDocumentData = function getLatestDocumentData(docId) {
-    var cacheItem = (0, _util.getFromMapOrThrow)(this.cacheItemByDocId, docId);
+    var cacheItem = (0, _utils.getFromMapOrThrow)(this.cacheItemByDocId, docId);
     return cacheItem.latestDoc;
   };
   _proto.getLatestDocumentDataIfExists = function getLatestDocumentDataIfExists(docId) {

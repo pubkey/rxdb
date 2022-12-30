@@ -3,7 +3,7 @@
  * if you use the same mango-query more then once, it will reuse the first RxQuery
  */
 
-import { nextTick, now, requestIdlePromise } from './util';
+import { nextTick, now, requestIdlePromise } from './plugins/utils';
 export var QueryCache = /*#__PURE__*/function () {
   function QueryCache() {
     this._map = new Map();

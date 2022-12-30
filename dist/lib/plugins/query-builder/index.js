@@ -24,12 +24,12 @@ Object.keys(_nosqlQueryBuilder).forEach(function (key) {
   });
 });
 var _rxQuery = require("../../rx-query");
-var _util = require("../../util");
+var _utils = require("../../plugins/utils");
 var _hooks = require("../../hooks");
 // if the query-builder plugin is used, we have to save its last path
 var RXQUERY_OTHER_FLAG = 'queryBuilderPath';
 function runBuildingStep(rxQuery, functionName, value) {
-  var queryBuilder = (0, _nosqlQueryBuilder.createQueryBuilder)((0, _util.clone)(rxQuery.mangoQuery));
+  var queryBuilder = (0, _nosqlQueryBuilder.createQueryBuilder)((0, _utils.clone)(rxQuery.mangoQuery));
   if (rxQuery.other[RXQUERY_OTHER_FLAG]) {
     queryBuilder._path = rxQuery.other[RXQUERY_OTHER_FLAG];
   }

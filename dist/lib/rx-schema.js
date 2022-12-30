@@ -12,7 +12,7 @@ exports.isInstanceOf = isInstanceOf;
 exports.toTypedRxJsonSchema = toTypedRxJsonSchema;
 var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
 var _fastDeepEqual = _interopRequireDefault(require("fast-deep-equal"));
-var _util = require("./util");
+var _utils = require("./plugins/utils");
 var _rxError = require("./rx-error");
 var _hooks = require("./hooks");
 var _rxDocument = require("./rx-document");
@@ -52,7 +52,7 @@ var RxSchema = /*#__PURE__*/function () {
    * fills all unset fields with default-values if set
    */;
   _proto.fillObjectWithDefaults = function fillObjectWithDefaults(obj) {
-    obj = (0, _util.flatClone)(obj);
+    obj = (0, _utils.flatClone)(obj);
     Object.entries(this.defaultValues).filter(function (_ref) {
       var k = _ref[0];
       return !obj.hasOwnProperty(k) || typeof obj[k] === 'undefined';
@@ -71,7 +71,7 @@ var RxSchema = /*#__PURE__*/function () {
   _proto.getDocumentPrototype = function getDocumentPrototype() {
     var proto = {};
     (0, _rxDocument.defineGetterSetter)(this, proto, '');
-    (0, _util.overwriteGetterForCaching)(this, 'getDocumentPrototype', function () {
+    (0, _utils.overwriteGetterForCaching)(this, 'getDocumentPrototype', function () {
       return proto;
     });
     return proto;
@@ -96,7 +96,7 @@ var RxSchema = /*#__PURE__*/function () {
           v = _ref4[1];
         return values[k] = v["default"];
       });
-      return (0, _util.overwriteGetterForCaching)(this, 'defaultValues', values);
+      return (0, _utils.overwriteGetterForCaching)(this, 'defaultValues', values);
     }
 
     /**
@@ -105,7 +105,7 @@ var RxSchema = /*#__PURE__*/function () {
   }, {
     key: "hash",
     get: function get() {
-      return (0, _util.overwriteGetterForCaching)(this, 'hash', (0, _util.fastUnsecureHash)(JSON.stringify(this.jsonSchema)));
+      return (0, _utils.overwriteGetterForCaching)(this, 'hash', (0, _utils.fastUnsecureHash)(JSON.stringify(this.jsonSchema)));
     }
   }]);
   return RxSchema;
@@ -113,7 +113,7 @@ var RxSchema = /*#__PURE__*/function () {
 exports.RxSchema = RxSchema;
 function getIndexes(jsonSchema) {
   return (jsonSchema.indexes || []).map(function (index) {
-    return (0, _util.isMaybeReadonlyArray)(index) ? index : [index];
+    return (0, _utils.isMaybeReadonlyArray)(index) ? index : [index];
   });
 }
 

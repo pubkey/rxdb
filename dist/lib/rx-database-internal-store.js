@@ -15,7 +15,7 @@ var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/
 var _rxError = require("./rx-error");
 var _rxSchemaHelper = require("./rx-schema-helper");
 var _rxStorageHelper = require("./rx-storage-helper");
-var _util = require("./util");
+var _utils = require("./plugins/utils");
 var INTERNAL_CONTEXT_COLLECTION = 'collection';
 exports.INTERNAL_CONTEXT_COLLECTION = INTERNAL_CONTEXT_COLLECTION;
 var INTERNAL_CONTEXT_STORAGE_TOKEN = 'storage-token';
@@ -139,8 +139,8 @@ function _ensureStorageTokenDocumentExists() {
            * we just try to insert a new document
            * and only fetch the existing one if a conflict happened.
            */
-          storageToken = (0, _util.randomCouchString)(10);
-          passwordHash = rxDatabase.password ? (0, _util.fastUnsecureHash)(rxDatabase.password) : undefined;
+          storageToken = (0, _utils.randomCouchString)(10);
+          passwordHash = rxDatabase.password ? (0, _utils.fastUnsecureHash)(rxDatabase.password) : undefined;
           docData = {
             id: STORAGE_TOKEN_DOCUMENT_ID,
             context: INTERNAL_CONTEXT_STORAGE_TOKEN,
@@ -158,8 +158,8 @@ function _ensureStorageTokenDocumentExists() {
               passwordHash: passwordHash
             },
             _deleted: false,
-            _meta: (0, _util.getDefaultRxDocumentMeta)(),
-            _rev: (0, _util.getDefaultRevision)(),
+            _meta: (0, _utils.getDefaultRxDocumentMeta)(),
+            _rev: (0, _utils.getDefaultRevision)(),
             _attachments: {}
           };
           _context2.next = 5;
@@ -179,7 +179,7 @@ function _ensureStorageTokenDocumentExists() {
            * it means another instance already inserted the storage token.
            * So we get that token from the database and return that one.
            */
-          error = (0, _util.ensureNotFalsy)(writeResult.error[STORAGE_TOKEN_DOCUMENT_ID]);
+          error = (0, _utils.ensureNotFalsy)(writeResult.error[STORAGE_TOKEN_DOCUMENT_ID]);
           if (!(error.isError && error.status === 409)) {
             _context2.next = 15;
             break;
@@ -195,7 +195,7 @@ function _ensureStorageTokenDocumentExists() {
           });
         case 13:
           storageTokenDocInDb = conflictError.documentInDb;
-          return _context2.abrupt("return", (0, _util.ensureNotFalsy)(storageTokenDocInDb));
+          return _context2.abrupt("return", (0, _utils.ensureNotFalsy)(storageTokenDocInDb));
         case 15:
           throw error;
         case 16:
@@ -230,7 +230,7 @@ function _addConnectedStorageToCollection() {
           return (0, _rxStorageHelper.getSingleDocument)(collection.database.internalStore, collectionDocId);
         case 5:
           collectionDoc = _context3.sent;
-          saveData = (0, _util.clone)((0, _util.ensureNotFalsy)(collectionDoc));
+          saveData = (0, _utils.clone)((0, _utils.ensureNotFalsy)(collectionDoc));
           /**
            * Add array if not exist for backwards compatibility
            * TODO remove this in 2023
@@ -257,7 +257,7 @@ function _addConnectedStorageToCollection() {
           _context3.prev = 12;
           _context3.next = 15;
           return (0, _rxStorageHelper.writeSingle)(collection.database.internalStore, {
-            previous: (0, _util.ensureNotFalsy)(collectionDoc),
+            previous: (0, _utils.ensureNotFalsy)(collectionDoc),
             document: saveData
           }, 'add-connected-storage-to-collection');
         case 15:

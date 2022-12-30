@@ -15,7 +15,7 @@ var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"))
 var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 var _inheritsLoose2 = _interopRequireDefault(require("@babel/runtime/helpers/inheritsLoose"));
 var _objectPath = _interopRequireDefault(require("object-path"));
-var _util = require("../../util");
+var _utils = require("../../plugins/utils");
 var _helper = require("./helper");
 Object.keys(_helper).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
@@ -97,7 +97,7 @@ var RxGraphQLReplicationState = /*#__PURE__*/function (_RxReplicationState) {
     this.clientState.credentials = credentials;
   };
   _proto.graphQLRequest = function graphQLRequest(queryParams) {
-    return (0, _helper.graphQLRequest)((0, _util.ensureNotFalsy)(this.url.http), this.clientState, queryParams);
+    return (0, _helper.graphQLRequest)((0, _utils.ensureNotFalsy)(this.url.http), this.clientState, queryParams);
   };
   return RxGraphQLReplicationState;
 }(_replication.RxReplicationState);
@@ -228,16 +228,16 @@ function syncGraphQL(_ref) {
       modifier: push.modifier
     };
   }
-  var graphqlReplicationState = new RxGraphQLReplicationState(url, mutateableClientState, _helper.GRAPHQL_REPLICATION_PLUGIN_IDENTITY_PREFIX + (0, _util.fastUnsecureHash)(url.http ? url.http : url.ws), collection, deletedField, replicationPrimitivesPull, replicationPrimitivesPush, live, retryTime, autoStart);
+  var graphqlReplicationState = new RxGraphQLReplicationState(url, mutateableClientState, _helper.GRAPHQL_REPLICATION_PLUGIN_IDENTITY_PREFIX + (0, _utils.fastUnsecureHash)(url.http ? url.http : url.ws), collection, deletedField, replicationPrimitivesPull, replicationPrimitivesPush, live, retryTime, autoStart);
   var mustUseSocket = url.ws && pull && pull.streamQueryBuilder && live;
   var startBefore = graphqlReplicationState.start.bind(graphqlReplicationState);
   graphqlReplicationState.start = function () {
     if (mustUseSocket) {
-      var wsClient = (0, _graphqlWebsocket.getGraphQLWebSocket)((0, _util.ensureNotFalsy)(url.ws));
+      var wsClient = (0, _graphqlWebsocket.getGraphQLWebSocket)((0, _utils.ensureNotFalsy)(url.ws));
       wsClient.on('connected', function () {
         pullStream$.next('RESYNC');
       });
-      var query = (0, _util.ensureNotFalsy)(pull.streamQueryBuilder)(mutateableClientState.headers);
+      var query = (0, _utils.ensureNotFalsy)(pull.streamQueryBuilder)(mutateableClientState.headers);
       wsClient.subscribe(query, {
         next: function () {
           var _next = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee3(streamResponse) {
@@ -282,7 +282,7 @@ function syncGraphQL(_ref) {
   graphqlReplicationState.cancel = function () {
     pullStream$.complete();
     if (mustUseSocket) {
-      (0, _graphqlWebsocket.removeGraphQLWebSocketRef)((0, _util.ensureNotFalsy)(url.ws));
+      (0, _graphqlWebsocket.removeGraphQLWebSocketRef)((0, _utils.ensureNotFalsy)(url.ws));
     }
     return cancelBefore();
   };

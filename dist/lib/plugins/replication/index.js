@@ -10,7 +10,7 @@ exports.startReplicationOnLeaderShip = startReplicationOnLeaderShip;
 var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
 var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 var _rxjs = require("rxjs");
-var _util = require("../../util");
+var _utils = require("../../plugins/utils");
 var _replicationProtocol = require("../../replication-protocol");
 var _rxError = require("../../rx-error");
 var _replicationHelper = require("./replication-helper");
@@ -140,7 +140,7 @@ var RxReplicationState = /*#__PURE__*/function () {
                           }
                           return _context.abrupt("return", ev);
                         case 2:
-                          useEv = (0, _util.flatClone)(ev);
+                          useEv = (0, _utils.flatClone)(ev);
                           if (_this2.deletedField !== '_deleted') {
                             useEv.documents = useEv.documents.map(function (doc) {
                               return (0, _replicationHelper.swapdeletedFieldToDefaultDeleted)(_this2.deletedField, doc);
@@ -203,14 +203,14 @@ var RxReplicationState = /*#__PURE__*/function () {
                           _context2.t0 = _context2["catch"](5);
                           emitError = (0, _rxError.newRxError)('RC_PULL', {
                             checkpoint: checkpoint,
-                            errors: (0, _util.toArray)(_context2.t0).map(function (er) {
-                              return (0, _util.errorToPlainJson)(er);
+                            errors: (0, _utils.toArray)(_context2.t0).map(function (er) {
+                              return (0, _utils.errorToPlainJson)(er);
                             }),
                             direction: 'pull'
                           });
                           _this2.subjects.error.next(emitError);
                           _context2.next = 18;
-                          return (0, _replicationHelper.awaitRetry)(_this2.collection, (0, _util.ensureNotFalsy)(_this2.retryTime));
+                          return (0, _replicationHelper.awaitRetry)(_this2.collection, (0, _utils.ensureNotFalsy)(_this2.retryTime));
                         case 18:
                           _context2.next = 4;
                           break;
@@ -224,7 +224,7 @@ var RxReplicationState = /*#__PURE__*/function () {
                             documents: []
                           });
                         case 22:
-                          useResult = (0, _util.flatClone)(result);
+                          useResult = (0, _utils.flatClone)(result);
                           if (_this2.deletedField !== '_deleted') {
                             useResult.documents = useResult.documents.map(function (doc) {
                               return (0, _replicationHelper.swapdeletedFieldToDefaultDeleted)(_this2.deletedField, doc);
@@ -330,14 +330,14 @@ var RxReplicationState = /*#__PURE__*/function () {
                           _context4.t0 = _context4["catch"](8);
                           emitError = _context4.t0.rxdb ? _context4.t0 : (0, _rxError.newRxError)('RC_PUSH', {
                             pushRows: rows,
-                            errors: (0, _util.toArray)(_context4.t0).map(function (er) {
-                              return (0, _util.errorToPlainJson)(er);
+                            errors: (0, _utils.toArray)(_context4.t0).map(function (er) {
+                              return (0, _utils.errorToPlainJson)(er);
                             }),
                             direction: 'push'
                           });
                           _this2.subjects.error.next(emitError);
                           _context4.next = 23;
-                          return (0, _replicationHelper.awaitRetry)(_this2.collection, (0, _util.ensureNotFalsy)(_this2.retryTime));
+                          return (0, _replicationHelper.awaitRetry)(_this2.collection, (0, _utils.ensureNotFalsy)(_this2.retryTime));
                         case 23:
                           _context4.next = 7;
                           break;
@@ -348,7 +348,7 @@ var RxReplicationState = /*#__PURE__*/function () {
                           }
                           return _context4.abrupt("return", []);
                         case 27:
-                          conflicts = (0, _util.ensureNotFalsy)(result).map(function (doc) {
+                          conflicts = (0, _utils.ensureNotFalsy)(result).map(function (doc) {
                             return (0, _replicationHelper.swapdeletedFieldToDefaultDeleted)(_this2.deletedField, doc);
                           });
                           return _context4.abrupt("return", conflicts);
@@ -431,7 +431,7 @@ var RxReplicationState = /*#__PURE__*/function () {
             _context6.next = 2;
             return this.startPromise;
           case 2:
-            return _context6.abrupt("return", (0, _replicationProtocol.awaitRxStorageReplicationFirstInSync)((0, _util.ensureNotFalsy)(this.internalReplicationState)));
+            return _context6.abrupt("return", (0, _replicationProtocol.awaitRxStorageReplicationFirstInSync)((0, _utils.ensureNotFalsy)(this.internalReplicationState)));
           case 3:
           case "end":
             return _context6.stop();
@@ -465,13 +465,13 @@ var RxReplicationState = /*#__PURE__*/function () {
             return this.startPromise;
           case 2:
             _context7.next = 4;
-            return (0, _replicationProtocol.awaitRxStorageReplicationFirstInSync)((0, _util.ensureNotFalsy)(this.internalReplicationState));
+            return (0, _replicationProtocol.awaitRxStorageReplicationFirstInSync)((0, _utils.ensureNotFalsy)(this.internalReplicationState));
           case 4:
             _context7.next = 6;
             return this.collection.database.requestIdlePromise();
           case 6:
             _context7.next = 8;
-            return (0, _replicationProtocol.awaitRxStorageReplicationInSync)((0, _util.ensureNotFalsy)(this.internalReplicationState));
+            return (0, _replicationProtocol.awaitRxStorageReplicationInSync)((0, _utils.ensureNotFalsy)(this.internalReplicationState));
           case 8:
             return _context7.abrupt("return", true);
           case 9:
@@ -494,15 +494,15 @@ var RxReplicationState = /*#__PURE__*/function () {
   _proto.cancel = function cancel() {
     var _this3 = this;
     if (this.isStopped()) {
-      return _util.PROMISE_RESOLVE_FALSE;
+      return _utils.PROMISE_RESOLVE_FALSE;
     }
     var promises = [];
     if (this.internalReplicationState) {
       (0, _replicationProtocol.cancelRxStorageReplication)(this.internalReplicationState);
     }
     if (this.metaInstance) {
-      promises.push((0, _util.ensureNotFalsy)(this.internalReplicationState).checkpointQueue.then(function () {
-        return (0, _util.ensureNotFalsy)(_this3.metaInstance).close();
+      promises.push((0, _utils.ensureNotFalsy)(this.internalReplicationState).checkpointQueue.then(function () {
+        return (0, _utils.ensureNotFalsy)(_this3.metaInstance).close();
       }));
     }
     this.subs.forEach(function (sub) {
@@ -534,7 +534,7 @@ function replicateRxCollection(_ref4) {
     waitForLeadership = _ref4$waitForLeadersh === void 0 ? true : _ref4$waitForLeadersh,
     _ref4$autoStart = _ref4.autoStart,
     autoStart = _ref4$autoStart === void 0 ? true : _ref4$autoStart;
-  var replicationIdentifierHash = (0, _util.fastUnsecureHash)([collection.database.name, collection.name, replicationIdentifier].join('|'));
+  var replicationIdentifierHash = (0, _utils.fastUnsecureHash)([collection.database.name, collection.name, replicationIdentifier].join('|'));
   var replicationState = new RxReplicationState(replicationIdentifierHash, collection, deletedField, pull, push, live, retryTime, autoStart);
   startReplicationOnLeaderShip(waitForLeadership, replicationState);
   return replicationState;
@@ -545,7 +545,7 @@ function startReplicationOnLeaderShip(waitForLeadership, replicationState) {
    * is leader when waitForLeadership=true
    */
   var mustWaitForLeadership = waitForLeadership && replicationState.collection.database.multiInstance;
-  var waitTillRun = mustWaitForLeadership ? replicationState.collection.database.waitForLeadership() : _util.PROMISE_RESOLVE_TRUE;
+  var waitTillRun = mustWaitForLeadership ? replicationState.collection.database.waitForLeadership() : _utils.PROMISE_RESOLVE_TRUE;
   return waitTillRun.then(function () {
     if (replicationState.isStopped()) {
       return;

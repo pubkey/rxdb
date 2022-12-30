@@ -9,7 +9,7 @@ exports.runCleanupAfterDelete = runCleanupAfterDelete;
 exports.startCleanupForRxCollection = startCleanupForRxCollection;
 var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
 var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
-var _util = require("../../util");
+var _utils = require("../../plugins/utils");
 var _replication = require("../replication");
 var _cleanupHelper = require("./cleanup-helper");
 /**
@@ -19,7 +19,7 @@ var _cleanupHelper = require("./cleanup-helper");
  * The cleanup is a background task which should
  * not affect the performance of other, more important tasks.
  */
-var RXSOTRAGE_CLEANUP_QUEUE = _util.PROMISE_RESOLVE_TRUE;
+var RXSOTRAGE_CLEANUP_QUEUE = _utils.PROMISE_RESOLVE_TRUE;
 function startCleanupForRxCollection(_x) {
   return _startCleanupForRxCollection.apply(this, arguments);
 }

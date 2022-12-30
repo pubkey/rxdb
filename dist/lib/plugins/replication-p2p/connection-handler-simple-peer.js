@@ -8,7 +8,7 @@ exports.getConnectionHandlerSimplePeer = getConnectionHandlerSimplePeer;
 var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
 var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 var _rxjs = require("rxjs");
-var _util = require("../../util");
+var _utils = require("../../plugins/utils");
 var _simplePeer = _interopRequireDefault(require("simple-peer"));
 var _rxError = require("../../rx-error");
 /**
@@ -18,7 +18,7 @@ function getConnectionHandlerSimplePeer(serverUrl, wrtc) {
   var io = require('socket.io-client');
   var creator = function creator(options) {
     var socket = io(serverUrl);
-    var peerId = (0, _util.randomCouchString)(10);
+    var peerId = (0, _utils.randomCouchString)(10);
     socket.emit('join', {
       room: options.topic,
       peerId: peerId
@@ -77,7 +77,7 @@ function getConnectionHandlerSimplePeer(serverUrl, wrtc) {
     });
     socket.on('signal', function (data) {
       // console.log('got signal(' + peerId + ') ' + data.from + ' -> ' + data.to);
-      var peer = (0, _util.getFromMapOrThrow)(peers, data.from);
+      var peer = (0, _utils.getFromMapOrThrow)(peers, data.from);
       peer.signal(data.signal);
     });
     var handler = {
@@ -111,7 +111,7 @@ function getConnectionHandlerSimplePeer(serverUrl, wrtc) {
         disconnect$.complete();
         message$.complete();
         response$.complete();
-        return _util.PROMISE_RESOLVE_VOID;
+        return _utils.PROMISE_RESOLVE_VOID;
       }
     };
     return handler;
