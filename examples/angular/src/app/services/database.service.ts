@@ -35,8 +35,7 @@ import {
     replicateWithWebsocketServer
 } from 'rxdb/plugins/replication-websocket';
 
-import { RxDBReplicationCouchDBPlugin } from 'rxdb/plugins/replication-couchdb';
-addRxPlugin(RxDBReplicationCouchDBPlugin);
+import { replicateCouchDB } from 'rxdb/plugins/replication-couchdb';
 
 const collectionSettings = {
     [HERO_COLLECTION_NAME]: {
@@ -179,7 +178,8 @@ async function _create(): Promise<RxHeroesDatabase> {
          */
         if (IS_SERVER_SIDE_RENDERING) {
             console.log('DatabaseService: await initial replication to ensure SSR has all data');
-            const firstReplication = await db.hero.syncCouchDB({
+            const firstReplication = await replicateCouchDB({
+                collection: db.hero,
                 url: syncURL + db.hero.name + '/',
                 live: false,
                 pull: {},
@@ -192,7 +192,8 @@ async function _create(): Promise<RxHeroesDatabase> {
          * we start a live replication which also sync the ongoing changes
          */
         console.log('DatabaseService: start ongoing replication');
-        const ongoingReplication = db.hero.syncCouchDB({
+        const ongoingReplication = replicateCouchDB({
+            collection: db.hero,
             url: syncURL + db.hero.name + '/',
             live: true,
             pull: {},

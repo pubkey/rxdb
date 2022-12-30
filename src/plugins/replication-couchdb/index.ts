@@ -1,6 +1,5 @@
 /**
- * this plugin adds the RxCollection.syncCouchDB()-function to rxdb
- * you can use it to sync collections with a remote CouchDB endpoint.
+ * This plugin can be used to sync collections with a remote CouchDB endpoint.
  */
 import {
     ensureNotFalsy,

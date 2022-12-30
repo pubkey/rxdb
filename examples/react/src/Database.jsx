@@ -9,8 +9,7 @@ import {
     heroSchema
 } from './Schema';
 
-import { RxDBReplicationCouchDBPlugin } from 'rxdb/plugins/replication-couchdb';
-addRxPlugin(RxDBReplicationCouchDBPlugin);
+import { replicateCouchDB } from 'rxdb/plugins/replication-couchdb';
 
 import { RxDBLeaderElectionPlugin } from 'rxdb/plugins/leader-election';
 addRxPlugin(RxDBLeaderElectionPlugin);
@@ -82,7 +81,8 @@ const _create = async () => {
     Object.values(db.collections).map(col => col.name).map(colName => {
         const url = syncURL + colName + '/';
         console.log('url: ' + url);
-        const replicationState = db[colName].syncCouchDB({
+        const replicationState = replicateCouchDB({
+            collection: db[colName],
             url,
             live: true,
             pull: {},

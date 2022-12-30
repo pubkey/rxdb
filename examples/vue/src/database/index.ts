@@ -29,8 +29,7 @@ import { wrappedValidateAjvStorage } from 'rxdb/plugins/validate-ajv';
 import { RxDBLeaderElectionPlugin } from 'rxdb/plugins/leader-election';
 addRxPlugin(RxDBLeaderElectionPlugin);
 
-import { RxDBReplicationCouchDBPlugin } from 'rxdb/plugins/replication-couchdb';
-addRxPlugin(RxDBReplicationCouchDBPlugin);
+import { replicateCouchDB } from 'rxdb/plugins/replication-couchdb';
 
 console.log('hostname: ' + window.location.hostname);
 const syncURL = 'http://' + window.location.hostname + ':10101/';
@@ -113,7 +112,8 @@ export async function createDatabase(): Promise<Plugin> {
     const colName = col.name;
     const url = syncURL + colName + '/';
     console.log('url: ' + url);
-    const replicationState = col.syncCouchDB({
+    const replicationState = replicateCouchDB({
+      collection: col,
       url,
       live: true,
       pull: {},
