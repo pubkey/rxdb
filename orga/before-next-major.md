@@ -142,7 +142,7 @@ Atm the rx-collection contains methods like `syncCouchDB()` etc.
 This requires the `rx-collection.ts` to import the types of all replication plugins which will cause tree-shaking bailouts.
 Instead we should only be able to start the replication by using plain pure functions like `replicateCouchDB()`.
 
-## Move util to an util plugin
+## Move util to an util plugin [DONE]
 
 To make tree-shaking work better, create an utils plugin so that the premium plugins and others
 can import utility functions like `from 'rxdb/plugins/util` instead of having to use `from 'rxdb'`.

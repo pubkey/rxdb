@@ -22,7 +22,7 @@ import {
     now,
     objectPathMonad,
     toArray
-} from '../../util';
+} from '../../plugins/utils';
 import modifyjs from 'modifyjs';
 import {
     overwritable,

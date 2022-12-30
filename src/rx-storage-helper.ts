@@ -40,7 +40,7 @@ import {
     getDefaultRxDocumentMeta,
     now,
     randomCouchString
-} from './util';
+} from './plugins/utils';
 
 export const INTERNAL_STORAGE_NAME = '_rxdb_internal';
 export const RX_DATABASE_LOCAL_DOCS_STORAGE_NAME = 'rxdatabase_storage_local';

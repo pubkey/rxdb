@@ -5,7 +5,7 @@ import {
 } from './mquery/nosql-query-builder';
 import type { RxPlugin, RxQuery } from '../../types';
 import { RxQueryBase, tunnelQueryCache } from '../../rx-query';
-import { clone } from '../../util';
+import { clone } from '../../plugins/utils';
 import { runPluginHooks } from '../../hooks';
 
 // if the query-builder plugin is used, we have to save its last path

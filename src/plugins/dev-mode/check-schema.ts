@@ -18,7 +18,7 @@ import type {
 import {
     flattenObject, isMaybeReadonlyArray,
     trimDots
-} from '../../util';
+} from '../../plugins/utils';
 import { rxDocumentProperties } from './entity-properties';
 
 /**

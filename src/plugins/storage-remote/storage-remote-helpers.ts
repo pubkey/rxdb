@@ -2,7 +2,7 @@ import type {
     RxError,
     RxTypeError
 } from '../../types';
-import { errorToPlainJson } from '../../util';
+import { errorToPlainJson } from '../../plugins/utils';
 import type {
     MessageFromRemote,
     MessageToRemote

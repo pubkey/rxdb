@@ -1,5 +1,5 @@
 import type { RxDocumentData, StringKeys, WithDeleted } from '../../types';
-import { flatClone } from '../../util';
+import { flatClone } from '../../plugins/utils';
 import { URLQueryParams } from './couchdb-types';
 
 

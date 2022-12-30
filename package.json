@@ -40,6 +40,13 @@
       "es2015": "./dist/es/index.js",
       "default": "./dist/es/index.js"
     },
+    "./plugins/utils": {
+      "types": "./dist/types/plugins/utils/index.d.ts",
+      "node": "./dist/lib/plugins/utils/index.js",
+      "require": "./dist/lib/plugins/utils/index.js",
+      "es2015": "./dist/es/plugins/utils/index.js",
+      "default": "./dist/es/plugins/utils/index.js"
+    },
     "./plugins/backup": {
       "types": "./dist/types/plugins/backup/index.d.ts",
       "node": "./dist/lib/plugins/backup/index.js",

@@ -17,7 +17,7 @@ import type {
     RxStorageQueryResult
 } from '../../types';
 import { expose } from 'threads/worker';
-import { getFromMapOrThrow } from '../../util';
+import { getFromMapOrThrow } from '../utils';
 import { Observable } from 'rxjs';
 
 

@@ -22,7 +22,7 @@ import {
     parseRevision,
     PROMISE_RESOLVE_FALSE,
     PROMISE_RESOLVE_VOID
-} from '../util';
+} from '../plugins/utils';
 import {
     getLastCheckpointDoc,
     setCheckpoint

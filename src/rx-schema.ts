@@ -5,7 +5,7 @@ import {
     flatClone,
     isMaybeReadonlyArray,
     fastUnsecureHash
-} from './util';
+} from './plugins/utils';
 import {
     newRxError,
 } from './rx-error';

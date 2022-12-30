@@ -27,7 +27,7 @@ import {
     clone,
     ensureNotFalsy,
     flatClone
-} from '../../util';
+} from '../../plugins/utils';
 
 export const MINIMUM_PASSWORD_LENGTH: 8 = 8;
 

@@ -14,7 +14,7 @@ import {
     PROMISE_RESOLVE_VOID,
     getDefaultRxDocumentMeta,
     getDefaultRevision
-} from './util';
+} from './plugins/utils';
 import {
     fillObjectDataBeforeInsert,
     createRxCollectionStorageInstance,

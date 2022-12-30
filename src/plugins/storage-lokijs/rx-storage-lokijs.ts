@@ -19,7 +19,7 @@ import type {
 import {
     ensureNotFalsy,
     flatClone
-} from '../../util';
+} from '../utils';
 import {
     createLokiStorageInstance,
     RxStorageInstanceLoki

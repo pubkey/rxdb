@@ -38,7 +38,7 @@ import {
     getDefaultRevision,
     getDefaultRxDocumentMeta,
     defaultHashFunction
-} from './util';
+} from './plugins/utils';
 import {
     newRxError
 } from './rx-error';

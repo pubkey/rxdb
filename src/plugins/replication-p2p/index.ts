@@ -9,7 +9,7 @@ import type {
     RxReplicationWriteToMasterRow,
     RxTypeError
 } from '../../types';
-import { ensureNotFalsy, getFromMapOrThrow, randomCouchString } from '../../util';
+import { ensureNotFalsy, getFromMapOrThrow, randomCouchString } from '../../plugins/utils';
 import { RxDBLeaderElectionPlugin } from '../leader-election';
 import { replicateRxCollection } from '../replication';
 import { isMasterInP2PReplication, sendMessageAndAwaitAnswer } from './p2p-helper';

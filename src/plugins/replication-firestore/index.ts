@@ -8,7 +8,7 @@ import {
     fastUnsecureHash,
     flatClone,
     lastOfArray
-} from '../../util';
+} from '../../plugins/utils';
 
 import {
     doc,

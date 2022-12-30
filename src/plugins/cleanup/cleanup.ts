@@ -1,5 +1,5 @@
 import type { RxCleanupPolicy, RxCollection } from '../../types';
-import { PROMISE_RESOLVE_TRUE } from '../../util';
+import { PROMISE_RESOLVE_TRUE } from '../../plugins/utils';
 import { REPLICATION_STATE_BY_COLLECTION } from '../replication';
 import { DEFAULT_CLEANUP_POLICY } from './cleanup-helper';
 

@@ -35,7 +35,7 @@ import {
     getFromMapOrThrow,
     getFromObjectOrThrow,
     RXJS_SHARE_REPLAY_DEFAULTS
-} from '../../util';
+} from '../../plugins/utils';
 import { getLocalDocStateByParent, LOCAL_DOC_STATE_BY_PARENT_RESOLVED } from './local-documents-helper';
 
 const RxDocumentParent = createRxDocumentConstructor() as any;

@@ -28,7 +28,7 @@ import type {
 import {
     ensureNotFalsy,
     getFromMapOrThrow
-} from '../../util';
+} from '../../plugins/utils';
 import { InWorkerStorage } from './in-worker';
 
 declare type WorkerStorageInternals = {

@@ -6,7 +6,7 @@ import objectPath from 'object-path';
 import {
     ensureNotFalsy,
     fastUnsecureHash
-} from '../../util';
+} from '../../plugins/utils';
 
 import {
     graphQLRequest,

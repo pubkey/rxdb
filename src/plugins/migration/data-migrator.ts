@@ -23,7 +23,7 @@ import {
     PROMISE_RESOLVE_NULL,
     getDefaultRxDocumentMeta,
     now
-} from '../../util';
+} from '../../plugins/utils';
 import {
     createRxSchema
 } from '../../rx-schema';

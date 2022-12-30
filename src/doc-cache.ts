@@ -7,7 +7,7 @@ import {
     getFromMapOrFill,
     getFromMapOrThrow,
     parseRevision
-} from './util';
+} from './plugins/utils';
 import {
     overwritable
 } from './overwritable';

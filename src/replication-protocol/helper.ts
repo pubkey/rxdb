@@ -7,7 +7,7 @@ import {
     flatClone,
     getDefaultRevision,
     now
-} from '../util';
+} from '../plugins/utils';
 
 export function docStateToWriteDoc<RxDocType>(
     databaseInstanceToken: string,

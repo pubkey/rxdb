@@ -9,7 +9,7 @@ import type {
 } from '../../types';
 import { Dexie } from 'dexie';
 import { DexieSettings } from '../../types';
-import { flatClone, toArray } from '../../util';
+import { flatClone, toArray } from '../utils';
 import { newRxError } from '../../rx-error';
 import {
     getPrimaryFieldOfPrimaryKey,

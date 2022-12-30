@@ -1,7 +1,7 @@
 import { getIndexableStringMonad } from '../../custom-index';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
 import type { RxDocumentData, RxJsonSchema } from '../../types';
-import { toArray } from '../../util';
+import { toArray } from '../../plugins/utils';
 import type { MemoryStorageInternals } from './memory-types';
 
 export function addIndexesToInternalsState<RxDocType>(

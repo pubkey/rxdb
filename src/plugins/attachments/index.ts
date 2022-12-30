@@ -6,7 +6,7 @@ import {
     blobBufferUtil,
     flatClone,
     PROMISE_RESOLVE_VOID
-} from '../../util';
+} from '../../plugins/utils';
 import {
     newRxError
 } from '../../rx-error';

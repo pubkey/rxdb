@@ -16,7 +16,7 @@ import {
     RX_META_LWT_MINIMUM,
     sortObject,
     trimDots
-} from './util';
+} from './plugins/utils';
 
 /**
  * Helper function to create a valid RxJsonSchema

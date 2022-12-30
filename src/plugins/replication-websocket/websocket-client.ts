@@ -11,7 +11,7 @@ import {
     getFromMapOrThrow,
     randomCouchString,
     toArray
-} from '../../util';
+} from '../../plugins/utils';
 import {
     filter,
     map,

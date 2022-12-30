@@ -37,7 +37,7 @@ import {
     PROMISE_RESOLVE_FALSE,
     PROMISE_RESOLVE_TRUE,
     toArray
-} from '../../util';
+} from '../../plugins/utils';
 import {
     awaitRxStorageReplicationFirstInSync,
     awaitRxStorageReplicationInSync,

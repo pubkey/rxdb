@@ -7,7 +7,7 @@ import {
     errorToPlainJson,
     fastUnsecureHash,
     flatClone
-} from '../../util';
+} from '../../plugins/utils';
 
 import { RxDBLeaderElectionPlugin } from '../leader-election';
 import type {

@@ -55,7 +55,7 @@ import {
     now,
     PROMISE_RESOLVE_VOID,
     toArray
-} from '../../util';
+} from '../../plugins/utils';
 import { queryFoundationDB } from './foundationdb-query';
 import { INDEX_MAX } from '../../query-planner';
 import { attachmentMapKey } from '../storage-memory';

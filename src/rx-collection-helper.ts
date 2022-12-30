@@ -13,7 +13,7 @@ import {
     getDefaultRevision,
     getDefaultRxDocumentMeta,
     now
-} from './util';
+} from './plugins/utils';
 import {
     fillPrimaryKey
 } from './rx-schema-helper';
