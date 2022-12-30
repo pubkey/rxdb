@@ -27,7 +27,8 @@ import {
     randomCouchString,
     ensureNotFalsy,
     RxReplicationWriteToMasterRow,
-    ReplicationPullHandlerResult
+    ReplicationPullHandlerResult,
+    RxCollection
 } from '../../';
 
 import {
@@ -2401,7 +2402,7 @@ describe('replication-graphql.test.ts', () => {
                         schema: schemas.humanWithTimestampAllIndex
                     }
                 });
-                const collection = collections.humans;
+                const collection: RxCollection<schemaObjects.HumanWithTimestampDocumentType> = collections.humans;
 
                 // insert data to slow down the db
                 const amount = 30;
@@ -2411,7 +2412,7 @@ describe('replication-graphql.test.ts', () => {
                         .map(d => collection.insert(d))
                 );
 
-                const replicationState = replicateGraphQL({
+                const replicationState = replicateGraphQL<schemaObjects.HumanWithTimestampDocumentType, any>({
                     collection,
                     url: {
                         http: browserServerUrl
@@ -2447,7 +2448,7 @@ describe('replication-graphql.test.ts', () => {
                     }
                 });
                 const collection2 = collections2.humans;
-                const replicationState2 = replicateGraphQL({
+                const replicationState2 = replicateGraphQL<any, any>({
                     collection: collection2,
                     url: {
                         http: browserServerUrl

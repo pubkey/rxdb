@@ -219,7 +219,7 @@ describe('replication-couchdb.test.ts', () => {
             collection: RxCollection<RxDocType>,
             server: any
         ): Promise<RxCouchDBReplicationState<RxDocType>> {
-            const replicationState = replicateCouchDB({
+            const replicationState = replicateCouchDB<RxDocType>({
                 collection,
                 url: server.url,
                 live: true,

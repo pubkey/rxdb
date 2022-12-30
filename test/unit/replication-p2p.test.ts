@@ -112,7 +112,7 @@ describe('replication-p2p.test.ts', () => {
     ): Promise<RxP2PReplicationPool<RxDocType>[]> {
         const ret = await Promise.all(
             collections.map(async (collection) => {
-                const replicationPool = await replicateP2P({
+                const replicationPool = await replicateP2P<RxDocType>({
                     collection,
                     topic,
                     secret,
