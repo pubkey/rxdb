@@ -11,7 +11,7 @@ import {
     firstPropertyNameOfObject,
     toArray,
     isMaybeReadonlyArray
-} from './util';
+} from './plugins/utils';
 
 /**
  * Normalize the query to ensure we have all fields set

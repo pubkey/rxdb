@@ -7,7 +7,7 @@ import _regeneratorRuntime from "@babel/runtime/regenerator";
 import { overwritable } from './overwritable';
 import { newRxError } from './rx-error';
 import { fillPrimaryKey, getPrimaryFieldOfPrimaryKey } from './rx-schema-helper';
-import { createRevision, defaultHashFunction, ensureNotFalsy, firstPropertyValueOfObject, flatClone, getDefaultRevision, getDefaultRxDocumentMeta, now, randomCouchString } from './util';
+import { createRevision, defaultHashFunction, ensureNotFalsy, firstPropertyValueOfObject, flatClone, getDefaultRevision, getDefaultRxDocumentMeta, now, randomCouchString } from './plugins/utils';
 export var INTERNAL_STORAGE_NAME = '_rxdb_internal';
 export var RX_DATABASE_LOCAL_DOCS_STORAGE_NAME = 'rxdatabase_storage_local';
 export function getSingleDocument(_x, _x2) {

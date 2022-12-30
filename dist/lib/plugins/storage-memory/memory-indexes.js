@@ -7,11 +7,11 @@ exports.addIndexesToInternalsState = addIndexesToInternalsState;
 exports.getMemoryIndexName = getMemoryIndexName;
 var _customIndex = require("../../custom-index");
 var _rxSchemaHelper = require("../../rx-schema-helper");
-var _util = require("../../util");
+var _utils = require("../../plugins/utils");
 function addIndexesToInternalsState(state, schema) {
   var primaryPath = (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(schema.primaryKey);
   var useIndexes = !schema.indexes ? [] : schema.indexes.map(function (row) {
-    return (0, _util.toArray)(row);
+    return (0, _utils.toArray)(row);
   });
 
   // we need this as default index

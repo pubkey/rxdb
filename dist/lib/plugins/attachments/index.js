@@ -14,7 +14,7 @@ exports.putAttachment = putAttachment;
 var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
 var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 var _operators = require("rxjs/operators");
-var _util = require("../../util");
+var _utils = require("../../plugins/utils");
 var _rxError = require("../../rx-error");
 function ensureSchemaSupportsAttachments(doc) {
   var schemaJson = doc.collection.schema.jsonSchema;
@@ -79,7 +79,7 @@ var RxAttachment = /*#__PURE__*/function () {
           case 2:
             plainDataBase64 = _context.sent;
             _context.next = 5;
-            return _util.blobBufferUtil.createBlobBufferFromBase64(plainDataBase64, this.type);
+            return _utils.blobBufferUtil.createBlobBufferFromBase64(plainDataBase64, this.type);
           case 5:
             ret = _context.sent;
             return _context.abrupt("return", ret);
@@ -105,7 +105,7 @@ var RxAttachment = /*#__PURE__*/function () {
           case 2:
             data = _context2.sent;
             _context2.next = 5;
-            return _util.blobBufferUtil.toString(data);
+            return _utils.blobBufferUtil.toString(data);
           case 5:
             asString = _context2.sent;
             return _context2.abrupt("return", asString);
@@ -146,16 +146,16 @@ function _putAttachment() {
       while (1) switch (_context3.prev = _context3.next) {
         case 0:
           ensureSchemaSupportsAttachments(this);
-          dataSize = _util.blobBufferUtil.size(attachmentData.data);
+          dataSize = _utils.blobBufferUtil.size(attachmentData.data);
           _context3.next = 4;
-          return _util.blobBufferUtil.toBase64String(attachmentData.data);
+          return _utils.blobBufferUtil.toBase64String(attachmentData.data);
         case 4:
           dataString = _context3.sent;
           id = attachmentData.id;
           type = attachmentData.type;
           data = dataString;
           return _context3.abrupt("return", this.collection.incrementalWriteQueue.addWrite(this._data, function (docWriteData) {
-            docWriteData._attachments = (0, _util.flatClone)(docWriteData._attachments);
+            docWriteData._attachments = (0, _utils.flatClone)(docWriteData._attachments);
             docWriteData._attachments[id] = {
               length: dataSize,
               type: type,
@@ -263,7 +263,7 @@ function postMigrateDocument(_action) {
    * No longer needed because
    * we store the attachments data buffers directly in the document.
    */
-  return _util.PROMISE_RESOLVE_VOID;
+  return _utils.PROMISE_RESOLVE_VOID;
 }
 var RxDBAttachmentsPlugin = {
   name: 'attachments',

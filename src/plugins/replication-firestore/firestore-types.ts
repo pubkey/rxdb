@@ -33,7 +33,7 @@ export type FirestoreOptions<RxDocType> = {
 
 export type SyncOptionsFirestore<RxDocType> = Omit<
     ReplicationOptions<RxDocType, any>,
-    'pull' | 'push' | 'replicationIdentifier' | 'collection'
+    'pull' | 'push' | 'replicationIdentifier'
 > & {
     firestore: FirestoreOptions<RxDocType>;
     /**

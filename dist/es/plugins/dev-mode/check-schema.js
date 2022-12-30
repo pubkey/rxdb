@@ -6,7 +6,7 @@
 import objectPath from 'object-path';
 import { newRxError } from '../../rx-error';
 import { getPrimaryFieldOfPrimaryKey, getSchemaByObjectPath } from '../../rx-schema-helper';
-import { flattenObject, isMaybeReadonlyArray, trimDots } from '../../util';
+import { flattenObject, isMaybeReadonlyArray, trimDots } from '../../plugins/utils';
 import { rxDocumentProperties } from './entity-properties';
 
 /**

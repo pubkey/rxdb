@@ -3,7 +3,7 @@ import _regeneratorRuntime from "@babel/runtime/regenerator";
 import { replicateRxCollection } from '../replication';
 import ReconnectingWebSocket from 'reconnecting-websocket';
 import IsomorphicWebSocket from 'isomorphic-ws';
-import { errorToPlainJson, getFromMapOrThrow, randomCouchString, toArray } from '../../util';
+import { errorToPlainJson, getFromMapOrThrow, randomCouchString, toArray } from '../../plugins/utils';
 import { filter, map, Subject, firstValueFrom, BehaviorSubject } from 'rxjs';
 import { newRxError } from '../../rx-error';
 /**

@@ -1,14 +1,10 @@
-/**
- * this plugin adds the RxCollection.syncCouchDB()-function to rxdb
- * you can use it to sync collections with a remote CouchDB endpoint.
- */
 import {
     ensureNotFalsy,
     errorToPlainJson,
     fastUnsecureHash,
     flatClone,
     lastOfArray
-} from '../../util';
+} from '../../plugins/utils';
 
 import {
     doc,
@@ -29,7 +25,6 @@ import {
 import { RxDBLeaderElectionPlugin } from '../leader-election';
 import type {
     RxCollection,
-    RxPlugin,
     ReplicationPullOptions,
     ReplicationPushOptions,
     RxReplicationWriteToMasterRow,
@@ -89,11 +84,11 @@ export class RxFirestoreReplicationState<RxDocType> extends RxReplicationState<R
     }
 }
 
-export function syncFirestore<RxDocType>(
-    this: RxCollection<RxDocType>,
+export function replicateFirestore<RxDocType>(
     options: SyncOptionsFirestore<RxDocType>
 ): RxFirestoreReplicationState<RxDocType> {
-    const collection = this;
+    const collection = options.collection;
+    addRxPlugin(RxDBLeaderElectionPlugin);
     const pullStream$: Subject<RxReplicationPullStreamItem<RxDocType, FirestoreCheckpointType>> = new Subject();
     let replicationPrimitivesPull: ReplicationPullOptions<RxDocType, FirestoreCheckpointType> | undefined;
     options.live = typeof options.live === 'undefined' ? true : options.live;
@@ -105,7 +100,7 @@ export function syncFirestore<RxDocType>(
     /**
      * The serverTimestampField MUST NOT be part of the collections RxJsonSchema.
      */
-    const schemaPart = getSchemaByObjectPath(this.schema.jsonSchema, serverTimestampField);
+    const schemaPart = getSchemaByObjectPath(collection.schema.jsonSchema, serverTimestampField);
     if (
         schemaPart ||
         // also must not be nested.
@@ -113,7 +108,7 @@ export function syncFirestore<RxDocType>(
     ) {
         throw newRxError('RC6', {
             field: serverTimestampField,
-            schema: this.schema.jsonSchema
+            schema: collection.schema.jsonSchema
         });
     }
 
@@ -358,16 +353,3 @@ export function syncFirestore<RxDocType>(
 
     return replicationState;
 }
-
-export const RxDBReplicationFirestorePlugin: RxPlugin = {
-    name: 'replication-firestore',
-    init() {
-        addRxPlugin(RxDBLeaderElectionPlugin);
-    },
-    rxdb: true,
-    prototypes: {
-        RxCollection: (proto: any) => {
-            proto.syncFirestore = syncFirestore;
-        }
-    }
-};

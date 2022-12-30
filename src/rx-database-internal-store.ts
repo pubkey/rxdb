@@ -28,7 +28,7 @@ import {
     getDefaultRevision,
     getDefaultRxDocumentMeta,
     randomCouchString
-} from './util';
+} from './plugins/utils';
 
 export const INTERNAL_CONTEXT_COLLECTION = 'collection';
 export const INTERNAL_CONTEXT_STORAGE_TOKEN = 'storage-token';

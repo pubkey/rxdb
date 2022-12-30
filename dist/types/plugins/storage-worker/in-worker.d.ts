@@ -4,7 +4,7 @@
  */
 import type { BulkWriteRow, EventBulk, RxConflictResultionTask, RxConflictResultionTaskSolution, RxDocumentData, RxDocumentDataById, RxStorage, RxStorageBulkWriteResponse, RxStorageChangeEvent, RxStorageCountResult, RxStorageInstanceCreationParams, RxStorageQueryResult } from '../../types';
 import { Observable } from 'rxjs';
-export declare type InWorkerStorage<RxDocType, CheckpointType> = {
+export type InWorkerStorage<RxDocType, CheckpointType> = {
     createStorageInstance(params: RxStorageInstanceCreationParams<RxDocType, any>): Promise<number>;
     bulkWrite(instanceId: number, documentWrites: BulkWriteRow<RxDocType>[], context: string): Promise<RxStorageBulkWriteResponse<RxDocType>>;
     findDocumentsById(instanceId: number, ids: string[], deleted: boolean): Promise<RxDocumentDataById<RxDocType>>;

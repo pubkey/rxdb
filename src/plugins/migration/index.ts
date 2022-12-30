@@ -12,7 +12,7 @@ import type {
     RxDatabase,
     AllMigrationStates
 } from '../../types';
-import { PROMISE_RESOLVE_FALSE, RXJS_SHARE_REPLAY_DEFAULTS } from '../../util';
+import { PROMISE_RESOLVE_FALSE, RXJS_SHARE_REPLAY_DEFAULTS } from '../../plugins/utils';
 import {
     mustMigrate,
     DataMigrator

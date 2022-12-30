@@ -9,7 +9,7 @@ exports.fillObjectDataBeforeInsert = fillObjectDataBeforeInsert;
 exports.removeCollectionStorages = removeCollectionStorages;
 var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
 var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
-var _util = require("./util");
+var _utils = require("./plugins/utils");
 var _rxSchemaHelper = require("./rx-schema-helper");
 var _hooks = require("./hooks");
 var _rxDatabaseInternalStore = require("./rx-database-internal-store");
@@ -21,7 +21,7 @@ var _rxStorageHelper = require("./rx-storage-helper");
 function fillObjectDataBeforeInsert(schema, data) {
   var useJson = schema.fillObjectWithDefaults(data);
   useJson = (0, _rxSchemaHelper.fillPrimaryKey)(schema.primaryPath, schema.jsonSchema, useJson);
-  useJson._meta = (0, _util.getDefaultRxDocumentMeta)();
+  useJson._meta = (0, _utils.getDefaultRxDocumentMeta)();
   if (!useJson.hasOwnProperty('_deleted')) {
     useJson._deleted = false;
   }
@@ -29,7 +29,7 @@ function fillObjectDataBeforeInsert(schema, data) {
     useJson._attachments = {};
   }
   if (!useJson.hasOwnProperty('_rev')) {
-    useJson._rev = (0, _util.getDefaultRevision)();
+    useJson._rev = (0, _utils.getDefaultRevision)();
   }
   return useJson;
 }
@@ -164,8 +164,8 @@ function _removeCollectionStorages() {
           writeRows = relevantCollectionMetaDocs.map(function (doc) {
             var writeDoc = (0, _rxStorageHelper.flatCloneDocWithMeta)(doc);
             writeDoc._deleted = true;
-            writeDoc._meta.lwt = (0, _util.now)();
-            writeDoc._rev = (0, _util.createRevision)(databaseInstanceToken, doc);
+            writeDoc._meta.lwt = (0, _utils.now)();
+            writeDoc._rev = (0, _utils.createRevision)(databaseInstanceToken, doc);
             return {
               previous: doc,
               document: writeDoc

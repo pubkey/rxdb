@@ -9,7 +9,7 @@ exports.getStartIndexStringFromLowerBound = getStartIndexStringFromLowerBound;
 exports.getStartIndexStringFromUpperBound = getStartIndexStringFromUpperBound;
 exports.getStringLengthOfIndexNumber = getStringLengthOfIndexNumber;
 var _rxSchemaHelper = require("./rx-schema-helper");
-var _util = require("./util");
+var _utils = require("./plugins/utils");
 var _queryPlanner = require("./query-planner");
 /**
  * For some RxStorage implementations,
@@ -50,7 +50,7 @@ function getIndexableStringMonad(schema, index) {
       schemaPart: schemaPart,
       parsedLengths: parsedLengths,
       hasComplexPath: fieldName.includes('.'),
-      getValueFn: (0, _util.objectPathMonad)(fieldName)
+      getValueFn: (0, _utils.objectPathMonad)(fieldName)
     };
   });
   var ret = function ret(docData) {
@@ -68,7 +68,7 @@ function getIndexableStringMonad(schema, index) {
         var boolToStr = fieldValue ? '1' : '0';
         str += boolToStr;
       } else {
-        var parsedLengths = (0, _util.ensureNotFalsy)(props.parsedLengths);
+        var parsedLengths = (0, _utils.ensureNotFalsy)(props.parsedLengths);
         if (!fieldValue) {
           fieldValue = 0;
         }
@@ -113,7 +113,7 @@ function getStartIndexStringFromLowerBound(schema, index, lowerBound, inclusiveS
     var type = schemaPart.type;
     switch (type) {
       case 'string':
-        var maxLength = (0, _util.ensureNotFalsy)(schemaPart.maxLength);
+        var maxLength = (0, _utils.ensureNotFalsy)(schemaPart.maxLength);
         if (typeof bound === 'string') {
           str += bound.padEnd(maxLength, ' ');
         } else {
@@ -153,7 +153,7 @@ function getStartIndexStringFromUpperBound(schema, index, upperBound, inclusiveE
     var type = schemaPart.type;
     switch (type) {
       case 'string':
-        var maxLength = (0, _util.ensureNotFalsy)(schemaPart.maxLength);
+        var maxLength = (0, _utils.ensureNotFalsy)(schemaPart.maxLength);
         if (typeof bound === 'string') {
           str += bound.padEnd(maxLength, inclusiveEnd ? _queryPlanner.INDEX_MAX : ' ');
         } else {

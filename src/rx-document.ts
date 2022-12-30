@@ -17,7 +17,7 @@ import {
     PROMISE_RESOLVE_NULL,
     RXJS_SHARE_REPLAY_DEFAULTS,
     getFromObjectOrThrow
-} from './util';
+} from './plugins/utils';
 import {
     newRxError
 } from './rx-error';

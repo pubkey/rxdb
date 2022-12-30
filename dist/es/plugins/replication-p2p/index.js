@@ -3,7 +3,7 @@ import _regeneratorRuntime from "@babel/runtime/regenerator";
 import { BehaviorSubject, filter, firstValueFrom, map, Subject } from 'rxjs';
 import { addRxPlugin } from '../../plugin';
 import { rxStorageInstanceToReplicationHandler } from '../../replication-protocol';
-import { ensureNotFalsy, getFromMapOrThrow, randomCouchString } from '../../util';
+import { ensureNotFalsy, getFromMapOrThrow, randomCouchString } from '../../plugins/utils';
 import { RxDBLeaderElectionPlugin } from '../leader-election';
 import { replicateRxCollection } from '../replication';
 import { isMasterInP2PReplication, sendMessageAndAwaitAnswer } from './p2p-helper';

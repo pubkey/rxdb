@@ -19,7 +19,7 @@ var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/
 var _rxStorageInstanceLoki = require("./rx-storage-instance-loki");
 var _lokijs = _interopRequireDefault(require("lokijs"));
 var _unload = require("unload");
-var _util = require("../../util");
+var _utils = require("../utils");
 var _lokiSaveQueue = require("./loki-save-queue");
 var _rxError = require("../../rx-error");
 var _objectPath = _interopRequireDefault(require("object-path"));
@@ -42,7 +42,7 @@ function stripLokiKey(docData) {
   if (!docData.$loki) {
     return docData;
   }
-  var cloned = (0, _util.flatClone)(docData);
+  var cloned = (0, _utils.flatClone)(docData);
 
   /**
    * In RxDB version 12.0.0,
@@ -112,7 +112,7 @@ function getLokiDatabase(databaseName, databaseSettings) {
               autosave: false,
               throttledSaves: false
             });
-            database = new _lokijs["default"](databaseName + '.db', (0, _util.flatClone)(useSettings));
+            database = new _lokijs["default"](databaseName + '.db', (0, _utils.flatClone)(useSettings));
             lokiSaveQueue = new _lokiSaveQueue.LokiSaveQueue(database, useSettings);
             /**
              * Wait until all data is loaded from persistence adapter.
@@ -303,7 +303,7 @@ function _requestRemoteInstance() {
         case 0:
           isRxStorageInstanceLoki = typeof instance.query === 'function';
           messageType = isRxStorageInstanceLoki ? LOKI_BROADCAST_CHANNEL_MESSAGE_TYPE : LOKI_KEY_OBJECT_BROADCAST_CHANNEL_MESSAGE_TYPE;
-          leaderElector = (0, _util.ensureNotFalsy)(instance.internals.leaderElector);
+          leaderElector = (0, _utils.ensureNotFalsy)(instance.internals.leaderElector);
           _context3.next = 5;
           return waitUntilHasLeader(leaderElector);
         case 5:
@@ -318,7 +318,7 @@ function _requestRemoteInstance() {
             };
             broadcastChannel.addEventListener('internal', whenDeathListener);
           });
-          requestId = (0, _util.randomCouchString)(12);
+          requestId = (0, _utils.randomCouchString)(12);
           responsePromise = new Promise(function (res, _rej) {
             responseListener = function responseListener(msg) {
               if (msg.type === messageType && msg.response === true && msg.requestId === requestId) {
@@ -415,7 +415,7 @@ function _handleRemoteRequest() {
             isError: isError,
             type: msg.type
           };
-          (0, _util.ensureNotFalsy)(instance.internals.leaderElector).broadcastChannel.postMessage(response);
+          (0, _utils.ensureNotFalsy)(instance.internals.leaderElector).broadcastChannel.postMessage(response);
         case 17:
         case "end":
           return _context4.stop();
@@ -444,7 +444,7 @@ function _waitUntilHasLeader() {
           return leaderElector.applyOnce();
         case 3:
           _context5.next = 5;
-          return (0, _util.promiseWait)(0);
+          return (0, _utils.promiseWait)(0);
         case 5:
           _context5.next = 0;
           break;
@@ -483,7 +483,7 @@ function _mustUseLocalState() {
           }
           return _context6.abrupt("return", instance.internals.localState);
         case 4:
-          leaderElector = (0, _util.ensureNotFalsy)(instance.internals.leaderElector);
+          leaderElector = (0, _utils.ensureNotFalsy)(instance.internals.leaderElector);
           _context6.next = 7;
           return waitUntilHasLeader(leaderElector);
         case 7:
@@ -506,7 +506,7 @@ function _mustUseLocalState() {
             schema: instance.schema,
             multiInstance: instance.internals.leaderElector ? true : false
           }, instance.databaseSettings);
-          return _context6.abrupt("return", (0, _util.ensureNotFalsy)(instance.internals.localState));
+          return _context6.abrupt("return", (0, _utils.ensureNotFalsy)(instance.internals.localState));
         case 14:
           return _context6.abrupt("return", false);
         case 15:

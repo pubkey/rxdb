@@ -8,7 +8,7 @@ var _exportNames = {
 };
 exports.getRxStorageMemory = getRxStorageMemory;
 var _rxStorageHelper = require("../../rx-storage-helper");
-var _util = require("../../util");
+var _utils = require("../../plugins/utils");
 var _dexieStatics = require("../storage-dexie/dexie-statics");
 var _rxStorageInstanceMemory = require("./rx-storage-instance-memory");
 Object.keys(_rxStorageInstanceMemory).forEach(function (key) {
@@ -86,7 +86,7 @@ function getRxStorageMemory() {
       (0, _rxStorageHelper.ensureRxStorageInstanceParamsAreCorrect)(params);
 
       // TODO we should not need to append the schema version here.
-      params = (0, _util.flatClone)(params);
+      params = (0, _utils.flatClone)(params);
       params.collectionName = params.collectionName + '-' + params.schema.version;
       var useSettings = Object.assign({}, settings, params.options);
       return (0, _rxStorageInstanceMemory.createMemoryStorageInstance)(this, params, useSettings);

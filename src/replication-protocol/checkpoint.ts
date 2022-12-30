@@ -15,7 +15,7 @@ import {
     getDefaultRxDocumentMeta,
     getFromObjectOrThrow,
     now
-} from '../util';
+} from '../plugins/utils';
 import { RX_REPLICATION_META_INSTANCE_SCHEMA } from './meta-instance';
 
 export async function getLastCheckpointDoc<RxDocType, CheckpointType>(

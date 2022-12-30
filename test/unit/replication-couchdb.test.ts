@@ -11,14 +11,13 @@ import * as schemaObjects from '../helper/schema-objects';
 import * as humansCollection from '../helper/humans-collection';
 
 import {
-    addRxPlugin,
     RxCollection
 } from '../../';
 
 import {
     mergeUrlQueryParams,
     RxCouchDBReplicationState,
-    RxDBReplicationCouchDBPlugin
+    replicateCouchDB
 } from '../../plugins/replication-couchdb';
 
 import { CouchAllDocsResponse } from '../../src/types';
@@ -34,7 +33,6 @@ describe('replication-couchdb.test.ts', () => {
         return;
     }
     const SpawnServer = require('../helper/spawn-server');
-    addRxPlugin(RxDBReplicationCouchDBPlugin);
 
     async function getAllServerDocs(serverUrl: string) {
         const url = serverUrl + '_all_docs?' + mergeUrlQueryParams({ include_docs: true });
@@ -58,7 +56,8 @@ describe('replication-couchdb.test.ts', () => {
     }
 
     async function syncOnce(collection: RxCollection, server: any) {
-        const replicationState = collection.syncCouchDB({
+        const replicationState = replicateCouchDB({
+            collection,
             url: server.url,
             live: false,
             pull: {},
@@ -220,7 +219,8 @@ describe('replication-couchdb.test.ts', () => {
             collection: RxCollection<RxDocType>,
             server: any
         ): Promise<RxCouchDBReplicationState<RxDocType>> {
-            const replicationState = collection.syncCouchDB({
+            const replicationState = replicateCouchDB<RxDocType>({
+                collection,
                 url: server.url,
                 live: true,
                 pull: {},

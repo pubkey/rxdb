@@ -1,6 +1,6 @@
 import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
 import _regeneratorRuntime from "@babel/runtime/regenerator";
-import { getDefaultRevision, getDefaultRxDocumentMeta } from '../../util';
+import { getDefaultRevision, getDefaultRxDocumentMeta } from '../../plugins/utils';
 import { filter, map, startWith, mergeMap } from 'rxjs/operators';
 import { getLocalDocStateByParent } from './local-documents-helper';
 import { getSingleDocument, writeSingle } from '../../rx-storage-helper';

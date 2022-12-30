@@ -7,7 +7,7 @@ import type {
     RxDocumentData,
     RxStorageQueryResult
 } from '../../types';
-import { ensureNotFalsy } from '../../util';
+import { ensureNotFalsy } from '../../plugins/utils';
 import { RxStorageDexieStatics } from '../storage-dexie';
 import { getFoundationDBIndexName } from './foundationdb-helpers';
 import type {

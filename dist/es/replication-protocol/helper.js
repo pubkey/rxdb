@@ -1,4 +1,4 @@
-import { createRevision, flatClone, getDefaultRevision, now } from '../util';
+import { createRevision, flatClone, getDefaultRevision, now } from '../plugins/utils';
 export function docStateToWriteDoc(databaseInstanceToken, docState, previous) {
   var docData = Object.assign({}, docState, {
     _attachments: {},

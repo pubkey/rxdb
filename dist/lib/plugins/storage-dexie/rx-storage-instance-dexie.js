@@ -9,14 +9,14 @@ exports.createDexieStorageInstance = createDexieStorageInstance;
 var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
 var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 var _rxjs = require("rxjs");
-var _util = require("../../util");
+var _utils = require("../utils");
 var _dexieHelper = require("./dexie-helper");
 var _dexieQuery = require("./dexie-query");
 var _rxSchemaHelper = require("../../rx-schema-helper");
 var _rxStorageHelper = require("../../rx-storage-helper");
 var _rxStorageMultiinstance = require("../../rx-storage-multiinstance");
 var _rxError = require("../../rx-error");
-var instanceId = (0, _util.now)();
+var instanceId = (0, _utils.now)();
 var RxStorageInstanceDexie = /*#__PURE__*/function () {
   function RxStorageInstanceDexie(storage, databaseName, collectionName, schema, internals, options, settings) {
     this.changes$ = new _rxjs.Subject();
@@ -110,9 +110,9 @@ var RxStorageInstanceDexie = /*#__PURE__*/function () {
                     _context.next = 15;
                     return Promise.all([bulkPutDocs.length > 0 ? state.dexieTable.bulkPut(bulkPutDocs.map(function (d) {
                       return (0, _dexieHelper.fromStorageToDexie)(d);
-                    })) : _util.PROMISE_RESOLVE_VOID, bulkRemoveDocs.length > 0 ? state.dexieTable.bulkDelete(bulkRemoveDocs) : _util.PROMISE_RESOLVE_VOID, bulkPutDeletedDocs.length > 0 ? state.dexieDeletedTable.bulkPut(bulkPutDeletedDocs.map(function (d) {
+                    })) : _utils.PROMISE_RESOLVE_VOID, bulkRemoveDocs.length > 0 ? state.dexieTable.bulkDelete(bulkRemoveDocs) : _utils.PROMISE_RESOLVE_VOID, bulkPutDeletedDocs.length > 0 ? state.dexieDeletedTable.bulkPut(bulkPutDeletedDocs.map(function (d) {
                       return (0, _dexieHelper.fromStorageToDexie)(d);
-                    })) : _util.PROMISE_RESOLVE_VOID, bulkRemoveDeletedDocs.length > 0 ? state.dexieDeletedTable.bulkDelete(bulkRemoveDeletedDocs) : _util.PROMISE_RESOLVE_VOID]);
+                    })) : _utils.PROMISE_RESOLVE_VOID, bulkRemoveDeletedDocs.length > 0 ? state.dexieDeletedTable.bulkDelete(bulkRemoveDeletedDocs) : _utils.PROMISE_RESOLVE_VOID]);
                   case 15:
                   case "end":
                     return _context.stop();
@@ -120,17 +120,17 @@ var RxStorageInstanceDexie = /*#__PURE__*/function () {
               }, _callee);
             })));
           case 9:
-            if ((0, _util.ensureNotFalsy)(categorized).eventBulk.events.length > 0) {
+            if ((0, _utils.ensureNotFalsy)(categorized).eventBulk.events.length > 0) {
               lastState = (0, _rxStorageHelper.getNewestOfDocumentStates)(this.primaryPath, Object.values(ret.success));
-              (0, _util.ensureNotFalsy)(categorized).eventBulk.checkpoint = {
+              (0, _utils.ensureNotFalsy)(categorized).eventBulk.checkpoint = {
                 id: lastState[this.primaryPath],
                 lwt: lastState._meta.lwt
               };
-              endTime = (0, _util.now)();
-              (0, _util.ensureNotFalsy)(categorized).eventBulk.events.forEach(function (event) {
+              endTime = (0, _utils.now)();
+              (0, _utils.ensureNotFalsy)(categorized).eventBulk.events.forEach(function (event) {
                 return event.endTime = endTime;
               });
-              this.changes$.next((0, _util.ensureNotFalsy)(categorized).eventBulk);
+              this.changes$.next((0, _utils.ensureNotFalsy)(categorized).eventBulk);
             }
             return _context2.abrupt("return", ret);
           case 11:
@@ -241,7 +241,7 @@ var RxStorageInstanceDexie = /*#__PURE__*/function () {
         while (1) switch (_context7.prev = _context7.next) {
           case 0:
             ensureNotClosed(this);
-            sinceLwt = checkpoint ? checkpoint.lwt : _util.RX_META_LWT_MINIMUM;
+            sinceLwt = checkpoint ? checkpoint.lwt : _utils.RX_META_LWT_MINIMUM;
             sinceId = checkpoint ? checkpoint.id : '';
             _context7.next = 5;
             return this.internals;
@@ -277,9 +277,9 @@ var RxStorageInstanceDexie = /*#__PURE__*/function () {
             changedDocsNormal = _yield$Promise$all[0];
             changedDocsDeleted = _yield$Promise$all[1];
             changedDocs = changedDocsNormal.concat(changedDocsDeleted);
-            changedDocs = (0, _util.sortDocumentsByLastWriteTime)(this.primaryPath, changedDocs);
+            changedDocs = (0, _utils.sortDocumentsByLastWriteTime)(this.primaryPath, changedDocs);
             changedDocs = changedDocs.slice(0, limit);
-            lastDoc = (0, _util.lastOfArray)(changedDocs);
+            lastDoc = (0, _utils.lastOfArray)(changedDocs);
             return _context7.abrupt("return", {
               documents: changedDocs,
               checkpoint: lastDoc ? {
@@ -349,7 +349,7 @@ var RxStorageInstanceDexie = /*#__PURE__*/function () {
               return _regenerator["default"].wrap(function _callee9$(_context9) {
                 while (1) switch (_context9.prev = _context9.next) {
                   case 0:
-                    maxDeletionTime = (0, _util.now)() - minimumDeletedTime;
+                    maxDeletionTime = (0, _utils.now)() - minimumDeletedTime;
                     _context9.next = 3;
                     return state.dexieDeletedTable.where('_meta.lwt').below(maxDeletionTime).toArray();
                   case 3:
@@ -387,7 +387,7 @@ var RxStorageInstanceDexie = /*#__PURE__*/function () {
     this.closed = true;
     this.changes$.complete();
     (0, _dexieHelper.closeDexieDb)(this.internals);
-    return _util.PROMISE_RESOLVE_VOID;
+    return _utils.PROMISE_RESOLVE_VOID;
   };
   _proto.conflictResultionTasks = function conflictResultionTasks() {
     return new _rxjs.Subject();

@@ -2,7 +2,7 @@ import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
 import _regeneratorRuntime from "@babel/runtime/regenerator";
 import * as fs from 'fs';
 import * as path from 'path';
-import { blobBufferUtil, now } from '../../util';
+import { blobBufferUtil, now } from '../../plugins/utils';
 
 /**
  * ensure that the given folder exists

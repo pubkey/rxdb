@@ -12,7 +12,7 @@ var _rxjs = require("rxjs");
 var _customIndex = require("../../custom-index");
 var _rxSchemaHelper = require("../../rx-schema-helper");
 var _rxStorageHelper = require("../../rx-storage-helper");
-var _util = require("../../util");
+var _utils = require("../../plugins/utils");
 var _dexieStatics = require("../storage-dexie/dexie-statics");
 var _binarySearchBounds = require("./binary-search-bounds");
 var _memoryHelper = require("./memory-helper");
@@ -168,7 +168,7 @@ var RxStorageInstanceMemory = /*#__PURE__*/function () {
     return count;
   }();
   _proto.getChangedDocumentsSince = function getChangedDocumentsSince(limit, checkpoint) {
-    var sinceLwt = checkpoint ? checkpoint.lwt : _util.RX_META_LWT_MINIMUM;
+    var sinceLwt = checkpoint ? checkpoint.lwt : _utils.RX_META_LWT_MINIMUM;
     var sinceId = checkpoint ? checkpoint.id : '';
     var index = ['_meta.lwt', this.primaryPath];
     var indexName = (0, _memoryIndexes.getMemoryIndexName)(index);
@@ -185,7 +185,7 @@ var RxStorageInstanceMemory = /*#__PURE__*/function () {
       rows.push(currentDoc.doc);
       indexOfLower++;
     }
-    var lastDoc = (0, _util.lastOfArray)(rows);
+    var lastDoc = (0, _utils.lastOfArray)(rows);
     return Promise.resolve({
       documents: rows,
       checkpoint: lastDoc ? {
@@ -198,7 +198,7 @@ var RxStorageInstanceMemory = /*#__PURE__*/function () {
     });
   };
   _proto.cleanup = function cleanup(minimumDeletedTime) {
-    var maxDeletionTime = (0, _util.now)() - minimumDeletedTime;
+    var maxDeletionTime = (0, _utils.now)() - minimumDeletedTime;
     var index = ['_deleted', '_meta.lwt', this.primaryPath];
     var indexName = (0, _memoryIndexes.getMemoryIndexName)(index);
     var docsWithIndex = this.internals.byIndex[indexName].docsWithIndex;
@@ -216,11 +216,11 @@ var RxStorageInstanceMemory = /*#__PURE__*/function () {
         indexOfLower++;
       }
     }
-    return _util.PROMISE_RESOLVE_TRUE;
+    return _utils.PROMISE_RESOLVE_TRUE;
   };
   _proto.getAttachmentData = function getAttachmentData(documentId, attachmentId) {
     (0, _memoryHelper.ensureNotRemoved)(this);
-    var data = (0, _util.getFromMapOrThrow)(this.internals.attachments, (0, _memoryHelper.attachmentMapKey)(documentId, attachmentId));
+    var data = (0, _utils.getFromMapOrThrow)(this.internals.attachments, (0, _memoryHelper.attachmentMapKey)(documentId, attachmentId));
     return Promise.resolve(data.data);
   };
   _proto.changeStream = function changeStream() {
@@ -254,13 +254,13 @@ var RxStorageInstanceMemory = /*#__PURE__*/function () {
     }
     this.closed = true;
     this.internals.refCount = this.internals.refCount - 1;
-    return _util.PROMISE_RESOLVE_VOID;
+    return _utils.PROMISE_RESOLVE_VOID;
   };
   _proto.conflictResultionTasks = function conflictResultionTasks() {
     return this.internals.conflictResultionTasks$.asObservable();
   };
   _proto.resolveConflictResultionTask = function resolveConflictResultionTask(_taskSolution) {
-    return _util.PROMISE_RESOLVE_VOID;
+    return _utils.PROMISE_RESOLVE_VOID;
   };
   return RxStorageInstanceMemory;
 }();

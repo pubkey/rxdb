@@ -23,7 +23,7 @@ import {
     RXJS_SHARE_REPLAY_DEFAULTS,
     ensureNotFalsy,
     areRxDocumentArraysEqual
-} from './util';
+} from './plugins/utils';
 import {
     newRxError
 } from './rx-error';

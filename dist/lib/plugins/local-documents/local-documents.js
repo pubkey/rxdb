@@ -10,7 +10,7 @@ exports.insertLocal = insertLocal;
 exports.upsertLocal = upsertLocal;
 var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
 var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
-var _util = require("../../util");
+var _utils = require("../../plugins/utils");
 var _operators = require("rxjs/operators");
 var _localDocumentsHelper = require("./local-documents-helper");
 var _rxStorageHelper = require("../../rx-storage-helper");
@@ -40,8 +40,8 @@ function _insertLocal() {
             id: id,
             data: data,
             _deleted: false,
-            _meta: (0, _util.getDefaultRxDocumentMeta)(),
-            _rev: (0, _util.getDefaultRevision)(),
+            _meta: (0, _utils.getDefaultRxDocumentMeta)(),
+            _rev: (0, _utils.getDefaultRevision)(),
             _attachments: {}
           };
           return _context3.abrupt("return", (0, _rxStorageHelper.writeSingle)(state.storageInstance, {

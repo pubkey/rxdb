@@ -23,12 +23,17 @@
 - ADD `RxDocument.incrementalRemove()`
 - ADD non-incremental `RxDocument` methods `patch()` and `modify()`
 - ADD typings to the query selector
+- CHANGE start replication via pure functions instead of RxCollection methods.
 
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 13.17.1 (30 December 2022)
+
+- FIX Add missing mingo array operators [#4203](https://github.com/pubkey/rxdb/pull/4203) Thanks [@swnf](https://github.com/swnf)
 
 ### 13.17.0 (29 December 2022)
 

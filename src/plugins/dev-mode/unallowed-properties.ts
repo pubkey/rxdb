@@ -1,7 +1,7 @@
 import type { RxCollectionCreator, RxDatabaseCreator } from '../../types';
 import { newRxError, newRxTypeError } from '../../rx-error';
 import { rxDatabaseProperties } from './entity-properties';
-import { isFolderPath } from '../../util';
+import { isFolderPath } from '../../plugins/utils';
 
 /**
  * if the name of a collection

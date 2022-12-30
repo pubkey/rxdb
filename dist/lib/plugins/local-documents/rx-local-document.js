@@ -15,7 +15,7 @@ var _rxChangeEvent = require("../../rx-change-event");
 var _rxDocument = require("../../rx-document");
 var _rxError = require("../../rx-error");
 var _rxStorageHelper = require("../../rx-storage-helper");
-var _util = require("../../util");
+var _utils = require("../../plugins/utils");
 var _localDocumentsHelper = require("./local-documents-helper");
 var RxDocumentParent = (0, _rxDocument.createRxDocumentConstructor)();
 var RxLocalDocumentClass = /*#__PURE__*/function (_RxDocumentParent) {
@@ -59,10 +59,10 @@ var RxLocalDocumentPrototype = {
       return (0, _rxChangeEvent.getDocumentDataOfRxChangeEvent)(changeEvent);
     }), (0, _operators.startWith)(this._data), (0, _operators.distinctUntilChanged)(function (prev, curr) {
       return prev._rev === curr._rev;
-    }), (0, _operators.shareReplay)(_util.RXJS_SHARE_REPLAY_DEFAULTS));
+    }), (0, _operators.shareReplay)(_utils.RXJS_SHARE_REPLAY_DEFAULTS));
   },
   getLatest: function getLatest() {
-    var state = (0, _util.getFromMapOrThrow)(_localDocumentsHelper.LOCAL_DOC_STATE_BY_PARENT_RESOLVED, this.parent);
+    var state = (0, _utils.getFromMapOrThrow)(_localDocumentsHelper.LOCAL_DOC_STATE_BY_PARENT_RESOLVED, this.parent);
     var latestDocData = state.docCache.getLatestDocumentData(this.primary);
     return state.docCache.getCachedRxDocument(latestDocData);
   },
@@ -168,9 +168,9 @@ var RxLocalDocumentPrototype = {
             }], 'local-document-save-data').then(function (res) {
               var docResult = res.success[newData.id];
               if (!docResult) {
-                throw (0, _util.getFromObjectOrThrow)(res.error, newData.id);
+                throw (0, _utils.getFromObjectOrThrow)(res.error, newData.id);
               }
-              newData = (0, _util.flatClone)(newData);
+              newData = (0, _utils.flatClone)(newData);
               newData._rev = docResult._rev;
             }));
           case 6:
@@ -198,8 +198,8 @@ var RxLocalDocumentPrototype = {
               id: this._data.id,
               data: {},
               _deleted: true,
-              _meta: (0, _util.getDefaultRxDocumentMeta)(),
-              _rev: (0, _util.getDefaultRevision)(),
+              _meta: (0, _utils.getDefaultRxDocumentMeta)(),
+              _rev: (0, _utils.getDefaultRevision)(),
               _attachments: {}
             };
             return _context4.abrupt("return", (0, _rxStorageHelper.writeSingle)(state.storageInstance, {

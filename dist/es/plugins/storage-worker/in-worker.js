@@ -6,7 +6,7 @@ import _regeneratorRuntime from "@babel/runtime/regenerator";
  */
 
 import { expose } from 'threads/worker';
-import { getFromMapOrThrow } from '../../util';
+import { getFromMapOrThrow } from '../utils';
 export function wrappedWorkerRxStorage(args) {
   var nextId = 0;
   var instanceById = new Map();

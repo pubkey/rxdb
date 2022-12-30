@@ -4,7 +4,7 @@ import {
     Prefixes,
     SPACING
 } from './graphql-schema-from-rx-schema';
-import { ensureNotFalsy, ucfirst } from '../../util';
+import { ensureNotFalsy, ucfirst } from '../../plugins/utils';
 import type {
     RxGraphQLReplicationPullQueryBuilder,
     RxGraphQLReplicationPullStreamQueryBuilder,

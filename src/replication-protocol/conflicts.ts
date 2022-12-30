@@ -11,7 +11,7 @@ import {
     createRevision,
     now,
     flatClone
-} from '../util';
+} from '../plugins/utils';
 
 export const defaultConflictHandler: RxConflictHandler<any> = function (
     i: RxConflictHandlerInput<any>,

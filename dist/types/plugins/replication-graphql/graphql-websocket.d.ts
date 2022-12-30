@@ -1,5 +1,5 @@
 import { Client } from 'graphql-ws';
-export declare type WebsocketWithRefCount = {
+export type WebsocketWithRefCount = {
     url: string;
     socket: Client;
     refCount: number;

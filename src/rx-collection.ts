@@ -14,7 +14,7 @@ import {
     PROMISE_RESOLVE_VOID,
     getDefaultRxDocumentMeta,
     getDefaultRevision
-} from './util';
+} from './plugins/utils';
 import {
     fillObjectDataBeforeInsert,
     createRxCollectionStorageInstance,
@@ -60,7 +60,6 @@ import type {
     RxDatabase,
     RxQuery,
     RxDocument,
-    SyncOptionsGraphQL,
     RxDumpCollection,
     RxDumpCollectionAny,
     MangoQuery,
@@ -85,21 +84,6 @@ import type {
     CRDTEntry,
     MangoQuerySelectorAndIndex
 } from './types';
-import type {
-    RxGraphQLReplicationState
-} from './plugins/replication-graphql';
-import type {
-    RxCouchDBReplicationState,
-    SyncOptionsCouchDB
-} from './plugins/replication-couchdb';
-import type {
-    SyncOptionsP2P,
-    RxP2PReplicationPool
-} from './plugins/replication-p2p';
-import type {
-    RxFirestoreReplicationState,
-    SyncOptionsFirestore
-} from './plugins/replication-firestore';
 
 import {
     RxSchema
@@ -627,25 +611,6 @@ export class RxCollectionBase<
     insertCRDT(_updateObj: CRDTEntry<any> | CRDTEntry<any>[]): RxDocument<RxDocumentType, OrmMethods> {
         throw pluginMissing('crdt');
     }
-
-    /**
-     * sync with a GraphQL endpoint
-     */
-    syncGraphQL<CheckpointType = any>(_options: SyncOptionsGraphQL<RxDocumentType, CheckpointType>): RxGraphQLReplicationState<RxDocumentType, CheckpointType> {
-        throw pluginMissing('replication-graphql');
-    }
-
-    syncCouchDB(_syncOptions: SyncOptionsCouchDB<RxDocumentType>): RxCouchDBReplicationState<RxDocumentType> {
-        throw pluginMissing('replication-couchdb');
-    }
-
-    syncP2P(_syncOptions: SyncOptionsP2P<RxDocumentType>): RxP2PReplicationPool<RxDocumentType> {
-        throw pluginMissing('replication-p2p');
-    }
-    syncFirestore(_syncOptions: SyncOptionsFirestore<RxDocumentType>): RxFirestoreReplicationState<RxDocumentType> {
-        throw pluginMissing('replication-firestore');
-    }
-
 
     /**
      * HOOKS

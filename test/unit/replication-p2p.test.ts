@@ -11,7 +11,6 @@ import * as schemaObjects from '../helper/schema-objects';
 import * as humansCollection from '../helper/humans-collection';
 
 import {
-    addRxPlugin,
     randomCouchString,
     RxCollection,
     defaultHashFunction,
@@ -19,7 +18,7 @@ import {
 } from '../../';
 
 import {
-    RxDBReplicationP2PPlugin,
+    replicateP2P,
     RxP2PReplicationPool,
     // getConnectionHandlerP2PCF,
     isMasterInP2PReplication,
@@ -68,9 +67,6 @@ describe('replication-p2p.test.ts', () => {
         });
     });
 
-
-    addRxPlugin(RxDBReplicationP2PPlugin);
-
     function ensureReplicationHasNoErrors(replicationPool: RxP2PReplicationPool<any>) {
         /**
          * We do not have to unsubscribe because the observable will cancel anyway.
@@ -116,7 +112,8 @@ describe('replication-p2p.test.ts', () => {
     ): Promise<RxP2PReplicationPool<RxDocType>[]> {
         const ret = await Promise.all(
             collections.map(async (collection) => {
-                const replicationPool = await collection.syncP2P({
+                const replicationPool = await replicateP2P<RxDocType>({
+                    collection,
                     topic,
                     secret,
                     // connectionHandlerCreator: getConnectionHandlerWebtorrent([webtorrentTrackerUrl]),

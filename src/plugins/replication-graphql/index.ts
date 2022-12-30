@@ -6,7 +6,7 @@ import objectPath from 'object-path';
 import {
     ensureNotFalsy,
     fastUnsecureHash
-} from '../../util';
+} from '../../plugins/utils';
 
 import {
     graphQLRequest,
@@ -16,7 +16,6 @@ import {
 import { RxDBLeaderElectionPlugin } from '../leader-election';
 import type {
     RxCollection,
-    RxPlugin,
     ReplicationPullOptions,
     ReplicationPushOptions,
     RxReplicationWriteToMasterRow,
@@ -88,10 +87,9 @@ export class RxGraphQLReplicationState<RxDocType, CheckpointType> extends RxRepl
     }
 }
 
-
-export function syncGraphQL<RxDocType, CheckpointType>(
-    this: RxCollection<RxDocType>,
+export function replicateGraphQL<RxDocType, CheckpointType>(
     {
+        collection,
         url,
         headers = {},
         credentials,
@@ -104,8 +102,7 @@ export function syncGraphQL<RxDocType, CheckpointType>(
         autoStart = true,
     }: SyncOptionsGraphQL<RxDocType, CheckpointType>
 ): RxGraphQLReplicationState<RxDocType, CheckpointType> {
-    const collection = this;
-
+    addRxPlugin(RxDBLeaderElectionPlugin);
     /**
      * We use this object to store the GraphQL client
      * so we can later swap out the client inside of the replication handlers.
@@ -247,16 +244,3 @@ export * from './helper';
 export * from './graphql-schema-from-rx-schema';
 export * from './query-builder-from-rx-schema';
 export * from './graphql-websocket';
-
-export const RxDBReplicationGraphQLPlugin: RxPlugin = {
-    name: 'replication-graphql',
-    init() {
-        addRxPlugin(RxDBLeaderElectionPlugin);
-    },
-    rxdb: true,
-    prototypes: {
-        RxCollection: (proto: any) => {
-            proto.syncGraphQL = syncGraphQL;
-        }
-    }
-};

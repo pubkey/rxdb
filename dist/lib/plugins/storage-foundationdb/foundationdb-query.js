@@ -8,7 +8,7 @@ exports.queryFoundationDB = queryFoundationDB;
 var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
 var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 var _customIndex = require("../../custom-index");
-var _util = require("../../util");
+var _utils = require("../../plugins/utils");
 var _storageDexie = require("../storage-dexie");
 var _foundationdbHelpers = require("./foundationdb-helpers");
 function queryFoundationDB(_x, _x2) {
@@ -38,7 +38,7 @@ function _queryFoundationDB() {
           indexForName = queryPlanFields.slice(0);
           indexForName.unshift('_deleted');
           indexName = (0, _foundationdbHelpers.getFoundationDBIndexName)(indexForName);
-          indexDB = (0, _util.ensureNotFalsy)(dbs.indexes[indexName]).db;
+          indexDB = (0, _utils.ensureNotFalsy)(dbs.indexes[indexName]).db;
           lowerBound = queryPlan.startKeys;
           lowerBound = [false].concat(lowerBound);
           lowerBoundString = (0, _customIndex.getStartIndexStringFromLowerBound)(instance.schema, indexForName, lowerBound, queryPlan.inclusiveStart);

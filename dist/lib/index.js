@@ -305,6 +305,18 @@ Object.keys(_pluginHelpers).forEach(function (key) {
     }
   });
 });
+var _utils = require("./plugins/utils");
+Object.keys(_utils).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  if (key in exports && exports[key] === _utils[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function get() {
+      return _utils[key];
+    }
+  });
+});
 var _hooks = require("./hooks");
 var _queryCache = require("./query-cache");
 Object.keys(_queryCache).forEach(function (key) {
@@ -315,18 +327,6 @@ Object.keys(_queryCache).forEach(function (key) {
     enumerable: true,
     get: function get() {
       return _queryCache[key];
-    }
-  });
-});
-var _util = require("./util");
-Object.keys(_util).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
-  if (key in exports && exports[key] === _util[key]) return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function get() {
-      return _util[key];
     }
   });
 });

@@ -3,7 +3,7 @@ import _regeneratorRuntime from "@babel/runtime/regenerator";
 import { newRxError } from '../../rx-error';
 import deepEqual from 'fast-deep-equal';
 import objectPath from 'object-path';
-import { clone, ensureNotFalsy, now, objectPathMonad, toArray } from '../../util';
+import { clone, ensureNotFalsy, now, objectPathMonad, toArray } from '../../plugins/utils';
 import modifyjs from 'modifyjs';
 import { overwritable } from '../..';
 export function updateCRDT(_x) {

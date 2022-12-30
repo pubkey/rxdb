@@ -22,12 +22,11 @@ import {
 } from 'rxjs/operators';
 
 import {
-    RxDBReplicationGraphQLPlugin,
     pullQueryBuilderFromRxSchema,
     pushQueryBuilderFromRxSchema,
-    pullStreamBuilderFromRxSchema
+    pullStreamBuilderFromRxSchema,
+    replicateGraphQL
 } from 'rxdb/plugins/replication-graphql';
-addRxPlugin(RxDBReplicationGraphQLPlugin);
 
 
 // TODO import these only in non-production build
@@ -41,6 +40,9 @@ addRxPlugin(RxDBUpdatePlugin);
 
 import { RxDBQueryBuilderPlugin } from 'rxdb/plugins/query-builder';
 addRxPlugin(RxDBQueryBuilderPlugin);
+
+import { RxDBLeaderElectionPlugin } from 'rxdb/plugins/leader-election';
+addRxPlugin(RxDBLeaderElectionPlugin);
 
 
 import {
@@ -184,7 +186,8 @@ async function run() {
     // set up replication
     if (doSync()) {
         heroesList.innerHTML = 'Start replication..';
-        const replicationState = db.hero.syncGraphQL({
+        const replicationState = replicateGraphQL({
+            collection: db.hero,
             url: syncUrls,
             headers: {
                 /* optional, set an auth header */

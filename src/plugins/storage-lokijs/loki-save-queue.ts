@@ -2,7 +2,7 @@ import type { LokiDatabaseSettings } from '../../types';
 import {
     PROMISE_RESOLVE_VOID,
     requestIdlePromise
-} from '../../util';
+} from '../utils';
 
 /**
  * The autosave feature of lokijs has strange behaviors

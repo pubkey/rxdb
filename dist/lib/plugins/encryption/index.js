@@ -17,7 +17,7 @@ var _pluginHelpers = require("../../plugin-helpers");
 var _rxDatabaseInternalStore = require("../../rx-database-internal-store");
 var _rxError = require("../../rx-error");
 var _rxStorageHelper = require("../../rx-storage-helper");
-var _util = require("../../util");
+var _utils = require("../../plugins/utils");
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 /**
@@ -59,7 +59,7 @@ function wrappedKeyEncryptionStorage(args) {
             case 0:
               modifyAttachmentFromStorage = function _modifyAttachmentFrom(attachmentData) {
                 if (params.schema.attachments && params.schema.attachments.encrypted) {
-                  var decrypted = decryptString((0, _util.b64DecodeUnicode)(attachmentData), password);
+                  var decrypted = decryptString((0, _utils.b64DecodeUnicode)(attachmentData), password);
                   return decrypted;
                 } else {
                   return attachmentData;
@@ -67,7 +67,7 @@ function wrappedKeyEncryptionStorage(args) {
               };
               modifyFromStorage = function _modifyFromStorage(docData) {
                 docData = cloneWithoutAttachments(docData);
-                (0, _util.ensureNotFalsy)(params.schema.encrypted).forEach(function (path) {
+                (0, _utils.ensureNotFalsy)(params.schema.encrypted).forEach(function (path) {
                   var value = _objectPath["default"].get(docData, path);
                   if (typeof value === 'undefined') {
                     return;
@@ -80,7 +80,7 @@ function wrappedKeyEncryptionStorage(args) {
               };
               modifyToStorage = function _modifyToStorage(docData) {
                 docData = cloneWithoutAttachments(docData);
-                (0, _util.ensureNotFalsy)(params.schema.encrypted).forEach(function (path) {
+                (0, _utils.ensureNotFalsy)(params.schema.encrypted).forEach(function (path) {
                   var value = _objectPath["default"].get(docData, path);
                   if (typeof value === 'undefined') {
                     return;
@@ -96,10 +96,10 @@ function wrappedKeyEncryptionStorage(args) {
                   Object.entries(docData._attachments).forEach(function (_ref) {
                     var id = _ref[0],
                       attachment = _ref[1];
-                    var useAttachment = (0, _util.flatClone)(attachment);
+                    var useAttachment = (0, _utils.flatClone)(attachment);
                     if (useAttachment.data) {
                       var dataString = useAttachment.data;
-                      useAttachment.data = (0, _util.b64EncodeUnicode)(encryptString(dataString, password));
+                      useAttachment.data = (0, _utils.b64EncodeUnicode)(encryptString(dataString, password));
                     }
                     newAttachments[id] = useAttachment;
                   });
@@ -144,7 +144,7 @@ function wrappedKeyEncryptionStorage(args) {
               });
             case 20:
               password = params.password;
-              schemaWithoutEncrypted = (0, _util.clone)(params.schema);
+              schemaWithoutEncrypted = (0, _utils.clone)(params.schema);
               delete schemaWithoutEncrypted.encrypted;
               if (schemaWithoutEncrypted.attachments) {
                 schemaWithoutEncrypted.attachments.encrypted = false;
@@ -171,9 +171,9 @@ function wrappedKeyEncryptionStorage(args) {
 }
 function cloneWithoutAttachments(data) {
   var attachments = data._attachments;
-  data = (0, _util.flatClone)(data);
+  data = (0, _utils.flatClone)(data);
   delete data._attachments;
-  data = (0, _util.clone)(data);
+  data = (0, _utils.clone)(data);
   data._attachments = attachments;
   return data;
 }

@@ -1,6 +1,6 @@
 import { getIndexableStringMonad } from '../../custom-index';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
-import { toArray } from '../../util';
+import { toArray } from '../../plugins/utils';
 export function addIndexesToInternalsState(state, schema) {
   var primaryPath = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
   var useIndexes = !schema.indexes ? [] : schema.indexes.map(function (row) {

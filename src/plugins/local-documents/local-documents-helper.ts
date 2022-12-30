@@ -18,7 +18,7 @@ import type {
     RxLocalDocumentData,
     RxStorage
 } from '../../types';
-import { randomCouchString } from '../../util';
+import { randomCouchString } from '../../plugins/utils';
 import { createRxLocalDocument } from './rx-local-document';
 
 export const LOCAL_DOC_STATE_BY_PARENT: WeakMap<LocalDocumentParent, Promise<LocalDocumentState>> = new WeakMap();

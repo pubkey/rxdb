@@ -1,6 +1,6 @@
 import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
 import _regeneratorRuntime from "@babel/runtime/regenerator";
-import { PROMISE_RESOLVE_VOID, requestIdlePromise } from '../../util';
+import { PROMISE_RESOLVE_VOID, requestIdlePromise } from '../utils';
 
 /**
  * The autosave feature of lokijs has strange behaviors

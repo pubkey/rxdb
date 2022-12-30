@@ -10,13 +10,13 @@ exports.createLokiStorageInstance = createLokiStorageInstance;
 var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
 var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 var _rxjs = require("rxjs");
-var _util = require("../../util");
+var _utils = require("../utils");
 var _rxError = require("../../rx-error");
 var _lokijsHelper = require("./lokijs-helper");
 var _rxSchemaHelper = require("../../rx-schema-helper");
 var _rxStorageHelper = require("../../rx-storage-helper");
 var _rxStorageMultiinstance = require("../../rx-storage-multiinstance");
-var instanceId = (0, _util.now)();
+var instanceId = (0, _utils.now)();
 var RxStorageInstanceLoki = /*#__PURE__*/function () {
   function RxStorageInstanceLoki(databaseInstanceToken, storage, databaseName, collectionName, schema, internals, options, databaseSettings) {
     var _this = this;
@@ -61,7 +61,7 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
       };
       this.internals.leaderElector.awaitLeadership().then(function () {
         // this instance is leader now, so it has to reply to queries from other instances
-        (0, _util.ensureNotFalsy)(_this.internals.leaderElector).broadcastChannel.addEventListener('message', function (msg) {
+        (0, _utils.ensureNotFalsy)(_this.internals.leaderElector).broadcastChannel.addEventListener('message', function (msg) {
           return (0, _lokijsHelper.handleRemoteRequest)(copiedSelf, msg);
         });
       });
@@ -113,12 +113,12 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
             ret.error = categorized.errors;
             categorized.bulkInsertDocs.forEach(function (writeRow) {
               var docId = writeRow.document[_this2.primaryPath];
-              localState.collection.insert((0, _util.flatClone)(writeRow.document));
+              localState.collection.insert((0, _utils.flatClone)(writeRow.document));
               ret.success[docId] = writeRow.document;
             });
             categorized.bulkUpdateDocs.forEach(function (writeRow) {
               var docId = writeRow.document[_this2.primaryPath];
-              var documentInDbWithLokiKey = (0, _util.getFromMapOrThrow)(docsInDbWithLokiKey, docId);
+              var documentInDbWithLokiKey = (0, _utils.getFromMapOrThrow)(docsInDbWithLokiKey, docId);
               var writeDoc = Object.assign({}, writeRow.document, {
                 $loki: documentInDbWithLokiKey.$loki
               });
@@ -274,19 +274,19 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
             }
             return _context5.abrupt("return", (0, _lokijsHelper.requestRemoteInstance)(this, 'getChangedDocumentsSince', [limit, checkpoint]));
           case 5:
-            sinceLwt = checkpoint ? checkpoint.lwt : _util.RX_META_LWT_MINIMUM;
+            sinceLwt = checkpoint ? checkpoint.lwt : _utils.RX_META_LWT_MINIMUM;
             query = localState.collection.chain().find({
               '_meta.lwt': {
                 $gte: sinceLwt
               }
-            }).sort((0, _util.getSortDocumentsByLastWriteTimeComparator)(this.primaryPath));
+            }).sort((0, _utils.getSortDocumentsByLastWriteTimeComparator)(this.primaryPath));
             changedDocs = query.data();
             first = changedDocs[0];
             if (checkpoint && first && first[this.primaryPath] === checkpoint.id && first._meta.lwt === checkpoint.lwt) {
               changedDocs.shift();
             }
             changedDocs = changedDocs.slice(0, limit);
-            lastDoc = (0, _util.lastOfArray)(changedDocs);
+            lastDoc = (0, _utils.lastOfArray)(changedDocs);
             return _context5.abrupt("return", {
               documents: changedDocs.map(function (docData) {
                 return (0, _lokijsHelper.stripLokiKey)(docData);
@@ -330,7 +330,7 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
             return _context6.abrupt("return", (0, _lokijsHelper.requestRemoteInstance)(this, 'cleanup', [minimumDeletedTime]));
           case 5:
             deleteAmountPerRun = 10;
-            maxDeletionTime = (0, _util.now)() - minimumDeletedTime;
+            maxDeletionTime = (0, _utils.now)() - minimumDeletedTime;
             query = localState.collection.chain().find({
               _deleted: true,
               '_meta.lwt': {
@@ -473,7 +473,7 @@ function _createLokiLocalState() {
           indices = [];
           if (params.schema.indexes) {
             params.schema.indexes.forEach(function (idx) {
-              if (!(0, _util.isMaybeReadonlyArray)(idx)) {
+              if (!(0, _utils.isMaybeReadonlyArray)(idx)) {
                 indices.push(idx);
               }
             });
@@ -549,7 +549,7 @@ function _createLokiStorageInstance() {
             /**
              * Directly create the localState when/if the db becomes leader.
              */
-            (0, _util.ensureNotFalsy)(internals.leaderElector).awaitLeadership().then(function () {
+            (0, _utils.ensureNotFalsy)(internals.leaderElector).awaitLeadership().then(function () {
               if (!instance.closed) {
                 (0, _lokijsHelper.mustUseLocalState)(instance);
               }

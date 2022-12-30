@@ -3,7 +3,6 @@ import {
 } from '../rx-query';
 import { StringKeys } from './util';
 
-
 /**
  * Typed Mango Query Selector
  * @link https://github.com/mongodb/node-mongodb-native/blob/26bce4a8debb65df5a42dc8599e886c9c83de10d/src/mongo_types.ts
@@ -61,7 +60,6 @@ export interface MangoQueryOperators<PathValueType> {
     $type?: 'null' | 'boolean' | 'number' | 'string' | 'array' | 'object';
     $mod?: number;
     $not?: PathValueType;
-    $all?: PathValueType[];
     $size?: number;
     $elemMatch?: MangoQuerySelector<PathValueType>;
 }

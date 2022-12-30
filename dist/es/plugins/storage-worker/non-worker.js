@@ -2,7 +2,7 @@ import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
 import _regeneratorRuntime from "@babel/runtime/regenerator";
 import { Subject } from 'rxjs';
 import { spawn, Worker, Thread } from 'threads';
-import { ensureNotFalsy, getFromMapOrThrow } from '../../util';
+import { ensureNotFalsy, getFromMapOrThrow } from '../../plugins/utils';
 /**
  * We have no way to detect if a worker is no longer needed.
  * So we create the worker process on the first RxStorageInstance

@@ -21,72 +21,68 @@ Because the way how RxDB handles revisions and documents is very similar to Couc
 
 ## Usage
 
-To enable the CouchDB replication, you have to add the `replication-couchdb` plugin.
+Start the replication via `replicateCouchDB()`.
 
 ```ts
-import { addRxPlugin } from 'rxdb';
-import { RxDBReplicationCouchDBPlugin } from 'rxdb/plugins/replication-couchdb';
-addRxPlugin(RxDBReplicationCouchDBPlugin);
-```
+import { replicateCouchDB } from 'rxdb/plugins/replication-couchdb';
 
-Then you can start the replication va `RxCollection().syncCouchDB()`
-
-```ts
-
-const replicationState = collection.syncCouchDB({
-    // url to the CouchDB endpoint (required)
-    url: 'http://example.com/db/humans',
-    /**
-     * true for live replication,
-     * false for a one-time replication.
-     * [default=true]
-     */
-    live: true,
-    /**
-     * A custom fetch() method can be provided
-     * to add authentication or credentials.
-     * Can be swapped out dynamically
-     * by running 'replicationState.fetch = newFetchMethod;'.
-     * (optional)
-     */
-    fetch: myCustomFetchMethod,
-    pull: {
+const replicationState = replicateCouchDB(
+    {
+        collection: myRxCollection,
+        // url to the CouchDB endpoint (required)
+        url: 'http://example.com/db/humans',
         /**
-         * Amount of documents to be fetched in one HTTP request
+         * true for live replication,
+        * false for a one-time replication.
+        * [default=true]
+        */
+        live: true,
+        /**
+         * A custom fetch() method can be provided
+         * to add authentication or credentials.
+         * Can be swapped out dynamically
+         * by running 'replicationState.fetch = newFetchMethod;'.
          * (optional)
          */
-        batchSize: 60,
-        /**
-         * Custom modifier to mutate pulled documents
-         * before storing them in RxDB.
-         * (optional)
-         */
-        modifier: docData => {/* ... */} 
-        /**
-         * Heartbeat time in milliseconds
-         * for the long polling of the changestream.
-         * @link https://docs.couchdb.org/en/3.2.2-docs/api/database/changes.html
-         * (optional, default=60000)
-         */
-        heartbeat: 60000
-    },
-    push: {
-        /**
-         * How many local changes to process at once.
-         * (optional)
-         */
-        batchSize: 60;
-        /**
-         * Custom modifier to mutate documents
-         * before sending them to the CouchDB endpoint.
-         * (optional)
-         */
-        modifier: docData => {/* ... */} 
+        fetch: myCustomFetchMethod,
+        pull: {
+            /**
+             * Amount of documents to be fetched in one HTTP request
+             * (optional)
+             */
+            batchSize: 60,
+            /**
+             * Custom modifier to mutate pulled documents
+             * before storing them in RxDB.
+             * (optional)
+             */
+            modifier: docData => {/* ... */} 
+            /**
+             * Heartbeat time in milliseconds
+             * for the long polling of the changestream.
+             * @link https://docs.couchdb.org/en/3.2.2-docs/api/database/changes.html
+             * (optional, default=60000)
+             */
+            heartbeat: 60000
+        },
+        push: {
+            /**
+             * How many local changes to process at once.
+             * (optional)
+             */
+            batchSize: 60;
+            /**
+             * Custom modifier to mutate documents
+             * before sending them to the CouchDB endpoint.
+             * (optional)
+             */
+            modifier: docData => {/* ... */} 
+        }
     }
-});
+);
 ```
 
-When you call `myCollection.syncCouchDB()` it returns a `RxCouchDBReplicationState` which can be used to subscribe to events, for debugging or other functions. It extends the [RxReplicationState](./replication.md) so any other method that can be used there can also be used on the CouchDB replication state.
+When you call `replicateCouchDB()` it returns a `RxCouchDBReplicationState` which can be used to subscribe to events, for debugging or other functions. It extends the [RxReplicationState](./replication.md) so any other method that can be used there can also be used on the CouchDB replication state.
 
 ## Conflict handling
 
@@ -117,15 +113,18 @@ const myCustomFetch = (url, options) => {
     );
 };
 
-const replicationState = collection.syncCouchDB({
-    url: 'http://example.com/db/humans',
-    /**
-     * Add the custom fetch function here.
-     */
-    fetch: myCustomFetch,
-    pull: {},
-    push: {}
-});
+const replicationState = replicateCouchDB(
+    {
+        collection: myRxCollection,
+        url: 'http://example.com/db/humans',
+        /**
+         * Add the custom fetch function here.
+         */
+        fetch: myCustomFetch,
+        pull: {},
+        push: {}
+    }
+);
 ```
 
 Also when your bearer token changes over time, you can set a new custom `fetch` method while the replication is running:
@@ -158,10 +157,13 @@ React Native does not have a global `fetch` method. You have to import fetch met
 
 ```ts
 import crossFetch from 'cross-fetch';
-const replicationState = collection.syncCouchDB({
-    url: 'http://example.com/db/humans',
-    fetch: crossFetch,
-    pull: {},
-    push: {}
-});
+const replicationState = replicateCouchDB(
+    {
+        collection: myRxCollection,
+        url: 'http://example.com/db/humans',
+        fetch: crossFetch,
+        pull: {},
+        push: {}
+    }
+);
 ```

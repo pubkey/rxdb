@@ -19,7 +19,7 @@ var _incrementalWrite = require("../../incremental-write");
 var _rxError = require("../../rx-error");
 var _rxSchemaHelper = require("../../rx-schema-helper");
 var _rxStorageHelper = require("../../rx-storage-helper");
-var _util = require("../../util");
+var _utils = require("../../plugins/utils");
 var _rxLocalDocument = require("./rx-local-document");
 var LOCAL_DOC_STATE_BY_PARENT = new WeakMap();
 exports.LOCAL_DOC_STATE_BY_PARENT = LOCAL_DOC_STATE_BY_PARENT;
@@ -129,7 +129,7 @@ function _removeLocalDocumentsStorageInstance() {
     return _regenerator["default"].wrap(function _callee2$(_context2) {
       while (1) switch (_context2.prev = _context2.next) {
         case 0:
-          databaseInstanceToken = (0, _util.randomCouchString)(10);
+          databaseInstanceToken = (0, _utils.randomCouchString)(10);
           _context2.next = 3;
           return createLocalDocumentStorageInstance(databaseInstanceToken, storage, databaseName, collectionName, {}, false);
         case 3:

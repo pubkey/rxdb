@@ -31,7 +31,7 @@ import type {
 import {
     ensureNotFalsy,
     PROMISE_RESOLVE_VOID
-} from '../util';
+} from '../plugins/utils';
 import {
     getCheckpointKey
 } from './checkpoint';

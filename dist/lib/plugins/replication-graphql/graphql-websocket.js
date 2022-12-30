@@ -8,7 +8,7 @@ exports.GRAPHQL_WEBSOCKET_BY_URL = void 0;
 exports.getGraphQLWebSocket = getGraphQLWebSocket;
 exports.removeGraphQLWebSocketRef = removeGraphQLWebSocketRef;
 var _graphqlWs = require("graphql-ws");
-var _util = require("../../util");
+var _utils = require("../../plugins/utils");
 var _isomorphicWs = _interopRequireDefault(require("isomorphic-ws"));
 var IsomorphicWebSocket = _isomorphicWs["default"].WebSocket;
 var GRAPHQL_WEBSOCKET_BY_URL = new Map();
@@ -35,7 +35,7 @@ function getGraphQLWebSocket(url) {
   return has.socket;
 }
 function removeGraphQLWebSocketRef(url) {
-  var obj = (0, _util.getFromMapOrThrow)(GRAPHQL_WEBSOCKET_BY_URL, url);
+  var obj = (0, _utils.getFromMapOrThrow)(GRAPHQL_WEBSOCKET_BY_URL, url);
   obj.refCount = obj.refCount - 1;
   if (obj.refCount === 0) {
     GRAPHQL_WEBSOCKET_BY_URL["delete"](url);

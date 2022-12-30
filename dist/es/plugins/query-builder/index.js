@@ -1,6 +1,6 @@
 import { createQueryBuilder, OTHER_MANGO_ATTRIBUTES, OTHER_MANGO_OPERATORS } from './mquery/nosql-query-builder';
 import { RxQueryBase, tunnelQueryCache } from '../../rx-query';
-import { clone } from '../../util';
+import { clone } from '../../plugins/utils';
 import { runPluginHooks } from '../../hooks';
 
 // if the query-builder plugin is used, we have to save its last path

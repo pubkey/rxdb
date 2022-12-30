@@ -17,7 +17,7 @@ import {
     ensureNotFalsy,
     parseRevision,
     PROMISE_RESOLVE_FALSE
-} from '../util';
+} from '../plugins/utils';
 import {
     getLastCheckpointDoc,
     setCheckpoint

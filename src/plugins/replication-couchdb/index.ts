@@ -1,18 +1,16 @@
 /**
- * this plugin adds the RxCollection.syncCouchDB()-function to rxdb
- * you can use it to sync collections with a remote CouchDB endpoint.
+ * This plugin can be used to sync collections with a remote CouchDB endpoint.
  */
 import {
     ensureNotFalsy,
     errorToPlainJson,
     fastUnsecureHash,
     flatClone
-} from '../../util';
+} from '../../plugins/utils';
 
 import { RxDBLeaderElectionPlugin } from '../leader-election';
 import type {
     RxCollection,
-    RxPlugin,
     ReplicationPullOptions,
     ReplicationPushOptions,
     RxReplicationWriteToMasterRow,
@@ -22,7 +20,8 @@ import type {
     CouchAllDocsResponse
 } from '../../types';
 import {
-    RxReplicationState, startReplicationOnLeaderShip
+    RxReplicationState,
+    startReplicationOnLeaderShip
 } from '../replication';
 import {
     addRxPlugin,
@@ -72,17 +71,17 @@ export class RxCouchDBReplicationState<RxDocType> extends RxReplicationState<RxD
     }
 }
 
-export function syncCouchDB<RxDocType>(
-    this: RxCollection<RxDocType>,
+export function replicateCouchDB<RxDocType>(
     options: SyncOptionsCouchDB<RxDocType>
 ) {
+    const collection = options.collection;
+    addRxPlugin(RxDBLeaderElectionPlugin);
+
     options = flatClone(options);
     if (!options.url.endsWith('/')) {
         options.url = options.url + '/';
     }
     options.waitForLeadership = typeof options.waitForLeadership === 'undefined' ? true : options.waitForLeadership;
-
-    const collection = this;
     const pullStream$: Subject<RxReplicationPullStreamItem<RxDocType, CouchDBCheckpointType>> = new Subject();
     let replicationPrimitivesPull: ReplicationPullOptions<RxDocType, CouchDBCheckpointType> | undefined;
     if (options.pull) {
@@ -223,7 +222,7 @@ export function syncCouchDB<RxDocType>(
                             error: errorToPlainJson(err)
                         }));
                         // await next tick here otherwise we could go in to a 100% CPU blocking cycle.
-                        await this.promiseWait(0);
+                        await collection.promiseWait(0);
                         continue;
                     }
                     const documents: WithDeleted<RxDocType>[] = jsonResponse.results
@@ -246,17 +245,3 @@ export function syncCouchDB<RxDocType>(
 
     return replicationState;
 }
-
-
-export const RxDBReplicationCouchDBPlugin: RxPlugin = {
-    name: 'replication-couchdb',
-    init() {
-        addRxPlugin(RxDBLeaderElectionPlugin);
-    },
-    rxdb: true,
-    prototypes: {
-        RxCollection: (proto: any) => {
-            proto.syncCouchDB = syncCouchDB;
-        }
-    }
-};

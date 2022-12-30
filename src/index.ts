@@ -70,14 +70,13 @@ export * from './rx-storage-multiinstance';
 export * from './custom-index';
 export * from './query-planner';
 export * from './plugin-helpers';
+export * from './plugins/utils';
 
 export {
     _clearHook // used in tests
 } from './hooks';
 
 export * from './query-cache';
-
-export * from './util';
 
 // TODO how to do 'export type * ..' ?
 export type {

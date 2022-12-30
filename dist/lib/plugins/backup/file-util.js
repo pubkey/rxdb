@@ -18,7 +18,7 @@ var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"))
 var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 var fs = _interopRequireWildcard(require("fs"));
 var path = _interopRequireWildcard(require("path"));
-var _util = require("../../util");
+var _utils = require("../../plugins/utils");
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 /**
@@ -51,7 +51,7 @@ function prepareFolders(database, options) {
   ensureFolderExists(options.directory);
   var metaLoc = metaFileLocation(options);
   if (!fs.existsSync(metaLoc)) {
-    var currentTime = (0, _util.now)();
+    var currentTime = (0, _utils.now)();
     var metaData = {
       createdAt: currentTime,
       updatedAt: currentTime,
@@ -76,7 +76,7 @@ function _writeToFile() {
             break;
           }
           _context.next = 3;
-          return _util.blobBufferUtil.toString(data);
+          return _utils.blobBufferUtil.toString(data);
         case 3:
           data = _context.sent;
         case 4:

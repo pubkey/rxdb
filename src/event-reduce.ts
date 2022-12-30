@@ -17,7 +17,7 @@ import type {
     RxDocumentData
 } from './types';
 import { rxChangeEventToEventReduceChangeEvent } from './rx-change-event';
-import { arrayFilterNotEmpty, clone, ensureNotFalsy } from './util';
+import { arrayFilterNotEmpty, clone, ensureNotFalsy } from './plugins/utils';
 import { normalizeMangoQuery } from './rx-query-helper';
 
 export type EventReduceResultNeg = {

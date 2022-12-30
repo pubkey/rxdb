@@ -2,7 +2,7 @@ import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
 import _regeneratorRuntime from "@babel/runtime/regenerator";
 import { getComposedPrimaryKeyOfDocumentData } from '../rx-schema-helper';
 import { stackCheckpoints } from '../rx-storage-helper';
-import { createRevision, ensureNotFalsy, fastUnsecureHash, getDefaultRevision, getDefaultRxDocumentMeta, getFromObjectOrThrow, now } from '../util';
+import { createRevision, ensureNotFalsy, fastUnsecureHash, getDefaultRevision, getDefaultRxDocumentMeta, getFromObjectOrThrow, now } from '../plugins/utils';
 import { RX_REPLICATION_META_INSTANCE_SCHEMA } from './meta-instance';
 export function getLastCheckpointDoc(_x, _x2) {
   return _getLastCheckpointDoc.apply(this, arguments);

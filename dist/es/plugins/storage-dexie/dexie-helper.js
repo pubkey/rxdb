@@ -1,7 +1,7 @@
 import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
 import _regeneratorRuntime from "@babel/runtime/regenerator";
 import { Dexie } from 'dexie';
-import { flatClone, toArray } from '../../util';
+import { flatClone, toArray } from '../utils';
 import { newRxError } from '../../rx-error';
 import { getPrimaryFieldOfPrimaryKey, getSchemaByObjectPath } from '../../rx-schema-helper';
 import { getMingoQuery } from '../../rx-query-mingo';

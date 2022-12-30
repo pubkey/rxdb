@@ -21,7 +21,7 @@ import {
     getFromMapOrThrow,
     parseRevision,
     stripMetaDataFromDocument
-} from './util';
+} from './plugins/utils';
 
 
 

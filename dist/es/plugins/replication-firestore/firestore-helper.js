@@ -1,5 +1,5 @@
 import { Timestamp } from 'firebase/firestore';
-import { flatClone, now } from '../../util';
+import { flatClone, now } from '../../plugins/utils';
 export var FIRESTORE_REPLICATION_PLUGIN_IDENTITY_PREFIX = 'rxdb-replication-firestore-';
 export function getFirestoreSortFieldValue(docData, primaryKey) {
   var timeString = now() + '';

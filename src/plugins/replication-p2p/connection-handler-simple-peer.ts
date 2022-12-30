@@ -1,5 +1,5 @@
 import { Subject } from 'rxjs';
-import { getFromMapOrThrow, PROMISE_RESOLVE_VOID, randomCouchString } from '../../util';
+import { getFromMapOrThrow, PROMISE_RESOLVE_VOID, randomCouchString } from '../../plugins/utils';
 import type {
     P2PConnectionHandler,
     P2PConnectionHandlerCreator,

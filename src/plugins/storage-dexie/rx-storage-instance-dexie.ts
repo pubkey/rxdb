@@ -9,7 +9,7 @@ import {
     sortDocumentsByLastWriteTime,
     lastOfArray,
     ensureNotFalsy
-} from '../../util';
+} from '../utils';
 import type {
     RxStorageInstance,
     RxStorageChangeEvent,

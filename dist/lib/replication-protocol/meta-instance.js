@@ -8,7 +8,7 @@ exports.getAssumedMasterState = getAssumedMasterState;
 exports.getMetaWriteRow = getMetaWriteRow;
 var _rxSchemaHelper = require("../rx-schema-helper");
 var _rxStorageHelper = require("../rx-storage-helper");
-var _util = require("../util");
+var _utils = require("../plugins/utils");
 var RX_REPLICATION_META_INSTANCE_SCHEMA = (0, _rxSchemaHelper.fillWithDefaultSettings)({
   primaryKey: {
     key: 'id',
@@ -80,16 +80,16 @@ function getMetaWriteRow(state, newMasterDocState, previous, isResolvedConflict)
     data: newMasterDocState,
     _attachments: {},
     _deleted: false,
-    _rev: (0, _util.getDefaultRevision)(),
+    _rev: (0, _utils.getDefaultRevision)(),
     _meta: {
       lwt: 0
     }
   };
   newMeta.data = newMasterDocState;
   newMeta.isResolvedConflict = isResolvedConflict;
-  newMeta._meta.lwt = (0, _util.now)();
+  newMeta._meta.lwt = (0, _utils.now)();
   newMeta.id = (0, _rxSchemaHelper.getComposedPrimaryKeyOfDocumentData)(RX_REPLICATION_META_INSTANCE_SCHEMA, newMeta);
-  newMeta._rev = (0, _util.createRevision)(state.input.identifier, previous);
+  newMeta._rev = (0, _utils.createRevision)(state.input.identifier, previous);
   return {
     previous: previous,
     document: newMeta

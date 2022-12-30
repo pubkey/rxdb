@@ -9,7 +9,7 @@ exports.getQueryParams = getQueryParams;
 exports.getSortFieldsOfQuery = getSortFieldsOfQuery;
 var _eventReduceJs = require("event-reduce-js");
 var _rxChangeEvent = require("./rx-change-event");
-var _util = require("./util");
+var _utils = require("./plugins/utils");
 var _rxQueryHelper = require("./rx-query-helper");
 function getSortFieldsOfQuery(primaryKey, query) {
   if (!query.sort || query.sort.length === 0) {
@@ -26,7 +26,7 @@ function getQueryParams(rxQuery) {
   if (!RXQUERY_QUERY_PARAMS_CACHE.has(rxQuery)) {
     var collection = rxQuery.collection;
     var preparedQuery = rxQuery.getPreparedQuery();
-    var normalizedMangoQuery = (0, _rxQueryHelper.normalizeMangoQuery)(collection.storageInstance.schema, (0, _util.clone)(rxQuery.mangoQuery));
+    var normalizedMangoQuery = (0, _rxQueryHelper.normalizeMangoQuery)(collection.storageInstance.schema, (0, _utils.clone)(rxQuery.mangoQuery));
     var primaryKey = collection.schema.primaryPath;
 
     /**
@@ -78,12 +78,12 @@ function calculateNewResults(rxQuery, rxChangeEvents) {
     };
   }
   var queryParams = getQueryParams(rxQuery);
-  var previousResults = (0, _util.ensureNotFalsy)(rxQuery._result).docsData.slice(0);
-  var previousResultsMap = (0, _util.ensureNotFalsy)(rxQuery._result).docsDataMap;
+  var previousResults = (0, _utils.ensureNotFalsy)(rxQuery._result).docsData.slice(0);
+  var previousResultsMap = (0, _utils.ensureNotFalsy)(rxQuery._result).docsDataMap;
   var changed = false;
   var eventReduceEvents = rxChangeEvents.map(function (cE) {
     return (0, _rxChangeEvent.rxChangeEventToEventReduceChangeEvent)(cE);
-  }).filter(_util.arrayFilterNotEmpty);
+  }).filter(_utils.arrayFilterNotEmpty);
   var foundNonOptimizeable = eventReduceEvents.find(function (eventReduceEvent) {
     var stateResolveFunctionInput = {
       queryParams: queryParams,

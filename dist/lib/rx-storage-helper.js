@@ -26,7 +26,7 @@ var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/
 var _overwritable = require("./overwritable");
 var _rxError = require("./rx-error");
 var _rxSchemaHelper = require("./rx-schema-helper");
-var _util = require("./util");
+var _utils = require("./plugins/utils");
 /**
  * Helper functions for accessing the RxStorage instances.
  */
@@ -91,10 +91,10 @@ function _writeSingle() {
             _context2.next = 8;
             break;
           }
-          error = (0, _util.firstPropertyValueOfObject)(writeResult.error);
+          error = (0, _utils.firstPropertyValueOfObject)(writeResult.error);
           throw error;
         case 8:
-          ret = (0, _util.firstPropertyValueOfObject)(writeResult.success);
+          ret = (0, _utils.firstPropertyValueOfObject)(writeResult.success);
           return _context2.abrupt("return", ret);
         case 10:
         case "end":
@@ -158,7 +158,7 @@ function getNewestOfDocumentStates(primaryPath, docs) {
       ret = doc;
     }
   });
-  return (0, _util.ensureNotFalsy)(ret);
+  return (0, _utils.ensureNotFalsy)(ret);
 }
 
 /**
@@ -191,7 +191,7 @@ bulkWriteRows, context) {
   var errors = {};
   var changedDocumentIds = [];
   var eventBulk = {
-    id: (0, _util.randomCouchString)(10),
+    id: (0, _utils.randomCouchString)(10),
     events: [],
     checkpoint: null,
     context: context
@@ -199,7 +199,7 @@ bulkWriteRows, context) {
   var attachmentsAdd = [];
   var attachmentsRemove = [];
   var attachmentsUpdate = [];
-  var startTime = (0, _util.now)();
+  var startTime = (0, _utils.now)();
   var docsByIdIsMap = typeof docsInDb.get === 'function';
   bulkWriteRows.forEach(function (writeRow) {
     var id = writeRow.document[primaryPath];
@@ -247,7 +247,7 @@ bulkWriteRows, context) {
           documentData: hasAttachments ? stripAttachmentsDataFromDocument(writeRow.document) : writeRow.document,
           previousDocumentData: hasAttachments && writeRow.previous ? stripAttachmentsDataFromDocument(writeRow.previous) : writeRow.previous,
           startTime: startTime,
-          endTime: (0, _util.now)()
+          endTime: (0, _utils.now)()
         });
       }
     } else {
@@ -350,7 +350,7 @@ bulkWriteRows, context) {
         previousEventDocumentData = writeRow.previous;
       } else if (writeDoc._deleted) {
         operation = 'DELETE';
-        eventDocumentData = (0, _util.ensureNotFalsy)(writeRow.document);
+        eventDocumentData = (0, _utils.ensureNotFalsy)(writeRow.document);
         previousEventDocumentData = writeRow.previous;
       } else {
         throw (0, _rxError.newRxError)('SNH', {
@@ -363,11 +363,11 @@ bulkWriteRows, context) {
       eventBulk.events.push({
         eventId: getUniqueDeterministicEventKey(storageInstance, primaryPath, writeRow),
         documentId: id,
-        documentData: (0, _util.ensureNotFalsy)(eventDocumentData),
+        documentData: (0, _utils.ensureNotFalsy)(eventDocumentData),
         previousDocumentData: previousEventDocumentData,
         operation: operation,
         startTime: startTime,
-        endTime: (0, _util.now)()
+        endTime: (0, _utils.now)()
       });
     }
   });
@@ -401,14 +401,14 @@ function attachmentWriteDataToNormalData(writeData) {
     return writeData;
   }
   var ret = {
-    digest: (0, _util.defaultHashFunction)(data),
+    digest: (0, _utils.defaultHashFunction)(data),
     length: getAttachmentSize(data),
     type: writeData.type
   };
   return ret;
 }
 function stripAttachmentsDataFromDocument(doc) {
-  var useDoc = (0, _util.flatClone)(doc);
+  var useDoc = (0, _utils.flatClone)(doc);
   useDoc._attachments = {};
   Object.entries(doc._attachments).forEach(function (_ref4) {
     var attachmentId = _ref4[0],
@@ -425,8 +425,8 @@ function stripAttachmentsDataFromDocument(doc) {
  * during replication etc.
  */
 function flatCloneDocWithMeta(doc) {
-  var ret = (0, _util.flatClone)(doc);
-  ret._meta = (0, _util.flatClone)(doc._meta);
+  var ret = (0, _utils.flatClone)(doc);
+  ret._meta = (0, _utils.flatClone)(doc._meta);
   return ret;
 }
 
@@ -458,8 +458,8 @@ rxJsonSchema) {
   _overwritable.overwritable.deepFreezeWhenDevMode(rxJsonSchema);
   var primaryPath = (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(rxJsonSchema.primaryKey);
   function transformDocumentDataFromRxDBToRxStorage(writeRow) {
-    var data = (0, _util.flatClone)(writeRow.document);
-    data._meta = (0, _util.flatClone)(data._meta);
+    var data = (0, _utils.flatClone)(writeRow.document);
+    data._meta = (0, _utils.flatClone)(data._meta);
 
     /**
      * Do some checks in dev-mode
@@ -509,14 +509,14 @@ rxJsonSchema) {
         });
       }
     }
-    data._meta.lwt = (0, _util.now)();
+    data._meta.lwt = (0, _utils.now)();
 
     /**
      * Yes we really want to set the revision here.
      * If you make a plugin that relies on having its own revision
      * stored into the storage, use this.originalStorageInstance.bulkWrite() instead.
      */
-    data._rev = (0, _util.createRevision)(database.token, writeRow.previous);
+    data._rev = (0, _utils.createRevision)(database.token, writeRow.previous);
     return {
       document: data,
       previous: writeRow.previous
@@ -545,22 +545,22 @@ rxJsonSchema) {
        * @link https://github.com/pubkey/rxdb/pull/3839
        */.then(function (writeResult) {
         var reInsertErrors = Object.values(writeResult.error).filter(function (error) {
-          if (error.status === 409 && !error.writeRow.previous && !error.writeRow.document._deleted && (0, _util.ensureNotFalsy)(error.documentInDb)._deleted) {
+          if (error.status === 409 && !error.writeRow.previous && !error.writeRow.document._deleted && (0, _utils.ensureNotFalsy)(error.documentInDb)._deleted) {
             return true;
           }
           return false;
         });
         if (reInsertErrors.length > 0) {
           var useWriteResult = {
-            error: (0, _util.flatClone)(writeResult.error),
-            success: (0, _util.flatClone)(writeResult.success)
+            error: (0, _utils.flatClone)(writeResult.error),
+            success: (0, _utils.flatClone)(writeResult.success)
           };
           var reInserts = reInsertErrors.map(function (error) {
             delete useWriteResult.error[error.documentId];
             return {
               previous: error.documentInDb,
               document: Object.assign({}, error.writeRow.document, {
-                _rev: (0, _util.createRevision)(database.token, error.documentInDb)
+                _rev: (0, _utils.createRevision)(database.token, error.documentInDb)
               })
             };
           });
@@ -597,7 +597,7 @@ rxJsonSchema) {
     },
     getChangedDocumentsSince: function getChangedDocumentsSince(limit, checkpoint) {
       return database.lockedRun(function () {
-        return storageInstance.getChangedDocumentsSince((0, _util.ensureNotFalsy)(limit), checkpoint);
+        return storageInstance.getChangedDocumentsSince((0, _utils.ensureNotFalsy)(limit), checkpoint);
       });
     },
     cleanup: function cleanup(minDeletedTime) {
@@ -626,11 +626,11 @@ rxJsonSchema) {
         return storageInstance.resolveConflictResultionTask(taskSolution);
       }
       var doc = Object.assign({}, taskSolution.output.documentData, {
-        _meta: (0, _util.getDefaultRxDocumentMeta)(),
-        _rev: (0, _util.getDefaultRevision)(),
+        _meta: (0, _utils.getDefaultRxDocumentMeta)(),
+        _rev: (0, _utils.getDefaultRevision)(),
         _attachments: {}
       });
-      var documentData = (0, _util.flatClone)(doc);
+      var documentData = (0, _utils.flatClone)(doc);
       delete documentData._meta;
       delete documentData._rev;
       delete documentData._attachments;

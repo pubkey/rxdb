@@ -1,5 +1,5 @@
 import { Client, createClient } from 'graphql-ws';
-import { getFromMapOrThrow } from '../../util';
+import { getFromMapOrThrow } from '../../plugins/utils';
 import ws from 'isomorphic-ws';
 
 const { WebSocket: IsomorphicWebSocket } = ws;

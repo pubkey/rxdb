@@ -7,7 +7,7 @@ import type {
 } from '../../types';
 import {
     getFromMapOrThrow
-} from '../../util';
+} from '../../plugins/utils';
 import {
     getWebSocket,
     startSocketServer,

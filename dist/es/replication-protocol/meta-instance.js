@@ -1,6 +1,6 @@
 import { fillWithDefaultSettings, getComposedPrimaryKeyOfDocumentData } from '../rx-schema-helper';
 import { flatCloneDocWithMeta } from '../rx-storage-helper';
-import { getDefaultRevision, createRevision, now } from '../util';
+import { getDefaultRevision, createRevision, now } from '../plugins/utils';
 export var RX_REPLICATION_META_INSTANCE_SCHEMA = fillWithDefaultSettings({
   primaryKey: {
     key: 'id',

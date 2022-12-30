@@ -1,7 +1,7 @@
 import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
 import _regeneratorRuntime from "@babel/runtime/regenerator";
 import { map } from 'rxjs/operators';
-import { blobBufferUtil, flatClone, PROMISE_RESOLVE_VOID } from '../../util';
+import { blobBufferUtil, flatClone, PROMISE_RESOLVE_VOID } from '../../plugins/utils';
 import { newRxError } from '../../rx-error';
 function ensureSchemaSupportsAttachments(doc) {
   var schemaJson = doc.collection.schema.jsonSchema;

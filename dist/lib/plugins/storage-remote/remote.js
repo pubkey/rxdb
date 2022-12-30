@@ -8,7 +8,7 @@ exports.exposeRxStorageRemote = exposeRxStorageRemote;
 var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
 var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 var _rxjs = require("rxjs");
-var _util = require("../../util");
+var _utils = require("../../plugins/utils");
 var _storageRemoteHelpers = require("./storage-remote-helpers");
 var _fastDeepEqual = _interopRequireDefault(require("fast-deep-equal"));
 /**
@@ -123,26 +123,26 @@ function exposeRxStorageRemote(settings) {
                       return _context.abrupt("return");
                     case 5:
                       _context.prev = 5;
-                      if (!(message.method === 'close' && (0, _util.ensureNotFalsy)(state).connectionIds.size > 1)) {
+                      if (!(message.method === 'close' && (0, _utils.ensureNotFalsy)(state).connectionIds.size > 1)) {
                         _context.next = 11;
                         break;
                       }
                       settings.send((0, _storageRemoteHelpers.createAnswer)(message, null));
-                      (0, _util.ensureNotFalsy)(state).connectionIds["delete"](connectionId);
+                      (0, _utils.ensureNotFalsy)(state).connectionIds["delete"](connectionId);
                       subs.forEach(function (sub) {
                         return sub.unsubscribe();
                       });
                       return _context.abrupt("return");
                     case 11:
                       _context.next = 13;
-                      return (0, _util.ensureNotFalsy)(state).storageInstance[message.method](message.params[0], message.params[1], message.params[2], message.params[3]);
+                      return (0, _utils.ensureNotFalsy)(state).storageInstance[message.method](message.params[0], message.params[1], message.params[2], message.params[3]);
                     case 13:
                       result = _context.sent;
                       if (message.method === 'close' || message.method === 'remove') {
                         subs.forEach(function (sub) {
                           return sub.unsubscribe();
                         });
-                        (0, _util.ensureNotFalsy)(state).connectionIds["delete"](connectionId);
+                        (0, _utils.ensureNotFalsy)(state).connectionIds["delete"](connectionId);
                         instanceByFullName["delete"](fullName);
                         /**
                          * TODO how to notify the other ports on remove() ?

@@ -50,7 +50,7 @@ Object.keys(_checkQuery).forEach(function (key) {
   });
 });
 var _rxError = require("../../rx-error");
-var _util = require("../../util");
+var _utils = require("../../plugins/utils");
 /**
  * Deep freezes and object when in dev-mode.
  * Deep-Freezing has the same performaance as deep-cloning, so we only do that in dev-mode.
@@ -62,7 +62,7 @@ function deepFreezeWhenDevMode(obj) {
   if (!obj || typeof obj === 'string' || typeof obj === 'number') {
     return obj;
   }
-  return (0, _util.deepFreeze)(obj);
+  return (0, _utils.deepFreeze)(obj);
 }
 var DEV_MODE_PLUGIN_NAME = 'dev-mode';
 exports.DEV_MODE_PLUGIN_NAME = DEV_MODE_PLUGIN_NAME;

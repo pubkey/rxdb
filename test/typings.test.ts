@@ -752,13 +752,6 @@ describe('typings.test.js', function () {
             `;
                 await transpileCode(code);
             });
-            it('should be able to import and add a plugin', async () => {
-                const code = codeBase + `
-                import { RxDBReplicationGraphQLPlugin } from '${config.rootPath}plugins/replication-graphql';
-                addRxPlugin(RxDBReplicationGraphQLPlugin);
-            `;
-                await transpileCode(code);
-            });
         });
     });
     config.parallel('issues', () => {

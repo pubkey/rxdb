@@ -10,7 +10,7 @@ var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/
 var _rxjs = require("rxjs");
 var _rxError = require("../rx-error");
 var _rxStorageHelper = require("../rx-storage-helper");
-var _util = require("../util");
+var _utils = require("../plugins/utils");
 var _checkpoint = require("./checkpoint");
 var _helper = require("./helper");
 var _metaInstance = require("./meta-instance");
@@ -39,7 +39,7 @@ function startReplicationDownstream(state) {
       var useTasks = [];
       while (openTasks.length > 0) {
         state.events.active.down.next(true);
-        var innerTaskWithTime = (0, _util.ensureNotFalsy)(openTasks.shift());
+        var innerTaskWithTime = (0, _utils.ensureNotFalsy)(openTasks.shift());
 
         /**
          * If the task came in before the last time we started the pull
@@ -169,7 +169,7 @@ function startReplicationDownstream(state) {
       docsOfAllTasks = docsOfAllTasks.concat(task.documents);
       lastCheckpoint = (0, _rxStorageHelper.stackCheckpoints)([lastCheckpoint, task.checkpoint]);
     });
-    return persistFromMaster(docsOfAllTasks, (0, _util.ensureNotFalsy)(lastCheckpoint));
+    return persistFromMaster(docsOfAllTasks, (0, _utils.ensureNotFalsy)(lastCheckpoint));
   }
 
   /**
@@ -180,7 +180,7 @@ function startReplicationDownstream(state) {
    * This often bundles up single writes and improves performance
    * by processing the documents in bulks.
    */
-  var persistenceQueue = _util.PROMISE_RESOLVE_VOID;
+  var persistenceQueue = _utils.PROMISE_RESOLVE_VOID;
   var nonPersistedFromMaster = {
     docs: {}
   };
@@ -206,7 +206,7 @@ function startReplicationDownstream(state) {
       var useCheckpoint = nonPersistedFromMaster.checkpoint;
       var docIds = Object.keys(downDocsById);
       if (state.events.canceled.getValue() || docIds.length === 0) {
-        return _util.PROMISE_RESOLVE_VOID;
+        return _utils.PROMISE_RESOLVE_VOID;
       }
       var writeRowsToFork = [];
       var writeRowsToForkById = {};
@@ -229,9 +229,9 @@ function startReplicationDownstream(state) {
                     _context.next = 6;
                     break;
                   }
-                  return _context.abrupt("return", _util.PROMISE_RESOLVE_VOID);
+                  return _context.abrupt("return", _utils.PROMISE_RESOLVE_VOID);
                 case 6:
-                  isAssumedMasterEqualToForkStatePromise = !assumedMaster || !forkStateDocData ? _util.PROMISE_RESOLVE_FALSE : state.input.conflictHandler({
+                  isAssumedMasterEqualToForkStatePromise = !assumedMaster || !forkStateDocData ? _utils.PROMISE_RESOLVE_FALSE : state.input.conflictHandler({
                     realMasterState: assumedMaster.docData,
                     newDocumentState: forkStateDocData
                   }, 'downstream-check-if-equal-0').then(function (r) {
@@ -241,16 +241,16 @@ function startReplicationDownstream(state) {
                   return isAssumedMasterEqualToForkStatePromise;
                 case 9:
                   isAssumedMasterEqualToForkState = _context.sent;
-                  if (!isAssumedMasterEqualToForkState && assumedMaster && assumedMaster.docData._rev && forkStateFullDoc._meta[state.input.identifier] && (0, _util.parseRevision)(forkStateFullDoc._rev).height === forkStateFullDoc._meta[state.input.identifier]) {
+                  if (!isAssumedMasterEqualToForkState && assumedMaster && assumedMaster.docData._rev && forkStateFullDoc._meta[state.input.identifier] && (0, _utils.parseRevision)(forkStateFullDoc._rev).height === forkStateFullDoc._meta[state.input.identifier]) {
                     isAssumedMasterEqualToForkState = true;
                   }
                   if (!(forkStateFullDoc && assumedMaster && isAssumedMasterEqualToForkState === false || forkStateFullDoc && !assumedMaster)) {
                     _context.next = 13;
                     break;
                   }
-                  return _context.abrupt("return", _util.PROMISE_RESOLVE_VOID);
+                  return _context.abrupt("return", _utils.PROMISE_RESOLVE_VOID);
                 case 13:
-                  areStatesExactlyEqualPromise = !forkStateDocData ? _util.PROMISE_RESOLVE_FALSE : state.input.conflictHandler({
+                  areStatesExactlyEqualPromise = !forkStateDocData ? _utils.PROMISE_RESOLVE_FALSE : state.input.conflictHandler({
                     realMasterState: masterState,
                     newDocumentState: forkStateDocData
                   }, 'downstream-check-if-equal-1').then(function (r) {
@@ -275,19 +275,19 @@ function startReplicationDownstream(state) {
                   if (!assumedMaster || isAssumedMasterEqualToForkState === false) {
                     useMetaWriteRows.push((0, _metaInstance.getMetaWriteRow)(state, forkStateDocData, assumedMaster ? assumedMaster.metaDocument : undefined));
                   }
-                  return _context.abrupt("return", _util.PROMISE_RESOLVE_VOID);
+                  return _context.abrupt("return", _utils.PROMISE_RESOLVE_VOID);
                 case 20:
                   /**
                    * All other master states need to be written to the forkInstance
                    * and metaInstance.
                    */
                   newForkState = Object.assign({}, masterState, forkStateFullDoc ? {
-                    _meta: (0, _util.flatClone)(forkStateFullDoc._meta),
+                    _meta: (0, _utils.flatClone)(forkStateFullDoc._meta),
                     _attachments: {},
-                    _rev: (0, _util.getDefaultRevision)()
+                    _rev: (0, _utils.getDefaultRevision)()
                   } : {
-                    _meta: (0, _util.getDefaultRxDocumentMeta)(),
-                    _rev: (0, _util.getDefaultRevision)(),
+                    _meta: (0, _utils.getDefaultRxDocumentMeta)(),
+                    _rev: (0, _utils.getDefaultRevision)(),
                     _attachments: {}
                   });
                   /**
@@ -299,7 +299,7 @@ function startReplicationDownstream(state) {
                    * This is used for example in the CouchDB replication plugin.
                    */
                   if (masterState._rev) {
-                    nextRevisionHeight = !forkStateFullDoc ? 1 : (0, _util.parseRevision)(forkStateFullDoc._rev).height + 1;
+                    nextRevisionHeight = !forkStateFullDoc ? 1 : (0, _utils.parseRevision)(forkStateFullDoc._rev).height + 1;
                     newForkState._meta[state.input.identifier] = nextRevisionHeight;
                   }
                   forkWriteRow = {

@@ -1,7 +1,7 @@
 import {
     getDefaultRevision,
     getDefaultRxDocumentMeta
-} from '../../util';
+} from '../../plugins/utils';
 
 import type {
     RxChangeEvent,

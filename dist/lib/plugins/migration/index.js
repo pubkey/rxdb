@@ -55,7 +55,7 @@ Object.defineProperty(exports, "migratePromise", {
 });
 var _rxjs = require("rxjs");
 var _operators = require("rxjs/operators");
-var _util = require("../../util");
+var _utils = require("../../plugins/utils");
 var _dataMigrator = require("./data-migrator");
 var _migrationState = require("./migration-state");
 var DATA_MIGRATOR_BY_COLLECTION = new WeakMap();
@@ -73,7 +73,7 @@ var RxDBMigrationPlugin = {
       proto.migrationStates = function () {
         return (0, _migrationState.getMigrationStateByDatabase)(this).pipe((0, _operators.switchMap)(function (list) {
           return (0, _rxjs.combineLatest)(list);
-        }), (0, _operators.shareReplay)(_util.RXJS_SHARE_REPLAY_DEFAULTS));
+        }), (0, _operators.shareReplay)(_utils.RXJS_SHARE_REPLAY_DEFAULTS));
       };
     },
     RxCollection: function RxCollection(proto) {
@@ -85,7 +85,7 @@ var RxDBMigrationPlugin = {
       };
       proto.migrationNeeded = function () {
         if (this.schema.version === 0) {
-          return _util.PROMISE_RESOLVE_FALSE;
+          return _utils.PROMISE_RESOLVE_FALSE;
         }
         return (0, _dataMigrator.mustMigrate)(this.getDataMigrator());
       };

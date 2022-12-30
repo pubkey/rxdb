@@ -16,7 +16,7 @@ var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"))
 var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
 var _customIdleQueue = require("custom-idle-queue");
-var _util = require("./util");
+var _utils = require("./plugins/utils");
 var _rxError = require("./rx-error");
 var _rxSchema = require("./rx-schema");
 var _hooks = require("./hooks");
@@ -61,8 +61,8 @@ var RxDatabaseBase = /*#__PURE__*/function () {
     this.observable$ = this.eventBulks$.pipe((0, _operators.mergeMap)(function (changeEventBulk) {
       return changeEventBulk.events;
     }));
-    this.storageToken = _util.PROMISE_RESOLVE_FALSE;
-    this.storageTokenDocument = _util.PROMISE_RESOLVE_FALSE;
+    this.storageToken = _utils.PROMISE_RESOLVE_FALSE;
+    this.storageTokenDocument = _utils.PROMISE_RESOLVE_FALSE;
     this.emittedEventBulkIds = new _obliviousSet.ObliviousSet(60 * 1000);
     this.name = name;
     this.token = token;
@@ -222,8 +222,8 @@ var RxDatabaseBase = /*#__PURE__*/function () {
                   connectedStorages: []
                 },
                 _deleted: false,
-                _meta: (0, _util.getDefaultRxDocumentMeta)(),
-                _rev: (0, _util.getDefaultRevision)(),
+                _meta: (0, _utils.getDefaultRxDocumentMeta)(),
+                _rev: (0, _utils.getDefaultRevision)(),
                 _attachments: {}
               };
               bulkPutDocs.push({
@@ -236,7 +236,7 @@ var RxDatabaseBase = /*#__PURE__*/function () {
               });
 
               // run hooks
-              var hookData = (0, _util.flatClone)(args);
+              var hookData = (0, _utils.flatClone)(args);
               hookData.database = _this2;
               hookData.name = name;
               (0, _hooks.runPluginHooks)('preCreateRxCollection', hookData);
@@ -259,7 +259,7 @@ var RxDatabaseBase = /*#__PURE__*/function () {
                   writeError: error
                 });
               }
-              var docInDb = (0, _util.ensureNotFalsy)(error.documentInDb);
+              var docInDb = (0, _utils.ensureNotFalsy)(error.documentInDb);
               var collectionName = docInDb.data.name;
               var schema = schemas[collectionName];
               // collection already exists but has different schema
@@ -270,7 +270,7 @@ var RxDatabaseBase = /*#__PURE__*/function () {
                   previousSchemaHash: docInDb.data.schemaHash,
                   schemaHash: schema.hash,
                   previousSchema: docInDb.data.schema,
-                  schema: (0, _util.ensureNotFalsy)(jsonSchemas[collectionName])
+                  schema: (0, _utils.ensureNotFalsy)(jsonSchemas[collectionName])
                 });
               }
             });
@@ -336,7 +336,7 @@ var RxDatabaseBase = /*#__PURE__*/function () {
    * Export database to a JSON friendly format.
    */;
   _proto.exportJSON = function exportJSON(_collections) {
-    throw (0, _util.pluginMissing)('json-dump');
+    throw (0, _utils.pluginMissing)('json-dump');
   }
 
   /**
@@ -346,25 +346,25 @@ var RxDatabaseBase = /*#__PURE__*/function () {
    * since data could be encrypted.
    */;
   _proto.importJSON = function importJSON(_exportedJSON) {
-    throw (0, _util.pluginMissing)('json-dump');
+    throw (0, _utils.pluginMissing)('json-dump');
   };
   _proto.backup = function backup(_options) {
-    throw (0, _util.pluginMissing)('backup');
+    throw (0, _utils.pluginMissing)('backup');
   };
   _proto.leaderElector = function leaderElector() {
-    throw (0, _util.pluginMissing)('leader-election');
+    throw (0, _utils.pluginMissing)('leader-election');
   };
   _proto.isLeader = function isLeader() {
-    throw (0, _util.pluginMissing)('leader-election');
+    throw (0, _utils.pluginMissing)('leader-election');
   }
   /**
    * returns a promise which resolves when the instance becomes leader
    */;
   _proto.waitForLeadership = function waitForLeadership() {
-    throw (0, _util.pluginMissing)('leader-election');
+    throw (0, _utils.pluginMissing)('leader-election');
   };
   _proto.migrationStates = function migrationStates() {
-    throw (0, _util.pluginMissing)('migration');
+    throw (0, _utils.pluginMissing)('migration');
   }
 
   /**
@@ -382,7 +382,7 @@ var RxDatabaseBase = /*#__PURE__*/function () {
               _context4.next = 2;
               break;
             }
-            return _context4.abrupt("return", _util.PROMISE_RESOLVE_FALSE);
+            return _context4.abrupt("return", _utils.PROMISE_RESOLVE_FALSE);
           case 2:
             // settings destroyed = true must be the first thing to do.
             this.destroyed = true;
@@ -409,7 +409,7 @@ var RxDatabaseBase = /*#__PURE__*/function () {
               _context4.next = 10;
               break;
             }
-            return _context4.abrupt("return", _util.PROMISE_RESOLVE_FALSE);
+            return _context4.abrupt("return", _utils.PROMISE_RESOLVE_FALSE);
           case 10:
             return _context4.abrupt("return", this.requestIdlePromise().then(function () {
               return Promise.all(_this3.onDestroy.map(function (fn) {
@@ -538,7 +538,7 @@ function createRxDatabase(_ref4) {
     _ref4$localDocuments = _ref4.localDocuments,
     localDocuments = _ref4$localDocuments === void 0 ? false : _ref4$localDocuments,
     _ref4$hashFunction = _ref4.hashFunction,
-    hashFunction = _ref4$hashFunction === void 0 ? _util.defaultHashFunction : _ref4$hashFunction;
+    hashFunction = _ref4$hashFunction === void 0 ? _utils.defaultHashFunction : _ref4$hashFunction;
   (0, _hooks.runPluginHooks)('preCreateRxDatabase', {
     storage: storage,
     instanceCreationOptions: instanceCreationOptions,
@@ -555,7 +555,7 @@ function createRxDatabase(_ref4) {
     throwIfDatabaseNameUsed(name);
   }
   USED_DATABASE_NAMES.add(name);
-  var databaseInstanceToken = (0, _util.randomCouchString)(10);
+  var databaseInstanceToken = (0, _utils.randomCouchString)(10);
   return createRxDatabaseStorageInstance(databaseInstanceToken, storage, name, instanceCreationOptions, multiInstance, password)
   /**
    * Creating the internal store might fail
@@ -601,7 +601,7 @@ function _removeRxDatabase() {
     return _regenerator["default"].wrap(function _callee6$(_context6) {
       while (1) switch (_context6.prev = _context6.next) {
         case 0:
-          databaseInstanceToken = (0, _util.randomCouchString)(10);
+          databaseInstanceToken = (0, _utils.randomCouchString)(10);
           _context6.next = 3;
           return createRxDatabaseStorageInstance(databaseInstanceToken, storage, databaseName, {}, false);
         case 3:

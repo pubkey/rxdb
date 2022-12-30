@@ -6,14 +6,14 @@ Object.defineProperty(exports, "__esModule", {
 exports.normalizeMangoQuery = normalizeMangoQuery;
 var _queryPlanner = require("./query-planner");
 var _rxSchemaHelper = require("./rx-schema-helper");
-var _util = require("./util");
+var _utils = require("./plugins/utils");
 /**
  * Normalize the query to ensure we have all fields set
  * and queries that represent the same query logic are detected as equal by the caching.
  */
 function normalizeMangoQuery(schema, mangoQuery) {
   var primaryKey = (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(schema.primaryKey);
-  var normalizedMangoQuery = (0, _util.clone)(mangoQuery);
+  var normalizedMangoQuery = (0, _utils.clone)(mangoQuery);
   if (typeof normalizedMangoQuery.skip !== 'number') {
     normalizedMangoQuery.skip = 0;
   }
@@ -52,7 +52,7 @@ function normalizeMangoQuery(schema, mangoQuery) {
    * the primaryKey is inside of it.
    */
   if (normalizedMangoQuery.index) {
-    var indexAr = (0, _util.toArray)(normalizedMangoQuery.index);
+    var indexAr = (0, _utils.toArray)(normalizedMangoQuery.index);
     if (!indexAr.includes(primaryKey)) {
       indexAr.push(primaryKey);
     }
@@ -105,7 +105,7 @@ function normalizeMangoQuery(schema, mangoQuery) {
         var currentFieldsAmount = -1;
         var currentBestIndexForSort;
         schema.indexes.forEach(function (index) {
-          var useIndex = (0, _util.isMaybeReadonlyArray)(index) ? index : [index];
+          var useIndex = (0, _utils.isMaybeReadonlyArray)(index) ? index : [index];
           var firstWrongIndex = useIndex.findIndex(function (indexField) {
             return !fieldsWithLogicalOperator.has(indexField);
           });
@@ -133,7 +133,7 @@ function normalizeMangoQuery(schema, mangoQuery) {
     }
   } else {
     var isPrimaryInSort = normalizedMangoQuery.sort.find(function (p) {
-      return (0, _util.firstPropertyNameOfObject)(p) === primaryKey;
+      return (0, _utils.firstPropertyNameOfObject)(p) === primaryKey;
     });
     if (!isPrimaryInSort) {
       var _normalizedMangoQuery;

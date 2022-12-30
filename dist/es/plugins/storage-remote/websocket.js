@@ -1,5 +1,5 @@
 import { Subject } from 'rxjs';
-import { getFromMapOrThrow } from '../../util';
+import { getFromMapOrThrow } from '../../plugins/utils';
 import { getWebSocket, startSocketServer } from '../replication-websocket';
 import { exposeRxStorageRemote } from './remote';
 import { getRxStorageRemote } from './rx-storage-remote';

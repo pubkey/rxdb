@@ -15,7 +15,7 @@ var _overwritable = require("../../overwritable");
 var _pluginHelpers = require("../../plugin-helpers");
 var _rxSchemaHelper = require("../../rx-schema-helper");
 var _rxStorageHelper = require("../../rx-storage-helper");
-var _util = require("../../util");
+var _utils = require("../../plugins/utils");
 /**
  * this plugin adds the keycompression-capabilities to rxdb
  * if you dont use this, ensure that you set disableKeyComression to false in your schema
@@ -35,7 +35,7 @@ function getCompressionStateByRxJsonSchema(schema) {
   _overwritable.overwritable.deepFreezeWhenDevMode(schema);
   var compressionState = COMPRESSION_STATE_BY_SCHEMA.get(schema);
   if (!compressionState) {
-    var compressionSchema = (0, _util.flatClone)(schema);
+    var compressionSchema = (0, _utils.flatClone)(schema);
     delete compressionSchema.primaryKey;
     var table = (0, _jsonschemaKeyCompression.createCompressionTable)(compressionSchema, _jsonschemaKeyCompression.DEFAULT_COMPRESSION_FLAG, [
     /**
@@ -67,7 +67,7 @@ function getCompressionStateByRxJsonSchema(schema) {
      */
     if (schema.indexes) {
       var newIndexes = schema.indexes.map(function (idx) {
-        if ((0, _util.isMaybeReadonlyArray)(idx)) {
+        if ((0, _utils.isMaybeReadonlyArray)(idx)) {
           return idx.map(function (subIdx) {
             return (0, _jsonschemaKeyCompression.compressedPath)(table, subIdx);
           });
@@ -151,7 +151,7 @@ function wrappedKeyCompressionStorage(args) {
                * which allows underlying storages to detect wrong conficturations
                * like when keyCompression is set to false but no key-compression module is used.
                */
-              childSchema = (0, _util.flatClone)(compressionState.compressedSchema);
+              childSchema = (0, _utils.flatClone)(compressionState.compressedSchema);
               childSchema.keyCompression = false;
               _context.next = 9;
               return args.storage.createStorageInstance(Object.assign({}, params, {

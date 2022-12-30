@@ -3,7 +3,7 @@ import { getGraphqlSchemaFromJsonSchema } from 'get-graphql-from-jsonschema';
 import { fillWithDefaultSettings } from '../../rx-schema-helper';
 
 import { RxJsonSchema } from '../../types';
-import { clone, ensureNotFalsy, flatClone, ucfirst } from '../../util';
+import { clone, ensureNotFalsy, flatClone, ucfirst } from '../../plugins/utils';
 
 export type Prefixes = {
     push?: string;

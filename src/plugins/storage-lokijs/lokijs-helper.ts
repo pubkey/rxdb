@@ -15,7 +15,7 @@ import {
     add as unloadAdd,
     AddReturn
 } from 'unload';
-import { ensureNotFalsy, flatClone, promiseWait, randomCouchString } from '../../util';
+import { ensureNotFalsy, flatClone, promiseWait, randomCouchString } from '../utils';
 import { LokiSaveQueue } from './loki-save-queue';
 import type { DeterministicSortComparator } from 'event-reduce-js';
 import { newRxError } from '../../rx-error';

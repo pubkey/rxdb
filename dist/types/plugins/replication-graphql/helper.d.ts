@@ -8,5 +8,5 @@ export interface GraphQLError {
     }>;
     path: string[];
 }
-export declare type GraphQLErrors = Array<GraphQLError>;
+export type GraphQLErrors = Array<GraphQLError>;
 export declare function graphQLRequest(httpUrl: string, clientState: RxGraphQLReplicationClientState, queryParams: RxGraphQLReplicationQueryBuilderResponseObject): Promise<any>;

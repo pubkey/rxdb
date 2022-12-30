@@ -11,7 +11,7 @@ import {
     getSortDocumentsByLastWriteTimeComparator,
     RX_META_LWT_MINIMUM,
     lastOfArray
-} from '../../util';
+} from '../utils';
 import { newRxError } from '../../rx-error';
 import type {
     RxStorageInstance,

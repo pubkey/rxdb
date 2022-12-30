@@ -10,7 +10,7 @@ var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"))
 var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 var _operators = require("rxjs/operators");
 var _rxSchemaHelper = require("./rx-schema-helper");
-var _util = require("./util");
+var _utils = require("./plugins/utils");
 /**
  * cache the validators by the schema-hash
  * so we can reuse them when multiple collections have the same schema
@@ -34,15 +34,15 @@ validatorKey) {
   if (!VALIDATOR_CACHE_BY_VALIDATOR_KEY.has(validatorKey)) {
     VALIDATOR_CACHE_BY_VALIDATOR_KEY.set(validatorKey, new Map());
   }
-  var VALIDATOR_CACHE = (0, _util.getFromMapOrThrow)(VALIDATOR_CACHE_BY_VALIDATOR_KEY, validatorKey);
+  var VALIDATOR_CACHE = (0, _utils.getFromMapOrThrow)(VALIDATOR_CACHE_BY_VALIDATOR_KEY, validatorKey);
   function initValidator(schema) {
-    var hash = (0, _util.fastUnsecureHash)(JSON.stringify(schema));
+    var hash = (0, _utils.fastUnsecureHash)(JSON.stringify(schema));
     if (!VALIDATOR_CACHE.has(hash)) {
       var validator = getValidator(schema);
       VALIDATOR_CACHE.set(hash, validator);
       return validator;
     }
-    return (0, _util.getFromMapOrThrow)(VALIDATOR_CACHE, hash);
+    return (0, _utils.getFromMapOrThrow)(VALIDATOR_CACHE, hash);
   }
   return function (args) {
     return Object.assign({}, args.storage, {
@@ -63,7 +63,7 @@ validatorKey) {
                  * Some libraries take really long to initialize the validator
                  * from the schema.
                  */
-                (0, _util.requestIdleCallbackIfAvailable)(function () {
+                (0, _utils.requestIdleCallbackIfAvailable)(function () {
                   return validatorCached = initValidator(params.schema);
                 });
                 oldBulkWrite = instance.bulkWrite.bind(instance);
@@ -184,8 +184,8 @@ function wrapRxStorageInstance(instance, modifyToStorage, modifyFromStorage) {
       return _regenerator["default"].wrap(function _callee13$(_context13) {
         while (1) switch (_context13.prev = _context13.next) {
           case 0:
-            ret = (0, _util.flatClone)(error);
-            ret.writeRow = (0, _util.flatClone)(ret.writeRow);
+            ret = (0, _utils.flatClone)(error);
+            ret.writeRow = (0, _utils.flatClone)(ret.writeRow);
             if (!ret.documentInDb) {
               _context13.next = 6;
               break;

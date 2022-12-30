@@ -15,7 +15,7 @@ import type {
 import { rxStorageInstanceToReplicationHandler } from '../../replication-protocol';
 import {
     PROMISE_RESOLVE_VOID
-} from '../../util';
+} from '../../plugins/utils';
 import { Subject } from 'rxjs';
 
 

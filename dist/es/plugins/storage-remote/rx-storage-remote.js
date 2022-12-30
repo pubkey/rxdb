@@ -2,7 +2,7 @@ import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
 import _regeneratorRuntime from "@babel/runtime/regenerator";
 import { ensureNotFalsy } from 'event-reduce-js';
 import { firstValueFrom, filter, Subject } from 'rxjs';
-import { randomCouchString } from '../../util';
+import { randomCouchString } from '../../plugins/utils';
 export var RxStorageRemote = /*#__PURE__*/function () {
   function RxStorageRemote(settings) {
     this.name = 'remote';

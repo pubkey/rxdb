@@ -23,7 +23,7 @@ import {
     flatClone,
     getFromMapOrThrow,
     requestIdleCallbackIfAvailable
-} from './util';
+} from './plugins/utils';
 
 
 type WrappedStorageFunction = <Internals, InstanceCreationOptions>(

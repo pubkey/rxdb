@@ -11,7 +11,7 @@ import {
     nextTick,
     now,
     requestIdlePromise
-} from './util';
+} from './plugins/utils';
 
 export class QueryCache {
     public _map: Map<string, RxQuery> = new Map();

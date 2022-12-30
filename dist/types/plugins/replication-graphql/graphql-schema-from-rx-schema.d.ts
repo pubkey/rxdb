@@ -1,5 +1,5 @@
 import { RxJsonSchema } from '../../types';
-export declare type Prefixes = {
+export type Prefixes = {
     push?: string;
     pushRow?: string;
     checkpoint?: string;
@@ -13,8 +13,8 @@ export declare type Prefixes = {
  * to have better IDE autocomplete,
  * all strings are allowed
  */
-export declare type GraphQLParamType = 'ID' | 'ID!' | 'String' | 'String!' | 'Int' | 'Int!' | 'Float' | 'Float!' | string;
-export declare type GraphQLSchemaFromRxSchemaInputSingleCollection = {
+export type GraphQLParamType = 'ID' | 'ID!' | 'String' | 'String!' | 'Int' | 'Int!' | 'Float' | 'Float!' | string;
+export type GraphQLSchemaFromRxSchemaInputSingleCollection = {
     schema: RxJsonSchema<any>;
     /**
      * These fields of the document data
@@ -32,10 +32,10 @@ export declare type GraphQLSchemaFromRxSchemaInputSingleCollection = {
      */
     deletedField?: string;
 };
-export declare type GraphQLSchemaFromRxSchemaInput = {
+export type GraphQLSchemaFromRxSchemaInput = {
     [collectionName: string]: GraphQLSchemaFromRxSchemaInputSingleCollection;
 };
-export declare type GraphQLSchemaFromRxSchemaOutput = {
+export type GraphQLSchemaFromRxSchemaOutput = {
     asString: string;
     queries: string[];
     mutations: string[];

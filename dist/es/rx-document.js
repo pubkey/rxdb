@@ -2,7 +2,7 @@ import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
 import _regeneratorRuntime from "@babel/runtime/regenerator";
 import objectPath from 'object-path';
 import { distinctUntilChanged, filter, map, shareReplay, startWith } from 'rxjs/operators';
-import { clone, trimDots, pluginMissing, flatClone, PROMISE_RESOLVE_NULL, RXJS_SHARE_REPLAY_DEFAULTS, getFromObjectOrThrow } from './util';
+import { clone, trimDots, pluginMissing, flatClone, PROMISE_RESOLVE_NULL, RXJS_SHARE_REPLAY_DEFAULTS, getFromObjectOrThrow } from './plugins/utils';
 import { newRxError } from './rx-error';
 import { runPluginHooks } from './hooks';
 import { getDocumentDataOfRxChangeEvent } from './rx-change-event';

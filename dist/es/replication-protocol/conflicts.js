@@ -1,7 +1,7 @@
 import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
 import _regeneratorRuntime from "@babel/runtime/regenerator";
 import deepEqual from 'fast-deep-equal';
-import { getDefaultRevision, createRevision, now, flatClone } from '../util';
+import { getDefaultRevision, createRevision, now, flatClone } from '../plugins/utils';
 export var defaultConflictHandler = function defaultConflictHandler(i, _context) {
   /**
    * If the documents are deep equal,
