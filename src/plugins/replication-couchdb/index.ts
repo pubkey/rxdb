@@ -72,9 +72,9 @@ export class RxCouchDBReplicationState<RxDocType> extends RxReplicationState<RxD
 }
 
 export function replicateCouchDB<RxDocType>(
-    collection: RxCollection<RxDocType>,
     options: SyncOptionsCouchDB<RxDocType>
 ) {
+    const collection = options.collection;
     addRxPlugin(RxDBLeaderElectionPlugin);
 
     options = flatClone(options);

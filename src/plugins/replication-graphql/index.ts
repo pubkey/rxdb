@@ -88,8 +88,8 @@ export class RxGraphQLReplicationState<RxDocType, CheckpointType> extends RxRepl
 }
 
 export function replicateGraphQL<RxDocType, CheckpointType>(
-    collection: RxCollection<RxDocType>,
     {
+        collection,
         url,
         headers = {},
         credentials,

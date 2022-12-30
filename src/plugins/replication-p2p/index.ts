@@ -31,9 +31,9 @@ import type {
 
 
 export async function replicateP2P<RxDocType>(
-    collection: RxCollection<RxDocType>,
     options: SyncOptionsP2P<RxDocType>
 ): Promise<RxP2PReplicationPool<RxDocType>> {
+    const collection = options.collection;
     addRxPlugin(RxDBLeaderElectionPlugin);
 
     // fill defaults

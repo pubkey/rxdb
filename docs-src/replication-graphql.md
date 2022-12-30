@@ -165,8 +165,8 @@ With the queryBuilder, you can then setup the pull-replication.
 ```js
 import { replicateGraphQL } from 'rxdb/plugins/replication-graphql';
 const replicationState = replicateGraphQL(
-    myRxCollection,
     {
+        collection: myRxCollection,
         // urls to the GraphQL endpoints
         url: {
             http: 'http://example.com/graphql'
@@ -233,8 +233,8 @@ With the queryBuilder, you can then setup the push-replication.
 
 ```js
 const replicationState = replicateGraphQL(
-    myRxCollection,
     {
+        collection: myRxCollection,
         // urls to the GraphQL endpoints
         url: {
             http: 'http://example.com/graphql'
@@ -300,8 +300,8 @@ With the `pullStreamQueryBuilder` you can then start a realtime replication.
 
 ```js
 const replicationState = replicateGraphQL(
-    myRxCollection
     {
+        collection: myRxCollection,
         // urls to the GraphQL endpoints
         url: {
             http: 'http://example.com/graphql',
@@ -333,8 +333,8 @@ GraphQL fills up non-existent optional values with `null` while RxDB required th
 Therefore, if your schema contains optional properties, you have to transform the pulled data to switch out `null` to `undefined`
 ```js
 const replicationState: RxGraphQLReplicationState<RxDocType> = replicateGraphQL(
-    myRxCollection,
     {
+        collection: myRxCollection,
         url: {/* ... */},
         headers: {/* ... */},
         push: {/* ... */},
@@ -366,8 +366,8 @@ import {
 
 } from 'rxdb';
 const replicationState: RxGraphQLReplicationState<RxDocType> = replicateGraphQL(
-    myRxCollection,
     {
+        collection: myRxCollection,
         url: {/* ... */},
         headers: {/* ... */},
         push: {/* ... */},
@@ -429,8 +429,8 @@ or directly pass it in the the `syncGraphQL`:
 
 ```js
 replicateGraphQL(
-    myRxCollection,
     {
+        collection: myRxCollection,
         /* ... */
         credentials: 'include',
         /* ... */

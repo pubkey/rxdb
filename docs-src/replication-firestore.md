@@ -44,8 +44,8 @@ Then you can start the replication by calling `replicateFirestore()` on your [Rx
 
 ```ts
 const replicationState = replicateFirestore(
-    myRxCollection,
     {
+        collection: myRxCollection,
         firestore: {
             projectId,
             database: firestoreDatabase,

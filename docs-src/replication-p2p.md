@@ -23,8 +23,8 @@ import {
 
 
 const replicationPool = await replicateP2P(
-    myRxCollection,
     {
+        collection: myRxCollection,
         // The topic is like a 'room-name'. All clients with the same topic
         // will replicate with each other. In most cases you want to use
         // a different topic string per user.
