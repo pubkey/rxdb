@@ -82,8 +82,6 @@ If multiple atomic updates are run on the same document at the same time, we sho
 ## Add enum-compression to the key-compression plugin
 - Also rename the key-compression plugin to be just called 'compression'
 
-## Fix migration+replication
-When the schema is changed a migration runs, the replication plugins will replicate the migrated data. This is mostly not wanted by the user. We should add an option to let the user define what should happen after the migration.
 
 ## Prefix storage plugins with `storage-` [DONE]
 Like the replication plugins, all RxStorage plugins should be prefixed with `storage-` for example `storage-dexie`.
@@ -121,12 +119,34 @@ We should unify the naming so that each of the methods has an atomic and a non-a
 
 The [worker plugin](https://rxdb.info/rx-storage-worker.html) is using threads.js atm. Instead we should use the [remote worker plugin](https://rxdb.info/rx-storage-remote.html). Also the worker plugin is a pure performance optimization, so it will move to the premium packages.
 
+
+## Fix migration+replication
+When the schema is changed a migration runs, the replication plugins will replicate the migrated data. This is mostly not wanted by the user. We should add an option to let the user define what should happen after the migration.
+
+Proposed solution:
+
+- Add a `preMigrate` hook to the collection creation so that it can be ensured that all local non-replicated writes are replicated before the migration runs.
+- During migration, listen to the events of the new storage instance and store the last event in the internals collection
+- After the migration has run, the replication plugins start from that latest event and only replicate document writes that have occured after the migration.
+
 ## Refactor data-migrator
 
  - The current implemetation does not use pouchdb's bulkDocs which is much faster.
  - This could have been done in much less code which would be easier to understand.
  - Migration strategies should be defined [like in WatermelonDB](https://nozbe.github.io/WatermelonDB/Advanced/Migrations.html) with a `toVersion` version field. We should also add a `fromVersion` field so people could implement performance shortcuts by directly jumping several versions. The current migration strategies use the array index as `toVersion` which is confusing.
  
+
+## Do not start replication via RxCollection.sync...
+
+Atm the rx-collection contains methods like `syncCouchDB()` etc.
+This requires the `rx-collection.ts` to import the types of all replication plugins which will cause tree-shaking bailouts.
+Instead we should only be able to start the replication by using plain pure functions like `replicateCouchDB()`.
+
+## Move util to an util plugin
+
+To make tree-shaking work better, create an utils plugin so that the premium plugins and others
+can import utility functions like `from 'rxdb/plugins/util` instead of having to use `from 'rxdb'`.
+
 ## Use plain json errors inside of RxError parameters [DONE]
 
 Atm, printing a RxError gives not information about the inner errors because it looks like:
