@@ -23,6 +23,7 @@
 - ADD `RxDocument.incrementalRemove()`
 - ADD non-incremental `RxDocument` methods `patch()` and `modify()`
 - ADD typings to the query selector
+- CHANGE start replication via pure functions instead of RxCollection methods.
 
 <!-- ADD new changes here! -->
 
