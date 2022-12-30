@@ -8,7 +8,6 @@ import assert from 'assert';
 
 import {
     randomCouchString,
-    addRxPlugin,
     RxCollection,
     ensureNotFalsy
 } from '../';
@@ -35,12 +34,11 @@ import {
 } from 'firebase/firestore';
 import {
     FirestoreOptions,
-    RxDBReplicationFirestorePlugin,
+    replicateFirestore,
     RxFirestoreReplicationState
 } from '../plugins/replication-firestore';
 import { ensureCollectionsHaveEqualState, ensureReplicationHasNoErrors } from './helper/test-util';
 
-addRxPlugin(RxDBReplicationFirestorePlugin);
 
 /**
  * The tests for the firstore replication plugin
@@ -79,7 +77,8 @@ describe('replication-firstore.test.js', () => {
         };
     }
     async function syncOnce(collection: RxCollection, firestoreState: FirestoreOptions<any>) {
-        const replicationState = collection.syncFirestore({
+        const replicationState = replicateFirestore({
+            collection,
             firestore: firestoreState,
             live: false,
             pull: {},
@@ -92,7 +91,8 @@ describe('replication-firstore.test.js', () => {
         collection: RxCollection<RxDocType>,
         firestoreState: FirestoreOptions<RxDocType>
     ): RxFirestoreReplicationState<RxDocType> {
-        const replicationState = collection.syncFirestore({
+        const replicationState = replicateFirestore({
+            collection,
             firestore: firestoreState,
             pull: {
                 batchSize

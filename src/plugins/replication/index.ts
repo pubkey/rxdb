@@ -29,6 +29,7 @@ import type {
     RxTypeError,
     WithDeleted
 } from '../../types';
+import { RxDBLeaderElectionPlugin } from '../leader-election';
 import {
     ensureNotFalsy,
     errorToPlainJson,
@@ -55,6 +56,7 @@ import {
 import {
     addConnectedStorageToCollection
 } from '../../rx-database-internal-store';
+import { addRxPlugin } from '../../plugin';
 
 
 export const REPLICATION_STATE_BY_COLLECTION: WeakMap<RxCollection, RxReplicationState<any, any>[]> = new WeakMap();
@@ -426,6 +428,7 @@ export function replicateRxCollection<RxDocType, CheckpointType>(
         autoStart = true,
     }: ReplicationOptions<RxDocType, CheckpointType>
 ): RxReplicationState<RxDocType, CheckpointType> {
+    addRxPlugin(RxDBLeaderElectionPlugin);
     const replicationIdentifierHash = fastUnsecureHash(
         [
             collection.database.name,

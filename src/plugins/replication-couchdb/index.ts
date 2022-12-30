@@ -21,7 +21,8 @@ import type {
     CouchAllDocsResponse
 } from '../../types';
 import {
-    RxReplicationState, startReplicationOnLeaderShip
+    RxReplicationState,
+    startReplicationOnLeaderShip
 } from '../replication';
 import {
     addRxPlugin,
