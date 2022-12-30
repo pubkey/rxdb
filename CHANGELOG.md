@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- FIX Add missing mingo array operators [#4203](https://github.com/pubkey/rxdb/pull/4203) Thanks [@swnf](https://github.com/swnf)
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
