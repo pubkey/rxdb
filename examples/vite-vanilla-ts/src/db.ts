@@ -1,5 +1,5 @@
 import { createRxDatabase, addRxPlugin } from 'rxdb';
-import { getRxStorageDexie } from 'rxdb/plugins/dexie';
+import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
 import { wrappedKeyCompressionStorage } from 'rxdb/plugins/key-compression';
 import { RxDBQueryBuilderPlugin } from 'rxdb/plugins/query-builder';
 import { wrappedKeyEncryptionStorage } from 'rxdb/plugins/encryption';
