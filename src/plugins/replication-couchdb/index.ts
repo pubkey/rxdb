@@ -12,7 +12,6 @@ import {
 import { RxDBLeaderElectionPlugin } from '../leader-election';
 import type {
     RxCollection,
-    RxPlugin,
     ReplicationPullOptions,
     ReplicationPushOptions,
     RxReplicationWriteToMasterRow,
@@ -72,17 +71,17 @@ export class RxCouchDBReplicationState<RxDocType> extends RxReplicationState<RxD
     }
 }
 
-export function syncCouchDB<RxDocType>(
-    this: RxCollection<RxDocType>,
+export function replicateCouchDB<RxDocType>(
+    collection: RxCollection<RxDocType>,
     options: SyncOptionsCouchDB<RxDocType>
 ) {
+    addRxPlugin(RxDBLeaderElectionPlugin);
+
     options = flatClone(options);
     if (!options.url.endsWith('/')) {
         options.url = options.url + '/';
     }
     options.waitForLeadership = typeof options.waitForLeadership === 'undefined' ? true : options.waitForLeadership;
-
-    const collection = this;
     const pullStream$: Subject<RxReplicationPullStreamItem<RxDocType, CouchDBCheckpointType>> = new Subject();
     let replicationPrimitivesPull: ReplicationPullOptions<RxDocType, CouchDBCheckpointType> | undefined;
     if (options.pull) {
@@ -223,7 +222,7 @@ export function syncCouchDB<RxDocType>(
                             error: errorToPlainJson(err)
                         }));
                         // await next tick here otherwise we could go in to a 100% CPU blocking cycle.
-                        await this.promiseWait(0);
+                        await collection.promiseWait(0);
                         continue;
                     }
                     const documents: WithDeleted<RxDocType>[] = jsonResponse.results
@@ -246,17 +245,3 @@ export function syncCouchDB<RxDocType>(
 
     return replicationState;
 }
-
-
-export const RxDBReplicationCouchDBPlugin: RxPlugin = {
-    name: 'replication-couchdb',
-    init() {
-        addRxPlugin(RxDBLeaderElectionPlugin);
-    },
-    rxdb: true,
-    prototypes: {
-        RxCollection: (proto: any) => {
-            proto.syncCouchDB = syncCouchDB;
-        }
-    }
-};

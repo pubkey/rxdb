@@ -136,7 +136,7 @@ Proposed solution:
  - Migration strategies should be defined [like in WatermelonDB](https://nozbe.github.io/WatermelonDB/Advanced/Migrations.html) with a `toVersion` version field. We should also add a `fromVersion` field so people could implement performance shortcuts by directly jumping several versions. The current migration strategies use the array index as `toVersion` which is confusing.
  
 
-## Do not start replication via RxCollection.sync...
+## Do not start replication via RxCollection.sync... [DONE]
 
 Atm the rx-collection contains methods like `syncCouchDB()` etc.
 This requires the `rx-collection.ts` to import the types of all replication plugins which will cause tree-shaking bailouts.

@@ -60,8 +60,6 @@
         * [findByIds$()](./rx-collection.md#findbyids$)
         * [exportJSON()](./rx-collection.md#dump)
         * [importJSON()](./rx-collection.md#importdump)
-        * [syncCouchDB()](./rx-collection.md#synccouchdb)
-        * [syncGraphQL()](./rx-collection.md#syncgraphql)
         * [remove()](./rx-collection.md#remove)
         * [destroy()](./rx-collection.md#destroy)
         * [isRxCollection()](./rx-collection.md#isrxcollection)
@@ -158,7 +156,6 @@
 
 * Tutorials
     * [Use RxDB with Typescript](./tutorials/typescript.md)
-    * [Using the CouchDB Server Plugin](./tutorials/server-couchdb.md)
 
 * Opinions
     * [About Offline First](./offline-first.md)
