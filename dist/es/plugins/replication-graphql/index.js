@@ -42,8 +42,9 @@ export var RxGraphQLReplicationState = /*#__PURE__*/function (_RxReplicationStat
   };
   return RxGraphQLReplicationState;
 }(RxReplicationState);
-export function syncGraphQL(_ref) {
-  var url = _ref.url,
+export function replicateGraphQL(_ref) {
+  var collection = _ref.collection,
+    url = _ref.url,
     _ref$headers = _ref.headers,
     headers = _ref$headers === void 0 ? {} : _ref$headers,
     credentials = _ref.credentials,
@@ -59,8 +60,7 @@ export function syncGraphQL(_ref) {
     retryTime = _ref$retryTime === void 0 ? 1000 * 5 : _ref$retryTime,
     _ref$autoStart = _ref.autoStart,
     autoStart = _ref$autoStart === void 0 ? true : _ref$autoStart;
-  var collection = this;
-
+  addRxPlugin(RxDBLeaderElectionPlugin);
   /**
    * We use this object to store the GraphQL client
    * so we can later swap out the client inside of the replication handlers.
@@ -233,16 +233,4 @@ export * from './helper';
 export * from './graphql-schema-from-rx-schema';
 export * from './query-builder-from-rx-schema';
 export * from './graphql-websocket';
-export var RxDBReplicationGraphQLPlugin = {
-  name: 'replication-graphql',
-  init: function init() {
-    addRxPlugin(RxDBLeaderElectionPlugin);
-  },
-  rxdb: true,
-  prototypes: {
-    RxCollection: function RxCollection(proto) {
-      proto.syncGraphQL = syncGraphQL;
-    }
-  }
-};
 //# sourceMappingURL=index.js.map

@@ -537,22 +537,6 @@ export var RxCollectionBase = /*#__PURE__*/function () {
   }
 
   /**
-   * sync with a GraphQL endpoint
-   */;
-  _proto.syncGraphQL = function syncGraphQL(_options) {
-    throw pluginMissing('replication-graphql');
-  };
-  _proto.syncCouchDB = function syncCouchDB(_syncOptions) {
-    throw pluginMissing('replication-couchdb');
-  };
-  _proto.syncP2P = function syncP2P(_syncOptions) {
-    throw pluginMissing('replication-p2p');
-  };
-  _proto.syncFirestore = function syncFirestore(_syncOptions) {
-    throw pluginMissing('replication-firestore');
-  }
-
-  /**
    * HOOKS
    */;
   _proto.addHook = function addHook(when, key, fun) {

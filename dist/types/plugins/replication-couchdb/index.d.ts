@@ -1,4 +1,4 @@
-import type { RxCollection, RxPlugin, ReplicationPullOptions, ReplicationPushOptions } from '../../types';
+import type { RxCollection, ReplicationPullOptions, ReplicationPushOptions } from '../../types';
 import { RxReplicationState } from '../replication';
 import type { CouchDBCheckpointType, FetchMethodType, SyncOptionsCouchDB } from './couchdb-types';
 export * from './couchdb-helper';
@@ -15,5 +15,4 @@ export declare class RxCouchDBReplicationState<RxDocType> extends RxReplicationS
     autoStart: boolean;
     constructor(url: string, fetch: FetchMethodType, replicationIdentifierHash: string, collection: RxCollection<RxDocType>, pull?: ReplicationPullOptions<RxDocType, CouchDBCheckpointType> | undefined, push?: ReplicationPushOptions<RxDocType> | undefined, live?: boolean, retryTime?: number, autoStart?: boolean);
 }
-export declare function syncCouchDB<RxDocType>(this: RxCollection<RxDocType>, options: SyncOptionsCouchDB<RxDocType>): RxCouchDBReplicationState<RxDocType>;
-export declare const RxDBReplicationCouchDBPlugin: RxPlugin;
+export declare function replicateCouchDB<RxDocType>(options: SyncOptionsCouchDB<RxDocType>): RxCouchDBReplicationState<RxDocType>;

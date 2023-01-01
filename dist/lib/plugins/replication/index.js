@@ -10,11 +10,13 @@ exports.startReplicationOnLeaderShip = startReplicationOnLeaderShip;
 var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
 var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 var _rxjs = require("rxjs");
+var _leaderElection = require("../leader-election");
 var _utils = require("../../plugins/utils");
 var _replicationProtocol = require("../../replication-protocol");
 var _rxError = require("../../rx-error");
 var _replicationHelper = require("./replication-helper");
 var _rxDatabaseInternalStore = require("../../rx-database-internal-store");
+var _plugin = require("../../plugin");
 /**
  * This plugin contains the primitives to create
  * a RxDB client-server replication.
@@ -534,6 +536,7 @@ function replicateRxCollection(_ref4) {
     waitForLeadership = _ref4$waitForLeadersh === void 0 ? true : _ref4$waitForLeadersh,
     _ref4$autoStart = _ref4.autoStart,
     autoStart = _ref4$autoStart === void 0 ? true : _ref4$autoStart;
+  (0, _plugin.addRxPlugin)(_leaderElection.RxDBLeaderElectionPlugin);
   var replicationIdentifierHash = (0, _utils.fastUnsecureHash)([collection.database.name, collection.name, replicationIdentifier].join('|'));
   var replicationState = new RxReplicationState(replicationIdentifierHash, collection, deletedField, pull, push, live, retryTime, autoStart);
   startReplicationOnLeaderShip(waitForLeadership, replicationState);

@@ -20,7 +20,7 @@ export type FirestoreOptions<RxDocType> = {
     collection: FirestoreCollection<RxDocType>;
     database: Firestore;
 };
-export type SyncOptionsFirestore<RxDocType> = Omit<ReplicationOptions<RxDocType, any>, 'pull' | 'push' | 'replicationIdentifier' | 'collection'> & {
+export type SyncOptionsFirestore<RxDocType> = Omit<ReplicationOptions<RxDocType, any>, 'pull' | 'push' | 'replicationIdentifier'> & {
     firestore: FirestoreOptions<RxDocType>;
     /**
      * In firestore it is not possible to read out

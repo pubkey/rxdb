@@ -1,10 +1,6 @@
 import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
 import _inheritsLoose from "@babel/runtime/helpers/inheritsLoose";
 import _regeneratorRuntime from "@babel/runtime/regenerator";
-/**
- * this plugin adds the RxCollection.syncCouchDB()-function to rxdb
- * you can use it to sync collections with a remote CouchDB endpoint.
- */
 import { ensureNotFalsy, errorToPlainJson, fastUnsecureHash, flatClone, lastOfArray } from '../../plugins/utils';
 import { doc, query, where, orderBy, limit, getDocs, onSnapshot, runTransaction, writeBatch, serverTimestamp, waitForPendingWrites, documentId } from 'firebase/firestore';
 import { RxDBLeaderElectionPlugin } from '../leader-election';
@@ -34,8 +30,9 @@ export var RxFirestoreReplicationState = /*#__PURE__*/function (_RxReplicationSt
   }
   return RxFirestoreReplicationState;
 }(RxReplicationState);
-export function syncFirestore(options) {
-  var collection = this;
+export function replicateFirestore(options) {
+  var collection = options.collection;
+  addRxPlugin(RxDBLeaderElectionPlugin);
   var pullStream$ = new Subject();
   var replicationPrimitivesPull;
   options.live = typeof options.live === 'undefined' ? true : options.live;
@@ -47,13 +44,13 @@ export function syncFirestore(options) {
   /**
    * The serverTimestampField MUST NOT be part of the collections RxJsonSchema.
    */
-  var schemaPart = getSchemaByObjectPath(this.schema.jsonSchema, serverTimestampField);
+  var schemaPart = getSchemaByObjectPath(collection.schema.jsonSchema, serverTimestampField);
   if (schemaPart ||
   // also must not be nested.
   serverTimestampField.includes('.')) {
     throw newRxError('RC6', {
       field: serverTimestampField,
-      schema: this.schema.jsonSchema
+      schema: collection.schema.jsonSchema
     });
   }
   if (options.pull) {
@@ -347,16 +344,4 @@ export function syncFirestore(options) {
   startReplicationOnLeaderShip(options.waitForLeadership, replicationState);
   return replicationState;
 }
-export var RxDBReplicationFirestorePlugin = {
-  name: 'replication-firestore',
-  init: function init() {
-    addRxPlugin(RxDBLeaderElectionPlugin);
-  },
-  rxdb: true,
-  prototypes: {
-    RxCollection: function RxCollection(proto) {
-      proto.syncFirestore = syncFirestore;
-    }
-  }
-};
 //# sourceMappingURL=index.js.map

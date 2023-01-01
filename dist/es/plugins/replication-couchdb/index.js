@@ -2,8 +2,7 @@ import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
 import _inheritsLoose from "@babel/runtime/helpers/inheritsLoose";
 import _regeneratorRuntime from "@babel/runtime/regenerator";
 /**
- * this plugin adds the RxCollection.syncCouchDB()-function to rxdb
- * you can use it to sync collections with a remote CouchDB endpoint.
+ * This plugin can be used to sync collections with a remote CouchDB endpoint.
  */
 import { ensureNotFalsy, errorToPlainJson, fastUnsecureHash, flatClone } from '../../plugins/utils';
 import { RxDBLeaderElectionPlugin } from '../leader-election';
@@ -34,14 +33,14 @@ export var RxCouchDBReplicationState = /*#__PURE__*/function (_RxReplicationStat
   }
   return RxCouchDBReplicationState;
 }(RxReplicationState);
-export function syncCouchDB(options) {
-  var _this2 = this;
+export function replicateCouchDB(options) {
+  var collection = options.collection;
+  addRxPlugin(RxDBLeaderElectionPlugin);
   options = flatClone(options);
   if (!options.url.endsWith('/')) {
     options.url = options.url + '/';
   }
   options.waitForLeadership = typeof options.waitForLeadership === 'undefined' ? true : options.waitForLeadership;
-  var collection = this;
   var pullStream$ = new Subject();
   var replicationPrimitivesPull;
   if (options.pull) {
@@ -233,7 +232,7 @@ export function syncCouchDB(options) {
               }));
               // await next tick here otherwise we could go in to a 100% CPU blocking cycle.
               _context3.next = 16;
-              return _this2.promiseWait(0);
+              return collection.promiseWait(0);
             case 16:
               return _context3.abrupt("continue", 0);
             case 17:
@@ -261,16 +260,4 @@ export function syncCouchDB(options) {
   startReplicationOnLeaderShip(options.waitForLeadership, replicationState);
   return replicationState;
 }
-export var RxDBReplicationCouchDBPlugin = {
-  name: 'replication-couchdb',
-  init: function init() {
-    addRxPlugin(RxDBLeaderElectionPlugin);
-  },
-  rxdb: true,
-  prototypes: {
-    RxCollection: function RxCollection(proto) {
-      proto.syncCouchDB = syncCouchDB;
-    }
-  }
-};
 //# sourceMappingURL=index.js.map

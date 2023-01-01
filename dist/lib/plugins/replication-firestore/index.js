@@ -6,11 +6,10 @@ Object.defineProperty(exports, "__esModule", {
 });
 var _exportNames = {
   RxFirestoreReplicationState: true,
-  syncFirestore: true,
-  RxDBReplicationFirestorePlugin: true
+  replicateFirestore: true
 };
-exports.RxFirestoreReplicationState = exports.RxDBReplicationFirestorePlugin = void 0;
-exports.syncFirestore = syncFirestore;
+exports.RxFirestoreReplicationState = void 0;
+exports.replicateFirestore = replicateFirestore;
 var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
 var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 var _inheritsLoose2 = _interopRequireDefault(require("@babel/runtime/helpers/inheritsLoose"));
@@ -44,10 +43,6 @@ Object.keys(_firestoreTypes).forEach(function (key) {
     }
   });
 });
-/**
- * this plugin adds the RxCollection.syncCouchDB()-function to rxdb
- * you can use it to sync collections with a remote CouchDB endpoint.
- */
 var RxFirestoreReplicationState = /*#__PURE__*/function (_RxReplicationState) {
   (0, _inheritsLoose2["default"])(RxFirestoreReplicationState, _RxReplicationState);
   function RxFirestoreReplicationState(firestore, replicationIdentifierHash, collection, pull, push) {
@@ -69,8 +64,9 @@ var RxFirestoreReplicationState = /*#__PURE__*/function (_RxReplicationState) {
   return RxFirestoreReplicationState;
 }(_replication.RxReplicationState);
 exports.RxFirestoreReplicationState = RxFirestoreReplicationState;
-function syncFirestore(options) {
-  var collection = this;
+function replicateFirestore(options) {
+  var collection = options.collection;
+  (0, _.addRxPlugin)(_leaderElection.RxDBLeaderElectionPlugin);
   var pullStream$ = new _rxjs.Subject();
   var replicationPrimitivesPull;
   options.live = typeof options.live === 'undefined' ? true : options.live;
@@ -82,13 +78,13 @@ function syncFirestore(options) {
   /**
    * The serverTimestampField MUST NOT be part of the collections RxJsonSchema.
    */
-  var schemaPart = (0, _.getSchemaByObjectPath)(this.schema.jsonSchema, serverTimestampField);
+  var schemaPart = (0, _.getSchemaByObjectPath)(collection.schema.jsonSchema, serverTimestampField);
   if (schemaPart ||
   // also must not be nested.
   serverTimestampField.includes('.')) {
     throw (0, _.newRxError)('RC6', {
       field: serverTimestampField,
-      schema: this.schema.jsonSchema
+      schema: collection.schema.jsonSchema
     });
   }
   if (options.pull) {
@@ -382,17 +378,4 @@ function syncFirestore(options) {
   (0, _replication.startReplicationOnLeaderShip)(options.waitForLeadership, replicationState);
   return replicationState;
 }
-var RxDBReplicationFirestorePlugin = {
-  name: 'replication-firestore',
-  init: function init() {
-    (0, _.addRxPlugin)(_leaderElection.RxDBLeaderElectionPlugin);
-  },
-  rxdb: true,
-  prototypes: {
-    RxCollection: function RxCollection(proto) {
-      proto.syncFirestore = syncFirestore;
-    }
-  }
-};
-exports.RxDBReplicationFirestorePlugin = RxDBReplicationFirestorePlugin;
 //# sourceMappingURL=index.js.map

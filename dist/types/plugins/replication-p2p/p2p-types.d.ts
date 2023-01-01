@@ -30,7 +30,7 @@ export type P2PConnectionHandler = {
 export type P2PConnectionHandlerCreator = (opts: SyncOptionsP2P<any>) => P2PConnectionHandler;
 export type P2PSyncPushOptions<RxDocType> = Omit<ReplicationPushOptions<RxDocType>, 'handler'> & {};
 export type P2PSyncPullOptions<RxDocType> = Omit<ReplicationPullOptions<RxDocType, P2PReplicationCheckpoint>, 'handler' | 'stream$'> & {};
-export type SyncOptionsP2P<RxDocType> = Omit<ReplicationOptions<RxDocType, P2PReplicationCheckpoint>, 'pull' | 'push' | 'replicationIdentifier' | 'collection' | 'deletedField' | 'live' | 'autostart' | 'waitForLeadership'> & {
+export type SyncOptionsP2P<RxDocType> = Omit<ReplicationOptions<RxDocType, P2PReplicationCheckpoint>, 'pull' | 'push' | 'replicationIdentifier' | 'deletedField' | 'live' | 'autostart' | 'waitForLeadership'> & {
     /**
      * It will only replicate with other instances
      * that use the same topic and

@@ -8,11 +8,13 @@ import _regeneratorRuntime from "@babel/runtime/regenerator";
  */
 
 import { BehaviorSubject, combineLatest, mergeMap, Subject } from 'rxjs';
+import { RxDBLeaderElectionPlugin } from '../leader-election';
 import { ensureNotFalsy, errorToPlainJson, fastUnsecureHash, flatClone, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_TRUE, toArray } from '../../plugins/utils';
 import { awaitRxStorageReplicationFirstInSync, awaitRxStorageReplicationInSync, cancelRxStorageReplication, replicateRxStorageInstance, RX_REPLICATION_META_INSTANCE_SCHEMA } from '../../replication-protocol';
 import { newRxError } from '../../rx-error';
 import { awaitRetry, DEFAULT_MODIFIER, swapDefaultDeletedTodeletedField, swapdeletedFieldToDefaultDeleted } from './replication-helper';
 import { addConnectedStorageToCollection } from '../../rx-database-internal-store';
+import { addRxPlugin } from '../../plugin';
 export var REPLICATION_STATE_BY_COLLECTION = new WeakMap();
 export var RxReplicationState = /*#__PURE__*/function () {
   function RxReplicationState(
@@ -523,6 +525,7 @@ export function replicateRxCollection(_ref4) {
     waitForLeadership = _ref4$waitForLeadersh === void 0 ? true : _ref4$waitForLeadersh,
     _ref4$autoStart = _ref4.autoStart,
     autoStart = _ref4$autoStart === void 0 ? true : _ref4$autoStart;
+  addRxPlugin(RxDBLeaderElectionPlugin);
   var replicationIdentifierHash = fastUnsecureHash([collection.database.name, collection.name, replicationIdentifier].join('|'));
   var replicationState = new RxReplicationState(replicationIdentifierHash, collection, deletedField, pull, push, live, retryTime, autoStart);
   startReplicationOnLeaderShip(waitForLeadership, replicationState);

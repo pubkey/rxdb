@@ -7,17 +7,16 @@ import { ensureNotFalsy, getFromMapOrThrow, randomCouchString } from '../../plug
 import { RxDBLeaderElectionPlugin } from '../leader-election';
 import { replicateRxCollection } from '../replication';
 import { isMasterInP2PReplication, sendMessageAndAwaitAnswer } from './p2p-helper';
-export function syncP2P(_x) {
-  return _syncP2P.apply(this, arguments);
+export function replicateP2P(_x) {
+  return _replicateP2P.apply(this, arguments);
 }
 
 /**
  * Because the P2P replication runs between many instances,
  * we use a Pool instead of returning a single replication state.
  */
-function _syncP2P() {
-  _syncP2P = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee6(options) {
-    var _this4 = this;
+function _replicateP2P() {
+  _replicateP2P = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee6(options) {
     var collection, requestCounter, requestFlag, getRequestId, storageToken, pool, connectSub;
     return _regeneratorRuntime.wrap(function _callee6$(_context6) {
       while (1) switch (_context6.prev = _context6.next) {
@@ -26,6 +25,9 @@ function _syncP2P() {
             var count = requestCounter++;
             return collection.database.token + '|' + requestFlag + '|' + count;
           };
+          collection = options.collection;
+          addRxPlugin(RxDBLeaderElectionPlugin);
+
           // fill defaults
           if (options.pull) {
             if (!options.pull.batchSize) {
@@ -37,22 +39,21 @@ function _syncP2P() {
               options.push.batchSize = 20;
             }
           }
-          collection = this;
-          if (!this.database.multiInstance) {
-            _context6.next = 7;
+          if (!collection.database.multiInstance) {
+            _context6.next = 8;
             break;
           }
-          _context6.next = 7;
-          return this.database.waitForLeadership();
-        case 7:
+          _context6.next = 8;
+          return collection.database.waitForLeadership();
+        case 8:
           // used to easier debug stuff
           requestCounter = 0;
           requestFlag = randomCouchString(10);
-          _context6.next = 11;
-          return this.database.storageToken;
-        case 11:
+          _context6.next = 12;
+          return collection.database.storageToken;
+        case 12:
           storageToken = _context6.sent;
-          pool = new RxP2PReplicationPool(this, options, options.connectionHandlerCreator(options));
+          pool = new RxP2PReplicationPool(collection, options, options.connectionHandlerCreator(options));
           pool.subs.push(pool.connectionHandler.error$.subscribe(function (err) {
             return pool.error$.next(err);
           }), pool.connectionHandler.disconnect$.subscribe(function (peer) {
@@ -87,7 +88,7 @@ function _syncP2P() {
                   case 2:
                     tokenResponse = _context5.sent;
                     peerToken = tokenResponse.result;
-                    isMaster = isMasterInP2PReplication(_this4.database.hashFunction, storageToken, peerToken);
+                    isMaster = isMasterInP2PReplication(collection.database.hashFunction, storageToken, peerToken);
                     if (isMaster) {
                       masterHandler = pool.masterReplicationHandler;
                       masterChangeStreamSub = masterHandler.masterChangeStream$.subscribe(function (ev) {
@@ -140,8 +141,8 @@ function _syncP2P() {
                       pool.subs.push(messageSub);
                     } else {
                       replicationState = replicateRxCollection({
-                        replicationIdentifier: [_this4.name, options.topic, peerToken].join('||'),
-                        collection: _this4,
+                        replicationIdentifier: [collection.name, options.topic, peerToken].join('||'),
+                        collection: collection,
                         autoStart: true,
                         deletedField: '_deleted',
                         live: true,
@@ -223,13 +224,13 @@ function _syncP2P() {
           }());
           pool.subs.push(connectSub);
           return _context6.abrupt("return", pool);
-        case 18:
+        case 19:
         case "end":
           return _context6.stop();
       }
-    }, _callee6, this);
+    }, _callee6);
   }));
-  return _syncP2P.apply(this, arguments);
+  return _replicateP2P.apply(this, arguments);
 }
 export var RxP2PReplicationPool = /*#__PURE__*/function () {
   function RxP2PReplicationPool(collection, options, connectionHandler) {
@@ -314,18 +315,6 @@ export var RxP2PReplicationPool = /*#__PURE__*/function () {
   }();
   return RxP2PReplicationPool;
 }();
-export var RxDBReplicationP2PPlugin = {
-  name: 'replication-p2p',
-  init: function init() {
-    addRxPlugin(RxDBLeaderElectionPlugin);
-  },
-  rxdb: true,
-  prototypes: {
-    RxCollection: function RxCollection(proto) {
-      proto.syncP2P = syncP2P;
-    }
-  }
-};
 export * from './p2p-helper';
 export * from './p2p-types';
 // export * from './connection-handler-webtorrent';

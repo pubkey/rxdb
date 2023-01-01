@@ -6,11 +6,10 @@ Object.defineProperty(exports, "__esModule", {
 });
 var _exportNames = {
   RxCouchDBReplicationState: true,
-  syncCouchDB: true,
-  RxDBReplicationCouchDBPlugin: true
+  replicateCouchDB: true
 };
-exports.RxDBReplicationCouchDBPlugin = exports.RxCouchDBReplicationState = void 0;
-exports.syncCouchDB = syncCouchDB;
+exports.RxCouchDBReplicationState = void 0;
+exports.replicateCouchDB = replicateCouchDB;
 var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
 var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 var _inheritsLoose2 = _interopRequireDefault(require("@babel/runtime/helpers/inheritsLoose"));
@@ -44,8 +43,7 @@ Object.keys(_couchdbTypes).forEach(function (key) {
   });
 });
 /**
- * this plugin adds the RxCollection.syncCouchDB()-function to rxdb
- * you can use it to sync collections with a remote CouchDB endpoint.
+ * This plugin can be used to sync collections with a remote CouchDB endpoint.
  */
 var RxCouchDBReplicationState = /*#__PURE__*/function (_RxReplicationState) {
   (0, _inheritsLoose2["default"])(RxCouchDBReplicationState, _RxReplicationState);
@@ -69,14 +67,14 @@ var RxCouchDBReplicationState = /*#__PURE__*/function (_RxReplicationState) {
   return RxCouchDBReplicationState;
 }(_replication.RxReplicationState);
 exports.RxCouchDBReplicationState = RxCouchDBReplicationState;
-function syncCouchDB(options) {
-  var _this2 = this;
+function replicateCouchDB(options) {
+  var collection = options.collection;
+  (0, _index.addRxPlugin)(_leaderElection.RxDBLeaderElectionPlugin);
   options = (0, _utils.flatClone)(options);
   if (!options.url.endsWith('/')) {
     options.url = options.url + '/';
   }
   options.waitForLeadership = typeof options.waitForLeadership === 'undefined' ? true : options.waitForLeadership;
-  var collection = this;
   var pullStream$ = new _rxjs.Subject();
   var replicationPrimitivesPull;
   if (options.pull) {
@@ -268,7 +266,7 @@ function syncCouchDB(options) {
               }));
               // await next tick here otherwise we could go in to a 100% CPU blocking cycle.
               _context3.next = 16;
-              return _this2.promiseWait(0);
+              return collection.promiseWait(0);
             case 16:
               return _context3.abrupt("continue", 0);
             case 17:
@@ -296,17 +294,4 @@ function syncCouchDB(options) {
   (0, _replication.startReplicationOnLeaderShip)(options.waitForLeadership, replicationState);
   return replicationState;
 }
-var RxDBReplicationCouchDBPlugin = {
-  name: 'replication-couchdb',
-  init: function init() {
-    (0, _index.addRxPlugin)(_leaderElection.RxDBLeaderElectionPlugin);
-  },
-  rxdb: true,
-  prototypes: {
-    RxCollection: function RxCollection(proto) {
-      proto.syncCouchDB = syncCouchDB;
-    }
-  }
-};
-exports.RxDBReplicationCouchDBPlugin = RxDBReplicationCouchDBPlugin;
 //# sourceMappingURL=index.js.map

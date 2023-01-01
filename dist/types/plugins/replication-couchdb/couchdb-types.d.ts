@@ -3,7 +3,7 @@ export type CouchDBCheckpointType = {
     sequence: number;
 };
 export type FetchMethodType = typeof fetch;
-export type SyncOptionsCouchDB<RxDocType> = Omit<ReplicationOptions<RxDocType, any>, 'pull' | 'push' | 'replicationIdentifier' | 'collection'> & {
+export type SyncOptionsCouchDB<RxDocType> = Omit<ReplicationOptions<RxDocType, any>, 'pull' | 'push' | 'replicationIdentifier'> & {
     url: string;
     /**
      * Here you can set a custom fetch method

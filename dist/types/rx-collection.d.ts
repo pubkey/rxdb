@@ -3,11 +3,7 @@ import { DocumentCache } from './doc-cache';
 import { QueryCache } from './query-cache';
 import { ChangeEventBuffer } from './change-event-buffer';
 import { Subscription, Observable } from 'rxjs';
-import type { KeyFunctionMap, MigrationState, RxCollection, RxDatabase, RxQuery, RxDocument, SyncOptionsGraphQL, RxDumpCollection, RxDumpCollectionAny, MangoQuery, MangoQueryNoLimit, RxCacheReplacementPolicy, RxStorageWriteError, RxChangeEvent, RxChangeEventInsert, RxChangeEventUpdate, RxChangeEventDelete, RxStorageInstance, CollectionsOfDatabase, RxConflictHandler, MaybePromise, CRDTEntry, MangoQuerySelectorAndIndex } from './types';
-import type { RxGraphQLReplicationState } from './plugins/replication-graphql';
-import type { RxCouchDBReplicationState, SyncOptionsCouchDB } from './plugins/replication-couchdb';
-import type { SyncOptionsP2P, RxP2PReplicationPool } from './plugins/replication-p2p';
-import type { RxFirestoreReplicationState, SyncOptionsFirestore } from './plugins/replication-firestore';
+import type { KeyFunctionMap, MigrationState, RxCollection, RxDatabase, RxQuery, RxDocument, RxDumpCollection, RxDumpCollectionAny, MangoQuery, MangoQueryNoLimit, RxCacheReplacementPolicy, RxStorageWriteError, RxChangeEvent, RxChangeEventInsert, RxChangeEventUpdate, RxChangeEventDelete, RxStorageInstance, CollectionsOfDatabase, RxConflictHandler, MaybePromise, CRDTEntry, MangoQuerySelectorAndIndex } from './types';
 import { RxSchema } from './rx-schema';
 import { WrappedRxStorageInstance } from './rx-storage-helper';
 import { IncrementalWriteQueue } from './incremental-write';
@@ -110,13 +106,6 @@ export declare class RxCollectionBase<InstanceCreationOptions, RxDocumentType = 
      */
     importJSON(_exportedJSON: RxDumpCollectionAny<RxDocumentType>): Promise<void>;
     insertCRDT(_updateObj: CRDTEntry<any> | CRDTEntry<any>[]): RxDocument<RxDocumentType, OrmMethods>;
-    /**
-     * sync with a GraphQL endpoint
-     */
-    syncGraphQL<CheckpointType = any>(_options: SyncOptionsGraphQL<RxDocumentType, CheckpointType>): RxGraphQLReplicationState<RxDocumentType, CheckpointType>;
-    syncCouchDB(_syncOptions: SyncOptionsCouchDB<RxDocumentType>): RxCouchDBReplicationState<RxDocumentType>;
-    syncP2P(_syncOptions: SyncOptionsP2P<RxDocumentType>): RxP2PReplicationPool<RxDocumentType>;
-    syncFirestore(_syncOptions: SyncOptionsFirestore<RxDocumentType>): RxFirestoreReplicationState<RxDocumentType>;
     /**
      * HOOKS
      */

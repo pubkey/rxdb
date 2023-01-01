@@ -6,11 +6,10 @@ Object.defineProperty(exports, "__esModule", {
 });
 var _exportNames = {
   RxGraphQLReplicationState: true,
-  syncGraphQL: true,
-  RxDBReplicationGraphQLPlugin: true
+  replicateGraphQL: true
 };
-exports.RxGraphQLReplicationState = exports.RxDBReplicationGraphQLPlugin = void 0;
-exports.syncGraphQL = syncGraphQL;
+exports.RxGraphQLReplicationState = void 0;
+exports.replicateGraphQL = replicateGraphQL;
 var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
 var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 var _inheritsLoose2 = _interopRequireDefault(require("@babel/runtime/helpers/inheritsLoose"));
@@ -102,8 +101,9 @@ var RxGraphQLReplicationState = /*#__PURE__*/function (_RxReplicationState) {
   return RxGraphQLReplicationState;
 }(_replication.RxReplicationState);
 exports.RxGraphQLReplicationState = RxGraphQLReplicationState;
-function syncGraphQL(_ref) {
-  var url = _ref.url,
+function replicateGraphQL(_ref) {
+  var collection = _ref.collection,
+    url = _ref.url,
     _ref$headers = _ref.headers,
     headers = _ref$headers === void 0 ? {} : _ref$headers,
     credentials = _ref.credentials,
@@ -119,8 +119,7 @@ function syncGraphQL(_ref) {
     retryTime = _ref$retryTime === void 0 ? 1000 * 5 : _ref$retryTime,
     _ref$autoStart = _ref.autoStart,
     autoStart = _ref$autoStart === void 0 ? true : _ref$autoStart;
-  var collection = this;
-
+  (0, _index.addRxPlugin)(_leaderElection.RxDBLeaderElectionPlugin);
   /**
    * We use this object to store the GraphQL client
    * so we can later swap out the client inside of the replication handlers.
@@ -289,17 +288,4 @@ function syncGraphQL(_ref) {
   (0, _replication.startReplicationOnLeaderShip)(waitForLeadership, graphqlReplicationState);
   return graphqlReplicationState;
 }
-var RxDBReplicationGraphQLPlugin = {
-  name: 'replication-graphql',
-  init: function init() {
-    (0, _index.addRxPlugin)(_leaderElection.RxDBLeaderElectionPlugin);
-  },
-  rxdb: true,
-  prototypes: {
-    RxCollection: function RxCollection(proto) {
-      proto.syncGraphQL = syncGraphQL;
-    }
-  }
-};
-exports.RxDBReplicationGraphQLPlugin = RxDBReplicationGraphQLPlugin;
 //# sourceMappingURL=index.js.map
