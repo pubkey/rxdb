@@ -4,18 +4,15 @@
  * @link https://github.com/mafintosh/is-my-json-valid
  */
 import isMyJsonValid from 'is-my-json-valid';
-import { newRxError } from '../../rx-error';
 import { wrappedValidateStorageFactory } from '../../plugin-helpers';
 export function getValidator(schema) {
   var validator = isMyJsonValid(schema);
   return function (docData) {
     var isValid = validator(docData);
-    if (!isValid) {
-      throw newRxError('VD2', {
-        errors: validator.errors,
-        document: docData,
-        schema: schema
-      });
+    if (isValid) {
+      return [];
+    } else {
+      return validator.errors;
     }
   };
 }

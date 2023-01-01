@@ -2,7 +2,8 @@ import { useOperators, OperatorType } from 'mingo/core';
 import { Query } from 'mingo/query';
 import type { MangoQuerySelector } from './types';
 
-import { $sort, $project } from 'mingo/operators/pipeline';
+import { $sort } from 'mingo/operators/pipeline/sort';
+import { $project } from 'mingo/operators/pipeline/project';
 import {
     $and,
     $eq,

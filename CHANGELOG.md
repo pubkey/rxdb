@@ -2,6 +2,28 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
+- CHANGE Do not use hash for revisions but use database instance token instead.
+- Remove the deprecated PouchDB RxStorage.
+- CHANGE (memory RxStorage) do not clean up database state on closing of the storage, only on `remove()`.
+- REMOVE old `replication-couchdb` plugin. Rename `replication-couchdb-new` to `replication-couchdb`.
+- FIX CouchDB replication: Use correct default fetch method.
+- CHANGE use plain json errors inside of RxError parameters to make debugging easier.
+- CHANGE crunch multiple incremental (aka 'atomic') operations into a single database write. Also batch writes to multiple documents into a single write.
+- CHANGE Make RxDocuments immutable
+- ADD `RxDocument.getLatest()`
+- REMOVE deprecated `babel-plugin-transform-async-to-promises` plugin.
+- CHANGE `RxCollection.findByIds()` now returns a `RxQuery`.
+- REMOVED `RxCollection.findByIds$`, use `RxCollection.findByIds().$` instead.
+- FIX schema hashing should respect the sort order [#4005](https://github.com/pubkey/rxdb/pull/4005)
+- CHANGE Prefix storage plugins with `storage-` like `rxdb/plugins/storage-dexie`.
+- RENAME `atomicUpdate()` to `incrementalModify()`
+- RENAME `atomicPatch()` to `incrementalPatch()`
+- RENAME `atomicUpsert()` to `incrementalUpsert()`
+- ADD `RxDocument().incrementalUpdate()`
+- ADD `RxDocument.incrementalRemove()`
+- ADD non-incremental `RxDocument` methods `patch()` and `modify()`
+- ADD typings to the query selector
+- CHANGE start replication via pure functions instead of RxCollection methods.
 
 <!-- ADD new changes here! -->
 

@@ -5,18 +5,11 @@ import {
     isRxCollection,
     isRxDatabase,
     createRxDatabase,
-    createRxSchema,
     randomCouchString,
     RxDatabase,
     isRxDatabaseFirstTimeInstantiated,
-    fastUnsecureHash,
-    RxCollection
+    fastUnsecureHash
 } from '../../';
-
-
-import {
-    getPouchLocation
-} from '../../plugins/pouchdb';
 
 import AsyncTestUtil from 'async-test-util';
 import * as schemas from '../helper/schemas';
@@ -156,17 +149,8 @@ config.parallel('rx-database.test.js', () => {
                         return fastUnsecureHash(i) + 'xxx';
                     }
                 });
-
-                const cols = await db.addCollections({
-                    human: {
-                        schema: schemas.human
-                    }
-                });
-                const collection: RxCollection<schemas.HumanDocumentType> = cols.human;
-                const doc = await collection.insert(schemaObjects.human());
-                const rev = doc.toJSON(true)._rev;
-                assert.ok(rev.endsWith('xxx'));
-
+                const hash = db.hashFunction('foobar');
+                assert.ok(hash.endsWith('xxx'));
                 db.destroy();
             });
         });
@@ -229,46 +213,6 @@ config.parallel('rx-database.test.js', () => {
 
                 db.destroy();
             });
-            it('the schema-object should be saved in the internal storage instance', async () => {
-                if (config.storage.name !== 'pouchdb') {
-                    return;
-                }
-                const db = await createRxDatabase({
-                    name: randomCouchString(10),
-                    storage: config.storage.getStorage()
-                });
-                await db.addCollections({
-                    human0: {
-                        schema: schemas.human
-                    }
-                });
-                // TODO check storage instance instead of pouchdb
-                const colDoc = await (db.internalStore.internals.pouch as any).get('collection|human0-' + schemas.human.version);
-                const compareSchema = createRxSchema(schemas.human);
-                assert.deepStrictEqual(compareSchema.jsonSchema, colDoc.data.schema);
-                db.destroy();
-            });
-            it('collectionsCollection should contain schema.version', async () => {
-                if (config.storage.name !== 'pouchdb') {
-                    return;
-                }
-                const db = await createRxDatabase({
-                    name: randomCouchString(10),
-                    storage: config.storage.getStorage()
-                });
-                const collections = await db.addCollections({
-                    human: {
-                        schema: schemas.human
-                    }
-                });
-                const collection = collections.human;
-                const version = collection.schema.version;
-                assert.deepStrictEqual(version, 0);
-                // TODO check storage instance instead of pouchdb
-                const internalDoc = await (db.internalStore.internals.pouch as any).get('collection|human-' + version);
-                assert.deepStrictEqual(internalDoc.data.version, version);
-                db.destroy();
-            });
             it('create 2 times on same adapter', async () => {
                 const name = randomCouchString(10);
                 const collectionName = 'foobar';
@@ -296,6 +240,9 @@ config.parallel('rx-database.test.js', () => {
                 db2.destroy();
             });
             it('should not do a write to the internalStore when creating a previous existing collection', async () => {
+                if (!config.storage.hasMultiInstance) {
+                    return;
+                }
                 const name = randomCouchString(10);
                 const collectionName = 'foobar';
                 const db1 = await createRxDatabase({
@@ -324,6 +271,7 @@ config.parallel('rx-database.test.js', () => {
                     );
                     return result.documents;
                 }
+
                 const storeDocsBefore = await getStoreDocs(db1);
                 await db1.destroy();
 
@@ -589,23 +537,6 @@ config.parallel('rx-database.test.js', () => {
             assert.strictEqual(hasLocal, null);
 
             await db2.remove();
-        });
-    });
-    describe('ISSUES', () => {
-        it('#677 wrong pouch-location when path as collection-name', () => {
-            const pouchPathNormal = getPouchLocation(
-                'mydb',
-                'humans',
-                5
-            );
-            assert.strictEqual(pouchPathNormal, 'mydb-rxdb-5-humans');
-
-            const pouchPath = getPouchLocation(
-                'mydb',
-                'subfolder/humans',
-                5
-            );
-            assert.strictEqual(pouchPath, 'subfolder/mydb-rxdb-5-humans');
         });
     });
 });

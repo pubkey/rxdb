@@ -186,7 +186,7 @@ config.parallel('change-event-buffer.test.js', () => {
             let newVal = 0;
             while (newVal < 5) {
                 newVal++;
-                await oneDoc.atomicPatch({age: newVal});
+                await oneDoc.incrementalPatch({age: newVal});
             }
 
             const allEvents: any[] = q.collection._changeEventBuffer.getFrom(1) as any;

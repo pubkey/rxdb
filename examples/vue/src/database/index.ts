@@ -13,7 +13,7 @@ import {
 
 import heroSchema from '../schemas/Hero.schema';
 
-import { addPouchPlugin, getRxStoragePouch } from 'rxdb/plugins/pouchdb';
+import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
 
 // import modules
 import { RxDBDevModePlugin } from 'rxdb/plugins/dev-mode';
@@ -29,16 +29,7 @@ import { wrappedValidateAjvStorage } from 'rxdb/plugins/validate-ajv';
 import { RxDBLeaderElectionPlugin } from 'rxdb/plugins/leader-election';
 addRxPlugin(RxDBLeaderElectionPlugin);
 
-import { RxDBReplicationCouchDBPlugin } from 'rxdb/plugins/replication-couchdb';
-addRxPlugin(RxDBReplicationCouchDBPlugin);
-
-// always needed for replication with the node-server
-import * as PouchdbAdapterHttp from 'pouchdb-adapter-http';
-addPouchPlugin(PouchdbAdapterHttp);
-
-import * as PouchdbAdapterIdb from 'pouchdb-adapter-idb';
-addPouchPlugin(PouchdbAdapterIdb);
-const useAdapter = 'idb';
+import { replicateCouchDB } from 'rxdb/plugins/replication-couchdb';
 
 console.log('hostname: ' + window.location.hostname);
 const syncURL = 'http://' + window.location.hostname + ':10101/';
@@ -52,7 +43,7 @@ export async function createDatabase(): Promise<Plugin> {
   const db = await createRxDatabase<RxHeroesCollections>({
     name: 'heroes',
     storage: wrappedValidateAjvStorage({
-      storage: getRxStoragePouch(useAdapter)
+      storage: getRxStorageDexie()
     })
     // password: 'myLongAndStupidPassword' // no password needed
   });
@@ -99,10 +90,40 @@ export async function createDatabase(): Promise<Plugin> {
       });
   }, true);
 
-  // sync with server
+  // sync
   console.log('DatabaseService: sync');
-  await db.heroes.syncCouchDB({
-    remote: syncURL + '/hero',
+  await Promise.all(
+    Object.values(db.collections).map(async (col) => {
+      try {
+        // create the CouchDB database
+        await fetch(
+          syncURL + col.name + '/',
+          {
+            method: 'PUT'
+          }
+        );
+      } catch (err) {
+        console.dir(err);
+      }
+    })
+  );
+  console.log('DatabaseService: sync - start live');
+  Object.values(db.collections).map((col: any) => {
+    const colName = col.name;
+    const url = syncURL + colName + '/';
+    console.log('url: ' + url);
+    const replicationState = replicateCouchDB({
+      collection: col,
+      url,
+      live: true,
+      pull: {},
+      push: {},
+      autoStart: true
+    });
+    replicationState.error$.subscribe((err: any) => {
+      console.log('Got replication error:');
+      console.dir(err);
+    });
   });
 
   return {

@@ -35,7 +35,7 @@ export declare const BROADCAST_CHANNEL_BY_TOKEN: Map<string, {
      */
     refs: Set<any>;
 }>;
-export declare type RxStorageMultiInstanceBroadcastType = {
+export type RxStorageMultiInstanceBroadcastType = {
     storageName: string;
     collectionName: string;
     /**

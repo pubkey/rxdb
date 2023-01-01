@@ -8,7 +8,6 @@ import assert from 'assert';
 
 import {
     randomCouchString,
-    addRxPlugin,
     RxCollection,
     ensureNotFalsy
 } from '../';
@@ -35,12 +34,11 @@ import {
 } from 'firebase/firestore';
 import {
     FirestoreOptions,
-    RxDBReplicationFirestorePlugin,
+    replicateFirestore,
     RxFirestoreReplicationState
 } from '../plugins/replication-firestore';
 import { ensureCollectionsHaveEqualState, ensureReplicationHasNoErrors } from './helper/test-util';
 
-addRxPlugin(RxDBReplicationFirestorePlugin);
 
 /**
  * The tests for the firstore replication plugin
@@ -79,7 +77,8 @@ describe('replication-firstore.test.js', () => {
         };
     }
     async function syncOnce(collection: RxCollection, firestoreState: FirestoreOptions<any>) {
-        const replicationState = collection.syncFirestore({
+        const replicationState = replicateFirestore({
+            collection,
             firestore: firestoreState,
             live: false,
             pull: {},
@@ -92,7 +91,8 @@ describe('replication-firstore.test.js', () => {
         collection: RxCollection<RxDocType>,
         firestoreState: FirestoreOptions<RxDocType>
     ): RxFirestoreReplicationState<RxDocType> {
-        const replicationState = collection.syncFirestore({
+        const replicationState = replicateFirestore({
+            collection,
             firestore: firestoreState,
             pull: {
                 batchSize
@@ -155,7 +155,7 @@ describe('replication-firstore.test.js', () => {
 
             // update one
             const doc = await collection.findOne().exec(true);
-            await doc.atomicPatch({ age: 100 });
+            await doc.incrementalPatch({ age: 100 });
             await replicationState.awaitInSync();
             docsOnServer = await getAllDocsOfFirestore(firestoreState);
             assert.strictEqual(docsOnServer.length, 3);
@@ -163,7 +163,7 @@ describe('replication-firstore.test.js', () => {
             assert.strictEqual(serverDoc.age, 100);
 
             // delete one
-            await doc.remove();
+            await doc.getLatest().remove();
             await replicationState.awaitInSync();
             docsOnServer = await getAllDocsOfFirestore(firestoreState);
             // must still have 3 because there are no hard deletes
@@ -243,8 +243,8 @@ describe('replication-firstore.test.js', () => {
             const doc2 = await c2.findOne().exec(true);
 
             // make update on both sides
-            await doc1.atomicPatch({ firstName: 'c1' });
-            await doc2.atomicPatch({ firstName: 'c2' });
+            await doc1.incrementalPatch({ firstName: 'c1' });
+            await doc2.incrementalPatch({ firstName: 'c2' });
 
             await syncOnce(c2, firestoreState);
 
@@ -254,7 +254,7 @@ describe('replication-firstore.test.js', () => {
             /**
              * Must have kept the master state c2
              */
-            assert.strictEqual(doc1.firstName, 'c2');
+            assert.strictEqual(doc1.getLatest().firstName, 'c2');
 
             c1.database.destroy();
             c2.database.destroy();

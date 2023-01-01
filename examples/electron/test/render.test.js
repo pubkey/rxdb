@@ -7,11 +7,10 @@ const {
 } = require('rxdb');
 const { RxDBLeaderElectionPlugin } = require('rxdb/plugins/leader-election');
 const { RxDBAttachmentsPlugin } = require('rxdb/plugins/attachments');
-const { getRxStoragePouch, addPouchPlugin } = require('rxdb/plugins/pouchdb');
+const { getRxStorageMemory } = require('rxdb/plugins/storage-memory');
 
 addRxPlugin(RxDBLeaderElectionPlugin);
 addRxPlugin(RxDBAttachmentsPlugin);
-addPouchPlugin(require('pouchdb-adapter-idb'));
 
 
 /**
@@ -25,7 +24,7 @@ module.exports = (function () {
             const db = await createRxDatabase({
                 // generate simple random ID to avoid conflicts when running tests at the same time
                 name: 'foobar587' + Math.round(Math.random() * 0xffffff).toString(16),
-                storage: getRxStoragePouch('idb'),
+                storage: getRxStorageMemory(),
                 password: 'myLongAndStupidPassword',
                 multiInstance: true
             });

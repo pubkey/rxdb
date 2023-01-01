@@ -4,15 +4,8 @@ const {
     addRxPlugin
 } = require('../../../');
 const {
-    RxDBReplicationCouchDBPlugin
-} = require('../../../plugins/replication-couchdb');
-addRxPlugin(RxDBReplicationCouchDBPlugin);
-const {
-    addPouchPlugin,
-    getRxStoragePouch
-} = require('../../../plugins/pouchdb');
-addPouchPlugin(require('pouchdb-adapter-node-websql'));
-addPouchPlugin(require('pouchdb-adapter-http'));
+    getRxStorageMemory
+} = require('../../../plugins/storage-memory');
 
 const { RxDBQueryBuilderPlugin } = require('../../../plugins/query-builder');
 addRxPlugin(RxDBQueryBuilderPlugin);
@@ -31,7 +24,8 @@ const heroSchema = {
     properties: {
         name: {
             type: 'string',
-            primary: true
+            primary: true,
+            maxLength: 100
         },
         color: {
             type: 'string'
@@ -40,12 +34,11 @@ const heroSchema = {
     required: ['color']
 };
 
-const SYNC_URL = 'http://localhost:10102/';
 
 const create = async () => {
     const database = await createRxDatabase({
         name: 'heroesdb',
-        storage: getRxStoragePouch('websql'),
+        storage: getRxStorageMemory(),
         password: 'myLongAndStupidPassword',
         multiInstance: true
     });
@@ -62,9 +55,10 @@ const create = async () => {
             }
         }
     });
-    database.collections.heroes.syncCouchDB({
-        remote: SYNC_URL + 'hero/'
-    });
+    // const SYNC_URL = 'http://localhost:10102/';
+    // database.collections.heroes.syncCouchDB({
+    //     remote: SYNC_URL + 'hero/'
+    // });
     return database;
 };
 

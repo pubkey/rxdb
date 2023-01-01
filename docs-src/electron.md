@@ -12,7 +12,7 @@ Similar to the [Worker RxStorage](./rx-storage-worker.md), these wrap any other 
 ```ts
 //  main.js
 const { exposeIpcMainRxStorage } = require('rxdb/plugins/electron');
-const { getRxStorageMemory } = require('rxdb/plugins/memory');
+const { getRxStorageMemory } = require('rxdb/plugins/storage-memory');
 app.on('ready', async function () {
     exposeIpcMainRxStorage({
         key: 'main-storage',
@@ -26,7 +26,7 @@ app.on('ready', async function () {
 ```ts
 //  renderer.js
 const { getRxStorageIpcRenderer } = require('rxdb/plugins/electron');
-const { getRxStorageMemory } = require('rxdb/plugins/memory');
+const { getRxStorageMemory } = require('rxdb/plugins/storage-memory');
 
 const db = await createRxDatabase({
     name,

@@ -1,15 +1,21 @@
-import { BehaviorSubject, filter, firstValueFrom, map, Subject, Subscription } from 'rxjs';
+import {
+    BehaviorSubject,
+    filter,
+    firstValueFrom,
+    map,
+    Subject,
+    Subscription
+} from 'rxjs';
 import { addRxPlugin } from '../../plugin';
 import { rxStorageInstanceToReplicationHandler } from '../../replication-protocol';
 import type {
     RxCollection,
     RxError,
-    RxPlugin,
     RxReplicationHandler,
     RxReplicationWriteToMasterRow,
     RxTypeError
 } from '../../types';
-import { ensureNotFalsy, getFromMapOrThrow, randomCouchString } from '../../util';
+import { ensureNotFalsy, getFromMapOrThrow, randomCouchString } from '../../plugins/utils';
 import { RxDBLeaderElectionPlugin } from '../leader-election';
 import { replicateRxCollection } from '../replication';
 import { isMasterInP2PReplication, sendMessageAndAwaitAnswer } from './p2p-helper';
@@ -24,10 +30,11 @@ import type {
 } from './p2p-types';
 
 
-export async function syncP2P<RxDocType>(
-    this: RxCollection<RxDocType>,
+export async function replicateP2P<RxDocType>(
     options: SyncOptionsP2P<RxDocType>
 ): Promise<RxP2PReplicationPool<RxDocType>> {
+    const collection = options.collection;
+    addRxPlugin(RxDBLeaderElectionPlugin);
 
     // fill defaults
     if (options.pull) {
@@ -41,9 +48,8 @@ export async function syncP2P<RxDocType>(
         }
     }
 
-    const collection = this;
-    if (this.database.multiInstance) {
-        await this.database.waitForLeadership();
+    if (collection.database.multiInstance) {
+        await collection.database.waitForLeadership();
     }
 
     // used to easier debug stuff
@@ -54,9 +60,9 @@ export async function syncP2P<RxDocType>(
         return collection.database.token + '|' + requestFlag + '|' + count;
     }
 
-    const storageToken = await this.database.storageToken;
+    const storageToken = await collection.database.storageToken;
     const pool = new RxP2PReplicationPool(
-        this,
+        collection,
         options,
         options.connectionHandlerCreator(options)
     );
@@ -99,7 +105,7 @@ export async function syncP2P<RxDocType>(
                 }
             );
             const peerToken: string = tokenResponse.result;
-            const isMaster = isMasterInP2PReplication(this.database.hashFunction, storageToken, peerToken);
+            const isMaster = isMasterInP2PReplication(collection.database.hashFunction, storageToken, peerToken);
 
             let replicationState: RxP2PReplicationState<RxDocType> | undefined;
             if (isMaster) {
@@ -142,8 +148,8 @@ export async function syncP2P<RxDocType>(
                 pool.subs.push(messageSub);
             } else {
                 replicationState = replicateRxCollection({
-                    replicationIdentifier: [this.name, options.topic, peerToken].join('||'),
-                    collection: this,
+                    replicationIdentifier: [collection.name, options.topic, peerToken].join('||'),
+                    collection: collection,
                     autoStart: true,
                     deletedField: '_deleted',
                     live: true,
@@ -216,7 +222,7 @@ export class RxP2PReplicationPool<RxDocType> {
         this.masterReplicationHandler = rxStorageInstanceToReplicationHandler(
             collection.storageInstance,
             collection.conflictHandler,
-            collection.database.hashFunction
+            collection.database.token,
         );
     }
 
@@ -267,21 +273,6 @@ export class RxP2PReplicationPool<RxDocType> {
         await this.connectionHandler.destroy();
     }
 }
-
-
-export const RxDBReplicationP2PPlugin: RxPlugin = {
-    name: 'replication-p2p',
-    init() {
-        addRxPlugin(RxDBLeaderElectionPlugin);
-    },
-    rxdb: true,
-    prototypes: {
-        RxCollection: (proto: any) => {
-            proto.syncP2P = syncP2P;
-        }
-    }
-};
-
 
 export * from './p2p-helper';
 export * from './p2p-types';

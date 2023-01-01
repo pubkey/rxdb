@@ -2,6 +2,7 @@ import {
     firstValueFrom,
     filter
 } from 'rxjs';
+import { newRxError } from '../rx-error';
 import { stackCheckpoints } from '../rx-storage-helper';
 import type {
     RxStorageInstanceReplicationState,
@@ -14,16 +15,14 @@ import type {
     DocumentsWithCheckpoint
 } from '../types';
 import {
-    createRevision,
     ensureNotFalsy,
     flatClone,
     getDefaultRevision,
     getDefaultRxDocumentMeta,
-    now,
     parseRevision,
     PROMISE_RESOLVE_FALSE,
     PROMISE_RESOLVE_VOID
-} from '../util';
+} from '../plugins/utils';
 import {
     getLastCheckpointDoc,
     setCheckpoint
@@ -367,20 +366,6 @@ export function startReplicationDownstream<RxDocType, CheckpointType = any>(
                                 _attachments: {}
                             });
 
-
-                        /**
-                         * TODO for unknown reason we need
-                         * to manually set the lwt and the _rev here
-                         * to fix the pouchdb tests. This is not required for
-                         * the other RxStorage implementations which means something is wrong.
-                         */
-                        newForkState._meta.lwt = now();
-                        newForkState._rev = (masterState as any)._rev ? (masterState as any)._rev : createRevision(
-                            state.input.hashFunction,
-                            newForkState,
-                            forkStateFullDoc
-                        );
-
                         /**
                          * If the remote works with revisions,
                          * we store the height of the next fork-state revision
@@ -417,6 +402,19 @@ export function startReplicationDownstream<RxDocType, CheckpointType = any>(
                         Object.keys(forkWriteResult.success).forEach((docId) => {
                             state.events.processed.down.next(writeRowsToForkById[docId]);
                             useMetaWriteRows.push(writeRowsToMeta[docId]);
+                        });
+                        Object.values(forkWriteResult.error).forEach(error => {
+                            /**
+                             * We do not have to care about downstream conflict errors here
+                             * because on conflict, it will be solved locally and result in another write.
+                             */
+                            if (error.status === 409) {
+                                return;
+                            }
+                            // other non-conflict errors must be handled
+                            state.events.error.next(newRxError('RC_PULL', {
+                                writeError: error
+                            }));
                         });
                     });
                 }

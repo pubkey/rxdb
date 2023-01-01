@@ -1,6 +1,6 @@
 import { ReplicationOptions, ReplicationPullOptions, ReplicationPushOptions } from '../../types';
 import { CollectionReference, Firestore } from 'firebase/firestore';
-export declare type FirestoreCheckpointType = {
+export type FirestoreCheckpointType = {
     id: string;
     /**
      * Firestore internally sets the time to an object like
@@ -14,13 +14,13 @@ export declare type FirestoreCheckpointType = {
      */
     serverTimestamp: string;
 };
-export declare type FirestoreCollection<RxDocType> = CollectionReference<RxDocType>;
-export declare type FirestoreOptions<RxDocType> = {
+export type FirestoreCollection<RxDocType> = CollectionReference<RxDocType>;
+export type FirestoreOptions<RxDocType> = {
     projectId: string;
     collection: FirestoreCollection<RxDocType>;
     database: Firestore;
 };
-export declare type SyncOptionsFirestore<RxDocType> = Omit<ReplicationOptions<RxDocType, any>, 'pull' | 'push' | 'replicationIdentifier' | 'collection'> & {
+export type SyncOptionsFirestore<RxDocType> = Omit<ReplicationOptions<RxDocType, any>, 'pull' | 'push' | 'replicationIdentifier'> & {
     firestore: FirestoreOptions<RxDocType>;
     /**
      * In firestore it is not possible to read out

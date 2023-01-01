@@ -1,36 +1,12 @@
+import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
+import _regeneratorRuntime from "@babel/runtime/regenerator";
 import * as fs from 'fs';
 import * as path from 'path';
-import { blobBufferUtil, now } from '../../util';
+import { blobBufferUtil, now } from '../../plugins/utils';
 
 /**
  * ensure that the given folder exists
  */
-
-export var writeToFile = function writeToFile(location, data) {
-  try {
-    var _temp2 = function _temp2() {
-      return new Promise(function (res, rej) {
-        fs.writeFile(location, data, 'utf-8', function (err) {
-          if (err) {
-            rej(err);
-          } else {
-            res();
-          }
-        });
-      });
-    };
-    var _temp = function () {
-      if (typeof data !== 'string') {
-        return Promise.resolve(blobBufferUtil.toString(data)).then(function (_blobBufferUtil$toStr) {
-          data = _blobBufferUtil$toStr;
-        });
-      }
-    }();
-    return Promise.resolve(_temp && _temp.then ? _temp.then(_temp2) : _temp2(_temp));
-  } catch (e) {
-    return Promise.reject(e);
-  }
-};
 export function ensureFolderExists(folderPath) {
   if (!fs.existsSync(folderPath)) {
     fs.mkdirSync(folderPath, {
@@ -69,6 +45,40 @@ export function prepareFolders(database, options) {
   Object.keys(database.collections).forEach(function (collectionName) {
     ensureFolderExists(path.join(options.directory, collectionName));
   });
+}
+export function writeToFile(_x, _x2) {
+  return _writeToFile.apply(this, arguments);
+}
+function _writeToFile() {
+  _writeToFile = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee(location, data) {
+    return _regeneratorRuntime.wrap(function _callee$(_context) {
+      while (1) switch (_context.prev = _context.next) {
+        case 0:
+          if (!(typeof data !== 'string')) {
+            _context.next = 4;
+            break;
+          }
+          _context.next = 3;
+          return blobBufferUtil.toString(data);
+        case 3:
+          data = _context.sent;
+        case 4:
+          return _context.abrupt("return", new Promise(function (res, rej) {
+            fs.writeFile(location, data, 'utf-8', function (err) {
+              if (err) {
+                rej(err);
+              } else {
+                res();
+              }
+            });
+          }));
+        case 5:
+        case "end":
+          return _context.stop();
+      }
+    }, _callee);
+  }));
+  return _writeToFile.apply(this, arguments);
 }
 export function writeJsonToFile(location, data) {
   return writeToFile(location, JSON.stringify(data));

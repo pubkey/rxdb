@@ -1,6 +1,6 @@
 import objectPath from 'object-path';
 import { newRxError } from './rx-error';
-import { clone, flatClone, isMaybeReadonlyArray, RX_META_LWT_MINIMUM, sortObject, trimDots } from './util';
+import { flatClone, isMaybeReadonlyArray, RX_META_LWT_MINIMUM, sortObject, trimDots } from './plugins/utils';
 
 /**
  * Helper function to create a valid RxJsonSchema
@@ -92,18 +92,7 @@ export function getComposedPrimaryKeyOfDocumentData(jsonSchema, documentData) {
  * @return RxJsonSchema - ordered and filled
  */
 export function normalizeRxJsonSchema(jsonSchema) {
-  // TODO do we need the deep clone() here?
-  var normalizedSchema = sortObject(clone(jsonSchema));
-
-  // indexes must NOT be sorted because sort order is important here.
-  if (jsonSchema.indexes) {
-    normalizedSchema.indexes = Array.from(jsonSchema.indexes);
-  }
-
-  // primaryKey.fields must NOT be sorted because sort order is important here.
-  if (typeof normalizedSchema.primaryKey === 'object' && typeof jsonSchema.primaryKey === 'object') {
-    normalizedSchema.primaryKey.fields = jsonSchema.primaryKey.fields;
-  }
+  var normalizedSchema = sortObject(jsonSchema, true);
   return normalizedSchema;
 }
 

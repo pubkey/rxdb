@@ -6,7 +6,8 @@ import { overwritable } from './overwritable';
 import type {
     RxErrorParameters,
     RxErrorKey,
-    RxStorageBulkWriteError
+    RxStorageWriteError,
+    RxStorageWriteErrorConflict
 } from './types';
 
 /**
@@ -48,6 +49,7 @@ export class RxError extends Error {
     public code: RxErrorKey;
     public message: string;
     public parameters: RxErrorParameters;
+    // always true, use this to detect if its an rxdb-error
     public rxdb: true;
     constructor(
         code: RxErrorKey,
@@ -76,6 +78,7 @@ export class RxTypeError extends TypeError {
     public code: RxErrorKey;
     public message: string;
     public parameters: RxErrorParameters;
+    // always true, use this to detect if its an rxdb-error
     public rxdb: true;
     constructor(
         code: RxErrorKey,
@@ -128,13 +131,29 @@ export function newRxTypeError(
  * return false if it is another error.
  */
 export function isBulkWriteConflictError<RxDocType>(
-    err: RxStorageBulkWriteError<RxDocType> | any
-): RxStorageBulkWriteError<RxDocType> | false {
+    err?: RxStorageWriteError<RxDocType> | any
+): RxStorageWriteErrorConflict<RxDocType> | false {
     if (
+        err &&
         err.status === 409
     ) {
         return err;
     } else {
         return false;
     }
+}
+
+
+const STORAGE_WRITE_ERROR_CODE_TO_MESSAGE: { [k: number]: string; } = {
+    409: 'document write conflict',
+    422: 'schema validation error',
+    510: 'attachment data missing'
+};
+
+export function rxStorageWriteErrorToRxError(err: RxStorageWriteError<any>): RxError {
+    return newRxError('COL20', {
+        name: STORAGE_WRITE_ERROR_CODE_TO_MESSAGE[err.status],
+        document: err.documentId,
+        writeError: err
+    });
 }

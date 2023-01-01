@@ -12,7 +12,7 @@ exports.rxdb = exports.prototypes = void 0;
 exports.waitForLeadership = waitForLeadership;
 var _broadcastChannel = require("broadcast-channel");
 var _rxStorageMultiinstance = require("../../rx-storage-multiinstance");
-var _util = require("../../util");
+var _utils = require("../utils");
 /**
  * this plugin adds the leader-election-capabilities to rxdb
  */
@@ -69,7 +69,7 @@ function isLeader() {
 }
 function waitForLeadership() {
   if (!this.multiInstance) {
-    return _util.PROMISE_RESOLVE_TRUE;
+    return _utils.PROMISE_RESOLVE_TRUE;
   } else {
     return this.leaderElector().awaitLeadership().then(function () {
       return true;

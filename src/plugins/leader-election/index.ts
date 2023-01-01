@@ -16,9 +16,7 @@ import type {
     RxDatabase,
     RxPlugin
 } from '../../types';
-import {
-    PROMISE_RESOLVE_TRUE
-} from '../../util';
+import { PROMISE_RESOLVE_TRUE } from '../utils';
 
 const LEADER_ELECTORS_OF_DB: WeakMap<RxDatabase, LeaderElector> = new WeakMap();
 const LEADER_ELECTOR_BY_BROADCAST_CHANNEL: WeakMap<BroadcastChannel, LeaderElector> = new WeakMap();

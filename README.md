@@ -134,7 +134,7 @@ import {
  * In other JavaScript runtimes, we can use different storages:
  * @link https://rxdb.info/rx-storage.html
  */
-import { getRxStorageDexie } from 'rxdb/plugins/dexie';
+import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
 
 // create a database
 const db = await createRxDatabase({
@@ -259,7 +259,7 @@ As you may detect, the query can take very long time to run, because you have th
 When a user now logs off, the whole query will re-run over the database which takes again very long.
 
 ```js
-await anyUser.atomicPatch({loggedIn: false});
+await anyUser.incrementalPatch({loggedIn: false});
 ```
 
 But not with the EventReduce.

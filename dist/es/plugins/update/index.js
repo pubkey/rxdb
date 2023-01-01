@@ -4,6 +4,12 @@
  * @link https://github.com/lgandecki/modifyjs
  */
 import modifyjs from 'modifyjs';
+export function incrementalUpdate(updateObj) {
+  return this.incrementalModify(function (docData) {
+    var newDocData = modifyjs(docData, updateObj);
+    return newDocData;
+  });
+}
 export function update(updateObj) {
   var oldDocData = this._data;
   var newDocData = modifyjs(oldDocData, updateObj);
@@ -34,6 +40,7 @@ export var RxDBUpdatePlugin = {
   prototypes: {
     RxDocument: function RxDocument(proto) {
       proto.update = update;
+      proto.incrementalUpdate = incrementalUpdate;
     },
     RxQuery: function RxQuery(proto) {
       proto.update = RxQueryUpdate;

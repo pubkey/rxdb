@@ -13,7 +13,7 @@ import {
     getDefaultRevision,
     getDefaultRxDocumentMeta,
     now
-} from './util';
+} from './plugins/utils';
 import {
     fillPrimaryKey
 } from './rx-schema-helper';
@@ -147,8 +147,7 @@ export async function removeCollectionStorages(
             writeDoc._deleted = true;
             writeDoc._meta.lwt = now();
             writeDoc._rev = createRevision(
-                hashFunction,
-                writeDoc,
+                databaseInstanceToken,
                 doc
             );
             return {

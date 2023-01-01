@@ -17,7 +17,7 @@ The encryption plugin is a wrapper around any other [RxStorage](./rx-storage.md)
 
 ```ts
 import { wrappedKeyEncryptionStorage } from 'rxdb/plugins/encryption';
-import { getRxStorageDexie } from 'rxdb/plugins/dexie';
+import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
 
 
 const encryptedDexieStorage = wrappedKeyEncryptionStorage({

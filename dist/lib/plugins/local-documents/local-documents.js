@@ -1,136 +1,189 @@
 "use strict";
 
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.getLocal = void 0;
+exports.getLocal = getLocal;
 exports.getLocal$ = getLocal$;
-exports.insertLocal = void 0;
+exports.insertLocal = insertLocal;
 exports.upsertLocal = upsertLocal;
-var _util = require("../../util");
+var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
+var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
+var _utils = require("../../plugins/utils");
 var _operators = require("rxjs/operators");
-var _rxLocalDocument = require("./rx-local-document");
 var _localDocumentsHelper = require("./local-documents-helper");
 var _rxStorageHelper = require("../../rx-storage-helper");
-var getLocal = function getLocal(id) {
-  try {
-    var _this3 = this;
-    return Promise.resolve((0, _localDocumentsHelper.getLocalDocStateByParent)(_this3)).then(function (state) {
-      var docCache = state.docCache;
-
-      // check in doc-cache
-      var found = docCache.get(id);
-      return found ? Promise.resolve(found) : (0, _rxStorageHelper.getSingleDocument)(state.storageInstance, id).then(function (docData) {
-        if (!docData) {
-          return null;
-        }
-        var doc = (0, _rxLocalDocument.createRxLocalDocument)(id, docData, _this3, state);
-        return doc;
-      })["catch"](function () {
-        return null;
-      });
-    });
-  } catch (e) {
-    return Promise.reject(e);
-  }
-};
-exports.getLocal = getLocal;
 /**
  * save the local-document-data
  * throws if already exists
  */
-var insertLocal = function insertLocal(id, data) {
-  try {
-    var _this = this;
-    return Promise.resolve((0, _localDocumentsHelper.getLocalDocStateByParent)(_this)).then(function (state) {
-      // create new one
-      var docData = {
-        id: id,
-        data: data,
-        _deleted: false,
-        _meta: (0, _util.getDefaultRxDocumentMeta)(),
-        _rev: (0, _util.getDefaultRevision)(),
-        _attachments: {}
-      };
-      return (0, _rxStorageHelper.writeSingle)(state.storageInstance, {
-        document: docData
-      }, 'local-document-insert').then(function (res) {
-        docData = (0, _util.flatClone)(docData);
-        docData._rev = res._rev;
-        var newDoc = (0, _rxLocalDocument.createRxLocalDocument)(id, docData, _this, state);
-        return newDoc;
-      });
-    });
-  } catch (e) {
-    return Promise.reject(e);
-  }
-};
+function insertLocal(_x, _x2) {
+  return _insertLocal.apply(this, arguments);
+}
 /**
  * save the local-document-data
  * overwrites existing if exists
  */
-exports.insertLocal = insertLocal;
+function _insertLocal() {
+  _insertLocal = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee3(id, data) {
+    var state, docData;
+    return _regenerator["default"].wrap(function _callee3$(_context3) {
+      while (1) switch (_context3.prev = _context3.next) {
+        case 0:
+          _context3.next = 2;
+          return (0, _localDocumentsHelper.getLocalDocStateByParent)(this);
+        case 2:
+          state = _context3.sent;
+          // create new one
+          docData = {
+            id: id,
+            data: data,
+            _deleted: false,
+            _meta: (0, _utils.getDefaultRxDocumentMeta)(),
+            _rev: (0, _utils.getDefaultRevision)(),
+            _attachments: {}
+          };
+          return _context3.abrupt("return", (0, _rxStorageHelper.writeSingle)(state.storageInstance, {
+            document: docData
+          }, 'local-document-insert').then(function (newDocData) {
+            return state.docCache.getCachedRxDocument(newDocData);
+          }));
+        case 5:
+        case "end":
+          return _context3.stop();
+      }
+    }, _callee3, this);
+  }));
+  return _insertLocal.apply(this, arguments);
+}
 function upsertLocal(id, data) {
-  var _this2 = this;
+  var _this = this;
   return this.getLocal(id).then(function (existing) {
     if (!existing) {
       // create new one
-      var docPromise = _this2.insertLocal(id, data);
+      var docPromise = _this.insertLocal(id, data);
       return docPromise;
     } else {
       // update existing
-      return existing.atomicUpdate(function () {
+      return existing.incrementalModify(function () {
         return data;
-      }).then(function () {
-        return existing;
       });
     }
   });
 }
-function getLocal$(id) {
-  var _this4 = this;
-  return this.$.pipe((0, _operators.startWith)(null), (0, _operators.mergeMap)(function (cE) {
-    try {
-      if (cE) {
-        return Promise.resolve({
-          changeEvent: cE
-        });
-      } else {
-        return Promise.resolve(_this4.getLocal(id)).then(function (doc) {
-          return {
-            doc: doc
-          };
-        });
+function getLocal(_x3) {
+  return _getLocal.apply(this, arguments);
+}
+function _getLocal() {
+  _getLocal = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee4(id) {
+    var state, docCache, found;
+    return _regenerator["default"].wrap(function _callee4$(_context4) {
+      while (1) switch (_context4.prev = _context4.next) {
+        case 0:
+          _context4.next = 2;
+          return (0, _localDocumentsHelper.getLocalDocStateByParent)(this);
+        case 2:
+          state = _context4.sent;
+          docCache = state.docCache; // check in doc-cache
+          found = docCache.getLatestDocumentDataIfExists(id);
+          if (!found) {
+            _context4.next = 7;
+            break;
+          }
+          return _context4.abrupt("return", Promise.resolve(docCache.getCachedRxDocument(found)));
+        case 7:
+          return _context4.abrupt("return", (0, _rxStorageHelper.getSingleDocument)(state.storageInstance, id).then(function (docData) {
+            if (!docData) {
+              return null;
+            }
+            return state.docCache.getCachedRxDocument(docData);
+          }));
+        case 8:
+        case "end":
+          return _context4.stop();
       }
-    } catch (e) {
-      return Promise.reject(e);
-    }
-  }), (0, _operators.mergeMap)(function (changeEventOrDoc) {
-    try {
-      if (changeEventOrDoc.changeEvent) {
-        var cE = changeEventOrDoc.changeEvent;
-        if (!cE.isLocal || cE.documentId !== id) {
-          return Promise.resolve({
-            use: false
-          });
-        } else {
-          return Promise.resolve(_this4.getLocal(id)).then(function (doc) {
-            return {
+    }, _callee4, this);
+  }));
+  return _getLocal.apply(this, arguments);
+}
+function getLocal$(id) {
+  var _this2 = this;
+  return this.$.pipe((0, _operators.startWith)(null), (0, _operators.mergeMap)( /*#__PURE__*/function () {
+    var _ref = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(cE) {
+      var doc;
+      return _regenerator["default"].wrap(function _callee$(_context) {
+        while (1) switch (_context.prev = _context.next) {
+          case 0:
+            if (!cE) {
+              _context.next = 4;
+              break;
+            }
+            return _context.abrupt("return", {
+              changeEvent: cE
+            });
+          case 4:
+            _context.next = 6;
+            return _this2.getLocal(id);
+          case 6:
+            doc = _context.sent;
+            return _context.abrupt("return", {
+              doc: doc
+            });
+          case 8:
+          case "end":
+            return _context.stop();
+        }
+      }, _callee);
+    }));
+    return function (_x4) {
+      return _ref.apply(this, arguments);
+    };
+  }()), (0, _operators.mergeMap)( /*#__PURE__*/function () {
+    var _ref2 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee2(changeEventOrDoc) {
+      var cE, doc;
+      return _regenerator["default"].wrap(function _callee2$(_context2) {
+        while (1) switch (_context2.prev = _context2.next) {
+          case 0:
+            if (!changeEventOrDoc.changeEvent) {
+              _context2.next = 12;
+              break;
+            }
+            cE = changeEventOrDoc.changeEvent;
+            if (!(!cE.isLocal || cE.documentId !== id)) {
+              _context2.next = 6;
+              break;
+            }
+            return _context2.abrupt("return", {
+              use: false
+            });
+          case 6:
+            _context2.next = 8;
+            return _this2.getLocal(id);
+          case 8:
+            doc = _context2.sent;
+            return _context2.abrupt("return", {
               use: true,
               doc: doc
-            };
-          });
+            });
+          case 10:
+            _context2.next = 13;
+            break;
+          case 12:
+            return _context2.abrupt("return", {
+              use: true,
+              doc: changeEventOrDoc.doc
+            });
+          case 13:
+          case "end":
+            return _context2.stop();
         }
-      } else {
-        return Promise.resolve({
-          use: true,
-          doc: changeEventOrDoc.doc
-        });
-      }
-    } catch (e) {
-      return Promise.reject(e);
-    }
-  }), (0, _operators.filter)(function (filterFlagged) {
+      }, _callee2);
+    }));
+    return function (_x5) {
+      return _ref2.apply(this, arguments);
+    };
+  }()), (0, _operators.filter)(function (filterFlagged) {
     return filterFlagged.use;
   }), (0, _operators.map)(function (filterFlagged) {
     return filterFlagged.doc;

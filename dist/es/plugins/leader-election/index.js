@@ -4,7 +4,7 @@
 
 import { createLeaderElection } from 'broadcast-channel';
 import { getBroadcastChannelReference, removeBroadcastChannelReference } from '../../rx-storage-multiinstance';
-import { PROMISE_RESOLVE_TRUE } from '../../util';
+import { PROMISE_RESOLVE_TRUE } from '../utils';
 var LEADER_ELECTORS_OF_DB = new WeakMap();
 var LEADER_ELECTOR_BY_BROADCAST_CHANNEL = new WeakMap();
 

@@ -14,7 +14,7 @@ import {
     ensureNotFalsy,
     objectPathMonad,
     ObjectPathMonadFunction
-} from './util';
+} from './plugins/utils';
 import { INDEX_MAX, INDEX_MIN } from './query-planner';
 
 

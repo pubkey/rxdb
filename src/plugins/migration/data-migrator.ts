@@ -23,7 +23,7 @@ import {
     PROMISE_RESOLVE_NULL,
     getDefaultRxDocumentMeta,
     now
-} from '../../util';
+} from '../../plugins/utils';
 import {
     createRxSchema
 } from '../../rx-schema';
@@ -499,8 +499,7 @@ export async function _migrateDocuments(
              */
             const newHeight = getHeightOfRevision(docData._rev) + 1;
             const newRevision = newHeight + '-' + createRevision(
-                oldCollection.newestCollection.database.hashFunction,
-                migratedDocData
+                oldCollection.newestCollection.database.token
             );
             migratedDocData._rev = newRevision;
         }

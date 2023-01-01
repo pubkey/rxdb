@@ -1,6 +1,6 @@
 import { LOGICAL_OPERATORS } from './query-planner';
 import { getPrimaryFieldOfPrimaryKey } from './rx-schema-helper';
-import { clone, firstPropertyNameOfObject, isMaybeReadonlyArray } from './util';
+import { clone, firstPropertyNameOfObject, toArray, isMaybeReadonlyArray } from './plugins/utils';
 
 /**
  * Normalize the query to ensure we have all fields set
@@ -47,7 +47,7 @@ export function normalizeMangoQuery(schema, mangoQuery) {
    * the primaryKey is inside of it.
    */
   if (normalizedMangoQuery.index) {
-    var indexAr = Array.isArray(normalizedMangoQuery.index) ? normalizedMangoQuery.index.slice(0) : [normalizedMangoQuery.index];
+    var indexAr = toArray(normalizedMangoQuery.index);
     if (!indexAr.includes(primaryKey)) {
       indexAr.push(primaryKey);
     }

@@ -6,7 +6,7 @@ import {
     blobBufferUtil,
     flatClone,
     PROMISE_RESOLVE_VOID
-} from '../../util';
+} from '../../plugins/utils';
 import {
     newRxError
 } from '../../rx-error';
@@ -21,9 +21,6 @@ import type {
     RxAttachmentCreator,
     RxAttachmentWriteData
 } from '../../types';
-import { flatCloneDocWithMeta, writeSingle } from '../../rx-storage-helper';
-
-
 
 function ensureSchemaSupportsAttachments(doc: any) {
     const schemaJson = doc.collection.schema.jsonSchema;
@@ -71,27 +68,13 @@ export class RxAttachment {
     }
 
     remove(): Promise<void> {
-        this.doc._atomicQueue = this.doc._atomicQueue
-            .then(async () => {
-                const docWriteData: RxDocumentWriteData<{}> = flatCloneDocWithMeta(this.doc._data);
-                docWriteData._attachments = flatClone(docWriteData._attachments);
+        return this.doc.collection.incrementalWriteQueue.addWrite(
+            this.doc._data,
+            docWriteData => {
                 delete docWriteData._attachments[this.id];
-                const writeResult: RxDocumentData<any> = await writeSingle(
-                    this.doc.collection.storageInstance,
-                    {
-                        previous: flatClone(this.doc._data), // TODO do we need a flatClone here?
-                        document: docWriteData
-                    },
-                    'attachment-remove'
-                );
-
-                const newData = flatClone(this.doc._data);
-                newData._rev = writeResult._rev;
-                newData._attachments = writeResult._attachments;
-                this.doc._dataSync$.next(newData);
-
-            });
-        return this.doc._atomicQueue;
+                return docWriteData;
+            }
+        ).then(() => { });
     }
 
     /**
@@ -116,10 +99,10 @@ export class RxAttachment {
     }
 }
 
-export function fromStorageInstanceResult(
+export function fromStorageInstanceResult<RxDocType>(
     id: string,
     attachmentData: RxAttachmentData,
-    rxDocument: RxDocument
+    rxDocument: RxDocument<RxDocType>
 ) {
     return new RxAttachment({
         doc: rxDocument,
@@ -130,17 +113,9 @@ export function fromStorageInstanceResult(
     });
 }
 
-export async function putAttachment(
-    this: RxDocument,
-    attachmentData: RxAttachmentCreator,
-    /**
-     * If set to true, the write will be skipped
-     * when the attachment already contains the same data.
-     * @deprecated The check if the data has changed is now performed
-     * inside of the RxStorage, no longer by RxDB itself. So we do
-     * no longer need 'skipIfSame'.
-     */
-    _skipIfSame: boolean = true
+export async function putAttachment<RxDocType>(
+    this: RxDocument<RxDocType>,
+    attachmentData: RxAttachmentCreator
 ): Promise<RxAttachment> {
     ensureSchemaSupportsAttachments(this);
 
@@ -151,9 +126,9 @@ export async function putAttachment(
     const type = attachmentData.type;
     const data = dataString;
 
-    this._atomicQueue = this._atomicQueue
-        .then(async () => {
-            const docWriteData: RxDocumentWriteData<{}> = flatCloneDocWithMeta(this._data);
+    return this.collection.incrementalWriteQueue.addWrite(
+        this._data,
+        (docWriteData: RxDocumentWriteData<RxDocType>) => {
             docWriteData._attachments = flatClone(docWriteData._attachments);
 
             docWriteData._attachments[id] = {
@@ -161,32 +136,17 @@ export async function putAttachment(
                 type,
                 data
             };
-            const writeRow = {
-                previous: flatClone(this._data),
-                document: flatClone(docWriteData)
-            };
-
-            const writeResult = await writeSingle(
-                this.collection.storageInstance,
-                writeRow,
-                'attachment-put'
-            );
-
+            return docWriteData;
+        }).then(writeResult => {
+            const newDocument = this.collection._docCache.getCachedRxDocument(writeResult);
             const attachmentDataOfId = writeResult._attachments[id];
             const attachment = fromStorageInstanceResult(
                 id,
                 attachmentDataOfId,
-                this
+                newDocument
             );
-
-            const newData = flatClone(this._data);
-            newData._rev = writeResult._rev;
-            newData._attachments = writeResult._attachments;
-            this._dataSync$.next(newData);
-
             return attachment;
         });
-    return this._atomicQueue;
 }
 
 /**
@@ -197,7 +157,7 @@ export function getAttachment(
     id: string
 ): RxAttachment | null {
     ensureSchemaSupportsAttachments(this);
-    const docData: any = this._dataSync$.getValue();
+    const docData: any = this._data;
     if (!docData._attachments || !docData._attachments[id])
         return null;
 
@@ -217,7 +177,7 @@ export function allAttachments(
     this: RxDocument
 ): RxAttachment[] {
     ensureSchemaSupportsAttachments(this);
-    const docData: any = this._dataSync$.getValue();
+    const docData: any = this._data;
 
     // if there are no attachments, the field is missing
     if (!docData._attachments) {
@@ -280,17 +240,11 @@ export const RxDBAttachmentsPlugin: RxPlugin = {
             proto.getAttachment = getAttachment;
             proto.allAttachments = allAttachments;
             Object.defineProperty(proto, 'allAttachments$', {
-                get: function allAttachments$() {
-                    return this._dataSync$
+                get: function allAttachments$(this: RxDocument) {
+                    return this.$
                         .pipe(
-                            map((data: any) => {
-                                if (!data['_attachments']) {
-                                    return {};
-                                }
-                                return data['_attachments'];
-                            }),
-                            map((attachmentsData: any) => Object.entries(
-                                attachmentsData
+                            map(data => Object.entries(
+                                data._attachments
                             )),
                             map(entries => {
                                 return (entries as any)

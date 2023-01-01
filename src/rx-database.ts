@@ -8,11 +8,9 @@ import type {
     RxCollectionCreator,
     RxJsonSchema,
     RxCollection,
-    CouchDBServerOptions,
     RxDumpDatabase,
     RxDumpDatabaseAny,
     AllMigrationStates,
-    CouchDBServerResponse,
     BackupOptions,
     RxStorage,
     RxStorageInstance,
@@ -40,7 +38,7 @@ import {
     getDefaultRevision,
     getDefaultRxDocumentMeta,
     defaultHashFunction
-} from './util';
+} from './plugins/utils';
 import {
     newRxError
 } from './rx-error';
@@ -310,8 +308,7 @@ export class RxDatabaseBase<
                 {
                     name: collectionName,
                     schema,
-                    database: this,
-
+                    database: this
                 }
             );
 
@@ -333,6 +330,12 @@ export class RxDatabaseBase<
         await ensureNoStartupErrors(this);
 
         Object.entries(putDocsResult.error).forEach(([_id, error]) => {
+            if (error.status !== 409) {
+                throw newRxError('DB12', {
+                    database: this.name,
+                    writeError: error
+                });
+            }
             const docInDb: RxDocumentData<InternalStoreCollectionDocType> = ensureNotFalsy(error.documentInDb);
             const collectionName = docInDb.data.name;
             const schema = (schemas as any)[collectionName];
@@ -397,10 +400,6 @@ export class RxDatabaseBase<
      */
     importJSON(_exportedJSON: RxDumpDatabaseAny<Collections>): Promise<void> {
         throw pluginMissing('json-dump');
-    }
-
-    serverCouchDB(_options?: CouchDBServerOptions): Promise<CouchDBServerResponse> {
-        throw pluginMissing('server-couchdb');
     }
 
     backup(_options: BackupOptions): RxBackupState {
@@ -485,9 +484,9 @@ export class RxDatabaseBase<
     }
 
     get asRxDatabase(): RxDatabase<
-    {},
-    Internals,
-    InstanceCreationOptions
+        {},
+        Internals,
+        InstanceCreationOptions
     > {
         return this as any;
     }
@@ -557,7 +556,7 @@ export function createRxDatabase<
     }: RxDatabaseCreator<Internals, InstanceCreationOptions>
 ): Promise<
     RxDatabase<Collections, Internals, InstanceCreationOptions>
-    > {
+> {
     runPluginHooks('preCreateRxDatabase', {
         storage,
         instanceCreationOptions,
@@ -578,8 +577,8 @@ export function createRxDatabase<
     const databaseInstanceToken = randomCouchString(10);
 
     return createRxDatabaseStorageInstance<
-    Internals,
-    InstanceCreationOptions
+        Internals,
+        InstanceCreationOptions
     >(
         databaseInstanceToken,
         storage,

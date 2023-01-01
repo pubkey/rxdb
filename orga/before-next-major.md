@@ -4,7 +4,7 @@ This list contains things that have to be done but will create breaking changes.
 
 
 
-## Make RxDocuments immutable
+## Make RxDocuments immutable [DONE]
 At the current version of RxDB, RxDocuments mutate themself when they recieve ChangeEvents from the database.
 For example when you have a document where `name = 'foo'` and some update changes the state to `name = 'bar'` in the database, then the previous javascript-object will change its own property to the have `doc.name === 'bar'`.
 This feature is great when you use a RxDocument with some change-detection like in angular or vue templates. You can use document properties directly in the template and all updates will be reflected in the view, without having to use observables or subscriptions.
@@ -41,19 +41,19 @@ This is bad and should not be used. Instead each field must have exactly one typ
 Having mixed types causes many confusion, for example when the type is `['string', 'number']`,
 you could run a query selector like `$gt: 10` where it now is not clear if the string `foobar` is matching or not.
 
-## Ensure the schema hashing works equal across all browsers
+## Ensure the schema hashing works equal across all browsers [DONE]
 
 https://github.com/pubkey/rxdb/pull/4005
 https://github.com/pubkey/rxdb/pull/4005#issuecomment-1264742235
 
 
-## Add typings to the query selector
+## Add typings to the query selector [DONE]
 
 The `selector`part of queries is currently not fully typed.
 Hint: We can find out the possible doc field names via https://stackoverflow.com/questions/58434389/typescript-deep-keyof-of-a-nested-object/58436959#58436959
 
 
-## Use normal RxQuery for `findByIds$` and `findByIds`
+## Use normal RxQuery for `findByIds$` and `findByIds` [DONE]
 
 Atm `findByIds$` and `findByIds` are implemented with their own query and observe logic. 
 This is not necessary and confusing for the user.
@@ -62,34 +62,28 @@ Instead we should use a different `RxQuery.op` and use normal `RxQuery` objects 
 The user would call it like normal queries but with a different method input:
 
 ```ts
-const result = await myRxCollection.findById('foo').exec();
-const result$ = await myRxCollection.findById('foo').$;
-
 const results = await myRxCollection.findByIds(['foo', 'bar']).exec();
 const results$ = await myRxCollection.findByIds(['foo', 'bar']).$;
 ```
 
-## Remove depricated `skipIfSame` from `putAttachment()`
+## Remove depricated `skipIfSame` from `putAttachment()` [DONE]
 
 
-## Rename `replication-couchdb-new`
+## Rename `replication-couchdb-new` [DONE]
 
 The `replication-couchdb-new` plugin should be called `replication-couchdb` while the previous `replication-couchdb`
 should be called `replication-couchdb-pouchdb`.
 Also rename the method names and variables inside of the plugins.
 
-## Batch up atomic operations
+## Batch up atomic operations [DONE]
 
 If multiple atomic updates are run on the same document at the same time, we should merge them together and do a single database write.
 
-## Add enum-compression to the key-compressio plugin
+## Add enum-compression to the key-compression plugin
 - Also rename the key-compression plugin to be just called 'compression'
 
-## Fix migration+replication
-When the schema is changed a migration runs, the replication plugins will replicate the migrated data. This is mostly not wanted by the user. We should
-add an option to let the user define what should happen after the migration.
 
-## Prefix storage plugins with `storage-`
+## Prefix storage plugins with `storage-` [DONE]
 Like the replication plugins, all RxStorage plugins should be prefixed with `storage-` for example `storage-dexie`.
 
 ## Require string based `$regex`
@@ -98,11 +92,11 @@ Atm people can pass `RegExp` instances to the queries. These cannot be transfere
 can make problems. We should enforce people using strings as operators instead.
 
 
-## Set `hasPersistence=true` on memory storage
+## Set `hasPersistence=true` on memory storage [DONE]
 
 This will make testing easier. The memory storage should keep data in memory, even when the last instance has been closed.
 
-## Do not use hash for revisions
+## Do not use hash for revisions [DONE]
 
 Atm the _rev field is filled with a hash of the documents data. This is not the best solution becuase:
 - Hashing in JavaScript is slow, not running hashes on insert improves performance by about 33%
@@ -111,7 +105,7 @@ Atm the _rev field is filled with a hash of the documents data. This is not the 
 Instead we should just use the RxDatabase.token together with the revision height.
 
 
-## Rename document mutation functions
+## Rename document mutation functions [DONE]
 
 Related: https://github.com/pubkey/rxdb/issues/4180
 
@@ -119,11 +113,21 @@ Atm the naming of the document mutation methods is confusing.
 For example `update()` works completely different to `atomicUpdate()` and so on.
 We should unify the naming so that each of the methods has an atomic and a non-atomic way to run.
 
-## Remove the deprecated PouchDB RxStorage
+## Remove the deprecated PouchDB RxStorage [DONE]
 
 ## Refactor the Worker plugin to use the remote storage
 
 The [worker plugin](https://rxdb.info/rx-storage-worker.html) is using threads.js atm. Instead we should use the [remote worker plugin](https://rxdb.info/rx-storage-remote.html). Also the worker plugin is a pure performance optimization, so it will move to the premium packages.
+
+
+## Fix migration+replication
+When the schema is changed a migration runs, the replication plugins will replicate the migrated data. This is mostly not wanted by the user. We should add an option to let the user define what should happen after the migration.
+
+Proposed solution:
+
+- Add a `preMigrate` hook to the collection creation so that it can be ensured that all local non-replicated writes are replicated before the migration runs.
+- During migration, listen to the events of the new storage instance and store the last event in the internals collection
+- After the migration has run, the replication plugins start from that latest event and only replicate document writes that have occured after the migration.
 
 ## Refactor data-migrator
 
@@ -132,3 +136,23 @@ The [worker plugin](https://rxdb.info/rx-storage-worker.html) is using threads.j
  - Migration strategies should be defined [like in WatermelonDB](https://nozbe.github.io/WatermelonDB/Advanced/Migrations.html) with a `toVersion` version field. We should also add a `fromVersion` field so people could implement performance shortcuts by directly jumping several versions. The current migration strategies use the array index as `toVersion` which is confusing.
  
 
+## Do not start replication via RxCollection.sync... [DONE]
+
+Atm the rx-collection contains methods like `syncCouchDB()` etc.
+This requires the `rx-collection.ts` to import the types of all replication plugins which will cause tree-shaking bailouts.
+Instead we should only be able to start the replication by using plain pure functions like `replicateCouchDB()`.
+
+## Move util to an util plugin [DONE]
+
+To make tree-shaking work better, create an utils plugin so that the premium plugins and others
+can import utility functions like `from 'rxdb/plugins/util` instead of having to use `from 'rxdb'`.
+
+## Use plain json errors inside of RxError parameters [DONE]
+
+Atm, printing a RxError gives not information about the inner errors because it looks like:
+
+```
+"errors": [
+            {}
+        ],
+```

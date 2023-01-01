@@ -3,5 +3,5 @@
  * so that it can be swappet out in the CI to test
  * different storages.
  */
-import { getRxStorageMemory } from 'rxdb/plugins/memory';
+import { getRxStorageMemory } from 'rxdb/plugins/storage-memory';
 export const STORAGE = getRxStorageMemory();

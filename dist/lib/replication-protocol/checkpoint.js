@@ -1,202 +1,102 @@
 "use strict";
 
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.getCheckpointKey = getCheckpointKey;
-exports.setCheckpoint = exports.getLastCheckpointDoc = void 0;
+exports.getLastCheckpointDoc = getLastCheckpointDoc;
+exports.setCheckpoint = setCheckpoint;
+var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
+var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 var _rxSchemaHelper = require("../rx-schema-helper");
 var _rxStorageHelper = require("../rx-storage-helper");
-var _util = require("../util");
+var _utils = require("../plugins/utils");
 var _metaInstance = require("./meta-instance");
-function _settle(pact, state, value) {
-  if (!pact.s) {
-    if (value instanceof _Pact) {
-      if (value.s) {
-        if (state & 1) {
-          state = value.s;
-        }
-        value = value.v;
-      } else {
-        value.o = _settle.bind(null, pact, state);
-        return;
-      }
-    }
-    if (value && value.then) {
-      value.then(_settle.bind(null, pact, state), _settle.bind(null, pact, 2));
-      return;
-    }
-    pact.s = state;
-    pact.v = value;
-    var observer = pact.o;
-    if (observer) {
-      observer(pact);
-    }
-  }
-}
-var _Pact = /*#__PURE__*/function () {
-  function _Pact() {}
-  _Pact.prototype.then = function (onFulfilled, onRejected) {
-    var result = new _Pact();
-    var state = this.s;
-    if (state) {
-      var callback = state & 1 ? onFulfilled : onRejected;
-      if (callback) {
-        try {
-          _settle(result, 1, callback(this.v));
-        } catch (e) {
-          _settle(result, 2, e);
-        }
-        return result;
-      } else {
-        return this;
-      }
-    }
-    this.o = function (_this) {
-      try {
-        var value = _this.v;
-        if (_this.s & 1) {
-          _settle(result, 1, onFulfilled ? onFulfilled(value) : value);
-        } else if (onRejected) {
-          _settle(result, 1, onRejected(value));
-        } else {
-          _settle(result, 2, value);
-        }
-      } catch (e) {
-        _settle(result, 2, e);
-      }
-    };
-    return result;
-  };
-  return _Pact;
-}();
-function _isSettledPact(thenable) {
-  return thenable instanceof _Pact && thenable.s & 1;
-}
-function _for(test, update, body) {
-  var stage;
-  for (;;) {
-    var shouldContinue = test();
-    if (_isSettledPact(shouldContinue)) {
-      shouldContinue = shouldContinue.v;
-    }
-    if (!shouldContinue) {
-      return result;
-    }
-    if (shouldContinue.then) {
-      stage = 0;
-      break;
-    }
-    var result = body();
-    if (result && result.then) {
-      if (_isSettledPact(result)) {
-        result = result.s;
-      } else {
-        stage = 1;
-        break;
-      }
-    }
-    if (update) {
-      var updateValue = update();
-      if (updateValue && updateValue.then && !_isSettledPact(updateValue)) {
-        stage = 2;
-        break;
-      }
-    }
-  }
-  var pact = new _Pact();
-  var reject = _settle.bind(null, pact, 2);
-  (stage === 0 ? shouldContinue.then(_resumeAfterTest) : stage === 1 ? result.then(_resumeAfterBody) : updateValue.then(_resumeAfterUpdate)).then(void 0, reject);
-  return pact;
-  function _resumeAfterBody(value) {
-    result = value;
-    do {
-      if (update) {
-        updateValue = update();
-        if (updateValue && updateValue.then && !_isSettledPact(updateValue)) {
-          updateValue.then(_resumeAfterUpdate).then(void 0, reject);
-          return;
-        }
-      }
-      shouldContinue = test();
-      if (!shouldContinue || _isSettledPact(shouldContinue) && !shouldContinue.v) {
-        _settle(pact, 1, result);
-        return;
-      }
-      if (shouldContinue.then) {
-        shouldContinue.then(_resumeAfterTest).then(void 0, reject);
-        return;
-      }
-      result = body();
-      if (_isSettledPact(result)) {
-        result = result.v;
-      }
-    } while (!result || !result.then);
-    result.then(_resumeAfterBody).then(void 0, reject);
-  }
-  function _resumeAfterTest(shouldContinue) {
-    if (shouldContinue) {
-      result = body();
-      if (result && result.then) {
-        result.then(_resumeAfterBody).then(void 0, reject);
-      } else {
-        _resumeAfterBody(result);
-      }
-    } else {
-      _settle(pact, 1, result);
-    }
-  }
-  function _resumeAfterUpdate() {
-    if (shouldContinue = test()) {
-      if (shouldContinue.then) {
-        shouldContinue.then(_resumeAfterTest).then(void 0, reject);
-      } else {
-        _resumeAfterTest(shouldContinue);
-      }
-    } else {
-      _settle(pact, 1, result);
-    }
-  }
+function getLastCheckpointDoc(_x, _x2) {
+  return _getLastCheckpointDoc.apply(this, arguments);
 }
 /**
  * Sets the checkpoint,
  * automatically resolves conflicts that appear.
  */
-var setCheckpoint = function setCheckpoint(state, direction, checkpoint) {
-  try {
-    var _exit = false;
-    var previousCheckpointDoc = state.lastCheckpointDoc[direction];
-    return Promise.resolve(function () {
-      if (checkpoint &&
-      /**
-       * If the replication is already canceled,
-       * we do not write a checkpoint
-       * because that could mean we write a checkpoint
-       * for data that has been fetched from the master
-       * but not been written to the child.
-       */
-      !state.events.canceled.getValue() && (
-      /**
-       * Only write checkpoint if it is different from before
-       * to have less writes to the storage.
-       */
+function _getLastCheckpointDoc() {
+  _getLastCheckpointDoc = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(state, direction) {
+    var checkpointDocId, checkpointResult, checkpointDoc;
+    return _regenerator["default"].wrap(function _callee$(_context) {
+      while (1) switch (_context.prev = _context.next) {
+        case 0:
+          checkpointDocId = (0, _rxSchemaHelper.getComposedPrimaryKeyOfDocumentData)(_metaInstance.RX_REPLICATION_META_INSTANCE_SCHEMA, {
+            isCheckpoint: '1',
+            itemId: direction,
+            replicationIdentifier: state.checkpointKey
+          });
+          _context.next = 3;
+          return state.input.metaInstance.findDocumentsById([checkpointDocId], false);
+        case 3:
+          checkpointResult = _context.sent;
+          checkpointDoc = checkpointResult[checkpointDocId];
+          state.lastCheckpointDoc[direction] = checkpointDoc;
+          if (!checkpointDoc) {
+            _context.next = 10;
+            break;
+          }
+          return _context.abrupt("return", checkpointDoc.data);
+        case 10:
+          return _context.abrupt("return", undefined);
+        case 11:
+        case "end":
+          return _context.stop();
+      }
+    }, _callee);
+  }));
+  return _getLastCheckpointDoc.apply(this, arguments);
+}
+function setCheckpoint(_x3, _x4, _x5) {
+  return _setCheckpoint.apply(this, arguments);
+}
+function _setCheckpoint() {
+  _setCheckpoint = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee2(state, direction, checkpoint) {
+    var previousCheckpointDoc, newDoc, result, error;
+    return _regenerator["default"].wrap(function _callee2$(_context2) {
+      while (1) switch (_context2.prev = _context2.next) {
+        case 0:
+          previousCheckpointDoc = state.lastCheckpointDoc[direction];
+          if (!(checkpoint &&
+          /**
+           * If the replication is already canceled,
+           * we do not write a checkpoint
+           * because that could mean we write a checkpoint
+           * for data that has been fetched from the master
+           * but not been written to the child.
+           */
+          !state.events.canceled.getValue() && (
+          /**
+           * Only write checkpoint if it is different from before
+           * to have less writes to the storage.
+           */
 
-      !previousCheckpointDoc || JSON.stringify(previousCheckpointDoc.data) !== JSON.stringify(checkpoint))) {
-        var newDoc = {
-          id: '',
-          isCheckpoint: '1',
-          itemId: direction,
-          replicationIdentifier: state.checkpointKey,
-          _deleted: false,
-          _attachments: {},
-          data: checkpoint,
-          _meta: (0, _util.getDefaultRxDocumentMeta)(),
-          _rev: (0, _util.getDefaultRevision)()
-        };
-        newDoc.id = (0, _rxSchemaHelper.getComposedPrimaryKeyOfDocumentData)(_metaInstance.RX_REPLICATION_META_INSTANCE_SCHEMA, newDoc);
-        return _for(function () {
-          return !_exit;
-        }, void 0, function () {
+          !previousCheckpointDoc || JSON.stringify(previousCheckpointDoc.data) !== JSON.stringify(checkpoint)))) {
+            _context2.next = 25;
+            break;
+          }
+          newDoc = {
+            id: '',
+            isCheckpoint: '1',
+            itemId: direction,
+            replicationIdentifier: state.checkpointKey,
+            _deleted: false,
+            _attachments: {},
+            data: checkpoint,
+            _meta: (0, _utils.getDefaultRxDocumentMeta)(),
+            _rev: (0, _utils.getDefaultRevision)()
+          };
+          newDoc.id = (0, _rxSchemaHelper.getComposedPrimaryKeyOfDocumentData)(_metaInstance.RX_REPLICATION_META_INSTANCE_SCHEMA, newDoc);
+        case 4:
+          if (!true) {
+            _context2.next = 25;
+            break;
+          }
           /**
            * Instead of just storign the new checkpoint,
            * we have to stack up the checkpoint with the previous one.
@@ -207,56 +107,44 @@ var setCheckpoint = function setCheckpoint(state, direction, checkpoint) {
           if (previousCheckpointDoc) {
             newDoc.data = (0, _rxStorageHelper.stackCheckpoints)([previousCheckpointDoc.data, newDoc.data]);
           }
-          newDoc._meta.lwt = (0, _util.now)();
-          newDoc._rev = (0, _util.createRevision)(state.input.hashFunction, newDoc, previousCheckpointDoc);
-          return Promise.resolve(state.input.metaInstance.bulkWrite([{
+          newDoc._meta.lwt = (0, _utils.now)();
+          newDoc._rev = (0, _utils.createRevision)(state.input.identifier, previousCheckpointDoc);
+          _context2.next = 10;
+          return state.input.metaInstance.bulkWrite([{
             previous: previousCheckpointDoc,
             document: newDoc
-          }], 'replication-set-checkpoint')).then(function (result) {
-            if (result.success[newDoc.id]) {
-              state.lastCheckpointDoc[direction] = (0, _util.getFromObjectOrThrow)(result.success, newDoc.id);
-              _exit = true;
-            } else {
-              var error = (0, _util.getFromObjectOrThrow)(result.error, newDoc.id);
-              if (error.status !== 409) {
-                throw error;
-              } else {
-                previousCheckpointDoc = (0, _util.ensureNotFalsy)(error.documentInDb);
-                newDoc._rev = (0, _util.createRevision)(state.input.hashFunction, newDoc, previousCheckpointDoc);
-              }
-            }
-          });
-        });
+          }], 'replication-set-checkpoint');
+        case 10:
+          result = _context2.sent;
+          if (!result.success[newDoc.id]) {
+            _context2.next = 16;
+            break;
+          }
+          state.lastCheckpointDoc[direction] = (0, _utils.getFromObjectOrThrow)(result.success, newDoc.id);
+          return _context2.abrupt("return");
+        case 16:
+          error = (0, _utils.getFromObjectOrThrow)(result.error, newDoc.id);
+          if (!(error.status !== 409)) {
+            _context2.next = 21;
+            break;
+          }
+          throw error;
+        case 21:
+          previousCheckpointDoc = (0, _utils.ensureNotFalsy)(error.documentInDb);
+          newDoc._rev = (0, _utils.createRevision)(state.input.identifier, previousCheckpointDoc);
+        case 23:
+          _context2.next = 4;
+          break;
+        case 25:
+        case "end":
+          return _context2.stop();
       }
-    }());
-  } catch (e) {
-    return Promise.reject(e);
-  }
-};
-exports.setCheckpoint = setCheckpoint;
-var getLastCheckpointDoc = function getLastCheckpointDoc(state, direction) {
-  try {
-    var checkpointDocId = (0, _rxSchemaHelper.getComposedPrimaryKeyOfDocumentData)(_metaInstance.RX_REPLICATION_META_INSTANCE_SCHEMA, {
-      isCheckpoint: '1',
-      itemId: direction,
-      replicationIdentifier: state.checkpointKey
-    });
-    return Promise.resolve(state.input.metaInstance.findDocumentsById([checkpointDocId], false)).then(function (checkpointResult) {
-      var checkpointDoc = checkpointResult[checkpointDocId];
-      state.lastCheckpointDoc[direction] = checkpointDoc;
-      if (checkpointDoc) {
-        return checkpointDoc.data;
-      } else {
-        return undefined;
-      }
-    });
-  } catch (e) {
-    return Promise.reject(e);
-  }
-};
-exports.getLastCheckpointDoc = getLastCheckpointDoc;
+    }, _callee2);
+  }));
+  return _setCheckpoint.apply(this, arguments);
+}
 function getCheckpointKey(input) {
-  var hash = (0, _util.fastUnsecureHash)([input.identifier, input.forkInstance.databaseName, input.forkInstance.collectionName].join('||'));
+  var hash = (0, _utils.fastUnsecureHash)([input.identifier, input.forkInstance.databaseName, input.forkInstance.collectionName].join('||'));
   return 'rx-storage-replication-' + hash;
 }
 //# sourceMappingURL=checkpoint.js.map

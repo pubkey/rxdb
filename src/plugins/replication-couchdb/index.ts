@@ -1,403 +1,247 @@
 /**
- * this plugin adds the RxCollection.sync()-function to rxdb
- * you can use it to sync collections with remote or local couchdb-instances
+ * This plugin can be used to sync collections with a remote CouchDB endpoint.
  */
+import {
+    ensureNotFalsy,
+    errorToPlainJson,
+    fastUnsecureHash,
+    flatClone
+} from '../../plugins/utils';
 
-import PouchReplicationPlugin from 'pouchdb-replication';
-import {
-    BehaviorSubject,
-    Subject,
-    fromEvent,
-    Subscription,
-    Observable,
-    firstValueFrom
-} from 'rxjs';
-import {
-    skipUntil,
-    filter,
-    first,
-    mergeMap
-} from 'rxjs/operators';
-
-import {
-    promiseWait,
-    flatClone,
-    PROMISE_RESOLVE_FALSE,
-    PROMISE_RESOLVE_TRUE,
-    ensureNotFalsy
-} from '../../util';
-import {
-    newRxError
-} from '../../rx-error';
-import {
-    isInstanceOf as isInstanceOfPouchDB,
-    addPouchPlugin,
-    getPouchDBOfRxCollection
-} from '../../plugins/pouchdb';
-
-import {
-    isRxCollection
-} from '../../rx-collection';
+import { RxDBLeaderElectionPlugin } from '../leader-election';
 import type {
     RxCollection,
-    PouchSyncHandler,
-    PouchReplicationOptions,
-    RxPlugin,
-    SyncOptions,
-    PouchDBInstance
+    ReplicationPullOptions,
+    ReplicationPushOptions,
+    RxReplicationWriteToMasterRow,
+    RxReplicationPullStreamItem,
+    CouchdbChangesResult,
+    CouchBulkDocResultRow,
+    CouchAllDocsResponse
 } from '../../types';
+import {
+    RxReplicationState,
+    startReplicationOnLeaderShip
+} from '../replication';
+import {
+    addRxPlugin,
+    newRxError,
+    WithDeleted
+} from '../../index';
 
-/**
- * Contains all pouchdb instances that
- * are used inside of RxDB by collections or databases.
- * Used to ensure the remote of a replication cannot be an internal pouchdb.
- */
-const INTERNAL_POUCHDBS = new WeakSet();
+import { Subject } from 'rxjs';
+import type {
+    CouchDBCheckpointType,
+    FetchMethodType,
+    SyncOptionsCouchDB
+} from './couchdb-types';
+import {
+    couchDBDocToRxDocData,
+    COUCHDB_NEW_REPLICATION_PLUGIN_IDENTITY_PREFIX,
+    mergeUrlQueryParams,
+    couchSwapPrimaryToId,
+    getDefaultFetch
+} from './couchdb-helper';
 
-export class RxCouchDBReplicationStateBase {
-    public _subs: Subscription[] = [];
+export * from './couchdb-helper';
+export * from './couchdb-types';
 
-    // can be used for debugging or custom event-handling
-    // will be set some time after sync() is called
-    public _pouchEventEmitterObject?: PouchSyncHandler | null;
-    public _subjects = {
-        change: new Subject(),
-        docs: new Subject(),
-        denied: new Subject(),
-        active: new BehaviorSubject(false),
-        complete: new BehaviorSubject(false),
-        alive: new BehaviorSubject(false),
-        error: new Subject(),
-    };
-
-    public canceled: boolean = false;
-
+export class RxCouchDBReplicationState<RxDocType> extends RxReplicationState<RxDocType, CouchDBCheckpointType> {
     constructor(
-        public readonly collection: RxCollection,
-        public readonly syncOptions: SyncOptions
+        public readonly url: string,
+        public fetch: FetchMethodType,
+        public readonly replicationIdentifierHash: string,
+        public readonly collection: RxCollection<RxDocType>,
+        public readonly pull?: ReplicationPullOptions<RxDocType, CouchDBCheckpointType>,
+        public readonly push?: ReplicationPushOptions<RxDocType>,
+        public readonly live: boolean = true,
+        public retryTime: number = 1000 * 5,
+        public autoStart: boolean = true
     ) {
-        // create getters
-        Object.keys(this._subjects).forEach(key => {
-            Object.defineProperty(this, key + '$', {
-                get: function () {
-                    return this._subjects[key].asObservable();
-                }
-            });
-        });
-    }
-
-    awaitInitialReplication(): Promise<void> {
-        if (this.syncOptions.options && this.syncOptions.options.live) {
-            throw newRxError('RC4', {
-                database: this.collection.database.name,
-                collection: this.collection.name
-            });
-        }
-        if (this.collection.database.multiInstance && this.syncOptions.waitForLeadership) {
-            throw newRxError('RC5', {
-                database: this.collection.database.name,
-                collection: this.collection.name
-            });
-        }
-
-        const that: RxCouchDBReplicationState = this as any;
-        return firstValueFrom(
-            that.complete$.pipe(
-                filter(x => !!x)
-            )
+        super(
+            replicationIdentifierHash,
+            collection,
+            '_deleted',
+            pull,
+            push,
+            live,
+            retryTime,
+            autoStart
         );
     }
+}
+
+export function replicateCouchDB<RxDocType>(
+    options: SyncOptionsCouchDB<RxDocType>
+) {
+    const collection = options.collection;
+    addRxPlugin(RxDBLeaderElectionPlugin);
+
+    options = flatClone(options);
+    if (!options.url.endsWith('/')) {
+        options.url = options.url + '/';
+    }
+    options.waitForLeadership = typeof options.waitForLeadership === 'undefined' ? true : options.waitForLeadership;
+    const pullStream$: Subject<RxReplicationPullStreamItem<RxDocType, CouchDBCheckpointType>> = new Subject();
+    let replicationPrimitivesPull: ReplicationPullOptions<RxDocType, CouchDBCheckpointType> | undefined;
+    if (options.pull) {
+        replicationPrimitivesPull = {
+            async handler(
+                lastPulledCheckpoint: CouchDBCheckpointType | undefined,
+                batchSize: number
+            ) {
+                /**
+                 * @link https://docs.couchdb.org/en/3.2.2-docs/api/database/changes.html
+                 */
+                const url = options.url + '_changes?' + mergeUrlQueryParams({
+                    style: 'all_docs',
+                    feed: 'normal',
+                    include_docs: true,
+                    since: lastPulledCheckpoint ? lastPulledCheckpoint.sequence : 0,
+                    heartbeat: options.pull && options.pull.heartbeat ? options.pull.heartbeat : 60000,
+                    limit: batchSize,
+                    seq_interval: batchSize
+                });
+
+                const response = await replicationState.fetch(url);
+                const jsonResponse: CouchdbChangesResult = await response.json();
+                const documents: WithDeleted<RxDocType>[] = jsonResponse.results
+                    .map(row => couchDBDocToRxDocData(collection.schema.primaryPath, ensureNotFalsy(row.doc)));
+                return {
+                    documents,
+                    checkpoint: {
+                        sequence: jsonResponse.last_seq
+                    }
+                };
+            },
+            batchSize: ensureNotFalsy(options.pull).batchSize,
+            modifier: ensureNotFalsy(options.pull).modifier,
+            stream$: pullStream$.asObservable()
+        };
+    }
+
+    let replicationPrimitivesPush: ReplicationPushOptions<RxDocType> | undefined;
+    if (options.push) {
+        replicationPrimitivesPush = {
+            async handler(
+                rows: RxReplicationWriteToMasterRow<RxDocType>[]
+            ) {
+                /**
+                 * @link https://docs.couchdb.org/en/3.2.2-docs/api/database/bulk-api.html#db-bulk-docs
+                 */
+                const url = options.url + '_bulk_docs?' + mergeUrlQueryParams({});
+                const body = {
+                    docs: rows.map(row => {
+                        const sendDoc = flatClone(row.newDocumentState);
+                        if (row.assumedMasterState) {
+                            (sendDoc as any)._rev = ensureNotFalsy((row.assumedMasterState as any)._rev);
+                        }
+                        return couchSwapPrimaryToId(collection.schema.primaryPath, sendDoc);
+                    })
+                };
+
+                const response = await replicationState.fetch(
+                    url,
+                    {
+                        method: 'POST',
+                        headers: {
+                            'content-type': 'application/json'
+                        },
+                        body: JSON.stringify(body)
+                    }
+                );
+                const responseJson: CouchBulkDocResultRow[] = await response.json();
+
+                const conflicts = responseJson.filter(row => {
+                    const isConflict = row.error === 'conflict';
+                    if (!row.ok && !isConflict) {
+                        throw newRxError('SNH', { args: { row } });
+                    }
+                    return isConflict;
+                });
+
+                if (conflicts.length === 0) {
+                    return [];
+                }
+
+                const getConflictDocsUrl = options.url + '_all_docs?' + mergeUrlQueryParams({
+                    include_docs: true,
+                    keys: JSON.stringify(conflicts.map(c => c.id))
+                });
+                const conflictResponse = await replicationState.fetch(getConflictDocsUrl);
+                const conflictResponseJson: CouchAllDocsResponse = await conflictResponse.json();
+                const conflictDocsMasterState: WithDeleted<RxDocType>[] = conflictResponseJson.rows
+                    .map(r => couchDBDocToRxDocData(collection.schema.primaryPath, r.doc));
+
+                return conflictDocsMasterState;
+            },
+            batchSize: options.push.batchSize,
+            modifier: options.push.modifier
+        };
+    }
+
+    const replicationState = new RxCouchDBReplicationState<RxDocType>(
+        options.url,
+        options.fetch ? options.fetch : getDefaultFetch(),
+        COUCHDB_NEW_REPLICATION_PLUGIN_IDENTITY_PREFIX + fastUnsecureHash(options.url),
+        collection,
+        replicationPrimitivesPull,
+        replicationPrimitivesPush,
+        options.live,
+        options.retryTime,
+        options.autoStart
+    );
 
     /**
-     * Returns false when the replication has already been canceled
+     * Use long polling to get live changes for the pull.stream$
      */
-    cancel(): Promise<boolean> {
-        if (this.canceled) {
-            return PROMISE_RESOLVE_FALSE;
-        }
-        this.canceled = true;
-        let ret = PROMISE_RESOLVE_TRUE;
-        if (this._pouchEventEmitterObject) {
-            /**
-             * Calling cancel() does not return a promise,
-             * so we have to await the complete event
-             * to know that everything is cleaned up properly.
-             */
-            ret = new Promise<true>(res => {
-                ensureNotFalsy(this._pouchEventEmitterObject)
-                    .on('complete', () => {
-                        res(true);
+    if (options.live && options.pull) {
+        const startBefore = replicationState.start.bind(replicationState);
+        replicationState.start = () => {
+            let since: string | number = 'now';
+            const batchSize = options.pull && options.pull.batchSize ? options.pull.batchSize : 20;
+
+            (async () => {
+                while (!replicationState.isStopped()) {
+                    const url = options.url + '_changes?' + mergeUrlQueryParams({
+                        style: 'all_docs',
+                        feed: 'longpoll',
+                        since,
+                        include_docs: true,
+                        heartbeat: options.pull && options.pull.heartbeat ? options.pull.heartbeat : 60000,
+                        limit: batchSize,
+                        seq_interval: batchSize
                     });
-            });
-            this._pouchEventEmitterObject.cancel();
-        }
-        this._subs.forEach(sub => sub.unsubscribe());
-        return ret;
-    }
-}
 
-export type RxCouchDBReplicationState = RxCouchDBReplicationStateBase & {
-    change$: Observable<any>;
-    docs$: Observable<any>;
-    denied$: Observable<any>;
-    active$: Observable<any>;
-    alive$: Observable<boolean>;
-    complete$: Observable<any>;
-    error$: Observable<any>;
-};
+                    let jsonResponse: CouchdbChangesResult;
+                    try {
+                        jsonResponse = await (await replicationState.fetch(url)).json();
+                    } catch (err: any) {
+                        pullStream$.error(newRxError('RC_STREAM', {
+                            args: { url },
+                            error: errorToPlainJson(err)
+                        }));
+                        // await next tick here otherwise we could go in to a 100% CPU blocking cycle.
+                        await collection.promiseWait(0);
+                        continue;
+                    }
+                    const documents: WithDeleted<RxDocType>[] = jsonResponse.results
+                        .map(row => couchDBDocToRxDocData(collection.schema.primaryPath, ensureNotFalsy(row.doc)));
+                    since = jsonResponse.last_seq;
 
-export function setPouchEventEmitter(
-    rxRepState: RxCouchDBReplicationState,
-    evEmitter: PouchSyncHandler
-) {
-    if (rxRepState._pouchEventEmitterObject) {
-        throw newRxError('RC1');
-    }
-    rxRepState._pouchEventEmitterObject = evEmitter;
-
-    // change
-    rxRepState._subs.push(
-        fromEvent(evEmitter as any, 'change')
-            .subscribe(ev => {
-                rxRepState._subjects.change.next(ev);
-            })
-    );
-
-    // denied
-    rxRepState._subs.push(
-        fromEvent(evEmitter as any, 'denied')
-            .subscribe(ev => rxRepState._subjects.denied.next(ev))
-    );
-
-    // docs
-    rxRepState._subs.push(
-        fromEvent(evEmitter as any, 'change')
-            .subscribe(ev => {
-                if (
-                    rxRepState._subjects.docs.observers.length === 0 ||
-                    (ev as any).direction !== 'pull'
-                ) return;
-
-                (ev as any).change.docs
-                    .filter((doc: any) => doc.language !== 'query') // remove internal docs
-                    // do primary-swap and keycompression
-                    .forEach((doc: any) => rxRepState._subjects.docs.next(doc));
-            }));
-
-    // error
-    rxRepState._subs.push(
-        fromEvent(evEmitter as any, 'error')
-            .subscribe(ev => rxRepState._subjects.error.next(ev))
-    );
-
-    // active
-    rxRepState._subs.push(
-        fromEvent(evEmitter as any, 'active')
-            .subscribe(() => rxRepState._subjects.active.next(true))
-    );
-    rxRepState._subs.push(
-        fromEvent(evEmitter as any, 'paused')
-            .subscribe(() => rxRepState._subjects.active.next(false))
-    );
-
-    // complete
-    rxRepState._subs.push(
-        fromEvent(evEmitter as any, 'complete')
-            .subscribe(async (info: any) => {
-                /**
-                 * when complete fires, it might be that not all changeEvents
-                 * have passed through, because of the delay of .wachtForChanges()
-                 * Therefore we have to first ensure that all previous changeEvents have been handled
-                 */
-                await promiseWait(100);
-                rxRepState._subjects.complete.next(info);
-            })
-    );
-    // auto-cancel one-time replications on complelete to not cause memory leak
-    if (
-        !rxRepState.syncOptions.options ||
-        !rxRepState.syncOptions.options.live
-    ) {
-        rxRepState._subs.push(
-            rxRepState.complete$.pipe(
-                filter(x => !!x),
-                first(),
-                mergeMap(() => {
-                    return rxRepState.collection.database
-                        .requestIdlePromise()
-                        .then(() => rxRepState.cancel());
-                })
-            ).subscribe()
-        );
-    }
-
-    function getIsAlive(emitter: any): Promise<boolean> {
-        // "state" will live in emitter.state if single direction replication
-        // or in emitter.push.state & emitter.pull.state when syncing for both
-        let state = emitter.state;
-        if (!state) {
-            state = [emitter.pull.state, emitter.push.state]
-                .reduce((acc, val) => {
-                    if (acc === 'active' || val === 'active') return 'active';
-                    return acc === 'stopped' ? acc : val;
-                }, '');
-        }
-
-        // If it's active, we can't determine whether the connection is active
-        // or not yet
-        if (state === 'active') {
-            return promiseWait(15).then(() => getIsAlive(emitter));
-        }
-
-        const isAlive = state !== 'stopped';
-        return Promise.resolve(isAlive);
-    }
-
-    rxRepState._subs.push(
-        fromEvent(evEmitter as any, 'paused')
-            .pipe(
-                skipUntil(fromEvent(evEmitter as any, 'active'))
-            ).subscribe(() => {
-                getIsAlive(rxRepState._pouchEventEmitterObject)
-                    .then(isAlive => rxRepState._subjects.alive.next(isAlive));
-            })
-    );
-}
-
-export function createRxCouchDBReplicationState(
-    collection: RxCollection,
-    syncOptions: SyncOptions
-): RxCouchDBReplicationState {
-    return new RxCouchDBReplicationStateBase(
-        collection,
-        syncOptions
-    ) as RxCouchDBReplicationState;
-}
-
-/**
- * get the correct function-name for pouchdb-replication
- */
-export function pouchReplicationFunction(
-    pouch: PouchDBInstance,
-    {
-        pull = true,
-        push = true
-    }
-): any {
-    if (pull && push) {
-        return pouch.sync.bind(pouch);
-    }
-    if (!pull && push) {
-        return (pouch.replicate as any).to.bind(pouch);
-    }
-    if (pull && !push) {
-        return (pouch.replicate as any).from.bind(pouch);
-    }
-    if (!pull && !push) {
-        throw newRxError('UT3', {
-            pull,
-            push
-        });
-    }
-}
-
-export function syncCouchDB(
-    this: RxCollection,
-    {
-        remote,
-        waitForLeadership = true,
-        direction = {
-            pull: true,
-            push: true
-        },
-        options = {
-            live: true,
-            retry: true
-        },
-        query
-    }: SyncOptions) {
-    const useOptions: PouchReplicationOptions & { selector: any; } = flatClone(options) as any;
-
-    // prevent #641 by not allowing internal pouchdbs as remote
-    if (
-        isInstanceOfPouchDB(remote) &&
-        INTERNAL_POUCHDBS.has(remote)
-    ) {
-        throw newRxError('RC3', {
-            database: this.database.name,
-            collection: this.name
-        });
-    }
-
-    // if remote is RxCollection, get internal pouchdb
-    if (isRxCollection(remote)) {
-        remote = (remote as RxCollection).storageInstance.internals.pouch;
-    }
-
-    if (query && this !== query.collection) {
-        throw newRxError('RC2', {
-            query
-        });
-    }
-
-    const pouch = getPouchDBOfRxCollection(this);
-    const syncFun = pouchReplicationFunction(pouch, direction);
-    if (query) {
-        useOptions.selector = query.getPreparedQuery().selector;
-    }
-
-    const repState: any = createRxCouchDBReplicationState(
-        this,
-        {
-            remote,
-            waitForLeadership,
-            direction,
-            options,
-            query
-        }
-    );
-
-    // run internal so .sync() does not have to be async
-    const waitTillRun = (
-        waitForLeadership &&
-        this.database.multiInstance // do not await leadership if not multiInstance
-    ) ? this.database.waitForLeadership() : promiseWait(0);
-    (waitTillRun as any).then(() => {
-        if (this.destroyed || repState.canceled) {
-            return;
-        }
-        const pouchSync = syncFun(remote, useOptions);
-        setPouchEventEmitter(repState, pouchSync);
-
-        this.onDestroy.push(() => repState.cancel());
-    });
-
-    return repState;
-}
-
-
-
-export const RxDBReplicationCouchDBPlugin: RxPlugin = {
-    name: 'replication-couchdb',
-    rxdb: true,
-    init() {
-        // add pouchdb-replication-plugin
-        addPouchPlugin(PouchReplicationPlugin);
-    },
-    prototypes: {
-        RxCollection: (proto: any) => {
-            proto.syncCouchDB = syncCouchDB;
-        }
-    },
-    hooks: {
-        createRxCollection: {
-            after: args => {
-                const collection = args.collection;
-                const pouch: PouchDBInstance | undefined = collection.storageInstance.internals.pouch;
-                if (pouch) {
-                    INTERNAL_POUCHDBS.add(collection.storageInstance.internals.pouch);
+                    pullStream$.next({
+                        documents,
+                        checkpoint: {
+                            sequence: jsonResponse.last_seq
+                        }
+                    });
                 }
-            }
-        }
+            })();
+            return startBefore();
+        };
     }
-};
+
+    startReplicationOnLeaderShip(options.waitForLeadership, replicationState);
+
+    return replicationState;
+}

@@ -57,7 +57,8 @@ window.RxDB
     })
     .then(function(col) {
         console.log('DatabaseService: sync');
-        col.syncCouchDB({
+        replicateCouchDB({
+            collection: col,
             remote: syncURL + 'hero/'
         });
         return col;

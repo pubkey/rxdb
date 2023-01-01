@@ -11,7 +11,20 @@ import type {
     UpdateQuery
 } from '../../types';
 
-export function update(this: RxDocument, updateObj: any) {
+export function incrementalUpdate<RxDocType>(
+    this: RxDocument<RxDocType>,
+    updateObj: UpdateQuery<RxDocType>
+): Promise<RxDocument<RxDocType>> {
+    return this.incrementalModify((docData) => {
+        const newDocData = modifyjs(docData, updateObj);
+        return newDocData;
+    });
+}
+
+export function update<RxDocType>(
+    this: RxDocument<RxDocType>,
+    updateObj: UpdateQuery<RxDocType>
+): Promise<RxDocument<RxDocType>> {
     const oldDocData = this._data;
     const newDocData = modifyjs(oldDocData, updateObj);
     return this._saveData(newDocData, oldDocData);
@@ -44,6 +57,7 @@ export const RxDBUpdatePlugin: RxPlugin = {
     prototypes: {
         RxDocument: (proto: any) => {
             proto.update = update;
+            proto.incrementalUpdate = incrementalUpdate;
         },
         RxQuery: (proto: any) => {
             proto.update = RxQueryUpdate;

@@ -8,18 +8,14 @@ import {
 import * as path from 'path';
 import parallel from 'mocha.parallel';
 import type { RxTestStorage } from '../../';
-import {
-    getRxStoragePouch,
-    addPouchPlugin
-} from '../../plugins/pouchdb';
-import { getRxStorageLoki } from '../../plugins/lokijs';
+import { getRxStorageLoki } from '../../plugins/storage-lokijs';
 import {
     getRxStorageDexie,
     RxStorageDexieStatics
-} from '../../plugins/dexie';
-import { getRxStorageWorker } from '../../plugins/worker';
+} from '../../plugins/storage-dexie';
+import { getRxStorageWorker } from '../../plugins/storage-worker';
 import { getRxStorageRemoteWebsocket } from '../../plugins/storage-remote';
-import { getRxStorageMemory } from '../../plugins/memory';
+import { getRxStorageMemory } from '../../plugins/storage-memory';
 import { CUSTOM_STORAGE } from './custom-storage';
 import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv';
 import { isPromise } from 'async-test-util';
@@ -105,43 +101,6 @@ export function setDefaultStorage(storageKey: string) {
     }
 
     switch (storageKey) {
-        case 'pouchdb':
-            config.storage = {
-                name: storageKey,
-                getStorage: () => {
-                    if (config.platform.name === 'node') {
-                        addPouchPlugin(require('pouchdb-adapter-memory'));
-                        return getRxStoragePouch('memory');
-                    } else {
-                        // TODO use idb when performance is fixed
-                        addPouchPlugin(require('pouchdb-adapter-memory'));
-                        return getRxStoragePouch('memory');
-                    }
-                },
-                getPerformanceStorage() {
-                    if (config.platform.name === 'node') {
-                        // Node.js
-                        addPouchPlugin(require('pouchdb-adapter-leveldb'));
-                        return {
-                            storage: getRxStoragePouch('leveldb'),
-                            description: 'pouchdb+leveldb'
-                        };
-                    } else {
-                        // browser
-                        addPouchPlugin(require('pouchdb-adapter-idb'));
-                        return {
-                            storage: getRxStoragePouch('idb'),
-                            description: 'pouchdb+idb'
-                        };
-                    }
-                },
-                hasPersistence: true,
-                hasMultiInstance: true,
-                hasCouchDBReplication: true,
-                hasAttachments: true,
-                hasRegexSupport: true
-            };
-            break;
         case 'memory':
             config.storage = {
                 name: storageKey,
@@ -152,7 +111,7 @@ export function setDefaultStorage(storageKey: string) {
                         storage: getRxStorageMemory()
                     };
                 },
-                hasPersistence: false,
+                hasPersistence: true,
                 hasMultiInstance: false,
                 hasCouchDBReplication: false,
                 hasAttachments: true,
@@ -256,7 +215,7 @@ export function setDefaultStorage(storageKey: string) {
             break;
         case 'dexie-worker':
             const dexieMemoryWorkerPath = require('path').join(
-                '../../../../dist/lib/plugins/worker/workers/',
+                '../../../../dist/lib/plugins/storage-worker/workers/',
                 'dexie-memory.worker.js'
             );
             console.log('dexieMemoryWorkerPath: ' + dexieMemoryWorkerPath);
@@ -290,7 +249,7 @@ export function setDefaultStorage(storageKey: string) {
             const foundationDBAPIVersion = 620;
 
             // use a dynamic import so it does not break browser bundling
-            const { getRxStorageFoundationDB } = require('../../plugins/foundationdb' + '');
+            const { getRxStorageFoundationDB } = require('../../plugins/storage-foundationdb' + '');
 
             config.storage = {
                 name: storageKey,

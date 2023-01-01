@@ -1,62 +1,14 @@
+import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
 import _createClass from "@babel/runtime/helpers/createClass";
+import _regeneratorRuntime from "@babel/runtime/regenerator";
 import { BehaviorSubject, firstValueFrom, merge } from 'rxjs';
 import { mergeMap, filter, map, startWith, distinctUntilChanged, shareReplay } from 'rxjs/operators';
-import { sortObject, stringifyFilter, pluginMissing, clone, overwriteGetterForCaching, now, PROMISE_RESOLVE_FALSE, RXJS_SHARE_REPLAY_DEFAULTS, ensureNotFalsy, areRxDocumentArraysEqual } from './util';
+import { sortObject, stringifyFilter, pluginMissing, clone, overwriteGetterForCaching, now, PROMISE_RESOLVE_FALSE, RXJS_SHARE_REPLAY_DEFAULTS, ensureNotFalsy, areRxDocumentArraysEqual } from './plugins/utils';
 import { newRxError } from './rx-error';
 import { runPluginHooks } from './hooks';
-import { createRxDocuments } from './rx-document-prototype-merge';
 import { calculateNewResults } from './event-reduce';
 import { triggerCacheReplacement } from './query-cache';
 import { normalizeMangoQuery } from './rx-query-helper';
-/**
- * Runs the query over the storage instance
- * of the collection.
- * Does some optimizations to ensuer findById is used
- * when specific queries are used.
- */
-export var queryCollection = function queryCollection(rxQuery) {
-  try {
-    var docs = [];
-    var _collection = rxQuery.collection;
-
-    /**
-     * Optimizations shortcut.
-     * If query is find-one-document-by-id,
-     * then we do not have to use the slow query() method
-     * but instead can use findDocumentsById()
-     */
-    var _temp = function () {
-      if (rxQuery.isFindOneByIdQuery) {
-        var docId = rxQuery.isFindOneByIdQuery;
-        return Promise.resolve(_collection.storageInstance.findDocumentsById([docId], false)).then(function (docsMap) {
-          var docData = docsMap[docId];
-          if (docData) {
-            docs.push(docData);
-          }
-        });
-      } else {
-        var preparedQuery = rxQuery.getPreparedQuery();
-        return Promise.resolve(_collection.storageInstance.query(preparedQuery)).then(function (queryResult) {
-          docs = queryResult.documents;
-        });
-      }
-    }();
-    return Promise.resolve(_temp && _temp.then ? _temp.then(function () {
-      return docs;
-    }) : docs);
-  } catch (e) {
-    return Promise.reject(e);
-  }
-};
-
-/**
- * Returns true if the given query
- * selects exactly one document by its id.
- * Used to optimize performance because these kind of
- * queries do not have to run over an index and can use get-by-id instead.
- * Returns false if no query of that kind.
- * Returns the document id otherwise.
- */
 var _queryCount = 0;
 var newQueryID = function newQueryID() {
   return ++_queryCount;
@@ -101,36 +53,42 @@ export var RxQueryBase = /*#__PURE__*/function () {
   var _proto = RxQueryBase.prototype;
   /**
    * set the new result-data as result-docs of the query
-   * @param newResultData json-docs that were received from pouchdb
+   * @param newResultData json-docs that were received from the storage
    */
   _proto._setResultData = function _setResultData(newResultData) {
+    var _this = this;
     if (typeof newResultData === 'number') {
       this._result = {
         docsData: [],
+        docsMap: new Map(),
         docsDataMap: new Map(),
         count: newResultData,
         docs: [],
         time: now()
       };
       return;
+    } else if (newResultData instanceof Map) {
+      newResultData = Array.from(newResultData.values());
     }
-    var docs = createRxDocuments(this.collection, newResultData);
+    var docsDataMap = new Map();
+    var docsMap = new Map();
+    var docs = newResultData.map(function (docData) {
+      return _this.collection._docCache.getCachedRxDocument(docData);
+    });
 
     /**
      * Instead of using the newResultData in the result cache,
      * we directly use the objects that are stored in the RxDocument
      * to ensure we do not store the same data twice and fill up the memory.
      */
-    var primPath = this.collection.schema.primaryPath;
-    var docsDataMap = new Map();
     var docsData = docs.map(function (doc) {
-      var docData = doc._dataSync$.getValue();
-      var id = docData[primPath];
-      docsDataMap.set(id, docData);
-      return docData;
+      docsDataMap.set(doc.primary, doc._data);
+      docsMap.set(doc.primary, doc);
+      return doc._data;
     });
     this._result = {
       docsData: docsData,
+      docsMap: docsMap,
       docsDataMap: docsDataMap,
       count: docsData.length,
       docs: docs,
@@ -142,37 +100,95 @@ export var RxQueryBase = /*#__PURE__*/function () {
    * executes the query on the database
    * @return results-array with document-data
    */;
-  _proto._execOverDatabase = function _execOverDatabase() {
-    var _this = this;
-    this._execOverDatabaseCount = this._execOverDatabaseCount + 1;
-    this._lastExecStart = now();
-    if (this.op === 'count') {
-      var preparedQuery = this.getPreparedQuery();
-      return this.collection.storageInstance.count(preparedQuery).then(function (result) {
-        if (result.mode === 'slow' && !_this.collection.database.allowSlowCount) {
-          throw newRxError('QU14', {
-            collection: _this.collection,
-            queryObj: _this.mangoQuery
-          });
-        } else {
-          return result.count;
+  _proto._execOverDatabase =
+  /*#__PURE__*/
+  function () {
+    var _execOverDatabase2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee() {
+      var _this2 = this;
+      var preparedQuery, result, ids, ret, mustBeQueried, docs, docsPromise;
+      return _regeneratorRuntime.wrap(function _callee$(_context) {
+        while (1) switch (_context.prev = _context.next) {
+          case 0:
+            this._execOverDatabaseCount = this._execOverDatabaseCount + 1;
+            this._lastExecStart = now();
+            if (!(this.op === 'count')) {
+              _context.next = 12;
+              break;
+            }
+            preparedQuery = this.getPreparedQuery();
+            _context.next = 6;
+            return this.collection.storageInstance.count(preparedQuery);
+          case 6:
+            result = _context.sent;
+            if (!(result.mode === 'slow' && !this.collection.database.allowSlowCount)) {
+              _context.next = 11;
+              break;
+            }
+            throw newRxError('QU14', {
+              collection: this.collection,
+              queryObj: this.mangoQuery
+            });
+          case 11:
+            return _context.abrupt("return", result.count);
+          case 12:
+            if (!(this.op === 'findByIds')) {
+              _context.next = 23;
+              break;
+            }
+            ids = ensureNotFalsy(this.mangoQuery.selector)[this.collection.schema.primaryPath].$in;
+            ret = new Map();
+            mustBeQueried = []; // first try to fill from docCache
+            ids.forEach(function (id) {
+              var docData = _this2.collection._docCache.getLatestDocumentDataIfExists(id);
+              if (docData) {
+                if (!docData._deleted) {
+                  var doc = _this2.collection._docCache.getCachedRxDocument(docData);
+                  ret.set(id, doc);
+                }
+              } else {
+                mustBeQueried.push(id);
+              }
+            });
+            // everything which was not in docCache must be fetched from the storage
+            if (!(mustBeQueried.length > 0)) {
+              _context.next = 22;
+              break;
+            }
+            _context.next = 20;
+            return this.collection.storageInstance.findDocumentsById(mustBeQueried, false);
+          case 20:
+            docs = _context.sent;
+            Object.values(docs).forEach(function (docData) {
+              var doc = _this2.collection._docCache.getCachedRxDocument(docData);
+              ret.set(doc.primary, doc);
+            });
+          case 22:
+            return _context.abrupt("return", ret);
+          case 23:
+            docsPromise = queryCollection(this);
+            return _context.abrupt("return", docsPromise.then(function (docs) {
+              _this2._lastExecEnd = now();
+              return docs;
+            }));
+          case 25:
+          case "end":
+            return _context.stop();
         }
-      });
+      }, _callee, this);
+    }));
+    function _execOverDatabase() {
+      return _execOverDatabase2.apply(this, arguments);
     }
-    var docsPromise = queryCollection(this);
-    return docsPromise.then(function (docs) {
-      _this._lastExecEnd = now();
-      return docs;
-    });
-  }
-
+    return _execOverDatabase;
+  }()
   /**
    * Execute the query
    * To have an easier implementations,
    * just subscribe and use the first result
-   */;
+   */
+  ;
   _proto.exec = function exec(throwIfMissing) {
-    var _this2 = this;
+    var _this3 = this;
     if (throwIfMissing && this.op !== 'findOne') {
       throw newRxError('QU9', {
         collection: this.collection.name,
@@ -187,13 +203,13 @@ export var RxQueryBase = /*#__PURE__*/function () {
      * will be thrown at this execution context and not in the background.
      */
     return _ensureEqual(this).then(function () {
-      return firstValueFrom(_this2.$);
+      return firstValueFrom(_this3.$);
     }).then(function (result) {
       if (!result && throwIfMissing) {
         throw newRxError('QU10', {
-          collection: _this2.collection.name,
-          query: _this2.mangoQuery,
-          op: _this2.op
+          collection: _this3.collection.name,
+          query: _this3.mangoQuery,
+          op: _this3.op
         });
       } else {
         return result;
@@ -258,9 +274,7 @@ export var RxQueryBase = /*#__PURE__*/function () {
    * @return promise with deleted documents
    */;
   _proto.remove = function remove() {
-    var ret;
     return this.exec().then(function (docs) {
-      ret = docs;
       if (Array.isArray(docs)) {
         // TODO use a bulk operation instead of running .remove() on each document
         return Promise.all(docs.map(function (doc) {
@@ -269,8 +283,6 @@ export var RxQueryBase = /*#__PURE__*/function () {
       } else {
         return docs.remove();
       }
-    }).then(function () {
-      return ret;
     });
   }
 
@@ -303,7 +315,7 @@ export var RxQueryBase = /*#__PURE__*/function () {
   _createClass(RxQueryBase, [{
     key: "$",
     get: function get() {
-      var _this3 = this;
+      var _this4 = this;
       if (!this._$) {
         var results$ = this.collection.$.pipe(
         /**
@@ -320,11 +332,11 @@ export var RxQueryBase = /*#__PURE__*/function () {
         startWith(null),
         // ensure query results are up to date.
         mergeMap(function () {
-          return _ensureEqual(_this3);
+          return _ensureEqual(_this4);
         }),
         // use the current result set, written by _ensureEqual().
         map(function () {
-          return _this3._result;
+          return _this4._result;
         }),
         // do not run stuff above for each new subscriber, only once.
         shareReplay(RXJS_SHARE_REPLAY_DEFAULTS),
@@ -344,11 +356,13 @@ export var RxQueryBase = /*#__PURE__*/function () {
          */
         map(function (result) {
           var useResult = ensureNotFalsy(result);
-          if (_this3.op === 'count') {
+          if (_this4.op === 'count') {
             return useResult.count;
-          } else if (_this3.op === 'findOne') {
+          } else if (_this4.op === 'findOne') {
             // findOne()-queries emit RxDocument or null
             return useResult.docs.length === 0 ? null : useResult.docs[0];
+          } else if (_this4.op === 'findByIds') {
+            return useResult.docsMap;
           } else {
             // find()-queries emit RxDocument[]
             // Flat copy the array so it won't matter if the user modifies it.
@@ -539,12 +553,83 @@ function __ensureEqual(rxQuery) {
   return Promise.resolve(ret); // true if results have changed
 }
 
+/**
+ * Runs the query over the storage instance
+ * of the collection.
+ * Does some optimizations to ensuer findById is used
+ * when specific queries are used.
+ */
+export function queryCollection(_x) {
+  return _queryCollection.apply(this, arguments);
+}
+
+/**
+ * Returns true if the given query
+ * selects exactly one document by its id.
+ * Used to optimize performance because these kind of
+ * queries do not have to run over an index and can use get-by-id instead.
+ * Returns false if no query of that kind.
+ * Returns the document id otherwise.
+ */
+function _queryCollection() {
+  _queryCollection = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee2(rxQuery) {
+    var docs, collection, docId, docData, docsMap, preparedQuery, queryResult;
+    return _regeneratorRuntime.wrap(function _callee2$(_context2) {
+      while (1) switch (_context2.prev = _context2.next) {
+        case 0:
+          docs = [];
+          collection = rxQuery.collection;
+          /**
+           * Optimizations shortcut.
+           * If query is find-one-document-by-id,
+           * then we do not have to use the slow query() method
+           * but instead can use findDocumentsById()
+           */
+          if (!rxQuery.isFindOneByIdQuery) {
+            _context2.next = 13;
+            break;
+          }
+          docId = rxQuery.isFindOneByIdQuery; // first try to fill from docCache
+          docData = rxQuery.collection._docCache.getLatestDocumentDataIfExists(docId);
+          if (docData) {
+            _context2.next = 10;
+            break;
+          }
+          _context2.next = 8;
+          return collection.storageInstance.findDocumentsById([docId], false);
+        case 8:
+          docsMap = _context2.sent;
+          docData = docsMap[docId];
+        case 10:
+          if (docData) {
+            docs.push(docData);
+          }
+          _context2.next = 18;
+          break;
+        case 13:
+          preparedQuery = rxQuery.getPreparedQuery();
+          _context2.next = 16;
+          return collection.storageInstance.query(preparedQuery);
+        case 16:
+          queryResult = _context2.sent;
+          docs = queryResult.documents;
+        case 18:
+          return _context2.abrupt("return", docs);
+        case 19:
+        case "end":
+          return _context2.stop();
+      }
+    }, _callee2);
+  }));
+  return _queryCollection.apply(this, arguments);
+}
 export function isFindOneByIdQuery(primaryPath, query) {
   if (!query.skip && query.selector && Object.keys(query.selector).length === 1 && query.selector[primaryPath]) {
-    if (typeof query.selector[primaryPath] === 'string') {
-      return query.selector[primaryPath];
-    } else if (Object.keys(query.selector[primaryPath]).length === 1 && typeof query.selector[primaryPath].$eq === 'string') {
-      return query.selector[primaryPath].$eq;
+    var value = query.selector[primaryPath];
+    if (typeof value === 'string') {
+      return value;
+    } else if (Object.keys(value).length === 1 && typeof value.$eq === 'string') {
+      return value.$eq;
     }
   }
   return false;

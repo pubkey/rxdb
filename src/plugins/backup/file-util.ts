@@ -6,7 +6,7 @@ import {
     BlobBuffer,
     RxDatabase
 } from '../../types';
-import { blobBufferUtil, now } from '../../util';
+import { blobBufferUtil, now } from '../../plugins/utils';
 
 /**
  * ensure that the given folder exists

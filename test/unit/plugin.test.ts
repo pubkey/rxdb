@@ -13,10 +13,6 @@ import {
     RxPlugin
 } from '../../';
 
-import {
-    addPouchPlugin
-} from '../../plugins/pouchdb';
-
 import * as humansCollection from '../helper/humans-collection';
 import { assertThrows } from 'async-test-util';
 import { RxDBDevModePlugin, DEV_MODE_PLUGIN_NAME } from '../../plugins/dev-mode';
@@ -45,48 +41,6 @@ config.parallel('plugin.test.js', () => {
         });
         it('should NOT crash when a plugin with the same name added already but it IS the same object', async () => {
             await addRxPlugin(RxDBDevModePlugin);
-        });
-    });
-    describe('.addPouchPlugin()', () => {
-        it('should not crash when pouch plugin is added', () => {
-            addPouchPlugin(require('pouchdb-adapter-memory'));
-        });
-        it('should crash when rxdb plugin is added via addPouchPlugin', async () => {
-            await assertThrows(
-                () => addPouchPlugin(RxDBDevModePlugin),
-                'RxTypeError',
-                'PL2'
-            );
-        });
-    });
-    describe('core.node.ts', () => {
-        it('core.node.ts: should run without errors', async function () {
-            this.timeout(10000);
-            if (!config.platform.isNode())
-                return;
-
-            const spawn = REQUIRE_FUN('child-process-promise').spawn;
-            const stdout: any[] = [];
-            const stderr: any[] = [];
-            const promise = spawn('mocha', [config.rootPath + 'test_tmp/unit/core.node.js']);
-            const childProcess = promise.childProcess;
-            childProcess.stdout.on('data', (data: any) => {
-                // comment in to debug
-                //               console.log(':: ' + data.toString());
-                stdout.push(data.toString());
-            });
-            childProcess.stderr.on('data', (data: any) => stderr.push(data.toString()));
-            try {
-                await promise;
-            } catch (err) {
-                console.error('errrrr');
-                console.dir(stdout);
-                throw new Error(`could not run Core.node.js.
-                    # Error: ${err}
-                    # Output: ${stdout}
-                    # ErrOut: ${stderr}
-                    `);
-            }
         });
     });
     describe('full.node.ts', () => {

@@ -19,7 +19,7 @@ const myDatabase = await createRxDatabase({/* ... */});
 
 // start a websocket server
 const serverState = await startWebsocketServer({
-    database: myDatabase
+    database: myDatabase,
     port: 1337,
     path: 'socket'
 });
@@ -34,7 +34,7 @@ The replication has to be started once for each collection that you want to repl
 
 ```ts
 import {
-    syncWebsocketServer
+    replicateWithWebsocketServer
 } from 'rxdb/plugins/replication-websocket';
 
 // start the replication

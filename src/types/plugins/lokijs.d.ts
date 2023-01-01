@@ -3,7 +3,7 @@ import type {
     Collection
 } from 'lokijs';
 import { AddReturn } from 'unload';
-import { LokiSaveQueue } from '../../plugins/lokijs/loki-save-queue';
+import { LokiSaveQueue } from '../../plugins/storage-lokijs/loki-save-queue';
 
 export type LokiDatabaseSettings = Partial<LokiConstructorOptions & LokiConfigOptions> & {};
 

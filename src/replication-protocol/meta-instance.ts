@@ -12,7 +12,7 @@ import type {
     RxStorageReplicationMeta,
     WithDeleted
 } from '../types';
-import { getDefaultRevision, createRevision, now } from '../util';
+import { getDefaultRevision, createRevision, now } from '../plugins/utils';
 
 export const RX_REPLICATION_META_INSTANCE_SCHEMA: RxJsonSchema<RxDocumentData<RxStorageReplicationMeta>> = fillWithDefaultSettings({
     primaryKey: {
@@ -140,8 +140,7 @@ export function getMetaWriteRow<RxDocType>(
         newMeta
     );
     newMeta._rev = createRevision(
-        state.input.hashFunction,
-        newMeta,
+        state.input.identifier,
         previous
     );
     return {

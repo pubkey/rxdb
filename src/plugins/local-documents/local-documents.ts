@@ -1,8 +1,7 @@
 import {
-    flatClone,
     getDefaultRevision,
     getDefaultRxDocumentMeta
-} from '../../util';
+} from '../../plugins/utils';
 
 import type {
     RxChangeEvent,
@@ -22,7 +21,6 @@ import {
 } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 
-import { createRxLocalDocument } from './rx-local-document';
 import { getLocalDocStateByParent } from './local-documents-helper';
 import { getSingleDocument, writeSingle } from '../../rx-storage-helper';
 
@@ -40,7 +38,7 @@ export async function insertLocal<DocData extends Record<string, any> = any>(
     const state = await getLocalDocStateByParent(this);
 
     // create new one
-    let docData: RxDocumentWriteData<RxLocalDocumentData<DocData>> = {
+    const docData: RxDocumentWriteData<RxLocalDocumentData<DocData>> = {
         id: id,
         data,
         _deleted: false,
@@ -55,19 +53,14 @@ export async function insertLocal<DocData extends Record<string, any> = any>(
             document: docData
         },
         'local-document-insert'
-    ).then(res => {
-        docData = flatClone(docData);
-        docData._rev = res._rev;
-        const newDoc = createRxLocalDocument(id, docData as any, this, state);
-        return newDoc as any;
-    });
+    ).then(newDocData => state.docCache.getCachedRxDocument(newDocData) as any);
 }
 
 /**
  * save the local-document-data
  * overwrites existing if exists
  */
-export function upsertLocal<DocData extends Record<string,any> = any>(
+export function upsertLocal<DocData extends Record<string, any> = any>(
     this: any,
     id: string,
     data: DocData
@@ -80,9 +73,9 @@ export function upsertLocal<DocData extends Record<string,any> = any>(
                 return docPromise;
             } else {
                 // update existing
-                return existing.atomicUpdate(() => {
+                return existing.incrementalModify(() => {
                     return data;
-                }).then(() => existing);
+                });
             }
         });
 }
@@ -92,9 +85,11 @@ export async function getLocal<DocData = any>(this: any, id: string): Promise<Rx
     const docCache = state.docCache;
 
     // check in doc-cache
-    const found = docCache.get(id);
+    const found = docCache.getLatestDocumentDataIfExists(id);
     if (found) {
-        return Promise.resolve(found as any);
+        return Promise.resolve(
+            docCache.getCachedRxDocument(found) as any
+        );
     }
 
     // if not found, check in storage instance
@@ -103,10 +98,8 @@ export async function getLocal<DocData = any>(this: any, id: string): Promise<Rx
             if (!docData) {
                 return null;
             }
-            const doc = createRxLocalDocument(id, docData, this, state);
-            return doc as any;
-        })
-        .catch(() => null);
+            return state.docCache.getCachedRxDocument(docData) as any;
+        });
 }
 
 export function getLocal$<DocData = any>(this: RxCollection, id: string): Observable<RxLocalDocument<DocData> | null> {

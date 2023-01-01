@@ -11,7 +11,7 @@ exports.validateFieldsDeep = validateFieldsDeep;
 var _objectPath = _interopRequireDefault(require("object-path"));
 var _rxError = require("../../rx-error");
 var _rxSchemaHelper = require("../../rx-schema-helper");
-var _util = require("../../util");
+var _utils = require("../../plugins/utils");
 var _entityProperties = require("./entity-properties");
 /**
  * does additional checks over the schema-json
@@ -220,7 +220,7 @@ function getSchemaPropertyRealPath(shortPath) {
       realPath = realPath.concat('.items');
     }
   }
-  return (0, _util.trimDots)(realPath);
+  return (0, _utils.trimDots)(realPath);
 }
 
 /**
@@ -296,7 +296,7 @@ function checkSchema(jsonSchema) {
   // check format of jsonSchema.indexes
   if (jsonSchema.indexes) {
     // should be an array
-    if (!(0, _util.isMaybeReadonlyArray)(jsonSchema.indexes)) {
+    if (!(0, _utils.isMaybeReadonlyArray)(jsonSchema.indexes)) {
       throw (0, _rxError.newRxError)('SC18', {
         indexes: jsonSchema.indexes,
         schema: jsonSchema
@@ -328,7 +328,7 @@ function checkSchema(jsonSchema) {
        * when they are transformed to strings.
        * Therefore we need to enforce some properties inside of the schema.
        */
-      var indexAsArray = (0, _util.isMaybeReadonlyArray)(index) ? index : [index];
+      var indexAsArray = (0, _utils.isMaybeReadonlyArray)(index) ? index : [index];
       indexAsArray.forEach(function (fieldName) {
         var schemaPart = (0, _rxSchemaHelper.getSchemaByObjectPath)(jsonSchema, fieldName);
         var type = schemaPart.type;
@@ -396,7 +396,7 @@ function checkSchema(jsonSchema) {
   }
 
   // remove backward-compatibility for index: true
-  Object.keys((0, _util.flattenObject)(jsonSchema)).map(function (key) {
+  Object.keys((0, _utils.flattenObject)(jsonSchema)).map(function (key) {
     // flattenObject returns only ending paths, we need all paths pointing to an object
     var split = key.split('.');
     split.pop(); // all but last
@@ -415,14 +415,14 @@ function checkSchema(jsonSchema) {
     key = key.replace('properties.', ''); // first
     key = key.replace(/\.properties\./g, '.'); // middle
     throw (0, _rxError.newRxError)('SC26', {
-      index: (0, _util.trimDots)(key),
+      index: (0, _utils.trimDots)(key),
       schema: jsonSchema
     });
   });
 
   /* check types of the indexes */
   (jsonSchema.indexes || []).reduce(function (indexPaths, currentIndex) {
-    if ((0, _util.isMaybeReadonlyArray)(currentIndex)) {
+    if ((0, _utils.isMaybeReadonlyArray)(currentIndex)) {
       indexPaths.concat(currentIndex);
     } else {
       indexPaths.push(currentIndex);
@@ -460,7 +460,7 @@ function checkSchema(jsonSchema) {
    * This check ensures people do not oversee the breaking change
    * Remove this check in the future
    */
-  Object.keys((0, _util.flattenObject)(jsonSchema)).map(function (key) {
+  Object.keys((0, _utils.flattenObject)(jsonSchema)).map(function (key) {
     // flattenObject returns only ending paths, we need all paths pointing to an object
     var split = key.split('.');
     split.pop(); // all but last
@@ -479,7 +479,7 @@ function checkSchema(jsonSchema) {
     key = key.replace('properties.', ''); // first
     key = key.replace(/\.properties\./g, '.'); // middle
     throw (0, _rxError.newRxError)('SC27', {
-      index: (0, _util.trimDots)(key),
+      index: (0, _utils.trimDots)(key),
       schema: jsonSchema
     });
   });

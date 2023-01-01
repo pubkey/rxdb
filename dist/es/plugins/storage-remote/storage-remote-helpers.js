@@ -1,4 +1,4 @@
-import { errorToPlainJson } from '../../util';
+import { errorToPlainJson } from '../../plugins/utils';
 export function createErrorAnswer(msg, error) {
   return {
     connectionId: msg.connectionId,

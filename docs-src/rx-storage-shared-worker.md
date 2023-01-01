@@ -73,7 +73,7 @@ import {
     createRxDatabase
 } from 'rxdb';
 import { getRxStorageSharedWorker } from 'rxdb-premium/plugins/worker';
-import { RxStorageLokiStatics } from 'rxdb/plugins/lokijs';
+import { RxStorageLokiStatics } from 'rxdb/plugins/storage-lokijs';
 const database = await createRxDatabase({
     name: 'mydatabase',
     storage: getRxStorageSharedWorker(

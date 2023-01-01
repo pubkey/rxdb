@@ -6,14 +6,15 @@ Object.defineProperty(exports, "__esModule", {
 });
 var _exportNames = {
   RxGraphQLReplicationState: true,
-  syncGraphQL: true,
-  RxDBReplicationGraphQLPlugin: true
+  replicateGraphQL: true
 };
-exports.RxGraphQLReplicationState = exports.RxDBReplicationGraphQLPlugin = void 0;
-exports.syncGraphQL = syncGraphQL;
+exports.RxGraphQLReplicationState = void 0;
+exports.replicateGraphQL = replicateGraphQL;
+var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
+var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 var _inheritsLoose2 = _interopRequireDefault(require("@babel/runtime/helpers/inheritsLoose"));
 var _objectPath = _interopRequireDefault(require("object-path"));
-var _util = require("../../util");
+var _utils = require("../../plugins/utils");
 var _helper = require("./helper");
 Object.keys(_helper).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
@@ -95,13 +96,14 @@ var RxGraphQLReplicationState = /*#__PURE__*/function (_RxReplicationState) {
     this.clientState.credentials = credentials;
   };
   _proto.graphQLRequest = function graphQLRequest(queryParams) {
-    return (0, _helper.graphQLRequest)((0, _util.ensureNotFalsy)(this.url.http), this.clientState, queryParams);
+    return (0, _helper.graphQLRequest)((0, _utils.ensureNotFalsy)(this.url.http), this.clientState, queryParams);
   };
   return RxGraphQLReplicationState;
 }(_replication.RxReplicationState);
 exports.RxGraphQLReplicationState = RxGraphQLReplicationState;
-function syncGraphQL(_ref) {
-  var url = _ref.url,
+function replicateGraphQL(_ref) {
+  var collection = _ref.collection,
+    url = _ref.url,
     _ref$headers = _ref.headers,
     headers = _ref$headers === void 0 ? {} : _ref$headers,
     credentials = _ref.credentials,
@@ -117,8 +119,7 @@ function syncGraphQL(_ref) {
     retryTime = _ref$retryTime === void 0 ? 1000 * 5 : _ref$retryTime,
     _ref$autoStart = _ref.autoStart,
     autoStart = _ref$autoStart === void 0 ? true : _ref$autoStart;
-  var collection = this;
-
+  (0, _index.addRxPlugin)(_leaderElection.RxDBLeaderElectionPlugin);
   /**
    * We use this object to store the GraphQL client
    * so we can later swap out the client inside of the replication handlers.
@@ -132,37 +133,54 @@ function syncGraphQL(_ref) {
   if (pull) {
     var pullBatchSize = pull.batchSize ? pull.batchSize : 20;
     replicationPrimitivesPull = {
-      handler: function handler(lastPulledCheckpoint) {
-        try {
-          return Promise.resolve(pull.queryBuilder(lastPulledCheckpoint, pullBatchSize)).then(function (pullGraphQL) {
-            return Promise.resolve(graphqlReplicationState.graphQLRequest(pullGraphQL)).then(function (result) {
-              function _temp2() {
-                var docsData = data.documents;
-                var newCheckpoint = data.checkpoint;
-                return {
+      handler: function () {
+        var _handler = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(lastPulledCheckpoint) {
+          var pullGraphQL, result, dataPath, data, docsData, newCheckpoint;
+          return _regenerator["default"].wrap(function _callee$(_context) {
+            while (1) switch (_context.prev = _context.next) {
+              case 0:
+                _context.next = 2;
+                return pull.queryBuilder(lastPulledCheckpoint, pullBatchSize);
+              case 2:
+                pullGraphQL = _context.sent;
+                _context.next = 5;
+                return graphqlReplicationState.graphQLRequest(pullGraphQL);
+              case 5:
+                result = _context.sent;
+                if (!result.errors) {
+                  _context.next = 8;
+                  break;
+                }
+                throw result.errors;
+              case 8:
+                dataPath = pull.dataPath || ['data', Object.keys(result.data)[0]];
+                data = _objectPath["default"].get(result, dataPath);
+                if (!pull.responseModifier) {
+                  _context.next = 14;
+                  break;
+                }
+                _context.next = 13;
+                return pull.responseModifier(data, 'handler', lastPulledCheckpoint);
+              case 13:
+                data = _context.sent;
+              case 14:
+                docsData = data.documents;
+                newCheckpoint = data.checkpoint;
+                return _context.abrupt("return", {
                   documents: docsData,
                   checkpoint: newCheckpoint
-                };
-              }
-              if (result.errors) {
-                throw result.errors;
-              }
-              var dataPath = pull.dataPath || ['data', Object.keys(result.data)[0]];
-              var data = _objectPath["default"].get(result, dataPath);
-              var _temp = function () {
-                if (pull.responseModifier) {
-                  return Promise.resolve(pull.responseModifier(data, 'handler', lastPulledCheckpoint)).then(function (_pull$responseModifie) {
-                    data = _pull$responseModifie;
-                  });
-                }
-              }();
-              return _temp && _temp.then ? _temp.then(_temp2) : _temp2(_temp);
-            });
-          });
-        } catch (e) {
-          return Promise.reject(e);
+                });
+              case 17:
+              case "end":
+                return _context.stop();
+            }
+          }, _callee);
+        }));
+        function handler(_x) {
+          return _handler.apply(this, arguments);
         }
-      },
+        return handler;
+      }(),
       batchSize: pull.batchSize,
       modifier: pull.modifier,
       stream$: pullStream$.asObservable()
@@ -171,56 +189,84 @@ function syncGraphQL(_ref) {
   var replicationPrimitivesPush;
   if (push) {
     replicationPrimitivesPush = {
-      handler: function handler(rows) {
-        try {
-          return Promise.resolve(push.queryBuilder(rows)).then(function (pushObj) {
-            return Promise.resolve(graphqlReplicationState.graphQLRequest(pushObj)).then(function (result) {
-              if (result.errors) {
+      handler: function () {
+        var _handler2 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee2(rows) {
+          var pushObj, result, dataPath, data;
+          return _regenerator["default"].wrap(function _callee2$(_context2) {
+            while (1) switch (_context2.prev = _context2.next) {
+              case 0:
+                _context2.next = 2;
+                return push.queryBuilder(rows);
+              case 2:
+                pushObj = _context2.sent;
+                _context2.next = 5;
+                return graphqlReplicationState.graphQLRequest(pushObj);
+              case 5:
+                result = _context2.sent;
+                if (!result.errors) {
+                  _context2.next = 8;
+                  break;
+                }
                 throw result.errors;
-              }
-              var dataPath = Object.keys(result.data)[0];
-              var data = _objectPath["default"].get(result.data, dataPath);
-              return data;
-            });
-          });
-        } catch (e) {
-          return Promise.reject(e);
+              case 8:
+                dataPath = Object.keys(result.data)[0];
+                data = _objectPath["default"].get(result.data, dataPath);
+                return _context2.abrupt("return", data);
+              case 11:
+              case "end":
+                return _context2.stop();
+            }
+          }, _callee2);
+        }));
+        function handler(_x2) {
+          return _handler2.apply(this, arguments);
         }
-      },
+        return handler;
+      }(),
       batchSize: push.batchSize,
       modifier: push.modifier
     };
   }
-  var graphqlReplicationState = new RxGraphQLReplicationState(url, mutateableClientState, _helper.GRAPHQL_REPLICATION_PLUGIN_IDENTITY_PREFIX + (0, _util.fastUnsecureHash)(url.http ? url.http : url.ws), collection, deletedField, replicationPrimitivesPull, replicationPrimitivesPush, live, retryTime, autoStart);
+  var graphqlReplicationState = new RxGraphQLReplicationState(url, mutateableClientState, _helper.GRAPHQL_REPLICATION_PLUGIN_IDENTITY_PREFIX + (0, _utils.fastUnsecureHash)(url.http ? url.http : url.ws), collection, deletedField, replicationPrimitivesPull, replicationPrimitivesPush, live, retryTime, autoStart);
   var mustUseSocket = url.ws && pull && pull.streamQueryBuilder && live;
   var startBefore = graphqlReplicationState.start.bind(graphqlReplicationState);
   graphqlReplicationState.start = function () {
     if (mustUseSocket) {
-      var wsClient = (0, _graphqlWebsocket.getGraphQLWebSocket)((0, _util.ensureNotFalsy)(url.ws));
+      var wsClient = (0, _graphqlWebsocket.getGraphQLWebSocket)((0, _utils.ensureNotFalsy)(url.ws));
       wsClient.on('connected', function () {
         pullStream$.next('RESYNC');
       });
-      var query = (0, _util.ensureNotFalsy)(pull.streamQueryBuilder)(mutateableClientState.headers);
+      var query = (0, _utils.ensureNotFalsy)(pull.streamQueryBuilder)(mutateableClientState.headers);
       wsClient.subscribe(query, {
-        next: function (streamResponse) {
-          try {
-            var _temp4 = function _temp4() {
-              pullStream$.next(_data);
-            };
-            var firstField = Object.keys(streamResponse.data)[0];
-            var _data = streamResponse.data[firstField];
-            var _temp3 = function () {
-              if (pull.responseModifier) {
-                return Promise.resolve(pull.responseModifier(_data, 'stream')).then(function (_pull$responseModifie2) {
-                  _data = _pull$responseModifie2;
-                });
+        next: function () {
+          var _next = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee3(streamResponse) {
+            var firstField, data;
+            return _regenerator["default"].wrap(function _callee3$(_context3) {
+              while (1) switch (_context3.prev = _context3.next) {
+                case 0:
+                  firstField = Object.keys(streamResponse.data)[0];
+                  data = streamResponse.data[firstField];
+                  if (!pull.responseModifier) {
+                    _context3.next = 6;
+                    break;
+                  }
+                  _context3.next = 5;
+                  return pull.responseModifier(data, 'stream');
+                case 5:
+                  data = _context3.sent;
+                case 6:
+                  pullStream$.next(data);
+                case 7:
+                case "end":
+                  return _context3.stop();
               }
-            }();
-            return Promise.resolve(_temp3 && _temp3.then ? _temp3.then(_temp4) : _temp4(_temp3));
-          } catch (e) {
-            return Promise.reject(e);
+            }, _callee3);
+          }));
+          function next(_x3) {
+            return _next.apply(this, arguments);
           }
-        },
+          return next;
+        }(),
         error: function error(_error) {
           pullStream$.error(_error);
         },
@@ -235,24 +281,11 @@ function syncGraphQL(_ref) {
   graphqlReplicationState.cancel = function () {
     pullStream$.complete();
     if (mustUseSocket) {
-      (0, _graphqlWebsocket.removeGraphQLWebSocketRef)((0, _util.ensureNotFalsy)(url.ws));
+      (0, _graphqlWebsocket.removeGraphQLWebSocketRef)((0, _utils.ensureNotFalsy)(url.ws));
     }
     return cancelBefore();
   };
   (0, _replication.startReplicationOnLeaderShip)(waitForLeadership, graphqlReplicationState);
   return graphqlReplicationState;
 }
-var RxDBReplicationGraphQLPlugin = {
-  name: 'replication-graphql',
-  init: function init() {
-    (0, _index.addRxPlugin)(_leaderElection.RxDBLeaderElectionPlugin);
-  },
-  rxdb: true,
-  prototypes: {
-    RxCollection: function RxCollection(proto) {
-      proto.syncGraphQL = syncGraphQL;
-    }
-  }
-};
-exports.RxDBReplicationGraphQLPlugin = RxDBReplicationGraphQLPlugin;
 //# sourceMappingURL=index.js.map

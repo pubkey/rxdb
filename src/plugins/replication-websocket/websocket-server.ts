@@ -15,7 +15,7 @@ import type {
 import { rxStorageInstanceToReplicationHandler } from '../../replication-protocol';
 import {
     PROMISE_RESOLVE_VOID
-} from '../../util';
+} from '../../plugins/utils';
 import { Subject } from 'rxjs';
 
 
@@ -80,7 +80,7 @@ export function startWebsocketServer(options: WebsocketServerOptions): Websocket
             handler = rxStorageInstanceToReplicationHandler(
                 collection.storageInstance,
                 collection.conflictHandler,
-                database.hashFunction
+                database.token
             );
             replicationHandlerByCollection.set(collectionName, handler);
         }

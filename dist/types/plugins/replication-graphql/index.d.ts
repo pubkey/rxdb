@@ -1,4 +1,4 @@
-import type { RxCollection, RxPlugin, ReplicationPullOptions, ReplicationPushOptions, GraphQLServerUrl, RxGraphQLReplicationQueryBuilderResponseObject, RxGraphQLReplicationClientState } from '../../types';
+import type { RxCollection, ReplicationPullOptions, ReplicationPushOptions, GraphQLServerUrl, RxGraphQLReplicationQueryBuilderResponseObject, RxGraphQLReplicationClientState } from '../../types';
 import { RxReplicationState } from '../replication';
 import { SyncOptionsGraphQL } from '../../index';
 export declare class RxGraphQLReplicationState<RxDocType, CheckpointType> extends RxReplicationState<RxDocType, CheckpointType> {
@@ -19,10 +19,9 @@ export declare class RxGraphQLReplicationState<RxDocType, CheckpointType> extend
     setCredentials(credentials: RequestCredentials | undefined): void;
     graphQLRequest(queryParams: RxGraphQLReplicationQueryBuilderResponseObject): Promise<any>;
 }
-export declare function syncGraphQL<RxDocType, CheckpointType>(this: RxCollection<RxDocType>, { url, headers, credentials, deletedField, waitForLeadership, pull, push, live, retryTime, // in ms
+export declare function replicateGraphQL<RxDocType, CheckpointType>({ collection, url, headers, credentials, deletedField, waitForLeadership, pull, push, live, retryTime, // in ms
 autoStart, }: SyncOptionsGraphQL<RxDocType, CheckpointType>): RxGraphQLReplicationState<RxDocType, CheckpointType>;
 export * from './helper';
 export * from './graphql-schema-from-rx-schema';
 export * from './query-builder-from-rx-schema';
 export * from './graphql-websocket';
-export declare const RxDBReplicationGraphQLPlugin: RxPlugin;

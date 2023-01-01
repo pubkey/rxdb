@@ -1,1 +1,0 @@
-{"version":3,"file":"pouchdb-utils.d.js","names":[],"sources":["../../../../src/types/modules/pouchdb-utils.d.ts"],"sourcesContent":["declare module 'pouchdb-utils';\n"],"mappings":""}

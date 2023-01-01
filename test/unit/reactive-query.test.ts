@@ -17,10 +17,6 @@ import {
 } from '../../';
 
 import {
-    getRxStoragePouch
-} from '../../plugins/pouchdb';
-
-import {
     filter,
     map,
     first
@@ -126,7 +122,7 @@ config.parallel('reactive-query.test.js', () => {
 
             // change doc so query does not match
             const newPromiseWait = AsyncTestUtil.waitResolveable(500);
-            await doc.atomicPatch({ firstName: 'foobar' });
+            await doc.incrementalPatch({ firstName: 'foobar' });
             await newPromiseWait.promise;
             assert.strictEqual(values.length, 0);
             querySub.unsubscribe();
@@ -239,7 +235,7 @@ config.parallel('reactive-query.test.js', () => {
 
                     // edit+save doc
                     await promiseWait(20);
-                    await lastDoc.atomicPatch({ firstName: 'foobar' });
+                    await lastDoc.incrementalPatch({ firstName: 'foobar' });
                     await promiseWait(100);
 
                     // query must not have emitted because an unrelated document got changed.
@@ -259,13 +255,15 @@ config.parallel('reactive-query.test.js', () => {
             const doc = await c.findOne().exec(true);
             const docId = doc.primary;
 
-            assert.deepStrictEqual(c2._docCache.get(docId), undefined);
+            // should not be in cache
+            assert.deepStrictEqual(c2._docCache.getLatestDocumentDataIfExists(docId), undefined);
 
             const results = [];
             const sub = c2.find().$.subscribe(docs => results.push(docs));
             await AsyncTestUtil.waitUntil(() => results.length >= 1);
 
-            assert.strictEqual((c2._docCache.get(docId) as any).primary, docId);
+            // should be in cache now
+            assert.strictEqual((c2._docCache.getLatestDocumentData(docId) as any).passportId, docId);
 
             sub.unsubscribe();
             c.database.destroy();
@@ -325,7 +323,13 @@ config.parallel('reactive-query.test.js', () => {
             sub.unsubscribe();
             col.database.destroy();
         });
-        it('ISSUE emitted-order working when doing many atomicUpserts', async () => {
+        it('ISSUE emitted-order not correct when doing many incrementalUpserts', async () => {
+            if (
+                !config.storage.hasPersistence ||
+                !config.storage.hasMultiInstance
+            ) {
+                return;
+            }
             const crawlStateSchema = {
                 version: 0,
                 type: 'object',
@@ -344,7 +348,7 @@ config.parallel('reactive-query.test.js', () => {
             const name = randomCouchString(10);
             const db = await createRxDatabase({
                 name,
-                storage: getRxStoragePouch('memory'),
+                storage: config.storage.getStorage(),
                 ignoreDuplicate: true
             });
             await db.addCollections({
@@ -354,7 +358,7 @@ config.parallel('reactive-query.test.js', () => {
             });
             const db2 = await createRxDatabase({
                 name,
-                storage: getRxStoragePouch('memory'),
+                storage: config.storage.getStorage(),
                 ignoreDuplicate: true
             });
             await db2.addCollections({
@@ -401,7 +405,7 @@ config.parallel('reactive-query.test.js', () => {
                         state: getData()
                     }))
                     .map(data => {
-                        return db2.crawlstate.atomicUpsert(data);
+                        return db2.crawlstate.incrementalUpsert(data);
                     })
             );
 
@@ -409,7 +413,7 @@ config.parallel('reactive-query.test.js', () => {
             await AsyncTestUtil.waitUntil(() => {
                 const lastEmitted = emitted[emitted.length - 1];
                 return lastEmitted.state.providers === 4;
-            }, 0, 300);
+            }, undefined, 300);
 
             await Promise.all(
                 new Array(5)
@@ -418,7 +422,7 @@ config.parallel('reactive-query.test.js', () => {
                         key: 'registry',
                         state: getData()
                     }))
-                    .map(data => db2.crawlstate.atomicUpsert(data))
+                    .map(data => db2.crawlstate.incrementalUpsert(data))
             );
 
             await AsyncTestUtil.waitUntil(() => {
@@ -448,7 +452,7 @@ config.parallel('reactive-query.test.js', () => {
                 const name = randomCouchString(10);
                 const db = await createRxDatabase({
                     name,
-                    storage: getRxStoragePouch('memory'),
+                    storage: config.storage.getStorage(),
                     ignoreDuplicate: true
                 });
                 const collections = await db.addCollections({

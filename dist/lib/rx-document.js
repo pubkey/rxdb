@@ -5,197 +5,24 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.basePrototype = void 0;
+exports.beforeDocumentUpdateWrite = beforeDocumentUpdateWrite;
 exports.createRxDocumentConstructor = createRxDocumentConstructor;
 exports.createWithConstructor = createWithConstructor;
 exports.defineGetterSetter = defineGetterSetter;
 exports.isRxDocument = isRxDocument;
+var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
+var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 var _objectPath = _interopRequireDefault(require("object-path"));
-var _rxjs = require("rxjs");
 var _operators = require("rxjs/operators");
-var _util = require("./util");
+var _utils = require("./plugins/utils");
 var _rxError = require("./rx-error");
 var _hooks = require("./hooks");
 var _rxChangeEvent = require("./rx-change-event");
 var _overwritable = require("./overwritable");
 var _rxSchemaHelper = require("./rx-schema-helper");
 var _rxStorageHelper = require("./rx-storage-helper");
-function _catch(body, recover) {
-  try {
-    var result = body();
-  } catch (e) {
-    return recover(e);
-  }
-  if (result && result.then) {
-    return result.then(void 0, recover);
-  }
-  return result;
-}
-function _settle(pact, state, value) {
-  if (!pact.s) {
-    if (value instanceof _Pact) {
-      if (value.s) {
-        if (state & 1) {
-          state = value.s;
-        }
-        value = value.v;
-      } else {
-        value.o = _settle.bind(null, pact, state);
-        return;
-      }
-    }
-    if (value && value.then) {
-      value.then(_settle.bind(null, pact, state), _settle.bind(null, pact, 2));
-      return;
-    }
-    pact.s = state;
-    pact.v = value;
-    var observer = pact.o;
-    if (observer) {
-      observer(pact);
-    }
-  }
-}
-var _Pact = /*#__PURE__*/function () {
-  function _Pact() {}
-  _Pact.prototype.then = function (onFulfilled, onRejected) {
-    var result = new _Pact();
-    var state = this.s;
-    if (state) {
-      var callback = state & 1 ? onFulfilled : onRejected;
-      if (callback) {
-        try {
-          _settle(result, 1, callback(this.v));
-        } catch (e) {
-          _settle(result, 2, e);
-        }
-        return result;
-      } else {
-        return this;
-      }
-    }
-    this.o = function (_this) {
-      try {
-        var value = _this.v;
-        if (_this.s & 1) {
-          _settle(result, 1, onFulfilled ? onFulfilled(value) : value);
-        } else if (onRejected) {
-          _settle(result, 1, onRejected(value));
-        } else {
-          _settle(result, 2, value);
-        }
-      } catch (e) {
-        _settle(result, 2, e);
-      }
-    };
-    return result;
-  };
-  return _Pact;
-}();
-function _isSettledPact(thenable) {
-  return thenable instanceof _Pact && thenable.s & 1;
-}
-function _for(test, update, body) {
-  var stage;
-  for (;;) {
-    var shouldContinue = test();
-    if (_isSettledPact(shouldContinue)) {
-      shouldContinue = shouldContinue.v;
-    }
-    if (!shouldContinue) {
-      return result;
-    }
-    if (shouldContinue.then) {
-      stage = 0;
-      break;
-    }
-    var result = body();
-    if (result && result.then) {
-      if (_isSettledPact(result)) {
-        result = result.s;
-      } else {
-        stage = 1;
-        break;
-      }
-    }
-    if (update) {
-      var updateValue = update();
-      if (updateValue && updateValue.then && !_isSettledPact(updateValue)) {
-        stage = 2;
-        break;
-      }
-    }
-  }
-  var pact = new _Pact();
-  var reject = _settle.bind(null, pact, 2);
-  (stage === 0 ? shouldContinue.then(_resumeAfterTest) : stage === 1 ? result.then(_resumeAfterBody) : updateValue.then(_resumeAfterUpdate)).then(void 0, reject);
-  return pact;
-  function _resumeAfterBody(value) {
-    result = value;
-    do {
-      if (update) {
-        updateValue = update();
-        if (updateValue && updateValue.then && !_isSettledPact(updateValue)) {
-          updateValue.then(_resumeAfterUpdate).then(void 0, reject);
-          return;
-        }
-      }
-      shouldContinue = test();
-      if (!shouldContinue || _isSettledPact(shouldContinue) && !shouldContinue.v) {
-        _settle(pact, 1, result);
-        return;
-      }
-      if (shouldContinue.then) {
-        shouldContinue.then(_resumeAfterTest).then(void 0, reject);
-        return;
-      }
-      result = body();
-      if (_isSettledPact(result)) {
-        result = result.v;
-      }
-    } while (!result || !result.then);
-    result.then(_resumeAfterBody).then(void 0, reject);
-  }
-  function _resumeAfterTest(shouldContinue) {
-    if (shouldContinue) {
-      result = body();
-      if (result && result.then) {
-        result.then(_resumeAfterBody).then(void 0, reject);
-      } else {
-        _resumeAfterBody(result);
-      }
-    } else {
-      _settle(pact, 1, result);
-    }
-  }
-  function _resumeAfterUpdate() {
-    if (shouldContinue = test()) {
-      if (shouldContinue.then) {
-        shouldContinue.then(_resumeAfterTest).then(void 0, reject);
-      } else {
-        _resumeAfterTest(shouldContinue);
-      }
-    } else {
-      _settle(pact, 1, result);
-    }
-  }
-}
+var _incrementalWrite = require("./incremental-write");
 var basePrototype = {
-  /**
-   * TODO
-   * instead of appliying the _this-hack
-   * we should make these accessors functions instead of getters.
-   */
-  get _data() {
-    var _this = this;
-    /**
-     * Might be undefined when vuejs-devtools are used
-     * @link https://github.com/pubkey/rxdb/issues/1126
-     */
-    if (!_this.isInstanceOfRxDocument) {
-      return undefined;
-    }
-    return _this._dataSync$.getValue();
-  },
   get primaryPath() {
     var _this = this;
     if (!_this.isInstanceOfRxDocument) {
@@ -222,7 +49,7 @@ var basePrototype = {
     if (!_this.isInstanceOfRxDocument) {
       return undefined;
     }
-    return _this._dataSync$.pipe((0, _operators.map)(function (d) {
+    return _this.$.pipe((0, _operators.map)(function (d) {
       return d._deleted;
     }));
   },
@@ -233,62 +60,54 @@ var basePrototype = {
     }
     return _this._data._deleted;
   },
+  getLatest: function getLatest() {
+    var latestDocData = this.collection._docCache.getLatestDocumentData(this.primary);
+    return this.collection._docCache.getCachedRxDocument(latestDocData);
+  },
   /**
    * returns the observable which emits the plain-data of this document
    */
   get $() {
+    var _this2 = this;
     var _this = this;
-    return _this._dataSync$.asObservable().pipe((0, _operators.map)(function (docData) {
-      return _overwritable.overwritable.deepFreezeWhenDevMode(docData);
-    }));
-  },
-  _handleChangeEvent: function _handleChangeEvent(changeEvent) {
-    if (changeEvent.documentId !== this.primary) {
-      return;
-    }
-
-    // ensure that new _rev is higher then current
-    var docData = (0, _rxChangeEvent.getDocumentDataOfRxChangeEvent)(changeEvent);
-    var newRevNr = (0, _util.getHeightOfRevision)(docData._rev);
-    var currentRevNr = (0, _util.getHeightOfRevision)(this._data._rev);
-    if (currentRevNr > newRevNr) return;
-    switch (changeEvent.operation) {
-      case 'INSERT':
-        break;
-      case 'UPDATE':
-        this._dataSync$.next(changeEvent.documentData);
-        break;
-      case 'DELETE':
-        // remove from docCache to assure new upserted RxDocuments will be a new instance
-        this.collection._docCache["delete"](this.primary);
-        this._dataSync$.next(changeEvent.documentData);
-        break;
-    }
+    return _this.collection.$.pipe((0, _operators.filter)(function (changeEvent) {
+      return !changeEvent.isLocal;
+    }), (0, _operators.filter)(function (changeEvent) {
+      return changeEvent.documentId === _this2.primary;
+    }), (0, _operators.map)(function (changeEvent) {
+      return (0, _rxChangeEvent.getDocumentDataOfRxChangeEvent)(changeEvent);
+    }), (0, _operators.startWith)(_this.collection._docCache.getLatestDocumentData(this.primary)), (0, _operators.distinctUntilChanged)(function (prev, curr) {
+      return prev._rev === curr._rev;
+    }), (0, _operators.shareReplay)(_utils.RXJS_SHARE_REPLAY_DEFAULTS));
   },
   /**
    * returns observable of the value of the given path
    */
   get$: function get$(path) {
-    if (path.includes('.item.')) {
-      throw (0, _rxError.newRxError)('DOC1', {
-        path: path
-      });
-    }
-    if (path === this.primaryPath) throw (0, _rxError.newRxError)('DOC2');
+    if (_overwritable.overwritable.isDevMode()) {
+      if (path.includes('.item.')) {
+        throw (0, _rxError.newRxError)('DOC1', {
+          path: path
+        });
+      }
+      if (path === this.primaryPath) {
+        throw (0, _rxError.newRxError)('DOC2');
+      }
 
-    // final fields cannot be modified and so also not observed
-    if (this.collection.schema.finalFields.includes(path)) {
-      throw (0, _rxError.newRxError)('DOC3', {
-        path: path
-      });
+      // final fields cannot be modified and so also not observed
+      if (this.collection.schema.finalFields.includes(path)) {
+        throw (0, _rxError.newRxError)('DOC3', {
+          path: path
+        });
+      }
+      var schemaObj = (0, _rxSchemaHelper.getSchemaByObjectPath)(this.collection.schema.jsonSchema, path);
+      if (!schemaObj) {
+        throw (0, _rxError.newRxError)('DOC4', {
+          path: path
+        });
+      }
     }
-    var schemaObj = (0, _rxSchemaHelper.getSchemaByObjectPath)(this.collection.schema.jsonSchema, path);
-    if (!schemaObj) {
-      throw (0, _rxError.newRxError)('DOC4', {
-        path: path
-      });
-    }
-    return this._dataSync$.pipe((0, _operators.map)(function (data) {
+    return this.$.pipe((0, _operators.map)(function (data) {
       return _objectPath["default"].get(data, path);
     }), (0, _operators.distinctUntilChanged)());
   },
@@ -299,7 +118,7 @@ var basePrototype = {
     var schemaObj = (0, _rxSchemaHelper.getSchemaByObjectPath)(this.collection.schema.jsonSchema, path);
     var value = this.get(path);
     if (!value) {
-      return _util.PROMISE_RESOLVE_NULL;
+      return _utils.PROMISE_RESOLVE_NULL;
     }
     if (!schemaObj) {
       throw (0, _rxError.newRxError)('DOC5', {
@@ -321,7 +140,7 @@ var basePrototype = {
       });
     }
     if (schemaObj.type === 'array') {
-      return refCollection.findByIds(value).then(function (res) {
+      return refCollection.findByIds(value).exec().then(function (res) {
         var valuesIterator = res.values();
         return Array.from(valuesIterator);
       });
@@ -345,14 +164,14 @@ var basePrototype = {
      * TODO find a way to deep-freeze together with defineGetterSetter
      * so we do not have to do a deep clone here.
      */
-    valueObj = (0, _util.clone)(valueObj);
+    valueObj = (0, _utils.clone)(valueObj);
     defineGetterSetter(this.collection.schema, valueObj, objPath, this);
     return valueObj;
   },
   toJSON: function toJSON() {
     var withMetaFields = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
     if (!withMetaFields) {
-      var data = (0, _util.flatClone)(this._data);
+      var data = (0, _utils.flatClone)(this._data);
       delete data._rev;
       delete data._attachments;
       delete data._deleted;
@@ -364,7 +183,7 @@ var basePrototype = {
   },
   toMutableJSON: function toMutableJSON() {
     var withMetaFields = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
-    return (0, _util.clone)(this.toJSON(withMetaFields));
+    return (0, _utils.clone)(this.toJSON(withMetaFields));
   },
   /**
    * updates document
@@ -372,99 +191,81 @@ var basePrototype = {
    * @param updateObj mongodb-like syntax
    */
   update: function update(_updateObj) {
-    throw (0, _util.pluginMissing)('update');
+    throw (0, _utils.pluginMissing)('update');
+  },
+  incrementalUpdate: function incrementalUpdate(_updateObj) {
+    throw (0, _utils.pluginMissing)('update');
   },
   updateCRDT: function updateCRDT(_updateObj) {
-    throw (0, _util.pluginMissing)('crdt');
+    throw (0, _utils.pluginMissing)('crdt');
   },
   putAttachment: function putAttachment() {
-    throw (0, _util.pluginMissing)('attachments');
+    throw (0, _utils.pluginMissing)('attachments');
   },
   getAttachment: function getAttachment() {
-    throw (0, _util.pluginMissing)('attachments');
+    throw (0, _utils.pluginMissing)('attachments');
   },
   allAttachments: function allAttachments() {
-    throw (0, _util.pluginMissing)('attachments');
+    throw (0, _utils.pluginMissing)('attachments');
   },
   get allAttachments$() {
-    throw (0, _util.pluginMissing)('attachments');
+    throw (0, _utils.pluginMissing)('attachments');
   },
+  modify: function () {
+    var _modify = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(mutationFunction,
+    // used by some plugins that wrap the method
+    _context) {
+      var oldData, newData;
+      return _regenerator["default"].wrap(function _callee$(_context2) {
+        while (1) switch (_context2.prev = _context2.next) {
+          case 0:
+            oldData = this._data;
+            _context2.next = 3;
+            return (0, _incrementalWrite.modifierFromPublicToInternal)(mutationFunction)(oldData);
+          case 3:
+            newData = _context2.sent;
+            return _context2.abrupt("return", this._saveData(newData, oldData));
+          case 5:
+          case "end":
+            return _context2.stop();
+        }
+      }, _callee, this);
+    }));
+    function modify(_x, _x2) {
+      return _modify.apply(this, arguments);
+    }
+    return modify;
+  }(),
   /**
-   * runs an atomic update over the document
+   * runs an incremental update over the document
    * @param function that takes the document-data and returns a new data-object
    */
-  atomicUpdate: function atomicUpdate(mutationFunction,
+  incrementalModify: function incrementalModify(mutationFunction,
   // used by some plugins that wrap the method
   _context) {
-    var _this2 = this;
-    return new Promise(function (res, rej) {
-      _this2._atomicQueue = _this2._atomicQueue.then(function () {
-        try {
-          var _temp5 = function _temp5(_result3) {
-            if (_exit) return _result3;
-            res(_this2);
-          };
-          var _exit = false;
-          var done = false;
-          // we need a hacky while loop to stay incide the chain-link of _atomicQueue
-          // while still having the option to run a retry on conflicts
-          var _temp4 = _for(function () {
-            return !_exit && !done;
-          }, void 0, function () {
-            function _temp3(_result) {
-              if (_exit) return _result;
-              var _temp = _catch(function () {
-                return Promise.resolve(_this2._saveData(newData, oldData)).then(function () {
-                  done = true;
-                });
-              }, function (err) {
-                var useError = err.parameters && err.parameters.error ? err.parameters.error : err;
-                /**
-                 * conflicts cannot happen by just using RxDB in one process
-                 * There are two ways they still can appear which is
-                 * replication and multi-tab usage
-                 * Because atomicUpdate has a mutation function,
-                 * we can just re-run the mutation until there is no conflict
-                 */
-                var isConflict = (0, _rxError.isBulkWriteConflictError)(useError);
-                if (isConflict) {} else {
-                  rej(useError);
-                  _exit = true;
-                }
-              });
-              if (_temp && _temp.then) return _temp.then(function () {});
-            }
-            var oldData = _this2._dataSync$.getValue();
-            // always await because mutationFunction might be async
-            var newData;
-            var _temp2 = _catch(function () {
-              return Promise.resolve(mutationFunction((0, _util.clone)(oldData), _this2)).then(function (_mutationFunction) {
-                newData = _mutationFunction;
-                if (_this2.collection) {
-                  newData = _this2.collection.schema.fillObjectWithDefaults(newData);
-                }
-              });
-            }, function (err) {
-              rej(err);
-              _exit = true;
-            });
-            return _temp2 && _temp2.then ? _temp2.then(_temp3) : _temp3(_temp2);
-          });
-          return Promise.resolve(_temp4 && _temp4.then ? _temp4.then(_temp5) : _temp5(_temp4));
-        } catch (e) {
-          return Promise.reject(e);
-        }
-      });
+    var _this3 = this;
+    return this.collection.incrementalWriteQueue.addWrite(this._data, (0, _incrementalWrite.modifierFromPublicToInternal)(mutationFunction)).then(function (result) {
+      return _this3.collection._docCache.getCachedRxDocument(result);
     });
+  },
+  patch: function patch(_patch) {
+    var oldData = this._data;
+    var newData = (0, _utils.clone)(oldData);
+    Object.entries(_patch).forEach(function (_ref) {
+      var k = _ref[0],
+        v = _ref[1];
+      newData[k] = v;
+    });
+    return this._saveData(newData, oldData);
   },
   /**
    * patches the given properties
    */
-  atomicPatch: function atomicPatch(patch) {
-    return this.atomicUpdate(function (docData) {
-      Object.entries(patch).forEach(function (_ref) {
-        var k = _ref[0],
-          v = _ref[1];
+  incrementalPatch: function incrementalPatch(patch) {
+    return this.incrementalModify(function (docData) {
+      Object.entries(patch).forEach(function (_ref2) {
+        var k = _ref2[0],
+          v = _ref2[1];
         docData[k] = v;
       });
       return docData;
@@ -474,49 +275,55 @@ var basePrototype = {
    * saves the new document-data
    * and handles the events
    */
-  _saveData: function _saveData(newData, oldData) {
-    try {
-      var _this3 = this;
-      newData = (0, _util.flatClone)(newData);
+  _saveData: function () {
+    var _saveData2 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee2(newData, oldData) {
+      var writeResult, isError;
+      return _regenerator["default"].wrap(function _callee2$(_context3) {
+        while (1) switch (_context3.prev = _context3.next) {
+          case 0:
+            newData = (0, _utils.flatClone)(newData);
 
-      // deleted documents cannot be changed
-      if (_this3._data._deleted) {
-        throw (0, _rxError.newRxError)('DOC11', {
-          id: _this3.primary,
-          document: _this3
-        });
-      }
-
-      /**
-       * Meta values must always be merged
-       * instead of overwritten.
-       * This ensures that different plugins do not overwrite
-       * each others meta properties.
-       */
-      newData._meta = Object.assign({}, oldData._meta, newData._meta);
-
-      // ensure modifications are ok
-      if (_overwritable.overwritable.isDevMode()) {
-        _this3.collection.schema.validateChange(oldData, newData);
-      }
-      return Promise.resolve(_this3.collection._runHooks('pre', 'save', newData, _this3)).then(function () {
-        return Promise.resolve(_this3.collection.storageInstance.bulkWrite([{
-          previous: oldData,
-          document: newData
-        }], 'rx-document-save-data')).then(function (writeResult) {
-          var isError = writeResult.error[_this3.primary];
-          (0, _rxStorageHelper.throwIfIsStorageWriteError)(_this3.collection, _this3.primary, newData, isError);
-          return _this3.collection._runHooks('post', 'save', newData, _this3);
-        });
-      });
-    } catch (e) {
-      return Promise.reject(e);
+            // deleted documents cannot be changed
+            if (!this._data._deleted) {
+              _context3.next = 3;
+              break;
+            }
+            throw (0, _rxError.newRxError)('DOC11', {
+              id: this.primary,
+              document: this
+            });
+          case 3:
+            _context3.next = 5;
+            return beforeDocumentUpdateWrite(this.collection, newData, oldData);
+          case 5:
+            _context3.next = 7;
+            return this.collection.storageInstance.bulkWrite([{
+              previous: oldData,
+              document: newData
+            }], 'rx-document-save-data');
+          case 7:
+            writeResult = _context3.sent;
+            isError = writeResult.error[this.primary];
+            (0, _rxStorageHelper.throwIfIsStorageWriteError)(this.collection, this.primary, newData, isError);
+            _context3.next = 12;
+            return this.collection._runHooks('post', 'save', newData, this);
+          case 12:
+            return _context3.abrupt("return", this.collection._docCache.getCachedRxDocument((0, _utils.getFromObjectOrThrow)(writeResult.success, this.primary)));
+          case 13:
+          case "end":
+            return _context3.stop();
+        }
+      }, _callee2, this);
+    }));
+    function _saveData(_x3, _x4) {
+      return _saveData2.apply(this, arguments);
     }
-  },
+    return _saveData;
+  }(),
   /**
-   * remove the document,
-   * this not not equal to a pouchdb.remove(),
-   * instead we keep the values and only set _deleted: true
+   * Remove the document.
+   * Notice that there is no hard delete,
+   * instead deleted documents get flagged with _deleted=true.
    */
   remove: function remove() {
     var _this4 = this;
@@ -527,26 +334,76 @@ var basePrototype = {
         id: this.primary
       }));
     }
-    var deletedData = (0, _util.flatClone)(this._data);
-    return collection._runHooks('pre', 'remove', deletedData, this).then(function () {
-      try {
-        deletedData._deleted = true;
-        return Promise.resolve(collection.storageInstance.bulkWrite([{
-          previous: _this4._data,
-          document: deletedData
-        }], 'rx-document-remove')).then(function (writeResult) {
-          var isError = writeResult.error[_this4.primary];
-          (0, _rxStorageHelper.throwIfIsStorageWriteError)(collection, _this4.primary, deletedData, isError);
-          return (0, _util.ensureNotFalsy)(writeResult.success[_this4.primary]);
-        });
-      } catch (e) {
-        return Promise.reject(e);
-      }
-    }).then(function () {
+    var deletedData = (0, _utils.flatClone)(this._data);
+    var removedDocData;
+    return collection._runHooks('pre', 'remove', deletedData, this).then( /*#__PURE__*/(0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee3() {
+      var writeResult, isError;
+      return _regenerator["default"].wrap(function _callee3$(_context4) {
+        while (1) switch (_context4.prev = _context4.next) {
+          case 0:
+            deletedData._deleted = true;
+            _context4.next = 3;
+            return collection.storageInstance.bulkWrite([{
+              previous: _this4._data,
+              document: deletedData
+            }], 'rx-document-remove');
+          case 3:
+            writeResult = _context4.sent;
+            isError = writeResult.error[_this4.primary];
+            (0, _rxStorageHelper.throwIfIsStorageWriteError)(collection, _this4.primary, deletedData, isError);
+            return _context4.abrupt("return", (0, _utils.getFromObjectOrThrow)(writeResult.success, _this4.primary));
+          case 7:
+          case "end":
+            return _context4.stop();
+        }
+      }, _callee3);
+    }))).then(function (removed) {
+      removedDocData = removed;
       return _this4.collection._runHooks('post', 'remove', deletedData, _this4);
     }).then(function () {
-      return _this4;
+      return _this4.collection._docCache.getCachedRxDocument(removedDocData);
     });
+  },
+  incrementalRemove: function incrementalRemove() {
+    var _this5 = this;
+    return this.incrementalModify( /*#__PURE__*/function () {
+      var _ref4 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee4(docData) {
+        return _regenerator["default"].wrap(function _callee4$(_context5) {
+          while (1) switch (_context5.prev = _context5.next) {
+            case 0:
+              _context5.next = 2;
+              return _this5.collection._runHooks('pre', 'remove', docData, _this5);
+            case 2:
+              docData._deleted = true;
+              return _context5.abrupt("return", docData);
+            case 4:
+            case "end":
+              return _context5.stop();
+          }
+        }, _callee4);
+      }));
+      return function (_x5) {
+        return _ref4.apply(this, arguments);
+      };
+    }()).then( /*#__PURE__*/function () {
+      var _ref5 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee5(newDoc) {
+        return _regenerator["default"].wrap(function _callee5$(_context6) {
+          while (1) switch (_context6.prev = _context6.next) {
+            case 0:
+              _context6.next = 2;
+              return _this5.collection._runHooks('post', 'remove', newDoc._data, newDoc);
+            case 2:
+              return _context6.abrupt("return", newDoc);
+            case 3:
+            case "end":
+              return _context6.stop();
+          }
+        }, _callee5);
+      }));
+      return function (_x6) {
+        return _ref5.apply(this, arguments);
+      };
+    }());
   },
   destroy: function destroy() {
     throw (0, _rxError.newRxError)('DOC14');
@@ -555,12 +412,11 @@ var basePrototype = {
 exports.basePrototype = basePrototype;
 function createRxDocumentConstructor() {
   var proto = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : basePrototype;
-  var constructor = function RxDocumentConstructor(collection, jsonData) {
+  var constructor = function RxDocumentConstructor(collection, docData) {
     this.collection = collection;
 
     // assume that this is always equal to the doc-data in the database
-    this._dataSync$ = new _rxjs.BehaviorSubject(jsonData);
-    this._atomicQueue = _util.PROMISE_RESOLVE_VOID;
+    this._data = docData;
 
     /**
      * because of the prototype-merge,
@@ -579,7 +435,7 @@ function defineGetterSetter(schema, valueObj) {
   if (typeof pathProperties === 'undefined') return;
   if (pathProperties.properties) pathProperties = pathProperties.properties;
   Object.keys(pathProperties).forEach(function (key) {
-    var fullPath = (0, _util.trimDots)(objPath + '.' + key);
+    var fullPath = (0, _utils.trimDots)(objPath + '.' + key);
 
     // getter - value
     valueObj.__defineGetter__(key, function () {
@@ -621,10 +477,6 @@ function defineGetterSetter(schema, valueObj) {
   });
 }
 function createWithConstructor(constructor, collection, jsonData) {
-  var primary = jsonData[collection.schema.primaryPath];
-  if (primary && primary.startsWith('_design')) {
-    return null;
-  }
   var doc = new constructor(collection, jsonData);
   (0, _hooks.runPluginHooks)('createRxDocument', doc);
   return doc;
@@ -632,5 +484,20 @@ function createWithConstructor(constructor, collection, jsonData) {
 function isRxDocument(obj) {
   if (typeof obj === 'undefined') return false;
   return !!obj.isInstanceOfRxDocument;
+}
+function beforeDocumentUpdateWrite(collection, newData, oldData) {
+  /**
+   * Meta values must always be merged
+   * instead of overwritten.
+   * This ensures that different plugins do not overwrite
+   * each others meta properties.
+   */
+  newData._meta = Object.assign({}, oldData._meta, newData._meta);
+
+  // ensure modifications are ok
+  if (_overwritable.overwritable.isDevMode()) {
+    collection.schema.validateChange(oldData, newData);
+  }
+  return collection._runHooks('pre', 'save', newData);
 }
 //# sourceMappingURL=rx-document.js.map

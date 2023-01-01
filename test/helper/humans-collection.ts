@@ -8,14 +8,12 @@ import {
     RxJsonSchema,
     RxCollection,
     RxDatabase,
-    randomCouchString
+    randomCouchString,
+    MigrationStrategies,
+    RxAttachmentCreator,
+    RxStorage
 } from '../../';
 
-import {
-    addPouchPlugin
-} from '../../plugins/pouchdb';
-
-import { MigrationStrategies, RxAttachmentCreator, RxStorage } from '../../src/types';
 import { HumanDocumentType } from './schemas';
 
 export async function create(
@@ -170,13 +168,13 @@ export async function createAgeIndex(
 export async function multipleOnSameDB(
     size = 10
 ): Promise<{
-        db: RxDatabase<{
-            human: RxCollection<HumanDocumentType>;
-            human2: RxCollection<HumanDocumentType>;
-        }>;
-        collection: RxCollection<HumanDocumentType>;
-        collection2: RxCollection<HumanDocumentType>;
-    }> {
+    db: RxDatabase<{
+        human: RxCollection<HumanDocumentType>;
+        human2: RxCollection<HumanDocumentType>;
+    }>;
+    collection: RxCollection<HumanDocumentType>;
+    collection2: RxCollection<HumanDocumentType>;
+}> {
     const db = await createRxDatabase<{
         human: RxCollection<HumanDocumentType>;
         human2: RxCollection<HumanDocumentType>;
@@ -275,6 +273,10 @@ export async function createMultiInstance(
     password = null,
     storage: RxStorage<any, any> = config.storage.getStorage()
 ): Promise<RxCollection<HumanDocumentType, {}, {}>> {
+    if (!config.storage.hasMultiInstance) {
+        throw new Error('createMultiInstance() cannot be called on a storage with hasMultiInstance:false');
+    }
+
     const db = await createRxDatabase<{ human: RxCollection<HumanDocumentType>; }>({
         name,
         storage,
@@ -430,8 +432,6 @@ export async function createMigrationCollection(
 export async function createRelated(
     name = randomCouchString(10)
 ): Promise<RxCollection<schemaObjects.RefHumanDocumentType>> {
-    addPouchPlugin(require('pouchdb-adapter-memory'));
-
     const db = await createRxDatabase<{ human: RxCollection<schemaObjects.RefHumanDocumentType>; }>({
         name,
         storage: config.storage.getStorage(),

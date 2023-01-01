@@ -1,200 +1,79 @@
+import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
+import _regeneratorRuntime from "@babel/runtime/regenerator";
 import * as path from 'path';
 import { BehaviorSubject, firstValueFrom, Subject } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
 import { newRxError } from '../../rx-error';
-import { getFromMapOrThrow, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_TRUE, PROMISE_RESOLVE_VOID } from '../../util';
+import { getFromMapOrThrow, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_TRUE, PROMISE_RESOLVE_VOID } from '../../plugins/utils';
 import { clearFolder, deleteFolder, documentFolder, ensureFolderExists, getMeta, prepareFolders, setMeta, writeJsonToFile, writeToFile } from './file-util';
 
 /**
  * Backups a single documents,
  * returns the paths to all written files
  */
-function _settle(pact, state, value) {
-  if (!pact.s) {
-    if (value instanceof _Pact) {
-      if (value.s) {
-        if (state & 1) {
-          state = value.s;
-        }
-        value = value.v;
-      } else {
-        value.o = _settle.bind(null, pact, state);
-        return;
-      }
-    }
-    if (value && value.then) {
-      value.then(_settle.bind(null, pact, state), _settle.bind(null, pact, 2));
-      return;
-    }
-    pact.s = state;
-    pact.v = value;
-    const observer = pact.o;
-    if (observer) {
-      observer(pact);
-    }
-  }
+export function backupSingleDocument(_x, _x2) {
+  return _backupSingleDocument.apply(this, arguments);
 }
-var _Pact = /*#__PURE__*/function () {
-  function _Pact() {}
-  _Pact.prototype.then = function (onFulfilled, onRejected) {
-    var result = new _Pact();
-    var state = this.s;
-    if (state) {
-      var callback = state & 1 ? onFulfilled : onRejected;
-      if (callback) {
-        try {
-          _settle(result, 1, callback(this.v));
-        } catch (e) {
-          _settle(result, 2, e);
-        }
-        return result;
-      } else {
-        return this;
-      }
-    }
-    this.o = function (_this) {
-      try {
-        var value = _this.v;
-        if (_this.s & 1) {
-          _settle(result, 1, onFulfilled ? onFulfilled(value) : value);
-        } else if (onRejected) {
-          _settle(result, 1, onRejected(value));
-        } else {
-          _settle(result, 2, value);
-        }
-      } catch (e) {
-        _settle(result, 2, e);
-      }
-    };
-    return result;
-  };
-  return _Pact;
-}();
-function _isSettledPact(thenable) {
-  return thenable instanceof _Pact && thenable.s & 1;
-}
-function _for(test, update, body) {
-  var stage;
-  for (;;) {
-    var shouldContinue = test();
-    if (_isSettledPact(shouldContinue)) {
-      shouldContinue = shouldContinue.v;
-    }
-    if (!shouldContinue) {
-      return result;
-    }
-    if (shouldContinue.then) {
-      stage = 0;
-      break;
-    }
-    var result = body();
-    if (result && result.then) {
-      if (_isSettledPact(result)) {
-        result = result.s;
-      } else {
-        stage = 1;
-        break;
-      }
-    }
-    if (update) {
-      var updateValue = update();
-      if (updateValue && updateValue.then && !_isSettledPact(updateValue)) {
-        stage = 2;
-        break;
-      }
-    }
-  }
-  var pact = new _Pact();
-  var reject = _settle.bind(null, pact, 2);
-  (stage === 0 ? shouldContinue.then(_resumeAfterTest) : stage === 1 ? result.then(_resumeAfterBody) : updateValue.then(_resumeAfterUpdate)).then(void 0, reject);
-  return pact;
-  function _resumeAfterBody(value) {
-    result = value;
-    do {
-      if (update) {
-        updateValue = update();
-        if (updateValue && updateValue.then && !_isSettledPact(updateValue)) {
-          updateValue.then(_resumeAfterUpdate).then(void 0, reject);
-          return;
-        }
-      }
-      shouldContinue = test();
-      if (!shouldContinue || _isSettledPact(shouldContinue) && !shouldContinue.v) {
-        _settle(pact, 1, result);
-        return;
-      }
-      if (shouldContinue.then) {
-        shouldContinue.then(_resumeAfterTest).then(void 0, reject);
-        return;
-      }
-      result = body();
-      if (_isSettledPact(result)) {
-        result = result.v;
-      }
-    } while (!result || !result.then);
-    result.then(_resumeAfterBody).then(void 0, reject);
-  }
-  function _resumeAfterTest(shouldContinue) {
-    if (shouldContinue) {
-      result = body();
-      if (result && result.then) {
-        result.then(_resumeAfterBody).then(void 0, reject);
-      } else {
-        _resumeAfterBody(result);
-      }
-    } else {
-      _settle(pact, 1, result);
-    }
-  }
-  function _resumeAfterUpdate() {
-    if (shouldContinue = test()) {
-      if (shouldContinue.then) {
-        shouldContinue.then(_resumeAfterTest).then(void 0, reject);
-      } else {
-        _resumeAfterTest(shouldContinue);
-      }
-    } else {
-      _settle(pact, 1, result);
-    }
-  }
-}
-export var backupSingleDocument = function backupSingleDocument(rxDocument, options) {
-  try {
-    var data = rxDocument.toJSON(true);
-    var writtenFiles = [];
-    var docFolder = documentFolder(options, rxDocument.primary);
-    return Promise.resolve(clearFolder(docFolder)).then(function () {
-      var fileLocation = path.join(docFolder, 'document.json');
-      return Promise.resolve(writeJsonToFile(fileLocation, data)).then(function () {
-        writtenFiles.push(fileLocation);
-        var _temp = function () {
-          if (options.attachments) {
-            var attachmentsFolder = path.join(docFolder, 'attachments');
-            ensureFolderExists(attachmentsFolder);
-            var attachments = rxDocument.allAttachments();
-            return Promise.resolve(Promise.all(attachments.map(function (attachment) {
-              try {
-                return Promise.resolve(attachment.getData()).then(function (content) {
-                  var attachmentFileLocation = path.join(attachmentsFolder, attachment.id);
-                  return Promise.resolve(writeToFile(attachmentFileLocation, content)).then(function () {
-                    writtenFiles.push(attachmentFileLocation);
-                  });
-                });
-              } catch (e) {
-                return Promise.reject(e);
-              }
-            }))).then(function () {});
+function _backupSingleDocument() {
+  _backupSingleDocument = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee6(rxDocument, options) {
+    var data, writtenFiles, docFolder, fileLocation, attachmentsFolder, attachments;
+    return _regeneratorRuntime.wrap(function _callee6$(_context7) {
+      while (1) switch (_context7.prev = _context7.next) {
+        case 0:
+          data = rxDocument.toJSON(true);
+          writtenFiles = [];
+          docFolder = documentFolder(options, rxDocument.primary);
+          _context7.next = 5;
+          return clearFolder(docFolder);
+        case 5:
+          fileLocation = path.join(docFolder, 'document.json');
+          _context7.next = 8;
+          return writeJsonToFile(fileLocation, data);
+        case 8:
+          writtenFiles.push(fileLocation);
+          if (!options.attachments) {
+            _context7.next = 15;
+            break;
           }
-        }();
-        return _temp && _temp.then ? _temp.then(function () {
-          return writtenFiles;
-        }) : writtenFiles;
-      });
-    });
-  } catch (e) {
-    return Promise.reject(e);
-  }
-};
+          attachmentsFolder = path.join(docFolder, 'attachments');
+          ensureFolderExists(attachmentsFolder);
+          attachments = rxDocument.allAttachments();
+          _context7.next = 15;
+          return Promise.all(attachments.map( /*#__PURE__*/function () {
+            var _ref5 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee5(attachment) {
+              var content, attachmentFileLocation;
+              return _regeneratorRuntime.wrap(function _callee5$(_context6) {
+                while (1) switch (_context6.prev = _context6.next) {
+                  case 0:
+                    _context6.next = 2;
+                    return attachment.getData();
+                  case 2:
+                    content = _context6.sent;
+                    attachmentFileLocation = path.join(attachmentsFolder, attachment.id);
+                    _context6.next = 6;
+                    return writeToFile(attachmentFileLocation, content);
+                  case 6:
+                    writtenFiles.push(attachmentFileLocation);
+                  case 7:
+                  case "end":
+                    return _context6.stop();
+                }
+              }, _callee5);
+            }));
+            return function (_x6) {
+              return _ref5.apply(this, arguments);
+            };
+          }()));
+        case 15:
+          return _context7.abrupt("return", writtenFiles);
+        case 16:
+        case "end":
+          return _context7.stop();
+      }
+    }, _callee6);
+  }));
+  return _backupSingleDocument.apply(this, arguments);
+}
 var BACKUP_STATES_BY_DB = new WeakMap();
 function addToBackupStates(db, state) {
   if (!BACKUP_STATES_BY_DB.has(db)) {
@@ -237,103 +116,181 @@ export var RxBackupState = /*#__PURE__*/function () {
       return _this._persistOnce();
     });
   };
-  _proto._persistOnce = function _persistOnce() {
-    try {
+  _proto._persistOnce = /*#__PURE__*/function () {
+    var _persistOnce2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee4() {
       var _this2 = this;
-      return Promise.resolve(getMeta(_this2.options)).then(function (meta) {
-        return Promise.resolve(Promise.all(Object.entries(_this2.database.collections).map(function (_ref) {
-          try {
-            var collectionName = _ref[0],
-              collection = _ref[1];
-            var primaryKey = collection.schema.primaryPath;
-            var processedDocuments = new Set();
-            return Promise.resolve(_this2.database.requestIdlePromise()).then(function () {
-              function _temp3() {
-                meta.collectionStates[collectionName].checkpoint = lastCheckpoint;
-                return Promise.resolve(setMeta(_this2.options, meta)).then(function () {});
-              }
-              if (!meta.collectionStates[collectionName]) {
-                meta.collectionStates[collectionName] = {};
-              }
-              var lastCheckpoint = meta.collectionStates[collectionName].checkpoint;
-              var hasMore = true;
-              var _temp2 = _for(function () {
-                return !!hasMore && !_this2.isStopped;
-              }, void 0, function () {
-                return Promise.resolve(_this2.database.requestIdlePromise()).then(function () {
-                  return Promise.resolve(collection.storageInstance.getChangedDocumentsSince(_this2.options.batchSize ? _this2.options.batchSize : 0, lastCheckpoint)).then(function (changesResult) {
-                    lastCheckpoint = changesResult.documents.length > 0 ? changesResult.checkpoint : lastCheckpoint;
-                    meta.collectionStates[collectionName].checkpoint = lastCheckpoint;
-                    var docIds = changesResult.documents.map(function (doc) {
-                      return doc[primaryKey];
-                    }).filter(function (id) {
-                      if (processedDocuments.has(id)) {
-                        return false;
-                      } else {
-                        processedDocuments.add(id);
-                        return true;
+      var meta;
+      return _regeneratorRuntime.wrap(function _callee4$(_context5) {
+        while (1) switch (_context5.prev = _context5.next) {
+          case 0:
+            _context5.next = 2;
+            return getMeta(this.options);
+          case 2:
+            meta = _context5.sent;
+            _context5.next = 5;
+            return Promise.all(Object.entries(this.database.collections).map( /*#__PURE__*/function () {
+              var _ref2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee3(_ref) {
+                var collectionName, collection, primaryKey, processedDocuments, lastCheckpoint, hasMore, _loop, _ret;
+                return _regeneratorRuntime.wrap(function _callee3$(_context4) {
+                  while (1) switch (_context4.prev = _context4.next) {
+                    case 0:
+                      collectionName = _ref[0], collection = _ref[1];
+                      primaryKey = collection.schema.primaryPath;
+                      processedDocuments = new Set();
+                      _context4.next = 5;
+                      return _this2.database.requestIdlePromise();
+                    case 5:
+                      if (!meta.collectionStates[collectionName]) {
+                        meta.collectionStates[collectionName] = {};
                       }
-                    }).filter(function (elem, pos, arr) {
-                      return arr.indexOf(elem) === pos;
-                    }); // unique
-                    return Promise.resolve(_this2.database.requestIdlePromise()).then(function () {
-                      return Promise.resolve(collection.findByIds(docIds)).then(function (docs) {
-                        if (docs.size === 0) {
-                          hasMore = false;
-                          return;
-                        }
-                        return Promise.resolve(Promise.all(Array.from(docs.values()).map(function (doc) {
-                          try {
-                            return Promise.resolve(backupSingleDocument(doc, _this2.options)).then(function (writtenFiles) {
-                              _this2.internalWriteEvents$.next({
-                                collectionName: collection.name,
-                                documentId: doc.primary,
-                                files: writtenFiles,
-                                deleted: false
-                              });
-                            });
-                          } catch (e) {
-                            return Promise.reject(e);
+                      lastCheckpoint = meta.collectionStates[collectionName].checkpoint;
+                      hasMore = true;
+                      _loop = /*#__PURE__*/_regeneratorRuntime.mark(function _loop() {
+                        var changesResult, docIds, docs;
+                        return _regeneratorRuntime.wrap(function _loop$(_context3) {
+                          while (1) switch (_context3.prev = _context3.next) {
+                            case 0:
+                              _context3.next = 2;
+                              return _this2.database.requestIdlePromise();
+                            case 2:
+                              _context3.next = 4;
+                              return collection.storageInstance.getChangedDocumentsSince(_this2.options.batchSize ? _this2.options.batchSize : 0, lastCheckpoint);
+                            case 4:
+                              changesResult = _context3.sent;
+                              lastCheckpoint = changesResult.documents.length > 0 ? changesResult.checkpoint : lastCheckpoint;
+                              meta.collectionStates[collectionName].checkpoint = lastCheckpoint;
+                              docIds = changesResult.documents.map(function (doc) {
+                                return doc[primaryKey];
+                              }).filter(function (id) {
+                                if (processedDocuments.has(id)) {
+                                  return false;
+                                } else {
+                                  processedDocuments.add(id);
+                                  return true;
+                                }
+                              }).filter(function (elem, pos, arr) {
+                                return arr.indexOf(elem) === pos;
+                              }); // unique
+                              _context3.next = 10;
+                              return _this2.database.requestIdlePromise();
+                            case 10:
+                              _context3.next = 12;
+                              return collection.findByIds(docIds).exec();
+                            case 12:
+                              docs = _context3.sent;
+                              if (!(docs.size === 0)) {
+                                _context3.next = 16;
+                                break;
+                              }
+                              hasMore = false;
+                              return _context3.abrupt("return", "continue");
+                            case 16:
+                              _context3.next = 18;
+                              return Promise.all(Array.from(docs.values()).map( /*#__PURE__*/function () {
+                                var _ref3 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee(doc) {
+                                  var writtenFiles;
+                                  return _regeneratorRuntime.wrap(function _callee$(_context) {
+                                    while (1) switch (_context.prev = _context.next) {
+                                      case 0:
+                                        _context.next = 2;
+                                        return backupSingleDocument(doc, _this2.options);
+                                      case 2:
+                                        writtenFiles = _context.sent;
+                                        _this2.internalWriteEvents$.next({
+                                          collectionName: collection.name,
+                                          documentId: doc.primary,
+                                          files: writtenFiles,
+                                          deleted: false
+                                        });
+                                      case 4:
+                                      case "end":
+                                        return _context.stop();
+                                    }
+                                  }, _callee);
+                                }));
+                                return function (_x4) {
+                                  return _ref3.apply(this, arguments);
+                                };
+                              }()));
+                            case 18:
+                              _context3.next = 20;
+                              return Promise.all(docIds.filter(function (docId) {
+                                return !docs.has(docId);
+                              }).map( /*#__PURE__*/function () {
+                                var _ref4 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee2(docId) {
+                                  return _regeneratorRuntime.wrap(function _callee2$(_context2) {
+                                    while (1) switch (_context2.prev = _context2.next) {
+                                      case 0:
+                                        _context2.next = 2;
+                                        return deleteFolder(documentFolder(_this2.options, docId));
+                                      case 2:
+                                        _this2.internalWriteEvents$.next({
+                                          collectionName: collection.name,
+                                          documentId: docId,
+                                          files: [],
+                                          deleted: true
+                                        });
+                                      case 3:
+                                      case "end":
+                                        return _context2.stop();
+                                    }
+                                  }, _callee2);
+                                }));
+                                return function (_x5) {
+                                  return _ref4.apply(this, arguments);
+                                };
+                              }()));
+                            case 20:
+                            case "end":
+                              return _context3.stop();
                           }
-                        }))).then(function () {
-                          // handle deleted documents
-                          return Promise.resolve(Promise.all(docIds.filter(function (docId) {
-                            return !docs.has(docId);
-                          }).map(function (docId) {
-                            try {
-                              return Promise.resolve(deleteFolder(documentFolder(_this2.options, docId))).then(function () {
-                                _this2.internalWriteEvents$.next({
-                                  collectionName: collection.name,
-                                  documentId: docId,
-                                  files: [],
-                                  deleted: true
-                                });
-                              });
-                            } catch (e) {
-                              return Promise.reject(e);
-                            }
-                          }))).then(function () {});
-                        });
+                        }, _loop);
                       });
-                    });
-                  });
-                });
-              });
-              return _temp2 && _temp2.then ? _temp2.then(_temp3) : _temp3(_temp2);
-            });
-          } catch (e) {
-            return Promise.reject(e);
-          }
-        }))).then(function () {
-          if (!_this2.initialReplicationDone$.getValue()) {
-            _this2.initialReplicationDone$.next(true);
-          }
-        });
-      });
-    } catch (e) {
-      return Promise.reject(e);
+                    case 9:
+                      if (!(hasMore && !_this2.isStopped)) {
+                        _context4.next = 16;
+                        break;
+                      }
+                      return _context4.delegateYield(_loop(), "t0", 11);
+                    case 11:
+                      _ret = _context4.t0;
+                      if (!(_ret === "continue")) {
+                        _context4.next = 14;
+                        break;
+                      }
+                      return _context4.abrupt("continue", 9);
+                    case 14:
+                      _context4.next = 9;
+                      break;
+                    case 16:
+                      meta.collectionStates[collectionName].checkpoint = lastCheckpoint;
+                      _context4.next = 19;
+                      return setMeta(_this2.options, meta);
+                    case 19:
+                    case "end":
+                      return _context4.stop();
+                  }
+                }, _callee3);
+              }));
+              return function (_x3) {
+                return _ref2.apply(this, arguments);
+              };
+            }()));
+          case 5:
+            if (!this.initialReplicationDone$.getValue()) {
+              this.initialReplicationDone$.next(true);
+            }
+          case 6:
+          case "end":
+            return _context5.stop();
+        }
+      }, _callee4, this);
+    }));
+    function _persistOnce() {
+      return _persistOnce2.apply(this, arguments);
     }
-  };
+    return _persistOnce;
+  }();
   _proto.watchForChanges = function watchForChanges() {
     var _this3 = this;
     var collections = Object.values(this.database.collections);

@@ -17,16 +17,8 @@ export declare class RxAttachment {
     getData(): Promise<BlobBuffer>;
     getStringData(): Promise<string>;
 }
-export declare function fromStorageInstanceResult(id: string, attachmentData: RxAttachmentData, rxDocument: RxDocument): RxAttachment;
-export declare function putAttachment(this: RxDocument, attachmentData: RxAttachmentCreator, 
-/**
- * If set to true, the write will be skipped
- * when the attachment already contains the same data.
- * @deprecated The check if the data has changed is now performed
- * inside of the RxStorage, no longer by RxDB itself. So we do
- * no longer need 'skipIfSame'.
- */
-_skipIfSame?: boolean): Promise<RxAttachment>;
+export declare function fromStorageInstanceResult<RxDocType>(id: string, attachmentData: RxAttachmentData, rxDocument: RxDocument<RxDocType>): RxAttachment;
+export declare function putAttachment<RxDocType>(this: RxDocument<RxDocType>, attachmentData: RxAttachmentCreator): Promise<RxAttachment>;
 /**
  * get an attachment of the document by its id
  */

@@ -19,7 +19,7 @@ import {
     flatClone,
     getDefaultRevision,
     now
-} from '../../util';
+} from '../../plugins/utils';
 
 function dumpRxDatabase(
     this: RxDatabase,

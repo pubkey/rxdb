@@ -5,35 +5,28 @@ import {
 } from 'rxdb';
 
 import {
-    addPouchPlugin,
-    getRxStoragePouch
-} from 'rxdb/plugins/pouchdb';
+    getRxStorageDexie
+} from 'rxdb/plugins/storage-dexie';
 
 import {
     getRxStorageLoki
-} from 'rxdb/plugins/lokijs';
+} from 'rxdb/plugins/storage-lokijs';
 const LokiIncrementalIndexedDBAdapter = require('lokijs/src/incremental-indexeddb-adapter');
 
 import {
-    getRxStorageDexie
-} from 'rxdb/plugins/dexie';
-
-import {
     getRxStorageMemory
-} from 'rxdb/plugins/memory';
+} from 'rxdb/plugins/storage-memory';
 
 import {
     filter
 } from 'rxjs/operators';
 
-addPouchPlugin(require('pouchdb-adapter-idb'));
 import {
-    RxDBReplicationGraphQLPlugin,
     pullQueryBuilderFromRxSchema,
     pushQueryBuilderFromRxSchema,
-    pullStreamBuilderFromRxSchema
+    pullStreamBuilderFromRxSchema,
+    replicateGraphQL
 } from 'rxdb/plugins/replication-graphql';
-addRxPlugin(RxDBReplicationGraphQLPlugin);
 
 
 // TODO import these only in non-production build
@@ -47,6 +40,9 @@ addRxPlugin(RxDBUpdatePlugin);
 
 import { RxDBQueryBuilderPlugin } from 'rxdb/plugins/query-builder';
 addRxPlugin(RxDBQueryBuilderPlugin);
+
+import { RxDBLeaderElectionPlugin } from 'rxdb/plugins/leader-election';
+addRxPlugin(RxDBLeaderElectionPlugin);
 
 
 import {
@@ -135,10 +131,7 @@ function getStorageKey() {
  */
 function getStorage() {
     const storageKey = getStorageKey();
-
-    if (storageKey === 'pouchdb') {
-        return getRxStoragePouch('idb');
-    } else if (storageKey === 'lokijs') {
+    if (storageKey === 'lokijs') {
         return getRxStorageLoki({
             adapter: new LokiIncrementalIndexedDBAdapter(),
             autosaveInterval: 999999999,
@@ -193,7 +186,8 @@ async function run() {
     // set up replication
     if (doSync()) {
         heroesList.innerHTML = 'Start replication..';
-        const replicationState = db.hero.syncGraphQL({
+        const replicationState = replicateGraphQL({
+            collection: db.hero,
             url: syncUrls,
             headers: {
                 /* optional, set an auth header */

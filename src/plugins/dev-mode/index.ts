@@ -23,7 +23,7 @@ import {
 import { checkMangoQuery, checkQuery } from './check-query';
 import { newRxError } from '../../rx-error';
 import { DeepReadonly } from '../../types/util';
-import { deepFreeze } from '../../util';
+import { deepFreeze } from '../../plugins/utils';
 
 export * from './check-schema';
 export * from './unallowed-properties';

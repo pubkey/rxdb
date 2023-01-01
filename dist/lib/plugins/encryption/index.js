@@ -8,6 +8,8 @@ exports.MINIMUM_PASSWORD_LENGTH = void 0;
 exports.decryptString = decryptString;
 exports.encryptString = encryptString;
 exports.wrappedKeyEncryptionStorage = wrappedKeyEncryptionStorage;
+var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
+var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 var _aes = _interopRequireDefault(require("crypto-js/aes"));
 var cryptoEnc = _interopRequireWildcard(require("crypto-js/enc-utf8"));
 var _objectPath = _interopRequireDefault(require("object-path"));
@@ -15,18 +17,7 @@ var _pluginHelpers = require("../../plugin-helpers");
 var _rxDatabaseInternalStore = require("../../rx-database-internal-store");
 var _rxError = require("../../rx-error");
 var _rxStorageHelper = require("../../rx-storage-helper");
-var _util = require("../../util");
-function _catch(body, recover) {
-  try {
-    var result = body();
-  } catch (e) {
-    return recover(e);
-  }
-  if (result && result.then) {
-    return result.then(void 0, recover);
-  }
-  return result;
-}
+var _utils = require("../../plugins/utils");
 function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
 function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 /**
@@ -60,120 +51,129 @@ function decryptString(cipherText, password) {
 }
 function wrappedKeyEncryptionStorage(args) {
   return Object.assign({}, args.storage, {
-    createStorageInstance: function createStorageInstance(params) {
-      try {
-        var _temp4 = function _temp4(_result) {
-          if (_exit) return _result;
-          if (!params.password) {
-            throw (0, _rxError.newRxError)('EN3', {
-              database: params.databaseName,
-              collection: params.collectionName,
-              schema: params.schema
-            });
-          }
-          var password = params.password;
-          var schemaWithoutEncrypted = (0, _util.clone)(params.schema);
-          delete schemaWithoutEncrypted.encrypted;
-          if (schemaWithoutEncrypted.attachments) {
-            schemaWithoutEncrypted.attachments.encrypted = false;
-          }
-          function modifyToStorage(docData) {
-            docData = cloneWithoutAttachments(docData);
-            (0, _util.ensureNotFalsy)(params.schema.encrypted).forEach(function (path) {
-              var value = _objectPath["default"].get(docData, path);
-              if (typeof value === 'undefined') {
-                return;
-              }
-              var stringValue = JSON.stringify(value);
-              var encrypted = encryptString(stringValue, password);
-              _objectPath["default"].set(docData, path, encrypted);
-            });
+    createStorageInstance: function () {
+      var _createStorageInstance = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(params) {
+        var retInstance, password, schemaWithoutEncrypted, instance, modifyToStorage, modifyFromStorage, modifyAttachmentFromStorage;
+        return _regenerator["default"].wrap(function _callee$(_context) {
+          while (1) switch (_context.prev = _context.next) {
+            case 0:
+              modifyAttachmentFromStorage = function _modifyAttachmentFrom(attachmentData) {
+                if (params.schema.attachments && params.schema.attachments.encrypted) {
+                  var decrypted = decryptString((0, _utils.b64DecodeUnicode)(attachmentData), password);
+                  return decrypted;
+                } else {
+                  return attachmentData;
+                }
+              };
+              modifyFromStorage = function _modifyFromStorage(docData) {
+                docData = cloneWithoutAttachments(docData);
+                (0, _utils.ensureNotFalsy)(params.schema.encrypted).forEach(function (path) {
+                  var value = _objectPath["default"].get(docData, path);
+                  if (typeof value === 'undefined') {
+                    return;
+                  }
+                  var decrypted = decryptString(value, password);
+                  var decryptedParsed = JSON.parse(decrypted);
+                  _objectPath["default"].set(docData, path, decryptedParsed);
+                });
+                return docData;
+              };
+              modifyToStorage = function _modifyToStorage(docData) {
+                docData = cloneWithoutAttachments(docData);
+                (0, _utils.ensureNotFalsy)(params.schema.encrypted).forEach(function (path) {
+                  var value = _objectPath["default"].get(docData, path);
+                  if (typeof value === 'undefined') {
+                    return;
+                  }
+                  var stringValue = JSON.stringify(value);
+                  var encrypted = encryptString(stringValue, password);
+                  _objectPath["default"].set(docData, path, encrypted);
+                });
 
-            // handle attachments
-            if (params.schema.attachments && params.schema.attachments.encrypted) {
-              var newAttachments = {};
-              Object.entries(docData._attachments).forEach(function (_ref) {
-                var id = _ref[0],
-                  attachment = _ref[1];
-                var useAttachment = (0, _util.flatClone)(attachment);
-                if (useAttachment.data) {
-                  var dataString = useAttachment.data;
-                  useAttachment.data = (0, _util.b64EncodeUnicode)(encryptString(dataString, password));
-                }
-                newAttachments[id] = useAttachment;
-              });
-              docData._attachments = newAttachments;
-            }
-            return docData;
-          }
-          function modifyFromStorage(docData) {
-            docData = cloneWithoutAttachments(docData);
-            (0, _util.ensureNotFalsy)(params.schema.encrypted).forEach(function (path) {
-              var value = _objectPath["default"].get(docData, path);
-              if (typeof value === 'undefined') {
-                return;
-              }
-              var decrypted = decryptString(value, password);
-              var decryptedParsed = JSON.parse(decrypted);
-              _objectPath["default"].set(docData, path, decryptedParsed);
-            });
-            return docData;
-          }
-          function modifyAttachmentFromStorage(attachmentData) {
-            if (params.schema.attachments && params.schema.attachments.encrypted) {
-              var decrypted = decryptString((0, _util.b64DecodeUnicode)(attachmentData), password);
-              return decrypted;
-            } else {
-              return attachmentData;
-            }
-          }
-          return Promise.resolve(args.storage.createStorageInstance(Object.assign({}, params, {
-            schema: schemaWithoutEncrypted
-          }))).then(function (instance) {
-            return (0, _pluginHelpers.wrapRxStorageInstance)(instance, modifyToStorage, modifyFromStorage, modifyAttachmentFromStorage);
-          });
-        };
-        var _exit = false;
-        var _temp3 = function () {
-          if (!(0, _rxStorageHelper.hasEncryption)(params.schema)) {
-            return Promise.resolve(args.storage.createStorageInstance(params)).then(function (retInstance) {
-              var _exit2 = false;
-              function _temp2(_result3) {
-                if (_exit2) return _result3;
-                _exit = true;
-                return retInstance;
-              }
-              var _temp = function () {
-                if (params.schema.title === _rxDatabaseInternalStore.INTERNAL_STORE_SCHEMA_TITLE && params.password) {
-                  return _catch(function () {
-                    validatePassword(params.password);
-                  }, function (err) {
-                    /**
-                     * Even if the checks fail,
-                     * we have to clean up.
-                     */
-                    return Promise.resolve(retInstance.close()).then(function () {
-                      throw err;
-                    });
+                // handle attachments
+                if (params.schema.attachments && params.schema.attachments.encrypted) {
+                  var newAttachments = {};
+                  Object.entries(docData._attachments).forEach(function (_ref) {
+                    var id = _ref[0],
+                      attachment = _ref[1];
+                    var useAttachment = (0, _utils.flatClone)(attachment);
+                    if (useAttachment.data) {
+                      var dataString = useAttachment.data;
+                      useAttachment.data = (0, _utils.b64EncodeUnicode)(encryptString(dataString, password));
+                    }
+                    newAttachments[id] = useAttachment;
                   });
+                  docData._attachments = newAttachments;
                 }
-              }();
-              return _temp && _temp.then ? _temp.then(_temp2) : _temp2(_temp);
-            });
+                return docData;
+              };
+              if ((0, _rxStorageHelper.hasEncryption)(params.schema)) {
+                _context.next = 18;
+                break;
+              }
+              _context.next = 6;
+              return args.storage.createStorageInstance(params);
+            case 6:
+              retInstance = _context.sent;
+              if (!(params.schema.title === _rxDatabaseInternalStore.INTERNAL_STORE_SCHEMA_TITLE && params.password)) {
+                _context.next = 17;
+                break;
+              }
+              _context.prev = 8;
+              validatePassword(params.password);
+              _context.next = 17;
+              break;
+            case 12:
+              _context.prev = 12;
+              _context.t0 = _context["catch"](8);
+              _context.next = 16;
+              return retInstance.close();
+            case 16:
+              throw _context.t0;
+            case 17:
+              return _context.abrupt("return", retInstance);
+            case 18:
+              if (params.password) {
+                _context.next = 20;
+                break;
+              }
+              throw (0, _rxError.newRxError)('EN3', {
+                database: params.databaseName,
+                collection: params.collectionName,
+                schema: params.schema
+              });
+            case 20:
+              password = params.password;
+              schemaWithoutEncrypted = (0, _utils.clone)(params.schema);
+              delete schemaWithoutEncrypted.encrypted;
+              if (schemaWithoutEncrypted.attachments) {
+                schemaWithoutEncrypted.attachments.encrypted = false;
+              }
+              _context.next = 26;
+              return args.storage.createStorageInstance(Object.assign({}, params, {
+                schema: schemaWithoutEncrypted
+              }));
+            case 26:
+              instance = _context.sent;
+              return _context.abrupt("return", (0, _pluginHelpers.wrapRxStorageInstance)(instance, modifyToStorage, modifyFromStorage, modifyAttachmentFromStorage));
+            case 28:
+            case "end":
+              return _context.stop();
           }
-        }();
-        return Promise.resolve(_temp3 && _temp3.then ? _temp3.then(_temp4) : _temp4(_temp3));
-      } catch (e) {
-        return Promise.reject(e);
+        }, _callee, null, [[8, 12]]);
+      }));
+      function createStorageInstance(_x) {
+        return _createStorageInstance.apply(this, arguments);
       }
-    }
+      return createStorageInstance;
+    }()
   });
 }
 function cloneWithoutAttachments(data) {
   var attachments = data._attachments;
-  data = (0, _util.flatClone)(data);
+  data = (0, _utils.flatClone)(data);
   delete data._attachments;
-  data = (0, _util.clone)(data);
+  data = (0, _utils.clone)(data);
   data._attachments = attachments;
   return data;
 }

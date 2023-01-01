@@ -1,7 +1,7 @@
 /**
  * Helper functions for accessing the RxStorage instances.
  */
-import type { BulkWriteRow, BulkWriteRowProcessed, ById, CategorizeBulkWriteRowsOutput, RxAttachmentData, RxAttachmentWriteData, RxChangeEvent, RxCollection, RxDatabase, RxDocumentData, RxDocumentWriteData, RxJsonSchema, RxStorageBulkWriteError, RxStorageChangeEvent, RxStorageInstance, RxStorageInstanceCreationParams, StringKeys } from './types';
+import type { BulkWriteRow, BulkWriteRowProcessed, ById, CategorizeBulkWriteRowsOutput, RxAttachmentData, RxAttachmentWriteData, RxChangeEvent, RxCollection, RxDatabase, RxDocumentData, RxDocumentWriteData, RxJsonSchema, RxStorageWriteError, RxStorageChangeEvent, RxStorageInstance, RxStorageInstanceCreationParams, StringKeys } from './types';
 export declare const INTERNAL_STORAGE_NAME = "_rxdb_internal";
 export declare const RX_DATABASE_LOCAL_DOCS_STORAGE_NAME = "rxdatabase_storage_local";
 export declare function getSingleDocument<RxDocType>(storageInstance: RxStorageInstance<RxDocType, any, any>, documentId: string): Promise<RxDocumentData<RxDocType> | null>;
@@ -18,7 +18,7 @@ export declare function writeSingle<RxDocType>(instance: RxStorageInstance<RxDoc
  */
 export declare function stackCheckpoints<CheckpointType>(checkpoints: CheckpointType[]): CheckpointType;
 export declare function storageChangeEventToRxChangeEvent<DocType>(isLocal: boolean, rxStorageChangeEvent: RxStorageChangeEvent<DocType>, rxCollection?: RxCollection): RxChangeEvent<DocType>;
-export declare function throwIfIsStorageWriteError<RxDocType>(collection: RxCollection<RxDocType>, documentId: string, writeData: RxDocumentWriteData<RxDocType> | RxDocType, error: RxStorageBulkWriteError<RxDocType> | undefined): void;
+export declare function throwIfIsStorageWriteError<RxDocType>(collection: RxCollection<RxDocType>, documentId: string, writeData: RxDocumentWriteData<RxDocType> | RxDocType, error: RxStorageWriteError<RxDocType> | undefined): void;
 /**
  * From a list of documents,
  * it will return the document that has the 'newest' state
@@ -69,6 +69,9 @@ export declare function flatCloneDocWithMeta<RxDocType>(doc: RxDocumentData<RxDo
  * to make it easy to filter out duplicates.
  */
 export declare function getUniqueDeterministicEventKey(storageInstance: RxStorageInstance<any, any, any>, primaryPath: string, writeRow: BulkWriteRow<any>): string;
+export type WrappedRxStorageInstance<RxDocumentType, Internals, InstanceCreationOptions> = RxStorageInstance<RxDocumentType, any, InstanceCreationOptions> & {
+    originalStorageInstance: RxStorageInstance<RxDocumentType, Internals, InstanceCreationOptions>;
+};
 /**
  * Wraps the normal storageInstance of a RxCollection
  * to ensure that all access is properly using the hooks
@@ -80,7 +83,7 @@ export declare function getWrappedStorageInstance<RxDocType, Internals, Instance
  * The original RxJsonSchema
  * before it was mutated by hooks.
  */
-rxJsonSchema: RxJsonSchema<RxDocumentData<RxDocType>>): RxStorageInstance<RxDocType, Internals, InstanceCreationOptions>;
+rxJsonSchema: RxJsonSchema<RxDocumentData<RxDocType>>): WrappedRxStorageInstance<RxDocType, Internals, InstanceCreationOptions>;
 /**
  * Each RxStorage implementation should
  * run this method at the first step of createStorageInstance()

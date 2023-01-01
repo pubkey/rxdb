@@ -26,17 +26,14 @@ const {
 } = require('../../plugins/leader-election');
 addRxPlugin(RxDBLeaderElectionPlugin);
 const {
-    addPouchPlugin,
-    getRxStoragePouch
-} = require('../../plugins/pouchdb');
+    getRxStorageMemory
+} = require('../../plugins/storage-memory');
 const {
     replicateRxCollection
 } = require('../../plugins/replication');
 import type {
     RxJsonSchema,
 } from '../../';
-
-addPouchPlugin(require('pouchdb-adapter-memory'));
 
 const schema: RxJsonSchema<{ passportId: string; firstName: string; lastName: string; }> = {
     title: 'human schema',
@@ -66,7 +63,7 @@ const run = async function () {
     // create database
     const db = await createRxDatabase({
         name: randomCouchString(10),
-        storage: getRxStoragePouch('memory'),
+        storage: getRxStorageMemory(),
         ignoreDuplicate: true
     });
 

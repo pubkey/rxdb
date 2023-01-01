@@ -1,4 +1,4 @@
-import type { RxCollection, RxPlugin, ReplicationPullOptions, ReplicationPushOptions } from '../../types';
+import type { RxCollection, ReplicationPullOptions, ReplicationPushOptions } from '../../types';
 import { RxReplicationState } from '../replication';
 import type { FirestoreCheckpointType, FirestoreOptions, SyncOptionsFirestore } from './firestore-types';
 export * from './firestore-helper';
@@ -14,5 +14,4 @@ export declare class RxFirestoreReplicationState<RxDocType> extends RxReplicatio
     autoStart: boolean;
     constructor(firestore: FirestoreOptions<RxDocType>, replicationIdentifierHash: string, collection: RxCollection<RxDocType>, pull?: ReplicationPullOptions<RxDocType, FirestoreCheckpointType> | undefined, push?: ReplicationPushOptions<RxDocType> | undefined, live?: boolean, retryTime?: number, autoStart?: boolean);
 }
-export declare function syncFirestore<RxDocType>(this: RxCollection<RxDocType>, options: SyncOptionsFirestore<RxDocType>): RxFirestoreReplicationState<RxDocType>;
-export declare const RxDBReplicationFirestorePlugin: RxPlugin;
+export declare function replicateFirestore<RxDocType>(options: SyncOptionsFirestore<RxDocType>): RxFirestoreReplicationState<RxDocType>;

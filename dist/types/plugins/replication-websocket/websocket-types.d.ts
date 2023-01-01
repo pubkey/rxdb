@@ -1,26 +1,27 @@
 import type { Observable } from 'rxjs';
 import type { ServerOptions, ClientOptions, WebSocketServer, WebSocket } from 'ws';
 import type { RxCollection, RxDatabase, RxReplicationHandler, StringKeys } from '../../types';
-export declare type WebsocketServerOptions = {
+export type WebsocketServerOptions = {
     database: RxDatabase<any, any, any>;
 } & ServerOptions;
-export declare type WebsocketServerState = {
+export type WebsocketServerState = {
     server: WebSocketServer;
     close: () => Promise<void>;
     onConnection$: Observable<WebSocket>;
 };
-export declare type WebsocketClientOptions<RxDocType> = {
+export type WebsocketClientOptions<RxDocType> = {
     collection: RxCollection<RxDocType>;
     url: string;
     batchSize?: number;
+    live?: boolean;
 } & ClientOptions;
-export declare type WebsocketMessageType = {
+export type WebsocketMessageType = {
     id: string;
     collection: string;
     method: StringKeys<RxReplicationHandler<any, any>>;
     params: any[];
 };
-export declare type WebsocketMessageResponseType = {
+export type WebsocketMessageResponseType = {
     id: string;
     collection: string;
     result: any;

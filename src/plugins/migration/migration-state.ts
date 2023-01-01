@@ -7,7 +7,7 @@ import type {
     RxCollection,
     RxDatabase
 } from '../../types';
-import { ensureNotFalsy } from '../../util';
+import { ensureNotFalsy } from '../../plugins/utils';
 
 export type MigrationStateWithCollection = {
     collection: RxCollection;

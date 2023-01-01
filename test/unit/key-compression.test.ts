@@ -4,7 +4,6 @@
 import assert from 'assert';
 import config from './config';
 
-import * as schemaObjects from './../helper/schema-objects';
 
 import {
     createRxDatabase,
@@ -12,15 +11,12 @@ import {
     isRxDocument,
     RxJsonSchema,
     RxCollection,
+    RxStorageInstance,
 } from '../../';
-
-import {
-    pouchDocumentDataToRxDocumentData
-} from '../../plugins/pouchdb';
+import * as schemaObjects from '../helper/schema-objects';
 import {
     wrappedKeyCompressionStorage
 } from '../../plugins/key-compression';
-import { SimpleHumanDocumentType } from './../helper/schema-objects';
 import { HumanDocumentType, human, enableKeyCompression } from '../helper/schemas';
 
 
@@ -56,40 +52,31 @@ config.parallel('key-compression.test.js', () => {
             assert.ok(jsonString.includes('myFirstName'));
             c.database.destroy();
         });
-        it('additional attribute', async () => {
-            if (config.storage.name !== 'pouchdb') {
-                return;
-            }
-            const c = await getCollection();
-            const query: any = c.find()
-                .where('age').eq(5)
-                .getPreparedQuery();
-
-            assert.deepStrictEqual(query.selector.age, { $eq: 5 });
-            c.database.destroy();
-        });
     });
     describe('integration into pouchDB', () => {
         it('should have saved a compressed document', async () => {
-            if (config.storage.name !== 'pouchdb') {
-                return;
-            }
-
             const c = await getCollection();
             const docData = schemaObjects.simpleHuman();
             await c.insert(docData);
 
-            const pouchDoc = await c.internalStorageInstance.internals.pouch.get(docData.passportId);
-            const doc = pouchDocumentDataToRxDocumentData<SimpleHumanDocumentType>(c.schema.primaryPath as any, pouchDoc);
-            Object.keys(doc)
+
+            const internalInstance: RxStorageInstance<schemaObjects.SimpleHumanDocumentType, any, any> = await (c.storageInstance.originalStorageInstance as any)
+                .originalStorageInstance;
+
+            const storageDocs = await internalInstance.findDocumentsById([docData.passportId], true);
+            const storageDoc = storageDocs[docData.passportId];
+            Object.keys(storageDoc)
                 .filter(key => !key.startsWith('_'))
                 .filter(key => key !== c.schema.primaryPath)
                 .forEach(key => {
                     assert.ok(key.length <= 3);
-                    assert.strictEqual(typeof (doc as any)[key], 'string');
+                    assert.strictEqual(typeof (storageDoc as any)[key], 'string');
                 });
-            assert.strictEqual((doc as any)[c.schema.primaryPath], docData.passportId);
-            assert.strictEqual((doc as any)['|a'], docData.firstName);
+
+            // should keep the primary path and _meta
+            assert.ok(storageDoc._meta);
+            assert.strictEqual((storageDoc as any)[c.schema.primaryPath], docData.passportId);
+            assert.strictEqual((storageDoc as any)['|a'], docData.firstName);
             c.database.destroy();
         });
     });

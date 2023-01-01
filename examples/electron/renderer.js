@@ -1,8 +1,8 @@
 const { getDatabase } = require('./shared');
 const renderTest = require('./test/render.test.js');
 const electron = require('electron');
+const { getRxStorageMemory } = require('rxdb/plugins/storage-memory');
 const { getRxStorageIpcRenderer } = require('../../plugins/electron');
-const { getRxStorageMemory } = require('rxdb/plugins/memory');
 
 
 const heroesList = document.querySelector('#heroes-list');

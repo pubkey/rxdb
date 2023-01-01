@@ -17,7 +17,7 @@ import {
     ensureNotFalsy,
     parseRevision,
     PROMISE_RESOLVE_FALSE
-} from '../util';
+} from '../plugins/utils';
 import {
     getLastCheckpointDoc,
     setCheckpoint
@@ -115,7 +115,7 @@ export function startReplicationUpstream<RxDocType, CheckpointType>(
         /**
          * If we had conflicts during the initial sync,
          * it means that we likely have new writes to the fork
-         * and so we have to run the initial sync again to upastream these new writes.
+         * and so we have to run the initial sync again to upstream these new writes.
          */
         const resolvedPromises = await Promise.all(promises);
         const hadConflicts = resolvedPromises.find(r => !!r);

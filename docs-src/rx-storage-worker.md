@@ -10,7 +10,7 @@ With the worker plugin, you can put the `RxStorage` of your database inside of a
 // worker.ts
 
 import { wrappedWorkerRxStorage } from 'rxdb/plugins/worker';
-import { getRxStorageLoki } from 'rxdb/plugins/lokijs';
+import { getRxStorageLoki } from 'rxdb/plugins/storage-lokijs';
 
 wrappedWorkerRxStorage({
     /**
@@ -30,7 +30,7 @@ import {
     createRxDatabase
 } from 'rxdb';
 import { getRxStorageWorker } from 'rxdb/plugins/worker';
-import { RxStorageLokiStatics } from 'rxdb/plugins/lokijs';
+import { RxStorageLokiStatics } from 'rxdb/plugins/storage-lokijs';
 
 
 const database = await createRxDatabase({
@@ -66,7 +66,7 @@ import {
     createRxDatabase
 } from 'rxdb';
 import { getRxStorageWorker } from 'rxdb/plugins/worker';
-import { RxStorageLokiStatics } from 'rxdb/plugins/lokijs';
+import { RxStorageLokiStatics } from 'rxdb/plugins/storage-lokijs';
 const database = await createRxDatabase({
     name: 'mydatabase',
     storage: getRxStorageWorker(

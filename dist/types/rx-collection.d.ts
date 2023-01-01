@@ -1,18 +1,16 @@
 import type { DataMigrator } from './plugins/migration';
-import { DocCache } from './doc-cache';
+import { DocumentCache } from './doc-cache';
 import { QueryCache } from './query-cache';
 import { ChangeEventBuffer } from './change-event-buffer';
 import { Subscription, Observable } from 'rxjs';
-import type { KeyFunctionMap, RxCouchDBReplicationState, MigrationState, SyncOptions, RxCollection, RxDatabase, RxQuery, RxDocument, SyncOptionsGraphQL, RxDumpCollection, RxDumpCollectionAny, MangoQuery, MangoQueryNoLimit, RxCacheReplacementPolicy, RxStorageBulkWriteError, RxChangeEvent, RxChangeEventInsert, RxChangeEventUpdate, RxChangeEventDelete, RxStorageInstance, CollectionsOfDatabase, RxConflictHandler, MaybePromise, CRDTEntry, MangoQuerySelectorAndIndex } from './types';
-import type { RxGraphQLReplicationState } from './plugins/replication-graphql';
-import type { RxCouchDBNewReplicationState, SyncOptionsCouchDBNew } from './plugins/replication-couchdb-new';
-import type { SyncOptionsP2P, RxP2PReplicationPool } from './plugins/replication-p2p';
-import type { RxFirestoreReplicationState, SyncOptionsFirestore } from './plugins/replication-firestore';
+import type { KeyFunctionMap, MigrationState, RxCollection, RxDatabase, RxQuery, RxDocument, RxDumpCollection, RxDumpCollectionAny, MangoQuery, MangoQueryNoLimit, RxCacheReplacementPolicy, RxStorageWriteError, RxChangeEvent, RxChangeEventInsert, RxChangeEventUpdate, RxChangeEventDelete, RxStorageInstance, CollectionsOfDatabase, RxConflictHandler, MaybePromise, CRDTEntry, MangoQuerySelectorAndIndex } from './types';
 import { RxSchema } from './rx-schema';
+import { WrappedRxStorageInstance } from './rx-storage-helper';
+import { IncrementalWriteQueue } from './incremental-write';
 declare const HOOKS_WHEN: readonly ["pre", "post"];
-declare type HookWhenType = typeof HOOKS_WHEN[number];
+type HookWhenType = typeof HOOKS_WHEN[number];
 declare const HOOKS_KEYS: readonly ["insert", "save", "remove", "create"];
-declare type HookKeyType = typeof HOOKS_KEYS[number];
+type HookKeyType = typeof HOOKS_KEYS[number];
 export declare class RxCollectionBase<InstanceCreationOptions, RxDocumentType = {
     [prop: string]: any;
 }, OrmMethods = {}, StaticMethods = {
@@ -33,13 +31,14 @@ export declare class RxCollectionBase<InstanceCreationOptions, RxDocumentType = 
     /**
      * Stores all 'normal' documents
      */
-    storageInstance: RxStorageInstance<RxDocumentType, any, InstanceCreationOptions>;
+    storageInstance: WrappedRxStorageInstance<RxDocumentType, any, InstanceCreationOptions>;
     readonly timeouts: Set<ReturnType<typeof setTimeout>>;
+    incrementalWriteQueue: IncrementalWriteQueue<RxDocumentType>;
     constructor(database: RxDatabase<CollectionsOfDatabase, any, InstanceCreationOptions>, name: string, schema: RxSchema<RxDocumentType>, internalStorageInstance: RxStorageInstance<RxDocumentType, any, InstanceCreationOptions>, instanceCreationOptions?: InstanceCreationOptions, migrationStrategies?: KeyFunctionMap, methods?: KeyFunctionMap, attachments?: KeyFunctionMap, options?: any, cacheReplacementPolicy?: RxCacheReplacementPolicy, statics?: KeyFunctionMap, conflictHandler?: RxConflictHandler<RxDocumentType>);
     get insert$(): Observable<RxChangeEventInsert<RxDocumentType>>;
     get update$(): Observable<RxChangeEventUpdate<RxDocumentType>>;
     get remove$(): Observable<RxChangeEventDelete<RxDocumentType>>;
-    _atomicUpsertQueues: Map<string, Promise<any>>;
+    _incrementalUpsertQueues: Map<string, Promise<any>>;
     synced: boolean;
     hooks: {
         [key in HookKeyType]: {
@@ -50,7 +49,7 @@ export declare class RxCollectionBase<InstanceCreationOptions, RxDocumentType = 
         };
     };
     _subs: Subscription[];
-    _docCache: DocCache<RxDocument<RxDocumentType, OrmMethods>>;
+    _docCache: DocumentCache<RxDocumentType, OrmMethods>;
     _queryCache: QueryCache;
     $: Observable<RxChangeEvent<RxDocumentType>>;
     _changeEventBuffer: ChangeEventBuffer;
@@ -70,11 +69,11 @@ export declare class RxCollectionBase<InstanceCreationOptions, RxDocumentType = 
     insert(json: RxDocumentType | RxDocument): Promise<RxDocument<RxDocumentType, OrmMethods>>;
     bulkInsert(docsData: RxDocumentType[]): Promise<{
         success: RxDocument<RxDocumentType, OrmMethods>[];
-        error: RxStorageBulkWriteError<RxDocumentType>[];
+        error: RxStorageWriteError<RxDocumentType>[];
     }>;
     bulkRemove(ids: string[]): Promise<{
         success: RxDocument<RxDocumentType, OrmMethods>[];
-        error: RxStorageBulkWriteError<RxDocumentType>[];
+        error: RxStorageWriteError<RxDocumentType>[];
     }>;
     /**
      * same as bulkInsert but overwrites existing document with same primary
@@ -85,9 +84,9 @@ export declare class RxCollectionBase<InstanceCreationOptions, RxDocumentType = 
      */
     upsert(json: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType, OrmMethods>>;
     /**
-     * upserts to a RxDocument, uses atomicUpdate if document already exists
+     * upserts to a RxDocument, uses incrementalModify if document already exists
      */
-    atomicUpsert(json: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType, OrmMethods>>;
+    incrementalUpsert(json: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType, OrmMethods>>;
     find(queryObj?: MangoQuery<RxDocumentType>): RxQuery<RxDocumentType, RxDocument<RxDocumentType, OrmMethods>[]>;
     findOne(queryObj?: MangoQueryNoLimit<RxDocumentType> | string): RxQuery<RxDocumentType, RxDocument<RxDocumentType, OrmMethods> | null>;
     count(queryObj?: MangoQuerySelectorAndIndex<RxDocumentType>): RxQuery<RxDocumentType, number>;
@@ -95,12 +94,7 @@ export declare class RxCollectionBase<InstanceCreationOptions, RxDocumentType = 
      * find a list documents by their primary key
      * has way better performance then running multiple findOne() or a find() with a complex $or-selected
      */
-    findByIds(ids: string[]): Promise<Map<string, RxDocument<RxDocumentType, OrmMethods>>>;
-    /**
-     * like this.findByIds but returns an observable
-     * that always emits the current state
-     */
-    findByIds$(ids: string[]): Observable<Map<string, RxDocument<RxDocumentType, OrmMethods>>>;
+    findByIds(ids: string[]): RxQuery<RxDocumentType, Map<string, RxDocument<RxDocumentType, OrmMethods>>>;
     /**
      * Export collection to a JSON friendly format.
      */
@@ -112,17 +106,6 @@ export declare class RxCollectionBase<InstanceCreationOptions, RxDocumentType = 
      */
     importJSON(_exportedJSON: RxDumpCollectionAny<RxDocumentType>): Promise<void>;
     insertCRDT(_updateObj: CRDTEntry<any> | CRDTEntry<any>[]): RxDocument<RxDocumentType, OrmMethods>;
-    /**
-     * sync with a CouchDB endpoint
-     */
-    syncCouchDB(_syncOptions: SyncOptions): RxCouchDBReplicationState;
-    /**
-     * sync with a GraphQL endpoint
-     */
-    syncGraphQL<CheckpointType = any>(_options: SyncOptionsGraphQL<RxDocumentType, CheckpointType>): RxGraphQLReplicationState<RxDocumentType, CheckpointType>;
-    syncCouchDBNew(_syncOptions: SyncOptionsCouchDBNew<RxDocumentType>): RxCouchDBNewReplicationState<RxDocumentType>;
-    syncP2P(_syncOptions: SyncOptionsP2P<RxDocumentType>): RxP2PReplicationPool<RxDocumentType>;
-    syncFirestore(_syncOptions: SyncOptionsFirestore<RxDocumentType>): RxFirestoreReplicationState<RxDocumentType>;
     /**
      * HOOKS
      */

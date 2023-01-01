@@ -15,7 +15,7 @@ import {
     getLocalstorageMetaOptimizerRxStorage
 } from 'rxdb-premium/plugins/localstorage-meta-optimizer';
 
-import { getRxStorageDexie } from 'rxdb/plugins/dexie';
+import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
 
 
 /**

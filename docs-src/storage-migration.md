@@ -18,7 +18,7 @@ Lets say you want to migrate from PouchDB to the [Dexie.js](./rx-storage-dexie.m
 import {
     getRxStoragePouch
 } from 'rxdb/plugins/pouchdb';
-import { getRxStorageDexie } from 'rxdb/plugins/dexie';
+import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
 
 // create the new RxDatabase
 const db = await createRxDatabase<RxStylechaseCollections>({

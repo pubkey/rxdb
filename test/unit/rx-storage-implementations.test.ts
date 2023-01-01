@@ -23,7 +23,6 @@ import {
     flatCloneDocWithMeta,
     ById,
     stackCheckpoints,
-    defaultHashFunction,
     deepFreeze,
     stripAttachmentsDataFromDocument,
     getAttachmentSize
@@ -325,7 +324,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                  * This ensures that we can continue resolving the conflict
                  * without having to pull the document out of the db first.
                  */
-                assert.ok(ensureNotFalsy(first.documentInDb).value, writeData.value);
+                assert.ok((first as any).documentInDb.value, writeData.value);
 
                 /**
                  * The documentInDb must not have any additional attributes.
@@ -334,7 +333,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                  * These fields must never be leaked to 409 conflict errors
                  */
                 assert.deepStrictEqual(
-                    Object.keys(ensureNotFalsy(first.documentInDb)).sort(),
+                    Object.keys((first as any).documentInDb).sort(),
                     Object.keys(writeData).sort()
                 );
 
@@ -750,8 +749,9 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 storageInstance.close();
             });
             it('should be able to do a write where only _meta fields are changed', async () => {
+                const databaseInstanceToken = randomCouchString(10);
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
-                    databaseInstanceToken: randomCouchString(10),
+                    databaseInstanceToken,
                     databaseName: randomCouchString(12),
                     collectionName: randomCouchString(12),
                     schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
@@ -771,7 +771,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                         foobar: 0
                     }
                 };
-                docData._rev = createRevision(defaultHashFunction, docData);
+                docData._rev = createRevision(databaseInstanceToken);
 
                 const res1 = await storageInstance.bulkWrite(
                     [{
@@ -785,7 +785,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 let newDocData: RxDocumentData<TestDocType> = clone(docData);
                 newDocData._meta.foobar = 1;
                 newDocData._meta.lwt = now();
-                newDocData._rev = createRevision(defaultHashFunction, newDocData, docData);
+                newDocData._rev = createRevision(databaseInstanceToken, docData);
 
                 const res2 = await storageInstance.bulkWrite(
                     [{
@@ -801,7 +801,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 newDocData = clone(docData);
                 newDocData._meta.foobar = 2;
                 newDocData._meta.lwt = now();
-                newDocData._rev = createRevision(defaultHashFunction, newDocData, docData);
+                newDocData._rev = createRevision(databaseInstanceToken, docData);
                 assert.strictEqual(parseRevision(newDocData._rev).height, 3);
 
                 const res3 = await storageInstance.bulkWrite(
@@ -1138,7 +1138,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
         });
         describe('.getQueryMatcher()', () => {
             it('should match the right docs', async () => {
-                const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
+                const storageInstance = await config.storage.getStorage().createStorageInstance<schemas.HumanDocumentType>({
                     databaseInstanceToken: randomCouchString(10),
                     databaseName: randomCouchString(12),
                     collectionName: randomCouchString(12),
@@ -1147,7 +1147,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     multiInstance: false
                 });
 
-                const query: FilledMangoQuery<TestDocType> = {
+                const query: FilledMangoQuery<schemas.HumanDocumentType> = {
                     selector: {
                         age: {
                             $gt: 10,
@@ -1155,9 +1155,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                         }
                     },
                     sort: [
-                        {
-                            _id: 'asc'
-                        }
+                        { _id: 'asc' }
                     ],
                     skip: 0
                 };
@@ -1931,8 +1929,9 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 storageInstance.close();
             });
             it('should return the correct amount of documents', async () => {
+                const databaseInstanceToken = randomCouchString(10);
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
-                    databaseInstanceToken: randomCouchString(10),
+                    databaseInstanceToken,
                     databaseName: randomCouchString(12),
                     collectionName: randomCouchString(12),
                     schema: getTestDataSchema(),
@@ -1959,7 +1958,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     t++;
                     const newDocInner = clone(previous);
                     newDocInner.value = t + '';
-                    const newRevInner = createRevision(defaultHashFunction, newDocInner, previous);
+                    const newRevInner = createRevision(databaseInstanceToken, previous);
                     newDocInner._rev = newRevInner;
                     newDocInner._meta.lwt = now();
                     const updateResult = await storageInstance.bulkWrite([
@@ -2007,7 +2006,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 newDoc.value = t + '';
                 newDoc._deleted = true;
                 newDoc._meta.lwt = now();
-                const newRev = createRevision(defaultHashFunction, newDoc, previous);
+                const newRev = createRevision(databaseInstanceToken, previous);
                 newDoc._rev = newRev;
                 const deleteResult = await storageInstance.bulkWrite([
                     {
@@ -2698,16 +2697,6 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
 
                 // clean up the deleted document
                 await storageInstance.cleanup(0);
-
-                if (config.storage.name === 'pouchdb') {
-                    /**
-                     * PouchDB is not able to fully purge a document
-                     * so it makes no sense to check if the deleted document
-                     * was removed on cleanup.
-                     */
-                    await storageInstance.close();
-                    return;
-                }
 
                 const mustNotBeThere = await storageInstance.findDocumentsById(
                     [id],

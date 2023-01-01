@@ -27,13 +27,13 @@ The benefits of not having to support transactions:
 
 Working without transactions leads to having undefined state when doing multiple database operations at the same time. Most client side databases rely on a last-write-wins strategy on write operations. This might be a viable solution for some cases, but often this leads to strange problems that are hard to debug.
 
-Instead, to ensure that the behavior of RxDB is **always predictable**, RxDB relies on **revisions** for version control.
+Instead, to ensure that the behavior of RxDB is **always predictable**, RxDB relies on **revisions** for version control. Revisions work similar to [Lamport Clocks](https://martinfowler.com/articles/patterns-of-distributed-systems/lamport-clock.html).
 
-Each document is stored together with its revision string, that looks like `1-12080c42d471e3d2625e49dcca3b8e1a` and consists of:
+Each document is stored together with its revision string, that looks like `1-9dcca3b8e1a` and consists of:
 - The revision height, a number that starts with `1` and is increased with each write to that document.
-- A revision hash that is a hash string of the documents data. Different [RxStorage](./rx-storage.md) implementations might use different hashing methods.
+- The database instance token.
 
-An operation to the RxDB data layer does not only contain the new document data, but also the previous document data with its revision string. If the previous revision matches the revision that is currently stored in the database, the write operation can succeed. If the previous revision is **different** than the revision that is currently stored in the database, the operation will throw a `local conflict` error.
+An operation to the RxDB data layer does not only contain the new document data, but also the previous document data with its revision string. If the previous revision matches the revision that is currently stored in the database, the write operation can succeed. If the previous revision is **different** than the revision that is currently stored in the database, the operation will throw a `409 CONFLICT` error.
 
 ## Conflicts
 
@@ -45,7 +45,7 @@ A local conflict can happen when a write operation assumes a different previous 
 
 When a local conflict appears, RxDB will throw a `409 CONFLICT` error. The calling code must then handle the error properly, depending on the application logic.
 
-Instead of handling local conflicts, in most cases it is easier to ensure that they cannot happen, by using `atomic` database operations like [atomicUpdate()](./rx-document.md), [atomicPatch()](./rx-document.md) or [atomicUpsert()](./rx-collection.md). These write operations have a build in way to handle conflicts by re-applying the mutation functions to the conflicting document state.
+Instead of handling local conflicts, in most cases it is easier to ensure that they cannot happen, by using `incremental` database operations like [incrementalModify()](./rx-document.md), [incrementalPatch()](./rx-document.md) or [incrementalUpsert()](./rx-collection.md). These write operations have a build in way to handle conflicts by re-applying the mutation functions to the conflicting document state.
 
 ## Replication conflicts
 

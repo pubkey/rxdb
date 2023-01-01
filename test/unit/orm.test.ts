@@ -9,10 +9,6 @@ import {
     RxJsonSchema
 } from '../../';
 
-import {
-    getRxStoragePouch,
-} from '../../plugins/pouchdb';
-
 
 import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';
@@ -25,7 +21,7 @@ config.parallel('orm.test.js', () => {
                 it('create a collection with static-methods', async () => {
                     const db = await createRxDatabase({
                         name: randomCouchString(10),
-                        storage: getRxStoragePouch('memory'),
+                        storage: config.storage.getStorage(),
                     });
                     await db.addCollections({
                         humans: {
@@ -44,7 +40,7 @@ config.parallel('orm.test.js', () => {
                 it('crash when name not allowed (startsWith(_))', async () => {
                     const db = await createRxDatabase({
                         name: randomCouchString(10),
-                        storage: getRxStoragePouch('memory'),
+                        storage: config.storage.getStorage(),
                     });
                     await AsyncTestUtil.assertThrows(
                         () => db.addCollections({
@@ -65,7 +61,7 @@ config.parallel('orm.test.js', () => {
                 it('crash when name not allowed (name reserved)', async () => {
                     const db = await createRxDatabase({
                         name: randomCouchString(10),
-                        storage: getRxStoragePouch('memory'),
+                        storage: config.storage.getStorage(),
                     });
                     const reserved = [
                         'synced',
@@ -98,9 +94,9 @@ config.parallel('orm.test.js', () => {
                 const db = await createRxDatabase<{
                     humans: RxCollection<HumanDocumentType, {}, { foobar(): string; }>;
                 }>({
-                            name: randomCouchString(10),
-                            storage: getRxStoragePouch('memory'),
-                        });
+                    name: randomCouchString(10),
+                    storage: config.storage.getStorage(),
+                });
                 const collections = await db.addCollections({
                     humans: {
                         schema: schemas.human,
@@ -118,7 +114,7 @@ config.parallel('orm.test.js', () => {
             it('should have the right this-context', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    storage: getRxStoragePouch('memory'),
+                    storage: config.storage.getStorage(),
                 });
                 const collections = await db.addCollections({
                     humans: {
@@ -138,7 +134,7 @@ config.parallel('orm.test.js', () => {
             it('should be able to use this.insert()', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    storage: getRxStoragePouch('memory'),
+                    storage: config.storage.getStorage(),
                 });
                 const collections = await db.addCollections({
                     humans: {
@@ -164,7 +160,7 @@ config.parallel('orm.test.js', () => {
                 it('create a collection with instance-methods', async () => {
                     const db = await createRxDatabase({
                         name: randomCouchString(10),
-                        storage: getRxStoragePouch('memory'),
+                        storage: config.storage.getStorage(),
                     });
                     await db.addCollections({
                         humans: {
@@ -181,7 +177,7 @@ config.parallel('orm.test.js', () => {
                 it('this-scope should be bound to document', async () => {
                     const db = await createRxDatabase({
                         name: randomCouchString(10),
-                        storage: getRxStoragePouch('memory'),
+                        storage: config.storage.getStorage(),
                     });
                     const cols = await db.addCollections({
                         humans: {
@@ -215,7 +211,7 @@ config.parallel('orm.test.js', () => {
                 it('crash when name not allowed (startsWith(_))', async () => {
                     const db = await createRxDatabase({
                         name: randomCouchString(10),
-                        storage: getRxStoragePouch('memory'),
+                        storage: config.storage.getStorage(),
                     });
                     await AsyncTestUtil.assertThrows(
                         () => db.addCollections({
@@ -235,7 +231,7 @@ config.parallel('orm.test.js', () => {
                 it('crash when name not allowed (name reserved)', async () => {
                     const db = await createRxDatabase({
                         name: randomCouchString(10),
-                        storage: getRxStoragePouch('memory'),
+                        storage: config.storage.getStorage(),
                     });
                     const reserved = [
                         'primaryPath',
@@ -263,7 +259,7 @@ config.parallel('orm.test.js', () => {
                 it('crash when name not allowed (name is top-level field in schema)', async () => {
                     const db = await createRxDatabase({
                         name: randomCouchString(10),
-                        storage: getRxStoragePouch('memory'),
+                        storage: config.storage.getStorage(),
                     });
                     const reserved = [
                         'passportId',
@@ -296,7 +292,7 @@ config.parallel('orm.test.js', () => {
             it('should be able to run the method', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    storage: getRxStoragePouch('memory'),
+                    storage: config.storage.getStorage(),
                 });
                 const collections = await db.addCollections({
                     humans: {
@@ -318,7 +314,7 @@ config.parallel('orm.test.js', () => {
             it('should have the right this-context', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    storage: getRxStoragePouch('memory'),
+                    storage: config.storage.getStorage()
                 });
                 const collections = await db.addCollections({
                     humans: {
@@ -341,7 +337,7 @@ config.parallel('orm.test.js', () => {
             it('should not be confused with many collections', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    storage: getRxStoragePouch('memory'),
+                    storage: config.storage.getStorage(),
                 });
                 const collections = await db.addCollections({
                     humans: {
@@ -375,7 +371,7 @@ config.parallel('orm.test.js', () => {
         it('#791 Document methods are not bind() to the document', async () => {
             const db = await createRxDatabase({
                 name: randomCouchString(),
-                storage: getRxStoragePouch('memory'),
+                storage: config.storage.getStorage(),
                 multiInstance: false
             });
 

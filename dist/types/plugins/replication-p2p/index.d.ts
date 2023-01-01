@@ -1,7 +1,7 @@
 import { BehaviorSubject, Subject, Subscription } from 'rxjs';
-import type { RxCollection, RxError, RxPlugin, RxReplicationHandler, RxTypeError } from '../../types';
+import type { RxCollection, RxError, RxReplicationHandler, RxTypeError } from '../../types';
 import type { P2PConnectionHandler, P2PPeer, P2PPeerState, P2PReplicationCheckpoint, RxP2PReplicationState, SyncOptionsP2P } from './p2p-types';
-export declare function syncP2P<RxDocType>(this: RxCollection<RxDocType>, options: SyncOptionsP2P<RxDocType>): Promise<RxP2PReplicationPool<RxDocType>>;
+export declare function replicateP2P<RxDocType>(options: SyncOptionsP2P<RxDocType>): Promise<RxP2PReplicationPool<RxDocType>>;
 /**
  * Because the P2P replication runs between many instances,
  * we use a Pool instead of returning a single replication state.
@@ -21,7 +21,6 @@ export declare class RxP2PReplicationPool<RxDocType> {
     awaitFirstPeer(): Promise<Map<P2PPeer, P2PPeerState<RxDocType>>>;
     cancel(): Promise<void>;
 }
-export declare const RxDBReplicationP2PPlugin: RxPlugin;
 export * from './p2p-helper';
 export * from './p2p-types';
 export * from './connection-handler-simple-peer';

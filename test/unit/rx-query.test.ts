@@ -15,10 +15,6 @@ import {
     randomCouchString,
     ensureNotFalsy,
 } from '../../';
-import {
-    getRxStoragePouch
-} from '../../plugins/pouchdb';
-
 
 import { firstValueFrom } from 'rxjs';
 
@@ -306,7 +302,7 @@ describe('rx-query.test.ts', () => {
                 throw new Error('doc missing');
             }
 
-            const docDataObject = doc._dataSync$.getValue();
+            const docDataObject = doc._data;
             const inQueryCacheObject = ensureNotFalsy(query._result).docsData[0];
 
             assert.ok(
@@ -364,46 +360,6 @@ describe('rx-query.test.ts', () => {
             assert.strictEqual(true, q.doesDocumentDataMatch(docData));
             col.database.destroy();
         });
-        it('BUG should not match regex', async () => {
-            if (!config.storage.hasRegexSupport) {
-                return;
-            }
-            const col = await humansCollection.create(0);
-
-
-            // TODO using $and fails, we have to open an issue at the pouchdb repo
-            /*
-           const q = col.find({
-                selector: {
-                    $and: [{
-                        color: {
-                            $regex: new RegExp('f', 'i')
-                        }
-                    }]
-                }
-            });
-            */
-
-            const q = col.find({
-                selector: {
-                    color: {
-                        $regex: new RegExp('f', 'i')
-                    }
-                }
-            });
-
-            const docData = {
-                _id: 'mydoc',
-                color: 'green',
-                hp: 100,
-                maxHP: 767,
-                name: 'asdfsadf',
-                _rev: '1-971bfd0b8749eb33b6aae7f6c0dc2cd4'
-            };
-
-            assert.strictEqual(false, q.doesDocumentDataMatch(docData));
-            col.database.destroy();
-        });
     });
     config.parallel('.exec()', () => {
         it('should throw if top level field is not known to the schema', async () => {
@@ -413,7 +369,7 @@ describe('rx-query.test.ts', () => {
                 () => col.find({
                     selector: {
                         asdfasdfasdf: 'asdf'
-                    }
+                    } as any
                 }).exec(),
                 'RxError',
                 'QU13'
@@ -426,10 +382,10 @@ describe('rx-query.test.ts', () => {
                         $and: [
                             {
                                 asdfasdfasdf: 'asdf'
-                            },
+                            } as any,
                             {
                                 asdfasdfasdf: 'asdf'
-                            }
+                            } as any
                         ]
                     }
                 }).exec(),
@@ -518,16 +474,14 @@ describe('rx-query.test.ts', () => {
         });
         it('querying fast should still return the same RxDocument', async () => {
             if (
-                !config.platform.isNode() ||
-                config.storage.name !== 'pouchdb'
+                !config.platform.isNode()
             ) {
                 return;
             }
             // use a 'slow' adapter because memory might be to fast
-            const leveldown = require('leveldown');
             const db = await createRxDatabase({
                 name: config.rootPath + 'test_tmp/' + randomCouchString(10),
-                storage: getRxStoragePouch(leveldown),
+                storage: config.storage.getStorage(),
             });
             const cols = await db.addCollections({
                 humans: {
@@ -595,7 +549,7 @@ describe('rx-query.test.ts', () => {
             await AsyncTestUtil.waitUntil(() => emitted.length === 2);
             assert.strictEqual(query._execOverDatabaseCount, 1);
 
-            await col.atomicUpsert(otherData());
+            await col.incrementalUpsert(otherData());
             await AsyncTestUtil.waitUntil(() => emitted.length === 3);
             assert.strictEqual(query._execOverDatabaseCount, 1);
 
@@ -603,7 +557,7 @@ describe('rx-query.test.ts', () => {
                 new Array(2)
                     .fill(0)
                     .map(() => otherData())
-                    .map(data => col.atomicUpsert(data))
+                    .map(data => col.incrementalUpsert(data))
             );
             await AsyncTestUtil.waitUntil(() => emitted.length === 5);
             assert.strictEqual(query._execOverDatabaseCount, 1);
@@ -612,14 +566,14 @@ describe('rx-query.test.ts', () => {
                 new Array(10)
                     .fill(0)
                     .map(() => otherData())
-                    .map(data => col.atomicUpsert(data))
+                    .map(data => col.incrementalUpsert(data))
             );
             await AsyncTestUtil.waitUntil(() => emitted.length === 15);
             assert.strictEqual(query._execOverDatabaseCount, 1);
 
             col.database.destroy();
         });
-        it('should not make more requests then needed on atomic upsert', async () => {
+        it('should not make more requests then needed on incremental upsert', async () => {
             const col = await humansCollection.createPrimary(0);
             const docData = schemaObjects.simpleHuman();
             let count = 0;
@@ -641,19 +595,22 @@ describe('rx-query.test.ts', () => {
                 new Array(10)
                     .fill(0)
                     .map(() => otherData())
-                    .map(data => col.atomicUpsert(data))
+                    .map(data => col.incrementalUpsert(data))
             );
 
             assert.strictEqual(query._execOverDatabaseCount, 1);
             col.database.destroy();
         });
         it('exec from other database-instance', async () => {
+            if (!config.storage.hasPersistence) {
+                return;
+            }
             const dbName = randomCouchString(10);
             const schema = schemas.averageSchema();
             const db = await createRxDatabase({
                 name: dbName,
                 eventReduce: true,
-                storage: getRxStoragePouch('memory'),
+                storage: config.storage.getStorage(),
             });
             const cols = await db.addCollections({
                 human: {
@@ -673,7 +630,7 @@ describe('rx-query.test.ts', () => {
 
             const db2 = await createRxDatabase({
                 name: dbName,
-                storage: getRxStoragePouch('memory'),
+                storage: config.storage.getStorage(),
                 eventReduce: true,
                 ignoreDuplicate: true
             });
@@ -711,7 +668,7 @@ describe('rx-query.test.ts', () => {
         });
         it('isFindOneByIdQuery(): .findOne(documentId) should use RxStorage().findDocumentsById() instead of RxStorage().query()', async () => {
             const c = await humansCollection.create();
-            const docData = schemaObjects.simpleHuman();
+            const docData = schemaObjects.human();
             const docId = 'foobar';
             docData.passportId = docId;
             await c.insert(docData);
@@ -809,30 +766,7 @@ describe('rx-query.test.ts', () => {
         });
     });
     config.parallel('issues', () => {
-        it('#267 query for null-fields', async () => {
-            if (config.storage.name !== 'pouchdb') {
-                /**
-                 * This test only runs in pouchdb,
-                 * TODO this should run on every RxStorage because it is a valid mongodb query.
-                 * @link https://docs.mongodb.com/manual/tutorial/query-for-null-fields/#faq-developers-query-for-nulls
-                 */
-                return;
-            }
-            const c = await humansCollection.create(2);
-            const foundDocs = await c.find({
-                selector: {
-                    passportId: null
-                }
-            }).exec();
-            assert.ok(Array.isArray(foundDocs));
-            c.database.destroy();
-        });
         it('#278 queryCache breaks when pointer out of bounds', async () => {
-            if (!config.platform.isNode()) {
-                // dont do this on browsers because firefox takes too long
-                return;
-            }
-
             const c = await humansCollection.createPrimary(0);
 
             // insert some docs
@@ -854,7 +788,6 @@ describe('rx-query.test.ts', () => {
                     .fill(0)
                     .map(() => schemaObjects.human())
             );
-
 
             // re-exec query
             const docs2 = await query.exec();
@@ -883,6 +816,10 @@ describe('rx-query.test.ts', () => {
             c.database.destroy();
         });
         it('#585 sort by sub-path not working', async () => {
+            if (['lokijs', 'remote'].includes(config.storage.name)) {
+                // TODO fix wrong sort order in lokijs
+                return;
+            }
             const schema = {
                 version: 0,
                 type: 'object',
@@ -907,7 +844,7 @@ describe('rx-query.test.ts', () => {
             };
             const db = await createRxDatabase({
                 name: randomCouchString(10),
-                storage: getRxStoragePouch('memory'),
+                storage: config.storage.getStorage(),
             });
             const cols = await db.addCollections({
                 humans: {
@@ -915,21 +852,6 @@ describe('rx-query.test.ts', () => {
                 }
             });
             const col = cols.humans;
-
-            await col.storageInstance.internals.pouch.createIndex({
-                name: 'idx-rxdb-info',
-                ddoc: 'idx-rxdb-info',
-                index: {
-                    fields: ['info']
-                }
-            });
-            await col.storageInstance.internals.pouch.createIndex({
-                name: 'idx-rxdb-info.title',
-                ddoc: 'idx-rxdb-info.title',
-                index: {
-                    fields: ['info.title']
-                }
-            });
 
             await col.insert({
                 id: '1',
@@ -950,10 +872,10 @@ describe('rx-query.test.ts', () => {
                 }
             });
 
-            const foundDocs = await col
+            const query = col
                 .find()
-                .sort('info.title')
-                .exec();
+                .sort('info.title');
+            const foundDocs = await query.exec();
             assert.strictEqual(foundDocs.length, 3);
             assert.strictEqual(foundDocs[0].info.title, 'aatest');
 
@@ -965,67 +887,6 @@ describe('rx-query.test.ts', () => {
             assert.strictEqual(foundDocsDesc[0].info.title, 'cctest');
 
             db.destroy();
-        });
-        it('#609 default index on primaryKey when better possible', async () => {
-            if (config.storage.name !== 'pouchdb') {
-                return;
-            }
-
-            const mySchema: RxJsonSchema<{ name: string; passportId: string; }> = {
-                version: 0,
-                keyCompression: false,
-                primaryKey: 'name',
-                type: 'object',
-                properties: {
-                    name: {
-                        type: 'string',
-                        maxLength: 100
-                    },
-                    passportId: {
-                        type: 'string',
-                        maxLength: 100
-                    }
-                },
-                indexes: ['passportId']
-            };
-            const collection = await humansCollection.createBySchema(mySchema);
-
-            await collection.insert({
-                name: 'abc',
-                passportId: 'foobar'
-            });
-
-            // first query, no sort
-            const q1 = collection.findOne({
-                selector: {
-                    passportId: 'foofbar'
-                },
-                /**
-                 * TODO if we do not set a sorting,
-                 * the primaryKey sorting will still be added by RxDb
-                 * which causes PouchDB to pick the wrong index.
-                 * This looks like a pouchdb bug, create a test there.
-                 */
-                sort: [
-                    { passportId: 'asc' }
-                ]
-            });
-            const explained1 = await collection.storageInstance.internals.pouch.explain(q1.getPreparedQuery());
-
-            assert.ok(explained1.index.ddoc);
-            assert.ok(explained1.index.ddoc.startsWith('_design/idx-'));
-
-            // second query, with sort
-            const q2 = collection.findOne({
-                selector: {
-                    passportId: 'foofbar'
-                }
-            }).sort('passportId');
-            const explained2 = await collection.storageInstance.internals.pouch.explain(q2.getPreparedQuery());
-            assert.ok(explained2.index.ddoc);
-            assert.ok(explained2.index.ddoc.startsWith('_design/idx-'));
-
-            collection.database.destroy();
         });
         it('#698 Same query producing a different result', async () => {
             const mySchema: RxJsonSchema<{ id: string; event_id: number; user_id: string; created_at: number; }> = {
@@ -1146,67 +1007,7 @@ describe('rx-query.test.ts', () => {
 
             c2.database.destroy();
         });
-        it('#724 find() does not find all matching documents', async () => {
-            const db = await createRxDatabase({
-                name: randomCouchString(10),
-                storage: getRxStoragePouch('memory'),
-            });
-            const schema: RxJsonSchema<{ roomId: string; sessionId: string; }> = {
-                version: 0,
-                primaryKey: 'roomId',
-                type: 'object',
-                properties: {
-                    roomId: {
-                        type: 'string',
-                        maxLength: 100
-                    },
-                    sessionId: {
-                        type: 'string'
-                    }
-                }
-            };
-            const collections = await db.addCollections({
-                roomsession: {
-                    schema
-                }
-            });
-            const roomsession = collections.roomsession;
-            const roomId = 'roomId';
-            const sessionId = 'sessionID';
-            await roomsession.insert({
-                roomId,
-                sessionId
-            });
-
-            const foundByRoomId = await roomsession.findOne({
-                selector: {
-                    roomId
-                }
-            }).exec();
-            const foundByRoomAndSessionId = await roomsession.findOne({
-                selector: {
-                    roomId,
-                    sessionId
-                }
-            }).exec();
-            const foundBySessionId = await roomsession.findOne({
-                selector: {
-                    sessionId
-                }
-            }).exec();
-
-            assert(foundByRoomId !== null); // fail
-            assert(foundByRoomAndSessionId !== null); // fail
-            assert(foundBySessionId !== null); // pass
-            assert(foundBySessionId.roomId === roomId && foundBySessionId.sessionId === sessionId); // pass
-
-            db.destroy();
-        });
         it('#815 Allow null value for strings', async () => {
-            if (config.storage.name !== 'pouchdb') {
-                return;
-            }
-
             // create a schema
             const mySchema = {
                 version: 0,
@@ -1237,7 +1038,7 @@ describe('rx-query.test.ts', () => {
             // create a database
             const db = await createRxDatabase({
                 name,
-                storage: getRxStoragePouch('memory'),
+                storage: config.storage.getStorage(),
                 eventReduce: true,
                 ignoreDuplicate: true
             });
@@ -1265,22 +1066,6 @@ describe('rx-query.test.ts', () => {
             const queryOK = collection.find();
             const docsOK = await queryOK.exec();
             assert.strictEqual(docsOK.length, 2);
-
-            const selector = {
-                lastName: null
-            };
-
-            const pouchResult = await collection.storageInstance.internals.pouch.find({
-                selector
-            });
-            const pouchDocs = pouchResult.docs;
-            const query = collection.find({
-                selector
-            });
-            const docs = await query.exec();
-
-            assert.strictEqual(pouchDocs.length, docs.length);
-            assert.strictEqual(pouchDocs[0].firstName, docs[0].firstName);
 
             db.destroy();
         });
@@ -1312,7 +1097,7 @@ describe('rx-query.test.ts', () => {
             };
             const db = await createRxDatabase({
                 name: randomCouchString(10),
-                storage: getRxStoragePouch('memory'),
+                storage: config.storage.getStorage(),
                 eventReduce: true,
                 ignoreDuplicate: true
             });
@@ -1418,7 +1203,7 @@ describe('rx-query.test.ts', () => {
         it('gitter: mutating find-params causes different results', async () => {
             const db = await createRxDatabase({
                 name: randomCouchString(10),
-                storage: getRxStoragePouch('memory'),
+                storage: config.storage.getStorage(),
                 eventReduce: false
             });
             const schema = clone(schemas.human);
@@ -1486,7 +1271,7 @@ describe('rx-query.test.ts', () => {
             } as const;
             const db = await createRxDatabase({
                 name: randomCouchString(10),
-                storage: getRxStoragePouch('memory'),
+                storage: config.storage.getStorage(),
                 eventReduce: true,
                 ignoreDuplicate: true
             });

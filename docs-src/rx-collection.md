@@ -144,12 +144,12 @@ const docs = await myCollection.bulkUpsert([
 // > [RxDocument, RxDocument]
 ```
 
-### atomicUpsert()
+### incrementalUpsert()
 
 When you run many upsert operations on the same RxDocument in a very short timespan, you might get a `409 Conflict` error.
 This means that you tried to run a `.upsert()` on the document, while the previous upsert operation was still running.
-To prevent these types of errors, you can run atomic upsert operations.
-The behavior is similar to [RxDocument.atomicUpdate](./rx-document.md#atomicUpdate).
+To prevent these types of errors, you can run incremental upsert operations.
+The behavior is similar to [RxDocument.incrementalModify](./rx-document.md#incrementalModify).
 
 ```js
 const docData = {
@@ -161,12 +161,12 @@ myCollection.upsert(docData);
 myCollection.upsert(docData);
 // -> throws because of parallel update to the same document
 
-myCollection.atomicUpsert(docData);
-myCollection.atomicUpsert(docData);
-myCollection.atomicUpsert(docData);
+myCollection.incrementalUpsert(docData);
+myCollection.incrementalUpsert(docData);
+myCollection.incrementalUpsert(docData);
 
 // wait until last upsert finished
-await myCollection.atomicUpsert(docData);
+await myCollection.incrementalUpsert(docData);
 // -> works
 ```
 
@@ -256,9 +256,9 @@ Note that importing will fire events for each inserted document.
 This method allows you to replicate data between other RxCollections, pouchdb instances or remote servers which support the couchdb-sync-protocol.
 Full documentation on how to use replication is [here](./replication-couchdb.md).
 
-### syncCouchDBNew()
-This method allows you to replicate data between a `RxCollection` and a CouchDB endpoint. Compared to `syncCouchDB()`, `syncCouchDBNew()` does not require to use the PouchDB [RxStorage](./rx-storage.md).
-Full documentation on how to use replication is [here](./replication-couchdb-new.md).
+### syncCouchDB()
+This method allows you to replicate data between a `RxCollection` and a CouchDB endpoint. Compared to `syncCouchDB()`, `syncCouchDB()` does not require to use the PouchDB [RxStorage](./rx-storage.md).
+Full documentation on how to use replication is [here](./replication-couchdb.md).
 
 
 ### syncGraphQL()

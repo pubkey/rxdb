@@ -34,9 +34,9 @@ jobs:
           path: |
             ~/.npm
             ./node_modules
-          key: ${{ runner.os }}-npm-core-x7-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-core-x8-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-core-x7-
+            ${{ runner.os }}-npm-core-x8-
 
       - name: install npm dependencies
         run: npm install
@@ -46,57 +46,6 @@ jobs:
       
       - name: test:typings
         run: npm run test:typings
-
-  storage-pouchdb:
-    runs-on: ubuntu-20.04
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set node version
-        uses: actions/setup-node@v3
-        with:
-          node-version-file: '.nvmrc'
-
-      - name: Reuse npm cache folder
-        uses: actions/cache@v2
-        env:
-          cache-name: cache-node-modules
-        with:
-          path: |
-            ~/.npm
-            ./node_modules
-          key: ${{ runner.os }}-npm-storage-pouchdb-x7-${{ hashFiles('**/package.json') }}
-          restore-keys: |
-            ${{ runner.os }}-npm-storage-pouchdb-x7-
-
-      - name: install npm dependencies
-        run: npm install
-      
-      - name: build
-        run: npm run build
-
-      - name: npm run test:node:pouchdb
-        run: npm run test:node:pouchdb
-
-      - name: npm run test:fast:pouchdb
-        run: npm run test:fast:pouchdb
-        
-      - name: node example
-        working-directory: ./examples/node
-        run: |
-          npm install
-          npm run test
-
-      - name: npm run test:browser:pouchdb
-        uses: GabrielBB/xvfb-action@v1
-        with:
-          run: npm run test:browser:pouchdb
-
-      - name: performance test
-        uses: GabrielBB/xvfb-action@v1
-        with:
-          run: npm run test:performance:pouchdb:browser
-
-      - run: npm run test:performance:pouchdb:node
 
   # run the node tests for the LokiJS RxStorage
   storage-lokijs:
@@ -116,9 +65,9 @@ jobs:
           path: |
             ~/.npm
             ./node_modules
-          key: ${{ runner.os }}-npm-loki-x7-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-loki-x8-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-loki-x7-
+            ${{ runner.os }}-npm-loki-x8-
 
       - name: install npm dependencies
         run: npm install
@@ -160,9 +109,9 @@ jobs:
           path: |
             ~/.npm
             ./node_modules
-          key: ${{ runner.os }}-npm-memory-x7-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-memory-x8-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-memory-x7-
+            ${{ runner.os }}-npm-memory-x8-
 
       - name: install npm dependencies
         run: npm install
@@ -191,6 +140,12 @@ jobs:
 
       - run: npm run test:performance:memory:node
 
+      - name: node example
+        working-directory: ./examples/node
+        run: |
+          npm install
+          npm run test
+
 
   storage-remote:
     runs-on: ubuntu-20.04
@@ -209,9 +164,9 @@ jobs:
           path: |
             ~/.npm
             ./node_modules
-          key: ${{ runner.os }}-npm-remote-x7-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-remote-x8-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-remote-x7-
+            ${{ runner.os }}-npm-remote-x8-
 
       - name: install npm dependencies
         run: npm install
@@ -226,9 +181,7 @@ jobs:
         with:
           run: npm run test:browser:remote
 
-  # run the node tests for the LokiJS RxStorage in a different
-  # task to run in parallel.
-  node-dexie-worker:
+  storage-worker-dexie:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
@@ -245,9 +198,9 @@ jobs:
           path: |
             ~/.npm
             ./node_modules
-          key: ${{ runner.os }}-npm-loki-worker-x7-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-loki-worker-x8-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-loki-worker-x7-
+            ${{ runner.os }}-npm-loki-worker-x8-
 
       - name: install npm dependencies
         run: npm install
@@ -285,9 +238,9 @@ jobs:
           path: |
             ~/.npm
             ./node_modules
-          key: ${{ runner.os }}-npm-storage-dexie-x7-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-storage-dexie-x8-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-storage-dexie-x7-
+            ${{ runner.os }}-npm-storage-dexie-x8-
 
       - name: install npm dependencies
         run: npm install
@@ -331,9 +284,9 @@ jobs:
           path: |
             ~/.npm
             ./node_modules
-          key: ${{ runner.os }}-npm-storage-foundationdb-x7-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-storage-foundationdb-x8-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-storage-foundationdb-x7-
+            ${{ runner.os }}-npm-storage-foundationdb-x8-
 
       - name: install FoundationDB client and server
         working-directory: ./scripts
@@ -351,8 +304,8 @@ jobs:
       - run: npm run test:fast:foundationdb
       - run: npm run test:performance:foundationdb
 
-  angular:
-    runs-on: ubuntu-20.04
+  example-angular:
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v2
       #- name: install dependencies
@@ -372,9 +325,9 @@ jobs:
             ./node_modules
             ./examples/angular/node_modules
           # invalidate cache when any package.json changes
-          key: ${{ runner.os }}-npm-angular-x7-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-angular-x8-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-angular-x7-
+            ${{ runner.os }}-npm-angular-x8-
 
       - name: prepare RxDB core
         run: |
@@ -392,9 +345,9 @@ jobs:
 
       - name: angular test
         # uses: DevExpress/testcafe-action@latest
-        uses: GabrielBB/xvfb-action@v1
+        uses: GabrielBB/xvfb-action@v1.6
         with:
-          working-directory: ./examples/angular #optional
+          working-directory: ./examples/angular
           run: npm run test:build
 
       - name: angular test ssr
@@ -418,9 +371,9 @@ jobs:
           path: |
             ~/.npm
             ./node_modules
-          key: ${{ runner.os }}-npm-test-builds-x7-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-test-builds-x8-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-test-builds-x7-
+            ${{ runner.os }}-npm-test-builds-x8-
 
       - name: prepare RxDB core
         run: |
@@ -451,9 +404,9 @@ jobs:
           path: |
             ~/.npm
             ./node_modules
-          key: ${{ runner.os }}-npm-test-code-style-x7-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-test-code-style-x8-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-test-code-style-x7-
+            ${{ runner.os }}-npm-test-code-style-x8-
 
       - name: prepare RxDB core
         run: |
@@ -492,7 +445,7 @@ jobs:
           ignore_words_file: config/codespellignore.txt
           path: test
 
-  electron:
+  example-electron:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
@@ -520,7 +473,7 @@ jobs:
           working-directory: ./examples/electron
           run: npm run test
 
-  react:
+  example-react:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
@@ -548,7 +501,7 @@ jobs:
           working-directory: ./examples/react
           run: npm run test:build
 
-  react-native-expo:
+  example-react-native-expo:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
@@ -574,7 +527,7 @@ jobs:
           yarn test:bundle
 
 
-  supabase:
+  example-supabase:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
@@ -592,9 +545,9 @@ jobs:
             ./node_modules
             ./examples/supabase/node_modules
           # invalidate cache when any package-lock.json changes
-          key: ${{ runner.os }}-npm-supabase-x1-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-supabase-x2-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-supabase-x1
+            ${{ runner.os }}-npm-supabase-x2
       - name: Cache Docker layers
         uses: actions/cache@v2
         with:
@@ -631,7 +584,7 @@ jobs:
           working-directory: ./examples/supabase
           run: npm run test:dexie
 
-  vue:
+  example-vue:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
@@ -660,7 +613,7 @@ jobs:
           working-directory: ./examples/vue
           run: npm run test
 
-  svelte:
+  example-svelte:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
@@ -715,7 +668,7 @@ jobs:
           working-directory: ./examples/vite-vanilla-ts
           run: npm run test
           
-  graphql:
+  example-graphql:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
@@ -738,11 +691,6 @@ jobs:
       - name: build
         working-directory: ./examples/graphql
         run: npm run build
-      - name: test test:pouchdb
-        uses: GabrielBB/xvfb-action@v1.6
-        with:
-          working-directory: ./examples/graphql
-          run: npm run test:pouchdb
       - name: test test:lokijs
         uses: GabrielBB/xvfb-action@v1.6
         with:
@@ -754,45 +702,7 @@ jobs:
           working-directory: ./examples/graphql
           run: npm run test:dexie
 
-
-  test-couchdb-integration:
-    # The type of runner that the job will run on
-    runs-on: ubuntu-20.04
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
-    steps:
-      - uses: actions/checkout@v2
-      - uses: docker/setup-buildx-action@v1
-
-      - name: install linux
-        run: sudo apt-get update && sudo apt-get install -y chromium-browser
-
-       # https://github.com/docker/build-push-action/blob/master/docs/advanced/cache.md#github-cache
-      - name: Cache Docker layers
-        uses: actions/cache@v2
-        with:
-          path: /tmp/.buildx-cache
-          key: ${{ runner.os }}-buildx-${{ github.sha }}
-          restore-keys: |
-            ${{ runner.os }}-buildx
-
-      - name: start couchdb container
-        run: docker run -d -p 5984:5984 --rm --name rxdb-couchdb couchdb:2.1.1
-
-      - name: Set node version
-        uses: actions/setup-node@v3
-        with:
-          node-version-file: '.nvmrc'
-
-      - name: prepare RxDB core
-        run: |
-          npm install
-          npm run build
-        
-      - name: npm run test:couchdb
-        run: npm run test:couchdb
-
-  test-flutter:
+  example-flutter:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v2
@@ -814,9 +724,9 @@ jobs:
             ~/.npm
             ./node_modules
             ./examples/flutter/javascript/node_modules
-          key: ${{ runner.os }}-npm-flutter-x8-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-flutter-x9-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-flutter-x8-
+            ${{ runner.os }}-npm-flutter-x9-
       - name: prepare RxDB core
         run: |
           npm install --legacy-peer-deps
@@ -859,23 +769,6 @@ jobs:
           npm install
           npm test
 
-  test-multiple-times-pouchdb:
-    runs-on: ubuntu-20.04
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set node version
-        uses: actions/setup-node@v3
-        with:
-          node-version-file: '.nvmrc'
-      - name: prepare RxDB core
-        run: |
-          npm install
-          npm run build
-       # in the past we had tests that failed randomly
-       # to prevent this we run the tests in fast-mode 10 times
-      - name: unit tests 10 times
-        run: for i in `seq 10`; do npm run test:fast:pouchdb; done
-
   test-multiple-times-lokijs:
     runs-on: ubuntu-20.04
     steps:
@@ -900,28 +793,26 @@ jobs:
   # But this is a bad metric so I destroy it by obfuscating the actual download count.
   # This should never increase the total time of the CI. If this task takes longer then all other tasks,
   # decrease the download calls.
-  download:
-    runs-on: ubuntu-20.04
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set node version
-        uses: actions/setup-node@v3
-        with:
-          node-version-file: '.nvmrc'
-      - name: download X times
-        run: |
-          npm i rxdb --no-optional --skip-installed --ignore-scripts --no-audit
-          npm cache clean --force
-          rm -rf node_modules
-          npm i rxdb --no-optional --skip-installed --ignore-scripts --no-audit
-          npm cache clean --force
-          rm -rf node_modules
-          npm i rxdb --no-optional --skip-installed --ignore-scripts --no-audit
-          npm cache clean --force
-          rm -rf node_modules
-          npm i rxdb --no-optional --skip-installed --ignore-scripts --no-audit
-          npm cache clean --force
-          rm -rf node_modules
-          npm i rxdb --no-optional --skip-installed --ignore-scripts --no-audit
-
-          
+  # download:
+  #   runs-on: ubuntu-20.04
+  #   steps:
+  #     - uses: actions/checkout@v2
+  #     - name: Set node version
+  #       uses: actions/setup-node@v3
+  #       with:
+  #         node-version-file: '.nvmrc'
+  #     - name: download X times
+  #       run: |
+  #         npm i rxdb --no-optional --skip-installed --ignore-scripts --no-audit
+  #         npm cache clean --force
+  #         rm -rf node_modules
+  #         npm i rxdb --no-optional --skip-installed --ignore-scripts --no-audit
+  #         npm cache clean --force
+  #         rm -rf node_modules
+  #         npm i rxdb --no-optional --skip-installed --ignore-scripts --no-audit
+  #         npm cache clean --force
+  #         rm -rf node_modules
+  #         npm i rxdb --no-optional --skip-installed --ignore-scripts --no-audit
+  #         npm cache clean --force
+  #         rm -rf node_modules
+  #         npm i rxdb --no-optional --skip-installed --ignore-scripts --no-audit

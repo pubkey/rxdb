@@ -12,7 +12,7 @@ export declare function getQueryPlan<RxDocType>(schema: RxJsonSchema<RxDocumentD
 export declare const LOGICAL_OPERATORS: Set<string>;
 export declare const LOWER_BOUND_LOGICAL_OPERATORS: Set<string>;
 export declare const UPPER_BOUND_LOGICAL_OPERATORS: Set<string>;
-export declare function isSelectorSatisfiedByIndex(index: string[], selector: MangoQuerySelector): boolean;
+export declare function isSelectorSatisfiedByIndex(index: string[], selector: MangoQuerySelector<any>): boolean;
 export declare function getMatcherQueryOpts(operator: string, operatorValue: any): Partial<RxQueryPlanerOpts>;
 /**
  * Returns a number that determines the quality of the query plan.

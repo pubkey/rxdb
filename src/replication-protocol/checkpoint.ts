@@ -15,7 +15,7 @@ import {
     getDefaultRxDocumentMeta,
     getFromObjectOrThrow,
     now
-} from '../util';
+} from '../plugins/utils';
 import { RX_REPLICATION_META_INSTANCE_SCHEMA } from './meta-instance';
 
 export async function getLastCheckpointDoc<RxDocType, CheckpointType>(
@@ -107,8 +107,7 @@ export async function setCheckpoint<RxDocType, CheckpointType>(
             }
             newDoc._meta.lwt = now();
             newDoc._rev = createRevision(
-                state.input.hashFunction,
-                newDoc,
+                state.input.identifier,
                 previousCheckpointDoc
             );
             const result = await state.input.metaInstance.bulkWrite([{
@@ -132,8 +131,7 @@ export async function setCheckpoint<RxDocType, CheckpointType>(
                 } else {
                     previousCheckpointDoc = ensureNotFalsy(error.documentInDb);
                     newDoc._rev = createRevision(
-                        state.input.hashFunction,
-                        newDoc,
+                        state.input.identifier,
                         previousCheckpointDoc
                     );
                 }

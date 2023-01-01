@@ -15,12 +15,9 @@ import {
     getDocumentOrmPrototype,
     getDocumentPrototype,
     addRxPlugin,
-    blobBufferUtil
+    blobBufferUtil,
+    RxCollection
 } from '../../';
-
-import {
-    getRxStoragePouch
-} from '../../plugins/pouchdb';
 
 
 import { RxDBAttachmentsPlugin } from '../../plugins/attachments';
@@ -72,7 +69,7 @@ describe('rx-document.test.js', () => {
             it('should get a prototype with all orm-methods', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    storage: getRxStoragePouch('memory'),
+                    storage: config.storage.getStorage(),
                 });
                 const cols = await db.addCollections({
                     humans: {
@@ -100,7 +97,7 @@ describe('rx-document.test.js', () => {
             it('should get a valid prototype', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    storage: getRxStoragePouch('memory'),
+                    storage: config.storage.getStorage(),
                 });
                 const cols = await db.addCollections({
                     humans: {
@@ -164,9 +161,8 @@ describe('rx-document.test.js', () => {
             });
             it('should update the data of the RxDocument instance', async () => {
                 const c = await humansCollection.create(1);
-                const doc = await c.findOne().exec(true);
-                await doc.remove();
-
+                let doc = await c.findOne().exec(true);
+                doc = await doc.remove();
                 assert.strictEqual(doc.toJSON(true)._deleted, true);
                 c.database.destroy();
             });
@@ -176,15 +172,15 @@ describe('rx-document.test.js', () => {
                 assert.ok(doc);
 
                 // update some times to generate revisions
-                await doc.atomicUpdate((docData: any) => {
+                await doc.incrementalModify((docData: any) => {
                     docData.age++;
                     return docData;
                 });
-                await doc.atomicUpdate((docData: any) => {
+                await doc.incrementalModify((docData: any) => {
                     docData.age++;
                     return docData;
                 });
-                await doc.atomicUpdate((docData: any) => {
+                await doc.incrementalModify((docData: any) => {
                     docData.age = 100;
                     return docData;
                 });
@@ -211,28 +207,51 @@ describe('rx-document.test.js', () => {
                 const c = await humansCollection.create(5);
                 const docs = await c.find().exec();
                 assert.ok(docs.length > 1);
-                const first = docs[0];
+                let first = docs[0];
 
-                await first.atomicPatch({ firstName: 'foobar' });
-
+                first = await first.incrementalPatch({ firstName: 'foobar' });
                 await first.remove();
+
                 const docsAfter = await c.find().exec();
                 docsAfter.map(doc => {
-                    if (doc._data.passportId === first._data.passportId)
+                    if (doc._data.passportId === first._data.passportId) {
                         throw new Error('still here after remove()');
+                    }
                 });
+                c.database.destroy();
+            });
+            it('incrementalRemove() should not create a conflict', async () => {
+                const c = await humansCollection.create(1);
+                const doc = await c.findOne().exec(true);
+                await doc.patch({ firstName: 'first' });
+                await doc.incrementalRemove();
+
+                const docsAfter = await c.find().exec();
+                assert.strictEqual(docsAfter.length, 0);
+
                 c.database.destroy();
             });
         });
         describe('negative', () => {
-            it('delete doc twice', async () => {
+            it('should throw on conflict', async () => {
+                const c = await humansCollection.create(1);
+                const doc = await c.findOne().exec(true);
+                await doc.remove();
+                await AsyncTestUtil.assertThrows(
+                    () => doc.remove(),
+                    'RxError',
+                    'CONFLICT'
+                );
+                c.database.destroy();
+            });
+            it('delete doc twice should cause a conflict', async () => {
                 const c = await humansCollection.create(5);
                 const doc: any = await c.findOne().exec();
                 await doc.remove();
                 await AsyncTestUtil.assertThrows(
                     () => doc.remove(),
                     'RxError',
-                    'already'
+                    'CONFLICT'
                 );
                 c.database.destroy();
             });
@@ -270,25 +289,46 @@ describe('rx-document.test.js', () => {
             });
             it('$inc a value with a mongo like query', async () => {
                 const c = await humansCollection.create(1);
-                const doc: any = await c.findOne().exec(true);
+                let doc = await c.findOne().exec(true);
                 const agePrev = doc.age;
-                await doc.update({
+                doc = await doc.update({
                     $inc: {
                         age: 1
                     }
                 });
                 assert.strictEqual(doc.age, agePrev + 1);
-                await doc.save;
+
+                // check again via query
                 const updatedDoc: any = await c.findOne().exec(true);
                 assert.strictEqual(updatedDoc.age, agePrev + 1);
                 c.database.destroy();
             });
         });
         describe('negative', () => {
+            it('should throw on conflict', async () => {
+                const c = await humansCollection.create(1);
+                const doc = await c.findOne().exec(true);
+
+                await doc.update({
+                    $set: {
+                        firstName: 'first'
+                    }
+                });
+                await AsyncTestUtil.assertThrows(
+                    () => doc.update({
+                        $set: {
+                            firstName: 'second'
+                        }
+                    }),
+                    'RxError',
+                    'CONFLICT'
+                );
+                c.database.destroy();
+            });
             it('should throw when final field is modified', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    storage: getRxStoragePouch('memory'),
+                    storage: config.storage.getStorage(),
                 });
                 const cols = await db.addCollections({
                     humans: {
@@ -316,38 +356,46 @@ describe('rx-document.test.js', () => {
             });
         });
     });
-    config.parallel('.atomicUpdate()', () => {
+    config.parallel('.modify()', () => {
         describe('positive', () => {
             it('run one update', async () => {
                 const c = await humansCollection.createNested(1);
-                const doc = await c.findOne().exec(true);
-
-                const returnedDoc = await doc.atomicUpdate((innerDoc: any) => {
+                let doc = await c.findOne().exec(true);
+                doc = await doc.incrementalModify((innerDoc: any) => {
                     innerDoc.firstName = 'foobar';
                     return innerDoc;
                 });
                 assert.strictEqual('foobar', doc.firstName);
-                assert.ok(doc === returnedDoc);
+
+                /**
+                 * Running a totally new query must return the
+                 * exact same document instance as incrementalModify() did.
+                 */
+                const doc2 = await c.findOne().exec(true);
+                assert.ok(doc === doc2);
+
                 c.database.destroy();
             });
             it('run two updates (last write wins)', async () => {
                 const c = await humansCollection.createNested(1);
-                const doc = await c.findOne().exec(true);
+                let doc = await c.findOne().exec(true);
 
-                doc.atomicUpdate((innerDoc: any) => {
+                doc.incrementalModify((innerDoc: any) => {
                     innerDoc.firstName = 'foobar';
                     return innerDoc;
                 });
-                await doc.atomicUpdate((innerDoc: any) => {
+                await doc.incrementalModify((innerDoc: any) => {
                     innerDoc.firstName = 'foobar2';
                     return innerDoc;
                 });
+
+                doc = await c.findOne().exec(true);
                 assert.strictEqual('foobar2', doc.firstName);
                 c.database.destroy();
             });
             it('do many updates (last write wins)', async () => {
                 const c = await humansCollection.create(1);
-                const doc: any = await c.findOne().exec(true);
+                let doc: any = await c.findOne().exec(true);
                 let lastPromise;
                 let t = 0;
                 new Array(10).fill(0)
@@ -355,17 +403,19 @@ describe('rx-document.test.js', () => {
                         t++;
                         return t;
                     })
-                    .forEach(x => lastPromise = doc.atomicUpdate((innerDoc: any) => {
+                    .forEach(x => lastPromise = doc.incrementalModify((innerDoc: any) => {
                         innerDoc.age = x;
                         return innerDoc;
                     }));
                 await lastPromise;
+
+                doc = await c.findOne().exec(true);
                 assert.strictEqual(t, doc.age);
                 c.database.destroy();
             });
             it('run async functions', async () => {
                 const c = await humansCollection.create(1);
-                const doc: any = await c.findOne().exec();
+                let doc = await c.findOne().exec(true);
                 let lastPromise;
                 let t = 0;
                 new Array(10).fill(0)
@@ -373,27 +423,26 @@ describe('rx-document.test.js', () => {
                         t++;
                         return t;
                     })
-                    .forEach(x => lastPromise = doc.atomicUpdate(async (innerDoc: any) => {
+                    .forEach(x => lastPromise = doc.incrementalModify(async (innerDoc: any) => {
                         await promiseWait(1);
                         innerDoc.age = x;
                         return innerDoc;
                     }));
                 await lastPromise;
+
+                doc = await c.findOne().exec(true);
                 assert.strictEqual(t, doc.age);
                 c.database.destroy();
             });
             it('should work when inserting on a slow storage', async () => {
                 if (
-                    !config.platform.isNode() ||
-                    config.storage.name !== 'pouchdb'
+                    !config.platform.isNode()
                 ) {
                     return;
                 }
-                // use a 'slow' adapter because memory might be to fast
-                const leveldown = require('leveldown');
                 const db = await createRxDatabase({
                     name: config.rootPath + 'test_tmp/' + randomCouchString(10),
-                    storage: getRxStoragePouch(leveldown),
+                    storage: config.storage.getStorage(),
                 });
                 const cols = await db.addCollections({
                     humans: {
@@ -404,47 +453,47 @@ describe('rx-document.test.js', () => {
                 await c.insert(schemaObjects.simpleHuman());
                 const doc = await c.findOne().exec();
 
-                doc.atomicUpdate((innerDoc: any) => {
+                doc.incrementalModify((innerDoc: any) => {
                     innerDoc.firstName = 'foobar';
                     return innerDoc;
                 });
 
-                await doc.atomicUpdate((innerDoc: any) => {
+                await doc.incrementalModify((innerDoc: any) => {
                     innerDoc.firstName = 'foobar2';
                     return innerDoc;
                 });
 
                 await AsyncTestUtil.wait(50);
 
-                await doc.atomicUpdate((innerDoc: any) => {
+                await doc.incrementalModify((innerDoc: any) => {
                     innerDoc.firstName = 'foobar3';
                     return innerDoc;
                 });
-                assert.strictEqual('foobar3', doc.firstName);
+                assert.strictEqual('foobar3', doc.getLatest().firstName);
 
                 db.destroy();
             });
             it('should be persistent when re-creating the database', async () => {
-                if (!config.platform.isNode()) return;
+                if (!config.storage.hasPersistence) {
+                    return;
+                }
                 // use a 'slow' adapter because memory might be to fast
-                const leveldown = require('leveldown');
-
                 const dbName = config.rootPath + 'test_tmp/' + randomCouchString(10);
                 const db = await createRxDatabase({
                     name: dbName,
-                    storage: getRxStoragePouch(leveldown),
+                    storage: config.storage.getStorage(),
                 });
                 const cols = await db.addCollections({
                     humans: {
                         schema: schemas.primaryHuman
                     }
                 });
-                const c = cols.humans;
+                const c: RxCollection<schemaObjects.SimpleHumanDocumentType> = cols.humans;
                 await c.insert(schemaObjects.simpleHuman());
-                const doc = await c.findOne().exec();
+                let doc = await c.findOne().exec(true);
                 const docData = doc.toJSON();
                 assert.ok(docData);
-                await doc.atomicUpdate((innerDoc: any) => {
+                doc = await doc.incrementalModify((innerDoc: any) => {
                     innerDoc.firstName = 'foobar';
                     return innerDoc;
                 });
@@ -454,15 +503,15 @@ describe('rx-document.test.js', () => {
                 // same again
                 const db2 = await createRxDatabase({
                     name: dbName,
-                    storage: getRxStoragePouch(leveldown),
+                    storage: config.storage.getStorage(),
                 });
                 const cols2 = await db2.addCollections({
                     humans: {
                         schema: schemas.primaryHuman
                     }
                 });
-                const c2 = cols2.humans;
-                const doc2 = await c2.findOne().exec();
+                const c2: RxCollection<schemaObjects.SimpleHumanDocumentType> = cols2.humans;
+                const doc2 = await c2.findOne().exec(true);
                 assert.strictEqual(doc.passportId, doc2.passportId);
                 const docData2 = doc2.toJSON();
                 assert.ok(docData2);
@@ -470,10 +519,15 @@ describe('rx-document.test.js', () => {
                 db2.destroy();
             });
             it('should retry on conflict errors', async () => {
+                if (
+                    !config.storage.hasPersistence
+                ) {
+                    return;
+                }
                 const dbName = randomCouchString(10);
                 const db = await createRxDatabase({
                     name: dbName,
-                    storage: getRxStoragePouch('memory'),
+                    storage: config.storage.getStorage(),
                 });
 
                 const cols = await db.addCollections({
@@ -485,7 +539,7 @@ describe('rx-document.test.js', () => {
                 const doc = await c.insert(schemaObjects.simpleHuman());
                 const db2 = await createRxDatabase({
                     name: dbName,
-                    storage: getRxStoragePouch('memory'),
+                    storage: config.storage.getStorage(),
                     ignoreDuplicate: true
                 });
                 const cols2 = await db2.addCollections({
@@ -497,11 +551,11 @@ describe('rx-document.test.js', () => {
                 const doc2 = await c2.findOne().exec(true);
 
                 await Promise.all([
-                    doc.atomicUpdate((d: any) => {
+                    doc.incrementalModify((d: any) => {
                         d.firstName = 'foobar1';
                         return d;
                     }),
-                    doc2.atomicUpdate((d: any) => {
+                    doc2.incrementalModify((d: any) => {
                         d.firstName = 'foobar2';
                         return d;
                     })
@@ -512,10 +566,28 @@ describe('rx-document.test.js', () => {
             });
         });
         describe('negative', () => {
+            it('should throw on conflict', async () => {
+                const c = await humansCollection.create(1);
+                const doc = await c.findOne().exec(true);
+
+                await doc.modify(docData => {
+                    docData.firstName = 'first';
+                    return docData;
+                });
+                await AsyncTestUtil.assertThrows(
+                    () => doc.modify(docData => {
+                        docData.firstName = 'second';
+                        return docData;
+                    }),
+                    'RxError',
+                    'CONFLICT'
+                );
+                c.database.destroy();
+            });
             it('should throw when final field is modified', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    storage: getRxStoragePouch('memory'),
+                    storage: config.storage.getStorage(),
                 });
                 const cols = await db.addCollections({
                     humans: {
@@ -533,7 +605,7 @@ describe('rx-document.test.js', () => {
                 const doc = await col.insert(docData);
 
                 await AsyncTestUtil.assertThrows(
-                    () => doc.atomicUpdate((data: any) => {
+                    () => doc.incrementalModify((data: any) => {
                         data.age = 100;
                         return data;
                     }),
@@ -544,25 +616,25 @@ describe('rx-document.test.js', () => {
             });
             it('should still be usable if previous mutation function has thrown', async () => {
                 const col = await humansCollection.create(1);
-                const doc = await col.findOne().exec(true);
+                let doc = await col.findOne().exec(true);
 
                 // non-async mutation
                 try {
-                    await doc.atomicUpdate(() => {
+                    await doc.incrementalModify(() => {
                         throw new Error('throws intentional A');
                     });
                 } catch (err) { }
 
                 // async mutation
                 try {
-                    await doc.atomicUpdate(async () => {
+                    await doc.incrementalModify(async () => {
                         await wait(10);
                         throw new Error('throws intentional B');
                     });
                 } catch (err) { }
 
                 // non throwing mutation
-                await doc.atomicUpdate(d => {
+                doc = await doc.incrementalModify(d => {
                     d.age = 150;
                     return d;
                 });
@@ -572,30 +644,50 @@ describe('rx-document.test.js', () => {
             });
         });
     });
-    config.parallel('.atomicPatch()', () => {
+    config.parallel('.patch()', () => {
         describe('positive', () => {
             it('run one update', async () => {
                 const c = await humansCollection.createNested(1);
                 const doc = await c.findOne().exec(true);
 
-                const returnedDoc = await doc.atomicPatch({
+                const returnedDoc = await doc.incrementalPatch({
                     firstName: 'foobar'
                 });
-                assert.strictEqual('foobar', doc.firstName);
-                assert.ok(doc === returnedDoc);
+                assert.strictEqual('foobar', returnedDoc.firstName);
+
+                const docAfter = await c.findOne().exec(true);
+                assert.ok(docAfter === returnedDoc);
                 c.database.destroy();
             });
             it('unset optional property by assigning undefined', async () => {
                 const c = await humansCollection.createNested(1);
-                const doc = await c.findOne().exec(true);
+                let doc = await c.findOne().exec(true);
 
                 assert.ok(doc.mainSkill);
 
-                await doc.atomicPatch({
+                doc = await doc.incrementalPatch({
                     mainSkill: undefined
                 });
 
                 assert.strictEqual(doc.mainSkill, undefined);
+                c.database.destroy();
+            });
+        });
+        describe('negative', () => {
+            it('should throw on conflict', async () => {
+                const c = await humansCollection.create(1);
+                const doc = await c.findOne().exec(true);
+
+                await doc.patch({
+                    firstName: 'first'
+                });
+                await AsyncTestUtil.assertThrows(
+                    () => doc.patch({
+                        firstName: 'second'
+                    }),
+                    'RxError',
+                    'CONFLICT'
+                );
                 c.database.destroy();
             });
         });
@@ -640,7 +732,7 @@ describe('rx-document.test.js', () => {
         it('should not return _attachments if not wanted', async () => {
             const db = await createRxDatabase({
                 name: randomCouchString(10),
-                storage: getRxStoragePouch('memory'),
+                storage: config.storage.getStorage(),
                 multiInstance: false,
                 ignoreDuplicate: true
             });
@@ -723,7 +815,7 @@ describe('rx-document.test.js', () => {
                     value = newVal;
                 });
 
-                await doc.atomicPatch({ firstName: 'foobar' });
+                await doc.incrementalPatch({ firstName: 'foobar' });
 
                 await promiseWait(5);
                 assert.strictEqual(value, 'foobar');
@@ -748,7 +840,7 @@ describe('rx-document.test.js', () => {
                     value = newVal;
                 });
 
-                await doc.atomicPatch({
+                await doc.incrementalPatch({
                     mainSkill: {
                         name: randomCouchString(5),
                         level: 10
@@ -768,7 +860,7 @@ describe('rx-document.test.js', () => {
                 (doc.mainSkill.attack as any).good$.subscribe((newVal: any) => {
                     value = newVal;
                 });
-                await doc.atomicPatch({
+                await doc.incrementalPatch({
                     mainSkill: {
                         name: 'foobar',
                         attack: {
@@ -834,7 +926,7 @@ describe('rx-document.test.js', () => {
         it('#76 - deepEqual does not work correctly for Arrays', async () => {
             const db = await createRxDatabase({
                 name: randomCouchString(10),
-                storage: getRxStoragePouch('memory'),
+                storage: config.storage.getStorage(),
             });
             const cols = await await db.addCollections({
                 heroes: {
@@ -855,7 +947,7 @@ describe('rx-document.test.js', () => {
             assert.strictEqual(doc.skills.length, 3);
 
             const newSkill = 'newSikSkill';
-            await doc.atomicPatch({ skills: doc.skills.concat(newSkill) });
+            await doc.incrementalPatch({ skills: doc.skills.concat(newSkill) });
 
             const colDump = await col.exportJSON();
             const afterSkills = colDump.docs[0].skills;
@@ -866,7 +958,7 @@ describe('rx-document.test.js', () => {
         it('#646 Skip defining getter and setter when property not defined in schema', async () => {
             const db = await createRxDatabase({
                 name: randomCouchString(10),
-                storage: getRxStoragePouch('memory'),
+                storage: config.storage.getStorage(),
             });
             const schema = {
                 version: 0,
@@ -906,9 +998,9 @@ describe('rx-document.test.js', () => {
         });
         it('#830 should return a rejected promise when already deleted', async () => {
             const c = await humansCollection.createPrimary(1);
-            const doc = await c.findOne().exec(true);
+            let doc = await c.findOne().exec(true);
             assert.ok(doc);
-            await doc.remove();
+            doc = await doc.remove();
             assert.ok(doc.deleted);
             const ret = doc.remove();
             if (!ret) {
@@ -924,13 +1016,12 @@ describe('rx-document.test.js', () => {
         });
         it('#1325 populate should return null when value is falsy', async () => {
             const collection = await humansCollection.createRelated();
-            const doc = await collection.findOne({
+            let doc = await collection.findOne({
                 selector: {
                     bestFriend: { $exists: true }
                 }
             }).exec(true);
-
-            await doc.update({
+            doc = await doc.update({
                 $set: {
                     bestFriend: ''
                 }

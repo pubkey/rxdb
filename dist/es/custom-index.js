@@ -5,7 +5,7 @@
  */
 
 import { getSchemaByObjectPath } from './rx-schema-helper';
-import { ensureNotFalsy, objectPathMonad } from './util';
+import { ensureNotFalsy, objectPathMonad } from './plugins/utils';
 import { INDEX_MAX, INDEX_MIN } from './query-planner';
 
 /**

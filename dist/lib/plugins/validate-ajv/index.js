@@ -7,7 +7,6 @@ Object.defineProperty(exports, "__esModule", {
 exports.getValidator = getValidator;
 exports.wrappedValidateAjvStorage = void 0;
 var _ajv = _interopRequireDefault(require("ajv"));
-var _rxError = require("../../rx-error");
 var _pluginHelpers = require("../../plugin-helpers");
 /**
  * this plugin validates documents before they can be inserted into the RxCollection.
@@ -22,12 +21,10 @@ function getValidator(schema) {
   var validator = ajv.compile(schema);
   return function (docData) {
     var isValid = validator(docData);
-    if (!isValid) {
-      throw (0, _rxError.newRxError)('VD2', {
-        errors: validator.errors,
-        document: docData,
-        schema: schema
-      });
+    if (isValid) {
+      return [];
+    } else {
+      return validator.errors;
     }
   };
 }

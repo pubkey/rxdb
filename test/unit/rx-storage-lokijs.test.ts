@@ -13,7 +13,7 @@ import {
 import {
     getRxStorageLoki,
     RxStorageInstanceLoki
-} from '../../plugins/lokijs';
+} from '../../plugins/storage-lokijs';
 
 import * as humansCollections from '../helper/humans-collection';
 import * as schemaObjects from '../helper/schema-objects';

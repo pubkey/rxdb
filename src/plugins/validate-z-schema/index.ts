@@ -4,9 +4,6 @@
  * @link https://github.com/zaggino/z-schema
  */
 import ZSchema from 'z-schema';
-import {
-    newRxError
-} from '../../rx-error';
 import type { RxJsonSchema } from '../../types';
 import { wrappedValidateStorageFactory } from '../../plugin-helpers';
 
@@ -35,11 +32,9 @@ export function getValidator(
                 description,
                 message
             }));
-            throw newRxError('VD2', {
-                errors: formattedZSchemaErrors,
-                document: docData,
-                schema
-            });
+            return formattedZSchemaErrors;
+        } else {
+            return [];
         }
     };
 }

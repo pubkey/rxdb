@@ -17,35 +17,34 @@ In difference to the other replication plugins, the P2P replication returns a `r
 
 ```ts
 import {
-    addRxPlugin
-} from 'rxdb/';
-import {
-    RxDBReplicationP2PPlugin,
+    replicateP2P,
     getConnectionHandlerSimplePeer
 } from 'rxdb/plugins/replication-p2p';
-addRxPlugin(RxDBReplicationP2PPlugin);
 
 
-const replicationPool = await myRxCollection.syncP2P({
-    // The topic is like a 'room-name'. All clients with the same topic
-    // will replicate with each other. In most cases you want to use
-    // a different topic string per user.
-    topic: 'my-users-pool',
-    /**
-     * You need a collection handler to be able to create WebRTC connections.
-     * Here we use the simple peer handler which uses the 'simple-peer' npm library.
-     * To learn how to create a custom connection handler, read the source code,
-     * it is pretty simple.
-     */
-    connectionHandlerCreator: getConnectionHandlerSimplePeer(
-        'wss://example.com:8080',
-        // only in Node.js, we need the wrtc library
-        // because Node.js does not contain the WebRTC API.
-        require('wrtc')
-    ),
-    pull: {},
-    push: {}
-});
+const replicationPool = await replicateP2P(
+    {
+        collection: myRxCollection,
+        // The topic is like a 'room-name'. All clients with the same topic
+        // will replicate with each other. In most cases you want to use
+        // a different topic string per user.
+        topic: 'my-users-pool',
+        /**
+         * You need a collection handler to be able to create WebRTC connections.
+         * Here we use the simple peer handler which uses the 'simple-peer' npm library.
+         * To learn how to create a custom connection handler, read the source code,
+         * it is pretty simple.
+         */
+        connectionHandlerCreator: getConnectionHandlerSimplePeer(
+            'wss://example.com:8080',
+            // only in Node.js, we need the wrtc library
+            // because Node.js does not contain the WebRTC API.
+            require('wrtc')
+        ),
+        pull: {},
+        push: {}
+    }
+);
 replicationPool.error$.subscribe(err => { /* ... */ });
 replicationPool.cancel();
 

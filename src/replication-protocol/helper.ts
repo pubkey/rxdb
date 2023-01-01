@@ -1,5 +1,4 @@
 import type {
-    HashFunction,
     RxDocumentData,
     WithDeleted
 } from '../types';
@@ -8,10 +7,10 @@ import {
     flatClone,
     getDefaultRevision,
     now
-} from '../util';
+} from '../plugins/utils';
 
 export function docStateToWriteDoc<RxDocType>(
-    hashFunction: HashFunction,
+    databaseInstanceToken: string,
     docState: WithDeleted<RxDocType>,
     previous?: RxDocumentData<RxDocType>
 ): RxDocumentData<RxDocType> {
@@ -27,8 +26,7 @@ export function docStateToWriteDoc<RxDocType>(
         }
     );
     docData._rev = createRevision(
-        hashFunction,
-        docData,
+        databaseInstanceToken,
         previous
     );
     return docData;

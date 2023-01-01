@@ -15,7 +15,7 @@ exports.getSchemaByObjectPath = getSchemaByObjectPath;
 exports.normalizeRxJsonSchema = normalizeRxJsonSchema;
 var _objectPath = _interopRequireDefault(require("object-path"));
 var _rxError = require("./rx-error");
-var _util = require("./util");
+var _utils = require("./plugins/utils");
 /**
  * Helper function to create a valid RxJsonSchema
  * with a given version.
@@ -42,12 +42,12 @@ function getSchemaByObjectPath(rxJsonSchema, path) {
   var usePath = path;
   usePath = usePath.replace(/\./g, '.properties.');
   usePath = 'properties.' + usePath;
-  usePath = (0, _util.trimDots)(usePath);
+  usePath = (0, _utils.trimDots)(usePath);
   var ret = _objectPath["default"].get(rxJsonSchema, usePath);
   return ret;
 }
 function fillPrimaryKey(primaryPath, jsonSchema, documentData) {
-  var cloned = (0, _util.flatClone)(documentData);
+  var cloned = (0, _utils.flatClone)(documentData);
   var newPrimary = getComposedPrimaryKeyOfDocumentData(jsonSchema, documentData);
   var existingPrimary = documentData[primaryPath];
   if (existingPrimary && existingPrimary !== newPrimary) {
@@ -106,18 +106,7 @@ function getComposedPrimaryKeyOfDocumentData(jsonSchema, documentData) {
  * @return RxJsonSchema - ordered and filled
  */
 function normalizeRxJsonSchema(jsonSchema) {
-  // TODO do we need the deep clone() here?
-  var normalizedSchema = (0, _util.sortObject)((0, _util.clone)(jsonSchema));
-
-  // indexes must NOT be sorted because sort order is important here.
-  if (jsonSchema.indexes) {
-    normalizedSchema.indexes = Array.from(jsonSchema.indexes);
-  }
-
-  // primaryKey.fields must NOT be sorted because sort order is important here.
-  if (typeof normalizedSchema.primaryKey === 'object' && typeof jsonSchema.primaryKey === 'object') {
-    normalizedSchema.primaryKey.fields = jsonSchema.primaryKey.fields;
-  }
+  var normalizedSchema = (0, _utils.sortObject)(jsonSchema, true);
   return normalizedSchema;
 }
 
@@ -126,9 +115,9 @@ function normalizeRxJsonSchema(jsonSchema) {
  * @return cloned schemaObj
  */
 function fillWithDefaultSettings(schemaObj) {
-  schemaObj = (0, _util.flatClone)(schemaObj);
+  schemaObj = (0, _utils.flatClone)(schemaObj);
   var primaryPath = getPrimaryFieldOfPrimaryKey(schemaObj.primaryKey);
-  schemaObj.properties = (0, _util.flatClone)(schemaObj.properties);
+  schemaObj.properties = (0, _utils.flatClone)(schemaObj.properties);
 
   // additionalProperties is always false
   schemaObj.additionalProperties = false;
@@ -196,7 +185,7 @@ function fillWithDefaultSettings(schemaObj) {
    */
   if (schemaObj.indexes) {
     schemaObj.indexes = schemaObj.indexes.map(function (index) {
-      var arIndex = (0, _util.isMaybeReadonlyArray)(index) ? index.slice(0) : [index];
+      var arIndex = (0, _utils.isMaybeReadonlyArray)(index) ? index.slice(0) : [index];
       if (!arIndex.includes(primaryPath)) {
         var modifiedIndex = arIndex.slice(0);
         modifiedIndex.push(primaryPath);
@@ -219,7 +208,7 @@ var RX_META_SCHEMA = {
       /**
        * We use 1 as minimum so that the value is never falsy.
        */
-      minimum: _util.RX_META_LWT_MINIMUM,
+      minimum: _utils.RX_META_LWT_MINIMUM,
       maximum: 1000000000000000,
       multipleOf: 0.01
     }

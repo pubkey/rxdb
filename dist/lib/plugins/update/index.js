@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.RxDBUpdatePlugin = void 0;
 exports.RxQueryUpdate = RxQueryUpdate;
+exports.incrementalUpdate = incrementalUpdate;
 exports.update = update;
 var _modifyjs = _interopRequireDefault(require("modifyjs"));
 /**
@@ -14,6 +15,12 @@ var _modifyjs = _interopRequireDefault(require("modifyjs"));
  * @link https://github.com/lgandecki/modifyjs
  */
 
+function incrementalUpdate(updateObj) {
+  return this.incrementalModify(function (docData) {
+    var newDocData = (0, _modifyjs["default"])(docData, updateObj);
+    return newDocData;
+  });
+}
 function update(updateObj) {
   var oldDocData = this._data;
   var newDocData = (0, _modifyjs["default"])(oldDocData, updateObj);
@@ -44,6 +51,7 @@ var RxDBUpdatePlugin = {
   prototypes: {
     RxDocument: function RxDocument(proto) {
       proto.update = update;
+      proto.incrementalUpdate = incrementalUpdate;
     },
     RxQuery: function RxQuery(proto) {
       proto.update = RxQueryUpdate;

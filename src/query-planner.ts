@@ -48,7 +48,7 @@ export function getQueryPlan<RxDocType>(
         let inclusiveEnd = true;
         let inclusiveStart = true;
         const opts: RxQueryPlanerOpts[] = index.map(indexField => {
-            const matcher = selector[indexField];
+            const matcher = (selector as any)[indexField];
             const operators = matcher ? Object.keys(matcher) : [];
 
             let matcherOpts: RxQueryPlanerOpts = {} as any;
@@ -148,7 +148,7 @@ export const UPPER_BOUND_LOGICAL_OPERATORS = new Set(['$eq', '$lt', '$lte']);
 
 export function isSelectorSatisfiedByIndex(
     index: string[],
-    selector: MangoQuerySelector
+    selector: MangoQuerySelector<any>
 ): boolean {
     const selectorEntries = Object.entries(selector);
     const hasNonMatchingOperator = selectorEntries
@@ -156,7 +156,7 @@ export function isSelectorSatisfiedByIndex(
             if (!index.includes(fieldName)) {
                 return true;
             }
-            const hasNonLogicOperator = Object.entries(operation)
+            const hasNonLogicOperator = Object.entries(operation as any)
                 .find(([op, _value]) => !LOGICAL_OPERATORS.has(op));
             return hasNonLogicOperator;
         });

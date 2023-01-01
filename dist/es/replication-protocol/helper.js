@@ -1,5 +1,5 @@
-import { createRevision, flatClone, getDefaultRevision, now } from '../util';
-export function docStateToWriteDoc(hashFunction, docState, previous) {
+import { createRevision, flatClone, getDefaultRevision, now } from '../plugins/utils';
+export function docStateToWriteDoc(databaseInstanceToken, docState, previous) {
   var docData = Object.assign({}, docState, {
     _attachments: {},
     _meta: {
@@ -7,7 +7,7 @@ export function docStateToWriteDoc(hashFunction, docState, previous) {
     },
     _rev: getDefaultRevision()
   });
-  docData._rev = createRevision(hashFunction, docData, previous);
+  docData._rev = createRevision(databaseInstanceToken, previous);
   return docData;
 }
 export function writeDocToDocState(writeDoc) {

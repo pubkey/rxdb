@@ -1,8 +1,6 @@
 import {
     filter,
-    startWith,
-    mergeMap,
-    shareReplay
+    mergeMap
 } from 'rxjs/operators';
 
 import {
@@ -12,14 +10,11 @@ import {
     pluginMissing,
     ensureNotFalsy,
     getFromMapOrThrow,
-    clone,
     PROMISE_RESOLVE_FALSE,
     PROMISE_RESOLVE_VOID,
-    RXJS_SHARE_REPLAY_DEFAULTS,
     getDefaultRxDocumentMeta,
-    getDefaultRevision,
-    nextTick
-} from './util';
+    getDefaultRevision
+} from './plugins/utils';
 import {
     fillObjectDataBeforeInsert,
     createRxCollectionStorageInstance,
@@ -37,7 +32,7 @@ import type {
     DataMigrator
 } from './plugins/migration';
 import {
-    DocCache
+    DocumentCache
 } from './doc-cache';
 import {
     QueryCache,
@@ -60,20 +55,17 @@ import {
 
 import type {
     KeyFunctionMap,
-    RxCouchDBReplicationState,
     MigrationState,
-    SyncOptions,
     RxCollection,
     RxDatabase,
     RxQuery,
     RxDocument,
-    SyncOptionsGraphQL,
     RxDumpCollection,
     RxDumpCollectionAny,
     MangoQuery,
     MangoQueryNoLimit,
     RxCacheReplacementPolicy,
-    RxStorageBulkWriteError,
+    RxStorageWriteError,
     RxDocumentData,
     RxDocumentWriteData,
     RxStorageInstanceCreationParams,
@@ -92,35 +84,23 @@ import type {
     CRDTEntry,
     MangoQuerySelectorAndIndex
 } from './types';
-import type {
-    RxGraphQLReplicationState
-} from './plugins/replication-graphql';
-import type {
-    RxCouchDBNewReplicationState,
-    SyncOptionsCouchDBNew
-} from './plugins/replication-couchdb-new';
-import type {
-    SyncOptionsP2P,
-    RxP2PReplicationPool
-} from './plugins/replication-p2p';
-import type {
-    RxFirestoreReplicationState,
-    SyncOptionsFirestore
-} from './plugins/replication-firestore';
 
 import {
     RxSchema
 } from './rx-schema';
 
 import {
-    createRxDocument
+    createNewRxDocument
 } from './rx-document-prototype-merge';
 import {
     getWrappedStorageInstance,
     storageChangeEventToRxChangeEvent,
-    throwIfIsStorageWriteError
+    throwIfIsStorageWriteError,
+    WrappedRxStorageInstance
 } from './rx-storage-helper';
 import { defaultConflictHandler } from './replication-protocol';
+import { IncrementalWriteQueue } from './incremental-write';
+import { beforeDocumentUpdateWrite } from './rx-document';
 
 const HOOKS_WHEN = ['pre', 'post'] as const;
 type HookWhenType = typeof HOOKS_WHEN[number];
@@ -139,8 +119,9 @@ export class RxCollectionBase<
     /**
      * Stores all 'normal' documents
      */
-    public storageInstance: RxStorageInstance<RxDocumentType, any, InstanceCreationOptions> = {} as any;
+    public storageInstance: WrappedRxStorageInstance<RxDocumentType, any, InstanceCreationOptions> = {} as any;
     public readonly timeouts: Set<ReturnType<typeof setTimeout>> = new Set();
+    public incrementalWriteQueue: IncrementalWriteQueue<RxDocumentType> = {} as any;
 
     constructor(
         public database: RxDatabase<CollectionsOfDatabase, any, InstanceCreationOptions>,
@@ -175,7 +156,7 @@ export class RxCollectionBase<
         ) as any;
     }
 
-    public _atomicUpsertQueues: Map<string, Promise<any>> = new Map();
+    public _incrementalUpsertQueues: Map<string, Promise<any>> = new Map();
     // defaults
     public synced: boolean = false;
     public hooks: {
@@ -188,7 +169,7 @@ export class RxCollectionBase<
     } = {} as any;
     public _subs: Subscription[] = [];
 
-    public _docCache: DocCache<RxDocument<RxDocumentType, OrmMethods>> = new DocCache();
+    public _docCache: DocumentCache<RxDocumentType, OrmMethods> = {} as any;
 
     public _queryCache: QueryCache = createQueryCache();
     public $: Observable<RxChangeEvent<RxDocumentType>> = {} as any;
@@ -211,12 +192,23 @@ export class RxCollectionBase<
             this.internalStorageInstance,
             this.schema.jsonSchema
         );
+        this.incrementalWriteQueue = new IncrementalWriteQueue<RxDocumentType>(
+            this.storageInstance,
+            this.schema.primaryPath,
+            (newData, oldData) => beforeDocumentUpdateWrite(this as any, newData, oldData),
+            result => this._runHooks('post', 'save', result)
+        );
 
         this.$ = this.database.eventBulks$.pipe(
             filter(changeEventBulk => changeEventBulk.collectionName === this.name),
             mergeMap(changeEventBulk => changeEventBulk.events),
         );
         this._changeEventBuffer = createChangeEventBuffer(this.asRxCollection);
+        this._docCache = new DocumentCache(
+            this.schema.primaryPath,
+            this.$.pipe(filter(cE => !cE.isLocal)),
+            docData => createNewRxDocument(this.asRxCollection, docData)
+        );
 
         /**
          * Instead of resolving the EventBulk array here and spit it into
@@ -242,25 +234,6 @@ export class RxCollectionBase<
             this.database.$emit(changeEventBulk);
         });
         this._subs.push(subDocs);
-
-        /**
-         * When a write happens to the collection
-         * we find the changed document in the docCache
-         * and tell it that it has to change its data.
-         */
-        this._subs.push(
-            this.$
-                .pipe(
-                    filter((cE: RxChangeEvent<RxDocumentType>) => !cE.isLocal)
-                )
-                .subscribe(cE => {
-                    // when data changes, send it to RxDocument in docCache
-                    const doc = this._docCache.get(cE.documentId);
-                    if (doc) {
-                        doc._handleChangeEvent(cE);
-                    }
-                })
-        );
 
         /**
          * Resolve the conflict tasks
@@ -318,7 +291,7 @@ export class RxCollectionBase<
         docsData: RxDocumentType[]
     ): Promise<{
         success: RxDocument<RxDocumentType, OrmMethods>[];
-        error: RxStorageBulkWriteError<RxDocumentType>[];
+        error: RxStorageWriteError<RxDocumentType>[];
     }> {
         /**
          * Optimization shortcut,
@@ -364,10 +337,7 @@ export class RxCollectionBase<
         // create documents
         const successDocData: RxDocumentData<RxDocumentType>[] = Object.values(results.success);
         const rxDocuments: any[] = successDocData
-            .map((writtenDocData) => {
-                const doc = createRxDocument(this as any, writtenDocData);
-                return doc;
-            });
+            .map((writtenDocData) => this._docCache.getCachedRxDocument(writtenDocData));
 
         if (this.hasHooks('post', 'insert')) {
             await Promise.all(
@@ -391,7 +361,7 @@ export class RxCollectionBase<
         ids: string[]
     ): Promise<{
         success: RxDocument<RxDocumentType, OrmMethods>[];
-        error: RxStorageBulkWriteError<RxDocumentType>[];
+        error: RxStorageWriteError<RxDocumentType>[];
     }> {
         /**
          * Optimization shortcut,
@@ -404,11 +374,11 @@ export class RxCollectionBase<
             };
         }
 
-        const rxDocumentMap = await this.findByIds(ids);
+        const rxDocumentMap = await this.findByIds(ids).exec();
         const docsData: RxDocumentData<RxDocumentType>[] = [];
         const docsMap: Map<string, RxDocumentData<RxDocumentType>> = new Map();
         Array.from(rxDocumentMap.values()).forEach(rxDocument => {
-            const data: RxDocumentData<RxDocumentType> = clone(rxDocument.toJSON(true)) as any;
+            const data: RxDocumentData<RxDocumentType> = rxDocument.toMutableJSON(true) as any;
             docsData.push(data);
             docsMap.set(rxDocument.primary, data);
         });
@@ -446,9 +416,7 @@ export class RxCollectionBase<
             })
         );
 
-        const rxDocuments: any[] = successIds.map(id => {
-            return rxDocumentMap.get(id);
-        });
+        const rxDocuments = successIds.map(id => getFromMapOrThrow(rxDocumentMap, id));
 
         return {
             success: rxDocuments,
@@ -479,12 +447,19 @@ export class RxCollectionBase<
         const insertResult = await this.bulkInsert(insertData);
         let ret = insertResult.success.slice(0);
         const updatedDocs = await Promise.all(
-            insertResult.error.map(error => {
+            insertResult.error.map(async (error) => {
+                if (error.status !== 409) {
+                    throw newRxError('VD2', {
+                        collection: this.name,
+                        writeError: error
+                    });
+                }
                 const id = error.documentId;
                 const writeData = getFromMapOrThrow(useJsonByDocId, id);
                 const docDataInDb = ensureNotFalsy(error.documentInDb);
-                const doc = createRxDocument(this.asRxCollection, docDataInDb);
-                return doc.atomicUpdate(() => writeData);
+                const doc = this._docCache.getCachedRxDocument(docDataInDb);
+                const newDoc = await doc.incrementalModify(() => writeData);
+                return newDoc;
             })
         );
         ret = ret.concat(updatedDocs);
@@ -499,9 +474,9 @@ export class RxCollectionBase<
     }
 
     /**
-     * upserts to a RxDocument, uses atomicUpdate if document already exists
+     * upserts to a RxDocument, uses incrementalModify if document already exists
      */
-    atomicUpsert(json: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType, OrmMethods>> {
+    incrementalUpsert(json: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType, OrmMethods>> {
         const useJson = fillObjectDataBeforeInsert(this.schema, json);
         const primary: string = useJson[this.schema.primaryPath] as any;
         if (!primary) {
@@ -511,21 +486,20 @@ export class RxCollectionBase<
         }
 
         // ensure that it won't try 2 parallel runs
-        let queue = this._atomicUpsertQueues.get(primary);
+        let queue = this._incrementalUpsertQueues.get(primary);
         if (!queue) {
             queue = PROMISE_RESOLVE_VOID;
         }
         queue = queue
-            .then(() => _atomicUpsertEnsureRxDocumentExists(this as any, primary as any, useJson))
+            .then(() => _incrementalUpsertEnsureRxDocumentExists(this as any, primary as any, useJson))
             .then((wasInserted) => {
                 if (!wasInserted.inserted) {
-                    return _atomicUpsertUpdate(wasInserted.doc, useJson)
-                        .then(() => wasInserted.doc);
+                    return _incrementalUpsertUpdate(wasInserted.doc, useJson);
                 } else {
                     return wasInserted.doc;
                 }
             });
-        this._atomicUpsertQueues.set(primary, queue);
+        this._incrementalUpsertQueues.set(primary, queue);
         return queue;
     }
 
@@ -543,7 +517,7 @@ export class RxCollectionBase<
             queryObj = _getDefaultQuery();
         }
 
-        const query = createRxQuery('find', queryObj, this.asRxCollection);
+        const query = createRxQuery('find', queryObj, this as any);
         return query as any;
     }
 
@@ -573,7 +547,7 @@ export class RxCollectionBase<
             }
 
             (queryObj as any).limit = 1;
-            query = createRxQuery('findOne', queryObj, this.asRxCollection);
+            query = createRxQuery<RxDocumentType>('findOne', queryObj, this as any);
         }
 
         if (
@@ -595,7 +569,7 @@ export class RxCollectionBase<
         if (!queryObj) {
             queryObj = _getDefaultQuery();
         }
-        const query = createRxQuery('count', queryObj, this.asRxCollection);
+        const query = createRxQuery('count', queryObj, this as any);
         return query as any;
     }
 
@@ -603,141 +577,18 @@ export class RxCollectionBase<
      * find a list documents by their primary key
      * has way better performance then running multiple findOne() or a find() with a complex $or-selected
      */
-    async findByIds(
+    findByIds(
         ids: string[]
-    ): Promise<Map<string, RxDocument<RxDocumentType, OrmMethods>>> {
-
-        const ret = new Map();
-        const mustBeQueried: string[] = [];
-
-        // first try to fill from docCache
-        ids.forEach(id => {
-            const doc = this._docCache.get(id);
-            if (doc) {
-                ret.set(id, doc);
-            } else {
-                mustBeQueried.push(id);
-            }
-        });
-
-        // find everything which was not in docCache
-        if (mustBeQueried.length > 0) {
-            const docs = await this.storageInstance.findDocumentsById(mustBeQueried, false);
-            Object.values(docs).forEach(docData => {
-                const doc = createRxDocument<RxDocumentType, OrmMethods>(this as any, docData);
-                ret.set(doc.primary, doc);
-            });
-        }
-        return ret;
-    }
-
-    /**
-     * like this.findByIds but returns an observable
-     * that always emits the current state
-     */
-    findByIds$(
-        ids: string[]
-    ): Observable<Map<string, RxDocument<RxDocumentType, OrmMethods>>> {
-        let currentValue: Map<string, RxDocument<RxDocumentType, OrmMethods>> | null = null;
-        let lastChangeEvent: number = -1;
-
-        /**
-         * Ensure we do not process events in parallel
-         */
-        let queue: Promise<any> = PROMISE_RESOLVE_VOID;
-
-        const initialPromise = this.findByIds(ids).then(docsMap => {
-            lastChangeEvent = this._changeEventBuffer.counter;
-            currentValue = docsMap;
-        });
-        let firstEmitDone = false;
-
-        return this.$.pipe(
-            startWith(null),
-            /**
-             * Optimization shortcut.
-             * Do not proceed if the emitted RxChangeEvent
-             * is not relevant for the query.
-             */
-            filter(changeEvent => {
-                if (
-                    // first emit has no event
-                    changeEvent &&
-                    (
-                        // local documents are not relevant for the query
-                        changeEvent.isLocal ||
-                        // document of the change is not in the ids list.
-                        !ids.includes(changeEvent.documentId)
-                    )
-                ) {
-                    return false;
-                } else {
-                    return true;
+    ): RxQuery<RxDocumentType, Map<string, RxDocument<RxDocumentType, OrmMethods>>> {
+        const mangoQuery: MangoQuery<RxDocumentType> = {
+            selector: {
+                [this.schema.primaryPath]: {
+                    $in: ids.slice(0)
                 }
-            }),
-            mergeMap(() => initialPromise),
-            /**
-             * Because shareReplay with refCount: true
-             * will often subscribe/unsusbscribe
-             * we always ensure that we handled all missed events
-             * since the last subscription.
-             */
-            mergeMap(() => {
-                queue = queue.then(async () => {
-                    /**
-                     * We first have to clone the Map
-                     * to ensure we do not create side effects by mutating
-                     * a Map that has already been returned before.
-                     */
-                    currentValue = new Map(ensureNotFalsy(currentValue));
-                    const missedChangeEvents = this._changeEventBuffer.getFrom(lastChangeEvent + 1);
-                    lastChangeEvent = this._changeEventBuffer.counter;
-                    if (missedChangeEvents === null) {
-                        /**
-                         * changeEventBuffer is of bounds -> we must re-execute over the database
-                         * because we cannot calculate the new results just from the events.
-                         */
-                        const newResult = await this.findByIds(ids);
-                        lastChangeEvent = this._changeEventBuffer.counter;
-                        return newResult;
-                    } else {
-                        let resultHasChanged = false;
-                        missedChangeEvents
-                            .forEach(rxChangeEvent => {
-                                const docId = rxChangeEvent.documentId;
-                                if (!ids.includes(docId)) {
-                                    // document is not relevant for the result set
-                                    return;
-                                }
-                                const op = rxChangeEvent.operation;
-                                if (op === 'INSERT' || op === 'UPDATE') {
-                                    resultHasChanged = true;
-                                    const rxDocument = createRxDocument(
-                                        this.asRxCollection,
-                                        rxChangeEvent.documentData
-                                    );
-                                    ensureNotFalsy(currentValue).set(docId, rxDocument);
-                                } else {
-                                    if (ensureNotFalsy(currentValue).has(docId)) {
-                                        resultHasChanged = true;
-                                        ensureNotFalsy(currentValue).delete(docId);
-                                    }
-                                }
-                            });
-
-                        // nothing happened that affects the result -> do not emit
-                        if (!resultHasChanged && firstEmitDone) {
-                            return false as any;
-                        }
-                    }
-                    firstEmitDone = true;
-                    return currentValue;
-                });
-                return queue;
-            }),
-            filter(x => !!x),
-            shareReplay(RXJS_SHARE_REPLAY_DEFAULTS)
-        );
+            } as any
+        };
+        const query = createRxQuery('findByIds', mangoQuery, this as any);
+        return query as any;
     }
 
     /**
@@ -760,32 +611,6 @@ export class RxCollectionBase<
     insertCRDT(_updateObj: CRDTEntry<any> | CRDTEntry<any>[]): RxDocument<RxDocumentType, OrmMethods> {
         throw pluginMissing('crdt');
     }
-
-    /**
-     * sync with a CouchDB endpoint
-     */
-    syncCouchDB(_syncOptions: SyncOptions): RxCouchDBReplicationState {
-        throw pluginMissing('replication');
-    }
-
-    /**
-     * sync with a GraphQL endpoint
-     */
-    syncGraphQL<CheckpointType = any>(_options: SyncOptionsGraphQL<RxDocumentType, CheckpointType>): RxGraphQLReplicationState<RxDocumentType, CheckpointType> {
-        throw pluginMissing('replication-graphql');
-    }
-
-    syncCouchDBNew(_syncOptions: SyncOptionsCouchDBNew<RxDocumentType>): RxCouchDBNewReplicationState<RxDocumentType> {
-        throw pluginMissing('replication-couchdb-new');
-    }
-
-    syncP2P(_syncOptions: SyncOptionsP2P<RxDocumentType>): RxP2PReplicationPool<RxDocumentType> {
-        throw pluginMissing('replication-p2p');
-    }
-    syncFirestore(_syncOptions: SyncOptionsFirestore<RxDocumentType>): RxFirestoreReplicationState<RxDocumentType> {
-        throw pluginMissing('replication-firestore');
-    }
-
 
     /**
      * HOOKS
@@ -978,30 +803,26 @@ function _applyHookFunctions(
     });
 }
 
-function _atomicUpsertUpdate<RxDocType>(
+function _incrementalUpsertUpdate<RxDocType>(
     doc: RxDocumentBase<RxDocType>,
     json: RxDocumentData<RxDocType>
 ): Promise<RxDocumentBase<RxDocType>> {
-    return doc.atomicUpdate((_innerDoc: RxDocumentData<RxDocType>) => {
+    return doc.incrementalModify((_innerDoc) => {
         return json;
-    })
-        .then(() => nextTick())
-        .then(() => {
-            return doc;
-        });
+    });
 }
 
 /**
  * ensures that the given document exists
  * @return promise that resolves with new doc and flag if inserted
  */
-function _atomicUpsertEnsureRxDocumentExists(
-    rxCollection: RxCollection,
+function _incrementalUpsertEnsureRxDocumentExists<RxDocType>(
+    rxCollection: RxCollection<RxDocType>,
     primary: string,
     json: any
 ): Promise<
     {
-        doc: RxDocument;
+        doc: RxDocument<RxDocType>;
         inserted: boolean;
     }
 > {
@@ -1009,10 +830,10 @@ function _atomicUpsertEnsureRxDocumentExists(
      * Optimisation shortcut,
      * first try to find the document in the doc-cache
      */
-    const docFromCache = rxCollection._docCache.get(primary);
-    if (docFromCache) {
+    const docDataFromCache = rxCollection._docCache.getLatestDocumentDataIfExists(primary);
+    if (docDataFromCache) {
         return Promise.resolve({
-            doc: docFromCache,
+            doc: rxCollection._docCache.getCachedRxDocument(docDataFromCache),
             inserted: false
         });
     }

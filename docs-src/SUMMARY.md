@@ -45,7 +45,6 @@
     * [Creation](./rx-collection.md#creating-a-collection)
         * [name](./rx-collection.md#name)
         * [schema](./rx-collection.md#schema)
-        * [pouchSettings](./rx-collection.md#pouchSettings)
         * [ORM-functions](./rx-collection.md#orm-functions)
         * [Migration](./rx-collection.md#Migration)
     * [Functions](./rx-collection.md#functions)
@@ -54,15 +53,13 @@
         * [bulkInsert()](./rx-collection.md#bulkinsert)
         * [bulkRemove()](./rx-collection.md#bulkremove)
         * [upsert()](./rx-collection.md#upsert)
-        * [atomicUpsert()](./rx-collection.md#atomicupsert)
+        * [incrementalUpsert()](./rx-collection.md#incrementalUpsert)
         * [find()](./rx-collection.md#find)
         * [findOne()](./rx-collection.md#findone)
         * [findByIds()](./rx-collection.md#findbyids)
         * [findByIds$()](./rx-collection.md#findbyids$)
         * [exportJSON()](./rx-collection.md#dump)
         * [importJSON()](./rx-collection.md#importdump)
-        * [syncCouchDB()](./rx-collection.md#synccouchdb)
-        * [syncGraphQL()](./rx-collection.md#syncgraphql)
         * [remove()](./rx-collection.md#remove)
         * [destroy()](./rx-collection.md#destroy)
         * [isRxCollection()](./rx-collection.md#isrxcollection)
@@ -75,8 +72,8 @@
         * [get$()](./rx-document.md#get$)
         * [proxy-get](./rx-document.md#proxy-get)
         * [update()](./rx-document.md#update)
-        * [atomicUpdate()](./rx-document.md#atomicupdate)
-        * [atomicPatch()](./rx-document.md#atomicpatch)
+        * [incrementalModify()](./rx-document.md#incrementalModify)
+        * [incrementalPatch()](./rx-document.md#incrementalPatch)
         * [$](./rx-document.md#observe-)
         * [remove()](./rx-document.md#remove)
         * [deleted$](./rx-document.md#deleted$)
@@ -127,16 +124,13 @@
     * [RxStorage Sharding](./rx-storage-sharding.md)
     * [RxStorage Localstorage Meta Optimizer](./rx-storage-localstorage-meta-optimizer.md)
     * [RxStorage Electron IpcRenderer & IpcMain](./electron.md#rxstorage-electron-ipcrenderer--ipcmain)
-    * [RxStorage PouchDB](./rx-storage-pouchdb.md)
-    * [PouchDB Adapters](./adapters.md)
 
 * [Replication](./replication.md)
     * [Replication GraphQL](./replication-graphql.md)
     * [Replication Websocket](./replication-websocket.md)
-    * [Replication CouchDB (new)](./replication-couchdb-new.md)
+    * [Replication CouchDB](./replication-couchdb.md)
     * [Replication P2P](./replication-p2p.md)
     * [Replication Firestore](./replication-firestore.md)
-    * [Replication CouchDB/PouchDB](./replication-couchdb.md)
 
 * [Cleanup](./cleanup.md)
 
@@ -162,7 +156,6 @@
 
 * Tutorials
     * [Use RxDB with Typescript](./tutorials/typescript.md)
-    * [Using the CouchDB Server Plugin](./tutorials/server-couchdb.md)
 
 * Opinions
     * [About Offline First](./offline-first.md)

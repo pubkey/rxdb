@@ -1,4 +1,4 @@
-import { ensureNotFalsy } from '../../util';
+import { ensureNotFalsy } from '../../plugins/utils';
 export var GRAPHQL_REPLICATION_PLUGIN_IDENTITY_PREFIX = 'rxdb-replication-graphql-';
 export function graphQLRequest(httpUrl, clientState, queryParams) {
   var headers = new Headers(clientState.headers || {});

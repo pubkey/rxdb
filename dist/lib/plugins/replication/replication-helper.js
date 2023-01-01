@@ -7,7 +7,7 @@ exports.DEFAULT_MODIFIER = void 0;
 exports.awaitRetry = awaitRetry;
 exports.swapDefaultDeletedTodeletedField = swapDefaultDeletedTodeletedField;
 exports.swapdeletedFieldToDefaultDeleted = swapdeletedFieldToDefaultDeleted;
-var _util = require("../../util");
+var _utils = require("../../plugins/utils");
 // does nothing
 var DEFAULT_MODIFIER = function DEFAULT_MODIFIER(d) {
   return Promise.resolve(d);
@@ -17,7 +17,7 @@ function swapDefaultDeletedTodeletedField(deletedField, doc) {
   if (deletedField === '_deleted') {
     return doc;
   } else {
-    doc = (0, _util.flatClone)(doc);
+    doc = (0, _utils.flatClone)(doc);
     var isDeleted = !!doc._deleted;
     doc[deletedField] = isDeleted;
     delete doc._deleted;
@@ -28,7 +28,7 @@ function swapdeletedFieldToDefaultDeleted(deletedField, doc) {
   if (deletedField === '_deleted') {
     return doc;
   } else {
-    doc = (0, _util.flatClone)(doc);
+    doc = (0, _utils.flatClone)(doc);
     var isDeleted = !!doc[deletedField];
     doc._deleted = isDeleted;
     delete doc[deletedField];

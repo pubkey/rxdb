@@ -1,6 +1,6 @@
 import _createClass from "@babel/runtime/helpers/createClass";
 import deepEqual from 'fast-deep-equal';
-import { overwriteGetterForCaching, flatClone, isMaybeReadonlyArray, fastUnsecureHash } from './util';
+import { overwriteGetterForCaching, flatClone, isMaybeReadonlyArray, fastUnsecureHash } from './plugins/utils';
 import { newRxError } from './rx-error';
 import { runPluginHooks } from './hooks';
 import { defineGetterSetter } from './rx-document';

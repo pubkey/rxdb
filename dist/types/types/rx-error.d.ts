@@ -5,30 +5,23 @@ import {
 import { RxPlugin } from './rx-plugin';
 import { ERROR_MESSAGES } from '../plugins/dev-mode/error-messages';
 import { RxReplicationWriteToMasterRow } from './replication-protocol';
+import { BulkWriteRow, RxDocumentData } from './rx-storage';
 
 type KeyOf<T extends object> = Extract<keyof T, string>;
 export type RxErrorKey = KeyOf<typeof ERROR_MESSAGES>;
 
-export declare class RxError extends Error {
-    readonly rxdb: boolean; // always true, use this to detect if its an rxdb-error
-    readonly parameters: RxErrorParameters; // an object with parameters to use the programmatically
-    readonly code: RxErrorKey; // error-code
-    readonly typeError: false; // true if is TypeError
-}
-
-export declare class RxTypeError extends TypeError {
-    readonly rxdb: boolean; // always true, use this to detect if its an rxdb-error
-    readonly parameters: RxErrorParameters; // an object with parameters to use the programmatically
-    readonly code: RxErrorKey; // error-code
-    readonly typeError: true; // true if is TypeError
-}
+export type {
+    RxError,
+    RxTypeError
+} from '../rx-error';
 
 /**
  * this lists all possible parameters
  */
 export interface RxErrorParameters {
-    readonly error?: any;
-    readonly errors?: RxErrorItem[];
+    readonly error?: PlainJsonError;
+    readonly errors?: PlainJsonError[];
+    readonly writeError?: RxStorageWriteError<any>;
     readonly schemaPath?: string;
     readonly objPath?: string;
     readonly rootPath?: string;
@@ -56,7 +49,6 @@ export interface RxErrorParameters {
     readonly path?: string;
     readonly value?: any;
     readonly givenName?: string;
-    readonly pouchDbError?: any;
     readonly fromVersion?: number;
     readonly toVersion?: number;
     readonly version?: number;
@@ -117,7 +109,85 @@ export interface RxErrorParameters {
 /**
  * Error-Items which are created by the jsonschema-validator
  */
-export interface RxErrorItem {
+export type RxValidationError = {
     readonly field: string;
     readonly message: string;
-}
+};
+
+/**
+ * Use to have a transferable error object
+ * in plain json instead of a JavaScript Error instance.
+ */
+export type PlainJsonError = {
+    name: string;
+    message: string;
+    rxdb?: true;
+    code?: RxErrorKey;
+    parameters?: RxErrorParameters;
+    stack?: string;
+};
+
+
+
+
+
+/**
+ * Error that can happer per document when
+ * RxStorage.bulkWrite() is called
+ */
+export type RxStorageWriteErrorBase<RxDocType> = {
+
+    status: number
+    | 409 // conflict
+    | 422 // schema validation error
+    | 510 // attachment data missing
+    ;
+
+    /**
+     * set this property to make it easy
+     * to detect if the object is a RxStorageBulkWriteError
+     */
+    isError: true;
+
+    // primary key of the document
+    documentId: string;
+
+    // the original document data that should have been written.
+    writeRow: BulkWriteRow<RxDocType>;
+};
+
+export type RxStorageWriteErrorConflict<RxDocType> = RxStorageWriteErrorBase<RxDocType> & {
+    status: 409;
+    /**
+     * A conflict error state must contain the
+     * document state in the database.
+     * This ensures that we can continue resolving a conflict
+     * without having to pull the document out of the db first.
+     * Is not set if the error happens on an insert.
+     */
+    documentInDb: RxDocumentData<RxDocType>;
+};
+
+export type RxStorageWriteErrorValidation<RxDocType> = RxStorageWriteErrorBase<RxDocType> & {
+    status: 422;
+    /**
+     * Other properties that give
+     * information about the error,
+     * for example a schema validation error
+     * might contain the exact error from the validator here.
+     * Must be plain JSON!
+     */
+    validationErrors: RxValidationError[];
+};
+
+export type RxStorageWriteErrorAttachment<RxDocType> = RxStorageWriteErrorBase<RxDocType> & {
+    status: 510;
+    attachmentId: string;
+    documentInDb?: RxDocumentData<RxDocType>;
+};
+
+
+export type RxStorageWriteError<RxDocType> =
+    RxStorageWriteErrorConflict<RxDocType> |
+    RxStorageWriteErrorValidation<RxDocType> |
+    RxStorageWriteErrorAttachment<RxDocType>;

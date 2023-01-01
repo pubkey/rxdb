@@ -25,7 +25,7 @@ import type {
 } from '../../types';
 import {
     randomCouchString
-} from '../../util';
+} from '../../plugins/utils';
 import type {
     MessageFromRemote,
     MessageToRemote,

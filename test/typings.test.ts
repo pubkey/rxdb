@@ -7,7 +7,7 @@ import config from './unit/config';
 import AsyncTestUtil from 'async-test-util';
 import * as path from 'path';
 
-const pouchdbPluginPath = path.join(config.rootPath, 'plugins/pouchdb');
+const memoryPluginPath = path.join(config.rootPath, 'plugins/storage-memory');
 
 describe('typings.test.js', function () {
     this.timeout(120 * 1000); // tests can take very long on slow devices like the CI
@@ -27,13 +27,8 @@ describe('typings.test.js', function () {
             blobBufferUtil
         } from '${config.rootPath}';
         import {
-            addPouchPlugin,
-            getRxStoragePouch
-        } from '${pouchdbPluginPath}';
-        import * as PouchMemAdapter from 'pouchdb-adapter-memory';
-        addPouchPlugin(PouchMemAdapter);
-        const PouchHttpAdapter = require('pouchdb-adapter-http');
-        addPouchPlugin(PouchHttpAdapter);
+            getRxStorageMemory
+        } from '${memoryPluginPath}';
 
         type DefaultDocType = {
             passportId: string;
@@ -102,16 +97,6 @@ describe('typings.test.js', function () {
             assert.ok(thrown);
         });
     });
-    config.parallel('import', () => {
-        it('import * with strict:true', async () => {
-            const code = `
-                import { addPouchPlugin } from '${pouchdbPluginPath}';
-                import * as PouchMemAdapter from 'pouchdb-adapter-memory';
-                addPouchPlugin(PouchMemAdapter);
-            `;
-            await transpileCode(code);
-        });
-    });
     config.parallel('database', () => {
         describe('positive', () => {
             it('should create the database and use its methods', async () => {
@@ -119,7 +104,7 @@ describe('typings.test.js', function () {
                     (async() => {
                         const databaseCreator: RxDatabaseCreator = {
                             name: 'mydb',
-                            storage: getRxStoragePouch('memory'),
+                            storage: getRxStorageMemory(),
                             multiInstance: false,
                             ignoreDuplicate: false
                         };
@@ -170,7 +155,7 @@ describe('typings.test.js', function () {
                             hero: RxCollection;
                         }>({
                             name: 'heroes',
-                            storage: getRxStoragePouch('memory')
+                            storage: getRxStorageMemory()
                         });
                         const col: RxCollection = db.hero;
                         await db.destroy();
@@ -184,7 +169,7 @@ describe('typings.test.js', function () {
                 const brokenCode = codeBase + `
                     const databaseCreator: RxDatabaseCreator = {
                         name: 'mydb',
-                        storage: getRxStoragePouch('memory'),
+                        storage: getRxStorageMemory(),
                         multiInstance: false,
                         ignoreDuplicate: false,
                         foo: 'bar'
@@ -236,7 +221,7 @@ describe('typings.test.js', function () {
                     (async() => {
                         const databaseCreator: RxDatabaseCreator = {
                             name: 'mydb',
-                            storage: getRxStoragePouch('memory'),
+                            storage: getRxStorageMemory(),
                             multiInstance: false,
                             ignoreDuplicate: false
                         };
@@ -259,7 +244,7 @@ describe('typings.test.js', function () {
                     (async() => {
                         const databaseCreator: RxDatabaseCreator = {
                             name: 'mydb',
-                            storage: getRxStoragePouch('memory'),
+                            storage: getRxStorageMemory(),
                             multiInstance: false,
                             ignoreDuplicate: false
                         };
@@ -294,7 +279,7 @@ describe('typings.test.js', function () {
                     (async() => {
                         const myDb: RxDatabase = await createRxDatabase({
                             name: 'mydb',
-                            storage: getRxStoragePouch('memory'),
+                            storage: getRxStorageMemory(),
                             multiInstance: false,
                             ignoreDuplicate: false
                         });
@@ -315,7 +300,7 @@ describe('typings.test.js', function () {
                     (async() => {
                         const myDb: RxDatabase = await createRxDatabase({
                             name: 'mydb',
-                            storage: getRxStoragePouch('memory'),
+                            storage: getRxStorageMemory(),
                             multiInstance: false,
                             ignoreDuplicate: false
                         });
@@ -345,7 +330,7 @@ describe('typings.test.js', function () {
                     (async() => {
                         const myDb: RxDatabase = await createRxDatabase({
                             name: 'mydb',
-                            storage: getRxStoragePouch('memory'),
+                            storage: getRxStorageMemory(),
                             multiInstance: false,
                             ignoreDuplicate: false,
                             options: {
@@ -369,41 +354,6 @@ describe('typings.test.js', function () {
                 `;
                 await transpileCode(code);
             });
-            it('use underlying pouchdb', async () => {
-                const code = codeBase + `
-                    (async() => {
-                        const myDb: RxDatabase = await createRxDatabase({
-                            name: 'mydb',
-                            storage: getRxStoragePouch('memory'),
-                            multiInstance: false,
-                            ignoreDuplicate: false,
-                            options: {
-                                foo1: 'bar1'
-                            }
-                        });
-                        const mySchema: RxJsonSchema<any> = ${JSON.stringify(schemas.human)};
-                        type docType = {
-                                foo: string
-                        };
-                        const cols = await myDb.addCollections({
-                            humans: {
-                                schema: mySchema,
-                                autoMigrate: false,
-                                options: {
-                                    foo2: 'bar2'
-                                }
-                            }
-                        });
-                        const myCollection: RxCollection<docType> = cols.humans;
-                        const result = await myCollection.storageInstance.internals.pouch.put({
-                            _id: 'foobar',
-                            foo: 'bar'
-                        });
-                        const docs = await myCollection.storageInstance.internals.pouch.allDocs();
-                    })();
-                `;
-                await transpileCode(code);
-            });
         });
         describe('negative', () => {
             it('should not allow wrong collection-settings', async () => {
@@ -411,7 +361,7 @@ describe('typings.test.js', function () {
                     (async() => {
                         const myDb: RxDatabase = await createRxDatabase({
                             name: 'mydb',
-                            storage: getRxStoragePouch('memory'),
+                            storage: getRxStorageMemory(),
                             multiInstance: false,
                             ignoreDuplicate: false
                         });
@@ -440,7 +390,7 @@ describe('typings.test.js', function () {
                 (async() => {
                     const myDb: RxDatabase = await createRxDatabase({
                         name: 'mydb',
-                        storage: getRxStoragePouch('memory'),
+                        storage: getRxStorageMemory(),
                         multiInstance: false,
                         ignoreDuplicate: false
                     });
@@ -586,7 +536,7 @@ describe('typings.test.js', function () {
                 '_rev'
             );
         });
-        it('.atomicUpdate()', async () => {
+        it('.incrementalModify()', async () => {
             const code = codeBase + `
                 (async() => {
                     const myDb: any = {};
@@ -605,7 +555,7 @@ describe('typings.test.js', function () {
                     });
                     const collection: RxCollection<DocType> = myCollections.humans;
                     const doc = await collection.findOne().exec(true);
-                    await doc.atomicUpdate(docData => {
+                    await doc.incrementalModify(docData => {
                         const newData = {
                             age: 23,
                             firstName: 'bar',
@@ -799,13 +749,6 @@ describe('typings.test.js', function () {
                     }
                     addRxPlugin(myPlugin);
                 });
-            `;
-                await transpileCode(code);
-            });
-            it('should be able to import and add a plugin', async () => {
-                const code = codeBase + `
-                import { RxDBReplicationGraphQLPlugin } from '${config.rootPath}plugins/replication-graphql';
-                addRxPlugin(RxDBReplicationGraphQLPlugin);
             `;
                 await transpileCode(code);
             });

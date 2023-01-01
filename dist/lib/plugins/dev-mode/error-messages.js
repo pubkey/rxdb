@@ -19,8 +19,8 @@ var ERROR_MESSAGES = {
   UT5: 'keyCompression is set to true in the schema but no key-compression handler is used in the storage',
   UT6: 'schema contains encrypted fields but no encryption handler is used in the storage',
   // plugins
-  PL1: 'Given plugin is not RxDB plugin. Pouchdb plugins must be added via addPouchPlugin()',
-  PL2: 'You tried importy a RxDB plugin to pouchdb. Use addRxPlugin() instead.',
+  PL1: 'Given plugin is not RxDB plugin.',
+  // removed in 14.0.0 - PouchDB RxStorage was removed - PL2: 'You tried importy a RxDB plugin to pouchdb. Use addRxPlugin() instead.',
   PL3: 'A plugin with the same name was already added but it was not the exact same JavaScript object',
   // pouch-db.js
   // removed in 12.0.0 - P1: 'PouchDB.getBatch: limit must be > 2',
@@ -61,14 +61,15 @@ var ERROR_MESSAGES = {
   DB6: 'RxDatabase.addCollections(): another instance created this collection with a different schema. Read this https://pubkey.github.io/rxdb/questions-answers.html#cant-change-the-schema',
   // removed in 13.0.0 (now part of the encryption plugin) DB7: 'RxDatabase.addCollections(): schema encrypted but no password given',
   DB8: 'RxDatabase.create(): A RxDatabase with the same name and adapter already exists.\n' + 'Make sure to use this combination only once or set ignoreDuplicate to true if you do this intentional',
-  DB9: 'createRxDatabase(): Adapter not added. Use addPouchPlugin(require(\'pouchdb-adapter-[adaptername]\'));',
-  DB10: 'createRxDatabase(): To use leveldown-adapters, you have to add the leveldb-plugin. Use addPouchPlugin(require(\'pouchdb-adapter-leveldb\'));',
+  // removed in 14.0.0 - PouchDB RxStorage is removed - DB9: 'createRxDatabase(): Adapter not added. Use addPouchPlugin(require(\'pouchdb-adapter-[adaptername]\'));',
+  // removed in 14.0.0 - PouchDB RxStorage is removed DB10: 'createRxDatabase(): To use leveldown-adapters, you have to add the leveldb-plugin. Use addPouchPlugin(require(\'pouchdb-adapter-leveldb\'));',
   DB11: 'createRxDatabase(): Invalid db-name, folder-paths must not have an ending slash',
+  DB12: 'RxDatabase.addCollections(): could not write to internal store',
   // rx-collection
   COL1: 'RxDocument.insert() You cannot insert an existing document',
   COL2: 'RxCollection.insert() fieldName ._id can only be used as primaryKey',
   COL3: 'RxCollection.upsert() does not work without primary',
-  COL4: 'RxCollection.atomicUpsert() does not work without primary',
+  COL4: 'RxCollection.incrementalUpsert() does not work without primary',
   COL5: 'RxCollection.find() if you want to search by _id, use .findOne(_id)',
   COL6: 'RxCollection.findOne() needs a queryObject or string',
   COL7: 'hook must be a function',
@@ -83,7 +84,9 @@ var ERROR_MESSAGES = {
   COL16: 'given static method is not a function',
   COL17: 'RxCollection.ORM: statics-name not allowed',
   COL18: 'collection-method not allowed because fieldname is in the schema',
-  COL19: 'Document update conflict. When changing a document you must work on the previous revision',
+  // removed in 14.0.0, use CONFLICT instead - COL19: 'Document update conflict. When changing a document you must work on the previous revision',
+  COL20: 'Storage write error',
+  CONFLICT: 'Document update conflict. When changing a document you must work on the previous revision',
   // rx-document.js
   DOC1: 'RxDocument.get$ cannot get observable of in-array fields because order cannot be guessed',
   DOC2: 'cannot observe primary path',
@@ -131,8 +134,8 @@ var ERROR_MESSAGES = {
   LD8: 'localDocuments not activated. Set localDocuments=true on creation, when you want to store local documents on the RxDatabase or RxCollection.',
   // plugins/replication.js
   RC1: 'Replication: already added',
-  RC2: 'RxCollection.syncCouchDB() query must be from the same RxCollection',
-  RC3: 'RxCollection.syncCouchDB() Do not use a collection\'s pouchdb as remote, use the collection instead',
+  RC2: 'replicateCouchDB() query must be from the same RxCollection',
+  // removed in 14.0.0 - PouchDB RxStorage is removed RC3: 'RxCollection.syncCouchDB() Do not use a collection\'s pouchdb as remote, use the collection instead',
   RC4: 'RxCouchDBReplicationState.awaitInitialReplication() cannot await initial replication when live: true',
   RC5: 'RxCouchDBReplicationState.awaitInitialReplication() cannot await initial replication if multiInstance because the replication might run on another instance',
   RC6: 'syncFirestore() serverTimestampField MUST NOT be part of the collections schema and MUST NOT be nested.',
@@ -185,8 +188,9 @@ var ERROR_MESSAGES = {
   VD1: 'Sub-schema not found, does the schemaPath exists in your schema?',
   VD2: 'object does not match schema',
   // plugins/in-memory.js
-  IM1: 'InMemory: Memory-Adapter must be added. Use addPouchPlugin(require(\'pouchdb-adapter-memory\'));',
-  IM2: 'inMemoryCollection.sync(): Do not replicate with the in-memory instance. Replicate with the parent instead',
+  // removed in 14.0.0 - PouchDB RxStorage is removed IM1: 'InMemory: Memory-Adapter must be added. Use addPouchPlugin(require(\'pouchdb-adapter-memory\'));',
+  // removed in 14.0.0 - PouchDB RxStorage is removed IM2: 'inMemoryCollection.sync(): Do not replicate with the in-memory instance. Replicate with the parent instead',
+
   // plugins/server.js
   S1: 'You cannot create collections after calling RxDatabase.server()',
   // plugins/replication-graphql.js
@@ -197,7 +201,7 @@ var ERROR_MESSAGES = {
 
   // plugins/crdt/
   CRDT1: 'CRDT operations cannot be used because the crdt options are not set in the schema.',
-  CRDT2: 'RxDocument.atomicUpdate() cannot be used when CRDTs are activated.',
+  CRDT2: 'RxDocument.incrementalModify() cannot be used when CRDTs are activated.',
   CRDT3: 'To use CRDTs you MUST NOT set a conflictHandler because the default CRDT conflict handler must be used',
   // plugins/dexie/
   DXE1: 'The dexie.js RxStorage does not support boolean indexes, see https://rxdb.info/rx-storage-dexie.html#boolean-index',

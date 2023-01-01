@@ -66,6 +66,9 @@ config.parallel('import-export.test.js', () => {
         describe('.importJSON()', () => {
             describe('positive', () => {
                 it('import json', async () => {
+                    if (!config.storage.hasMultiInstance) {
+                        return;
+                    }
                     const col = await humansCollection.createMultiInstance(
                         randomCouchString(10),
                         5
@@ -88,6 +91,9 @@ config.parallel('import-export.test.js', () => {
             });
             describe('negative', () => {
                 it('should not import if schema is different', async () => {
+                    if (!config.storage.hasMultiInstance) {
+                        return;
+                    }
                     const col = await humansCollection.createMultiInstance('pref1', 5);
                     const json = await col.exportJSON();
                     const differentSchemaCol = await humansCollection.createNested();
@@ -105,6 +111,9 @@ config.parallel('import-export.test.js', () => {
     describe('Database', () => {
         describe('.exportJSON()', () => {
             it('should export a valid dump', async () => {
+                if (!config.storage.hasMultiInstance) {
+                    return;
+                }
                 const col = await humansCollection.createMultiInstance(randomCouchString(10), 5);
                 const json = await col.database.exportJSON();
 

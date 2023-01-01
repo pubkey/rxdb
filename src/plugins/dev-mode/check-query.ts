@@ -13,7 +13,7 @@ import { newRxError, newRxTypeError } from '../../rx-error';
 import {
     massageSelector
 } from 'pouchdb-selector-core';
-import { RxStorageDexieStatics } from '../dexie';
+import { RxStorageDexieStatics } from '../storage-dexie';
 
 /**
  * accidentally passing a non-valid object into the query params
@@ -93,6 +93,7 @@ export function checkMangoQuery(args: RxPluginPrePrepareQueryArgs) {
                 });
             }
         });
+
     /**
      * ensure if custom index is set,
      * it is also defined in the schema
@@ -131,6 +132,25 @@ export function checkMangoQuery(args: RxPluginPrePrepareQueryArgs) {
                 query: args.mangoQuery
             });
         }
+    }
+
+    /**
+     * Ensure that sort only runs on known fields
+     * TODO also check nested fields
+     */
+    if (args.mangoQuery.sort) {
+        args.mangoQuery.sort
+            .map(sortPart => Object.keys(sortPart)[0])
+            .filter(field => !field.includes('.'))
+            .forEach(field => {
+                if (!schemaTopLevelFields.includes(field)) {
+                    throw newRxError('QU13', {
+                        schema,
+                        field,
+                        query: args.mangoQuery,
+                    });
+                }
+            });
     }
 }
 

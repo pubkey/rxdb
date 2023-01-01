@@ -1,8 +1,7 @@
-export const COUCHDB_PORT = 10101;
-
-
 export const DATABASE_NAME = 'db';
 export const HERO_COLLECTION_NAME = 'hero';
+
+export const SYNC_PORT = 10101;
 
 /**
  * We assume that when no indexeddb is there,

@@ -9,8 +9,7 @@ import {
     normalizeMangoQuery,
     randomCouchString,
     now,
-    createRevision,
-    defaultHashFunction
+    createRevision
 } from '../../';
 
 import {
@@ -18,7 +17,7 @@ import {
     getDexieStoreSchema,
     fromDexieToStorage,
     fromStorageToDexie
-} from '../../plugins/dexie';
+} from '../../plugins/storage-dexie';
 
 import * as schemaObjects from '../helper/schema-objects';
 import {
@@ -214,8 +213,9 @@ config.parallel('rx-storage-dexie.test.js', () => {
             schema = fillWithDefaultSettings(schema);
 
             const databaseName = randomCouchString(12);
+            const databaseInstanceToken = randomCouchString(10);
             const storageInstance = await storage.createStorageInstance<HumanDocumentType>({
-                databaseInstanceToken: randomCouchString(10),
+                databaseInstanceToken,
                 databaseName,
                 collectionName: randomCouchString(12),
                 schema,
@@ -232,7 +232,7 @@ config.parallel('rx-storage-dexie.test.js', () => {
                     data._meta = {
                         lwt: now()
                     };
-                    data._rev = createRevision(defaultHashFunction, data);
+                    data._rev = createRevision(databaseInstanceToken, data);
                     return {
                         document: data
                     };

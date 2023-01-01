@@ -1,182 +1,240 @@
+import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
+import _regeneratorRuntime from "@babel/runtime/regenerator";
 import { BehaviorSubject, filter, firstValueFrom, map, Subject } from 'rxjs';
 import { addRxPlugin } from '../../plugin';
 import { rxStorageInstanceToReplicationHandler } from '../../replication-protocol';
-import { ensureNotFalsy, getFromMapOrThrow, randomCouchString } from '../../util';
+import { ensureNotFalsy, getFromMapOrThrow, randomCouchString } from '../../plugins/utils';
 import { RxDBLeaderElectionPlugin } from '../leader-election';
 import { replicateRxCollection } from '../replication';
 import { isMasterInP2PReplication, sendMessageAndAwaitAnswer } from './p2p-helper';
-export var syncP2P = function syncP2P(options) {
-  try {
-    var _temp2 = function _temp2() {
-      // used to easier debug stuff
-      var requestCounter = 0;
-      function getRequestId() {
-        var count = requestCounter++;
-        return _collection.database.token + '|' + requestFlag + '|' + count;
-      }
-      var requestFlag = randomCouchString(10);
-      return Promise.resolve(_this.database.storageToken).then(function (storageToken) {
-        var pool = new RxP2PReplicationPool(_this, options, options.connectionHandlerCreator(options));
-        pool.subs.push(pool.connectionHandler.error$.subscribe(function (err) {
-          return pool.error$.next(err);
-        }), pool.connectionHandler.disconnect$.subscribe(function (peer) {
-          return pool.removePeer(peer);
-        }));
-
-        /**
-         * Answer if someone requests our storage token
-         */
-        pool.subs.push(pool.connectionHandler.message$.pipe(filter(function (data) {
-          return data.message.method === 'token';
-        })).subscribe(function (data) {
-          pool.connectionHandler.send(data.peer, {
-            id: data.message.id,
-            result: storageToken
-          });
-        }));
-        var connectSub = pool.connectionHandler.connect$.pipe(filter(function () {
-          return !pool.canceled;
-        })).subscribe(function (peer) {
-          try {
-            /**
-             * TODO ensure both know the correct secret
-             */
-            return Promise.resolve(sendMessageAndAwaitAnswer(pool.connectionHandler, peer, {
-              id: getRequestId(),
-              method: 'token',
-              params: []
-            })).then(function (tokenResponse) {
-              var peerToken = tokenResponse.result;
-              var isMaster = isMasterInP2PReplication(_this.database.hashFunction, storageToken, peerToken);
-              var replicationState;
-              if (isMaster) {
-                var masterHandler = pool.masterReplicationHandler;
-                var masterChangeStreamSub = masterHandler.masterChangeStream$.subscribe(function (ev) {
-                  var streamResponse = {
-                    id: 'masterChangeStream$',
-                    result: ev
-                  };
-                  pool.connectionHandler.send(peer, streamResponse);
-                });
-
-                // clean up the subscription
-                pool.subs.push(masterChangeStreamSub, pool.connectionHandler.disconnect$.pipe(filter(function (p) {
-                  return p.id === peer.id;
-                })).subscribe(function () {
-                  return masterChangeStreamSub.unsubscribe();
-                }));
-                var messageSub = pool.connectionHandler.message$.pipe(filter(function (data) {
-                  return data.peer.id === peer.id;
-                }), filter(function (data) {
-                  return data.message.method !== 'token';
-                })).subscribe(function (data) {
-                  try {
-                    var msgPeer = data.peer,
-                      message = data.message;
-                    /**
-                     * If it is not a function,
-                     * it means that the client requested the masterChangeStream$
-                     */
-                    var method = masterHandler[message.method].bind(masterHandler);
-                    return Promise.resolve(method.apply(void 0, message.params)).then(function (result) {
-                      var response = {
-                        id: message.id,
-                        result: result
-                      };
-                      pool.connectionHandler.send(msgPeer, response);
-                    });
-                  } catch (e) {
-                    return Promise.reject(e);
-                  }
-                });
-                pool.subs.push(messageSub);
-              } else {
-                replicationState = replicateRxCollection({
-                  replicationIdentifier: [_this.name, options.topic, peerToken].join('||'),
-                  collection: _this,
-                  autoStart: true,
-                  deletedField: '_deleted',
-                  live: true,
-                  retryTime: options.retryTime,
-                  waitForLeadership: false,
-                  pull: options.pull ? Object.assign({}, options.pull, {
-                    handler: function handler(lastPulledCheckpoint) {
-                      try {
-                        return Promise.resolve(sendMessageAndAwaitAnswer(pool.connectionHandler, peer, {
-                          method: 'masterChangesSince',
-                          params: [lastPulledCheckpoint, ensureNotFalsy(options.pull).batchSize],
-                          id: getRequestId()
-                        })).then(function (answer) {
-                          return answer.result;
-                        });
-                      } catch (e) {
-                        return Promise.reject(e);
-                      }
-                    },
-                    stream$: pool.connectionHandler.response$.pipe(filter(function (m) {
-                      return m.response.id === 'masterChangeStream$';
-                    }), map(function (m) {
-                      return m.response.result;
-                    }))
-                  }) : undefined,
-                  push: options.push ? Object.assign({}, options.push, {
-                    handler: function handler(docs) {
-                      try {
-                        return Promise.resolve(sendMessageAndAwaitAnswer(pool.connectionHandler, peer, {
-                          method: 'masterWrite',
-                          params: [docs],
-                          id: getRequestId()
-                        })).then(function (answer) {
-                          return answer.result;
-                        });
-                      } catch (e) {
-                        return Promise.reject(e);
-                      }
-                    }
-                  }) : undefined
-                });
-              }
-              pool.addPeer(peer, replicationState);
-            });
-          } catch (e) {
-            return Promise.reject(e);
-          }
-        });
-        pool.subs.push(connectSub);
-        return pool;
-      });
-    };
-    var _this = this;
-    // fill defaults
-    if (options.pull) {
-      if (!options.pull.batchSize) {
-        options.pull.batchSize = 20;
-      }
-    }
-    if (options.push) {
-      if (!options.push.batchSize) {
-        options.push.batchSize = 20;
-      }
-    }
-    var _collection = _this;
-    var _temp = function () {
-      if (_this.database.multiInstance) {
-        return Promise.resolve(_this.database.waitForLeadership()).then(function () {});
-      }
-    }();
-    return Promise.resolve(_temp && _temp.then ? _temp.then(_temp2) : _temp2(_temp));
-  } catch (e) {
-    return Promise.reject(e);
-  }
-};
+export function replicateP2P(_x) {
+  return _replicateP2P.apply(this, arguments);
+}
 
 /**
  * Because the P2P replication runs between many instances,
  * we use a Pool instead of returning a single replication state.
  */
+function _replicateP2P() {
+  _replicateP2P = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee6(options) {
+    var collection, requestCounter, requestFlag, getRequestId, storageToken, pool, connectSub;
+    return _regeneratorRuntime.wrap(function _callee6$(_context6) {
+      while (1) switch (_context6.prev = _context6.next) {
+        case 0:
+          getRequestId = function _getRequestId() {
+            var count = requestCounter++;
+            return collection.database.token + '|' + requestFlag + '|' + count;
+          };
+          collection = options.collection;
+          addRxPlugin(RxDBLeaderElectionPlugin);
+
+          // fill defaults
+          if (options.pull) {
+            if (!options.pull.batchSize) {
+              options.pull.batchSize = 20;
+            }
+          }
+          if (options.push) {
+            if (!options.push.batchSize) {
+              options.push.batchSize = 20;
+            }
+          }
+          if (!collection.database.multiInstance) {
+            _context6.next = 8;
+            break;
+          }
+          _context6.next = 8;
+          return collection.database.waitForLeadership();
+        case 8:
+          // used to easier debug stuff
+          requestCounter = 0;
+          requestFlag = randomCouchString(10);
+          _context6.next = 12;
+          return collection.database.storageToken;
+        case 12:
+          storageToken = _context6.sent;
+          pool = new RxP2PReplicationPool(collection, options, options.connectionHandlerCreator(options));
+          pool.subs.push(pool.connectionHandler.error$.subscribe(function (err) {
+            return pool.error$.next(err);
+          }), pool.connectionHandler.disconnect$.subscribe(function (peer) {
+            return pool.removePeer(peer);
+          }));
+
+          /**
+           * Answer if someone requests our storage token
+           */
+          pool.subs.push(pool.connectionHandler.message$.pipe(filter(function (data) {
+            return data.message.method === 'token';
+          })).subscribe(function (data) {
+            pool.connectionHandler.send(data.peer, {
+              id: data.message.id,
+              result: storageToken
+            });
+          }));
+          connectSub = pool.connectionHandler.connect$.pipe(filter(function () {
+            return !pool.canceled;
+          })).subscribe( /*#__PURE__*/function () {
+            var _ref = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee5(peer) {
+              var tokenResponse, peerToken, isMaster, replicationState, masterHandler, masterChangeStreamSub, messageSub;
+              return _regeneratorRuntime.wrap(function _callee5$(_context5) {
+                while (1) switch (_context5.prev = _context5.next) {
+                  case 0:
+                    _context5.next = 2;
+                    return sendMessageAndAwaitAnswer(pool.connectionHandler, peer, {
+                      id: getRequestId(),
+                      method: 'token',
+                      params: []
+                    });
+                  case 2:
+                    tokenResponse = _context5.sent;
+                    peerToken = tokenResponse.result;
+                    isMaster = isMasterInP2PReplication(collection.database.hashFunction, storageToken, peerToken);
+                    if (isMaster) {
+                      masterHandler = pool.masterReplicationHandler;
+                      masterChangeStreamSub = masterHandler.masterChangeStream$.subscribe(function (ev) {
+                        var streamResponse = {
+                          id: 'masterChangeStream$',
+                          result: ev
+                        };
+                        pool.connectionHandler.send(peer, streamResponse);
+                      }); // clean up the subscription
+                      pool.subs.push(masterChangeStreamSub, pool.connectionHandler.disconnect$.pipe(filter(function (p) {
+                        return p.id === peer.id;
+                      })).subscribe(function () {
+                        return masterChangeStreamSub.unsubscribe();
+                      }));
+                      messageSub = pool.connectionHandler.message$.pipe(filter(function (data) {
+                        return data.peer.id === peer.id;
+                      }), filter(function (data) {
+                        return data.message.method !== 'token';
+                      })).subscribe( /*#__PURE__*/function () {
+                        var _ref2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee2(data) {
+                          var msgPeer, message, method, result, response;
+                          return _regeneratorRuntime.wrap(function _callee2$(_context2) {
+                            while (1) switch (_context2.prev = _context2.next) {
+                              case 0:
+                                msgPeer = data.peer, message = data.message;
+                                /**
+                                 * If it is not a function,
+                                 * it means that the client requested the masterChangeStream$
+                                 */
+                                method = masterHandler[message.method].bind(masterHandler);
+                                _context2.next = 4;
+                                return method.apply(void 0, message.params);
+                              case 4:
+                                result = _context2.sent;
+                                response = {
+                                  id: message.id,
+                                  result: result
+                                };
+                                pool.connectionHandler.send(msgPeer, response);
+                              case 7:
+                              case "end":
+                                return _context2.stop();
+                            }
+                          }, _callee2);
+                        }));
+                        return function (_x3) {
+                          return _ref2.apply(this, arguments);
+                        };
+                      }());
+                      pool.subs.push(messageSub);
+                    } else {
+                      replicationState = replicateRxCollection({
+                        replicationIdentifier: [collection.name, options.topic, peerToken].join('||'),
+                        collection: collection,
+                        autoStart: true,
+                        deletedField: '_deleted',
+                        live: true,
+                        retryTime: options.retryTime,
+                        waitForLeadership: false,
+                        pull: options.pull ? Object.assign({}, options.pull, {
+                          handler: function () {
+                            var _handler = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee3(lastPulledCheckpoint) {
+                              var answer;
+                              return _regeneratorRuntime.wrap(function _callee3$(_context3) {
+                                while (1) switch (_context3.prev = _context3.next) {
+                                  case 0:
+                                    _context3.next = 2;
+                                    return sendMessageAndAwaitAnswer(pool.connectionHandler, peer, {
+                                      method: 'masterChangesSince',
+                                      params: [lastPulledCheckpoint, ensureNotFalsy(options.pull).batchSize],
+                                      id: getRequestId()
+                                    });
+                                  case 2:
+                                    answer = _context3.sent;
+                                    return _context3.abrupt("return", answer.result);
+                                  case 4:
+                                  case "end":
+                                    return _context3.stop();
+                                }
+                              }, _callee3);
+                            }));
+                            function handler(_x4) {
+                              return _handler.apply(this, arguments);
+                            }
+                            return handler;
+                          }(),
+                          stream$: pool.connectionHandler.response$.pipe(filter(function (m) {
+                            return m.response.id === 'masterChangeStream$';
+                          }), map(function (m) {
+                            return m.response.result;
+                          }))
+                        }) : undefined,
+                        push: options.push ? Object.assign({}, options.push, {
+                          handler: function () {
+                            var _handler2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee4(docs) {
+                              var answer;
+                              return _regeneratorRuntime.wrap(function _callee4$(_context4) {
+                                while (1) switch (_context4.prev = _context4.next) {
+                                  case 0:
+                                    _context4.next = 2;
+                                    return sendMessageAndAwaitAnswer(pool.connectionHandler, peer, {
+                                      method: 'masterWrite',
+                                      params: [docs],
+                                      id: getRequestId()
+                                    });
+                                  case 2:
+                                    answer = _context4.sent;
+                                    return _context4.abrupt("return", answer.result);
+                                  case 4:
+                                  case "end":
+                                    return _context4.stop();
+                                }
+                              }, _callee4);
+                            }));
+                            function handler(_x5) {
+                              return _handler2.apply(this, arguments);
+                            }
+                            return handler;
+                          }()
+                        }) : undefined
+                      });
+                    }
+                    pool.addPeer(peer, replicationState);
+                  case 7:
+                  case "end":
+                    return _context5.stop();
+                }
+              }, _callee5);
+            }));
+            return function (_x2) {
+              return _ref.apply(this, arguments);
+            };
+          }());
+          pool.subs.push(connectSub);
+          return _context6.abrupt("return", pool);
+        case 19:
+        case "end":
+          return _context6.stop();
+      }
+    }, _callee6);
+  }));
+  return _replicateP2P.apply(this, arguments);
+}
 export var RxP2PReplicationPool = /*#__PURE__*/function () {
   function RxP2PReplicationPool(collection, options, connectionHandler) {
-    var _this2 = this;
+    var _this = this;
     this.peerStates$ = new BehaviorSubject(new Map());
     this.canceled = false;
     this.subs = [];
@@ -185,13 +243,13 @@ export var RxP2PReplicationPool = /*#__PURE__*/function () {
     this.options = options;
     this.connectionHandler = connectionHandler;
     this.collection.onDestroy.push(function () {
-      return _this2.cancel();
+      return _this.cancel();
     });
-    this.masterReplicationHandler = rxStorageInstanceToReplicationHandler(collection.storageInstance, collection.conflictHandler, collection.database.hashFunction);
+    this.masterReplicationHandler = rxStorageInstanceToReplicationHandler(collection.storageInstance, collection.conflictHandler, collection.database.token);
   }
   var _proto = RxP2PReplicationPool.prototype;
   _proto.addPeer = function addPeer(peer, replicationState) {
-    var _this3 = this;
+    var _this2 = this;
     var peerState = {
       peer: peer,
       replicationState: replicationState,
@@ -200,7 +258,7 @@ export var RxP2PReplicationPool = /*#__PURE__*/function () {
     this.peerStates$.next(this.peerStates$.getValue().set(peer, peerState));
     if (replicationState) {
       peerState.subs.push(replicationState.error$.subscribe(function (ev) {
-        return _this3.error$.next(ev);
+        return _this2.error$.next(ev);
       }));
     }
   };
@@ -223,38 +281,40 @@ export var RxP2PReplicationPool = /*#__PURE__*/function () {
       return peerStates.size > 0;
     })));
   };
-  _proto.cancel = function cancel() {
-    try {
-      var _this4 = this;
-      if (_this4.canceled) {
-        return Promise.resolve();
-      }
-      _this4.canceled = true;
-      _this4.subs.forEach(function (sub) {
-        return sub.unsubscribe();
-      });
-      Array.from(_this4.peerStates$.getValue().keys()).forEach(function (peer) {
-        _this4.removePeer(peer);
-      });
-      return Promise.resolve(_this4.connectionHandler.destroy()).then(function () {});
-    } catch (e) {
-      return Promise.reject(e);
+  _proto.cancel = /*#__PURE__*/function () {
+    var _cancel = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee() {
+      var _this3 = this;
+      return _regeneratorRuntime.wrap(function _callee$(_context) {
+        while (1) switch (_context.prev = _context.next) {
+          case 0:
+            if (!this.canceled) {
+              _context.next = 2;
+              break;
+            }
+            return _context.abrupt("return");
+          case 2:
+            this.canceled = true;
+            this.subs.forEach(function (sub) {
+              return sub.unsubscribe();
+            });
+            Array.from(this.peerStates$.getValue().keys()).forEach(function (peer) {
+              _this3.removePeer(peer);
+            });
+            _context.next = 7;
+            return this.connectionHandler.destroy();
+          case 7:
+          case "end":
+            return _context.stop();
+        }
+      }, _callee, this);
+    }));
+    function cancel() {
+      return _cancel.apply(this, arguments);
     }
-  };
+    return cancel;
+  }();
   return RxP2PReplicationPool;
 }();
-export var RxDBReplicationP2PPlugin = {
-  name: 'replication-p2p',
-  init: function init() {
-    addRxPlugin(RxDBLeaderElectionPlugin);
-  },
-  rxdb: true,
-  prototypes: {
-    RxCollection: function RxCollection(proto) {
-      proto.syncP2P = syncP2P;
-    }
-  }
-};
 export * from './p2p-helper';
 export * from './p2p-types';
 // export * from './connection-handler-webtorrent';

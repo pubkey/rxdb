@@ -1,4 +1,6 @@
 import type { LocalDocumentParent, LocalDocumentState, RxDocumentData, RxJsonSchema, RxLocalDocumentData, RxStorage } from '../../types';
+export declare const LOCAL_DOC_STATE_BY_PARENT: WeakMap<LocalDocumentParent, Promise<LocalDocumentState>>;
+export declare const LOCAL_DOC_STATE_BY_PARENT_RESOLVED: WeakMap<LocalDocumentParent, LocalDocumentState>;
 export declare function createLocalDocStateByParent(parent: LocalDocumentParent): void;
 export declare function getLocalDocStateByParent(parent: LocalDocumentParent): Promise<LocalDocumentState>;
 export declare function createLocalDocumentStorageInstance(databaseInstanceToken: string, storage: RxStorage<any, any>, databaseName: string, collectionName: string, instanceCreationOptions: any, multiInstance: boolean): Promise<import("../../types").RxStorageInstance<RxLocalDocumentData<{

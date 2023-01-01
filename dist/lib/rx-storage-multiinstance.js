@@ -1,5 +1,6 @@
 "use strict";
 
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -7,6 +8,8 @@ exports.BROADCAST_CHANNEL_BY_TOKEN = void 0;
 exports.addRxStorageMultiInstanceSupport = addRxStorageMultiInstanceSupport;
 exports.getBroadcastChannelReference = getBroadcastChannelReference;
 exports.removeBroadcastChannelReference = removeBroadcastChannelReference;
+var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
+var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 var _rxjs = require("rxjs");
 var _operators = require("rxjs/operators");
 var _broadcastChannel = require("broadcast-channel");
@@ -103,40 +106,48 @@ providedBroadcastChannel) {
     return changesFromOtherInstances$.asObservable().pipe((0, _operators.mergeWith)(oldChangestream$));
   };
   var oldClose = instance.close.bind(instance);
-  instance.close = function () {
-    try {
-      closed = true;
-      sub.unsubscribe();
-      broadcastChannel.removeEventListener('message', eventListener);
-      var _temp = function () {
-        if (!providedBroadcastChannel) {
-          return Promise.resolve(removeBroadcastChannelReference(instanceCreationParams.databaseInstanceToken, instance)).then(function () {});
-        }
-      }();
-      return Promise.resolve(_temp && _temp.then ? _temp.then(function () {
-        return oldClose();
-      }) : oldClose());
-    } catch (e) {
-      return Promise.reject(e);
-    }
-  };
+  instance.close = /*#__PURE__*/(0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee() {
+    return _regenerator["default"].wrap(function _callee$(_context) {
+      while (1) switch (_context.prev = _context.next) {
+        case 0:
+          closed = true;
+          sub.unsubscribe();
+          broadcastChannel.removeEventListener('message', eventListener);
+          if (providedBroadcastChannel) {
+            _context.next = 6;
+            break;
+          }
+          _context.next = 6;
+          return removeBroadcastChannelReference(instanceCreationParams.databaseInstanceToken, instance);
+        case 6:
+          return _context.abrupt("return", oldClose());
+        case 7:
+        case "end":
+          return _context.stop();
+      }
+    }, _callee);
+  }));
   var oldRemove = instance.remove.bind(instance);
-  instance.remove = function () {
-    try {
-      closed = true;
-      sub.unsubscribe();
-      broadcastChannel.removeEventListener('message', eventListener);
-      var _temp2 = function () {
-        if (!providedBroadcastChannel) {
-          return Promise.resolve(removeBroadcastChannelReference(instanceCreationParams.databaseInstanceToken, instance)).then(function () {});
-        }
-      }();
-      return Promise.resolve(_temp2 && _temp2.then ? _temp2.then(function () {
-        return oldRemove();
-      }) : oldRemove());
-    } catch (e) {
-      return Promise.reject(e);
-    }
-  };
+  instance.remove = /*#__PURE__*/(0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee2() {
+    return _regenerator["default"].wrap(function _callee2$(_context2) {
+      while (1) switch (_context2.prev = _context2.next) {
+        case 0:
+          closed = true;
+          sub.unsubscribe();
+          broadcastChannel.removeEventListener('message', eventListener);
+          if (providedBroadcastChannel) {
+            _context2.next = 6;
+            break;
+          }
+          _context2.next = 6;
+          return removeBroadcastChannelReference(instanceCreationParams.databaseInstanceToken, instance);
+        case 6:
+          return _context2.abrupt("return", oldRemove());
+        case 7:
+        case "end":
+          return _context2.stop();
+      }
+    }, _callee2);
+  }));
 }
 //# sourceMappingURL=rx-storage-multiinstance.js.map

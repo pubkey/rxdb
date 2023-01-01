@@ -60,7 +60,6 @@ ReplicationOptions<RxDocType, P2PReplicationCheckpoint>,
 'pull' |
 'push' |
 'replicationIdentifier' |
-'collection' |
 'deletedField' |
 'live' |
 'autostart' |

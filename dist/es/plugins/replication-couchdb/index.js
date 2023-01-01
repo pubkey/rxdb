@@ -1,302 +1,263 @@
+import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
+import _inheritsLoose from "@babel/runtime/helpers/inheritsLoose";
+import _regeneratorRuntime from "@babel/runtime/regenerator";
 /**
- * this plugin adds the RxCollection.sync()-function to rxdb
- * you can use it to sync collections with remote or local couchdb-instances
+ * This plugin can be used to sync collections with a remote CouchDB endpoint.
  */
-
-import PouchReplicationPlugin from 'pouchdb-replication';
-import { BehaviorSubject, Subject, fromEvent, firstValueFrom } from 'rxjs';
-import { skipUntil, filter, first, mergeMap } from 'rxjs/operators';
-import { promiseWait, flatClone, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_TRUE, ensureNotFalsy } from '../../util';
-import { newRxError } from '../../rx-error';
-import { isInstanceOf as isInstanceOfPouchDB, addPouchPlugin, getPouchDBOfRxCollection } from '../../plugins/pouchdb';
-import { isRxCollection } from '../../rx-collection';
-/**
- * Contains all pouchdb instances that
- * are used inside of RxDB by collections or databases.
- * Used to ensure the remote of a replication cannot be an internal pouchdb.
- */
-var INTERNAL_POUCHDBS = new WeakSet();
-export var RxCouchDBReplicationStateBase = /*#__PURE__*/function () {
-  function RxCouchDBReplicationStateBase(collection, syncOptions) {
-    var _this = this;
-    this._subs = [];
-    this._subjects = {
-      change: new Subject(),
-      docs: new Subject(),
-      denied: new Subject(),
-      active: new BehaviorSubject(false),
-      complete: new BehaviorSubject(false),
-      alive: new BehaviorSubject(false),
-      error: new Subject()
-    };
-    this.canceled = false;
-    this.collection = collection;
-    this.syncOptions = syncOptions;
-    // create getters
-    Object.keys(this._subjects).forEach(function (key) {
-      Object.defineProperty(_this, key + '$', {
-        get: function get() {
-          return this._subjects[key].asObservable();
+import { ensureNotFalsy, errorToPlainJson, fastUnsecureHash, flatClone } from '../../plugins/utils';
+import { RxDBLeaderElectionPlugin } from '../leader-election';
+import { RxReplicationState, startReplicationOnLeaderShip } from '../replication';
+import { addRxPlugin, newRxError } from '../../index';
+import { Subject } from 'rxjs';
+import { couchDBDocToRxDocData, COUCHDB_NEW_REPLICATION_PLUGIN_IDENTITY_PREFIX, mergeUrlQueryParams, couchSwapPrimaryToId, getDefaultFetch } from './couchdb-helper';
+export * from './couchdb-helper';
+export * from './couchdb-types';
+export var RxCouchDBReplicationState = /*#__PURE__*/function (_RxReplicationState) {
+  _inheritsLoose(RxCouchDBReplicationState, _RxReplicationState);
+  function RxCouchDBReplicationState(url, fetch, replicationIdentifierHash, collection, pull, push) {
+    var _this;
+    var live = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : true;
+    var retryTime = arguments.length > 7 && arguments[7] !== undefined ? arguments[7] : 1000 * 5;
+    var autoStart = arguments.length > 8 && arguments[8] !== undefined ? arguments[8] : true;
+    _this = _RxReplicationState.call(this, replicationIdentifierHash, collection, '_deleted', pull, push, live, retryTime, autoStart) || this;
+    _this.url = url;
+    _this.fetch = fetch;
+    _this.replicationIdentifierHash = replicationIdentifierHash;
+    _this.collection = collection;
+    _this.pull = pull;
+    _this.push = push;
+    _this.live = live;
+    _this.retryTime = retryTime;
+    _this.autoStart = autoStart;
+    return _this;
+  }
+  return RxCouchDBReplicationState;
+}(RxReplicationState);
+export function replicateCouchDB(options) {
+  var collection = options.collection;
+  addRxPlugin(RxDBLeaderElectionPlugin);
+  options = flatClone(options);
+  if (!options.url.endsWith('/')) {
+    options.url = options.url + '/';
+  }
+  options.waitForLeadership = typeof options.waitForLeadership === 'undefined' ? true : options.waitForLeadership;
+  var pullStream$ = new Subject();
+  var replicationPrimitivesPull;
+  if (options.pull) {
+    replicationPrimitivesPull = {
+      handler: function () {
+        var _handler = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee(lastPulledCheckpoint, batchSize) {
+          var url, response, jsonResponse, documents;
+          return _regeneratorRuntime.wrap(function _callee$(_context) {
+            while (1) switch (_context.prev = _context.next) {
+              case 0:
+                /**
+                 * @link https://docs.couchdb.org/en/3.2.2-docs/api/database/changes.html
+                 */
+                url = options.url + '_changes?' + mergeUrlQueryParams({
+                  style: 'all_docs',
+                  feed: 'normal',
+                  include_docs: true,
+                  since: lastPulledCheckpoint ? lastPulledCheckpoint.sequence : 0,
+                  heartbeat: options.pull && options.pull.heartbeat ? options.pull.heartbeat : 60000,
+                  limit: batchSize,
+                  seq_interval: batchSize
+                });
+                _context.next = 3;
+                return replicationState.fetch(url);
+              case 3:
+                response = _context.sent;
+                _context.next = 6;
+                return response.json();
+              case 6:
+                jsonResponse = _context.sent;
+                documents = jsonResponse.results.map(function (row) {
+                  return couchDBDocToRxDocData(collection.schema.primaryPath, ensureNotFalsy(row.doc));
+                });
+                return _context.abrupt("return", {
+                  documents: documents,
+                  checkpoint: {
+                    sequence: jsonResponse.last_seq
+                  }
+                });
+              case 9:
+              case "end":
+                return _context.stop();
+            }
+          }, _callee);
+        }));
+        function handler(_x, _x2) {
+          return _handler.apply(this, arguments);
         }
-      });
-    });
+        return handler;
+      }(),
+      batchSize: ensureNotFalsy(options.pull).batchSize,
+      modifier: ensureNotFalsy(options.pull).modifier,
+      stream$: pullStream$.asObservable()
+    };
   }
-  var _proto = RxCouchDBReplicationStateBase.prototype;
-  _proto.awaitInitialReplication = function awaitInitialReplication() {
-    if (this.syncOptions.options && this.syncOptions.options.live) {
-      throw newRxError('RC4', {
-        database: this.collection.database.name,
-        collection: this.collection.name
-      });
-    }
-    if (this.collection.database.multiInstance && this.syncOptions.waitForLeadership) {
-      throw newRxError('RC5', {
-        database: this.collection.database.name,
-        collection: this.collection.name
-      });
-    }
-    var that = this;
-    return firstValueFrom(that.complete$.pipe(filter(function (x) {
-      return !!x;
-    })));
+  var replicationPrimitivesPush;
+  if (options.push) {
+    replicationPrimitivesPush = {
+      handler: function () {
+        var _handler2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee2(rows) {
+          var url, body, response, responseJson, conflicts, getConflictDocsUrl, conflictResponse, conflictResponseJson, conflictDocsMasterState;
+          return _regeneratorRuntime.wrap(function _callee2$(_context2) {
+            while (1) switch (_context2.prev = _context2.next) {
+              case 0:
+                /**
+                 * @link https://docs.couchdb.org/en/3.2.2-docs/api/database/bulk-api.html#db-bulk-docs
+                 */
+                url = options.url + '_bulk_docs?' + mergeUrlQueryParams({});
+                body = {
+                  docs: rows.map(function (row) {
+                    var sendDoc = flatClone(row.newDocumentState);
+                    if (row.assumedMasterState) {
+                      sendDoc._rev = ensureNotFalsy(row.assumedMasterState._rev);
+                    }
+                    return couchSwapPrimaryToId(collection.schema.primaryPath, sendDoc);
+                  })
+                };
+                _context2.next = 4;
+                return replicationState.fetch(url, {
+                  method: 'POST',
+                  headers: {
+                    'content-type': 'application/json'
+                  },
+                  body: JSON.stringify(body)
+                });
+              case 4:
+                response = _context2.sent;
+                _context2.next = 7;
+                return response.json();
+              case 7:
+                responseJson = _context2.sent;
+                conflicts = responseJson.filter(function (row) {
+                  var isConflict = row.error === 'conflict';
+                  if (!row.ok && !isConflict) {
+                    throw newRxError('SNH', {
+                      args: {
+                        row: row
+                      }
+                    });
+                  }
+                  return isConflict;
+                });
+                if (!(conflicts.length === 0)) {
+                  _context2.next = 11;
+                  break;
+                }
+                return _context2.abrupt("return", []);
+              case 11:
+                getConflictDocsUrl = options.url + '_all_docs?' + mergeUrlQueryParams({
+                  include_docs: true,
+                  keys: JSON.stringify(conflicts.map(function (c) {
+                    return c.id;
+                  }))
+                });
+                _context2.next = 14;
+                return replicationState.fetch(getConflictDocsUrl);
+              case 14:
+                conflictResponse = _context2.sent;
+                _context2.next = 17;
+                return conflictResponse.json();
+              case 17:
+                conflictResponseJson = _context2.sent;
+                conflictDocsMasterState = conflictResponseJson.rows.map(function (r) {
+                  return couchDBDocToRxDocData(collection.schema.primaryPath, r.doc);
+                });
+                return _context2.abrupt("return", conflictDocsMasterState);
+              case 20:
+              case "end":
+                return _context2.stop();
+            }
+          }, _callee2);
+        }));
+        function handler(_x3) {
+          return _handler2.apply(this, arguments);
+        }
+        return handler;
+      }(),
+      batchSize: options.push.batchSize,
+      modifier: options.push.modifier
+    };
   }
+  var replicationState = new RxCouchDBReplicationState(options.url, options.fetch ? options.fetch : getDefaultFetch(), COUCHDB_NEW_REPLICATION_PLUGIN_IDENTITY_PREFIX + fastUnsecureHash(options.url), collection, replicationPrimitivesPull, replicationPrimitivesPush, options.live, options.retryTime, options.autoStart);
 
   /**
-   * Returns false when the replication has already been canceled
-   */;
-  _proto.cancel = function cancel() {
-    var _this2 = this;
-    if (this.canceled) {
-      return PROMISE_RESOLVE_FALSE;
-    }
-    this.canceled = true;
-    var ret = PROMISE_RESOLVE_TRUE;
-    if (this._pouchEventEmitterObject) {
-      /**
-       * Calling cancel() does not return a promise,
-       * so we have to await the complete event
-       * to know that everything is cleaned up properly.
-       */
-      ret = new Promise(function (res) {
-        ensureNotFalsy(_this2._pouchEventEmitterObject).on('complete', function () {
-          res(true);
-        });
-      });
-      this._pouchEventEmitterObject.cancel();
-    }
-    this._subs.forEach(function (sub) {
-      return sub.unsubscribe();
-    });
-    return ret;
-  };
-  return RxCouchDBReplicationStateBase;
-}();
-export function setPouchEventEmitter(rxRepState, evEmitter) {
-  if (rxRepState._pouchEventEmitterObject) {
-    throw newRxError('RC1');
+   * Use long polling to get live changes for the pull.stream$
+   */
+  if (options.live && options.pull) {
+    var startBefore = replicationState.start.bind(replicationState);
+    replicationState.start = function () {
+      var since = 'now';
+      var batchSize = options.pull && options.pull.batchSize ? options.pull.batchSize : 20;
+      _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee3() {
+        var _url, jsonResponse, documents;
+        return _regeneratorRuntime.wrap(function _callee3$(_context3) {
+          while (1) switch (_context3.prev = _context3.next) {
+            case 0:
+              if (replicationState.isStopped()) {
+                _context3.next = 22;
+                break;
+              }
+              _url = options.url + '_changes?' + mergeUrlQueryParams({
+                style: 'all_docs',
+                feed: 'longpoll',
+                since: since,
+                include_docs: true,
+                heartbeat: options.pull && options.pull.heartbeat ? options.pull.heartbeat : 60000,
+                limit: batchSize,
+                seq_interval: batchSize
+              });
+              jsonResponse = void 0;
+              _context3.prev = 3;
+              _context3.next = 6;
+              return replicationState.fetch(_url);
+            case 6:
+              _context3.next = 8;
+              return _context3.sent.json();
+            case 8:
+              jsonResponse = _context3.sent;
+              _context3.next = 17;
+              break;
+            case 11:
+              _context3.prev = 11;
+              _context3.t0 = _context3["catch"](3);
+              pullStream$.error(newRxError('RC_STREAM', {
+                args: {
+                  url: _url
+                },
+                error: errorToPlainJson(_context3.t0)
+              }));
+              // await next tick here otherwise we could go in to a 100% CPU blocking cycle.
+              _context3.next = 16;
+              return collection.promiseWait(0);
+            case 16:
+              return _context3.abrupt("continue", 0);
+            case 17:
+              documents = jsonResponse.results.map(function (row) {
+                return couchDBDocToRxDocData(collection.schema.primaryPath, ensureNotFalsy(row.doc));
+              });
+              since = jsonResponse.last_seq;
+              pullStream$.next({
+                documents: documents,
+                checkpoint: {
+                  sequence: jsonResponse.last_seq
+                }
+              });
+              _context3.next = 0;
+              break;
+            case 22:
+            case "end":
+              return _context3.stop();
+          }
+        }, _callee3, null, [[3, 11]]);
+      }))();
+      return startBefore();
+    };
   }
-  rxRepState._pouchEventEmitterObject = evEmitter;
-
-  // change
-  rxRepState._subs.push(fromEvent(evEmitter, 'change').subscribe(function (ev) {
-    rxRepState._subjects.change.next(ev);
-  }));
-
-  // denied
-  rxRepState._subs.push(fromEvent(evEmitter, 'denied').subscribe(function (ev) {
-    return rxRepState._subjects.denied.next(ev);
-  }));
-
-  // docs
-  rxRepState._subs.push(fromEvent(evEmitter, 'change').subscribe(function (ev) {
-    if (rxRepState._subjects.docs.observers.length === 0 || ev.direction !== 'pull') return;
-    ev.change.docs.filter(function (doc) {
-      return doc.language !== 'query';
-    }) // remove internal docs
-    // do primary-swap and keycompression
-    .forEach(function (doc) {
-      return rxRepState._subjects.docs.next(doc);
-    });
-  }));
-
-  // error
-  rxRepState._subs.push(fromEvent(evEmitter, 'error').subscribe(function (ev) {
-    return rxRepState._subjects.error.next(ev);
-  }));
-
-  // active
-  rxRepState._subs.push(fromEvent(evEmitter, 'active').subscribe(function () {
-    return rxRepState._subjects.active.next(true);
-  }));
-  rxRepState._subs.push(fromEvent(evEmitter, 'paused').subscribe(function () {
-    return rxRepState._subjects.active.next(false);
-  }));
-
-  // complete
-  rxRepState._subs.push(fromEvent(evEmitter, 'complete').subscribe(function (info) {
-    try {
-      /**
-       * when complete fires, it might be that not all changeEvents
-       * have passed through, because of the delay of .wachtForChanges()
-       * Therefore we have to first ensure that all previous changeEvents have been handled
-       */
-      return Promise.resolve(promiseWait(100)).then(function () {
-        rxRepState._subjects.complete.next(info);
-      });
-    } catch (e) {
-      return Promise.reject(e);
-    }
-  }));
-  // auto-cancel one-time replications on complelete to not cause memory leak
-  if (!rxRepState.syncOptions.options || !rxRepState.syncOptions.options.live) {
-    rxRepState._subs.push(rxRepState.complete$.pipe(filter(function (x) {
-      return !!x;
-    }), first(), mergeMap(function () {
-      return rxRepState.collection.database.requestIdlePromise().then(function () {
-        return rxRepState.cancel();
-      });
-    })).subscribe());
-  }
-  function getIsAlive(emitter) {
-    // "state" will live in emitter.state if single direction replication
-    // or in emitter.push.state & emitter.pull.state when syncing for both
-    var state = emitter.state;
-    if (!state) {
-      state = [emitter.pull.state, emitter.push.state].reduce(function (acc, val) {
-        if (acc === 'active' || val === 'active') return 'active';
-        return acc === 'stopped' ? acc : val;
-      }, '');
-    }
-
-    // If it's active, we can't determine whether the connection is active
-    // or not yet
-    if (state === 'active') {
-      return promiseWait(15).then(function () {
-        return getIsAlive(emitter);
-      });
-    }
-    var isAlive = state !== 'stopped';
-    return Promise.resolve(isAlive);
-  }
-  rxRepState._subs.push(fromEvent(evEmitter, 'paused').pipe(skipUntil(fromEvent(evEmitter, 'active'))).subscribe(function () {
-    getIsAlive(rxRepState._pouchEventEmitterObject).then(function (isAlive) {
-      return rxRepState._subjects.alive.next(isAlive);
-    });
-  }));
+  startReplicationOnLeaderShip(options.waitForLeadership, replicationState);
+  return replicationState;
 }
-export function createRxCouchDBReplicationState(collection, syncOptions) {
-  return new RxCouchDBReplicationStateBase(collection, syncOptions);
-}
-
-/**
- * get the correct function-name for pouchdb-replication
- */
-export function pouchReplicationFunction(pouch, _ref) {
-  var _ref$pull = _ref.pull,
-    pull = _ref$pull === void 0 ? true : _ref$pull,
-    _ref$push = _ref.push,
-    push = _ref$push === void 0 ? true : _ref$push;
-  if (pull && push) {
-    return pouch.sync.bind(pouch);
-  }
-  if (!pull && push) {
-    return pouch.replicate.to.bind(pouch);
-  }
-  if (pull && !push) {
-    return pouch.replicate.from.bind(pouch);
-  }
-  if (!pull && !push) {
-    throw newRxError('UT3', {
-      pull: pull,
-      push: push
-    });
-  }
-}
-export function syncCouchDB(_ref2) {
-  var _this3 = this;
-  var remote = _ref2.remote,
-    _ref2$waitForLeadersh = _ref2.waitForLeadership,
-    waitForLeadership = _ref2$waitForLeadersh === void 0 ? true : _ref2$waitForLeadersh,
-    _ref2$direction = _ref2.direction,
-    direction = _ref2$direction === void 0 ? {
-      pull: true,
-      push: true
-    } : _ref2$direction,
-    _ref2$options = _ref2.options,
-    options = _ref2$options === void 0 ? {
-      live: true,
-      retry: true
-    } : _ref2$options,
-    query = _ref2.query;
-  var useOptions = flatClone(options);
-
-  // prevent #641 by not allowing internal pouchdbs as remote
-  if (isInstanceOfPouchDB(remote) && INTERNAL_POUCHDBS.has(remote)) {
-    throw newRxError('RC3', {
-      database: this.database.name,
-      collection: this.name
-    });
-  }
-
-  // if remote is RxCollection, get internal pouchdb
-  if (isRxCollection(remote)) {
-    remote = remote.storageInstance.internals.pouch;
-  }
-  if (query && this !== query.collection) {
-    throw newRxError('RC2', {
-      query: query
-    });
-  }
-  var pouch = getPouchDBOfRxCollection(this);
-  var syncFun = pouchReplicationFunction(pouch, direction);
-  if (query) {
-    useOptions.selector = query.getPreparedQuery().selector;
-  }
-  var repState = createRxCouchDBReplicationState(this, {
-    remote: remote,
-    waitForLeadership: waitForLeadership,
-    direction: direction,
-    options: options,
-    query: query
-  });
-
-  // run internal so .sync() does not have to be async
-  var waitTillRun = waitForLeadership && this.database.multiInstance // do not await leadership if not multiInstance
-  ? this.database.waitForLeadership() : promiseWait(0);
-  waitTillRun.then(function () {
-    if (_this3.destroyed || repState.canceled) {
-      return;
-    }
-    var pouchSync = syncFun(remote, useOptions);
-    setPouchEventEmitter(repState, pouchSync);
-    _this3.onDestroy.push(function () {
-      return repState.cancel();
-    });
-  });
-  return repState;
-}
-export var RxDBReplicationCouchDBPlugin = {
-  name: 'replication-couchdb',
-  rxdb: true,
-  init: function init() {
-    // add pouchdb-replication-plugin
-    addPouchPlugin(PouchReplicationPlugin);
-  },
-  prototypes: {
-    RxCollection: function RxCollection(proto) {
-      proto.syncCouchDB = syncCouchDB;
-    }
-  },
-  hooks: {
-    createRxCollection: {
-      after: function after(args) {
-        var collection = args.collection;
-        var pouch = collection.storageInstance.internals.pouch;
-        if (pouch) {
-          INTERNAL_POUCHDBS.add(collection.storageInstance.internals.pouch);
-        }
-      }
-    }
-  }
-};
 //# sourceMappingURL=index.js.map

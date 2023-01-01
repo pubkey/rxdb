@@ -1,25 +1,25 @@
 import objectPath from 'object-path';
 import {
-    Observable,
-    BehaviorSubject
+    Observable
 } from 'rxjs';
 import {
     distinctUntilChanged,
-    map
+    filter,
+    map,
+    shareReplay,
+    startWith
 } from 'rxjs/operators';
 import {
     clone,
     trimDots,
-    getHeightOfRevision,
     pluginMissing,
     flatClone,
     PROMISE_RESOLVE_NULL,
-    PROMISE_RESOLVE_VOID,
-    ensureNotFalsy
-} from './util';
+    RXJS_SHARE_REPLAY_DEFAULTS,
+    getFromObjectOrThrow
+} from './plugins/utils';
 import {
-    newRxError,
-    isBulkWriteConflictError
+    newRxError
 } from './rx-error';
 import {
     runPluginHooks
@@ -30,34 +30,17 @@ import type {
     RxCollection,
     RxDocumentData,
     RxDocumentWriteData,
-    RxChangeEvent,
     UpdateQuery,
-    CRDTEntry
+    CRDTEntry,
+    ModifyFunction
 } from './types';
 import { getDocumentDataOfRxChangeEvent } from './rx-change-event';
 import { overwritable } from './overwritable';
 import { getSchemaByObjectPath } from './rx-schema-helper';
 import { throwIfIsStorageWriteError } from './rx-storage-helper';
+import { modifierFromPublicToInternal } from './incremental-write';
 
 export const basePrototype = {
-
-    /**
-     * TODO
-     * instead of appliying the _this-hack
-     * we should make these accessors functions instead of getters.
-     */
-    get _data() {
-        const _this: RxDocument = this as any;
-        /**
-         * Might be undefined when vuejs-devtools are used
-         * @link https://github.com/pubkey/rxdb/issues/1126
-         */
-        if (!_this.isInstanceOfRxDocument) {
-            return undefined;
-        }
-
-        return _this._dataSync$.getValue();
-    },
     get primaryPath() {
         const _this: RxDocument = this as any;
         if (!_this.isInstanceOfRxDocument) {
@@ -84,7 +67,7 @@ export const basePrototype = {
         if (!_this.isInstanceOfRxDocument) {
             return undefined;
         }
-        return _this._dataSync$.pipe(
+        return _this.$.pipe(
             map((d: any) => d._deleted)
         );
     },
@@ -96,72 +79,60 @@ export const basePrototype = {
         return _this._data._deleted;
     },
 
+    getLatest(this: RxDocument): RxDocument {
+        const latestDocData = this.collection._docCache.getLatestDocumentData(this.primary);
+        return this.collection._docCache.getCachedRxDocument(latestDocData);
+    },
+
     /**
      * returns the observable which emits the plain-data of this document
      */
-    get $(): Observable<any> {
+    get $(): Observable<RxDocumentData<any>> {
         const _this: RxDocument = this as any;
-        return _this._dataSync$.asObservable().pipe(
-            map(docData => overwritable.deepFreezeWhenDevMode(docData))
+        return _this.collection.$.pipe(
+            filter(changeEvent => !changeEvent.isLocal),
+            filter(changeEvent => changeEvent.documentId === this.primary),
+            map(changeEvent => getDocumentDataOfRxChangeEvent(changeEvent)),
+            startWith(_this.collection._docCache.getLatestDocumentData(this.primary)),
+            distinctUntilChanged((prev, curr) => prev._rev === curr._rev),
+            shareReplay(RXJS_SHARE_REPLAY_DEFAULTS)
         );
-    },
-
-    _handleChangeEvent(this: RxDocument, changeEvent: RxChangeEvent<any>) {
-        if (changeEvent.documentId !== this.primary) {
-            return;
-        }
-
-        // ensure that new _rev is higher then current
-        const docData = getDocumentDataOfRxChangeEvent(changeEvent);
-        const newRevNr = getHeightOfRevision(docData._rev);
-        const currentRevNr = getHeightOfRevision(this._data._rev);
-        if (currentRevNr > newRevNr) return;
-
-        switch (changeEvent.operation) {
-            case 'INSERT':
-                break;
-            case 'UPDATE':
-                this._dataSync$.next(changeEvent.documentData);
-                break;
-            case 'DELETE':
-                // remove from docCache to assure new upserted RxDocuments will be a new instance
-                this.collection._docCache.delete(this.primary);
-                this._dataSync$.next(changeEvent.documentData);
-                break;
-        }
     },
 
     /**
      * returns observable of the value of the given path
      */
     get$(this: RxDocument, path: string): Observable<any> {
-        if (path.includes('.item.')) {
-            throw newRxError('DOC1', {
+        if (overwritable.isDevMode()) {
+            if (path.includes('.item.')) {
+                throw newRxError('DOC1', {
+                    path
+                });
+            }
+
+            if (path === this.primaryPath) {
+                throw newRxError('DOC2');
+            }
+
+            // final fields cannot be modified and so also not observed
+            if (this.collection.schema.finalFields.includes(path)) {
+                throw newRxError('DOC3', {
+                    path
+                });
+            }
+
+            const schemaObj = getSchemaByObjectPath(
+                this.collection.schema.jsonSchema,
                 path
-            });
+            );
+            if (!schemaObj) {
+                throw newRxError('DOC4', {
+                    path
+                });
+            }
         }
 
-        if (path === this.primaryPath)
-            throw newRxError('DOC2');
-
-        // final fields cannot be modified and so also not observed
-        if (this.collection.schema.finalFields.includes(path)) {
-            throw newRxError('DOC3', {
-                path
-            });
-        }
-
-        const schemaObj = getSchemaByObjectPath(
-            this.collection.schema.jsonSchema,
-            path
-        );
-        if (!schemaObj) {
-            throw newRxError('DOC4', {
-                path
-            });
-        }
-
-        return this._dataSync$
+        return this.$
             .pipe(
                 map(data => objectPath.get(data, path)),
                 distinctUntilChanged()
@@ -202,7 +173,7 @@ export const basePrototype = {
         }
 
         if (schemaObj.type === 'array') {
-            return refCollection.findByIds(value).then(res => {
+            return refCollection.findByIds(value).exec().then(res => {
                 const valuesIterator = res.values();
                 return Array.from(valuesIterator) as any;
             });
@@ -264,6 +235,9 @@ export const basePrototype = {
     update(_updateObj: UpdateQuery<any>) {
         throw pluginMissing('update');
     },
+    incrementalUpdate(_updateObj: UpdateQuery<any>) {
+        throw pluginMissing('update');
+    },
     updateCRDT(_updateObj: CRDTEntry<any> | CRDTEntry<any>[]) {
         throw pluginMissing('crdt');
     },
@@ -280,77 +254,55 @@ export const basePrototype = {
         throw pluginMissing('attachments');
     },
 
-
-    /**
-     * runs an atomic update over the document
-     * @param function that takes the document-data and returns a new data-object
-     */
-    atomicUpdate(
-        this: RxDocument,
-        mutationFunction: Function,
+    async modify<RxDocType>(
+        this: RxDocument<RxDocType>,
+        mutationFunction: ModifyFunction<RxDocType>,
         // used by some plugins that wrap the method
         _context?: string
     ): Promise<RxDocument> {
-        return new Promise((res, rej) => {
-            this._atomicQueue = this
-                ._atomicQueue
-                .then(async () => {
-                    let done = false;
-                    // we need a hacky while loop to stay incide the chain-link of _atomicQueue
-                    // while still having the option to run a retry on conflicts
-                    while (!done) {
-                        const oldData = this._dataSync$.getValue();
-                        // always await because mutationFunction might be async
-                        let newData;
-
-                        try {
-                            newData = await mutationFunction(
-                                clone(oldData),
-                                this
-                            );
-                            if (this.collection) {
-                                newData = this.collection.schema.fillObjectWithDefaults(newData);
-                            }
-                        } catch (err) {
-                            rej(err);
-                            return;
-                        }
-
-                        try {
-                            await this._saveData(newData, oldData);
-                            done = true;
-                        } catch (err: any) {
-                            const useError = err.parameters && err.parameters.error ? err.parameters.error : err;
-                            /**
-                             * conflicts cannot happen by just using RxDB in one process
-                             * There are two ways they still can appear which is
-                             * replication and multi-tab usage
-                             * Because atomicUpdate has a mutation function,
-                             * we can just re-run the mutation until there is no conflict
-                             */
-                            const isConflict = isBulkWriteConflictError(useError as any);
-                            if (isConflict) {
-                                // conflict error -> retrying
-                            } else {
-                                rej(useError);
-                                return;
-                            }
-                        }
-                    }
-                    res(this);
-                });
-        });
+        const oldData = this._data;
+        const newData: RxDocumentData<RxDocType> = await modifierFromPublicToInternal<RxDocType>(mutationFunction)(oldData) as any;
+        return this._saveData(newData, oldData) as any;
     },
 
+    /**
+     * runs an incremental update over the document
+     * @param function that takes the document-data and returns a new data-object
+     */
+    incrementalModify(
+        this: RxDocument,
+        mutationFunction: ModifyFunction<any>,
+        // used by some plugins that wrap the method
+        _context?: string
+    ): Promise<RxDocument> {
+        return this.collection.incrementalWriteQueue.addWrite(
+            this._data,
+            modifierFromPublicToInternal(mutationFunction)
+        ).then(result => this.collection._docCache.getCachedRxDocument(result));
+    },
+
+    patch<RxDocType>(
+        this: RxDocument<RxDocType>,
+        patch: Partial<RxDocType>
+    ) {
+        const oldData = this._data;
+        const newData = clone(oldData);
+        Object
+            .entries(patch)
+            .forEach(([k, v]) => {
+                (newData as any)[k] = v;
+            });
+        return this._saveData(newData, oldData);
+    },
 
     /**
      * patches the given properties
      */
-    atomicPatch<RxDocumentType = any>(
+    incrementalPatch<RxDocumentType = any>(
         this: RxDocument<RxDocumentType>,
         patch: Partial<RxDocumentType>
     ): Promise<RxDocument<RxDocumentType>> {
-        return this.atomicUpdate((docData: RxDocumentType) => {
+        return this.incrementalModify((docData) => {
             Object
                 .entries(patch)
                 .forEach(([k, v]) => {
@@ -364,11 +316,11 @@ export const basePrototype = {
      * saves the new document-data
      * and handles the events
      */
-    async _saveData<RxDocumentType>(
-        this: RxDocument<RxDocumentType>,
-        newData: RxDocumentWriteData<RxDocumentType>,
-        oldData: RxDocumentData<RxDocumentType>
-    ): Promise<void> {
+    async _saveData<RxDocType>(
+        this: RxDocument<RxDocType>,
+        newData: RxDocumentWriteData<RxDocType>,
+        oldData: RxDocumentData<RxDocType>
+    ): Promise<RxDocument<RxDocType>> {
         newData = flatClone(newData);
 
         // deleted documents cannot be changed
@@ -378,26 +330,7 @@ export const basePrototype = {
                 document: this
             });
         }
-
-        /**
-         * Meta values must always be merged
-         * instead of overwritten.
-         * This ensures that different plugins do not overwrite
-         * each others meta properties.
-         */
-        newData._meta = Object.assign(
-            {},
-            oldData._meta,
-            newData._meta
-        );
-
-        // ensure modifications are ok
-        if (overwritable.isDevMode()) {
-            this.collection.schema.validateChange(oldData, newData);
-        }
-
-        await this.collection._runHooks('pre', 'save', newData, this);
-
+        await beforeDocumentUpdateWrite(this.collection, newData, oldData);
         const writeResult = await this.collection.storageInstance.bulkWrite([{
             previous: oldData,
             document: newData
@@ -406,13 +339,16 @@ export const basePrototype = {
         const isError = writeResult.error[this.primary];
         throwIfIsStorageWriteError(this.collection, this.primary, newData, isError);
 
-        return this.collection._runHooks('post', 'save', newData, this);
+        await this.collection._runHooks('post', 'save', newData, this);
+        return this.collection._docCache.getCachedRxDocument(
+            getFromObjectOrThrow(writeResult.success, this.primary)
+        );
     },
 
     /**
-     * remove the document,
-     * this not not equal to a pouchdb.remove(),
-     * instead we keep the values and only set _deleted: true
+     * Remove the document.
+     * Notice that there is no hard delete,
+     * instead deleted documents get flagged with _deleted=true.
      */
     remove(this: RxDocument): Promise<RxDocument> {
         const collection = this.collection;
@@ -424,22 +360,35 @@ export const basePrototype = {
         }
 
         const deletedData = flatClone(this._data);
+        let removedDocData: RxDocumentData<any>;
         return collection._runHooks('pre', 'remove', deletedData, this)
             .then(async () => {
                 deletedData._deleted = true;
-
                 const writeResult = await collection.storageInstance.bulkWrite([{
                     previous: this._data,
                     document: deletedData
                 }], 'rx-document-remove');
                 const isError = writeResult.error[this.primary];
                 throwIfIsStorageWriteError(collection, this.primary, deletedData, isError);
-                return ensureNotFalsy(writeResult.success[this.primary]);
+                return getFromObjectOrThrow(writeResult.success, this.primary);
             })
-            .then(() => {
+            .then((removed) => {
+                removedDocData = removed;
                 return this.collection._runHooks('post', 'remove', deletedData, this);
             })
-            .then(() => this);
+            .then(() => {
+                return this.collection._docCache.getCachedRxDocument(removedDocData);
+            });
+    },
+    incrementalRemove(this: RxDocument): Promise<RxDocument> {
+        return this.incrementalModify(async (docData) => {
+            await this.collection._runHooks('pre', 'remove', docData, this);
+            docData._deleted = true;
+            return docData;
+        }).then(async (newDoc) => {
+            await this.collection._runHooks('post', 'remove', newDoc._data, newDoc);
+            return newDoc;
+        });
     },
     destroy() {
         throw newRxError('DOC14');
@@ -450,14 +399,12 @@ export function createRxDocumentConstructor(proto = basePrototype) {
     const constructor = function RxDocumentConstructor(
         this: RxDocument,
         collection: RxCollection,
-        jsonData: any
+        docData: RxDocumentData<any>
     ) {
         this.collection = collection;
 
         // assume that this is always equal to the doc-data in the database
-        this._dataSync$ = new BehaviorSubject(jsonData);
-
-        this._atomicQueue = PROMISE_RESOLVE_VOID;
+        this._data = docData;
 
         /**
          * because of the prototype-merge,
@@ -541,14 +488,6 @@ export function createWithConstructor<RxDocType>(
     collection: RxCollection<RxDocType>,
     jsonData: RxDocumentData<RxDocType>
 ): RxDocument<RxDocType> | null {
-    const primary: string = jsonData[collection.schema.primaryPath] as any;
-    if (
-        primary &&
-        primary.startsWith('_design')
-    ) {
-        return null;
-    }
-
     const doc = new constructor(collection, jsonData);
     runPluginHooks('createRxDocument', doc);
     return doc;
@@ -557,4 +496,29 @@ export function createWithConstructor<RxDocType>(
 export function isRxDocument(obj: any): boolean {
     if (typeof obj === 'undefined') return false;
     return !!obj.isInstanceOfRxDocument;
+}
+
+
+export function beforeDocumentUpdateWrite<RxDocType>(
+    collection: RxCollection<RxDocType>,
+    newData: RxDocumentWriteData<RxDocType>,
+    oldData: RxDocumentData<RxDocType>
+): Promise<any> {
+    /**
+     * Meta values must always be merged
+     * instead of overwritten.
+     * This ensures that different plugins do not overwrite
+     * each others meta properties.
+     */
+    newData._meta = Object.assign(
+        {},
+        oldData._meta,
+        newData._meta
+    );
+
+    // ensure modifications are ok
+    if (overwritable.isDevMode()) {
+        collection.schema.validateChange(oldData, newData);
+    }
+    return collection._runHooks('pre', 'save', newData);
 }

@@ -1,6 +1,6 @@
 import {
     getRxStorageDexie
-} from '../plugins/dexie';
+} from '../plugins/storage-dexie';
 import {
     createRxDatabase,
     addRxPlugin

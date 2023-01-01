@@ -8,7 +8,7 @@ exports.fillUpOptionals = fillUpOptionals;
 exports.graphQLSchemaFromRxSchema = graphQLSchemaFromRxSchema;
 var _getGraphqlFromJsonschema = require("get-graphql-from-jsonschema");
 var _rxSchemaHelper = require("../../rx-schema-helper");
-var _util = require("../../util");
+var _utils = require("../../plugins/utils");
 // we use two spaces because get-graphql-from-jsonschema does also
 var SPACING = '  ';
 
@@ -30,12 +30,12 @@ function graphQLSchemaFromRxSchema(input) {
       collectionSettings = _ref[1];
     collectionSettings = fillUpOptionals(collectionSettings);
     var schema = collectionSettings.schema;
-    var prefixes = (0, _util.ensureNotFalsy)(collectionSettings.prefixes);
-    var ucCollectionName = (0, _util.ucfirst)(collectionName);
-    var collectionNameInput = (0, _util.ucfirst)(collectionName) + 'Input';
+    var prefixes = (0, _utils.ensureNotFalsy)(collectionSettings.prefixes);
+    var ucCollectionName = (0, _utils.ucfirst)(collectionName);
+    var collectionNameInput = (0, _utils.ucfirst)(collectionName) + 'Input';
 
     // input
-    var inputSchema = stripKeysFromSchema(schema, (0, _util.ensureNotFalsy)(collectionSettings.ignoreInputKeys));
+    var inputSchema = stripKeysFromSchema(schema, (0, _utils.ensureNotFalsy)(collectionSettings.ignoreInputKeys));
     var inputGraphQL = (0, _getGraphqlFromJsonschema.getGraphqlSchemaFromJsonSchema)({
       rootName: collectionNameInput,
       schema: inputSchema,
@@ -83,7 +83,7 @@ function graphQLSchemaFromRxSchema(input) {
       properties: {},
       required: []
     };
-    (0, _util.ensureNotFalsy)(collectionSettings.headerFields).forEach(function (headerField) {
+    (0, _utils.ensureNotFalsy)(collectionSettings.headerFields).forEach(function (headerField) {
       headersSchema.properties[headerField] = {
         type: 'string'
       };
@@ -95,14 +95,14 @@ function graphQLSchemaFromRxSchema(input) {
       schema: headersSchema,
       direction: 'input'
     });
-    if ((0, _util.ensureNotFalsy)(collectionSettings.headerFields).length > 0) {
+    if ((0, _utils.ensureNotFalsy)(collectionSettings.headerFields).length > 0) {
       ret.inputs = ret.inputs.concat(headersInputGraphQL.typeDefinitions.map(function (str) {
         return replaceTopLevelTypeName(str, headersInputName);
       }));
     }
 
     // output
-    var outputSchema = stripKeysFromSchema(schema, (0, _util.ensureNotFalsy)(collectionSettings.ignoreOutputKeys));
+    var outputSchema = stripKeysFromSchema(schema, (0, _utils.ensureNotFalsy)(collectionSettings.ignoreOutputKeys));
     var outputGraphQL = (0, _getGraphqlFromJsonschema.getGraphqlSchemaFromJsonSchema)({
       rootName: collectionName,
       schema: outputSchema,
@@ -169,7 +169,7 @@ function graphQLSchemaFromRxSchema(input) {
   return ret;
 }
 function fillUpOptionals(input) {
-  input = (0, _util.flatClone)(input);
+  input = (0, _utils.flatClone)(input);
   var schema = (0, _rxSchemaHelper.fillWithDefaultSettings)(input.schema);
   // strip internal attributes
   Object.keys(schema.properties).forEach(function (key) {
@@ -229,7 +229,7 @@ function fillUpOptionals(input) {
   return input;
 }
 function stripKeysFromSchema(schema, strip) {
-  var cloned = (0, _util.clone)(schema);
+  var cloned = (0, _utils.clone)(schema);
   strip.forEach(function (key) {
     delete cloned.properties[key];
   });

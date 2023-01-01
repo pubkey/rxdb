@@ -39,7 +39,7 @@ import type {
 import {
     flatClone,
     isMaybeReadonlyArray
-} from '../../util';
+} from '../../plugins/utils';
 
 declare type CompressionState = {
     table: CompressionTable;

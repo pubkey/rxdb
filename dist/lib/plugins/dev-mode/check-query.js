@@ -10,7 +10,7 @@ exports.checkQuery = checkQuery;
 var _fastDeepEqual = _interopRequireDefault(require("fast-deep-equal"));
 var _rxError = require("../../rx-error");
 var _pouchdbSelectorCore = require("pouchdb-selector-core");
-var _dexie = require("../dexie");
+var _storageDexie = require("../storage-dexie");
 /**
  * accidentally passing a non-valid object into the query params
  * is very hard to debug especially when queries are observed
@@ -74,6 +74,7 @@ function checkMangoQuery(args) {
       });
     }
   });
+
   /**
    * ensure if custom index is set,
    * it is also defined in the schema
@@ -105,9 +106,29 @@ function checkMangoQuery(args) {
       });
     }
   }
+
+  /**
+   * Ensure that sort only runs on known fields
+   * TODO also check nested fields
+   */
+  if (args.mangoQuery.sort) {
+    args.mangoQuery.sort.map(function (sortPart) {
+      return Object.keys(sortPart)[0];
+    }).filter(function (field) {
+      return !field.includes('.');
+    }).forEach(function (field) {
+      if (!schemaTopLevelFields.includes(field)) {
+        throw (0, _rxError.newRxError)('QU13', {
+          schema: schema,
+          field: field,
+          query: args.mangoQuery
+        });
+      }
+    });
+  }
 }
 function areSelectorsSatisfiedByIndex(schema, query) {
-  var preparedQuery = _dexie.RxStorageDexieStatics.prepareQuery(schema, query);
+  var preparedQuery = _storageDexie.RxStorageDexieStatics.prepareQuery(schema, query);
   return preparedQuery.queryPlan.selectorSatisfiedByIndex;
 }
 //# sourceMappingURL=check-query.js.map

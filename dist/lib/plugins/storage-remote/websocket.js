@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.getRxStorageRemoteWebsocket = getRxStorageRemoteWebsocket;
 exports.startRxStorageRemoteWebsocketServer = startRxStorageRemoteWebsocketServer;
 var _rxjs = require("rxjs");
-var _util = require("../../util");
+var _utils = require("../../plugins/utils");
 var _replicationWebsocket = require("../replication-websocket");
 var _remote = require("./remote");
 var _rxStorageRemote = require("./rx-storage-remote");
@@ -19,7 +19,7 @@ function startRxStorageRemoteWebsocketServer(options) {
     messages$: messages$.asObservable(),
     storage: options.storage,
     send: function send(msg) {
-      var ws = (0, _util.getFromMapOrThrow)(websocketByConnectionId, msg.connectionId);
+      var ws = (0, _utils.getFromMapOrThrow)(websocketByConnectionId, msg.connectionId);
       ws.send(JSON.stringify(msg));
     }
   };
@@ -64,7 +64,7 @@ var WebsocketClientByUrl = new Map();
 function getRxStorageRemoteWebsocket(options) {
   var identifier = options.url + 'rx-remote-storage-websocket';
   var messages$ = new _rxjs.Subject();
-  var websocketClientPromise = WebsocketClientByUrl.has(options.url) ? (0, _util.getFromMapOrThrow)(WebsocketClientByUrl, options.url) : (0, _replicationWebsocket.getWebSocket)(options.url, identifier);
+  var websocketClientPromise = WebsocketClientByUrl.has(options.url) ? (0, _utils.getFromMapOrThrow)(WebsocketClientByUrl, options.url) : (0, _replicationWebsocket.getWebSocket)(options.url, identifier);
   WebsocketClientByUrl.set(options.url, websocketClientPromise);
   var storage = (0, _rxStorageRemote.getRxStorageRemote)({
     identifier: identifier,

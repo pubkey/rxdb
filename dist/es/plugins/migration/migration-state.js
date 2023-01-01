@@ -1,5 +1,5 @@
 import { BehaviorSubject } from 'rxjs';
-import { ensureNotFalsy } from '../../util';
+import { ensureNotFalsy } from '../../plugins/utils';
 export var DATA_MIGRATION_STATE_SUBJECT_BY_DATABASE = new WeakMap();
 export function getMigrationStateByDatabase(database) {
   if (!DATA_MIGRATION_STATE_SUBJECT_BY_DATABASE.has(database)) {

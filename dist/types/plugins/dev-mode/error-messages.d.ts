@@ -11,7 +11,6 @@ export declare const ERROR_MESSAGES: {
     UT5: string;
     UT6: string;
     PL1: string;
-    PL2: string;
     PL3: string;
     P2: string;
     QU1: string;
@@ -40,9 +39,8 @@ export declare const ERROR_MESSAGES: {
     DB5: string;
     DB6: string;
     DB8: string;
-    DB9: string;
-    DB10: string;
     DB11: string;
+    DB12: string;
     COL1: string;
     COL2: string;
     COL3: string;
@@ -61,7 +59,8 @@ export declare const ERROR_MESSAGES: {
     COL16: string;
     COL17: string;
     COL18: string;
-    COL19: string;
+    COL20: string;
+    CONFLICT: string;
     DOC1: string;
     DOC2: string;
     DOC3: string;
@@ -100,7 +99,6 @@ export declare const ERROR_MESSAGES: {
     LD8: string;
     RC1: string;
     RC2: string;
-    RC3: string;
     RC4: string;
     RC5: string;
     RC6: string;
@@ -146,8 +144,6 @@ export declare const ERROR_MESSAGES: {
     SC39: string;
     VD1: string;
     VD2: string;
-    IM1: string;
-    IM2: string;
     S1: string;
     GQL1: string;
     GQL3: string;

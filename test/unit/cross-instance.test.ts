@@ -22,7 +22,6 @@ import {
 import * as schemas from './../helper/schemas';
 import * as schemaObjects from './../helper/schema-objects';
 import * as humansCollection from './../helper/humans-collection';
-import { getRxStoragePouch } from '../../plugins/pouchdb';
 import { HumanDocumentType } from './../helper/schemas';
 import {
     wrappedKeyEncryptionStorage
@@ -46,13 +45,13 @@ config.parallel('cross-instance.test.js', () => {
             const name = randomCouchString(10);
             const db = await createRxDatabase({
                 name,
-                storage: getRxStoragePouch('memory'),
+                storage: config.storage.getStorage(),
                 multiInstance: true,
                 ignoreDuplicate: true
             });
             const db2 = await createRxDatabase({
                 name,
-                storage: getRxStoragePouch('memory'),
+                storage: config.storage.getStorage(),
                 multiInstance: true,
                 ignoreDuplicate: true
             });
@@ -133,28 +132,6 @@ config.parallel('cross-instance.test.js', () => {
             c1.database.destroy();
             c2.database.destroy();
         });
-        it('get no changes via pouchdb on different dbs', async () => {
-            if (config.storage.name !== 'pouchdb') {
-                return;
-            }
-            const c1 = await humansCollection.create(0);
-            const c2 = await humansCollection.create(0);
-            let got;
-            c2.storageInstance.internals.pouch.changes({
-                since: 'now',
-                live: true,
-                include_docs: true
-            }).on('change', function (change: any) {
-                if (!change.id.startsWith('_'))
-                    got = change;
-            });
-            await c1.insert(schemaObjects.human());
-
-            await promiseWait(50);
-            assert.strictEqual(got, undefined);
-            c1.database.destroy();
-            c2.database.destroy();
-        });
     });
 
     describe('Document.$', () => {
@@ -182,7 +159,7 @@ config.parallel('cross-instance.test.js', () => {
                 firstNameAfter = newValue;
             });
 
-            await doc1.atomicPatch({ firstName: 'foobar' });
+            await doc1.incrementalPatch({ firstName: 'foobar' });
 
             await promiseWait(10);
             await AsyncTestUtil.waitUntil(() => firstNameAfter === 'foobar');
@@ -247,7 +224,7 @@ config.parallel('cross-instance.test.js', () => {
                 secretAfter = newValue;
             });
 
-            await doc1.atomicPatch({ secret: 'foobar' });
+            await doc1.incrementalPatch({ secret: 'foobar' });
 
             await AsyncTestUtil.waitUntil(() => secretAfter === 'foobar');
             assert.strictEqual(secretAfter, 'foobar');
@@ -310,7 +287,7 @@ config.parallel('cross-instance.test.js', () => {
                 secretAfter = newValue;
             });
 
-            await doc1.atomicPatch({
+            await doc1.incrementalPatch({
                 secret: {
                     name: 'foo',
                     subname: 'bar'

@@ -189,11 +189,11 @@ config.parallel('hooks.test.js', () => {
                     await c.insert(human);
                     const doc = await c.findOne(human.passportId).exec(true);
                     let count = 0;
-                    c.preSave(function (data, instance) {
-                        assert.ok(isRxDocument(instance));
+                    c.preSave(function (data) {
+                        assert.ok(data);
                         count++;
                     }, false);
-                    await doc.atomicPatch({ firstName: 'foobar' });
+                    await doc.incrementalPatch({ firstName: 'foobar' });
                     assert.strictEqual(count, 1);
                     c.database.destroy();
                 });
@@ -203,11 +203,11 @@ config.parallel('hooks.test.js', () => {
                     await c.insert(human);
                     const doc = await c.findOne(human.passportId).exec(true);
                     let count = 0;
-                    c.preSave(function (data, instance) {
-                        assert.ok(isRxDocument(instance));
+                    c.preSave(function (data) {
+                        assert.ok(data);
                         count++;
                     }, true);
-                    await doc.atomicPatch({ firstName: 'foobar' });
+                    await doc.incrementalPatch({ firstName: 'foobar' });
                     assert.strictEqual(count, 1);
                     c.database.destroy();
                 });
@@ -222,7 +222,7 @@ config.parallel('hooks.test.js', () => {
                         hasRun = true;
                     }, false);
 
-                    await doc.atomicPatch({ firstName: 'foobar' });
+                    await doc.incrementalPatch({ firstName: 'foobar' });
                     assert.ok(hasRun);
                     c.database.destroy();
                 });
@@ -237,7 +237,7 @@ config.parallel('hooks.test.js', () => {
                         await promiseWait(10);
                         hasRun = true;
                     }, false);
-                    await doc.atomicPatch({ firstName: 'foobar' });
+                    await doc.incrementalPatch({ firstName: 'foobar' });
                     assert.ok(hasRun);
                     c.database.destroy();
                 });
@@ -254,7 +254,7 @@ config.parallel('hooks.test.js', () => {
 
                     let failC = 0;
                     try {
-                        await doc.atomicPatch({ firstName: 'foobar' });
+                        await doc.incrementalPatch({ firstName: 'foobar' });
                     } catch (e) {
                         failC++;
                     }
@@ -273,11 +273,11 @@ config.parallel('hooks.test.js', () => {
                     await c.insert(human);
                     const doc = await c.findOne(human.passportId).exec(true);
                     let count = 0;
-                    c.postSave(function (data, instance) {
-                        assert.ok(isRxDocument(instance));
+                    c.postSave(function (data) {
+                        assert.ok(data);
                         count++;
                     }, false);
-                    await doc.atomicPatch({ firstName: 'foobar' });
+                    await doc.incrementalPatch({ firstName: 'foobar' });
                     assert.strictEqual(count, 1);
                     c.database.destroy();
                 });
@@ -287,11 +287,11 @@ config.parallel('hooks.test.js', () => {
                     await c.insert(human);
                     const doc = await c.findOne(human.passportId).exec(true);
                     let count = 0;
-                    c.postSave(function (data, instance) {
-                        assert.ok(isRxDocument(instance));
+                    c.postSave(function (data) {
+                        assert.ok(data);
                         count++;
                     }, true);
-                    await doc.atomicPatch({ firstName: 'foobar' });
+                    await doc.incrementalPatch({ firstName: 'foobar' });
                     assert.strictEqual(count, 1);
                     c.database.destroy();
                 });

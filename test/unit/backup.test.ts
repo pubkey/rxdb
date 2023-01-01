@@ -57,7 +57,7 @@ describe('backup.test.ts', () => {
             const directory = getBackupDir();
 
             await backupSingleDocument(
-                firstDoc as any,
+                firstDoc.getLatest(),
                 {
                     directory,
                     attachments: true,

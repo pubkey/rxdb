@@ -70,6 +70,7 @@ export * from './rx-storage-multiinstance';
 export * from './custom-index';
 export * from './query-planner';
 export * from './plugin-helpers';
+export * from './plugins/utils';
 
 export {
     _clearHook // used in tests
@@ -77,14 +78,12 @@ export {
 
 export * from './query-cache';
 
-export * from './util';
-
 // TODO how to do 'export type * ..' ?
 export type {
     JsonSchemaTypes,
     GraphQLSyncPullOptions,
     GraphQLSyncPushOptions,
-    AtomicUpdateFunction,
+    ModifyFunction,
     CollectionsOfDatabase,
     MangoQuery,
     MangoQueryNoLimit,
@@ -139,7 +138,7 @@ export type {
     RxAttachmentWriteData,
     RxStorage,
     RxStorageStatics,
-    RxStorageBulkWriteError,
+    RxStorageWriteError,
     RxStorageBulkWriteResponse,
     PreparedQuery,
     RxStorageQueryResult,
@@ -182,7 +181,8 @@ export type {
     RxDumpDatabaseAny,
     RxDumpDatabaseBase,
     RxError,
-    RxErrorItem,
+    RxTypeError,
+    RxValidationError,
     RxErrorParameters,
     RxGraphQLReplicationPushQueryBuilder,
     RxGraphQLReplicationPullQueryBuilder,
@@ -192,12 +192,7 @@ export type {
     RxPlugin,
     RxQuery,
     RxQueryOP,
-    RxQueryObject,
-    RxQueryOptions,
-    RxCouchDBReplicationState,
-    RxTypeError,
-    CouchDBServerOptions,
-    SyncOptions,
+    MangoQueryOperators,
     SyncOptionsGraphQL,
     MigrationStrategy,
     MigrationStrategies,

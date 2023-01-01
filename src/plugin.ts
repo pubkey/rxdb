@@ -68,9 +68,8 @@ export function addRxPlugin(plugin: RxPlugin) {
     }
 
     /**
-     * Since version 10.0.0 we decoupled pouchdb from
-     * the rxdb core. Therefore pouchdb plugins must be added
-     * with the addPouchPlugin() method of the pouchdb plugin.
+     * To identify broken configurations,
+     * we only allow RxDB plugins to be passed into addRxPlugin().
      */
     if (!plugin.rxdb) {
         throw newRxTypeError('PL1', {
@@ -111,3 +110,4 @@ export function addRxPlugin(plugin: RxPlugin) {
             });
     }
 }
+

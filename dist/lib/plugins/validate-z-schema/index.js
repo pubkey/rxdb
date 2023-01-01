@@ -7,7 +7,6 @@ Object.defineProperty(exports, "__esModule", {
 exports.getValidator = getValidator;
 exports.wrappedValidateZSchemaStorage = void 0;
 var _zSchema = _interopRequireDefault(require("z-schema"));
-var _rxError = require("../../rx-error");
 var _pluginHelpers = require("../../plugin-helpers");
 /**
  * this plugin validates documents before they can be inserted into the RxCollection.
@@ -38,11 +37,9 @@ function getValidator(schema) {
           message: message
         };
       });
-      throw (0, _rxError.newRxError)('VD2', {
-        errors: formattedZSchemaErrors,
-        document: docData,
-        schema: schema
-      });
+      return formattedZSchemaErrors;
+    } else {
+      return [];
     }
   };
 }

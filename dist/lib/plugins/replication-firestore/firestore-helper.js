@@ -11,15 +11,15 @@ exports.serverTimestampToIsoString = serverTimestampToIsoString;
 exports.stripPrimaryKey = stripPrimaryKey;
 exports.stripServerTimestampField = stripServerTimestampField;
 var _firestore = require("firebase/firestore");
-var _util = require("../../util");
+var _utils = require("../../plugins/utils");
 var FIRESTORE_REPLICATION_PLUGIN_IDENTITY_PREFIX = 'rxdb-replication-firestore-';
 exports.FIRESTORE_REPLICATION_PLUGIN_IDENTITY_PREFIX = FIRESTORE_REPLICATION_PLUGIN_IDENTITY_PREFIX;
 function getFirestoreSortFieldValue(docData, primaryKey) {
-  var timeString = (0, _util.now)() + '';
+  var timeString = (0, _utils.now)() + '';
   return 'rxdb-' + timeString.padStart(15, '0') + '-' + docData[primaryKey];
 }
 function stripServerTimestampField(serverTimestampField, docData) {
-  var data = (0, _util.flatClone)(docData);
+  var data = (0, _utils.flatClone)(docData);
   delete data[serverTimestampField];
   return data;
 }
@@ -38,7 +38,7 @@ function firestoreRowToDocData(serverTimestampField, primaryPath, row) {
   return docData;
 }
 function stripPrimaryKey(primaryPath, docData) {
-  docData = (0, _util.flatClone)(docData);
+  docData = (0, _utils.flatClone)(docData);
   delete docData[primaryPath];
   return docData;
 }

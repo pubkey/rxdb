@@ -142,9 +142,8 @@ config.parallel('crdt.test.js', () => {
                     $set: Object.assign({}, writeData, { firstName: 'foobar' })
                 }
             });
-            assert.strictEqual(doc2.firstName, 'foobar');
-
-            assert.ok(doc1 === doc2);
+            assert.ok(doc1 !== doc2);
+            assert.strictEqual(doc2.getLatest().firstName, 'foobar');
 
             collection.database.destroy();
         });
@@ -168,9 +167,8 @@ config.parallel('crdt.test.js', () => {
                     $set: writeData
                 }
             });
-            assert.strictEqual(doc2.age, 2);
-
-            assert.ok(doc1 === doc2);
+            assert.ok(doc1 !== doc2);
+            assert.strictEqual(doc2.getLatest().age, 2);
 
             collection.database.destroy();
         });
@@ -184,7 +182,7 @@ config.parallel('crdt.test.js', () => {
             const docsAfter = await collection.find().exec();
             assert.deepStrictEqual(docsAfter.map(d => d.toJSON(true)), []);
 
-            const secondOp = ensureNotFalsy(doc.toJSON()).crdts?.operations[1][0];
+            const secondOp = ensureNotFalsy(doc.getLatest().toJSON()).crdts?.operations[1][0];
             assert.ok(secondOp);
             assert.strictEqual(secondOp.body[0].ifMatch?.$set?._deleted, true);
 
@@ -192,19 +190,19 @@ config.parallel('crdt.test.js', () => {
         });
     });
 
-    describe('.atomicPatch()', () => {
+    describe('.incrementalPatch()', () => {
         it('should update the document', async () => {
             const collection = await getCRDTCollection();
             const doc = await collection.insert(schemaObjects.human('foobar', 1));
-            await doc.atomicPatch({
+            await doc.incrementalPatch({
                 age: 10
             });
             assert.strictEqual(
-                doc.age,
+                doc.getLatest().age,
                 10
             );
 
-            const secondOp = ensureNotFalsy(doc.toJSON()).crdts?.operations[1][0];
+            const secondOp = ensureNotFalsy(doc.getLatest().toJSON()).crdts?.operations[1][0];
             assert.ok(secondOp);
             assert.strictEqual(secondOp.body[0].ifMatch?.$set?.age, 10);
 
@@ -223,7 +221,7 @@ config.parallel('crdt.test.js', () => {
             const doc = await collection.insert(schemaObjects.human('foobar', 1));
 
             await AsyncTestUtil.assertThrows(
-                () => doc.atomicUpdate(d => d),
+                () => doc.incrementalModify(d => d),
                 'RxError',
                 'CRDT2'
             );
@@ -324,7 +322,7 @@ config.parallel('crdt.test.js', () => {
                 const helper = rxStorageInstanceToReplicationHandler(
                     remoteCollection.storageInstance,
                     remoteCollection.database.conflictHandler as any,
-                    remoteCollection.database.hashFunction
+                    remoteCollection.database.token
                 );
                 const handler: ReplicationPullHandler<TestDocType, CheckpointType> = async (
                     latestPullCheckpoint: CheckpointType | null,
@@ -341,7 +339,7 @@ config.parallel('crdt.test.js', () => {
                 const helper = rxStorageInstanceToReplicationHandler(
                     remoteCollection.storageInstance,
                     remoteCollection.conflictHandler,
-                    remoteCollection.database.hashFunction
+                    remoteCollection.database.token
                 );
                 const handler: ReplicationPushHandler<TestDocType> = async (
                     rows: RxReplicationWriteToMasterRow<TestDocType>[]
@@ -416,19 +414,19 @@ config.parallel('crdt.test.js', () => {
                     }))
                 );
 
-                assert.strictEqual(docA.age, 1);
-                assert.strictEqual(docB.age, 1);
+                assert.strictEqual(docA.getLatest().age, 1);
+                assert.strictEqual(docB.getLatest().age, 1);
 
                 await replicateOnce(clientACollection, serverCollection);
                 await replicateOnce(clientBCollection, serverCollection);
                 await replicateOnce(clientACollection, serverCollection);
 
-                assert.strictEqual(docA.age, 2);
-                assert.strictEqual(docB.age, 2);
+                assert.strictEqual(docA.getLatest().age, 2);
+                assert.strictEqual(docB.getLatest().age, 2);
 
                 // must have both $inc operations
-                assert.strictEqual(docA.toJSON().crdts?.operations[1].length, 2);
-                assert.strictEqual(docB.toJSON().crdts?.operations[1].length, 2);
+                assert.strictEqual(docA.getLatest().toJSON().crdts?.operations[1].length, 2);
+                assert.strictEqual(docB.getLatest().toJSON().crdts?.operations[1].length, 2);
 
                 clientACollection.database.destroy();
                 clientBCollection.database.destroy();

@@ -1,7 +1,7 @@
 {
   "name": "rxdb",
   "description": "A realtime Database for JavaScript applications",
-  "version": "13.17.1",
+  "version": "14.0.0-beta.1",
   "author": "pubkey",
   "repository": {
     "type": "git",
@@ -20,7 +20,6 @@
     "localstorage",
     "indexeddb",
     "encryption",
-    "pouchdb",
     "couchdb",
     "live-query",
     "reactive",
@@ -40,6 +39,13 @@
       "require": "./dist/lib/index.js",
       "es2015": "./dist/es/index.js",
       "default": "./dist/es/index.js"
+    },
+    "./plugins/utils": {
+      "types": "./dist/types/plugins/utils/index.d.ts",
+      "node": "./dist/lib/plugins/utils/index.js",
+      "require": "./dist/lib/plugins/utils/index.js",
+      "es2015": "./dist/es/plugins/utils/index.js",
+      "default": "./dist/es/plugins/utils/index.js"
     },
     "./plugins/backup": {
       "types": "./dist/types/plugins/backup/index.d.ts",
@@ -69,12 +75,12 @@
       "es2015": "./dist/es/plugins/dev-mode/index.js",
       "default": "./dist/es/plugins/dev-mode/index.js"
     },
-    "./plugins/dexie": {
-      "types": "./dist/types/plugins/dexie/index.d.ts",
-      "node": "./dist/lib/plugins/dexie/index.js",
-      "require": "./dist/lib/plugins/dexie/index.js",
-      "es2015": "./dist/es/plugins/dexie/index.js",
-      "default": "./dist/es/plugins/dexie/index.js"
+    "./plugins/storage-dexie": {
+      "types": "./dist/types/plugins/storage-dexie/index.d.ts",
+      "node": "./dist/lib/plugins/storage-dexie/index.js",
+      "require": "./dist/lib/plugins/storage-dexie/index.js",
+      "es2015": "./dist/es/plugins/storage-dexie/index.js",
+      "default": "./dist/es/plugins/storage-dexie/index.js"
     },
     "./plugins/electron": {
       "types": "./dist/types/plugins/electron/index.d.ts",
@@ -90,12 +96,12 @@
       "es2015": "./dist/es/plugins/flutter/index.js",
       "default": "./dist/es/plugins/flutter/index.js"
     },
-    "./plugins/foundationdb": {
-      "types": "./dist/types/plugins/foundationdb/index.d.ts",
-      "node": "./dist/lib/plugins/foundationdb/index.js",
-      "require": "./dist/lib/plugins/foundationdb/index.js",
-      "es2015": "./dist/es/plugins/foundationdb/index.js",
-      "default": "./dist/es/plugins/foundationdb/index.js"
+    "./plugins/storage-foundationdb": {
+      "types": "./dist/types/plugins/storage-foundationdb/index.d.ts",
+      "node": "./dist/lib/plugins/storage-foundationdb/index.js",
+      "require": "./dist/lib/plugins/storage-foundationdb/index.js",
+      "es2015": "./dist/es/plugins/storage-foundationdb/index.js",
+      "default": "./dist/es/plugins/storage-foundationdb/index.js"
     },
     "./plugins/local-documents": {
       "types": "./dist/types/plugins/local-documents/index.d.ts",
@@ -104,19 +110,19 @@
       "es2015": "./dist/es/plugins/local-documents/index.js",
       "default": "./dist/es/plugins/local-documents/index.js"
     },
-    "./plugins/lokijs": {
-      "types": "./dist/types/plugins/lokijs/index.d.ts",
-      "node": "./dist/lib/plugins/lokijs/index.js",
-      "require": "./dist/lib/plugins/lokijs/index.js",
-      "es2015": "./dist/es/plugins/lokijs/index.js",
-      "default": "./dist/es/plugins/lokijs/index.js"
+    "./plugins/storage-lokijs": {
+      "types": "./dist/types/plugins/storage-lokijs/index.d.ts",
+      "node": "./dist/lib/plugins/storage-lokijs/index.js",
+      "require": "./dist/lib/plugins/storage-lokijs/index.js",
+      "es2015": "./dist/es/plugins/storage-lokijs/index.js",
+      "default": "./dist/es/plugins/storage-lokijs/index.js"
     },
-    "./plugins/memory": {
-      "types": "./dist/types/plugins/memory/index.d.ts",
-      "node": "./dist/lib/plugins/memory/index.js",
-      "require": "./dist/lib/plugins/memory/index.js",
-      "es2015": "./dist/es/plugins/memory/index.js",
-      "default": "./dist/es/plugins/memory/index.js"
+    "./plugins/storage-memory": {
+      "types": "./dist/types/plugins/storage-memory/index.d.ts",
+      "node": "./dist/lib/plugins/storage-memory/index.js",
+      "require": "./dist/lib/plugins/storage-memory/index.js",
+      "es2015": "./dist/es/plugins/storage-memory/index.js",
+      "default": "./dist/es/plugins/storage-memory/index.js"
     },
     "./plugins/migration": {
       "types": "./dist/types/plugins/migration/index.d.ts",
@@ -124,13 +130,6 @@
       "require": "./dist/lib/plugins/migration/index.js",
       "es2015": "./dist/es/plugins/migration/index.js",
       "default": "./dist/es/plugins/migration/index.js"
-    },
-    "./plugins/pouchdb": {
-      "types": "./dist/types/plugins/pouchdb/index.d.ts",
-      "node": "./dist/lib/plugins/pouchdb/index.js",
-      "require": "./dist/lib/plugins/pouchdb/index.js",
-      "es2015": "./dist/es/plugins/pouchdb/index.js",
-      "default": "./dist/es/plugins/pouchdb/index.js"
     },
     "./plugins/query-builder": {
       "types": "./dist/types/plugins/query-builder/index.d.ts",
@@ -188,12 +187,12 @@
       "es2015": "./dist/es/plugins/storage-remote/index.js",
       "default": "./dist/es/plugins/storage-remote/index.js"
     },
-    "./plugins/worker": {
-      "types": "./dist/types/plugins/worker/index.d.ts",
-      "node": "./dist/lib/plugins/worker/index.js",
-      "require": "./dist/lib/plugins/worker/index.js",
-      "es2015": "./dist/es/plugins/worker/index.js",
-      "default": "./dist/es/plugins/worker/index.js"
+    "./plugins/storage-worker": {
+      "types": "./dist/types/plugins/storage-worker/index.d.ts",
+      "node": "./dist/lib/plugins/storage-worker/index.js",
+      "require": "./dist/lib/plugins/storage-worker/index.js",
+      "es2015": "./dist/es/plugins/storage-worker/index.js",
+      "default": "./dist/es/plugins/storage-worker/index.js"
     },
     "./plugins/attachments": {
       "types": "./dist/types/plugins/attachments/index.d.ts",
@@ -278,23 +277,20 @@
     "postinstall": "node scripts/postinstall.js || echo \"ignore\"",
     "test": "npm run test:node && npm run test:browser",
     "// test:fast": "run tests in the fast-mode. Most of them will run in parrallel, skips tests that are known slow",
-    "test:fast": "npm run test:fast:memory && npm run test:fast:pouchdb && npm run test:fast:lokijs && npm run test:fast:dexie-worker && npm run test:fast:dexie",
-    "test:fast:pouchdb": "npm run transpile && rimraf -rf pouch__all_dbs__ && cross-env DEFAULT_STORAGE=pouchdb NODE_ENV=fast mocha --config ./config/.mocharc.js ./test_tmp/unit.test.js",
-    "test:fast:memory": "npm run transpile && rimraf -rf pouch__all_dbs__ && cross-env DEFAULT_STORAGE=memory NODE_ENV=fast mocha --config ./config/.mocharc.js ./test_tmp/unit.test.js",
-    "test:fast:memory-validation": "npm run transpile && rimraf -rf pouch__all_dbs__ && cross-env DEFAULT_STORAGE=memory-validation NODE_ENV=fast mocha --config ./config/.mocharc.js ./test_tmp/unit.test.js",
+    "test:fast": "npm run test:fast:memory && npm run test:fast:lokijs && npm run test:fast:dexie-worker && npm run test:fast:dexie",
+    "test:fast:memory": "npm run transpile && cross-env DEFAULT_STORAGE=memory NODE_ENV=fast mocha --config ./config/.mocharc.js ./test_tmp/unit.test.js",
+    "test:fast:memory-validation": "npm run transpile && cross-env DEFAULT_STORAGE=memory-validation NODE_ENV=fast mocha --config ./config/.mocharc.js ./test_tmp/unit.test.js",
     "test:fast:lokijs": "npm run transpile && cross-env DEFAULT_STORAGE=lokijs NODE_ENV=fast mocha --config ./config/.mocharc.js ./test_tmp/unit.test.js",
     "test:fast:dexie": "npm run transpile && cross-env DEFAULT_STORAGE=dexie NODE_ENV=fast mocha --config ./config/.mocharc.js ./test_tmp/unit.test.js",
-    "test:fast:dexie-worker": "npm run transpile && npm run build:workers && rimraf -rf pouch__all_dbs__ && cross-env DEFAULT_STORAGE=dexie-worker NODE_ENV=fast mocha --config ./config/.mocharc.js ./test_tmp/unit.test.js",
+    "test:fast:dexie-worker": "npm run transpile && npm run build:workers && cross-env DEFAULT_STORAGE=dexie-worker NODE_ENV=fast mocha --config ./config/.mocharc.js ./test_tmp/unit.test.js",
     "test:fast:foundationdb": "npm run transpile && cross-env DEFAULT_STORAGE=foundationdb NODE_ENV=fast mocha --config ./config/.mocharc.js ./test_tmp/unit.test.js",
     "// test:fast:loop": "runs tests in the fast-mode in a loop. Use this to debug tests that only fail sometimes",
     "test:fast:loop": "npm run test:fast && npm run test:fast:loop",
-    "test:fast:loop:pouchdb": "npm run test:fast:pouchdb && npm run test:fast:loop:pouchdb",
     "test:fast:loop:lokijs": "npm run test:fast:lokijs && npm run test:fast:loop:lokijs",
     "test:fast:loop:memory": "npm run test:fast:memory && npm run test:fast:loop:memory",
     "test:fast:loop:dexie": "npm run test:fast:dexie && npm run test:fast:loop:dexie",
     "test:fast:loop:dexie-worker": "npm run test:fast:dexie-worker && npm run test:fast:loop:dexie-worker",
-    "test:node": "npm run test:node:pouchdb && npm run test:node:lokijs && npm run test:node:dexie",
-    "test:node:pouchdb": "npm run transpile && cross-env DEFAULT_STORAGE=pouchdb mocha --expose-gc --config ./config/.mocharc.js ./test_tmp/unit.test.js",
+    "test:node": "npm run test:node:lokijs && npm run test:node:dexie",
     "test:node:memory": "npm run transpile && cross-env DEFAULT_STORAGE=memory mocha --expose-gc --config ./config/.mocharc.js ./test_tmp/unit.test.js",
     "test:node:memory-validation": "npm run transpile && cross-env DEFAULT_STORAGE=memory-validation mocha --expose-gc --config ./config/.mocharc.js ./test_tmp/unit.test.js",
     "test:node:lokijs": "npm run transpile && cross-env DEFAULT_STORAGE=lokijs mocha --expose-gc --config ./config/.mocharc.js ./test_tmp/unit.test.js",
@@ -302,7 +298,6 @@
     "test:node:dexie": "npm run transpile && cross-env DEFAULT_STORAGE=dexie mocha --expose-gc --config ./config/.mocharc.js ./test_tmp/unit.test.js",
     "test:node:foundationdb": "npm run transpile && cross-env DEFAULT_STORAGE=foundationdb mocha --expose-gc --config ./config/.mocharc.js ./test_tmp/unit.test.js",
     "test:node:remote": "npm run transpile && cross-env DEFAULT_STORAGE=remote mocha --expose-gc --config ./config/.mocharc.js ./test_tmp/unit.test.js",
-    "test:node:pouchdb:loop": "npm run test:node:pouchdb && npm run test:node:pouchdb:loop",
     "test:node:lokijs:loop": "npm run test:node:lokijs && npm run test:node:lokijs:loop",
     "test:node:memory:loop": "npm run test:node:memory && npm run test:node:memory:loop",
     "test:node:dexie:loop": "npm run test:node:dexie && npm run test:node:dexie:loop",
@@ -311,9 +306,7 @@
     "test:node:custom": "npm run transpile && cross-env DEFAULT_STORAGE=custom mocha --expose-gc --config ./config/.mocharc.js ./test_tmp/unit.test.js",
     "// test:node:loop": "runs tests in node in a loop. Use this to debug tests that only fail sometimes",
     "test:node:loop": "npm run test:node && npm run test:node:loop",
-    "test:browser": "npm run transpile && cross-env DEFAULT_STORAGE=pouchdb karma start ./config/karma.conf.js --single-run",
     "test:browser:loop": "npm run test:browser && npm run test:browser:loop",
-    "test:browser:pouchdb": "npm run transpile && cross-env CI=true DEFAULT_STORAGE=pouchdb karma start ./config/karma.conf.js --single-run",
     "test:browser:lokijs": " npm run transpile && cross-env CI=true DEFAULT_STORAGE=lokijs  karma start ./config/karma.conf.js --single-run",
     "test:browser:memory": " npm run transpile && cross-env CI=true DEFAULT_STORAGE=memory  karma start ./config/karma.conf.js --single-run",
     "test:browser:dexie": "  npm run transpile && cross-env CI=true DEFAULT_STORAGE=dexie   karma start ./config/karma.conf.js --single-run",
@@ -322,12 +315,10 @@
     "test:firestore-replication": "npm run transpile && firebase emulators:exec \"cross-env DEFAULT_STORAGE=dexie mocha --expose-gc --config ./config/.mocharc.js ./test_tmp/replication-firestore.test.js\" --only firestore --project 'rxdb-test'",
     "test:core": "npm run transpile && mocha ./test_tmp/unit/core.node.js",
     "test:full": "npm run transpile && mocha ./test_tmp/unit/full.node.js",
-    "test:typings": "npm run transpile && cross-env DEFAULT_STORAGE=pouchdb NODE_ENV=fast mocha --config ./config/.mocharc.js ./test_tmp/typings.test.js",
+    "test:typings": "npm run transpile && cross-env DEFAULT_STORAGE=memory NODE_ENV=fast mocha --config ./config/.mocharc.js ./test_tmp/typings.test.js",
     "test:typings:ci": "npm run transpile && mocha --config ./config/.mocharc.js ./test_tmp/typings.test.js",
-    "test:deps": "npm run build && dependency-check ./package.json ./dist/lib/index.js ./dist/lib/plugins/validate-is-my-json-valid/index.js ./dist/lib/plugins/validate-ajv/index.js ./dist/lib/plugins/update/index.js ./dist/lib/plugins/key-compression/index.js ./dist/lib/plugins/dev-mode/index.js ./dist/lib/plugins/encryption/index.js ./dist/lib/plugins/replication-graphql/index.js ./dist/lib/plugins/replication-p2p/index.js ./dist/lib/plugins/replication-websocket/index.js ./dist/lib/plugins/replication-firestore/index.js ./dist/lib/plugins/server-couchdb/index.js ./dist/lib/plugins/validate-z-schema/index.js ./dist/lib/plugins/lokijs/index.js ./dist/lib/plugins/dexie/index.js ./dist/lib/plugins/worker/index.js ./dist/lib/plugins/memory/index.js --no-dev --ignore-module util --ignore-module babel-plugin-transform-async-to-promises --ignore-module url --ignore-module ws --ignore-module graphql --ignore-module as-typed --ignore-module \"@types/*\"",
-    "test:circular": "npm run build && madge --circular ./dist/es/index.js && madge --circular ./dist/es/plugins/dexie/index.js",
-    "test:performance:pouchdb:browser": "npm run transpile && cross-env DEFAULT_STORAGE=pouchdb CI=true karma start ./config/karma.performance.conf.js --single-run",
-    "test:performance:pouchdb:node": "npm run transpile && cross-env DEFAULT_STORAGE=pouchdb mocha --config ./config/.mocharc.js ./test_tmp/performance.test.js --unhandled-rejections=strict --expose-gc",
+    "test:deps": "npm run build && dependency-check ./package.json ./dist/lib/index.js ./dist/lib/plugins/validate-is-my-json-valid/index.js ./dist/lib/plugins/validate-ajv/index.js ./dist/lib/plugins/update/index.js ./dist/lib/plugins/key-compression/index.js ./dist/lib/plugins/dev-mode/index.js ./dist/lib/plugins/encryption/index.js ./dist/lib/plugins/replication-graphql/index.js ./dist/lib/plugins/replication-p2p/index.js ./dist/lib/plugins/replication-websocket/index.js ./dist/lib/plugins/replication-firestore/index.js ./dist/lib/plugins/validate-z-schema/index.js ./dist/lib/plugins/storage-lokijs/index.js ./dist/lib/plugins/storage-dexie/index.js ./dist/lib/plugins/storage-worker/index.js ./dist/lib/plugins/storage-memory/index.js --no-dev --ignore-module util --ignore-module url --ignore-module ws --ignore-module graphql --ignore-module as-typed --ignore-module \"@types/*\"",
+    "test:circular": "npm run build && madge --circular ./dist/es/index.js && madge --circular ./dist/es/plugins/storage-dexie/index.js",
     "test:performance:lokijs:browser": "npm run transpile && cross-env DEFAULT_STORAGE=lokijs CI=true karma start ./config/karma.performance.conf.js --single-run",
     "test:performance:lokijs:node": "npm run transpile && cross-env DEFAULT_STORAGE=lokijs mocha --config ./config/.mocharc.js ./test_tmp/performance.test.js --unhandled-rejections=strict --expose-gc",
     "test:performance:dexie": "npm run transpile && cross-env DEFAULT_STORAGE=dexie CI=true karma start ./config/karma.performance.conf.js --single-run",
@@ -337,12 +328,11 @@
     "test:performance:foundationdb": "npm run transpile && cross-env DEFAULT_STORAGE=foundationdb mocha --config ./config/.mocharc.js ./test_tmp/performance.test.js --unhandled-rejections=strict --expose-gc",
     "test:performance:custom:browser": "npm run transpile && cross-env DEFAULT_STORAGE=custom CI=true karma start ./config/karma.performance.conf.js --single-run",
     "test:performance:custom:node": "npm run transpile && cross-env DEFAULT_STORAGE=custom mocha --config ./config/.mocharc.js ./test_tmp/performance.test.js --unhandled-rejections=strict --expose-gc",
-    "test:performance": "npm run build && npm run test:performance:pouchdb:node && npm run test:performance:pouchdb:browser && npm run test:performance:lokijs && npm run test:performance:dexie && npm run test:performance:memory:browser && npm run test:performance:memory:node && npm run test:performance:foundationdb",
+    "test:performance": "npm run build && npm run test:performance:lokijs && npm run test:performance:dexie && npm run test:performance:memory:browser && npm run test:performance:memory:node && npm run test:performance:foundationdb",
     "couch:start": "docker run -d -p 5984:5984 --rm --name rxdb-couchdb couchdb:2.1.1",
     "couch:stop": "docker rm -f rxdb-couchdb",
-    "test:couchdb": "npm run transpile && cross-env DEFAULT_STORAGE=pouchdb mocha --config ./config/.mocharc.js ./test_tmp/couch-db-integration.test.js",
     "dockertest": "docker run -it -v $(pwd):/usr/src/app markadams/chromium-xvfb-js:latest-onbuild",
-    "profile": "npm run transpile && rm -f isolate-* && cross-env STORAGE=pouchdb NODE_ENV=fast NODE_PROF=true mocha --config ./config/.mocharc.js ./test_tmp/performance.test.js --v8-prof --expose-gc && node scripts/profile.js",
+    "profile": "npm run transpile && rm -f isolate-* && cross-env STORAGE=memory NODE_ENV=fast NODE_PROF=true mocha --config ./config/.mocharc.js ./test_tmp/performance.test.js --v8-prof --expose-gc && node scripts/profile.js",
     "clear": "rimraf -rf test_tmp/ && rimraf -rf dist/ && rimraf .transpile_state.json",
     "lint": "eslint . --ext .js,.ts --cache",
     "lint:fix": "eslint --fix . --ext .js,.ts",
@@ -355,7 +345,7 @@
     "build": "npm run clear && concurrently \"npm run transpile\" \"npm run build:workers\" \"npm run build:es\" \"npm run build:types\" \"npm run build:plugins\" && browserify dist/lib/browserify.index.js > dist/rxdb.browserify.js && terser --compress --mangle --output dist/rxdb.browserify.min.js -- dist/rxdb.browserify.js",
     "build:plugins": "node ./scripts/generate-plugins-package-json.js",
     "build:min": "npm run transpile && browserify dist/lib/browserify.index.js > dist/rxdb.browserify.js && terser --compress --mangle --output dist/rxdb.browserify.min.js -- dist/rxdb.browserify.js",
-    "build:workers": "npx webpack build --config ./src/plugins/worker/workers/webpack.config.js",
+    "build:workers": "npx webpack build --config ./src/plugins/storage-worker/workers/webpack.config.js",
     "build:webpack": "npm run build && cross-env NODE_ENV=build webpack --config ./config/webpack.config.js",
     "build:rollup": "npm run build && rollup --config ./config/rollup.config.js",
     "build:size": "npm run build:webpack && echo \"Build-Size (minified+gzip):\" && gzip-size --raw ./test_tmp/webpack.bundle.js",
@@ -378,7 +368,7 @@
     "lint"
   ],
   "peerDependencies": {
-    "rxjs": "^7.5.7"
+    "rxjs": "^7.8.0"
   },
   "dependencies": {
     "@babel/runtime": "7.20.7",
@@ -387,20 +377,16 @@
     "@types/express": "4.17.15",
     "@types/lokijs": "1.5.7",
     "@types/object-path": "0.11.1",
-    "@types/pouchdb-core": "7.0.10",
     "@types/simple-peer": "9.11.5",
     "@types/ws": "8.5.3",
     "ajv": "8.11.2",
     "array-push-at-sort-position": "2.0.0",
     "as-typed": "1.3.2",
-    "babel-plugin-transform-async-to-promises": "0.8.18",
     "broadcast-channel": "4.19.1",
-    "cors": "2.8.5",
     "crypto-js": "4.1.1",
     "custom-idle-queue": "3.0.1",
     "dexie": "4.0.0-alpha.4",
     "event-reduce-js": "2.0.4",
-    "express": "4.18.2",
     "fast-deep-equal": "3.1.3",
     "firebase": "9.15.0",
     "get-graphql-from-jsonschema": "8.1.0",
@@ -415,12 +401,6 @@
     "modifyjs": "0.3.1",
     "object-path": "0.11.8",
     "oblivious-set": "1.1.1",
-    "pouchdb-adapter-http": "7.3.1",
-    "pouchdb-all-dbs": "1.1.1",
-    "pouchdb-core": "7.3.1",
-    "pouchdb-find": "7.3.1",
-    "pouchdb-md5": "7.3.1",
-    "pouchdb-replication": "7.3.1",
     "pouchdb-selector-core": "7.3.1",
     "reconnecting-websocket": "4.4.0",
     "simple-peer": "9.11.1",
@@ -454,7 +434,7 @@
     "@types/faker": "5.5.9",
     "@types/memdown": "3.0.0",
     "@types/mocha": "8.2.3",
-    "@types/node": "14.18.36",
+    "@types/node": "18.11.17",
     "@types/pouchdb-adapter-memory": "6.1.3",
     "@types/request": "2.48.8",
     "@types/request-promise-native": "1.0.18",
@@ -464,7 +444,10 @@
     "async-test-util": "2.0.0",
     "babel-loader": "8.3.0",
     "babel-plugin-transform-class-properties": "6.24.1",
+    "express": "4.17.3",
     "brfs": "2.0.2",
+    "@types/cors": "2.8.13",
+    "cors": "2.8.5",
     "browserify": "17.0.0",
     "child-process-promise": "2.2.1",
     "concurrently": "7.6.0",
@@ -514,9 +497,7 @@
     "pouchdb": "7.3.1",
     "pouchdb-adapter-idb": "7.3.1",
     "pouchdb-adapter-leveldb": "7.3.1",
-    "pouchdb-adapter-localstorage": "7.3.1",
     "pouchdb-adapter-memory": "7.3.1",
-    "pouchdb-adapter-websql": "7.0.0",
     "pouchdb-debug": "7.2.1",
     "pouchdb-utils": "7.3.1",
     "pre-commit": "1.2.2",
@@ -526,7 +507,7 @@
     "rollup": "2.77.2",
     "rollup-plugin-commonjs": "10.1.0",
     "rollup-plugin-node-resolve": "5.2.0",
-    "rxjs": "7.5.7",
+    "rxjs": "7.8.0",
     "shelljs": "0.8.5",
     "socket.io": "4.5.4",
     "source-map-support": "0.5.21",
@@ -535,7 +516,7 @@
     "terser-webpack-plugin": "5.3.6",
     "ts-loader": "9.3.1",
     "ts-node": "10.9.1",
-    "typescript": "4.8.4",
+    "typescript": "4.9.4",
     "walk-sync": "3.0.0",
     "watch": "1.0.2",
     "webpack": "5.74.0",

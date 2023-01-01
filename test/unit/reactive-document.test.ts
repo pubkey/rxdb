@@ -12,12 +12,9 @@ import * as schemaObjects from '../helper/schema-objects';
 import {
     createRxDatabase,
     randomCouchString,
-    promiseWait
+    promiseWait,
+    ensureNotFalsy
 } from '../../';
-
-import {
-    getRxStoragePouch
-} from '../../plugins/pouchdb';
 
 import {
     first
@@ -43,7 +40,7 @@ config.parallel('reactive-document.test.js', () => {
                     emittedCollection.push(cE);
                 });
 
-                await doc.atomicPatch({ firstName: newName });
+                await doc.incrementalPatch({ firstName: newName });
                 await AsyncTestUtil.waitUntil(() => {
                     const count = emittedCollection.length;
                     if (count > 1) {
@@ -58,8 +55,8 @@ config.parallel('reactive-document.test.js', () => {
                 assert.strictEqual(changeEvent.previousDocumentData.firstName, oldName);
 
 
-                assert.strictEqual(docDataAfter.passportId, doc.primary);
-                assert.strictEqual(docDataAfter.passportId, doc.primary);
+                assert.strictEqual(ensureNotFalsy(docDataAfter).passportId, doc.primary);
+                assert.strictEqual(ensureNotFalsy(docDataAfter).passportId, doc.primary);
                 colSub.unsubscribe();
                 c.database.destroy();
             });
@@ -73,7 +70,7 @@ config.parallel('reactive-document.test.js', () => {
                     valueObj.v = newVal;
                 });
                 const setName = randomCouchString(10);
-                await doc.atomicPatch({ firstName: setName });
+                await doc.incrementalPatch({ firstName: setName });
                 await promiseWait(5);
                 assert.strictEqual(valueObj.v, setName);
                 c.database.destroy();
@@ -88,7 +85,7 @@ config.parallel('reactive-document.test.js', () => {
                     valueObj.v = newVal;
                 });
                 const setName = randomCouchString(10);
-                await doc.atomicPatch({
+                await doc.incrementalPatch({
                     mainSkill: {
                         name: setName,
                         level: 10
@@ -105,7 +102,7 @@ config.parallel('reactive-document.test.js', () => {
                 const sub = doc.get$('firstName').subscribe((newVal: any) => v1 = newVal);
                 await promiseWait(5);
 
-                await doc.atomicPatch({ firstName: 'foobar' });
+                await doc.incrementalPatch({ firstName: 'foobar' });
 
                 let v2;
                 doc.get$('firstName').subscribe((newVal: any) => v2 = newVal);
@@ -164,7 +161,7 @@ config.parallel('reactive-document.test.js', () => {
             it('final fields cannot be observed', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    storage: getRxStoragePouch('memory'),
+                    storage: config.storage.getStorage(),
                 });
                 const cols = await db.addCollections({
                     humans: {
@@ -188,7 +185,7 @@ config.parallel('reactive-document.test.js', () => {
         it('#3434 event data must not be mutateable', async () => {
             const db = await createRxDatabase({
                 name: randomCouchString(10),
-                storage: getRxStoragePouch('memory'),
+                storage: config.storage.getStorage(),
                 eventReduce: true,
                 ignoreDuplicate: true
             });
@@ -211,18 +208,18 @@ config.parallel('reactive-document.test.js', () => {
             person.$.subscribe(data => {
                 try {
                     // mutating the document data is not allowed and should throw
-                    delete data['_rev'];
+                    delete (data as any)['_rev'];
                 } catch (err) {
                     hasThrown = true;
                 }
             });
 
-            await person.atomicUpdate(state => {
+            await person.incrementalModify(state => {
                 state.age = 50;
                 return state;
             });
 
-            assert.strictEqual(person.age, 50);
+            assert.strictEqual(person.getLatest().age, 50);
             assert.ok(hasThrown);
 
             db.destroy();

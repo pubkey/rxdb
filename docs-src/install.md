@@ -26,7 +26,7 @@ import '@babel/polyfill';
 
 ## Polyfill the `global` variable
 
-When you use RxDB with **angular** or other **webpack** based frameworks, you might get the error <span style="color: red;">Uncaught ReferenceError: global is not defined</span>. This is because pouchdb assumes a nodejs-specific `global` variable that is not added to browser runtimes by some bundlers.
+When you use RxDB with **angular** or other **webpack** based frameworks, you might get the error <span style="color: red;">Uncaught ReferenceError: global is not defined</span>. This is because some dependencies of RxDB assume a Node.js-specific `global` variable that is not added to browser runtimes by some bundlers.
 You have to add them by your own, like we do [here](https://github.com/pubkey/rxdb/blob/master/examples/angular/src/polyfills.ts).
 
 ```ts

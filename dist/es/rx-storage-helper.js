@@ -1,3 +1,5 @@
+import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
+import _regeneratorRuntime from "@babel/runtime/regenerator";
 /**
  * Helper functions for accessing the RxStorage instances.
  */
@@ -5,26 +7,46 @@
 import { overwritable } from './overwritable';
 import { newRxError } from './rx-error';
 import { fillPrimaryKey, getPrimaryFieldOfPrimaryKey } from './rx-schema-helper';
-import { createRevision, defaultHashFunction, ensureNotFalsy, firstPropertyValueOfObject, flatClone, getDefaultRevision, getDefaultRxDocumentMeta, now, randomCouchString } from './util';
+import { createRevision, defaultHashFunction, ensureNotFalsy, firstPropertyValueOfObject, flatClone, getDefaultRevision, getDefaultRxDocumentMeta, now, randomCouchString } from './plugins/utils';
+export var INTERNAL_STORAGE_NAME = '_rxdb_internal';
+export var RX_DATABASE_LOCAL_DOCS_STORAGE_NAME = 'rxdatabase_storage_local';
+export function getSingleDocument(_x, _x2) {
+  return _getSingleDocument.apply(this, arguments);
+}
+
 /**
  * Writes a single document,
  * throws RxStorageBulkWriteError on failure
  */
-export var writeSingle = function writeSingle(instance, writeRow, context) {
-  try {
-    return Promise.resolve(instance.bulkWrite([writeRow], context)).then(function (writeResult) {
-      if (Object.keys(writeResult.error).length > 0) {
-        var error = firstPropertyValueOfObject(writeResult.error);
-        throw error;
-      } else {
-        var ret = firstPropertyValueOfObject(writeResult.success);
-        return ret;
+function _getSingleDocument() {
+  _getSingleDocument = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee(storageInstance, documentId) {
+    var results, doc;
+    return _regeneratorRuntime.wrap(function _callee$(_context) {
+      while (1) switch (_context.prev = _context.next) {
+        case 0:
+          _context.next = 2;
+          return storageInstance.findDocumentsById([documentId], false);
+        case 2:
+          results = _context.sent;
+          doc = results[documentId];
+          if (!doc) {
+            _context.next = 8;
+            break;
+          }
+          return _context.abrupt("return", doc);
+        case 8:
+          return _context.abrupt("return", null);
+        case 9:
+        case "end":
+          return _context.stop();
       }
-    });
-  } catch (e) {
-    return Promise.reject(e);
-  }
-};
+    }, _callee);
+  }));
+  return _getSingleDocument.apply(this, arguments);
+}
+export function writeSingle(_x3, _x4, _x5) {
+  return _writeSingle.apply(this, arguments);
+}
 
 /**
  * Checkpoints must be stackable over another.
@@ -32,22 +54,33 @@ export var writeSingle = function writeSingle(instance, writeRow, context) {
  * like the sharding plugin, where a checkpoint only represents
  * the document state from some, but not all shards.
  */
-export var getSingleDocument = function getSingleDocument(storageInstance, documentId) {
-  try {
-    return Promise.resolve(storageInstance.findDocumentsById([documentId], false)).then(function (results) {
-      var doc = results[documentId];
-      if (doc) {
-        return doc;
-      } else {
-        return null;
+function _writeSingle() {
+  _writeSingle = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee2(instance, writeRow, context) {
+    var writeResult, error, ret;
+    return _regeneratorRuntime.wrap(function _callee2$(_context2) {
+      while (1) switch (_context2.prev = _context2.next) {
+        case 0:
+          _context2.next = 2;
+          return instance.bulkWrite([writeRow], context);
+        case 2:
+          writeResult = _context2.sent;
+          if (!(Object.keys(writeResult.error).length > 0)) {
+            _context2.next = 8;
+            break;
+          }
+          error = firstPropertyValueOfObject(writeResult.error);
+          throw error;
+        case 8:
+          ret = firstPropertyValueOfObject(writeResult.success);
+          return _context2.abrupt("return", ret);
+        case 10:
+        case "end":
+          return _context2.stop();
       }
-    });
-  } catch (e) {
-    return Promise.reject(e);
-  }
-};
-export var INTERNAL_STORAGE_NAME = '_rxdb_internal';
-export var RX_DATABASE_LOCAL_DOCS_STORAGE_NAME = 'rxdatabase_storage_local';
+    }, _callee2);
+  }));
+  return _writeSingle.apply(this, arguments);
+}
 export function stackCheckpoints(checkpoints) {
   return Object.assign.apply(Object, [{}].concat(checkpoints));
 }
@@ -70,10 +103,17 @@ export function storageChangeEventToRxChangeEvent(isLocal, rxStorageChangeEvent,
 export function throwIfIsStorageWriteError(collection, documentId, writeData, error) {
   if (error) {
     if (error.status === 409) {
-      throw newRxError('COL19', {
+      throw newRxError('CONFLICT', {
         collection: collection.name,
         id: documentId,
-        error: error,
+        writeError: error,
+        data: writeData
+      });
+    } else if (error.status === 422) {
+      throw newRxError('VD2', {
+        collection: collection.name,
+        id: documentId,
+        writeError: error,
         data: writeData
       });
     } else {
@@ -156,7 +196,8 @@ bulkWriteRows, context) {
             documentId: id,
             isError: true,
             status: 510,
-            writeRow: writeRow
+            writeRow: writeRow,
+            attachmentId: attachmentId
           };
           errors[id] = attachmentError;
         } else {
@@ -233,7 +274,8 @@ bulkWriteRows, context) {
               documentInDb: documentInDb,
               isError: true,
               status: 510,
-              writeRow: writeRow
+              writeRow: writeRow,
+              attachmentId: attachmentId
             };
           }
           return true;
@@ -378,7 +420,6 @@ export function getUniqueDeterministicEventKey(storageInstance, primaryPath, wri
   var eventKey = storageInstance.databaseName + '|' + storageInstance.collectionName + '|' + docId + '|' + '|' + binary + '|' + writeRow.document._rev;
   return eventKey;
 }
-
 /**
  * Wraps the normal storageInstance of a RxCollection
  * to ensure that all access is properly using the hooks
@@ -452,13 +493,14 @@ rxJsonSchema) {
      * If you make a plugin that relies on having its own revision
      * stored into the storage, use this.originalStorageInstance.bulkWrite() instead.
      */
-    data._rev = createRevision(database.hashFunction, data, writeRow.previous);
+    data._rev = createRevision(database.token, writeRow.previous);
     return {
       document: data,
       previous: writeRow.previous
     };
   }
   var ret = {
+    originalStorageInstance: storageInstance,
     schema: storageInstance.schema,
     internals: storageInstance.internals,
     collectionName: storageInstance.collectionName,
@@ -495,7 +537,7 @@ rxJsonSchema) {
             return {
               previous: error.documentInDb,
               document: Object.assign({}, error.writeRow.document, {
-                _rev: createRevision(database.hashFunction, error.writeRow.document, error.documentInDb)
+                _rev: createRevision(database.token, error.documentInDb)
               })
             };
           });
@@ -578,7 +620,6 @@ rxJsonSchema) {
       });
     }
   };
-  ret.originalStorageInstance = storageInstance;
   return ret;
 }
 

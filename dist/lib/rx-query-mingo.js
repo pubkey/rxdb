@@ -6,7 +6,8 @@ Object.defineProperty(exports, "__esModule", {
 exports.getMingoQuery = getMingoQuery;
 var _core = require("mingo/core");
 var _query = require("mingo/query");
-var _pipeline = require("mingo/operators/pipeline");
+var _sort = require("mingo/operators/pipeline/sort");
+var _project = require("mingo/operators/pipeline/project");
 var _query2 = require("mingo/operators/query");
 var mingoInitDone = false;
 
@@ -20,8 +21,8 @@ var mingoInitDone = false;
 function getMingoQuery(selector) {
   if (!mingoInitDone) {
     (0, _core.useOperators)(_core.OperatorType.PIPELINE, {
-      $sort: _pipeline.$sort,
-      $project: _pipeline.$project
+      $sort: _sort.$sort,
+      $project: _project.$project
     });
     (0, _core.useOperators)(_core.OperatorType.QUERY, {
       $and: _query2.$and,

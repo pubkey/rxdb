@@ -20,7 +20,6 @@ import type {
     BulkWriteRow,
     ById,
     DocumentsWithCheckpoint,
-    HashFunction,
     RxConflictHandler,
     RxReplicationHandler,
     RxReplicationWriteToMasterRow,
@@ -32,7 +31,7 @@ import type {
 import {
     ensureNotFalsy,
     PROMISE_RESOLVE_VOID
-} from '../util';
+} from '../plugins/utils';
 import {
     getCheckpointKey
 } from './checkpoint';
@@ -159,7 +158,7 @@ export async function awaitRxStorageReplicationIdle(
 export function rxStorageInstanceToReplicationHandler<RxDocType, MasterCheckpointType>(
     instance: RxStorageInstance<RxDocType, any, any, MasterCheckpointType>,
     conflictHandler: RxConflictHandler<RxDocType>,
-    hashFunction: HashFunction
+    databaseInstanceToken: string
 ): RxReplicationHandler<RxDocType, MasterCheckpointType> {
     const primaryPath = getPrimaryFieldOfPrimaryKey(instance.schema.primaryKey);
     const replicationHandler: RxReplicationHandler<RxDocType, MasterCheckpointType> = {
@@ -210,7 +209,7 @@ export function rxStorageInstanceToReplicationHandler<RxDocType, MasterCheckpoin
                         const masterState = masterDocsState[id];
                         if (!masterState) {
                             writeRows.push({
-                                document: docStateToWriteDoc(hashFunction, row.newDocumentState)
+                                document: docStateToWriteDoc(databaseInstanceToken, row.newDocumentState)
                             });
                         } else if (
                             masterState &&
@@ -225,7 +224,7 @@ export function rxStorageInstanceToReplicationHandler<RxDocType, MasterCheckpoin
                         ) {
                             writeRows.push({
                                 previous: masterState,
-                                document: docStateToWriteDoc(hashFunction, row.newDocumentState, masterState)
+                                document: docStateToWriteDoc(databaseInstanceToken, row.newDocumentState, masterState)
                             });
                         } else {
                             conflicts.push(writeDocToDocState(masterState));

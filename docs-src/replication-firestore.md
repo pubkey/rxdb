@@ -20,17 +20,8 @@ Replicating your Firestore state to RxDB can bring multiple benefits compared to
 
 ## Usage
 
-First you have to add the `replication-firestore` plugin to RxDB.
 
-```ts
-import { addRxPlugin, createRxDatabase } from 'rxdb';
-import { RxDBReplicationFirestorePlugin } from 'rxdb/plugins/replication-firestore';
-addRxPlugin(RxDBReplicationFirestorePlugin);
-// also create your RxDatabase and RxCollection.
-const database = await createRxDatabase({/* ... */});
-```
-
-Then you initialize your Firestore database like you would do without RxDB.
+First initialize your Firestore database like you would do without RxDB.
 
 ```ts
 import * as firebase from 'firebase/app';
@@ -49,35 +40,39 @@ const firestoreDatabase = getFirestore(app);
 const firestoreCollection = collection(firestoreDatabase, 'my-collection-name');
 ```
 
-Then you can start the replication by calling `syncFirestore()` on your [RxCollection](./rx-collection.md).
+Then you can start the replication by calling `replicateFirestore()` on your [RxCollection](./rx-collection.md).
+
 ```ts
-const replicationState = myRxCollection.syncFirestore({
-    firestore: {
-        projectId,
-        database: firestoreDatabase,
-        collection: firestoreCollection
-    },
-    pull: {},
-    push: {},
-    /**
-     * Either do a live or a one-time replication
-     * [default=true]
-     */
-    live: true,
-    /**
-     * (optional) likely you should just use the default.
-     *
-     * In firestore it is not possible to read out
-     * the internally used write timestamp of a document.
-     * Even if we could read it out, it is not indexed which
-     * is required for fetch 'changes-since-x'.
-     * So instead we have to rely on a custom user defined field
-     * that contains the server time which is set by firestore via serverTimestamp()
-     * IMPORTANT: The serverTimestampField MUST NOT be part of the collections RxJsonSchema!
-     * [default='serverTimestamp']
-     */
-    serverTimestampField: 'serverTimestamp'
-});
+const replicationState = replicateFirestore(
+    {
+        collection: myRxCollection,
+        firestore: {
+            projectId,
+            database: firestoreDatabase,
+            collection: firestoreCollection
+        },
+        pull: {},
+        push: {},
+        /**
+         * Either do a live or a one-time replication
+         * [default=true]
+         */
+        live: true,
+        /**
+         * (optional) likely you should just use the default.
+         *
+         * In firestore it is not possible to read out
+         * the internally used write timestamp of a document.
+         * Even if we could read it out, it is not indexed which
+         * is required for fetch 'changes-since-x'.
+         * So instead we have to rely on a custom user defined field
+         * that contains the server time which is set by firestore via serverTimestamp()
+         * IMPORTANT: The serverTimestampField MUST NOT be part of the collections RxJsonSchema!
+         * [default='serverTimestamp']
+         */
+        serverTimestampField: 'serverTimestamp'
+    }
+);
 ```
 
 To observe and cancel the replication, you can use any other methods from the [ReplicationState](./replication.md) like `error$`, `cancel()` and `awaitInitialReplication()`.

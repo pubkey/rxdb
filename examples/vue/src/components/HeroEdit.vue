@@ -80,7 +80,7 @@ export default defineComponent({
 
     const onSubmitClick = async () => {
       console.log('heroEdit.onSubmitClick()');
-      await props.hero.atomicPatch({ hp: props.hero.hp });
+      await props.hero.incrementalPatch({ hp: props.hero.hp });
       emit('submit');
     };
 

@@ -13,12 +13,8 @@ import {
     createRxDatabase
 } from 'rxdb';
 import {
-    addPouchPlugin,
-    getRxStoragePouch
-} from 'rxdb/plugins/pouchdb';
-
-import * as MemoryAdapter from 'pouchdb-adapter-memory';
-addPouchPlugin(MemoryAdapter);
+    getRxStorageMemory
+} from 'rxdb/plugins/storage-memory';
 
 /**
  * declare types
@@ -55,7 +51,7 @@ async function run() {
      */
     const myDatabase: MyDatabase = await createRxDatabase<MyDatabaseCollections>({
         name: 'mydb',
-        storage: getRxStoragePouch('memory')
+        storage: getRxStorageMemory()
     });
 
     const heroSchema: RxJsonSchema<HeroDocType> = {
@@ -67,7 +63,8 @@ async function run() {
         type: 'object',
         properties: {
             passportId: {
-                type: 'string'
+                type: 'string',
+                maxLength: 100
             },
             firstName: {
                 type: 'string'

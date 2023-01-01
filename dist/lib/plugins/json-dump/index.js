@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.RxDBJsonDumpPlugin = void 0;
 var _rxQuery = require("../../rx-query");
 var _rxError = require("../../rx-error");
-var _util = require("../../util");
+var _utils = require("../../plugins/utils");
 /**
  * this plugin adds the json export/import capabilities to RxDB
  */
@@ -61,7 +61,7 @@ var dumpRxCollection = function dumpRxCollection() {
   var query = (0, _rxQuery.createRxQuery)('find', (0, _rxQuery._getDefaultQuery)(), this);
   return (0, _rxQuery.queryCollection)(query).then(function (docs) {
     json.docs = docs.map(function (docData) {
-      docData = (0, _util.flatClone)(docData);
+      docData = (0, _utils.flatClone)(docData);
       delete docData._rev;
       delete docData._attachments;
       return docData;
@@ -81,9 +81,9 @@ function importDumpRxCollection(exportedJSON) {
   return this.storageInstance.bulkWrite(docs.map(function (docData) {
     var document = Object.assign({}, docData, {
       _meta: {
-        lwt: (0, _util.now)()
+        lwt: (0, _utils.now)()
       },
-      _rev: (0, _util.getDefaultRevision)(),
+      _rev: (0, _utils.getDefaultRevision)(),
       _attachments: {},
       _deleted: false
     });

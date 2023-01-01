@@ -5,7 +5,7 @@ import type {
 } from '../../types';
 import {
     ensureNotFalsy
-} from '../../util';
+} from '../../plugins/utils';
 import { createAnswer, createErrorAnswer } from './storage-remote-helpers';
 import type {
     MessageFromRemote,

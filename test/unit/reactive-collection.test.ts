@@ -11,16 +11,13 @@ import {
     RxChangeEvent
 } from '../../';
 
-import {
-    getRxStoragePouch,
-} from '../../plugins/pouchdb';
-
 
 import AsyncTestUtil from 'async-test-util';
 import {
     first
 } from 'rxjs/operators';
 import { HumanDocumentType } from '../helper/schemas';
+import { firstValueFrom } from 'rxjs';
 
 config.parallel('reactive-collection.test.js', () => {
     describe('.insert()', () => {
@@ -28,7 +25,7 @@ config.parallel('reactive-collection.test.js', () => {
             it('should get a valid event on insert', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    storage: getRxStoragePouch('memory'),
+                    storage: config.storage.getStorage(),
                 });
                 const colName = 'foobar';
                 const cols = await db.addCollections({
@@ -38,8 +35,9 @@ config.parallel('reactive-collection.test.js', () => {
                 });
                 const c = cols[colName];
 
+                const changeEventPromise = firstValueFrom(c.$.pipe(first()));
                 c.insert(schemaObjects.human());
-                const changeEvent: RxChangeEvent<HumanDocumentType> = await c.$.pipe(first()).toPromise() as any;
+                const changeEvent = await changeEventPromise;
                 assert.strictEqual(changeEvent.collectionName, colName);
                 assert.strictEqual(typeof changeEvent.documentId, 'string');
                 assert.ok(changeEvent.documentData);
@@ -52,7 +50,7 @@ config.parallel('reactive-collection.test.js', () => {
             it('should fire on bulk insert', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    storage: getRxStoragePouch('memory'),
+                    storage: config.storage.getStorage(),
                 });
                 const collections = await db.addCollections({
                     human: {
@@ -172,8 +170,8 @@ config.parallel('reactive-collection.test.js', () => {
             await c.insert(schemaObjects.human());
             await doc3.remove();
 
-            await doc1.atomicPatch({ firstName: 'foobar1' });
-            await doc2.atomicPatch({ firstName: 'foobar2' });
+            await doc1.incrementalPatch({ firstName: 'foobar1' });
+            await doc2.incrementalPatch({ firstName: 'foobar2' });
 
             await AsyncTestUtil.waitUntil(() => emitted.length === 2);
             emitted.forEach(cE => assert.strictEqual(cE.operation, 'UPDATE'));

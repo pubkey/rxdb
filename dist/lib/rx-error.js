@@ -8,6 +8,7 @@ exports.RxTypeError = exports.RxError = void 0;
 exports.isBulkWriteConflictError = isBulkWriteConflictError;
 exports.newRxError = newRxError;
 exports.newRxTypeError = newRxTypeError;
+exports.rxStorageWriteErrorToRxError = rxStorageWriteErrorToRxError;
 var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
 var _inheritsLoose2 = _interopRequireDefault(require("@babel/runtime/helpers/inheritsLoose"));
 var _wrapNativeSuper2 = _interopRequireDefault(require("@babel/runtime/helpers/wrapNativeSuper"));
@@ -40,6 +41,8 @@ function messageForError(message, code, parameters) {
 }
 var RxError = /*#__PURE__*/function (_Error) {
   (0, _inheritsLoose2["default"])(RxError, _Error);
+  // always true, use this to detect if its an rxdb-error
+
   function RxError(code, message) {
     var _this;
     var parameters = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
@@ -71,6 +74,8 @@ var RxError = /*#__PURE__*/function (_Error) {
 exports.RxError = RxError;
 var RxTypeError = /*#__PURE__*/function (_TypeError) {
   (0, _inheritsLoose2["default"])(RxTypeError, _TypeError);
+  // always true, use this to detect if its an rxdb-error
+
   function RxTypeError(code, message) {
     var _this2;
     var parameters = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
@@ -112,10 +117,22 @@ function newRxTypeError(code, parameters) {
  * return false if it is another error.
  */
 function isBulkWriteConflictError(err) {
-  if (err.status === 409) {
+  if (err && err.status === 409) {
     return err;
   } else {
     return false;
   }
+}
+var STORAGE_WRITE_ERROR_CODE_TO_MESSAGE = {
+  409: 'document write conflict',
+  422: 'schema validation error',
+  510: 'attachment data missing'
+};
+function rxStorageWriteErrorToRxError(err) {
+  return newRxError('COL20', {
+    name: STORAGE_WRITE_ERROR_CODE_TO_MESSAGE[err.status],
+    document: err.documentId,
+    writeError: err
+  });
 }
 //# sourceMappingURL=rx-error.js.map

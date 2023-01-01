@@ -14,7 +14,7 @@ import {
     getRxStorageSharding
 } from 'rxdb-premium/plugins/sharding';
 
-import { getRxStorageDexie } from 'rxdb/plugins/dexie';
+import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
 
 
 /**

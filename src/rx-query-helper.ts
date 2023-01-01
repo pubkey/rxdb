@@ -9,8 +9,9 @@ import type {
 import {
     clone,
     firstPropertyNameOfObject,
+    toArray,
     isMaybeReadonlyArray
-} from './util';
+} from './plugins/utils';
 
 /**
  * Normalize the query to ensure we have all fields set
@@ -50,7 +51,7 @@ export function normalizeMangoQuery<RxDocType>(
             .entries(normalizedMangoQuery.selector)
             .forEach(([field, matcher]) => {
                 if (typeof matcher !== 'object' || matcher === null) {
-                    normalizedMangoQuery.selector[field] = {
+                    (normalizedMangoQuery as any).selector[field] = {
                         $eq: matcher
                     };
                 }
@@ -62,7 +63,7 @@ export function normalizeMangoQuery<RxDocType>(
      * the primaryKey is inside of it.
      */
     if (normalizedMangoQuery.index) {
-        const indexAr = Array.isArray(normalizedMangoQuery.index) ? normalizedMangoQuery.index.slice(0) : [normalizedMangoQuery.index];
+        const indexAr = toArray(normalizedMangoQuery.index);
         if (!indexAr.includes(primaryKey)) {
             indexAr.push(primaryKey);
         }

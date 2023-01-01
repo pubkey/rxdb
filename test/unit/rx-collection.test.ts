@@ -34,24 +34,16 @@ import {
     parseRevision
 } from '../../';
 
-import {
-    addPouchPlugin,
-    getRxStoragePouch
-} from '../../plugins/pouchdb';
-
-import { wrappedKeyCompressionStorage } from '../../plugins/key-compression';
-
 import { RxDBUpdatePlugin } from '../../plugins/update';
 addRxPlugin(RxDBUpdatePlugin);
 import { RxDBMigrationPlugin } from '../../plugins/migration';
 addRxPlugin(RxDBMigrationPlugin);
 
 import { firstValueFrom } from 'rxjs';
-import { enableKeyCompression, HumanDocumentType } from '../helper/schemas';
+import { HumanDocumentType } from '../helper/schemas';
 import { RxDocumentData } from '../../src/types';
 
 describe('rx-collection.test.ts', () => {
-    addPouchPlugin(require('pouchdb-adapter-memory'));
     async function getDb(): Promise<RxDatabase> {
         return await createRxDatabase({
             name: randomCouchString(10),
@@ -89,76 +81,6 @@ describe('rx-collection.test.ts', () => {
                     });
                     const collection = db.collections.human;
                     assert.ok(isRxCollection(collection));
-                    db.destroy();
-                });
-                it('should create compound-indexes (keyCompression: false)', async () => {
-                    addPouchPlugin(require('pouchdb-adapter-memory'));
-                    const db = await createRxDatabase({
-                        name: randomCouchString(10),
-                        storage: getRxStoragePouch('memory'),
-                    });
-                    const schemaJSON = clone(schemas.compoundIndex);
-                    schemaJSON.keyCompression = false;
-
-                    await db.addCollections({
-                        human: {
-                            schema: schemaJSON
-                        }
-                    });
-                    const collection = db.collections.human;
-                    const indexes = await collection.storageInstance.internals.pouch.getIndexes();
-                    assert.strictEqual(indexes.indexes.length, 2);
-                    const lastIndexDefFields = indexes.indexes[1].def.fields;
-                    assert.deepStrictEqual(
-                        lastIndexDefFields,
-                        [
-                            { 'age': 'asc' },
-                            { 'passportCountry': 'asc' },
-                            // the primaryKey index will always be added by RxDB
-                            { _id: 'asc' }
-                        ]
-                    );
-                    db.destroy();
-                });
-                it('should create compound-indexes (keyCompression: true)', async () => {
-                    const db = await createRxDatabase({
-                        name: randomCouchString(10),
-                        storage: wrappedKeyCompressionStorage({
-                            storage: getRxStoragePouch('memory')
-                        })
-                    });
-                    await db.addCollections({
-                        human: {
-                            schema: enableKeyCompression(schemas.compoundIndex)
-                        }
-                    });
-                    const collection = db.collections.human;
-                    const indexes = await collection.storageInstance.internals.pouch.getIndexes();
-                    assert.strictEqual(indexes.indexes.length, 2);
-                    const lastIndexDefFields = indexes.indexes[1].def.fields;
-                    assert.deepStrictEqual(
-                        lastIndexDefFields, [
-                        { 'age': 'asc' },
-                        { '|a': 'asc' },
-                        // the primaryKey index will always be added by RxDB
-                        { _id: 'asc' }
-                    ]
-                    );
-                    db.destroy();
-                });
-                it('should have the version-number in the pouchdb-prefix', async () => {
-                    const db = await createRxDatabase({
-                        name: randomCouchString(10),
-                        storage: getRxStoragePouch('memory'),
-                    });
-                    await db.addCollections({
-                        human: {
-                            schema: schemas.human
-                        }
-                    });
-                    const collection = db.collections.human;
-                    assert.deepStrictEqual(schemas.human.version, 0);
-                    assert.ok(collection.storageInstance.internals.pouch.name.includes('-' + schemas.human.version + '-'));
                     db.destroy();
                 });
                 it('should not forget the options', async () => {
@@ -630,56 +552,6 @@ describe('rx-collection.test.ts', () => {
                         assert.ok(ensureNotFalsy(docs[0]._data.age) <= ensureNotFalsy(docs[1]._data.age));
                         c.database.destroy();
                     });
-                    it('sort by non-top-level-key as index (no keycompression)', async () => {
-                        const db = await createRxDatabase({
-                            name: randomCouchString(10),
-                            storage: getRxStoragePouch('memory'),
-                        });
-                        const schemaObj = clone(schemas.humanSubIndex);
-                        schemaObj.keyCompression = false;
-                        await db.addCollections({
-                            human: {
-                                schema: schemaObj
-                            }
-                        });
-                        const collection = db.human;
-                        const objects = new Array(10).fill(0).map(() => {
-                            return {
-                                passportId: randomCouchString(10),
-                                other: {
-                                    age: randomNumber(10, 50)
-                                }
-                            };
-                        });
-                        await Promise.all(objects.map(o => collection.insert(o)));
-
-                        // do it manually
-                        const all = await collection.storageInstance.internals.pouch.find({
-                            selector: {
-                                'other.age': {
-                                    '$gt': 0
-                                }
-                            },
-                            sort: [
-                                { 'other.age': 'asc' },
-                                { _id: 'asc' }
-                            ]
-                        });
-                        assert.strictEqual(all.docs.length, 10);
-
-                        // with RxQuery
-                        const query = collection.find().sort({
-                            'other.age': 'asc'
-                        });
-                        const docs = await query.exec();
-
-                        let lastAge = 0;
-                        docs.forEach((doc: any) => {
-                            assert.ok(doc.other.age >= lastAge);
-                            lastAge = doc.other.age;
-                        });
-                        db.destroy();
-                    });
                     it('sort by non-top-level-key as index (with keycompression)', async () => {
                         if (config.storage.name === 'lokijs') {
                             // TODO why does this test not work on lokijs?
@@ -789,51 +661,23 @@ describe('rx-collection.test.ts', () => {
                     });
                 });
                 describe('negative', () => {
-                    it('throw when sort is not index', async () => {
-                        if (config.storage.name !== 'pouchdb') {
-                            return;
-                        }
-                        const c = await humansCollection.create();
-                        await c.find().exec();
-                        await AsyncTestUtil.assertThrows(
-                            () => c.find({
-                                selector: {
-                                    age: {
-                                        $gt: 0
-                                    }
-                                }
-                            })
-                                .sort({
-                                    age: 'desc'
-                                })
-                                .exec(),
-                            Error
-                        );
-                        c.database.destroy();
-                    });
                     it('#146 throw when field not in schema (object)', async () => {
-                        if (config.storage.name !== 'pouchdb') {
-                            return;
-                        }
                         const c = await humansCollection.createAgeIndex();
                         await AsyncTestUtil.assertThrows(
                             () => c.find().sort({
                                 foobar: 'desc'
                             }).exec(),
                             'RxError',
-                            'not defined in the schema'
+                            'QU13'
                         );
                         c.database.destroy();
                     });
                     it('#146 throw when field not in schema (string)', async () => {
-                        if (config.storage.name !== 'pouchdb') {
-                            return;
-                        }
                         const c = await humansCollection.createAgeIndex();
                         await AsyncTestUtil.assertThrows(
                             () => c.find().sort('foobar').exec(),
                             'RxError',
-                            'not defined in the schema'
+                            'QU13'
                         );
                         c.database.destroy();
                     });
@@ -950,14 +794,6 @@ describe('rx-collection.test.ts', () => {
                     new Array(config.isFastMode() ? 3 : 10)
                         .fill(0).forEach(() => {
                             it('skip first and limit (storage: ' + config.storage.name + ')', async () => {
-                                /**
-                                 * TODO this test is broken in pouchdb
-                                 * @link https://github.com/pouchdb/pouchdb/pull/8371
-                                 * Check again on the next release.
-                                 */
-                                if (config.storage.name === 'pouchdb') {
-                                    return;
-                                }
                                 const c = await humansCollection.create(5);
                                 const docs = await c.find().sort('passportId').exec();
                                 const second = await c.find().sort('passportId').skip(1).limit(1).exec();
@@ -1034,29 +870,22 @@ describe('rx-collection.test.ts', () => {
                     });
                 });
                 describe('negative', () => {
-                    /**
-                     * @link https://docs.cloudant.com/cloudant_query.html#creating-selector-expressions
-                     */
-                    it('regex on primary should throw', async () => {
-                        if (!config.storage.hasRegexSupport) {
-                            return;
-                        }
-
-                        // TODO run this check in dev-mode so it behaves equal on all storage implementations.
-                        if (config.storage.name !== 'pouchdb') {
-                            return;
-                        }
-                        const c = await humansCollection.createPrimary(0);
-                        await AsyncTestUtil.assertThrows(
-                            () => c.find().where('passportId').regex(/Match/).exec(),
-                            'RxError',
-                            'regex'
-                        );
-                        c.database.destroy();
-                    });
                 });
             });
             config.parallel('.remove()', () => {
+                it('should remove one document', async () => {
+                    const c = await humansCollection.create(1);
+                    const query = c.find();
+                    const removed = await query.remove();
+                    assert.strictEqual(removed.length, 1);
+                    removed.forEach(doc => {
+                        assert.ok(isRxDocument(doc));
+                        assert.strictEqual(doc.deleted, true);
+                    });
+                    const docsAfter = await c.find().exec();
+                    assert.strictEqual(docsAfter.length, 0);
+                    c.database.destroy();
+                });
                 it('should remove all documents', async () => {
                     const c = await humansCollection.create(10);
                     const query = c.find();
@@ -1231,10 +1060,6 @@ describe('rx-collection.test.ts', () => {
                     c.database.destroy();
                 });
                 it('unsets fields in all documents', async () => {
-                    // TODO should work on all storage implementations
-                    if (config.storage.name !== 'pouchdb') {
-                        return;
-                    }
                     const c = await humansCollection.create(10);
                     const query = c.find();
                     await query.update({
@@ -1285,11 +1110,6 @@ describe('rx-collection.test.ts', () => {
                     c.database.destroy();
                 });
                 it('find by primary in parallel', async () => {
-                    // TODO should work on all storage implementations
-                    if (config.storage.name !== 'pouchdb') {
-                        return;
-                    }
-
                     const c = await humansCollection.createPrimary(0);
 
                     const docData = schemaObjects.simpleHuman();
@@ -1309,7 +1129,7 @@ describe('rx-collection.test.ts', () => {
 
                     assert.ok(results[0] === results[1]);
 
-                    await results[0].atomicPatch({ firstName: 'foobar' });
+                    await results[0].incrementalPatch({ firstName: 'foobar' });
 
                     const results2 = await Promise.all([
                         c.findOne(primary).exec(),
@@ -1431,20 +1251,15 @@ describe('rx-collection.test.ts', () => {
         });
         config.parallel('.bulkUpsert()', () => {
             it('insert and update', async () => {
-                console.log('---- 0');
-
                 const c = await humansCollection.create(0);
                 const amount = 5;
-
-                console.log('---- 1');
 
                 // insert
                 await c.bulkUpsert(
                     new Array(amount).fill(0).map(() => schemaObjects.human())
                 );
                 let allDocs = await c.find().exec();
-                assert.strictEqual(allDocs.length, 5);
-                console.log('---- 2');
+                assert.strictEqual(allDocs.length, amount);
 
                 // update
                 const docsData = allDocs.map(d => {
@@ -1452,13 +1267,10 @@ describe('rx-collection.test.ts', () => {
                     data.age = 100;
                     return data;
                 });
-                console.log('---- 3');
                 await c.bulkUpsert(docsData);
                 allDocs = await c.find().exec();
-                assert.strictEqual(allDocs.length, 5);
+                assert.strictEqual(allDocs.length, amount);
                 allDocs.forEach(d => assert.strictEqual(d.age, 100));
-                console.log('---- 4');
-
                 c.database.destroy();
             });
         });
@@ -1526,21 +1338,12 @@ describe('rx-collection.test.ts', () => {
                     db.destroy();
                 });
                 it('overwrite deleted', async () => {
-                    const db = await createRxDatabase({
-                        name: randomCouchString(10),
-                        storage: config.storage.getStorage()
-                    });
-                    const collections = await db.addCollections({
-                        human: {
-                            schema: schemas.primaryHuman
-                        }
-                    });
-                    const collection = collections.human;
+                    const collection = await humansCollection.createPrimary(1);
                     const objData = schemaObjects.simpleHuman();
 
-                    const doc = await collection.insert(objData);
 
-                    await doc.atomicPatch({
+                    let doc = await collection.insert(objData);
+                    doc = await doc.incrementalPatch({
                         firstName: 'alice'
                     });
                     await doc.remove();
@@ -1560,7 +1363,7 @@ describe('rx-collection.test.ts', () => {
                     const parsedRev = parseRevision(docAfter.toJSON(true)._rev);
                     assert.strictEqual(parsedRev.height, 4);
 
-                    db.destroy();
+                    collection.database.destroy();
                 });
             });
             describe('negative', () => {
@@ -1590,29 +1393,34 @@ describe('rx-collection.test.ts', () => {
                 });
             });
         });
-        describe('.atomicUpsert()', () => {
+        describe('.incrementalUpsert()', () => {
             config.parallel('positive', () => {
                 it('should work in serial', async () => {
                     const c = await humansCollection.createPrimary(0);
                     const docData = schemaObjects.simpleHuman();
                     const primary = docData.passportId;
                     await c.findOne(primary).exec();
-                    await c.atomicUpsert(docData);
+                    await c.incrementalUpsert(docData);
                     await c.findOne(primary).exec();
                     const docData2 = clone(docData);
                     docData.firstName = 'foobar';
 
-                    await c.atomicUpsert(docData2);
+                    await c.incrementalUpsert(docData2);
                     c.database.destroy();
                 });
                 it('should not crash when upserting the same doc in parallel', async () => {
                     const c = await humansCollection.createPrimary(0);
                     const docData = schemaObjects.simpleHuman();
                     const docs = await Promise.all([
-                        c.atomicUpsert(docData),
-                        c.atomicUpsert(docData)
+                        c.incrementalUpsert(docData),
+                        c.incrementalUpsert(docData)
                     ]);
-                    assert.ok(docs[0] === docs[1]);
+
+                    /**
+                     * Should not be equal because one doc state was inserted
+                     * and the other was updated.
+                     */
+                    assert.ok(docs[0] !== docs[1]);
                     assert.ok(isRxDocument(docs[0]));
                     c.database.destroy();
                 });
@@ -1620,18 +1428,18 @@ describe('rx-collection.test.ts', () => {
                     const c = await humansCollection.createPrimary(0);
                     const docData = schemaObjects.simpleHuman();
                     const docs = await Promise.all([
-                        c.atomicUpsert(docData),
-                        c.atomicUpsert(docData),
-                        c.atomicUpsert(docData)
+                        c.incrementalUpsert(docData),
+                        c.incrementalUpsert(docData),
+                        c.incrementalUpsert(docData)
                     ]);
-                    assert.ok(docs[0] === docs[1]);
+                    assert.ok(docs[0] !== docs[1]);
                     assert.ok(isRxDocument(docs[0]));
                     c.database.destroy();
                 });
                 it('should not crash when upserting the same doc in parallel many times with random waits', async function () {
                     const c = await humansCollection.createPrimary(0);
                     const docData = schemaObjects.simpleHuman();
-                    docData.firstName = 'test-many-atomic-upsert';
+                    docData.firstName = 'test-many-incremental-upsert';
 
                     let t = 0;
                     const amount = config.isFastMode() ? 20 : 200;
@@ -1644,7 +1452,7 @@ describe('rx-collection.test.ts', () => {
                                 upsertData.lastName = idx + '';
                                 const randomWait = randomBoolean() ? wait(randomNumber(0, 30)) : Promise.resolve();
                                 return randomWait
-                                    .then(() => c.atomicUpsert(upsertData))
+                                    .then(() => c.incrementalUpsert(upsertData))
                                     .then(doc => {
                                         t++;
                                         return doc;
@@ -1652,7 +1460,7 @@ describe('rx-collection.test.ts', () => {
                             })
                     );
                     assert.strictEqual(t, amount);
-                    assert.ok(docs[0] === docs[1]);
+                    assert.ok(docs[0] !== docs[1]);
                     assert.ok(isRxDocument(docs[0]));
 
                     c.database.destroy();
@@ -1663,9 +1471,9 @@ describe('rx-collection.test.ts', () => {
                     const docId = docData.passportId;
 
                     await Promise.all([
-                        c.atomicUpsert(docData),
-                        c.atomicUpsert(docData),
-                        c.atomicUpsert(docData)
+                        c.incrementalUpsert(docData),
+                        c.incrementalUpsert(docData),
+                        c.incrementalUpsert(docData)
                     ]);
 
                     const viaStorage = await c.storageInstance.findDocumentsById([docId], true);
@@ -1674,7 +1482,7 @@ describe('rx-collection.test.ts', () => {
 
                     const docData2 = clone(docData);
                     docData2.firstName = 'foobar';
-                    await c.atomicUpsert(docData2);
+                    await c.incrementalUpsert(docData2);
                     const doc = await c.findOne().exec(true);
                     assert.strictEqual(doc.firstName, 'foobar');
 
@@ -1686,11 +1494,11 @@ describe('rx-collection.test.ts', () => {
                     const docData = schemaObjects.simpleHuman();
                     await c.insert(docData);
                     const docs = await Promise.all([
-                        c.atomicUpsert(docData),
-                        c.atomicUpsert(docData),
-                        c.atomicUpsert(docData)
+                        c.incrementalUpsert(docData),
+                        c.incrementalUpsert(docData),
+                        c.incrementalUpsert(docData)
                     ]);
-                    assert.ok(docs[0] === docs[1]);
+                    assert.ok(docs[0] !== docs[1]);
                     assert.ok(isRxDocument(docs[0]));
                     c.database.destroy();
                 });
@@ -1699,9 +1507,9 @@ describe('rx-collection.test.ts', () => {
                     const docData = schemaObjects.simpleHuman();
                     const order: any[] = [];
                     await Promise.all([
-                        c.atomicUpsert(docData).then(() => order.push(0)),
-                        c.atomicUpsert(docData).then(() => order.push(1)),
-                        c.atomicUpsert(docData).then(() => order.push(2))
+                        c.incrementalUpsert(docData).then(() => order.push(0)),
+                        c.incrementalUpsert(docData).then(() => order.push(1)),
+                        c.incrementalUpsert(docData).then(() => order.push(2))
                     ]);
                     assert.deepStrictEqual(order, [0, 1, 2]);
 
@@ -1710,11 +1518,9 @@ describe('rx-collection.test.ts', () => {
                 it('should work when inserting on a slow storage', async () => {
                     if (!config.platform.isNode()) return;
                     // use a 'slow' adapter because memory might be to fast
-                    const leveldown = require('leveldown');
-                    addPouchPlugin(require('pouchdb-adapter-leveldb'));
                     const db = await createRxDatabase({
                         name: config.rootPath + 'test_tmp/' + randomCouchString(10),
-                        storage: getRxStoragePouch(leveldown),
+                        storage: config.storage.getStorage(),
                     });
                     const collections = await db.addCollections({
                         human: {
@@ -1724,11 +1530,11 @@ describe('rx-collection.test.ts', () => {
                     const c = collections.human;
 
                     const docData = schemaObjects.simpleHuman();
-                    await c.atomicUpsert(docData);
-                    await c.atomicUpsert(docData);
+                    await c.incrementalUpsert(docData);
+                    await c.incrementalUpsert(docData);
                     const docData2 = clone(docData);
                     docData2.firstName = 'foobar1';
-                    await c.atomicUpsert(docData2);
+                    await c.incrementalUpsert(docData2);
                     const docs = await c.find().exec();
                     assert.strictEqual(docs.length, 1);
                     const doc = await c.findOne().exec();
@@ -1752,15 +1558,15 @@ describe('rx-collection.test.ts', () => {
                     });
                     const collection = collections.nestedhuman;
 
-                    const doc = await collection.atomicUpsert({
+                    const doc = await collection.incrementalUpsert({
                         passportId: 'foobar',
                         firstName: 'foobar2'
                     });
 
                     assert.strictEqual(doc.age, defaultValue);
 
-                    // should also set after atomicUpdate when document exists
-                    const afterUpdate = await collection.atomicUpsert({
+                    // should also set after incrementalModify when document exists
+                    const afterUpdate = await collection.incrementalUpsert({
                         passportId: 'foobar',
                         firstName: 'foobar3'
                     });
@@ -1782,13 +1588,13 @@ describe('rx-collection.test.ts', () => {
                     });
                     const collection = collections.nestedhuman;
 
-                    const doc = await collection.atomicUpsert({
+                    const doc = await collection.incrementalUpsert({
                         passportId: 'foobar',
                         firstName: 'foobar2'
                     });
                     assert.strictEqual(doc.firstName, 'foobar2');
 
-                    const afterUpdate = await collection.atomicUpsert({
+                    const afterUpdate = await collection.incrementalUpsert({
                         passportId: 'foobar'
                     });
                     assert.strictEqual(typeof afterUpdate.firstName, 'undefined');
@@ -1942,19 +1748,6 @@ describe('rx-collection.test.ts', () => {
                 });
             });
             describe('negative', () => {
-                it('should not be possible to use the cleared collection', async () => {
-                    // TODO should work on all storage implementations
-                    if (config.storage.name !== 'pouchdb') {
-                        return;
-                    }
-                    const c = await humansCollection.createPrimary(0);
-                    await c.remove();
-                    await AsyncTestUtil.assertThrows(
-                        () => c.find().exec(),
-                        Error
-                    );
-                    c.database.destroy();
-                });
                 it('should not have the collection in the collections-list', async () => {
                     const c = await humansCollection.createPrimary(0);
                     const db = c.database;
@@ -1980,7 +1773,7 @@ describe('rx-collection.test.ts', () => {
 
                 const docs = await c.find().exec();
                 const ids = docs.map(d => d.primary);
-                const res = await c.findByIds(ids);
+                const res = await c.findByIds(ids).exec();
 
                 assert.ok(res.has(docs[0].primary));
                 assert.strictEqual(res.size, 5);
@@ -1993,9 +1786,9 @@ describe('rx-collection.test.ts', () => {
                 const ids = docs.map(d => d.primary);
 
                 // clear docCache
-                ids.forEach(id => c._docCache.delete(id));
+                ids.forEach(id => c._docCache.cacheItemByDocId.delete(id));
 
-                const res = await c.findByIds(ids);
+                const res = await c.findByIds(ids).exec();
                 assert.strictEqual(res.size, 5);
                 c.database.destroy();
             });
@@ -2006,7 +1799,7 @@ describe('rx-collection.test.ts', () => {
             const c = await humansCollection.create(5);
             const docs = await c.find().exec();
             const ids = docs.map(d => d.primary);
-            const res = await firstValueFrom(c.findByIds$(ids));
+            const res = await firstValueFrom(c.findByIds(ids).$);
 
             assert.ok(res);
             assert.ok(res instanceof Map);
@@ -2018,7 +1811,7 @@ describe('rx-collection.test.ts', () => {
 
             const docs = await c.find().exec();
             const ids = docs.map(d => d.primary);
-            const res = await firstValueFrom(c.findByIds$(ids));
+            const res = await firstValueFrom(c.findByIds(ids).$);
 
             assert.ok(res.has(docs[0].primary));
             assert.strictEqual(res.size, 5);
@@ -2030,7 +1823,7 @@ describe('rx-collection.test.ts', () => {
             const docs = await c.find().exec();
             const ids = docs.map(d => d.primary);
             ids.push('foobar');
-            const obs = c.findByIds$(ids);
+            const obs = c.findByIds(ids).$;
             await firstValueFrom(obs);
 
             // check insert
@@ -2148,25 +1941,6 @@ describe('rx-collection.test.ts', () => {
             assert.strictEqual(myDocument.score, 100);
             db.destroy();
         });
-        it('auto_compaction not works on collection-level https://gitter.im/pubkey/rxdb?at=5c42f3dd0721b912a5a4366b', async () => {
-            const db = await createRxDatabase({
-                name: randomCouchString(10),
-                storage: getRxStoragePouch('memory')
-            });
-
-            // test with auto_compaction
-            const collections = await db.addCollections({
-                human_compact: {
-                    schema: schemas.primaryHuman,
-                    instanceCreationOptions: {
-                        auto_compaction: true
-                    }
-                }
-            });
-            const collection = collections.human_compact;
-            assert.ok(collection.storageInstance.internals.pouch.auto_compaction);
-            db.destroy();
-        });
         it('#939 creating a collection mutates the given parameters-object', async () => {
             const schema = {
                 version: 0,
@@ -2246,7 +2020,7 @@ describe('rx-collection.test.ts', () => {
 
             const matchingIds = ['a', 'b', 'c', 'd'];
 
-            const sub = collection.findByIds$(matchingIds).subscribe(data => {
+            const sub = collection.findByIds(matchingIds).$.subscribe(data => {
 
                 const m = new Map();
                 Array
@@ -2316,7 +2090,7 @@ describe('rx-collection.test.ts', () => {
             });
 
             // should have the same result set as running findByIds() once.
-            const singleQueryDocs = await collection.findByIds(matchingIds);
+            const singleQueryDocs = await collection.findByIds(matchingIds).exec();
 
             const lastEmit = lastOfArray(emitted) as Map<string, RxDocumentData<HumanDocumentType>>;
             const singleResultPlain = matchingIds.map(id => getFromMapOrThrow(singleQueryDocs, id).toJSON(true));

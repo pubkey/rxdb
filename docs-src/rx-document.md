@@ -39,7 +39,7 @@ myDocument.get$('name')
     isName = newName;
   });
 
-await myDocument.atomicPatch({name: 'foobar2'});
+await myDocument.incrementalPatch({name: 'foobar2'});
 console.dir(isName); // isName is now 'foobar2'
 ```
 
@@ -56,7 +56,7 @@ All properties of a `RxDocument` are assigned as getters so you can also directl
   // Also usable with observables:
   myDocument.firstName$.subscribe(newName => console.log('name is: ' + newName));
   // > 'name is: Stefe'
-  await myDocument.atomicPatch({firstName: 'Steve'});
+  await myDocument.incrementalPatch({firstName: 'Steve'});
   // > 'name is: Steve'
 ```
 
@@ -82,9 +82,8 @@ await myDocument.update({
 });
 ```
 
-### atomicUpdate()
+### modify()
 Updates a documents data based on a function that mutates the current data and returns the new value.
-In difference to `update()`, the atomic function cannot lead to 409 write conflicts.
 
 ```js
 
@@ -93,20 +92,70 @@ const changeFunction = (oldData) => {
     oldData.name = 'foooobarNew';
     return oldData;
 }
-await myDocument.atomicUpdate(changeFunction);
+await myDocument.modify(changeFunction);
 console.log(myDocument.name); // 'foooobarNew'
 ```
 
-### atomicPatch()
-Works like `atomicUpdate` but overwrites the given attributes over the documents data.
+### patch()
+
+Overwrites the given attributes over the documents data.
 
 ```js
-await myDocument.atomicPatch({
+await myDocument.patch({
   name: 'Steve',
   age: undefined // setting an attribute to undefined will remove it
 });
 console.log(myDocument.name); // 'Steve'
 ```
+
+
+### Prevent conflicts with the incremental methods
+
+Making a normal change to the non-latest version of a `RxDocument` will lead to a `409 CONFLICT` error because RxDB
+uses [revision checks](./transactions-conflicts-revisions.md) instead of transactions.
+
+To make a change to a document, no matter what the current state is, you can use the `incremental` methods:
+
+```js
+// update
+await myDocument.incrementalUpdate({
+    $inc: {
+        age: 1 // increases age by 1
+    }
+});
+
+// modify
+await myDocument.incrementalModify(docData => {
+  docData.age = docData.age + 1;
+  return docData;
+});
+
+// patch
+await myDocument.incrementalPatch({
+  age: 100
+});
+
+// remove
+await myDocument.incrementalRemove({
+  age: 100
+});
+```
+
+
+
+### getLatest()
+
+Returns the latest known state of the `RxDocument`.
+
+```js
+const myDocument = await myCollection.findOne('foobar').exec();
+const docAfterEdit = await myDocument.incrementalPatch({
+  age: 10
+});
+const latestDoc = myDocument.getLatest();
+console.log(docAfterEdit === latestDoc); // > true
+```
+
 
 
 ### Observe $

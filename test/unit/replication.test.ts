@@ -25,7 +25,9 @@ import {
     ensureNotFalsy,
     randomCouchString,
     rxStorageInstanceToReplicationHandler,
-    normalizeMangoQuery
+    normalizeMangoQuery,
+    RxError,
+    RxTypeError
 } from '../../';
 
 import {
@@ -67,7 +69,7 @@ describe('replication.test.js', () => {
         const helper = rxStorageInstanceToReplicationHandler(
             remoteCollection.storageInstance,
             remoteCollection.database.conflictHandler as any,
-            remoteCollection.database.hashFunction
+            remoteCollection.database.token
         );
         const handler: ReplicationPullHandler<TestDocType, CheckpointType> = async (
             latestPullCheckpoint: CheckpointType | null,
@@ -84,7 +86,7 @@ describe('replication.test.js', () => {
         const helper = rxStorageInstanceToReplicationHandler(
             remoteCollection.storageInstance,
             remoteCollection.conflictHandler,
-            remoteCollection.database.hashFunction
+            remoteCollection.database.token
         );
         const handler: ReplicationPushHandler<TestDocType> = async (
             rows: RxReplicationWriteToMasterRow<TestDocType>[]
@@ -200,7 +202,8 @@ describe('replication.test.js', () => {
             remoteCollection.database.destroy();
         });
         it('should not save pulled documents that do not match the schema', async () => {
-            const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 5 });
+            const amount = 5;
+            const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: amount });
 
             /**
              * Use collection with different schema
@@ -227,7 +230,7 @@ describe('replication.test.js', () => {
                     handler: getPushHandler(remoteCollection)
                 }
             });
-            const errors: any[] = [];
+            const errors: (RxError | RxTypeError)[] = [];
             replicationState.error$.subscribe(err => errors.push(err));
             await replicationState.awaitInitialReplication();
 
@@ -237,8 +240,8 @@ describe('replication.test.js', () => {
             assert.strictEqual(docsLocal.length, 0);
 
 
-            assert.strictEqual(errors.length, 1);
-            assert.ok(errors[0].message.includes('does not match schema'));
+            assert.strictEqual(errors.length, amount);
+            assert.ok(JSON.stringify(errors[0].parameters).includes('maximum'));
 
 
             localCollection.database.destroy();
@@ -274,14 +277,14 @@ describe('replication.test.js', () => {
             const docData = schemaObjects.humanWithTimestamp({
                 id
             });
-            const doc = await localCollection.insert(docData);
+            let doc = await localCollection.insert(docData);
             await waitUntil(async () => {
                 const remoteDoc = await docsRemoteQuery.exec();
                 return !!remoteDoc;
             });
 
             // UPDATE
-            await doc.atomicPatch({
+            doc = await doc.incrementalPatch({
                 age: 100
             });
             await waitUntil(async () => {

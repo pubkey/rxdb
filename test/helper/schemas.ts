@@ -58,7 +58,7 @@ export const humanSchemaLiteral = overwritable.deepFreezeWhenDevMode({
             multipleOf: 1
         }
     },
-    required: ['firstName', 'lastName', 'passportId'],
+    required: ['firstName', 'lastName', 'passportId', 'age'],
     indexes: ['firstName']
 } as const);
 const humanSchemaTyped = toTypedRxJsonSchema(humanSchemaLiteral);
@@ -79,10 +79,12 @@ export const humanDefault: RxJsonSchema<HumanDocumentType> = overwritable.deepFr
             maxLength: 100
         },
         firstName: {
-            type: 'string'
+            type: 'string',
+            maxLength: 100
         },
         lastName: {
-            type: 'string'
+            type: 'string',
+            maxLength: 100
         },
         age: {
             description: 'age in years',
