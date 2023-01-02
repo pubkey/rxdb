@@ -2,6 +2,11 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
+
+<!-- ADD new changes here! -->
+
+### 14.0.0-beta.1 (2 January 2023)
+
 - CHANGE Do not use hash for revisions but use database instance token instead.
 - Remove the deprecated PouchDB RxStorage.
 - CHANGE (memory RxStorage) do not clean up database state on closing of the storage, only on `remove()`.
@@ -24,8 +29,6 @@
 - ADD non-incremental `RxDocument` methods `patch()` and `modify()`
 - ADD typings to the query selector
 - CHANGE start replication via pure functions instead of RxCollection methods.
-
-<!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
