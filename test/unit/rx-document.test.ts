@@ -730,6 +730,9 @@ describe('rx-document.test.js', () => {
             c.database.destroy();
         });
         it('should not return _attachments if not wanted', async () => {
+            if (!config.storage.hasAttachments) {
+                return;
+            }
             const db = await createRxDatabase({
                 name: randomCouchString(10),
                 storage: config.storage.getStorage(),
