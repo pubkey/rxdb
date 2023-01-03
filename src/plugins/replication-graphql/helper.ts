@@ -1,7 +1,7 @@
 import { RxGraphQLReplicationClientState, RxGraphQLReplicationQueryBuilderResponseObject } from '../../types';
 import { ensureNotFalsy } from '../../plugins/utils';
 
-export const GRAPHQL_REPLICATION_PLUGIN_IDENTITY_PREFIX = 'rxdb-replication-graphql-';
+export const GRAPHQL_REPLICATION_PLUGIN_IDENTITY_PREFIX = 'graphql';
 
 export interface GraphQLError {
     message: string;

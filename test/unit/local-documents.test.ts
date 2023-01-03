@@ -27,7 +27,7 @@ declare type TestDocType = {
     foo: string;
 };
 
-config.parallel('local-documents.test.js', () => {
+config.parallel('local-documents.test.ts', () => {
     describe('.insertLocal()', () => {
         describe('positive', () => {
             it('should create a local document', async () => {

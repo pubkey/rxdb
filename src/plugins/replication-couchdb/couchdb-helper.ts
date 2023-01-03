@@ -3,7 +3,7 @@ import { flatClone } from '../../plugins/utils';
 import { URLQueryParams } from './couchdb-types';
 
 
-export const COUCHDB_NEW_REPLICATION_PLUGIN_IDENTITY_PREFIX = 'rxdb-replication-couchdb-';
+export const COUCHDB_NEW_REPLICATION_PLUGIN_IDENTITY_PREFIX = 'couchdb';
 
 
 export function mergeUrlQueryParams(

@@ -497,11 +497,10 @@ export async function _migrateDocuments(
              * data changed, increase revision height
              * so replicating instances use our new document data
              */
-            const newHeight = getHeightOfRevision(docData._rev) + 1;
-            const newRevision = newHeight + '-' + createRevision(
-                oldCollection.newestCollection.database.token
+            migratedDocData._rev = createRevision(
+                oldCollection.newestCollection.database.token,
+                docData
             );
-            migratedDocData._rev = newRevision;
         }
 
 
