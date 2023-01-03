@@ -9,16 +9,13 @@ const plugins = [
     ['@babel/plugin-transform-classes', {
         'loose': true
     }],
-    '@babel/transform-object-super',
     '@babel/transform-sticky-regex',
     '@babel/transform-unicode-regex',
     '@babel/transform-block-scoping',
-    '@babel/plugin-transform-member-expression-literals',
     ['@babel/transform-runtime', {
         'regenerator': true
     }],
-    '@babel/proposal-class-properties',
-    '@babel/proposal-object-rest-spread'
+    '@babel/proposal-class-properties'
 ];
 
 let presets = [
@@ -40,11 +37,10 @@ if (process.env['NODE_ENV'] === 'es5') {
             {
                 loose: true,
                 targets: {
-                    edge: '17',
-                    firefox: '60',
-                    chrome: '67',
-                    safari: '11.1',
-                    ie: '11'
+                    edge: '107',
+                    firefox: '107',
+                    chrome: '108',
+                    safari: '16.2'
                 },
                 useBuiltIns: false
             }]
