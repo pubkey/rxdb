@@ -6,17 +6,12 @@ const plugins = [
     }],
     '@babel/transform-literals',
     '@babel/transform-function-name',
-    '@babel/transform-arrow-functions',
     '@babel/transform-block-scoped-functions',
     ['@babel/plugin-transform-classes', {
         'loose': true
     }],
     '@babel/transform-object-super',
-    '@babel/transform-shorthand-properties',
     ['@babel/transform-computed-properties', {
-        'loose': true
-    }],
-    ['@babel/transform-for-of', {
         'loose': true
     }],
     '@babel/transform-sticky-regex',
@@ -24,14 +19,13 @@ const plugins = [
     ['@babel/transform-spread', {
         'loose': true
     }],
-    '@babel/transform-parameters', ['@babel/transform-destructuring', {
+    '@babel/transform-parameters',
+    ['@babel/transform-destructuring', {
         'loose': true
     }],
     '@babel/transform-block-scoping',
     '@babel/plugin-transform-member-expression-literals',
     '@babel/transform-property-literals',
-    '@babel/transform-async-to-generator',
-    '@babel/transform-regenerator',
     ['@babel/transform-runtime', {
         'regenerator': true
     }],

@@ -30,6 +30,12 @@
 - ADD typings to the query selector
 - CHANGE start replication via pure functions instead of RxCollection methods.
 - FIX replication does not provide a `._rev` to the storage write when a conflict is resolved.
+- CHANGE to reduce bundle size and improve performance, the following JavaScript features will no longer be transpiled:
+  - [async/await](https://caniuse.com/async-functions)
+  - [Arrow functions](https://caniuse.com/arrow-functions)
+  - [for...of](https://caniuse.com/?search=for...of)
+  - [shorthand properties](https://caniuse.com/mdn-javascript_operators_object_initializer_shorthand_property_names)
+
 
 <!-- /CHANGELOG NEWEST -->
 

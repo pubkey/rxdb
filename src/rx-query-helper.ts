@@ -88,7 +88,9 @@ export function normalizeMangoQuery<RxDocType>(
          * which has a bad performance in most cases.
          */
         if (normalizedMangoQuery.index) {
-            normalizedMangoQuery.sort = normalizedMangoQuery.index.map((field: string) => ({ [field as any]: 'asc' } as any));
+            normalizedMangoQuery.sort = normalizedMangoQuery.index.map((field: string) => {
+                return { [field as any]: 'asc' } as any;
+            });
         } else {
             /**
              * Find the index that best matches the fields with the logical operators
@@ -122,7 +124,9 @@ export function normalizeMangoQuery<RxDocType>(
                     }
                 });
                 if (currentBestIndexForSort) {
-                    normalizedMangoQuery.sort = currentBestIndexForSort.map((field: string) => ({ [field as any]: 'asc' } as any));
+                    normalizedMangoQuery.sort = currentBestIndexForSort.map((field: string) => {
+                        return { [field as any]: 'asc' } as any;
+                    });
                 }
 
             }
