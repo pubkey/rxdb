@@ -166,7 +166,7 @@ export function createRxSchema<T>(
     return schema;
 }
 
-export function isInstanceOfRxSchema(obj: any): boolean {
+export function isRxSchema(obj: any): boolean {
     return obj instanceof RxSchema;
 }
 
