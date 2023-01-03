@@ -15,8 +15,8 @@ var _pluginHelpers = require("../../plugin-helpers");
  */
 
 function getValidator(schema) {
-  var validator = (0, _isMyJsonValid["default"])(schema);
-  return function (docData) {
+  var validator = (0, _isMyJsonValid.default)(schema);
+  return docData => {
     var isValid = validator(docData);
     if (isValid) {
       return [];

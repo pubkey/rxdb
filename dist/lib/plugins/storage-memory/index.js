@@ -17,7 +17,7 @@ Object.keys(_rxStorageInstanceMemory).forEach(function (key) {
   if (key in exports && exports[key] === _rxStorageInstanceMemory[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _rxStorageInstanceMemory[key];
     }
   });
@@ -29,7 +29,7 @@ Object.keys(_memoryHelper).forEach(function (key) {
   if (key in exports && exports[key] === _memoryHelper[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _memoryHelper[key];
     }
   });
@@ -41,7 +41,7 @@ Object.keys(_binarySearchBounds).forEach(function (key) {
   if (key in exports && exports[key] === _binarySearchBounds[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _binarySearchBounds[key];
     }
   });
@@ -53,7 +53,7 @@ Object.keys(_memoryTypes).forEach(function (key) {
   if (key in exports && exports[key] === _memoryTypes[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _memoryTypes[key];
     }
   });
@@ -65,7 +65,7 @@ Object.keys(_memoryIndexes).forEach(function (key) {
   if (key in exports && exports[key] === _memoryIndexes[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _memoryIndexes[key];
     }
   });
@@ -76,13 +76,12 @@ Object.keys(_memoryIndexes).forEach(function (key) {
  * to test filesystem-like and multiInstance behaviors.
  */
 var COLLECTION_STATES = new Map();
-function getRxStorageMemory() {
-  var settings = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+function getRxStorageMemory(settings = {}) {
   var storage = {
     name: 'memory',
     statics: _dexieStatics.RxStorageDexieStatics,
     collectionStates: COLLECTION_STATES,
-    createStorageInstance: function createStorageInstance(params) {
+    createStorageInstance(params) {
       (0, _rxStorageHelper.ensureRxStorageInstanceParamsAreCorrect)(params);
 
       // TODO we should not need to append the schema version here.

@@ -18,9 +18,7 @@ function lastOfArray(ar) {
  * shuffle the given array
  */
 function shuffleArray(arr) {
-  return arr.sort(function () {
-    return Math.random() - 0.5;
-  });
+  return arr.sort(() => Math.random() - 0.5);
 }
 function toArray(input) {
   return Array.isArray(input) ? input.slice(0) : [input];

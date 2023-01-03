@@ -31,7 +31,7 @@ var ADDED_PLUGIN_NAMES = new Set();
  */
 export function addRxPlugin(plugin) {
   runPluginHooks('preAddRxPlugin', {
-    plugin: plugin,
+    plugin,
     plugins: ADDED_PLUGINS
   });
 
@@ -43,7 +43,7 @@ export function addRxPlugin(plugin) {
     if (ADDED_PLUGIN_NAMES.has(plugin.name)) {
       throw newRxError('PL3', {
         name: plugin.name,
-        plugin: plugin
+        plugin
       });
     }
     ADDED_PLUGINS.add(plugin);
@@ -56,7 +56,7 @@ export function addRxPlugin(plugin) {
    */
   if (!plugin.rxdb) {
     throw newRxTypeError('PL1', {
-      plugin: plugin
+      plugin
     });
   }
   if (plugin.init) {
@@ -65,9 +65,7 @@ export function addRxPlugin(plugin) {
 
   // prototype-overwrites
   if (plugin.prototypes) {
-    Object.entries(plugin.prototypes).forEach(function (_ref) {
-      var name = _ref[0],
-        fun = _ref[1];
+    Object.entries(plugin.prototypes).forEach(([name, fun]) => {
       return fun(PROTOTYPES[name]);
     });
   }
@@ -77,9 +75,7 @@ export function addRxPlugin(plugin) {
   }
   // extend-hooks
   if (plugin.hooks) {
-    Object.entries(plugin.hooks).forEach(function (_ref2) {
-      var name = _ref2[0],
-        hooksObj = _ref2[1];
+    Object.entries(plugin.hooks).forEach(([name, hooksObj]) => {
       if (hooksObj.after) {
         HOOKS[name].push(hooksObj.after);
       }

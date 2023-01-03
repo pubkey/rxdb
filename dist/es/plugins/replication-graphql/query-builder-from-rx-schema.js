@@ -6,19 +6,17 @@ export function pullQueryBuilderFromRxSchema(collectionName, input) {
   var prefixes = input.prefixes;
   var ucCollectionName = ucfirst(collectionName);
   var queryName = prefixes.pull + ucCollectionName;
-  var outputFields = Object.keys(schema.properties).filter(function (k) {
-    return !input.ignoreOutputKeys.includes(k);
-  });
+  var outputFields = Object.keys(schema.properties).filter(k => !input.ignoreOutputKeys.includes(k));
   // outputFields.push(input.deletedField);
 
   var checkpointInputName = ucCollectionName + 'Input' + prefixes.checkpoint;
-  var builder = function builder(checkpoint, limit) {
+  var builder = (checkpoint, limit) => {
     var query = 'query ' + ucfirst(queryName) + '($checkpoint: ' + checkpointInputName + ', $limit: Int!) {\n' + SPACING + SPACING + queryName + '(checkpoint: $checkpoint, limit: $limit) {\n' + SPACING + SPACING + SPACING + 'documents {\n' + SPACING + SPACING + SPACING + SPACING + outputFields.join('\n' + SPACING + SPACING + SPACING + SPACING) + '\n' + SPACING + SPACING + SPACING + '}\n' + SPACING + SPACING + SPACING + 'checkpoint {\n' + SPACING + SPACING + SPACING + SPACING + input.checkpointFields.join('\n' + SPACING + SPACING + SPACING + SPACING) + '\n' + SPACING + SPACING + SPACING + '}\n' + SPACING + SPACING + '}\n' + '}';
     return {
-      query: query,
+      query,
       variables: {
-        checkpoint: checkpoint,
-        limit: limit
+        checkpoint,
+        limit
       }
     };
   };
@@ -29,16 +27,14 @@ export function pullStreamBuilderFromRxSchema(collectionName, input) {
   var schema = input.schema;
   var prefixes = input.prefixes;
   var ucCollectionName = ucfirst(collectionName);
-  var outputFields = Object.keys(schema.properties).filter(function (k) {
-    return !input.ignoreOutputKeys.includes(k);
-  });
+  var outputFields = Object.keys(schema.properties).filter(k => !input.ignoreOutputKeys.includes(k));
   var headersName = ucCollectionName + 'Input' + prefixes.headers;
   var query = 'subscription on' + ucfirst(ensureNotFalsy(prefixes.stream)) + '($headers: ' + headersName + ') {\n' + SPACING + prefixes.stream + ucCollectionName + '(headers: $headers) {\n' + SPACING + SPACING + SPACING + 'documents {\n' + SPACING + SPACING + SPACING + SPACING + outputFields.join('\n' + SPACING + SPACING + SPACING + SPACING) + '\n' + SPACING + SPACING + SPACING + '}\n' + SPACING + SPACING + SPACING + 'checkpoint {\n' + SPACING + SPACING + SPACING + SPACING + input.checkpointFields.join('\n' + SPACING + SPACING + SPACING + SPACING) + '\n' + SPACING + SPACING + SPACING + '}\n' + SPACING + '}' + '}';
-  var builder = function builder(headers) {
+  var builder = headers => {
     return {
-      query: query,
+      query,
       variables: {
-        headers: headers
+        headers
       }
     };
   };
@@ -51,15 +47,12 @@ export function pushQueryBuilderFromRxSchema(collectionName, input) {
   var queryName = prefixes.push + ucCollectionName;
   var variableName = collectionName + prefixes.pushRow;
   var returnFields = Object.keys(input.schema.properties);
-  var builder = function builder(pushRows) {
-    var _variables;
+  var builder = pushRows => {
     var query = '' + 'mutation ' + prefixes.push + ucCollectionName + '($' + variableName + ': [' + ucCollectionName + 'Input' + prefixes.pushRow + '!]) {\n' + SPACING + queryName + '(' + variableName + ': $' + variableName + ') {\n' + SPACING + SPACING + returnFields.join(',\n' + SPACING + SPACING) + '\n' + SPACING + '}\n' + '}';
     var sendRows = [];
     function transformPushDoc(doc) {
       var sendDoc = {};
-      Object.entries(doc).forEach(function (_ref) {
-        var k = _ref[0],
-          v = _ref[1];
+      Object.entries(doc).forEach(([k, v]) => {
         if (
         // skip if in ignoreInputKeys list
         !input.ignoreInputKeys.includes(k) &&
@@ -70,17 +63,19 @@ export function pushQueryBuilderFromRxSchema(collectionName, input) {
       });
       return sendDoc;
     }
-    pushRows.forEach(function (pushRow) {
+    pushRows.forEach(pushRow => {
       var newRow = {
         newDocumentState: transformPushDoc(pushRow.newDocumentState),
         assumedMasterState: pushRow.assumedMasterState ? transformPushDoc(pushRow.assumedMasterState) : undefined
       };
       sendRows.push(newRow);
     });
-    var variables = (_variables = {}, _variables[variableName] = sendRows, _variables);
+    var variables = {
+      [variableName]: sendRows
+    };
     return {
-      query: query,
-      variables: variables
+      query,
+      variables
     };
   };
   return builder;

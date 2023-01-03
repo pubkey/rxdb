@@ -8,6 +8,6 @@ var storage = (0, _storageDexie.getRxStorageDexie)({
   IDBKeyRange: _fakeIndexeddb.IDBKeyRange
 });
 (0, _storageWorker.wrappedWorkerRxStorage)({
-  storage: storage
+  storage
 });
 //# sourceMappingURL=dexie-memory.worker.js.map

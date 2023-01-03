@@ -16,9 +16,9 @@ export function getDocumentPrototype(rxCollection) {
   var ormProto = getDocumentOrmPrototype(rxCollection);
   var baseProto = basePrototype;
   var proto = {};
-  [schemaProto, ormProto, baseProto].forEach(function (obj) {
+  [schemaProto, ormProto, baseProto].forEach(obj => {
     var props = Object.getOwnPropertyNames(obj);
-    props.forEach(function (key) {
+    props.forEach(key => {
       var desc = Object.getOwnPropertyDescriptor(obj, key);
 
       /**
@@ -30,10 +30,10 @@ export function getDocumentPrototype(rxCollection) {
       if (typeof desc.value === 'function') {
         // when getting a function, we automatically do a .bind(this)
         Object.defineProperty(proto, key, {
-          get: function get() {
+          get() {
             return desc.value.bind(this);
           },
-          enumerable: enumerable,
+          enumerable,
           configurable: false
         });
       } else {
@@ -74,9 +74,7 @@ export function createNewRxDocument(rxCollection, docData) {
  */
 export function getDocumentOrmPrototype(rxCollection) {
   var proto = {};
-  Object.entries(rxCollection.methods).forEach(function (_ref) {
-    var k = _ref[0],
-      v = _ref[1];
+  Object.entries(rxCollection.methods).forEach(([k, v]) => {
     proto[k] = v;
   });
   return proto;

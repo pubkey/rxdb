@@ -12,8 +12,7 @@ exports.ucfirst = ucfirst;
  * get a random string which can be used with couchdb
  * @link http://stackoverflow.com/a/1349426/3443137
  */
-function randomCouchString() {
-  var length = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 10;
+function randomCouchString(length = 10) {
   var text = '';
   var possible = 'abcdefghijklmnopqrstuvwxyz';
   for (var i = 0; i < length; i++) {

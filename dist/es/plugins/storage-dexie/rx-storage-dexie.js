@@ -16,8 +16,7 @@ export var RxStorageDexie = /*#__PURE__*/function () {
   };
   return RxStorageDexie;
 }();
-export function getRxStorageDexie() {
-  var settings = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+export function getRxStorageDexie(settings = {}) {
   var storage = new RxStorageDexie(settings);
   return storage;
 }

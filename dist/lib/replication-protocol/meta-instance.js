@@ -29,7 +29,7 @@ var RX_REPLICATION_META_INSTANCE_SCHEMA = (0, _rxSchemaHelper.fillWithDefaultSet
     },
     isCheckpoint: {
       type: 'string',
-      "enum": ['0', '1'],
+      enum: ['0', '1'],
       maxLength: 1
     },
     itemId: {
@@ -52,16 +52,16 @@ var RX_REPLICATION_META_INSTANCE_SCHEMA = (0, _rxSchemaHelper.fillWithDefaultSet
  */
 exports.RX_REPLICATION_META_INSTANCE_SCHEMA = RX_REPLICATION_META_INSTANCE_SCHEMA;
 function getAssumedMasterState(state, docIds) {
-  return state.input.metaInstance.findDocumentsById(docIds.map(function (docId) {
+  return state.input.metaInstance.findDocumentsById(docIds.map(docId => {
     var useId = (0, _rxSchemaHelper.getComposedPrimaryKeyOfDocumentData)(RX_REPLICATION_META_INSTANCE_SCHEMA, {
       itemId: docId,
       replicationIdentifier: state.checkpointKey,
       isCheckpoint: '0'
     });
     return useId;
-  }), true).then(function (metaDocs) {
+  }), true).then(metaDocs => {
     var ret = {};
-    Object.values(metaDocs).forEach(function (metaDoc) {
+    Object.values(metaDocs).forEach(metaDoc => {
       ret[metaDoc.itemId] = {
         docData: metaDoc.data,
         metaDocument: metaDoc
@@ -91,7 +91,7 @@ function getMetaWriteRow(state, newMasterDocState, previous, isResolvedConflict)
   newMeta.id = (0, _rxSchemaHelper.getComposedPrimaryKeyOfDocumentData)(RX_REPLICATION_META_INSTANCE_SCHEMA, newMeta);
   newMeta._rev = (0, _utils.createRevision)(state.input.identifier, previous);
   return {
-    previous: previous,
+    previous,
     document: newMeta
   };
 }

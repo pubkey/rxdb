@@ -9,7 +9,7 @@ export function checkMigrationStrategies(schema, migrationStrategies) {
   // migrationStrategies must be object not array
   if (typeof migrationStrategies !== 'object' || Array.isArray(migrationStrategies)) {
     throw newRxTypeError('COL11', {
-      schema: schema
+      schema
     });
   }
   var previousVersions = getPreviousVersions(schema);
@@ -23,18 +23,14 @@ export function checkMigrationStrategies(schema, migrationStrategies) {
   }
 
   // every strategy must have number as property and be a function
-  previousVersions.map(function (vNr) {
-    return {
-      v: vNr,
-      s: migrationStrategies[vNr + 1]
-    };
-  }).filter(function (strategy) {
-    return typeof strategy.s !== 'function';
-  }).forEach(function (strategy) {
+  previousVersions.map(vNr => ({
+    v: vNr,
+    s: migrationStrategies[vNr + 1]
+  })).filter(strategy => typeof strategy.s !== 'function').forEach(strategy => {
     throw newRxTypeError('COL13', {
       version: strategy.v,
       type: typeof strategy,
-      schema: schema
+      schema
     });
   });
   return true;

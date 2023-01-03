@@ -1,12 +1,9 @@
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.LokiSaveQueue = void 0;
-var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
-var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 var _utils = require("../utils");
 /**
  * The autosave feature of lokijs has strange behaviors
@@ -36,7 +33,6 @@ var LokiSaveQueue = /*#__PURE__*/function () {
     this.run();
   };
   _proto.run = function run() {
-    var _this = this;
     if (
     // no persistence adapter given, so we do not need to save
     !this.databaseSettings.adapter ||
@@ -45,53 +41,46 @@ var LokiSaveQueue = /*#__PURE__*/function () {
       return this.saveQueue;
     }
     this.saveQueueC = this.saveQueueC + 1;
-    this.saveQueue = this.saveQueue.then( /*#__PURE__*/(0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee() {
-      var writeAmount;
-      return _regenerator["default"].wrap(function _callee$(_context) {
-        while (1) switch (_context.prev = _context.next) {
-          case 0:
-            _context.next = 2;
-            return (0, _utils.requestIdlePromise)();
-          case 2:
-            if (!(_this.writesSinceLastRun === 0)) {
-              _context.next = 4;
-              break;
+    this.saveQueue = this.saveQueue.then(async () => {
+      /**
+       * Always wait until the JavaScript process is idle.
+       * This ensures that CPU blocking writes are finished
+       * before we proceed.
+       */
+      await (0, _utils.requestIdlePromise)();
+
+      // no write happened since the last save call
+      if (this.writesSinceLastRun === 0) {
+        return;
+      }
+
+      /**
+       * Because LokiJS is a in-memory database,
+       * we can just wait until the JavaScript process is idle
+       * via requestIdlePromise(). Then we know that nothing important
+       * is running at the moment.
+       */
+      await (0, _utils.requestIdlePromise)().then(() => (0, _utils.requestIdlePromise)());
+      if (this.writesSinceLastRun === 0) {
+        return;
+      }
+      var writeAmount = this.writesSinceLastRun;
+      this.writesSinceLastRun = 0;
+      return new Promise((res, rej) => {
+        this.lokiDatabase.saveDatabase(err => {
+          if (err) {
+            this.writesSinceLastRun = this.writesSinceLastRun + writeAmount;
+            rej(err);
+          } else {
+            if (this.databaseSettings.autosaveCallback) {
+              this.databaseSettings.autosaveCallback();
             }
-            return _context.abrupt("return");
-          case 4:
-            _context.next = 6;
-            return (0, _utils.requestIdlePromise)().then(function () {
-              return (0, _utils.requestIdlePromise)();
-            });
-          case 6:
-            if (!(_this.writesSinceLastRun === 0)) {
-              _context.next = 8;
-              break;
-            }
-            return _context.abrupt("return");
-          case 8:
-            writeAmount = _this.writesSinceLastRun;
-            _this.writesSinceLastRun = 0;
-            return _context.abrupt("return", new Promise(function (res, rej) {
-              _this.lokiDatabase.saveDatabase(function (err) {
-                if (err) {
-                  _this.writesSinceLastRun = _this.writesSinceLastRun + writeAmount;
-                  rej(err);
-                } else {
-                  if (_this.databaseSettings.autosaveCallback) {
-                    _this.databaseSettings.autosaveCallback();
-                  }
-                  res();
-                }
-              });
-            }));
-          case 11:
-          case "end":
-            return _context.stop();
-        }
-      }, _callee);
-    })))["catch"](function () {}).then(function () {
-      _this.saveQueueC = _this.saveQueueC - 1;
+            res();
+          }
+        });
+      });
+    }).catch(() => {}).then(() => {
+      this.saveQueueC = this.saveQueueC - 1;
     });
     return this.saveQueue;
   };

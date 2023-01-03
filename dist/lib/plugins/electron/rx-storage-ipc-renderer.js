@@ -10,18 +10,18 @@ var _electronHelper = require("./electron-helper");
 function getRxStorageIpcRenderer(settings) {
   var channelId = [_electronHelper.IPC_RENDERER_KEY_PREFIX, settings.key].join('|');
   var messages$ = new _rxjs.Subject();
-  settings.ipcRenderer.on(channelId, function (_event, message) {
+  settings.ipcRenderer.on(channelId, (_event, message) => {
     messages$.next(message);
   });
   settings.ipcRenderer.postMessage(channelId, false);
-  var send = function send(msg) {
+  var send = msg => {
     settings.ipcRenderer.postMessage(channelId, msg);
   };
   var storage = (0, _storageRemote.getRxStorageRemote)({
     identifier: 'electron-ipc-renderer',
     statics: settings.statics,
-    messages$: messages$,
-    send: send
+    messages$,
+    send
   });
   return storage;
 }

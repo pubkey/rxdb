@@ -1,16 +1,15 @@
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.areSelectorsSatisfiedByIndex = areSelectorsSatisfiedByIndex;
 exports.checkMangoQuery = checkMangoQuery;
 exports.checkQuery = checkQuery;
-var _fastDeepEqual = _interopRequireDefault(require("fast-deep-equal"));
 var _rxError = require("../../rx-error");
 var _pouchdbSelectorCore = require("pouchdb-selector-core");
 var _storageDexie = require("../storage-dexie");
+var _utils = require("../utils");
 /**
  * accidentally passing a non-valid object into the query params
  * is very hard to debug especially when queries are observed
@@ -26,15 +25,15 @@ function checkQuery(args) {
     });
   }
   var validKeys = ['selector', 'limit', 'skip', 'sort', 'index'];
-  Object.keys(args.queryObj).forEach(function (key) {
+  Object.keys(args.queryObj).forEach(key => {
     if (!validKeys.includes(key)) {
       throw (0, _rxError.newRxTypeError)('QU11', {
         op: args.op,
         collection: args.collection.name,
         queryObj: args.queryObj,
-        key: key,
+        key,
         args: {
-          validKeys: validKeys
+          validKeys
         }
       });
     }
@@ -59,17 +58,13 @@ function checkMangoQuery(args) {
   var schemaTopLevelFields = Object.keys(schema.properties);
   Object.keys(massagedSelector)
   // do not check operators
-  .filter(function (fieldOrOperator) {
-    return !fieldOrOperator.startsWith('$');
-  })
+  .filter(fieldOrOperator => !fieldOrOperator.startsWith('$'))
   // skip this check on non-top-level fields
-  .filter(function (field) {
-    return !field.includes('.');
-  }).forEach(function (field) {
+  .filter(field => !field.includes('.')).forEach(field => {
     if (!schemaTopLevelFields.includes(field)) {
       throw (0, _rxError.newRxError)('QU13', {
-        schema: schema,
-        field: field,
+        schema,
+        field,
         query: args.mangoQuery
       });
     }
@@ -82,14 +77,12 @@ function checkMangoQuery(args) {
   var schemaIndexes = schema.indexes ? schema.indexes : [];
   var index = args.mangoQuery.index;
   if (index) {
-    var isInSchema = schemaIndexes.find(function (schemaIndex) {
-      return (0, _fastDeepEqual["default"])(schemaIndex, index);
-    });
+    var isInSchema = schemaIndexes.find(schemaIndex => (0, _utils.deepEqual)(schemaIndex, index));
     if (!isInSchema) {
       throw (0, _rxError.newRxError)('QU12', {
         collection: args.rxQuery.collection.name,
         query: args.mangoQuery,
-        schema: schema
+        schema
       });
     }
   }
@@ -112,15 +105,11 @@ function checkMangoQuery(args) {
    * TODO also check nested fields
    */
   if (args.mangoQuery.sort) {
-    args.mangoQuery.sort.map(function (sortPart) {
-      return Object.keys(sortPart)[0];
-    }).filter(function (field) {
-      return !field.includes('.');
-    }).forEach(function (field) {
+    args.mangoQuery.sort.map(sortPart => Object.keys(sortPart)[0]).filter(field => !field.includes('.')).forEach(field => {
       if (!schemaTopLevelFields.includes(field)) {
         throw (0, _rxError.newRxError)('QU13', {
-          schema: schema,
-          field: field,
+          schema,
+          field,
           query: args.mangoQuery
         });
       }

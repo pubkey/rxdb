@@ -9,7 +9,7 @@ Object.keys(_rxStorageLokijs).forEach(function (key) {
   if (key in exports && exports[key] === _rxStorageLokijs[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _rxStorageLokijs[key];
     }
   });
@@ -20,7 +20,7 @@ Object.keys(_lokijsHelper).forEach(function (key) {
   if (key in exports && exports[key] === _lokijsHelper[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _lokijsHelper[key];
     }
   });
@@ -31,7 +31,7 @@ Object.keys(_rxStorageInstanceLoki).forEach(function (key) {
   if (key in exports && exports[key] === _rxStorageInstanceLoki[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _rxStorageInstanceLoki[key];
     }
   });

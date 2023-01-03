@@ -44,9 +44,7 @@ export function getForDatabase() {
   /**
    * Overwrite for caching
    */
-  this.leaderElector = function () {
-    return elector;
-  };
+  this.leaderElector = () => elector;
   return elector;
 }
 export function isLeader() {
@@ -59,9 +57,7 @@ export function waitForLeadership() {
   if (!this.multiInstance) {
     return PROMISE_RESOLVE_TRUE;
   } else {
-    return this.leaderElector().awaitLeadership().then(function () {
-      return true;
-    });
+    return this.leaderElector().awaitLeadership().then(() => true);
   }
 }
 
@@ -76,7 +72,7 @@ export function onDestroy(db) {
 }
 export var rxdb = true;
 export var prototypes = {
-  RxDatabase: function RxDatabase(proto) {
+  RxDatabase: proto => {
     proto.leaderElector = getForDatabase;
     proto.isLeader = isLeader;
     proto.waitForLeadership = waitForLeadership;
@@ -84,8 +80,8 @@ export var prototypes = {
 };
 export var RxDBLeaderElectionPlugin = {
   name: 'leader-election',
-  rxdb: rxdb,
-  prototypes: prototypes,
+  rxdb,
+  prototypes,
   hooks: {
     preDestroyRxDatabase: {
       after: onDestroy

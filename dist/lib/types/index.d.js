@@ -9,7 +9,7 @@ Object.keys(_pouch).forEach(function (key) {
   if (key in exports && exports[key] === _pouch[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _pouch[key];
     }
   });
@@ -20,7 +20,7 @@ Object.keys(_rxAttachment).forEach(function (key) {
   if (key in exports && exports[key] === _rxAttachment[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _rxAttachment[key];
     }
   });
@@ -31,7 +31,7 @@ Object.keys(_rxCollection).forEach(function (key) {
   if (key in exports && exports[key] === _rxCollection[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _rxCollection[key];
     }
   });
@@ -42,7 +42,7 @@ Object.keys(_rxDatabase).forEach(function (key) {
   if (key in exports && exports[key] === _rxDatabase[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _rxDatabase[key];
     }
   });
@@ -53,7 +53,7 @@ Object.keys(_rxDatabaseInternalStore).forEach(function (key) {
   if (key in exports && exports[key] === _rxDatabaseInternalStore[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _rxDatabaseInternalStore[key];
     }
   });
@@ -64,7 +64,7 @@ Object.keys(_rxDocument).forEach(function (key) {
   if (key in exports && exports[key] === _rxDocument[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _rxDocument[key];
     }
   });
@@ -75,7 +75,7 @@ Object.keys(_rxError).forEach(function (key) {
   if (key in exports && exports[key] === _rxError[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _rxError[key];
     }
   });
@@ -86,7 +86,7 @@ Object.keys(_rxPlugin).forEach(function (key) {
   if (key in exports && exports[key] === _rxPlugin[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _rxPlugin[key];
     }
   });
@@ -97,7 +97,7 @@ Object.keys(_rxQuery).forEach(function (key) {
   if (key in exports && exports[key] === _rxQuery[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _rxQuery[key];
     }
   });
@@ -108,7 +108,7 @@ Object.keys(_rxSchema).forEach(function (key) {
   if (key in exports && exports[key] === _rxSchema[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _rxSchema[key];
     }
   });
@@ -119,7 +119,7 @@ Object.keys(_rxStorage).forEach(function (key) {
   if (key in exports && exports[key] === _rxStorage[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _rxStorage[key];
     }
   });
@@ -130,7 +130,7 @@ Object.keys(_rxStorage2).forEach(function (key) {
   if (key in exports && exports[key] === _rxStorage2[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _rxStorage2[key];
     }
   });
@@ -141,7 +141,7 @@ Object.keys(_replicationProtocol).forEach(function (key) {
   if (key in exports && exports[key] === _replicationProtocol[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _replicationProtocol[key];
     }
   });
@@ -152,7 +152,7 @@ Object.keys(_conflictHandling).forEach(function (key) {
   if (key in exports && exports[key] === _conflictHandling[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _conflictHandling[key];
     }
   });
@@ -163,7 +163,7 @@ Object.keys(_rxChangeEvent).forEach(function (key) {
   if (key in exports && exports[key] === _rxChangeEvent[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _rxChangeEvent[key];
     }
   });
@@ -174,7 +174,7 @@ Object.keys(_queryPlanner).forEach(function (key) {
   if (key in exports && exports[key] === _queryPlanner[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _queryPlanner[key];
     }
   });
@@ -185,7 +185,7 @@ Object.keys(_util).forEach(function (key) {
   if (key in exports && exports[key] === _util[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _util[key];
     }
   });
@@ -196,7 +196,7 @@ Object.keys(_replication).forEach(function (key) {
   if (key in exports && exports[key] === _replication[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _replication[key];
     }
   });
@@ -207,7 +207,7 @@ Object.keys(_replicationGraphql).forEach(function (key) {
   if (key in exports && exports[key] === _replicationGraphql[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _replicationGraphql[key];
     }
   });
@@ -218,7 +218,7 @@ Object.keys(_localDocuments).forEach(function (key) {
   if (key in exports && exports[key] === _localDocuments[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _localDocuments[key];
     }
   });
@@ -229,7 +229,7 @@ Object.keys(_migration).forEach(function (key) {
   if (key in exports && exports[key] === _migration[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _migration[key];
     }
   });
@@ -240,7 +240,7 @@ Object.keys(_backup).forEach(function (key) {
   if (key in exports && exports[key] === _backup[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _backup[key];
     }
   });
@@ -251,7 +251,7 @@ Object.keys(_cleanup).forEach(function (key) {
   if (key in exports && exports[key] === _cleanup[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _cleanup[key];
     }
   });
@@ -262,7 +262,7 @@ Object.keys(_lokijs).forEach(function (key) {
   if (key in exports && exports[key] === _lokijs[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _lokijs[key];
     }
   });
@@ -273,7 +273,7 @@ Object.keys(_dexie).forEach(function (key) {
   if (key in exports && exports[key] === _dexie[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _dexie[key];
     }
   });
@@ -284,7 +284,7 @@ Object.keys(_update).forEach(function (key) {
   if (key in exports && exports[key] === _update[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _update[key];
     }
   });
@@ -295,7 +295,7 @@ Object.keys(_crdt).forEach(function (key) {
   if (key in exports && exports[key] === _crdt[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _crdt[key];
     }
   });

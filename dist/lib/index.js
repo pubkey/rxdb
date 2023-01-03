@@ -4,179 +4,29 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 var _exportNames = {
-  addRxPlugin: true,
-  createRxDatabase: true,
-  removeRxDatabase: true,
-  isRxDatabase: true,
-  dbCount: true,
-  isRxDatabaseFirstTimeInstantiated: true,
-  ensureNoStartupErrors: true,
-  overwritable: true,
-  isRxCollection: true,
-  RxCollectionBase: true,
-  createRxCollection: true,
-  fillObjectDataBeforeInsert: true,
-  isRxDocument: true,
-  flattenEvents: true,
-  getDocumentOrmPrototype: true,
-  getDocumentPrototype: true,
-  isRxQuery: true,
-  isRxSchema: true,
-  createRxSchema: true,
-  RxSchema: true,
-  getIndexes: true,
-  getPreviousVersions: true,
-  toTypedRxJsonSchema: true,
-  _clearHook: true
+  addRxPlugin: true
 };
-Object.defineProperty(exports, "RxCollectionBase", {
-  enumerable: true,
-  get: function get() {
-    return _rxCollection.RxCollectionBase;
-  }
-});
-Object.defineProperty(exports, "RxSchema", {
-  enumerable: true,
-  get: function get() {
-    return _rxSchema.RxSchema;
-  }
-});
-Object.defineProperty(exports, "_clearHook", {
-  enumerable: true,
-  get: function get() {
-    return _hooks._clearHook;
-  }
-});
 Object.defineProperty(exports, "addRxPlugin", {
   enumerable: true,
-  get: function get() {
+  get: function () {
     return _plugin.addRxPlugin;
-  }
-});
-Object.defineProperty(exports, "createRxCollection", {
-  enumerable: true,
-  get: function get() {
-    return _rxCollection.createRxCollection;
-  }
-});
-Object.defineProperty(exports, "createRxDatabase", {
-  enumerable: true,
-  get: function get() {
-    return _rxDatabase.createRxDatabase;
-  }
-});
-Object.defineProperty(exports, "createRxSchema", {
-  enumerable: true,
-  get: function get() {
-    return _rxSchema.createRxSchema;
-  }
-});
-Object.defineProperty(exports, "dbCount", {
-  enumerable: true,
-  get: function get() {
-    return _rxDatabase.dbCount;
-  }
-});
-Object.defineProperty(exports, "ensureNoStartupErrors", {
-  enumerable: true,
-  get: function get() {
-    return _rxDatabase.ensureNoStartupErrors;
-  }
-});
-Object.defineProperty(exports, "fillObjectDataBeforeInsert", {
-  enumerable: true,
-  get: function get() {
-    return _rxCollectionHelper.fillObjectDataBeforeInsert;
-  }
-});
-Object.defineProperty(exports, "flattenEvents", {
-  enumerable: true,
-  get: function get() {
-    return _rxChangeEvent.flattenEvents;
-  }
-});
-Object.defineProperty(exports, "getDocumentOrmPrototype", {
-  enumerable: true,
-  get: function get() {
-    return _rxDocumentPrototypeMerge.getDocumentOrmPrototype;
-  }
-});
-Object.defineProperty(exports, "getDocumentPrototype", {
-  enumerable: true,
-  get: function get() {
-    return _rxDocumentPrototypeMerge.getDocumentPrototype;
-  }
-});
-Object.defineProperty(exports, "getIndexes", {
-  enumerable: true,
-  get: function get() {
-    return _rxSchema.getIndexes;
-  }
-});
-Object.defineProperty(exports, "getPreviousVersions", {
-  enumerable: true,
-  get: function get() {
-    return _rxSchema.getPreviousVersions;
-  }
-});
-Object.defineProperty(exports, "isRxCollection", {
-  enumerable: true,
-  get: function get() {
-    return _rxCollection.isRxCollection;
-  }
-});
-Object.defineProperty(exports, "isRxDatabase", {
-  enumerable: true,
-  get: function get() {
-    return _rxDatabase.isRxDatabase;
-  }
-});
-Object.defineProperty(exports, "isRxDatabaseFirstTimeInstantiated", {
-  enumerable: true,
-  get: function get() {
-    return _rxDatabase.isRxDatabaseFirstTimeInstantiated;
-  }
-});
-Object.defineProperty(exports, "isRxDocument", {
-  enumerable: true,
-  get: function get() {
-    return _rxDocument.isRxDocument;
-  }
-});
-Object.defineProperty(exports, "isRxQuery", {
-  enumerable: true,
-  get: function get() {
-    return _rxQuery.isInstanceOf;
-  }
-});
-Object.defineProperty(exports, "isRxSchema", {
-  enumerable: true,
-  get: function get() {
-    return _rxSchema.isInstanceOf;
-  }
-});
-Object.defineProperty(exports, "overwritable", {
-  enumerable: true,
-  get: function get() {
-    return _overwritable.overwritable;
-  }
-});
-Object.defineProperty(exports, "removeRxDatabase", {
-  enumerable: true,
-  get: function get() {
-    return _rxDatabase.removeRxDatabase;
-  }
-});
-Object.defineProperty(exports, "toTypedRxJsonSchema", {
-  enumerable: true,
-  get: function get() {
-    return _rxSchema.toTypedRxJsonSchema;
   }
 });
 require("./types/modules/mocha.parallel.d");
 require("./types/modules/modifiyjs.d");
 var _plugin = require("./plugin");
 var _rxDatabase = require("./rx-database");
+Object.keys(_rxDatabase).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  if (key in exports && exports[key] === _rxDatabase[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function () {
+      return _rxDatabase[key];
+    }
+  });
+});
 var _rxError = require("./rx-error");
 Object.keys(_rxError).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
@@ -184,7 +34,7 @@ Object.keys(_rxError).forEach(function (key) {
   if (key in exports && exports[key] === _rxError[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _rxError[key];
     }
   });
@@ -196,18 +46,95 @@ Object.keys(_rxDatabaseInternalStore).forEach(function (key) {
   if (key in exports && exports[key] === _rxDatabaseInternalStore[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _rxDatabaseInternalStore[key];
     }
   });
 });
 var _overwritable = require("./overwritable");
+Object.keys(_overwritable).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  if (key in exports && exports[key] === _overwritable[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function () {
+      return _overwritable[key];
+    }
+  });
+});
 var _rxCollection = require("./rx-collection");
+Object.keys(_rxCollection).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  if (key in exports && exports[key] === _rxCollection[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function () {
+      return _rxCollection[key];
+    }
+  });
+});
 var _rxCollectionHelper = require("./rx-collection-helper");
+Object.keys(_rxCollectionHelper).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  if (key in exports && exports[key] === _rxCollectionHelper[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function () {
+      return _rxCollectionHelper[key];
+    }
+  });
+});
 var _rxDocument = require("./rx-document");
+Object.keys(_rxDocument).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  if (key in exports && exports[key] === _rxDocument[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function () {
+      return _rxDocument[key];
+    }
+  });
+});
 var _rxChangeEvent = require("./rx-change-event");
+Object.keys(_rxChangeEvent).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  if (key in exports && exports[key] === _rxChangeEvent[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function () {
+      return _rxChangeEvent[key];
+    }
+  });
+});
 var _rxDocumentPrototypeMerge = require("./rx-document-prototype-merge");
+Object.keys(_rxDocumentPrototypeMerge).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  if (key in exports && exports[key] === _rxDocumentPrototypeMerge[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function () {
+      return _rxDocumentPrototypeMerge[key];
+    }
+  });
+});
 var _rxQuery = require("./rx-query");
+Object.keys(_rxQuery).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  if (key in exports && exports[key] === _rxQuery[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function () {
+      return _rxQuery[key];
+    }
+  });
+});
 var _rxQueryHelper = require("./rx-query-helper");
 Object.keys(_rxQueryHelper).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
@@ -215,12 +142,23 @@ Object.keys(_rxQueryHelper).forEach(function (key) {
   if (key in exports && exports[key] === _rxQueryHelper[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _rxQueryHelper[key];
     }
   });
 });
 var _rxSchema = require("./rx-schema");
+Object.keys(_rxSchema).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  if (key in exports && exports[key] === _rxSchema[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function () {
+      return _rxSchema[key];
+    }
+  });
+});
 var _rxSchemaHelper = require("./rx-schema-helper");
 Object.keys(_rxSchemaHelper).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
@@ -228,7 +166,7 @@ Object.keys(_rxSchemaHelper).forEach(function (key) {
   if (key in exports && exports[key] === _rxSchemaHelper[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _rxSchemaHelper[key];
     }
   });
@@ -240,7 +178,7 @@ Object.keys(_rxStorageHelper).forEach(function (key) {
   if (key in exports && exports[key] === _rxStorageHelper[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _rxStorageHelper[key];
     }
   });
@@ -252,7 +190,7 @@ Object.keys(_index).forEach(function (key) {
   if (key in exports && exports[key] === _index[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _index[key];
     }
   });
@@ -264,7 +202,7 @@ Object.keys(_rxStorageMultiinstance).forEach(function (key) {
   if (key in exports && exports[key] === _rxStorageMultiinstance[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _rxStorageMultiinstance[key];
     }
   });
@@ -276,7 +214,7 @@ Object.keys(_customIndex).forEach(function (key) {
   if (key in exports && exports[key] === _customIndex[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _customIndex[key];
     }
   });
@@ -288,7 +226,7 @@ Object.keys(_queryPlanner).forEach(function (key) {
   if (key in exports && exports[key] === _queryPlanner[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _queryPlanner[key];
     }
   });
@@ -300,7 +238,7 @@ Object.keys(_pluginHelpers).forEach(function (key) {
   if (key in exports && exports[key] === _pluginHelpers[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _pluginHelpers[key];
     }
   });
@@ -312,12 +250,23 @@ Object.keys(_utils).forEach(function (key) {
   if (key in exports && exports[key] === _utils[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _utils[key];
     }
   });
 });
 var _hooks = require("./hooks");
+Object.keys(_hooks).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  if (key in exports && exports[key] === _hooks[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function () {
+      return _hooks[key];
+    }
+  });
+});
 var _queryCache = require("./query-cache");
 Object.keys(_queryCache).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
@@ -325,7 +274,7 @@ Object.keys(_queryCache).forEach(function (key) {
   if (key in exports && exports[key] === _queryCache[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _queryCache[key];
     }
   });

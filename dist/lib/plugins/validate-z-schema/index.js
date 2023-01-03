@@ -15,28 +15,27 @@ var _pluginHelpers = require("../../plugin-helpers");
  */
 
 function getValidator(schema) {
-  var validatorInstance = new _zSchema["default"]();
-  var validator = function validator(obj) {
+  var validatorInstance = new _zSchema.default();
+  var validator = obj => {
     validatorInstance.validate(obj, schema);
     return validatorInstance;
   };
-  return function (docData) {
+  return docData => {
     var useValidator = validator(docData);
     if (useValidator === true) {
       return;
     }
     var errors = useValidator.getLastErrors();
     if (errors) {
-      var formattedZSchemaErrors = errors.map(function (_ref) {
-        var title = _ref.title,
-          description = _ref.description,
-          message = _ref.message;
-        return {
-          title: title,
-          description: description,
-          message: message
-        };
-      });
+      var formattedZSchemaErrors = errors.map(({
+        title,
+        description,
+        message
+      }) => ({
+        title,
+        description,
+        message
+      }));
       return formattedZSchemaErrors;
     } else {
       return [];

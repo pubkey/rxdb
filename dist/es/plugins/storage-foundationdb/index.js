@@ -7,14 +7,15 @@ export function getRxStorageFoundationDB(settings) {
     throw new Error('foundationdb already initialized with api version ' + versionSet);
   } else if (!versionSet) {
     versionSet = settings.apiVersion;
-    var _require = require('foundationdb'),
-      setAPIVersion = _require.setAPIVersion;
+    var {
+      setAPIVersion
+    } = require('foundationdb');
     setAPIVersion(settings.apiVersion);
   }
   var storage = {
     name: 'foundationdb',
     statics: RxStorageDexieStatics,
-    createStorageInstance: function createStorageInstance(params) {
+    createStorageInstance(params) {
       ensureRxStorageInstanceParamsAreCorrect(params);
       var useSettings = Object.assign({}, settings, params.options);
       if (!useSettings.batchSize) {

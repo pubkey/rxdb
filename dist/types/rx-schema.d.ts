@@ -37,7 +37,7 @@ export declare function getIndexes<RxDocType = any>(jsonSchema: RxJsonSchema<RxD
  */
 export declare function getPreviousVersions(schema: RxJsonSchema<any>): number[];
 export declare function createRxSchema<T>(jsonSchema: RxJsonSchema<T>, runPreCreateHooks?: boolean): RxSchema<T>;
-export declare function isInstanceOf(obj: any): boolean;
+export declare function isRxSchema(obj: any): boolean;
 /**
  * Used as helper function the generate the document type out of the schema via typescript.
  * @link https://github.com/pubkey/rxdb/discussions/3467

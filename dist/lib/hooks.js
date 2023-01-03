@@ -91,9 +91,7 @@ var HOOKS = {
 };
 exports.HOOKS = HOOKS;
 function runPluginHooks(hookKey, obj) {
-  HOOKS[hookKey].forEach(function (fun) {
-    return fun(obj);
-  });
+  HOOKS[hookKey].forEach(fun => fun(obj));
 }
 
 /**
@@ -102,17 +100,13 @@ function runPluginHooks(hookKey, obj) {
  * this makes stuff unpredictable.
  */
 function runAsyncPluginHooks(hookKey, obj) {
-  return Promise.all(HOOKS[hookKey].map(function (fun) {
-    return fun(obj);
-  }));
+  return Promise.all(HOOKS[hookKey].map(fun => fun(obj)));
 }
 
 /**
  * used in tests to remove hooks
  */
 function _clearHook(type, fun) {
-  HOOKS[type] = HOOKS[type].filter(function (h) {
-    return h !== fun;
-  });
+  HOOKS[type] = HOOKS[type].filter(h => h !== fun);
 }
 //# sourceMappingURL=hooks.js.map

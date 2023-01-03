@@ -1,6 +1,5 @@
 import _createClass from "@babel/runtime/helpers/createClass";
-import deepEqual from 'fast-deep-equal';
-import { overwriteGetterForCaching, flatClone, isMaybeReadonlyArray, fastUnsecureHash } from './plugins/utils';
+import { overwriteGetterForCaching, flatClone, isMaybeReadonlyArray, fastUnsecureHash, deepEqual } from './plugins/utils';
 import { newRxError } from './rx-error';
 import { runPluginHooks } from './hooks';
 import { defineGetterSetter } from './rx-document';
@@ -23,14 +22,13 @@ export var RxSchema = /*#__PURE__*/function () {
    * @throws {Error} if not valid
    */
   _proto.validateChange = function validateChange(dataBefore, dataAfter) {
-    var _this = this;
-    this.finalFields.forEach(function (fieldName) {
+    this.finalFields.forEach(fieldName => {
       if (!deepEqual(dataBefore[fieldName], dataAfter[fieldName])) {
         throw newRxError('DOC9', {
-          dataBefore: dataBefore,
-          dataAfter: dataAfter,
-          fieldName: fieldName,
-          schema: _this.jsonSchema
+          dataBefore,
+          dataAfter,
+          fieldName,
+          schema: this.jsonSchema
         });
       }
     });
@@ -41,14 +39,7 @@ export var RxSchema = /*#__PURE__*/function () {
    */;
   _proto.fillObjectWithDefaults = function fillObjectWithDefaults(obj) {
     obj = flatClone(obj);
-    Object.entries(this.defaultValues).filter(function (_ref) {
-      var k = _ref[0];
-      return !obj.hasOwnProperty(k) || typeof obj[k] === 'undefined';
-    }).forEach(function (_ref2) {
-      var k = _ref2[0],
-        v = _ref2[1];
-      return obj[k] = v;
-    });
+    Object.entries(this.defaultValues).filter(([k]) => !obj.hasOwnProperty(k) || typeof obj[k] === 'undefined').forEach(([k, v]) => obj[k] = v);
     return obj;
   }
 
@@ -59,9 +50,7 @@ export var RxSchema = /*#__PURE__*/function () {
   _proto.getDocumentPrototype = function getDocumentPrototype() {
     var proto = {};
     defineGetterSetter(this, proto, '');
-    overwriteGetterForCaching(this, 'getDocumentPrototype', function () {
-      return proto;
-    });
+    overwriteGetterForCaching(this, 'getDocumentPrototype', () => proto);
     return proto;
   };
   _proto.getPrimaryOfDocumentData = function getPrimaryOfDocumentData(documentData) {
@@ -69,21 +58,14 @@ export var RxSchema = /*#__PURE__*/function () {
   };
   _createClass(RxSchema, [{
     key: "version",
-    get: function get() {
+    get: function () {
       return this.jsonSchema.version;
     }
   }, {
     key: "defaultValues",
-    get: function get() {
+    get: function () {
       var values = {};
-      Object.entries(this.jsonSchema.properties).filter(function (_ref3) {
-        var v = _ref3[1];
-        return v.hasOwnProperty('default');
-      }).forEach(function (_ref4) {
-        var k = _ref4[0],
-          v = _ref4[1];
-        return values[k] = v["default"];
-      });
+      Object.entries(this.jsonSchema.properties).filter(([, v]) => v.hasOwnProperty('default')).forEach(([k, v]) => values[k] = v.default);
       return overwriteGetterForCaching(this, 'defaultValues', values);
     }
 
@@ -92,16 +74,14 @@ export var RxSchema = /*#__PURE__*/function () {
      */
   }, {
     key: "hash",
-    get: function get() {
+    get: function () {
       return overwriteGetterForCaching(this, 'hash', fastUnsecureHash(JSON.stringify(this.jsonSchema)));
     }
   }]);
   return RxSchema;
 }();
 export function getIndexes(jsonSchema) {
-  return (jsonSchema.indexes || []).map(function (index) {
-    return isMaybeReadonlyArray(index) ? index : [index];
-  });
+  return (jsonSchema.indexes || []).map(index => isMaybeReadonlyArray(index) ? index : [index]);
 }
 
 /**
@@ -110,12 +90,9 @@ export function getIndexes(jsonSchema) {
 export function getPreviousVersions(schema) {
   var version = schema.version ? schema.version : 0;
   var c = 0;
-  return new Array(version).fill(0).map(function () {
-    return c++;
-  });
+  return new Array(version).fill(0).map(() => c++);
 }
-export function createRxSchema(jsonSchema) {
-  var runPreCreateHooks = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
+export function createRxSchema(jsonSchema, runPreCreateHooks = true) {
   if (runPreCreateHooks) {
     runPluginHooks('preCreateRxSchema', jsonSchema);
   }
@@ -126,7 +103,7 @@ export function createRxSchema(jsonSchema) {
   runPluginHooks('createRxSchema', schema);
   return schema;
 }
-export function isInstanceOf(obj) {
+export function isRxSchema(obj) {
   return obj instanceof RxSchema;
 }
 

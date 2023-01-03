@@ -2,15 +2,10 @@
  * returns a promise that resolves on the next tick
  */
 export function nextTick() {
-  return new Promise(function (res) {
-    return setTimeout(res, 0);
-  });
+  return new Promise(res => setTimeout(res, 0));
 }
-export function promiseWait() {
-  var ms = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
-  return new Promise(function (res) {
-    return setTimeout(res, ms);
-  });
+export function promiseWait(ms = 0) {
+  return new Promise(res => setTimeout(res, ms));
 }
 export function toPromise(maybePromise) {
   if (maybePromise && typeof maybePromise.then === 'function') {
@@ -24,14 +19,11 @@ export var PROMISE_RESOLVE_TRUE = Promise.resolve(true);
 export var PROMISE_RESOLVE_FALSE = Promise.resolve(false);
 export var PROMISE_RESOLVE_NULL = Promise.resolve(null);
 export var PROMISE_RESOLVE_VOID = Promise.resolve();
-export function requestIdlePromise() {
-  var timeout = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+export function requestIdlePromise(timeout = null) {
   if (typeof window === 'object' && window['requestIdleCallback']) {
-    return new Promise(function (res) {
-      return window['requestIdleCallback'](res, {
-        timeout: timeout
-      });
-    });
+    return new Promise(res => window['requestIdleCallback'](res, {
+      timeout
+    }));
   } else {
     return promiseWait(0);
   }
@@ -52,8 +44,6 @@ export function requestIdleCallbackIfAvailable(fun) {
  * @param tasks array with functions that return a promise
  */
 export function promiseSeries(tasks, initial) {
-  return tasks.reduce(function (current, next) {
-    return current.then(next);
-  }, Promise.resolve(initial));
+  return tasks.reduce((current, next) => current.then(next), Promise.resolve(initial));
 }
 //# sourceMappingURL=utils-promise.js.map

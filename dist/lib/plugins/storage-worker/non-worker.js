@@ -1,14 +1,11 @@
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.RxStorageWorker = exports.RxStorageInstanceWorker = void 0;
 exports.getRxStorageWorker = getRxStorageWorker;
 exports.removeWorkerRef = removeWorkerRef;
-var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
-var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 var _rxjs = require("rxjs");
 var _threads = require("threads");
 var _utils = require("../../plugins/utils");
@@ -26,7 +23,6 @@ var RxStorageWorker = /*#__PURE__*/function () {
   }
   var _proto = RxStorageWorker.prototype;
   _proto.createStorageInstance = function createStorageInstance(params) {
-    var _this = this;
     var workerState = WORKER_BY_INSTANCE.get(this);
     if (!workerState) {
       workerState = {
@@ -35,12 +31,12 @@ var RxStorageWorker = /*#__PURE__*/function () {
       };
       WORKER_BY_INSTANCE.set(this, workerState);
     }
-    return workerState.workerPromise.then(function (worker) {
-      return worker.createStorageInstance(params).then(function (instanceId) {
-        var instance = new RxStorageInstanceWorker(_this, params.databaseName, params.collectionName, params.schema, {
-          rxStorage: _this,
-          instanceId: instanceId,
-          worker: worker
+    return workerState.workerPromise.then(worker => {
+      return worker.createStorageInstance(params).then(instanceId => {
+        var instance = new RxStorageInstanceWorker(this, params.databaseName, params.collectionName, params.schema, {
+          rxStorage: this,
+          instanceId,
+          worker
         }, params.options);
         (0, _utils.ensureNotFalsy)(workerState).refs.add(instance);
         return instance;
@@ -57,7 +53,6 @@ var RxStorageInstanceWorker = /*#__PURE__*/function () {
    */
 
   function RxStorageInstanceWorker(storage, databaseName, collectionName, schema, internals, options) {
-    var _this2 = this;
     this.changes$ = new _rxjs.Subject();
     this.conflicts$ = new _rxjs.Subject();
     this.subs = [];
@@ -68,12 +63,8 @@ var RxStorageInstanceWorker = /*#__PURE__*/function () {
     this.schema = schema;
     this.internals = internals;
     this.options = options;
-    this.subs.push(this.internals.worker.changeStream(this.internals.instanceId).subscribe(function (ev) {
-      return _this2.changes$.next(ev);
-    }));
-    this.subs.push(this.internals.worker.conflictResultionTasks(this.internals.instanceId).subscribe(function (ev) {
-      return _this2.conflicts$.next(ev);
-    }));
+    this.subs.push(this.internals.worker.changeStream(this.internals.instanceId).subscribe(ev => this.changes$.next(ev)));
+    this.subs.push(this.internals.worker.conflictResultionTasks(this.internals.instanceId).subscribe(ev => this.conflicts$.next(ev)));
   }
   var _proto2 = RxStorageInstanceWorker.prototype;
   _proto2.bulkWrite = function bulkWrite(documentWrites, context) {
@@ -100,80 +91,26 @@ var RxStorageInstanceWorker = /*#__PURE__*/function () {
   _proto2.cleanup = function cleanup(minDeletedTime) {
     return this.internals.worker.cleanup(this.internals.instanceId, minDeletedTime);
   };
-  _proto2.close = /*#__PURE__*/function () {
-    var _close = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee() {
-      return _regenerator["default"].wrap(function _callee$(_context) {
-        while (1) switch (_context.prev = _context.next) {
-          case 0:
-            if (!this.closed) {
-              _context.next = 2;
-              break;
-            }
-            return _context.abrupt("return", Promise.reject(new Error('already closed')));
-          case 2:
-            this.closed = true;
-            this.subs.forEach(function (sub) {
-              return sub.unsubscribe();
-            });
-            _context.next = 6;
-            return this.internals.worker.close(this.internals.instanceId);
-          case 6:
-            _context.next = 8;
-            return removeWorkerRef(this);
-          case 8:
-          case "end":
-            return _context.stop();
-        }
-      }, _callee, this);
-    }));
-    function close() {
-      return _close.apply(this, arguments);
+  _proto2.close = async function close() {
+    if (this.closed) {
+      return Promise.reject(new Error('already closed'));
     }
-    return close;
-  }();
-  _proto2.remove = /*#__PURE__*/function () {
-    var _remove = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee2() {
-      return _regenerator["default"].wrap(function _callee2$(_context2) {
-        while (1) switch (_context2.prev = _context2.next) {
-          case 0:
-            _context2.next = 2;
-            return this.internals.worker.remove(this.internals.instanceId);
-          case 2:
-            this.closed = true;
-            _context2.next = 5;
-            return removeWorkerRef(this);
-          case 5:
-          case "end":
-            return _context2.stop();
-        }
-      }, _callee2, this);
-    }));
-    function remove() {
-      return _remove.apply(this, arguments);
-    }
-    return remove;
-  }();
+    this.closed = true;
+    this.subs.forEach(sub => sub.unsubscribe());
+    await this.internals.worker.close(this.internals.instanceId);
+    await removeWorkerRef(this);
+  };
+  _proto2.remove = async function remove() {
+    await this.internals.worker.remove(this.internals.instanceId);
+    this.closed = true;
+    await removeWorkerRef(this);
+  };
   _proto2.conflictResultionTasks = function conflictResultionTasks() {
     return this.conflicts$;
   };
-  _proto2.resolveConflictResultionTask = /*#__PURE__*/function () {
-    var _resolveConflictResultionTask = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee3(taskSolution) {
-      return _regenerator["default"].wrap(function _callee3$(_context3) {
-        while (1) switch (_context3.prev = _context3.next) {
-          case 0:
-            _context3.next = 2;
-            return this.internals.worker.resolveConflictResultionTask(this.internals.instanceId, taskSolution);
-          case 2:
-          case "end":
-            return _context3.stop();
-        }
-      }, _callee3, this);
-    }));
-    function resolveConflictResultionTask(_x) {
-      return _resolveConflictResultionTask.apply(this, arguments);
-    }
-    return resolveConflictResultionTask;
-  }();
+  _proto2.resolveConflictResultionTask = async function resolveConflictResultionTask(taskSolution) {
+    await this.internals.worker.resolveConflictResultionTask(this.internals.instanceId, taskSolution);
+  };
   return RxStorageInstanceWorker;
 }();
 exports.RxStorageInstanceWorker = RxStorageInstanceWorker;
@@ -189,32 +126,12 @@ function getRxStorageWorker(settings) {
  * that some calls to createStorageInstance() time out,
  * because the worker thread is in the closing state.
  */
-function removeWorkerRef(_x2) {
-  return _removeWorkerRef.apply(this, arguments);
-}
-function _removeWorkerRef() {
-  _removeWorkerRef = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee4(instance) {
-    var workerState;
-    return _regenerator["default"].wrap(function _callee4$(_context4) {
-      while (1) switch (_context4.prev = _context4.next) {
-        case 0:
-          workerState = (0, _utils.getFromMapOrThrow)(WORKER_BY_INSTANCE, instance.storage);
-          workerState.refs["delete"](instance);
-          if (!(workerState.refs.size === 0)) {
-            _context4.next = 6;
-            break;
-          }
-          WORKER_BY_INSTANCE["delete"](instance.storage);
-          _context4.next = 6;
-          return workerState.workerPromise.then(function (worker) {
-            return _threads.Thread.terminate(worker);
-          });
-        case 6:
-        case "end":
-          return _context4.stop();
-      }
-    }, _callee4);
-  }));
-  return _removeWorkerRef.apply(this, arguments);
+async function removeWorkerRef(instance) {
+  var workerState = (0, _utils.getFromMapOrThrow)(WORKER_BY_INSTANCE, instance.storage);
+  workerState.refs.delete(instance);
+  if (workerState.refs.size === 0) {
+    WORKER_BY_INSTANCE.delete(instance.storage);
+    await workerState.workerPromise.then(worker => _threads.Thread.terminate(worker));
+  }
 }
 //# sourceMappingURL=non-worker.js.map

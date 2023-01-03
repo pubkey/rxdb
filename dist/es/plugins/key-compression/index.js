@@ -1,5 +1,3 @@
-import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
-import _regeneratorRuntime from "@babel/runtime/regenerator";
 /**
  * this plugin adds the keycompression-capabilities to rxdb
  * if you dont use this, ensure that you set disableKeyComression to false in your schema
@@ -41,9 +39,7 @@ export function getCompressionStateByRxJsonSchema(schema) {
       var composedPrimary = schema.primaryKey;
       var newComposedPrimary = {
         key: compressedPath(table, composedPrimary.key),
-        fields: composedPrimary.fields.map(function (field) {
-          return compressedPath(table, field);
-        }),
+        fields: composedPrimary.fields.map(field => compressedPath(table, field)),
         separator: composedPrimary.separator
       };
       compressedSchema.primaryKey = newComposedPrimary;
@@ -56,11 +52,9 @@ export function getCompressionStateByRxJsonSchema(schema) {
      * in the schema, so we have to also compress them here.
      */
     if (schema.indexes) {
-      var newIndexes = schema.indexes.map(function (idx) {
+      var newIndexes = schema.indexes.map(idx => {
         if (isMaybeReadonlyArray(idx)) {
-          return idx.map(function (subIdx) {
-            return compressedPath(table, subIdx);
-          });
+          return idx.map(subIdx => compressedPath(table, subIdx));
         } else {
           return compressedPath(table, idx);
         }
@@ -68,9 +62,9 @@ export function getCompressionStateByRxJsonSchema(schema) {
       compressedSchema.indexes = newIndexes;
     }
     compressionState = {
-      table: table,
-      schema: schema,
-      compressedSchema: compressedSchema
+      table,
+      schema,
+      compressedSchema
     };
     COMPRESSION_STATE_BY_SCHEMA.set(schema, compressionState);
   }
@@ -78,7 +72,7 @@ export function getCompressionStateByRxJsonSchema(schema) {
 }
 export function wrappedKeyCompressionStorage(args) {
   var statics = Object.assign({}, args.storage.statics, {
-    prepareQuery: function prepareQuery(schema, mutateableQuery) {
+    prepareQuery(schema, mutateableQuery) {
       if (schema.keyCompression) {
         var compressionState = getCompressionStateByRxJsonSchema(schema);
         mutateableQuery = compressQuery(compressionState.table, mutateableQuery);
@@ -86,13 +80,13 @@ export function wrappedKeyCompressionStorage(args) {
       }
       return args.storage.statics.prepareQuery(schema, mutateableQuery);
     },
-    getSortComparator: function getSortComparator(schema, preparedQuery) {
+    getSortComparator(schema, preparedQuery) {
       if (!schema.keyCompression) {
         return args.storage.statics.getSortComparator(schema, preparedQuery);
       } else {
         var compressionState = getCompressionStateByRxJsonSchema(schema);
         var comparator = args.storage.statics.getSortComparator(compressionState.schema, preparedQuery);
-        return function (a, b) {
+        return (a, b) => {
           var compressedDocDataA = compressObject(compressionState.table, a);
           var compressedDocDataB = compressObject(compressionState.table, b);
           var res = comparator(compressedDocDataA, compressedDocDataB);
@@ -100,13 +94,13 @@ export function wrappedKeyCompressionStorage(args) {
         };
       }
     },
-    getQueryMatcher: function getQueryMatcher(schema, preparedQuery) {
+    getQueryMatcher(schema, preparedQuery) {
       if (!schema.keyCompression) {
         return args.storage.statics.getQueryMatcher(schema, preparedQuery);
       } else {
         var compressionState = getCompressionStateByRxJsonSchema(schema);
         var matcher = args.storage.statics.getQueryMatcher(compressionState.schema, preparedQuery);
-        return function (docData) {
+        return docData => {
           var compressedDocData = compressObject(compressionState.table, docData);
           var ret = matcher(compressedDocData);
           return ret;
@@ -115,52 +109,32 @@ export function wrappedKeyCompressionStorage(args) {
     }
   });
   return Object.assign({}, args.storage, {
-    statics: statics,
-    createStorageInstance: function () {
-      var _createStorageInstance = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee(params) {
-        var compressionState, modifyToStorage, modifyFromStorage, childSchema, instance;
-        return _regeneratorRuntime.wrap(function _callee$(_context) {
-          while (1) switch (_context.prev = _context.next) {
-            case 0:
-              modifyFromStorage = function _modifyFromStorage(docData) {
-                return decompressDocumentData(compressionState, docData);
-              };
-              modifyToStorage = function _modifyToStorage(docData) {
-                return compressDocumentData(compressionState, docData);
-              };
-              if (params.schema.keyCompression) {
-                _context.next = 4;
-                break;
-              }
-              return _context.abrupt("return", args.storage.createStorageInstance(params));
-            case 4:
-              compressionState = getCompressionStateByRxJsonSchema(params.schema);
-              /**
-               * Because this wrapper resolves the key-compression,
-               * we can set the flag to false
-               * which allows underlying storages to detect wrong conficturations
-               * like when keyCompression is set to false but no key-compression module is used.
-               */
-              childSchema = flatClone(compressionState.compressedSchema);
-              childSchema.keyCompression = false;
-              _context.next = 9;
-              return args.storage.createStorageInstance(Object.assign({}, params, {
-                schema: childSchema
-              }));
-            case 9:
-              instance = _context.sent;
-              return _context.abrupt("return", wrapRxStorageInstance(instance, modifyToStorage, modifyFromStorage));
-            case 11:
-            case "end":
-              return _context.stop();
-          }
-        }, _callee);
-      }));
-      function createStorageInstance(_x) {
-        return _createStorageInstance.apply(this, arguments);
+    statics,
+    async createStorageInstance(params) {
+      if (!params.schema.keyCompression) {
+        return args.storage.createStorageInstance(params);
       }
-      return createStorageInstance;
-    }()
+      var compressionState = getCompressionStateByRxJsonSchema(params.schema);
+      function modifyToStorage(docData) {
+        return compressDocumentData(compressionState, docData);
+      }
+      function modifyFromStorage(docData) {
+        return decompressDocumentData(compressionState, docData);
+      }
+
+      /**
+       * Because this wrapper resolves the key-compression,
+       * we can set the flag to false
+       * which allows underlying storages to detect wrong conficturations
+       * like when keyCompression is set to false but no key-compression module is used.
+       */
+      var childSchema = flatClone(compressionState.compressedSchema);
+      childSchema.keyCompression = false;
+      var instance = await args.storage.createStorageInstance(Object.assign({}, params, {
+        schema: childSchema
+      }));
+      return wrapRxStorageInstance(instance, modifyToStorage, modifyFromStorage);
+    }
   });
 }
 export function compressDocumentData(compressionState, docData) {

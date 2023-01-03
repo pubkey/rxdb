@@ -6,50 +6,50 @@ Object.defineProperty(exports, "__esModule", {
 exports.DATA_MIGRATOR_BY_COLLECTION = void 0;
 Object.defineProperty(exports, "DataMigrator", {
   enumerable: true,
-  get: function get() {
+  get: function () {
     return _dataMigrator.DataMigrator;
   }
 });
 exports.RxDBMigrationPlugin = void 0;
 Object.defineProperty(exports, "_getOldCollections", {
   enumerable: true,
-  get: function get() {
+  get: function () {
     return _dataMigrator._getOldCollections;
   }
 });
 Object.defineProperty(exports, "_migrateDocuments", {
   enumerable: true,
-  get: function get() {
+  get: function () {
     return _dataMigrator._migrateDocuments;
   }
 });
 Object.defineProperty(exports, "deleteOldCollection", {
   enumerable: true,
-  get: function get() {
+  get: function () {
     return _dataMigrator.deleteOldCollection;
   }
 });
 Object.defineProperty(exports, "getBatchOfOldCollection", {
   enumerable: true,
-  get: function get() {
+  get: function () {
     return _dataMigrator.getBatchOfOldCollection;
   }
 });
 Object.defineProperty(exports, "migrateDocumentData", {
   enumerable: true,
-  get: function get() {
+  get: function () {
     return _dataMigrator.migrateDocumentData;
   }
 });
 Object.defineProperty(exports, "migrateOldCollection", {
   enumerable: true,
-  get: function get() {
+  get: function () {
     return _dataMigrator.migrateOldCollection;
   }
 });
 Object.defineProperty(exports, "migratePromise", {
   enumerable: true,
-  get: function get() {
+  get: function () {
     return _dataMigrator.migratePromise;
   }
 });
@@ -69,14 +69,12 @@ var RxDBMigrationPlugin = {
     }
   },
   prototypes: {
-    RxDatabase: function RxDatabase(proto) {
+    RxDatabase: proto => {
       proto.migrationStates = function () {
-        return (0, _migrationState.getMigrationStateByDatabase)(this).pipe((0, _operators.switchMap)(function (list) {
-          return (0, _rxjs.combineLatest)(list);
-        }), (0, _operators.shareReplay)(_utils.RXJS_SHARE_REPLAY_DEFAULTS));
+        return (0, _migrationState.getMigrationStateByDatabase)(this).pipe((0, _operators.switchMap)(list => (0, _rxjs.combineLatest)(list)), (0, _operators.shareReplay)(_utils.RXJS_SHARE_REPLAY_DEFAULTS));
       };
     },
-    RxCollection: function RxCollection(proto) {
+    RxCollection: proto => {
       proto.getDataMigrator = function () {
         if (!DATA_MIGRATOR_BY_COLLECTION.has(this)) {
           DATA_MIGRATOR_BY_COLLECTION.set(this, new _dataMigrator.DataMigrator(this.asRxCollection, this.migrationStrategies));

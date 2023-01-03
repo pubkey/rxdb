@@ -13,7 +13,7 @@ var _lokijsHelper = require("./lokijs-helper");
 var _rxStorageHelper = require("../../rx-storage-helper");
 var _rxSchemaHelper = require("../../rx-schema-helper");
 var RxStorageLokiStatics = {
-  prepareQuery: function prepareQuery(_schema, mutateableQuery) {
+  prepareQuery(_schema, mutateableQuery) {
     mutateableQuery = (0, _utils.flatClone)(mutateableQuery);
     if (Object.keys((0, _utils.ensureNotFalsy)(mutateableQuery.selector)).length > 0) {
       mutateableQuery.selector = {
@@ -28,7 +28,7 @@ var RxStorageLokiStatics = {
     }
     return mutateableQuery;
   },
-  getSortComparator: function getSortComparator(schema, query) {
+  getSortComparator(schema, query) {
     return (0, _lokijsHelper.getLokiSortComparator)(schema, query);
   },
   /**
@@ -41,8 +41,8 @@ var RxStorageLokiStatics = {
    * Instead we create a fake Resultset and apply the prototype method Resultset.prototype.find(),
    * same with Collection.
    */
-  getQueryMatcher: function getQueryMatcher(_schema, query) {
-    var fun = function fun(doc) {
+  getQueryMatcher(_schema, query) {
+    var fun = doc => {
       if (doc._deleted) {
         return false;
       }
@@ -52,11 +52,11 @@ var RxStorageLokiStatics = {
         data: [docWithResetDeleted],
         binaryIndices: {}
       };
-      Object.setPrototypeOf(fakeCollection, _lokijs["default"].Collection.prototype);
+      Object.setPrototypeOf(fakeCollection, _lokijs.default.Collection.prototype);
       var fakeResultSet = {
         collection: fakeCollection
       };
-      Object.setPrototypeOf(fakeResultSet, _lokijs["default"].Resultset.prototype);
+      Object.setPrototypeOf(fakeResultSet, _lokijs.default.Resultset.prototype);
       fakeResultSet.find(query.selector, true);
       var ret = fakeResultSet.filteredrows.length > 0;
       return ret;
@@ -87,8 +87,7 @@ var RxStorageLoki = /*#__PURE__*/function () {
   return RxStorageLoki;
 }();
 exports.RxStorageLoki = RxStorageLoki;
-function getRxStorageLoki() {
-  var databaseSettings = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+function getRxStorageLoki(databaseSettings = {}) {
   var storage = new RxStorageLoki(databaseSettings);
   return storage;
 }

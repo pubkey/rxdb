@@ -3,8 +3,8 @@
 
 require("@babel/polyfill");
 var RxDB = _interopRequireWildcard(require("./index.js"));
-function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function _getRequireWildcardCache(nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
-function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { "default": obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj["default"] = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function (nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
+function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
 /**
  * this is the index for a browserify-build
  * which produces a single file that can be embedded into the html
@@ -32,18 +32,13 @@ var ChangeEventBuffer = /*#__PURE__*/function () {
    */
 
   function ChangeEventBuffer(collection) {
-    var _this = this;
     this.subs = [];
     this.limit = 100;
     this.counter = 0;
     this.eventCounterMap = new WeakMap();
     this.buffer = [];
     this.collection = collection;
-    this.subs.push(this.collection.$.pipe((0, _operators.filter)(function (cE) {
-      return !cE.isLocal;
-    })).subscribe(function (cE) {
-      return _this._handleChangeEvent(cE);
-    }));
+    this.subs.push(this.collection.$.pipe((0, _operators.filter)(cE => !cE.isLocal)).subscribe(cE => this._handleChangeEvent(cE)));
   }
   var _proto = ChangeEventBuffer.prototype;
   _proto._handleChangeEvent = function _handleChangeEvent(changeEvent) {
@@ -93,9 +88,7 @@ var ChangeEventBuffer = /*#__PURE__*/function () {
     if (ret === null) {
       throw new Error('out of bounds');
     } else {
-      ret.forEach(function (cE) {
-        return fn(cE);
-      });
+      ret.forEach(cE => fn(cE));
     }
   }
 
@@ -110,15 +103,13 @@ var ChangeEventBuffer = /*#__PURE__*/function () {
     // because it did not correctly reassigned the previousData of the changeevents
     // this should be added to the event-reduce library and not be done in RxDB
     var docEventMap = {};
-    changeEvents.forEach(function (changeEvent) {
+    changeEvents.forEach(changeEvent => {
       docEventMap[changeEvent.documentId] = changeEvent;
     });
     return Object.values(docEventMap);
   };
   _proto.destroy = function destroy() {
-    this.subs.forEach(function (sub) {
-      return sub.unsubscribe();
-    });
+    this.subs.forEach(sub => sub.unsubscribe());
   };
   return ChangeEventBuffer;
 }();
@@ -127,7 +118,7 @@ function createChangeEventBuffer(collection) {
   return new ChangeEventBuffer(collection);
 }
 
-},{"rxjs/operators":648}],3:[function(require,module,exports){
+},{"rxjs/operators":645}],3:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -165,7 +156,7 @@ function getIndexableStringMonad(schema, index) {
    * to save performance when the returned
    * function is called many times.
    */
-  var fieldNameProperties = index.map(function (fieldName) {
+  var fieldNameProperties = index.map(fieldName => {
     var schemaPart = (0, _rxSchemaHelper.getSchemaByObjectPath)(schema, fieldName);
     if (!schemaPart) {
       throw new Error('not in schema: ' + fieldName);
@@ -176,16 +167,16 @@ function getIndexableStringMonad(schema, index) {
       parsedLengths = getStringLengthOfIndexNumber(schemaPart);
     }
     return {
-      fieldName: fieldName,
-      schemaPart: schemaPart,
-      parsedLengths: parsedLengths,
+      fieldName,
+      schemaPart,
+      parsedLengths,
       hasComplexPath: fieldName.includes('.'),
       getValueFn: (0, _utils.objectPathMonad)(fieldName)
     };
   });
-  var ret = function ret(docData) {
+  var ret = function (docData) {
     var str = '';
-    fieldNameProperties.forEach(function (props) {
+    fieldNameProperties.forEach(props => {
       var schemaPart = props.schemaPart;
       var type = schemaPart.type;
       var fieldValue = props.getValueFn(docData);
@@ -221,8 +212,8 @@ function getStringLengthOfIndexNumber(schemaPart) {
     decimals = multipleOfParts[1].length;
   }
   return {
-    nonDecimals: nonDecimals,
-    decimals: decimals,
+    nonDecimals,
+    decimals,
     roundedMinimum: minimum
   };
 }
@@ -237,7 +228,7 @@ function getNumberIndexString(parsedLengths, fieldValue) {
 }
 function getStartIndexStringFromLowerBound(schema, index, lowerBound, inclusiveStart) {
   var str = '';
-  index.forEach(function (fieldName, idx) {
+  index.forEach((fieldName, idx) => {
     var schemaPart = (0, _rxSchemaHelper.getSchemaByObjectPath)(schema, fieldName);
     var bound = lowerBound[idx];
     var type = schemaPart.type;
@@ -277,7 +268,7 @@ function getStartIndexStringFromLowerBound(schema, index, lowerBound, inclusiveS
 }
 function getStartIndexStringFromUpperBound(schema, index, upperBound, inclusiveEnd) {
   var str = '';
-  index.forEach(function (fieldName, idx) {
+  index.forEach((fieldName, idx) => {
     var schemaPart = (0, _rxSchemaHelper.getSchemaByObjectPath)(schema, fieldName);
     var bound = upperBound[idx];
     var type = schemaPart.type;
@@ -348,28 +339,27 @@ var DocumentCache = /*#__PURE__*/function () {
    * A method that can create a RxDocument by the given document data.
    */
   documentCreator) {
-    var _this = this;
     this.cacheItemByDocId = new Map();
-    this.registry = typeof FinalizationRegistry === 'function' ? new FinalizationRegistry(function (docMeta) {
+    this.registry = typeof FinalizationRegistry === 'function' ? new FinalizationRegistry(docMeta => {
       var docId = docMeta.docId;
-      var cacheItem = _this.cacheItemByDocId.get(docId);
+      var cacheItem = this.cacheItemByDocId.get(docId);
       if (cacheItem) {
-        cacheItem.documentByRevisionHeight["delete"](docMeta.revisionHeight);
+        cacheItem.documentByRevisionHeight.delete(docMeta.revisionHeight);
         if (cacheItem.documentByRevisionHeight.size === 0) {
           /**
            * No state of the document is cached anymore,
            * so we can clean up.
            */
-          _this.cacheItemByDocId["delete"](docId);
+          this.cacheItemByDocId.delete(docId);
         }
       }
     }) : undefined;
     this.primaryPath = primaryPath;
     this.changes$ = changes$;
     this.documentCreator = documentCreator;
-    changes$.subscribe(function (changeEvent) {
+    changes$.subscribe(changeEvent => {
       var docId = changeEvent.documentId;
-      var cacheItem = _this.cacheItemByDocId.get(docId);
+      var cacheItem = this.cacheItemByDocId.get(docId);
       if (cacheItem) {
         var documentData = (0, _rxChangeEvent.getDocumentDataOfRxChangeEvent)(changeEvent);
         cacheItem.latestDoc = documentData;
@@ -385,9 +375,7 @@ var DocumentCache = /*#__PURE__*/function () {
   _proto.getCachedRxDocument = function getCachedRxDocument(docData) {
     var docId = docData[this.primaryPath];
     var revisionHeight = (0, _utils.parseRevision)(docData._rev).height;
-    var cacheItem = (0, _utils.getFromMapOrFill)(this.cacheItemByDocId, docId, function () {
-      return getNewCacheItem(docData);
-    });
+    var cacheItem = (0, _utils.getFromMapOrFill)(this.cacheItemByDocId, docId, () => getNewCacheItem(docData));
     var cachedRxDocumentWeakRef = cacheItem.documentByRevisionHeight.get(revisionHeight);
     var cachedRxDocument = cachedRxDocumentWeakRef ? cachedRxDocumentWeakRef.deref() : undefined;
     if (!cachedRxDocument) {
@@ -396,8 +384,8 @@ var DocumentCache = /*#__PURE__*/function () {
       cacheItem.documentByRevisionHeight.set(revisionHeight, createWeakRefWithFallback(cachedRxDocument));
       if (this.registry) {
         this.registry.register(cachedRxDocument, {
-          docId: docId,
-          revisionHeight: revisionHeight
+          docId,
+          revisionHeight
         });
       }
     }
@@ -438,7 +426,7 @@ function createWeakRefWithFallback(obj) {
     return new WeakRef(obj);
   } else {
     return {
-      deref: function deref() {
+      deref() {
         return obj;
       }
     };
@@ -463,9 +451,7 @@ function getSortFieldsOfQuery(primaryKey, query) {
   if (!query.sort || query.sort.length === 0) {
     return [primaryKey];
   } else {
-    return query.sort.map(function (part) {
-      return Object.keys(part)[0];
-    });
+    return query.sort.map(part => Object.keys(part)[0]);
   }
 }
 var RXQUERY_QUERY_PARAMS_CACHE = new WeakMap();
@@ -483,11 +469,11 @@ function getQueryParams(rxQuery) {
      * we send for example compressed documents to be sorted by compressed queries.
      */
     var sortComparator = collection.database.storage.statics.getSortComparator(collection.schema.jsonSchema, preparedQuery);
-    var useSortComparator = function useSortComparator(docA, docB) {
+    var useSortComparator = (docA, docB) => {
       var sortComparatorData = {
-        docA: docA,
-        docB: docB,
-        rxQuery: rxQuery
+        docA,
+        docB,
+        rxQuery
       };
       return sortComparator(sortComparatorData.docA, sortComparatorData.docB);
     };
@@ -498,10 +484,10 @@ function getQueryParams(rxQuery) {
      * we send for example compressed documents to match compressed queries.
      */
     var queryMatcher = collection.database.storage.statics.getQueryMatcher(collection.schema.jsonSchema, preparedQuery);
-    var useQueryMatcher = function useQueryMatcher(doc) {
+    var useQueryMatcher = doc => {
       var queryMatcherData = {
-        doc: doc,
-        rxQuery: rxQuery
+        doc,
+        rxQuery
       };
       return queryMatcher(queryMatcherData.doc);
     };
@@ -529,14 +515,12 @@ function calculateNewResults(rxQuery, rxChangeEvents) {
   var previousResults = (0, _utils.ensureNotFalsy)(rxQuery._result).docsData.slice(0);
   var previousResultsMap = (0, _utils.ensureNotFalsy)(rxQuery._result).docsDataMap;
   var changed = false;
-  var eventReduceEvents = rxChangeEvents.map(function (cE) {
-    return (0, _rxChangeEvent.rxChangeEventToEventReduceChangeEvent)(cE);
-  }).filter(_utils.arrayFilterNotEmpty);
-  var foundNonOptimizeable = eventReduceEvents.find(function (eventReduceEvent) {
+  var eventReduceEvents = rxChangeEvents.map(cE => (0, _rxChangeEvent.rxChangeEventToEventReduceChangeEvent)(cE)).filter(_utils.arrayFilterNotEmpty);
+  var foundNonOptimizeable = eventReduceEvents.find(eventReduceEvent => {
     var stateResolveFunctionInput = {
-      queryParams: queryParams,
+      queryParams,
       changeEvent: eventReduceEvent,
-      previousResults: previousResults,
+      previousResults,
       keyDocumentMap: previousResultsMap
     };
     var actionName = (0, _eventReduceJs.calculateActionName)(stateResolveFunctionInput);
@@ -555,13 +539,13 @@ function calculateNewResults(rxQuery, rxChangeEvents) {
   } else {
     return {
       runFullQueryAgain: false,
-      changed: changed,
+      changed,
       newResults: previousResults
     };
   }
 }
 
-},{"./plugins/utils":12,"./rx-change-event":34,"./rx-query-helper":42,"event-reduce-js":412}],6:[function(require,module,exports){
+},{"./plugins/utils":12,"./rx-change-event":34,"./rx-query-helper":42,"event-reduce-js":409}],6:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -655,9 +639,7 @@ var HOOKS = {
 };
 exports.HOOKS = HOOKS;
 function runPluginHooks(hookKey, obj) {
-  HOOKS[hookKey].forEach(function (fun) {
-    return fun(obj);
-  });
+  HOOKS[hookKey].forEach(fun => fun(obj));
 }
 
 /**
@@ -666,37 +648,27 @@ function runPluginHooks(hookKey, obj) {
  * this makes stuff unpredictable.
  */
 function runAsyncPluginHooks(hookKey, obj) {
-  return Promise.all(HOOKS[hookKey].map(function (fun) {
-    return fun(obj);
-  }));
+  return Promise.all(HOOKS[hookKey].map(fun => fun(obj)));
 }
 
 /**
  * used in tests to remove hooks
  */
 function _clearHook(type, fun) {
-  HOOKS[type] = HOOKS[type].filter(function (h) {
-    return h !== fun;
-  });
+  HOOKS[type] = HOOKS[type].filter(h => h !== fun);
 }
 
 },{}],7:[function(require,module,exports){
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.IncrementalWriteQueue = void 0;
 exports.findNewestOfDocumentStates = findNewestOfDocumentStates;
 exports.modifierFromPublicToInternal = modifierFromPublicToInternal;
-var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
-var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 var _rxError = require("./rx-error");
 var _utils = require("./plugins/utils");
-function _createForOfIteratorHelperLoose(o, allowArrayLike) { var it = typeof Symbol !== "undefined" && o[Symbol.iterator] || o["@@iterator"]; if (it) return (it = it.call(o)).next.bind(it); if (Array.isArray(o) || (it = _unsupportedIterableToArray(o)) || allowArrayLike && o && typeof o.length === "number") { if (it) o = it; var i = 0; return function () { if (i >= o.length) return { done: true }; return { done: false, value: o[i++] }; }; } throw new TypeError("Invalid attempt to iterate non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
-function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
-function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) arr2[i] = arr[i]; return arr2; }
 /**
  * The incremental write queue
  * batches up all incremental writes to a collection
@@ -717,236 +689,135 @@ var IncrementalWriteQueue = /*#__PURE__*/function () {
   }
   var _proto = IncrementalWriteQueue.prototype;
   _proto.addWrite = function addWrite(lastKnownDocumentState, modifier) {
-    var _this = this;
     var docId = lastKnownDocumentState[this.primaryPath];
-    var ar = (0, _utils.getFromMapOrFill)(this.queueByDocId, docId, function () {
-      return [];
-    });
-    var ret = new Promise(function (resolve, reject) {
+    var ar = (0, _utils.getFromMapOrFill)(this.queueByDocId, docId, () => []);
+    var ret = new Promise((resolve, reject) => {
       var item = {
-        lastKnownDocumentState: lastKnownDocumentState,
-        modifier: modifier,
-        resolve: resolve,
-        reject: reject
+        lastKnownDocumentState,
+        modifier,
+        resolve,
+        reject
       };
       (0, _utils.ensureNotFalsy)(ar).push(item);
-      _this.triggerRun();
+      this.triggerRun();
     });
     return ret;
   };
-  _proto.triggerRun = /*#__PURE__*/function () {
-    var _triggerRun = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee2() {
-      var _this2 = this;
-      var writeRows, itemsById, writeResult;
-      return _regenerator["default"].wrap(function _callee2$(_context2) {
-        while (1) switch (_context2.prev = _context2.next) {
-          case 0:
-            if (!(this.isRunning === true || this.queueByDocId.size === 0)) {
-              _context2.next = 2;
-              break;
-            }
-            return _context2.abrupt("return");
-          case 2:
-            this.isRunning = true;
-            writeRows = [];
-            /**
-             * 'take over' so that while the async functions runs,
-             * new incremental updates could be added from the outside.
-             */
-            itemsById = this.queueByDocId;
-            this.queueByDocId = new Map();
-            _context2.next = 8;
-            return Promise.all(Array.from(itemsById.entries()).map( /*#__PURE__*/function () {
-              var _ref2 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(_ref) {
-                var _docId, items, oldData, newData, _iterator, _step, item;
-                return _regenerator["default"].wrap(function _callee$(_context) {
-                  while (1) switch (_context.prev = _context.next) {
-                    case 0:
-                      _docId = _ref[0], items = _ref[1];
-                      oldData = findNewestOfDocumentStates(items.map(function (i) {
-                        return i.lastKnownDocumentState;
-                      }));
-                      newData = oldData;
-                      _iterator = _createForOfIteratorHelperLoose(items);
-                    case 4:
-                      if ((_step = _iterator()).done) {
-                        _context.next = 19;
-                        break;
-                      }
-                      item = _step.value;
-                      _context.prev = 6;
-                      _context.next = 9;
-                      return item.modifier(
-                      /**
-                       * We have to clone() each time because the modifier
-                       * might throw while it already changed some properties
-                       * of the document.
-                       */
-                      (0, _utils.clone)(newData));
-                    case 9:
-                      newData = _context.sent;
-                      _context.next = 17;
-                      break;
-                    case 12:
-                      _context.prev = 12;
-                      _context.t0 = _context["catch"](6);
-                      item.reject(_context.t0);
-                      item.reject = function () {};
-                      item.resolve = function () {};
-                    case 17:
-                      _context.next = 4;
-                      break;
-                    case 19:
-                      _context.prev = 19;
-                      _context.next = 22;
-                      return _this2.preWrite(newData, oldData);
-                    case 22:
-                      _context.next = 28;
-                      break;
-                    case 24:
-                      _context.prev = 24;
-                      _context.t1 = _context["catch"](19);
-                      /**
-                       * If the before-hooks fail,
-                       * we reject all of the writes because it is
-                       * not possible to determine which one is to blame.
-                       */
-                      items.forEach(function (item) {
-                        return item.reject(_context.t1);
-                      });
-                      return _context.abrupt("return");
-                    case 28:
-                      writeRows.push({
-                        previous: oldData,
-                        document: newData
-                      });
-                    case 29:
-                    case "end":
-                      return _context.stop();
-                  }
-                }, _callee, null, [[6, 12], [19, 24]]);
-              }));
-              return function (_x) {
-                return _ref2.apply(this, arguments);
-              };
-            }()));
-          case 8:
-            if (!(writeRows.length > 0)) {
-              _context2.next = 14;
-              break;
-            }
-            _context2.next = 11;
-            return this.storageInstance.bulkWrite(writeRows, 'incremental-write');
-          case 11:
-            _context2.t0 = _context2.sent;
-            _context2.next = 15;
-            break;
-          case 14:
-            _context2.t0 = {
-              error: {},
-              success: {}
-            };
-          case 15:
-            writeResult = _context2.t0;
-            _context2.next = 18;
-            return Promise.all(Array.from(Object.entries(writeResult.success)).map(function (_ref3) {
-              var docId = _ref3[0],
-                result = _ref3[1];
-              _this2.postWrite(result);
-              var items = (0, _utils.getFromMapOrThrow)(itemsById, docId);
-              items.forEach(function (item) {
-                return item.resolve(result);
-              });
-            }));
-          case 18:
-            // process errors
-            Array.from(Object.entries(writeResult.error)).forEach(function (_ref4) {
-              var docId = _ref4[0],
-                error = _ref4[1];
-              var items = (0, _utils.getFromMapOrThrow)(itemsById, docId);
-              var isConflict = (0, _rxError.isBulkWriteConflictError)(error);
-              if (isConflict) {
-                // had conflict -> retry afterwards
-                var ar = (0, _utils.getFromMapOrFill)(_this2.queueByDocId, docId, function () {
-                  return [];
-                });
-                /**
-                 * Add the items back to this.queueByDocId
-                 * by maintaining the original order.
-                 */
-                items.reverse().forEach(function (item) {
-                  item.lastKnownDocumentState = (0, _utils.ensureNotFalsy)(isConflict.documentInDb);
-                  (0, _utils.ensureNotFalsy)(ar).unshift(item);
-                });
-              } else {
-                // other error -> must be thrown
-                var rxError = (0, _rxError.rxStorageWriteErrorToRxError)(error);
-                items.forEach(function (item) {
-                  return item.reject(rxError);
-                });
-              }
-            });
-            this.isRunning = false;
-
-            /**
-             * Always trigger another run
-             * because in between there might be new items
-             * been added to the queue.
-             */
-            return _context2.abrupt("return", this.triggerRun());
-          case 21:
-          case "end":
-            return _context2.stop();
-        }
-      }, _callee2, this);
-    }));
-    function triggerRun() {
-      return _triggerRun.apply(this, arguments);
+  _proto.triggerRun = async function triggerRun() {
+    if (this.isRunning === true || this.queueByDocId.size === 0) {
+      // already running
+      return;
     }
-    return triggerRun;
-  }();
+    this.isRunning = true;
+    var writeRows = [];
+
+    /**
+     * 'take over' so that while the async functions runs,
+     * new incremental updates could be added from the outside.
+     */
+    var itemsById = this.queueByDocId;
+    this.queueByDocId = new Map();
+    await Promise.all(Array.from(itemsById.entries()).map(async ([_docId, items]) => {
+      var oldData = findNewestOfDocumentStates(items.map(i => i.lastKnownDocumentState));
+      var newData = oldData;
+      for (var item of items) {
+        try {
+          newData = await item.modifier(
+          /**
+           * We have to clone() each time because the modifier
+           * might throw while it already changed some properties
+           * of the document.
+           */
+          (0, _utils.clone)(newData));
+        } catch (err) {
+          item.reject(err);
+          item.reject = () => {};
+          item.resolve = () => {};
+        }
+      }
+      try {
+        await this.preWrite(newData, oldData);
+      } catch (err) {
+        /**
+         * If the before-hooks fail,
+         * we reject all of the writes because it is
+         * not possible to determine which one is to blame.
+         */
+        items.forEach(item => item.reject(err));
+        return;
+      }
+      writeRows.push({
+        previous: oldData,
+        document: newData
+      });
+    }));
+    var writeResult = writeRows.length > 0 ? await this.storageInstance.bulkWrite(writeRows, 'incremental-write') : {
+      error: {},
+      success: {}
+    };
+
+    // process success
+    await Promise.all(Array.from(Object.entries(writeResult.success)).map(([docId, result]) => {
+      this.postWrite(result);
+      var items = (0, _utils.getFromMapOrThrow)(itemsById, docId);
+      items.forEach(item => item.resolve(result));
+    }));
+
+    // process errors
+    Array.from(Object.entries(writeResult.error)).forEach(([docId, error]) => {
+      var items = (0, _utils.getFromMapOrThrow)(itemsById, docId);
+      var isConflict = (0, _rxError.isBulkWriteConflictError)(error);
+      if (isConflict) {
+        // had conflict -> retry afterwards
+        var ar = (0, _utils.getFromMapOrFill)(this.queueByDocId, docId, () => []);
+        /**
+         * Add the items back to this.queueByDocId
+         * by maintaining the original order.
+         */
+        items.reverse().forEach(item => {
+          item.lastKnownDocumentState = (0, _utils.ensureNotFalsy)(isConflict.documentInDb);
+          (0, _utils.ensureNotFalsy)(ar).unshift(item);
+        });
+      } else {
+        // other error -> must be thrown
+        var rxError = (0, _rxError.rxStorageWriteErrorToRxError)(error);
+        items.forEach(item => item.reject(rxError));
+      }
+    });
+    this.isRunning = false;
+
+    /**
+     * Always trigger another run
+     * because in between there might be new items
+     * been added to the queue.
+     */
+    return this.triggerRun();
+  };
   return IncrementalWriteQueue;
 }();
 exports.IncrementalWriteQueue = IncrementalWriteQueue;
 function modifierFromPublicToInternal(publicModifier) {
-  var ret = /*#__PURE__*/function () {
-    var _ref5 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee3(docData) {
-      var withoutMeta, modified, reattachedMeta;
-      return _regenerator["default"].wrap(function _callee3$(_context3) {
-        while (1) switch (_context3.prev = _context3.next) {
-          case 0:
-            withoutMeta = (0, _utils.stripMetaDataFromDocument)(docData);
-            withoutMeta._deleted = docData._deleted;
-            _context3.next = 4;
-            return publicModifier(withoutMeta);
-          case 4:
-            modified = _context3.sent;
-            reattachedMeta = Object.assign({}, modified, {
-              _meta: docData._meta,
-              _attachments: docData._attachments,
-              _rev: docData._rev,
-              _deleted: typeof modified._deleted !== 'undefined' ? modified._deleted : docData._deleted
-            });
-            if (typeof reattachedMeta._deleted === 'undefined') {
-              reattachedMeta._deleted = false;
-            }
-            return _context3.abrupt("return", reattachedMeta);
-          case 8:
-          case "end":
-            return _context3.stop();
-        }
-      }, _callee3);
-    }));
-    return function ret(_x2) {
-      return _ref5.apply(this, arguments);
-    };
-  }();
+  var ret = async docData => {
+    var withoutMeta = (0, _utils.stripMetaDataFromDocument)(docData);
+    withoutMeta._deleted = docData._deleted;
+    var modified = await publicModifier(withoutMeta);
+    var reattachedMeta = Object.assign({}, modified, {
+      _meta: docData._meta,
+      _attachments: docData._attachments,
+      _rev: docData._rev,
+      _deleted: typeof modified._deleted !== 'undefined' ? modified._deleted : docData._deleted
+    });
+    if (typeof reattachedMeta._deleted === 'undefined') {
+      reattachedMeta._deleted = false;
+    }
+    return reattachedMeta;
+  };
   return ret;
 }
 function findNewestOfDocumentStates(docs) {
   var newest = docs[0];
   var newestRevisionHeight = (0, _utils.parseRevision)(newest._rev).height;
-  docs.forEach(function (doc) {
+  docs.forEach(doc => {
     var height = (0, _utils.parseRevision)(doc._rev).height;
     if (height > newestRevisionHeight) {
       newest = doc;
@@ -956,186 +827,36 @@ function findNewestOfDocumentStates(docs) {
   return newest;
 }
 
-},{"./plugins/utils":12,"./rx-error":41,"@babel/runtime/helpers/asyncToGenerator":52,"@babel/runtime/helpers/interopRequireDefault":57,"@babel/runtime/regenerator":66}],8:[function(require,module,exports){
+},{"./plugins/utils":12,"./rx-error":41}],8:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 var _exportNames = {
-  addRxPlugin: true,
-  createRxDatabase: true,
-  removeRxDatabase: true,
-  isRxDatabase: true,
-  dbCount: true,
-  isRxDatabaseFirstTimeInstantiated: true,
-  ensureNoStartupErrors: true,
-  overwritable: true,
-  isRxCollection: true,
-  RxCollectionBase: true,
-  createRxCollection: true,
-  fillObjectDataBeforeInsert: true,
-  isRxDocument: true,
-  flattenEvents: true,
-  getDocumentOrmPrototype: true,
-  getDocumentPrototype: true,
-  isRxQuery: true,
-  isRxSchema: true,
-  createRxSchema: true,
-  RxSchema: true,
-  getIndexes: true,
-  getPreviousVersions: true,
-  toTypedRxJsonSchema: true,
-  _clearHook: true
+  addRxPlugin: true
 };
-Object.defineProperty(exports, "RxCollectionBase", {
-  enumerable: true,
-  get: function get() {
-    return _rxCollection.RxCollectionBase;
-  }
-});
-Object.defineProperty(exports, "RxSchema", {
-  enumerable: true,
-  get: function get() {
-    return _rxSchema.RxSchema;
-  }
-});
-Object.defineProperty(exports, "_clearHook", {
-  enumerable: true,
-  get: function get() {
-    return _hooks._clearHook;
-  }
-});
 Object.defineProperty(exports, "addRxPlugin", {
   enumerable: true,
-  get: function get() {
+  get: function () {
     return _plugin.addRxPlugin;
-  }
-});
-Object.defineProperty(exports, "createRxCollection", {
-  enumerable: true,
-  get: function get() {
-    return _rxCollection.createRxCollection;
-  }
-});
-Object.defineProperty(exports, "createRxDatabase", {
-  enumerable: true,
-  get: function get() {
-    return _rxDatabase.createRxDatabase;
-  }
-});
-Object.defineProperty(exports, "createRxSchema", {
-  enumerable: true,
-  get: function get() {
-    return _rxSchema.createRxSchema;
-  }
-});
-Object.defineProperty(exports, "dbCount", {
-  enumerable: true,
-  get: function get() {
-    return _rxDatabase.dbCount;
-  }
-});
-Object.defineProperty(exports, "ensureNoStartupErrors", {
-  enumerable: true,
-  get: function get() {
-    return _rxDatabase.ensureNoStartupErrors;
-  }
-});
-Object.defineProperty(exports, "fillObjectDataBeforeInsert", {
-  enumerable: true,
-  get: function get() {
-    return _rxCollectionHelper.fillObjectDataBeforeInsert;
-  }
-});
-Object.defineProperty(exports, "flattenEvents", {
-  enumerable: true,
-  get: function get() {
-    return _rxChangeEvent.flattenEvents;
-  }
-});
-Object.defineProperty(exports, "getDocumentOrmPrototype", {
-  enumerable: true,
-  get: function get() {
-    return _rxDocumentPrototypeMerge.getDocumentOrmPrototype;
-  }
-});
-Object.defineProperty(exports, "getDocumentPrototype", {
-  enumerable: true,
-  get: function get() {
-    return _rxDocumentPrototypeMerge.getDocumentPrototype;
-  }
-});
-Object.defineProperty(exports, "getIndexes", {
-  enumerable: true,
-  get: function get() {
-    return _rxSchema.getIndexes;
-  }
-});
-Object.defineProperty(exports, "getPreviousVersions", {
-  enumerable: true,
-  get: function get() {
-    return _rxSchema.getPreviousVersions;
-  }
-});
-Object.defineProperty(exports, "isRxCollection", {
-  enumerable: true,
-  get: function get() {
-    return _rxCollection.isRxCollection;
-  }
-});
-Object.defineProperty(exports, "isRxDatabase", {
-  enumerable: true,
-  get: function get() {
-    return _rxDatabase.isRxDatabase;
-  }
-});
-Object.defineProperty(exports, "isRxDatabaseFirstTimeInstantiated", {
-  enumerable: true,
-  get: function get() {
-    return _rxDatabase.isRxDatabaseFirstTimeInstantiated;
-  }
-});
-Object.defineProperty(exports, "isRxDocument", {
-  enumerable: true,
-  get: function get() {
-    return _rxDocument.isRxDocument;
-  }
-});
-Object.defineProperty(exports, "isRxQuery", {
-  enumerable: true,
-  get: function get() {
-    return _rxQuery.isInstanceOf;
-  }
-});
-Object.defineProperty(exports, "isRxSchema", {
-  enumerable: true,
-  get: function get() {
-    return _rxSchema.isInstanceOf;
-  }
-});
-Object.defineProperty(exports, "overwritable", {
-  enumerable: true,
-  get: function get() {
-    return _overwritable.overwritable;
-  }
-});
-Object.defineProperty(exports, "removeRxDatabase", {
-  enumerable: true,
-  get: function get() {
-    return _rxDatabase.removeRxDatabase;
-  }
-});
-Object.defineProperty(exports, "toTypedRxJsonSchema", {
-  enumerable: true,
-  get: function get() {
-    return _rxSchema.toTypedRxJsonSchema;
   }
 });
 require("./types/modules/mocha.parallel.d");
 require("./types/modules/modifiyjs.d");
 var _plugin = require("./plugin");
 var _rxDatabase = require("./rx-database");
+Object.keys(_rxDatabase).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  if (key in exports && exports[key] === _rxDatabase[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function () {
+      return _rxDatabase[key];
+    }
+  });
+});
 var _rxError = require("./rx-error");
 Object.keys(_rxError).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
@@ -1143,7 +864,7 @@ Object.keys(_rxError).forEach(function (key) {
   if (key in exports && exports[key] === _rxError[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _rxError[key];
     }
   });
@@ -1155,18 +876,95 @@ Object.keys(_rxDatabaseInternalStore).forEach(function (key) {
   if (key in exports && exports[key] === _rxDatabaseInternalStore[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _rxDatabaseInternalStore[key];
     }
   });
 });
 var _overwritable = require("./overwritable");
+Object.keys(_overwritable).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  if (key in exports && exports[key] === _overwritable[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function () {
+      return _overwritable[key];
+    }
+  });
+});
 var _rxCollection = require("./rx-collection");
+Object.keys(_rxCollection).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  if (key in exports && exports[key] === _rxCollection[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function () {
+      return _rxCollection[key];
+    }
+  });
+});
 var _rxCollectionHelper = require("./rx-collection-helper");
+Object.keys(_rxCollectionHelper).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  if (key in exports && exports[key] === _rxCollectionHelper[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function () {
+      return _rxCollectionHelper[key];
+    }
+  });
+});
 var _rxDocument = require("./rx-document");
+Object.keys(_rxDocument).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  if (key in exports && exports[key] === _rxDocument[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function () {
+      return _rxDocument[key];
+    }
+  });
+});
 var _rxChangeEvent = require("./rx-change-event");
+Object.keys(_rxChangeEvent).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  if (key in exports && exports[key] === _rxChangeEvent[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function () {
+      return _rxChangeEvent[key];
+    }
+  });
+});
 var _rxDocumentPrototypeMerge = require("./rx-document-prototype-merge");
+Object.keys(_rxDocumentPrototypeMerge).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  if (key in exports && exports[key] === _rxDocumentPrototypeMerge[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function () {
+      return _rxDocumentPrototypeMerge[key];
+    }
+  });
+});
 var _rxQuery = require("./rx-query");
+Object.keys(_rxQuery).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  if (key in exports && exports[key] === _rxQuery[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function () {
+      return _rxQuery[key];
+    }
+  });
+});
 var _rxQueryHelper = require("./rx-query-helper");
 Object.keys(_rxQueryHelper).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
@@ -1174,12 +972,23 @@ Object.keys(_rxQueryHelper).forEach(function (key) {
   if (key in exports && exports[key] === _rxQueryHelper[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _rxQueryHelper[key];
     }
   });
 });
 var _rxSchema = require("./rx-schema");
+Object.keys(_rxSchema).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  if (key in exports && exports[key] === _rxSchema[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function () {
+      return _rxSchema[key];
+    }
+  });
+});
 var _rxSchemaHelper = require("./rx-schema-helper");
 Object.keys(_rxSchemaHelper).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
@@ -1187,7 +996,7 @@ Object.keys(_rxSchemaHelper).forEach(function (key) {
   if (key in exports && exports[key] === _rxSchemaHelper[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _rxSchemaHelper[key];
     }
   });
@@ -1199,7 +1008,7 @@ Object.keys(_rxStorageHelper).forEach(function (key) {
   if (key in exports && exports[key] === _rxStorageHelper[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _rxStorageHelper[key];
     }
   });
@@ -1211,7 +1020,7 @@ Object.keys(_index).forEach(function (key) {
   if (key in exports && exports[key] === _index[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _index[key];
     }
   });
@@ -1223,7 +1032,7 @@ Object.keys(_rxStorageMultiinstance).forEach(function (key) {
   if (key in exports && exports[key] === _rxStorageMultiinstance[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _rxStorageMultiinstance[key];
     }
   });
@@ -1235,7 +1044,7 @@ Object.keys(_customIndex).forEach(function (key) {
   if (key in exports && exports[key] === _customIndex[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _customIndex[key];
     }
   });
@@ -1247,7 +1056,7 @@ Object.keys(_queryPlanner).forEach(function (key) {
   if (key in exports && exports[key] === _queryPlanner[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _queryPlanner[key];
     }
   });
@@ -1259,7 +1068,7 @@ Object.keys(_pluginHelpers).forEach(function (key) {
   if (key in exports && exports[key] === _pluginHelpers[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _pluginHelpers[key];
     }
   });
@@ -1271,12 +1080,23 @@ Object.keys(_utils).forEach(function (key) {
   if (key in exports && exports[key] === _utils[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _utils[key];
     }
   });
 });
 var _hooks = require("./hooks");
+Object.keys(_hooks).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  if (key in exports && exports[key] === _hooks[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function () {
+      return _hooks[key];
+    }
+  });
+});
 var _queryCache = require("./query-cache");
 Object.keys(_queryCache).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
@@ -1284,7 +1104,7 @@ Object.keys(_queryCache).forEach(function (key) {
   if (key in exports && exports[key] === _queryCache[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _queryCache[key];
     }
   });
@@ -1310,7 +1130,7 @@ var overwritable = {
    * that returns true, we do additional checks
    * which help the developer but have bad performance
    */
-  isDevMode: function isDevMode() {
+  isDevMode() {
     return false;
   },
   /**
@@ -1319,13 +1139,13 @@ var overwritable = {
    * Also, we can ensure the readonly state via typescript
    * @link https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Global_Objects/Object/freeze
    */
-  deepFreezeWhenDevMode: function deepFreezeWhenDevMode(obj) {
+  deepFreezeWhenDevMode(obj) {
     return obj;
   },
   /**
    * overwritten to map error-codes to text-messages
    */
-  tunnelErrorMessage: function tunnelErrorMessage(message) {
+  tunnelErrorMessage(message) {
     return "RxDB Error-Code " + message + ".\n        Error messages are not included in RxDB core to reduce build size.\n        - To find out what this error means, either use the dev-mode-plugin https://rxdb.info/dev-mode.html\n        - or search for the error code here: https://github.com/pubkey/rxdb/search?q=" + message + "\n        ";
   }
 };
@@ -1334,14 +1154,11 @@ exports.overwritable = overwritable;
 },{}],10:[function(require,module,exports){
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.wrapRxStorageInstance = wrapRxStorageInstance;
 exports.wrappedValidateStorageFactory = wrappedValidateStorageFactory;
-var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
-var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 var _operators = require("rxjs/operators");
 var _rxSchemaHelper = require("./rx-schema-helper");
 var _utils = require("./plugins/utils");
@@ -1378,73 +1195,55 @@ validatorKey) {
     }
     return (0, _utils.getFromMapOrThrow)(VALIDATOR_CACHE, hash);
   }
-  return function (args) {
+  return args => {
     return Object.assign({}, args.storage, {
-      createStorageInstance: function () {
-        var _createStorageInstance = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(params) {
-          var instance, primaryPath, validatorCached, oldBulkWrite;
-          return _regenerator["default"].wrap(function _callee$(_context) {
-            while (1) switch (_context.prev = _context.next) {
-              case 0:
-                _context.next = 2;
-                return args.storage.createStorageInstance(params);
-              case 2:
-                instance = _context.sent;
-                primaryPath = (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(params.schema.primaryKey);
-                /**
-                 * Lazy initialize the validator
-                 * to save initial page load performance.
-                 * Some libraries take really long to initialize the validator
-                 * from the schema.
-                 */
-                (0, _utils.requestIdleCallbackIfAvailable)(function () {
-                  return validatorCached = initValidator(params.schema);
-                });
-                oldBulkWrite = instance.bulkWrite.bind(instance);
-                instance.bulkWrite = function (documentWrites, context) {
-                  if (!validatorCached) {
-                    validatorCached = initValidator(params.schema);
-                  }
-                  var errors = [];
-                  var continueWrites = [];
-                  documentWrites.forEach(function (row) {
-                    var documentId = row.document[primaryPath];
-                    var validationErrors = validatorCached(row.document);
-                    if (validationErrors.length > 0) {
-                      errors.push({
-                        status: 422,
-                        isError: true,
-                        documentId: documentId,
-                        writeRow: row,
-                        validationErrors: validationErrors
-                      });
-                    } else {
-                      continueWrites.push(row);
-                    }
-                  });
-                  var writePromise = continueWrites.length > 0 ? oldBulkWrite(continueWrites, context) : Promise.resolve({
-                    error: {},
-                    success: {}
-                  });
-                  return writePromise.then(function (writeResult) {
-                    errors.forEach(function (validationError) {
-                      writeResult.error[validationError.documentId] = validationError;
-                    });
-                    return writeResult;
-                  });
-                };
-                return _context.abrupt("return", instance);
-              case 8:
-              case "end":
-                return _context.stop();
+      async createStorageInstance(params) {
+        var instance = await args.storage.createStorageInstance(params);
+        var primaryPath = (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(params.schema.primaryKey);
+
+        /**
+         * Lazy initialize the validator
+         * to save initial page load performance.
+         * Some libraries take really long to initialize the validator
+         * from the schema.
+         */
+        var validatorCached;
+        (0, _utils.requestIdleCallbackIfAvailable)(() => validatorCached = initValidator(params.schema));
+        var oldBulkWrite = instance.bulkWrite.bind(instance);
+        instance.bulkWrite = (documentWrites, context) => {
+          if (!validatorCached) {
+            validatorCached = initValidator(params.schema);
+          }
+          var errors = [];
+          var continueWrites = [];
+          documentWrites.forEach(row => {
+            var documentId = row.document[primaryPath];
+            var validationErrors = validatorCached(row.document);
+            if (validationErrors.length > 0) {
+              errors.push({
+                status: 422,
+                isError: true,
+                documentId,
+                writeRow: row,
+                validationErrors
+              });
+            } else {
+              continueWrites.push(row);
             }
-          }, _callee);
-        }));
-        function createStorageInstance(_x) {
-          return _createStorageInstance.apply(this, arguments);
-        }
-        return createStorageInstance;
-      }()
+          });
+          var writePromise = continueWrites.length > 0 ? oldBulkWrite(continueWrites, context) : Promise.resolve({
+            error: {},
+            success: {}
+          });
+          return writePromise.then(writeResult => {
+            errors.forEach(validationError => {
+              writeResult.error[validationError.documentId] = validationError;
+            });
+            return writeResult;
+          });
+        };
+        return instance;
+      }
     });
   };
 }
@@ -1453,103 +1252,30 @@ validatorKey) {
  * Used in plugins to easily modify all in- and outgoing
  * data of that storage instance.
  */
-function wrapRxStorageInstance(instance, modifyToStorage, modifyFromStorage) {
-  var modifyAttachmentFromStorage = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : function (v) {
-    return v;
-  };
-  function toStorage(_x2) {
-    return _toStorage.apply(this, arguments);
+function wrapRxStorageInstance(instance, modifyToStorage, modifyFromStorage, modifyAttachmentFromStorage = v => v) {
+  async function toStorage(docData) {
+    if (!docData) {
+      return docData;
+    }
+    return await modifyToStorage(docData);
   }
-  function _toStorage() {
-    _toStorage = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee11(docData) {
-      return _regenerator["default"].wrap(function _callee11$(_context11) {
-        while (1) switch (_context11.prev = _context11.next) {
-          case 0:
-            if (docData) {
-              _context11.next = 2;
-              break;
-            }
-            return _context11.abrupt("return", docData);
-          case 2:
-            _context11.next = 4;
-            return modifyToStorage(docData);
-          case 4:
-            return _context11.abrupt("return", _context11.sent);
-          case 5:
-          case "end":
-            return _context11.stop();
-        }
-      }, _callee11);
-    }));
-    return _toStorage.apply(this, arguments);
+  async function fromStorage(docData) {
+    if (!docData) {
+      return docData;
+    }
+    return await modifyFromStorage(docData);
   }
-  function fromStorage(_x3) {
-    return _fromStorage.apply(this, arguments);
-  }
-  function _fromStorage() {
-    _fromStorage = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee12(docData) {
-      return _regenerator["default"].wrap(function _callee12$(_context12) {
-        while (1) switch (_context12.prev = _context12.next) {
-          case 0:
-            if (docData) {
-              _context12.next = 2;
-              break;
-            }
-            return _context12.abrupt("return", docData);
-          case 2:
-            _context12.next = 4;
-            return modifyFromStorage(docData);
-          case 4:
-            return _context12.abrupt("return", _context12.sent);
-          case 5:
-          case "end":
-            return _context12.stop();
-        }
-      }, _callee12);
-    }));
-    return _fromStorage.apply(this, arguments);
-  }
-  function errorFromStorage(_x4) {
-    return _errorFromStorage.apply(this, arguments);
-  }
-  function _errorFromStorage() {
-    _errorFromStorage = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee13(error) {
-      var ret;
-      return _regenerator["default"].wrap(function _callee13$(_context13) {
-        while (1) switch (_context13.prev = _context13.next) {
-          case 0:
-            ret = (0, _utils.flatClone)(error);
-            ret.writeRow = (0, _utils.flatClone)(ret.writeRow);
-            if (!ret.documentInDb) {
-              _context13.next = 6;
-              break;
-            }
-            _context13.next = 5;
-            return fromStorage(ret.documentInDb);
-          case 5:
-            ret.documentInDb = _context13.sent;
-          case 6:
-            if (!ret.writeRow.previous) {
-              _context13.next = 10;
-              break;
-            }
-            _context13.next = 9;
-            return fromStorage(ret.writeRow.previous);
-          case 9:
-            ret.writeRow.previous = _context13.sent;
-          case 10:
-            _context13.next = 12;
-            return fromStorage(ret.writeRow.document);
-          case 12:
-            ret.writeRow.document = _context13.sent;
-            return _context13.abrupt("return", ret);
-          case 14:
-          case "end":
-            return _context13.stop();
-        }
-      }, _callee13);
-    }));
-    return _errorFromStorage.apply(this, arguments);
+  async function errorFromStorage(error) {
+    var ret = (0, _utils.flatClone)(error);
+    ret.writeRow = (0, _utils.flatClone)(ret.writeRow);
+    if (ret.documentInDb) {
+      ret.documentInDb = await fromStorage(ret.documentInDb);
+    }
+    if (ret.writeRow.previous) {
+      ret.writeRow.previous = await fromStorage(ret.writeRow.previous);
+    }
+    ret.writeRow.document = await fromStorage(ret.writeRow.document);
+    return ret;
   }
   var wrappedInstance = {
     databaseName: instance.databaseName,
@@ -1562,288 +1288,101 @@ function wrapRxStorageInstance(instance, modifyToStorage, modifyFromStorage) {
     count: instance.count.bind(instance),
     remove: instance.remove.bind(instance),
     originalStorageInstance: instance,
-    bulkWrite: function () {
-      var _bulkWrite = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee3(documentWrites, context) {
-        var useRows, writeResult, ret, promises;
-        return _regenerator["default"].wrap(function _callee3$(_context3) {
-          while (1) switch (_context3.prev = _context3.next) {
-            case 0:
-              useRows = [];
-              _context3.next = 3;
-              return Promise.all(documentWrites.map( /*#__PURE__*/function () {
-                var _ref = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee2(row) {
-                  var _yield$Promise$all, previous, document;
-                  return _regenerator["default"].wrap(function _callee2$(_context2) {
-                    while (1) switch (_context2.prev = _context2.next) {
-                      case 0:
-                        _context2.next = 2;
-                        return Promise.all([row.previous ? toStorage(row.previous) : undefined, toStorage(row.document)]);
-                      case 2:
-                        _yield$Promise$all = _context2.sent;
-                        previous = _yield$Promise$all[0];
-                        document = _yield$Promise$all[1];
-                        useRows.push({
-                          previous: previous,
-                          document: document
-                        });
-                      case 6:
-                      case "end":
-                        return _context2.stop();
-                    }
-                  }, _callee2);
-                }));
-                return function (_x7) {
-                  return _ref.apply(this, arguments);
-                };
-              }()));
-            case 3:
-              _context3.next = 5;
-              return instance.bulkWrite(useRows, context);
-            case 5:
-              writeResult = _context3.sent;
-              ret = {
-                success: {},
-                error: {}
-              };
-              promises = [];
-              Object.entries(writeResult.success).forEach(function (_ref2) {
-                var k = _ref2[0],
-                  v = _ref2[1];
-                promises.push(fromStorage(v).then(function (v2) {
-                  return ret.success[k] = v2;
-                }));
-              });
-              Object.entries(writeResult.error).forEach(function (_ref3) {
-                var k = _ref3[0],
-                  error = _ref3[1];
-                promises.push(errorFromStorage(error).then(function (err) {
-                  return ret.error[k] = err;
-                }));
-              });
-              _context3.next = 12;
-              return Promise.all(promises);
-            case 12:
-              return _context3.abrupt("return", ret);
-            case 13:
-            case "end":
-              return _context3.stop();
-          }
-        }, _callee3);
+    bulkWrite: async (documentWrites, context) => {
+      var useRows = [];
+      await Promise.all(documentWrites.map(async row => {
+        var [previous, document] = await Promise.all([row.previous ? toStorage(row.previous) : undefined, toStorage(row.document)]);
+        useRows.push({
+          previous,
+          document
+        });
       }));
-      function bulkWrite(_x5, _x6) {
-        return _bulkWrite.apply(this, arguments);
-      }
-      return bulkWrite;
-    }(),
-    query: function query(preparedQuery) {
-      return instance.query(preparedQuery).then(function (queryResult) {
-        return Promise.all(queryResult.documents.map(function (doc) {
-          return fromStorage(doc);
+      var writeResult = await instance.bulkWrite(useRows, context);
+      var ret = {
+        success: {},
+        error: {}
+      };
+      var promises = [];
+      Object.entries(writeResult.success).forEach(([k, v]) => {
+        promises.push(fromStorage(v).then(v2 => ret.success[k] = v2));
+      });
+      Object.entries(writeResult.error).forEach(([k, error]) => {
+        promises.push(errorFromStorage(error).then(err => ret.error[k] = err));
+      });
+      await Promise.all(promises);
+      return ret;
+    },
+    query: preparedQuery => {
+      return instance.query(preparedQuery).then(queryResult => {
+        return Promise.all(queryResult.documents.map(doc => fromStorage(doc)));
+      }).then(documents => ({
+        documents: documents
+      }));
+    },
+    getAttachmentData: async (documentId, attachmentId) => {
+      var data = await instance.getAttachmentData(documentId, attachmentId);
+      data = await modifyAttachmentFromStorage(data);
+      return data;
+    },
+    findDocumentsById: (ids, deleted) => {
+      return instance.findDocumentsById(ids, deleted).then(async findResult => {
+        var ret = {};
+        await Promise.all(Object.entries(findResult).map(async ([key, doc]) => {
+          ret[key] = await fromStorage(doc);
         }));
-      }).then(function (documents) {
+        return ret;
+      });
+    },
+    getChangedDocumentsSince: (limit, checkpoint) => {
+      return instance.getChangedDocumentsSince(limit, checkpoint).then(async result => {
         return {
-          documents: documents
+          checkpoint: result.checkpoint,
+          documents: await Promise.all(result.documents.map(d => fromStorage(d)))
         };
       });
     },
-    getAttachmentData: function () {
-      var _getAttachmentData = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee4(documentId, attachmentId) {
-        var data;
-        return _regenerator["default"].wrap(function _callee4$(_context4) {
-          while (1) switch (_context4.prev = _context4.next) {
-            case 0:
-              _context4.next = 2;
-              return instance.getAttachmentData(documentId, attachmentId);
-            case 2:
-              data = _context4.sent;
-              _context4.next = 5;
-              return modifyAttachmentFromStorage(data);
-            case 5:
-              data = _context4.sent;
-              return _context4.abrupt("return", data);
-            case 7:
-            case "end":
-              return _context4.stop();
-          }
-        }, _callee4);
+    changeStream: () => {
+      return instance.changeStream().pipe((0, _operators.mergeMap)(async eventBulk => {
+        var useEvents = await Promise.all(eventBulk.events.map(async event => {
+          var [documentData, previousDocumentData] = await Promise.all([fromStorage(event.documentData), fromStorage(event.previousDocumentData)]);
+          var ev = {
+            operation: event.operation,
+            eventId: event.eventId,
+            documentId: event.documentId,
+            endTime: event.endTime,
+            startTime: event.startTime,
+            documentData: documentData,
+            previousDocumentData: previousDocumentData,
+            isLocal: false
+          };
+          return ev;
+        }));
+        var ret = {
+          id: eventBulk.id,
+          events: useEvents,
+          checkpoint: eventBulk.checkpoint,
+          context: eventBulk.context
+        };
+        return ret;
       }));
-      function getAttachmentData(_x8, _x9) {
-        return _getAttachmentData.apply(this, arguments);
-      }
-      return getAttachmentData;
-    }(),
-    findDocumentsById: function findDocumentsById(ids, deleted) {
-      return instance.findDocumentsById(ids, deleted).then( /*#__PURE__*/function () {
-        var _ref4 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee6(findResult) {
-          var ret;
-          return _regenerator["default"].wrap(function _callee6$(_context6) {
-            while (1) switch (_context6.prev = _context6.next) {
-              case 0:
-                ret = {};
-                _context6.next = 3;
-                return Promise.all(Object.entries(findResult).map( /*#__PURE__*/function () {
-                  var _ref6 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee5(_ref5) {
-                    var key, doc;
-                    return _regenerator["default"].wrap(function _callee5$(_context5) {
-                      while (1) switch (_context5.prev = _context5.next) {
-                        case 0:
-                          key = _ref5[0], doc = _ref5[1];
-                          _context5.next = 3;
-                          return fromStorage(doc);
-                        case 3:
-                          ret[key] = _context5.sent;
-                        case 4:
-                        case "end":
-                          return _context5.stop();
-                      }
-                    }, _callee5);
-                  }));
-                  return function (_x11) {
-                    return _ref6.apply(this, arguments);
-                  };
-                }()));
-              case 3:
-                return _context6.abrupt("return", ret);
-              case 4:
-              case "end":
-                return _context6.stop();
-            }
-          }, _callee6);
-        }));
-        return function (_x10) {
-          return _ref4.apply(this, arguments);
-        };
-      }());
     },
-    getChangedDocumentsSince: function getChangedDocumentsSince(limit, checkpoint) {
-      return instance.getChangedDocumentsSince(limit, checkpoint).then( /*#__PURE__*/function () {
-        var _ref7 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee7(result) {
-          return _regenerator["default"].wrap(function _callee7$(_context7) {
-            while (1) switch (_context7.prev = _context7.next) {
-              case 0:
-                _context7.t0 = result.checkpoint;
-                _context7.next = 3;
-                return Promise.all(result.documents.map(function (d) {
-                  return fromStorage(d);
-                }));
-              case 3:
-                _context7.t1 = _context7.sent;
-                return _context7.abrupt("return", {
-                  checkpoint: _context7.t0,
-                  documents: _context7.t1
-                });
-              case 5:
-              case "end":
-                return _context7.stop();
-            }
-          }, _callee7);
-        }));
-        return function (_x12) {
-          return _ref7.apply(this, arguments);
+    conflictResultionTasks: () => {
+      return instance.conflictResultionTasks().pipe((0, _operators.mergeMap)(async task => {
+        var assumedMasterState = await fromStorage(task.input.assumedMasterState);
+        var newDocumentState = await fromStorage(task.input.newDocumentState);
+        var realMasterState = await fromStorage(task.input.realMasterState);
+        return {
+          id: task.id,
+          context: task.context,
+          input: {
+            assumedMasterState,
+            realMasterState,
+            newDocumentState
+          }
         };
-      }());
+      }));
     },
-    changeStream: function changeStream() {
-      return instance.changeStream().pipe((0, _operators.mergeMap)( /*#__PURE__*/function () {
-        var _ref8 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee9(eventBulk) {
-          var useEvents, ret;
-          return _regenerator["default"].wrap(function _callee9$(_context9) {
-            while (1) switch (_context9.prev = _context9.next) {
-              case 0:
-                _context9.next = 2;
-                return Promise.all(eventBulk.events.map( /*#__PURE__*/function () {
-                  var _ref9 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee8(event) {
-                    var _yield$Promise$all2, documentData, previousDocumentData, ev;
-                    return _regenerator["default"].wrap(function _callee8$(_context8) {
-                      while (1) switch (_context8.prev = _context8.next) {
-                        case 0:
-                          _context8.next = 2;
-                          return Promise.all([fromStorage(event.documentData), fromStorage(event.previousDocumentData)]);
-                        case 2:
-                          _yield$Promise$all2 = _context8.sent;
-                          documentData = _yield$Promise$all2[0];
-                          previousDocumentData = _yield$Promise$all2[1];
-                          ev = {
-                            operation: event.operation,
-                            eventId: event.eventId,
-                            documentId: event.documentId,
-                            endTime: event.endTime,
-                            startTime: event.startTime,
-                            documentData: documentData,
-                            previousDocumentData: previousDocumentData,
-                            isLocal: false
-                          };
-                          return _context8.abrupt("return", ev);
-                        case 7:
-                        case "end":
-                          return _context8.stop();
-                      }
-                    }, _callee8);
-                  }));
-                  return function (_x14) {
-                    return _ref9.apply(this, arguments);
-                  };
-                }()));
-              case 2:
-                useEvents = _context9.sent;
-                ret = {
-                  id: eventBulk.id,
-                  events: useEvents,
-                  checkpoint: eventBulk.checkpoint,
-                  context: eventBulk.context
-                };
-                return _context9.abrupt("return", ret);
-              case 5:
-              case "end":
-                return _context9.stop();
-            }
-          }, _callee9);
-        }));
-        return function (_x13) {
-          return _ref8.apply(this, arguments);
-        };
-      }()));
-    },
-    conflictResultionTasks: function conflictResultionTasks() {
-      return instance.conflictResultionTasks().pipe((0, _operators.mergeMap)( /*#__PURE__*/function () {
-        var _ref10 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee10(task) {
-          var assumedMasterState, newDocumentState, realMasterState;
-          return _regenerator["default"].wrap(function _callee10$(_context10) {
-            while (1) switch (_context10.prev = _context10.next) {
-              case 0:
-                _context10.next = 2;
-                return fromStorage(task.input.assumedMasterState);
-              case 2:
-                assumedMasterState = _context10.sent;
-                _context10.next = 5;
-                return fromStorage(task.input.newDocumentState);
-              case 5:
-                newDocumentState = _context10.sent;
-                _context10.next = 8;
-                return fromStorage(task.input.realMasterState);
-              case 8:
-                realMasterState = _context10.sent;
-                return _context10.abrupt("return", {
-                  id: task.id,
-                  context: task.context,
-                  input: {
-                    assumedMasterState: assumedMasterState,
-                    realMasterState: realMasterState,
-                    newDocumentState: newDocumentState
-                  }
-                });
-              case 10:
-              case "end":
-                return _context10.stop();
-            }
-          }, _callee10);
-        }));
-        return function (_x15) {
-          return _ref10.apply(this, arguments);
-        };
-      }()));
-    },
-    resolveConflictResultionTask: function resolveConflictResultionTask(taskSolution) {
+    resolveConflictResultionTask: taskSolution => {
       if (taskSolution.output.isEqual) {
         return instance.resolveConflictResultionTask(taskSolution);
       }
@@ -1860,7 +1399,7 @@ function wrapRxStorageInstance(instance, modifyToStorage, modifyFromStorage) {
   return wrappedInstance;
 }
 
-},{"./plugins/utils":12,"./rx-schema-helper":44,"@babel/runtime/helpers/asyncToGenerator":52,"@babel/runtime/helpers/interopRequireDefault":57,"@babel/runtime/regenerator":66,"rxjs/operators":648}],11:[function(require,module,exports){
+},{"./plugins/utils":12,"./rx-schema-helper":44,"rxjs/operators":645}],11:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1900,7 +1439,7 @@ var ADDED_PLUGIN_NAMES = new Set();
  */
 function addRxPlugin(plugin) {
   (0, _hooks.runPluginHooks)('preAddRxPlugin', {
-    plugin: plugin,
+    plugin,
     plugins: ADDED_PLUGINS
   });
 
@@ -1912,7 +1451,7 @@ function addRxPlugin(plugin) {
     if (ADDED_PLUGIN_NAMES.has(plugin.name)) {
       throw (0, _rxError.newRxError)('PL3', {
         name: plugin.name,
-        plugin: plugin
+        plugin
       });
     }
     ADDED_PLUGINS.add(plugin);
@@ -1925,7 +1464,7 @@ function addRxPlugin(plugin) {
    */
   if (!plugin.rxdb) {
     throw (0, _rxError.newRxTypeError)('PL1', {
-      plugin: plugin
+      plugin
     });
   }
   if (plugin.init) {
@@ -1934,9 +1473,7 @@ function addRxPlugin(plugin) {
 
   // prototype-overwrites
   if (plugin.prototypes) {
-    Object.entries(plugin.prototypes).forEach(function (_ref) {
-      var name = _ref[0],
-        fun = _ref[1];
+    Object.entries(plugin.prototypes).forEach(([name, fun]) => {
       return fun(PROTOTYPES[name]);
     });
   }
@@ -1946,9 +1483,7 @@ function addRxPlugin(plugin) {
   }
   // extend-hooks
   if (plugin.hooks) {
-    Object.entries(plugin.hooks).forEach(function (_ref2) {
-      var name = _ref2[0],
-        hooksObj = _ref2[1];
+    Object.entries(plugin.hooks).forEach(([name, hooksObj]) => {
       if (hooksObj.after) {
         _hooks.HOOKS[name].push(hooksObj.after);
       }
@@ -1971,7 +1506,7 @@ Object.keys(_utilsArray).forEach(function (key) {
   if (key in exports && exports[key] === _utilsArray[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _utilsArray[key];
     }
   });
@@ -1982,7 +1517,7 @@ Object.keys(_utilsBlobBuffer).forEach(function (key) {
   if (key in exports && exports[key] === _utilsBlobBuffer[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _utilsBlobBuffer[key];
     }
   });
@@ -1993,7 +1528,7 @@ Object.keys(_utilsBase).forEach(function (key) {
   if (key in exports && exports[key] === _utilsBase[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _utilsBase[key];
     }
   });
@@ -2004,7 +1539,7 @@ Object.keys(_utilsRevision).forEach(function (key) {
   if (key in exports && exports[key] === _utilsRevision[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _utilsRevision[key];
     }
   });
@@ -2015,7 +1550,7 @@ Object.keys(_utilsDocument).forEach(function (key) {
   if (key in exports && exports[key] === _utilsDocument[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _utilsDocument[key];
     }
   });
@@ -2026,7 +1561,7 @@ Object.keys(_utilsHash).forEach(function (key) {
   if (key in exports && exports[key] === _utilsHash[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _utilsHash[key];
     }
   });
@@ -2037,7 +1572,7 @@ Object.keys(_utilsPromise).forEach(function (key) {
   if (key in exports && exports[key] === _utilsPromise[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _utilsPromise[key];
     }
   });
@@ -2048,7 +1583,7 @@ Object.keys(_utilsString).forEach(function (key) {
   if (key in exports && exports[key] === _utilsString[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _utilsString[key];
     }
   });
@@ -2059,7 +1594,7 @@ Object.keys(_utilsObject).forEach(function (key) {
   if (key in exports && exports[key] === _utilsObject[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _utilsObject[key];
     }
   });
@@ -2070,7 +1605,7 @@ Object.keys(_utilsError).forEach(function (key) {
   if (key in exports && exports[key] === _utilsError[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _utilsError[key];
     }
   });
@@ -2081,7 +1616,7 @@ Object.keys(_utilsTime).forEach(function (key) {
   if (key in exports && exports[key] === _utilsTime[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _utilsTime[key];
     }
   });
@@ -2092,7 +1627,7 @@ Object.keys(_utilsOther).forEach(function (key) {
   if (key in exports && exports[key] === _utilsOther[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _utilsOther[key];
     }
   });
@@ -2119,9 +1654,7 @@ function lastOfArray(ar) {
  * shuffle the given array
  */
 function shuffleArray(arr) {
-  return arr.sort(function () {
-    return Math.random() - 0.5;
-  });
+  return arr.sort(() => Math.random() - 0.5);
 }
 function toArray(input) {
   return Array.isArray(input) ? input.slice(0) : [input];
@@ -2227,17 +1760,14 @@ function arrayBufferToBase64(buffer) {
   return btoa(binary);
 }
 
-},{"js-base64":418}],15:[function(require,module,exports){
+},{"js-base64":415}],15:[function(require,module,exports){
 (function (Buffer){(function (){
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.blobBufferUtil = void 0;
-var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
-var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 var _utilsBase = require("./utils-base64");
 /**
  * This is an abstraction over the Blob/Buffer data structure.
@@ -2250,9 +1780,9 @@ var blobBufferUtil = {
    * depending if we are on node or browser,
    * we have to use Buffer(node) or Blob(browser)
    */
-  createBlobBuffer: function createBlobBuffer(data, type) {
+  createBlobBuffer(data, type) {
     var blobBuffer = new Blob([data], {
-      type: type
+      type
     });
     return blobBuffer;
   },
@@ -2260,40 +1790,19 @@ var blobBufferUtil = {
    * depending if we are on node or browser,
    * we have to use Buffer(node) or Blob(browser)
    */
-  createBlobBufferFromBase64: function () {
-    var _createBlobBufferFromBase = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(base64String, type) {
-      var base64Response, blob;
-      return _regenerator["default"].wrap(function _callee$(_context) {
-        while (1) switch (_context.prev = _context.next) {
-          case 0:
-            _context.next = 2;
-            return fetch("data:" + type + ";base64," + base64String);
-          case 2:
-            base64Response = _context.sent;
-            _context.next = 5;
-            return base64Response.blob();
-          case 5:
-            blob = _context.sent;
-            return _context.abrupt("return", blob);
-          case 7:
-          case "end":
-            return _context.stop();
-        }
-      }, _callee);
-    }));
-    function createBlobBufferFromBase64(_x, _x2) {
-      return _createBlobBufferFromBase.apply(this, arguments);
-    }
-    return createBlobBufferFromBase64;
-  }(),
-  isBlobBuffer: function isBlobBuffer(data) {
+  async createBlobBufferFromBase64(base64String, type) {
+    var base64Response = await fetch("data:" + type + ";base64," + base64String);
+    var blob = await base64Response.blob();
+    return blob;
+  },
+  isBlobBuffer(data) {
     if (data instanceof Blob || typeof Buffer !== 'undefined' && Buffer.isBuffer(data)) {
       return true;
     } else {
       return false;
     }
   },
-  toString: function toString(blobBuffer) {
+  toString(blobBuffer) {
     /**
      * in the electron-renderer we have a typed array insteaf of a blob
      * so we have to transform it.
@@ -2308,53 +1817,31 @@ var blobBufferUtil = {
     }
     return blobBuffer.text();
   },
-  toBase64String: function () {
-    var _toBase64String = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee2(blobBuffer) {
-      var blobBufferType, arrayBuffer;
-      return _regenerator["default"].wrap(function _callee2$(_context2) {
-        while (1) switch (_context2.prev = _context2.next) {
-          case 0:
-            if (!(typeof blobBuffer === 'string')) {
-              _context2.next = 2;
-              break;
-            }
-            return _context2.abrupt("return", blobBuffer);
-          case 2:
-            /**
-             * in the electron-renderer we have a typed array insteaf of a blob
-             * so we have to transform it.
-             * @link https://github.com/pubkey/rxdb/issues/1371
-             */
-            blobBufferType = Object.prototype.toString.call(blobBuffer);
-            if (blobBufferType === '[object Uint8Array]') {
-              blobBuffer = new Blob([blobBuffer]);
-            }
-            _context2.next = 6;
-            return fetch(URL.createObjectURL(blobBuffer)).then(function (res) {
-              return res.arrayBuffer();
-            });
-          case 6:
-            arrayBuffer = _context2.sent;
-            return _context2.abrupt("return", (0, _utilsBase.arrayBufferToBase64)(arrayBuffer));
-          case 8:
-          case "end":
-            return _context2.stop();
-        }
-      }, _callee2);
-    }));
-    function toBase64String(_x3) {
-      return _toBase64String.apply(this, arguments);
+  async toBase64String(blobBuffer) {
+    if (typeof blobBuffer === 'string') {
+      return blobBuffer;
     }
-    return toBase64String;
-  }(),
-  size: function size(blobBuffer) {
+
+    /**
+     * in the electron-renderer we have a typed array insteaf of a blob
+     * so we have to transform it.
+     * @link https://github.com/pubkey/rxdb/issues/1371
+     */
+    var blobBufferType = Object.prototype.toString.call(blobBuffer);
+    if (blobBufferType === '[object Uint8Array]') {
+      blobBuffer = new Blob([blobBuffer]);
+    }
+    var arrayBuffer = await fetch(URL.createObjectURL(blobBuffer)).then(res => res.arrayBuffer());
+    return (0, _utilsBase.arrayBufferToBase64)(arrayBuffer);
+  },
+  size(blobBuffer) {
     return blobBuffer.size;
   }
 };
 exports.blobBufferUtil = blobBufferUtil;
 
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"./utils-base64":14,"@babel/runtime/helpers/asyncToGenerator":52,"@babel/runtime/helpers/interopRequireDefault":57,"@babel/runtime/regenerator":66,"buffer":102}],16:[function(require,module,exports){
+},{"./utils-base64":14,"buffer":99}],16:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -2429,7 +1916,7 @@ function areRxDocumentArraysEqual(primaryPath, ar1, ar2) {
   return true;
 }
 function getSortDocumentsByLastWriteTimeComparator(primaryPath) {
-  return function (a, b) {
+  return (a, b) => {
     if (a._meta.lwt === b._meta.lwt) {
       if (b[primaryPath] < a[primaryPath]) {
         return 1;
@@ -2462,7 +1949,7 @@ var _utilsString = require("./utils-string");
 function pluginMissing(pluginKey) {
   var keyParts = pluginKey.split('-');
   var pluginName = 'RxDB';
-  keyParts.forEach(function (part) {
+  keyParts.forEach(part => {
     pluginName += (0, _utilsString.ucfirst)(part);
   });
   pluginName += 'Plugin';
@@ -2560,10 +2047,12 @@ function defaultHashFunction(input) {
 },{}],19:[function(require,module,exports){
 "use strict";
 
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.clone = void 0;
+exports.deepEqual = deepEqual;
 exports.deepFreeze = deepFreeze;
 exports.firstPropertyNameOfObject = firstPropertyNameOfObject;
 exports.firstPropertyValueOfObject = firstPropertyValueOfObject;
@@ -2574,6 +2063,7 @@ exports.objectPathMonad = objectPathMonad;
 exports.overwriteGetterForCaching = overwriteGetterForCaching;
 exports.sortObject = sortObject;
 exports.stringifyFilter = stringifyFilter;
+var _fastDeepEqual = _interopRequireDefault(require("fast-deep-equal"));
 function deepFreeze(o) {
   Object.freeze(o);
   Object.getOwnPropertyNames(o).forEach(function (prop) {
@@ -2582,6 +2072,9 @@ function deepFreeze(o) {
     }
   });
   return o;
+}
+function deepEqual(obj1, obj2) {
+  return (0, _fastDeepEqual.default)(obj1, obj2);
 }
 
 /**
@@ -2601,11 +2094,9 @@ function objectPathMonad(objectPath) {
    * directly return the field of the object.
    */
   if (split.length === 1) {
-    return function (obj) {
-      return obj[objectPath];
-    };
+    return obj => obj[objectPath];
   }
-  return function (obj) {
+  return obj => {
     var currentVal = obj;
     var t = 0;
     while (t < split.length) {
@@ -2672,18 +2163,15 @@ function firstPropertyValueOfObject(obj) {
  * deep-sort an object so its attributes are in lexical order.
  * Also sorts the arrays inside of the object if no-array-sort not set
  */
-function sortObject(obj) {
-  var noArraySort = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+function sortObject(obj, noArraySort = false) {
   if (!obj) return obj; // do not sort null, false or undefined
 
   // array
   if (!noArraySort && Array.isArray(obj)) {
-    return obj.sort(function (a, b) {
+    return obj.sort((a, b) => {
       if (typeof a === 'string' && typeof b === 'string') return a.localeCompare(b);
       if (typeof a === 'object') return 1;else return -1;
-    }).map(function (i) {
-      return sortObject(i, noArraySort);
-    });
+    }).map(i => sortObject(i, noArraySort));
   }
 
   // object
@@ -2693,9 +2181,7 @@ function sortObject(obj) {
       return obj;
     }
     var out = {};
-    Object.keys(obj).sort(function (a, b) {
-      return a.localeCompare(b);
-    }).forEach(function (key) {
+    Object.keys(obj).sort((a, b) => a.localeCompare(b)).forEach(key => {
       out[key] = sortObject(obj[key], noArraySort);
     });
     return out;
@@ -2751,7 +2237,7 @@ var clone = deepClone;
 exports.clone = clone;
 function overwriteGetterForCaching(obj, getterName, value) {
   Object.defineProperty(obj, getterName, {
-    get: function get() {
+    get: function () {
       return value;
     }
   });
@@ -2769,7 +2255,7 @@ function stringifyFilter(key, value) {
   return value;
 }
 
-},{}],20:[function(require,module,exports){
+},{"@babel/runtime/helpers/interopRequireDefault":56,"fast-deep-equal":413}],20:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -2782,9 +2268,7 @@ exports.getFromMapOrFill = getFromMapOrFill;
 exports.getFromMapOrThrow = getFromMapOrThrow;
 exports.runXTimes = runXTimes;
 function runXTimes(xTimes, fn) {
-  new Array(xTimes).fill(0).forEach(function (_v, idx) {
-    return fn(idx);
-  });
+  new Array(xTimes).fill(0).forEach((_v, idx) => fn(idx));
 }
 function ensureNotFalsy(obj) {
   if (!obj) {
@@ -2843,15 +2327,10 @@ exports.toPromise = toPromise;
  * returns a promise that resolves on the next tick
  */
 function nextTick() {
-  return new Promise(function (res) {
-    return setTimeout(res, 0);
-  });
+  return new Promise(res => setTimeout(res, 0));
 }
-function promiseWait() {
-  var ms = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 0;
-  return new Promise(function (res) {
-    return setTimeout(res, ms);
-  });
+function promiseWait(ms = 0) {
+  return new Promise(res => setTimeout(res, ms));
 }
 function toPromise(maybePromise) {
   if (maybePromise && typeof maybePromise.then === 'function') {
@@ -2869,14 +2348,11 @@ var PROMISE_RESOLVE_NULL = Promise.resolve(null);
 exports.PROMISE_RESOLVE_NULL = PROMISE_RESOLVE_NULL;
 var PROMISE_RESOLVE_VOID = Promise.resolve();
 exports.PROMISE_RESOLVE_VOID = PROMISE_RESOLVE_VOID;
-function requestIdlePromise() {
-  var timeout = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : null;
+function requestIdlePromise(timeout = null) {
   if (typeof window === 'object' && window['requestIdleCallback']) {
-    return new Promise(function (res) {
-      return window['requestIdleCallback'](res, {
-        timeout: timeout
-      });
-    });
+    return new Promise(res => window['requestIdleCallback'](res, {
+      timeout
+    }));
   } else {
     return promiseWait(0);
   }
@@ -2897,9 +2373,7 @@ function requestIdleCallbackIfAvailable(fun) {
  * @param tasks array with functions that return a promise
  */
 function promiseSeries(tasks, initial) {
-  return tasks.reduce(function (current, next) {
-    return current.then(next);
-  }, Promise.resolve(initial));
+  return tasks.reduce((current, next) => current.then(next), Promise.resolve(initial));
 }
 
 },{}],22:[function(require,module,exports){
@@ -2950,8 +2424,7 @@ exports.ucfirst = ucfirst;
  * get a random string which can be used with couchdb
  * @link http://stackoverflow.com/a/1349426/3443137
  */
-function randomCouchString() {
-  var length = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 10;
+function randomCouchString(length = 10) {
   var text = '';
   var possible = 'abcdefghijklmnopqrstuvwxyz';
   for (var i = 0; i < length; i++) {
@@ -3087,7 +2560,7 @@ function createQueryCache() {
 function uncacheRxQuery(queryCache, rxQuery) {
   rxQuery.uncached = true;
   var stringRep = rxQuery.toString();
-  queryCache._map["delete"](stringRep);
+  queryCache._map.delete(stringRep);
 }
 function countRxQuerySubscribers(rxQuery) {
   return rxQuery.refCount$.observers.length;
@@ -3103,39 +2576,32 @@ var DEFAULT_UNEXECUTED_LIFETME = 30 * 1000;
  * This is a monad which makes it easier to unit test
  */
 exports.DEFAULT_UNEXECUTED_LIFETME = DEFAULT_UNEXECUTED_LIFETME;
-var defaultCacheReplacementPolicyMonad = function defaultCacheReplacementPolicyMonad(tryToKeepMax, unExecutedLifetime) {
-  return function (_collection, queryCache) {
-    if (queryCache._map.size < tryToKeepMax) {
-      return;
+var defaultCacheReplacementPolicyMonad = (tryToKeepMax, unExecutedLifetime) => (_collection, queryCache) => {
+  if (queryCache._map.size < tryToKeepMax) {
+    return;
+  }
+  var minUnExecutedLifetime = (0, _utils.now)() - unExecutedLifetime;
+  var maybeUncash = [];
+  var queriesInCache = Array.from(queryCache._map.values());
+  for (var rxQuery of queriesInCache) {
+    // filter out queries with subscribers
+    if (countRxQuerySubscribers(rxQuery) > 0) {
+      continue;
     }
-    var minUnExecutedLifetime = (0, _utils.now)() - unExecutedLifetime;
-    var maybeUncash = [];
-    var queriesInCache = Array.from(queryCache._map.values());
-    for (var _i = 0, _queriesInCache = queriesInCache; _i < _queriesInCache.length; _i++) {
-      var rxQuery = _queriesInCache[_i];
-      // filter out queries with subscribers
-      if (countRxQuerySubscribers(rxQuery) > 0) {
-        continue;
-      }
-      // directly uncache queries that never executed and are older then unExecutedLifetime
-      if (rxQuery._lastEnsureEqual === 0 && rxQuery._creationTime < minUnExecutedLifetime) {
-        uncacheRxQuery(queryCache, rxQuery);
-        continue;
-      }
-      maybeUncash.push(rxQuery);
+    // directly uncache queries that never executed and are older then unExecutedLifetime
+    if (rxQuery._lastEnsureEqual === 0 && rxQuery._creationTime < minUnExecutedLifetime) {
+      uncacheRxQuery(queryCache, rxQuery);
+      continue;
     }
-    var mustUncache = maybeUncash.length - tryToKeepMax;
-    if (mustUncache <= 0) {
-      return;
-    }
-    var sortedByLastUsage = maybeUncash.sort(function (a, b) {
-      return a._lastEnsureEqual - b._lastEnsureEqual;
-    });
-    var toRemove = sortedByLastUsage.slice(0, mustUncache);
-    toRemove.forEach(function (rxQuery) {
-      return uncacheRxQuery(queryCache, rxQuery);
-    });
-  };
+    maybeUncash.push(rxQuery);
+  }
+  var mustUncache = maybeUncash.length - tryToKeepMax;
+  if (mustUncache <= 0) {
+    return;
+  }
+  var sortedByLastUsage = maybeUncash.sort((a, b) => a._lastEnsureEqual - b._lastEnsureEqual);
+  var toRemove = sortedByLastUsage.slice(0, mustUncache);
+  toRemove.forEach(rxQuery => uncacheRxQuery(queryCache, rxQuery));
 };
 exports.defaultCacheReplacementPolicyMonad = defaultCacheReplacementPolicyMonad;
 var defaultCacheReplacementPolicy = defaultCacheReplacementPolicyMonad(DEFAULT_TRY_TO_KEEP_MAX, DEFAULT_UNEXECUTED_LIFETME);
@@ -3160,14 +2626,12 @@ function triggerCacheReplacement(rxCollection) {
    * Do not run directly to not reduce result latency of a new query
    */
   (0, _utils.nextTick)() // wait at least one tick
-  .then(function () {
-    return (0, _utils.requestIdlePromise)(200);
-  }) // and then wait for the CPU to be idle
-  .then(function () {
+  .then(() => (0, _utils.requestIdlePromise)(200)) // and then wait for the CPU to be idle
+  .then(() => {
     if (!rxCollection.destroyed) {
       rxCollection.cacheReplacementPolicy(rxCollection, rxCollection._queryCache);
     }
-    COLLECTIONS_WITH_RUNNING_CLEANUP["delete"](rxCollection);
+    COLLECTIONS_WITH_RUNNING_CLEANUP.delete(rxCollection);
   });
 }
 
@@ -3204,23 +2668,19 @@ function getQueryPlan(schema, query) {
   } else {
     indexes.push([primaryPath]);
   }
-  var optimalSortIndex = query.sort.map(function (sortField) {
-    return Object.keys(sortField)[0];
-  });
+  var optimalSortIndex = query.sort.map(sortField => Object.keys(sortField)[0]);
   var optimalSortIndexCompareString = optimalSortIndex.join(',');
   /**
    * Most storages do not support descending indexes
    * so having a 'desc' in the sorting, means we always have to re-sort the results.
    */
-  var hasDescSorting = !!query.sort.find(function (sortField) {
-    return Object.values(sortField)[0] === 'desc';
-  });
+  var hasDescSorting = !!query.sort.find(sortField => Object.values(sortField)[0] === 'desc');
   var currentBestQuality = -1;
   var currentBestQueryPlan;
-  indexes.forEach(function (index) {
+  indexes.forEach(index => {
     var inclusiveEnd = true;
     var inclusiveStart = true;
-    var opts = index.map(function (indexField) {
+    var opts = index.map(indexField => {
       var matcher = selector[indexField];
       var operators = matcher ? Object.keys(matcher) : [];
       var matcherOpts = {};
@@ -3232,7 +2692,7 @@ function getQueryPlan(schema, query) {
           inclusiveEnd: true
         };
       } else {
-        operators.forEach(function (operator) {
+        operators.forEach(operator => {
           if (LOGICAL_OPERATORS.has(operator)) {
             var operatorValue = matcher[operator];
             var partialOpts = getMatcherQueryOpts(operator, operatorValue);
@@ -3263,15 +2723,11 @@ function getQueryPlan(schema, query) {
       return matcherOpts;
     });
     var queryPlan = {
-      index: index,
-      startKeys: opts.map(function (opt) {
-        return opt.startKey;
-      }),
-      endKeys: opts.map(function (opt) {
-        return opt.endKey;
-      }),
-      inclusiveEnd: inclusiveEnd,
-      inclusiveStart: inclusiveStart,
+      index,
+      startKeys: opts.map(opt => opt.startKey),
+      endKeys: opts.map(opt => opt.endKey),
+      inclusiveEnd,
+      inclusiveStart,
       sortFieldsSameAsIndexFields: !hasDescSorting && optimalSortIndexCompareString === index.join(','),
       selectorSatisfiedByIndex: isSelectorSatisfiedByIndex(index, query.selector)
     };
@@ -3306,31 +2762,23 @@ var UPPER_BOUND_LOGICAL_OPERATORS = new Set(['$eq', '$lt', '$lte']);
 exports.UPPER_BOUND_LOGICAL_OPERATORS = UPPER_BOUND_LOGICAL_OPERATORS;
 function isSelectorSatisfiedByIndex(index, selector) {
   var selectorEntries = Object.entries(selector);
-  var hasNonMatchingOperator = selectorEntries.find(function (_ref) {
-    var fieldName = _ref[0],
-      operation = _ref[1];
+  var hasNonMatchingOperator = selectorEntries.find(([fieldName, operation]) => {
     if (!index.includes(fieldName)) {
       return true;
     }
-    var hasNonLogicOperator = Object.entries(operation).find(function (_ref2) {
-      var op = _ref2[0],
-        _value = _ref2[1];
-      return !LOGICAL_OPERATORS.has(op);
-    });
+    var hasNonLogicOperator = Object.entries(operation).find(([op, _value]) => !LOGICAL_OPERATORS.has(op));
     return hasNonLogicOperator;
   });
   if (hasNonMatchingOperator) {
     return false;
   }
   var prevLowerBoundaryField;
-  var hasMoreThenOneLowerBoundaryField = index.find(function (fieldName) {
+  var hasMoreThenOneLowerBoundaryField = index.find(fieldName => {
     var operation = selector[fieldName];
     if (!operation) {
       return false;
     }
-    var hasLowerLogicOp = Object.keys(operation).find(function (key) {
-      return LOWER_BOUND_LOGICAL_OPERATORS.has(key);
-    });
+    var hasLowerLogicOp = Object.keys(operation).find(key => LOWER_BOUND_LOGICAL_OPERATORS.has(key));
     if (prevLowerBoundaryField && hasLowerLogicOp) {
       return true;
     } else if (hasLowerLogicOp !== '$eq') {
@@ -3342,14 +2790,12 @@ function isSelectorSatisfiedByIndex(index, selector) {
     return false;
   }
   var prevUpperBoundaryField;
-  var hasMoreThenOneUpperBoundaryField = index.find(function (fieldName) {
+  var hasMoreThenOneUpperBoundaryField = index.find(fieldName => {
     var operation = selector[fieldName];
     if (!operation) {
       return false;
     }
-    var hasUpperLogicOp = Object.keys(operation).find(function (key) {
-      return UPPER_BOUND_LOGICAL_OPERATORS.has(key);
-    });
+    var hasUpperLogicOp = Object.keys(operation).find(key => UPPER_BOUND_LOGICAL_OPERATORS.has(key));
     if (prevUpperBoundaryField && hasUpperLogicOp) {
       return true;
     } else if (hasUpperLogicOp !== '$eq') {
@@ -3399,15 +2845,11 @@ function getMatcherQueryOpts(operator, operatorValue) {
 function rateQueryPlan(schema, query, queryPlan) {
   var quality = 0;
   var pointsPerMatchingKey = 10;
-  var idxOfFirstMinStartKey = queryPlan.startKeys.findIndex(function (keyValue) {
-    return keyValue === INDEX_MIN;
-  });
+  var idxOfFirstMinStartKey = queryPlan.startKeys.findIndex(keyValue => keyValue === INDEX_MIN);
   if (idxOfFirstMinStartKey > 0) {
     quality = quality + idxOfFirstMinStartKey * pointsPerMatchingKey;
   }
-  var idxOfFirstMaxEndKey = queryPlan.endKeys.findIndex(function (keyValue) {
-    return keyValue === INDEX_MAX;
-  });
+  var idxOfFirstMaxEndKey = queryPlan.endKeys.findIndex(keyValue => keyValue === INDEX_MAX);
   if (idxOfFirstMaxEndKey > 0) {
     quality = quality + idxOfFirstMaxEndKey * pointsPerMatchingKey;
   }
@@ -3421,168 +2863,112 @@ function rateQueryPlan(schema, query, queryPlan) {
 },{"./rx-schema-helper":44}],27:[function(require,module,exports){
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.getCheckpointKey = getCheckpointKey;
 exports.getLastCheckpointDoc = getLastCheckpointDoc;
 exports.setCheckpoint = setCheckpoint;
-var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
-var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 var _rxSchemaHelper = require("../rx-schema-helper");
 var _rxStorageHelper = require("../rx-storage-helper");
 var _utils = require("../plugins/utils");
 var _metaInstance = require("./meta-instance");
-function getLastCheckpointDoc(_x, _x2) {
-  return _getLastCheckpointDoc.apply(this, arguments);
+async function getLastCheckpointDoc(state, direction) {
+  var checkpointDocId = (0, _rxSchemaHelper.getComposedPrimaryKeyOfDocumentData)(_metaInstance.RX_REPLICATION_META_INSTANCE_SCHEMA, {
+    isCheckpoint: '1',
+    itemId: direction,
+    replicationIdentifier: state.checkpointKey
+  });
+  var checkpointResult = await state.input.metaInstance.findDocumentsById([checkpointDocId], false);
+  var checkpointDoc = checkpointResult[checkpointDocId];
+  state.lastCheckpointDoc[direction] = checkpointDoc;
+  if (checkpointDoc) {
+    return checkpointDoc.data;
+  } else {
+    return undefined;
+  }
 }
+
 /**
  * Sets the checkpoint,
  * automatically resolves conflicts that appear.
  */
-function _getLastCheckpointDoc() {
-  _getLastCheckpointDoc = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(state, direction) {
-    var checkpointDocId, checkpointResult, checkpointDoc;
-    return _regenerator["default"].wrap(function _callee$(_context) {
-      while (1) switch (_context.prev = _context.next) {
-        case 0:
-          checkpointDocId = (0, _rxSchemaHelper.getComposedPrimaryKeyOfDocumentData)(_metaInstance.RX_REPLICATION_META_INSTANCE_SCHEMA, {
-            isCheckpoint: '1',
-            itemId: direction,
-            replicationIdentifier: state.checkpointKey
-          });
-          _context.next = 3;
-          return state.input.metaInstance.findDocumentsById([checkpointDocId], false);
-        case 3:
-          checkpointResult = _context.sent;
-          checkpointDoc = checkpointResult[checkpointDocId];
-          state.lastCheckpointDoc[direction] = checkpointDoc;
-          if (!checkpointDoc) {
-            _context.next = 10;
-            break;
-          }
-          return _context.abrupt("return", checkpointDoc.data);
-        case 10:
-          return _context.abrupt("return", undefined);
-        case 11:
-        case "end":
-          return _context.stop();
-      }
-    }, _callee);
-  }));
-  return _getLastCheckpointDoc.apply(this, arguments);
-}
-function setCheckpoint(_x3, _x4, _x5) {
-  return _setCheckpoint.apply(this, arguments);
-}
-function _setCheckpoint() {
-  _setCheckpoint = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee2(state, direction, checkpoint) {
-    var previousCheckpointDoc, newDoc, result, error;
-    return _regenerator["default"].wrap(function _callee2$(_context2) {
-      while (1) switch (_context2.prev = _context2.next) {
-        case 0:
-          previousCheckpointDoc = state.lastCheckpointDoc[direction];
-          if (!(checkpoint &&
-          /**
-           * If the replication is already canceled,
-           * we do not write a checkpoint
-           * because that could mean we write a checkpoint
-           * for data that has been fetched from the master
-           * but not been written to the child.
-           */
-          !state.events.canceled.getValue() && (
-          /**
-           * Only write checkpoint if it is different from before
-           * to have less writes to the storage.
-           */
+async function setCheckpoint(state, direction, checkpoint) {
+  var previousCheckpointDoc = state.lastCheckpointDoc[direction];
+  if (checkpoint &&
+  /**
+   * If the replication is already canceled,
+   * we do not write a checkpoint
+   * because that could mean we write a checkpoint
+   * for data that has been fetched from the master
+   * but not been written to the child.
+   */
+  !state.events.canceled.getValue() && (
+  /**
+   * Only write checkpoint if it is different from before
+   * to have less writes to the storage.
+   */
 
-          !previousCheckpointDoc || JSON.stringify(previousCheckpointDoc.data) !== JSON.stringify(checkpoint)))) {
-            _context2.next = 25;
-            break;
-          }
-          newDoc = {
-            id: '',
-            isCheckpoint: '1',
-            itemId: direction,
-            replicationIdentifier: state.checkpointKey,
-            _deleted: false,
-            _attachments: {},
-            data: checkpoint,
-            _meta: (0, _utils.getDefaultRxDocumentMeta)(),
-            _rev: (0, _utils.getDefaultRevision)()
-          };
-          newDoc.id = (0, _rxSchemaHelper.getComposedPrimaryKeyOfDocumentData)(_metaInstance.RX_REPLICATION_META_INSTANCE_SCHEMA, newDoc);
-        case 4:
-          if (!true) {
-            _context2.next = 25;
-            break;
-          }
-          /**
-           * Instead of just storign the new checkpoint,
-           * we have to stack up the checkpoint with the previous one.
-           * This is required for plugins like the sharding RxStorage
-           * where the changeStream events only contain a Partial of the
-           * checkpoint.
-           */
-          if (previousCheckpointDoc) {
-            newDoc.data = (0, _rxStorageHelper.stackCheckpoints)([previousCheckpointDoc.data, newDoc.data]);
-          }
-          newDoc._meta.lwt = (0, _utils.now)();
-          newDoc._rev = (0, _utils.createRevision)(state.input.identifier, previousCheckpointDoc);
-          _context2.next = 10;
-          return state.input.metaInstance.bulkWrite([{
-            previous: previousCheckpointDoc,
-            document: newDoc
-          }], 'replication-set-checkpoint');
-        case 10:
-          result = _context2.sent;
-          if (!result.success[newDoc.id]) {
-            _context2.next = 16;
-            break;
-          }
-          state.lastCheckpointDoc[direction] = (0, _utils.getFromObjectOrThrow)(result.success, newDoc.id);
-          return _context2.abrupt("return");
-        case 16:
-          error = (0, _utils.getFromObjectOrThrow)(result.error, newDoc.id);
-          if (!(error.status !== 409)) {
-            _context2.next = 21;
-            break;
-          }
+  !previousCheckpointDoc || JSON.stringify(previousCheckpointDoc.data) !== JSON.stringify(checkpoint))) {
+    var newDoc = {
+      id: '',
+      isCheckpoint: '1',
+      itemId: direction,
+      replicationIdentifier: state.checkpointKey,
+      _deleted: false,
+      _attachments: {},
+      data: checkpoint,
+      _meta: (0, _utils.getDefaultRxDocumentMeta)(),
+      _rev: (0, _utils.getDefaultRevision)()
+    };
+    newDoc.id = (0, _rxSchemaHelper.getComposedPrimaryKeyOfDocumentData)(_metaInstance.RX_REPLICATION_META_INSTANCE_SCHEMA, newDoc);
+    while (true) {
+      /**
+       * Instead of just storign the new checkpoint,
+       * we have to stack up the checkpoint with the previous one.
+       * This is required for plugins like the sharding RxStorage
+       * where the changeStream events only contain a Partial of the
+       * checkpoint.
+       */
+      if (previousCheckpointDoc) {
+        newDoc.data = (0, _rxStorageHelper.stackCheckpoints)([previousCheckpointDoc.data, newDoc.data]);
+      }
+      newDoc._meta.lwt = (0, _utils.now)();
+      newDoc._rev = (0, _utils.createRevision)(state.input.identifier, previousCheckpointDoc);
+      var result = await state.input.metaInstance.bulkWrite([{
+        previous: previousCheckpointDoc,
+        document: newDoc
+      }], 'replication-set-checkpoint');
+      if (result.success[newDoc.id]) {
+        state.lastCheckpointDoc[direction] = (0, _utils.getFromObjectOrThrow)(result.success, newDoc.id);
+        return;
+      } else {
+        var error = (0, _utils.getFromObjectOrThrow)(result.error, newDoc.id);
+        if (error.status !== 409) {
           throw error;
-        case 21:
+        } else {
           previousCheckpointDoc = (0, _utils.ensureNotFalsy)(error.documentInDb);
           newDoc._rev = (0, _utils.createRevision)(state.input.identifier, previousCheckpointDoc);
-        case 23:
-          _context2.next = 4;
-          break;
-        case 25:
-        case "end":
-          return _context2.stop();
+        }
       }
-    }, _callee2);
-  }));
-  return _setCheckpoint.apply(this, arguments);
+    }
+  }
 }
 function getCheckpointKey(input) {
   var hash = (0, _utils.fastUnsecureHash)([input.identifier, input.forkInstance.databaseName, input.forkInstance.collectionName].join('||'));
   return 'rx-storage-replication-' + hash;
 }
 
-},{"../plugins/utils":12,"../rx-schema-helper":44,"../rx-storage-helper":46,"./meta-instance":32,"@babel/runtime/helpers/asyncToGenerator":52,"@babel/runtime/helpers/interopRequireDefault":57,"@babel/runtime/regenerator":66}],28:[function(require,module,exports){
+},{"../plugins/utils":12,"../rx-schema-helper":44,"../rx-storage-helper":46,"./meta-instance":32}],28:[function(require,module,exports){
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.defaultConflictHandler = void 0;
 exports.resolveConflictError = resolveConflictError;
-var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
-var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
-var _fastDeepEqual = _interopRequireDefault(require("fast-deep-equal"));
 var _utils = require("../plugins/utils");
-var defaultConflictHandler = function defaultConflictHandler(i, _context) {
+var defaultConflictHandler = function (i, _context) {
   /**
    * If the documents are deep equal,
    * we have no conflict.
@@ -3590,7 +2976,7 @@ var defaultConflictHandler = function defaultConflictHandler(i, _context) {
    * check some properties, like the updatedAt time,
    * for better performance, because deepEqual is expensive.
    */
-  if ((0, _fastDeepEqual["default"])(i.newDocumentState, i.realMasterState)) {
+  if ((0, _utils.deepEqual)(i.newDocumentState, i.realMasterState)) {
     return Promise.resolve({
       isEqual: true
     });
@@ -3615,64 +3001,45 @@ var defaultConflictHandler = function defaultConflictHandler(i, _context) {
  * Conflicts are only solved in the upstream, never in the downstream.
  */
 exports.defaultConflictHandler = defaultConflictHandler;
-function resolveConflictError(_x, _x2, _x3) {
-  return _resolveConflictError.apply(this, arguments);
-}
-function _resolveConflictError() {
-  _resolveConflictError = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(state, input, forkState) {
-    var conflictHandler, conflictHandlerOutput, resolvedDoc;
-    return _regenerator["default"].wrap(function _callee$(_context2) {
-      while (1) switch (_context2.prev = _context2.next) {
-        case 0:
-          conflictHandler = state.input.conflictHandler;
-          _context2.next = 3;
-          return conflictHandler(input, 'replication-resolve-conflict');
-        case 3:
-          conflictHandlerOutput = _context2.sent;
-          if (!conflictHandlerOutput.isEqual) {
-            _context2.next = 8;
-            break;
-          }
-          return _context2.abrupt("return", undefined);
-        case 8:
-          /**
-           * We have a resolved conflict,
-           * use the resolved document data.
-           */
-          resolvedDoc = Object.assign({}, conflictHandlerOutput.documentData, {
-            /**
-             * Because the resolved conflict is written to the fork,
-             * we have to keep/update the forks _meta data, not the masters.
-             */
-            _meta: (0, _utils.flatClone)(forkState._meta),
-            _rev: (0, _utils.getDefaultRevision)(),
-            _attachments: (0, _utils.flatClone)(forkState._attachments)
-          });
-          resolvedDoc._meta.lwt = (0, _utils.now)();
-          resolvedDoc._rev = (0, _utils.createRevision)(state.input.identifier, forkState);
-          return _context2.abrupt("return", {
-            resolvedDoc: resolvedDoc,
-            output: conflictHandlerOutput
-          });
-        case 12:
-        case "end":
-          return _context2.stop();
-      }
-    }, _callee);
-  }));
-  return _resolveConflictError.apply(this, arguments);
+async function resolveConflictError(state, input, forkState) {
+  var conflictHandler = state.input.conflictHandler;
+  var conflictHandlerOutput = await conflictHandler(input, 'replication-resolve-conflict');
+  if (conflictHandlerOutput.isEqual) {
+    /**
+     * Documents are equal,
+     * so this is not a conflict -> do nothing.
+     */
+    return undefined;
+  } else {
+    /**
+     * We have a resolved conflict,
+     * use the resolved document data.
+     */
+    var resolvedDoc = Object.assign({}, conflictHandlerOutput.documentData, {
+      /**
+       * Because the resolved conflict is written to the fork,
+       * we have to keep/update the forks _meta data, not the masters.
+       */
+      _meta: (0, _utils.flatClone)(forkState._meta),
+      _rev: (0, _utils.getDefaultRevision)(),
+      _attachments: (0, _utils.flatClone)(forkState._attachments)
+    });
+    resolvedDoc._meta.lwt = (0, _utils.now)();
+    resolvedDoc._rev = (0, _utils.createRevision)(state.input.identifier, forkState);
+    return {
+      resolvedDoc,
+      output: conflictHandlerOutput
+    };
+  }
 }
 
-},{"../plugins/utils":12,"@babel/runtime/helpers/asyncToGenerator":52,"@babel/runtime/helpers/interopRequireDefault":57,"@babel/runtime/regenerator":66,"fast-deep-equal":416}],29:[function(require,module,exports){
+},{"../plugins/utils":12}],29:[function(require,module,exports){
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.startReplicationDownstream = startReplicationDownstream;
-var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
-var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 var _rxjs = require("rxjs");
 var _rxError = require("../rx-error");
 var _rxStorageHelper = require("../rx-storage-helper");
@@ -3699,10 +3066,10 @@ function startReplicationDownstream(state) {
     state.stats.down.addNewTask = state.stats.down.addNewTask + 1;
     var taskWithTime = {
       time: timer++,
-      task: task
+      task
     };
     openTasks.push(taskWithTime);
-    state.streamQueue.down = state.streamQueue.down.then(function () {
+    state.streamQueue.down = state.streamQueue.down.then(() => {
       var useTasks = [];
       while (openTasks.length > 0) {
         state.events.active.down.next(true);
@@ -3731,7 +3098,7 @@ function startReplicationDownstream(state) {
       } else {
         return downstreamProcessChanges(useTasks);
       }
-    }).then(function () {
+    }).then(() => {
       state.events.active.down.next(false);
       if (!state.firstSyncDone.down.getValue()) {
         state.firstSyncDone.down.next(true);
@@ -3743,93 +3110,50 @@ function startReplicationDownstream(state) {
   /**
    * If a write on the master happens, we have to trigger the downstream.
    */
-  var sub = replicationHandler.masterChangeStream$.subscribe(function (task) {
+  var sub = replicationHandler.masterChangeStream$.subscribe(task => {
     state.stats.down.masterChangeStreamEmit = state.stats.down.masterChangeStreamEmit + 1;
     addNewTask(task);
   });
-  (0, _rxjs.firstValueFrom)(state.events.canceled.pipe((0, _rxjs.filter)(function (canceled) {
-    return !!canceled;
-  }))).then(function () {
-    return sub.unsubscribe();
-  });
+  (0, _rxjs.firstValueFrom)(state.events.canceled.pipe((0, _rxjs.filter)(canceled => !!canceled))).then(() => sub.unsubscribe());
 
   /**
    * For faster performance, we directly start each write
    * and then await all writes at the end.
    */
   var lastTimeMasterChangesRequested = -1;
-  function downstreamResyncOnce() {
-    return _downstreamResyncOnce.apply(this, arguments);
-  }
-  function _downstreamResyncOnce() {
-    _downstreamResyncOnce = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee2() {
-      var lastCheckpoint, promises, downResult;
-      return _regenerator["default"].wrap(function _callee2$(_context2) {
-        while (1) switch (_context2.prev = _context2.next) {
-          case 0:
-            state.stats.down.downstreamResyncOnce = state.stats.down.downstreamResyncOnce + 1;
-            if (!state.events.canceled.getValue()) {
-              _context2.next = 3;
-              break;
-            }
-            return _context2.abrupt("return");
-          case 3:
-            state.checkpointQueue = state.checkpointQueue.then(function () {
-              return (0, _checkpoint.getLastCheckpointDoc)(state, 'down');
-            });
-            _context2.next = 6;
-            return state.checkpointQueue;
-          case 6:
-            lastCheckpoint = _context2.sent;
-            promises = [];
-          case 8:
-            if (state.events.canceled.getValue()) {
-              _context2.next = 21;
-              break;
-            }
-            lastTimeMasterChangesRequested = timer++;
-            _context2.next = 12;
-            return replicationHandler.masterChangesSince(lastCheckpoint, state.input.pullBatchSize);
-          case 12:
-            downResult = _context2.sent;
-            if (!(downResult.documents.length === 0)) {
-              _context2.next = 15;
-              break;
-            }
-            return _context2.abrupt("break", 21);
-          case 15:
-            lastCheckpoint = (0, _rxStorageHelper.stackCheckpoints)([lastCheckpoint, downResult.checkpoint]);
-            promises.push(persistFromMaster(downResult.documents, lastCheckpoint));
+  async function downstreamResyncOnce() {
+    state.stats.down.downstreamResyncOnce = state.stats.down.downstreamResyncOnce + 1;
+    if (state.events.canceled.getValue()) {
+      return;
+    }
+    state.checkpointQueue = state.checkpointQueue.then(() => (0, _checkpoint.getLastCheckpointDoc)(state, 'down'));
+    var lastCheckpoint = await state.checkpointQueue;
+    var promises = [];
+    while (!state.events.canceled.getValue()) {
+      lastTimeMasterChangesRequested = timer++;
+      var downResult = await replicationHandler.masterChangesSince(lastCheckpoint, state.input.pullBatchSize);
+      if (downResult.documents.length === 0) {
+        break;
+      }
+      lastCheckpoint = (0, _rxStorageHelper.stackCheckpoints)([lastCheckpoint, downResult.checkpoint]);
+      promises.push(persistFromMaster(downResult.documents, lastCheckpoint));
 
-            /**
-             * By definition we stop pull when the pulled documents
-             * do not fill up the pullBatchSize because we
-             * can assume that the remote has no more documents.
-             */
-            if (!(downResult.documents.length < state.input.pullBatchSize)) {
-              _context2.next = 19;
-              break;
-            }
-            return _context2.abrupt("break", 21);
-          case 19:
-            _context2.next = 8;
-            break;
-          case 21:
-            _context2.next = 23;
-            return Promise.all(promises);
-          case 23:
-          case "end":
-            return _context2.stop();
-        }
-      }, _callee2);
-    }));
-    return _downstreamResyncOnce.apply(this, arguments);
+      /**
+       * By definition we stop pull when the pulled documents
+       * do not fill up the pullBatchSize because we
+       * can assume that the remote has no more documents.
+       */
+      if (downResult.documents.length < state.input.pullBatchSize) {
+        break;
+      }
+    }
+    await Promise.all(promises);
   }
   function downstreamProcessChanges(tasks) {
     state.stats.down.downstreamProcessChanges = state.stats.down.downstreamProcessChanges + 1;
     var docsOfAllTasks = [];
     var lastCheckpoint = null;
-    tasks.forEach(function (task) {
+    tasks.forEach(task => {
       if (task === 'RESYNC') {
         throw new Error('SNH');
       }
@@ -3857,7 +3181,7 @@ function startReplicationDownstream(state) {
     /**
      * Add the new docs to the non-persistend list
      */
-    docs.forEach(function (docData) {
+    docs.forEach(docData => {
       var docId = docData[state.primaryPath];
       nonPersistedFromMaster.docs[docId] = docData;
     });
@@ -3867,7 +3191,7 @@ function startReplicationDownstream(state) {
      * Run in the queue
      * with all open documents from nonPersistedFromMaster.
      */
-    persistenceQueue = persistenceQueue.then(function () {
+    persistenceQueue = persistenceQueue.then(() => {
       var downDocsById = nonPersistedFromMaster.docs;
       nonPersistedFromMaster.docs = {};
       var useCheckpoint = nonPersistedFromMaster.checkpoint;
@@ -3879,122 +3203,99 @@ function startReplicationDownstream(state) {
       var writeRowsToForkById = {};
       var writeRowsToMeta = {};
       var useMetaWriteRows = [];
-      return Promise.all([state.input.forkInstance.findDocumentsById(docIds, true), (0, _metaInstance.getAssumedMasterState)(state, docIds)]).then(function (_ref) {
-        var currentForkState = _ref[0],
-          assumedMasterState = _ref[1];
-        return Promise.all(docIds.map( /*#__PURE__*/function () {
-          var _ref2 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(docId) {
-            var forkStateFullDoc, forkStateDocData, masterState, assumedMaster, isAssumedMasterEqualToForkStatePromise, isAssumedMasterEqualToForkState, areStatesExactlyEqualPromise, areStatesExactlyEqual, newForkState, nextRevisionHeight, forkWriteRow;
-            return _regenerator["default"].wrap(function _callee$(_context) {
-              while (1) switch (_context.prev = _context.next) {
-                case 0:
-                  forkStateFullDoc = currentForkState[docId];
-                  forkStateDocData = forkStateFullDoc ? (0, _helper.writeDocToDocState)(forkStateFullDoc) : undefined;
-                  masterState = downDocsById[docId];
-                  assumedMaster = assumedMasterState[docId];
-                  if (!(assumedMaster && assumedMaster.metaDocument.isResolvedConflict === forkStateFullDoc._rev)) {
-                    _context.next = 6;
-                    break;
-                  }
-                  return _context.abrupt("return", _utils.PROMISE_RESOLVE_VOID);
-                case 6:
-                  isAssumedMasterEqualToForkStatePromise = !assumedMaster || !forkStateDocData ? _utils.PROMISE_RESOLVE_FALSE : state.input.conflictHandler({
-                    realMasterState: assumedMaster.docData,
-                    newDocumentState: forkStateDocData
-                  }, 'downstream-check-if-equal-0').then(function (r) {
-                    return r.isEqual;
-                  });
-                  _context.next = 9;
-                  return isAssumedMasterEqualToForkStatePromise;
-                case 9:
-                  isAssumedMasterEqualToForkState = _context.sent;
-                  if (!isAssumedMasterEqualToForkState && assumedMaster && assumedMaster.docData._rev && forkStateFullDoc._meta[state.input.identifier] && (0, _utils.parseRevision)(forkStateFullDoc._rev).height === forkStateFullDoc._meta[state.input.identifier]) {
-                    isAssumedMasterEqualToForkState = true;
-                  }
-                  if (!(forkStateFullDoc && assumedMaster && isAssumedMasterEqualToForkState === false || forkStateFullDoc && !assumedMaster)) {
-                    _context.next = 13;
-                    break;
-                  }
-                  return _context.abrupt("return", _utils.PROMISE_RESOLVE_VOID);
-                case 13:
-                  areStatesExactlyEqualPromise = !forkStateDocData ? _utils.PROMISE_RESOLVE_FALSE : state.input.conflictHandler({
-                    realMasterState: masterState,
-                    newDocumentState: forkStateDocData
-                  }, 'downstream-check-if-equal-1').then(function (r) {
-                    return r.isEqual;
-                  });
-                  _context.next = 16;
-                  return areStatesExactlyEqualPromise;
-                case 16:
-                  areStatesExactlyEqual = _context.sent;
-                  if (!(forkStateDocData && areStatesExactlyEqual)) {
-                    _context.next = 20;
-                    break;
-                  }
-                  /**
-                   * Document states are exactly equal.
-                   * This can happen when the replication is shut down
-                   * unexpected like when the user goes offline.
-                   *
-                   * Only when the assumedMaster is different from the forkState,
-                   * we have to patch the document in the meta instance.
-                   */
-                  if (!assumedMaster || isAssumedMasterEqualToForkState === false) {
-                    useMetaWriteRows.push((0, _metaInstance.getMetaWriteRow)(state, forkStateDocData, assumedMaster ? assumedMaster.metaDocument : undefined));
-                  }
-                  return _context.abrupt("return", _utils.PROMISE_RESOLVE_VOID);
-                case 20:
-                  /**
-                   * All other master states need to be written to the forkInstance
-                   * and metaInstance.
-                   */
-                  newForkState = Object.assign({}, masterState, forkStateFullDoc ? {
-                    _meta: (0, _utils.flatClone)(forkStateFullDoc._meta),
-                    _attachments: {},
-                    _rev: (0, _utils.getDefaultRevision)()
-                  } : {
-                    _meta: (0, _utils.getDefaultRxDocumentMeta)(),
-                    _rev: (0, _utils.getDefaultRevision)(),
-                    _attachments: {}
-                  });
-                  /**
-                   * If the remote works with revisions,
-                   * we store the height of the next fork-state revision
-                   * inside of the documents meta data.
-                   * By doing so we can filter it out in the upstream
-                   * and detect the document as being equal to master or not.
-                   * This is used for example in the CouchDB replication plugin.
-                   */
-                  if (masterState._rev) {
-                    nextRevisionHeight = !forkStateFullDoc ? 1 : (0, _utils.parseRevision)(forkStateFullDoc._rev).height + 1;
-                    newForkState._meta[state.input.identifier] = nextRevisionHeight;
-                  }
-                  forkWriteRow = {
-                    previous: forkStateFullDoc,
-                    document: newForkState
-                  };
-                  forkWriteRow.document._rev = (0, _utils.createRevision)(identifierHash, forkWriteRow.previous);
-                  writeRowsToFork.push(forkWriteRow);
-                  writeRowsToForkById[docId] = forkWriteRow;
-                  writeRowsToMeta[docId] = (0, _metaInstance.getMetaWriteRow)(state, masterState, assumedMaster ? assumedMaster.metaDocument : undefined);
-                case 27:
-                case "end":
-                  return _context.stop();
-              }
-            }, _callee);
-          }));
-          return function (_x) {
-            return _ref2.apply(this, arguments);
+      return Promise.all([state.input.forkInstance.findDocumentsById(docIds, true), (0, _metaInstance.getAssumedMasterState)(state, docIds)]).then(([currentForkState, assumedMasterState]) => {
+        return Promise.all(docIds.map(async docId => {
+          var forkStateFullDoc = currentForkState[docId];
+          var forkStateDocData = forkStateFullDoc ? (0, _helper.writeDocToDocState)(forkStateFullDoc) : undefined;
+          var masterState = downDocsById[docId];
+          var assumedMaster = assumedMasterState[docId];
+          if (assumedMaster && assumedMaster.metaDocument.isResolvedConflict === forkStateFullDoc._rev) {
+            /**
+             * The current fork state represents a resolved conflict
+             * that first must be send to the master in the upstream.
+             * All conflicts are resolved by the upstream.
+             */
+            return _utils.PROMISE_RESOLVE_VOID;
+          }
+          var isAssumedMasterEqualToForkStatePromise = !assumedMaster || !forkStateDocData ? _utils.PROMISE_RESOLVE_FALSE : state.input.conflictHandler({
+            realMasterState: assumedMaster.docData,
+            newDocumentState: forkStateDocData
+          }, 'downstream-check-if-equal-0').then(r => r.isEqual);
+          var isAssumedMasterEqualToForkState = await isAssumedMasterEqualToForkStatePromise;
+          if (!isAssumedMasterEqualToForkState && assumedMaster && assumedMaster.docData._rev && forkStateFullDoc._meta[state.input.identifier] && (0, _utils.parseRevision)(forkStateFullDoc._rev).height === forkStateFullDoc._meta[state.input.identifier]) {
+            isAssumedMasterEqualToForkState = true;
+          }
+          if (forkStateFullDoc && assumedMaster && isAssumedMasterEqualToForkState === false || forkStateFullDoc && !assumedMaster) {
+            /**
+             * We have a non-upstream-replicated
+             * local write to the fork.
+             * This means we ignore the downstream of this document
+             * because anyway the upstream will first resolve the conflict.
+             */
+            return _utils.PROMISE_RESOLVE_VOID;
+          }
+          var areStatesExactlyEqualPromise = !forkStateDocData ? _utils.PROMISE_RESOLVE_FALSE : state.input.conflictHandler({
+            realMasterState: masterState,
+            newDocumentState: forkStateDocData
+          }, 'downstream-check-if-equal-1').then(r => r.isEqual);
+          var areStatesExactlyEqual = await areStatesExactlyEqualPromise;
+          if (forkStateDocData && areStatesExactlyEqual) {
+            /**
+             * Document states are exactly equal.
+             * This can happen when the replication is shut down
+             * unexpected like when the user goes offline.
+             *
+             * Only when the assumedMaster is different from the forkState,
+             * we have to patch the document in the meta instance.
+             */
+            if (!assumedMaster || isAssumedMasterEqualToForkState === false) {
+              useMetaWriteRows.push((0, _metaInstance.getMetaWriteRow)(state, forkStateDocData, assumedMaster ? assumedMaster.metaDocument : undefined));
+            }
+            return _utils.PROMISE_RESOLVE_VOID;
+          }
+
+          /**
+           * All other master states need to be written to the forkInstance
+           * and metaInstance.
+           */
+          var newForkState = Object.assign({}, masterState, forkStateFullDoc ? {
+            _meta: (0, _utils.flatClone)(forkStateFullDoc._meta),
+            _attachments: {},
+            _rev: (0, _utils.getDefaultRevision)()
+          } : {
+            _meta: (0, _utils.getDefaultRxDocumentMeta)(),
+            _rev: (0, _utils.getDefaultRevision)(),
+            _attachments: {}
+          });
+          /**
+           * If the remote works with revisions,
+           * we store the height of the next fork-state revision
+           * inside of the documents meta data.
+           * By doing so we can filter it out in the upstream
+           * and detect the document as being equal to master or not.
+           * This is used for example in the CouchDB replication plugin.
+           */
+          if (masterState._rev) {
+            var nextRevisionHeight = !forkStateFullDoc ? 1 : (0, _utils.parseRevision)(forkStateFullDoc._rev).height + 1;
+            newForkState._meta[state.input.identifier] = nextRevisionHeight;
+          }
+          var forkWriteRow = {
+            previous: forkStateFullDoc,
+            document: newForkState
           };
-        }()));
-      }).then(function () {
+          forkWriteRow.document._rev = (0, _utils.createRevision)(identifierHash, forkWriteRow.previous);
+          writeRowsToFork.push(forkWriteRow);
+          writeRowsToForkById[docId] = forkWriteRow;
+          writeRowsToMeta[docId] = (0, _metaInstance.getMetaWriteRow)(state, masterState, assumedMaster ? assumedMaster.metaDocument : undefined);
+        }));
+      }).then(() => {
         if (writeRowsToFork.length > 0) {
-          return state.input.forkInstance.bulkWrite(writeRowsToFork, state.downstreamBulkWriteFlag).then(function (forkWriteResult) {
-            Object.keys(forkWriteResult.success).forEach(function (docId) {
+          return state.input.forkInstance.bulkWrite(writeRowsToFork, state.downstreamBulkWriteFlag).then(forkWriteResult => {
+            Object.keys(forkWriteResult.success).forEach(docId => {
               state.events.processed.down.next(writeRowsToForkById[docId]);
               useMetaWriteRows.push(writeRowsToMeta[docId]);
             });
-            Object.values(forkWriteResult.error).forEach(function (error) {
+            Object.values(forkWriteResult.error).forEach(error => {
               /**
                * We do not have to care about downstream conflict errors here
                * because on conflict, it will be solved locally and result in another write.
@@ -4009,28 +3310,24 @@ function startReplicationDownstream(state) {
             });
           });
         }
-      }).then(function () {
+      }).then(() => {
         if (useMetaWriteRows.length > 0) {
           return state.input.metaInstance.bulkWrite(useMetaWriteRows, 'replication-down-write-meta');
         }
-      }).then(function () {
+      }).then(() => {
         /**
          * For better performance we do not await checkpoint writes,
          * but to ensure order on parallel checkpoint writes,
          * we have to use a queue.
          */
-        state.checkpointQueue = state.checkpointQueue.then(function () {
-          return (0, _checkpoint.setCheckpoint)(state, 'down', useCheckpoint);
-        });
+        state.checkpointQueue = state.checkpointQueue.then(() => (0, _checkpoint.setCheckpoint)(state, 'down', useCheckpoint));
       });
-    })["catch"](function (unhandledError) {
-      return state.events.error.next(unhandledError);
-    });
+    }).catch(unhandledError => state.events.error.next(unhandledError));
     return persistenceQueue;
   }
 }
 
-},{"../plugins/utils":12,"../rx-error":41,"../rx-storage-helper":46,"./checkpoint":27,"./helper":30,"./meta-instance":32,"@babel/runtime/helpers/asyncToGenerator":52,"@babel/runtime/helpers/interopRequireDefault":57,"@babel/runtime/regenerator":66,"rxjs":423}],30:[function(require,module,exports){
+},{"../plugins/utils":12,"../rx-error":41,"../rx-storage-helper":46,"./checkpoint":27,"./helper":30,"./meta-instance":32,"rxjs":420}],30:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -4061,7 +3358,6 @@ function writeDocToDocState(writeDoc) {
 },{"../plugins/utils":12}],31:[function(require,module,exports){
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -4079,8 +3375,6 @@ exports.awaitRxStorageReplicationInSync = awaitRxStorageReplicationInSync;
 exports.cancelRxStorageReplication = cancelRxStorageReplication;
 exports.replicateRxStorageInstance = replicateRxStorageInstance;
 exports.rxStorageInstanceToReplicationHandler = rxStorageInstanceToReplicationHandler;
-var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
-var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 var _rxjs = require("rxjs");
 var _rxSchemaHelper = require("../rx-schema-helper");
 var _utils = require("../plugins/utils");
@@ -4091,7 +3385,7 @@ Object.keys(_checkpoint).forEach(function (key) {
   if (key in exports && exports[key] === _checkpoint[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _checkpoint[key];
     }
   });
@@ -4103,7 +3397,7 @@ Object.keys(_downstream).forEach(function (key) {
   if (key in exports && exports[key] === _downstream[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _downstream[key];
     }
   });
@@ -4115,7 +3409,7 @@ Object.keys(_helper).forEach(function (key) {
   if (key in exports && exports[key] === _helper[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _helper[key];
     }
   });
@@ -4127,7 +3421,7 @@ Object.keys(_upstream).forEach(function (key) {
   if (key in exports && exports[key] === _upstream[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _upstream[key];
     }
   });
@@ -4139,7 +3433,7 @@ Object.keys(_metaInstance).forEach(function (key) {
   if (key in exports && exports[key] === _metaInstance[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _metaInstance[key];
     }
   });
@@ -4151,7 +3445,7 @@ Object.keys(_conflicts).forEach(function (key) {
   if (key in exports && exports[key] === _conflicts[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _conflicts[key];
     }
   });
@@ -4166,8 +3460,8 @@ function replicateRxStorageInstance(input) {
   var checkpointKey = (0, _checkpoint.getCheckpointKey)(input);
   var state = {
     primaryPath: (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(input.forkInstance.schema.primaryKey),
-    input: input,
-    checkpointKey: checkpointKey,
+    input,
+    checkpointKey,
     downstreamBulkWriteFlag: 'replication-downstream-' + checkpointKey,
     events: {
       canceled: new _rxjs.BehaviorSubject(false),
@@ -4215,176 +3509,91 @@ function replicateRxStorageInstance(input) {
   return state;
 }
 function awaitRxStorageReplicationFirstInSync(state) {
-  return (0, _rxjs.firstValueFrom)((0, _rxjs.combineLatest)([state.firstSyncDone.down.pipe((0, _rxjs.filter)(function (v) {
-    return !!v;
-  })), state.firstSyncDone.up.pipe((0, _rxjs.filter)(function (v) {
-    return !!v;
-  }))])).then(function () {});
+  return (0, _rxjs.firstValueFrom)((0, _rxjs.combineLatest)([state.firstSyncDone.down.pipe((0, _rxjs.filter)(v => !!v)), state.firstSyncDone.up.pipe((0, _rxjs.filter)(v => !!v))])).then(() => {});
 }
 function awaitRxStorageReplicationInSync(replicationState) {
   return Promise.all([replicationState.streamQueue.up, replicationState.streamQueue.down, replicationState.checkpointQueue]);
 }
-function awaitRxStorageReplicationIdle(_x) {
-  return _awaitRxStorageReplicationIdle.apply(this, arguments);
-}
-function _awaitRxStorageReplicationIdle() {
-  _awaitRxStorageReplicationIdle = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee3(state) {
-    var _state$streamQueue, down, up;
-    return _regenerator["default"].wrap(function _callee3$(_context3) {
-      while (1) switch (_context3.prev = _context3.next) {
-        case 0:
-          _context3.next = 2;
-          return awaitRxStorageReplicationFirstInSync(state);
-        case 2:
-          if (!true) {
-            _context3.next = 10;
-            break;
-          }
-          _state$streamQueue = state.streamQueue, down = _state$streamQueue.down, up = _state$streamQueue.up;
-          _context3.next = 6;
-          return Promise.all([up, down]);
-        case 6:
-          if (!(down === state.streamQueue.down && up === state.streamQueue.up)) {
-            _context3.next = 8;
-            break;
-          }
-          return _context3.abrupt("return");
-        case 8:
-          _context3.next = 2;
-          break;
-        case 10:
-        case "end":
-          return _context3.stop();
-      }
-    }, _callee3);
-  }));
-  return _awaitRxStorageReplicationIdle.apply(this, arguments);
+async function awaitRxStorageReplicationIdle(state) {
+  await awaitRxStorageReplicationFirstInSync(state);
+  while (true) {
+    var {
+      down,
+      up
+    } = state.streamQueue;
+    await Promise.all([up, down]);
+    /**
+     * If the Promises have not been reasigned
+     * after awaiting them, we know that the replication
+     * is in idle state at this point in time.
+     */
+    if (down === state.streamQueue.down && up === state.streamQueue.up) {
+      return;
+    }
+  }
 }
 function rxStorageInstanceToReplicationHandler(instance, conflictHandler, databaseInstanceToken) {
   var primaryPath = (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(instance.schema.primaryKey);
   var replicationHandler = {
-    masterChangeStream$: instance.changeStream().pipe((0, _rxjs.map)(function (eventBulk) {
+    masterChangeStream$: instance.changeStream().pipe((0, _rxjs.map)(eventBulk => {
       var ret = {
         checkpoint: eventBulk.checkpoint,
-        documents: eventBulk.events.map(function (event) {
+        documents: eventBulk.events.map(event => {
           return (0, _helper.writeDocToDocState)((0, _utils.ensureNotFalsy)(event.documentData));
         })
       };
       return ret;
     })),
-    masterChangesSince: function masterChangesSince(checkpoint, batchSize) {
-      return instance.getChangedDocumentsSince(batchSize, checkpoint).then(function (result) {
+    masterChangesSince(checkpoint, batchSize) {
+      return instance.getChangedDocumentsSince(batchSize, checkpoint).then(result => {
         return {
           checkpoint: result.documents.length > 0 ? result.checkpoint : checkpoint,
-          documents: result.documents.map(function (d) {
-            return (0, _helper.writeDocToDocState)(d);
-          })
+          documents: result.documents.map(d => (0, _helper.writeDocToDocState)(d))
         };
       });
     },
-    masterWrite: function () {
-      var _masterWrite = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee2(rows) {
-        var rowById, ids, masterDocsState, conflicts, writeRows, result;
-        return _regenerator["default"].wrap(function _callee2$(_context2) {
-          while (1) switch (_context2.prev = _context2.next) {
-            case 0:
-              rowById = {};
-              rows.forEach(function (row) {
-                var docId = row.newDocumentState[primaryPath];
-                rowById[docId] = row;
-              });
-              ids = Object.keys(rowById);
-              _context2.next = 5;
-              return instance.findDocumentsById(ids, true);
-            case 5:
-              masterDocsState = _context2.sent;
-              conflicts = [];
-              writeRows = [];
-              _context2.next = 10;
-              return Promise.all(Object.entries(rowById).map( /*#__PURE__*/function () {
-                var _ref2 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(_ref) {
-                  var id, row, masterState;
-                  return _regenerator["default"].wrap(function _callee$(_context) {
-                    while (1) switch (_context.prev = _context.next) {
-                      case 0:
-                        id = _ref[0], row = _ref[1];
-                        masterState = masterDocsState[id];
-                        if (masterState) {
-                          _context.next = 6;
-                          break;
-                        }
-                        writeRows.push({
-                          document: (0, _helper.docStateToWriteDoc)(databaseInstanceToken, row.newDocumentState)
-                        });
-                        _context.next = 18;
-                        break;
-                      case 6:
-                        if (!(masterState && !row.assumedMasterState)) {
-                          _context.next = 10;
-                          break;
-                        }
-                        conflicts.push((0, _helper.writeDocToDocState)(masterState));
-                        _context.next = 18;
-                        break;
-                      case 10:
-                        _context.next = 12;
-                        return conflictHandler({
-                          realMasterState: (0, _helper.writeDocToDocState)(masterState),
-                          newDocumentState: (0, _utils.ensureNotFalsy)(row.assumedMasterState)
-                        }, 'rxStorageInstanceToReplicationHandler-masterWrite');
-                      case 12:
-                        _context.t0 = _context.sent.isEqual;
-                        if (!(_context.t0 === true)) {
-                          _context.next = 17;
-                          break;
-                        }
-                        writeRows.push({
-                          previous: masterState,
-                          document: (0, _helper.docStateToWriteDoc)(databaseInstanceToken, row.newDocumentState, masterState)
-                        });
-                        _context.next = 18;
-                        break;
-                      case 17:
-                        conflicts.push((0, _helper.writeDocToDocState)(masterState));
-                      case 18:
-                      case "end":
-                        return _context.stop();
-                    }
-                  }, _callee);
-                }));
-                return function (_x3) {
-                  return _ref2.apply(this, arguments);
-                };
-              }()));
-            case 10:
-              if (!(writeRows.length > 0)) {
-                _context2.next = 15;
-                break;
-              }
-              _context2.next = 13;
-              return instance.bulkWrite(writeRows, 'replication-master-write');
-            case 13:
-              result = _context2.sent;
-              Object.values(result.error).forEach(function (err) {
-                if (err.status !== 409) {
-                  throw new Error('non conflict error');
-                } else {
-                  conflicts.push((0, _helper.writeDocToDocState)((0, _utils.ensureNotFalsy)(err.documentInDb)));
-                }
-              });
-            case 15:
-              return _context2.abrupt("return", conflicts);
-            case 16:
-            case "end":
-              return _context2.stop();
-          }
-        }, _callee2);
+    async masterWrite(rows) {
+      var rowById = {};
+      rows.forEach(row => {
+        var docId = row.newDocumentState[primaryPath];
+        rowById[docId] = row;
+      });
+      var ids = Object.keys(rowById);
+      var masterDocsState = await instance.findDocumentsById(ids, true);
+      var conflicts = [];
+      var writeRows = [];
+      await Promise.all(Object.entries(rowById).map(async ([id, row]) => {
+        var masterState = masterDocsState[id];
+        if (!masterState) {
+          writeRows.push({
+            document: (0, _helper.docStateToWriteDoc)(databaseInstanceToken, row.newDocumentState)
+          });
+        } else if (masterState && !row.assumedMasterState) {
+          conflicts.push((0, _helper.writeDocToDocState)(masterState));
+        } else if ((await conflictHandler({
+          realMasterState: (0, _helper.writeDocToDocState)(masterState),
+          newDocumentState: (0, _utils.ensureNotFalsy)(row.assumedMasterState)
+        }, 'rxStorageInstanceToReplicationHandler-masterWrite')).isEqual === true) {
+          writeRows.push({
+            previous: masterState,
+            document: (0, _helper.docStateToWriteDoc)(databaseInstanceToken, row.newDocumentState, masterState)
+          });
+        } else {
+          conflicts.push((0, _helper.writeDocToDocState)(masterState));
+        }
       }));
-      function masterWrite(_x2) {
-        return _masterWrite.apply(this, arguments);
+      if (writeRows.length > 0) {
+        var result = await instance.bulkWrite(writeRows, 'replication-master-write');
+        Object.values(result.error).forEach(err => {
+          if (err.status !== 409) {
+            throw new Error('non conflict error');
+          } else {
+            conflicts.push((0, _helper.writeDocToDocState)((0, _utils.ensureNotFalsy)(err.documentInDb)));
+          }
+        });
       }
-      return masterWrite;
-    }()
+      return conflicts;
+    }
   };
   return replicationHandler;
 }
@@ -4398,7 +3607,7 @@ function cancelRxStorageReplication(replicationState) {
   replicationState.events.canceled.complete();
 }
 
-},{"../plugins/utils":12,"../rx-schema-helper":44,"./checkpoint":27,"./conflicts":28,"./downstream":29,"./helper":30,"./meta-instance":32,"./upstream":33,"@babel/runtime/helpers/asyncToGenerator":52,"@babel/runtime/helpers/interopRequireDefault":57,"@babel/runtime/regenerator":66,"rxjs":423}],32:[function(require,module,exports){
+},{"../plugins/utils":12,"../rx-schema-helper":44,"./checkpoint":27,"./conflicts":28,"./downstream":29,"./helper":30,"./meta-instance":32,"./upstream":33,"rxjs":420}],32:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -4430,7 +3639,7 @@ var RX_REPLICATION_META_INSTANCE_SCHEMA = (0, _rxSchemaHelper.fillWithDefaultSet
     },
     isCheckpoint: {
       type: 'string',
-      "enum": ['0', '1'],
+      enum: ['0', '1'],
       maxLength: 1
     },
     itemId: {
@@ -4453,16 +3662,16 @@ var RX_REPLICATION_META_INSTANCE_SCHEMA = (0, _rxSchemaHelper.fillWithDefaultSet
  */
 exports.RX_REPLICATION_META_INSTANCE_SCHEMA = RX_REPLICATION_META_INSTANCE_SCHEMA;
 function getAssumedMasterState(state, docIds) {
-  return state.input.metaInstance.findDocumentsById(docIds.map(function (docId) {
+  return state.input.metaInstance.findDocumentsById(docIds.map(docId => {
     var useId = (0, _rxSchemaHelper.getComposedPrimaryKeyOfDocumentData)(RX_REPLICATION_META_INSTANCE_SCHEMA, {
       itemId: docId,
       replicationIdentifier: state.checkpointKey,
       isCheckpoint: '0'
     });
     return useId;
-  }), true).then(function (metaDocs) {
+  }), true).then(metaDocs => {
     var ret = {};
-    Object.values(metaDocs).forEach(function (metaDoc) {
+    Object.values(metaDocs).forEach(metaDoc => {
       ret[metaDoc.itemId] = {
         docData: metaDoc.data,
         metaDocument: metaDoc
@@ -4492,7 +3701,7 @@ function getMetaWriteRow(state, newMasterDocState, previous, isResolvedConflict)
   newMeta.id = (0, _rxSchemaHelper.getComposedPrimaryKeyOfDocumentData)(RX_REPLICATION_META_INSTANCE_SCHEMA, newMeta);
   newMeta._rev = (0, _utils.createRevision)(state.input.identifier, previous);
   return {
-    previous: previous,
+    previous,
     document: newMeta
   };
 }
@@ -4500,13 +3709,10 @@ function getMetaWriteRow(state, newMasterDocState, previous, isResolvedConflict)
 },{"../plugins/utils":12,"../rx-schema-helper":44,"../rx-storage-helper":46}],33:[function(require,module,exports){
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.startReplicationUpstream = startReplicationUpstream;
-var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
-var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 var _rxjs = require("rxjs");
 var _rxStorageHelper = require("../rx-storage-helper");
 var _utils = require("../plugins/utils");
@@ -4524,8 +3730,8 @@ var _metaInstance = require("./meta-instance");
  */
 function startReplicationUpstream(state) {
   var replicationHandler = state.input.replicationHandler;
-  state.streamQueue.up = state.streamQueue.up.then(function () {
-    return upstreamInitialSync().then(function () {
+  state.streamQueue.up = state.streamQueue.up.then(() => {
+    return upstreamInitialSync().then(() => {
       processTasks();
     });
   });
@@ -4534,103 +3740,54 @@ function startReplicationUpstream(state) {
   var timer = 0;
   var initialSyncStartTime = -1;
   var openTasks = [];
-  var sub = state.input.forkInstance.changeStream().pipe((0, _rxjs.filter)(function (eventBulk) {
-    return eventBulk.context !== state.downstreamBulkWriteFlag;
-  })).subscribe(function (eventBulk) {
+  var sub = state.input.forkInstance.changeStream().pipe((0, _rxjs.filter)(eventBulk => eventBulk.context !== state.downstreamBulkWriteFlag)).subscribe(eventBulk => {
     state.stats.up.forkChangeStreamEmit = state.stats.up.forkChangeStreamEmit + 1;
     openTasks.push({
       task: eventBulk,
       time: timer++
     });
     if (state.input.waitBeforePersist) {
-      return state.input.waitBeforePersist().then(function () {
-        return processTasks();
-      });
+      return state.input.waitBeforePersist().then(() => processTasks());
     } else {
       return processTasks();
     }
   });
-  (0, _rxjs.firstValueFrom)(state.events.canceled.pipe((0, _rxjs.filter)(function (canceled) {
-    return !!canceled;
-  }))).then(function () {
-    return sub.unsubscribe();
-  });
-  function upstreamInitialSync() {
-    return _upstreamInitialSync.apply(this, arguments);
+  (0, _rxjs.firstValueFrom)(state.events.canceled.pipe((0, _rxjs.filter)(canceled => !!canceled))).then(() => sub.unsubscribe());
+  async function upstreamInitialSync() {
+    state.stats.up.upstreamInitialSync = state.stats.up.upstreamInitialSync + 1;
+    if (state.events.canceled.getValue()) {
+      return;
+    }
+    state.checkpointQueue = state.checkpointQueue.then(() => (0, _checkpoint.getLastCheckpointDoc)(state, 'up'));
+    var lastCheckpoint = await state.checkpointQueue;
+    var promises = [];
+    while (!state.events.canceled.getValue()) {
+      initialSyncStartTime = timer++;
+      var upResult = await state.input.forkInstance.getChangedDocumentsSince(state.input.pushBatchSize, lastCheckpoint);
+      if (upResult.documents.length === 0) {
+        break;
+      }
+      lastCheckpoint = (0, _rxStorageHelper.stackCheckpoints)([lastCheckpoint, upResult.checkpoint]);
+      promises.push(persistToMaster(upResult.documents, (0, _utils.ensureNotFalsy)(lastCheckpoint)));
+    }
+
+    /**
+     * If we had conflicts during the initial sync,
+     * it means that we likely have new writes to the fork
+     * and so we have to run the initial sync again to upstream these new writes.
+     */
+    var resolvedPromises = await Promise.all(promises);
+    var hadConflicts = resolvedPromises.find(r => !!r);
+    if (hadConflicts) {
+      await upstreamInitialSync();
+    } else if (!state.firstSyncDone.up.getValue()) {
+      state.firstSyncDone.up.next(true);
+    }
   }
+
   /**
    * Takes all open tasks an processes them at once.
    */
-  function _upstreamInitialSync() {
-    _upstreamInitialSync = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee4() {
-      var lastCheckpoint, promises, upResult, resolvedPromises, hadConflicts;
-      return _regenerator["default"].wrap(function _callee4$(_context4) {
-        while (1) switch (_context4.prev = _context4.next) {
-          case 0:
-            state.stats.up.upstreamInitialSync = state.stats.up.upstreamInitialSync + 1;
-            if (!state.events.canceled.getValue()) {
-              _context4.next = 3;
-              break;
-            }
-            return _context4.abrupt("return");
-          case 3:
-            state.checkpointQueue = state.checkpointQueue.then(function () {
-              return (0, _checkpoint.getLastCheckpointDoc)(state, 'up');
-            });
-            _context4.next = 6;
-            return state.checkpointQueue;
-          case 6:
-            lastCheckpoint = _context4.sent;
-            promises = [];
-          case 8:
-            if (state.events.canceled.getValue()) {
-              _context4.next = 19;
-              break;
-            }
-            initialSyncStartTime = timer++;
-            _context4.next = 12;
-            return state.input.forkInstance.getChangedDocumentsSince(state.input.pushBatchSize, lastCheckpoint);
-          case 12:
-            upResult = _context4.sent;
-            if (!(upResult.documents.length === 0)) {
-              _context4.next = 15;
-              break;
-            }
-            return _context4.abrupt("break", 19);
-          case 15:
-            lastCheckpoint = (0, _rxStorageHelper.stackCheckpoints)([lastCheckpoint, upResult.checkpoint]);
-            promises.push(persistToMaster(upResult.documents, (0, _utils.ensureNotFalsy)(lastCheckpoint)));
-            _context4.next = 8;
-            break;
-          case 19:
-            _context4.next = 21;
-            return Promise.all(promises);
-          case 21:
-            resolvedPromises = _context4.sent;
-            hadConflicts = resolvedPromises.find(function (r) {
-              return !!r;
-            });
-            if (!hadConflicts) {
-              _context4.next = 28;
-              break;
-            }
-            _context4.next = 26;
-            return upstreamInitialSync();
-          case 26:
-            _context4.next = 29;
-            break;
-          case 28:
-            if (!state.firstSyncDone.up.getValue()) {
-              state.firstSyncDone.up.next(true);
-            }
-          case 29:
-          case "end":
-            return _context4.stop();
-        }
-      }, _callee4);
-    }));
-    return _upstreamInitialSync.apply(this, arguments);
-  }
   function processTasks() {
     if (state.events.canceled.getValue() || openTasks.length === 0) {
       state.events.active.up.next(false);
@@ -4638,7 +3795,7 @@ function startReplicationUpstream(state) {
     }
     state.stats.up.processTasks = state.stats.up.processTasks + 1;
     state.events.active.up.next(true);
-    state.streamQueue.up = state.streamQueue.up.then(function () {
+    state.streamQueue.up = state.streamQueue.up.then(() => {
       /**
        * Merge/filter all open tasks
        */
@@ -4654,13 +3811,13 @@ function startReplicationUpstream(state) {
         if (taskWithTime.time < initialSyncStartTime) {
           continue;
         }
-        docs = docs.concat(taskWithTime.task.events.map(function (r) {
+        docs = docs.concat(taskWithTime.task.events.map(r => {
           return r.documentData;
         }));
         checkpoint = (0, _rxStorageHelper.stackCheckpoints)([checkpoint, taskWithTime.task.checkpoint]);
       }
       var promise = docs.length === 0 ? _utils.PROMISE_RESOLVE_FALSE : persistToMaster(docs, checkpoint);
-      return promise.then(function () {
+      return promise.then(() => {
         if (openTasks.length === 0) {
           state.events.active.up.next(false);
         } else {
@@ -4684,247 +3841,156 @@ function startReplicationUpstream(state) {
     /**
      * Add the new docs to the non-persistend list
      */
-    docs.forEach(function (docData) {
+    docs.forEach(docData => {
       var docId = docData[state.primaryPath];
       nonPersistedFromMaster.docs[docId] = docData;
     });
     nonPersistedFromMaster.checkpoint = checkpoint;
-    persistenceQueue = persistenceQueue.then( /*#__PURE__*/(0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee3() {
-      var upDocsById, useCheckpoint, docIds, assumedMasterState, writeRowsToMaster, writeRowsToMasterIds, writeRowsToMeta, forkStateById, writeRowsArray, conflictIds, conflictsById, writeBatches, useWriteRowsToMeta, hadConflictWrites, conflictWriteFork, conflictWriteMeta, forkWriteResult, useMetaWrites;
-      return _regenerator["default"].wrap(function _callee3$(_context3) {
-        while (1) switch (_context3.prev = _context3.next) {
-          case 0:
-            if (!state.events.canceled.getValue()) {
-              _context3.next = 2;
-              break;
-            }
-            return _context3.abrupt("return", false);
-          case 2:
-            upDocsById = nonPersistedFromMaster.docs;
-            nonPersistedFromMaster.docs = {};
-            useCheckpoint = nonPersistedFromMaster.checkpoint;
-            docIds = Object.keys(upDocsById);
-            if (!(docIds.length === 0)) {
-              _context3.next = 8;
-              break;
-            }
-            return _context3.abrupt("return", false);
-          case 8:
-            _context3.next = 10;
-            return (0, _metaInstance.getAssumedMasterState)(state, docIds);
-          case 10:
-            assumedMasterState = _context3.sent;
-            writeRowsToMaster = {};
-            writeRowsToMasterIds = [];
-            writeRowsToMeta = {};
-            forkStateById = {};
-            _context3.next = 17;
-            return Promise.all(docIds.map( /*#__PURE__*/function () {
-              var _ref2 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(docId) {
-                var fullDocData, docData, assumedMasterDoc;
-                return _regenerator["default"].wrap(function _callee$(_context) {
-                  while (1) switch (_context.prev = _context.next) {
-                    case 0:
-                      fullDocData = upDocsById[docId];
-                      forkStateById[docId] = fullDocData;
-                      docData = (0, _helper.writeDocToDocState)(fullDocData);
-                      assumedMasterDoc = assumedMasterState[docId];
-                      /**
-                       * If the master state is equal to the
-                       * fork state, we can assume that the document state is already
-                       * replicated.
-                       */
-                      _context.t1 = assumedMasterDoc &&
-                      // if the isResolvedConflict is correct, we do not have to compare the documents.
-                      assumedMasterDoc.metaDocument.isResolvedConflict !== fullDocData._rev;
-                      if (!_context.t1) {
-                        _context.next = 9;
-                        break;
-                      }
-                      _context.next = 8;
-                      return state.input.conflictHandler({
-                        realMasterState: assumedMasterDoc.docData,
-                        newDocumentState: docData
-                      }, 'upstream-check-if-equal');
-                    case 8:
-                      _context.t1 = _context.sent.isEqual;
-                    case 9:
-                      _context.t0 = _context.t1;
-                      if (_context.t0) {
-                        _context.next = 12;
-                        break;
-                      }
-                      _context.t0 =
-                      /**
-                       * If the master works with _rev fields,
-                       * we use that to check if our current doc state
-                       * is different from the assumedMasterDoc.
-                       */
+    persistenceQueue = persistenceQueue.then(async () => {
+      if (state.events.canceled.getValue()) {
+        return false;
+      }
+      var upDocsById = nonPersistedFromMaster.docs;
+      nonPersistedFromMaster.docs = {};
+      var useCheckpoint = nonPersistedFromMaster.checkpoint;
+      var docIds = Object.keys(upDocsById);
+      if (docIds.length === 0) {
+        return false;
+      }
+      var assumedMasterState = await (0, _metaInstance.getAssumedMasterState)(state, docIds);
+      var writeRowsToMaster = {};
+      var writeRowsToMasterIds = [];
+      var writeRowsToMeta = {};
+      var forkStateById = {};
+      await Promise.all(docIds.map(async docId => {
+        var fullDocData = upDocsById[docId];
+        forkStateById[docId] = fullDocData;
+        var docData = (0, _helper.writeDocToDocState)(fullDocData);
+        var assumedMasterDoc = assumedMasterState[docId];
 
-                      assumedMasterDoc && assumedMasterDoc.docData._rev && (0, _utils.parseRevision)(fullDocData._rev).height === fullDocData._meta[state.input.identifier];
-                    case 12:
-                      if (!_context.t0) {
-                        _context.next = 14;
-                        break;
-                      }
-                      return _context.abrupt("return");
-                    case 14:
-                      writeRowsToMasterIds.push(docId);
-                      writeRowsToMaster[docId] = {
-                        assumedMasterState: assumedMasterDoc ? assumedMasterDoc.docData : undefined,
-                        newDocumentState: docData
-                      };
-                      writeRowsToMeta[docId] = (0, _metaInstance.getMetaWriteRow)(state, docData, assumedMasterDoc ? assumedMasterDoc.metaDocument : undefined);
-                    case 17:
-                    case "end":
-                      return _context.stop();
-                  }
-                }, _callee);
-              }));
-              return function (_x) {
-                return _ref2.apply(this, arguments);
-              };
-            }()));
-          case 17:
-            if (!(writeRowsToMasterIds.length === 0)) {
-              _context3.next = 19;
-              break;
-            }
-            return _context3.abrupt("return", false);
-          case 19:
-            writeRowsArray = Object.values(writeRowsToMaster);
-            conflictIds = new Set();
-            conflictsById = {};
-            /**
-             * To always respect the push.batchSize,
-             * we have to split the write rows into batches
-             * to ensure that replicationHandler.masterWrite() is never
-             * called with more documents than what the batchSize limits.
-             */
-            writeBatches = (0, _utils.batchArray)(writeRowsArray, state.input.pushBatchSize);
-            _context3.next = 25;
-            return Promise.all(writeBatches.map( /*#__PURE__*/function () {
-              var _ref3 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee2(writeBatch) {
-                var masterWriteResult;
-                return _regenerator["default"].wrap(function _callee2$(_context2) {
-                  while (1) switch (_context2.prev = _context2.next) {
-                    case 0:
-                      _context2.next = 2;
-                      return replicationHandler.masterWrite(writeBatch);
-                    case 2:
-                      masterWriteResult = _context2.sent;
-                      masterWriteResult.forEach(function (conflictDoc) {
-                        var id = conflictDoc[state.primaryPath];
-                        conflictIds.add(id);
-                        conflictsById[id] = conflictDoc;
-                      });
-                    case 4:
-                    case "end":
-                      return _context2.stop();
-                  }
-                }, _callee2);
-              }));
-              return function (_x2) {
-                return _ref3.apply(this, arguments);
-              };
-            }()));
-          case 25:
-            useWriteRowsToMeta = [];
-            writeRowsToMasterIds.forEach(function (docId) {
-              if (!conflictIds.has(docId)) {
-                state.events.processed.up.next(writeRowsToMaster[docId]);
-                useWriteRowsToMeta.push(writeRowsToMeta[docId]);
-              }
-            });
-            if (!(useWriteRowsToMeta.length > 0)) {
-              _context3.next = 30;
-              break;
-            }
-            _context3.next = 30;
-            return state.input.metaInstance.bulkWrite(useWriteRowsToMeta, 'replication-up-write-meta');
-          case 30:
-            /**
-             * Resolve conflicts by writing a new document
-             * state to the fork instance and the 'real' master state
-             * to the meta instance.
-             * Non-409 errors will be detected by resolveConflictError()
-             */
-            hadConflictWrites = false;
-            if (!(conflictIds.size > 0)) {
-              _context3.next = 48;
-              break;
-            }
-            state.stats.up.persistToMasterHadConflicts = state.stats.up.persistToMasterHadConflicts + 1;
-            conflictWriteFork = [];
-            conflictWriteMeta = {};
-            _context3.next = 37;
-            return Promise.all(Object.entries(conflictsById).map(function (_ref4) {
-              var docId = _ref4[0],
-                realMasterState = _ref4[1];
-              var writeToMasterRow = writeRowsToMaster[docId];
-              var input = {
-                newDocumentState: writeToMasterRow.newDocumentState,
-                assumedMasterState: writeToMasterRow.assumedMasterState,
-                realMasterState: realMasterState
-              };
-              return (0, _conflicts.resolveConflictError)(state, input, forkStateById[docId]).then(function (resolved) {
-                if (resolved) {
-                  state.events.resolvedConflicts.next({
-                    input: input,
-                    output: resolved.output
-                  });
-                  conflictWriteFork.push({
-                    previous: forkStateById[docId],
-                    document: resolved.resolvedDoc
-                  });
-                  var assumedMasterDoc = assumedMasterState[docId];
-                  conflictWriteMeta[docId] = (0, _metaInstance.getMetaWriteRow)(state, (0, _utils.ensureNotFalsy)(realMasterState), assumedMasterDoc ? assumedMasterDoc.metaDocument : undefined, resolved.resolvedDoc._rev);
-                }
-              });
-            }));
-          case 37:
-            if (!(conflictWriteFork.length > 0)) {
-              _context3.next = 48;
-              break;
-            }
-            hadConflictWrites = true;
-            state.stats.up.persistToMasterConflictWrites = state.stats.up.persistToMasterConflictWrites + 1;
-            _context3.next = 42;
-            return state.input.forkInstance.bulkWrite(conflictWriteFork, 'replication-up-write-conflict');
-          case 42:
-            forkWriteResult = _context3.sent;
-            /**
-             * Errors in the forkWriteResult must not be handled
-             * because they have been caused by a write to the forkInstance
-             * in between which will anyway trigger a new upstream cycle
-             * that will then resolved the conflict again.
-             */
-            useMetaWrites = [];
-            Object.keys(forkWriteResult.success).forEach(function (docId) {
-              useMetaWrites.push(conflictWriteMeta[docId]);
-            });
-            if (!(useMetaWrites.length > 0)) {
-              _context3.next = 48;
-              break;
-            }
-            _context3.next = 48;
-            return state.input.metaInstance.bulkWrite(useMetaWrites, 'replication-up-write-conflict-meta');
-          case 48:
-            /**
-             * For better performance we do not await checkpoint writes,
-             * but to ensure order on parallel checkpoint writes,
-             * we have to use a queue.
-             */
-            state.checkpointQueue = state.checkpointQueue.then(function () {
-              return (0, _checkpoint.setCheckpoint)(state, 'up', useCheckpoint);
-            });
-            return _context3.abrupt("return", hadConflictWrites);
-          case 50:
-          case "end":
-            return _context3.stop();
+        /**
+         * If the master state is equal to the
+         * fork state, we can assume that the document state is already
+         * replicated.
+         */
+        if (assumedMasterDoc &&
+        // if the isResolvedConflict is correct, we do not have to compare the documents.
+        assumedMasterDoc.metaDocument.isResolvedConflict !== fullDocData._rev && (await state.input.conflictHandler({
+          realMasterState: assumedMasterDoc.docData,
+          newDocumentState: docData
+        }, 'upstream-check-if-equal')).isEqual ||
+        /**
+         * If the master works with _rev fields,
+         * we use that to check if our current doc state
+         * is different from the assumedMasterDoc.
+         */
+
+        assumedMasterDoc && assumedMasterDoc.docData._rev && (0, _utils.parseRevision)(fullDocData._rev).height === fullDocData._meta[state.input.identifier]) {
+          return;
         }
-      }, _callee3);
-    })))["catch"](function (unhandledError) {
+        writeRowsToMasterIds.push(docId);
+        writeRowsToMaster[docId] = {
+          assumedMasterState: assumedMasterDoc ? assumedMasterDoc.docData : undefined,
+          newDocumentState: docData
+        };
+        writeRowsToMeta[docId] = (0, _metaInstance.getMetaWriteRow)(state, docData, assumedMasterDoc ? assumedMasterDoc.metaDocument : undefined);
+      }));
+      if (writeRowsToMasterIds.length === 0) {
+        return false;
+      }
+      var writeRowsArray = Object.values(writeRowsToMaster);
+      var conflictIds = new Set();
+      var conflictsById = {};
+
+      /**
+       * To always respect the push.batchSize,
+       * we have to split the write rows into batches
+       * to ensure that replicationHandler.masterWrite() is never
+       * called with more documents than what the batchSize limits.
+       */
+      var writeBatches = (0, _utils.batchArray)(writeRowsArray, state.input.pushBatchSize);
+      await Promise.all(writeBatches.map(async writeBatch => {
+        var masterWriteResult = await replicationHandler.masterWrite(writeBatch);
+        masterWriteResult.forEach(conflictDoc => {
+          var id = conflictDoc[state.primaryPath];
+          conflictIds.add(id);
+          conflictsById[id] = conflictDoc;
+        });
+      }));
+      var useWriteRowsToMeta = [];
+      writeRowsToMasterIds.forEach(docId => {
+        if (!conflictIds.has(docId)) {
+          state.events.processed.up.next(writeRowsToMaster[docId]);
+          useWriteRowsToMeta.push(writeRowsToMeta[docId]);
+        }
+      });
+      if (useWriteRowsToMeta.length > 0) {
+        await state.input.metaInstance.bulkWrite(useWriteRowsToMeta, 'replication-up-write-meta');
+        // TODO what happens when we have conflicts here?
+      }
+
+      /**
+       * Resolve conflicts by writing a new document
+       * state to the fork instance and the 'real' master state
+       * to the meta instance.
+       * Non-409 errors will be detected by resolveConflictError()
+       */
+      var hadConflictWrites = false;
+      if (conflictIds.size > 0) {
+        state.stats.up.persistToMasterHadConflicts = state.stats.up.persistToMasterHadConflicts + 1;
+        var conflictWriteFork = [];
+        var conflictWriteMeta = {};
+        await Promise.all(Object.entries(conflictsById).map(([docId, realMasterState]) => {
+          var writeToMasterRow = writeRowsToMaster[docId];
+          var input = {
+            newDocumentState: writeToMasterRow.newDocumentState,
+            assumedMasterState: writeToMasterRow.assumedMasterState,
+            realMasterState
+          };
+          return (0, _conflicts.resolveConflictError)(state, input, forkStateById[docId]).then(resolved => {
+            if (resolved) {
+              state.events.resolvedConflicts.next({
+                input,
+                output: resolved.output
+              });
+              conflictWriteFork.push({
+                previous: forkStateById[docId],
+                document: resolved.resolvedDoc
+              });
+              var assumedMasterDoc = assumedMasterState[docId];
+              conflictWriteMeta[docId] = (0, _metaInstance.getMetaWriteRow)(state, (0, _utils.ensureNotFalsy)(realMasterState), assumedMasterDoc ? assumedMasterDoc.metaDocument : undefined, resolved.resolvedDoc._rev);
+            }
+          });
+        }));
+        if (conflictWriteFork.length > 0) {
+          hadConflictWrites = true;
+          state.stats.up.persistToMasterConflictWrites = state.stats.up.persistToMasterConflictWrites + 1;
+          var forkWriteResult = await state.input.forkInstance.bulkWrite(conflictWriteFork, 'replication-up-write-conflict');
+          /**
+           * Errors in the forkWriteResult must not be handled
+           * because they have been caused by a write to the forkInstance
+           * in between which will anyway trigger a new upstream cycle
+           * that will then resolved the conflict again.
+           */
+          var useMetaWrites = [];
+          Object.keys(forkWriteResult.success).forEach(docId => {
+            useMetaWrites.push(conflictWriteMeta[docId]);
+          });
+          if (useMetaWrites.length > 0) {
+            await state.input.metaInstance.bulkWrite(useMetaWrites, 'replication-up-write-conflict-meta');
+          }
+          // TODO what to do with conflicts while writing to the metaInstance?
+        }
+      }
+
+      /**
+       * For better performance we do not await checkpoint writes,
+       * but to ensure order on parallel checkpoint writes,
+       * we have to use a queue.
+       */
+      state.checkpointQueue = state.checkpointQueue.then(() => (0, _checkpoint.setCheckpoint)(state, 'up', useCheckpoint));
+      return hadConflictWrites;
+    }).catch(unhandledError => {
       state.events.error.next(unhandledError);
       return false;
     });
@@ -4932,7 +3998,7 @@ function startReplicationUpstream(state) {
   }
 }
 
-},{"../plugins/utils":12,"../rx-storage-helper":46,"./checkpoint":27,"./conflicts":28,"./helper":30,"./meta-instance":32,"@babel/runtime/helpers/asyncToGenerator":52,"@babel/runtime/helpers/interopRequireDefault":57,"@babel/runtime/regenerator":66,"rxjs":423}],34:[function(require,module,exports){
+},{"../plugins/utils":12,"../rx-storage-helper":46,"./checkpoint":27,"./conflicts":28,"./helper":30,"./meta-instance":32,"rxjs":420}],34:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -4994,23 +4060,21 @@ function rxChangeEventToEventReduceChangeEvent(rxChangeEvent) {
 function flattenEvents(input) {
   var output = [];
   if (Array.isArray(input)) {
-    input.forEach(function (inputItem) {
+    input.forEach(inputItem => {
       var add = flattenEvents(inputItem);
       output = output.concat(add);
     });
   } else {
     if (input.id && input.events) {
       // is bulk
-      input.events.forEach(function (ev) {
-        return output.push(ev);
-      });
+      input.events.forEach(ev => output.push(ev));
     } else {
       output.push(input);
     }
   }
   var usedIds = new Set();
   var nonDuplicate = [];
-  output.forEach(function (ev) {
+  output.forEach(ev => {
     if (!usedIds.has(ev.eventId)) {
       usedIds.add(ev.eventId);
       nonDuplicate.push(ev);
@@ -5022,15 +4086,12 @@ function flattenEvents(input) {
 },{"./overwritable":9}],35:[function(require,module,exports){
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.createRxCollectionStorageInstance = createRxCollectionStorageInstance;
 exports.fillObjectDataBeforeInsert = fillObjectDataBeforeInsert;
 exports.removeCollectionStorages = removeCollectionStorages;
-var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
-var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 var _utils = require("./plugins/utils");
 var _rxSchemaHelper = require("./rx-schema-helper");
 var _hooks = require("./hooks");
@@ -5059,152 +4120,88 @@ function fillObjectDataBeforeInsert(schema, data) {
 /**
  * Creates the storage instances that are used internally in the collection
  */
-function createRxCollectionStorageInstance(_x, _x2) {
-  return _createRxCollectionStorageInstance.apply(this, arguments);
+async function createRxCollectionStorageInstance(rxDatabase, storageInstanceCreationParams) {
+  storageInstanceCreationParams.multiInstance = rxDatabase.multiInstance;
+  var storageInstance = await rxDatabase.storage.createStorageInstance(storageInstanceCreationParams);
+  return storageInstance;
 }
+
 /**
  * Removes the main storage of the collection
  * and all connected storages like the ones from the replication meta etc.
  */
-function _createRxCollectionStorageInstance() {
-  _createRxCollectionStorageInstance = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(rxDatabase, storageInstanceCreationParams) {
-    var storageInstance;
-    return _regenerator["default"].wrap(function _callee$(_context) {
-      while (1) switch (_context.prev = _context.next) {
-        case 0:
-          storageInstanceCreationParams.multiInstance = rxDatabase.multiInstance;
-          _context.next = 3;
-          return rxDatabase.storage.createStorageInstance(storageInstanceCreationParams);
-        case 3:
-          storageInstance = _context.sent;
-          return _context.abrupt("return", storageInstance);
-        case 5:
-        case "end":
-          return _context.stop();
-      }
-    }, _callee);
+async function removeCollectionStorages(storage, databaseInternalStorage, databaseInstanceToken, databaseName, collectionName,
+/**
+ * If no hash function is provided,
+ * we assume that the whole internal store is removed anyway
+ * so we do not have to delete the meta documents.
+ */
+hashFunction) {
+  var allCollectionMetaDocs = await (0, _rxDatabaseInternalStore.getAllCollectionDocuments)(storage.statics, databaseInternalStorage);
+  var relevantCollectionMetaDocs = allCollectionMetaDocs.filter(metaDoc => metaDoc.data.name === collectionName);
+  var removeStorages = [];
+  relevantCollectionMetaDocs.forEach(metaDoc => {
+    removeStorages.push({
+      collectionName: metaDoc.data.name,
+      schema: metaDoc.data.schema,
+      isCollection: true
+    });
+    metaDoc.data.connectedStorages.forEach(row => removeStorages.push({
+      collectionName: row.collectionName,
+      isCollection: false,
+      schema: row.schema
+    }));
+  });
+
+  // ensure uniqueness
+  var alreadyAdded = new Set();
+  removeStorages = removeStorages.filter(row => {
+    var key = row.collectionName + '||' + row.schema.version;
+    if (alreadyAdded.has(key)) {
+      return false;
+    } else {
+      alreadyAdded.add(key);
+      return true;
+    }
+  });
+
+  // remove all the storages
+  await Promise.all(removeStorages.map(async row => {
+    var storageInstance = await storage.createStorageInstance({
+      collectionName: row.collectionName,
+      databaseInstanceToken,
+      databaseName,
+      multiInstance: false,
+      options: {},
+      schema: row.schema
+    });
+    await storageInstance.remove();
+    if (row.isCollection) {
+      await (0, _hooks.runAsyncPluginHooks)('postRemoveRxCollection', {
+        storage,
+        databaseName: databaseName,
+        collectionName
+      });
+    }
   }));
-  return _createRxCollectionStorageInstance.apply(this, arguments);
-}
-function removeCollectionStorages(_x3, _x4, _x5, _x6, _x7, _x8) {
-  return _removeCollectionStorages.apply(this, arguments);
-}
-function _removeCollectionStorages() {
-  _removeCollectionStorages = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee3(storage, databaseInternalStorage, databaseInstanceToken, databaseName, collectionName,
-  /**
-   * If no hash function is provided,
-   * we assume that the whole internal store is removed anyway
-   * so we do not have to delete the meta documents.
-   */
-  hashFunction) {
-    var allCollectionMetaDocs, relevantCollectionMetaDocs, removeStorages, alreadyAdded, writeRows;
-    return _regenerator["default"].wrap(function _callee3$(_context3) {
-      while (1) switch (_context3.prev = _context3.next) {
-        case 0:
-          _context3.next = 2;
-          return (0, _rxDatabaseInternalStore.getAllCollectionDocuments)(storage.statics, databaseInternalStorage);
-        case 2:
-          allCollectionMetaDocs = _context3.sent;
-          relevantCollectionMetaDocs = allCollectionMetaDocs.filter(function (metaDoc) {
-            return metaDoc.data.name === collectionName;
-          });
-          removeStorages = [];
-          relevantCollectionMetaDocs.forEach(function (metaDoc) {
-            removeStorages.push({
-              collectionName: metaDoc.data.name,
-              schema: metaDoc.data.schema,
-              isCollection: true
-            });
-            metaDoc.data.connectedStorages.forEach(function (row) {
-              return removeStorages.push({
-                collectionName: row.collectionName,
-                isCollection: false,
-                schema: row.schema
-              });
-            });
-          });
 
-          // ensure uniqueness
-          alreadyAdded = new Set();
-          removeStorages = removeStorages.filter(function (row) {
-            var key = row.collectionName + '||' + row.schema.version;
-            if (alreadyAdded.has(key)) {
-              return false;
-            } else {
-              alreadyAdded.add(key);
-              return true;
-            }
-          });
-
-          // remove all the storages
-          _context3.next = 10;
-          return Promise.all(removeStorages.map( /*#__PURE__*/function () {
-            var _ref = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee2(row) {
-              var storageInstance;
-              return _regenerator["default"].wrap(function _callee2$(_context2) {
-                while (1) switch (_context2.prev = _context2.next) {
-                  case 0:
-                    _context2.next = 2;
-                    return storage.createStorageInstance({
-                      collectionName: row.collectionName,
-                      databaseInstanceToken: databaseInstanceToken,
-                      databaseName: databaseName,
-                      multiInstance: false,
-                      options: {},
-                      schema: row.schema
-                    });
-                  case 2:
-                    storageInstance = _context2.sent;
-                    _context2.next = 5;
-                    return storageInstance.remove();
-                  case 5:
-                    if (!row.isCollection) {
-                      _context2.next = 8;
-                      break;
-                    }
-                    _context2.next = 8;
-                    return (0, _hooks.runAsyncPluginHooks)('postRemoveRxCollection', {
-                      storage: storage,
-                      databaseName: databaseName,
-                      collectionName: collectionName
-                    });
-                  case 8:
-                  case "end":
-                    return _context2.stop();
-                }
-              }, _callee2);
-            }));
-            return function (_x9) {
-              return _ref.apply(this, arguments);
-            };
-          }()));
-        case 10:
-          if (!hashFunction) {
-            _context3.next = 14;
-            break;
-          }
-          writeRows = relevantCollectionMetaDocs.map(function (doc) {
-            var writeDoc = (0, _rxStorageHelper.flatCloneDocWithMeta)(doc);
-            writeDoc._deleted = true;
-            writeDoc._meta.lwt = (0, _utils.now)();
-            writeDoc._rev = (0, _utils.createRevision)(databaseInstanceToken, doc);
-            return {
-              previous: doc,
-              document: writeDoc
-            };
-          });
-          _context3.next = 14;
-          return databaseInternalStorage.bulkWrite(writeRows, 'rx-database-remove-collection-all');
-        case 14:
-        case "end":
-          return _context3.stop();
-      }
-    }, _callee3);
-  }));
-  return _removeCollectionStorages.apply(this, arguments);
+  // remove the meta documents
+  if (hashFunction) {
+    var writeRows = relevantCollectionMetaDocs.map(doc => {
+      var writeDoc = (0, _rxStorageHelper.flatCloneDocWithMeta)(doc);
+      writeDoc._deleted = true;
+      writeDoc._meta.lwt = (0, _utils.now)();
+      writeDoc._rev = (0, _utils.createRevision)(databaseInstanceToken, doc);
+      return {
+        previous: doc,
+        document: writeDoc
+      };
+    });
+    await databaseInternalStorage.bulkWrite(writeRows, 'rx-database-remove-collection-all');
+  }
 }
 
-},{"./hooks":6,"./plugins/utils":12,"./rx-database-internal-store":37,"./rx-schema-helper":44,"./rx-storage-helper":46,"@babel/runtime/helpers/asyncToGenerator":52,"@babel/runtime/helpers/interopRequireDefault":57,"@babel/runtime/regenerator":66}],36:[function(require,module,exports){
+},{"./hooks":6,"./plugins/utils":12,"./rx-database-internal-store":37,"./rx-schema-helper":44,"./rx-storage-helper":46}],36:[function(require,module,exports){
 "use strict";
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
@@ -5214,8 +4211,6 @@ Object.defineProperty(exports, "__esModule", {
 exports.RxCollectionBase = void 0;
 exports.createRxCollection = createRxCollection;
 exports.isRxCollection = isRxCollection;
-var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
-var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
 var _operators = require("rxjs/operators");
 var _utils = require("./plugins/utils");
@@ -5239,15 +4234,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
    * Stores all 'normal' documents
    */
 
-  function RxCollectionBase(database, name, schema, internalStorageInstance) {
-    var instanceCreationOptions = arguments.length > 4 && arguments[4] !== undefined ? arguments[4] : {};
-    var migrationStrategies = arguments.length > 5 && arguments[5] !== undefined ? arguments[5] : {};
-    var methods = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : {};
-    var attachments = arguments.length > 7 && arguments[7] !== undefined ? arguments[7] : {};
-    var options = arguments.length > 8 && arguments[8] !== undefined ? arguments[8] : {};
-    var cacheReplacementPolicy = arguments.length > 9 && arguments[9] !== undefined ? arguments[9] : _queryCache.defaultCacheReplacementPolicy;
-    var statics = arguments.length > 10 && arguments[10] !== undefined ? arguments[10] : {};
-    var conflictHandler = arguments.length > 11 && arguments[11] !== undefined ? arguments[11] : _replicationProtocol.defaultConflictHandler;
+  function RxCollectionBase(database, name, schema, internalStorageInstance, instanceCreationOptions = {}, migrationStrategies = {}, methods = {}, attachments = {}, options = {}, cacheReplacementPolicy = _queryCache.defaultCacheReplacementPolicy, statics = {}, conflictHandler = _replicationProtocol.defaultConflictHandler) {
     this.storageInstance = {};
     this.timeouts = new Set();
     this.incrementalWriteQueue = {};
@@ -5276,81 +4263,50 @@ var RxCollectionBase = /*#__PURE__*/function () {
     _applyHookFunctions(this.asRxCollection);
   }
   var _proto = RxCollectionBase.prototype;
-  _proto.prepare = /*#__PURE__*/function () {
-    var _prepare = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee() {
-      var _this = this;
-      var databaseStorageToken, subDocs;
-      return _regenerator["default"].wrap(function _callee$(_context) {
-        while (1) switch (_context.prev = _context.next) {
-          case 0:
-            this.storageInstance = (0, _rxStorageHelper.getWrappedStorageInstance)(this.database, this.internalStorageInstance, this.schema.jsonSchema);
-            this.incrementalWriteQueue = new _incrementalWrite.IncrementalWriteQueue(this.storageInstance, this.schema.primaryPath, function (newData, oldData) {
-              return (0, _rxDocument.beforeDocumentUpdateWrite)(_this, newData, oldData);
-            }, function (result) {
-              return _this._runHooks('post', 'save', result);
-            });
-            this.$ = this.database.eventBulks$.pipe((0, _operators.filter)(function (changeEventBulk) {
-              return changeEventBulk.collectionName === _this.name;
-            }), (0, _operators.mergeMap)(function (changeEventBulk) {
-              return changeEventBulk.events;
-            }));
-            this._changeEventBuffer = (0, _changeEventBuffer.createChangeEventBuffer)(this.asRxCollection);
-            this._docCache = new _docCache.DocumentCache(this.schema.primaryPath, this.$.pipe((0, _operators.filter)(function (cE) {
-              return !cE.isLocal;
-            })), function (docData) {
-              return (0, _rxDocumentPrototypeMerge.createNewRxDocument)(_this.asRxCollection, docData);
-            });
+  _proto.prepare = async function prepare() {
+    this.storageInstance = (0, _rxStorageHelper.getWrappedStorageInstance)(this.database, this.internalStorageInstance, this.schema.jsonSchema);
+    this.incrementalWriteQueue = new _incrementalWrite.IncrementalWriteQueue(this.storageInstance, this.schema.primaryPath, (newData, oldData) => (0, _rxDocument.beforeDocumentUpdateWrite)(this, newData, oldData), result => this._runHooks('post', 'save', result));
+    this.$ = this.database.eventBulks$.pipe((0, _operators.filter)(changeEventBulk => changeEventBulk.collectionName === this.name), (0, _operators.mergeMap)(changeEventBulk => changeEventBulk.events));
+    this._changeEventBuffer = (0, _changeEventBuffer.createChangeEventBuffer)(this.asRxCollection);
+    this._docCache = new _docCache.DocumentCache(this.schema.primaryPath, this.$.pipe((0, _operators.filter)(cE => !cE.isLocal)), docData => (0, _rxDocumentPrototypeMerge.createNewRxDocument)(this.asRxCollection, docData));
 
-            /**
-             * Instead of resolving the EventBulk array here and spit it into
-             * single events, we should fully work with event bulks internally
-             * to save performance.
-             */
-            _context.next = 7;
-            return this.database.storageToken;
-          case 7:
-            databaseStorageToken = _context.sent;
-            subDocs = this.storageInstance.changeStream().subscribe(function (eventBulk) {
-              var changeEventBulk = {
-                id: eventBulk.id,
-                internal: false,
-                collectionName: _this.name,
-                storageToken: databaseStorageToken,
-                events: eventBulk.events.map(function (ev) {
-                  return (0, _rxStorageHelper.storageChangeEventToRxChangeEvent)(false, ev, _this);
-                }),
-                databaseToken: _this.database.token,
-                checkpoint: eventBulk.checkpoint,
-                context: eventBulk.context
-              };
-              _this.database.$emit(changeEventBulk);
-            });
-            this._subs.push(subDocs);
+    /**
+     * Instead of resolving the EventBulk array here and spit it into
+     * single events, we should fully work with event bulks internally
+     * to save performance.
+     */
+    var databaseStorageToken = await this.database.storageToken;
+    var subDocs = this.storageInstance.changeStream().subscribe(eventBulk => {
+      var changeEventBulk = {
+        id: eventBulk.id,
+        internal: false,
+        collectionName: this.name,
+        storageToken: databaseStorageToken,
+        events: eventBulk.events.map(ev => (0, _rxStorageHelper.storageChangeEventToRxChangeEvent)(false, ev, this)),
+        databaseToken: this.database.token,
+        checkpoint: eventBulk.checkpoint,
+        context: eventBulk.context
+      };
+      this.database.$emit(changeEventBulk);
+    });
+    this._subs.push(subDocs);
 
-            /**
-             * Resolve the conflict tasks
-             * of the RxStorageInstance
-             */
-            this._subs.push(this.storageInstance.conflictResultionTasks().subscribe(function (task) {
-              _this.conflictHandler(task.input, task.context).then(function (output) {
-                _this.storageInstance.resolveConflictResultionTask({
-                  id: task.id,
-                  output: output
-                });
-              });
-            }));
-            return _context.abrupt("return", _utils.PROMISE_RESOLVE_VOID);
-          case 12:
-          case "end":
-            return _context.stop();
-        }
-      }, _callee, this);
+    /**
+     * Resolve the conflict tasks
+     * of the RxStorageInstance
+     */
+    this._subs.push(this.storageInstance.conflictResultionTasks().subscribe(task => {
+      this.conflictHandler(task.input, task.context).then(output => {
+        this.storageInstance.resolveConflictResultionTask({
+          id: task.id,
+          output
+        });
+      });
     }));
-    function prepare() {
-      return _prepare.apply(this, arguments);
-    }
-    return prepare;
-  }() // overwritte by migration-plugin
+    return _utils.PROMISE_RESOLVE_VOID;
+  }
+
+  // overwritte by migration-plugin
   ;
   _proto.migrationNeeded = function migrationNeeded() {
     throw (0, _utils.pluginMissing)('migration');
@@ -5358,295 +4314,165 @@ var RxCollectionBase = /*#__PURE__*/function () {
   _proto.getDataMigrator = function getDataMigrator() {
     throw (0, _utils.pluginMissing)('migration');
   };
-  _proto.migrate = function migrate() {
-    var batchSize = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 10;
+  _proto.migrate = function migrate(batchSize = 10) {
     return this.getDataMigrator().migrate(batchSize);
   };
-  _proto.migratePromise = function migratePromise() {
-    var batchSize = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : 10;
+  _proto.migratePromise = function migratePromise(batchSize = 10) {
     return this.getDataMigrator().migratePromise(batchSize);
   };
-  _proto.insert = /*#__PURE__*/function () {
-    var _insert = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee2(json) {
-      var useJson, writeResult, isError, insertResult;
-      return _regenerator["default"].wrap(function _callee2$(_context2) {
-        while (1) switch (_context2.prev = _context2.next) {
-          case 0:
-            // TODO do we need fillObjectDataBeforeInsert() here because it is also run at bulkInsert() later
-            useJson = (0, _rxCollectionHelper.fillObjectDataBeforeInsert)(this.schema, json);
-            _context2.next = 3;
-            return this.bulkInsert([useJson]);
-          case 3:
-            writeResult = _context2.sent;
-            isError = writeResult.error[0];
-            (0, _rxStorageHelper.throwIfIsStorageWriteError)(this, useJson[this.schema.primaryPath], json, isError);
-            insertResult = (0, _utils.ensureNotFalsy)(writeResult.success[0]);
-            return _context2.abrupt("return", insertResult);
-          case 8:
-          case "end":
-            return _context2.stop();
-        }
-      }, _callee2, this);
-    }));
-    function insert(_x) {
-      return _insert.apply(this, arguments);
+  _proto.insert = async function insert(json) {
+    // TODO do we need fillObjectDataBeforeInsert() here because it is also run at bulkInsert() later
+    var useJson = (0, _rxCollectionHelper.fillObjectDataBeforeInsert)(this.schema, json);
+    var writeResult = await this.bulkInsert([useJson]);
+    var isError = writeResult.error[0];
+    (0, _rxStorageHelper.throwIfIsStorageWriteError)(this, useJson[this.schema.primaryPath], json, isError);
+    var insertResult = (0, _utils.ensureNotFalsy)(writeResult.success[0]);
+    return insertResult;
+  };
+  _proto.bulkInsert = async function bulkInsert(docsData) {
+    /**
+     * Optimization shortcut,
+     * do nothing when called with an empty array
+     */
+    if (docsData.length === 0) {
+      return {
+        success: [],
+        error: []
+      };
     }
-    return insert;
-  }();
-  _proto.bulkInsert = /*#__PURE__*/function () {
-    var _bulkInsert = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee3(docsData) {
-      var _this2 = this;
-      var useDocs, docs, docsMap, insertRows, results, successDocData, rxDocuments;
-      return _regenerator["default"].wrap(function _callee3$(_context3) {
-        while (1) switch (_context3.prev = _context3.next) {
-          case 0:
-            if (!(docsData.length === 0)) {
-              _context3.next = 2;
-              break;
-            }
-            return _context3.abrupt("return", {
-              success: [],
-              error: []
-            });
-          case 2:
-            useDocs = docsData.map(function (docData) {
-              var useDocData = (0, _rxCollectionHelper.fillObjectDataBeforeInsert)(_this2.schema, docData);
-              return useDocData;
-            });
-            if (!this.hasHooks('pre', 'insert')) {
-              _context3.next = 9;
-              break;
-            }
-            _context3.next = 6;
-            return Promise.all(useDocs.map(function (doc) {
-              return _this2._runHooks('pre', 'insert', doc).then(function () {
-                return doc;
-              });
-            }));
-          case 6:
-            _context3.t0 = _context3.sent;
-            _context3.next = 10;
-            break;
-          case 9:
-            _context3.t0 = useDocs;
-          case 10:
-            docs = _context3.t0;
-            docsMap = new Map();
-            insertRows = docs.map(function (doc) {
-              docsMap.set(doc[_this2.schema.primaryPath], doc);
-              var docData = Object.assign(doc, {
-                _attachments: {},
-                _meta: (0, _utils.getDefaultRxDocumentMeta)(),
-                _rev: (0, _utils.getDefaultRevision)(),
-                _deleted: false
-              });
-              var row = {
-                document: docData
-              };
-              return row;
-            });
-            _context3.next = 15;
-            return this.storageInstance.bulkWrite(insertRows, 'rx-collection-bulk-insert');
-          case 15:
-            results = _context3.sent;
-            // create documents
-            successDocData = Object.values(results.success);
-            rxDocuments = successDocData.map(function (writtenDocData) {
-              return _this2._docCache.getCachedRxDocument(writtenDocData);
-            });
-            if (!this.hasHooks('post', 'insert')) {
-              _context3.next = 21;
-              break;
-            }
-            _context3.next = 21;
-            return Promise.all(rxDocuments.map(function (doc) {
-              return _this2._runHooks('post', 'insert', docsMap.get(doc.primary), doc);
-            }));
-          case 21:
-            return _context3.abrupt("return", {
-              success: rxDocuments,
-              error: Object.values(results.error)
-            });
-          case 22:
-          case "end":
-            return _context3.stop();
-        }
-      }, _callee3, this);
-    }));
-    function bulkInsert(_x2) {
-      return _bulkInsert.apply(this, arguments);
+    var useDocs = docsData.map(docData => {
+      var useDocData = (0, _rxCollectionHelper.fillObjectDataBeforeInsert)(this.schema, docData);
+      return useDocData;
+    });
+    var docs = this.hasHooks('pre', 'insert') ? await Promise.all(useDocs.map(doc => {
+      return this._runHooks('pre', 'insert', doc).then(() => {
+        return doc;
+      });
+    })) : useDocs;
+    var docsMap = new Map();
+    var insertRows = docs.map(doc => {
+      docsMap.set(doc[this.schema.primaryPath], doc);
+      var docData = Object.assign(doc, {
+        _attachments: {},
+        _meta: (0, _utils.getDefaultRxDocumentMeta)(),
+        _rev: (0, _utils.getDefaultRevision)(),
+        _deleted: false
+      });
+      var row = {
+        document: docData
+      };
+      return row;
+    });
+    var results = await this.storageInstance.bulkWrite(insertRows, 'rx-collection-bulk-insert');
+
+    // create documents
+    var successDocData = Object.values(results.success);
+    var rxDocuments = successDocData.map(writtenDocData => this._docCache.getCachedRxDocument(writtenDocData));
+    if (this.hasHooks('post', 'insert')) {
+      await Promise.all(rxDocuments.map(doc => {
+        return this._runHooks('post', 'insert', docsMap.get(doc.primary), doc);
+      }));
     }
-    return bulkInsert;
-  }();
-  _proto.bulkRemove = /*#__PURE__*/function () {
-    var _bulkRemove = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee4(ids) {
-      var _this3 = this;
-      var rxDocumentMap, docsData, docsMap, removeDocs, results, successIds, rxDocuments;
-      return _regenerator["default"].wrap(function _callee4$(_context4) {
-        while (1) switch (_context4.prev = _context4.next) {
-          case 0:
-            if (!(ids.length === 0)) {
-              _context4.next = 2;
-              break;
-            }
-            return _context4.abrupt("return", {
-              success: [],
-              error: []
-            });
-          case 2:
-            _context4.next = 4;
-            return this.findByIds(ids).exec();
-          case 4:
-            rxDocumentMap = _context4.sent;
-            docsData = [];
-            docsMap = new Map();
-            Array.from(rxDocumentMap.values()).forEach(function (rxDocument) {
-              var data = rxDocument.toMutableJSON(true);
-              docsData.push(data);
-              docsMap.set(rxDocument.primary, data);
-            });
-            _context4.next = 10;
-            return Promise.all(docsData.map(function (doc) {
-              var primary = doc[_this3.schema.primaryPath];
-              return _this3._runHooks('pre', 'remove', doc, rxDocumentMap.get(primary));
-            }));
-          case 10:
-            removeDocs = docsData.map(function (doc) {
-              var writeDoc = (0, _utils.flatClone)(doc);
-              writeDoc._deleted = true;
-              return {
-                previous: doc,
-                document: writeDoc
-              };
-            });
-            _context4.next = 13;
-            return this.storageInstance.bulkWrite(removeDocs, 'rx-collection-bulk-remove');
-          case 13:
-            results = _context4.sent;
-            successIds = Object.keys(results.success); // run hooks
-            _context4.next = 17;
-            return Promise.all(successIds.map(function (id) {
-              return _this3._runHooks('post', 'remove', docsMap.get(id), rxDocumentMap.get(id));
-            }));
-          case 17:
-            rxDocuments = successIds.map(function (id) {
-              return (0, _utils.getFromMapOrThrow)(rxDocumentMap, id);
-            });
-            return _context4.abrupt("return", {
-              success: rxDocuments,
-              error: Object.values(results.error)
-            });
-          case 19:
-          case "end":
-            return _context4.stop();
-        }
-      }, _callee4, this);
-    }));
-    function bulkRemove(_x3) {
-      return _bulkRemove.apply(this, arguments);
+    return {
+      success: rxDocuments,
+      error: Object.values(results.error)
+    };
+  };
+  _proto.bulkRemove = async function bulkRemove(ids) {
+    /**
+     * Optimization shortcut,
+     * do nothing when called with an empty array
+     */
+    if (ids.length === 0) {
+      return {
+        success: [],
+        error: []
+      };
     }
-    return bulkRemove;
-  }()
+    var rxDocumentMap = await this.findByIds(ids).exec();
+    var docsData = [];
+    var docsMap = new Map();
+    Array.from(rxDocumentMap.values()).forEach(rxDocument => {
+      var data = rxDocument.toMutableJSON(true);
+      docsData.push(data);
+      docsMap.set(rxDocument.primary, data);
+    });
+    await Promise.all(docsData.map(doc => {
+      var primary = doc[this.schema.primaryPath];
+      return this._runHooks('pre', 'remove', doc, rxDocumentMap.get(primary));
+    }));
+    var removeDocs = docsData.map(doc => {
+      var writeDoc = (0, _utils.flatClone)(doc);
+      writeDoc._deleted = true;
+      return {
+        previous: doc,
+        document: writeDoc
+      };
+    });
+    var results = await this.storageInstance.bulkWrite(removeDocs, 'rx-collection-bulk-remove');
+    var successIds = Object.keys(results.success);
+
+    // run hooks
+    await Promise.all(successIds.map(id => {
+      return this._runHooks('post', 'remove', docsMap.get(id), rxDocumentMap.get(id));
+    }));
+    var rxDocuments = successIds.map(id => (0, _utils.getFromMapOrThrow)(rxDocumentMap, id));
+    return {
+      success: rxDocuments,
+      error: Object.values(results.error)
+    };
+  }
+
   /**
    * same as bulkInsert but overwrites existing document with same primary
-   */
-  ;
-  _proto.bulkUpsert =
-  /*#__PURE__*/
-  function () {
-    var _bulkUpsert = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee6(docsData) {
-      var _this4 = this;
-      var insertData, useJsonByDocId, insertResult, ret, updatedDocs;
-      return _regenerator["default"].wrap(function _callee6$(_context6) {
-        while (1) switch (_context6.prev = _context6.next) {
-          case 0:
-            insertData = [];
-            useJsonByDocId = new Map();
-            docsData.forEach(function (docData) {
-              var useJson = (0, _rxCollectionHelper.fillObjectDataBeforeInsert)(_this4.schema, docData);
-              var primary = useJson[_this4.schema.primaryPath];
-              if (!primary) {
-                throw (0, _rxError.newRxError)('COL3', {
-                  primaryPath: _this4.schema.primaryPath,
-                  data: useJson,
-                  schema: _this4.schema.jsonSchema
-                });
-              }
-              useJsonByDocId.set(primary, useJson);
-              insertData.push(useJson);
-            });
-            _context6.next = 5;
-            return this.bulkInsert(insertData);
-          case 5:
-            insertResult = _context6.sent;
-            ret = insertResult.success.slice(0);
-            _context6.next = 9;
-            return Promise.all(insertResult.error.map( /*#__PURE__*/function () {
-              var _ref = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee5(error) {
-                var id, writeData, docDataInDb, doc, newDoc;
-                return _regenerator["default"].wrap(function _callee5$(_context5) {
-                  while (1) switch (_context5.prev = _context5.next) {
-                    case 0:
-                      if (!(error.status !== 409)) {
-                        _context5.next = 2;
-                        break;
-                      }
-                      throw (0, _rxError.newRxError)('VD2', {
-                        collection: _this4.name,
-                        writeError: error
-                      });
-                    case 2:
-                      id = error.documentId;
-                      writeData = (0, _utils.getFromMapOrThrow)(useJsonByDocId, id);
-                      docDataInDb = (0, _utils.ensureNotFalsy)(error.documentInDb);
-                      doc = _this4._docCache.getCachedRxDocument(docDataInDb);
-                      _context5.next = 8;
-                      return doc.incrementalModify(function () {
-                        return writeData;
-                      });
-                    case 8:
-                      newDoc = _context5.sent;
-                      return _context5.abrupt("return", newDoc);
-                    case 10:
-                    case "end":
-                      return _context5.stop();
-                  }
-                }, _callee5);
-              }));
-              return function (_x5) {
-                return _ref.apply(this, arguments);
-              };
-            }()));
-          case 9:
-            updatedDocs = _context6.sent;
-            ret = ret.concat(updatedDocs);
-            return _context6.abrupt("return", ret);
-          case 12:
-          case "end":
-            return _context6.stop();
-        }
-      }, _callee6, this);
+   */;
+  _proto.bulkUpsert = async function bulkUpsert(docsData) {
+    var insertData = [];
+    var useJsonByDocId = new Map();
+    docsData.forEach(docData => {
+      var useJson = (0, _rxCollectionHelper.fillObjectDataBeforeInsert)(this.schema, docData);
+      var primary = useJson[this.schema.primaryPath];
+      if (!primary) {
+        throw (0, _rxError.newRxError)('COL3', {
+          primaryPath: this.schema.primaryPath,
+          data: useJson,
+          schema: this.schema.jsonSchema
+        });
+      }
+      useJsonByDocId.set(primary, useJson);
+      insertData.push(useJson);
+    });
+    var insertResult = await this.bulkInsert(insertData);
+    var ret = insertResult.success.slice(0);
+    var updatedDocs = await Promise.all(insertResult.error.map(async error => {
+      if (error.status !== 409) {
+        throw (0, _rxError.newRxError)('VD2', {
+          collection: this.name,
+          writeError: error
+        });
+      }
+      var id = error.documentId;
+      var writeData = (0, _utils.getFromMapOrThrow)(useJsonByDocId, id);
+      var docDataInDb = (0, _utils.ensureNotFalsy)(error.documentInDb);
+      var doc = this._docCache.getCachedRxDocument(docDataInDb);
+      var newDoc = await doc.incrementalModify(() => writeData);
+      return newDoc;
     }));
-    function bulkUpsert(_x4) {
-      return _bulkUpsert.apply(this, arguments);
-    }
-    return bulkUpsert;
-  }()
+    ret = ret.concat(updatedDocs);
+    return ret;
+  }
+
   /**
    * same as insert but overwrites existing document with same primary
-   */
-  ;
+   */;
   _proto.upsert = function upsert(json) {
-    return this.bulkUpsert([json]).then(function (result) {
-      return result[0];
-    });
+    return this.bulkUpsert([json]).then(result => result[0]);
   }
 
   /**
    * upserts to a RxDocument, uses incrementalModify if document already exists
    */;
   _proto.incrementalUpsert = function incrementalUpsert(json) {
-    var _this5 = this;
     var useJson = (0, _rxCollectionHelper.fillObjectDataBeforeInsert)(this.schema, json);
     var primary = useJson[this.schema.primaryPath];
     if (!primary) {
@@ -5660,9 +4486,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
     if (!queue) {
       queue = _utils.PROMISE_RESOLVE_VOID;
     }
-    queue = queue.then(function () {
-      return _incrementalUpsertEnsureRxDocumentExists(_this5, primary, useJson);
-    }).then(function (wasInserted) {
+    queue = queue.then(() => _incrementalUpsertEnsureRxDocumentExists(this, primary, useJson)).then(wasInserted => {
       if (!wasInserted.inserted) {
         return _incrementalUpsertUpdate(wasInserted.doc, useJson);
       } else {
@@ -5675,7 +4499,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
   _proto.find = function find(queryObj) {
     if (typeof queryObj === 'string') {
       throw (0, _rxError.newRxError)('COL5', {
-        queryObj: queryObj
+        queryObj
       });
     }
     if (!queryObj) {
@@ -5687,9 +4511,10 @@ var RxCollectionBase = /*#__PURE__*/function () {
   _proto.findOne = function findOne(queryObj) {
     var query;
     if (typeof queryObj === 'string') {
-      var _selector;
       query = (0, _rxQuery.createRxQuery)('findOne', {
-        selector: (_selector = {}, _selector[this.schema.primaryPath] = queryObj, _selector),
+        selector: {
+          [this.schema.primaryPath]: queryObj
+        },
         limit: 1
       }, this);
     } else {
@@ -5706,7 +4531,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
     }
     if (typeof queryObj === 'number' || Array.isArray(queryObj)) {
       throw (0, _rxError.newRxTypeError)('COL6', {
-        queryObj: queryObj
+        queryObj
       });
     }
     return query;
@@ -5724,11 +4549,12 @@ var RxCollectionBase = /*#__PURE__*/function () {
    * has way better performance then running multiple findOne() or a find() with a complex $or-selected
    */;
   _proto.findByIds = function findByIds(ids) {
-    var _selector2;
     var mangoQuery = {
-      selector: (_selector2 = {}, _selector2[this.schema.primaryPath] = {
-        $in: ids.slice(0)
-      }, _selector2)
+      selector: {
+        [this.schema.primaryPath]: {
+          $in: ids.slice(0)
+        }
+      }
     };
     var query = (0, _rxQuery.createRxQuery)('findByIds', mangoQuery, this);
     return query;
@@ -5755,30 +4581,29 @@ var RxCollectionBase = /*#__PURE__*/function () {
   /**
    * HOOKS
    */;
-  _proto.addHook = function addHook(when, key, fun) {
-    var parallel = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : false;
+  _proto.addHook = function addHook(when, key, fun, parallel = false) {
     if (typeof fun !== 'function') {
       throw (0, _rxError.newRxTypeError)('COL7', {
-        key: key,
-        when: when
+        key,
+        when
       });
     }
     if (!HOOKS_WHEN.includes(when)) {
       throw (0, _rxError.newRxTypeError)('COL8', {
-        key: key,
-        when: when
+        key,
+        when
       });
     }
     if (!HOOKS_KEYS.includes(key)) {
       throw (0, _rxError.newRxError)('COL9', {
-        key: key
+        key
       });
     }
     if (when === 'post' && key === 'create' && parallel === true) {
       throw (0, _rxError.newRxError)('COL10', {
-        when: when,
-        key: key,
-        parallel: parallel
+        when,
+        key,
+        parallel
       });
     }
 
@@ -5815,18 +4640,10 @@ var RxCollectionBase = /*#__PURE__*/function () {
     }
 
     // run parallel: false
-    var tasks = hooks.series.map(function (hook) {
-      return function () {
-        return hook(data, instance);
-      };
-    });
+    var tasks = hooks.series.map(hook => () => hook(data, instance));
     return (0, _utils.promiseSeries)(tasks)
     // run parallel: true
-    .then(function () {
-      return Promise.all(hooks.parallel.map(function (hook) {
-        return hook(data, instance);
-      }));
-    });
+    .then(() => Promise.all(hooks.parallel.map(hook => hook(data, instance))));
   }
 
   /**
@@ -5835,9 +4652,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
   _proto._runHooksSync = function _runHooksSync(when, key, data, instance) {
     var hooks = this.getHooks(when, key);
     if (!hooks) return;
-    hooks.series.forEach(function (hook) {
-      return hook(data, instance);
-    });
+    hooks.series.forEach(hook => hook(data, instance));
   }
 
   /**
@@ -5846,18 +4661,16 @@ var RxCollectionBase = /*#__PURE__*/function () {
    * so that no running timeouts prevent the exit of the JavaScript process.
    */;
   _proto.promiseWait = function promiseWait(time) {
-    var _this6 = this;
-    var ret = new Promise(function (res) {
-      var timeout = setTimeout(function () {
-        _this6.timeouts["delete"](timeout);
+    var ret = new Promise(res => {
+      var timeout = setTimeout(() => {
+        this.timeouts.delete(timeout);
         res();
       }, time);
-      _this6.timeouts.add(timeout);
+      this.timeouts.add(timeout);
     });
     return ret;
   };
   _proto.destroy = function destroy() {
-    var _this7 = this;
     if (this.destroyed) {
       return _utils.PROMISE_RESOLVE_FALSE;
     }
@@ -5869,9 +4682,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
      * instead of sending requests to a closed storage.
      */
     this.destroyed = true;
-    Array.from(this.timeouts).forEach(function (timeout) {
-      return clearTimeout(timeout);
-    });
+    Array.from(this.timeouts).forEach(timeout => clearTimeout(timeout));
     if (this._changeEventBuffer) {
       this._changeEventBuffer.destroy();
     }
@@ -5883,79 +4694,44 @@ var RxCollectionBase = /*#__PURE__*/function () {
      * because it might lead to undefined behavior like when a doc is written
      * but the change is not added to the changes collection.
      */
-    return this.database.requestIdlePromise().then(function () {
-      return Promise.all(_this7.onDestroy.map(function (fn) {
-        return fn();
-      }));
-    }).then(function () {
-      return _this7.storageInstance.close();
-    }).then(function () {
+    return this.database.requestIdlePromise().then(() => Promise.all(this.onDestroy.map(fn => fn()))).then(() => this.storageInstance.close()).then(() => {
       /**
        * Unsubscribing must be done AFTER the storageInstance.close()
        * Because the conflict handling is part of the subscriptions and
        * otherwise there might be open conflicts to be resolved which
        * will then stuck and never resolve.
        */
-      _this7._subs.forEach(function (sub) {
-        return sub.unsubscribe();
-      });
-      delete _this7.database.collections[_this7.name];
-      return (0, _hooks.runAsyncPluginHooks)('postDestroyRxCollection', _this7).then(function () {
-        return true;
-      });
+      this._subs.forEach(sub => sub.unsubscribe());
+      delete this.database.collections[this.name];
+      return (0, _hooks.runAsyncPluginHooks)('postDestroyRxCollection', this).then(() => true);
     });
   }
 
   /**
    * remove all data of the collection
    */;
-  _proto.remove =
-  /*#__PURE__*/
-  function () {
-    var _remove = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee7() {
-      return _regenerator["default"].wrap(function _callee7$(_context7) {
-        while (1) switch (_context7.prev = _context7.next) {
-          case 0:
-            _context7.next = 2;
-            return this.destroy();
-          case 2:
-            _context7.next = 4;
-            return (0, _rxCollectionHelper.removeCollectionStorages)(this.database.storage, this.database.internalStore, this.database.token, this.database.name, this.name, this.database.hashFunction);
-          case 4:
-          case "end":
-            return _context7.stop();
-        }
-      }, _callee7, this);
-    }));
-    function remove() {
-      return _remove.apply(this, arguments);
-    }
-    return remove;
-  }();
-  (0, _createClass2["default"])(RxCollectionBase, [{
+  _proto.remove = async function remove() {
+    await this.destroy();
+    await (0, _rxCollectionHelper.removeCollectionStorages)(this.database.storage, this.database.internalStore, this.database.token, this.database.name, this.name, this.database.hashFunction);
+  };
+  (0, _createClass2.default)(RxCollectionBase, [{
     key: "insert$",
-    get: function get() {
-      return this.$.pipe((0, _operators.filter)(function (cE) {
-        return cE.operation === 'INSERT';
-      }));
+    get: function () {
+      return this.$.pipe((0, _operators.filter)(cE => cE.operation === 'INSERT'));
     }
   }, {
     key: "update$",
-    get: function get() {
-      return this.$.pipe((0, _operators.filter)(function (cE) {
-        return cE.operation === 'UPDATE';
-      }));
+    get: function () {
+      return this.$.pipe((0, _operators.filter)(cE => cE.operation === 'UPDATE'));
     }
   }, {
     key: "remove$",
-    get: function get() {
-      return this.$.pipe((0, _operators.filter)(function (cE) {
-        return cE.operation === 'DELETE';
-      }));
+    get: function () {
+      return this.$.pipe((0, _operators.filter)(cE => cE.operation === 'DELETE'));
     }
   }, {
     key: "asRxCollection",
-    get: function get() {
+    get: function () {
       return this;
     }
   }]);
@@ -5970,8 +4746,8 @@ function _applyHookFunctions(collection) {
   if (hooksApplied) return; // already run
   hooksApplied = true;
   var colProto = Object.getPrototypeOf(collection);
-  HOOKS_KEYS.forEach(function (key) {
-    HOOKS_WHEN.map(function (when) {
+  HOOKS_KEYS.forEach(key => {
+    HOOKS_WHEN.map(when => {
       var fnName = when + (0, _utils.ucfirst)(key);
       colProto[fnName] = function (fun, parallel) {
         return this.addHook(when, key, fun, parallel);
@@ -5980,7 +4756,7 @@ function _applyHookFunctions(collection) {
   });
 }
 function _incrementalUpsertUpdate(doc, json) {
-  return doc.incrementalModify(function (_innerDoc) {
+  return doc.incrementalModify(_innerDoc => {
     return json;
   });
 }
@@ -6001,17 +4777,15 @@ function _incrementalUpsertEnsureRxDocumentExists(rxCollection, primary, json) {
       inserted: false
     });
   }
-  return rxCollection.findOne(primary).exec().then(function (doc) {
+  return rxCollection.findOne(primary).exec().then(doc => {
     if (!doc) {
-      return rxCollection.insert(json).then(function (newDoc) {
-        return {
-          doc: newDoc,
-          inserted: true
-        };
-      });
+      return rxCollection.insert(json).then(newDoc => ({
+        doc: newDoc,
+        inserted: true
+      }));
     } else {
       return {
-        doc: doc,
+        doc,
         inserted: false
       };
     }
@@ -6021,30 +4795,21 @@ function _incrementalUpsertEnsureRxDocumentExists(rxCollection, primary, json) {
 /**
  * creates and prepares a new collection
  */
-function createRxCollection(_ref2) {
-  var database = _ref2.database,
-    name = _ref2.name,
-    schema = _ref2.schema,
-    _ref2$instanceCreatio = _ref2.instanceCreationOptions,
-    instanceCreationOptions = _ref2$instanceCreatio === void 0 ? {} : _ref2$instanceCreatio,
-    _ref2$migrationStrate = _ref2.migrationStrategies,
-    migrationStrategies = _ref2$migrationStrate === void 0 ? {} : _ref2$migrationStrate,
-    _ref2$autoMigrate = _ref2.autoMigrate,
-    autoMigrate = _ref2$autoMigrate === void 0 ? true : _ref2$autoMigrate,
-    _ref2$statics = _ref2.statics,
-    statics = _ref2$statics === void 0 ? {} : _ref2$statics,
-    _ref2$methods = _ref2.methods,
-    methods = _ref2$methods === void 0 ? {} : _ref2$methods,
-    _ref2$attachments = _ref2.attachments,
-    attachments = _ref2$attachments === void 0 ? {} : _ref2$attachments,
-    _ref2$options = _ref2.options,
-    options = _ref2$options === void 0 ? {} : _ref2$options,
-    _ref2$localDocuments = _ref2.localDocuments,
-    localDocuments = _ref2$localDocuments === void 0 ? false : _ref2$localDocuments,
-    _ref2$cacheReplacemen = _ref2.cacheReplacementPolicy,
-    cacheReplacementPolicy = _ref2$cacheReplacemen === void 0 ? _queryCache.defaultCacheReplacementPolicy : _ref2$cacheReplacemen,
-    _ref2$conflictHandler = _ref2.conflictHandler,
-    conflictHandler = _ref2$conflictHandler === void 0 ? _replicationProtocol.defaultConflictHandler : _ref2$conflictHandler;
+function createRxCollection({
+  database,
+  name,
+  schema,
+  instanceCreationOptions = {},
+  migrationStrategies = {},
+  autoMigrate = true,
+  statics = {},
+  methods = {},
+  attachments = {},
+  options = {},
+  localDocuments = false,
+  cacheReplacementPolicy = _queryCache.defaultCacheReplacementPolicy,
+  conflictHandler = _replicationProtocol.defaultConflictHandler
+}) {
   var storageInstanceCreationParams = {
     databaseInstanceToken: database.token,
     databaseName: database.name,
@@ -6055,17 +4820,13 @@ function createRxCollection(_ref2) {
     password: database.password
   };
   (0, _hooks.runPluginHooks)('preCreateRxStorageInstance', storageInstanceCreationParams);
-  return (0, _rxCollectionHelper.createRxCollectionStorageInstance)(database, storageInstanceCreationParams).then(function (storageInstance) {
+  return (0, _rxCollectionHelper.createRxCollectionStorageInstance)(database, storageInstanceCreationParams).then(storageInstance => {
     var collection = new RxCollectionBase(database, name, schema, storageInstance, instanceCreationOptions, migrationStrategies, methods, attachments, options, cacheReplacementPolicy, statics, conflictHandler);
-    return collection.prepare().then(function () {
+    return collection.prepare().then(() => {
       // ORM add statics
-      Object.entries(statics).forEach(function (_ref3) {
-        var funName = _ref3[0],
-          fun = _ref3[1];
+      Object.entries(statics).forEach(([funName, fun]) => {
         Object.defineProperty(collection, funName, {
-          get: function get() {
-            return fun.bind(collection);
-          }
+          get: () => fun.bind(collection)
         });
       });
       var ret = _utils.PROMISE_RESOLVE_VOID;
@@ -6073,21 +4834,21 @@ function createRxCollection(_ref2) {
         ret = collection.migratePromise();
       }
       return ret;
-    }).then(function () {
+    }).then(() => {
       (0, _hooks.runPluginHooks)('createRxCollection', {
-        collection: collection,
+        collection,
         creator: {
-          name: name,
-          schema: schema,
-          storageInstance: storageInstance,
-          instanceCreationOptions: instanceCreationOptions,
-          migrationStrategies: migrationStrategies,
-          methods: methods,
-          attachments: attachments,
-          options: options,
-          cacheReplacementPolicy: cacheReplacementPolicy,
-          localDocuments: localDocuments,
-          statics: statics
+          name,
+          schema,
+          storageInstance,
+          instanceCreationOptions,
+          migrationStrategies,
+          methods,
+          attachments,
+          options,
+          cacheReplacementPolicy,
+          localDocuments,
+          statics
         }
       });
       return collection;
@@ -6095,10 +4856,8 @@ function createRxCollection(_ref2) {
     /**
      * If the collection creation fails,
      * we yet have to close the storage instances.
-     */["catch"](function (err) {
-      return storageInstance.close().then(function () {
-        return Promise.reject(err);
-      });
+     */.catch(err => {
+      return storageInstance.close().then(() => Promise.reject(err));
     });
   });
 }
@@ -6106,10 +4865,9 @@ function isRxCollection(obj) {
   return obj instanceof RxCollectionBase;
 }
 
-},{"./change-event-buffer":2,"./doc-cache":4,"./hooks":6,"./incremental-write":7,"./plugins/utils":12,"./query-cache":25,"./replication-protocol":31,"./rx-collection-helper":35,"./rx-document":40,"./rx-document-prototype-merge":39,"./rx-error":41,"./rx-query":43,"./rx-storage-helper":46,"@babel/runtime/helpers/asyncToGenerator":52,"@babel/runtime/helpers/createClass":54,"@babel/runtime/helpers/interopRequireDefault":57,"@babel/runtime/regenerator":66,"rxjs/operators":648}],37:[function(require,module,exports){
+},{"./change-event-buffer":2,"./doc-cache":4,"./hooks":6,"./incremental-write":7,"./plugins/utils":12,"./query-cache":25,"./replication-protocol":31,"./rx-collection-helper":35,"./rx-document":40,"./rx-document-prototype-merge":39,"./rx-error":41,"./rx-query":43,"./rx-storage-helper":46,"@babel/runtime/helpers/createClass":53,"@babel/runtime/helpers/interopRequireDefault":56,"rxjs/operators":645}],37:[function(require,module,exports){
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -6119,8 +4877,6 @@ exports.addConnectedStorageToCollection = addConnectedStorageToCollection;
 exports.ensureStorageTokenDocumentExists = ensureStorageTokenDocumentExists;
 exports.getAllCollectionDocuments = getAllCollectionDocuments;
 exports.getPrimaryKeyOfInternalDocument = getPrimaryKeyOfInternalDocument;
-var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
-var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 var _rxError = require("./rx-error");
 var _rxSchemaHelper = require("./rx-schema-helper");
 var _rxStorageHelper = require("./rx-storage-helper");
@@ -6159,7 +4915,7 @@ var INTERNAL_STORE_SCHEMA = (0, _rxSchemaHelper.fillWithDefaultSettings)({
     },
     context: {
       type: 'string',
-      "enum": [INTERNAL_CONTEXT_COLLECTION, INTERNAL_CONTEXT_STORAGE_TOKEN, 'OTHER']
+      enum: [INTERNAL_CONTEXT_COLLECTION, INTERNAL_CONTEXT_STORAGE_TOKEN, 'OTHER']
     },
     data: {
       type: 'object',
@@ -6184,8 +4940,8 @@ var INTERNAL_STORE_SCHEMA = (0, _rxSchemaHelper.fillWithDefaultSettings)({
 exports.INTERNAL_STORE_SCHEMA = INTERNAL_STORE_SCHEMA;
 function getPrimaryKeyOfInternalDocument(key, context) {
   return (0, _rxSchemaHelper.getComposedPrimaryKeyOfDocumentData)(INTERNAL_STORE_SCHEMA, {
-    key: key,
-    context: context
+    key,
+    context
   });
 }
 
@@ -6193,209 +4949,133 @@ function getPrimaryKeyOfInternalDocument(key, context) {
  * Returns all internal documents
  * with context 'collection'
  */
-function getAllCollectionDocuments(_x, _x2) {
-  return _getAllCollectionDocuments.apply(this, arguments);
+async function getAllCollectionDocuments(storageStatics, storageInstance) {
+  var getAllQueryPrepared = storageStatics.prepareQuery(storageInstance.schema, {
+    selector: {
+      context: INTERNAL_CONTEXT_COLLECTION
+    },
+    sort: [{
+      id: 'asc'
+    }],
+    skip: 0
+  });
+  var queryResult = await storageInstance.query(getAllQueryPrepared);
+  var allDocs = queryResult.documents;
+  return allDocs;
 }
+
 /**
  * to not confuse multiInstance-messages with other databases that have the same
  * name and adapter, but do not share state with this one (for example in-memory-instances),
  * we set a storage-token and use it in the broadcast-channel
  */
-function _getAllCollectionDocuments() {
-  _getAllCollectionDocuments = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(storageStatics, storageInstance) {
-    var getAllQueryPrepared, queryResult, allDocs;
-    return _regenerator["default"].wrap(function _callee$(_context) {
-      while (1) switch (_context.prev = _context.next) {
-        case 0:
-          getAllQueryPrepared = storageStatics.prepareQuery(storageInstance.schema, {
-            selector: {
-              context: INTERNAL_CONTEXT_COLLECTION
-            },
-            sort: [{
-              id: 'asc'
-            }],
-            skip: 0
-          });
-          _context.next = 3;
-          return storageInstance.query(getAllQueryPrepared);
-        case 3:
-          queryResult = _context.sent;
-          allDocs = queryResult.documents;
-          return _context.abrupt("return", allDocs);
-        case 6:
-        case "end":
-          return _context.stop();
-      }
-    }, _callee);
-  }));
-  return _getAllCollectionDocuments.apply(this, arguments);
-}
 var STORAGE_TOKEN_DOCUMENT_KEY = 'storageToken';
 exports.STORAGE_TOKEN_DOCUMENT_KEY = STORAGE_TOKEN_DOCUMENT_KEY;
 var STORAGE_TOKEN_DOCUMENT_ID = getPrimaryKeyOfInternalDocument(STORAGE_TOKEN_DOCUMENT_KEY, INTERNAL_CONTEXT_STORAGE_TOKEN);
 exports.STORAGE_TOKEN_DOCUMENT_ID = STORAGE_TOKEN_DOCUMENT_ID;
-function ensureStorageTokenDocumentExists(_x3) {
-  return _ensureStorageTokenDocumentExists.apply(this, arguments);
+async function ensureStorageTokenDocumentExists(rxDatabase) {
+  /**
+   * To have less read-write cycles,
+   * we just try to insert a new document
+   * and only fetch the existing one if a conflict happened.
+   */
+  var storageToken = (0, _utils.randomCouchString)(10);
+  var passwordHash = rxDatabase.password ? (0, _utils.fastUnsecureHash)(rxDatabase.password) : undefined;
+  var docData = {
+    id: STORAGE_TOKEN_DOCUMENT_ID,
+    context: INTERNAL_CONTEXT_STORAGE_TOKEN,
+    key: STORAGE_TOKEN_DOCUMENT_KEY,
+    data: {
+      token: storageToken,
+      /**
+       * We add the instance token here
+       * to be able to detect if a given RxDatabase instance
+       * is the first instance that was ever created
+       * or if databases have existed earlier on that storage
+       * with the same database name.
+       */
+      instanceToken: rxDatabase.token,
+      passwordHash
+    },
+    _deleted: false,
+    _meta: (0, _utils.getDefaultRxDocumentMeta)(),
+    _rev: (0, _utils.getDefaultRevision)(),
+    _attachments: {}
+  };
+  var writeResult = await rxDatabase.internalStore.bulkWrite([{
+    document: docData
+  }], 'internal-add-storage-token');
+  if (writeResult.success[STORAGE_TOKEN_DOCUMENT_ID]) {
+    return writeResult.success[STORAGE_TOKEN_DOCUMENT_ID];
+  }
+
+  /**
+   * If we get a 409 error,
+   * it means another instance already inserted the storage token.
+   * So we get that token from the database and return that one.
+   */
+  var error = (0, _utils.ensureNotFalsy)(writeResult.error[STORAGE_TOKEN_DOCUMENT_ID]);
+  if (error.isError && error.status === 409) {
+    var conflictError = error;
+    if (passwordHash && passwordHash !== conflictError.documentInDb.data.passwordHash) {
+      throw (0, _rxError.newRxError)('DB1', {
+        passwordHash,
+        existingPasswordHash: conflictError.documentInDb.data.passwordHash
+      });
+    }
+    var storageTokenDocInDb = conflictError.documentInDb;
+    return (0, _utils.ensureNotFalsy)(storageTokenDocInDb);
+  }
+  throw error;
 }
-function _ensureStorageTokenDocumentExists() {
-  _ensureStorageTokenDocumentExists = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee2(rxDatabase) {
-    var storageToken, passwordHash, docData, writeResult, error, conflictError, storageTokenDocInDb;
-    return _regenerator["default"].wrap(function _callee2$(_context2) {
-      while (1) switch (_context2.prev = _context2.next) {
-        case 0:
-          /**
-           * To have less read-write cycles,
-           * we just try to insert a new document
-           * and only fetch the existing one if a conflict happened.
-           */
-          storageToken = (0, _utils.randomCouchString)(10);
-          passwordHash = rxDatabase.password ? (0, _utils.fastUnsecureHash)(rxDatabase.password) : undefined;
-          docData = {
-            id: STORAGE_TOKEN_DOCUMENT_ID,
-            context: INTERNAL_CONTEXT_STORAGE_TOKEN,
-            key: STORAGE_TOKEN_DOCUMENT_KEY,
-            data: {
-              token: storageToken,
-              /**
-               * We add the instance token here
-               * to be able to detect if a given RxDatabase instance
-               * is the first instance that was ever created
-               * or if databases have existed earlier on that storage
-               * with the same database name.
-               */
-              instanceToken: rxDatabase.token,
-              passwordHash: passwordHash
-            },
-            _deleted: false,
-            _meta: (0, _utils.getDefaultRxDocumentMeta)(),
-            _rev: (0, _utils.getDefaultRevision)(),
-            _attachments: {}
-          };
-          _context2.next = 5;
-          return rxDatabase.internalStore.bulkWrite([{
-            document: docData
-          }], 'internal-add-storage-token');
-        case 5:
-          writeResult = _context2.sent;
-          if (!writeResult.success[STORAGE_TOKEN_DOCUMENT_ID]) {
-            _context2.next = 8;
-            break;
-          }
-          return _context2.abrupt("return", writeResult.success[STORAGE_TOKEN_DOCUMENT_ID]);
-        case 8:
-          /**
-           * If we get a 409 error,
-           * it means another instance already inserted the storage token.
-           * So we get that token from the database and return that one.
-           */
-          error = (0, _utils.ensureNotFalsy)(writeResult.error[STORAGE_TOKEN_DOCUMENT_ID]);
-          if (!(error.isError && error.status === 409)) {
-            _context2.next = 15;
-            break;
-          }
-          conflictError = error;
-          if (!(passwordHash && passwordHash !== conflictError.documentInDb.data.passwordHash)) {
-            _context2.next = 13;
-            break;
-          }
-          throw (0, _rxError.newRxError)('DB1', {
-            passwordHash: passwordHash,
-            existingPasswordHash: conflictError.documentInDb.data.passwordHash
-          });
-        case 13:
-          storageTokenDocInDb = conflictError.documentInDb;
-          return _context2.abrupt("return", (0, _utils.ensureNotFalsy)(storageTokenDocInDb));
-        case 15:
-          throw error;
-        case 16:
-        case "end":
-          return _context2.stop();
+async function addConnectedStorageToCollection(collection, storageCollectionName, schema) {
+  var collectionNameWithVersion = _collectionNamePrimary(collection.name, collection.schema.jsonSchema);
+  var collectionDocId = getPrimaryKeyOfInternalDocument(collectionNameWithVersion, INTERNAL_CONTEXT_COLLECTION);
+  while (true) {
+    var collectionDoc = await (0, _rxStorageHelper.getSingleDocument)(collection.database.internalStore, collectionDocId);
+    var saveData = (0, _utils.clone)((0, _utils.ensureNotFalsy)(collectionDoc));
+    /**
+     * Add array if not exist for backwards compatibility
+     * TODO remove this in 2023
+     */
+    if (!saveData.data.connectedStorages) {
+      saveData.data.connectedStorages = [];
+    }
+
+    // do nothing if already in array
+    var alreadyThere = saveData.data.connectedStorages.find(row => row.collectionName === storageCollectionName && row.schema.version === schema.version);
+    if (alreadyThere) {
+      return;
+    }
+
+    // otherwise add to array and save
+    saveData.data.connectedStorages.push({
+      collectionName: storageCollectionName,
+      schema
+    });
+    try {
+      await (0, _rxStorageHelper.writeSingle)(collection.database.internalStore, {
+        previous: (0, _utils.ensureNotFalsy)(collectionDoc),
+        document: saveData
+      }, 'add-connected-storage-to-collection');
+    } catch (err) {
+      if (!(0, _rxError.isBulkWriteConflictError)(err)) {
+        throw err;
       }
-    }, _callee2);
-  }));
-  return _ensureStorageTokenDocumentExists.apply(this, arguments);
+      // retry on conflict
+    }
+  }
 }
-function addConnectedStorageToCollection(_x4, _x5, _x6) {
-  return _addConnectedStorageToCollection.apply(this, arguments);
-}
+
 /**
  * returns the primary for a given collection-data
  * used in the internal store of a RxDatabase
  */
-function _addConnectedStorageToCollection() {
-  _addConnectedStorageToCollection = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee3(collection, storageCollectionName, schema) {
-    var collectionNameWithVersion, collectionDocId, collectionDoc, saveData, alreadyThere;
-    return _regenerator["default"].wrap(function _callee3$(_context3) {
-      while (1) switch (_context3.prev = _context3.next) {
-        case 0:
-          collectionNameWithVersion = _collectionNamePrimary(collection.name, collection.schema.jsonSchema);
-          collectionDocId = getPrimaryKeyOfInternalDocument(collectionNameWithVersion, INTERNAL_CONTEXT_COLLECTION);
-        case 2:
-          if (!true) {
-            _context3.next = 23;
-            break;
-          }
-          _context3.next = 5;
-          return (0, _rxStorageHelper.getSingleDocument)(collection.database.internalStore, collectionDocId);
-        case 5:
-          collectionDoc = _context3.sent;
-          saveData = (0, _utils.clone)((0, _utils.ensureNotFalsy)(collectionDoc));
-          /**
-           * Add array if not exist for backwards compatibility
-           * TODO remove this in 2023
-           */
-          if (!saveData.data.connectedStorages) {
-            saveData.data.connectedStorages = [];
-          }
-
-          // do nothing if already in array
-          alreadyThere = saveData.data.connectedStorages.find(function (row) {
-            return row.collectionName === storageCollectionName && row.schema.version === schema.version;
-          });
-          if (!alreadyThere) {
-            _context3.next = 11;
-            break;
-          }
-          return _context3.abrupt("return");
-        case 11:
-          // otherwise add to array and save
-          saveData.data.connectedStorages.push({
-            collectionName: storageCollectionName,
-            schema: schema
-          });
-          _context3.prev = 12;
-          _context3.next = 15;
-          return (0, _rxStorageHelper.writeSingle)(collection.database.internalStore, {
-            previous: (0, _utils.ensureNotFalsy)(collectionDoc),
-            document: saveData
-          }, 'add-connected-storage-to-collection');
-        case 15:
-          _context3.next = 21;
-          break;
-        case 17:
-          _context3.prev = 17;
-          _context3.t0 = _context3["catch"](12);
-          if ((0, _rxError.isBulkWriteConflictError)(_context3.t0)) {
-            _context3.next = 21;
-            break;
-          }
-          throw _context3.t0;
-        case 21:
-          _context3.next = 2;
-          break;
-        case 23:
-        case "end":
-          return _context3.stop();
-      }
-    }, _callee3, null, [[12, 17]]);
-  }));
-  return _addConnectedStorageToCollection.apply(this, arguments);
-}
 function _collectionNamePrimary(name, schema) {
   return name + '-' + schema.version;
 }
 
-},{"./plugins/utils":12,"./rx-error":41,"./rx-schema-helper":44,"./rx-storage-helper":46,"@babel/runtime/helpers/asyncToGenerator":52,"@babel/runtime/helpers/interopRequireDefault":57,"@babel/runtime/regenerator":66}],38:[function(require,module,exports){
+},{"./plugins/utils":12,"./rx-error":41,"./rx-schema-helper":44,"./rx-storage-helper":46}],38:[function(require,module,exports){
 "use strict";
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
@@ -6410,8 +5090,6 @@ exports.ensureNoStartupErrors = ensureNoStartupErrors;
 exports.isRxDatabase = isRxDatabase;
 exports.isRxDatabaseFirstTimeInstantiated = isRxDatabaseFirstTimeInstantiated;
 exports.removeRxDatabase = removeRxDatabase;
-var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
-var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
 var _customIdleQueue = require("custom-idle-queue");
 var _utils = require("./plugins/utils");
@@ -6437,18 +5115,11 @@ var RxDatabaseBase = /*#__PURE__*/function () {
    * Uniquely identifies the instance
    * of this RxDatabase.
    */
-  token, storage, instanceCreationOptions, password, multiInstance) {
-    var _this = this;
-    var eventReduce = arguments.length > 6 && arguments[6] !== undefined ? arguments[6] : false;
-    var options = arguments.length > 7 && arguments[7] !== undefined ? arguments[7] : {};
-    var
-    /**
-     * Stores information documents about the collections of the database
-     */
-    internalStore = arguments.length > 8 ? arguments[8] : undefined;
-    var hashFunction = arguments.length > 9 ? arguments[9] : undefined;
-    var cleanupPolicy = arguments.length > 10 ? arguments[10] : undefined;
-    var allowSlowCount = arguments.length > 11 ? arguments[11] : undefined;
+  token, storage, instanceCreationOptions, password, multiInstance, eventReduce = false, options = {},
+  /**
+   * Stores information documents about the collections of the database
+   */
+  internalStore, hashFunction, cleanupPolicy, allowSlowCount) {
     this.idleQueue = new _customIdleQueue.IdleQueue();
     this._subs = [];
     this.startupErrors = [];
@@ -6456,9 +5127,7 @@ var RxDatabaseBase = /*#__PURE__*/function () {
     this.destroyed = false;
     this.collections = {};
     this.eventBulks$ = new _rxjs.Subject();
-    this.observable$ = this.eventBulks$.pipe((0, _operators.mergeMap)(function (changeEventBulk) {
-      return changeEventBulk.events;
-    }));
+    this.observable$ = this.eventBulks$.pipe((0, _operators.mergeMap)(changeEventBulk => changeEventBulk.events));
     this.storageToken = _utils.PROMISE_RESOLVE_FALSE;
     this.storageTokenDocument = _utils.PROMISE_RESOLVE_FALSE;
     this.emittedEventBulkIds = new _obliviousSet.ObliviousSet(60 * 1000);
@@ -6502,14 +5171,8 @@ var RxDatabaseBase = /*#__PURE__*/function () {
        * Writing the token takes about 20 milliseconds
        * even on a fast adapter, so this is worth it.
        */
-      this.storageTokenDocument = (0, _rxDatabaseInternalStore.ensureStorageTokenDocumentExists)(this.asRxDatabase)["catch"](function (err) {
-        return _this.startupErrors.push(err);
-      });
-      this.storageToken = this.storageTokenDocument.then(function (doc) {
-        return doc.data.token;
-      })["catch"](function (err) {
-        return _this.startupErrors.push(err);
-      });
+      this.storageTokenDocument = (0, _rxDatabaseInternalStore.ensureStorageTokenDocumentExists)(this.asRxDatabase).catch(err => this.startupErrors.push(err));
+      this.storageToken = this.storageTokenDocument.then(doc => doc.data.token).catch(err => this.startupErrors.push(err));
     }
   }
   var _proto = RxDatabaseBase.prototype;
@@ -6533,196 +5196,124 @@ var RxDatabaseBase = /*#__PURE__*/function () {
   /**
    * removes the collection-doc from the internalStore
    */;
-  _proto.removeCollectionDoc =
-  /*#__PURE__*/
-  function () {
-    var _removeCollectionDoc = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(name, schema) {
-      var doc, writeDoc;
-      return _regenerator["default"].wrap(function _callee$(_context) {
-        while (1) switch (_context.prev = _context.next) {
-          case 0:
-            _context.next = 2;
-            return (0, _rxStorageHelper.getSingleDocument)(this.internalStore, (0, _rxDatabaseInternalStore.getPrimaryKeyOfInternalDocument)((0, _rxDatabaseInternalStore._collectionNamePrimary)(name, schema), _rxDatabaseInternalStore.INTERNAL_CONTEXT_COLLECTION));
-          case 2:
-            doc = _context.sent;
-            if (doc) {
-              _context.next = 5;
-              break;
-            }
-            throw (0, _rxError.newRxError)('SNH', {
-              name: name,
-              schema: schema
-            });
-          case 5:
-            writeDoc = (0, _rxStorageHelper.flatCloneDocWithMeta)(doc);
-            writeDoc._deleted = true;
-            _context.next = 9;
-            return this.internalStore.bulkWrite([{
-              document: writeDoc,
-              previous: doc
-            }], 'rx-database-remove-collection');
-          case 9:
-          case "end":
-            return _context.stop();
-        }
-      }, _callee, this);
-    }));
-    function removeCollectionDoc(_x, _x2) {
-      return _removeCollectionDoc.apply(this, arguments);
+  _proto.removeCollectionDoc = async function removeCollectionDoc(name, schema) {
+    var doc = await (0, _rxStorageHelper.getSingleDocument)(this.internalStore, (0, _rxDatabaseInternalStore.getPrimaryKeyOfInternalDocument)((0, _rxDatabaseInternalStore._collectionNamePrimary)(name, schema), _rxDatabaseInternalStore.INTERNAL_CONTEXT_COLLECTION));
+    if (!doc) {
+      throw (0, _rxError.newRxError)('SNH', {
+        name,
+        schema
+      });
     }
-    return removeCollectionDoc;
-  }()
+    var writeDoc = (0, _rxStorageHelper.flatCloneDocWithMeta)(doc);
+    writeDoc._deleted = true;
+    await this.internalStore.bulkWrite([{
+      document: writeDoc,
+      previous: doc
+    }], 'rx-database-remove-collection');
+  }
+
   /**
    * creates multiple RxCollections at once
    * to be much faster by saving db txs and doing stuff in bulk-operations
    * This function is not called often, but mostly in the critical path at the initial page load
    * So it must be as fast as possible.
-   */
-  ;
-  _proto.addCollections =
-  /*#__PURE__*/
-  function () {
-    var _addCollections = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee3(collectionCreators) {
-      var _this2 = this;
-      var jsonSchemas, schemas, bulkPutDocs, useArgsByCollectionName, putDocsResult, ret;
-      return _regenerator["default"].wrap(function _callee3$(_context3) {
-        while (1) switch (_context3.prev = _context3.next) {
-          case 0:
-            jsonSchemas = {};
-            schemas = {};
-            bulkPutDocs = [];
-            useArgsByCollectionName = {};
-            Object.entries(collectionCreators).forEach(function (_ref) {
-              var name = _ref[0],
-                args = _ref[1];
-              var collectionName = name;
-              var rxJsonSchema = args.schema;
-              jsonSchemas[collectionName] = rxJsonSchema;
-              var schema = (0, _rxSchema.createRxSchema)(rxJsonSchema);
-              schemas[collectionName] = schema;
+   */;
+  _proto.addCollections = async function addCollections(collectionCreators) {
+    var jsonSchemas = {};
+    var schemas = {};
+    var bulkPutDocs = [];
+    var useArgsByCollectionName = {};
+    Object.entries(collectionCreators).forEach(([name, args]) => {
+      var collectionName = name;
+      var rxJsonSchema = args.schema;
+      jsonSchemas[collectionName] = rxJsonSchema;
+      var schema = (0, _rxSchema.createRxSchema)(rxJsonSchema);
+      schemas[collectionName] = schema;
 
-              // collection already exists
-              if (_this2.collections[name]) {
-                throw (0, _rxError.newRxError)('DB3', {
-                  name: name
-                });
-              }
-              var collectionNameWithVersion = (0, _rxDatabaseInternalStore._collectionNamePrimary)(name, rxJsonSchema);
-              var collectionDocData = {
-                id: (0, _rxDatabaseInternalStore.getPrimaryKeyOfInternalDocument)(collectionNameWithVersion, _rxDatabaseInternalStore.INTERNAL_CONTEXT_COLLECTION),
-                key: collectionNameWithVersion,
-                context: _rxDatabaseInternalStore.INTERNAL_CONTEXT_COLLECTION,
-                data: {
-                  name: collectionName,
-                  schemaHash: schema.hash,
-                  schema: schema.jsonSchema,
-                  version: schema.version,
-                  connectedStorages: []
-                },
-                _deleted: false,
-                _meta: (0, _utils.getDefaultRxDocumentMeta)(),
-                _rev: (0, _utils.getDefaultRevision)(),
-                _attachments: {}
-              };
-              bulkPutDocs.push({
-                document: collectionDocData
-              });
-              var useArgs = Object.assign({}, args, {
-                name: collectionName,
-                schema: schema,
-                database: _this2
-              });
+      // collection already exists
+      if (this.collections[name]) {
+        throw (0, _rxError.newRxError)('DB3', {
+          name
+        });
+      }
+      var collectionNameWithVersion = (0, _rxDatabaseInternalStore._collectionNamePrimary)(name, rxJsonSchema);
+      var collectionDocData = {
+        id: (0, _rxDatabaseInternalStore.getPrimaryKeyOfInternalDocument)(collectionNameWithVersion, _rxDatabaseInternalStore.INTERNAL_CONTEXT_COLLECTION),
+        key: collectionNameWithVersion,
+        context: _rxDatabaseInternalStore.INTERNAL_CONTEXT_COLLECTION,
+        data: {
+          name: collectionName,
+          schemaHash: schema.hash,
+          schema: schema.jsonSchema,
+          version: schema.version,
+          connectedStorages: []
+        },
+        _deleted: false,
+        _meta: (0, _utils.getDefaultRxDocumentMeta)(),
+        _rev: (0, _utils.getDefaultRevision)(),
+        _attachments: {}
+      };
+      bulkPutDocs.push({
+        document: collectionDocData
+      });
+      var useArgs = Object.assign({}, args, {
+        name: collectionName,
+        schema,
+        database: this
+      });
 
-              // run hooks
-              var hookData = (0, _utils.flatClone)(args);
-              hookData.database = _this2;
-              hookData.name = name;
-              (0, _hooks.runPluginHooks)('preCreateRxCollection', hookData);
-              useArgs.conflictHandler = hookData.conflictHandler;
-              useArgsByCollectionName[collectionName] = useArgs;
-            });
-            _context3.next = 7;
-            return this.internalStore.bulkWrite(bulkPutDocs, 'rx-database-add-collection');
-          case 7:
-            putDocsResult = _context3.sent;
-            _context3.next = 10;
-            return ensureNoStartupErrors(this);
-          case 10:
-            Object.entries(putDocsResult.error).forEach(function (_ref2) {
-              var _id = _ref2[0],
-                error = _ref2[1];
-              if (error.status !== 409) {
-                throw (0, _rxError.newRxError)('DB12', {
-                  database: _this2.name,
-                  writeError: error
-                });
-              }
-              var docInDb = (0, _utils.ensureNotFalsy)(error.documentInDb);
-              var collectionName = docInDb.data.name;
-              var schema = schemas[collectionName];
-              // collection already exists but has different schema
-              if (docInDb.data.schemaHash !== schema.hash) {
-                throw (0, _rxError.newRxError)('DB6', {
-                  database: _this2.name,
-                  collection: collectionName,
-                  previousSchemaHash: docInDb.data.schemaHash,
-                  schemaHash: schema.hash,
-                  previousSchema: docInDb.data.schema,
-                  schema: (0, _utils.ensureNotFalsy)(jsonSchemas[collectionName])
-                });
-              }
-            });
-            ret = {};
-            _context3.next = 14;
-            return Promise.all(Object.keys(collectionCreators).map( /*#__PURE__*/function () {
-              var _ref3 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee2(collectionName) {
-                var useArgs, collection;
-                return _regenerator["default"].wrap(function _callee2$(_context2) {
-                  while (1) switch (_context2.prev = _context2.next) {
-                    case 0:
-                      useArgs = useArgsByCollectionName[collectionName];
-                      _context2.next = 3;
-                      return (0, _rxCollection.createRxCollection)(useArgs);
-                    case 3:
-                      collection = _context2.sent;
-                      ret[collectionName] = collection;
+      // run hooks
+      var hookData = (0, _utils.flatClone)(args);
+      hookData.database = this;
+      hookData.name = name;
+      (0, _hooks.runPluginHooks)('preCreateRxCollection', hookData);
+      useArgs.conflictHandler = hookData.conflictHandler;
+      useArgsByCollectionName[collectionName] = useArgs;
+    });
+    var putDocsResult = await this.internalStore.bulkWrite(bulkPutDocs, 'rx-database-add-collection');
+    await ensureNoStartupErrors(this);
+    Object.entries(putDocsResult.error).forEach(([_id, error]) => {
+      if (error.status !== 409) {
+        throw (0, _rxError.newRxError)('DB12', {
+          database: this.name,
+          writeError: error
+        });
+      }
+      var docInDb = (0, _utils.ensureNotFalsy)(error.documentInDb);
+      var collectionName = docInDb.data.name;
+      var schema = schemas[collectionName];
+      // collection already exists but has different schema
+      if (docInDb.data.schemaHash !== schema.hash) {
+        throw (0, _rxError.newRxError)('DB6', {
+          database: this.name,
+          collection: collectionName,
+          previousSchemaHash: docInDb.data.schemaHash,
+          schemaHash: schema.hash,
+          previousSchema: docInDb.data.schema,
+          schema: (0, _utils.ensureNotFalsy)(jsonSchemas[collectionName])
+        });
+      }
+    });
+    var ret = {};
+    await Promise.all(Object.keys(collectionCreators).map(async collectionName => {
+      var useArgs = useArgsByCollectionName[collectionName];
+      var collection = await (0, _rxCollection.createRxCollection)(useArgs);
+      ret[collectionName] = collection;
 
-                      // set as getter to the database
-                      _this2.collections[collectionName] = collection;
-                      if (!_this2[collectionName]) {
-                        Object.defineProperty(_this2, collectionName, {
-                          get: function get() {
-                            return _this2.collections[collectionName];
-                          }
-                        });
-                      }
-                    case 7:
-                    case "end":
-                      return _context2.stop();
-                  }
-                }, _callee2);
-              }));
-              return function (_x4) {
-                return _ref3.apply(this, arguments);
-              };
-            }()));
-          case 14:
-            return _context3.abrupt("return", ret);
-          case 15:
-          case "end":
-            return _context3.stop();
-        }
-      }, _callee3, this);
+      // set as getter to the database
+      this.collections[collectionName] = collection;
+      if (!this[collectionName]) {
+        Object.defineProperty(this, collectionName, {
+          get: () => this.collections[collectionName]
+        });
+      }
     }));
-    function addCollections(_x3) {
-      return _addCollections.apply(this, arguments);
-    }
-    return addCollections;
-  }()
+    return ret;
+  }
+
   /**
    * runs the given function between idleQueue-locking
-   */
-  ;
+   */;
   _proto.lockedRun = function lockedRun(fn) {
     return this.idleQueue.wrapCall(fn);
   };
@@ -6768,100 +5359,59 @@ var RxDatabaseBase = /*#__PURE__*/function () {
   /**
    * destroys the database-instance and all collections
    */;
-  _proto.destroy =
-  /*#__PURE__*/
-  function () {
-    var _destroy = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee4() {
-      var _this3 = this;
-      return _regenerator["default"].wrap(function _callee4$(_context4) {
-        while (1) switch (_context4.prev = _context4.next) {
-          case 0:
-            if (!this.destroyed) {
-              _context4.next = 2;
-              break;
-            }
-            return _context4.abrupt("return", _utils.PROMISE_RESOLVE_FALSE);
-          case 2:
-            // settings destroyed = true must be the first thing to do.
-            this.destroyed = true;
-            _context4.next = 5;
-            return (0, _hooks.runAsyncPluginHooks)('preDestroyRxDatabase', this);
-          case 5:
-            /**
-             * Complete the event stream
-             * to stop all subscribers who forgot to unsubscribe.
-             */
-            this.eventBulks$.complete();
-            DB_COUNT--;
-            this._subs.map(function (sub) {
-              return sub.unsubscribe();
-            });
-
-            /**
-             * Destroying the pseudo instance will throw
-             * because stulff is missing
-             * TODO we should not need the pseudo instance on runtime.
-             * we should generate the property list on build time.
-             */
-            if (!(this.name === 'pseudoInstance')) {
-              _context4.next = 10;
-              break;
-            }
-            return _context4.abrupt("return", _utils.PROMISE_RESOLVE_FALSE);
-          case 10:
-            return _context4.abrupt("return", this.requestIdlePromise().then(function () {
-              return Promise.all(_this3.onDestroy.map(function (fn) {
-                return fn();
-              }));
-            })
-            // destroy all collections
-            .then(function () {
-              return Promise.all(Object.keys(_this3.collections).map(function (key) {
-                return _this3.collections[key];
-              }).map(function (col) {
-                return col.destroy();
-              }));
-            })
-            // destroy internal storage instances
-            .then(function () {
-              return _this3.internalStore.close();
-            })
-            // remove combination from USED_COMBINATIONS-map
-            .then(function () {
-              return USED_DATABASE_NAMES["delete"](_this3.name);
-            }).then(function () {
-              return true;
-            }));
-          case 11:
-          case "end":
-            return _context4.stop();
-        }
-      }, _callee4, this);
-    }));
-    function destroy() {
-      return _destroy.apply(this, arguments);
+  _proto.destroy = async function destroy() {
+    if (this.destroyed) {
+      return _utils.PROMISE_RESOLVE_FALSE;
     }
-    return destroy;
-  }()
+
+    // settings destroyed = true must be the first thing to do.
+    this.destroyed = true;
+    await (0, _hooks.runAsyncPluginHooks)('preDestroyRxDatabase', this);
+    /**
+     * Complete the event stream
+     * to stop all subscribers who forgot to unsubscribe.
+     */
+    this.eventBulks$.complete();
+    DB_COUNT--;
+    this._subs.map(sub => sub.unsubscribe());
+
+    /**
+     * Destroying the pseudo instance will throw
+     * because stulff is missing
+     * TODO we should not need the pseudo instance on runtime.
+     * we should generate the property list on build time.
+     */
+    if (this.name === 'pseudoInstance') {
+      return _utils.PROMISE_RESOLVE_FALSE;
+    }
+
+    /**
+     * First wait until the database is idle
+     */
+    return this.requestIdlePromise().then(() => Promise.all(this.onDestroy.map(fn => fn())))
+    // destroy all collections
+    .then(() => Promise.all(Object.keys(this.collections).map(key => this.collections[key]).map(col => col.destroy())))
+    // destroy internal storage instances
+    .then(() => this.internalStore.close())
+    // remove combination from USED_COMBINATIONS-map
+    .then(() => USED_DATABASE_NAMES.delete(this.name)).then(() => true);
+  }
+
   /**
    * deletes the database and its stored data.
    * Returns the names of all removed collections.
-   */
-  ;
+   */;
   _proto.remove = function remove() {
-    var _this4 = this;
-    return this.destroy().then(function () {
-      return removeRxDatabase(_this4.name, _this4.storage);
-    });
+    return this.destroy().then(() => removeRxDatabase(this.name, this.storage));
   };
-  (0, _createClass2["default"])(RxDatabaseBase, [{
+  (0, _createClass2.default)(RxDatabaseBase, [{
     key: "$",
-    get: function get() {
+    get: function () {
       return this.observable$;
     }
   }, {
     key: "asRxDatabase",
-    get: function get() {
+    get: function () {
       return this;
     }
   }]);
@@ -6877,7 +5427,7 @@ function throwIfDatabaseNameUsed(name) {
     return;
   } else {
     throw (0, _rxError.newRxError)('DB8', {
-      name: name,
+      name,
       link: 'https://pubkey.github.io/rxdb/rx-database.html#ignoreduplicate'
     });
   }
@@ -6887,66 +5437,42 @@ function throwIfDatabaseNameUsed(name) {
  * Creates the storage instances that are used internally in the database
  * to store schemas and other configuration stuff.
  */
-function createRxDatabaseStorageInstance(_x5, _x6, _x7, _x8, _x9, _x10) {
-  return _createRxDatabaseStorageInstance.apply(this, arguments);
+async function createRxDatabaseStorageInstance(databaseInstanceToken, storage, databaseName, options, multiInstance, password) {
+  var internalStore = await storage.createStorageInstance({
+    databaseInstanceToken,
+    databaseName,
+    collectionName: _rxStorageHelper.INTERNAL_STORAGE_NAME,
+    schema: _rxDatabaseInternalStore.INTERNAL_STORE_SCHEMA,
+    options,
+    multiInstance,
+    password
+  });
+  return internalStore;
 }
-function _createRxDatabaseStorageInstance() {
-  _createRxDatabaseStorageInstance = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee5(databaseInstanceToken, storage, databaseName, options, multiInstance, password) {
-    var internalStore;
-    return _regenerator["default"].wrap(function _callee5$(_context5) {
-      while (1) switch (_context5.prev = _context5.next) {
-        case 0:
-          _context5.next = 2;
-          return storage.createStorageInstance({
-            databaseInstanceToken: databaseInstanceToken,
-            databaseName: databaseName,
-            collectionName: _rxStorageHelper.INTERNAL_STORAGE_NAME,
-            schema: _rxDatabaseInternalStore.INTERNAL_STORE_SCHEMA,
-            options: options,
-            multiInstance: multiInstance,
-            password: password
-          });
-        case 2:
-          internalStore = _context5.sent;
-          return _context5.abrupt("return", internalStore);
-        case 4:
-        case "end":
-          return _context5.stop();
-      }
-    }, _callee5);
-  }));
-  return _createRxDatabaseStorageInstance.apply(this, arguments);
-}
-function createRxDatabase(_ref4) {
-  var storage = _ref4.storage,
-    instanceCreationOptions = _ref4.instanceCreationOptions,
-    name = _ref4.name,
-    password = _ref4.password,
-    _ref4$multiInstance = _ref4.multiInstance,
-    multiInstance = _ref4$multiInstance === void 0 ? true : _ref4$multiInstance,
-    _ref4$eventReduce = _ref4.eventReduce,
-    eventReduce = _ref4$eventReduce === void 0 ? false : _ref4$eventReduce,
-    _ref4$ignoreDuplicate = _ref4.ignoreDuplicate,
-    ignoreDuplicate = _ref4$ignoreDuplicate === void 0 ? false : _ref4$ignoreDuplicate,
-    _ref4$options = _ref4.options,
-    options = _ref4$options === void 0 ? {} : _ref4$options,
-    cleanupPolicy = _ref4.cleanupPolicy,
-    _ref4$allowSlowCount = _ref4.allowSlowCount,
-    allowSlowCount = _ref4$allowSlowCount === void 0 ? false : _ref4$allowSlowCount,
-    _ref4$localDocuments = _ref4.localDocuments,
-    localDocuments = _ref4$localDocuments === void 0 ? false : _ref4$localDocuments,
-    _ref4$hashFunction = _ref4.hashFunction,
-    hashFunction = _ref4$hashFunction === void 0 ? _utils.defaultHashFunction : _ref4$hashFunction;
+function createRxDatabase({
+  storage,
+  instanceCreationOptions,
+  name,
+  password,
+  multiInstance = true,
+  eventReduce = false,
+  ignoreDuplicate = false,
+  options = {},
+  cleanupPolicy,
+  allowSlowCount = false,
+  localDocuments = false,
+  hashFunction = _utils.defaultHashFunction
+}) {
   (0, _hooks.runPluginHooks)('preCreateRxDatabase', {
-    storage: storage,
-    instanceCreationOptions: instanceCreationOptions,
-    name: name,
-    password: password,
-    multiInstance: multiInstance,
-    eventReduce: eventReduce,
-    ignoreDuplicate: ignoreDuplicate,
-    options: options,
-    localDocuments: localDocuments
+    storage,
+    instanceCreationOptions,
+    name,
+    password,
+    multiInstance,
+    eventReduce,
+    ignoreDuplicate,
+    options,
+    localDocuments
   });
   // check if combination already used
   if (!ignoreDuplicate) {
@@ -6960,27 +5486,25 @@ function createRxDatabase(_ref4) {
    * if some RxStorage wrapper is used that does some checks
    * and then throw.
    * In that case we have to properly clean up the database.
-   */["catch"](function (err) {
-    USED_DATABASE_NAMES["delete"](name);
+   */.catch(err => {
+    USED_DATABASE_NAMES.delete(name);
     throw err;
-  }).then(function (storageInstance) {
+  }).then(storageInstance => {
     var rxDatabase = new RxDatabaseBase(name, databaseInstanceToken, storage, instanceCreationOptions, password, multiInstance, eventReduce, options, storageInstance, hashFunction, cleanupPolicy, allowSlowCount);
     return (0, _hooks.runAsyncPluginHooks)('createRxDatabase', {
       database: rxDatabase,
       creator: {
-        storage: storage,
-        instanceCreationOptions: instanceCreationOptions,
-        name: name,
-        password: password,
-        multiInstance: multiInstance,
-        eventReduce: eventReduce,
-        ignoreDuplicate: ignoreDuplicate,
-        options: options,
-        localDocuments: localDocuments
+        storage,
+        instanceCreationOptions,
+        name,
+        password,
+        multiInstance,
+        eventReduce,
+        ignoreDuplicate,
+        options,
+        localDocuments
       }
-    }).then(function () {
-      return rxDatabase;
-    });
+    }).then(() => rxDatabase);
   });
 }
 
@@ -6990,51 +5514,20 @@ function createRxDatabase(_ref4) {
  *
  * Returns the names of the removed collections.
  */
-function removeRxDatabase(_x11, _x12) {
-  return _removeRxDatabase.apply(this, arguments);
-}
-function _removeRxDatabase() {
-  _removeRxDatabase = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee6(databaseName, storage) {
-    var databaseInstanceToken, dbInternalsStorageInstance, collectionDocs, collectionNames, removedCollectionNames;
-    return _regenerator["default"].wrap(function _callee6$(_context6) {
-      while (1) switch (_context6.prev = _context6.next) {
-        case 0:
-          databaseInstanceToken = (0, _utils.randomCouchString)(10);
-          _context6.next = 3;
-          return createRxDatabaseStorageInstance(databaseInstanceToken, storage, databaseName, {}, false);
-        case 3:
-          dbInternalsStorageInstance = _context6.sent;
-          _context6.next = 6;
-          return (0, _rxDatabaseInternalStore.getAllCollectionDocuments)(storage.statics, dbInternalsStorageInstance);
-        case 6:
-          collectionDocs = _context6.sent;
-          collectionNames = new Set();
-          collectionDocs.forEach(function (doc) {
-            return collectionNames.add(doc.data.name);
-          });
-          removedCollectionNames = Array.from(collectionNames);
-          _context6.next = 12;
-          return Promise.all(removedCollectionNames.map(function (collectionName) {
-            return (0, _rxCollectionHelper.removeCollectionStorages)(storage, dbInternalsStorageInstance, databaseInstanceToken, databaseName, collectionName);
-          }));
-        case 12:
-          _context6.next = 14;
-          return (0, _hooks.runAsyncPluginHooks)('postRemoveRxDatabase', {
-            databaseName: databaseName,
-            storage: storage
-          });
-        case 14:
-          _context6.next = 16;
-          return dbInternalsStorageInstance.remove();
-        case 16:
-          return _context6.abrupt("return", removedCollectionNames);
-        case 17:
-        case "end":
-          return _context6.stop();
-      }
-    }, _callee6);
-  }));
-  return _removeRxDatabase.apply(this, arguments);
+async function removeRxDatabase(databaseName, storage) {
+  var databaseInstanceToken = (0, _utils.randomCouchString)(10);
+  var dbInternalsStorageInstance = await createRxDatabaseStorageInstance(databaseInstanceToken, storage, databaseName, {}, false);
+  var collectionDocs = await (0, _rxDatabaseInternalStore.getAllCollectionDocuments)(storage.statics, dbInternalsStorageInstance);
+  var collectionNames = new Set();
+  collectionDocs.forEach(doc => collectionNames.add(doc.data.name));
+  var removedCollectionNames = Array.from(collectionNames);
+  await Promise.all(removedCollectionNames.map(collectionName => (0, _rxCollectionHelper.removeCollectionStorages)(storage, dbInternalsStorageInstance, databaseInstanceToken, databaseName, collectionName)));
+  await (0, _hooks.runAsyncPluginHooks)('postRemoveRxDatabase', {
+    databaseName,
+    storage
+  });
+  await dbInternalsStorageInstance.remove();
+  return removedCollectionNames;
 }
 function isRxDatabase(obj) {
   return obj instanceof RxDatabaseBase;
@@ -7050,60 +5543,25 @@ function dbCount() {
  * Can be used for some optimizations because on the first instantiation,
  * we can assume that no data was written before.
  */
-function isRxDatabaseFirstTimeInstantiated(_x13) {
-  return _isRxDatabaseFirstTimeInstantiated.apply(this, arguments);
+async function isRxDatabaseFirstTimeInstantiated(database) {
+  var tokenDoc = await database.storageTokenDocument;
+  return tokenDoc.data.instanceToken === database.token;
 }
+
 /**
  * For better performance some tasks run async
  * and are awaited later.
  * But we still have to ensure that there have been no errors
  * on database creation.
  */
-function _isRxDatabaseFirstTimeInstantiated() {
-  _isRxDatabaseFirstTimeInstantiated = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee7(database) {
-    var tokenDoc;
-    return _regenerator["default"].wrap(function _callee7$(_context7) {
-      while (1) switch (_context7.prev = _context7.next) {
-        case 0:
-          _context7.next = 2;
-          return database.storageTokenDocument;
-        case 2:
-          tokenDoc = _context7.sent;
-          return _context7.abrupt("return", tokenDoc.data.instanceToken === database.token);
-        case 4:
-        case "end":
-          return _context7.stop();
-      }
-    }, _callee7);
-  }));
-  return _isRxDatabaseFirstTimeInstantiated.apply(this, arguments);
-}
-function ensureNoStartupErrors(_x14) {
-  return _ensureNoStartupErrors.apply(this, arguments);
-}
-function _ensureNoStartupErrors() {
-  _ensureNoStartupErrors = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee8(rxDatabase) {
-    return _regenerator["default"].wrap(function _callee8$(_context8) {
-      while (1) switch (_context8.prev = _context8.next) {
-        case 0:
-          _context8.next = 2;
-          return rxDatabase.storageToken;
-        case 2:
-          if (!rxDatabase.startupErrors[0]) {
-            _context8.next = 4;
-            break;
-          }
-          throw rxDatabase.startupErrors[0];
-        case 4:
-        case "end":
-          return _context8.stop();
-      }
-    }, _callee8);
-  }));
-  return _ensureNoStartupErrors.apply(this, arguments);
+async function ensureNoStartupErrors(rxDatabase) {
+  await rxDatabase.storageToken;
+  if (rxDatabase.startupErrors[0]) {
+    throw rxDatabase.startupErrors[0];
+  }
 }
 
-},{"./hooks":6,"./plugins/utils":12,"./rx-collection":36,"./rx-collection-helper":35,"./rx-database-internal-store":37,"./rx-error":41,"./rx-schema":45,"./rx-storage-helper":46,"@babel/runtime/helpers/asyncToGenerator":52,"@babel/runtime/helpers/createClass":54,"@babel/runtime/helpers/interopRequireDefault":57,"@babel/runtime/regenerator":66,"custom-idle-queue":407,"oblivious-set":420,"rxjs":423,"rxjs/operators":648}],39:[function(require,module,exports){
+},{"./hooks":6,"./plugins/utils":12,"./rx-collection":36,"./rx-collection-helper":35,"./rx-database-internal-store":37,"./rx-error":41,"./rx-schema":45,"./rx-storage-helper":46,"@babel/runtime/helpers/createClass":53,"@babel/runtime/helpers/interopRequireDefault":56,"custom-idle-queue":404,"oblivious-set":417,"rxjs":420,"rxjs/operators":645}],39:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -7131,9 +5589,9 @@ function getDocumentPrototype(rxCollection) {
   var ormProto = getDocumentOrmPrototype(rxCollection);
   var baseProto = _rxDocument.basePrototype;
   var proto = {};
-  [schemaProto, ormProto, baseProto].forEach(function (obj) {
+  [schemaProto, ormProto, baseProto].forEach(obj => {
     var props = Object.getOwnPropertyNames(obj);
-    props.forEach(function (key) {
+    props.forEach(key => {
       var desc = Object.getOwnPropertyDescriptor(obj, key);
 
       /**
@@ -7145,10 +5603,10 @@ function getDocumentPrototype(rxCollection) {
       if (typeof desc.value === 'function') {
         // when getting a function, we automatically do a .bind(this)
         Object.defineProperty(proto, key, {
-          get: function get() {
+          get() {
             return desc.value.bind(this);
           },
-          enumerable: enumerable,
+          enumerable,
           configurable: false
         });
       } else {
@@ -7189,9 +5647,7 @@ function createNewRxDocument(rxCollection, docData) {
  */
 function getDocumentOrmPrototype(rxCollection) {
   var proto = {};
-  Object.entries(rxCollection.methods).forEach(function (_ref) {
-    var k = _ref[0],
-      v = _ref[1];
+  Object.entries(rxCollection.methods).forEach(([k, v]) => {
     proto[k] = v;
   });
   return proto;
@@ -7210,8 +5666,6 @@ exports.createRxDocumentConstructor = createRxDocumentConstructor;
 exports.createWithConstructor = createWithConstructor;
 exports.defineGetterSetter = defineGetterSetter;
 exports.isRxDocument = isRxDocument;
-var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
-var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 var _objectPath = _interopRequireDefault(require("object-path"));
 var _operators = require("rxjs/operators");
 var _utils = require("./plugins/utils");
@@ -7249,9 +5703,7 @@ var basePrototype = {
     if (!_this.isInstanceOfRxDocument) {
       return undefined;
     }
-    return _this.$.pipe((0, _operators.map)(function (d) {
-      return d._deleted;
-    }));
+    return _this.$.pipe((0, _operators.map)(d => d._deleted));
   },
   get deleted() {
     var _this = this;
@@ -7260,7 +5712,7 @@ var basePrototype = {
     }
     return _this._data._deleted;
   },
-  getLatest: function getLatest() {
+  getLatest() {
     var latestDocData = this.collection._docCache.getLatestDocumentData(this.primary);
     return this.collection._docCache.getCachedRxDocument(latestDocData);
   },
@@ -7268,26 +5720,17 @@ var basePrototype = {
    * returns the observable which emits the plain-data of this document
    */
   get $() {
-    var _this2 = this;
     var _this = this;
-    return _this.collection.$.pipe((0, _operators.filter)(function (changeEvent) {
-      return !changeEvent.isLocal;
-    }), (0, _operators.filter)(function (changeEvent) {
-      return changeEvent.documentId === _this2.primary;
-    }), (0, _operators.map)(function (changeEvent) {
-      return (0, _rxChangeEvent.getDocumentDataOfRxChangeEvent)(changeEvent);
-    }), (0, _operators.startWith)(_this.collection._docCache.getLatestDocumentData(this.primary)), (0, _operators.distinctUntilChanged)(function (prev, curr) {
-      return prev._rev === curr._rev;
-    }), (0, _operators.shareReplay)(_utils.RXJS_SHARE_REPLAY_DEFAULTS));
+    return _this.collection.$.pipe((0, _operators.filter)(changeEvent => !changeEvent.isLocal), (0, _operators.filter)(changeEvent => changeEvent.documentId === this.primary), (0, _operators.map)(changeEvent => (0, _rxChangeEvent.getDocumentDataOfRxChangeEvent)(changeEvent)), (0, _operators.startWith)(_this.collection._docCache.getLatestDocumentData(this.primary)), (0, _operators.distinctUntilChanged)((prev, curr) => prev._rev === curr._rev), (0, _operators.shareReplay)(_utils.RXJS_SHARE_REPLAY_DEFAULTS));
   },
   /**
    * returns observable of the value of the given path
    */
-  get$: function get$(path) {
+  get$(path) {
     if (_overwritable.overwritable.isDevMode()) {
       if (path.includes('.item.')) {
         throw (0, _rxError.newRxError)('DOC1', {
-          path: path
+          path
         });
       }
       if (path === this.primaryPath) {
@@ -7297,24 +5740,22 @@ var basePrototype = {
       // final fields cannot be modified and so also not observed
       if (this.collection.schema.finalFields.includes(path)) {
         throw (0, _rxError.newRxError)('DOC3', {
-          path: path
+          path
         });
       }
       var schemaObj = (0, _rxSchemaHelper.getSchemaByObjectPath)(this.collection.schema.jsonSchema, path);
       if (!schemaObj) {
         throw (0, _rxError.newRxError)('DOC4', {
-          path: path
+          path
         });
       }
     }
-    return this.$.pipe((0, _operators.map)(function (data) {
-      return _objectPath["default"].get(data, path);
-    }), (0, _operators.distinctUntilChanged)());
+    return this.$.pipe((0, _operators.map)(data => _objectPath.default.get(data, path)), (0, _operators.distinctUntilChanged)());
   },
   /**
    * populate the given path
    */
-  populate: function populate(path) {
+  populate(path) {
     var schemaObj = (0, _rxSchemaHelper.getSchemaByObjectPath)(this.collection.schema.jsonSchema, path);
     var value = this.get(path);
     if (!value) {
@@ -7322,25 +5763,25 @@ var basePrototype = {
     }
     if (!schemaObj) {
       throw (0, _rxError.newRxError)('DOC5', {
-        path: path
+        path
       });
     }
     if (!schemaObj.ref) {
       throw (0, _rxError.newRxError)('DOC6', {
-        path: path,
-        schemaObj: schemaObj
+        path,
+        schemaObj
       });
     }
     var refCollection = this.collection.database.collections[schemaObj.ref];
     if (!refCollection) {
       throw (0, _rxError.newRxError)('DOC7', {
         ref: schemaObj.ref,
-        path: path,
-        schemaObj: schemaObj
+        path,
+        schemaObj
       });
     }
     if (schemaObj.type === 'array') {
-      return refCollection.findByIds(value).exec().then(function (res) {
+      return refCollection.findByIds(value).exec().then(res => {
         var valuesIterator = res.values();
         return Array.from(valuesIterator);
       });
@@ -7351,9 +5792,9 @@ var basePrototype = {
   /**
    * get data by objectPath
    */
-  get: function get(objPath) {
+  get(objPath) {
     if (!this._data) return undefined;
-    var valueObj = _objectPath["default"].get(this._data, objPath);
+    var valueObj = _objectPath.default.get(this._data, objPath);
 
     // direct return if array or non-object
     if (typeof valueObj !== 'object' || Array.isArray(valueObj)) {
@@ -7368,8 +5809,7 @@ var basePrototype = {
     defineGetterSetter(this.collection.schema, valueObj, objPath, this);
     return valueObj;
   },
-  toJSON: function toJSON() {
-    var withMetaFields = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+  toJSON(withMetaFields = false) {
     if (!withMetaFields) {
       var data = (0, _utils.flatClone)(this._data);
       delete data._rev;
@@ -7381,8 +5821,7 @@ var basePrototype = {
       return _overwritable.overwritable.deepFreezeWhenDevMode(this._data);
     }
   },
-  toMutableJSON: function toMutableJSON() {
-    var withMetaFields = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : false;
+  toMutableJSON(withMetaFields = false) {
     return (0, _utils.clone)(this.toJSON(withMetaFields));
   },
   /**
@@ -7390,70 +5829,47 @@ var basePrototype = {
    * @overwritten by plugin (optional)
    * @param updateObj mongodb-like syntax
    */
-  update: function update(_updateObj) {
+  update(_updateObj) {
     throw (0, _utils.pluginMissing)('update');
   },
-  incrementalUpdate: function incrementalUpdate(_updateObj) {
+  incrementalUpdate(_updateObj) {
     throw (0, _utils.pluginMissing)('update');
   },
-  updateCRDT: function updateCRDT(_updateObj) {
+  updateCRDT(_updateObj) {
     throw (0, _utils.pluginMissing)('crdt');
   },
-  putAttachment: function putAttachment() {
+  putAttachment() {
     throw (0, _utils.pluginMissing)('attachments');
   },
-  getAttachment: function getAttachment() {
+  getAttachment() {
     throw (0, _utils.pluginMissing)('attachments');
   },
-  allAttachments: function allAttachments() {
+  allAttachments() {
     throw (0, _utils.pluginMissing)('attachments');
   },
   get allAttachments$() {
     throw (0, _utils.pluginMissing)('attachments');
   },
-  modify: function () {
-    var _modify = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(mutationFunction,
-    // used by some plugins that wrap the method
-    _context) {
-      var oldData, newData;
-      return _regenerator["default"].wrap(function _callee$(_context2) {
-        while (1) switch (_context2.prev = _context2.next) {
-          case 0:
-            oldData = this._data;
-            _context2.next = 3;
-            return (0, _incrementalWrite.modifierFromPublicToInternal)(mutationFunction)(oldData);
-          case 3:
-            newData = _context2.sent;
-            return _context2.abrupt("return", this._saveData(newData, oldData));
-          case 5:
-          case "end":
-            return _context2.stop();
-        }
-      }, _callee, this);
-    }));
-    function modify(_x, _x2) {
-      return _modify.apply(this, arguments);
-    }
-    return modify;
-  }(),
+  async modify(mutationFunction,
+  // used by some plugins that wrap the method
+  _context) {
+    var oldData = this._data;
+    var newData = await (0, _incrementalWrite.modifierFromPublicToInternal)(mutationFunction)(oldData);
+    return this._saveData(newData, oldData);
+  },
   /**
    * runs an incremental update over the document
    * @param function that takes the document-data and returns a new data-object
    */
-  incrementalModify: function incrementalModify(mutationFunction,
+  incrementalModify(mutationFunction,
   // used by some plugins that wrap the method
   _context) {
-    var _this3 = this;
-    return this.collection.incrementalWriteQueue.addWrite(this._data, (0, _incrementalWrite.modifierFromPublicToInternal)(mutationFunction)).then(function (result) {
-      return _this3.collection._docCache.getCachedRxDocument(result);
-    });
+    return this.collection.incrementalWriteQueue.addWrite(this._data, (0, _incrementalWrite.modifierFromPublicToInternal)(mutationFunction)).then(result => this.collection._docCache.getCachedRxDocument(result));
   },
-  patch: function patch(_patch) {
+  patch(patch) {
     var oldData = this._data;
     var newData = (0, _utils.clone)(oldData);
-    Object.entries(_patch).forEach(function (_ref) {
-      var k = _ref[0],
-        v = _ref[1];
+    Object.entries(patch).forEach(([k, v]) => {
       newData[k] = v;
     });
     return this._saveData(newData, oldData);
@@ -7461,11 +5877,9 @@ var basePrototype = {
   /**
    * patches the given properties
    */
-  incrementalPatch: function incrementalPatch(patch) {
-    return this.incrementalModify(function (docData) {
-      Object.entries(patch).forEach(function (_ref2) {
-        var k = _ref2[0],
-          v = _ref2[1];
+  incrementalPatch(patch) {
+    return this.incrementalModify(docData => {
+      Object.entries(patch).forEach(([k, v]) => {
         docData[k] = v;
       });
       return docData;
@@ -7475,58 +5889,32 @@ var basePrototype = {
    * saves the new document-data
    * and handles the events
    */
-  _saveData: function () {
-    var _saveData2 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee2(newData, oldData) {
-      var writeResult, isError;
-      return _regenerator["default"].wrap(function _callee2$(_context3) {
-        while (1) switch (_context3.prev = _context3.next) {
-          case 0:
-            newData = (0, _utils.flatClone)(newData);
+  async _saveData(newData, oldData) {
+    newData = (0, _utils.flatClone)(newData);
 
-            // deleted documents cannot be changed
-            if (!this._data._deleted) {
-              _context3.next = 3;
-              break;
-            }
-            throw (0, _rxError.newRxError)('DOC11', {
-              id: this.primary,
-              document: this
-            });
-          case 3:
-            _context3.next = 5;
-            return beforeDocumentUpdateWrite(this.collection, newData, oldData);
-          case 5:
-            _context3.next = 7;
-            return this.collection.storageInstance.bulkWrite([{
-              previous: oldData,
-              document: newData
-            }], 'rx-document-save-data');
-          case 7:
-            writeResult = _context3.sent;
-            isError = writeResult.error[this.primary];
-            (0, _rxStorageHelper.throwIfIsStorageWriteError)(this.collection, this.primary, newData, isError);
-            _context3.next = 12;
-            return this.collection._runHooks('post', 'save', newData, this);
-          case 12:
-            return _context3.abrupt("return", this.collection._docCache.getCachedRxDocument((0, _utils.getFromObjectOrThrow)(writeResult.success, this.primary)));
-          case 13:
-          case "end":
-            return _context3.stop();
-        }
-      }, _callee2, this);
-    }));
-    function _saveData(_x3, _x4) {
-      return _saveData2.apply(this, arguments);
+    // deleted documents cannot be changed
+    if (this._data._deleted) {
+      throw (0, _rxError.newRxError)('DOC11', {
+        id: this.primary,
+        document: this
+      });
     }
-    return _saveData;
-  }(),
+    await beforeDocumentUpdateWrite(this.collection, newData, oldData);
+    var writeResult = await this.collection.storageInstance.bulkWrite([{
+      previous: oldData,
+      document: newData
+    }], 'rx-document-save-data');
+    var isError = writeResult.error[this.primary];
+    (0, _rxStorageHelper.throwIfIsStorageWriteError)(this.collection, this.primary, newData, isError);
+    await this.collection._runHooks('post', 'save', newData, this);
+    return this.collection._docCache.getCachedRxDocument((0, _utils.getFromObjectOrThrow)(writeResult.success, this.primary));
+  },
   /**
    * Remove the document.
    * Notice that there is no hard delete,
    * instead deleted documents get flagged with _deleted=true.
    */
-  remove: function remove() {
-    var _this4 = this;
+  remove() {
     var collection = this.collection;
     if (this.deleted) {
       return Promise.reject((0, _rxError.newRxError)('DOC13', {
@@ -7536,82 +5924,38 @@ var basePrototype = {
     }
     var deletedData = (0, _utils.flatClone)(this._data);
     var removedDocData;
-    return collection._runHooks('pre', 'remove', deletedData, this).then( /*#__PURE__*/(0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee3() {
-      var writeResult, isError;
-      return _regenerator["default"].wrap(function _callee3$(_context4) {
-        while (1) switch (_context4.prev = _context4.next) {
-          case 0:
-            deletedData._deleted = true;
-            _context4.next = 3;
-            return collection.storageInstance.bulkWrite([{
-              previous: _this4._data,
-              document: deletedData
-            }], 'rx-document-remove');
-          case 3:
-            writeResult = _context4.sent;
-            isError = writeResult.error[_this4.primary];
-            (0, _rxStorageHelper.throwIfIsStorageWriteError)(collection, _this4.primary, deletedData, isError);
-            return _context4.abrupt("return", (0, _utils.getFromObjectOrThrow)(writeResult.success, _this4.primary));
-          case 7:
-          case "end":
-            return _context4.stop();
-        }
-      }, _callee3);
-    }))).then(function (removed) {
+    return collection._runHooks('pre', 'remove', deletedData, this).then(async () => {
+      deletedData._deleted = true;
+      var writeResult = await collection.storageInstance.bulkWrite([{
+        previous: this._data,
+        document: deletedData
+      }], 'rx-document-remove');
+      var isError = writeResult.error[this.primary];
+      (0, _rxStorageHelper.throwIfIsStorageWriteError)(collection, this.primary, deletedData, isError);
+      return (0, _utils.getFromObjectOrThrow)(writeResult.success, this.primary);
+    }).then(removed => {
       removedDocData = removed;
-      return _this4.collection._runHooks('post', 'remove', deletedData, _this4);
-    }).then(function () {
-      return _this4.collection._docCache.getCachedRxDocument(removedDocData);
+      return this.collection._runHooks('post', 'remove', deletedData, this);
+    }).then(() => {
+      return this.collection._docCache.getCachedRxDocument(removedDocData);
     });
   },
-  incrementalRemove: function incrementalRemove() {
-    var _this5 = this;
-    return this.incrementalModify( /*#__PURE__*/function () {
-      var _ref4 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee4(docData) {
-        return _regenerator["default"].wrap(function _callee4$(_context5) {
-          while (1) switch (_context5.prev = _context5.next) {
-            case 0:
-              _context5.next = 2;
-              return _this5.collection._runHooks('pre', 'remove', docData, _this5);
-            case 2:
-              docData._deleted = true;
-              return _context5.abrupt("return", docData);
-            case 4:
-            case "end":
-              return _context5.stop();
-          }
-        }, _callee4);
-      }));
-      return function (_x5) {
-        return _ref4.apply(this, arguments);
-      };
-    }()).then( /*#__PURE__*/function () {
-      var _ref5 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee5(newDoc) {
-        return _regenerator["default"].wrap(function _callee5$(_context6) {
-          while (1) switch (_context6.prev = _context6.next) {
-            case 0:
-              _context6.next = 2;
-              return _this5.collection._runHooks('post', 'remove', newDoc._data, newDoc);
-            case 2:
-              return _context6.abrupt("return", newDoc);
-            case 3:
-            case "end":
-              return _context6.stop();
-          }
-        }, _callee5);
-      }));
-      return function (_x6) {
-        return _ref5.apply(this, arguments);
-      };
-    }());
+  incrementalRemove() {
+    return this.incrementalModify(async docData => {
+      await this.collection._runHooks('pre', 'remove', docData, this);
+      docData._deleted = true;
+      return docData;
+    }).then(async newDoc => {
+      await this.collection._runHooks('post', 'remove', newDoc._data, newDoc);
+      return newDoc;
+    });
   },
-  destroy: function destroy() {
+  destroy() {
     throw (0, _rxError.newRxError)('DOC14');
   }
 };
 exports.basePrototype = basePrototype;
-function createRxDocumentConstructor() {
-  var proto = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : basePrototype;
+function createRxDocumentConstructor(proto = basePrototype) {
   var constructor = function RxDocumentConstructor(collection, docData) {
     this.collection = collection;
 
@@ -7627,14 +5971,12 @@ function createRxDocumentConstructor() {
   constructor.prototype = proto;
   return constructor;
 }
-function defineGetterSetter(schema, valueObj) {
-  var objPath = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : '';
-  var thisObj = arguments.length > 3 && arguments[3] !== undefined ? arguments[3] : false;
+function defineGetterSetter(schema, valueObj, objPath = '', thisObj = false) {
   if (valueObj === null) return;
   var pathProperties = (0, _rxSchemaHelper.getSchemaByObjectPath)(schema.jsonSchema, objPath);
   if (typeof pathProperties === 'undefined') return;
   if (pathProperties.properties) pathProperties = pathProperties.properties;
-  Object.keys(pathProperties).forEach(function (key) {
+  Object.keys(pathProperties).forEach(key => {
     var fullPath = (0, _utils.trimDots)(objPath + '.' + key);
 
     // getter - value
@@ -7653,7 +5995,7 @@ function defineGetterSetter(schema, valueObj) {
     });
     // getter - observable$
     Object.defineProperty(valueObj, key + '$', {
-      get: function get() {
+      get: function () {
         var _this = thisObj ? thisObj : this;
         return _this.get$(fullPath);
       },
@@ -7662,7 +6004,7 @@ function defineGetterSetter(schema, valueObj) {
     });
     // getter - populate_
     Object.defineProperty(valueObj, key + '_', {
-      get: function get() {
+      get: function () {
         var _this = thisObj ? thisObj : this;
         return _this.populate(fullPath);
       },
@@ -7701,7 +6043,7 @@ function beforeDocumentUpdateWrite(collection, newData, oldData) {
   return collection._runHooks('pre', 'save', newData);
 }
 
-},{"./hooks":6,"./incremental-write":7,"./overwritable":9,"./plugins/utils":12,"./rx-change-event":34,"./rx-error":41,"./rx-schema-helper":44,"./rx-storage-helper":46,"@babel/runtime/helpers/asyncToGenerator":52,"@babel/runtime/helpers/interopRequireDefault":57,"@babel/runtime/regenerator":66,"object-path":419,"rxjs/operators":648}],41:[function(require,module,exports){
+},{"./hooks":6,"./incremental-write":7,"./overwritable":9,"./plugins/utils":12,"./rx-change-event":34,"./rx-error":41,"./rx-schema-helper":44,"./rx-storage-helper":46,"@babel/runtime/helpers/interopRequireDefault":56,"object-path":416,"rxjs/operators":645}],41:[function(require,module,exports){
 "use strict";
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
@@ -7728,12 +6070,10 @@ function parametersToString(parameters) {
   var ret = '';
   if (Object.keys(parameters).length === 0) return ret;
   ret += 'Given parameters: {\n';
-  ret += Object.keys(parameters).map(function (k) {
+  ret += Object.keys(parameters).map(k => {
     var paramStr = '[object Object]';
     try {
-      paramStr = JSON.stringify(parameters[k], function (_k, v) {
-        return v === undefined ? null : v;
-      }, 2);
+      paramStr = JSON.stringify(parameters[k], (_k, v) => v === undefined ? null : v, 2);
     } catch (e) {}
     return k + ':' + paramStr;
   }).join('\n');
@@ -7744,12 +6084,11 @@ function messageForError(message, code, parameters) {
   return 'RxError (' + code + '):' + '\n' + message + '\n' + parametersToString(parameters);
 }
 var RxError = /*#__PURE__*/function (_Error) {
-  (0, _inheritsLoose2["default"])(RxError, _Error);
+  (0, _inheritsLoose2.default)(RxError, _Error);
   // always true, use this to detect if its an rxdb-error
 
-  function RxError(code, message) {
+  function RxError(code, message, parameters = {}) {
     var _this;
-    var parameters = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
     var mes = messageForError(message, code, parameters);
     _this = _Error.call(this, mes) || this;
     _this.code = code;
@@ -7762,27 +6101,26 @@ var RxError = /*#__PURE__*/function (_Error) {
   _proto.toString = function toString() {
     return this.message;
   };
-  (0, _createClass2["default"])(RxError, [{
+  (0, _createClass2.default)(RxError, [{
     key: "name",
-    get: function get() {
+    get: function () {
       return 'RxError (' + this.code + ')';
     }
   }, {
     key: "typeError",
-    get: function get() {
+    get: function () {
       return false;
     }
   }]);
   return RxError;
-}( /*#__PURE__*/(0, _wrapNativeSuper2["default"])(Error));
+}( /*#__PURE__*/(0, _wrapNativeSuper2.default)(Error));
 exports.RxError = RxError;
 var RxTypeError = /*#__PURE__*/function (_TypeError) {
-  (0, _inheritsLoose2["default"])(RxTypeError, _TypeError);
+  (0, _inheritsLoose2.default)(RxTypeError, _TypeError);
   // always true, use this to detect if its an rxdb-error
 
-  function RxTypeError(code, message) {
+  function RxTypeError(code, message, parameters = {}) {
     var _this2;
-    var parameters = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
     var mes = messageForError(message, code, parameters);
     _this2 = _TypeError.call(this, mes) || this;
     _this2.code = code;
@@ -7795,19 +6133,19 @@ var RxTypeError = /*#__PURE__*/function (_TypeError) {
   _proto2.toString = function toString() {
     return this.message;
   };
-  (0, _createClass2["default"])(RxTypeError, [{
+  (0, _createClass2.default)(RxTypeError, [{
     key: "name",
-    get: function get() {
+    get: function () {
       return 'RxTypeError (' + this.code + ')';
     }
   }, {
     key: "typeError",
-    get: function get() {
+    get: function () {
       return true;
     }
   }]);
   return RxTypeError;
-}( /*#__PURE__*/(0, _wrapNativeSuper2["default"])(TypeError));
+}( /*#__PURE__*/(0, _wrapNativeSuper2.default)(TypeError));
 exports.RxTypeError = RxTypeError;
 function newRxError(code, parameters) {
   return new RxError(code, _overwritable.overwritable.tunnelErrorMessage(code), parameters);
@@ -7840,7 +6178,7 @@ function rxStorageWriteErrorToRxError(err) {
   });
 }
 
-},{"./overwritable":9,"@babel/runtime/helpers/createClass":54,"@babel/runtime/helpers/inheritsLoose":56,"@babel/runtime/helpers/interopRequireDefault":57,"@babel/runtime/helpers/wrapNativeSuper":65}],42:[function(require,module,exports){
+},{"./overwritable":9,"@babel/runtime/helpers/createClass":53,"@babel/runtime/helpers/inheritsLoose":55,"@babel/runtime/helpers/interopRequireDefault":56,"@babel/runtime/helpers/wrapNativeSuper":63}],42:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -7879,9 +6217,7 @@ function normalizeMangoQuery(schema, mangoQuery) {
      * TODO this must work recursive with nested queries that
      * contain multiple selectors via $and or $or etc.
      */
-    Object.entries(normalizedMangoQuery.selector).forEach(function (_ref) {
-      var field = _ref[0],
-        matcher = _ref[1];
+    Object.entries(normalizedMangoQuery.selector).forEach(([field, matcher]) => {
       if (typeof matcher !== 'object' || matcher === null) {
         normalizedMangoQuery.selector[field] = {
           $eq: matcher
@@ -7920,9 +6256,10 @@ function normalizeMangoQuery(schema, mangoQuery) {
      * which has a bad performance in most cases.
      */
     if (normalizedMangoQuery.index) {
-      normalizedMangoQuery.sort = normalizedMangoQuery.index.map(function (field) {
-        var _ref2;
-        return _ref2 = {}, _ref2[field] = 'asc', _ref2;
+      normalizedMangoQuery.sort = normalizedMangoQuery.index.map(field => {
+        return {
+          [field]: 'asc'
+        };
       });
     } else {
       /**
@@ -7930,14 +6267,10 @@ function normalizeMangoQuery(schema, mangoQuery) {
        */
       if (schema.indexes) {
         var fieldsWithLogicalOperator = new Set();
-        Object.entries(normalizedMangoQuery.selector).forEach(function (_ref3) {
-          var field = _ref3[0],
-            matcher = _ref3[1];
+        Object.entries(normalizedMangoQuery.selector).forEach(([field, matcher]) => {
           var hasLogical = false;
           if (typeof matcher === 'object' && matcher !== null) {
-            hasLogical = !!Object.keys(matcher).find(function (operator) {
-              return _queryPlanner.LOGICAL_OPERATORS.has(operator);
-            });
+            hasLogical = !!Object.keys(matcher).find(operator => _queryPlanner.LOGICAL_OPERATORS.has(operator));
           } else {
             hasLogical = true;
           }
@@ -7947,20 +6280,19 @@ function normalizeMangoQuery(schema, mangoQuery) {
         });
         var currentFieldsAmount = -1;
         var currentBestIndexForSort;
-        schema.indexes.forEach(function (index) {
+        schema.indexes.forEach(index => {
           var useIndex = (0, _utils.isMaybeReadonlyArray)(index) ? index : [index];
-          var firstWrongIndex = useIndex.findIndex(function (indexField) {
-            return !fieldsWithLogicalOperator.has(indexField);
-          });
+          var firstWrongIndex = useIndex.findIndex(indexField => !fieldsWithLogicalOperator.has(indexField));
           if (firstWrongIndex > 0 && firstWrongIndex > currentFieldsAmount) {
             currentFieldsAmount = firstWrongIndex;
             currentBestIndexForSort = useIndex;
           }
         });
         if (currentBestIndexForSort) {
-          normalizedMangoQuery.sort = currentBestIndexForSort.map(function (field) {
-            var _ref4;
-            return _ref4 = {}, _ref4[field] = 'asc', _ref4;
+          normalizedMangoQuery.sort = currentBestIndexForSort.map(field => {
+            return {
+              [field]: 'asc'
+            };
           });
         }
       }
@@ -7970,18 +6302,18 @@ function normalizeMangoQuery(schema, mangoQuery) {
        * if no better one has been found
        */
       if (!normalizedMangoQuery.sort) {
-        var _ref5;
-        normalizedMangoQuery.sort = [(_ref5 = {}, _ref5[primaryKey] = 'asc', _ref5)];
+        normalizedMangoQuery.sort = [{
+          [primaryKey]: 'asc'
+        }];
       }
     }
   } else {
-    var isPrimaryInSort = normalizedMangoQuery.sort.find(function (p) {
-      return (0, _utils.firstPropertyNameOfObject)(p) === primaryKey;
-    });
+    var isPrimaryInSort = normalizedMangoQuery.sort.find(p => (0, _utils.firstPropertyNameOfObject)(p) === primaryKey);
     if (!isPrimaryInSort) {
-      var _normalizedMangoQuery;
       normalizedMangoQuery.sort = normalizedMangoQuery.sort.slice(0);
-      normalizedMangoQuery.sort.push((_normalizedMangoQuery = {}, _normalizedMangoQuery[primaryKey] = 'asc', _normalizedMangoQuery));
+      normalizedMangoQuery.sort.push({
+        [primaryKey]: 'asc'
+      });
     }
   }
   return normalizedMangoQuery;
@@ -7998,11 +6330,9 @@ exports.RxQueryBase = void 0;
 exports._getDefaultQuery = _getDefaultQuery;
 exports.createRxQuery = createRxQuery;
 exports.isFindOneByIdQuery = isFindOneByIdQuery;
-exports.isInstanceOf = isInstanceOf;
+exports.isRxQuery = isRxQuery;
 exports.queryCollection = queryCollection;
 exports.tunnelQueryCache = tunnelQueryCache;
-var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
-var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
 var _rxjs = require("rxjs");
 var _operators = require("rxjs/operators");
@@ -8013,7 +6343,7 @@ var _eventReduce = require("./event-reduce");
 var _queryCache = require("./query-cache");
 var _rxQueryHelper = require("./rx-query-helper");
 var _queryCount = 0;
-var newQueryID = function newQueryID() {
+var newQueryID = function () {
   return ++_queryCount;
 };
 var RxQueryBase = /*#__PURE__*/function () {
@@ -8059,7 +6389,6 @@ var RxQueryBase = /*#__PURE__*/function () {
    * @param newResultData json-docs that were received from the storage
    */
   _proto._setResultData = function _setResultData(newResultData) {
-    var _this = this;
     if (typeof newResultData === 'number') {
       this._result = {
         docsData: [],
@@ -8075,26 +6404,24 @@ var RxQueryBase = /*#__PURE__*/function () {
     }
     var docsDataMap = new Map();
     var docsMap = new Map();
-    var docs = newResultData.map(function (docData) {
-      return _this.collection._docCache.getCachedRxDocument(docData);
-    });
+    var docs = newResultData.map(docData => this.collection._docCache.getCachedRxDocument(docData));
 
     /**
      * Instead of using the newResultData in the result cache,
      * we directly use the objects that are stored in the RxDocument
      * to ensure we do not store the same data twice and fill up the memory.
      */
-    var docsData = docs.map(function (doc) {
+    var docsData = docs.map(doc => {
       docsDataMap.set(doc.primary, doc._data);
       docsMap.set(doc.primary, doc);
       return doc._data;
     });
     this._result = {
-      docsData: docsData,
-      docsMap: docsMap,
-      docsDataMap: docsDataMap,
+      docsData,
+      docsMap,
+      docsDataMap,
       count: docsData.length,
-      docs: docs,
+      docs,
       time: (0, _utils.now)()
     };
   }
@@ -8103,95 +6430,60 @@ var RxQueryBase = /*#__PURE__*/function () {
    * executes the query on the database
    * @return results-array with document-data
    */;
-  _proto._execOverDatabase =
-  /*#__PURE__*/
-  function () {
-    var _execOverDatabase2 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee() {
-      var _this2 = this;
-      var preparedQuery, result, ids, ret, mustBeQueried, docs, docsPromise;
-      return _regenerator["default"].wrap(function _callee$(_context) {
-        while (1) switch (_context.prev = _context.next) {
-          case 0:
-            this._execOverDatabaseCount = this._execOverDatabaseCount + 1;
-            this._lastExecStart = (0, _utils.now)();
-            if (!(this.op === 'count')) {
-              _context.next = 12;
-              break;
-            }
-            preparedQuery = this.getPreparedQuery();
-            _context.next = 6;
-            return this.collection.storageInstance.count(preparedQuery);
-          case 6:
-            result = _context.sent;
-            if (!(result.mode === 'slow' && !this.collection.database.allowSlowCount)) {
-              _context.next = 11;
-              break;
-            }
-            throw (0, _rxError.newRxError)('QU14', {
-              collection: this.collection,
-              queryObj: this.mangoQuery
-            });
-          case 11:
-            return _context.abrupt("return", result.count);
-          case 12:
-            if (!(this.op === 'findByIds')) {
-              _context.next = 23;
-              break;
-            }
-            ids = (0, _utils.ensureNotFalsy)(this.mangoQuery.selector)[this.collection.schema.primaryPath].$in;
-            ret = new Map();
-            mustBeQueried = []; // first try to fill from docCache
-            ids.forEach(function (id) {
-              var docData = _this2.collection._docCache.getLatestDocumentDataIfExists(id);
-              if (docData) {
-                if (!docData._deleted) {
-                  var doc = _this2.collection._docCache.getCachedRxDocument(docData);
-                  ret.set(id, doc);
-                }
-              } else {
-                mustBeQueried.push(id);
-              }
-            });
-            // everything which was not in docCache must be fetched from the storage
-            if (!(mustBeQueried.length > 0)) {
-              _context.next = 22;
-              break;
-            }
-            _context.next = 20;
-            return this.collection.storageInstance.findDocumentsById(mustBeQueried, false);
-          case 20:
-            docs = _context.sent;
-            Object.values(docs).forEach(function (docData) {
-              var doc = _this2.collection._docCache.getCachedRxDocument(docData);
-              ret.set(doc.primary, doc);
-            });
-          case 22:
-            return _context.abrupt("return", ret);
-          case 23:
-            docsPromise = queryCollection(this);
-            return _context.abrupt("return", docsPromise.then(function (docs) {
-              _this2._lastExecEnd = (0, _utils.now)();
-              return docs;
-            }));
-          case 25:
-          case "end":
-            return _context.stop();
-        }
-      }, _callee, this);
-    }));
-    function _execOverDatabase() {
-      return _execOverDatabase2.apply(this, arguments);
+  _proto._execOverDatabase = async function _execOverDatabase() {
+    this._execOverDatabaseCount = this._execOverDatabaseCount + 1;
+    this._lastExecStart = (0, _utils.now)();
+    if (this.op === 'count') {
+      var preparedQuery = this.getPreparedQuery();
+      var result = await this.collection.storageInstance.count(preparedQuery);
+      if (result.mode === 'slow' && !this.collection.database.allowSlowCount) {
+        throw (0, _rxError.newRxError)('QU14', {
+          collection: this.collection,
+          queryObj: this.mangoQuery
+        });
+      } else {
+        return result.count;
+      }
     }
-    return _execOverDatabase;
-  }()
+    if (this.op === 'findByIds') {
+      var ids = (0, _utils.ensureNotFalsy)(this.mangoQuery.selector)[this.collection.schema.primaryPath].$in;
+      var ret = new Map();
+      var mustBeQueried = [];
+      // first try to fill from docCache
+      ids.forEach(id => {
+        var docData = this.collection._docCache.getLatestDocumentDataIfExists(id);
+        if (docData) {
+          if (!docData._deleted) {
+            var doc = this.collection._docCache.getCachedRxDocument(docData);
+            ret.set(id, doc);
+          }
+        } else {
+          mustBeQueried.push(id);
+        }
+      });
+      // everything which was not in docCache must be fetched from the storage
+      if (mustBeQueried.length > 0) {
+        var docs = await this.collection.storageInstance.findDocumentsById(mustBeQueried, false);
+        Object.values(docs).forEach(docData => {
+          var doc = this.collection._docCache.getCachedRxDocument(docData);
+          ret.set(doc.primary, doc);
+        });
+      }
+      return ret;
+    }
+    var docsPromise = queryCollection(this);
+    return docsPromise.then(docs => {
+      this._lastExecEnd = (0, _utils.now)();
+      return docs;
+    });
+  }
+
   /**
    * Execute the query
    * To have an easier implementations,
    * just subscribe and use the first result
-   */
-  ;
+   */;
   _proto.exec = function exec(throwIfMissing) {
-    var _this3 = this;
     if (throwIfMissing && this.op !== 'findOne') {
       throw (0, _rxError.newRxError)('QU9', {
         collection: this.collection.name,
@@ -8205,14 +6497,12 @@ var RxQueryBase = /*#__PURE__*/function () {
      * this will make sure that errors in the query which throw inside of the RxStorage,
      * will be thrown at this execution context and not in the background.
      */
-    return _ensureEqual(this).then(function () {
-      return (0, _rxjs.firstValueFrom)(_this3.$);
-    }).then(function (result) {
+    return _ensureEqual(this).then(() => (0, _rxjs.firstValueFrom)(this.$)).then(result => {
       if (!result && throwIfMissing) {
         throw (0, _rxError.newRxError)('QU10', {
-          collection: _this3.collection.name,
-          query: _this3.mangoQuery,
-          op: _this3.op
+          collection: this.collection.name,
+          query: this.mangoQuery,
+          op: this.op
         });
       } else {
         return result;
@@ -8235,9 +6525,7 @@ var RxQueryBase = /*#__PURE__*/function () {
       other: this.other
     }, true);
     var value = JSON.stringify(stringObj, _utils.stringifyFilter);
-    this.toString = function () {
-      return value;
-    };
+    this.toString = () => value;
     return value;
   }
 
@@ -8254,9 +6542,7 @@ var RxQueryBase = /*#__PURE__*/function () {
     };
     (0, _hooks.runPluginHooks)('prePrepareQuery', hookInput);
     var value = this.collection.database.storage.statics.prepareQuery(this.collection.schema.jsonSchema, hookInput.mangoQuery);
-    this.getPreparedQuery = function () {
-      return value;
-    };
+    this.getPreparedQuery = () => value;
     return value;
   }
 
@@ -8277,12 +6563,10 @@ var RxQueryBase = /*#__PURE__*/function () {
    * @return promise with deleted documents
    */;
   _proto.remove = function remove() {
-    return this.exec().then(function (docs) {
+    return this.exec().then(docs => {
       if (Array.isArray(docs)) {
         // TODO use a bulk operation instead of running .remove() on each document
-        return Promise.all(docs.map(function (doc) {
-          return doc.remove();
-        }));
+        return Promise.all(docs.map(doc => doc.remove()));
       } else {
         return docs.remove();
       }
@@ -8315,56 +6599,47 @@ var RxQueryBase = /*#__PURE__*/function () {
   _proto.limit = function limit(_amount) {
     throw (0, _utils.pluginMissing)('query-builder');
   };
-  (0, _createClass2["default"])(RxQueryBase, [{
+  (0, _createClass2.default)(RxQueryBase, [{
     key: "$",
-    get: function get() {
-      var _this4 = this;
+    get: function () {
       if (!this._$) {
         var results$ = this.collection.$.pipe(
         /**
          * Performance shortcut.
          * Changes to local documents are not relevant for the query.
          */
-        (0, _operators.filter)(function (changeEvent) {
-          return !changeEvent.isLocal;
-        }),
+        (0, _operators.filter)(changeEvent => !changeEvent.isLocal),
         /**
          * Start once to ensure the querying also starts
          * when there where no changes.
          */
         (0, _operators.startWith)(null),
         // ensure query results are up to date.
-        (0, _operators.mergeMap)(function () {
-          return _ensureEqual(_this4);
-        }),
+        (0, _operators.mergeMap)(() => _ensureEqual(this)),
         // use the current result set, written by _ensureEqual().
-        (0, _operators.map)(function () {
-          return _this4._result;
-        }),
+        (0, _operators.map)(() => this._result),
         // do not run stuff above for each new subscriber, only once.
         (0, _operators.shareReplay)(_utils.RXJS_SHARE_REPLAY_DEFAULTS),
         // do not proceed if result set has not changed.
-        (0, _operators.distinctUntilChanged)(function (prev, curr) {
+        (0, _operators.distinctUntilChanged)((prev, curr) => {
           if (prev && prev.time === (0, _utils.ensureNotFalsy)(curr).time) {
             return true;
           } else {
             return false;
           }
-        }), (0, _operators.filter)(function (result) {
-          return !!result;
-        }),
+        }), (0, _operators.filter)(result => !!result),
         /**
          * Map the result set to a single RxDocument or an array,
          * depending on query type
          */
-        (0, _operators.map)(function (result) {
+        (0, _operators.map)(result => {
           var useResult = (0, _utils.ensureNotFalsy)(result);
-          if (_this4.op === 'count') {
+          if (this.op === 'count') {
             return useResult.count;
-          } else if (_this4.op === 'findOne') {
+          } else if (this.op === 'findOne') {
             // findOne()-queries emit RxDocument or null
             return useResult.docs.length === 0 ? null : useResult.docs[0];
-          } else if (_this4.op === 'findByIds') {
+          } else if (this.op === 'findByIds') {
             return useResult.docsMap;
           } else {
             // find()-queries emit RxDocument[]
@@ -8377,9 +6652,7 @@ var RxQueryBase = /*#__PURE__*/function () {
          * Also add the refCount$ to the query observable
          * to allow us to count the amount of subscribers.
          */
-        this.refCount$.pipe((0, _operators.filter)(function () {
-          return false;
-        })));
+        this.refCount$.pipe((0, _operators.filter)(() => false)));
       }
       return this._$;
     }
@@ -8387,7 +6660,7 @@ var RxQueryBase = /*#__PURE__*/function () {
     // stores the changeEvent-number of the last handled change-event
   }, {
     key: "queryMatcher",
-    get: function get() {
+    get: function () {
       var schema = this.collection.schema.jsonSchema;
 
       /**
@@ -8401,7 +6674,7 @@ var RxQueryBase = /*#__PURE__*/function () {
     }
   }, {
     key: "asRxQuery",
-    get: function get() {
+    get: function () {
       return this;
     }
   }]);
@@ -8422,9 +6695,9 @@ function tunnelQueryCache(rxQuery) {
 }
 function createRxQuery(op, queryObj, collection) {
   (0, _hooks.runPluginHooks)('preCreateRxQuery', {
-    op: op,
-    queryObj: queryObj,
-    collection: collection
+    op,
+    queryObj,
+    collection
   });
   var ret = new RxQueryBase(op, queryObj, collection);
 
@@ -8458,9 +6731,7 @@ function _ensureEqual(rxQuery) {
   if (rxQuery.collection.database.destroyed || _isResultsInSync(rxQuery)) {
     return _utils.PROMISE_RESOLVE_FALSE;
   }
-  rxQuery._ensureEqualQueue = rxQuery._ensureEqualQueue.then(function () {
-    return __ensureEqual(rxQuery);
-  });
+  rxQuery._ensureEqualQueue = rxQuery._ensureEqualQueue.then(() => __ensureEqual(rxQuery));
   return rxQuery._ensureEqualQueue;
 }
 
@@ -8503,7 +6774,7 @@ function __ensureEqual(rxQuery) {
         // 'count' query
         var previousCount = (0, _utils.ensureNotFalsy)(rxQuery._result).count;
         var newCount = previousCount;
-        runChangeEvents.forEach(function (cE) {
+        runChangeEvents.forEach(cE => {
           var didMatchBefore = cE.previousDocumentData && rxQuery.doesDocumentDataMatch(cE.previousDocumentData);
           var doesMatchNow = rxQuery.doesDocumentDataMatch(cE.documentData);
           if (!didMatchBefore && doesMatchNow) {
@@ -8536,7 +6807,7 @@ function __ensureEqual(rxQuery) {
   if (mustReExec) {
     // counter can change while _execOverDatabase() is running so we save it here
     var latestAfter = rxQuery.collection._changeEventBuffer.counter;
-    return rxQuery._execOverDatabase().then(function (newResultData) {
+    return rxQuery._execOverDatabase().then(newResultData => {
       rxQuery._latestChangeEvent = latestAfter;
 
       // A count query needs a different has-changed check.
@@ -8563,9 +6834,37 @@ function __ensureEqual(rxQuery) {
  * Does some optimizations to ensuer findById is used
  * when specific queries are used.
  */
-function queryCollection(_x) {
-  return _queryCollection.apply(this, arguments);
+async function queryCollection(rxQuery) {
+  var docs = [];
+  var collection = rxQuery.collection;
+
+  /**
+   * Optimizations shortcut.
+   * If query is find-one-document-by-id,
+   * then we do not have to use the slow query() method
+   * but instead can use findDocumentsById()
+   */
+  if (rxQuery.isFindOneByIdQuery) {
+    var docId = rxQuery.isFindOneByIdQuery;
+
+    // first try to fill from docCache
+    var docData = rxQuery.collection._docCache.getLatestDocumentDataIfExists(docId);
+    if (!docData) {
+      // otherwise get from storage
+      var docsMap = await collection.storageInstance.findDocumentsById([docId], false);
+      docData = docsMap[docId];
+    }
+    if (docData) {
+      docs.push(docData);
+    }
+  } else {
+    var preparedQuery = rxQuery.getPreparedQuery();
+    var queryResult = await collection.storageInstance.query(preparedQuery);
+    docs = queryResult.documents;
+  }
+  return docs;
 }
+
 /**
  * Returns true if the given query
  * selects exactly one document by its id.
@@ -8574,58 +6873,6 @@ function queryCollection(_x) {
  * Returns false if no query of that kind.
  * Returns the document id otherwise.
  */
-function _queryCollection() {
-  _queryCollection = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee2(rxQuery) {
-    var docs, collection, docId, docData, docsMap, preparedQuery, queryResult;
-    return _regenerator["default"].wrap(function _callee2$(_context2) {
-      while (1) switch (_context2.prev = _context2.next) {
-        case 0:
-          docs = [];
-          collection = rxQuery.collection;
-          /**
-           * Optimizations shortcut.
-           * If query is find-one-document-by-id,
-           * then we do not have to use the slow query() method
-           * but instead can use findDocumentsById()
-           */
-          if (!rxQuery.isFindOneByIdQuery) {
-            _context2.next = 13;
-            break;
-          }
-          docId = rxQuery.isFindOneByIdQuery; // first try to fill from docCache
-          docData = rxQuery.collection._docCache.getLatestDocumentDataIfExists(docId);
-          if (docData) {
-            _context2.next = 10;
-            break;
-          }
-          _context2.next = 8;
-          return collection.storageInstance.findDocumentsById([docId], false);
-        case 8:
-          docsMap = _context2.sent;
-          docData = docsMap[docId];
-        case 10:
-          if (docData) {
-            docs.push(docData);
-          }
-          _context2.next = 18;
-          break;
-        case 13:
-          preparedQuery = rxQuery.getPreparedQuery();
-          _context2.next = 16;
-          return collection.storageInstance.query(preparedQuery);
-        case 16:
-          queryResult = _context2.sent;
-          docs = queryResult.documents;
-        case 18:
-          return _context2.abrupt("return", docs);
-        case 19:
-        case "end":
-          return _context2.stop();
-      }
-    }, _callee2);
-  }));
-  return _queryCollection.apply(this, arguments);
-}
 function isFindOneByIdQuery(primaryPath, query) {
   if (!query.skip && query.selector && Object.keys(query.selector).length === 1 && query.selector[primaryPath]) {
     var value = query.selector[primaryPath];
@@ -8637,11 +6884,11 @@ function isFindOneByIdQuery(primaryPath, query) {
   }
   return false;
 }
-function isInstanceOf(obj) {
+function isRxQuery(obj) {
   return obj instanceof RxQueryBase;
 }
 
-},{"./event-reduce":5,"./hooks":6,"./plugins/utils":12,"./query-cache":25,"./rx-error":41,"./rx-query-helper":42,"@babel/runtime/helpers/asyncToGenerator":52,"@babel/runtime/helpers/createClass":54,"@babel/runtime/helpers/interopRequireDefault":57,"@babel/runtime/regenerator":66,"rxjs":423,"rxjs/operators":648}],44:[function(require,module,exports){
+},{"./event-reduce":5,"./hooks":6,"./plugins/utils":12,"./query-cache":25,"./rx-error":41,"./rx-query-helper":42,"@babel/runtime/helpers/createClass":53,"@babel/runtime/helpers/interopRequireDefault":56,"rxjs":420,"rxjs/operators":645}],44:[function(require,module,exports){
 "use strict";
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
@@ -8665,15 +6912,16 @@ var _utils = require("./plugins/utils");
  * with a given version.
  */
 function getPseudoSchemaForVersion(version, primaryKey) {
-  var _properties;
   var pseudoSchema = fillWithDefaultSettings({
-    version: version,
+    version,
     type: 'object',
     primaryKey: primaryKey,
-    properties: (_properties = {}, _properties[primaryKey] = {
-      type: 'string',
-      maxLength: 100
-    }, _properties),
+    properties: {
+      [primaryKey]: {
+        type: 'string',
+        maxLength: 100
+      }
+    },
     required: [primaryKey]
   });
   return pseudoSchema;
@@ -8687,7 +6935,7 @@ function getSchemaByObjectPath(rxJsonSchema, path) {
   usePath = usePath.replace(/\./g, '.properties.');
   usePath = 'properties.' + usePath;
   usePath = (0, _utils.trimDots)(usePath);
-  var ret = _objectPath["default"].get(rxJsonSchema, usePath);
+  var ret = _objectPath.default.get(rxJsonSchema, usePath);
   return ret;
 }
 function fillPrimaryKey(primaryPath, jsonSchema, documentData) {
@@ -8697,9 +6945,9 @@ function fillPrimaryKey(primaryPath, jsonSchema, documentData) {
   if (existingPrimary && existingPrimary !== newPrimary) {
     throw (0, _rxError.newRxError)('DOC19', {
       args: {
-        documentData: documentData,
-        existingPrimary: existingPrimary,
-        newPrimary: newPrimary
+        documentData,
+        existingPrimary,
+        newPrimary
       },
       schema: jsonSchema
     });
@@ -8723,13 +6971,13 @@ function getComposedPrimaryKeyOfDocumentData(jsonSchema, documentData) {
     return documentData[jsonSchema.primaryKey];
   }
   var compositePrimary = jsonSchema.primaryKey;
-  return compositePrimary.fields.map(function (field) {
-    var value = _objectPath["default"].get(documentData, field);
+  return compositePrimary.fields.map(field => {
+    var value = _objectPath.default.get(documentData, field);
     if (typeof value === 'undefined') {
       throw (0, _rxError.newRxError)('DOC18', {
         args: {
-          field: field,
-          documentData: documentData
+          field,
+          documentData
         }
       });
     }
@@ -8810,11 +7058,7 @@ function fillWithDefaultSettings(schemaObj) {
 
   // final fields are always required
   var finalFields = getFinalFields(schemaObj);
-  schemaObj.required = schemaObj.required.concat(finalFields).filter(function (field) {
-    return !field.includes('.');
-  }).filter(function (elem, pos, arr) {
-    return arr.indexOf(elem) === pos;
-  }); // unique;
+  schemaObj.required = schemaObj.required.concat(finalFields).filter(field => !field.includes('.')).filter((elem, pos, arr) => arr.indexOf(elem) === pos); // unique;
 
   // version is 0 by default
   schemaObj.version = schemaObj.version || 0;
@@ -8824,7 +7068,7 @@ function fillWithDefaultSettings(schemaObj) {
    * All indexes must have the primaryKey to ensure a deterministic sort order.
    */
   if (schemaObj.indexes) {
-    schemaObj.indexes = schemaObj.indexes.map(function (index) {
+    schemaObj.indexes = schemaObj.indexes.map(index => {
       var arIndex = (0, _utils.isMaybeReadonlyArray)(index) ? index.slice(0) : [index];
       if (!arIndex.includes(primaryPath)) {
         var modifiedIndex = arIndex.slice(0);
@@ -8867,9 +7111,7 @@ var RX_META_SCHEMA = {
  */
 exports.RX_META_SCHEMA = RX_META_SCHEMA;
 function getFinalFields(jsonSchema) {
-  var ret = Object.keys(jsonSchema.properties).filter(function (key) {
-    return jsonSchema.properties[key]["final"];
-  });
+  var ret = Object.keys(jsonSchema.properties).filter(key => jsonSchema.properties[key].final);
 
   // primary is also final
   var primaryPath = getPrimaryFieldOfPrimaryKey(jsonSchema.primaryKey);
@@ -8877,9 +7119,7 @@ function getFinalFields(jsonSchema) {
 
   // fields of composite primary are final
   if (typeof jsonSchema.primaryKey !== 'string') {
-    jsonSchema.primaryKey.fields.forEach(function (field) {
-      return ret.push(field);
-    });
+    jsonSchema.primaryKey.fields.forEach(field => ret.push(field));
   }
   return ret;
 }
@@ -8898,7 +7138,7 @@ var DEFAULT_CHECKPOINT_SCHEMA = {
 };
 exports.DEFAULT_CHECKPOINT_SCHEMA = DEFAULT_CHECKPOINT_SCHEMA;
 
-},{"./plugins/utils":12,"./rx-error":41,"@babel/runtime/helpers/interopRequireDefault":57,"object-path":419}],45:[function(require,module,exports){
+},{"./plugins/utils":12,"./rx-error":41,"@babel/runtime/helpers/interopRequireDefault":56,"object-path":416}],45:[function(require,module,exports){
 "use strict";
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
@@ -8909,10 +7149,9 @@ exports.RxSchema = void 0;
 exports.createRxSchema = createRxSchema;
 exports.getIndexes = getIndexes;
 exports.getPreviousVersions = getPreviousVersions;
-exports.isInstanceOf = isInstanceOf;
+exports.isRxSchema = isRxSchema;
 exports.toTypedRxJsonSchema = toTypedRxJsonSchema;
 var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
-var _fastDeepEqual = _interopRequireDefault(require("fast-deep-equal"));
 var _utils = require("./plugins/utils");
 var _rxError = require("./rx-error");
 var _hooks = require("./hooks");
@@ -8936,14 +7175,13 @@ var RxSchema = /*#__PURE__*/function () {
    * @throws {Error} if not valid
    */
   _proto.validateChange = function validateChange(dataBefore, dataAfter) {
-    var _this = this;
-    this.finalFields.forEach(function (fieldName) {
-      if (!(0, _fastDeepEqual["default"])(dataBefore[fieldName], dataAfter[fieldName])) {
+    this.finalFields.forEach(fieldName => {
+      if (!(0, _utils.deepEqual)(dataBefore[fieldName], dataAfter[fieldName])) {
         throw (0, _rxError.newRxError)('DOC9', {
-          dataBefore: dataBefore,
-          dataAfter: dataAfter,
-          fieldName: fieldName,
-          schema: _this.jsonSchema
+          dataBefore,
+          dataAfter,
+          fieldName,
+          schema: this.jsonSchema
         });
       }
     });
@@ -8954,14 +7192,7 @@ var RxSchema = /*#__PURE__*/function () {
    */;
   _proto.fillObjectWithDefaults = function fillObjectWithDefaults(obj) {
     obj = (0, _utils.flatClone)(obj);
-    Object.entries(this.defaultValues).filter(function (_ref) {
-      var k = _ref[0];
-      return !obj.hasOwnProperty(k) || typeof obj[k] === 'undefined';
-    }).forEach(function (_ref2) {
-      var k = _ref2[0],
-        v = _ref2[1];
-      return obj[k] = v;
-    });
+    Object.entries(this.defaultValues).filter(([k]) => !obj.hasOwnProperty(k) || typeof obj[k] === 'undefined').forEach(([k, v]) => obj[k] = v);
     return obj;
   }
 
@@ -8972,31 +7203,22 @@ var RxSchema = /*#__PURE__*/function () {
   _proto.getDocumentPrototype = function getDocumentPrototype() {
     var proto = {};
     (0, _rxDocument.defineGetterSetter)(this, proto, '');
-    (0, _utils.overwriteGetterForCaching)(this, 'getDocumentPrototype', function () {
-      return proto;
-    });
+    (0, _utils.overwriteGetterForCaching)(this, 'getDocumentPrototype', () => proto);
     return proto;
   };
   _proto.getPrimaryOfDocumentData = function getPrimaryOfDocumentData(documentData) {
     return (0, _rxSchemaHelper.getComposedPrimaryKeyOfDocumentData)(this.jsonSchema, documentData);
   };
-  (0, _createClass2["default"])(RxSchema, [{
+  (0, _createClass2.default)(RxSchema, [{
     key: "version",
-    get: function get() {
+    get: function () {
       return this.jsonSchema.version;
     }
   }, {
     key: "defaultValues",
-    get: function get() {
+    get: function () {
       var values = {};
-      Object.entries(this.jsonSchema.properties).filter(function (_ref3) {
-        var v = _ref3[1];
-        return v.hasOwnProperty('default');
-      }).forEach(function (_ref4) {
-        var k = _ref4[0],
-          v = _ref4[1];
-        return values[k] = v["default"];
-      });
+      Object.entries(this.jsonSchema.properties).filter(([, v]) => v.hasOwnProperty('default')).forEach(([k, v]) => values[k] = v.default);
       return (0, _utils.overwriteGetterForCaching)(this, 'defaultValues', values);
     }
 
@@ -9005,7 +7227,7 @@ var RxSchema = /*#__PURE__*/function () {
      */
   }, {
     key: "hash",
-    get: function get() {
+    get: function () {
       return (0, _utils.overwriteGetterForCaching)(this, 'hash', (0, _utils.fastUnsecureHash)(JSON.stringify(this.jsonSchema)));
     }
   }]);
@@ -9013,9 +7235,7 @@ var RxSchema = /*#__PURE__*/function () {
 }();
 exports.RxSchema = RxSchema;
 function getIndexes(jsonSchema) {
-  return (jsonSchema.indexes || []).map(function (index) {
-    return (0, _utils.isMaybeReadonlyArray)(index) ? index : [index];
-  });
+  return (jsonSchema.indexes || []).map(index => (0, _utils.isMaybeReadonlyArray)(index) ? index : [index]);
 }
 
 /**
@@ -9024,12 +7244,9 @@ function getIndexes(jsonSchema) {
 function getPreviousVersions(schema) {
   var version = schema.version ? schema.version : 0;
   var c = 0;
-  return new Array(version).fill(0).map(function () {
-    return c++;
-  });
+  return new Array(version).fill(0).map(() => c++);
 }
-function createRxSchema(jsonSchema) {
-  var runPreCreateHooks = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
+function createRxSchema(jsonSchema, runPreCreateHooks = true) {
   if (runPreCreateHooks) {
     (0, _hooks.runPluginHooks)('preCreateRxSchema', jsonSchema);
   }
@@ -9040,7 +7257,7 @@ function createRxSchema(jsonSchema) {
   (0, _hooks.runPluginHooks)('createRxSchema', schema);
   return schema;
 }
-function isInstanceOf(obj) {
+function isRxSchema(obj) {
   return obj instanceof RxSchema;
 }
 
@@ -9052,10 +7269,9 @@ function toTypedRxJsonSchema(schema) {
   return schema;
 }
 
-},{"./hooks":6,"./overwritable":9,"./plugins/utils":12,"./rx-document":40,"./rx-error":41,"./rx-schema-helper":44,"@babel/runtime/helpers/createClass":54,"@babel/runtime/helpers/interopRequireDefault":57,"fast-deep-equal":416}],46:[function(require,module,exports){
+},{"./hooks":6,"./overwritable":9,"./plugins/utils":12,"./rx-document":40,"./rx-error":41,"./rx-schema-helper":44,"@babel/runtime/helpers/createClass":53,"@babel/runtime/helpers/interopRequireDefault":56}],46:[function(require,module,exports){
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -9076,8 +7292,6 @@ exports.stripAttachmentsDataFromDocument = stripAttachmentsDataFromDocument;
 exports.stripAttachmentsDataFromRow = stripAttachmentsDataFromRow;
 exports.throwIfIsStorageWriteError = throwIfIsStorageWriteError;
 exports.writeSingle = writeSingle;
-var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
-var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 var _overwritable = require("./overwritable");
 var _rxError = require("./rx-error");
 var _rxSchemaHelper = require("./rx-schema-helper");
@@ -9090,77 +7304,39 @@ var INTERNAL_STORAGE_NAME = '_rxdb_internal';
 exports.INTERNAL_STORAGE_NAME = INTERNAL_STORAGE_NAME;
 var RX_DATABASE_LOCAL_DOCS_STORAGE_NAME = 'rxdatabase_storage_local';
 exports.RX_DATABASE_LOCAL_DOCS_STORAGE_NAME = RX_DATABASE_LOCAL_DOCS_STORAGE_NAME;
-function getSingleDocument(_x, _x2) {
-  return _getSingleDocument.apply(this, arguments);
+async function getSingleDocument(storageInstance, documentId) {
+  var results = await storageInstance.findDocumentsById([documentId], false);
+  var doc = results[documentId];
+  if (doc) {
+    return doc;
+  } else {
+    return null;
+  }
 }
+
 /**
  * Writes a single document,
  * throws RxStorageBulkWriteError on failure
  */
-function _getSingleDocument() {
-  _getSingleDocument = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(storageInstance, documentId) {
-    var results, doc;
-    return _regenerator["default"].wrap(function _callee$(_context) {
-      while (1) switch (_context.prev = _context.next) {
-        case 0:
-          _context.next = 2;
-          return storageInstance.findDocumentsById([documentId], false);
-        case 2:
-          results = _context.sent;
-          doc = results[documentId];
-          if (!doc) {
-            _context.next = 8;
-            break;
-          }
-          return _context.abrupt("return", doc);
-        case 8:
-          return _context.abrupt("return", null);
-        case 9:
-        case "end":
-          return _context.stop();
-      }
-    }, _callee);
-  }));
-  return _getSingleDocument.apply(this, arguments);
+async function writeSingle(instance, writeRow, context) {
+  var writeResult = await instance.bulkWrite([writeRow], context);
+  if (Object.keys(writeResult.error).length > 0) {
+    var error = (0, _utils.firstPropertyValueOfObject)(writeResult.error);
+    throw error;
+  } else {
+    var ret = (0, _utils.firstPropertyValueOfObject)(writeResult.success);
+    return ret;
+  }
 }
-function writeSingle(_x3, _x4, _x5) {
-  return _writeSingle.apply(this, arguments);
-}
+
 /**
  * Checkpoints must be stackable over another.
  * This is required form some RxStorage implementations
  * like the sharding plugin, where a checkpoint only represents
  * the document state from some, but not all shards.
  */
-function _writeSingle() {
-  _writeSingle = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee2(instance, writeRow, context) {
-    var writeResult, error, ret;
-    return _regenerator["default"].wrap(function _callee2$(_context2) {
-      while (1) switch (_context2.prev = _context2.next) {
-        case 0:
-          _context2.next = 2;
-          return instance.bulkWrite([writeRow], context);
-        case 2:
-          writeResult = _context2.sent;
-          if (!(Object.keys(writeResult.error).length > 0)) {
-            _context2.next = 8;
-            break;
-          }
-          error = (0, _utils.firstPropertyValueOfObject)(writeResult.error);
-          throw error;
-        case 8:
-          ret = (0, _utils.firstPropertyValueOfObject)(writeResult.success);
-          return _context2.abrupt("return", ret);
-        case 10:
-        case "end":
-          return _context2.stop();
-      }
-    }, _callee2);
-  }));
-  return _writeSingle.apply(this, arguments);
-}
 function stackCheckpoints(checkpoints) {
-  return Object.assign.apply(Object, [{}].concat(checkpoints));
+  return Object.assign({}, ...checkpoints);
 }
 function storageChangeEventToRxChangeEvent(isLocal, rxStorageChangeEvent, rxCollection) {
   var documentData = rxStorageChangeEvent.documentData;
@@ -9171,7 +7347,7 @@ function storageChangeEventToRxChangeEvent(isLocal, rxStorageChangeEvent, rxColl
     collectionName: rxCollection ? rxCollection.name : undefined,
     startTime: rxStorageChangeEvent.startTime,
     endTime: rxStorageChangeEvent.endTime,
-    isLocal: isLocal,
+    isLocal,
     operation: rxStorageChangeEvent.operation,
     documentData: _overwritable.overwritable.deepFreezeWhenDevMode(documentData),
     previousDocumentData: _overwritable.overwritable.deepFreezeWhenDevMode(previousDocumentData)
@@ -9208,7 +7384,7 @@ function throwIfIsStorageWriteError(collection, documentId, writeData, error) {
  */
 function getNewestOfDocumentStates(primaryPath, docs) {
   var ret = null;
-  docs.forEach(function (doc) {
+  docs.forEach(doc => {
     if (!ret || doc._meta.lwt > ret._meta.lwt || doc._meta.lwt === ret._meta.lwt && doc[primaryPath] > ret[primaryPath]) {
       ret = doc;
     }
@@ -9249,14 +7425,14 @@ bulkWriteRows, context) {
     id: (0, _utils.randomCouchString)(10),
     events: [],
     checkpoint: null,
-    context: context
+    context
   };
   var attachmentsAdd = [];
   var attachmentsRemove = [];
   var attachmentsUpdate = [];
   var startTime = (0, _utils.now)();
   var docsByIdIsMap = typeof docsInDb.get === 'function';
-  bulkWriteRows.forEach(function (writeRow) {
+  bulkWriteRows.forEach(writeRow => {
     var id = writeRow.document[primaryPath];
     var documentInDb = docsByIdIsMap ? docsInDb.get(id) : docsInDb[id];
     var attachmentError;
@@ -9266,22 +7442,20 @@ bulkWriteRows, context) {
        * this can happen on replication.
        */
       var insertedIsDeleted = writeRow.document._deleted ? true : false;
-      Object.entries(writeRow.document._attachments).forEach(function (_ref) {
-        var attachmentId = _ref[0],
-          attachmentData = _ref[1];
+      Object.entries(writeRow.document._attachments).forEach(([attachmentId, attachmentData]) => {
         if (!attachmentData.data) {
           attachmentError = {
             documentId: id,
             isError: true,
             status: 510,
-            writeRow: writeRow,
-            attachmentId: attachmentId
+            writeRow,
+            attachmentId
           };
           errors[id] = attachmentError;
         } else {
           attachmentsAdd.push({
             documentId: id,
-            attachmentId: attachmentId,
+            attachmentId,
             attachmentData: attachmentData
           });
         }
@@ -9301,7 +7475,7 @@ bulkWriteRows, context) {
           operation: 'INSERT',
           documentData: hasAttachments ? stripAttachmentsDataFromDocument(writeRow.document) : writeRow.document,
           previousDocumentData: hasAttachments && writeRow.previous ? stripAttachmentsDataFromDocument(writeRow.previous) : writeRow.previous,
-          startTime: startTime,
+          startTime,
           endTime: (0, _utils.now)()
         });
       }
@@ -9319,7 +7493,7 @@ bulkWriteRows, context) {
           status: 409,
           documentId: id,
           writeRow: writeRow,
-          documentInDb: documentInDb
+          documentInDb
         };
         errors[id] = err;
         return;
@@ -9333,40 +7507,36 @@ bulkWriteRows, context) {
          * Deleted documents must have cleared all their attachments.
          */
         if (writeRow.previous) {
-          Object.keys(writeRow.previous._attachments).forEach(function (attachmentId) {
+          Object.keys(writeRow.previous._attachments).forEach(attachmentId => {
             attachmentsRemove.push({
               documentId: id,
-              attachmentId: attachmentId
+              attachmentId
             });
           });
         }
       } else {
         // first check for errors
-        Object.entries(writeRow.document._attachments).find(function (_ref2) {
-          var attachmentId = _ref2[0],
-            attachmentData = _ref2[1];
+        Object.entries(writeRow.document._attachments).find(([attachmentId, attachmentData]) => {
           var previousAttachmentData = writeRow.previous ? writeRow.previous._attachments[attachmentId] : undefined;
           if (!previousAttachmentData && !attachmentData.data) {
             attachmentError = {
               documentId: id,
-              documentInDb: documentInDb,
+              documentInDb,
               isError: true,
               status: 510,
-              writeRow: writeRow,
-              attachmentId: attachmentId
+              writeRow,
+              attachmentId
             };
           }
           return true;
         });
         if (!attachmentError) {
-          Object.entries(writeRow.document._attachments).forEach(function (_ref3) {
-            var attachmentId = _ref3[0],
-              attachmentData = _ref3[1];
+          Object.entries(writeRow.document._attachments).forEach(([attachmentId, attachmentData]) => {
             var previousAttachmentData = writeRow.previous ? writeRow.previous._attachments[attachmentId] : undefined;
             if (!previousAttachmentData) {
               attachmentsAdd.push({
                 documentId: id,
-                attachmentId: attachmentId,
+                attachmentId,
                 attachmentData: attachmentData
               });
             } else {
@@ -9379,7 +7549,7 @@ bulkWriteRows, context) {
               previousAttachmentData.digest !== newDigest) {
                 attachmentsUpdate.push({
                   documentId: id,
-                  attachmentId: attachmentId,
+                  attachmentId,
                   attachmentData: attachmentData
                 });
               }
@@ -9410,7 +7580,7 @@ bulkWriteRows, context) {
       } else {
         throw (0, _rxError.newRxError)('SNH', {
           args: {
-            writeRow: writeRow
+            writeRow
           }
         });
       }
@@ -9421,20 +7591,20 @@ bulkWriteRows, context) {
         documentData: (0, _utils.ensureNotFalsy)(eventDocumentData),
         previousDocumentData: previousEventDocumentData,
         operation: operation,
-        startTime: startTime,
+        startTime,
         endTime: (0, _utils.now)()
       });
     }
   });
   return {
-    bulkInsertDocs: bulkInsertDocs,
-    bulkUpdateDocs: bulkUpdateDocs,
-    errors: errors,
-    changedDocumentIds: changedDocumentIds,
-    eventBulk: eventBulk,
-    attachmentsAdd: attachmentsAdd,
-    attachmentsRemove: attachmentsRemove,
-    attachmentsUpdate: attachmentsUpdate
+    bulkInsertDocs,
+    bulkUpdateDocs,
+    errors,
+    changedDocumentIds,
+    eventBulk,
+    attachmentsAdd,
+    attachmentsRemove,
+    attachmentsUpdate
   };
 }
 function stripAttachmentsDataFromRow(writeRow) {
@@ -9465,9 +7635,7 @@ function attachmentWriteDataToNormalData(writeData) {
 function stripAttachmentsDataFromDocument(doc) {
   var useDoc = (0, _utils.flatClone)(doc);
   useDoc._attachments = {};
-  Object.entries(doc._attachments).forEach(function (_ref4) {
-    var attachmentId = _ref4[0],
-      attachmentData = _ref4[1];
+  Object.entries(doc._attachments).forEach(([attachmentId, attachmentData]) => {
     useDoc._attachments[attachmentId] = attachmentWriteDataToNormalData(attachmentData);
   });
   return useDoc;
@@ -9492,9 +7660,7 @@ function flatCloneDocWithMeta(doc) {
 function getUniqueDeterministicEventKey(storageInstance, primaryPath, writeRow) {
   var docId = writeRow.document[primaryPath];
   var binaryValues = [!!writeRow.previous, writeRow.previous && writeRow.previous._deleted, !!writeRow.document._deleted];
-  var binary = binaryValues.map(function (v) {
-    return v ? '1' : '0';
-  }).join('');
+  var binary = binaryValues.map(v => v ? '1' : '0').join('');
   var eventKey = storageInstance.databaseName + '|' + storageInstance.collectionName + '|' + docId + '|' + '|' + binary + '|' + writeRow.document._rev;
   return eventKey;
 }
@@ -9554,7 +7720,7 @@ rxJsonSchema) {
        * field of plugin A was not removed.
        */
       if (writeRow.previous) {
-        Object.keys(writeRow.previous._meta).forEach(function (metaFieldName) {
+        Object.keys(writeRow.previous._meta).forEach(metaFieldName => {
           if (!writeRow.document._meta.hasOwnProperty(metaFieldName)) {
             throw (0, _rxError.newRxError)('SNH', {
               dataBefore: writeRow.previous,
@@ -9584,13 +7750,9 @@ rxJsonSchema) {
     collectionName: storageInstance.collectionName,
     databaseName: storageInstance.databaseName,
     options: storageInstance.options,
-    bulkWrite: function bulkWrite(rows, context) {
-      var toStorageWriteRows = rows.map(function (row) {
-        return transformDocumentDataFromRxDBToRxStorage(row);
-      });
-      return database.lockedRun(function () {
-        return storageInstance.bulkWrite(toStorageWriteRows, context);
-      })
+    bulkWrite(rows, context) {
+      var toStorageWriteRows = rows.map(row => transformDocumentDataFromRxDBToRxStorage(row));
+      return database.lockedRun(() => storageInstance.bulkWrite(toStorageWriteRows, context))
       /**
        * The RxStorageInstance MUST NOT allow to insert already _deleted documents,
        * without sending the previous document version.
@@ -9598,8 +7760,8 @@ rxJsonSchema) {
        * We do this by automatically fixing the conflict errors for that case
        * by running another bulkWrite() and merging the results.
        * @link https://github.com/pubkey/rxdb/pull/3839
-       */.then(function (writeResult) {
-        var reInsertErrors = Object.values(writeResult.error).filter(function (error) {
+       */.then(writeResult => {
+        var reInsertErrors = Object.values(writeResult.error).filter(error => {
           if (error.status === 409 && !error.writeRow.previous && !error.writeRow.document._deleted && (0, _utils.ensureNotFalsy)(error.documentInDb)._deleted) {
             return true;
           }
@@ -9610,7 +7772,7 @@ rxJsonSchema) {
             error: (0, _utils.flatClone)(writeResult.error),
             success: (0, _utils.flatClone)(writeResult.success)
           };
-          var reInserts = reInsertErrors.map(function (error) {
+          var reInserts = reInsertErrors.map(error => {
             delete useWriteResult.error[error.documentId];
             return {
               previous: error.documentInDb,
@@ -9619,9 +7781,7 @@ rxJsonSchema) {
               })
             };
           });
-          return database.lockedRun(function () {
-            return storageInstance.bulkWrite(reInserts, context);
-          }).then(function (subResult) {
+          return database.lockedRun(() => storageInstance.bulkWrite(reInserts, context)).then(subResult => {
             useWriteResult.error = Object.assign(useWriteResult.error, subResult.error);
             useWriteResult.success = Object.assign(useWriteResult.success, subResult.success);
             return useWriteResult;
@@ -9630,53 +7790,37 @@ rxJsonSchema) {
         return writeResult;
       });
     },
-    query: function query(preparedQuery) {
-      return database.lockedRun(function () {
-        return storageInstance.query(preparedQuery);
-      });
+    query(preparedQuery) {
+      return database.lockedRun(() => storageInstance.query(preparedQuery));
     },
-    count: function count(preparedQuery) {
-      return database.lockedRun(function () {
-        return storageInstance.count(preparedQuery);
-      });
+    count(preparedQuery) {
+      return database.lockedRun(() => storageInstance.count(preparedQuery));
     },
-    findDocumentsById: function findDocumentsById(ids, deleted) {
-      return database.lockedRun(function () {
-        return storageInstance.findDocumentsById(ids, deleted);
-      });
+    findDocumentsById(ids, deleted) {
+      return database.lockedRun(() => storageInstance.findDocumentsById(ids, deleted));
     },
-    getAttachmentData: function getAttachmentData(documentId, attachmentId) {
-      return database.lockedRun(function () {
-        return storageInstance.getAttachmentData(documentId, attachmentId);
-      });
+    getAttachmentData(documentId, attachmentId) {
+      return database.lockedRun(() => storageInstance.getAttachmentData(documentId, attachmentId));
     },
-    getChangedDocumentsSince: function getChangedDocumentsSince(limit, checkpoint) {
-      return database.lockedRun(function () {
-        return storageInstance.getChangedDocumentsSince((0, _utils.ensureNotFalsy)(limit), checkpoint);
-      });
+    getChangedDocumentsSince(limit, checkpoint) {
+      return database.lockedRun(() => storageInstance.getChangedDocumentsSince((0, _utils.ensureNotFalsy)(limit), checkpoint));
     },
-    cleanup: function cleanup(minDeletedTime) {
-      return database.lockedRun(function () {
-        return storageInstance.cleanup(minDeletedTime);
-      });
+    cleanup(minDeletedTime) {
+      return database.lockedRun(() => storageInstance.cleanup(minDeletedTime));
     },
-    remove: function remove() {
-      return database.lockedRun(function () {
-        return storageInstance.remove();
-      });
+    remove() {
+      return database.lockedRun(() => storageInstance.remove());
     },
-    close: function close() {
-      return database.lockedRun(function () {
-        return storageInstance.close();
-      });
+    close() {
+      return database.lockedRun(() => storageInstance.close());
     },
-    changeStream: function changeStream() {
+    changeStream() {
       return storageInstance.changeStream();
     },
-    conflictResultionTasks: function conflictResultionTasks() {
+    conflictResultionTasks() {
       return storageInstance.conflictResultionTasks();
     },
-    resolveConflictResultionTask: function resolveConflictResultionTask(taskSolution) {
+    resolveConflictResultionTask(taskSolution) {
       if (taskSolution.output.isEqual) {
         return storageInstance.resolveConflictResultionTask(taskSolution);
       }
@@ -9693,7 +7837,7 @@ rxJsonSchema) {
         id: taskSolution.id,
         output: {
           isEqual: false,
-          documentData: documentData
+          documentData
         }
       });
     }
@@ -9710,14 +7854,14 @@ function ensureRxStorageInstanceParamsAreCorrect(params) {
   if (params.schema.keyCompression) {
     throw (0, _rxError.newRxError)('UT5', {
       args: {
-        params: params
+        params
       }
     });
   }
   if (hasEncryption(params.schema)) {
     throw (0, _rxError.newRxError)('UT6', {
       args: {
-        params: params
+        params
       }
     });
   }
@@ -9730,10 +7874,9 @@ function hasEncryption(jsonSchema) {
   }
 }
 
-},{"./overwritable":9,"./plugins/utils":12,"./rx-error":41,"./rx-schema-helper":44,"@babel/runtime/helpers/asyncToGenerator":52,"@babel/runtime/helpers/interopRequireDefault":57,"@babel/runtime/regenerator":66}],47:[function(require,module,exports){
+},{"./overwritable":9,"./plugins/utils":12,"./rx-error":41,"./rx-schema-helper":44}],47:[function(require,module,exports){
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -9741,8 +7884,6 @@ exports.BROADCAST_CHANNEL_BY_TOKEN = void 0;
 exports.addRxStorageMultiInstanceSupport = addRxStorageMultiInstanceSupport;
 exports.getBroadcastChannelReference = getBroadcastChannelReference;
 exports.removeBroadcastChannelReference = removeBroadcastChannelReference;
-var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
-var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 var _rxjs = require("rxjs");
 var _operators = require("rxjs/operators");
 var _broadcastChannel = require("broadcast-channel");
@@ -9798,9 +7939,9 @@ function removeBroadcastChannelReference(databaseInstanceToken, refObject) {
   if (!state) {
     return;
   }
-  state.refs["delete"](refObject);
+  state.refs.delete(refObject);
   if (state.refs.size === 0) {
-    BROADCAST_CHANNEL_BY_TOKEN["delete"](databaseInstanceToken);
+    BROADCAST_CHANNEL_BY_TOKEN.delete(databaseInstanceToken);
     return state.bc.close();
   }
 }
@@ -9815,7 +7956,7 @@ providedBroadcastChannel) {
   }
   var broadcastChannel = providedBroadcastChannel ? providedBroadcastChannel : getBroadcastChannelReference(instanceCreationParams.databaseInstanceToken, instance.databaseName, instance);
   var changesFromOtherInstances$ = new _rxjs.Subject();
-  var eventListener = function eventListener(msg) {
+  var eventListener = msg => {
     if (msg.storageName === storageName && msg.databaseName === instanceCreationParams.databaseName && msg.collectionName === instanceCreationParams.collectionName && msg.version === instanceCreationParams.schema.version) {
       changesFromOtherInstances$.next(msg.eventBulk);
     }
@@ -9823,7 +7964,7 @@ providedBroadcastChannel) {
   broadcastChannel.addEventListener('message', eventListener);
   var oldChangestream$ = instance.changeStream();
   var closed = false;
-  var sub = oldChangestream$.subscribe(function (eventBulk) {
+  var sub = oldChangestream$.subscribe(eventBulk => {
     if (closed) {
       return;
     }
@@ -9832,59 +7973,35 @@ providedBroadcastChannel) {
       databaseName: instanceCreationParams.databaseName,
       collectionName: instanceCreationParams.collectionName,
       version: instanceCreationParams.schema.version,
-      eventBulk: eventBulk
+      eventBulk
     });
   });
   instance.changeStream = function () {
     return changesFromOtherInstances$.asObservable().pipe((0, _operators.mergeWith)(oldChangestream$));
   };
   var oldClose = instance.close.bind(instance);
-  instance.close = /*#__PURE__*/(0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee() {
-    return _regenerator["default"].wrap(function _callee$(_context) {
-      while (1) switch (_context.prev = _context.next) {
-        case 0:
-          closed = true;
-          sub.unsubscribe();
-          broadcastChannel.removeEventListener('message', eventListener);
-          if (providedBroadcastChannel) {
-            _context.next = 6;
-            break;
-          }
-          _context.next = 6;
-          return removeBroadcastChannelReference(instanceCreationParams.databaseInstanceToken, instance);
-        case 6:
-          return _context.abrupt("return", oldClose());
-        case 7:
-        case "end":
-          return _context.stop();
-      }
-    }, _callee);
-  }));
+  instance.close = async function () {
+    closed = true;
+    sub.unsubscribe();
+    broadcastChannel.removeEventListener('message', eventListener);
+    if (!providedBroadcastChannel) {
+      await removeBroadcastChannelReference(instanceCreationParams.databaseInstanceToken, instance);
+    }
+    return oldClose();
+  };
   var oldRemove = instance.remove.bind(instance);
-  instance.remove = /*#__PURE__*/(0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee2() {
-    return _regenerator["default"].wrap(function _callee2$(_context2) {
-      while (1) switch (_context2.prev = _context2.next) {
-        case 0:
-          closed = true;
-          sub.unsubscribe();
-          broadcastChannel.removeEventListener('message', eventListener);
-          if (providedBroadcastChannel) {
-            _context2.next = 6;
-            break;
-          }
-          _context2.next = 6;
-          return removeBroadcastChannelReference(instanceCreationParams.databaseInstanceToken, instance);
-        case 6:
-          return _context2.abrupt("return", oldRemove());
-        case 7:
-        case "end":
-          return _context2.stop();
-      }
-    }, _callee2);
-  }));
+  instance.remove = async function () {
+    closed = true;
+    sub.unsubscribe();
+    broadcastChannel.removeEventListener('message', eventListener);
+    if (!providedBroadcastChannel) {
+      await removeBroadcastChannelReference(instanceCreationParams.databaseInstanceToken, instance);
+    }
+    return oldRemove();
+  };
 }
 
-},{"@babel/runtime/helpers/asyncToGenerator":52,"@babel/runtime/helpers/interopRequireDefault":57,"@babel/runtime/regenerator":66,"broadcast-channel":89,"rxjs":423,"rxjs/operators":648}],48:[function(require,module,exports){
+},{"broadcast-channel":86,"rxjs":420,"rxjs/operators":645}],48:[function(require,module,exports){
 "use strict";
 
 },{}],49:[function(require,module,exports){
@@ -9904,7 +8021,7 @@ if (_global["default"]._babelPolyfill && typeof console !== "undefined" && conso
 }
 
 _global["default"]._babelPolyfill = true;
-},{"./noConflict":51,"core-js/library/fn/global":115}],51:[function(require,module,exports){
+},{"./noConflict":51,"core-js/library/fn/global":112}],51:[function(require,module,exports){
 "use strict";
 
 require("core-js/es6");
@@ -9934,39 +8051,7 @@ require("core-js/fn/promise/finally");
 require("core-js/web");
 
 require("regenerator-runtime/runtime");
-},{"core-js/es6":103,"core-js/fn/array/flat-map":104,"core-js/fn/array/includes":105,"core-js/fn/object/entries":106,"core-js/fn/object/get-own-property-descriptors":107,"core-js/fn/object/values":108,"core-js/fn/promise/finally":109,"core-js/fn/string/pad-end":110,"core-js/fn/string/pad-start":111,"core-js/fn/string/trim-end":112,"core-js/fn/string/trim-start":113,"core-js/fn/symbol/async-iterator":114,"core-js/web":406,"regenerator-runtime/runtime":422}],52:[function(require,module,exports){
-function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) {
-  try {
-    var info = gen[key](arg);
-    var value = info.value;
-  } catch (error) {
-    reject(error);
-    return;
-  }
-  if (info.done) {
-    resolve(value);
-  } else {
-    Promise.resolve(value).then(_next, _throw);
-  }
-}
-function _asyncToGenerator(fn) {
-  return function () {
-    var self = this,
-      args = arguments;
-    return new Promise(function (resolve, reject) {
-      var gen = fn.apply(self, args);
-      function _next(value) {
-        asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value);
-      }
-      function _throw(err) {
-        asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err);
-      }
-      _next(undefined);
-    });
-  };
-}
-module.exports = _asyncToGenerator, module.exports.__esModule = true, module.exports["default"] = module.exports;
-},{}],53:[function(require,module,exports){
+},{"core-js/es6":100,"core-js/fn/array/flat-map":101,"core-js/fn/array/includes":102,"core-js/fn/object/entries":103,"core-js/fn/object/get-own-property-descriptors":104,"core-js/fn/object/values":105,"core-js/fn/promise/finally":106,"core-js/fn/string/pad-end":107,"core-js/fn/string/pad-start":108,"core-js/fn/string/trim-end":109,"core-js/fn/string/trim-start":110,"core-js/fn/symbol/async-iterator":111,"core-js/web":403,"regenerator-runtime/runtime":419}],52:[function(require,module,exports){
 var setPrototypeOf = require("./setPrototypeOf.js");
 var isNativeReflectConstruct = require("./isNativeReflectConstruct.js");
 function _construct(Parent, args, Class) {
@@ -9985,7 +8070,7 @@ function _construct(Parent, args, Class) {
   return _construct.apply(null, arguments);
 }
 module.exports = _construct, module.exports.__esModule = true, module.exports["default"] = module.exports;
-},{"./isNativeReflectConstruct.js":59,"./setPrototypeOf.js":61}],54:[function(require,module,exports){
+},{"./isNativeReflectConstruct.js":58,"./setPrototypeOf.js":59}],53:[function(require,module,exports){
 var toPropertyKey = require("./toPropertyKey.js");
 function _defineProperties(target, props) {
   for (var i = 0; i < props.length; i++) {
@@ -10005,7 +8090,7 @@ function _createClass(Constructor, protoProps, staticProps) {
   return Constructor;
 }
 module.exports = _createClass, module.exports.__esModule = true, module.exports["default"] = module.exports;
-},{"./toPropertyKey.js":63}],55:[function(require,module,exports){
+},{"./toPropertyKey.js":61}],54:[function(require,module,exports){
 function _getPrototypeOf(o) {
   module.exports = _getPrototypeOf = Object.setPrototypeOf ? Object.getPrototypeOf.bind() : function _getPrototypeOf(o) {
     return o.__proto__ || Object.getPrototypeOf(o);
@@ -10013,7 +8098,7 @@ function _getPrototypeOf(o) {
   return _getPrototypeOf(o);
 }
 module.exports = _getPrototypeOf, module.exports.__esModule = true, module.exports["default"] = module.exports;
-},{}],56:[function(require,module,exports){
+},{}],55:[function(require,module,exports){
 var setPrototypeOf = require("./setPrototypeOf.js");
 function _inheritsLoose(subClass, superClass) {
   subClass.prototype = Object.create(superClass.prototype);
@@ -10021,19 +8106,19 @@ function _inheritsLoose(subClass, superClass) {
   setPrototypeOf(subClass, superClass);
 }
 module.exports = _inheritsLoose, module.exports.__esModule = true, module.exports["default"] = module.exports;
-},{"./setPrototypeOf.js":61}],57:[function(require,module,exports){
+},{"./setPrototypeOf.js":59}],56:[function(require,module,exports){
 function _interopRequireDefault(obj) {
   return obj && obj.__esModule ? obj : {
     "default": obj
   };
 }
 module.exports = _interopRequireDefault, module.exports.__esModule = true, module.exports["default"] = module.exports;
-},{}],58:[function(require,module,exports){
+},{}],57:[function(require,module,exports){
 function _isNativeFunction(fn) {
   return Function.toString.call(fn).indexOf("[native code]") !== -1;
 }
 module.exports = _isNativeFunction, module.exports.__esModule = true, module.exports["default"] = module.exports;
-},{}],59:[function(require,module,exports){
+},{}],58:[function(require,module,exports){
 function _isNativeReflectConstruct() {
   if (typeof Reflect === "undefined" || !Reflect.construct) return false;
   if (Reflect.construct.sham) return false;
@@ -10046,312 +8131,7 @@ function _isNativeReflectConstruct() {
   }
 }
 module.exports = _isNativeReflectConstruct, module.exports.__esModule = true, module.exports["default"] = module.exports;
-},{}],60:[function(require,module,exports){
-var _typeof = require("./typeof.js")["default"];
-function _regeneratorRuntime() {
-  "use strict"; /*! regenerator-runtime -- Copyright (c) 2014-present, Facebook, Inc. -- license (MIT): https://github.com/facebook/regenerator/blob/main/LICENSE */
-  module.exports = _regeneratorRuntime = function _regeneratorRuntime() {
-    return exports;
-  }, module.exports.__esModule = true, module.exports["default"] = module.exports;
-  var exports = {},
-    Op = Object.prototype,
-    hasOwn = Op.hasOwnProperty,
-    defineProperty = Object.defineProperty || function (obj, key, desc) {
-      obj[key] = desc.value;
-    },
-    $Symbol = "function" == typeof Symbol ? Symbol : {},
-    iteratorSymbol = $Symbol.iterator || "@@iterator",
-    asyncIteratorSymbol = $Symbol.asyncIterator || "@@asyncIterator",
-    toStringTagSymbol = $Symbol.toStringTag || "@@toStringTag";
-  function define(obj, key, value) {
-    return Object.defineProperty(obj, key, {
-      value: value,
-      enumerable: !0,
-      configurable: !0,
-      writable: !0
-    }), obj[key];
-  }
-  try {
-    define({}, "");
-  } catch (err) {
-    define = function define(obj, key, value) {
-      return obj[key] = value;
-    };
-  }
-  function wrap(innerFn, outerFn, self, tryLocsList) {
-    var protoGenerator = outerFn && outerFn.prototype instanceof Generator ? outerFn : Generator,
-      generator = Object.create(protoGenerator.prototype),
-      context = new Context(tryLocsList || []);
-    return defineProperty(generator, "_invoke", {
-      value: makeInvokeMethod(innerFn, self, context)
-    }), generator;
-  }
-  function tryCatch(fn, obj, arg) {
-    try {
-      return {
-        type: "normal",
-        arg: fn.call(obj, arg)
-      };
-    } catch (err) {
-      return {
-        type: "throw",
-        arg: err
-      };
-    }
-  }
-  exports.wrap = wrap;
-  var ContinueSentinel = {};
-  function Generator() {}
-  function GeneratorFunction() {}
-  function GeneratorFunctionPrototype() {}
-  var IteratorPrototype = {};
-  define(IteratorPrototype, iteratorSymbol, function () {
-    return this;
-  });
-  var getProto = Object.getPrototypeOf,
-    NativeIteratorPrototype = getProto && getProto(getProto(values([])));
-  NativeIteratorPrototype && NativeIteratorPrototype !== Op && hasOwn.call(NativeIteratorPrototype, iteratorSymbol) && (IteratorPrototype = NativeIteratorPrototype);
-  var Gp = GeneratorFunctionPrototype.prototype = Generator.prototype = Object.create(IteratorPrototype);
-  function defineIteratorMethods(prototype) {
-    ["next", "throw", "return"].forEach(function (method) {
-      define(prototype, method, function (arg) {
-        return this._invoke(method, arg);
-      });
-    });
-  }
-  function AsyncIterator(generator, PromiseImpl) {
-    function invoke(method, arg, resolve, reject) {
-      var record = tryCatch(generator[method], generator, arg);
-      if ("throw" !== record.type) {
-        var result = record.arg,
-          value = result.value;
-        return value && "object" == _typeof(value) && hasOwn.call(value, "__await") ? PromiseImpl.resolve(value.__await).then(function (value) {
-          invoke("next", value, resolve, reject);
-        }, function (err) {
-          invoke("throw", err, resolve, reject);
-        }) : PromiseImpl.resolve(value).then(function (unwrapped) {
-          result.value = unwrapped, resolve(result);
-        }, function (error) {
-          return invoke("throw", error, resolve, reject);
-        });
-      }
-      reject(record.arg);
-    }
-    var previousPromise;
-    defineProperty(this, "_invoke", {
-      value: function value(method, arg) {
-        function callInvokeWithMethodAndArg() {
-          return new PromiseImpl(function (resolve, reject) {
-            invoke(method, arg, resolve, reject);
-          });
-        }
-        return previousPromise = previousPromise ? previousPromise.then(callInvokeWithMethodAndArg, callInvokeWithMethodAndArg) : callInvokeWithMethodAndArg();
-      }
-    });
-  }
-  function makeInvokeMethod(innerFn, self, context) {
-    var state = "suspendedStart";
-    return function (method, arg) {
-      if ("executing" === state) throw new Error("Generator is already running");
-      if ("completed" === state) {
-        if ("throw" === method) throw arg;
-        return doneResult();
-      }
-      for (context.method = method, context.arg = arg;;) {
-        var delegate = context.delegate;
-        if (delegate) {
-          var delegateResult = maybeInvokeDelegate(delegate, context);
-          if (delegateResult) {
-            if (delegateResult === ContinueSentinel) continue;
-            return delegateResult;
-          }
-        }
-        if ("next" === context.method) context.sent = context._sent = context.arg;else if ("throw" === context.method) {
-          if ("suspendedStart" === state) throw state = "completed", context.arg;
-          context.dispatchException(context.arg);
-        } else "return" === context.method && context.abrupt("return", context.arg);
-        state = "executing";
-        var record = tryCatch(innerFn, self, context);
-        if ("normal" === record.type) {
-          if (state = context.done ? "completed" : "suspendedYield", record.arg === ContinueSentinel) continue;
-          return {
-            value: record.arg,
-            done: context.done
-          };
-        }
-        "throw" === record.type && (state = "completed", context.method = "throw", context.arg = record.arg);
-      }
-    };
-  }
-  function maybeInvokeDelegate(delegate, context) {
-    var methodName = context.method,
-      method = delegate.iterator[methodName];
-    if (undefined === method) return context.delegate = null, "throw" === methodName && delegate.iterator["return"] && (context.method = "return", context.arg = undefined, maybeInvokeDelegate(delegate, context), "throw" === context.method) || "return" !== methodName && (context.method = "throw", context.arg = new TypeError("The iterator does not provide a '" + methodName + "' method")), ContinueSentinel;
-    var record = tryCatch(method, delegate.iterator, context.arg);
-    if ("throw" === record.type) return context.method = "throw", context.arg = record.arg, context.delegate = null, ContinueSentinel;
-    var info = record.arg;
-    return info ? info.done ? (context[delegate.resultName] = info.value, context.next = delegate.nextLoc, "return" !== context.method && (context.method = "next", context.arg = undefined), context.delegate = null, ContinueSentinel) : info : (context.method = "throw", context.arg = new TypeError("iterator result is not an object"), context.delegate = null, ContinueSentinel);
-  }
-  function pushTryEntry(locs) {
-    var entry = {
-      tryLoc: locs[0]
-    };
-    1 in locs && (entry.catchLoc = locs[1]), 2 in locs && (entry.finallyLoc = locs[2], entry.afterLoc = locs[3]), this.tryEntries.push(entry);
-  }
-  function resetTryEntry(entry) {
-    var record = entry.completion || {};
-    record.type = "normal", delete record.arg, entry.completion = record;
-  }
-  function Context(tryLocsList) {
-    this.tryEntries = [{
-      tryLoc: "root"
-    }], tryLocsList.forEach(pushTryEntry, this), this.reset(!0);
-  }
-  function values(iterable) {
-    if (iterable) {
-      var iteratorMethod = iterable[iteratorSymbol];
-      if (iteratorMethod) return iteratorMethod.call(iterable);
-      if ("function" == typeof iterable.next) return iterable;
-      if (!isNaN(iterable.length)) {
-        var i = -1,
-          next = function next() {
-            for (; ++i < iterable.length;) if (hasOwn.call(iterable, i)) return next.value = iterable[i], next.done = !1, next;
-            return next.value = undefined, next.done = !0, next;
-          };
-        return next.next = next;
-      }
-    }
-    return {
-      next: doneResult
-    };
-  }
-  function doneResult() {
-    return {
-      value: undefined,
-      done: !0
-    };
-  }
-  return GeneratorFunction.prototype = GeneratorFunctionPrototype, defineProperty(Gp, "constructor", {
-    value: GeneratorFunctionPrototype,
-    configurable: !0
-  }), defineProperty(GeneratorFunctionPrototype, "constructor", {
-    value: GeneratorFunction,
-    configurable: !0
-  }), GeneratorFunction.displayName = define(GeneratorFunctionPrototype, toStringTagSymbol, "GeneratorFunction"), exports.isGeneratorFunction = function (genFun) {
-    var ctor = "function" == typeof genFun && genFun.constructor;
-    return !!ctor && (ctor === GeneratorFunction || "GeneratorFunction" === (ctor.displayName || ctor.name));
-  }, exports.mark = function (genFun) {
-    return Object.setPrototypeOf ? Object.setPrototypeOf(genFun, GeneratorFunctionPrototype) : (genFun.__proto__ = GeneratorFunctionPrototype, define(genFun, toStringTagSymbol, "GeneratorFunction")), genFun.prototype = Object.create(Gp), genFun;
-  }, exports.awrap = function (arg) {
-    return {
-      __await: arg
-    };
-  }, defineIteratorMethods(AsyncIterator.prototype), define(AsyncIterator.prototype, asyncIteratorSymbol, function () {
-    return this;
-  }), exports.AsyncIterator = AsyncIterator, exports.async = function (innerFn, outerFn, self, tryLocsList, PromiseImpl) {
-    void 0 === PromiseImpl && (PromiseImpl = Promise);
-    var iter = new AsyncIterator(wrap(innerFn, outerFn, self, tryLocsList), PromiseImpl);
-    return exports.isGeneratorFunction(outerFn) ? iter : iter.next().then(function (result) {
-      return result.done ? result.value : iter.next();
-    });
-  }, defineIteratorMethods(Gp), define(Gp, toStringTagSymbol, "Generator"), define(Gp, iteratorSymbol, function () {
-    return this;
-  }), define(Gp, "toString", function () {
-    return "[object Generator]";
-  }), exports.keys = function (val) {
-    var object = Object(val),
-      keys = [];
-    for (var key in object) keys.push(key);
-    return keys.reverse(), function next() {
-      for (; keys.length;) {
-        var key = keys.pop();
-        if (key in object) return next.value = key, next.done = !1, next;
-      }
-      return next.done = !0, next;
-    };
-  }, exports.values = values, Context.prototype = {
-    constructor: Context,
-    reset: function reset(skipTempReset) {
-      if (this.prev = 0, this.next = 0, this.sent = this._sent = undefined, this.done = !1, this.delegate = null, this.method = "next", this.arg = undefined, this.tryEntries.forEach(resetTryEntry), !skipTempReset) for (var name in this) "t" === name.charAt(0) && hasOwn.call(this, name) && !isNaN(+name.slice(1)) && (this[name] = undefined);
-    },
-    stop: function stop() {
-      this.done = !0;
-      var rootRecord = this.tryEntries[0].completion;
-      if ("throw" === rootRecord.type) throw rootRecord.arg;
-      return this.rval;
-    },
-    dispatchException: function dispatchException(exception) {
-      if (this.done) throw exception;
-      var context = this;
-      function handle(loc, caught) {
-        return record.type = "throw", record.arg = exception, context.next = loc, caught && (context.method = "next", context.arg = undefined), !!caught;
-      }
-      for (var i = this.tryEntries.length - 1; i >= 0; --i) {
-        var entry = this.tryEntries[i],
-          record = entry.completion;
-        if ("root" === entry.tryLoc) return handle("end");
-        if (entry.tryLoc <= this.prev) {
-          var hasCatch = hasOwn.call(entry, "catchLoc"),
-            hasFinally = hasOwn.call(entry, "finallyLoc");
-          if (hasCatch && hasFinally) {
-            if (this.prev < entry.catchLoc) return handle(entry.catchLoc, !0);
-            if (this.prev < entry.finallyLoc) return handle(entry.finallyLoc);
-          } else if (hasCatch) {
-            if (this.prev < entry.catchLoc) return handle(entry.catchLoc, !0);
-          } else {
-            if (!hasFinally) throw new Error("try statement without catch or finally");
-            if (this.prev < entry.finallyLoc) return handle(entry.finallyLoc);
-          }
-        }
-      }
-    },
-    abrupt: function abrupt(type, arg) {
-      for (var i = this.tryEntries.length - 1; i >= 0; --i) {
-        var entry = this.tryEntries[i];
-        if (entry.tryLoc <= this.prev && hasOwn.call(entry, "finallyLoc") && this.prev < entry.finallyLoc) {
-          var finallyEntry = entry;
-          break;
-        }
-      }
-      finallyEntry && ("break" === type || "continue" === type) && finallyEntry.tryLoc <= arg && arg <= finallyEntry.finallyLoc && (finallyEntry = null);
-      var record = finallyEntry ? finallyEntry.completion : {};
-      return record.type = type, record.arg = arg, finallyEntry ? (this.method = "next", this.next = finallyEntry.finallyLoc, ContinueSentinel) : this.complete(record);
-    },
-    complete: function complete(record, afterLoc) {
-      if ("throw" === record.type) throw record.arg;
-      return "break" === record.type || "continue" === record.type ? this.next = record.arg : "return" === record.type ? (this.rval = this.arg = record.arg, this.method = "return", this.next = "end") : "normal" === record.type && afterLoc && (this.next = afterLoc), ContinueSentinel;
-    },
-    finish: function finish(finallyLoc) {
-      for (var i = this.tryEntries.length - 1; i >= 0; --i) {
-        var entry = this.tryEntries[i];
-        if (entry.finallyLoc === finallyLoc) return this.complete(entry.completion, entry.afterLoc), resetTryEntry(entry), ContinueSentinel;
-      }
-    },
-    "catch": function _catch(tryLoc) {
-      for (var i = this.tryEntries.length - 1; i >= 0; --i) {
-        var entry = this.tryEntries[i];
-        if (entry.tryLoc === tryLoc) {
-          var record = entry.completion;
-          if ("throw" === record.type) {
-            var thrown = record.arg;
-            resetTryEntry(entry);
-          }
-          return thrown;
-        }
-      }
-      throw new Error("illegal catch attempt");
-    },
-    delegateYield: function delegateYield(iterable, resultName, nextLoc) {
-      return this.delegate = {
-        iterator: values(iterable),
-        resultName: resultName,
-        nextLoc: nextLoc
-      }, "next" === this.method && (this.arg = undefined), ContinueSentinel;
-    }
-  }, exports;
-}
-module.exports = _regeneratorRuntime, module.exports.__esModule = true, module.exports["default"] = module.exports;
-},{"./typeof.js":64}],61:[function(require,module,exports){
+},{}],59:[function(require,module,exports){
 function _setPrototypeOf(o, p) {
   module.exports = _setPrototypeOf = Object.setPrototypeOf ? Object.setPrototypeOf.bind() : function _setPrototypeOf(o, p) {
     o.__proto__ = p;
@@ -10360,7 +8140,7 @@ function _setPrototypeOf(o, p) {
   return _setPrototypeOf(o, p);
 }
 module.exports = _setPrototypeOf, module.exports.__esModule = true, module.exports["default"] = module.exports;
-},{}],62:[function(require,module,exports){
+},{}],60:[function(require,module,exports){
 var _typeof = require("./typeof.js")["default"];
 function _toPrimitive(input, hint) {
   if (_typeof(input) !== "object" || input === null) return input;
@@ -10373,7 +8153,7 @@ function _toPrimitive(input, hint) {
   return (hint === "string" ? String : Number)(input);
 }
 module.exports = _toPrimitive, module.exports.__esModule = true, module.exports["default"] = module.exports;
-},{"./typeof.js":64}],63:[function(require,module,exports){
+},{"./typeof.js":62}],61:[function(require,module,exports){
 var _typeof = require("./typeof.js")["default"];
 var toPrimitive = require("./toPrimitive.js");
 function _toPropertyKey(arg) {
@@ -10381,7 +8161,7 @@ function _toPropertyKey(arg) {
   return _typeof(key) === "symbol" ? key : String(key);
 }
 module.exports = _toPropertyKey, module.exports.__esModule = true, module.exports["default"] = module.exports;
-},{"./toPrimitive.js":62,"./typeof.js":64}],64:[function(require,module,exports){
+},{"./toPrimitive.js":60,"./typeof.js":62}],62:[function(require,module,exports){
 function _typeof(obj) {
   "@babel/helpers - typeof";
 
@@ -10392,7 +8172,7 @@ function _typeof(obj) {
   }, module.exports.__esModule = true, module.exports["default"] = module.exports), _typeof(obj);
 }
 module.exports = _typeof, module.exports.__esModule = true, module.exports["default"] = module.exports;
-},{}],65:[function(require,module,exports){
+},{}],63:[function(require,module,exports){
 var getPrototypeOf = require("./getPrototypeOf.js");
 var setPrototypeOf = require("./setPrototypeOf.js");
 var isNativeFunction = require("./isNativeFunction.js");
@@ -10424,24 +8204,7 @@ function _wrapNativeSuper(Class) {
   return _wrapNativeSuper(Class);
 }
 module.exports = _wrapNativeSuper, module.exports.__esModule = true, module.exports["default"] = module.exports;
-},{"./construct.js":53,"./getPrototypeOf.js":55,"./isNativeFunction.js":58,"./setPrototypeOf.js":61}],66:[function(require,module,exports){
-// TODO(Babel 8): Remove this file.
-
-var runtime = require("../helpers/regeneratorRuntime")();
-module.exports = runtime;
-
-// Copied from https://github.com/facebook/regenerator/blob/main/packages/runtime/runtime.js#L736=
-try {
-  regeneratorRuntime = runtime;
-} catch (accidentalStrictMode) {
-  if (typeof globalThis === "object") {
-    globalThis.regeneratorRuntime = runtime;
-  } else {
-    Function("r", "regeneratorRuntime = r")(runtime);
-  }
-}
-
-},{"../helpers/regeneratorRuntime":60}],67:[function(require,module,exports){
+},{"./construct.js":52,"./getPrototypeOf.js":54,"./isNativeFunction.js":57,"./setPrototypeOf.js":59}],64:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -10500,7 +8263,7 @@ function pushAtSortPosition(array, item, compareFunction, noCopy) {
   ret.splice(mid, 0, item);
   return [ret, mid];
 }
-},{}],68:[function(require,module,exports){
+},{}],65:[function(require,module,exports){
 'use strict'
 
 exports.byteLength = byteLength
@@ -10652,7 +8415,7 @@ function fromByteArray (uint8) {
   return parts.join('')
 }
 
-},{}],69:[function(require,module,exports){
+},{}],66:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AbstractNode = void 0;
@@ -10828,7 +8591,7 @@ var AbstractNode = /** @class */ (function () {
 }());
 exports.AbstractNode = AbstractNode;
 
-},{"./find-similar-node":74,"./util":87}],70:[function(require,module,exports){
+},{"./find-similar-node":71,"./util":84}],67:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ensureNodesNotStrictEqual = exports.Branches = void 0;
@@ -10905,7 +8668,7 @@ function ensureNodesNotStrictEqual(node1, node2) {
 }
 exports.ensureNodesNotStrictEqual = ensureNodesNotStrictEqual;
 
-},{}],71:[function(require,module,exports){
+},{}],68:[function(require,module,exports){
 "use strict";
 var __values = (this && this.__values) || function(o) {
     var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
@@ -10982,7 +8745,7 @@ function createBddFromTruthTable(truthTable) {
 }
 exports.createBddFromTruthTable = createBddFromTruthTable;
 
-},{"./internal-node":76,"./leaf-node":77,"./root-node":86,"./util":87}],72:[function(require,module,exports){
+},{"./internal-node":73,"./leaf-node":74,"./root-node":83,"./util":84}],69:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getNodesRecursive = exports.ensureCorrectBdd = void 0;
@@ -11086,7 +8849,7 @@ function getNodesRecursive(node, set) {
 }
 exports.getNodesRecursive = getNodesRecursive;
 
-},{}],73:[function(require,module,exports){
+},{}],70:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.fillTruthTable = void 0;
@@ -11113,7 +8876,7 @@ function fillTruthTable(truthTable, inputLength, value) {
 }
 exports.fillTruthTable = fillTruthTable;
 
-},{"./util":87}],74:[function(require,module,exports){
+},{"./util":84}],71:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.findSimilarNode = void 0;
@@ -11136,7 +8899,7 @@ function findSimilarNode(own, others) {
 }
 exports.findSimilarNode = findSimilarNode;
 
-},{}],75:[function(require,module,exports){
+},{}],72:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -11163,7 +8926,7 @@ __exportStar(require("./parents"), exports);
 __exportStar(require("./root-node"), exports);
 __exportStar(require("./util"), exports);
 
-},{"./abstract-node":69,"./branches":70,"./create-bdd-from-truth-table":71,"./ensure-correct-bdd":72,"./fill-truth-table":73,"./find-similar-node":74,"./internal-node":76,"./leaf-node":77,"./minimal-string/index":80,"./optimize-brute-force":84,"./parents":85,"./root-node":86,"./util":87}],76:[function(require,module,exports){
+},{"./abstract-node":66,"./branches":67,"./create-bdd-from-truth-table":68,"./ensure-correct-bdd":69,"./fill-truth-table":70,"./find-similar-node":71,"./internal-node":73,"./leaf-node":74,"./minimal-string/index":77,"./optimize-brute-force":81,"./parents":82,"./root-node":83,"./util":84}],73:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -11229,7 +8992,7 @@ var InternalNode = /** @class */ (function (_super) {
 }(abstract_node_1.AbstractNode));
 exports.InternalNode = InternalNode;
 
-},{"./abstract-node":69,"./branches":70,"./parents":85}],77:[function(require,module,exports){
+},{"./abstract-node":66,"./branches":67,"./parents":82}],74:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -11282,7 +9045,7 @@ var LeafNode = /** @class */ (function (_super) {
 }(abstract_node_1.AbstractNode));
 exports.LeafNode = LeafNode;
 
-},{"./abstract-node":69,"./parents":85,"./util":87}],78:[function(require,module,exports){
+},{"./abstract-node":66,"./parents":82,"./util":84}],75:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.nodeToString = exports.bddToMinimalString = void 0;
@@ -11343,7 +9106,7 @@ function nodeToString(node, idByNode, lastCode) {
 }
 exports.nodeToString = nodeToString;
 
-},{"./string-format":83}],79:[function(require,module,exports){
+},{"./string-format":80}],76:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.nodeToSimpleBddNode = exports.bddToSimpleBdd = void 0;
@@ -11368,7 +9131,7 @@ function nodeToSimpleBddNode(node) {
 }
 exports.nodeToSimpleBddNode = nodeToSimpleBddNode;
 
-},{}],80:[function(require,module,exports){
+},{}],77:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -11387,7 +9150,7 @@ __exportStar(require("./resolve-with-simple-bdd"), exports);
 __exportStar(require("./string-format"), exports);
 __exportStar(require("./bdd-to-simple-bdd"), exports);
 
-},{"./bdd-to-minimal-string":78,"./bdd-to-simple-bdd":79,"./minimal-string-to-simple-bdd":81,"./resolve-with-simple-bdd":82,"./string-format":83}],81:[function(require,module,exports){
+},{"./bdd-to-minimal-string":75,"./bdd-to-simple-bdd":76,"./minimal-string-to-simple-bdd":78,"./resolve-with-simple-bdd":79,"./string-format":80}],78:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.minimalStringToSimpleBdd = void 0;
@@ -11446,7 +9209,7 @@ function minimalStringToSimpleBdd(str) {
 }
 exports.minimalStringToSimpleBdd = minimalStringToSimpleBdd;
 
-},{"../util":87,"./string-format":83}],82:[function(require,module,exports){
+},{"../util":84,"./string-format":80}],79:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.resolveWithSimpleBdd = void 0;
@@ -11468,7 +9231,7 @@ function resolveWithSimpleBdd(simpleBdd, fns, input) {
 }
 exports.resolveWithSimpleBdd = resolveWithSimpleBdd;
 
-},{"../util":87}],83:[function(require,module,exports){
+},{"../util":84}],80:[function(require,module,exports){
 "use strict";
 /*
 let t = 0;
@@ -11530,7 +9293,7 @@ function getNextCharId(lastCode) {
 }
 exports.getNextCharId = getNextCharId;
 
-},{}],84:[function(require,module,exports){
+},{}],81:[function(require,module,exports){
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
     function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
@@ -11769,7 +9532,7 @@ function getArrayWithIndexes(size) {
 }
 exports.getArrayWithIndexes = getArrayWithIndexes;
 
-},{"./create-bdd-from-truth-table":71,"./util":87}],85:[function(require,module,exports){
+},{"./create-bdd-from-truth-table":68,"./util":84}],82:[function(require,module,exports){
 "use strict";
 var __values = (this && this.__values) || function(o) {
     var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
@@ -11839,7 +9602,7 @@ var Parents = /** @class */ (function () {
 }());
 exports.Parents = Parents;
 
-},{}],86:[function(require,module,exports){
+},{}],83:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -12051,7 +9814,7 @@ var RootNode = /** @class */ (function (_super) {
 }(abstract_node_1.AbstractNode));
 exports.RootNode = RootNode;
 
-},{"./abstract-node":69,"./branches":70,"./minimal-string":80,"./util":87}],87:[function(require,module,exports){
+},{"./abstract-node":66,"./branches":67,"./minimal-string":77,"./util":84}],84:[function(require,module,exports){
 "use strict";
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -12197,7 +9960,7 @@ function splitStringToChunks(str, chunkSize) {
 }
 exports.splitStringToChunks = splitStringToChunks;
 
-},{}],88:[function(require,module,exports){
+},{}],85:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -12475,7 +10238,7 @@ function _stopListening(channel) {
     channel.method.onMessage(channel._state, null, time);
   }
 }
-},{"./method-chooser.js":92,"./options.js":97,"./util.js":98}],89:[function(require,module,exports){
+},{"./method-chooser.js":89,"./options.js":94,"./util.js":95}],86:[function(require,module,exports){
 "use strict";
 
 var _index = require("./index.js");
@@ -12495,7 +10258,7 @@ module.exports = {
   enforceOptions: _index.enforceOptions,
   beLeader: _index.beLeader
 };
-},{"./index.js":90}],90:[function(require,module,exports){
+},{"./index.js":87}],87:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -12539,7 +10302,7 @@ Object.defineProperty(exports, "enforceOptions", {
 });
 var _broadcastChannel = require("./broadcast-channel.js");
 var _leaderElection = require("./leader-election.js");
-},{"./broadcast-channel.js":88,"./leader-election.js":91}],91:[function(require,module,exports){
+},{"./broadcast-channel.js":85,"./leader-election.js":88}],88:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -12870,7 +10633,7 @@ function createLeaderElection(channel, options) {
   channel._leaderElector = elector;
   return elector;
 }
-},{"./util.js":98,"unload":100}],92:[function(require,module,exports){
+},{"./util.js":95,"unload":97}],89:[function(require,module,exports){
 "use strict";
 
 var _typeof = require("@babel/runtime/helpers/typeof");
@@ -12923,7 +10686,7 @@ function chooseMethod(options) {
     return m.type;
   })));else return useMethod;
 }
-},{"./methods/indexed-db.js":93,"./methods/localstorage.js":94,"./methods/native.js":95,"./methods/simulate.js":96,"@babel/runtime/helpers/typeof":64}],93:[function(require,module,exports){
+},{"./methods/indexed-db.js":90,"./methods/localstorage.js":91,"./methods/native.js":92,"./methods/simulate.js":93,"@babel/runtime/helpers/typeof":62}],90:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13296,7 +11059,7 @@ var IndexedDBMethod = {
   microSeconds: microSeconds
 };
 exports.IndexedDBMethod = IndexedDBMethod;
-},{"../options.js":97,"../util.js":98,"oblivious-set":420}],94:[function(require,module,exports){
+},{"../options.js":94,"../util.js":95,"oblivious-set":417}],91:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13469,7 +11232,7 @@ var LocalstorageMethod = {
   microSeconds: microSeconds
 };
 exports.LocalstorageMethod = LocalstorageMethod;
-},{"../options.js":97,"../util.js":98,"oblivious-set":420}],95:[function(require,module,exports){
+},{"../options.js":94,"../util.js":95,"oblivious-set":417}],92:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13545,7 +11308,7 @@ var NativeMethod = {
   microSeconds: microSeconds
 };
 exports.NativeMethod = NativeMethod;
-},{"../util.js":98}],96:[function(require,module,exports){
+},{"../util.js":95}],93:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13614,7 +11377,7 @@ var SimulateMethod = {
   microSeconds: microSeconds
 };
 exports.SimulateMethod = SimulateMethod;
-},{"../util.js":98}],97:[function(require,module,exports){
+},{"../util.js":95}],94:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13654,7 +11417,7 @@ function fillOptionsWithDefaults() {
   if (typeof options.node.useFastPath === 'undefined') options.node.useFastPath = true;
   return options;
 }
-},{}],98:[function(require,module,exports){
+},{}],95:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13717,7 +11480,7 @@ function microSeconds() {
     return ms * 1000;
   }
 }
-},{}],99:[function(require,module,exports){
+},{}],96:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -13769,7 +11532,7 @@ function addBrowser(fn) {
    * @link https://stackoverflow.com/a/26193516/3443137
    */
 }
-},{}],100:[function(require,module,exports){
+},{}],97:[function(require,module,exports){
 (function (process){(function (){
 "use strict";
 
@@ -13830,7 +11593,7 @@ function getSize() {
   return LISTENERS.size;
 }
 }).call(this)}).call(this,require('_process'))
-},{"./browser.js":99,"./node.js":101,"_process":421}],101:[function(require,module,exports){
+},{"./browser.js":96,"./node.js":98,"_process":418}],98:[function(require,module,exports){
 (function (process){(function (){
 "use strict";
 
@@ -13869,7 +11632,7 @@ function addNode(fn) {
   });
 }
 }).call(this)}).call(this,require('_process'))
-},{"_process":421}],102:[function(require,module,exports){
+},{"_process":418}],99:[function(require,module,exports){
 (function (Buffer){(function (){
 /*!
  * The buffer module from node.js, for the browser.
@@ -15650,7 +13413,7 @@ function numberIsNaN (obj) {
 }
 
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"base64-js":68,"buffer":102,"ieee754":417}],103:[function(require,module,exports){
+},{"base64-js":65,"buffer":99,"ieee754":414}],100:[function(require,module,exports){
 require('../modules/es6.symbol');
 require('../modules/es6.object.create');
 require('../modules/es6.object.define-property');
@@ -15791,74 +13554,74 @@ require('../modules/es6.reflect.set');
 require('../modules/es6.reflect.set-prototype-of');
 module.exports = require('../modules/_core');
 
-},{"../modules/_core":152,"../modules/es6.array.copy-within":254,"../modules/es6.array.every":255,"../modules/es6.array.fill":256,"../modules/es6.array.filter":257,"../modules/es6.array.find":259,"../modules/es6.array.find-index":258,"../modules/es6.array.for-each":260,"../modules/es6.array.from":261,"../modules/es6.array.index-of":262,"../modules/es6.array.is-array":263,"../modules/es6.array.iterator":264,"../modules/es6.array.join":265,"../modules/es6.array.last-index-of":266,"../modules/es6.array.map":267,"../modules/es6.array.of":268,"../modules/es6.array.reduce":270,"../modules/es6.array.reduce-right":269,"../modules/es6.array.slice":271,"../modules/es6.array.some":272,"../modules/es6.array.sort":273,"../modules/es6.array.species":274,"../modules/es6.date.now":275,"../modules/es6.date.to-iso-string":276,"../modules/es6.date.to-json":277,"../modules/es6.date.to-primitive":278,"../modules/es6.date.to-string":279,"../modules/es6.function.bind":280,"../modules/es6.function.has-instance":281,"../modules/es6.function.name":282,"../modules/es6.map":283,"../modules/es6.math.acosh":284,"../modules/es6.math.asinh":285,"../modules/es6.math.atanh":286,"../modules/es6.math.cbrt":287,"../modules/es6.math.clz32":288,"../modules/es6.math.cosh":289,"../modules/es6.math.expm1":290,"../modules/es6.math.fround":291,"../modules/es6.math.hypot":292,"../modules/es6.math.imul":293,"../modules/es6.math.log10":294,"../modules/es6.math.log1p":295,"../modules/es6.math.log2":296,"../modules/es6.math.sign":297,"../modules/es6.math.sinh":298,"../modules/es6.math.tanh":299,"../modules/es6.math.trunc":300,"../modules/es6.number.constructor":301,"../modules/es6.number.epsilon":302,"../modules/es6.number.is-finite":303,"../modules/es6.number.is-integer":304,"../modules/es6.number.is-nan":305,"../modules/es6.number.is-safe-integer":306,"../modules/es6.number.max-safe-integer":307,"../modules/es6.number.min-safe-integer":308,"../modules/es6.number.parse-float":309,"../modules/es6.number.parse-int":310,"../modules/es6.number.to-fixed":311,"../modules/es6.number.to-precision":312,"../modules/es6.object.assign":313,"../modules/es6.object.create":314,"../modules/es6.object.define-properties":315,"../modules/es6.object.define-property":316,"../modules/es6.object.freeze":317,"../modules/es6.object.get-own-property-descriptor":318,"../modules/es6.object.get-own-property-names":319,"../modules/es6.object.get-prototype-of":320,"../modules/es6.object.is":324,"../modules/es6.object.is-extensible":321,"../modules/es6.object.is-frozen":322,"../modules/es6.object.is-sealed":323,"../modules/es6.object.keys":325,"../modules/es6.object.prevent-extensions":326,"../modules/es6.object.seal":327,"../modules/es6.object.set-prototype-of":328,"../modules/es6.object.to-string":329,"../modules/es6.parse-float":330,"../modules/es6.parse-int":331,"../modules/es6.promise":332,"../modules/es6.reflect.apply":333,"../modules/es6.reflect.construct":334,"../modules/es6.reflect.define-property":335,"../modules/es6.reflect.delete-property":336,"../modules/es6.reflect.enumerate":337,"../modules/es6.reflect.get":340,"../modules/es6.reflect.get-own-property-descriptor":338,"../modules/es6.reflect.get-prototype-of":339,"../modules/es6.reflect.has":341,"../modules/es6.reflect.is-extensible":342,"../modules/es6.reflect.own-keys":343,"../modules/es6.reflect.prevent-extensions":344,"../modules/es6.reflect.set":346,"../modules/es6.reflect.set-prototype-of":345,"../modules/es6.regexp.constructor":347,"../modules/es6.regexp.exec":348,"../modules/es6.regexp.flags":349,"../modules/es6.regexp.match":350,"../modules/es6.regexp.replace":351,"../modules/es6.regexp.search":352,"../modules/es6.regexp.split":353,"../modules/es6.regexp.to-string":354,"../modules/es6.set":355,"../modules/es6.string.anchor":356,"../modules/es6.string.big":357,"../modules/es6.string.blink":358,"../modules/es6.string.bold":359,"../modules/es6.string.code-point-at":360,"../modules/es6.string.ends-with":361,"../modules/es6.string.fixed":362,"../modules/es6.string.fontcolor":363,"../modules/es6.string.fontsize":364,"../modules/es6.string.from-code-point":365,"../modules/es6.string.includes":366,"../modules/es6.string.italics":367,"../modules/es6.string.iterator":368,"../modules/es6.string.link":369,"../modules/es6.string.raw":370,"../modules/es6.string.repeat":371,"../modules/es6.string.small":372,"../modules/es6.string.starts-with":373,"../modules/es6.string.strike":374,"../modules/es6.string.sub":375,"../modules/es6.string.sup":376,"../modules/es6.string.trim":377,"../modules/es6.symbol":378,"../modules/es6.typed.array-buffer":379,"../modules/es6.typed.data-view":380,"../modules/es6.typed.float32-array":381,"../modules/es6.typed.float64-array":382,"../modules/es6.typed.int16-array":383,"../modules/es6.typed.int32-array":384,"../modules/es6.typed.int8-array":385,"../modules/es6.typed.uint16-array":386,"../modules/es6.typed.uint32-array":387,"../modules/es6.typed.uint8-array":388,"../modules/es6.typed.uint8-clamped-array":389,"../modules/es6.weak-map":390,"../modules/es6.weak-set":391}],104:[function(require,module,exports){
+},{"../modules/_core":149,"../modules/es6.array.copy-within":251,"../modules/es6.array.every":252,"../modules/es6.array.fill":253,"../modules/es6.array.filter":254,"../modules/es6.array.find":256,"../modules/es6.array.find-index":255,"../modules/es6.array.for-each":257,"../modules/es6.array.from":258,"../modules/es6.array.index-of":259,"../modules/es6.array.is-array":260,"../modules/es6.array.iterator":261,"../modules/es6.array.join":262,"../modules/es6.array.last-index-of":263,"../modules/es6.array.map":264,"../modules/es6.array.of":265,"../modules/es6.array.reduce":267,"../modules/es6.array.reduce-right":266,"../modules/es6.array.slice":268,"../modules/es6.array.some":269,"../modules/es6.array.sort":270,"../modules/es6.array.species":271,"../modules/es6.date.now":272,"../modules/es6.date.to-iso-string":273,"../modules/es6.date.to-json":274,"../modules/es6.date.to-primitive":275,"../modules/es6.date.to-string":276,"../modules/es6.function.bind":277,"../modules/es6.function.has-instance":278,"../modules/es6.function.name":279,"../modules/es6.map":280,"../modules/es6.math.acosh":281,"../modules/es6.math.asinh":282,"../modules/es6.math.atanh":283,"../modules/es6.math.cbrt":284,"../modules/es6.math.clz32":285,"../modules/es6.math.cosh":286,"../modules/es6.math.expm1":287,"../modules/es6.math.fround":288,"../modules/es6.math.hypot":289,"../modules/es6.math.imul":290,"../modules/es6.math.log10":291,"../modules/es6.math.log1p":292,"../modules/es6.math.log2":293,"../modules/es6.math.sign":294,"../modules/es6.math.sinh":295,"../modules/es6.math.tanh":296,"../modules/es6.math.trunc":297,"../modules/es6.number.constructor":298,"../modules/es6.number.epsilon":299,"../modules/es6.number.is-finite":300,"../modules/es6.number.is-integer":301,"../modules/es6.number.is-nan":302,"../modules/es6.number.is-safe-integer":303,"../modules/es6.number.max-safe-integer":304,"../modules/es6.number.min-safe-integer":305,"../modules/es6.number.parse-float":306,"../modules/es6.number.parse-int":307,"../modules/es6.number.to-fixed":308,"../modules/es6.number.to-precision":309,"../modules/es6.object.assign":310,"../modules/es6.object.create":311,"../modules/es6.object.define-properties":312,"../modules/es6.object.define-property":313,"../modules/es6.object.freeze":314,"../modules/es6.object.get-own-property-descriptor":315,"../modules/es6.object.get-own-property-names":316,"../modules/es6.object.get-prototype-of":317,"../modules/es6.object.is":321,"../modules/es6.object.is-extensible":318,"../modules/es6.object.is-frozen":319,"../modules/es6.object.is-sealed":320,"../modules/es6.object.keys":322,"../modules/es6.object.prevent-extensions":323,"../modules/es6.object.seal":324,"../modules/es6.object.set-prototype-of":325,"../modules/es6.object.to-string":326,"../modules/es6.parse-float":327,"../modules/es6.parse-int":328,"../modules/es6.promise":329,"../modules/es6.reflect.apply":330,"../modules/es6.reflect.construct":331,"../modules/es6.reflect.define-property":332,"../modules/es6.reflect.delete-property":333,"../modules/es6.reflect.enumerate":334,"../modules/es6.reflect.get":337,"../modules/es6.reflect.get-own-property-descriptor":335,"../modules/es6.reflect.get-prototype-of":336,"../modules/es6.reflect.has":338,"../modules/es6.reflect.is-extensible":339,"../modules/es6.reflect.own-keys":340,"../modules/es6.reflect.prevent-extensions":341,"../modules/es6.reflect.set":343,"../modules/es6.reflect.set-prototype-of":342,"../modules/es6.regexp.constructor":344,"../modules/es6.regexp.exec":345,"../modules/es6.regexp.flags":346,"../modules/es6.regexp.match":347,"../modules/es6.regexp.replace":348,"../modules/es6.regexp.search":349,"../modules/es6.regexp.split":350,"../modules/es6.regexp.to-string":351,"../modules/es6.set":352,"../modules/es6.string.anchor":353,"../modules/es6.string.big":354,"../modules/es6.string.blink":355,"../modules/es6.string.bold":356,"../modules/es6.string.code-point-at":357,"../modules/es6.string.ends-with":358,"../modules/es6.string.fixed":359,"../modules/es6.string.fontcolor":360,"../modules/es6.string.fontsize":361,"../modules/es6.string.from-code-point":362,"../modules/es6.string.includes":363,"../modules/es6.string.italics":364,"../modules/es6.string.iterator":365,"../modules/es6.string.link":366,"../modules/es6.string.raw":367,"../modules/es6.string.repeat":368,"../modules/es6.string.small":369,"../modules/es6.string.starts-with":370,"../modules/es6.string.strike":371,"../modules/es6.string.sub":372,"../modules/es6.string.sup":373,"../modules/es6.string.trim":374,"../modules/es6.symbol":375,"../modules/es6.typed.array-buffer":376,"../modules/es6.typed.data-view":377,"../modules/es6.typed.float32-array":378,"../modules/es6.typed.float64-array":379,"../modules/es6.typed.int16-array":380,"../modules/es6.typed.int32-array":381,"../modules/es6.typed.int8-array":382,"../modules/es6.typed.uint16-array":383,"../modules/es6.typed.uint32-array":384,"../modules/es6.typed.uint8-array":385,"../modules/es6.typed.uint8-clamped-array":386,"../modules/es6.weak-map":387,"../modules/es6.weak-set":388}],101:[function(require,module,exports){
 require('../../modules/es7.array.flat-map');
 module.exports = require('../../modules/_core').Array.flatMap;
 
-},{"../../modules/_core":152,"../../modules/es7.array.flat-map":392}],105:[function(require,module,exports){
+},{"../../modules/_core":149,"../../modules/es7.array.flat-map":389}],102:[function(require,module,exports){
 require('../../modules/es7.array.includes');
 module.exports = require('../../modules/_core').Array.includes;
 
-},{"../../modules/_core":152,"../../modules/es7.array.includes":393}],106:[function(require,module,exports){
+},{"../../modules/_core":149,"../../modules/es7.array.includes":390}],103:[function(require,module,exports){
 require('../../modules/es7.object.entries');
 module.exports = require('../../modules/_core').Object.entries;
 
-},{"../../modules/_core":152,"../../modules/es7.object.entries":394}],107:[function(require,module,exports){
+},{"../../modules/_core":149,"../../modules/es7.object.entries":391}],104:[function(require,module,exports){
 require('../../modules/es7.object.get-own-property-descriptors');
 module.exports = require('../../modules/_core').Object.getOwnPropertyDescriptors;
 
-},{"../../modules/_core":152,"../../modules/es7.object.get-own-property-descriptors":395}],108:[function(require,module,exports){
+},{"../../modules/_core":149,"../../modules/es7.object.get-own-property-descriptors":392}],105:[function(require,module,exports){
 require('../../modules/es7.object.values');
 module.exports = require('../../modules/_core').Object.values;
 
-},{"../../modules/_core":152,"../../modules/es7.object.values":396}],109:[function(require,module,exports){
+},{"../../modules/_core":149,"../../modules/es7.object.values":393}],106:[function(require,module,exports){
 'use strict';
 require('../../modules/es6.promise');
 require('../../modules/es7.promise.finally');
 module.exports = require('../../modules/_core').Promise['finally'];
 
-},{"../../modules/_core":152,"../../modules/es6.promise":332,"../../modules/es7.promise.finally":397}],110:[function(require,module,exports){
+},{"../../modules/_core":149,"../../modules/es6.promise":329,"../../modules/es7.promise.finally":394}],107:[function(require,module,exports){
 require('../../modules/es7.string.pad-end');
 module.exports = require('../../modules/_core').String.padEnd;
 
-},{"../../modules/_core":152,"../../modules/es7.string.pad-end":398}],111:[function(require,module,exports){
+},{"../../modules/_core":149,"../../modules/es7.string.pad-end":395}],108:[function(require,module,exports){
 require('../../modules/es7.string.pad-start');
 module.exports = require('../../modules/_core').String.padStart;
 
-},{"../../modules/_core":152,"../../modules/es7.string.pad-start":399}],112:[function(require,module,exports){
+},{"../../modules/_core":149,"../../modules/es7.string.pad-start":396}],109:[function(require,module,exports){
 require('../../modules/es7.string.trim-right');
 module.exports = require('../../modules/_core').String.trimRight;
 
-},{"../../modules/_core":152,"../../modules/es7.string.trim-right":401}],113:[function(require,module,exports){
+},{"../../modules/_core":149,"../../modules/es7.string.trim-right":398}],110:[function(require,module,exports){
 require('../../modules/es7.string.trim-left');
 module.exports = require('../../modules/_core').String.trimLeft;
 
-},{"../../modules/_core":152,"../../modules/es7.string.trim-left":400}],114:[function(require,module,exports){
+},{"../../modules/_core":149,"../../modules/es7.string.trim-left":397}],111:[function(require,module,exports){
 require('../../modules/es7.symbol.async-iterator');
 module.exports = require('../../modules/_wks-ext').f('asyncIterator');
 
-},{"../../modules/_wks-ext":251,"../../modules/es7.symbol.async-iterator":402}],115:[function(require,module,exports){
+},{"../../modules/_wks-ext":248,"../../modules/es7.symbol.async-iterator":399}],112:[function(require,module,exports){
 require('../modules/es7.global');
 module.exports = require('../modules/_core').global;
 
-},{"../modules/_core":118,"../modules/es7.global":132}],116:[function(require,module,exports){
+},{"../modules/_core":115,"../modules/es7.global":129}],113:[function(require,module,exports){
 module.exports = function (it) {
   if (typeof it != 'function') throw TypeError(it + ' is not a function!');
   return it;
 };
 
-},{}],117:[function(require,module,exports){
+},{}],114:[function(require,module,exports){
 var isObject = require('./_is-object');
 module.exports = function (it) {
   if (!isObject(it)) throw TypeError(it + ' is not an object!');
   return it;
 };
 
-},{"./_is-object":128}],118:[function(require,module,exports){
+},{"./_is-object":125}],115:[function(require,module,exports){
 var core = module.exports = { version: '2.6.12' };
 if (typeof __e == 'number') __e = core; // eslint-disable-line no-undef
 
-},{}],119:[function(require,module,exports){
+},{}],116:[function(require,module,exports){
 // optional / simple context binding
 var aFunction = require('./_a-function');
 module.exports = function (fn, that, length) {
@@ -15880,13 +13643,13 @@ module.exports = function (fn, that, length) {
   };
 };
 
-},{"./_a-function":116}],120:[function(require,module,exports){
+},{"./_a-function":113}],117:[function(require,module,exports){
 // Thank's IE8 for his funny defineProperty
 module.exports = !require('./_fails')(function () {
   return Object.defineProperty({}, 'a', { get: function () { return 7; } }).a != 7;
 });
 
-},{"./_fails":123}],121:[function(require,module,exports){
+},{"./_fails":120}],118:[function(require,module,exports){
 var isObject = require('./_is-object');
 var document = require('./_global').document;
 // typeof document.createElement is 'object' in old IE
@@ -15895,7 +13658,7 @@ module.exports = function (it) {
   return is ? document.createElement(it) : {};
 };
 
-},{"./_global":124,"./_is-object":128}],122:[function(require,module,exports){
+},{"./_global":121,"./_is-object":125}],119:[function(require,module,exports){
 var global = require('./_global');
 var core = require('./_core');
 var ctx = require('./_ctx');
@@ -15959,7 +13722,7 @@ $export.U = 64;  // safe
 $export.R = 128; // real proto method for `library`
 module.exports = $export;
 
-},{"./_core":118,"./_ctx":119,"./_global":124,"./_has":125,"./_hide":126}],123:[function(require,module,exports){
+},{"./_core":115,"./_ctx":116,"./_global":121,"./_has":122,"./_hide":123}],120:[function(require,module,exports){
 module.exports = function (exec) {
   try {
     return !!exec();
@@ -15968,7 +13731,7 @@ module.exports = function (exec) {
   }
 };
 
-},{}],124:[function(require,module,exports){
+},{}],121:[function(require,module,exports){
 // https://github.com/zloirock/core-js/issues/86#issuecomment-115759028
 var global = module.exports = typeof window != 'undefined' && window.Math == Math
   ? window : typeof self != 'undefined' && self.Math == Math ? self
@@ -15976,13 +13739,13 @@ var global = module.exports = typeof window != 'undefined' && window.Math == Mat
   : Function('return this')();
 if (typeof __g == 'number') __g = global; // eslint-disable-line no-undef
 
-},{}],125:[function(require,module,exports){
+},{}],122:[function(require,module,exports){
 var hasOwnProperty = {}.hasOwnProperty;
 module.exports = function (it, key) {
   return hasOwnProperty.call(it, key);
 };
 
-},{}],126:[function(require,module,exports){
+},{}],123:[function(require,module,exports){
 var dP = require('./_object-dp');
 var createDesc = require('./_property-desc');
 module.exports = require('./_descriptors') ? function (object, key, value) {
@@ -15992,17 +13755,17 @@ module.exports = require('./_descriptors') ? function (object, key, value) {
   return object;
 };
 
-},{"./_descriptors":120,"./_object-dp":129,"./_property-desc":130}],127:[function(require,module,exports){
+},{"./_descriptors":117,"./_object-dp":126,"./_property-desc":127}],124:[function(require,module,exports){
 module.exports = !require('./_descriptors') && !require('./_fails')(function () {
   return Object.defineProperty(require('./_dom-create')('div'), 'a', { get: function () { return 7; } }).a != 7;
 });
 
-},{"./_descriptors":120,"./_dom-create":121,"./_fails":123}],128:[function(require,module,exports){
+},{"./_descriptors":117,"./_dom-create":118,"./_fails":120}],125:[function(require,module,exports){
 module.exports = function (it) {
   return typeof it === 'object' ? it !== null : typeof it === 'function';
 };
 
-},{}],129:[function(require,module,exports){
+},{}],126:[function(require,module,exports){
 var anObject = require('./_an-object');
 var IE8_DOM_DEFINE = require('./_ie8-dom-define');
 var toPrimitive = require('./_to-primitive');
@@ -16020,7 +13783,7 @@ exports.f = require('./_descriptors') ? Object.defineProperty : function defineP
   return O;
 };
 
-},{"./_an-object":117,"./_descriptors":120,"./_ie8-dom-define":127,"./_to-primitive":131}],130:[function(require,module,exports){
+},{"./_an-object":114,"./_descriptors":117,"./_ie8-dom-define":124,"./_to-primitive":128}],127:[function(require,module,exports){
 module.exports = function (bitmap, value) {
   return {
     enumerable: !(bitmap & 1),
@@ -16030,7 +13793,7 @@ module.exports = function (bitmap, value) {
   };
 };
 
-},{}],131:[function(require,module,exports){
+},{}],128:[function(require,module,exports){
 // 7.1.1 ToPrimitive(input [, PreferredType])
 var isObject = require('./_is-object');
 // instead of the ES6 spec version, we didn't implement @@toPrimitive case
@@ -16044,22 +13807,22 @@ module.exports = function (it, S) {
   throw TypeError("Can't convert object to primitive value");
 };
 
-},{"./_is-object":128}],132:[function(require,module,exports){
+},{"./_is-object":125}],129:[function(require,module,exports){
 // https://github.com/tc39/proposal-global
 var $export = require('./_export');
 
 $export($export.G, { global: require('./_global') });
 
-},{"./_export":122,"./_global":124}],133:[function(require,module,exports){
-arguments[4][116][0].apply(exports,arguments)
-},{"dup":116}],134:[function(require,module,exports){
+},{"./_export":119,"./_global":121}],130:[function(require,module,exports){
+arguments[4][113][0].apply(exports,arguments)
+},{"dup":113}],131:[function(require,module,exports){
 var cof = require('./_cof');
 module.exports = function (it, msg) {
   if (typeof it != 'number' && cof(it) != 'Number') throw TypeError(msg);
   return +it;
 };
 
-},{"./_cof":148}],135:[function(require,module,exports){
+},{"./_cof":145}],132:[function(require,module,exports){
 // 22.1.3.31 Array.prototype[@@unscopables]
 var UNSCOPABLES = require('./_wks')('unscopables');
 var ArrayProto = Array.prototype;
@@ -16068,7 +13831,7 @@ module.exports = function (key) {
   ArrayProto[UNSCOPABLES][key] = true;
 };
 
-},{"./_hide":172,"./_wks":252}],136:[function(require,module,exports){
+},{"./_hide":169,"./_wks":249}],133:[function(require,module,exports){
 'use strict';
 var at = require('./_string-at')(true);
 
@@ -16078,16 +13841,16 @@ module.exports = function (S, index, unicode) {
   return index + (unicode ? at(S, index).length : 1);
 };
 
-},{"./_string-at":229}],137:[function(require,module,exports){
+},{"./_string-at":226}],134:[function(require,module,exports){
 module.exports = function (it, Constructor, name, forbiddenField) {
   if (!(it instanceof Constructor) || (forbiddenField !== undefined && forbiddenField in it)) {
     throw TypeError(name + ': incorrect invocation!');
   } return it;
 };
 
-},{}],138:[function(require,module,exports){
-arguments[4][117][0].apply(exports,arguments)
-},{"./_is-object":181,"dup":117}],139:[function(require,module,exports){
+},{}],135:[function(require,module,exports){
+arguments[4][114][0].apply(exports,arguments)
+},{"./_is-object":178,"dup":114}],136:[function(require,module,exports){
 // 22.1.3.3 Array.prototype.copyWithin(target, start, end = this.length)
 'use strict';
 var toObject = require('./_to-object');
@@ -16115,7 +13878,7 @@ module.exports = [].copyWithin || function copyWithin(target /* = 0 */, start /*
   } return O;
 };
 
-},{"./_to-absolute-index":237,"./_to-length":241,"./_to-object":242}],140:[function(require,module,exports){
+},{"./_to-absolute-index":234,"./_to-length":238,"./_to-object":239}],137:[function(require,module,exports){
 // 22.1.3.6 Array.prototype.fill(value, start = 0, end = this.length)
 'use strict';
 var toObject = require('./_to-object');
@@ -16132,7 +13895,7 @@ module.exports = function fill(value /* , start = 0, end = @length */) {
   return O;
 };
 
-},{"./_to-absolute-index":237,"./_to-length":241,"./_to-object":242}],141:[function(require,module,exports){
+},{"./_to-absolute-index":234,"./_to-length":238,"./_to-object":239}],138:[function(require,module,exports){
 // false -> Array#indexOf
 // true  -> Array#includes
 var toIObject = require('./_to-iobject');
@@ -16157,7 +13920,7 @@ module.exports = function (IS_INCLUDES) {
   };
 };
 
-},{"./_to-absolute-index":237,"./_to-iobject":240,"./_to-length":241}],142:[function(require,module,exports){
+},{"./_to-absolute-index":234,"./_to-iobject":237,"./_to-length":238}],139:[function(require,module,exports){
 // 0 -> Array#forEach
 // 1 -> Array#map
 // 2 -> Array#filter
@@ -16203,7 +13966,7 @@ module.exports = function (TYPE, $create) {
   };
 };
 
-},{"./_array-species-create":145,"./_ctx":154,"./_iobject":177,"./_to-length":241,"./_to-object":242}],143:[function(require,module,exports){
+},{"./_array-species-create":142,"./_ctx":151,"./_iobject":174,"./_to-length":238,"./_to-object":239}],140:[function(require,module,exports){
 var aFunction = require('./_a-function');
 var toObject = require('./_to-object');
 var IObject = require('./_iobject');
@@ -16233,7 +13996,7 @@ module.exports = function (that, callbackfn, aLen, memo, isRight) {
   return memo;
 };
 
-},{"./_a-function":133,"./_iobject":177,"./_to-length":241,"./_to-object":242}],144:[function(require,module,exports){
+},{"./_a-function":130,"./_iobject":174,"./_to-length":238,"./_to-object":239}],141:[function(require,module,exports){
 var isObject = require('./_is-object');
 var isArray = require('./_is-array');
 var SPECIES = require('./_wks')('species');
@@ -16251,7 +14014,7 @@ module.exports = function (original) {
   } return C === undefined ? Array : C;
 };
 
-},{"./_is-array":179,"./_is-object":181,"./_wks":252}],145:[function(require,module,exports){
+},{"./_is-array":176,"./_is-object":178,"./_wks":249}],142:[function(require,module,exports){
 // 9.4.2.3 ArraySpeciesCreate(originalArray, length)
 var speciesConstructor = require('./_array-species-constructor');
 
@@ -16259,7 +14022,7 @@ module.exports = function (original, length) {
   return new (speciesConstructor(original))(length);
 };
 
-},{"./_array-species-constructor":144}],146:[function(require,module,exports){
+},{"./_array-species-constructor":141}],143:[function(require,module,exports){
 'use strict';
 var aFunction = require('./_a-function');
 var isObject = require('./_is-object');
@@ -16286,7 +14049,7 @@ module.exports = Function.bind || function bind(that /* , ...args */) {
   return bound;
 };
 
-},{"./_a-function":133,"./_invoke":176,"./_is-object":181}],147:[function(require,module,exports){
+},{"./_a-function":130,"./_invoke":173,"./_is-object":178}],144:[function(require,module,exports){
 // getting tag from 19.1.3.6 Object.prototype.toString()
 var cof = require('./_cof');
 var TAG = require('./_wks')('toStringTag');
@@ -16311,14 +14074,14 @@ module.exports = function (it) {
     : (B = cof(O)) == 'Object' && typeof O.callee == 'function' ? 'Arguments' : B;
 };
 
-},{"./_cof":148,"./_wks":252}],148:[function(require,module,exports){
+},{"./_cof":145,"./_wks":249}],145:[function(require,module,exports){
 var toString = {}.toString;
 
 module.exports = function (it) {
   return toString.call(it).slice(8, -1);
 };
 
-},{}],149:[function(require,module,exports){
+},{}],146:[function(require,module,exports){
 'use strict';
 var dP = require('./_object-dp').f;
 var create = require('./_object-create');
@@ -16464,7 +14227,7 @@ module.exports = {
   }
 };
 
-},{"./_an-instance":137,"./_ctx":154,"./_descriptors":158,"./_for-of":168,"./_iter-define":185,"./_iter-step":187,"./_meta":194,"./_object-create":198,"./_object-dp":199,"./_redefine-all":217,"./_set-species":223,"./_validate-collection":249}],150:[function(require,module,exports){
+},{"./_an-instance":134,"./_ctx":151,"./_descriptors":155,"./_for-of":165,"./_iter-define":182,"./_iter-step":184,"./_meta":191,"./_object-create":195,"./_object-dp":196,"./_redefine-all":214,"./_set-species":220,"./_validate-collection":246}],147:[function(require,module,exports){
 'use strict';
 var redefineAll = require('./_redefine-all');
 var getWeak = require('./_meta').getWeak;
@@ -16551,7 +14314,7 @@ module.exports = {
   ufstore: uncaughtFrozenStore
 };
 
-},{"./_an-instance":137,"./_an-object":138,"./_array-methods":142,"./_for-of":168,"./_has":171,"./_is-object":181,"./_meta":194,"./_redefine-all":217,"./_validate-collection":249}],151:[function(require,module,exports){
+},{"./_an-instance":134,"./_an-object":135,"./_array-methods":139,"./_for-of":165,"./_has":168,"./_is-object":178,"./_meta":191,"./_redefine-all":214,"./_validate-collection":246}],148:[function(require,module,exports){
 'use strict';
 var global = require('./_global');
 var $export = require('./_export');
@@ -16638,9 +14401,9 @@ module.exports = function (NAME, wrapper, methods, common, IS_MAP, IS_WEAK) {
   return C;
 };
 
-},{"./_an-instance":137,"./_export":162,"./_fails":164,"./_for-of":168,"./_global":170,"./_inherit-if-required":175,"./_is-object":181,"./_iter-detect":186,"./_meta":194,"./_redefine":218,"./_redefine-all":217,"./_set-to-string-tag":224}],152:[function(require,module,exports){
-arguments[4][118][0].apply(exports,arguments)
-},{"dup":118}],153:[function(require,module,exports){
+},{"./_an-instance":134,"./_export":159,"./_fails":161,"./_for-of":165,"./_global":167,"./_inherit-if-required":172,"./_is-object":178,"./_iter-detect":183,"./_meta":191,"./_redefine":215,"./_redefine-all":214,"./_set-to-string-tag":221}],149:[function(require,module,exports){
+arguments[4][115][0].apply(exports,arguments)
+},{"dup":115}],150:[function(require,module,exports){
 'use strict';
 var $defineProperty = require('./_object-dp');
 var createDesc = require('./_property-desc');
@@ -16650,9 +14413,9 @@ module.exports = function (object, index, value) {
   else object[index] = value;
 };
 
-},{"./_object-dp":199,"./_property-desc":216}],154:[function(require,module,exports){
-arguments[4][119][0].apply(exports,arguments)
-},{"./_a-function":133,"dup":119}],155:[function(require,module,exports){
+},{"./_object-dp":196,"./_property-desc":213}],151:[function(require,module,exports){
+arguments[4][116][0].apply(exports,arguments)
+},{"./_a-function":130,"dup":116}],152:[function(require,module,exports){
 'use strict';
 // 20.3.4.36 / 15.9.5.43 Date.prototype.toISOString()
 var fails = require('./_fails');
@@ -16680,7 +14443,7 @@ module.exports = (fails(function () {
     ':' + lz(d.getUTCSeconds()) + '.' + (m > 99 ? m : '0' + lz(m)) + 'Z';
 } : $toISOString;
 
-},{"./_fails":164}],156:[function(require,module,exports){
+},{"./_fails":161}],153:[function(require,module,exports){
 'use strict';
 var anObject = require('./_an-object');
 var toPrimitive = require('./_to-primitive');
@@ -16691,24 +14454,24 @@ module.exports = function (hint) {
   return toPrimitive(anObject(this), hint != NUMBER);
 };
 
-},{"./_an-object":138,"./_to-primitive":243}],157:[function(require,module,exports){
+},{"./_an-object":135,"./_to-primitive":240}],154:[function(require,module,exports){
 // 7.2.1 RequireObjectCoercible(argument)
 module.exports = function (it) {
   if (it == undefined) throw TypeError("Can't call method on  " + it);
   return it;
 };
 
-},{}],158:[function(require,module,exports){
-arguments[4][120][0].apply(exports,arguments)
-},{"./_fails":164,"dup":120}],159:[function(require,module,exports){
-arguments[4][121][0].apply(exports,arguments)
-},{"./_global":170,"./_is-object":181,"dup":121}],160:[function(require,module,exports){
+},{}],155:[function(require,module,exports){
+arguments[4][117][0].apply(exports,arguments)
+},{"./_fails":161,"dup":117}],156:[function(require,module,exports){
+arguments[4][118][0].apply(exports,arguments)
+},{"./_global":167,"./_is-object":178,"dup":118}],157:[function(require,module,exports){
 // IE 8- don't enum bug keys
 module.exports = (
   'constructor,hasOwnProperty,isPrototypeOf,propertyIsEnumerable,toLocaleString,toString,valueOf'
 ).split(',');
 
-},{}],161:[function(require,module,exports){
+},{}],158:[function(require,module,exports){
 // all enumerable object keys, includes symbols
 var getKeys = require('./_object-keys');
 var gOPS = require('./_object-gops');
@@ -16725,7 +14488,7 @@ module.exports = function (it) {
   } return result;
 };
 
-},{"./_object-gops":204,"./_object-keys":207,"./_object-pie":208}],162:[function(require,module,exports){
+},{"./_object-gops":201,"./_object-keys":204,"./_object-pie":205}],159:[function(require,module,exports){
 var global = require('./_global');
 var core = require('./_core');
 var hide = require('./_hide');
@@ -16770,7 +14533,7 @@ $export.U = 64;  // safe
 $export.R = 128; // real proto method for `library`
 module.exports = $export;
 
-},{"./_core":152,"./_ctx":154,"./_global":170,"./_hide":172,"./_redefine":218}],163:[function(require,module,exports){
+},{"./_core":149,"./_ctx":151,"./_global":167,"./_hide":169,"./_redefine":215}],160:[function(require,module,exports){
 var MATCH = require('./_wks')('match');
 module.exports = function (KEY) {
   var re = /./;
@@ -16784,9 +14547,9 @@ module.exports = function (KEY) {
   } return true;
 };
 
-},{"./_wks":252}],164:[function(require,module,exports){
-arguments[4][123][0].apply(exports,arguments)
-},{"dup":123}],165:[function(require,module,exports){
+},{"./_wks":249}],161:[function(require,module,exports){
+arguments[4][120][0].apply(exports,arguments)
+},{"dup":120}],162:[function(require,module,exports){
 'use strict';
 require('./es6.regexp.exec');
 var redefine = require('./_redefine');
@@ -16884,7 +14647,7 @@ module.exports = function (KEY, length, exec) {
   }
 };
 
-},{"./_defined":157,"./_fails":164,"./_hide":172,"./_redefine":218,"./_regexp-exec":220,"./_wks":252,"./es6.regexp.exec":348}],166:[function(require,module,exports){
+},{"./_defined":154,"./_fails":161,"./_hide":169,"./_redefine":215,"./_regexp-exec":217,"./_wks":249,"./es6.regexp.exec":345}],163:[function(require,module,exports){
 'use strict';
 // 21.2.5.3 get RegExp.prototype.flags
 var anObject = require('./_an-object');
@@ -16899,7 +14662,7 @@ module.exports = function () {
   return result;
 };
 
-},{"./_an-object":138}],167:[function(require,module,exports){
+},{"./_an-object":135}],164:[function(require,module,exports){
 'use strict';
 // https://tc39.github.io/proposal-flatMap/#sec-FlattenIntoArray
 var isArray = require('./_is-array');
@@ -16940,7 +14703,7 @@ function flattenIntoArray(target, original, source, sourceLen, start, depth, map
 
 module.exports = flattenIntoArray;
 
-},{"./_ctx":154,"./_is-array":179,"./_is-object":181,"./_to-length":241,"./_wks":252}],168:[function(require,module,exports){
+},{"./_ctx":151,"./_is-array":176,"./_is-object":178,"./_to-length":238,"./_wks":249}],165:[function(require,module,exports){
 var ctx = require('./_ctx');
 var call = require('./_iter-call');
 var isArrayIter = require('./_is-array-iter');
@@ -16967,22 +14730,22 @@ var exports = module.exports = function (iterable, entries, fn, that, ITERATOR) 
 exports.BREAK = BREAK;
 exports.RETURN = RETURN;
 
-},{"./_an-object":138,"./_ctx":154,"./_is-array-iter":178,"./_iter-call":183,"./_to-length":241,"./core.get-iterator-method":253}],169:[function(require,module,exports){
+},{"./_an-object":135,"./_ctx":151,"./_is-array-iter":175,"./_iter-call":180,"./_to-length":238,"./core.get-iterator-method":250}],166:[function(require,module,exports){
 module.exports = require('./_shared')('native-function-to-string', Function.toString);
 
-},{"./_shared":226}],170:[function(require,module,exports){
-arguments[4][124][0].apply(exports,arguments)
-},{"dup":124}],171:[function(require,module,exports){
-arguments[4][125][0].apply(exports,arguments)
-},{"dup":125}],172:[function(require,module,exports){
-arguments[4][126][0].apply(exports,arguments)
-},{"./_descriptors":158,"./_object-dp":199,"./_property-desc":216,"dup":126}],173:[function(require,module,exports){
+},{"./_shared":223}],167:[function(require,module,exports){
+arguments[4][121][0].apply(exports,arguments)
+},{"dup":121}],168:[function(require,module,exports){
+arguments[4][122][0].apply(exports,arguments)
+},{"dup":122}],169:[function(require,module,exports){
+arguments[4][123][0].apply(exports,arguments)
+},{"./_descriptors":155,"./_object-dp":196,"./_property-desc":213,"dup":123}],170:[function(require,module,exports){
 var document = require('./_global').document;
 module.exports = document && document.documentElement;
 
-},{"./_global":170}],174:[function(require,module,exports){
-arguments[4][127][0].apply(exports,arguments)
-},{"./_descriptors":158,"./_dom-create":159,"./_fails":164,"dup":127}],175:[function(require,module,exports){
+},{"./_global":167}],171:[function(require,module,exports){
+arguments[4][124][0].apply(exports,arguments)
+},{"./_descriptors":155,"./_dom-create":156,"./_fails":161,"dup":124}],172:[function(require,module,exports){
 var isObject = require('./_is-object');
 var setPrototypeOf = require('./_set-proto').set;
 module.exports = function (that, target, C) {
@@ -16993,7 +14756,7 @@ module.exports = function (that, target, C) {
   } return that;
 };
 
-},{"./_is-object":181,"./_set-proto":222}],176:[function(require,module,exports){
+},{"./_is-object":178,"./_set-proto":219}],173:[function(require,module,exports){
 // fast apply, http://jsperf.lnkit.com/fast-apply/5
 module.exports = function (fn, args, that) {
   var un = that === undefined;
@@ -17011,7 +14774,7 @@ module.exports = function (fn, args, that) {
   } return fn.apply(that, args);
 };
 
-},{}],177:[function(require,module,exports){
+},{}],174:[function(require,module,exports){
 // fallback for non-array-like ES3 and non-enumerable old V8 strings
 var cof = require('./_cof');
 // eslint-disable-next-line no-prototype-builtins
@@ -17019,7 +14782,7 @@ module.exports = Object('z').propertyIsEnumerable(0) ? Object : function (it) {
   return cof(it) == 'String' ? it.split('') : Object(it);
 };
 
-},{"./_cof":148}],178:[function(require,module,exports){
+},{"./_cof":145}],175:[function(require,module,exports){
 // check on default Array iterator
 var Iterators = require('./_iterators');
 var ITERATOR = require('./_wks')('iterator');
@@ -17029,14 +14792,14 @@ module.exports = function (it) {
   return it !== undefined && (Iterators.Array === it || ArrayProto[ITERATOR] === it);
 };
 
-},{"./_iterators":188,"./_wks":252}],179:[function(require,module,exports){
+},{"./_iterators":185,"./_wks":249}],176:[function(require,module,exports){
 // 7.2.2 IsArray(argument)
 var cof = require('./_cof');
 module.exports = Array.isArray || function isArray(arg) {
   return cof(arg) == 'Array';
 };
 
-},{"./_cof":148}],180:[function(require,module,exports){
+},{"./_cof":145}],177:[function(require,module,exports){
 // 20.1.2.3 Number.isInteger(number)
 var isObject = require('./_is-object');
 var floor = Math.floor;
@@ -17044,9 +14807,9 @@ module.exports = function isInteger(it) {
   return !isObject(it) && isFinite(it) && floor(it) === it;
 };
 
-},{"./_is-object":181}],181:[function(require,module,exports){
-arguments[4][128][0].apply(exports,arguments)
-},{"dup":128}],182:[function(require,module,exports){
+},{"./_is-object":178}],178:[function(require,module,exports){
+arguments[4][125][0].apply(exports,arguments)
+},{"dup":125}],179:[function(require,module,exports){
 // 7.2.8 IsRegExp(argument)
 var isObject = require('./_is-object');
 var cof = require('./_cof');
@@ -17056,7 +14819,7 @@ module.exports = function (it) {
   return isObject(it) && ((isRegExp = it[MATCH]) !== undefined ? !!isRegExp : cof(it) == 'RegExp');
 };
 
-},{"./_cof":148,"./_is-object":181,"./_wks":252}],183:[function(require,module,exports){
+},{"./_cof":145,"./_is-object":178,"./_wks":249}],180:[function(require,module,exports){
 // call something on iterator step with safe closing on error
 var anObject = require('./_an-object');
 module.exports = function (iterator, fn, value, entries) {
@@ -17070,7 +14833,7 @@ module.exports = function (iterator, fn, value, entries) {
   }
 };
 
-},{"./_an-object":138}],184:[function(require,module,exports){
+},{"./_an-object":135}],181:[function(require,module,exports){
 'use strict';
 var create = require('./_object-create');
 var descriptor = require('./_property-desc');
@@ -17085,7 +14848,7 @@ module.exports = function (Constructor, NAME, next) {
   setToStringTag(Constructor, NAME + ' Iterator');
 };
 
-},{"./_hide":172,"./_object-create":198,"./_property-desc":216,"./_set-to-string-tag":224,"./_wks":252}],185:[function(require,module,exports){
+},{"./_hide":169,"./_object-create":195,"./_property-desc":213,"./_set-to-string-tag":221,"./_wks":249}],182:[function(require,module,exports){
 'use strict';
 var LIBRARY = require('./_library');
 var $export = require('./_export');
@@ -17156,7 +14919,7 @@ module.exports = function (Base, NAME, Constructor, next, DEFAULT, IS_SET, FORCE
   return methods;
 };
 
-},{"./_export":162,"./_hide":172,"./_iter-create":184,"./_iterators":188,"./_library":189,"./_object-gpo":205,"./_redefine":218,"./_set-to-string-tag":224,"./_wks":252}],186:[function(require,module,exports){
+},{"./_export":159,"./_hide":169,"./_iter-create":181,"./_iterators":185,"./_library":186,"./_object-gpo":202,"./_redefine":215,"./_set-to-string-tag":221,"./_wks":249}],183:[function(require,module,exports){
 var ITERATOR = require('./_wks')('iterator');
 var SAFE_CLOSING = false;
 
@@ -17180,18 +14943,18 @@ module.exports = function (exec, skipClosing) {
   return safe;
 };
 
-},{"./_wks":252}],187:[function(require,module,exports){
+},{"./_wks":249}],184:[function(require,module,exports){
 module.exports = function (done, value) {
   return { value: value, done: !!done };
 };
 
-},{}],188:[function(require,module,exports){
+},{}],185:[function(require,module,exports){
 module.exports = {};
 
-},{}],189:[function(require,module,exports){
+},{}],186:[function(require,module,exports){
 module.exports = false;
 
-},{}],190:[function(require,module,exports){
+},{}],187:[function(require,module,exports){
 // 20.2.2.14 Math.expm1(x)
 var $expm1 = Math.expm1;
 module.exports = (!$expm1
@@ -17203,7 +14966,7 @@ module.exports = (!$expm1
   return (x = +x) == 0 ? x : x > -1e-6 && x < 1e-6 ? x + x * x / 2 : Math.exp(x) - 1;
 } : $expm1;
 
-},{}],191:[function(require,module,exports){
+},{}],188:[function(require,module,exports){
 // 20.2.2.16 Math.fround(x)
 var sign = require('./_math-sign');
 var pow = Math.pow;
@@ -17228,20 +14991,20 @@ module.exports = Math.fround || function fround(x) {
   return $sign * result;
 };
 
-},{"./_math-sign":193}],192:[function(require,module,exports){
+},{"./_math-sign":190}],189:[function(require,module,exports){
 // 20.2.2.20 Math.log1p(x)
 module.exports = Math.log1p || function log1p(x) {
   return (x = +x) > -1e-8 && x < 1e-8 ? x - x * x / 2 : Math.log(1 + x);
 };
 
-},{}],193:[function(require,module,exports){
+},{}],190:[function(require,module,exports){
 // 20.2.2.28 Math.sign(x)
 module.exports = Math.sign || function sign(x) {
   // eslint-disable-next-line no-self-compare
   return (x = +x) == 0 || x != x ? x : x < 0 ? -1 : 1;
 };
 
-},{}],194:[function(require,module,exports){
+},{}],191:[function(require,module,exports){
 var META = require('./_uid')('meta');
 var isObject = require('./_is-object');
 var has = require('./_has');
@@ -17296,7 +15059,7 @@ var meta = module.exports = {
   onFreeze: onFreeze
 };
 
-},{"./_fails":164,"./_has":171,"./_is-object":181,"./_object-dp":199,"./_uid":247}],195:[function(require,module,exports){
+},{"./_fails":161,"./_has":168,"./_is-object":178,"./_object-dp":196,"./_uid":244}],192:[function(require,module,exports){
 var global = require('./_global');
 var macrotask = require('./_task').set;
 var Observer = global.MutationObserver || global.WebKitMutationObserver;
@@ -17367,7 +15130,7 @@ module.exports = function () {
   };
 };
 
-},{"./_cof":148,"./_global":170,"./_task":236}],196:[function(require,module,exports){
+},{"./_cof":145,"./_global":167,"./_task":233}],193:[function(require,module,exports){
 'use strict';
 // 25.4.1.5 NewPromiseCapability(C)
 var aFunction = require('./_a-function');
@@ -17387,7 +15150,7 @@ module.exports.f = function (C) {
   return new PromiseCapability(C);
 };
 
-},{"./_a-function":133}],197:[function(require,module,exports){
+},{"./_a-function":130}],194:[function(require,module,exports){
 'use strict';
 // 19.1.2.1 Object.assign(target, source, ...)
 var DESCRIPTORS = require('./_descriptors');
@@ -17427,7 +15190,7 @@ module.exports = !$assign || require('./_fails')(function () {
   } return T;
 } : $assign;
 
-},{"./_descriptors":158,"./_fails":164,"./_iobject":177,"./_object-gops":204,"./_object-keys":207,"./_object-pie":208,"./_to-object":242}],198:[function(require,module,exports){
+},{"./_descriptors":155,"./_fails":161,"./_iobject":174,"./_object-gops":201,"./_object-keys":204,"./_object-pie":205,"./_to-object":239}],195:[function(require,module,exports){
 // 19.1.2.2 / 15.2.3.5 Object.create(O [, Properties])
 var anObject = require('./_an-object');
 var dPs = require('./_object-dps');
@@ -17470,9 +15233,9 @@ module.exports = Object.create || function create(O, Properties) {
   return Properties === undefined ? result : dPs(result, Properties);
 };
 
-},{"./_an-object":138,"./_dom-create":159,"./_enum-bug-keys":160,"./_html":173,"./_object-dps":200,"./_shared-key":225}],199:[function(require,module,exports){
-arguments[4][129][0].apply(exports,arguments)
-},{"./_an-object":138,"./_descriptors":158,"./_ie8-dom-define":174,"./_to-primitive":243,"dup":129}],200:[function(require,module,exports){
+},{"./_an-object":135,"./_dom-create":156,"./_enum-bug-keys":157,"./_html":170,"./_object-dps":197,"./_shared-key":222}],196:[function(require,module,exports){
+arguments[4][126][0].apply(exports,arguments)
+},{"./_an-object":135,"./_descriptors":155,"./_ie8-dom-define":171,"./_to-primitive":240,"dup":126}],197:[function(require,module,exports){
 var dP = require('./_object-dp');
 var anObject = require('./_an-object');
 var getKeys = require('./_object-keys');
@@ -17487,7 +15250,7 @@ module.exports = require('./_descriptors') ? Object.defineProperties : function 
   return O;
 };
 
-},{"./_an-object":138,"./_descriptors":158,"./_object-dp":199,"./_object-keys":207}],201:[function(require,module,exports){
+},{"./_an-object":135,"./_descriptors":155,"./_object-dp":196,"./_object-keys":204}],198:[function(require,module,exports){
 var pIE = require('./_object-pie');
 var createDesc = require('./_property-desc');
 var toIObject = require('./_to-iobject');
@@ -17505,7 +15268,7 @@ exports.f = require('./_descriptors') ? gOPD : function getOwnPropertyDescriptor
   if (has(O, P)) return createDesc(!pIE.f.call(O, P), O[P]);
 };
 
-},{"./_descriptors":158,"./_has":171,"./_ie8-dom-define":174,"./_object-pie":208,"./_property-desc":216,"./_to-iobject":240,"./_to-primitive":243}],202:[function(require,module,exports){
+},{"./_descriptors":155,"./_has":168,"./_ie8-dom-define":171,"./_object-pie":205,"./_property-desc":213,"./_to-iobject":237,"./_to-primitive":240}],199:[function(require,module,exports){
 // fallback for IE11 buggy Object.getOwnPropertyNames with iframe and window
 var toIObject = require('./_to-iobject');
 var gOPN = require('./_object-gopn').f;
@@ -17526,7 +15289,7 @@ module.exports.f = function getOwnPropertyNames(it) {
   return windowNames && toString.call(it) == '[object Window]' ? getWindowNames(it) : gOPN(toIObject(it));
 };
 
-},{"./_object-gopn":203,"./_to-iobject":240}],203:[function(require,module,exports){
+},{"./_object-gopn":200,"./_to-iobject":237}],200:[function(require,module,exports){
 // 19.1.2.7 / 15.2.3.4 Object.getOwnPropertyNames(O)
 var $keys = require('./_object-keys-internal');
 var hiddenKeys = require('./_enum-bug-keys').concat('length', 'prototype');
@@ -17535,10 +15298,10 @@ exports.f = Object.getOwnPropertyNames || function getOwnPropertyNames(O) {
   return $keys(O, hiddenKeys);
 };
 
-},{"./_enum-bug-keys":160,"./_object-keys-internal":206}],204:[function(require,module,exports){
+},{"./_enum-bug-keys":157,"./_object-keys-internal":203}],201:[function(require,module,exports){
 exports.f = Object.getOwnPropertySymbols;
 
-},{}],205:[function(require,module,exports){
+},{}],202:[function(require,module,exports){
 // 19.1.2.9 / 15.2.3.2 Object.getPrototypeOf(O)
 var has = require('./_has');
 var toObject = require('./_to-object');
@@ -17553,7 +15316,7 @@ module.exports = Object.getPrototypeOf || function (O) {
   } return O instanceof Object ? ObjectProto : null;
 };
 
-},{"./_has":171,"./_shared-key":225,"./_to-object":242}],206:[function(require,module,exports){
+},{"./_has":168,"./_shared-key":222,"./_to-object":239}],203:[function(require,module,exports){
 var has = require('./_has');
 var toIObject = require('./_to-iobject');
 var arrayIndexOf = require('./_array-includes')(false);
@@ -17572,7 +15335,7 @@ module.exports = function (object, names) {
   return result;
 };
 
-},{"./_array-includes":141,"./_has":171,"./_shared-key":225,"./_to-iobject":240}],207:[function(require,module,exports){
+},{"./_array-includes":138,"./_has":168,"./_shared-key":222,"./_to-iobject":237}],204:[function(require,module,exports){
 // 19.1.2.14 / 15.2.3.14 Object.keys(O)
 var $keys = require('./_object-keys-internal');
 var enumBugKeys = require('./_enum-bug-keys');
@@ -17581,10 +15344,10 @@ module.exports = Object.keys || function keys(O) {
   return $keys(O, enumBugKeys);
 };
 
-},{"./_enum-bug-keys":160,"./_object-keys-internal":206}],208:[function(require,module,exports){
+},{"./_enum-bug-keys":157,"./_object-keys-internal":203}],205:[function(require,module,exports){
 exports.f = {}.propertyIsEnumerable;
 
-},{}],209:[function(require,module,exports){
+},{}],206:[function(require,module,exports){
 // most Object methods by ES6 should accept primitives
 var $export = require('./_export');
 var core = require('./_core');
@@ -17596,7 +15359,7 @@ module.exports = function (KEY, exec) {
   $export($export.S + $export.F * fails(function () { fn(1); }), 'Object', exp);
 };
 
-},{"./_core":152,"./_export":162,"./_fails":164}],210:[function(require,module,exports){
+},{"./_core":149,"./_export":159,"./_fails":161}],207:[function(require,module,exports){
 var DESCRIPTORS = require('./_descriptors');
 var getKeys = require('./_object-keys');
 var toIObject = require('./_to-iobject');
@@ -17619,7 +15382,7 @@ module.exports = function (isEntries) {
   };
 };
 
-},{"./_descriptors":158,"./_object-keys":207,"./_object-pie":208,"./_to-iobject":240}],211:[function(require,module,exports){
+},{"./_descriptors":155,"./_object-keys":204,"./_object-pie":205,"./_to-iobject":237}],208:[function(require,module,exports){
 // all object keys, includes non-enumerable and symbols
 var gOPN = require('./_object-gopn');
 var gOPS = require('./_object-gops');
@@ -17631,7 +15394,7 @@ module.exports = Reflect && Reflect.ownKeys || function ownKeys(it) {
   return getSymbols ? keys.concat(getSymbols(it)) : keys;
 };
 
-},{"./_an-object":138,"./_global":170,"./_object-gopn":203,"./_object-gops":204}],212:[function(require,module,exports){
+},{"./_an-object":135,"./_global":167,"./_object-gopn":200,"./_object-gops":201}],209:[function(require,module,exports){
 var $parseFloat = require('./_global').parseFloat;
 var $trim = require('./_string-trim').trim;
 
@@ -17641,7 +15404,7 @@ module.exports = 1 / $parseFloat(require('./_string-ws') + '-0') !== -Infinity ?
   return result === 0 && string.charAt(0) == '-' ? -0 : result;
 } : $parseFloat;
 
-},{"./_global":170,"./_string-trim":234,"./_string-ws":235}],213:[function(require,module,exports){
+},{"./_global":167,"./_string-trim":231,"./_string-ws":232}],210:[function(require,module,exports){
 var $parseInt = require('./_global').parseInt;
 var $trim = require('./_string-trim').trim;
 var ws = require('./_string-ws');
@@ -17652,7 +15415,7 @@ module.exports = $parseInt(ws + '08') !== 8 || $parseInt(ws + '0x16') !== 22 ? f
   return $parseInt(string, (radix >>> 0) || (hex.test(string) ? 16 : 10));
 } : $parseInt;
 
-},{"./_global":170,"./_string-trim":234,"./_string-ws":235}],214:[function(require,module,exports){
+},{"./_global":167,"./_string-trim":231,"./_string-ws":232}],211:[function(require,module,exports){
 module.exports = function (exec) {
   try {
     return { e: false, v: exec() };
@@ -17661,7 +15424,7 @@ module.exports = function (exec) {
   }
 };
 
-},{}],215:[function(require,module,exports){
+},{}],212:[function(require,module,exports){
 var anObject = require('./_an-object');
 var isObject = require('./_is-object');
 var newPromiseCapability = require('./_new-promise-capability');
@@ -17675,16 +15438,16 @@ module.exports = function (C, x) {
   return promiseCapability.promise;
 };
 
-},{"./_an-object":138,"./_is-object":181,"./_new-promise-capability":196}],216:[function(require,module,exports){
-arguments[4][130][0].apply(exports,arguments)
-},{"dup":130}],217:[function(require,module,exports){
+},{"./_an-object":135,"./_is-object":178,"./_new-promise-capability":193}],213:[function(require,module,exports){
+arguments[4][127][0].apply(exports,arguments)
+},{"dup":127}],214:[function(require,module,exports){
 var redefine = require('./_redefine');
 module.exports = function (target, src, safe) {
   for (var key in src) redefine(target, key, src[key], safe);
   return target;
 };
 
-},{"./_redefine":218}],218:[function(require,module,exports){
+},{"./_redefine":215}],215:[function(require,module,exports){
 var global = require('./_global');
 var hide = require('./_hide');
 var has = require('./_has');
@@ -17717,7 +15480,7 @@ require('./_core').inspectSource = function (it) {
   return typeof this == 'function' && this[SRC] || $toString.call(this);
 });
 
-},{"./_core":152,"./_function-to-string":169,"./_global":170,"./_has":171,"./_hide":172,"./_uid":247}],219:[function(require,module,exports){
+},{"./_core":149,"./_function-to-string":166,"./_global":167,"./_has":168,"./_hide":169,"./_uid":244}],216:[function(require,module,exports){
 'use strict';
 
 var classof = require('./_classof');
@@ -17740,7 +15503,7 @@ module.exports = function (R, S) {
   return builtinExec.call(R, S);
 };
 
-},{"./_classof":147}],220:[function(require,module,exports){
+},{"./_classof":144}],217:[function(require,module,exports){
 'use strict';
 
 var regexpFlags = require('./_flags');
@@ -17800,14 +15563,14 @@ if (PATCH) {
 
 module.exports = patchedExec;
 
-},{"./_flags":166}],221:[function(require,module,exports){
+},{"./_flags":163}],218:[function(require,module,exports){
 // 7.2.9 SameValue(x, y)
 module.exports = Object.is || function is(x, y) {
   // eslint-disable-next-line no-self-compare
   return x === y ? x !== 0 || 1 / x === 1 / y : x != x && y != y;
 };
 
-},{}],222:[function(require,module,exports){
+},{}],219:[function(require,module,exports){
 // Works with __proto__ only. Old v8 can't work with null proto objects.
 /* eslint-disable no-proto */
 var isObject = require('./_is-object');
@@ -17834,7 +15597,7 @@ module.exports = {
   check: check
 };
 
-},{"./_an-object":138,"./_ctx":154,"./_is-object":181,"./_object-gopd":201}],223:[function(require,module,exports){
+},{"./_an-object":135,"./_ctx":151,"./_is-object":178,"./_object-gopd":198}],220:[function(require,module,exports){
 'use strict';
 var global = require('./_global');
 var dP = require('./_object-dp');
@@ -17849,7 +15612,7 @@ module.exports = function (KEY) {
   });
 };
 
-},{"./_descriptors":158,"./_global":170,"./_object-dp":199,"./_wks":252}],224:[function(require,module,exports){
+},{"./_descriptors":155,"./_global":167,"./_object-dp":196,"./_wks":249}],221:[function(require,module,exports){
 var def = require('./_object-dp').f;
 var has = require('./_has');
 var TAG = require('./_wks')('toStringTag');
@@ -17858,14 +15621,14 @@ module.exports = function (it, tag, stat) {
   if (it && !has(it = stat ? it : it.prototype, TAG)) def(it, TAG, { configurable: true, value: tag });
 };
 
-},{"./_has":171,"./_object-dp":199,"./_wks":252}],225:[function(require,module,exports){
+},{"./_has":168,"./_object-dp":196,"./_wks":249}],222:[function(require,module,exports){
 var shared = require('./_shared')('keys');
 var uid = require('./_uid');
 module.exports = function (key) {
   return shared[key] || (shared[key] = uid(key));
 };
 
-},{"./_shared":226,"./_uid":247}],226:[function(require,module,exports){
+},{"./_shared":223,"./_uid":244}],223:[function(require,module,exports){
 var core = require('./_core');
 var global = require('./_global');
 var SHARED = '__core-js_shared__';
@@ -17879,7 +15642,7 @@ var store = global[SHARED] || (global[SHARED] = {});
   copyright: '© 2020 Denis Pushkarev (zloirock.ru)'
 });
 
-},{"./_core":152,"./_global":170,"./_library":189}],227:[function(require,module,exports){
+},{"./_core":149,"./_global":167,"./_library":186}],224:[function(require,module,exports){
 // 7.3.20 SpeciesConstructor(O, defaultConstructor)
 var anObject = require('./_an-object');
 var aFunction = require('./_a-function');
@@ -17890,7 +15653,7 @@ module.exports = function (O, D) {
   return C === undefined || (S = anObject(C)[SPECIES]) == undefined ? D : aFunction(S);
 };
 
-},{"./_a-function":133,"./_an-object":138,"./_wks":252}],228:[function(require,module,exports){
+},{"./_a-function":130,"./_an-object":135,"./_wks":249}],225:[function(require,module,exports){
 'use strict';
 var fails = require('./_fails');
 
@@ -17901,7 +15664,7 @@ module.exports = function (method, arg) {
   });
 };
 
-},{"./_fails":164}],229:[function(require,module,exports){
+},{"./_fails":161}],226:[function(require,module,exports){
 var toInteger = require('./_to-integer');
 var defined = require('./_defined');
 // true  -> String#at
@@ -17920,7 +15683,7 @@ module.exports = function (TO_STRING) {
   };
 };
 
-},{"./_defined":157,"./_to-integer":239}],230:[function(require,module,exports){
+},{"./_defined":154,"./_to-integer":236}],227:[function(require,module,exports){
 // helper for String#{startsWith, endsWith, includes}
 var isRegExp = require('./_is-regexp');
 var defined = require('./_defined');
@@ -17930,7 +15693,7 @@ module.exports = function (that, searchString, NAME) {
   return String(defined(that));
 };
 
-},{"./_defined":157,"./_is-regexp":182}],231:[function(require,module,exports){
+},{"./_defined":154,"./_is-regexp":179}],228:[function(require,module,exports){
 var $export = require('./_export');
 var fails = require('./_fails');
 var defined = require('./_defined');
@@ -17951,7 +15714,7 @@ module.exports = function (NAME, exec) {
   }), 'String', O);
 };
 
-},{"./_defined":157,"./_export":162,"./_fails":164}],232:[function(require,module,exports){
+},{"./_defined":154,"./_export":159,"./_fails":161}],229:[function(require,module,exports){
 // https://github.com/tc39/proposal-string-pad-start-end
 var toLength = require('./_to-length');
 var repeat = require('./_string-repeat');
@@ -17969,7 +15732,7 @@ module.exports = function (that, maxLength, fillString, left) {
   return left ? stringFiller + S : S + stringFiller;
 };
 
-},{"./_defined":157,"./_string-repeat":233,"./_to-length":241}],233:[function(require,module,exports){
+},{"./_defined":154,"./_string-repeat":230,"./_to-length":238}],230:[function(require,module,exports){
 'use strict';
 var toInteger = require('./_to-integer');
 var defined = require('./_defined');
@@ -17983,7 +15746,7 @@ module.exports = function repeat(count) {
   return res;
 };
 
-},{"./_defined":157,"./_to-integer":239}],234:[function(require,module,exports){
+},{"./_defined":154,"./_to-integer":236}],231:[function(require,module,exports){
 var $export = require('./_export');
 var defined = require('./_defined');
 var fails = require('./_fails');
@@ -18015,11 +15778,11 @@ var trim = exporter.trim = function (string, TYPE) {
 
 module.exports = exporter;
 
-},{"./_defined":157,"./_export":162,"./_fails":164,"./_string-ws":235}],235:[function(require,module,exports){
+},{"./_defined":154,"./_export":159,"./_fails":161,"./_string-ws":232}],232:[function(require,module,exports){
 module.exports = '\x09\x0A\x0B\x0C\x0D\x20\xA0\u1680\u180E\u2000\u2001\u2002\u2003' +
   '\u2004\u2005\u2006\u2007\u2008\u2009\u200A\u202F\u205F\u3000\u2028\u2029\uFEFF';
 
-},{}],236:[function(require,module,exports){
+},{}],233:[function(require,module,exports){
 var ctx = require('./_ctx');
 var invoke = require('./_invoke');
 var html = require('./_html');
@@ -18105,7 +15868,7 @@ module.exports = {
   clear: clearTask
 };
 
-},{"./_cof":148,"./_ctx":154,"./_dom-create":159,"./_global":170,"./_html":173,"./_invoke":176}],237:[function(require,module,exports){
+},{"./_cof":145,"./_ctx":151,"./_dom-create":156,"./_global":167,"./_html":170,"./_invoke":173}],234:[function(require,module,exports){
 var toInteger = require('./_to-integer');
 var max = Math.max;
 var min = Math.min;
@@ -18114,7 +15877,7 @@ module.exports = function (index, length) {
   return index < 0 ? max(index + length, 0) : min(index, length);
 };
 
-},{"./_to-integer":239}],238:[function(require,module,exports){
+},{"./_to-integer":236}],235:[function(require,module,exports){
 // https://tc39.github.io/ecma262/#sec-toindex
 var toInteger = require('./_to-integer');
 var toLength = require('./_to-length');
@@ -18126,7 +15889,7 @@ module.exports = function (it) {
   return length;
 };
 
-},{"./_to-integer":239,"./_to-length":241}],239:[function(require,module,exports){
+},{"./_to-integer":236,"./_to-length":238}],236:[function(require,module,exports){
 // 7.1.4 ToInteger
 var ceil = Math.ceil;
 var floor = Math.floor;
@@ -18134,7 +15897,7 @@ module.exports = function (it) {
   return isNaN(it = +it) ? 0 : (it > 0 ? floor : ceil)(it);
 };
 
-},{}],240:[function(require,module,exports){
+},{}],237:[function(require,module,exports){
 // to indexed object, toObject with fallback for non-array-like ES3 strings
 var IObject = require('./_iobject');
 var defined = require('./_defined');
@@ -18142,7 +15905,7 @@ module.exports = function (it) {
   return IObject(defined(it));
 };
 
-},{"./_defined":157,"./_iobject":177}],241:[function(require,module,exports){
+},{"./_defined":154,"./_iobject":174}],238:[function(require,module,exports){
 // 7.1.15 ToLength
 var toInteger = require('./_to-integer');
 var min = Math.min;
@@ -18150,16 +15913,16 @@ module.exports = function (it) {
   return it > 0 ? min(toInteger(it), 0x1fffffffffffff) : 0; // pow(2, 53) - 1 == 9007199254740991
 };
 
-},{"./_to-integer":239}],242:[function(require,module,exports){
+},{"./_to-integer":236}],239:[function(require,module,exports){
 // 7.1.13 ToObject(argument)
 var defined = require('./_defined');
 module.exports = function (it) {
   return Object(defined(it));
 };
 
-},{"./_defined":157}],243:[function(require,module,exports){
-arguments[4][131][0].apply(exports,arguments)
-},{"./_is-object":181,"dup":131}],244:[function(require,module,exports){
+},{"./_defined":154}],240:[function(require,module,exports){
+arguments[4][128][0].apply(exports,arguments)
+},{"./_is-object":178,"dup":128}],241:[function(require,module,exports){
 'use strict';
 if (require('./_descriptors')) {
   var LIBRARY = require('./_library');
@@ -18641,7 +16404,7 @@ if (require('./_descriptors')) {
   };
 } else module.exports = function () { /* empty */ };
 
-},{"./_an-instance":137,"./_array-copy-within":139,"./_array-fill":140,"./_array-includes":141,"./_array-methods":142,"./_classof":147,"./_ctx":154,"./_descriptors":158,"./_export":162,"./_fails":164,"./_global":170,"./_has":171,"./_hide":172,"./_is-array-iter":178,"./_is-object":181,"./_iter-detect":186,"./_iterators":188,"./_library":189,"./_object-create":198,"./_object-dp":199,"./_object-gopd":201,"./_object-gopn":203,"./_object-gpo":205,"./_property-desc":216,"./_redefine-all":217,"./_set-species":223,"./_species-constructor":227,"./_to-absolute-index":237,"./_to-index":238,"./_to-integer":239,"./_to-length":241,"./_to-object":242,"./_to-primitive":243,"./_typed":246,"./_typed-buffer":245,"./_uid":247,"./_wks":252,"./core.get-iterator-method":253,"./es6.array.iterator":264}],245:[function(require,module,exports){
+},{"./_an-instance":134,"./_array-copy-within":136,"./_array-fill":137,"./_array-includes":138,"./_array-methods":139,"./_classof":144,"./_ctx":151,"./_descriptors":155,"./_export":159,"./_fails":161,"./_global":167,"./_has":168,"./_hide":169,"./_is-array-iter":175,"./_is-object":178,"./_iter-detect":183,"./_iterators":185,"./_library":186,"./_object-create":195,"./_object-dp":196,"./_object-gopd":198,"./_object-gopn":200,"./_object-gpo":202,"./_property-desc":213,"./_redefine-all":214,"./_set-species":220,"./_species-constructor":224,"./_to-absolute-index":234,"./_to-index":235,"./_to-integer":236,"./_to-length":238,"./_to-object":239,"./_to-primitive":240,"./_typed":243,"./_typed-buffer":242,"./_uid":244,"./_wks":249,"./core.get-iterator-method":250,"./es6.array.iterator":261}],242:[function(require,module,exports){
 'use strict';
 var global = require('./_global');
 var DESCRIPTORS = require('./_descriptors');
@@ -18919,7 +16682,7 @@ hide($DataView[PROTOTYPE], $typed.VIEW, true);
 exports[ARRAY_BUFFER] = $ArrayBuffer;
 exports[DATA_VIEW] = $DataView;
 
-},{"./_an-instance":137,"./_array-fill":140,"./_descriptors":158,"./_fails":164,"./_global":170,"./_hide":172,"./_library":189,"./_object-dp":199,"./_object-gopn":203,"./_redefine-all":217,"./_set-to-string-tag":224,"./_to-index":238,"./_to-integer":239,"./_to-length":241,"./_typed":246}],246:[function(require,module,exports){
+},{"./_an-instance":134,"./_array-fill":137,"./_descriptors":155,"./_fails":161,"./_global":167,"./_hide":169,"./_library":186,"./_object-dp":196,"./_object-gopn":200,"./_redefine-all":214,"./_set-to-string-tag":221,"./_to-index":235,"./_to-integer":236,"./_to-length":238,"./_typed":243}],243:[function(require,module,exports){
 var global = require('./_global');
 var hide = require('./_hide');
 var uid = require('./_uid');
@@ -18949,27 +16712,27 @@ module.exports = {
   VIEW: VIEW
 };
 
-},{"./_global":170,"./_hide":172,"./_uid":247}],247:[function(require,module,exports){
+},{"./_global":167,"./_hide":169,"./_uid":244}],244:[function(require,module,exports){
 var id = 0;
 var px = Math.random();
 module.exports = function (key) {
   return 'Symbol('.concat(key === undefined ? '' : key, ')_', (++id + px).toString(36));
 };
 
-},{}],248:[function(require,module,exports){
+},{}],245:[function(require,module,exports){
 var global = require('./_global');
 var navigator = global.navigator;
 
 module.exports = navigator && navigator.userAgent || '';
 
-},{"./_global":170}],249:[function(require,module,exports){
+},{"./_global":167}],246:[function(require,module,exports){
 var isObject = require('./_is-object');
 module.exports = function (it, TYPE) {
   if (!isObject(it) || it._t !== TYPE) throw TypeError('Incompatible receiver, ' + TYPE + ' required!');
   return it;
 };
 
-},{"./_is-object":181}],250:[function(require,module,exports){
+},{"./_is-object":178}],247:[function(require,module,exports){
 var global = require('./_global');
 var core = require('./_core');
 var LIBRARY = require('./_library');
@@ -18980,10 +16743,10 @@ module.exports = function (name) {
   if (name.charAt(0) != '_' && !(name in $Symbol)) defineProperty($Symbol, name, { value: wksExt.f(name) });
 };
 
-},{"./_core":152,"./_global":170,"./_library":189,"./_object-dp":199,"./_wks-ext":251}],251:[function(require,module,exports){
+},{"./_core":149,"./_global":167,"./_library":186,"./_object-dp":196,"./_wks-ext":248}],248:[function(require,module,exports){
 exports.f = require('./_wks');
 
-},{"./_wks":252}],252:[function(require,module,exports){
+},{"./_wks":249}],249:[function(require,module,exports){
 var store = require('./_shared')('wks');
 var uid = require('./_uid');
 var Symbol = require('./_global').Symbol;
@@ -18996,7 +16759,7 @@ var $exports = module.exports = function (name) {
 
 $exports.store = store;
 
-},{"./_global":170,"./_shared":226,"./_uid":247}],253:[function(require,module,exports){
+},{"./_global":167,"./_shared":223,"./_uid":244}],250:[function(require,module,exports){
 var classof = require('./_classof');
 var ITERATOR = require('./_wks')('iterator');
 var Iterators = require('./_iterators');
@@ -19006,7 +16769,7 @@ module.exports = require('./_core').getIteratorMethod = function (it) {
     || Iterators[classof(it)];
 };
 
-},{"./_classof":147,"./_core":152,"./_iterators":188,"./_wks":252}],254:[function(require,module,exports){
+},{"./_classof":144,"./_core":149,"./_iterators":185,"./_wks":249}],251:[function(require,module,exports){
 // 22.1.3.3 Array.prototype.copyWithin(target, start, end = this.length)
 var $export = require('./_export');
 
@@ -19014,7 +16777,7 @@ $export($export.P, 'Array', { copyWithin: require('./_array-copy-within') });
 
 require('./_add-to-unscopables')('copyWithin');
 
-},{"./_add-to-unscopables":135,"./_array-copy-within":139,"./_export":162}],255:[function(require,module,exports){
+},{"./_add-to-unscopables":132,"./_array-copy-within":136,"./_export":159}],252:[function(require,module,exports){
 'use strict';
 var $export = require('./_export');
 var $every = require('./_array-methods')(4);
@@ -19026,7 +16789,7 @@ $export($export.P + $export.F * !require('./_strict-method')([].every, true), 'A
   }
 });
 
-},{"./_array-methods":142,"./_export":162,"./_strict-method":228}],256:[function(require,module,exports){
+},{"./_array-methods":139,"./_export":159,"./_strict-method":225}],253:[function(require,module,exports){
 // 22.1.3.6 Array.prototype.fill(value, start = 0, end = this.length)
 var $export = require('./_export');
 
@@ -19034,7 +16797,7 @@ $export($export.P, 'Array', { fill: require('./_array-fill') });
 
 require('./_add-to-unscopables')('fill');
 
-},{"./_add-to-unscopables":135,"./_array-fill":140,"./_export":162}],257:[function(require,module,exports){
+},{"./_add-to-unscopables":132,"./_array-fill":137,"./_export":159}],254:[function(require,module,exports){
 'use strict';
 var $export = require('./_export');
 var $filter = require('./_array-methods')(2);
@@ -19046,7 +16809,7 @@ $export($export.P + $export.F * !require('./_strict-method')([].filter, true), '
   }
 });
 
-},{"./_array-methods":142,"./_export":162,"./_strict-method":228}],258:[function(require,module,exports){
+},{"./_array-methods":139,"./_export":159,"./_strict-method":225}],255:[function(require,module,exports){
 'use strict';
 // 22.1.3.9 Array.prototype.findIndex(predicate, thisArg = undefined)
 var $export = require('./_export');
@@ -19062,7 +16825,7 @@ $export($export.P + $export.F * forced, 'Array', {
 });
 require('./_add-to-unscopables')(KEY);
 
-},{"./_add-to-unscopables":135,"./_array-methods":142,"./_export":162}],259:[function(require,module,exports){
+},{"./_add-to-unscopables":132,"./_array-methods":139,"./_export":159}],256:[function(require,module,exports){
 'use strict';
 // 22.1.3.8 Array.prototype.find(predicate, thisArg = undefined)
 var $export = require('./_export');
@@ -19078,7 +16841,7 @@ $export($export.P + $export.F * forced, 'Array', {
 });
 require('./_add-to-unscopables')(KEY);
 
-},{"./_add-to-unscopables":135,"./_array-methods":142,"./_export":162}],260:[function(require,module,exports){
+},{"./_add-to-unscopables":132,"./_array-methods":139,"./_export":159}],257:[function(require,module,exports){
 'use strict';
 var $export = require('./_export');
 var $forEach = require('./_array-methods')(0);
@@ -19091,7 +16854,7 @@ $export($export.P + $export.F * !STRICT, 'Array', {
   }
 });
 
-},{"./_array-methods":142,"./_export":162,"./_strict-method":228}],261:[function(require,module,exports){
+},{"./_array-methods":139,"./_export":159,"./_strict-method":225}],258:[function(require,module,exports){
 'use strict';
 var ctx = require('./_ctx');
 var $export = require('./_export');
@@ -19130,7 +16893,7 @@ $export($export.S + $export.F * !require('./_iter-detect')(function (iter) { Arr
   }
 });
 
-},{"./_create-property":153,"./_ctx":154,"./_export":162,"./_is-array-iter":178,"./_iter-call":183,"./_iter-detect":186,"./_to-length":241,"./_to-object":242,"./core.get-iterator-method":253}],262:[function(require,module,exports){
+},{"./_create-property":150,"./_ctx":151,"./_export":159,"./_is-array-iter":175,"./_iter-call":180,"./_iter-detect":183,"./_to-length":238,"./_to-object":239,"./core.get-iterator-method":250}],259:[function(require,module,exports){
 'use strict';
 var $export = require('./_export');
 var $indexOf = require('./_array-includes')(false);
@@ -19147,13 +16910,13 @@ $export($export.P + $export.F * (NEGATIVE_ZERO || !require('./_strict-method')($
   }
 });
 
-},{"./_array-includes":141,"./_export":162,"./_strict-method":228}],263:[function(require,module,exports){
+},{"./_array-includes":138,"./_export":159,"./_strict-method":225}],260:[function(require,module,exports){
 // 22.1.2.2 / 15.4.3.2 Array.isArray(arg)
 var $export = require('./_export');
 
 $export($export.S, 'Array', { isArray: require('./_is-array') });
 
-},{"./_export":162,"./_is-array":179}],264:[function(require,module,exports){
+},{"./_export":159,"./_is-array":176}],261:[function(require,module,exports){
 'use strict';
 var addToUnscopables = require('./_add-to-unscopables');
 var step = require('./_iter-step');
@@ -19189,7 +16952,7 @@ addToUnscopables('keys');
 addToUnscopables('values');
 addToUnscopables('entries');
 
-},{"./_add-to-unscopables":135,"./_iter-define":185,"./_iter-step":187,"./_iterators":188,"./_to-iobject":240}],265:[function(require,module,exports){
+},{"./_add-to-unscopables":132,"./_iter-define":182,"./_iter-step":184,"./_iterators":185,"./_to-iobject":237}],262:[function(require,module,exports){
 'use strict';
 // 22.1.3.13 Array.prototype.join(separator)
 var $export = require('./_export');
@@ -19203,7 +16966,7 @@ $export($export.P + $export.F * (require('./_iobject') != Object || !require('./
   }
 });
 
-},{"./_export":162,"./_iobject":177,"./_strict-method":228,"./_to-iobject":240}],266:[function(require,module,exports){
+},{"./_export":159,"./_iobject":174,"./_strict-method":225,"./_to-iobject":237}],263:[function(require,module,exports){
 'use strict';
 var $export = require('./_export');
 var toIObject = require('./_to-iobject');
@@ -19227,7 +16990,7 @@ $export($export.P + $export.F * (NEGATIVE_ZERO || !require('./_strict-method')($
   }
 });
 
-},{"./_export":162,"./_strict-method":228,"./_to-integer":239,"./_to-iobject":240,"./_to-length":241}],267:[function(require,module,exports){
+},{"./_export":159,"./_strict-method":225,"./_to-integer":236,"./_to-iobject":237,"./_to-length":238}],264:[function(require,module,exports){
 'use strict';
 var $export = require('./_export');
 var $map = require('./_array-methods')(1);
@@ -19239,7 +17002,7 @@ $export($export.P + $export.F * !require('./_strict-method')([].map, true), 'Arr
   }
 });
 
-},{"./_array-methods":142,"./_export":162,"./_strict-method":228}],268:[function(require,module,exports){
+},{"./_array-methods":139,"./_export":159,"./_strict-method":225}],265:[function(require,module,exports){
 'use strict';
 var $export = require('./_export');
 var createProperty = require('./_create-property');
@@ -19260,7 +17023,7 @@ $export($export.S + $export.F * require('./_fails')(function () {
   }
 });
 
-},{"./_create-property":153,"./_export":162,"./_fails":164}],269:[function(require,module,exports){
+},{"./_create-property":150,"./_export":159,"./_fails":161}],266:[function(require,module,exports){
 'use strict';
 var $export = require('./_export');
 var $reduce = require('./_array-reduce');
@@ -19272,7 +17035,7 @@ $export($export.P + $export.F * !require('./_strict-method')([].reduceRight, tru
   }
 });
 
-},{"./_array-reduce":143,"./_export":162,"./_strict-method":228}],270:[function(require,module,exports){
+},{"./_array-reduce":140,"./_export":159,"./_strict-method":225}],267:[function(require,module,exports){
 'use strict';
 var $export = require('./_export');
 var $reduce = require('./_array-reduce');
@@ -19284,7 +17047,7 @@ $export($export.P + $export.F * !require('./_strict-method')([].reduce, true), '
   }
 });
 
-},{"./_array-reduce":143,"./_export":162,"./_strict-method":228}],271:[function(require,module,exports){
+},{"./_array-reduce":140,"./_export":159,"./_strict-method":225}],268:[function(require,module,exports){
 'use strict';
 var $export = require('./_export');
 var html = require('./_html');
@@ -19314,7 +17077,7 @@ $export($export.P + $export.F * require('./_fails')(function () {
   }
 });
 
-},{"./_cof":148,"./_export":162,"./_fails":164,"./_html":173,"./_to-absolute-index":237,"./_to-length":241}],272:[function(require,module,exports){
+},{"./_cof":145,"./_export":159,"./_fails":161,"./_html":170,"./_to-absolute-index":234,"./_to-length":238}],269:[function(require,module,exports){
 'use strict';
 var $export = require('./_export');
 var $some = require('./_array-methods')(3);
@@ -19326,7 +17089,7 @@ $export($export.P + $export.F * !require('./_strict-method')([].some, true), 'Ar
   }
 });
 
-},{"./_array-methods":142,"./_export":162,"./_strict-method":228}],273:[function(require,module,exports){
+},{"./_array-methods":139,"./_export":159,"./_strict-method":225}],270:[function(require,module,exports){
 'use strict';
 var $export = require('./_export');
 var aFunction = require('./_a-function');
@@ -19351,16 +17114,16 @@ $export($export.P + $export.F * (fails(function () {
   }
 });
 
-},{"./_a-function":133,"./_export":162,"./_fails":164,"./_strict-method":228,"./_to-object":242}],274:[function(require,module,exports){
+},{"./_a-function":130,"./_export":159,"./_fails":161,"./_strict-method":225,"./_to-object":239}],271:[function(require,module,exports){
 require('./_set-species')('Array');
 
-},{"./_set-species":223}],275:[function(require,module,exports){
+},{"./_set-species":220}],272:[function(require,module,exports){
 // 20.3.3.1 / 15.9.4.4 Date.now()
 var $export = require('./_export');
 
 $export($export.S, 'Date', { now: function () { return new Date().getTime(); } });
 
-},{"./_export":162}],276:[function(require,module,exports){
+},{"./_export":159}],273:[function(require,module,exports){
 // 20.3.4.36 / 15.9.5.43 Date.prototype.toISOString()
 var $export = require('./_export');
 var toISOString = require('./_date-to-iso-string');
@@ -19370,7 +17133,7 @@ $export($export.P + $export.F * (Date.prototype.toISOString !== toISOString), 'D
   toISOString: toISOString
 });
 
-},{"./_date-to-iso-string":155,"./_export":162}],277:[function(require,module,exports){
+},{"./_date-to-iso-string":152,"./_export":159}],274:[function(require,module,exports){
 'use strict';
 var $export = require('./_export');
 var toObject = require('./_to-object');
@@ -19388,13 +17151,13 @@ $export($export.P + $export.F * require('./_fails')(function () {
   }
 });
 
-},{"./_export":162,"./_fails":164,"./_to-object":242,"./_to-primitive":243}],278:[function(require,module,exports){
+},{"./_export":159,"./_fails":161,"./_to-object":239,"./_to-primitive":240}],275:[function(require,module,exports){
 var TO_PRIMITIVE = require('./_wks')('toPrimitive');
 var proto = Date.prototype;
 
 if (!(TO_PRIMITIVE in proto)) require('./_hide')(proto, TO_PRIMITIVE, require('./_date-to-primitive'));
 
-},{"./_date-to-primitive":156,"./_hide":172,"./_wks":252}],279:[function(require,module,exports){
+},{"./_date-to-primitive":153,"./_hide":169,"./_wks":249}],276:[function(require,module,exports){
 var DateProto = Date.prototype;
 var INVALID_DATE = 'Invalid Date';
 var TO_STRING = 'toString';
@@ -19408,13 +17171,13 @@ if (new Date(NaN) + '' != INVALID_DATE) {
   });
 }
 
-},{"./_redefine":218}],280:[function(require,module,exports){
+},{"./_redefine":215}],277:[function(require,module,exports){
 // 19.2.3.2 / 15.3.4.5 Function.prototype.bind(thisArg, args...)
 var $export = require('./_export');
 
 $export($export.P, 'Function', { bind: require('./_bind') });
 
-},{"./_bind":146,"./_export":162}],281:[function(require,module,exports){
+},{"./_bind":143,"./_export":159}],278:[function(require,module,exports){
 'use strict';
 var isObject = require('./_is-object');
 var getPrototypeOf = require('./_object-gpo');
@@ -19429,7 +17192,7 @@ if (!(HAS_INSTANCE in FunctionProto)) require('./_object-dp').f(FunctionProto, H
   return false;
 } });
 
-},{"./_is-object":181,"./_object-dp":199,"./_object-gpo":205,"./_wks":252}],282:[function(require,module,exports){
+},{"./_is-object":178,"./_object-dp":196,"./_object-gpo":202,"./_wks":249}],279:[function(require,module,exports){
 var dP = require('./_object-dp').f;
 var FProto = Function.prototype;
 var nameRE = /^\s*function ([^ (]*)/;
@@ -19447,7 +17210,7 @@ NAME in FProto || require('./_descriptors') && dP(FProto, NAME, {
   }
 });
 
-},{"./_descriptors":158,"./_object-dp":199}],283:[function(require,module,exports){
+},{"./_descriptors":155,"./_object-dp":196}],280:[function(require,module,exports){
 'use strict';
 var strong = require('./_collection-strong');
 var validate = require('./_validate-collection');
@@ -19468,7 +17231,7 @@ module.exports = require('./_collection')(MAP, function (get) {
   }
 }, strong, true);
 
-},{"./_collection":151,"./_collection-strong":149,"./_validate-collection":249}],284:[function(require,module,exports){
+},{"./_collection":148,"./_collection-strong":146,"./_validate-collection":246}],281:[function(require,module,exports){
 // 20.2.2.3 Math.acosh(x)
 var $export = require('./_export');
 var log1p = require('./_math-log1p');
@@ -19488,7 +17251,7 @@ $export($export.S + $export.F * !($acosh
   }
 });
 
-},{"./_export":162,"./_math-log1p":192}],285:[function(require,module,exports){
+},{"./_export":159,"./_math-log1p":189}],282:[function(require,module,exports){
 // 20.2.2.5 Math.asinh(x)
 var $export = require('./_export');
 var $asinh = Math.asinh;
@@ -19500,7 +17263,7 @@ function asinh(x) {
 // Tor Browser bug: Math.asinh(0) -> -0
 $export($export.S + $export.F * !($asinh && 1 / $asinh(0) > 0), 'Math', { asinh: asinh });
 
-},{"./_export":162}],286:[function(require,module,exports){
+},{"./_export":159}],283:[function(require,module,exports){
 // 20.2.2.7 Math.atanh(x)
 var $export = require('./_export');
 var $atanh = Math.atanh;
@@ -19512,7 +17275,7 @@ $export($export.S + $export.F * !($atanh && 1 / $atanh(-0) < 0), 'Math', {
   }
 });
 
-},{"./_export":162}],287:[function(require,module,exports){
+},{"./_export":159}],284:[function(require,module,exports){
 // 20.2.2.9 Math.cbrt(x)
 var $export = require('./_export');
 var sign = require('./_math-sign');
@@ -19523,7 +17286,7 @@ $export($export.S, 'Math', {
   }
 });
 
-},{"./_export":162,"./_math-sign":193}],288:[function(require,module,exports){
+},{"./_export":159,"./_math-sign":190}],285:[function(require,module,exports){
 // 20.2.2.11 Math.clz32(x)
 var $export = require('./_export');
 
@@ -19533,7 +17296,7 @@ $export($export.S, 'Math', {
   }
 });
 
-},{"./_export":162}],289:[function(require,module,exports){
+},{"./_export":159}],286:[function(require,module,exports){
 // 20.2.2.12 Math.cosh(x)
 var $export = require('./_export');
 var exp = Math.exp;
@@ -19544,20 +17307,20 @@ $export($export.S, 'Math', {
   }
 });
 
-},{"./_export":162}],290:[function(require,module,exports){
+},{"./_export":159}],287:[function(require,module,exports){
 // 20.2.2.14 Math.expm1(x)
 var $export = require('./_export');
 var $expm1 = require('./_math-expm1');
 
 $export($export.S + $export.F * ($expm1 != Math.expm1), 'Math', { expm1: $expm1 });
 
-},{"./_export":162,"./_math-expm1":190}],291:[function(require,module,exports){
+},{"./_export":159,"./_math-expm1":187}],288:[function(require,module,exports){
 // 20.2.2.16 Math.fround(x)
 var $export = require('./_export');
 
 $export($export.S, 'Math', { fround: require('./_math-fround') });
 
-},{"./_export":162,"./_math-fround":191}],292:[function(require,module,exports){
+},{"./_export":159,"./_math-fround":188}],289:[function(require,module,exports){
 // 20.2.2.17 Math.hypot([value1[, value2[, … ]]])
 var $export = require('./_export');
 var abs = Math.abs;
@@ -19584,7 +17347,7 @@ $export($export.S, 'Math', {
   }
 });
 
-},{"./_export":162}],293:[function(require,module,exports){
+},{"./_export":159}],290:[function(require,module,exports){
 // 20.2.2.18 Math.imul(x, y)
 var $export = require('./_export');
 var $imul = Math.imul;
@@ -19603,7 +17366,7 @@ $export($export.S + $export.F * require('./_fails')(function () {
   }
 });
 
-},{"./_export":162,"./_fails":164}],294:[function(require,module,exports){
+},{"./_export":159,"./_fails":161}],291:[function(require,module,exports){
 // 20.2.2.21 Math.log10(x)
 var $export = require('./_export');
 
@@ -19613,13 +17376,13 @@ $export($export.S, 'Math', {
   }
 });
 
-},{"./_export":162}],295:[function(require,module,exports){
+},{"./_export":159}],292:[function(require,module,exports){
 // 20.2.2.20 Math.log1p(x)
 var $export = require('./_export');
 
 $export($export.S, 'Math', { log1p: require('./_math-log1p') });
 
-},{"./_export":162,"./_math-log1p":192}],296:[function(require,module,exports){
+},{"./_export":159,"./_math-log1p":189}],293:[function(require,module,exports){
 // 20.2.2.22 Math.log2(x)
 var $export = require('./_export');
 
@@ -19629,13 +17392,13 @@ $export($export.S, 'Math', {
   }
 });
 
-},{"./_export":162}],297:[function(require,module,exports){
+},{"./_export":159}],294:[function(require,module,exports){
 // 20.2.2.28 Math.sign(x)
 var $export = require('./_export');
 
 $export($export.S, 'Math', { sign: require('./_math-sign') });
 
-},{"./_export":162,"./_math-sign":193}],298:[function(require,module,exports){
+},{"./_export":159,"./_math-sign":190}],295:[function(require,module,exports){
 // 20.2.2.30 Math.sinh(x)
 var $export = require('./_export');
 var expm1 = require('./_math-expm1');
@@ -19652,7 +17415,7 @@ $export($export.S + $export.F * require('./_fails')(function () {
   }
 });
 
-},{"./_export":162,"./_fails":164,"./_math-expm1":190}],299:[function(require,module,exports){
+},{"./_export":159,"./_fails":161,"./_math-expm1":187}],296:[function(require,module,exports){
 // 20.2.2.33 Math.tanh(x)
 var $export = require('./_export');
 var expm1 = require('./_math-expm1');
@@ -19666,7 +17429,7 @@ $export($export.S, 'Math', {
   }
 });
 
-},{"./_export":162,"./_math-expm1":190}],300:[function(require,module,exports){
+},{"./_export":159,"./_math-expm1":187}],297:[function(require,module,exports){
 // 20.2.2.34 Math.trunc(x)
 var $export = require('./_export');
 
@@ -19676,7 +17439,7 @@ $export($export.S, 'Math', {
   }
 });
 
-},{"./_export":162}],301:[function(require,module,exports){
+},{"./_export":159}],298:[function(require,module,exports){
 'use strict';
 var global = require('./_global');
 var has = require('./_has');
@@ -19747,13 +17510,13 @@ if (!$Number(' 0o1') || !$Number('0b1') || $Number('+0x1')) {
   require('./_redefine')(global, NUMBER, $Number);
 }
 
-},{"./_cof":148,"./_descriptors":158,"./_fails":164,"./_global":170,"./_has":171,"./_inherit-if-required":175,"./_object-create":198,"./_object-dp":199,"./_object-gopd":201,"./_object-gopn":203,"./_redefine":218,"./_string-trim":234,"./_to-primitive":243}],302:[function(require,module,exports){
+},{"./_cof":145,"./_descriptors":155,"./_fails":161,"./_global":167,"./_has":168,"./_inherit-if-required":172,"./_object-create":195,"./_object-dp":196,"./_object-gopd":198,"./_object-gopn":200,"./_redefine":215,"./_string-trim":231,"./_to-primitive":240}],299:[function(require,module,exports){
 // 20.1.2.1 Number.EPSILON
 var $export = require('./_export');
 
 $export($export.S, 'Number', { EPSILON: Math.pow(2, -52) });
 
-},{"./_export":162}],303:[function(require,module,exports){
+},{"./_export":159}],300:[function(require,module,exports){
 // 20.1.2.2 Number.isFinite(number)
 var $export = require('./_export');
 var _isFinite = require('./_global').isFinite;
@@ -19764,13 +17527,13 @@ $export($export.S, 'Number', {
   }
 });
 
-},{"./_export":162,"./_global":170}],304:[function(require,module,exports){
+},{"./_export":159,"./_global":167}],301:[function(require,module,exports){
 // 20.1.2.3 Number.isInteger(number)
 var $export = require('./_export');
 
 $export($export.S, 'Number', { isInteger: require('./_is-integer') });
 
-},{"./_export":162,"./_is-integer":180}],305:[function(require,module,exports){
+},{"./_export":159,"./_is-integer":177}],302:[function(require,module,exports){
 // 20.1.2.4 Number.isNaN(number)
 var $export = require('./_export');
 
@@ -19781,7 +17544,7 @@ $export($export.S, 'Number', {
   }
 });
 
-},{"./_export":162}],306:[function(require,module,exports){
+},{"./_export":159}],303:[function(require,module,exports){
 // 20.1.2.5 Number.isSafeInteger(number)
 var $export = require('./_export');
 var isInteger = require('./_is-integer');
@@ -19793,31 +17556,31 @@ $export($export.S, 'Number', {
   }
 });
 
-},{"./_export":162,"./_is-integer":180}],307:[function(require,module,exports){
+},{"./_export":159,"./_is-integer":177}],304:[function(require,module,exports){
 // 20.1.2.6 Number.MAX_SAFE_INTEGER
 var $export = require('./_export');
 
 $export($export.S, 'Number', { MAX_SAFE_INTEGER: 0x1fffffffffffff });
 
-},{"./_export":162}],308:[function(require,module,exports){
+},{"./_export":159}],305:[function(require,module,exports){
 // 20.1.2.10 Number.MIN_SAFE_INTEGER
 var $export = require('./_export');
 
 $export($export.S, 'Number', { MIN_SAFE_INTEGER: -0x1fffffffffffff });
 
-},{"./_export":162}],309:[function(require,module,exports){
+},{"./_export":159}],306:[function(require,module,exports){
 var $export = require('./_export');
 var $parseFloat = require('./_parse-float');
 // 20.1.2.12 Number.parseFloat(string)
 $export($export.S + $export.F * (Number.parseFloat != $parseFloat), 'Number', { parseFloat: $parseFloat });
 
-},{"./_export":162,"./_parse-float":212}],310:[function(require,module,exports){
+},{"./_export":159,"./_parse-float":209}],307:[function(require,module,exports){
 var $export = require('./_export');
 var $parseInt = require('./_parse-int');
 // 20.1.2.13 Number.parseInt(string, radix)
 $export($export.S + $export.F * (Number.parseInt != $parseInt), 'Number', { parseInt: $parseInt });
 
-},{"./_export":162,"./_parse-int":213}],311:[function(require,module,exports){
+},{"./_export":159,"./_parse-int":210}],308:[function(require,module,exports){
 'use strict';
 var $export = require('./_export');
 var toInteger = require('./_to-integer');
@@ -19933,7 +17696,7 @@ $export($export.P + $export.F * (!!$toFixed && (
   }
 });
 
-},{"./_a-number-value":134,"./_export":162,"./_fails":164,"./_string-repeat":233,"./_to-integer":239}],312:[function(require,module,exports){
+},{"./_a-number-value":131,"./_export":159,"./_fails":161,"./_string-repeat":230,"./_to-integer":236}],309:[function(require,module,exports){
 'use strict';
 var $export = require('./_export');
 var $fails = require('./_fails');
@@ -19953,28 +17716,28 @@ $export($export.P + $export.F * ($fails(function () {
   }
 });
 
-},{"./_a-number-value":134,"./_export":162,"./_fails":164}],313:[function(require,module,exports){
+},{"./_a-number-value":131,"./_export":159,"./_fails":161}],310:[function(require,module,exports){
 // 19.1.3.1 Object.assign(target, source)
 var $export = require('./_export');
 
 $export($export.S + $export.F, 'Object', { assign: require('./_object-assign') });
 
-},{"./_export":162,"./_object-assign":197}],314:[function(require,module,exports){
+},{"./_export":159,"./_object-assign":194}],311:[function(require,module,exports){
 var $export = require('./_export');
 // 19.1.2.2 / 15.2.3.5 Object.create(O [, Properties])
 $export($export.S, 'Object', { create: require('./_object-create') });
 
-},{"./_export":162,"./_object-create":198}],315:[function(require,module,exports){
+},{"./_export":159,"./_object-create":195}],312:[function(require,module,exports){
 var $export = require('./_export');
 // 19.1.2.3 / 15.2.3.7 Object.defineProperties(O, Properties)
 $export($export.S + $export.F * !require('./_descriptors'), 'Object', { defineProperties: require('./_object-dps') });
 
-},{"./_descriptors":158,"./_export":162,"./_object-dps":200}],316:[function(require,module,exports){
+},{"./_descriptors":155,"./_export":159,"./_object-dps":197}],313:[function(require,module,exports){
 var $export = require('./_export');
 // 19.1.2.4 / 15.2.3.6 Object.defineProperty(O, P, Attributes)
 $export($export.S + $export.F * !require('./_descriptors'), 'Object', { defineProperty: require('./_object-dp').f });
 
-},{"./_descriptors":158,"./_export":162,"./_object-dp":199}],317:[function(require,module,exports){
+},{"./_descriptors":155,"./_export":159,"./_object-dp":196}],314:[function(require,module,exports){
 // 19.1.2.5 Object.freeze(O)
 var isObject = require('./_is-object');
 var meta = require('./_meta').onFreeze;
@@ -19985,7 +17748,7 @@ require('./_object-sap')('freeze', function ($freeze) {
   };
 });
 
-},{"./_is-object":181,"./_meta":194,"./_object-sap":209}],318:[function(require,module,exports){
+},{"./_is-object":178,"./_meta":191,"./_object-sap":206}],315:[function(require,module,exports){
 // 19.1.2.6 Object.getOwnPropertyDescriptor(O, P)
 var toIObject = require('./_to-iobject');
 var $getOwnPropertyDescriptor = require('./_object-gopd').f;
@@ -19996,13 +17759,13 @@ require('./_object-sap')('getOwnPropertyDescriptor', function () {
   };
 });
 
-},{"./_object-gopd":201,"./_object-sap":209,"./_to-iobject":240}],319:[function(require,module,exports){
+},{"./_object-gopd":198,"./_object-sap":206,"./_to-iobject":237}],316:[function(require,module,exports){
 // 19.1.2.7 Object.getOwnPropertyNames(O)
 require('./_object-sap')('getOwnPropertyNames', function () {
   return require('./_object-gopn-ext').f;
 });
 
-},{"./_object-gopn-ext":202,"./_object-sap":209}],320:[function(require,module,exports){
+},{"./_object-gopn-ext":199,"./_object-sap":206}],317:[function(require,module,exports){
 // 19.1.2.9 Object.getPrototypeOf(O)
 var toObject = require('./_to-object');
 var $getPrototypeOf = require('./_object-gpo');
@@ -20013,7 +17776,7 @@ require('./_object-sap')('getPrototypeOf', function () {
   };
 });
 
-},{"./_object-gpo":205,"./_object-sap":209,"./_to-object":242}],321:[function(require,module,exports){
+},{"./_object-gpo":202,"./_object-sap":206,"./_to-object":239}],318:[function(require,module,exports){
 // 19.1.2.11 Object.isExtensible(O)
 var isObject = require('./_is-object');
 
@@ -20023,7 +17786,7 @@ require('./_object-sap')('isExtensible', function ($isExtensible) {
   };
 });
 
-},{"./_is-object":181,"./_object-sap":209}],322:[function(require,module,exports){
+},{"./_is-object":178,"./_object-sap":206}],319:[function(require,module,exports){
 // 19.1.2.12 Object.isFrozen(O)
 var isObject = require('./_is-object');
 
@@ -20033,7 +17796,7 @@ require('./_object-sap')('isFrozen', function ($isFrozen) {
   };
 });
 
-},{"./_is-object":181,"./_object-sap":209}],323:[function(require,module,exports){
+},{"./_is-object":178,"./_object-sap":206}],320:[function(require,module,exports){
 // 19.1.2.13 Object.isSealed(O)
 var isObject = require('./_is-object');
 
@@ -20043,12 +17806,12 @@ require('./_object-sap')('isSealed', function ($isSealed) {
   };
 });
 
-},{"./_is-object":181,"./_object-sap":209}],324:[function(require,module,exports){
+},{"./_is-object":178,"./_object-sap":206}],321:[function(require,module,exports){
 // 19.1.3.10 Object.is(value1, value2)
 var $export = require('./_export');
 $export($export.S, 'Object', { is: require('./_same-value') });
 
-},{"./_export":162,"./_same-value":221}],325:[function(require,module,exports){
+},{"./_export":159,"./_same-value":218}],322:[function(require,module,exports){
 // 19.1.2.14 Object.keys(O)
 var toObject = require('./_to-object');
 var $keys = require('./_object-keys');
@@ -20059,7 +17822,7 @@ require('./_object-sap')('keys', function () {
   };
 });
 
-},{"./_object-keys":207,"./_object-sap":209,"./_to-object":242}],326:[function(require,module,exports){
+},{"./_object-keys":204,"./_object-sap":206,"./_to-object":239}],323:[function(require,module,exports){
 // 19.1.2.15 Object.preventExtensions(O)
 var isObject = require('./_is-object');
 var meta = require('./_meta').onFreeze;
@@ -20070,7 +17833,7 @@ require('./_object-sap')('preventExtensions', function ($preventExtensions) {
   };
 });
 
-},{"./_is-object":181,"./_meta":194,"./_object-sap":209}],327:[function(require,module,exports){
+},{"./_is-object":178,"./_meta":191,"./_object-sap":206}],324:[function(require,module,exports){
 // 19.1.2.17 Object.seal(O)
 var isObject = require('./_is-object');
 var meta = require('./_meta').onFreeze;
@@ -20081,12 +17844,12 @@ require('./_object-sap')('seal', function ($seal) {
   };
 });
 
-},{"./_is-object":181,"./_meta":194,"./_object-sap":209}],328:[function(require,module,exports){
+},{"./_is-object":178,"./_meta":191,"./_object-sap":206}],325:[function(require,module,exports){
 // 19.1.3.19 Object.setPrototypeOf(O, proto)
 var $export = require('./_export');
 $export($export.S, 'Object', { setPrototypeOf: require('./_set-proto').set });
 
-},{"./_export":162,"./_set-proto":222}],329:[function(require,module,exports){
+},{"./_export":159,"./_set-proto":219}],326:[function(require,module,exports){
 'use strict';
 // 19.1.3.6 Object.prototype.toString()
 var classof = require('./_classof');
@@ -20098,19 +17861,19 @@ if (test + '' != '[object z]') {
   }, true);
 }
 
-},{"./_classof":147,"./_redefine":218,"./_wks":252}],330:[function(require,module,exports){
+},{"./_classof":144,"./_redefine":215,"./_wks":249}],327:[function(require,module,exports){
 var $export = require('./_export');
 var $parseFloat = require('./_parse-float');
 // 18.2.4 parseFloat(string)
 $export($export.G + $export.F * (parseFloat != $parseFloat), { parseFloat: $parseFloat });
 
-},{"./_export":162,"./_parse-float":212}],331:[function(require,module,exports){
+},{"./_export":159,"./_parse-float":209}],328:[function(require,module,exports){
 var $export = require('./_export');
 var $parseInt = require('./_parse-int');
 // 18.2.5 parseInt(string, radix)
 $export($export.G + $export.F * (parseInt != $parseInt), { parseInt: $parseInt });
 
-},{"./_export":162,"./_parse-int":213}],332:[function(require,module,exports){
+},{"./_export":159,"./_parse-int":210}],329:[function(require,module,exports){
 'use strict';
 var LIBRARY = require('./_library');
 var global = require('./_global');
@@ -20398,7 +18161,7 @@ $export($export.S + $export.F * !(USE_NATIVE && require('./_iter-detect')(functi
   }
 });
 
-},{"./_a-function":133,"./_an-instance":137,"./_classof":147,"./_core":152,"./_ctx":154,"./_export":162,"./_for-of":168,"./_global":170,"./_is-object":181,"./_iter-detect":186,"./_library":189,"./_microtask":195,"./_new-promise-capability":196,"./_perform":214,"./_promise-resolve":215,"./_redefine-all":217,"./_set-species":223,"./_set-to-string-tag":224,"./_species-constructor":227,"./_task":236,"./_user-agent":248,"./_wks":252}],333:[function(require,module,exports){
+},{"./_a-function":130,"./_an-instance":134,"./_classof":144,"./_core":149,"./_ctx":151,"./_export":159,"./_for-of":165,"./_global":167,"./_is-object":178,"./_iter-detect":183,"./_library":186,"./_microtask":192,"./_new-promise-capability":193,"./_perform":211,"./_promise-resolve":212,"./_redefine-all":214,"./_set-species":220,"./_set-to-string-tag":221,"./_species-constructor":224,"./_task":233,"./_user-agent":245,"./_wks":249}],330:[function(require,module,exports){
 // 26.1.1 Reflect.apply(target, thisArgument, argumentsList)
 var $export = require('./_export');
 var aFunction = require('./_a-function');
@@ -20416,7 +18179,7 @@ $export($export.S + $export.F * !require('./_fails')(function () {
   }
 });
 
-},{"./_a-function":133,"./_an-object":138,"./_export":162,"./_fails":164,"./_global":170}],334:[function(require,module,exports){
+},{"./_a-function":130,"./_an-object":135,"./_export":159,"./_fails":161,"./_global":167}],331:[function(require,module,exports){
 // 26.1.2 Reflect.construct(target, argumentsList [, newTarget])
 var $export = require('./_export');
 var create = require('./_object-create');
@@ -20465,7 +18228,7 @@ $export($export.S + $export.F * (NEW_TARGET_BUG || ARGS_BUG), 'Reflect', {
   }
 });
 
-},{"./_a-function":133,"./_an-object":138,"./_bind":146,"./_export":162,"./_fails":164,"./_global":170,"./_is-object":181,"./_object-create":198}],335:[function(require,module,exports){
+},{"./_a-function":130,"./_an-object":135,"./_bind":143,"./_export":159,"./_fails":161,"./_global":167,"./_is-object":178,"./_object-create":195}],332:[function(require,module,exports){
 // 26.1.3 Reflect.defineProperty(target, propertyKey, attributes)
 var dP = require('./_object-dp');
 var $export = require('./_export');
@@ -20490,7 +18253,7 @@ $export($export.S + $export.F * require('./_fails')(function () {
   }
 });
 
-},{"./_an-object":138,"./_export":162,"./_fails":164,"./_object-dp":199,"./_to-primitive":243}],336:[function(require,module,exports){
+},{"./_an-object":135,"./_export":159,"./_fails":161,"./_object-dp":196,"./_to-primitive":240}],333:[function(require,module,exports){
 // 26.1.4 Reflect.deleteProperty(target, propertyKey)
 var $export = require('./_export');
 var gOPD = require('./_object-gopd').f;
@@ -20503,7 +18266,7 @@ $export($export.S, 'Reflect', {
   }
 });
 
-},{"./_an-object":138,"./_export":162,"./_object-gopd":201}],337:[function(require,module,exports){
+},{"./_an-object":135,"./_export":159,"./_object-gopd":198}],334:[function(require,module,exports){
 'use strict';
 // 26.1.5 Reflect.enumerate(target)
 var $export = require('./_export');
@@ -20531,7 +18294,7 @@ $export($export.S, 'Reflect', {
   }
 });
 
-},{"./_an-object":138,"./_export":162,"./_iter-create":184}],338:[function(require,module,exports){
+},{"./_an-object":135,"./_export":159,"./_iter-create":181}],335:[function(require,module,exports){
 // 26.1.7 Reflect.getOwnPropertyDescriptor(target, propertyKey)
 var gOPD = require('./_object-gopd');
 var $export = require('./_export');
@@ -20543,7 +18306,7 @@ $export($export.S, 'Reflect', {
   }
 });
 
-},{"./_an-object":138,"./_export":162,"./_object-gopd":201}],339:[function(require,module,exports){
+},{"./_an-object":135,"./_export":159,"./_object-gopd":198}],336:[function(require,module,exports){
 // 26.1.8 Reflect.getPrototypeOf(target)
 var $export = require('./_export');
 var getProto = require('./_object-gpo');
@@ -20555,7 +18318,7 @@ $export($export.S, 'Reflect', {
   }
 });
 
-},{"./_an-object":138,"./_export":162,"./_object-gpo":205}],340:[function(require,module,exports){
+},{"./_an-object":135,"./_export":159,"./_object-gpo":202}],337:[function(require,module,exports){
 // 26.1.6 Reflect.get(target, propertyKey [, receiver])
 var gOPD = require('./_object-gopd');
 var getPrototypeOf = require('./_object-gpo');
@@ -20578,7 +18341,7 @@ function get(target, propertyKey /* , receiver */) {
 
 $export($export.S, 'Reflect', { get: get });
 
-},{"./_an-object":138,"./_export":162,"./_has":171,"./_is-object":181,"./_object-gopd":201,"./_object-gpo":205}],341:[function(require,module,exports){
+},{"./_an-object":135,"./_export":159,"./_has":168,"./_is-object":178,"./_object-gopd":198,"./_object-gpo":202}],338:[function(require,module,exports){
 // 26.1.9 Reflect.has(target, propertyKey)
 var $export = require('./_export');
 
@@ -20588,7 +18351,7 @@ $export($export.S, 'Reflect', {
   }
 });
 
-},{"./_export":162}],342:[function(require,module,exports){
+},{"./_export":159}],339:[function(require,module,exports){
 // 26.1.10 Reflect.isExtensible(target)
 var $export = require('./_export');
 var anObject = require('./_an-object');
@@ -20601,13 +18364,13 @@ $export($export.S, 'Reflect', {
   }
 });
 
-},{"./_an-object":138,"./_export":162}],343:[function(require,module,exports){
+},{"./_an-object":135,"./_export":159}],340:[function(require,module,exports){
 // 26.1.11 Reflect.ownKeys(target)
 var $export = require('./_export');
 
 $export($export.S, 'Reflect', { ownKeys: require('./_own-keys') });
 
-},{"./_export":162,"./_own-keys":211}],344:[function(require,module,exports){
+},{"./_export":159,"./_own-keys":208}],341:[function(require,module,exports){
 // 26.1.12 Reflect.preventExtensions(target)
 var $export = require('./_export');
 var anObject = require('./_an-object');
@@ -20625,7 +18388,7 @@ $export($export.S, 'Reflect', {
   }
 });
 
-},{"./_an-object":138,"./_export":162}],345:[function(require,module,exports){
+},{"./_an-object":135,"./_export":159}],342:[function(require,module,exports){
 // 26.1.14 Reflect.setPrototypeOf(target, proto)
 var $export = require('./_export');
 var setProto = require('./_set-proto');
@@ -20642,7 +18405,7 @@ if (setProto) $export($export.S, 'Reflect', {
   }
 });
 
-},{"./_export":162,"./_set-proto":222}],346:[function(require,module,exports){
+},{"./_export":159,"./_set-proto":219}],343:[function(require,module,exports){
 // 26.1.13 Reflect.set(target, propertyKey, V [, receiver])
 var dP = require('./_object-dp');
 var gOPD = require('./_object-gopd');
@@ -20677,7 +18440,7 @@ function set(target, propertyKey, V /* , receiver */) {
 
 $export($export.S, 'Reflect', { set: set });
 
-},{"./_an-object":138,"./_export":162,"./_has":171,"./_is-object":181,"./_object-dp":199,"./_object-gopd":201,"./_object-gpo":205,"./_property-desc":216}],347:[function(require,module,exports){
+},{"./_an-object":135,"./_export":159,"./_has":168,"./_is-object":178,"./_object-dp":196,"./_object-gopd":198,"./_object-gpo":202,"./_property-desc":213}],344:[function(require,module,exports){
 var global = require('./_global');
 var inheritIfRequired = require('./_inherit-if-required');
 var dP = require('./_object-dp').f;
@@ -20722,7 +18485,7 @@ if (require('./_descriptors') && (!CORRECT_NEW || require('./_fails')(function (
 
 require('./_set-species')('RegExp');
 
-},{"./_descriptors":158,"./_fails":164,"./_flags":166,"./_global":170,"./_inherit-if-required":175,"./_is-regexp":182,"./_object-dp":199,"./_object-gopn":203,"./_redefine":218,"./_set-species":223,"./_wks":252}],348:[function(require,module,exports){
+},{"./_descriptors":155,"./_fails":161,"./_flags":163,"./_global":167,"./_inherit-if-required":172,"./_is-regexp":179,"./_object-dp":196,"./_object-gopn":200,"./_redefine":215,"./_set-species":220,"./_wks":249}],345:[function(require,module,exports){
 'use strict';
 var regexpExec = require('./_regexp-exec');
 require('./_export')({
@@ -20733,14 +18496,14 @@ require('./_export')({
   exec: regexpExec
 });
 
-},{"./_export":162,"./_regexp-exec":220}],349:[function(require,module,exports){
+},{"./_export":159,"./_regexp-exec":217}],346:[function(require,module,exports){
 // 21.2.5.3 get RegExp.prototype.flags()
 if (require('./_descriptors') && /./g.flags != 'g') require('./_object-dp').f(RegExp.prototype, 'flags', {
   configurable: true,
   get: require('./_flags')
 });
 
-},{"./_descriptors":158,"./_flags":166,"./_object-dp":199}],350:[function(require,module,exports){
+},{"./_descriptors":155,"./_flags":163,"./_object-dp":196}],347:[function(require,module,exports){
 'use strict';
 
 var anObject = require('./_an-object');
@@ -20782,7 +18545,7 @@ require('./_fix-re-wks')('match', 1, function (defined, MATCH, $match, maybeCall
   ];
 });
 
-},{"./_advance-string-index":136,"./_an-object":138,"./_fix-re-wks":165,"./_regexp-exec-abstract":219,"./_to-length":241}],351:[function(require,module,exports){
+},{"./_advance-string-index":133,"./_an-object":135,"./_fix-re-wks":162,"./_regexp-exec-abstract":216,"./_to-length":238}],348:[function(require,module,exports){
 'use strict';
 
 var anObject = require('./_an-object');
@@ -20902,7 +18665,7 @@ require('./_fix-re-wks')('replace', 2, function (defined, REPLACE, $replace, may
   }
 });
 
-},{"./_advance-string-index":136,"./_an-object":138,"./_fix-re-wks":165,"./_regexp-exec-abstract":219,"./_to-integer":239,"./_to-length":241,"./_to-object":242}],352:[function(require,module,exports){
+},{"./_advance-string-index":133,"./_an-object":135,"./_fix-re-wks":162,"./_regexp-exec-abstract":216,"./_to-integer":236,"./_to-length":238,"./_to-object":239}],349:[function(require,module,exports){
 'use strict';
 
 var anObject = require('./_an-object');
@@ -20935,7 +18698,7 @@ require('./_fix-re-wks')('search', 1, function (defined, SEARCH, $search, maybeC
   ];
 });
 
-},{"./_an-object":138,"./_fix-re-wks":165,"./_regexp-exec-abstract":219,"./_same-value":221}],353:[function(require,module,exports){
+},{"./_an-object":135,"./_fix-re-wks":162,"./_regexp-exec-abstract":216,"./_same-value":218}],350:[function(require,module,exports){
 'use strict';
 
 var isRegExp = require('./_is-regexp');
@@ -21071,7 +18834,7 @@ require('./_fix-re-wks')('split', 2, function (defined, SPLIT, $split, maybeCall
   ];
 });
 
-},{"./_advance-string-index":136,"./_an-object":138,"./_fails":164,"./_fix-re-wks":165,"./_is-regexp":182,"./_regexp-exec":220,"./_regexp-exec-abstract":219,"./_species-constructor":227,"./_to-length":241}],354:[function(require,module,exports){
+},{"./_advance-string-index":133,"./_an-object":135,"./_fails":161,"./_fix-re-wks":162,"./_is-regexp":179,"./_regexp-exec":217,"./_regexp-exec-abstract":216,"./_species-constructor":224,"./_to-length":238}],351:[function(require,module,exports){
 'use strict';
 require('./es6.regexp.flags');
 var anObject = require('./_an-object');
@@ -21098,7 +18861,7 @@ if (require('./_fails')(function () { return $toString.call({ source: 'a', flags
   });
 }
 
-},{"./_an-object":138,"./_descriptors":158,"./_fails":164,"./_flags":166,"./_redefine":218,"./es6.regexp.flags":349}],355:[function(require,module,exports){
+},{"./_an-object":135,"./_descriptors":155,"./_fails":161,"./_flags":163,"./_redefine":215,"./es6.regexp.flags":346}],352:[function(require,module,exports){
 'use strict';
 var strong = require('./_collection-strong');
 var validate = require('./_validate-collection');
@@ -21114,7 +18877,7 @@ module.exports = require('./_collection')(SET, function (get) {
   }
 }, strong);
 
-},{"./_collection":151,"./_collection-strong":149,"./_validate-collection":249}],356:[function(require,module,exports){
+},{"./_collection":148,"./_collection-strong":146,"./_validate-collection":246}],353:[function(require,module,exports){
 'use strict';
 // B.2.3.2 String.prototype.anchor(name)
 require('./_string-html')('anchor', function (createHTML) {
@@ -21123,7 +18886,7 @@ require('./_string-html')('anchor', function (createHTML) {
   };
 });
 
-},{"./_string-html":231}],357:[function(require,module,exports){
+},{"./_string-html":228}],354:[function(require,module,exports){
 'use strict';
 // B.2.3.3 String.prototype.big()
 require('./_string-html')('big', function (createHTML) {
@@ -21132,7 +18895,7 @@ require('./_string-html')('big', function (createHTML) {
   };
 });
 
-},{"./_string-html":231}],358:[function(require,module,exports){
+},{"./_string-html":228}],355:[function(require,module,exports){
 'use strict';
 // B.2.3.4 String.prototype.blink()
 require('./_string-html')('blink', function (createHTML) {
@@ -21141,7 +18904,7 @@ require('./_string-html')('blink', function (createHTML) {
   };
 });
 
-},{"./_string-html":231}],359:[function(require,module,exports){
+},{"./_string-html":228}],356:[function(require,module,exports){
 'use strict';
 // B.2.3.5 String.prototype.bold()
 require('./_string-html')('bold', function (createHTML) {
@@ -21150,7 +18913,7 @@ require('./_string-html')('bold', function (createHTML) {
   };
 });
 
-},{"./_string-html":231}],360:[function(require,module,exports){
+},{"./_string-html":228}],357:[function(require,module,exports){
 'use strict';
 var $export = require('./_export');
 var $at = require('./_string-at')(false);
@@ -21161,7 +18924,7 @@ $export($export.P, 'String', {
   }
 });
 
-},{"./_export":162,"./_string-at":229}],361:[function(require,module,exports){
+},{"./_export":159,"./_string-at":226}],358:[function(require,module,exports){
 // 21.1.3.6 String.prototype.endsWith(searchString [, endPosition])
 'use strict';
 var $export = require('./_export');
@@ -21183,7 +18946,7 @@ $export($export.P + $export.F * require('./_fails-is-regexp')(ENDS_WITH), 'Strin
   }
 });
 
-},{"./_export":162,"./_fails-is-regexp":163,"./_string-context":230,"./_to-length":241}],362:[function(require,module,exports){
+},{"./_export":159,"./_fails-is-regexp":160,"./_string-context":227,"./_to-length":238}],359:[function(require,module,exports){
 'use strict';
 // B.2.3.6 String.prototype.fixed()
 require('./_string-html')('fixed', function (createHTML) {
@@ -21192,7 +18955,7 @@ require('./_string-html')('fixed', function (createHTML) {
   };
 });
 
-},{"./_string-html":231}],363:[function(require,module,exports){
+},{"./_string-html":228}],360:[function(require,module,exports){
 'use strict';
 // B.2.3.7 String.prototype.fontcolor(color)
 require('./_string-html')('fontcolor', function (createHTML) {
@@ -21201,7 +18964,7 @@ require('./_string-html')('fontcolor', function (createHTML) {
   };
 });
 
-},{"./_string-html":231}],364:[function(require,module,exports){
+},{"./_string-html":228}],361:[function(require,module,exports){
 'use strict';
 // B.2.3.8 String.prototype.fontsize(size)
 require('./_string-html')('fontsize', function (createHTML) {
@@ -21210,7 +18973,7 @@ require('./_string-html')('fontsize', function (createHTML) {
   };
 });
 
-},{"./_string-html":231}],365:[function(require,module,exports){
+},{"./_string-html":228}],362:[function(require,module,exports){
 var $export = require('./_export');
 var toAbsoluteIndex = require('./_to-absolute-index');
 var fromCharCode = String.fromCharCode;
@@ -21235,7 +18998,7 @@ $export($export.S + $export.F * (!!$fromCodePoint && $fromCodePoint.length != 1)
   }
 });
 
-},{"./_export":162,"./_to-absolute-index":237}],366:[function(require,module,exports){
+},{"./_export":159,"./_to-absolute-index":234}],363:[function(require,module,exports){
 // 21.1.3.7 String.prototype.includes(searchString, position = 0)
 'use strict';
 var $export = require('./_export');
@@ -21249,7 +19012,7 @@ $export($export.P + $export.F * require('./_fails-is-regexp')(INCLUDES), 'String
   }
 });
 
-},{"./_export":162,"./_fails-is-regexp":163,"./_string-context":230}],367:[function(require,module,exports){
+},{"./_export":159,"./_fails-is-regexp":160,"./_string-context":227}],364:[function(require,module,exports){
 'use strict';
 // B.2.3.9 String.prototype.italics()
 require('./_string-html')('italics', function (createHTML) {
@@ -21258,7 +19021,7 @@ require('./_string-html')('italics', function (createHTML) {
   };
 });
 
-},{"./_string-html":231}],368:[function(require,module,exports){
+},{"./_string-html":228}],365:[function(require,module,exports){
 'use strict';
 var $at = require('./_string-at')(true);
 
@@ -21277,7 +19040,7 @@ require('./_iter-define')(String, 'String', function (iterated) {
   return { value: point, done: false };
 });
 
-},{"./_iter-define":185,"./_string-at":229}],369:[function(require,module,exports){
+},{"./_iter-define":182,"./_string-at":226}],366:[function(require,module,exports){
 'use strict';
 // B.2.3.10 String.prototype.link(url)
 require('./_string-html')('link', function (createHTML) {
@@ -21286,7 +19049,7 @@ require('./_string-html')('link', function (createHTML) {
   };
 });
 
-},{"./_string-html":231}],370:[function(require,module,exports){
+},{"./_string-html":228}],367:[function(require,module,exports){
 var $export = require('./_export');
 var toIObject = require('./_to-iobject');
 var toLength = require('./_to-length');
@@ -21306,7 +19069,7 @@ $export($export.S, 'String', {
   }
 });
 
-},{"./_export":162,"./_to-iobject":240,"./_to-length":241}],371:[function(require,module,exports){
+},{"./_export":159,"./_to-iobject":237,"./_to-length":238}],368:[function(require,module,exports){
 var $export = require('./_export');
 
 $export($export.P, 'String', {
@@ -21314,7 +19077,7 @@ $export($export.P, 'String', {
   repeat: require('./_string-repeat')
 });
 
-},{"./_export":162,"./_string-repeat":233}],372:[function(require,module,exports){
+},{"./_export":159,"./_string-repeat":230}],369:[function(require,module,exports){
 'use strict';
 // B.2.3.11 String.prototype.small()
 require('./_string-html')('small', function (createHTML) {
@@ -21323,7 +19086,7 @@ require('./_string-html')('small', function (createHTML) {
   };
 });
 
-},{"./_string-html":231}],373:[function(require,module,exports){
+},{"./_string-html":228}],370:[function(require,module,exports){
 // 21.1.3.18 String.prototype.startsWith(searchString [, position ])
 'use strict';
 var $export = require('./_export');
@@ -21343,7 +19106,7 @@ $export($export.P + $export.F * require('./_fails-is-regexp')(STARTS_WITH), 'Str
   }
 });
 
-},{"./_export":162,"./_fails-is-regexp":163,"./_string-context":230,"./_to-length":241}],374:[function(require,module,exports){
+},{"./_export":159,"./_fails-is-regexp":160,"./_string-context":227,"./_to-length":238}],371:[function(require,module,exports){
 'use strict';
 // B.2.3.12 String.prototype.strike()
 require('./_string-html')('strike', function (createHTML) {
@@ -21352,7 +19115,7 @@ require('./_string-html')('strike', function (createHTML) {
   };
 });
 
-},{"./_string-html":231}],375:[function(require,module,exports){
+},{"./_string-html":228}],372:[function(require,module,exports){
 'use strict';
 // B.2.3.13 String.prototype.sub()
 require('./_string-html')('sub', function (createHTML) {
@@ -21361,7 +19124,7 @@ require('./_string-html')('sub', function (createHTML) {
   };
 });
 
-},{"./_string-html":231}],376:[function(require,module,exports){
+},{"./_string-html":228}],373:[function(require,module,exports){
 'use strict';
 // B.2.3.14 String.prototype.sup()
 require('./_string-html')('sup', function (createHTML) {
@@ -21370,7 +19133,7 @@ require('./_string-html')('sup', function (createHTML) {
   };
 });
 
-},{"./_string-html":231}],377:[function(require,module,exports){
+},{"./_string-html":228}],374:[function(require,module,exports){
 'use strict';
 // 21.1.3.25 String.prototype.trim()
 require('./_string-trim')('trim', function ($trim) {
@@ -21379,7 +19142,7 @@ require('./_string-trim')('trim', function ($trim) {
   };
 });
 
-},{"./_string-trim":234}],378:[function(require,module,exports){
+},{"./_string-trim":231}],375:[function(require,module,exports){
 'use strict';
 // ECMAScript 6 symbols shim
 var global = require('./_global');
@@ -21627,7 +19390,7 @@ setToStringTag(Math, 'Math', true);
 // 24.3.3 JSON[@@toStringTag]
 setToStringTag(global.JSON, 'JSON', true);
 
-},{"./_an-object":138,"./_descriptors":158,"./_enum-keys":161,"./_export":162,"./_fails":164,"./_global":170,"./_has":171,"./_hide":172,"./_is-array":179,"./_is-object":181,"./_library":189,"./_meta":194,"./_object-create":198,"./_object-dp":199,"./_object-gopd":201,"./_object-gopn":203,"./_object-gopn-ext":202,"./_object-gops":204,"./_object-keys":207,"./_object-pie":208,"./_property-desc":216,"./_redefine":218,"./_set-to-string-tag":224,"./_shared":226,"./_to-iobject":240,"./_to-object":242,"./_to-primitive":243,"./_uid":247,"./_wks":252,"./_wks-define":250,"./_wks-ext":251}],379:[function(require,module,exports){
+},{"./_an-object":135,"./_descriptors":155,"./_enum-keys":158,"./_export":159,"./_fails":161,"./_global":167,"./_has":168,"./_hide":169,"./_is-array":176,"./_is-object":178,"./_library":186,"./_meta":191,"./_object-create":195,"./_object-dp":196,"./_object-gopd":198,"./_object-gopn":200,"./_object-gopn-ext":199,"./_object-gops":201,"./_object-keys":204,"./_object-pie":205,"./_property-desc":213,"./_redefine":215,"./_set-to-string-tag":221,"./_shared":223,"./_to-iobject":237,"./_to-object":239,"./_to-primitive":240,"./_uid":244,"./_wks":249,"./_wks-define":247,"./_wks-ext":248}],376:[function(require,module,exports){
 'use strict';
 var $export = require('./_export');
 var $typed = require('./_typed');
@@ -21675,76 +19438,76 @@ $export($export.P + $export.U + $export.F * require('./_fails')(function () {
 
 require('./_set-species')(ARRAY_BUFFER);
 
-},{"./_an-object":138,"./_export":162,"./_fails":164,"./_global":170,"./_is-object":181,"./_set-species":223,"./_species-constructor":227,"./_to-absolute-index":237,"./_to-length":241,"./_typed":246,"./_typed-buffer":245}],380:[function(require,module,exports){
+},{"./_an-object":135,"./_export":159,"./_fails":161,"./_global":167,"./_is-object":178,"./_set-species":220,"./_species-constructor":224,"./_to-absolute-index":234,"./_to-length":238,"./_typed":243,"./_typed-buffer":242}],377:[function(require,module,exports){
 var $export = require('./_export');
 $export($export.G + $export.W + $export.F * !require('./_typed').ABV, {
   DataView: require('./_typed-buffer').DataView
 });
 
-},{"./_export":162,"./_typed":246,"./_typed-buffer":245}],381:[function(require,module,exports){
+},{"./_export":159,"./_typed":243,"./_typed-buffer":242}],378:[function(require,module,exports){
 require('./_typed-array')('Float32', 4, function (init) {
   return function Float32Array(data, byteOffset, length) {
     return init(this, data, byteOffset, length);
   };
 });
 
-},{"./_typed-array":244}],382:[function(require,module,exports){
+},{"./_typed-array":241}],379:[function(require,module,exports){
 require('./_typed-array')('Float64', 8, function (init) {
   return function Float64Array(data, byteOffset, length) {
     return init(this, data, byteOffset, length);
   };
 });
 
-},{"./_typed-array":244}],383:[function(require,module,exports){
+},{"./_typed-array":241}],380:[function(require,module,exports){
 require('./_typed-array')('Int16', 2, function (init) {
   return function Int16Array(data, byteOffset, length) {
     return init(this, data, byteOffset, length);
   };
 });
 
-},{"./_typed-array":244}],384:[function(require,module,exports){
+},{"./_typed-array":241}],381:[function(require,module,exports){
 require('./_typed-array')('Int32', 4, function (init) {
   return function Int32Array(data, byteOffset, length) {
     return init(this, data, byteOffset, length);
   };
 });
 
-},{"./_typed-array":244}],385:[function(require,module,exports){
+},{"./_typed-array":241}],382:[function(require,module,exports){
 require('./_typed-array')('Int8', 1, function (init) {
   return function Int8Array(data, byteOffset, length) {
     return init(this, data, byteOffset, length);
   };
 });
 
-},{"./_typed-array":244}],386:[function(require,module,exports){
+},{"./_typed-array":241}],383:[function(require,module,exports){
 require('./_typed-array')('Uint16', 2, function (init) {
   return function Uint16Array(data, byteOffset, length) {
     return init(this, data, byteOffset, length);
   };
 });
 
-},{"./_typed-array":244}],387:[function(require,module,exports){
+},{"./_typed-array":241}],384:[function(require,module,exports){
 require('./_typed-array')('Uint32', 4, function (init) {
   return function Uint32Array(data, byteOffset, length) {
     return init(this, data, byteOffset, length);
   };
 });
 
-},{"./_typed-array":244}],388:[function(require,module,exports){
+},{"./_typed-array":241}],385:[function(require,module,exports){
 require('./_typed-array')('Uint8', 1, function (init) {
   return function Uint8Array(data, byteOffset, length) {
     return init(this, data, byteOffset, length);
   };
 });
 
-},{"./_typed-array":244}],389:[function(require,module,exports){
+},{"./_typed-array":241}],386:[function(require,module,exports){
 require('./_typed-array')('Uint8', 1, function (init) {
   return function Uint8ClampedArray(data, byteOffset, length) {
     return init(this, data, byteOffset, length);
   };
 }, true);
 
-},{"./_typed-array":244}],390:[function(require,module,exports){
+},{"./_typed-array":241}],387:[function(require,module,exports){
 'use strict';
 var global = require('./_global');
 var each = require('./_array-methods')(0);
@@ -21806,7 +19569,7 @@ if (NATIVE_WEAK_MAP && IS_IE11) {
   });
 }
 
-},{"./_array-methods":142,"./_collection":151,"./_collection-weak":150,"./_global":170,"./_is-object":181,"./_meta":194,"./_object-assign":197,"./_redefine":218,"./_validate-collection":249}],391:[function(require,module,exports){
+},{"./_array-methods":139,"./_collection":148,"./_collection-weak":147,"./_global":167,"./_is-object":178,"./_meta":191,"./_object-assign":194,"./_redefine":215,"./_validate-collection":246}],388:[function(require,module,exports){
 'use strict';
 var weak = require('./_collection-weak');
 var validate = require('./_validate-collection');
@@ -21822,7 +19585,7 @@ require('./_collection')(WEAK_SET, function (get) {
   }
 }, weak, false, true);
 
-},{"./_collection":151,"./_collection-weak":150,"./_validate-collection":249}],392:[function(require,module,exports){
+},{"./_collection":148,"./_collection-weak":147,"./_validate-collection":246}],389:[function(require,module,exports){
 'use strict';
 // https://tc39.github.io/proposal-flatMap/#sec-Array.prototype.flatMap
 var $export = require('./_export');
@@ -21846,7 +19609,7 @@ $export($export.P, 'Array', {
 
 require('./_add-to-unscopables')('flatMap');
 
-},{"./_a-function":133,"./_add-to-unscopables":135,"./_array-species-create":145,"./_export":162,"./_flatten-into-array":167,"./_to-length":241,"./_to-object":242}],393:[function(require,module,exports){
+},{"./_a-function":130,"./_add-to-unscopables":132,"./_array-species-create":142,"./_export":159,"./_flatten-into-array":164,"./_to-length":238,"./_to-object":239}],390:[function(require,module,exports){
 'use strict';
 // https://github.com/tc39/Array.prototype.includes
 var $export = require('./_export');
@@ -21860,7 +19623,7 @@ $export($export.P, 'Array', {
 
 require('./_add-to-unscopables')('includes');
 
-},{"./_add-to-unscopables":135,"./_array-includes":141,"./_export":162}],394:[function(require,module,exports){
+},{"./_add-to-unscopables":132,"./_array-includes":138,"./_export":159}],391:[function(require,module,exports){
 // https://github.com/tc39/proposal-object-values-entries
 var $export = require('./_export');
 var $entries = require('./_object-to-array')(true);
@@ -21871,7 +19634,7 @@ $export($export.S, 'Object', {
   }
 });
 
-},{"./_export":162,"./_object-to-array":210}],395:[function(require,module,exports){
+},{"./_export":159,"./_object-to-array":207}],392:[function(require,module,exports){
 // https://github.com/tc39/proposal-object-getownpropertydescriptors
 var $export = require('./_export');
 var ownKeys = require('./_own-keys');
@@ -21895,7 +19658,7 @@ $export($export.S, 'Object', {
   }
 });
 
-},{"./_create-property":153,"./_export":162,"./_object-gopd":201,"./_own-keys":211,"./_to-iobject":240}],396:[function(require,module,exports){
+},{"./_create-property":150,"./_export":159,"./_object-gopd":198,"./_own-keys":208,"./_to-iobject":237}],393:[function(require,module,exports){
 // https://github.com/tc39/proposal-object-values-entries
 var $export = require('./_export');
 var $values = require('./_object-to-array')(false);
@@ -21906,7 +19669,7 @@ $export($export.S, 'Object', {
   }
 });
 
-},{"./_export":162,"./_object-to-array":210}],397:[function(require,module,exports){
+},{"./_export":159,"./_object-to-array":207}],394:[function(require,module,exports){
 // https://github.com/tc39/proposal-promise-finally
 'use strict';
 var $export = require('./_export');
@@ -21928,7 +19691,7 @@ $export($export.P + $export.R, 'Promise', { 'finally': function (onFinally) {
   );
 } });
 
-},{"./_core":152,"./_export":162,"./_global":170,"./_promise-resolve":215,"./_species-constructor":227}],398:[function(require,module,exports){
+},{"./_core":149,"./_export":159,"./_global":167,"./_promise-resolve":212,"./_species-constructor":224}],395:[function(require,module,exports){
 'use strict';
 // https://github.com/tc39/proposal-string-pad-start-end
 var $export = require('./_export');
@@ -21944,7 +19707,7 @@ $export($export.P + $export.F * WEBKIT_BUG, 'String', {
   }
 });
 
-},{"./_export":162,"./_string-pad":232,"./_user-agent":248}],399:[function(require,module,exports){
+},{"./_export":159,"./_string-pad":229,"./_user-agent":245}],396:[function(require,module,exports){
 'use strict';
 // https://github.com/tc39/proposal-string-pad-start-end
 var $export = require('./_export');
@@ -21960,7 +19723,7 @@ $export($export.P + $export.F * WEBKIT_BUG, 'String', {
   }
 });
 
-},{"./_export":162,"./_string-pad":232,"./_user-agent":248}],400:[function(require,module,exports){
+},{"./_export":159,"./_string-pad":229,"./_user-agent":245}],397:[function(require,module,exports){
 'use strict';
 // https://github.com/sebmarkbage/ecmascript-string-left-right-trim
 require('./_string-trim')('trimLeft', function ($trim) {
@@ -21969,7 +19732,7 @@ require('./_string-trim')('trimLeft', function ($trim) {
   };
 }, 'trimStart');
 
-},{"./_string-trim":234}],401:[function(require,module,exports){
+},{"./_string-trim":231}],398:[function(require,module,exports){
 'use strict';
 // https://github.com/sebmarkbage/ecmascript-string-left-right-trim
 require('./_string-trim')('trimRight', function ($trim) {
@@ -21978,10 +19741,10 @@ require('./_string-trim')('trimRight', function ($trim) {
   };
 }, 'trimEnd');
 
-},{"./_string-trim":234}],402:[function(require,module,exports){
+},{"./_string-trim":231}],399:[function(require,module,exports){
 require('./_wks-define')('asyncIterator');
 
-},{"./_wks-define":250}],403:[function(require,module,exports){
+},{"./_wks-define":247}],400:[function(require,module,exports){
 var $iterators = require('./es6.array.iterator');
 var getKeys = require('./_object-keys');
 var redefine = require('./_redefine');
@@ -22041,7 +19804,7 @@ for (var collections = getKeys(DOMIterables), i = 0; i < collections.length; i++
   }
 }
 
-},{"./_global":170,"./_hide":172,"./_iterators":188,"./_object-keys":207,"./_redefine":218,"./_wks":252,"./es6.array.iterator":264}],404:[function(require,module,exports){
+},{"./_global":167,"./_hide":169,"./_iterators":185,"./_object-keys":204,"./_redefine":215,"./_wks":249,"./es6.array.iterator":261}],401:[function(require,module,exports){
 var $export = require('./_export');
 var $task = require('./_task');
 $export($export.G + $export.B, {
@@ -22049,7 +19812,7 @@ $export($export.G + $export.B, {
   clearImmediate: $task.clear
 });
 
-},{"./_export":162,"./_task":236}],405:[function(require,module,exports){
+},{"./_export":159,"./_task":233}],402:[function(require,module,exports){
 // ie9- setTimeout & setInterval additional parameters fix
 var global = require('./_global');
 var $export = require('./_export');
@@ -22071,13 +19834,13 @@ $export($export.G + $export.B + $export.F * MSIE, {
   setInterval: wrap(global.setInterval)
 });
 
-},{"./_export":162,"./_global":170,"./_user-agent":248}],406:[function(require,module,exports){
+},{"./_export":159,"./_global":167,"./_user-agent":245}],403:[function(require,module,exports){
 require('../modules/web.timers');
 require('../modules/web.immediate');
 require('../modules/web.dom.iterable');
 module.exports = require('../modules/_core');
 
-},{"../modules/_core":152,"../modules/web.dom.iterable":403,"../modules/web.immediate":404,"../modules/web.timers":405}],407:[function(require,module,exports){
+},{"../modules/_core":149,"../modules/web.dom.iterable":400,"../modules/web.immediate":401,"../modules/web.timers":402}],404:[function(require,module,exports){
 "use strict";
 
 var _index = require("./index.js");
@@ -22093,7 +19856,7 @@ var _index = require("./index.js");
 module.exports = {
   IdleQueue: _index.IdleQueue
 };
-},{"./index.js":408}],408:[function(require,module,exports){
+},{"./index.js":405}],405:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -22384,7 +20147,7 @@ function _tryIdleCall(idleQueue) {
     }, 0);
   }, 0);
 }
-},{}],409:[function(require,module,exports){
+},{}],406:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.unknownAction = exports.runFullQueryAgain = exports.removeExistingAndInsertAtSortPosition = exports.insertAtSortPosition = exports.alwaysWrong = exports.replaceExisting = exports.removeExisting = exports.removeLastInsertLast = exports.removeFirstInsertFirst = exports.removeLastInsertFirst = exports.removeFirstInsertLast = exports.removeLastItem = exports.removeFirstItem = exports.insertLast = exports.insertFirst = exports.doNothing = void 0;
@@ -22532,7 +20295,7 @@ var unknownAction = function (_input) {
 };
 exports.unknownAction = unknownAction;
 
-},{"array-push-at-sort-position":67}],410:[function(require,module,exports){
+},{"array-push-at-sort-position":64}],407:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.actionFunctions = exports.orderedActionList = void 0;
@@ -22579,7 +20342,7 @@ exports.actionFunctions = {
     unknownAction: action_functions_1.unknownAction
 };
 
-},{"./action-functions":409}],411:[function(require,module,exports){
+},{"./action-functions":406}],408:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.resolveInput = exports.getSimpleBdd = exports.minimalBddString = void 0;
@@ -22599,7 +20362,7 @@ var resolveInput = function (input) {
 };
 exports.resolveInput = resolveInput;
 
-},{"../states":413,"binary-decision-diagram":75}],412:[function(require,module,exports){
+},{"../states":410,"binary-decision-diagram":72}],409:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -22662,7 +20425,7 @@ function runAction(action, queryParams, changeEvent, previousResults, keyDocumen
 }
 exports.runAction = runAction;
 
-},{"./actions":410,"./bdd/bdd.generated":411,"./states":413,"./util":415}],413:[function(require,module,exports){
+},{"./actions":407,"./bdd/bdd.generated":408,"./states":410,"./util":412}],410:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -22772,7 +20535,7 @@ function logStateSet(stateSet) {
 }
 exports.logStateSet = logStateSet;
 
-},{"./state-resolver":414}],414:[function(require,module,exports){
+},{"./state-resolver":411}],411:[function(require,module,exports){
 "use strict";
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
@@ -22970,7 +20733,7 @@ var wasResultsEmpty = function (input) {
 };
 exports.wasResultsEmpty = wasResultsEmpty;
 
-},{"../util":415,"object-path":419}],415:[function(require,module,exports){
+},{"../util":412,"object-path":416}],412:[function(require,module,exports){
 "use strict";
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -23133,7 +20896,7 @@ function roundToTwoDecimals(num) {
 }
 exports.roundToTwoDecimals = roundToTwoDecimals;
 
-},{}],416:[function(require,module,exports){
+},{}],413:[function(require,module,exports){
 'use strict';
 
 // do not edit .js files directly - edit src/index.jst
@@ -23181,7 +20944,7 @@ module.exports = function equal(a, b) {
   return a!==a && b!==b;
 };
 
-},{}],417:[function(require,module,exports){
+},{}],414:[function(require,module,exports){
 /*! ieee754. BSD-3-Clause License. Feross Aboukhadijeh <https://feross.org/opensource> */
 exports.read = function (buffer, offset, isLE, mLen, nBytes) {
   var e, m
@@ -23268,7 +21031,7 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
   buffer[offset + i - d] |= s * 128
 }
 
-},{}],418:[function(require,module,exports){
+},{}],415:[function(require,module,exports){
 (function (global,Buffer){(function (){
 //
 // THIS FILE IS AUTOMATICALLY GENERATED! DO NOT EDIT BY HAND!
@@ -23591,7 +21354,7 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
 }));
 
 }).call(this)}).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {},require("buffer").Buffer)
-},{"buffer":102}],419:[function(require,module,exports){
+},{"buffer":99}],416:[function(require,module,exports){
 (function (root, factory) {
   'use strict'
 
@@ -23913,7 +21676,7 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
   return mod
 })
 
-},{}],420:[function(require,module,exports){
+},{}],417:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.now = exports.removeTooOldValues = exports.ObliviousSet = void 0;
@@ -23991,7 +21754,7 @@ function now() {
 }
 exports.now = now;
 
-},{}],421:[function(require,module,exports){
+},{}],418:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -24177,7 +21940,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],422:[function(require,module,exports){
+},{}],419:[function(require,module,exports){
 /**
  * Copyright (c) 2014-present, Facebook, Inc.
  *
@@ -24940,7 +22703,7 @@ try {
   }
 }
 
-},{}],423:[function(require,module,exports){
+},{}],420:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -25299,7 +23062,7 @@ Object.defineProperty(exports, "zipAll", { enumerable: true, get: function () { 
 var zipWith_1 = require("./internal/operators/zipWith");
 Object.defineProperty(exports, "zipWith", { enumerable: true, get: function () { return zipWith_1.zipWith; } });
 
-},{"./internal/AsyncSubject":424,"./internal/BehaviorSubject":425,"./internal/Notification":426,"./internal/Observable":428,"./internal/ReplaySubject":429,"./internal/Scheduler":430,"./internal/Subject":431,"./internal/Subscriber":432,"./internal/Subscription":433,"./internal/config":434,"./internal/firstValueFrom":435,"./internal/lastValueFrom":436,"./internal/observable/ConnectableObservable":437,"./internal/observable/bindCallback":438,"./internal/observable/bindNodeCallback":440,"./internal/observable/combineLatest":441,"./internal/observable/concat":442,"./internal/observable/connectable":443,"./internal/observable/defer":444,"./internal/observable/dom/animationFrames":445,"./internal/observable/empty":446,"./internal/observable/forkJoin":447,"./internal/observable/from":448,"./internal/observable/fromEvent":449,"./internal/observable/fromEventPattern":450,"./internal/observable/generate":452,"./internal/observable/iif":453,"./internal/observable/interval":455,"./internal/observable/merge":456,"./internal/observable/never":457,"./internal/observable/of":458,"./internal/observable/onErrorResumeNext":459,"./internal/observable/pairs":460,"./internal/observable/partition":461,"./internal/observable/race":462,"./internal/observable/range":463,"./internal/observable/throwError":464,"./internal/observable/timer":465,"./internal/observable/using":466,"./internal/observable/zip":467,"./internal/operators/audit":469,"./internal/operators/auditTime":470,"./internal/operators/buffer":471,"./internal/operators/bufferCount":472,"./internal/operators/bufferTime":473,"./internal/operators/bufferToggle":474,"./internal/operators/bufferWhen":475,"./internal/operators/catchError":476,"./internal/operators/combineAll":477,"./internal/operators/combineLatestAll":479,"./internal/operators/combineLatestWith":480,"./internal/operators/concatAll":482,"./internal/operators/concatMap":483,"./internal/operators/concatMapTo":484,"./internal/operators/concatWith":485,"./internal/operators/connect":486,"./internal/operators/count":487,"./internal/operators/debounce":488,"./internal/operators/debounceTime":489,"./internal/operators/defaultIfEmpty":490,"./internal/operators/delay":491,"./internal/operators/delayWhen":492,"./internal/operators/dematerialize":493,"./internal/operators/distinct":494,"./internal/operators/distinctUntilChanged":495,"./internal/operators/distinctUntilKeyChanged":496,"./internal/operators/elementAt":497,"./internal/operators/endWith":498,"./internal/operators/every":499,"./internal/operators/exhaust":500,"./internal/operators/exhaustAll":501,"./internal/operators/exhaustMap":502,"./internal/operators/expand":503,"./internal/operators/filter":504,"./internal/operators/finalize":505,"./internal/operators/find":506,"./internal/operators/findIndex":507,"./internal/operators/first":508,"./internal/operators/flatMap":509,"./internal/operators/groupBy":510,"./internal/operators/ignoreElements":511,"./internal/operators/isEmpty":512,"./internal/operators/last":514,"./internal/operators/map":515,"./internal/operators/mapTo":516,"./internal/operators/materialize":517,"./internal/operators/max":518,"./internal/operators/mergeAll":520,"./internal/operators/mergeMap":522,"./internal/operators/mergeMapTo":523,"./internal/operators/mergeScan":524,"./internal/operators/mergeWith":525,"./internal/operators/min":526,"./internal/operators/multicast":527,"./internal/operators/observeOn":528,"./internal/operators/onErrorResumeNextWith":529,"./internal/operators/pairwise":530,"./internal/operators/pluck":532,"./internal/operators/publish":533,"./internal/operators/publishBehavior":534,"./internal/operators/publishLast":535,"./internal/operators/publishReplay":536,"./internal/operators/raceWith":538,"./internal/operators/reduce":539,"./internal/operators/refCount":540,"./internal/operators/repeat":541,"./internal/operators/repeatWhen":542,"./internal/operators/retry":543,"./internal/operators/retryWhen":544,"./internal/operators/sample":545,"./internal/operators/sampleTime":546,"./internal/operators/scan":547,"./internal/operators/sequenceEqual":549,"./internal/operators/share":550,"./internal/operators/shareReplay":551,"./internal/operators/single":552,"./internal/operators/skip":553,"./internal/operators/skipLast":554,"./internal/operators/skipUntil":555,"./internal/operators/skipWhile":556,"./internal/operators/startWith":557,"./internal/operators/subscribeOn":558,"./internal/operators/switchAll":559,"./internal/operators/switchMap":560,"./internal/operators/switchMapTo":561,"./internal/operators/switchScan":562,"./internal/operators/take":563,"./internal/operators/takeLast":564,"./internal/operators/takeUntil":565,"./internal/operators/takeWhile":566,"./internal/operators/tap":567,"./internal/operators/throttle":568,"./internal/operators/throttleTime":569,"./internal/operators/throwIfEmpty":570,"./internal/operators/timeInterval":571,"./internal/operators/timeout":572,"./internal/operators/timeoutWith":573,"./internal/operators/timestamp":574,"./internal/operators/toArray":575,"./internal/operators/window":576,"./internal/operators/windowCount":577,"./internal/operators/windowTime":578,"./internal/operators/windowToggle":579,"./internal/operators/windowWhen":580,"./internal/operators/withLatestFrom":581,"./internal/operators/zipAll":583,"./internal/operators/zipWith":584,"./internal/scheduled/scheduled":591,"./internal/scheduler/VirtualTimeScheduler":601,"./internal/scheduler/animationFrame":602,"./internal/scheduler/asap":604,"./internal/scheduler/async":605,"./internal/scheduler/queue":610,"./internal/symbol/observable":613,"./internal/types":614,"./internal/util/ArgumentOutOfRangeError":615,"./internal/util/EmptyError":616,"./internal/util/NotFoundError":618,"./internal/util/ObjectUnsubscribedError":619,"./internal/util/SequenceError":620,"./internal/util/UnsubscriptionError":621,"./internal/util/identity":630,"./internal/util/isObservable":637,"./internal/util/noop":643,"./internal/util/pipe":645}],424:[function(require,module,exports){
+},{"./internal/AsyncSubject":421,"./internal/BehaviorSubject":422,"./internal/Notification":423,"./internal/Observable":425,"./internal/ReplaySubject":426,"./internal/Scheduler":427,"./internal/Subject":428,"./internal/Subscriber":429,"./internal/Subscription":430,"./internal/config":431,"./internal/firstValueFrom":432,"./internal/lastValueFrom":433,"./internal/observable/ConnectableObservable":434,"./internal/observable/bindCallback":435,"./internal/observable/bindNodeCallback":437,"./internal/observable/combineLatest":438,"./internal/observable/concat":439,"./internal/observable/connectable":440,"./internal/observable/defer":441,"./internal/observable/dom/animationFrames":442,"./internal/observable/empty":443,"./internal/observable/forkJoin":444,"./internal/observable/from":445,"./internal/observable/fromEvent":446,"./internal/observable/fromEventPattern":447,"./internal/observable/generate":449,"./internal/observable/iif":450,"./internal/observable/interval":452,"./internal/observable/merge":453,"./internal/observable/never":454,"./internal/observable/of":455,"./internal/observable/onErrorResumeNext":456,"./internal/observable/pairs":457,"./internal/observable/partition":458,"./internal/observable/race":459,"./internal/observable/range":460,"./internal/observable/throwError":461,"./internal/observable/timer":462,"./internal/observable/using":463,"./internal/observable/zip":464,"./internal/operators/audit":466,"./internal/operators/auditTime":467,"./internal/operators/buffer":468,"./internal/operators/bufferCount":469,"./internal/operators/bufferTime":470,"./internal/operators/bufferToggle":471,"./internal/operators/bufferWhen":472,"./internal/operators/catchError":473,"./internal/operators/combineAll":474,"./internal/operators/combineLatestAll":476,"./internal/operators/combineLatestWith":477,"./internal/operators/concatAll":479,"./internal/operators/concatMap":480,"./internal/operators/concatMapTo":481,"./internal/operators/concatWith":482,"./internal/operators/connect":483,"./internal/operators/count":484,"./internal/operators/debounce":485,"./internal/operators/debounceTime":486,"./internal/operators/defaultIfEmpty":487,"./internal/operators/delay":488,"./internal/operators/delayWhen":489,"./internal/operators/dematerialize":490,"./internal/operators/distinct":491,"./internal/operators/distinctUntilChanged":492,"./internal/operators/distinctUntilKeyChanged":493,"./internal/operators/elementAt":494,"./internal/operators/endWith":495,"./internal/operators/every":496,"./internal/operators/exhaust":497,"./internal/operators/exhaustAll":498,"./internal/operators/exhaustMap":499,"./internal/operators/expand":500,"./internal/operators/filter":501,"./internal/operators/finalize":502,"./internal/operators/find":503,"./internal/operators/findIndex":504,"./internal/operators/first":505,"./internal/operators/flatMap":506,"./internal/operators/groupBy":507,"./internal/operators/ignoreElements":508,"./internal/operators/isEmpty":509,"./internal/operators/last":511,"./internal/operators/map":512,"./internal/operators/mapTo":513,"./internal/operators/materialize":514,"./internal/operators/max":515,"./internal/operators/mergeAll":517,"./internal/operators/mergeMap":519,"./internal/operators/mergeMapTo":520,"./internal/operators/mergeScan":521,"./internal/operators/mergeWith":522,"./internal/operators/min":523,"./internal/operators/multicast":524,"./internal/operators/observeOn":525,"./internal/operators/onErrorResumeNextWith":526,"./internal/operators/pairwise":527,"./internal/operators/pluck":529,"./internal/operators/publish":530,"./internal/operators/publishBehavior":531,"./internal/operators/publishLast":532,"./internal/operators/publishReplay":533,"./internal/operators/raceWith":535,"./internal/operators/reduce":536,"./internal/operators/refCount":537,"./internal/operators/repeat":538,"./internal/operators/repeatWhen":539,"./internal/operators/retry":540,"./internal/operators/retryWhen":541,"./internal/operators/sample":542,"./internal/operators/sampleTime":543,"./internal/operators/scan":544,"./internal/operators/sequenceEqual":546,"./internal/operators/share":547,"./internal/operators/shareReplay":548,"./internal/operators/single":549,"./internal/operators/skip":550,"./internal/operators/skipLast":551,"./internal/operators/skipUntil":552,"./internal/operators/skipWhile":553,"./internal/operators/startWith":554,"./internal/operators/subscribeOn":555,"./internal/operators/switchAll":556,"./internal/operators/switchMap":557,"./internal/operators/switchMapTo":558,"./internal/operators/switchScan":559,"./internal/operators/take":560,"./internal/operators/takeLast":561,"./internal/operators/takeUntil":562,"./internal/operators/takeWhile":563,"./internal/operators/tap":564,"./internal/operators/throttle":565,"./internal/operators/throttleTime":566,"./internal/operators/throwIfEmpty":567,"./internal/operators/timeInterval":568,"./internal/operators/timeout":569,"./internal/operators/timeoutWith":570,"./internal/operators/timestamp":571,"./internal/operators/toArray":572,"./internal/operators/window":573,"./internal/operators/windowCount":574,"./internal/operators/windowTime":575,"./internal/operators/windowToggle":576,"./internal/operators/windowWhen":577,"./internal/operators/withLatestFrom":578,"./internal/operators/zipAll":580,"./internal/operators/zipWith":581,"./internal/scheduled/scheduled":588,"./internal/scheduler/VirtualTimeScheduler":598,"./internal/scheduler/animationFrame":599,"./internal/scheduler/asap":601,"./internal/scheduler/async":602,"./internal/scheduler/queue":607,"./internal/symbol/observable":610,"./internal/types":611,"./internal/util/ArgumentOutOfRangeError":612,"./internal/util/EmptyError":613,"./internal/util/NotFoundError":615,"./internal/util/ObjectUnsubscribedError":616,"./internal/util/SequenceError":617,"./internal/util/UnsubscriptionError":618,"./internal/util/identity":627,"./internal/util/isObservable":634,"./internal/util/noop":640,"./internal/util/pipe":642}],421:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -25356,7 +23119,7 @@ var AsyncSubject = (function (_super) {
 }(Subject_1.Subject));
 exports.AsyncSubject = AsyncSubject;
 
-},{"./Subject":431}],425:[function(require,module,exports){
+},{"./Subject":428}],422:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -25410,7 +23173,7 @@ var BehaviorSubject = (function (_super) {
 }(Subject_1.Subject));
 exports.BehaviorSubject = BehaviorSubject;
 
-},{"./Subject":431}],426:[function(require,module,exports){
+},{"./Subject":428}],423:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.observeNotification = exports.Notification = exports.NotificationKind = void 0;
@@ -25487,7 +23250,7 @@ function observeNotification(notification, observer) {
 }
 exports.observeNotification = observeNotification;
 
-},{"./observable/empty":446,"./observable/of":458,"./observable/throwError":464,"./util/isFunction":634}],427:[function(require,module,exports){
+},{"./observable/empty":443,"./observable/of":455,"./observable/throwError":461,"./util/isFunction":631}],424:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createNotification = exports.nextNotification = exports.errorNotification = exports.COMPLETE_NOTIFICATION = void 0;
@@ -25509,7 +23272,7 @@ function createNotification(kind, value, error) {
 }
 exports.createNotification = createNotification;
 
-},{}],428:[function(require,module,exports){
+},{}],425:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Observable = void 0;
@@ -25615,7 +23378,7 @@ function isSubscriber(value) {
     return (value && value instanceof Subscriber_1.Subscriber) || (isObserver(value) && Subscription_1.isSubscription(value));
 }
 
-},{"./Subscriber":432,"./Subscription":433,"./config":434,"./symbol/observable":613,"./util/errorContext":628,"./util/isFunction":634,"./util/pipe":645}],429:[function(require,module,exports){
+},{"./Subscriber":429,"./Subscription":430,"./config":431,"./symbol/observable":610,"./util/errorContext":625,"./util/isFunction":631,"./util/pipe":642}],426:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -25691,7 +23454,7 @@ var ReplaySubject = (function (_super) {
 }(Subject_1.Subject));
 exports.ReplaySubject = ReplaySubject;
 
-},{"./Subject":431,"./scheduler/dateTimestampProvider":606}],430:[function(require,module,exports){
+},{"./Subject":428,"./scheduler/dateTimestampProvider":603}],427:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Scheduler = void 0;
@@ -25711,7 +23474,7 @@ var Scheduler = (function () {
 }());
 exports.Scheduler = Scheduler;
 
-},{"./scheduler/dateTimestampProvider":606}],431:[function(require,module,exports){
+},{"./scheduler/dateTimestampProvider":603}],428:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -25902,7 +23665,7 @@ var AnonymousSubject = (function (_super) {
 }(Subject));
 exports.AnonymousSubject = AnonymousSubject;
 
-},{"./Observable":428,"./Subscription":433,"./util/ObjectUnsubscribedError":619,"./util/arrRemove":625,"./util/errorContext":628}],432:[function(require,module,exports){
+},{"./Observable":425,"./Subscription":430,"./util/ObjectUnsubscribedError":616,"./util/arrRemove":622,"./util/errorContext":625}],429:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -26104,7 +23867,7 @@ exports.EMPTY_OBSERVER = {
     complete: noop_1.noop,
 };
 
-},{"./NotificationFactories":427,"./Subscription":433,"./config":434,"./scheduler/timeoutProvider":611,"./util/errorContext":628,"./util/isFunction":634,"./util/noop":643,"./util/reportUnhandledError":646}],433:[function(require,module,exports){
+},{"./NotificationFactories":424,"./Subscription":430,"./config":431,"./scheduler/timeoutProvider":608,"./util/errorContext":625,"./util/isFunction":631,"./util/noop":640,"./util/reportUnhandledError":643}],430:[function(require,module,exports){
 "use strict";
 var __values = (this && this.__values) || function(o) {
     var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
@@ -26283,7 +24046,7 @@ function execFinalizer(finalizer) {
     }
 }
 
-},{"./util/UnsubscriptionError":621,"./util/arrRemove":625,"./util/isFunction":634}],434:[function(require,module,exports){
+},{"./util/UnsubscriptionError":618,"./util/arrRemove":622,"./util/isFunction":631}],431:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.config = void 0;
@@ -26295,7 +24058,7 @@ exports.config = {
     useDeprecatedNextContext: false,
 };
 
-},{}],435:[function(require,module,exports){
+},{}],432:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.firstValueFrom = void 0;
@@ -26324,7 +24087,7 @@ function firstValueFrom(source, config) {
 }
 exports.firstValueFrom = firstValueFrom;
 
-},{"./Subscriber":432,"./util/EmptyError":616}],436:[function(require,module,exports){
+},{"./Subscriber":429,"./util/EmptyError":613}],433:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.lastValueFrom = void 0;
@@ -26356,7 +24119,7 @@ function lastValueFrom(source, config) {
 }
 exports.lastValueFrom = lastValueFrom;
 
-},{"./util/EmptyError":616}],437:[function(require,module,exports){
+},{"./util/EmptyError":613}],434:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -26437,7 +24200,7 @@ var ConnectableObservable = (function (_super) {
 }(Observable_1.Observable));
 exports.ConnectableObservable = ConnectableObservable;
 
-},{"../Observable":428,"../Subscription":433,"../operators/OperatorSubscriber":468,"../operators/refCount":540,"../util/lift":641}],438:[function(require,module,exports){
+},{"../Observable":425,"../Subscription":430,"../operators/OperatorSubscriber":465,"../operators/refCount":537,"../util/lift":638}],435:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.bindCallback = void 0;
@@ -26447,7 +24210,7 @@ function bindCallback(callbackFunc, resultSelector, scheduler) {
 }
 exports.bindCallback = bindCallback;
 
-},{"./bindCallbackInternals":439}],439:[function(require,module,exports){
+},{"./bindCallbackInternals":436}],436:[function(require,module,exports){
 "use strict";
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -26551,7 +24314,7 @@ function bindCallbackInternals(isNodeStyle, callbackFunc, resultSelector, schedu
 }
 exports.bindCallbackInternals = bindCallbackInternals;
 
-},{"../AsyncSubject":424,"../Observable":428,"../operators/observeOn":528,"../operators/subscribeOn":558,"../util/isScheduler":640,"../util/mapOneOrManyArgs":642}],440:[function(require,module,exports){
+},{"../AsyncSubject":421,"../Observable":425,"../operators/observeOn":525,"../operators/subscribeOn":555,"../util/isScheduler":637,"../util/mapOneOrManyArgs":639}],437:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.bindNodeCallback = void 0;
@@ -26561,7 +24324,7 @@ function bindNodeCallback(callbackFunc, resultSelector, scheduler) {
 }
 exports.bindNodeCallback = bindNodeCallback;
 
-},{"./bindCallbackInternals":439}],441:[function(require,module,exports){
+},{"./bindCallbackInternals":436}],438:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.combineLatestInit = exports.combineLatest = void 0;
@@ -26637,7 +24400,7 @@ function maybeSchedule(scheduler, execute, subscription) {
     }
 }
 
-},{"../Observable":428,"../operators/OperatorSubscriber":468,"../util/args":622,"../util/argsArgArrayOrObject":623,"../util/createObject":627,"../util/executeSchedule":629,"../util/identity":630,"../util/mapOneOrManyArgs":642,"./from":448}],442:[function(require,module,exports){
+},{"../Observable":425,"../operators/OperatorSubscriber":465,"../util/args":619,"../util/argsArgArrayOrObject":620,"../util/createObject":624,"../util/executeSchedule":626,"../util/identity":627,"../util/mapOneOrManyArgs":639,"./from":445}],439:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.concat = void 0;
@@ -26653,7 +24416,7 @@ function concat() {
 }
 exports.concat = concat;
 
-},{"../operators/concatAll":482,"../util/args":622,"./from":448}],443:[function(require,module,exports){
+},{"../operators/concatAll":479,"../util/args":619,"./from":445}],440:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.connectable = void 0;
@@ -26685,7 +24448,7 @@ function connectable(source, config) {
 }
 exports.connectable = connectable;
 
-},{"../Observable":428,"../Subject":431,"./defer":444}],444:[function(require,module,exports){
+},{"../Observable":425,"../Subject":428,"./defer":441}],441:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.defer = void 0;
@@ -26698,7 +24461,7 @@ function defer(observableFactory) {
 }
 exports.defer = defer;
 
-},{"../Observable":428,"./innerFrom":454}],445:[function(require,module,exports){
+},{"../Observable":425,"./innerFrom":451}],442:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.animationFrames = void 0;
@@ -26737,7 +24500,7 @@ function animationFramesFactory(timestampProvider) {
 }
 var DEFAULT_ANIMATION_FRAMES = animationFramesFactory();
 
-},{"../../Observable":428,"../../scheduler/animationFrameProvider":603,"../../scheduler/performanceTimestampProvider":609}],446:[function(require,module,exports){
+},{"../../Observable":425,"../../scheduler/animationFrameProvider":600,"../../scheduler/performanceTimestampProvider":606}],443:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.empty = exports.EMPTY = void 0;
@@ -26751,7 +24514,7 @@ function emptyScheduled(scheduler) {
     return new Observable_1.Observable(function (subscriber) { return scheduler.schedule(function () { return subscriber.complete(); }); });
 }
 
-},{"../Observable":428}],447:[function(require,module,exports){
+},{"../Observable":425}],444:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.forkJoin = void 0;
@@ -26803,7 +24566,7 @@ function forkJoin() {
 }
 exports.forkJoin = forkJoin;
 
-},{"../Observable":428,"../operators/OperatorSubscriber":468,"../util/args":622,"../util/argsArgArrayOrObject":623,"../util/createObject":627,"../util/mapOneOrManyArgs":642,"./innerFrom":454}],448:[function(require,module,exports){
+},{"../Observable":425,"../operators/OperatorSubscriber":465,"../util/args":619,"../util/argsArgArrayOrObject":620,"../util/createObject":624,"../util/mapOneOrManyArgs":639,"./innerFrom":451}],445:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.from = void 0;
@@ -26814,7 +24577,7 @@ function from(input, scheduler) {
 }
 exports.from = from;
 
-},{"../scheduled/scheduled":591,"./innerFrom":454}],449:[function(require,module,exports){
+},{"../scheduled/scheduled":588,"./innerFrom":451}],446:[function(require,module,exports){
 "use strict";
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -26893,7 +24656,7 @@ function isEventTarget(target) {
     return isFunction_1.isFunction(target.addEventListener) && isFunction_1.isFunction(target.removeEventListener);
 }
 
-},{"../Observable":428,"../observable/innerFrom":454,"../operators/mergeMap":522,"../util/isArrayLike":631,"../util/isFunction":634,"../util/mapOneOrManyArgs":642}],450:[function(require,module,exports){
+},{"../Observable":425,"../observable/innerFrom":451,"../operators/mergeMap":519,"../util/isArrayLike":628,"../util/isFunction":631,"../util/mapOneOrManyArgs":639}],447:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.fromEventPattern = void 0;
@@ -26918,7 +24681,7 @@ function fromEventPattern(addHandler, removeHandler, resultSelector) {
 }
 exports.fromEventPattern = fromEventPattern;
 
-},{"../Observable":428,"../util/isFunction":634,"../util/mapOneOrManyArgs":642}],451:[function(require,module,exports){
+},{"../Observable":425,"../util/isFunction":631,"../util/mapOneOrManyArgs":639}],448:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.fromSubscribable = void 0;
@@ -26928,7 +24691,7 @@ function fromSubscribable(subscribable) {
 }
 exports.fromSubscribable = fromSubscribable;
 
-},{"../Observable":428}],452:[function(require,module,exports){
+},{"../Observable":425}],449:[function(require,module,exports){
 "use strict";
 var __generator = (this && this.__generator) || function (thisArg, body) {
     var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
@@ -27008,7 +24771,7 @@ function generate(initialStateOrOptions, condition, iterate, resultSelectorOrSch
 }
 exports.generate = generate;
 
-},{"../scheduled/scheduleIterable":587,"../util/identity":630,"../util/isScheduler":640,"./defer":444}],453:[function(require,module,exports){
+},{"../scheduled/scheduleIterable":584,"../util/identity":627,"../util/isScheduler":637,"./defer":441}],450:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.iif = void 0;
@@ -27018,7 +24781,7 @@ function iif(condition, trueResult, falseResult) {
 }
 exports.iif = iif;
 
-},{"./defer":444}],454:[function(require,module,exports){
+},{"./defer":441}],451:[function(require,module,exports){
 (function (process){(function (){
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -27227,7 +24990,7 @@ function process(asyncIterable, subscriber) {
 }
 
 }).call(this)}).call(this,require('_process'))
-},{"../Observable":428,"../symbol/observable":613,"../util/isArrayLike":631,"../util/isAsyncIterable":632,"../util/isFunction":634,"../util/isInteropObservable":635,"../util/isIterable":636,"../util/isPromise":638,"../util/isReadableStreamLike":639,"../util/reportUnhandledError":646,"../util/throwUnobservableError":647,"_process":421}],455:[function(require,module,exports){
+},{"../Observable":425,"../symbol/observable":610,"../util/isArrayLike":628,"../util/isAsyncIterable":629,"../util/isFunction":631,"../util/isInteropObservable":632,"../util/isIterable":633,"../util/isPromise":635,"../util/isReadableStreamLike":636,"../util/reportUnhandledError":643,"../util/throwUnobservableError":644,"_process":418}],452:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.interval = void 0;
@@ -27243,7 +25006,7 @@ function interval(period, scheduler) {
 }
 exports.interval = interval;
 
-},{"../scheduler/async":605,"./timer":465}],456:[function(require,module,exports){
+},{"../scheduler/async":602,"./timer":462}],453:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.merge = void 0;
@@ -27271,7 +25034,7 @@ function merge() {
 }
 exports.merge = merge;
 
-},{"../operators/mergeAll":520,"../util/args":622,"./empty":446,"./from":448,"./innerFrom":454}],457:[function(require,module,exports){
+},{"../operators/mergeAll":517,"../util/args":619,"./empty":443,"./from":445,"./innerFrom":451}],454:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.never = exports.NEVER = void 0;
@@ -27283,7 +25046,7 @@ function never() {
 }
 exports.never = never;
 
-},{"../Observable":428,"../util/noop":643}],458:[function(require,module,exports){
+},{"../Observable":425,"../util/noop":640}],455:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.of = void 0;
@@ -27299,7 +25062,7 @@ function of() {
 }
 exports.of = of;
 
-},{"../util/args":622,"./from":448}],459:[function(require,module,exports){
+},{"../util/args":619,"./from":445}],456:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.onErrorResumeNext = void 0;
@@ -27339,7 +25102,7 @@ function onErrorResumeNext() {
 }
 exports.onErrorResumeNext = onErrorResumeNext;
 
-},{"../Observable":428,"../operators/OperatorSubscriber":468,"../util/argsOrArgArray":624,"../util/noop":643,"./innerFrom":454}],460:[function(require,module,exports){
+},{"../Observable":425,"../operators/OperatorSubscriber":465,"../util/argsOrArgArray":621,"../util/noop":640,"./innerFrom":451}],457:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.pairs = void 0;
@@ -27349,7 +25112,7 @@ function pairs(obj, scheduler) {
 }
 exports.pairs = pairs;
 
-},{"./from":448}],461:[function(require,module,exports){
+},{"./from":445}],458:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.partition = void 0;
@@ -27361,7 +25124,7 @@ function partition(source, predicate, thisArg) {
 }
 exports.partition = partition;
 
-},{"../operators/filter":504,"../util/not":644,"./innerFrom":454}],462:[function(require,module,exports){
+},{"../operators/filter":501,"../util/not":641,"./innerFrom":451}],459:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.raceInit = exports.race = void 0;
@@ -27399,7 +25162,7 @@ function raceInit(sources) {
 }
 exports.raceInit = raceInit;
 
-},{"../Observable":428,"../operators/OperatorSubscriber":468,"../util/argsOrArgArray":624,"./innerFrom":454}],463:[function(require,module,exports){
+},{"../Observable":425,"../operators/OperatorSubscriber":465,"../util/argsOrArgArray":621,"./innerFrom":451}],460:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.range = void 0;
@@ -27439,7 +25202,7 @@ function range(start, count, scheduler) {
 }
 exports.range = range;
 
-},{"../Observable":428,"./empty":446}],464:[function(require,module,exports){
+},{"../Observable":425,"./empty":443}],461:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.throwError = void 0;
@@ -27452,7 +25215,7 @@ function throwError(errorOrErrorFactory, scheduler) {
 }
 exports.throwError = throwError;
 
-},{"../Observable":428,"../util/isFunction":634}],465:[function(require,module,exports){
+},{"../Observable":425,"../util/isFunction":631}],462:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.timer = void 0;
@@ -27493,7 +25256,7 @@ function timer(dueTime, intervalOrScheduler, scheduler) {
 }
 exports.timer = timer;
 
-},{"../Observable":428,"../scheduler/async":605,"../util/isDate":633,"../util/isScheduler":640}],466:[function(require,module,exports){
+},{"../Observable":425,"../scheduler/async":602,"../util/isDate":630,"../util/isScheduler":637}],463:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.using = void 0;
@@ -27515,7 +25278,7 @@ function using(resourceFactory, observableFactory) {
 }
 exports.using = using;
 
-},{"../Observable":428,"./empty":446,"./innerFrom":454}],467:[function(require,module,exports){
+},{"../Observable":425,"./empty":443,"./innerFrom":451}],464:[function(require,module,exports){
 "use strict";
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -27586,7 +25349,7 @@ function zip() {
 }
 exports.zip = zip;
 
-},{"../Observable":428,"../operators/OperatorSubscriber":468,"../util/args":622,"../util/argsOrArgArray":624,"./empty":446,"./innerFrom":454}],468:[function(require,module,exports){
+},{"../Observable":425,"../operators/OperatorSubscriber":465,"../util/args":619,"../util/argsOrArgArray":621,"./empty":443,"./innerFrom":451}],465:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -27666,7 +25429,7 @@ var OperatorSubscriber = (function (_super) {
 }(Subscriber_1.Subscriber));
 exports.OperatorSubscriber = OperatorSubscriber;
 
-},{"../Subscriber":432}],469:[function(require,module,exports){
+},{"../Subscriber":429}],466:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.audit = void 0;
@@ -27708,7 +25471,7 @@ function audit(durationSelector) {
 }
 exports.audit = audit;
 
-},{"../observable/innerFrom":454,"../util/lift":641,"./OperatorSubscriber":468}],470:[function(require,module,exports){
+},{"../observable/innerFrom":451,"../util/lift":638,"./OperatorSubscriber":465}],467:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.auditTime = void 0;
@@ -27721,7 +25484,7 @@ function auditTime(duration, scheduler) {
 }
 exports.auditTime = auditTime;
 
-},{"../observable/timer":465,"../scheduler/async":605,"./audit":469}],471:[function(require,module,exports){
+},{"../observable/timer":462,"../scheduler/async":602,"./audit":466}],468:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.buffer = void 0;
@@ -27748,7 +25511,7 @@ function buffer(closingNotifier) {
 }
 exports.buffer = buffer;
 
-},{"../observable/innerFrom":454,"../util/lift":641,"../util/noop":643,"./OperatorSubscriber":468}],472:[function(require,module,exports){
+},{"../observable/innerFrom":451,"../util/lift":638,"../util/noop":640,"./OperatorSubscriber":465}],469:[function(require,module,exports){
 "use strict";
 var __values = (this && this.__values) || function(o) {
     var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
@@ -27834,7 +25597,7 @@ function bufferCount(bufferSize, startBufferEvery) {
 }
 exports.bufferCount = bufferCount;
 
-},{"../util/arrRemove":625,"../util/lift":641,"./OperatorSubscriber":468}],473:[function(require,module,exports){
+},{"../util/arrRemove":622,"../util/lift":638,"./OperatorSubscriber":465}],470:[function(require,module,exports){
 "use strict";
 var __values = (this && this.__values) || function(o) {
     var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
@@ -27926,7 +25689,7 @@ function bufferTime(bufferTimeSpan) {
 }
 exports.bufferTime = bufferTime;
 
-},{"../Subscription":433,"../scheduler/async":605,"../util/args":622,"../util/arrRemove":625,"../util/executeSchedule":629,"../util/lift":641,"./OperatorSubscriber":468}],474:[function(require,module,exports){
+},{"../Subscription":430,"../scheduler/async":602,"../util/args":619,"../util/arrRemove":622,"../util/executeSchedule":626,"../util/lift":638,"./OperatorSubscriber":465}],471:[function(require,module,exports){
 "use strict";
 var __values = (this && this.__values) || function(o) {
     var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
@@ -27986,7 +25749,7 @@ function bufferToggle(openings, closingSelector) {
 }
 exports.bufferToggle = bufferToggle;
 
-},{"../Subscription":433,"../observable/innerFrom":454,"../util/arrRemove":625,"../util/lift":641,"../util/noop":643,"./OperatorSubscriber":468}],475:[function(require,module,exports){
+},{"../Subscription":430,"../observable/innerFrom":451,"../util/arrRemove":622,"../util/lift":638,"../util/noop":640,"./OperatorSubscriber":465}],472:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.bufferWhen = void 0;
@@ -28014,7 +25777,7 @@ function bufferWhen(closingSelector) {
 }
 exports.bufferWhen = bufferWhen;
 
-},{"../observable/innerFrom":454,"../util/lift":641,"../util/noop":643,"./OperatorSubscriber":468}],476:[function(require,module,exports){
+},{"../observable/innerFrom":451,"../util/lift":638,"../util/noop":640,"./OperatorSubscriber":465}],473:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.catchError = void 0;
@@ -28046,14 +25809,14 @@ function catchError(selector) {
 }
 exports.catchError = catchError;
 
-},{"../observable/innerFrom":454,"../util/lift":641,"./OperatorSubscriber":468}],477:[function(require,module,exports){
+},{"../observable/innerFrom":451,"../util/lift":638,"./OperatorSubscriber":465}],474:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.combineAll = void 0;
 var combineLatestAll_1 = require("./combineLatestAll");
 exports.combineAll = combineLatestAll_1.combineLatestAll;
 
-},{"./combineLatestAll":479}],478:[function(require,module,exports){
+},{"./combineLatestAll":476}],475:[function(require,module,exports){
 "use strict";
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -28098,7 +25861,7 @@ function combineLatest() {
 }
 exports.combineLatest = combineLatest;
 
-},{"../observable/combineLatest":441,"../util/args":622,"../util/argsOrArgArray":624,"../util/lift":641,"../util/mapOneOrManyArgs":642,"../util/pipe":645}],479:[function(require,module,exports){
+},{"../observable/combineLatest":438,"../util/args":619,"../util/argsOrArgArray":621,"../util/lift":638,"../util/mapOneOrManyArgs":639,"../util/pipe":642}],476:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.combineLatestAll = void 0;
@@ -28109,7 +25872,7 @@ function combineLatestAll(project) {
 }
 exports.combineLatestAll = combineLatestAll;
 
-},{"../observable/combineLatest":441,"./joinAllInternals":513}],480:[function(require,module,exports){
+},{"../observable/combineLatest":438,"./joinAllInternals":510}],477:[function(require,module,exports){
 "use strict";
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -28144,7 +25907,7 @@ function combineLatestWith() {
 }
 exports.combineLatestWith = combineLatestWith;
 
-},{"./combineLatest":478}],481:[function(require,module,exports){
+},{"./combineLatest":475}],478:[function(require,module,exports){
 "use strict";
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -28185,7 +25948,7 @@ function concat() {
 }
 exports.concat = concat;
 
-},{"../observable/from":448,"../util/args":622,"../util/lift":641,"./concatAll":482}],482:[function(require,module,exports){
+},{"../observable/from":445,"../util/args":619,"../util/lift":638,"./concatAll":479}],479:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.concatAll = void 0;
@@ -28195,7 +25958,7 @@ function concatAll() {
 }
 exports.concatAll = concatAll;
 
-},{"./mergeAll":520}],483:[function(require,module,exports){
+},{"./mergeAll":517}],480:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.concatMap = void 0;
@@ -28206,7 +25969,7 @@ function concatMap(project, resultSelector) {
 }
 exports.concatMap = concatMap;
 
-},{"../util/isFunction":634,"./mergeMap":522}],484:[function(require,module,exports){
+},{"../util/isFunction":631,"./mergeMap":519}],481:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.concatMapTo = void 0;
@@ -28217,7 +25980,7 @@ function concatMapTo(innerObservable, resultSelector) {
 }
 exports.concatMapTo = concatMapTo;
 
-},{"../util/isFunction":634,"./concatMap":483}],485:[function(require,module,exports){
+},{"../util/isFunction":631,"./concatMap":480}],482:[function(require,module,exports){
 "use strict";
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -28252,7 +26015,7 @@ function concatWith() {
 }
 exports.concatWith = concatWith;
 
-},{"./concat":481}],486:[function(require,module,exports){
+},{"./concat":478}],483:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.connect = void 0;
@@ -28274,7 +26037,7 @@ function connect(selector, config) {
 }
 exports.connect = connect;
 
-},{"../Subject":431,"../observable/fromSubscribable":451,"../observable/innerFrom":454,"../util/lift":641}],487:[function(require,module,exports){
+},{"../Subject":428,"../observable/fromSubscribable":448,"../observable/innerFrom":451,"../util/lift":638}],484:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.count = void 0;
@@ -28284,7 +26047,7 @@ function count(predicate) {
 }
 exports.count = count;
 
-},{"./reduce":539}],488:[function(require,module,exports){
+},{"./reduce":536}],485:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.debounce = void 0;
@@ -28323,7 +26086,7 @@ function debounce(durationSelector) {
 }
 exports.debounce = debounce;
 
-},{"../observable/innerFrom":454,"../util/lift":641,"../util/noop":643,"./OperatorSubscriber":468}],489:[function(require,module,exports){
+},{"../observable/innerFrom":451,"../util/lift":638,"../util/noop":640,"./OperatorSubscriber":465}],486:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.debounceTime = void 0;
@@ -28372,7 +26135,7 @@ function debounceTime(dueTime, scheduler) {
 }
 exports.debounceTime = debounceTime;
 
-},{"../scheduler/async":605,"../util/lift":641,"./OperatorSubscriber":468}],490:[function(require,module,exports){
+},{"../scheduler/async":602,"../util/lift":638,"./OperatorSubscriber":465}],487:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.defaultIfEmpty = void 0;
@@ -28394,7 +26157,7 @@ function defaultIfEmpty(defaultValue) {
 }
 exports.defaultIfEmpty = defaultIfEmpty;
 
-},{"../util/lift":641,"./OperatorSubscriber":468}],491:[function(require,module,exports){
+},{"../util/lift":638,"./OperatorSubscriber":465}],488:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.delay = void 0;
@@ -28408,7 +26171,7 @@ function delay(due, scheduler) {
 }
 exports.delay = delay;
 
-},{"../observable/timer":465,"../scheduler/async":605,"./delayWhen":492}],492:[function(require,module,exports){
+},{"../observable/timer":462,"../scheduler/async":602,"./delayWhen":489}],489:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.delayWhen = void 0;
@@ -28428,7 +26191,7 @@ function delayWhen(delayDurationSelector, subscriptionDelay) {
 }
 exports.delayWhen = delayWhen;
 
-},{"../observable/concat":442,"../observable/innerFrom":454,"./ignoreElements":511,"./mapTo":516,"./mergeMap":522,"./take":563}],493:[function(require,module,exports){
+},{"../observable/concat":439,"../observable/innerFrom":451,"./ignoreElements":508,"./mapTo":513,"./mergeMap":519,"./take":560}],490:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.dematerialize = void 0;
@@ -28442,7 +26205,7 @@ function dematerialize() {
 }
 exports.dematerialize = dematerialize;
 
-},{"../Notification":426,"../util/lift":641,"./OperatorSubscriber":468}],494:[function(require,module,exports){
+},{"../Notification":423,"../util/lift":638,"./OperatorSubscriber":465}],491:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.distinct = void 0;
@@ -28465,7 +26228,7 @@ function distinct(keySelector, flushes) {
 }
 exports.distinct = distinct;
 
-},{"../observable/innerFrom":454,"../util/lift":641,"../util/noop":643,"./OperatorSubscriber":468}],495:[function(require,module,exports){
+},{"../observable/innerFrom":451,"../util/lift":638,"../util/noop":640,"./OperatorSubscriber":465}],492:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.distinctUntilChanged = void 0;
@@ -28493,7 +26256,7 @@ function defaultCompare(a, b) {
     return a === b;
 }
 
-},{"../util/identity":630,"../util/lift":641,"./OperatorSubscriber":468}],496:[function(require,module,exports){
+},{"../util/identity":627,"../util/lift":638,"./OperatorSubscriber":465}],493:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.distinctUntilKeyChanged = void 0;
@@ -28503,7 +26266,7 @@ function distinctUntilKeyChanged(key, compare) {
 }
 exports.distinctUntilKeyChanged = distinctUntilKeyChanged;
 
-},{"./distinctUntilChanged":495}],497:[function(require,module,exports){
+},{"./distinctUntilChanged":492}],494:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.elementAt = void 0;
@@ -28523,7 +26286,7 @@ function elementAt(index, defaultValue) {
 }
 exports.elementAt = elementAt;
 
-},{"../util/ArgumentOutOfRangeError":615,"./defaultIfEmpty":490,"./filter":504,"./take":563,"./throwIfEmpty":570}],498:[function(require,module,exports){
+},{"../util/ArgumentOutOfRangeError":612,"./defaultIfEmpty":487,"./filter":501,"./take":560,"./throwIfEmpty":567}],495:[function(require,module,exports){
 "use strict";
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -28559,7 +26322,7 @@ function endWith() {
 }
 exports.endWith = endWith;
 
-},{"../observable/concat":442,"../observable/of":458}],499:[function(require,module,exports){
+},{"../observable/concat":439,"../observable/of":455}],496:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.every = void 0;
@@ -28581,14 +26344,14 @@ function every(predicate, thisArg) {
 }
 exports.every = every;
 
-},{"../util/lift":641,"./OperatorSubscriber":468}],500:[function(require,module,exports){
+},{"../util/lift":638,"./OperatorSubscriber":465}],497:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.exhaust = void 0;
 var exhaustAll_1 = require("./exhaustAll");
 exports.exhaust = exhaustAll_1.exhaustAll;
 
-},{"./exhaustAll":501}],501:[function(require,module,exports){
+},{"./exhaustAll":498}],498:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.exhaustAll = void 0;
@@ -28599,7 +26362,7 @@ function exhaustAll() {
 }
 exports.exhaustAll = exhaustAll;
 
-},{"../util/identity":630,"./exhaustMap":502}],502:[function(require,module,exports){
+},{"../util/identity":627,"./exhaustMap":499}],499:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.exhaustMap = void 0;
@@ -28633,7 +26396,7 @@ function exhaustMap(project, resultSelector) {
 }
 exports.exhaustMap = exhaustMap;
 
-},{"../observable/innerFrom":454,"../util/lift":641,"./OperatorSubscriber":468,"./map":515}],503:[function(require,module,exports){
+},{"../observable/innerFrom":451,"../util/lift":638,"./OperatorSubscriber":465,"./map":512}],500:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.expand = void 0;
@@ -28648,7 +26411,7 @@ function expand(project, concurrent, scheduler) {
 }
 exports.expand = expand;
 
-},{"../util/lift":641,"./mergeInternals":521}],504:[function(require,module,exports){
+},{"../util/lift":638,"./mergeInternals":518}],501:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.filter = void 0;
@@ -28662,7 +26425,7 @@ function filter(predicate, thisArg) {
 }
 exports.filter = filter;
 
-},{"../util/lift":641,"./OperatorSubscriber":468}],505:[function(require,module,exports){
+},{"../util/lift":638,"./OperatorSubscriber":465}],502:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.finalize = void 0;
@@ -28679,7 +26442,7 @@ function finalize(callback) {
 }
 exports.finalize = finalize;
 
-},{"../util/lift":641}],506:[function(require,module,exports){
+},{"../util/lift":638}],503:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createFind = exports.find = void 0;
@@ -28707,7 +26470,7 @@ function createFind(predicate, thisArg, emit) {
 }
 exports.createFind = createFind;
 
-},{"../util/lift":641,"./OperatorSubscriber":468}],507:[function(require,module,exports){
+},{"../util/lift":638,"./OperatorSubscriber":465}],504:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.findIndex = void 0;
@@ -28718,7 +26481,7 @@ function findIndex(predicate, thisArg) {
 }
 exports.findIndex = findIndex;
 
-},{"../util/lift":641,"./find":506}],508:[function(require,module,exports){
+},{"../util/lift":638,"./find":503}],505:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.first = void 0;
@@ -28736,14 +26499,14 @@ function first(predicate, defaultValue) {
 }
 exports.first = first;
 
-},{"../util/EmptyError":616,"../util/identity":630,"./defaultIfEmpty":490,"./filter":504,"./take":563,"./throwIfEmpty":570}],509:[function(require,module,exports){
+},{"../util/EmptyError":613,"../util/identity":627,"./defaultIfEmpty":487,"./filter":501,"./take":560,"./throwIfEmpty":567}],506:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.flatMap = void 0;
 var mergeMap_1 = require("./mergeMap");
 exports.flatMap = mergeMap_1.mergeMap;
 
-},{"./mergeMap":522}],510:[function(require,module,exports){
+},{"./mergeMap":519}],507:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.groupBy = void 0;
@@ -28811,7 +26574,7 @@ function groupBy(keySelector, elementOrOptions, duration, connector) {
 }
 exports.groupBy = groupBy;
 
-},{"../Observable":428,"../Subject":431,"../observable/innerFrom":454,"../util/lift":641,"./OperatorSubscriber":468}],511:[function(require,module,exports){
+},{"../Observable":425,"../Subject":428,"../observable/innerFrom":451,"../util/lift":638,"./OperatorSubscriber":465}],508:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ignoreElements = void 0;
@@ -28825,7 +26588,7 @@ function ignoreElements() {
 }
 exports.ignoreElements = ignoreElements;
 
-},{"../util/lift":641,"../util/noop":643,"./OperatorSubscriber":468}],512:[function(require,module,exports){
+},{"../util/lift":638,"../util/noop":640,"./OperatorSubscriber":465}],509:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.isEmpty = void 0;
@@ -28844,7 +26607,7 @@ function isEmpty() {
 }
 exports.isEmpty = isEmpty;
 
-},{"../util/lift":641,"./OperatorSubscriber":468}],513:[function(require,module,exports){
+},{"../util/lift":638,"./OperatorSubscriber":465}],510:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.joinAllInternals = void 0;
@@ -28858,7 +26621,7 @@ function joinAllInternals(joinFn, project) {
 }
 exports.joinAllInternals = joinAllInternals;
 
-},{"../util/identity":630,"../util/mapOneOrManyArgs":642,"../util/pipe":645,"./mergeMap":522,"./toArray":575}],514:[function(require,module,exports){
+},{"../util/identity":627,"../util/mapOneOrManyArgs":639,"../util/pipe":642,"./mergeMap":519,"./toArray":572}],511:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.last = void 0;
@@ -28876,7 +26639,7 @@ function last(predicate, defaultValue) {
 }
 exports.last = last;
 
-},{"../util/EmptyError":616,"../util/identity":630,"./defaultIfEmpty":490,"./filter":504,"./takeLast":564,"./throwIfEmpty":570}],515:[function(require,module,exports){
+},{"../util/EmptyError":613,"../util/identity":627,"./defaultIfEmpty":487,"./filter":501,"./takeLast":561,"./throwIfEmpty":567}],512:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.map = void 0;
@@ -28892,7 +26655,7 @@ function map(project, thisArg) {
 }
 exports.map = map;
 
-},{"../util/lift":641,"./OperatorSubscriber":468}],516:[function(require,module,exports){
+},{"../util/lift":638,"./OperatorSubscriber":465}],513:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.mapTo = void 0;
@@ -28902,7 +26665,7 @@ function mapTo(value) {
 }
 exports.mapTo = mapTo;
 
-},{"./map":515}],517:[function(require,module,exports){
+},{"./map":512}],514:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.materialize = void 0;
@@ -28924,7 +26687,7 @@ function materialize() {
 }
 exports.materialize = materialize;
 
-},{"../Notification":426,"../util/lift":641,"./OperatorSubscriber":468}],518:[function(require,module,exports){
+},{"../Notification":423,"../util/lift":638,"./OperatorSubscriber":465}],515:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.max = void 0;
@@ -28935,7 +26698,7 @@ function max(comparer) {
 }
 exports.max = max;
 
-},{"../util/isFunction":634,"./reduce":539}],519:[function(require,module,exports){
+},{"../util/isFunction":631,"./reduce":536}],516:[function(require,module,exports){
 "use strict";
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -28979,7 +26742,7 @@ function merge() {
 }
 exports.merge = merge;
 
-},{"../observable/from":448,"../util/args":622,"../util/argsOrArgArray":624,"../util/lift":641,"./mergeAll":520}],520:[function(require,module,exports){
+},{"../observable/from":445,"../util/args":619,"../util/argsOrArgArray":621,"../util/lift":638,"./mergeAll":517}],517:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.mergeAll = void 0;
@@ -28991,7 +26754,7 @@ function mergeAll(concurrent) {
 }
 exports.mergeAll = mergeAll;
 
-},{"../util/identity":630,"./mergeMap":522}],521:[function(require,module,exports){
+},{"../util/identity":627,"./mergeMap":519}],518:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.mergeInternals = void 0;
@@ -29057,7 +26820,7 @@ function mergeInternals(source, subscriber, project, concurrent, onBeforeNext, e
 }
 exports.mergeInternals = mergeInternals;
 
-},{"../observable/innerFrom":454,"../util/executeSchedule":629,"./OperatorSubscriber":468}],522:[function(require,module,exports){
+},{"../observable/innerFrom":451,"../util/executeSchedule":626,"./OperatorSubscriber":465}],519:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.mergeMap = void 0;
@@ -29078,7 +26841,7 @@ function mergeMap(project, resultSelector, concurrent) {
 }
 exports.mergeMap = mergeMap;
 
-},{"../observable/innerFrom":454,"../util/isFunction":634,"../util/lift":641,"./map":515,"./mergeInternals":521}],523:[function(require,module,exports){
+},{"../observable/innerFrom":451,"../util/isFunction":631,"../util/lift":638,"./map":512,"./mergeInternals":518}],520:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.mergeMapTo = void 0;
@@ -29096,7 +26859,7 @@ function mergeMapTo(innerObservable, resultSelector, concurrent) {
 }
 exports.mergeMapTo = mergeMapTo;
 
-},{"../util/isFunction":634,"./mergeMap":522}],524:[function(require,module,exports){
+},{"../util/isFunction":631,"./mergeMap":519}],521:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.mergeScan = void 0;
@@ -29113,7 +26876,7 @@ function mergeScan(accumulator, seed, concurrent) {
 }
 exports.mergeScan = mergeScan;
 
-},{"../util/lift":641,"./mergeInternals":521}],525:[function(require,module,exports){
+},{"../util/lift":638,"./mergeInternals":518}],522:[function(require,module,exports){
 "use strict";
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -29148,7 +26911,7 @@ function mergeWith() {
 }
 exports.mergeWith = mergeWith;
 
-},{"./merge":519}],526:[function(require,module,exports){
+},{"./merge":516}],523:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.min = void 0;
@@ -29159,7 +26922,7 @@ function min(comparer) {
 }
 exports.min = min;
 
-},{"../util/isFunction":634,"./reduce":539}],527:[function(require,module,exports){
+},{"../util/isFunction":631,"./reduce":536}],524:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.multicast = void 0;
@@ -29177,7 +26940,7 @@ function multicast(subjectOrSubjectFactory, selector) {
 }
 exports.multicast = multicast;
 
-},{"../observable/ConnectableObservable":437,"../util/isFunction":634,"./connect":486}],528:[function(require,module,exports){
+},{"../observable/ConnectableObservable":434,"../util/isFunction":631,"./connect":483}],525:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.observeOn = void 0;
@@ -29192,7 +26955,7 @@ function observeOn(scheduler, delay) {
 }
 exports.observeOn = observeOn;
 
-},{"../util/executeSchedule":629,"../util/lift":641,"./OperatorSubscriber":468}],529:[function(require,module,exports){
+},{"../util/executeSchedule":626,"../util/lift":638,"./OperatorSubscriber":465}],526:[function(require,module,exports){
 "use strict";
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -29230,7 +26993,7 @@ function onErrorResumeNextWith() {
 exports.onErrorResumeNextWith = onErrorResumeNextWith;
 exports.onErrorResumeNext = onErrorResumeNextWith;
 
-},{"../observable/onErrorResumeNext":459,"../util/argsOrArgArray":624}],530:[function(require,module,exports){
+},{"../observable/onErrorResumeNext":456,"../util/argsOrArgArray":621}],527:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.pairwise = void 0;
@@ -29250,7 +27013,7 @@ function pairwise() {
 }
 exports.pairwise = pairwise;
 
-},{"../util/lift":641,"./OperatorSubscriber":468}],531:[function(require,module,exports){
+},{"../util/lift":638,"./OperatorSubscriber":465}],528:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.partition = void 0;
@@ -29263,7 +27026,7 @@ function partition(predicate, thisArg) {
 }
 exports.partition = partition;
 
-},{"../util/not":644,"./filter":504}],532:[function(require,module,exports){
+},{"../util/not":641,"./filter":501}],529:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.pluck = void 0;
@@ -29293,7 +27056,7 @@ function pluck() {
 }
 exports.pluck = pluck;
 
-},{"./map":515}],533:[function(require,module,exports){
+},{"./map":512}],530:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.publish = void 0;
@@ -29305,7 +27068,7 @@ function publish(selector) {
 }
 exports.publish = publish;
 
-},{"../Subject":431,"./connect":486,"./multicast":527}],534:[function(require,module,exports){
+},{"../Subject":428,"./connect":483,"./multicast":524}],531:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.publishBehavior = void 0;
@@ -29319,7 +27082,7 @@ function publishBehavior(initialValue) {
 }
 exports.publishBehavior = publishBehavior;
 
-},{"../BehaviorSubject":425,"../observable/ConnectableObservable":437}],535:[function(require,module,exports){
+},{"../BehaviorSubject":422,"../observable/ConnectableObservable":434}],532:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.publishLast = void 0;
@@ -29333,7 +27096,7 @@ function publishLast() {
 }
 exports.publishLast = publishLast;
 
-},{"../AsyncSubject":424,"../observable/ConnectableObservable":437}],536:[function(require,module,exports){
+},{"../AsyncSubject":421,"../observable/ConnectableObservable":434}],533:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.publishReplay = void 0;
@@ -29349,7 +27112,7 @@ function publishReplay(bufferSize, windowTime, selectorOrScheduler, timestampPro
 }
 exports.publishReplay = publishReplay;
 
-},{"../ReplaySubject":429,"../util/isFunction":634,"./multicast":527}],537:[function(require,module,exports){
+},{"../ReplaySubject":426,"../util/isFunction":631,"./multicast":524}],534:[function(require,module,exports){
 "use strict";
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -29385,7 +27148,7 @@ function race() {
 }
 exports.race = race;
 
-},{"../util/argsOrArgArray":624,"./raceWith":538}],538:[function(require,module,exports){
+},{"../util/argsOrArgArray":621,"./raceWith":535}],535:[function(require,module,exports){
 "use strict";
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -29426,7 +27189,7 @@ function raceWith() {
 }
 exports.raceWith = raceWith;
 
-},{"../observable/race":462,"../util/identity":630,"../util/lift":641}],539:[function(require,module,exports){
+},{"../observable/race":459,"../util/identity":627,"../util/lift":638}],536:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.reduce = void 0;
@@ -29437,7 +27200,7 @@ function reduce(accumulator, seed) {
 }
 exports.reduce = reduce;
 
-},{"../util/lift":641,"./scanInternals":548}],540:[function(require,module,exports){
+},{"../util/lift":638,"./scanInternals":545}],537:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.refCount = void 0;
@@ -29468,7 +27231,7 @@ function refCount() {
 }
 exports.refCount = refCount;
 
-},{"../util/lift":641,"./OperatorSubscriber":468}],541:[function(require,module,exports){
+},{"../util/lift":638,"./OperatorSubscriber":465}],538:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.repeat = void 0;
@@ -29533,7 +27296,7 @@ function repeat(countOrConfig) {
 }
 exports.repeat = repeat;
 
-},{"../observable/empty":446,"../observable/innerFrom":454,"../observable/timer":465,"../util/lift":641,"./OperatorSubscriber":468}],542:[function(require,module,exports){
+},{"../observable/empty":443,"../observable/innerFrom":451,"../observable/timer":462,"../util/lift":638,"./OperatorSubscriber":465}],539:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.repeatWhen = void 0;
@@ -29584,7 +27347,7 @@ function repeatWhen(notifier) {
 }
 exports.repeatWhen = repeatWhen;
 
-},{"../Subject":431,"../observable/innerFrom":454,"../util/lift":641,"./OperatorSubscriber":468}],543:[function(require,module,exports){
+},{"../Subject":428,"../observable/innerFrom":451,"../util/lift":638,"./OperatorSubscriber":465}],540:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.retry = void 0;
@@ -29658,7 +27421,7 @@ function retry(configOrCount) {
 }
 exports.retry = retry;
 
-},{"../observable/innerFrom":454,"../observable/timer":465,"../util/identity":630,"../util/lift":641,"./OperatorSubscriber":468}],544:[function(require,module,exports){
+},{"../observable/innerFrom":451,"../observable/timer":462,"../util/identity":627,"../util/lift":638,"./OperatorSubscriber":465}],541:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.retryWhen = void 0;
@@ -29695,7 +27458,7 @@ function retryWhen(notifier) {
 }
 exports.retryWhen = retryWhen;
 
-},{"../Subject":431,"../observable/innerFrom":454,"../util/lift":641,"./OperatorSubscriber":468}],545:[function(require,module,exports){
+},{"../Subject":428,"../observable/innerFrom":451,"../util/lift":638,"./OperatorSubscriber":465}],542:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.sample = void 0;
@@ -29723,7 +27486,7 @@ function sample(notifier) {
 }
 exports.sample = sample;
 
-},{"../observable/innerFrom":454,"../util/lift":641,"../util/noop":643,"./OperatorSubscriber":468}],546:[function(require,module,exports){
+},{"../observable/innerFrom":451,"../util/lift":638,"../util/noop":640,"./OperatorSubscriber":465}],543:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.sampleTime = void 0;
@@ -29736,7 +27499,7 @@ function sampleTime(period, scheduler) {
 }
 exports.sampleTime = sampleTime;
 
-},{"../observable/interval":455,"../scheduler/async":605,"./sample":545}],547:[function(require,module,exports){
+},{"../observable/interval":452,"../scheduler/async":602,"./sample":542}],544:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.scan = void 0;
@@ -29747,7 +27510,7 @@ function scan(accumulator, seed) {
 }
 exports.scan = scan;
 
-},{"../util/lift":641,"./scanInternals":548}],548:[function(require,module,exports){
+},{"../util/lift":638,"./scanInternals":545}],545:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.scanInternals = void 0;
@@ -29774,7 +27537,7 @@ function scanInternals(accumulator, seed, hasSeed, emitOnNext, emitBeforeComplet
 }
 exports.scanInternals = scanInternals;
 
-},{"./OperatorSubscriber":468}],549:[function(require,module,exports){
+},{"./OperatorSubscriber":465}],546:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.sequenceEqual = void 0;
@@ -29819,7 +27582,7 @@ function createState() {
     };
 }
 
-},{"../observable/innerFrom":454,"../util/lift":641,"./OperatorSubscriber":468}],550:[function(require,module,exports){
+},{"../observable/innerFrom":451,"../util/lift":638,"./OperatorSubscriber":465}],547:[function(require,module,exports){
 "use strict";
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -29929,7 +27692,7 @@ function handleReset(reset, on) {
     return innerFrom_1.innerFrom(on.apply(void 0, __spreadArray([], __read(args)))).subscribe(onSubscriber);
 }
 
-},{"../Subject":431,"../Subscriber":432,"../observable/innerFrom":454,"../util/lift":641}],551:[function(require,module,exports){
+},{"../Subject":428,"../Subscriber":429,"../observable/innerFrom":451,"../util/lift":638}],548:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.shareReplay = void 0;
@@ -29954,7 +27717,7 @@ function shareReplay(configOrBufferSize, windowTime, scheduler) {
 }
 exports.shareReplay = shareReplay;
 
-},{"../ReplaySubject":429,"./share":550}],552:[function(require,module,exports){
+},{"../ReplaySubject":426,"./share":547}],549:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.single = void 0;
@@ -29989,7 +27752,7 @@ function single(predicate) {
 }
 exports.single = single;
 
-},{"../util/EmptyError":616,"../util/NotFoundError":618,"../util/SequenceError":620,"../util/lift":641,"./OperatorSubscriber":468}],553:[function(require,module,exports){
+},{"../util/EmptyError":613,"../util/NotFoundError":615,"../util/SequenceError":617,"../util/lift":638,"./OperatorSubscriber":465}],550:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.skip = void 0;
@@ -29999,7 +27762,7 @@ function skip(count) {
 }
 exports.skip = skip;
 
-},{"./filter":504}],554:[function(require,module,exports){
+},{"./filter":501}],551:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.skipLast = void 0;
@@ -30032,7 +27795,7 @@ function skipLast(skipCount) {
 }
 exports.skipLast = skipLast;
 
-},{"../util/identity":630,"../util/lift":641,"./OperatorSubscriber":468}],555:[function(require,module,exports){
+},{"../util/identity":627,"../util/lift":638,"./OperatorSubscriber":465}],552:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.skipUntil = void 0;
@@ -30053,7 +27816,7 @@ function skipUntil(notifier) {
 }
 exports.skipUntil = skipUntil;
 
-},{"../observable/innerFrom":454,"../util/lift":641,"../util/noop":643,"./OperatorSubscriber":468}],556:[function(require,module,exports){
+},{"../observable/innerFrom":451,"../util/lift":638,"../util/noop":640,"./OperatorSubscriber":465}],553:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.skipWhile = void 0;
@@ -30068,7 +27831,7 @@ function skipWhile(predicate) {
 }
 exports.skipWhile = skipWhile;
 
-},{"../util/lift":641,"./OperatorSubscriber":468}],557:[function(require,module,exports){
+},{"../util/lift":638,"./OperatorSubscriber":465}],554:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.startWith = void 0;
@@ -30087,7 +27850,7 @@ function startWith() {
 }
 exports.startWith = startWith;
 
-},{"../observable/concat":442,"../util/args":622,"../util/lift":641}],558:[function(require,module,exports){
+},{"../observable/concat":439,"../util/args":619,"../util/lift":638}],555:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.subscribeOn = void 0;
@@ -30100,7 +27863,7 @@ function subscribeOn(scheduler, delay) {
 }
 exports.subscribeOn = subscribeOn;
 
-},{"../util/lift":641}],559:[function(require,module,exports){
+},{"../util/lift":638}],556:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.switchAll = void 0;
@@ -30111,7 +27874,7 @@ function switchAll() {
 }
 exports.switchAll = switchAll;
 
-},{"../util/identity":630,"./switchMap":560}],560:[function(require,module,exports){
+},{"../util/identity":627,"./switchMap":557}],557:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.switchMap = void 0;
@@ -30140,7 +27903,7 @@ function switchMap(project, resultSelector) {
 }
 exports.switchMap = switchMap;
 
-},{"../observable/innerFrom":454,"../util/lift":641,"./OperatorSubscriber":468}],561:[function(require,module,exports){
+},{"../observable/innerFrom":451,"../util/lift":638,"./OperatorSubscriber":465}],558:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.switchMapTo = void 0;
@@ -30151,7 +27914,7 @@ function switchMapTo(innerObservable, resultSelector) {
 }
 exports.switchMapTo = switchMapTo;
 
-},{"../util/isFunction":634,"./switchMap":560}],562:[function(require,module,exports){
+},{"../util/isFunction":631,"./switchMap":557}],559:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.switchScan = void 0;
@@ -30168,7 +27931,7 @@ function switchScan(accumulator, seed) {
 }
 exports.switchScan = switchScan;
 
-},{"../util/lift":641,"./switchMap":560}],563:[function(require,module,exports){
+},{"../util/lift":638,"./switchMap":557}],560:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.take = void 0;
@@ -30193,7 +27956,7 @@ function take(count) {
 }
 exports.take = take;
 
-},{"../observable/empty":446,"../util/lift":641,"./OperatorSubscriber":468}],564:[function(require,module,exports){
+},{"../observable/empty":443,"../util/lift":638,"./OperatorSubscriber":465}],561:[function(require,module,exports){
 "use strict";
 var __values = (this && this.__values) || function(o) {
     var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
@@ -30242,7 +28005,7 @@ function takeLast(count) {
 }
 exports.takeLast = takeLast;
 
-},{"../observable/empty":446,"../util/lift":641,"./OperatorSubscriber":468}],565:[function(require,module,exports){
+},{"../observable/empty":443,"../util/lift":638,"./OperatorSubscriber":465}],562:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.takeUntil = void 0;
@@ -30258,7 +28021,7 @@ function takeUntil(notifier) {
 }
 exports.takeUntil = takeUntil;
 
-},{"../observable/innerFrom":454,"../util/lift":641,"../util/noop":643,"./OperatorSubscriber":468}],566:[function(require,module,exports){
+},{"../observable/innerFrom":451,"../util/lift":638,"../util/noop":640,"./OperatorSubscriber":465}],563:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.takeWhile = void 0;
@@ -30277,7 +28040,7 @@ function takeWhile(predicate, inclusive) {
 }
 exports.takeWhile = takeWhile;
 
-},{"../util/lift":641,"./OperatorSubscriber":468}],567:[function(require,module,exports){
+},{"../util/lift":638,"./OperatorSubscriber":465}],564:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.tap = void 0;
@@ -30322,7 +28085,7 @@ function tap(observerOrNext, error, complete) {
 }
 exports.tap = tap;
 
-},{"../util/identity":630,"../util/isFunction":634,"../util/lift":641,"./OperatorSubscriber":468}],568:[function(require,module,exports){
+},{"../util/identity":627,"../util/isFunction":631,"../util/lift":638,"./OperatorSubscriber":465}],565:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.throttle = exports.defaultThrottleConfig = void 0;
@@ -30377,7 +28140,7 @@ function throttle(durationSelector, config) {
 }
 exports.throttle = throttle;
 
-},{"../observable/innerFrom":454,"../util/lift":641,"./OperatorSubscriber":468}],569:[function(require,module,exports){
+},{"../observable/innerFrom":451,"../util/lift":638,"./OperatorSubscriber":465}],566:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.throttleTime = void 0;
@@ -30392,7 +28155,7 @@ function throttleTime(duration, scheduler, config) {
 }
 exports.throttleTime = throttleTime;
 
-},{"../observable/timer":465,"../scheduler/async":605,"./throttle":568}],570:[function(require,module,exports){
+},{"../observable/timer":462,"../scheduler/async":602,"./throttle":565}],567:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.throwIfEmpty = void 0;
@@ -30414,7 +28177,7 @@ function defaultErrorFactory() {
     return new EmptyError_1.EmptyError();
 }
 
-},{"../util/EmptyError":616,"../util/lift":641,"./OperatorSubscriber":468}],571:[function(require,module,exports){
+},{"../util/EmptyError":613,"../util/lift":638,"./OperatorSubscriber":465}],568:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TimeInterval = exports.timeInterval = void 0;
@@ -30443,7 +28206,7 @@ var TimeInterval = (function () {
 }());
 exports.TimeInterval = TimeInterval;
 
-},{"../scheduler/async":605,"../util/lift":641,"./OperatorSubscriber":468}],572:[function(require,module,exports){
+},{"../scheduler/async":602,"../util/lift":638,"./OperatorSubscriber":465}],569:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.timeout = exports.TimeoutError = void 0;
@@ -30507,7 +28270,7 @@ function timeoutErrorFactory(info) {
     throw new exports.TimeoutError(info);
 }
 
-},{"../observable/innerFrom":454,"../scheduler/async":605,"../util/createErrorClass":626,"../util/executeSchedule":629,"../util/isDate":633,"../util/lift":641,"./OperatorSubscriber":468}],573:[function(require,module,exports){
+},{"../observable/innerFrom":451,"../scheduler/async":602,"../util/createErrorClass":623,"../util/executeSchedule":626,"../util/isDate":630,"../util/lift":638,"./OperatorSubscriber":465}],570:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.timeoutWith = void 0;
@@ -30543,7 +28306,7 @@ function timeoutWith(due, withObservable, scheduler) {
 }
 exports.timeoutWith = timeoutWith;
 
-},{"../scheduler/async":605,"../util/isDate":633,"./timeout":572}],574:[function(require,module,exports){
+},{"../scheduler/async":602,"../util/isDate":630,"./timeout":569}],571:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.timestamp = void 0;
@@ -30555,7 +28318,7 @@ function timestamp(timestampProvider) {
 }
 exports.timestamp = timestamp;
 
-},{"../scheduler/dateTimestampProvider":606,"./map":515}],575:[function(require,module,exports){
+},{"../scheduler/dateTimestampProvider":603,"./map":512}],572:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.toArray = void 0;
@@ -30569,7 +28332,7 @@ function toArray() {
 }
 exports.toArray = toArray;
 
-},{"../util/lift":641,"./reduce":539}],576:[function(require,module,exports){
+},{"../util/lift":638,"./reduce":536}],573:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.window = void 0;
@@ -30602,7 +28365,7 @@ function window(windowBoundaries) {
 }
 exports.window = window;
 
-},{"../Subject":431,"../observable/innerFrom":454,"../util/lift":641,"../util/noop":643,"./OperatorSubscriber":468}],577:[function(require,module,exports){
+},{"../Subject":428,"../observable/innerFrom":451,"../util/lift":638,"../util/noop":640,"./OperatorSubscriber":465}],574:[function(require,module,exports){
 "use strict";
 var __values = (this && this.__values) || function(o) {
     var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
@@ -30670,7 +28433,7 @@ function windowCount(windowSize, startWindowEvery) {
 }
 exports.windowCount = windowCount;
 
-},{"../Subject":431,"../util/lift":641,"./OperatorSubscriber":468}],578:[function(require,module,exports){
+},{"../Subject":428,"../util/lift":638,"./OperatorSubscriber":465}],575:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.windowTime = void 0;
@@ -30745,7 +28508,7 @@ function windowTime(windowTimeSpan) {
 }
 exports.windowTime = windowTime;
 
-},{"../Subject":431,"../Subscription":433,"../scheduler/async":605,"../util/args":622,"../util/arrRemove":625,"../util/executeSchedule":629,"../util/lift":641,"./OperatorSubscriber":468}],579:[function(require,module,exports){
+},{"../Subject":428,"../Subscription":430,"../scheduler/async":602,"../util/args":619,"../util/arrRemove":622,"../util/executeSchedule":626,"../util/lift":638,"./OperatorSubscriber":465}],576:[function(require,module,exports){
 "use strict";
 var __values = (this && this.__values) || function(o) {
     var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
@@ -30826,7 +28589,7 @@ function windowToggle(openings, closingSelector) {
 }
 exports.windowToggle = windowToggle;
 
-},{"../Subject":431,"../Subscription":433,"../observable/innerFrom":454,"../util/arrRemove":625,"../util/lift":641,"../util/noop":643,"./OperatorSubscriber":468}],580:[function(require,module,exports){
+},{"../Subject":428,"../Subscription":430,"../observable/innerFrom":451,"../util/arrRemove":622,"../util/lift":638,"../util/noop":640,"./OperatorSubscriber":465}],577:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.windowWhen = void 0;
@@ -30869,7 +28632,7 @@ function windowWhen(closingSelector) {
 }
 exports.windowWhen = windowWhen;
 
-},{"../Subject":431,"../observable/innerFrom":454,"../util/lift":641,"./OperatorSubscriber":468}],581:[function(require,module,exports){
+},{"../Subject":428,"../observable/innerFrom":451,"../util/lift":638,"./OperatorSubscriber":465}],578:[function(require,module,exports){
 "use strict";
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -30933,7 +28696,7 @@ function withLatestFrom() {
 }
 exports.withLatestFrom = withLatestFrom;
 
-},{"../observable/innerFrom":454,"../util/args":622,"../util/identity":630,"../util/lift":641,"../util/noop":643,"./OperatorSubscriber":468}],582:[function(require,module,exports){
+},{"../observable/innerFrom":451,"../util/args":619,"../util/identity":627,"../util/lift":638,"../util/noop":640,"./OperatorSubscriber":465}],579:[function(require,module,exports){
 "use strict";
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -30971,7 +28734,7 @@ function zip() {
 }
 exports.zip = zip;
 
-},{"../observable/zip":467,"../util/lift":641}],583:[function(require,module,exports){
+},{"../observable/zip":464,"../util/lift":638}],580:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.zipAll = void 0;
@@ -30982,7 +28745,7 @@ function zipAll(project) {
 }
 exports.zipAll = zipAll;
 
-},{"../observable/zip":467,"./joinAllInternals":513}],584:[function(require,module,exports){
+},{"../observable/zip":464,"./joinAllInternals":510}],581:[function(require,module,exports){
 "use strict";
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -31017,7 +28780,7 @@ function zipWith() {
 }
 exports.zipWith = zipWith;
 
-},{"./zip":582}],585:[function(require,module,exports){
+},{"./zip":579}],582:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.scheduleArray = void 0;
@@ -31040,7 +28803,7 @@ function scheduleArray(input, scheduler) {
 }
 exports.scheduleArray = scheduleArray;
 
-},{"../Observable":428}],586:[function(require,module,exports){
+},{"../Observable":425}],583:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.scheduleAsyncIterable = void 0;
@@ -31068,7 +28831,7 @@ function scheduleAsyncIterable(input, scheduler) {
 }
 exports.scheduleAsyncIterable = scheduleAsyncIterable;
 
-},{"../Observable":428,"../util/executeSchedule":629}],587:[function(require,module,exports){
+},{"../Observable":425,"../util/executeSchedule":626}],584:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.scheduleIterable = void 0;
@@ -31105,7 +28868,7 @@ function scheduleIterable(input, scheduler) {
 }
 exports.scheduleIterable = scheduleIterable;
 
-},{"../Observable":428,"../symbol/iterator":612,"../util/executeSchedule":629,"../util/isFunction":634}],588:[function(require,module,exports){
+},{"../Observable":425,"../symbol/iterator":609,"../util/executeSchedule":626,"../util/isFunction":631}],585:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.scheduleObservable = void 0;
@@ -31117,7 +28880,7 @@ function scheduleObservable(input, scheduler) {
 }
 exports.scheduleObservable = scheduleObservable;
 
-},{"../observable/innerFrom":454,"../operators/observeOn":528,"../operators/subscribeOn":558}],589:[function(require,module,exports){
+},{"../observable/innerFrom":451,"../operators/observeOn":525,"../operators/subscribeOn":555}],586:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.schedulePromise = void 0;
@@ -31129,7 +28892,7 @@ function schedulePromise(input, scheduler) {
 }
 exports.schedulePromise = schedulePromise;
 
-},{"../observable/innerFrom":454,"../operators/observeOn":528,"../operators/subscribeOn":558}],590:[function(require,module,exports){
+},{"../observable/innerFrom":451,"../operators/observeOn":525,"../operators/subscribeOn":555}],587:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.scheduleReadableStreamLike = void 0;
@@ -31140,7 +28903,7 @@ function scheduleReadableStreamLike(input, scheduler) {
 }
 exports.scheduleReadableStreamLike = scheduleReadableStreamLike;
 
-},{"../util/isReadableStreamLike":639,"./scheduleAsyncIterable":586}],591:[function(require,module,exports){
+},{"../util/isReadableStreamLike":636,"./scheduleAsyncIterable":583}],588:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.scheduled = void 0;
@@ -31182,7 +28945,7 @@ function scheduled(input, scheduler) {
 }
 exports.scheduled = scheduled;
 
-},{"../util/isArrayLike":631,"../util/isAsyncIterable":632,"../util/isInteropObservable":635,"../util/isIterable":636,"../util/isPromise":638,"../util/isReadableStreamLike":639,"../util/throwUnobservableError":647,"./scheduleArray":585,"./scheduleAsyncIterable":586,"./scheduleIterable":587,"./scheduleObservable":588,"./schedulePromise":589,"./scheduleReadableStreamLike":590}],592:[function(require,module,exports){
+},{"../util/isArrayLike":628,"../util/isAsyncIterable":629,"../util/isInteropObservable":632,"../util/isIterable":633,"../util/isPromise":635,"../util/isReadableStreamLike":636,"../util/throwUnobservableError":644,"./scheduleArray":582,"./scheduleAsyncIterable":583,"./scheduleIterable":584,"./scheduleObservable":585,"./schedulePromise":586,"./scheduleReadableStreamLike":587}],589:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -31215,7 +28978,7 @@ var Action = (function (_super) {
 }(Subscription_1.Subscription));
 exports.Action = Action;
 
-},{"../Subscription":433}],593:[function(require,module,exports){
+},{"../Subscription":430}],590:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -31269,7 +29032,7 @@ var AnimationFrameAction = (function (_super) {
 }(AsyncAction_1.AsyncAction));
 exports.AnimationFrameAction = AnimationFrameAction;
 
-},{"./AsyncAction":597,"./animationFrameProvider":603}],594:[function(require,module,exports){
+},{"./AsyncAction":594,"./animationFrameProvider":600}],591:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -31318,7 +29081,7 @@ var AnimationFrameScheduler = (function (_super) {
 }(AsyncScheduler_1.AsyncScheduler));
 exports.AnimationFrameScheduler = AnimationFrameScheduler;
 
-},{"./AsyncScheduler":598}],595:[function(require,module,exports){
+},{"./AsyncScheduler":595}],592:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -31372,7 +29135,7 @@ var AsapAction = (function (_super) {
 }(AsyncAction_1.AsyncAction));
 exports.AsapAction = AsapAction;
 
-},{"./AsyncAction":597,"./immediateProvider":607}],596:[function(require,module,exports){
+},{"./AsyncAction":594,"./immediateProvider":604}],593:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -31421,7 +29184,7 @@ var AsapScheduler = (function (_super) {
 }(AsyncScheduler_1.AsyncScheduler));
 exports.AsapScheduler = AsapScheduler;
 
-},{"./AsyncScheduler":598}],597:[function(require,module,exports){
+},{"./AsyncScheduler":595}],594:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -31529,7 +29292,7 @@ var AsyncAction = (function (_super) {
 }(Action_1.Action));
 exports.AsyncAction = AsyncAction;
 
-},{"../util/arrRemove":625,"./Action":592,"./intervalProvider":608}],598:[function(require,module,exports){
+},{"../util/arrRemove":622,"./Action":589,"./intervalProvider":605}],595:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -31583,7 +29346,7 @@ var AsyncScheduler = (function (_super) {
 }(Scheduler_1.Scheduler));
 exports.AsyncScheduler = AsyncScheduler;
 
-},{"../Scheduler":430}],599:[function(require,module,exports){
+},{"../Scheduler":427}],596:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -31636,7 +29399,7 @@ var QueueAction = (function (_super) {
 }(AsyncAction_1.AsyncAction));
 exports.QueueAction = QueueAction;
 
-},{"./AsyncAction":597}],600:[function(require,module,exports){
+},{"./AsyncAction":594}],597:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -31665,7 +29428,7 @@ var QueueScheduler = (function (_super) {
 }(AsyncScheduler_1.AsyncScheduler));
 exports.QueueScheduler = QueueScheduler;
 
-},{"./AsyncScheduler":598}],601:[function(require,module,exports){
+},{"./AsyncScheduler":595}],598:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -31787,7 +29550,7 @@ var VirtualAction = (function (_super) {
 }(AsyncAction_1.AsyncAction));
 exports.VirtualAction = VirtualAction;
 
-},{"../Subscription":433,"./AsyncAction":597,"./AsyncScheduler":598}],602:[function(require,module,exports){
+},{"../Subscription":430,"./AsyncAction":594,"./AsyncScheduler":595}],599:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.animationFrame = exports.animationFrameScheduler = void 0;
@@ -31796,7 +29559,7 @@ var AnimationFrameScheduler_1 = require("./AnimationFrameScheduler");
 exports.animationFrameScheduler = new AnimationFrameScheduler_1.AnimationFrameScheduler(AnimationFrameAction_1.AnimationFrameAction);
 exports.animationFrame = exports.animationFrameScheduler;
 
-},{"./AnimationFrameAction":593,"./AnimationFrameScheduler":594}],603:[function(require,module,exports){
+},{"./AnimationFrameAction":590,"./AnimationFrameScheduler":591}],600:[function(require,module,exports){
 "use strict";
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -31856,7 +29619,7 @@ exports.animationFrameProvider = {
     delegate: undefined,
 };
 
-},{"../Subscription":433}],604:[function(require,module,exports){
+},{"../Subscription":430}],601:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.asap = exports.asapScheduler = void 0;
@@ -31865,7 +29628,7 @@ var AsapScheduler_1 = require("./AsapScheduler");
 exports.asapScheduler = new AsapScheduler_1.AsapScheduler(AsapAction_1.AsapAction);
 exports.asap = exports.asapScheduler;
 
-},{"./AsapAction":595,"./AsapScheduler":596}],605:[function(require,module,exports){
+},{"./AsapAction":592,"./AsapScheduler":593}],602:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.async = exports.asyncScheduler = void 0;
@@ -31874,7 +29637,7 @@ var AsyncScheduler_1 = require("./AsyncScheduler");
 exports.asyncScheduler = new AsyncScheduler_1.AsyncScheduler(AsyncAction_1.AsyncAction);
 exports.async = exports.asyncScheduler;
 
-},{"./AsyncAction":597,"./AsyncScheduler":598}],606:[function(require,module,exports){
+},{"./AsyncAction":594,"./AsyncScheduler":595}],603:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.dateTimestampProvider = void 0;
@@ -31885,7 +29648,7 @@ exports.dateTimestampProvider = {
     delegate: undefined,
 };
 
-},{}],607:[function(require,module,exports){
+},{}],604:[function(require,module,exports){
 "use strict";
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -31928,7 +29691,7 @@ exports.immediateProvider = {
     delegate: undefined,
 };
 
-},{"../util/Immediate":617}],608:[function(require,module,exports){
+},{"../util/Immediate":614}],605:[function(require,module,exports){
 "use strict";
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -31972,7 +29735,7 @@ exports.intervalProvider = {
     delegate: undefined,
 };
 
-},{}],609:[function(require,module,exports){
+},{}],606:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.performanceTimestampProvider = void 0;
@@ -31983,7 +29746,7 @@ exports.performanceTimestampProvider = {
     delegate: undefined,
 };
 
-},{}],610:[function(require,module,exports){
+},{}],607:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.queue = exports.queueScheduler = void 0;
@@ -31992,7 +29755,7 @@ var QueueScheduler_1 = require("./QueueScheduler");
 exports.queueScheduler = new QueueScheduler_1.QueueScheduler(QueueAction_1.QueueAction);
 exports.queue = exports.queueScheduler;
 
-},{"./QueueAction":599,"./QueueScheduler":600}],611:[function(require,module,exports){
+},{"./QueueAction":596,"./QueueScheduler":597}],608:[function(require,module,exports){
 "use strict";
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -32036,7 +29799,7 @@ exports.timeoutProvider = {
     delegate: undefined,
 };
 
-},{}],612:[function(require,module,exports){
+},{}],609:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.iterator = exports.getSymbolIterator = void 0;
@@ -32049,17 +29812,17 @@ function getSymbolIterator() {
 exports.getSymbolIterator = getSymbolIterator;
 exports.iterator = getSymbolIterator();
 
-},{}],613:[function(require,module,exports){
+},{}],610:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.observable = void 0;
 exports.observable = (function () { return (typeof Symbol === 'function' && Symbol.observable) || '@@observable'; })();
 
-},{}],614:[function(require,module,exports){
+},{}],611:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 
-},{}],615:[function(require,module,exports){
+},{}],612:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ArgumentOutOfRangeError = void 0;
@@ -32072,7 +29835,7 @@ exports.ArgumentOutOfRangeError = createErrorClass_1.createErrorClass(function (
     };
 });
 
-},{"./createErrorClass":626}],616:[function(require,module,exports){
+},{"./createErrorClass":623}],613:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EmptyError = void 0;
@@ -32083,7 +29846,7 @@ exports.EmptyError = createErrorClass_1.createErrorClass(function (_super) { ret
     this.message = 'no elements in sequence';
 }; });
 
-},{"./createErrorClass":626}],617:[function(require,module,exports){
+},{"./createErrorClass":623}],614:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TestTools = exports.Immediate = void 0;
@@ -32117,7 +29880,7 @@ exports.TestTools = {
     }
 };
 
-},{}],618:[function(require,module,exports){
+},{}],615:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.NotFoundError = void 0;
@@ -32130,7 +29893,7 @@ exports.NotFoundError = createErrorClass_1.createErrorClass(function (_super) {
     };
 });
 
-},{"./createErrorClass":626}],619:[function(require,module,exports){
+},{"./createErrorClass":623}],616:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ObjectUnsubscribedError = void 0;
@@ -32143,7 +29906,7 @@ exports.ObjectUnsubscribedError = createErrorClass_1.createErrorClass(function (
     };
 });
 
-},{"./createErrorClass":626}],620:[function(require,module,exports){
+},{"./createErrorClass":623}],617:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SequenceError = void 0;
@@ -32156,7 +29919,7 @@ exports.SequenceError = createErrorClass_1.createErrorClass(function (_super) {
     };
 });
 
-},{"./createErrorClass":626}],621:[function(require,module,exports){
+},{"./createErrorClass":623}],618:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UnsubscriptionError = void 0;
@@ -32172,7 +29935,7 @@ exports.UnsubscriptionError = createErrorClass_1.createErrorClass(function (_sup
     };
 });
 
-},{"./createErrorClass":626}],622:[function(require,module,exports){
+},{"./createErrorClass":623}],619:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.popNumber = exports.popScheduler = exports.popResultSelector = void 0;
@@ -32194,7 +29957,7 @@ function popNumber(args, defaultValue) {
 }
 exports.popNumber = popNumber;
 
-},{"./isFunction":634,"./isScheduler":640}],623:[function(require,module,exports){
+},{"./isFunction":631,"./isScheduler":637}],620:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.argsArgArrayOrObject = void 0;
@@ -32221,7 +29984,7 @@ function isPOJO(obj) {
     return obj && typeof obj === 'object' && getPrototypeOf(obj) === objectProto;
 }
 
-},{}],624:[function(require,module,exports){
+},{}],621:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.argsOrArgArray = void 0;
@@ -32231,7 +29994,7 @@ function argsOrArgArray(args) {
 }
 exports.argsOrArgArray = argsOrArgArray;
 
-},{}],625:[function(require,module,exports){
+},{}],622:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.arrRemove = void 0;
@@ -32243,7 +30006,7 @@ function arrRemove(arr, item) {
 }
 exports.arrRemove = arrRemove;
 
-},{}],626:[function(require,module,exports){
+},{}],623:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createErrorClass = void 0;
@@ -32259,7 +30022,7 @@ function createErrorClass(createImpl) {
 }
 exports.createErrorClass = createErrorClass;
 
-},{}],627:[function(require,module,exports){
+},{}],624:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createObject = void 0;
@@ -32268,7 +30031,7 @@ function createObject(keys, values) {
 }
 exports.createObject = createObject;
 
-},{}],628:[function(require,module,exports){
+},{}],625:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.captureError = exports.errorContext = void 0;
@@ -32302,7 +30065,7 @@ function captureError(err) {
 }
 exports.captureError = captureError;
 
-},{"../config":434}],629:[function(require,module,exports){
+},{"../config":431}],626:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.executeSchedule = void 0;
@@ -32325,7 +30088,7 @@ function executeSchedule(parentSubscription, scheduler, work, delay, repeat) {
 }
 exports.executeSchedule = executeSchedule;
 
-},{}],630:[function(require,module,exports){
+},{}],627:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.identity = void 0;
@@ -32334,13 +30097,13 @@ function identity(x) {
 }
 exports.identity = identity;
 
-},{}],631:[function(require,module,exports){
+},{}],628:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.isArrayLike = void 0;
 exports.isArrayLike = (function (x) { return x && typeof x.length === 'number' && typeof x !== 'function'; });
 
-},{}],632:[function(require,module,exports){
+},{}],629:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.isAsyncIterable = void 0;
@@ -32350,7 +30113,7 @@ function isAsyncIterable(obj) {
 }
 exports.isAsyncIterable = isAsyncIterable;
 
-},{"./isFunction":634}],633:[function(require,module,exports){
+},{"./isFunction":631}],630:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.isValidDate = void 0;
@@ -32359,7 +30122,7 @@ function isValidDate(value) {
 }
 exports.isValidDate = isValidDate;
 
-},{}],634:[function(require,module,exports){
+},{}],631:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.isFunction = void 0;
@@ -32368,7 +30131,7 @@ function isFunction(value) {
 }
 exports.isFunction = isFunction;
 
-},{}],635:[function(require,module,exports){
+},{}],632:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.isInteropObservable = void 0;
@@ -32379,7 +30142,7 @@ function isInteropObservable(input) {
 }
 exports.isInteropObservable = isInteropObservable;
 
-},{"../symbol/observable":613,"./isFunction":634}],636:[function(require,module,exports){
+},{"../symbol/observable":610,"./isFunction":631}],633:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.isIterable = void 0;
@@ -32390,7 +30153,7 @@ function isIterable(input) {
 }
 exports.isIterable = isIterable;
 
-},{"../symbol/iterator":612,"./isFunction":634}],637:[function(require,module,exports){
+},{"../symbol/iterator":609,"./isFunction":631}],634:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.isObservable = void 0;
@@ -32401,7 +30164,7 @@ function isObservable(obj) {
 }
 exports.isObservable = isObservable;
 
-},{"../Observable":428,"./isFunction":634}],638:[function(require,module,exports){
+},{"../Observable":425,"./isFunction":631}],635:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.isPromise = void 0;
@@ -32411,7 +30174,7 @@ function isPromise(value) {
 }
 exports.isPromise = isPromise;
 
-},{"./isFunction":634}],639:[function(require,module,exports){
+},{"./isFunction":631}],636:[function(require,module,exports){
 "use strict";
 var __generator = (this && this.__generator) || function (thisArg, body) {
     var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
@@ -32494,7 +30257,7 @@ function isReadableStreamLike(obj) {
 }
 exports.isReadableStreamLike = isReadableStreamLike;
 
-},{"./isFunction":634}],640:[function(require,module,exports){
+},{"./isFunction":631}],637:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.isScheduler = void 0;
@@ -32504,7 +30267,7 @@ function isScheduler(value) {
 }
 exports.isScheduler = isScheduler;
 
-},{"./isFunction":634}],641:[function(require,module,exports){
+},{"./isFunction":631}],638:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.operate = exports.hasLift = void 0;
@@ -32530,7 +30293,7 @@ function operate(init) {
 }
 exports.operate = operate;
 
-},{"./isFunction":634}],642:[function(require,module,exports){
+},{"./isFunction":631}],639:[function(require,module,exports){
 "use strict";
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -32565,14 +30328,14 @@ function mapOneOrManyArgs(fn) {
 }
 exports.mapOneOrManyArgs = mapOneOrManyArgs;
 
-},{"../operators/map":515}],643:[function(require,module,exports){
+},{"../operators/map":512}],640:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.noop = void 0;
 function noop() { }
 exports.noop = noop;
 
-},{}],644:[function(require,module,exports){
+},{}],641:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.not = void 0;
@@ -32581,7 +30344,7 @@ function not(pred, thisArg) {
 }
 exports.not = not;
 
-},{}],645:[function(require,module,exports){
+},{}],642:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.pipeFromArray = exports.pipe = void 0;
@@ -32607,7 +30370,7 @@ function pipeFromArray(fns) {
 }
 exports.pipeFromArray = pipeFromArray;
 
-},{"./identity":630}],646:[function(require,module,exports){
+},{"./identity":627}],643:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.reportUnhandledError = void 0;
@@ -32626,7 +30389,7 @@ function reportUnhandledError(err) {
 }
 exports.reportUnhandledError = reportUnhandledError;
 
-},{"../config":434,"../scheduler/timeoutProvider":611}],647:[function(require,module,exports){
+},{"../config":431,"../scheduler/timeoutProvider":608}],644:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createInvalidObservableTypeError = void 0;
@@ -32635,7 +30398,7 @@ function createInvalidObservableTypeError(input) {
 }
 exports.createInvalidObservableTypeError = createInvalidObservableTypeError;
 
-},{}],648:[function(require,module,exports){
+},{}],645:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.mergeAll = exports.merge = exports.max = exports.materialize = exports.mapTo = exports.map = exports.last = exports.isEmpty = exports.ignoreElements = exports.groupBy = exports.first = exports.findIndex = exports.find = exports.finalize = exports.filter = exports.expand = exports.exhaustMap = exports.exhaustAll = exports.exhaust = exports.every = exports.endWith = exports.elementAt = exports.distinctUntilKeyChanged = exports.distinctUntilChanged = exports.distinct = exports.dematerialize = exports.delayWhen = exports.delay = exports.defaultIfEmpty = exports.debounceTime = exports.debounce = exports.count = exports.connect = exports.concatWith = exports.concatMapTo = exports.concatMap = exports.concatAll = exports.concat = exports.combineLatestWith = exports.combineLatest = exports.combineLatestAll = exports.combineAll = exports.catchError = exports.bufferWhen = exports.bufferToggle = exports.bufferTime = exports.bufferCount = exports.buffer = exports.auditTime = exports.audit = void 0;
@@ -32868,4 +30631,4 @@ Object.defineProperty(exports, "zipAll", { enumerable: true, get: function () { 
 var zipWith_1 = require("../internal/operators/zipWith");
 Object.defineProperty(exports, "zipWith", { enumerable: true, get: function () { return zipWith_1.zipWith; } });
 
-},{"../internal/operators/audit":469,"../internal/operators/auditTime":470,"../internal/operators/buffer":471,"../internal/operators/bufferCount":472,"../internal/operators/bufferTime":473,"../internal/operators/bufferToggle":474,"../internal/operators/bufferWhen":475,"../internal/operators/catchError":476,"../internal/operators/combineAll":477,"../internal/operators/combineLatest":478,"../internal/operators/combineLatestAll":479,"../internal/operators/combineLatestWith":480,"../internal/operators/concat":481,"../internal/operators/concatAll":482,"../internal/operators/concatMap":483,"../internal/operators/concatMapTo":484,"../internal/operators/concatWith":485,"../internal/operators/connect":486,"../internal/operators/count":487,"../internal/operators/debounce":488,"../internal/operators/debounceTime":489,"../internal/operators/defaultIfEmpty":490,"../internal/operators/delay":491,"../internal/operators/delayWhen":492,"../internal/operators/dematerialize":493,"../internal/operators/distinct":494,"../internal/operators/distinctUntilChanged":495,"../internal/operators/distinctUntilKeyChanged":496,"../internal/operators/elementAt":497,"../internal/operators/endWith":498,"../internal/operators/every":499,"../internal/operators/exhaust":500,"../internal/operators/exhaustAll":501,"../internal/operators/exhaustMap":502,"../internal/operators/expand":503,"../internal/operators/filter":504,"../internal/operators/finalize":505,"../internal/operators/find":506,"../internal/operators/findIndex":507,"../internal/operators/first":508,"../internal/operators/flatMap":509,"../internal/operators/groupBy":510,"../internal/operators/ignoreElements":511,"../internal/operators/isEmpty":512,"../internal/operators/last":514,"../internal/operators/map":515,"../internal/operators/mapTo":516,"../internal/operators/materialize":517,"../internal/operators/max":518,"../internal/operators/merge":519,"../internal/operators/mergeAll":520,"../internal/operators/mergeMap":522,"../internal/operators/mergeMapTo":523,"../internal/operators/mergeScan":524,"../internal/operators/mergeWith":525,"../internal/operators/min":526,"../internal/operators/multicast":527,"../internal/operators/observeOn":528,"../internal/operators/onErrorResumeNextWith":529,"../internal/operators/pairwise":530,"../internal/operators/partition":531,"../internal/operators/pluck":532,"../internal/operators/publish":533,"../internal/operators/publishBehavior":534,"../internal/operators/publishLast":535,"../internal/operators/publishReplay":536,"../internal/operators/race":537,"../internal/operators/raceWith":538,"../internal/operators/reduce":539,"../internal/operators/refCount":540,"../internal/operators/repeat":541,"../internal/operators/repeatWhen":542,"../internal/operators/retry":543,"../internal/operators/retryWhen":544,"../internal/operators/sample":545,"../internal/operators/sampleTime":546,"../internal/operators/scan":547,"../internal/operators/sequenceEqual":549,"../internal/operators/share":550,"../internal/operators/shareReplay":551,"../internal/operators/single":552,"../internal/operators/skip":553,"../internal/operators/skipLast":554,"../internal/operators/skipUntil":555,"../internal/operators/skipWhile":556,"../internal/operators/startWith":557,"../internal/operators/subscribeOn":558,"../internal/operators/switchAll":559,"../internal/operators/switchMap":560,"../internal/operators/switchMapTo":561,"../internal/operators/switchScan":562,"../internal/operators/take":563,"../internal/operators/takeLast":564,"../internal/operators/takeUntil":565,"../internal/operators/takeWhile":566,"../internal/operators/tap":567,"../internal/operators/throttle":568,"../internal/operators/throttleTime":569,"../internal/operators/throwIfEmpty":570,"../internal/operators/timeInterval":571,"../internal/operators/timeout":572,"../internal/operators/timeoutWith":573,"../internal/operators/timestamp":574,"../internal/operators/toArray":575,"../internal/operators/window":576,"../internal/operators/windowCount":577,"../internal/operators/windowTime":578,"../internal/operators/windowToggle":579,"../internal/operators/windowWhen":580,"../internal/operators/withLatestFrom":581,"../internal/operators/zip":582,"../internal/operators/zipAll":583,"../internal/operators/zipWith":584}]},{},[1]);
+},{"../internal/operators/audit":466,"../internal/operators/auditTime":467,"../internal/operators/buffer":468,"../internal/operators/bufferCount":469,"../internal/operators/bufferTime":470,"../internal/operators/bufferToggle":471,"../internal/operators/bufferWhen":472,"../internal/operators/catchError":473,"../internal/operators/combineAll":474,"../internal/operators/combineLatest":475,"../internal/operators/combineLatestAll":476,"../internal/operators/combineLatestWith":477,"../internal/operators/concat":478,"../internal/operators/concatAll":479,"../internal/operators/concatMap":480,"../internal/operators/concatMapTo":481,"../internal/operators/concatWith":482,"../internal/operators/connect":483,"../internal/operators/count":484,"../internal/operators/debounce":485,"../internal/operators/debounceTime":486,"../internal/operators/defaultIfEmpty":487,"../internal/operators/delay":488,"../internal/operators/delayWhen":489,"../internal/operators/dematerialize":490,"../internal/operators/distinct":491,"../internal/operators/distinctUntilChanged":492,"../internal/operators/distinctUntilKeyChanged":493,"../internal/operators/elementAt":494,"../internal/operators/endWith":495,"../internal/operators/every":496,"../internal/operators/exhaust":497,"../internal/operators/exhaustAll":498,"../internal/operators/exhaustMap":499,"../internal/operators/expand":500,"../internal/operators/filter":501,"../internal/operators/finalize":502,"../internal/operators/find":503,"../internal/operators/findIndex":504,"../internal/operators/first":505,"../internal/operators/flatMap":506,"../internal/operators/groupBy":507,"../internal/operators/ignoreElements":508,"../internal/operators/isEmpty":509,"../internal/operators/last":511,"../internal/operators/map":512,"../internal/operators/mapTo":513,"../internal/operators/materialize":514,"../internal/operators/max":515,"../internal/operators/merge":516,"../internal/operators/mergeAll":517,"../internal/operators/mergeMap":519,"../internal/operators/mergeMapTo":520,"../internal/operators/mergeScan":521,"../internal/operators/mergeWith":522,"../internal/operators/min":523,"../internal/operators/multicast":524,"../internal/operators/observeOn":525,"../internal/operators/onErrorResumeNextWith":526,"../internal/operators/pairwise":527,"../internal/operators/partition":528,"../internal/operators/pluck":529,"../internal/operators/publish":530,"../internal/operators/publishBehavior":531,"../internal/operators/publishLast":532,"../internal/operators/publishReplay":533,"../internal/operators/race":534,"../internal/operators/raceWith":535,"../internal/operators/reduce":536,"../internal/operators/refCount":537,"../internal/operators/repeat":538,"../internal/operators/repeatWhen":539,"../internal/operators/retry":540,"../internal/operators/retryWhen":541,"../internal/operators/sample":542,"../internal/operators/sampleTime":543,"../internal/operators/scan":544,"../internal/operators/sequenceEqual":546,"../internal/operators/share":547,"../internal/operators/shareReplay":548,"../internal/operators/single":549,"../internal/operators/skip":550,"../internal/operators/skipLast":551,"../internal/operators/skipUntil":552,"../internal/operators/skipWhile":553,"../internal/operators/startWith":554,"../internal/operators/subscribeOn":555,"../internal/operators/switchAll":556,"../internal/operators/switchMap":557,"../internal/operators/switchMapTo":558,"../internal/operators/switchScan":559,"../internal/operators/take":560,"../internal/operators/takeLast":561,"../internal/operators/takeUntil":562,"../internal/operators/takeWhile":563,"../internal/operators/tap":564,"../internal/operators/throttle":565,"../internal/operators/throttleTime":566,"../internal/operators/throwIfEmpty":567,"../internal/operators/timeInterval":568,"../internal/operators/timeout":569,"../internal/operators/timeoutWith":570,"../internal/operators/timestamp":571,"../internal/operators/toArray":572,"../internal/operators/window":573,"../internal/operators/windowCount":574,"../internal/operators/windowTime":575,"../internal/operators/windowToggle":576,"../internal/operators/windowWhen":577,"../internal/operators/withLatestFrom":578,"../internal/operators/zip":579,"../internal/operators/zipAll":580,"../internal/operators/zipWith":581}]},{},[1]);

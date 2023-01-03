@@ -17,7 +17,7 @@ Object.keys(_foundationdbTypes).forEach(function (key) {
   if (key in exports && exports[key] === _foundationdbTypes[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _foundationdbTypes[key];
     }
   });
@@ -29,7 +29,7 @@ Object.keys(_foundationdbHelpers).forEach(function (key) {
   if (key in exports && exports[key] === _foundationdbHelpers[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _foundationdbHelpers[key];
     }
   });
@@ -40,14 +40,15 @@ function getRxStorageFoundationDB(settings) {
     throw new Error('foundationdb already initialized with api version ' + versionSet);
   } else if (!versionSet) {
     versionSet = settings.apiVersion;
-    var _require = require('foundationdb'),
-      setAPIVersion = _require.setAPIVersion;
+    var {
+      setAPIVersion
+    } = require('foundationdb');
     setAPIVersion(settings.apiVersion);
   }
   var storage = {
     name: 'foundationdb',
     statics: _dexieStatics.RxStorageDexieStatics,
-    createStorageInstance: function createStorageInstance(params) {
+    createStorageInstance(params) {
       (0, _rxStorageHelper.ensureRxStorageInstanceParamsAreCorrect)(params);
       var useSettings = Object.assign({}, settings, params.options);
       if (!useSettings.batchSize) {

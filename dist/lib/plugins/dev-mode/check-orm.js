@@ -15,9 +15,7 @@ function checkOrmMethods(statics) {
   if (!statics) {
     return;
   }
-  Object.entries(statics).forEach(function (_ref) {
-    var k = _ref[0],
-      v = _ref[1];
+  Object.entries(statics).forEach(([k, v]) => {
     if (typeof k !== 'string') {
       throw (0, _rxError.newRxTypeError)('COL14', {
         name: k
@@ -46,11 +44,9 @@ function checkOrmDocumentMethods(schema, methods) {
   if (!methods) {
     return;
   }
-  Object.keys(methods).filter(function (funName) {
-    return topLevelFields.includes(funName);
-  }).forEach(function (funName) {
+  Object.keys(methods).filter(funName => topLevelFields.includes(funName)).forEach(funName => {
     throw (0, _rxError.newRxError)('COL18', {
-      funName: funName
+      funName
     });
   });
 }

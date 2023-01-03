@@ -9,7 +9,7 @@ Object.keys(_rxStorageDexie).forEach(function (key) {
   if (key in exports && exports[key] === _rxStorageDexie[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _rxStorageDexie[key];
     }
   });
@@ -20,7 +20,7 @@ Object.keys(_rxStorageInstanceDexie).forEach(function (key) {
   if (key in exports && exports[key] === _rxStorageInstanceDexie[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _rxStorageInstanceDexie[key];
     }
   });
@@ -31,7 +31,7 @@ Object.keys(_dexieHelper).forEach(function (key) {
   if (key in exports && exports[key] === _dexieHelper[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _dexieHelper[key];
     }
   });
@@ -42,7 +42,7 @@ Object.keys(_dexieQuery).forEach(function (key) {
   if (key in exports && exports[key] === _dexieQuery[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _dexieQuery[key];
     }
   });
@@ -53,7 +53,7 @@ Object.keys(_dexieStatics).forEach(function (key) {
   if (key in exports && exports[key] === _dexieStatics[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _dexieStatics[key];
     }
   });

@@ -1,3 +1,4 @@
+import equal from 'fast-deep-equal';
 export function deepFreeze(o) {
   Object.freeze(o);
   Object.getOwnPropertyNames(o).forEach(function (prop) {
@@ -6,6 +7,9 @@ export function deepFreeze(o) {
     }
   });
   return o;
+}
+export function deepEqual(obj1, obj2) {
+  return equal(obj1, obj2);
 }
 
 /**
@@ -25,11 +29,9 @@ export function objectPathMonad(objectPath) {
    * directly return the field of the object.
    */
   if (split.length === 1) {
-    return function (obj) {
-      return obj[objectPath];
-    };
+    return obj => obj[objectPath];
   }
-  return function (obj) {
+  return obj => {
     var currentVal = obj;
     var t = 0;
     while (t < split.length) {
@@ -96,18 +98,15 @@ export function firstPropertyValueOfObject(obj) {
  * deep-sort an object so its attributes are in lexical order.
  * Also sorts the arrays inside of the object if no-array-sort not set
  */
-export function sortObject(obj) {
-  var noArraySort = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : false;
+export function sortObject(obj, noArraySort = false) {
   if (!obj) return obj; // do not sort null, false or undefined
 
   // array
   if (!noArraySort && Array.isArray(obj)) {
-    return obj.sort(function (a, b) {
+    return obj.sort((a, b) => {
       if (typeof a === 'string' && typeof b === 'string') return a.localeCompare(b);
       if (typeof a === 'object') return 1;else return -1;
-    }).map(function (i) {
-      return sortObject(i, noArraySort);
-    });
+    }).map(i => sortObject(i, noArraySort));
   }
 
   // object
@@ -117,9 +116,7 @@ export function sortObject(obj) {
       return obj;
     }
     var out = {};
-    Object.keys(obj).sort(function (a, b) {
-      return a.localeCompare(b);
-    }).forEach(function (key) {
+    Object.keys(obj).sort((a, b) => a.localeCompare(b)).forEach(key => {
       out[key] = sortObject(obj[key], noArraySort);
     });
     return out;
@@ -174,7 +171,7 @@ export var clone = deepClone;
  */
 export function overwriteGetterForCaching(obj, getterName, value) {
   Object.defineProperty(obj, getterName, {
-    get: function get() {
+    get: function () {
       return value;
     }
   });

@@ -11,7 +11,7 @@ export var overwritable = {
    * that returns true, we do additional checks
    * which help the developer but have bad performance
    */
-  isDevMode: function isDevMode() {
+  isDevMode() {
     return false;
   },
   /**
@@ -20,13 +20,13 @@ export var overwritable = {
    * Also, we can ensure the readonly state via typescript
    * @link https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Global_Objects/Object/freeze
    */
-  deepFreezeWhenDevMode: function deepFreezeWhenDevMode(obj) {
+  deepFreezeWhenDevMode(obj) {
     return obj;
   },
   /**
    * overwritten to map error-codes to text-messages
    */
-  tunnelErrorMessage: function tunnelErrorMessage(message) {
+  tunnelErrorMessage(message) {
     return "RxDB Error-Code " + message + ".\n        Error messages are not included in RxDB core to reduce build size.\n        - To find out what this error means, either use the dev-mode-plugin https://rxdb.info/dev-mode.html\n        - or search for the error code here: https://github.com/pubkey/rxdb/search?q=" + message + "\n        ";
   }
 };

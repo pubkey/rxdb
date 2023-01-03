@@ -28,11 +28,11 @@ export var RxDBDevModePlugin = {
   name: DEV_MODE_PLUGIN_NAME,
   rxdb: true,
   overwritable: {
-    isDevMode: function isDevMode() {
+    isDevMode() {
       return true;
     },
-    deepFreezeWhenDevMode: deepFreezeWhenDevMode,
-    tunnelErrorMessage: function tunnelErrorMessage(code) {
+    deepFreezeWhenDevMode,
+    tunnelErrorMessage(code) {
       if (!ERROR_MESSAGES[code]) {
         console.error('RxDB: Error-Code not known: ' + code);
         throw new Error('Error-Code ' + code + ' not known, contact the maintainer');
@@ -45,12 +45,12 @@ export var RxDBDevModePlugin = {
       after: checkSchema
     },
     preCreateRxDatabase: {
-      after: function after(args) {
+      after: function (args) {
         ensureDatabaseNameIsValid(args);
       }
     },
     preCreateRxCollection: {
-      after: function after(args) {
+      after: function (args) {
         ensureCollectionNameValid(args);
         checkOrmDocumentMethods(args.schema, args.methods);
         if (args.name.charAt(0) === '_') {
@@ -61,23 +61,23 @@ export var RxDBDevModePlugin = {
         if (!args.schema) {
           throw newRxError('DB4', {
             name: args.name,
-            args: args
+            args
           });
         }
       }
     },
     preCreateRxQuery: {
-      after: function after(args) {
+      after: function (args) {
         checkQuery(args);
       }
     },
     prePrepareQuery: {
-      after: function after(args) {
+      after: args => {
         checkMangoQuery(args);
       }
     },
     createRxCollection: {
-      after: function after(args) {
+      after: args => {
         // check ORM-methods
         checkOrmMethods(args.creator.statics);
         checkOrmMethods(args.creator.methods);

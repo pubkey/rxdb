@@ -13,15 +13,7 @@ var _utils = require("../../plugins/utils");
 var COUCHDB_NEW_REPLICATION_PLUGIN_IDENTITY_PREFIX = 'couchdb';
 exports.COUCHDB_NEW_REPLICATION_PLUGIN_IDENTITY_PREFIX = COUCHDB_NEW_REPLICATION_PLUGIN_IDENTITY_PREFIX;
 function mergeUrlQueryParams(params) {
-  return Object.entries(params).filter(function (_ref) {
-    var _k = _ref[0],
-      value = _ref[1];
-    return typeof value !== 'undefined';
-  }).map(function (_ref2) {
-    var key = _ref2[0],
-      value = _ref2[1];
-    return key + '=' + value;
-  }).join('&');
+  return Object.entries(params).filter(([_k, value]) => typeof value !== 'undefined').map(([key, value]) => key + '=' + value).join('&');
 }
 function couchDBDocToRxDocData(primaryPath, couchDocData) {
   var doc = couchSwapIdToPrimary(primaryPath, couchDocData);

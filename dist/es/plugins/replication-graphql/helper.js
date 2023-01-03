@@ -6,12 +6,10 @@ export function graphQLRequest(httpUrl, clientState, queryParams) {
   var req = new Request(ensureNotFalsy(httpUrl), {
     method: 'POST',
     body: JSON.stringify(queryParams),
-    headers: headers,
+    headers,
     credentials: clientState.credentials
   });
-  return fetch(req).then(function (res) {
-    return res.json();
-  }).then(function (body) {
+  return fetch(req).then(res => res.json()).then(body => {
     return body;
   });
 }

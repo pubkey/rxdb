@@ -19,13 +19,7 @@ function isMasterInP2PReplication(hashFunction, ownStorageToken, otherStorageTok
 }
 function sendMessageAndAwaitAnswer(handler, peer, message) {
   var requestId = message.id;
-  var answerPromise = (0, _rxjs.firstValueFrom)(handler.response$.pipe((0, _rxjs.filter)(function (d) {
-    return d.peer === peer;
-  }), (0, _rxjs.filter)(function (d) {
-    return d.response.id === requestId;
-  }), (0, _rxjs.map)(function (d) {
-    return d.response;
-  })));
+  var answerPromise = (0, _rxjs.firstValueFrom)(handler.response$.pipe((0, _rxjs.filter)(d => d.peer === peer), (0, _rxjs.filter)(d => d.response.id === requestId), (0, _rxjs.map)(d => d.response)));
   handler.send(peer, message);
   return answerPromise;
 }

@@ -1,5 +1,3 @@
-import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
-import _regeneratorRuntime from "@babel/runtime/regenerator";
 import { Subject } from 'rxjs';
 import { getFromMapOrThrow, PROMISE_RESOLVE_VOID, randomCouchString } from '../../plugins/utils';
 import { default as Peer } from 'simple-peer';
@@ -10,12 +8,12 @@ import { newRxError } from '../../rx-error';
  */
 export function getConnectionHandlerSimplePeer(serverUrl, wrtc) {
   var io = require('socket.io-client');
-  var creator = function creator(options) {
+  var creator = options => {
     var socket = io(serverUrl);
     var peerId = randomCouchString(10);
     socket.emit('join', {
       room: options.topic,
-      peerId: peerId
+      peerId
     });
     var connect$ = new Subject();
     var disconnect$ = new Subject();
@@ -23,19 +21,19 @@ export function getConnectionHandlerSimplePeer(serverUrl, wrtc) {
     var response$ = new Subject();
     var error$ = new Subject();
     var peers = new Map();
-    socket.on('joined', function (roomPeerIds) {
-      roomPeerIds.forEach(function (remotePeerId) {
+    socket.on('joined', roomPeerIds => {
+      roomPeerIds.forEach(remotePeerId => {
         if (remotePeerId === peerId || peers.has(remotePeerId)) {
           return;
         }
         // console.log('other user joined room ' + remotePeerId);
         var newPeer = new Peer({
           initiator: remotePeerId > peerId,
-          wrtc: wrtc,
+          wrtc,
           trickle: true
         });
         peers.set(remotePeerId, newPeer);
-        newPeer.on('data', function (messageOrResponse) {
+        newPeer.on('data', messageOrResponse => {
           messageOrResponse = JSON.parse(messageOrResponse.toString());
           // console.log('got a message from peer3: ' + messageOrResponse)
           if (messageOrResponse.result) {
@@ -50,55 +48,40 @@ export function getConnectionHandlerSimplePeer(serverUrl, wrtc) {
             });
           }
         });
-        newPeer.on('signal', function (signal) {
+        newPeer.on('signal', signal => {
           // console.log('emit signal from ' + peerId + ' to ' + remotePeerId);
           socket.emit('signal', {
             from: peerId,
             to: remotePeerId,
             room: options.topic,
-            signal: signal
+            signal
           });
         });
-        newPeer.on('error', function (error) {
+        newPeer.on('error', error => {
           error$.next(newRxError('RC_P2P_PEER', {
-            error: error
+            error
           }));
         });
-        newPeer.on('connect', function () {
+        newPeer.on('connect', () => {
           connect$.next(newPeer);
         });
       });
     });
-    socket.on('signal', function (data) {
+    socket.on('signal', data => {
       // console.log('got signal(' + peerId + ') ' + data.from + ' -> ' + data.to);
       var peer = getFromMapOrThrow(peers, data.from);
       peer.signal(data.signal);
     });
     var handler = {
-      error$: error$,
-      connect$: connect$,
-      disconnect$: disconnect$,
-      message$: message$,
-      response$: response$,
-      send: function () {
-        var _send = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee(peer, message) {
-          return _regeneratorRuntime.wrap(function _callee$(_context) {
-            while (1) switch (_context.prev = _context.next) {
-              case 0:
-                _context.next = 2;
-                return peer.send(JSON.stringify(message));
-              case 2:
-              case "end":
-                return _context.stop();
-            }
-          }, _callee);
-        }));
-        function send(_x, _x2) {
-          return _send.apply(this, arguments);
-        }
-        return send;
-      }(),
-      destroy: function destroy() {
+      error$,
+      connect$,
+      disconnect$,
+      message$,
+      response$,
+      async send(peer, message) {
+        await peer.send(JSON.stringify(message));
+      },
+      destroy() {
         socket.close();
         error$.complete();
         connect$.complete();

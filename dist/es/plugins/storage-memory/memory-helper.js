@@ -12,7 +12,7 @@ export function ensureNotRemoved(instance) {
 export function attachmentMapKey(documentId, attachmentId) {
   return documentId + '||' + attachmentId;
 }
-var SORT_BY_INDEX_STRING = function SORT_BY_INDEX_STRING(a, b) {
+var SORT_BY_INDEX_STRING = (a, b) => {
   if (a.indexString < b.indexString) {
     return -1;
   } else {
@@ -21,15 +21,14 @@ var SORT_BY_INDEX_STRING = function SORT_BY_INDEX_STRING(a, b) {
 };
 export function putWriteRowToState(docId, state, stateByIndex, row, docInState) {
   state.documents.set(docId, row.document);
-  stateByIndex.forEach(function (byIndex) {
+  stateByIndex.forEach(byIndex => {
     var docsWithIndex = byIndex.docsWithIndex;
     var newIndexString = byIndex.getIndexableString(row.document);
-    var _pushAtSortPosition = pushAtSortPosition(docsWithIndex, {
-        id: docId,
-        doc: row.document,
-        indexString: newIndexString
-      }, SORT_BY_INDEX_STRING, true),
-      insertPosition = _pushAtSortPosition[1];
+    var [, insertPosition] = pushAtSortPosition(docsWithIndex, {
+      id: docId,
+      doc: row.document,
+      indexString: newIndexString
+    }, SORT_BY_INDEX_STRING, true);
 
     /**
      * Remove previous if it was in the state
@@ -50,8 +49,8 @@ export function putWriteRowToState(docId, state, stateByIndex, row, docInState) 
           } else {
             throw newRxError('SNH', {
               args: {
-                row: row,
-                byIndex: byIndex
+                row,
+                byIndex
               }
             });
           }
@@ -70,12 +69,12 @@ export function putWriteRowToState(docId, state, stateByIndex, row, docInState) 
 }
 export function removeDocFromState(primaryPath, schema, state, doc) {
   var docId = doc[primaryPath];
-  state.documents["delete"](docId);
-  Object.values(state.byIndex).forEach(function (byIndex) {
+  state.documents.delete(docId);
+  Object.values(state.byIndex).forEach(byIndex => {
     var docsWithIndex = byIndex.docsWithIndex;
     var indexString = byIndex.getIndexableString(doc);
     var positionInIndex = boundEQ(docsWithIndex, {
-      indexString: indexString
+      indexString
     }, compareDocsWithIndex);
     docsWithIndex.splice(positionInIndex, 1);
   });

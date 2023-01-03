@@ -1,5 +1,3 @@
-import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
-import _regeneratorRuntime from "@babel/runtime/regenerator";
 /**
  * this plugin adds the encryption-capabilities to rxdb
  * It's using crypto-js/aes for password-encryption
@@ -27,7 +25,7 @@ export function decryptString(cipherText, password) {
   if (typeof cipherText !== 'string') {
     throw newRxError('SNH', {
       args: {
-        cipherText: cipherText
+        cipherText
       }
     });
   }
@@ -37,122 +35,89 @@ export function decryptString(cipherText, password) {
 }
 export function wrappedKeyEncryptionStorage(args) {
   return Object.assign({}, args.storage, {
-    createStorageInstance: function () {
-      var _createStorageInstance = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee(params) {
-        var retInstance, password, schemaWithoutEncrypted, instance, modifyToStorage, modifyFromStorage, modifyAttachmentFromStorage;
-        return _regeneratorRuntime.wrap(function _callee$(_context) {
-          while (1) switch (_context.prev = _context.next) {
-            case 0:
-              modifyAttachmentFromStorage = function _modifyAttachmentFrom(attachmentData) {
-                if (params.schema.attachments && params.schema.attachments.encrypted) {
-                  var decrypted = decryptString(b64DecodeUnicode(attachmentData), password);
-                  return decrypted;
-                } else {
-                  return attachmentData;
-                }
-              };
-              modifyFromStorage = function _modifyFromStorage(docData) {
-                docData = cloneWithoutAttachments(docData);
-                ensureNotFalsy(params.schema.encrypted).forEach(function (path) {
-                  var value = objectPath.get(docData, path);
-                  if (typeof value === 'undefined') {
-                    return;
-                  }
-                  var decrypted = decryptString(value, password);
-                  var decryptedParsed = JSON.parse(decrypted);
-                  objectPath.set(docData, path, decryptedParsed);
-                });
-                return docData;
-              };
-              modifyToStorage = function _modifyToStorage(docData) {
-                docData = cloneWithoutAttachments(docData);
-                ensureNotFalsy(params.schema.encrypted).forEach(function (path) {
-                  var value = objectPath.get(docData, path);
-                  if (typeof value === 'undefined') {
-                    return;
-                  }
-                  var stringValue = JSON.stringify(value);
-                  var encrypted = encryptString(stringValue, password);
-                  objectPath.set(docData, path, encrypted);
-                });
-
-                // handle attachments
-                if (params.schema.attachments && params.schema.attachments.encrypted) {
-                  var newAttachments = {};
-                  Object.entries(docData._attachments).forEach(function (_ref) {
-                    var id = _ref[0],
-                      attachment = _ref[1];
-                    var useAttachment = flatClone(attachment);
-                    if (useAttachment.data) {
-                      var dataString = useAttachment.data;
-                      useAttachment.data = b64EncodeUnicode(encryptString(dataString, password));
-                    }
-                    newAttachments[id] = useAttachment;
-                  });
-                  docData._attachments = newAttachments;
-                }
-                return docData;
-              };
-              if (hasEncryption(params.schema)) {
-                _context.next = 18;
-                break;
-              }
-              _context.next = 6;
-              return args.storage.createStorageInstance(params);
-            case 6:
-              retInstance = _context.sent;
-              if (!(params.schema.title === INTERNAL_STORE_SCHEMA_TITLE && params.password)) {
-                _context.next = 17;
-                break;
-              }
-              _context.prev = 8;
-              validatePassword(params.password);
-              _context.next = 17;
-              break;
-            case 12:
-              _context.prev = 12;
-              _context.t0 = _context["catch"](8);
-              _context.next = 16;
-              return retInstance.close();
-            case 16:
-              throw _context.t0;
-            case 17:
-              return _context.abrupt("return", retInstance);
-            case 18:
-              if (params.password) {
-                _context.next = 20;
-                break;
-              }
-              throw newRxError('EN3', {
-                database: params.databaseName,
-                collection: params.collectionName,
-                schema: params.schema
-              });
-            case 20:
-              password = params.password;
-              schemaWithoutEncrypted = clone(params.schema);
-              delete schemaWithoutEncrypted.encrypted;
-              if (schemaWithoutEncrypted.attachments) {
-                schemaWithoutEncrypted.attachments.encrypted = false;
-              }
-              _context.next = 26;
-              return args.storage.createStorageInstance(Object.assign({}, params, {
-                schema: schemaWithoutEncrypted
-              }));
-            case 26:
-              instance = _context.sent;
-              return _context.abrupt("return", wrapRxStorageInstance(instance, modifyToStorage, modifyFromStorage, modifyAttachmentFromStorage));
-            case 28:
-            case "end":
-              return _context.stop();
+    async createStorageInstance(params) {
+      if (!hasEncryption(params.schema)) {
+        var retInstance = await args.storage.createStorageInstance(params);
+        if (params.schema.title === INTERNAL_STORE_SCHEMA_TITLE && params.password) {
+          try {
+            validatePassword(params.password);
+          } catch (err) {
+            /**
+             * Even if the checks fail,
+             * we have to clean up.
+             */
+            await retInstance.close();
+            throw err;
           }
-        }, _callee, null, [[8, 12]]);
-      }));
-      function createStorageInstance(_x) {
-        return _createStorageInstance.apply(this, arguments);
+        }
+        return retInstance;
       }
-      return createStorageInstance;
-    }()
+      if (!params.password) {
+        throw newRxError('EN3', {
+          database: params.databaseName,
+          collection: params.collectionName,
+          schema: params.schema
+        });
+      }
+      var password = params.password;
+      var schemaWithoutEncrypted = clone(params.schema);
+      delete schemaWithoutEncrypted.encrypted;
+      if (schemaWithoutEncrypted.attachments) {
+        schemaWithoutEncrypted.attachments.encrypted = false;
+      }
+      var instance = await args.storage.createStorageInstance(Object.assign({}, params, {
+        schema: schemaWithoutEncrypted
+      }));
+      function modifyToStorage(docData) {
+        docData = cloneWithoutAttachments(docData);
+        ensureNotFalsy(params.schema.encrypted).forEach(path => {
+          var value = objectPath.get(docData, path);
+          if (typeof value === 'undefined') {
+            return;
+          }
+          var stringValue = JSON.stringify(value);
+          var encrypted = encryptString(stringValue, password);
+          objectPath.set(docData, path, encrypted);
+        });
+
+        // handle attachments
+        if (params.schema.attachments && params.schema.attachments.encrypted) {
+          var newAttachments = {};
+          Object.entries(docData._attachments).forEach(([id, attachment]) => {
+            var useAttachment = flatClone(attachment);
+            if (useAttachment.data) {
+              var dataString = useAttachment.data;
+              useAttachment.data = b64EncodeUnicode(encryptString(dataString, password));
+            }
+            newAttachments[id] = useAttachment;
+          });
+          docData._attachments = newAttachments;
+        }
+        return docData;
+      }
+      function modifyFromStorage(docData) {
+        docData = cloneWithoutAttachments(docData);
+        ensureNotFalsy(params.schema.encrypted).forEach(path => {
+          var value = objectPath.get(docData, path);
+          if (typeof value === 'undefined') {
+            return;
+          }
+          var decrypted = decryptString(value, password);
+          var decryptedParsed = JSON.parse(decrypted);
+          objectPath.set(docData, path, decryptedParsed);
+        });
+        return docData;
+      }
+      function modifyAttachmentFromStorage(attachmentData) {
+        if (params.schema.attachments && params.schema.attachments.encrypted) {
+          var decrypted = decryptString(b64DecodeUnicode(attachmentData), password);
+          return decrypted;
+        } else {
+          return attachmentData;
+        }
+      }
+      return wrapRxStorageInstance(instance, modifyToStorage, modifyFromStorage, modifyAttachmentFromStorage);
+    }
   });
 }
 function cloneWithoutAttachments(data) {
@@ -166,13 +131,13 @@ function cloneWithoutAttachments(data) {
 function validatePassword(password) {
   if (password && typeof password !== 'string') {
     throw newRxTypeError('EN1', {
-      password: password
+      password
     });
   }
   if (password && password.length < MINIMUM_PASSWORD_LENGTH) {
     throw newRxError('EN2', {
       minPassLength: MINIMUM_PASSWORD_LENGTH,
-      password: password
+      password
     });
   }
 }

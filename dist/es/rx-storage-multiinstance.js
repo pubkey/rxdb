@@ -1,5 +1,3 @@
-import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
-import _regeneratorRuntime from "@babel/runtime/regenerator";
 /**
  * When a persistend RxStorage is used in more the one JavaScript process,
  * the even stream of the changestream() function must be broadcasted to the other
@@ -55,9 +53,9 @@ export function removeBroadcastChannelReference(databaseInstanceToken, refObject
   if (!state) {
     return;
   }
-  state.refs["delete"](refObject);
+  state.refs.delete(refObject);
   if (state.refs.size === 0) {
-    BROADCAST_CHANNEL_BY_TOKEN["delete"](databaseInstanceToken);
+    BROADCAST_CHANNEL_BY_TOKEN.delete(databaseInstanceToken);
     return state.bc.close();
   }
 }
@@ -72,7 +70,7 @@ providedBroadcastChannel) {
   }
   var broadcastChannel = providedBroadcastChannel ? providedBroadcastChannel : getBroadcastChannelReference(instanceCreationParams.databaseInstanceToken, instance.databaseName, instance);
   var changesFromOtherInstances$ = new Subject();
-  var eventListener = function eventListener(msg) {
+  var eventListener = msg => {
     if (msg.storageName === storageName && msg.databaseName === instanceCreationParams.databaseName && msg.collectionName === instanceCreationParams.collectionName && msg.version === instanceCreationParams.schema.version) {
       changesFromOtherInstances$.next(msg.eventBulk);
     }
@@ -80,7 +78,7 @@ providedBroadcastChannel) {
   broadcastChannel.addEventListener('message', eventListener);
   var oldChangestream$ = instance.changeStream();
   var closed = false;
-  var sub = oldChangestream$.subscribe(function (eventBulk) {
+  var sub = oldChangestream$.subscribe(eventBulk => {
     if (closed) {
       return;
     }
@@ -89,55 +87,31 @@ providedBroadcastChannel) {
       databaseName: instanceCreationParams.databaseName,
       collectionName: instanceCreationParams.collectionName,
       version: instanceCreationParams.schema.version,
-      eventBulk: eventBulk
+      eventBulk
     });
   });
   instance.changeStream = function () {
     return changesFromOtherInstances$.asObservable().pipe(mergeWith(oldChangestream$));
   };
   var oldClose = instance.close.bind(instance);
-  instance.close = /*#__PURE__*/_asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee() {
-    return _regeneratorRuntime.wrap(function _callee$(_context) {
-      while (1) switch (_context.prev = _context.next) {
-        case 0:
-          closed = true;
-          sub.unsubscribe();
-          broadcastChannel.removeEventListener('message', eventListener);
-          if (providedBroadcastChannel) {
-            _context.next = 6;
-            break;
-          }
-          _context.next = 6;
-          return removeBroadcastChannelReference(instanceCreationParams.databaseInstanceToken, instance);
-        case 6:
-          return _context.abrupt("return", oldClose());
-        case 7:
-        case "end":
-          return _context.stop();
-      }
-    }, _callee);
-  }));
+  instance.close = async function () {
+    closed = true;
+    sub.unsubscribe();
+    broadcastChannel.removeEventListener('message', eventListener);
+    if (!providedBroadcastChannel) {
+      await removeBroadcastChannelReference(instanceCreationParams.databaseInstanceToken, instance);
+    }
+    return oldClose();
+  };
   var oldRemove = instance.remove.bind(instance);
-  instance.remove = /*#__PURE__*/_asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee2() {
-    return _regeneratorRuntime.wrap(function _callee2$(_context2) {
-      while (1) switch (_context2.prev = _context2.next) {
-        case 0:
-          closed = true;
-          sub.unsubscribe();
-          broadcastChannel.removeEventListener('message', eventListener);
-          if (providedBroadcastChannel) {
-            _context2.next = 6;
-            break;
-          }
-          _context2.next = 6;
-          return removeBroadcastChannelReference(instanceCreationParams.databaseInstanceToken, instance);
-        case 6:
-          return _context2.abrupt("return", oldRemove());
-        case 7:
-        case "end":
-          return _context2.stop();
-      }
-    }, _callee2);
-  }));
+  instance.remove = async function () {
+    closed = true;
+    sub.unsubscribe();
+    broadcastChannel.removeEventListener('message', eventListener);
+    if (!providedBroadcastChannel) {
+      await removeBroadcastChannelReference(instanceCreationParams.databaseInstanceToken, instance);
+    }
+    return oldRemove();
+  };
 }
 //# sourceMappingURL=rx-storage-multiinstance.js.map

@@ -8,7 +8,7 @@ import { ucfirst } from './utils-string';
 export function pluginMissing(pluginKey) {
   var keyParts = pluginKey.split('-');
   var pluginName = 'RxDB';
-  keyParts.forEach(function (part) {
+  keyParts.forEach(part => {
     pluginName += ucfirst(part);
   });
   pluginName += 'Plugin';

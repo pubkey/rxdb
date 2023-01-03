@@ -7,13 +7,13 @@ export var RxDBLocalDocumentsPlugin = {
   name: 'local-documents',
   rxdb: true,
   prototypes: {
-    RxCollection: function RxCollection(proto) {
+    RxCollection: proto => {
       proto.insertLocal = insertLocal;
       proto.upsertLocal = upsertLocal;
       proto.getLocal = getLocal;
       proto.getLocal$ = getLocal$;
     },
-    RxDatabase: function RxDatabase(proto) {
+    RxDatabase: proto => {
       proto.insertLocal = insertLocal;
       proto.upsertLocal = upsertLocal;
       proto.getLocal = getLocal;
@@ -22,7 +22,7 @@ export var RxDBLocalDocumentsPlugin = {
   },
   hooks: {
     createRxDatabase: {
-      before: function before(args) {
+      before: args => {
         if (args.creator.localDocuments) {
           /**
            * We do not have to await
@@ -34,7 +34,7 @@ export var RxDBLocalDocumentsPlugin = {
       }
     },
     createRxCollection: {
-      before: function before(args) {
+      before: args => {
         if (args.creator.localDocuments) {
           /**
            * We do not have to await
@@ -46,22 +46,20 @@ export var RxDBLocalDocumentsPlugin = {
       }
     },
     preDestroyRxDatabase: {
-      after: function after(db) {
+      after: db => {
         return closeStateByParent(db);
       }
     },
     postDestroyRxCollection: {
-      after: function after(collection) {
-        return closeStateByParent(collection);
-      }
+      after: collection => closeStateByParent(collection)
     },
     postRemoveRxDatabase: {
-      after: function after(args) {
+      after: args => {
         return removeLocalDocumentsStorageInstance(args.storage, args.databaseName, '');
       }
     },
     postRemoveRxCollection: {
-      after: function after(args) {
+      after: args => {
         return removeLocalDocumentsStorageInstance(args.storage, args.databaseName, args.collectionName);
       }
     }

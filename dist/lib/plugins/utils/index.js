@@ -9,7 +9,7 @@ Object.keys(_utilsArray).forEach(function (key) {
   if (key in exports && exports[key] === _utilsArray[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _utilsArray[key];
     }
   });
@@ -20,7 +20,7 @@ Object.keys(_utilsBlobBuffer).forEach(function (key) {
   if (key in exports && exports[key] === _utilsBlobBuffer[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _utilsBlobBuffer[key];
     }
   });
@@ -31,7 +31,7 @@ Object.keys(_utilsBase).forEach(function (key) {
   if (key in exports && exports[key] === _utilsBase[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _utilsBase[key];
     }
   });
@@ -42,7 +42,7 @@ Object.keys(_utilsRevision).forEach(function (key) {
   if (key in exports && exports[key] === _utilsRevision[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _utilsRevision[key];
     }
   });
@@ -53,7 +53,7 @@ Object.keys(_utilsDocument).forEach(function (key) {
   if (key in exports && exports[key] === _utilsDocument[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _utilsDocument[key];
     }
   });
@@ -64,7 +64,7 @@ Object.keys(_utilsHash).forEach(function (key) {
   if (key in exports && exports[key] === _utilsHash[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _utilsHash[key];
     }
   });
@@ -75,7 +75,7 @@ Object.keys(_utilsPromise).forEach(function (key) {
   if (key in exports && exports[key] === _utilsPromise[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _utilsPromise[key];
     }
   });
@@ -86,7 +86,7 @@ Object.keys(_utilsString).forEach(function (key) {
   if (key in exports && exports[key] === _utilsString[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _utilsString[key];
     }
   });
@@ -97,7 +97,7 @@ Object.keys(_utilsObject).forEach(function (key) {
   if (key in exports && exports[key] === _utilsObject[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _utilsObject[key];
     }
   });
@@ -108,7 +108,7 @@ Object.keys(_utilsError).forEach(function (key) {
   if (key in exports && exports[key] === _utilsError[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _utilsError[key];
     }
   });
@@ -119,7 +119,7 @@ Object.keys(_utilsTime).forEach(function (key) {
   if (key in exports && exports[key] === _utilsTime[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _utilsTime[key];
     }
   });
@@ -130,7 +130,7 @@ Object.keys(_utilsOther).forEach(function (key) {
   if (key in exports && exports[key] === _utilsOther[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _utilsOther[key];
     }
   });

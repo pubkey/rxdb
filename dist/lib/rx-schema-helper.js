@@ -21,15 +21,16 @@ var _utils = require("./plugins/utils");
  * with a given version.
  */
 function getPseudoSchemaForVersion(version, primaryKey) {
-  var _properties;
   var pseudoSchema = fillWithDefaultSettings({
-    version: version,
+    version,
     type: 'object',
     primaryKey: primaryKey,
-    properties: (_properties = {}, _properties[primaryKey] = {
-      type: 'string',
-      maxLength: 100
-    }, _properties),
+    properties: {
+      [primaryKey]: {
+        type: 'string',
+        maxLength: 100
+      }
+    },
     required: [primaryKey]
   });
   return pseudoSchema;
@@ -43,7 +44,7 @@ function getSchemaByObjectPath(rxJsonSchema, path) {
   usePath = usePath.replace(/\./g, '.properties.');
   usePath = 'properties.' + usePath;
   usePath = (0, _utils.trimDots)(usePath);
-  var ret = _objectPath["default"].get(rxJsonSchema, usePath);
+  var ret = _objectPath.default.get(rxJsonSchema, usePath);
   return ret;
 }
 function fillPrimaryKey(primaryPath, jsonSchema, documentData) {
@@ -53,9 +54,9 @@ function fillPrimaryKey(primaryPath, jsonSchema, documentData) {
   if (existingPrimary && existingPrimary !== newPrimary) {
     throw (0, _rxError.newRxError)('DOC19', {
       args: {
-        documentData: documentData,
-        existingPrimary: existingPrimary,
-        newPrimary: newPrimary
+        documentData,
+        existingPrimary,
+        newPrimary
       },
       schema: jsonSchema
     });
@@ -79,13 +80,13 @@ function getComposedPrimaryKeyOfDocumentData(jsonSchema, documentData) {
     return documentData[jsonSchema.primaryKey];
   }
   var compositePrimary = jsonSchema.primaryKey;
-  return compositePrimary.fields.map(function (field) {
-    var value = _objectPath["default"].get(documentData, field);
+  return compositePrimary.fields.map(field => {
+    var value = _objectPath.default.get(documentData, field);
     if (typeof value === 'undefined') {
       throw (0, _rxError.newRxError)('DOC18', {
         args: {
-          field: field,
-          documentData: documentData
+          field,
+          documentData
         }
       });
     }
@@ -166,11 +167,7 @@ function fillWithDefaultSettings(schemaObj) {
 
   // final fields are always required
   var finalFields = getFinalFields(schemaObj);
-  schemaObj.required = schemaObj.required.concat(finalFields).filter(function (field) {
-    return !field.includes('.');
-  }).filter(function (elem, pos, arr) {
-    return arr.indexOf(elem) === pos;
-  }); // unique;
+  schemaObj.required = schemaObj.required.concat(finalFields).filter(field => !field.includes('.')).filter((elem, pos, arr) => arr.indexOf(elem) === pos); // unique;
 
   // version is 0 by default
   schemaObj.version = schemaObj.version || 0;
@@ -180,7 +177,7 @@ function fillWithDefaultSettings(schemaObj) {
    * All indexes must have the primaryKey to ensure a deterministic sort order.
    */
   if (schemaObj.indexes) {
-    schemaObj.indexes = schemaObj.indexes.map(function (index) {
+    schemaObj.indexes = schemaObj.indexes.map(index => {
       var arIndex = (0, _utils.isMaybeReadonlyArray)(index) ? index.slice(0) : [index];
       if (!arIndex.includes(primaryPath)) {
         var modifiedIndex = arIndex.slice(0);
@@ -223,9 +220,7 @@ var RX_META_SCHEMA = {
  */
 exports.RX_META_SCHEMA = RX_META_SCHEMA;
 function getFinalFields(jsonSchema) {
-  var ret = Object.keys(jsonSchema.properties).filter(function (key) {
-    return jsonSchema.properties[key]["final"];
-  });
+  var ret = Object.keys(jsonSchema.properties).filter(key => jsonSchema.properties[key].final);
 
   // primary is also final
   var primaryPath = getPrimaryFieldOfPrimaryKey(jsonSchema.primaryKey);
@@ -233,9 +228,7 @@ function getFinalFields(jsonSchema) {
 
   // fields of composite primary are final
   if (typeof jsonSchema.primaryKey !== 'string') {
-    jsonSchema.primaryKey.fields.forEach(function (field) {
-      return ret.push(field);
-    });
+    jsonSchema.primaryKey.fields.forEach(field => ret.push(field));
   }
   return ret;
 }

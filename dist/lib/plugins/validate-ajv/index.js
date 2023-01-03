@@ -14,12 +14,12 @@ var _pluginHelpers = require("../../plugin-helpers");
  * @link https://github.com/epoberezkin/ajv
  */
 
-var ajv = new _ajv["default"]({
+var ajv = new _ajv.default({
   strict: false
 });
 function getValidator(schema) {
   var validator = ajv.compile(schema);
-  return function (docData) {
+  return docData => {
     var isValid = validator(docData);
     if (isValid) {
       return [];

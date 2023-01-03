@@ -13,14 +13,12 @@ export var RxDBMigrationPlugin = {
     }
   },
   prototypes: {
-    RxDatabase: function RxDatabase(proto) {
+    RxDatabase: proto => {
       proto.migrationStates = function () {
-        return getMigrationStateByDatabase(this).pipe(switchMap(function (list) {
-          return combineLatest(list);
-        }), shareReplay(RXJS_SHARE_REPLAY_DEFAULTS));
+        return getMigrationStateByDatabase(this).pipe(switchMap(list => combineLatest(list)), shareReplay(RXJS_SHARE_REPLAY_DEFAULTS));
       };
     },
-    RxCollection: function RxCollection(proto) {
+    RxCollection: proto => {
       proto.getDataMigrator = function () {
         if (!DATA_MIGRATOR_BY_COLLECTION.has(this)) {
           DATA_MIGRATOR_BY_COLLECTION.set(this, new DataMigrator(this.asRxCollection, this.migrationStrategies));

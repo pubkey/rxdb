@@ -9,7 +9,7 @@ Object.keys(_rxStorageRemote).forEach(function (key) {
   if (key in exports && exports[key] === _rxStorageRemote[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _rxStorageRemote[key];
     }
   });
@@ -20,7 +20,7 @@ Object.keys(_storageRemoteTypes).forEach(function (key) {
   if (key in exports && exports[key] === _storageRemoteTypes[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _storageRemoteTypes[key];
     }
   });
@@ -31,7 +31,7 @@ Object.keys(_storageRemoteHelpers).forEach(function (key) {
   if (key in exports && exports[key] === _storageRemoteHelpers[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _storageRemoteHelpers[key];
     }
   });
@@ -42,7 +42,7 @@ Object.keys(_remote).forEach(function (key) {
   if (key in exports && exports[key] === _remote[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _remote[key];
     }
   });
@@ -53,7 +53,7 @@ Object.keys(_websocket).forEach(function (key) {
   if (key in exports && exports[key] === _websocket[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _websocket[key];
     }
   });

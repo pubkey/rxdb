@@ -9,7 +9,7 @@ Object.keys(_inWorker).forEach(function (key) {
   if (key in exports && exports[key] === _inWorker[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _inWorker[key];
     }
   });
@@ -20,7 +20,7 @@ Object.keys(_nonWorker).forEach(function (key) {
   if (key in exports && exports[key] === _nonWorker[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _nonWorker[key];
     }
   });

@@ -10,7 +10,7 @@ var ajv = new Ajv({
 });
 export function getValidator(schema) {
   var validator = ajv.compile(schema);
-  return function (docData) {
+  return docData => {
     var isValid = validator(docData);
     if (isValid) {
       return [];

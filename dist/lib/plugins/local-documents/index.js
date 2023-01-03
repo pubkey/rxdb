@@ -14,7 +14,7 @@ Object.keys(_localDocuments).forEach(function (key) {
   if (key in exports && exports[key] === _localDocuments[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _localDocuments[key];
     }
   });
@@ -26,7 +26,7 @@ Object.keys(_localDocumentsHelper).forEach(function (key) {
   if (key in exports && exports[key] === _localDocumentsHelper[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _localDocumentsHelper[key];
     }
   });
@@ -38,7 +38,7 @@ Object.keys(_rxLocalDocument).forEach(function (key) {
   if (key in exports && exports[key] === _rxLocalDocument[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _rxLocalDocument[key];
     }
   });
@@ -47,13 +47,13 @@ var RxDBLocalDocumentsPlugin = {
   name: 'local-documents',
   rxdb: true,
   prototypes: {
-    RxCollection: function RxCollection(proto) {
+    RxCollection: proto => {
       proto.insertLocal = _localDocuments.insertLocal;
       proto.upsertLocal = _localDocuments.upsertLocal;
       proto.getLocal = _localDocuments.getLocal;
       proto.getLocal$ = _localDocuments.getLocal$;
     },
-    RxDatabase: function RxDatabase(proto) {
+    RxDatabase: proto => {
       proto.insertLocal = _localDocuments.insertLocal;
       proto.upsertLocal = _localDocuments.upsertLocal;
       proto.getLocal = _localDocuments.getLocal;
@@ -62,7 +62,7 @@ var RxDBLocalDocumentsPlugin = {
   },
   hooks: {
     createRxDatabase: {
-      before: function before(args) {
+      before: args => {
         if (args.creator.localDocuments) {
           /**
            * We do not have to await
@@ -74,7 +74,7 @@ var RxDBLocalDocumentsPlugin = {
       }
     },
     createRxCollection: {
-      before: function before(args) {
+      before: args => {
         if (args.creator.localDocuments) {
           /**
            * We do not have to await
@@ -86,22 +86,20 @@ var RxDBLocalDocumentsPlugin = {
       }
     },
     preDestroyRxDatabase: {
-      after: function after(db) {
+      after: db => {
         return (0, _localDocumentsHelper.closeStateByParent)(db);
       }
     },
     postDestroyRxCollection: {
-      after: function after(collection) {
-        return (0, _localDocumentsHelper.closeStateByParent)(collection);
-      }
+      after: collection => (0, _localDocumentsHelper.closeStateByParent)(collection)
     },
     postRemoveRxDatabase: {
-      after: function after(args) {
+      after: args => {
         return (0, _localDocumentsHelper.removeLocalDocumentsStorageInstance)(args.storage, args.databaseName, '');
       }
     },
     postRemoveRxCollection: {
-      after: function after(args) {
+      after: args => {
         return (0, _localDocumentsHelper.removeLocalDocumentsStorageInstance)(args.storage, args.databaseName, args.collectionName);
       }
     }

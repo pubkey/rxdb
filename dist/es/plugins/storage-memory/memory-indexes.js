@@ -3,16 +3,14 @@ import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
 import { toArray } from '../../plugins/utils';
 export function addIndexesToInternalsState(state, schema) {
   var primaryPath = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
-  var useIndexes = !schema.indexes ? [] : schema.indexes.map(function (row) {
-    return toArray(row);
-  });
+  var useIndexes = !schema.indexes ? [] : schema.indexes.map(row => toArray(row));
 
   // we need this as default index
   useIndexes.push([primaryPath]);
 
   // we need this index for running cleanup()
   useIndexes.push(['_meta.lwt', primaryPath]);
-  useIndexes.forEach(function (indexAr) {
+  useIndexes.forEach(indexAr => {
     /**
      * Running a query will only return non-deleted documents
      * so all indexes must have the the deleted field as first index field.

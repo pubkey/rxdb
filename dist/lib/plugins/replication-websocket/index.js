@@ -9,7 +9,7 @@ Object.keys(_websocketClient).forEach(function (key) {
   if (key in exports && exports[key] === _websocketClient[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _websocketClient[key];
     }
   });
@@ -20,7 +20,7 @@ Object.keys(_websocketServer).forEach(function (key) {
   if (key in exports && exports[key] === _websocketServer[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _websocketServer[key];
     }
   });
@@ -31,7 +31,7 @@ Object.keys(_websocketTypes).forEach(function (key) {
   if (key in exports && exports[key] === _websocketTypes[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _websocketTypes[key];
     }
   });

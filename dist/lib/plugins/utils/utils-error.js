@@ -14,7 +14,7 @@ var _utilsString = require("./utils-string");
 function pluginMissing(pluginKey) {
   var keyParts = pluginKey.split('-');
   var pluginName = 'RxDB';
-  keyParts.forEach(function (part) {
+  keyParts.forEach(part => {
     pluginName += (0, _utilsString.ucfirst)(part);
   });
   pluginName += 'Plugin';

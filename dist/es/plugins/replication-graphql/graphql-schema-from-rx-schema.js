@@ -16,9 +16,7 @@ export function graphQLSchemaFromRxSchema(input) {
     inputs: [],
     types: []
   };
-  Object.entries(input).forEach(function (_ref) {
-    var collectionName = _ref[0],
-      collectionSettings = _ref[1];
+  Object.entries(input).forEach(([collectionName, collectionSettings]) => {
     collectionSettings = fillUpOptionals(collectionSettings);
     var schema = collectionSettings.schema;
     var prefixes = ensureNotFalsy(collectionSettings.prefixes);
@@ -51,7 +49,7 @@ export function graphQLSchemaFromRxSchema(input) {
       required: [],
       additionalProperties: false
     };
-    collectionSettings.checkpointFields.forEach(function (key) {
+    collectionSettings.checkpointFields.forEach(key => {
       var subSchema = schema.properties[key];
       checkpointSchema.properties[key] = subSchema;
       checkpointSchema.required.push(key);
@@ -61,20 +59,14 @@ export function graphQLSchemaFromRxSchema(input) {
       schema: checkpointSchema,
       direction: 'input'
     });
-    ret.inputs = ret.inputs.concat(inputGraphQL.typeDefinitions.map(function (str) {
-      return replaceTopLevelTypeName(str, collectionNameInput);
-    })).concat(pushRowGraphQL.typeDefinitions.map(function (str) {
-      return replaceTopLevelTypeName(str, collectionNameInput + prefixes.pushRow);
-    })).concat(checkpointInputGraphQL.typeDefinitions.map(function (str) {
-      return replaceTopLevelTypeName(str, collectionNameInput + prefixes.checkpoint);
-    }));
+    ret.inputs = ret.inputs.concat(inputGraphQL.typeDefinitions.map(str => replaceTopLevelTypeName(str, collectionNameInput))).concat(pushRowGraphQL.typeDefinitions.map(str => replaceTopLevelTypeName(str, collectionNameInput + prefixes.pushRow))).concat(checkpointInputGraphQL.typeDefinitions.map(str => replaceTopLevelTypeName(str, collectionNameInput + prefixes.checkpoint)));
     var headersSchema = {
       type: 'object',
       additionalProperties: false,
       properties: {},
       required: []
     };
-    ensureNotFalsy(collectionSettings.headerFields).forEach(function (headerField) {
+    ensureNotFalsy(collectionSettings.headerFields).forEach(headerField => {
       headersSchema.properties[headerField] = {
         type: 'string'
       };
@@ -87,9 +79,7 @@ export function graphQLSchemaFromRxSchema(input) {
       direction: 'input'
     });
     if (ensureNotFalsy(collectionSettings.headerFields).length > 0) {
-      ret.inputs = ret.inputs.concat(headersInputGraphQL.typeDefinitions.map(function (str) {
-        return replaceTopLevelTypeName(str, headersInputName);
-      }));
+      ret.inputs = ret.inputs.concat(headersInputGraphQL.typeDefinitions.map(str => replaceTopLevelTypeName(str, headersInputName)));
     }
 
     // output
@@ -120,13 +110,7 @@ export function graphQLSchemaFromRxSchema(input) {
       },
       direction: 'output'
     });
-    ret.types = ret.types.concat(outputGraphQL.typeDefinitions.map(function (str) {
-      return replaceTopLevelTypeName(str, ucCollectionName);
-    })).concat(checkpointOutputGraphQL.typeDefinitions.map(function (str) {
-      return replaceTopLevelTypeName(str, ucCollectionName + prefixes.checkpoint);
-    })).concat(pullBulkOutputGraphQL.typeDefinitions.map(function (str) {
-      return replaceTopLevelTypeName(str, ucCollectionName + prefixes.pullBulk);
-    }));
+    ret.types = ret.types.concat(outputGraphQL.typeDefinitions.map(str => replaceTopLevelTypeName(str, ucCollectionName))).concat(checkpointOutputGraphQL.typeDefinitions.map(str => replaceTopLevelTypeName(str, ucCollectionName + prefixes.checkpoint))).concat(pullBulkOutputGraphQL.typeDefinitions.map(str => replaceTopLevelTypeName(str, ucCollectionName + prefixes.pullBulk)));
 
     // query
     var queryName = prefixes.pull + ucCollectionName;
@@ -163,7 +147,7 @@ export function fillUpOptionals(input) {
   input = flatClone(input);
   var schema = fillWithDefaultSettings(input.schema);
   // strip internal attributes
-  Object.keys(schema.properties).forEach(function (key) {
+  Object.keys(schema.properties).forEach(key => {
     if (key.startsWith('_')) {
       delete schema.properties[key];
     }
@@ -221,7 +205,7 @@ export function fillUpOptionals(input) {
 }
 function stripKeysFromSchema(schema, strip) {
   var cloned = clone(schema);
-  strip.forEach(function (key) {
+  strip.forEach(key => {
     delete cloned.properties[key];
   });
   return cloned;

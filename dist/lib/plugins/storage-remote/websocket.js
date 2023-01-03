@@ -18,20 +18,18 @@ function startRxStorageRemoteWebsocketServer(options) {
   var exposeSettings = {
     messages$: messages$.asObservable(),
     storage: options.storage,
-    send: function send(msg) {
+    send(msg) {
       var ws = (0, _utils.getFromMapOrThrow)(websocketByConnectionId, msg.connectionId);
       ws.send(JSON.stringify(msg));
     }
   };
   var exposeState = (0, _remote.exposeRxStorageRemote)(exposeSettings);
-  serverState.onConnection$.subscribe(function (ws) {
+  serverState.onConnection$.subscribe(ws => {
     var onCloseHandlers = [];
-    ws.onclose = function () {
-      onCloseHandlers.map(function (fn) {
-        return fn();
-      });
+    ws.onclose = () => {
+      onCloseHandlers.map(fn => fn());
     };
-    ws.on('message', function (messageString) {
+    ws.on('message', messageString => {
       var message = JSON.parse(messageString);
       var connectionId = message.connectionId;
       if (!websocketByConnectionId.has(connectionId)) {
@@ -49,8 +47,8 @@ function startRxStorageRemoteWebsocketServer(options) {
     });
   });
   return {
-    serverState: serverState,
-    exposeState: exposeState
+    serverState,
+    exposeState
   };
 }
 
@@ -67,19 +65,15 @@ function getRxStorageRemoteWebsocket(options) {
   var websocketClientPromise = WebsocketClientByUrl.has(options.url) ? (0, _utils.getFromMapOrThrow)(WebsocketClientByUrl, options.url) : (0, _replicationWebsocket.getWebSocket)(options.url, identifier);
   WebsocketClientByUrl.set(options.url, websocketClientPromise);
   var storage = (0, _rxStorageRemote.getRxStorageRemote)({
-    identifier: identifier,
+    identifier,
     statics: options.statics,
-    messages$: messages$,
-    send: function send(msg) {
-      return websocketClientPromise.then(function (websocketClient) {
-        return websocketClient.socket.send(JSON.stringify(msg));
-      });
+    messages$,
+    send(msg) {
+      return websocketClientPromise.then(websocketClient => websocketClient.socket.send(JSON.stringify(msg)));
     }
   });
-  websocketClientPromise.then(function (websocketClient) {
-    websocketClient.message$.subscribe(function (msg) {
-      return messages$.next(msg);
-    });
+  websocketClientPromise.then(websocketClient => {
+    websocketClient.message$.subscribe(msg => messages$.next(msg));
   });
   return storage;
 }

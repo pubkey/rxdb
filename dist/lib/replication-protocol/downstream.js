@@ -1,12 +1,9 @@
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.startReplicationDownstream = startReplicationDownstream;
-var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
-var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
 var _rxjs = require("rxjs");
 var _rxError = require("../rx-error");
 var _rxStorageHelper = require("../rx-storage-helper");
@@ -33,10 +30,10 @@ function startReplicationDownstream(state) {
     state.stats.down.addNewTask = state.stats.down.addNewTask + 1;
     var taskWithTime = {
       time: timer++,
-      task: task
+      task
     };
     openTasks.push(taskWithTime);
-    state.streamQueue.down = state.streamQueue.down.then(function () {
+    state.streamQueue.down = state.streamQueue.down.then(() => {
       var useTasks = [];
       while (openTasks.length > 0) {
         state.events.active.down.next(true);
@@ -65,7 +62,7 @@ function startReplicationDownstream(state) {
       } else {
         return downstreamProcessChanges(useTasks);
       }
-    }).then(function () {
+    }).then(() => {
       state.events.active.down.next(false);
       if (!state.firstSyncDone.down.getValue()) {
         state.firstSyncDone.down.next(true);
@@ -77,93 +74,50 @@ function startReplicationDownstream(state) {
   /**
    * If a write on the master happens, we have to trigger the downstream.
    */
-  var sub = replicationHandler.masterChangeStream$.subscribe(function (task) {
+  var sub = replicationHandler.masterChangeStream$.subscribe(task => {
     state.stats.down.masterChangeStreamEmit = state.stats.down.masterChangeStreamEmit + 1;
     addNewTask(task);
   });
-  (0, _rxjs.firstValueFrom)(state.events.canceled.pipe((0, _rxjs.filter)(function (canceled) {
-    return !!canceled;
-  }))).then(function () {
-    return sub.unsubscribe();
-  });
+  (0, _rxjs.firstValueFrom)(state.events.canceled.pipe((0, _rxjs.filter)(canceled => !!canceled))).then(() => sub.unsubscribe());
 
   /**
    * For faster performance, we directly start each write
    * and then await all writes at the end.
    */
   var lastTimeMasterChangesRequested = -1;
-  function downstreamResyncOnce() {
-    return _downstreamResyncOnce.apply(this, arguments);
-  }
-  function _downstreamResyncOnce() {
-    _downstreamResyncOnce = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee2() {
-      var lastCheckpoint, promises, downResult;
-      return _regenerator["default"].wrap(function _callee2$(_context2) {
-        while (1) switch (_context2.prev = _context2.next) {
-          case 0:
-            state.stats.down.downstreamResyncOnce = state.stats.down.downstreamResyncOnce + 1;
-            if (!state.events.canceled.getValue()) {
-              _context2.next = 3;
-              break;
-            }
-            return _context2.abrupt("return");
-          case 3:
-            state.checkpointQueue = state.checkpointQueue.then(function () {
-              return (0, _checkpoint.getLastCheckpointDoc)(state, 'down');
-            });
-            _context2.next = 6;
-            return state.checkpointQueue;
-          case 6:
-            lastCheckpoint = _context2.sent;
-            promises = [];
-          case 8:
-            if (state.events.canceled.getValue()) {
-              _context2.next = 21;
-              break;
-            }
-            lastTimeMasterChangesRequested = timer++;
-            _context2.next = 12;
-            return replicationHandler.masterChangesSince(lastCheckpoint, state.input.pullBatchSize);
-          case 12:
-            downResult = _context2.sent;
-            if (!(downResult.documents.length === 0)) {
-              _context2.next = 15;
-              break;
-            }
-            return _context2.abrupt("break", 21);
-          case 15:
-            lastCheckpoint = (0, _rxStorageHelper.stackCheckpoints)([lastCheckpoint, downResult.checkpoint]);
-            promises.push(persistFromMaster(downResult.documents, lastCheckpoint));
+  async function downstreamResyncOnce() {
+    state.stats.down.downstreamResyncOnce = state.stats.down.downstreamResyncOnce + 1;
+    if (state.events.canceled.getValue()) {
+      return;
+    }
+    state.checkpointQueue = state.checkpointQueue.then(() => (0, _checkpoint.getLastCheckpointDoc)(state, 'down'));
+    var lastCheckpoint = await state.checkpointQueue;
+    var promises = [];
+    while (!state.events.canceled.getValue()) {
+      lastTimeMasterChangesRequested = timer++;
+      var downResult = await replicationHandler.masterChangesSince(lastCheckpoint, state.input.pullBatchSize);
+      if (downResult.documents.length === 0) {
+        break;
+      }
+      lastCheckpoint = (0, _rxStorageHelper.stackCheckpoints)([lastCheckpoint, downResult.checkpoint]);
+      promises.push(persistFromMaster(downResult.documents, lastCheckpoint));
 
-            /**
-             * By definition we stop pull when the pulled documents
-             * do not fill up the pullBatchSize because we
-             * can assume that the remote has no more documents.
-             */
-            if (!(downResult.documents.length < state.input.pullBatchSize)) {
-              _context2.next = 19;
-              break;
-            }
-            return _context2.abrupt("break", 21);
-          case 19:
-            _context2.next = 8;
-            break;
-          case 21:
-            _context2.next = 23;
-            return Promise.all(promises);
-          case 23:
-          case "end":
-            return _context2.stop();
-        }
-      }, _callee2);
-    }));
-    return _downstreamResyncOnce.apply(this, arguments);
+      /**
+       * By definition we stop pull when the pulled documents
+       * do not fill up the pullBatchSize because we
+       * can assume that the remote has no more documents.
+       */
+      if (downResult.documents.length < state.input.pullBatchSize) {
+        break;
+      }
+    }
+    await Promise.all(promises);
   }
   function downstreamProcessChanges(tasks) {
     state.stats.down.downstreamProcessChanges = state.stats.down.downstreamProcessChanges + 1;
     var docsOfAllTasks = [];
     var lastCheckpoint = null;
-    tasks.forEach(function (task) {
+    tasks.forEach(task => {
       if (task === 'RESYNC') {
         throw new Error('SNH');
       }
@@ -191,7 +145,7 @@ function startReplicationDownstream(state) {
     /**
      * Add the new docs to the non-persistend list
      */
-    docs.forEach(function (docData) {
+    docs.forEach(docData => {
       var docId = docData[state.primaryPath];
       nonPersistedFromMaster.docs[docId] = docData;
     });
@@ -201,7 +155,7 @@ function startReplicationDownstream(state) {
      * Run in the queue
      * with all open documents from nonPersistedFromMaster.
      */
-    persistenceQueue = persistenceQueue.then(function () {
+    persistenceQueue = persistenceQueue.then(() => {
       var downDocsById = nonPersistedFromMaster.docs;
       nonPersistedFromMaster.docs = {};
       var useCheckpoint = nonPersistedFromMaster.checkpoint;
@@ -213,122 +167,99 @@ function startReplicationDownstream(state) {
       var writeRowsToForkById = {};
       var writeRowsToMeta = {};
       var useMetaWriteRows = [];
-      return Promise.all([state.input.forkInstance.findDocumentsById(docIds, true), (0, _metaInstance.getAssumedMasterState)(state, docIds)]).then(function (_ref) {
-        var currentForkState = _ref[0],
-          assumedMasterState = _ref[1];
-        return Promise.all(docIds.map( /*#__PURE__*/function () {
-          var _ref2 = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(docId) {
-            var forkStateFullDoc, forkStateDocData, masterState, assumedMaster, isAssumedMasterEqualToForkStatePromise, isAssumedMasterEqualToForkState, areStatesExactlyEqualPromise, areStatesExactlyEqual, newForkState, nextRevisionHeight, forkWriteRow;
-            return _regenerator["default"].wrap(function _callee$(_context) {
-              while (1) switch (_context.prev = _context.next) {
-                case 0:
-                  forkStateFullDoc = currentForkState[docId];
-                  forkStateDocData = forkStateFullDoc ? (0, _helper.writeDocToDocState)(forkStateFullDoc) : undefined;
-                  masterState = downDocsById[docId];
-                  assumedMaster = assumedMasterState[docId];
-                  if (!(assumedMaster && assumedMaster.metaDocument.isResolvedConflict === forkStateFullDoc._rev)) {
-                    _context.next = 6;
-                    break;
-                  }
-                  return _context.abrupt("return", _utils.PROMISE_RESOLVE_VOID);
-                case 6:
-                  isAssumedMasterEqualToForkStatePromise = !assumedMaster || !forkStateDocData ? _utils.PROMISE_RESOLVE_FALSE : state.input.conflictHandler({
-                    realMasterState: assumedMaster.docData,
-                    newDocumentState: forkStateDocData
-                  }, 'downstream-check-if-equal-0').then(function (r) {
-                    return r.isEqual;
-                  });
-                  _context.next = 9;
-                  return isAssumedMasterEqualToForkStatePromise;
-                case 9:
-                  isAssumedMasterEqualToForkState = _context.sent;
-                  if (!isAssumedMasterEqualToForkState && assumedMaster && assumedMaster.docData._rev && forkStateFullDoc._meta[state.input.identifier] && (0, _utils.parseRevision)(forkStateFullDoc._rev).height === forkStateFullDoc._meta[state.input.identifier]) {
-                    isAssumedMasterEqualToForkState = true;
-                  }
-                  if (!(forkStateFullDoc && assumedMaster && isAssumedMasterEqualToForkState === false || forkStateFullDoc && !assumedMaster)) {
-                    _context.next = 13;
-                    break;
-                  }
-                  return _context.abrupt("return", _utils.PROMISE_RESOLVE_VOID);
-                case 13:
-                  areStatesExactlyEqualPromise = !forkStateDocData ? _utils.PROMISE_RESOLVE_FALSE : state.input.conflictHandler({
-                    realMasterState: masterState,
-                    newDocumentState: forkStateDocData
-                  }, 'downstream-check-if-equal-1').then(function (r) {
-                    return r.isEqual;
-                  });
-                  _context.next = 16;
-                  return areStatesExactlyEqualPromise;
-                case 16:
-                  areStatesExactlyEqual = _context.sent;
-                  if (!(forkStateDocData && areStatesExactlyEqual)) {
-                    _context.next = 20;
-                    break;
-                  }
-                  /**
-                   * Document states are exactly equal.
-                   * This can happen when the replication is shut down
-                   * unexpected like when the user goes offline.
-                   *
-                   * Only when the assumedMaster is different from the forkState,
-                   * we have to patch the document in the meta instance.
-                   */
-                  if (!assumedMaster || isAssumedMasterEqualToForkState === false) {
-                    useMetaWriteRows.push((0, _metaInstance.getMetaWriteRow)(state, forkStateDocData, assumedMaster ? assumedMaster.metaDocument : undefined));
-                  }
-                  return _context.abrupt("return", _utils.PROMISE_RESOLVE_VOID);
-                case 20:
-                  /**
-                   * All other master states need to be written to the forkInstance
-                   * and metaInstance.
-                   */
-                  newForkState = Object.assign({}, masterState, forkStateFullDoc ? {
-                    _meta: (0, _utils.flatClone)(forkStateFullDoc._meta),
-                    _attachments: {},
-                    _rev: (0, _utils.getDefaultRevision)()
-                  } : {
-                    _meta: (0, _utils.getDefaultRxDocumentMeta)(),
-                    _rev: (0, _utils.getDefaultRevision)(),
-                    _attachments: {}
-                  });
-                  /**
-                   * If the remote works with revisions,
-                   * we store the height of the next fork-state revision
-                   * inside of the documents meta data.
-                   * By doing so we can filter it out in the upstream
-                   * and detect the document as being equal to master or not.
-                   * This is used for example in the CouchDB replication plugin.
-                   */
-                  if (masterState._rev) {
-                    nextRevisionHeight = !forkStateFullDoc ? 1 : (0, _utils.parseRevision)(forkStateFullDoc._rev).height + 1;
-                    newForkState._meta[state.input.identifier] = nextRevisionHeight;
-                  }
-                  forkWriteRow = {
-                    previous: forkStateFullDoc,
-                    document: newForkState
-                  };
-                  forkWriteRow.document._rev = (0, _utils.createRevision)(identifierHash, forkWriteRow.previous);
-                  writeRowsToFork.push(forkWriteRow);
-                  writeRowsToForkById[docId] = forkWriteRow;
-                  writeRowsToMeta[docId] = (0, _metaInstance.getMetaWriteRow)(state, masterState, assumedMaster ? assumedMaster.metaDocument : undefined);
-                case 27:
-                case "end":
-                  return _context.stop();
-              }
-            }, _callee);
-          }));
-          return function (_x) {
-            return _ref2.apply(this, arguments);
+      return Promise.all([state.input.forkInstance.findDocumentsById(docIds, true), (0, _metaInstance.getAssumedMasterState)(state, docIds)]).then(([currentForkState, assumedMasterState]) => {
+        return Promise.all(docIds.map(async docId => {
+          var forkStateFullDoc = currentForkState[docId];
+          var forkStateDocData = forkStateFullDoc ? (0, _helper.writeDocToDocState)(forkStateFullDoc) : undefined;
+          var masterState = downDocsById[docId];
+          var assumedMaster = assumedMasterState[docId];
+          if (assumedMaster && assumedMaster.metaDocument.isResolvedConflict === forkStateFullDoc._rev) {
+            /**
+             * The current fork state represents a resolved conflict
+             * that first must be send to the master in the upstream.
+             * All conflicts are resolved by the upstream.
+             */
+            return _utils.PROMISE_RESOLVE_VOID;
+          }
+          var isAssumedMasterEqualToForkStatePromise = !assumedMaster || !forkStateDocData ? _utils.PROMISE_RESOLVE_FALSE : state.input.conflictHandler({
+            realMasterState: assumedMaster.docData,
+            newDocumentState: forkStateDocData
+          }, 'downstream-check-if-equal-0').then(r => r.isEqual);
+          var isAssumedMasterEqualToForkState = await isAssumedMasterEqualToForkStatePromise;
+          if (!isAssumedMasterEqualToForkState && assumedMaster && assumedMaster.docData._rev && forkStateFullDoc._meta[state.input.identifier] && (0, _utils.parseRevision)(forkStateFullDoc._rev).height === forkStateFullDoc._meta[state.input.identifier]) {
+            isAssumedMasterEqualToForkState = true;
+          }
+          if (forkStateFullDoc && assumedMaster && isAssumedMasterEqualToForkState === false || forkStateFullDoc && !assumedMaster) {
+            /**
+             * We have a non-upstream-replicated
+             * local write to the fork.
+             * This means we ignore the downstream of this document
+             * because anyway the upstream will first resolve the conflict.
+             */
+            return _utils.PROMISE_RESOLVE_VOID;
+          }
+          var areStatesExactlyEqualPromise = !forkStateDocData ? _utils.PROMISE_RESOLVE_FALSE : state.input.conflictHandler({
+            realMasterState: masterState,
+            newDocumentState: forkStateDocData
+          }, 'downstream-check-if-equal-1').then(r => r.isEqual);
+          var areStatesExactlyEqual = await areStatesExactlyEqualPromise;
+          if (forkStateDocData && areStatesExactlyEqual) {
+            /**
+             * Document states are exactly equal.
+             * This can happen when the replication is shut down
+             * unexpected like when the user goes offline.
+             *
+             * Only when the assumedMaster is different from the forkState,
+             * we have to patch the document in the meta instance.
+             */
+            if (!assumedMaster || isAssumedMasterEqualToForkState === false) {
+              useMetaWriteRows.push((0, _metaInstance.getMetaWriteRow)(state, forkStateDocData, assumedMaster ? assumedMaster.metaDocument : undefined));
+            }
+            return _utils.PROMISE_RESOLVE_VOID;
+          }
+
+          /**
+           * All other master states need to be written to the forkInstance
+           * and metaInstance.
+           */
+          var newForkState = Object.assign({}, masterState, forkStateFullDoc ? {
+            _meta: (0, _utils.flatClone)(forkStateFullDoc._meta),
+            _attachments: {},
+            _rev: (0, _utils.getDefaultRevision)()
+          } : {
+            _meta: (0, _utils.getDefaultRxDocumentMeta)(),
+            _rev: (0, _utils.getDefaultRevision)(),
+            _attachments: {}
+          });
+          /**
+           * If the remote works with revisions,
+           * we store the height of the next fork-state revision
+           * inside of the documents meta data.
+           * By doing so we can filter it out in the upstream
+           * and detect the document as being equal to master or not.
+           * This is used for example in the CouchDB replication plugin.
+           */
+          if (masterState._rev) {
+            var nextRevisionHeight = !forkStateFullDoc ? 1 : (0, _utils.parseRevision)(forkStateFullDoc._rev).height + 1;
+            newForkState._meta[state.input.identifier] = nextRevisionHeight;
+          }
+          var forkWriteRow = {
+            previous: forkStateFullDoc,
+            document: newForkState
           };
-        }()));
-      }).then(function () {
+          forkWriteRow.document._rev = (0, _utils.createRevision)(identifierHash, forkWriteRow.previous);
+          writeRowsToFork.push(forkWriteRow);
+          writeRowsToForkById[docId] = forkWriteRow;
+          writeRowsToMeta[docId] = (0, _metaInstance.getMetaWriteRow)(state, masterState, assumedMaster ? assumedMaster.metaDocument : undefined);
+        }));
+      }).then(() => {
         if (writeRowsToFork.length > 0) {
-          return state.input.forkInstance.bulkWrite(writeRowsToFork, state.downstreamBulkWriteFlag).then(function (forkWriteResult) {
-            Object.keys(forkWriteResult.success).forEach(function (docId) {
+          return state.input.forkInstance.bulkWrite(writeRowsToFork, state.downstreamBulkWriteFlag).then(forkWriteResult => {
+            Object.keys(forkWriteResult.success).forEach(docId => {
               state.events.processed.down.next(writeRowsToForkById[docId]);
               useMetaWriteRows.push(writeRowsToMeta[docId]);
             });
-            Object.values(forkWriteResult.error).forEach(function (error) {
+            Object.values(forkWriteResult.error).forEach(error => {
               /**
                * We do not have to care about downstream conflict errors here
                * because on conflict, it will be solved locally and result in another write.
@@ -343,23 +274,19 @@ function startReplicationDownstream(state) {
             });
           });
         }
-      }).then(function () {
+      }).then(() => {
         if (useMetaWriteRows.length > 0) {
           return state.input.metaInstance.bulkWrite(useMetaWriteRows, 'replication-down-write-meta');
         }
-      }).then(function () {
+      }).then(() => {
         /**
          * For better performance we do not await checkpoint writes,
          * but to ensure order on parallel checkpoint writes,
          * we have to use a queue.
          */
-        state.checkpointQueue = state.checkpointQueue.then(function () {
-          return (0, _checkpoint.setCheckpoint)(state, 'down', useCheckpoint);
-        });
+        state.checkpointQueue = state.checkpointQueue.then(() => (0, _checkpoint.setCheckpoint)(state, 'down', useCheckpoint));
       });
-    })["catch"](function (unhandledError) {
-      return state.events.error.next(unhandledError);
-    });
+    }).catch(unhandledError => state.events.error.next(unhandledError));
     return persistenceQueue;
   }
 }

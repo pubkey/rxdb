@@ -8,10 +8,9 @@ exports.RxSchema = void 0;
 exports.createRxSchema = createRxSchema;
 exports.getIndexes = getIndexes;
 exports.getPreviousVersions = getPreviousVersions;
-exports.isInstanceOf = isInstanceOf;
+exports.isRxSchema = isRxSchema;
 exports.toTypedRxJsonSchema = toTypedRxJsonSchema;
 var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
-var _fastDeepEqual = _interopRequireDefault(require("fast-deep-equal"));
 var _utils = require("./plugins/utils");
 var _rxError = require("./rx-error");
 var _hooks = require("./hooks");
@@ -35,14 +34,13 @@ var RxSchema = /*#__PURE__*/function () {
    * @throws {Error} if not valid
    */
   _proto.validateChange = function validateChange(dataBefore, dataAfter) {
-    var _this = this;
-    this.finalFields.forEach(function (fieldName) {
-      if (!(0, _fastDeepEqual["default"])(dataBefore[fieldName], dataAfter[fieldName])) {
+    this.finalFields.forEach(fieldName => {
+      if (!(0, _utils.deepEqual)(dataBefore[fieldName], dataAfter[fieldName])) {
         throw (0, _rxError.newRxError)('DOC9', {
-          dataBefore: dataBefore,
-          dataAfter: dataAfter,
-          fieldName: fieldName,
-          schema: _this.jsonSchema
+          dataBefore,
+          dataAfter,
+          fieldName,
+          schema: this.jsonSchema
         });
       }
     });
@@ -53,14 +51,7 @@ var RxSchema = /*#__PURE__*/function () {
    */;
   _proto.fillObjectWithDefaults = function fillObjectWithDefaults(obj) {
     obj = (0, _utils.flatClone)(obj);
-    Object.entries(this.defaultValues).filter(function (_ref) {
-      var k = _ref[0];
-      return !obj.hasOwnProperty(k) || typeof obj[k] === 'undefined';
-    }).forEach(function (_ref2) {
-      var k = _ref2[0],
-        v = _ref2[1];
-      return obj[k] = v;
-    });
+    Object.entries(this.defaultValues).filter(([k]) => !obj.hasOwnProperty(k) || typeof obj[k] === 'undefined').forEach(([k, v]) => obj[k] = v);
     return obj;
   }
 
@@ -71,31 +62,22 @@ var RxSchema = /*#__PURE__*/function () {
   _proto.getDocumentPrototype = function getDocumentPrototype() {
     var proto = {};
     (0, _rxDocument.defineGetterSetter)(this, proto, '');
-    (0, _utils.overwriteGetterForCaching)(this, 'getDocumentPrototype', function () {
-      return proto;
-    });
+    (0, _utils.overwriteGetterForCaching)(this, 'getDocumentPrototype', () => proto);
     return proto;
   };
   _proto.getPrimaryOfDocumentData = function getPrimaryOfDocumentData(documentData) {
     return (0, _rxSchemaHelper.getComposedPrimaryKeyOfDocumentData)(this.jsonSchema, documentData);
   };
-  (0, _createClass2["default"])(RxSchema, [{
+  (0, _createClass2.default)(RxSchema, [{
     key: "version",
-    get: function get() {
+    get: function () {
       return this.jsonSchema.version;
     }
   }, {
     key: "defaultValues",
-    get: function get() {
+    get: function () {
       var values = {};
-      Object.entries(this.jsonSchema.properties).filter(function (_ref3) {
-        var v = _ref3[1];
-        return v.hasOwnProperty('default');
-      }).forEach(function (_ref4) {
-        var k = _ref4[0],
-          v = _ref4[1];
-        return values[k] = v["default"];
-      });
+      Object.entries(this.jsonSchema.properties).filter(([, v]) => v.hasOwnProperty('default')).forEach(([k, v]) => values[k] = v.default);
       return (0, _utils.overwriteGetterForCaching)(this, 'defaultValues', values);
     }
 
@@ -104,7 +86,7 @@ var RxSchema = /*#__PURE__*/function () {
      */
   }, {
     key: "hash",
-    get: function get() {
+    get: function () {
       return (0, _utils.overwriteGetterForCaching)(this, 'hash', (0, _utils.fastUnsecureHash)(JSON.stringify(this.jsonSchema)));
     }
   }]);
@@ -112,9 +94,7 @@ var RxSchema = /*#__PURE__*/function () {
 }();
 exports.RxSchema = RxSchema;
 function getIndexes(jsonSchema) {
-  return (jsonSchema.indexes || []).map(function (index) {
-    return (0, _utils.isMaybeReadonlyArray)(index) ? index : [index];
-  });
+  return (jsonSchema.indexes || []).map(index => (0, _utils.isMaybeReadonlyArray)(index) ? index : [index]);
 }
 
 /**
@@ -123,12 +103,9 @@ function getIndexes(jsonSchema) {
 function getPreviousVersions(schema) {
   var version = schema.version ? schema.version : 0;
   var c = 0;
-  return new Array(version).fill(0).map(function () {
-    return c++;
-  });
+  return new Array(version).fill(0).map(() => c++);
 }
-function createRxSchema(jsonSchema) {
-  var runPreCreateHooks = arguments.length > 1 && arguments[1] !== undefined ? arguments[1] : true;
+function createRxSchema(jsonSchema, runPreCreateHooks = true) {
   if (runPreCreateHooks) {
     (0, _hooks.runPluginHooks)('preCreateRxSchema', jsonSchema);
   }
@@ -139,7 +116,7 @@ function createRxSchema(jsonSchema) {
   (0, _hooks.runPluginHooks)('createRxSchema', schema);
   return schema;
 }
-function isInstanceOf(obj) {
+function isRxSchema(obj) {
   return obj instanceof RxSchema;
 }
 

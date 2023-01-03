@@ -7,7 +7,7 @@ import isMyJsonValid from 'is-my-json-valid';
 import { wrappedValidateStorageFactory } from '../../plugin-helpers';
 export function getValidator(schema) {
   var validator = isMyJsonValid(schema);
-  return function (docData) {
+  return docData => {
     var isValid = validator(docData);
     if (isValid) {
       return [];

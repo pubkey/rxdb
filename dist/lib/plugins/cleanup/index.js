@@ -14,7 +14,7 @@ Object.keys(_cleanup).forEach(function (key) {
   if (key in exports && exports[key] === _cleanup[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _cleanup[key];
     }
   });
@@ -25,7 +25,7 @@ var RxDBCleanupPlugin = {
   prototypes: {},
   hooks: {
     createRxCollection: {
-      after: function after(i) {
+      after: i => {
         (0, _cleanup.startCleanupForRxCollection)(i.collection);
       }
     }

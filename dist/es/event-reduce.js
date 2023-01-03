@@ -6,9 +6,7 @@ export function getSortFieldsOfQuery(primaryKey, query) {
   if (!query.sort || query.sort.length === 0) {
     return [primaryKey];
   } else {
-    return query.sort.map(function (part) {
-      return Object.keys(part)[0];
-    });
+    return query.sort.map(part => Object.keys(part)[0]);
   }
 }
 export var RXQUERY_QUERY_PARAMS_CACHE = new WeakMap();
@@ -25,11 +23,11 @@ export function getQueryParams(rxQuery) {
      * we send for example compressed documents to be sorted by compressed queries.
      */
     var sortComparator = collection.database.storage.statics.getSortComparator(collection.schema.jsonSchema, preparedQuery);
-    var useSortComparator = function useSortComparator(docA, docB) {
+    var useSortComparator = (docA, docB) => {
       var sortComparatorData = {
-        docA: docA,
-        docB: docB,
-        rxQuery: rxQuery
+        docA,
+        docB,
+        rxQuery
       };
       return sortComparator(sortComparatorData.docA, sortComparatorData.docB);
     };
@@ -40,10 +38,10 @@ export function getQueryParams(rxQuery) {
      * we send for example compressed documents to match compressed queries.
      */
     var queryMatcher = collection.database.storage.statics.getQueryMatcher(collection.schema.jsonSchema, preparedQuery);
-    var useQueryMatcher = function useQueryMatcher(doc) {
+    var useQueryMatcher = doc => {
       var queryMatcherData = {
-        doc: doc,
-        rxQuery: rxQuery
+        doc,
+        rxQuery
       };
       return queryMatcher(queryMatcherData.doc);
     };
@@ -71,14 +69,12 @@ export function calculateNewResults(rxQuery, rxChangeEvents) {
   var previousResults = ensureNotFalsy(rxQuery._result).docsData.slice(0);
   var previousResultsMap = ensureNotFalsy(rxQuery._result).docsDataMap;
   var changed = false;
-  var eventReduceEvents = rxChangeEvents.map(function (cE) {
-    return rxChangeEventToEventReduceChangeEvent(cE);
-  }).filter(arrayFilterNotEmpty);
-  var foundNonOptimizeable = eventReduceEvents.find(function (eventReduceEvent) {
+  var eventReduceEvents = rxChangeEvents.map(cE => rxChangeEventToEventReduceChangeEvent(cE)).filter(arrayFilterNotEmpty);
+  var foundNonOptimizeable = eventReduceEvents.find(eventReduceEvent => {
     var stateResolveFunctionInput = {
-      queryParams: queryParams,
+      queryParams,
       changeEvent: eventReduceEvent,
-      previousResults: previousResults,
+      previousResults,
       keyDocumentMap: previousResultsMap
     };
     var actionName = calculateActionName(stateResolveFunctionInput);
@@ -97,7 +93,7 @@ export function calculateNewResults(rxQuery, rxChangeEvents) {
   } else {
     return {
       runFullQueryAgain: false,
-      changed: changed,
+      changed,
       newResults: previousResults
     };
   }

@@ -35,14 +35,14 @@ export var RxDBQueryBuilderPlugin = {
   name: 'query-builder',
   rxdb: true,
   prototypes: {
-    RxQuery: function RxQuery(proto) {
-      ['where', 'equals', 'eq', 'or', 'nor', 'and', 'mod', 'exists', 'elemMatch', 'sort'].forEach(function (attribute) {
+    RxQuery(proto) {
+      ['where', 'equals', 'eq', 'or', 'nor', 'and', 'mod', 'exists', 'elemMatch', 'sort'].forEach(attribute => {
         applyBuildingStep(proto, attribute);
       });
-      OTHER_MANGO_ATTRIBUTES.forEach(function (attribute) {
+      OTHER_MANGO_ATTRIBUTES.forEach(attribute => {
         applyBuildingStep(proto, attribute);
       });
-      OTHER_MANGO_OPERATORS.forEach(function (operator) {
+      OTHER_MANGO_OPERATORS.forEach(operator => {
         applyBuildingStep(proto, operator);
       });
     }

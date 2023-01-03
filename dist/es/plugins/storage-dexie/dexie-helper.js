@@ -1,5 +1,3 @@
-import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
-import _regeneratorRuntime from "@babel/runtime/regenerator";
 import { Dexie } from 'dexie';
 import { flatClone, toArray } from '../utils';
 import { newRxError } from '../../rx-error';
@@ -16,69 +14,52 @@ export function getDexieDbWithTables(databaseName, collectionName, settings, sch
   var dexieDbName = 'rxdb-dexie-' + databaseName + '--' + schema.version + '--' + collectionName;
   var state = DEXIE_STATE_DB_BY_NAME.get(dexieDbName);
   if (!state) {
-    state = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee() {
-      var _dexieStoresSettings;
-      var useSettings, dexieDb, dexieStoresSettings;
-      return _regeneratorRuntime.wrap(function _callee$(_context) {
-        while (1) switch (_context.prev = _context.next) {
-          case 0:
-            /**
-             * IndexedDB was not designed for dynamically adding tables on the fly,
-             * so we create one dexie database per RxDB storage instance.
-             * @link https://github.com/dexie/Dexie.js/issues/684#issuecomment-373224696
-             */
-            useSettings = flatClone(settings);
-            useSettings.autoOpen = false;
-            dexieDb = new Dexie(dexieDbName, useSettings);
-            dexieStoresSettings = (_dexieStoresSettings = {}, _dexieStoresSettings[DEXIE_DOCS_TABLE_NAME] = getDexieStoreSchema(schema), _dexieStoresSettings[DEXIE_CHANGES_TABLE_NAME] = '++sequence, id', _dexieStoresSettings[DEXIE_DELETED_DOCS_TABLE_NAME] = primaryPath + ',_meta.lwt,[_meta.lwt+' + primaryPath + ']', _dexieStoresSettings);
-            dexieDb.version(1).stores(dexieStoresSettings);
-            _context.next = 7;
-            return dexieDb.open();
-          case 7:
-            return _context.abrupt("return", {
-              dexieDb: dexieDb,
-              dexieTable: dexieDb[DEXIE_DOCS_TABLE_NAME],
-              dexieDeletedTable: dexieDb[DEXIE_DELETED_DOCS_TABLE_NAME]
-            });
-          case 8:
-          case "end":
-            return _context.stop();
-        }
-      }, _callee);
-    }))();
+    state = (async () => {
+      /**
+       * IndexedDB was not designed for dynamically adding tables on the fly,
+       * so we create one dexie database per RxDB storage instance.
+       * @link https://github.com/dexie/Dexie.js/issues/684#issuecomment-373224696
+       */
+      var useSettings = flatClone(settings);
+      useSettings.autoOpen = false;
+      var dexieDb = new Dexie(dexieDbName, useSettings);
+      var dexieStoresSettings = {
+        [DEXIE_DOCS_TABLE_NAME]: getDexieStoreSchema(schema),
+        [DEXIE_CHANGES_TABLE_NAME]: '++sequence, id',
+        /**
+         * Instead of adding {deleted: false} to every query we run over the document store,
+         * we move deleted documents into a separate store where they can only be queried
+         * by primary key.
+         * This increases performance because it is way easier for the query planner to select
+         * a good index and we also do not have to add the _deleted field to every index.
+         *
+         * We also need the [_meta.lwt+' + primaryPath + '] index for getChangedDocumentsSince()
+         */
+        [DEXIE_DELETED_DOCS_TABLE_NAME]: primaryPath + ',_meta.lwt,[_meta.lwt+' + primaryPath + ']'
+      };
+      dexieDb.version(1).stores(dexieStoresSettings);
+      await dexieDb.open();
+      return {
+        dexieDb,
+        dexieTable: dexieDb[DEXIE_DOCS_TABLE_NAME],
+        dexieDeletedTable: dexieDb[DEXIE_DELETED_DOCS_TABLE_NAME]
+      };
+    })();
     DEXIE_STATE_DB_BY_NAME.set(dexieDbName, state);
     REF_COUNT_PER_DEXIE_DB.set(state, 0);
   }
   return state;
 }
-export function closeDexieDb(_x) {
-  return _closeDexieDb.apply(this, arguments);
-}
-function _closeDexieDb() {
-  _closeDexieDb = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee2(statePromise) {
-    var state, prevCount, newCount;
-    return _regeneratorRuntime.wrap(function _callee2$(_context2) {
-      while (1) switch (_context2.prev = _context2.next) {
-        case 0:
-          _context2.next = 2;
-          return statePromise;
-        case 2:
-          state = _context2.sent;
-          prevCount = REF_COUNT_PER_DEXIE_DB.get(statePromise);
-          newCount = prevCount - 1;
-          if (newCount === 0) {
-            state.dexieDb.close();
-            REF_COUNT_PER_DEXIE_DB["delete"](statePromise);
-          } else {
-            REF_COUNT_PER_DEXIE_DB.set(statePromise, newCount);
-          }
-        case 6:
-        case "end":
-          return _context2.stop();
-      }
-    }, _callee2);
-  }));
-  return _closeDexieDb.apply(this, arguments);
+export async function closeDexieDb(statePromise) {
+  var state = await statePromise;
+  var prevCount = REF_COUNT_PER_DEXIE_DB.get(statePromise);
+  var newCount = prevCount - 1;
+  if (newCount === 0) {
+    state.dexieDb.close();
+    REF_COUNT_PER_DEXIE_DB.delete(statePromise);
+  } else {
+    REF_COUNT_PER_DEXIE_DB.set(statePromise, newCount);
+  }
 }
 function sortDirectionToMingo(direction) {
   if (direction === 'asc') {
@@ -96,15 +77,15 @@ export function getDexieSortComparator(_schema, query) {
   var mingoSortObject = {};
   if (!query.sort) {
     throw newRxError('SNH', {
-      query: query
+      query
     });
   }
-  query.sort.forEach(function (sortBlock) {
+  query.sort.forEach(sortBlock => {
     var key = Object.keys(sortBlock)[0];
     var direction = Object.values(sortBlock)[0];
     mingoSortObject[key] = sortDirectionToMingo(direction);
   });
-  var fun = function fun(a, b) {
+  var fun = (a, b) => {
     var sorted = getMingoQuery({}).find([a, b], {}).sort(mingoSortObject);
     var first = sorted.next();
     if (first === a) {
@@ -120,9 +101,9 @@ export function ensureNoBooleanIndex(schema) {
     return;
   }
   var checkedFields = new Set();
-  schema.indexes.forEach(function (index) {
+  schema.indexes.forEach(index => {
     var fields = toArray(index);
-    fields.forEach(function (field) {
+    fields.forEach(field => {
       if (checkedFields.has(field)) {
         return;
       }
@@ -130,9 +111,9 @@ export function ensureNoBooleanIndex(schema) {
       var schemaObj = getSchemaByObjectPath(schema, field);
       if (schemaObj.type === 'boolean') {
         throw newRxError('DXE1', {
-          schema: schema,
-          index: index,
-          field: field
+          schema,
+          index,
+          field
         });
       }
     });
@@ -148,9 +129,7 @@ export var DEXIE_PIPE_SUBSTITUTE = '__';
 export function dexieReplaceIfStartsWithPipe(str) {
   var split = str.split('.');
   if (split.length > 1) {
-    return split.map(function (part) {
-      return dexieReplaceIfStartsWithPipe(part);
-    }).join('.');
+    return split.map(part => dexieReplaceIfStartsWithPipe(part)).join('.');
   }
   if (str.startsWith('|')) {
     var withoutFirst = str.substring(1);
@@ -162,9 +141,7 @@ export function dexieReplaceIfStartsWithPipe(str) {
 export function dexieReplaceIfStartsWithPipeRevert(str) {
   var split = str.split('.');
   if (split.length > 1) {
-    return split.map(function (part) {
-      return dexieReplaceIfStartsWithPipeRevert(part);
-    }).join('.');
+    return split.map(part => dexieReplaceIfStartsWithPipeRevert(part)).join('.');
   }
   if (str.startsWith(DEXIE_PIPE_SUBSTITUTE)) {
     var withoutFirst = str.substring(DEXIE_PIPE_SUBSTITUTE.length);
@@ -181,14 +158,10 @@ export function fromStorageToDexie(documentData) {
   if (!documentData || typeof documentData === 'string' || typeof documentData === 'number' || typeof documentData === 'boolean') {
     return documentData;
   } else if (Array.isArray(documentData)) {
-    return documentData.map(function (row) {
-      return fromStorageToDexie(row);
-    });
+    return documentData.map(row => fromStorageToDexie(row));
   } else if (typeof documentData === 'object') {
     var ret = {};
-    Object.entries(documentData).forEach(function (_ref2) {
-      var key = _ref2[0],
-        value = _ref2[1];
+    Object.entries(documentData).forEach(([key, value]) => {
       if (typeof value === 'object') {
         value = fromStorageToDexie(value);
       }
@@ -201,14 +174,10 @@ export function fromDexieToStorage(documentData) {
   if (!documentData || typeof documentData === 'string' || typeof documentData === 'number' || typeof documentData === 'boolean') {
     return documentData;
   } else if (Array.isArray(documentData)) {
-    return documentData.map(function (row) {
-      return fromDexieToStorage(row);
-    });
+    return documentData.map(row => fromDexieToStorage(row));
   } else if (typeof documentData === 'object') {
     var ret = {};
-    Object.entries(documentData).forEach(function (_ref3) {
-      var key = _ref3[0],
-        value = _ref3[1];
+    Object.entries(documentData).forEach(([key, value]) => {
       if (typeof value === 'object' || Array.isArray(documentData)) {
         value = fromDexieToStorage(value);
       }
@@ -234,7 +203,7 @@ export function getDexieStoreSchema(rxJsonSchema) {
 
   // add other indexes
   if (rxJsonSchema.indexes) {
-    rxJsonSchema.indexes.forEach(function (index) {
+    rxJsonSchema.indexes.forEach(index => {
       var arIndex = toArray(index);
       parts.push(arIndex);
     });
@@ -248,12 +217,10 @@ export function getDexieStoreSchema(rxJsonSchema) {
    * keys as IndexedDB indexes. So we have to substitute the pipe-char
    * which comes from the key-compression plugin.
    */
-  parts = parts.map(function (part) {
-    return part.map(function (str) {
-      return dexieReplaceIfStartsWithPipe(str);
-    });
+  parts = parts.map(part => {
+    return part.map(str => dexieReplaceIfStartsWithPipe(str));
   });
-  return parts.map(function (part) {
+  return parts.map(part => {
     if (part.length === 1) {
       return part[0];
     } else {
@@ -266,38 +233,15 @@ export function getDexieStoreSchema(rxJsonSchema) {
  * Returns all documents in the database.
  * Non-deleted plus deleted ones.
  */
-export function getDocsInDb(_x2, _x3) {
-  return _getDocsInDb.apply(this, arguments);
-}
-function _getDocsInDb() {
-  _getDocsInDb = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee3(internals, docIds) {
-    var state, _yield$Promise$all, nonDeletedDocsInDb, deletedDocsInDb, docsInDb;
-    return _regeneratorRuntime.wrap(function _callee3$(_context3) {
-      while (1) switch (_context3.prev = _context3.next) {
-        case 0:
-          _context3.next = 2;
-          return internals;
-        case 2:
-          state = _context3.sent;
-          _context3.next = 5;
-          return Promise.all([state.dexieTable.bulkGet(docIds), state.dexieDeletedTable.bulkGet(docIds)]);
-        case 5:
-          _yield$Promise$all = _context3.sent;
-          nonDeletedDocsInDb = _yield$Promise$all[0];
-          deletedDocsInDb = _yield$Promise$all[1];
-          docsInDb = deletedDocsInDb.slice(0);
-          nonDeletedDocsInDb.forEach(function (doc, idx) {
-            if (doc) {
-              docsInDb[idx] = doc;
-            }
-          });
-          return _context3.abrupt("return", docsInDb);
-        case 11:
-        case "end":
-          return _context3.stop();
-      }
-    }, _callee3);
-  }));
-  return _getDocsInDb.apply(this, arguments);
+export async function getDocsInDb(internals, docIds) {
+  var state = await internals;
+  var [nonDeletedDocsInDb, deletedDocsInDb] = await Promise.all([state.dexieTable.bulkGet(docIds), state.dexieDeletedTable.bulkGet(docIds)]);
+  var docsInDb = deletedDocsInDb.slice(0);
+  nonDeletedDocsInDb.forEach((doc, idx) => {
+    if (doc) {
+      docsInDb[idx] = doc;
+    }
+  });
+  return docsInDb;
 }
 //# sourceMappingURL=dexie-helper.js.map

@@ -59,7 +59,7 @@ export function areRxDocumentArraysEqual(primaryPath, ar1, ar2) {
   return true;
 }
 export function getSortDocumentsByLastWriteTimeComparator(primaryPath) {
-  return function (a, b) {
+  return (a, b) => {
     if (a._meta.lwt === b._meta.lwt) {
       if (b[primaryPath] < a[primaryPath]) {
         return 1;

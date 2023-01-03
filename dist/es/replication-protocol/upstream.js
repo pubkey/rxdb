@@ -1,5 +1,3 @@
-import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
-import _regeneratorRuntime from "@babel/runtime/regenerator";
 import { firstValueFrom, filter } from 'rxjs';
 import { stackCheckpoints } from '../rx-storage-helper';
 import { batchArray, ensureNotFalsy, parseRevision, PROMISE_RESOLVE_FALSE } from '../plugins/utils';
@@ -18,8 +16,8 @@ import { getAssumedMasterState, getMetaWriteRow } from './meta-instance';
  */
 export function startReplicationUpstream(state) {
   var replicationHandler = state.input.replicationHandler;
-  state.streamQueue.up = state.streamQueue.up.then(function () {
-    return upstreamInitialSync().then(function () {
+  state.streamQueue.up = state.streamQueue.up.then(() => {
+    return upstreamInitialSync().then(() => {
       processTasks();
     });
   });
@@ -28,103 +26,54 @@ export function startReplicationUpstream(state) {
   var timer = 0;
   var initialSyncStartTime = -1;
   var openTasks = [];
-  var sub = state.input.forkInstance.changeStream().pipe(filter(function (eventBulk) {
-    return eventBulk.context !== state.downstreamBulkWriteFlag;
-  })).subscribe(function (eventBulk) {
+  var sub = state.input.forkInstance.changeStream().pipe(filter(eventBulk => eventBulk.context !== state.downstreamBulkWriteFlag)).subscribe(eventBulk => {
     state.stats.up.forkChangeStreamEmit = state.stats.up.forkChangeStreamEmit + 1;
     openTasks.push({
       task: eventBulk,
       time: timer++
     });
     if (state.input.waitBeforePersist) {
-      return state.input.waitBeforePersist().then(function () {
-        return processTasks();
-      });
+      return state.input.waitBeforePersist().then(() => processTasks());
     } else {
       return processTasks();
     }
   });
-  firstValueFrom(state.events.canceled.pipe(filter(function (canceled) {
-    return !!canceled;
-  }))).then(function () {
-    return sub.unsubscribe();
-  });
-  function upstreamInitialSync() {
-    return _upstreamInitialSync.apply(this, arguments);
+  firstValueFrom(state.events.canceled.pipe(filter(canceled => !!canceled))).then(() => sub.unsubscribe());
+  async function upstreamInitialSync() {
+    state.stats.up.upstreamInitialSync = state.stats.up.upstreamInitialSync + 1;
+    if (state.events.canceled.getValue()) {
+      return;
+    }
+    state.checkpointQueue = state.checkpointQueue.then(() => getLastCheckpointDoc(state, 'up'));
+    var lastCheckpoint = await state.checkpointQueue;
+    var promises = [];
+    while (!state.events.canceled.getValue()) {
+      initialSyncStartTime = timer++;
+      var upResult = await state.input.forkInstance.getChangedDocumentsSince(state.input.pushBatchSize, lastCheckpoint);
+      if (upResult.documents.length === 0) {
+        break;
+      }
+      lastCheckpoint = stackCheckpoints([lastCheckpoint, upResult.checkpoint]);
+      promises.push(persistToMaster(upResult.documents, ensureNotFalsy(lastCheckpoint)));
+    }
+
+    /**
+     * If we had conflicts during the initial sync,
+     * it means that we likely have new writes to the fork
+     * and so we have to run the initial sync again to upstream these new writes.
+     */
+    var resolvedPromises = await Promise.all(promises);
+    var hadConflicts = resolvedPromises.find(r => !!r);
+    if (hadConflicts) {
+      await upstreamInitialSync();
+    } else if (!state.firstSyncDone.up.getValue()) {
+      state.firstSyncDone.up.next(true);
+    }
   }
+
   /**
    * Takes all open tasks an processes them at once.
    */
-  function _upstreamInitialSync() {
-    _upstreamInitialSync = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee4() {
-      var lastCheckpoint, promises, upResult, resolvedPromises, hadConflicts;
-      return _regeneratorRuntime.wrap(function _callee4$(_context4) {
-        while (1) switch (_context4.prev = _context4.next) {
-          case 0:
-            state.stats.up.upstreamInitialSync = state.stats.up.upstreamInitialSync + 1;
-            if (!state.events.canceled.getValue()) {
-              _context4.next = 3;
-              break;
-            }
-            return _context4.abrupt("return");
-          case 3:
-            state.checkpointQueue = state.checkpointQueue.then(function () {
-              return getLastCheckpointDoc(state, 'up');
-            });
-            _context4.next = 6;
-            return state.checkpointQueue;
-          case 6:
-            lastCheckpoint = _context4.sent;
-            promises = [];
-          case 8:
-            if (state.events.canceled.getValue()) {
-              _context4.next = 19;
-              break;
-            }
-            initialSyncStartTime = timer++;
-            _context4.next = 12;
-            return state.input.forkInstance.getChangedDocumentsSince(state.input.pushBatchSize, lastCheckpoint);
-          case 12:
-            upResult = _context4.sent;
-            if (!(upResult.documents.length === 0)) {
-              _context4.next = 15;
-              break;
-            }
-            return _context4.abrupt("break", 19);
-          case 15:
-            lastCheckpoint = stackCheckpoints([lastCheckpoint, upResult.checkpoint]);
-            promises.push(persistToMaster(upResult.documents, ensureNotFalsy(lastCheckpoint)));
-            _context4.next = 8;
-            break;
-          case 19:
-            _context4.next = 21;
-            return Promise.all(promises);
-          case 21:
-            resolvedPromises = _context4.sent;
-            hadConflicts = resolvedPromises.find(function (r) {
-              return !!r;
-            });
-            if (!hadConflicts) {
-              _context4.next = 28;
-              break;
-            }
-            _context4.next = 26;
-            return upstreamInitialSync();
-          case 26:
-            _context4.next = 29;
-            break;
-          case 28:
-            if (!state.firstSyncDone.up.getValue()) {
-              state.firstSyncDone.up.next(true);
-            }
-          case 29:
-          case "end":
-            return _context4.stop();
-        }
-      }, _callee4);
-    }));
-    return _upstreamInitialSync.apply(this, arguments);
-  }
   function processTasks() {
     if (state.events.canceled.getValue() || openTasks.length === 0) {
       state.events.active.up.next(false);
@@ -132,7 +81,7 @@ export function startReplicationUpstream(state) {
     }
     state.stats.up.processTasks = state.stats.up.processTasks + 1;
     state.events.active.up.next(true);
-    state.streamQueue.up = state.streamQueue.up.then(function () {
+    state.streamQueue.up = state.streamQueue.up.then(() => {
       /**
        * Merge/filter all open tasks
        */
@@ -148,13 +97,13 @@ export function startReplicationUpstream(state) {
         if (taskWithTime.time < initialSyncStartTime) {
           continue;
         }
-        docs = docs.concat(taskWithTime.task.events.map(function (r) {
+        docs = docs.concat(taskWithTime.task.events.map(r => {
           return r.documentData;
         }));
         checkpoint = stackCheckpoints([checkpoint, taskWithTime.task.checkpoint]);
       }
       var promise = docs.length === 0 ? PROMISE_RESOLVE_FALSE : persistToMaster(docs, checkpoint);
-      return promise.then(function () {
+      return promise.then(() => {
         if (openTasks.length === 0) {
           state.events.active.up.next(false);
         } else {
@@ -178,247 +127,156 @@ export function startReplicationUpstream(state) {
     /**
      * Add the new docs to the non-persistend list
      */
-    docs.forEach(function (docData) {
+    docs.forEach(docData => {
       var docId = docData[state.primaryPath];
       nonPersistedFromMaster.docs[docId] = docData;
     });
     nonPersistedFromMaster.checkpoint = checkpoint;
-    persistenceQueue = persistenceQueue.then( /*#__PURE__*/_asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee3() {
-      var upDocsById, useCheckpoint, docIds, assumedMasterState, writeRowsToMaster, writeRowsToMasterIds, writeRowsToMeta, forkStateById, writeRowsArray, conflictIds, conflictsById, writeBatches, useWriteRowsToMeta, hadConflictWrites, conflictWriteFork, conflictWriteMeta, forkWriteResult, useMetaWrites;
-      return _regeneratorRuntime.wrap(function _callee3$(_context3) {
-        while (1) switch (_context3.prev = _context3.next) {
-          case 0:
-            if (!state.events.canceled.getValue()) {
-              _context3.next = 2;
-              break;
-            }
-            return _context3.abrupt("return", false);
-          case 2:
-            upDocsById = nonPersistedFromMaster.docs;
-            nonPersistedFromMaster.docs = {};
-            useCheckpoint = nonPersistedFromMaster.checkpoint;
-            docIds = Object.keys(upDocsById);
-            if (!(docIds.length === 0)) {
-              _context3.next = 8;
-              break;
-            }
-            return _context3.abrupt("return", false);
-          case 8:
-            _context3.next = 10;
-            return getAssumedMasterState(state, docIds);
-          case 10:
-            assumedMasterState = _context3.sent;
-            writeRowsToMaster = {};
-            writeRowsToMasterIds = [];
-            writeRowsToMeta = {};
-            forkStateById = {};
-            _context3.next = 17;
-            return Promise.all(docIds.map( /*#__PURE__*/function () {
-              var _ref2 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee(docId) {
-                var fullDocData, docData, assumedMasterDoc;
-                return _regeneratorRuntime.wrap(function _callee$(_context) {
-                  while (1) switch (_context.prev = _context.next) {
-                    case 0:
-                      fullDocData = upDocsById[docId];
-                      forkStateById[docId] = fullDocData;
-                      docData = writeDocToDocState(fullDocData);
-                      assumedMasterDoc = assumedMasterState[docId];
-                      /**
-                       * If the master state is equal to the
-                       * fork state, we can assume that the document state is already
-                       * replicated.
-                       */
-                      _context.t1 = assumedMasterDoc &&
-                      // if the isResolvedConflict is correct, we do not have to compare the documents.
-                      assumedMasterDoc.metaDocument.isResolvedConflict !== fullDocData._rev;
-                      if (!_context.t1) {
-                        _context.next = 9;
-                        break;
-                      }
-                      _context.next = 8;
-                      return state.input.conflictHandler({
-                        realMasterState: assumedMasterDoc.docData,
-                        newDocumentState: docData
-                      }, 'upstream-check-if-equal');
-                    case 8:
-                      _context.t1 = _context.sent.isEqual;
-                    case 9:
-                      _context.t0 = _context.t1;
-                      if (_context.t0) {
-                        _context.next = 12;
-                        break;
-                      }
-                      _context.t0 =
-                      /**
-                       * If the master works with _rev fields,
-                       * we use that to check if our current doc state
-                       * is different from the assumedMasterDoc.
-                       */
+    persistenceQueue = persistenceQueue.then(async () => {
+      if (state.events.canceled.getValue()) {
+        return false;
+      }
+      var upDocsById = nonPersistedFromMaster.docs;
+      nonPersistedFromMaster.docs = {};
+      var useCheckpoint = nonPersistedFromMaster.checkpoint;
+      var docIds = Object.keys(upDocsById);
+      if (docIds.length === 0) {
+        return false;
+      }
+      var assumedMasterState = await getAssumedMasterState(state, docIds);
+      var writeRowsToMaster = {};
+      var writeRowsToMasterIds = [];
+      var writeRowsToMeta = {};
+      var forkStateById = {};
+      await Promise.all(docIds.map(async docId => {
+        var fullDocData = upDocsById[docId];
+        forkStateById[docId] = fullDocData;
+        var docData = writeDocToDocState(fullDocData);
+        var assumedMasterDoc = assumedMasterState[docId];
 
-                      assumedMasterDoc && assumedMasterDoc.docData._rev && parseRevision(fullDocData._rev).height === fullDocData._meta[state.input.identifier];
-                    case 12:
-                      if (!_context.t0) {
-                        _context.next = 14;
-                        break;
-                      }
-                      return _context.abrupt("return");
-                    case 14:
-                      writeRowsToMasterIds.push(docId);
-                      writeRowsToMaster[docId] = {
-                        assumedMasterState: assumedMasterDoc ? assumedMasterDoc.docData : undefined,
-                        newDocumentState: docData
-                      };
-                      writeRowsToMeta[docId] = getMetaWriteRow(state, docData, assumedMasterDoc ? assumedMasterDoc.metaDocument : undefined);
-                    case 17:
-                    case "end":
-                      return _context.stop();
-                  }
-                }, _callee);
-              }));
-              return function (_x) {
-                return _ref2.apply(this, arguments);
-              };
-            }()));
-          case 17:
-            if (!(writeRowsToMasterIds.length === 0)) {
-              _context3.next = 19;
-              break;
-            }
-            return _context3.abrupt("return", false);
-          case 19:
-            writeRowsArray = Object.values(writeRowsToMaster);
-            conflictIds = new Set();
-            conflictsById = {};
-            /**
-             * To always respect the push.batchSize,
-             * we have to split the write rows into batches
-             * to ensure that replicationHandler.masterWrite() is never
-             * called with more documents than what the batchSize limits.
-             */
-            writeBatches = batchArray(writeRowsArray, state.input.pushBatchSize);
-            _context3.next = 25;
-            return Promise.all(writeBatches.map( /*#__PURE__*/function () {
-              var _ref3 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee2(writeBatch) {
-                var masterWriteResult;
-                return _regeneratorRuntime.wrap(function _callee2$(_context2) {
-                  while (1) switch (_context2.prev = _context2.next) {
-                    case 0:
-                      _context2.next = 2;
-                      return replicationHandler.masterWrite(writeBatch);
-                    case 2:
-                      masterWriteResult = _context2.sent;
-                      masterWriteResult.forEach(function (conflictDoc) {
-                        var id = conflictDoc[state.primaryPath];
-                        conflictIds.add(id);
-                        conflictsById[id] = conflictDoc;
-                      });
-                    case 4:
-                    case "end":
-                      return _context2.stop();
-                  }
-                }, _callee2);
-              }));
-              return function (_x2) {
-                return _ref3.apply(this, arguments);
-              };
-            }()));
-          case 25:
-            useWriteRowsToMeta = [];
-            writeRowsToMasterIds.forEach(function (docId) {
-              if (!conflictIds.has(docId)) {
-                state.events.processed.up.next(writeRowsToMaster[docId]);
-                useWriteRowsToMeta.push(writeRowsToMeta[docId]);
-              }
-            });
-            if (!(useWriteRowsToMeta.length > 0)) {
-              _context3.next = 30;
-              break;
-            }
-            _context3.next = 30;
-            return state.input.metaInstance.bulkWrite(useWriteRowsToMeta, 'replication-up-write-meta');
-          case 30:
-            /**
-             * Resolve conflicts by writing a new document
-             * state to the fork instance and the 'real' master state
-             * to the meta instance.
-             * Non-409 errors will be detected by resolveConflictError()
-             */
-            hadConflictWrites = false;
-            if (!(conflictIds.size > 0)) {
-              _context3.next = 48;
-              break;
-            }
-            state.stats.up.persistToMasterHadConflicts = state.stats.up.persistToMasterHadConflicts + 1;
-            conflictWriteFork = [];
-            conflictWriteMeta = {};
-            _context3.next = 37;
-            return Promise.all(Object.entries(conflictsById).map(function (_ref4) {
-              var docId = _ref4[0],
-                realMasterState = _ref4[1];
-              var writeToMasterRow = writeRowsToMaster[docId];
-              var input = {
-                newDocumentState: writeToMasterRow.newDocumentState,
-                assumedMasterState: writeToMasterRow.assumedMasterState,
-                realMasterState: realMasterState
-              };
-              return resolveConflictError(state, input, forkStateById[docId]).then(function (resolved) {
-                if (resolved) {
-                  state.events.resolvedConflicts.next({
-                    input: input,
-                    output: resolved.output
-                  });
-                  conflictWriteFork.push({
-                    previous: forkStateById[docId],
-                    document: resolved.resolvedDoc
-                  });
-                  var assumedMasterDoc = assumedMasterState[docId];
-                  conflictWriteMeta[docId] = getMetaWriteRow(state, ensureNotFalsy(realMasterState), assumedMasterDoc ? assumedMasterDoc.metaDocument : undefined, resolved.resolvedDoc._rev);
-                }
-              });
-            }));
-          case 37:
-            if (!(conflictWriteFork.length > 0)) {
-              _context3.next = 48;
-              break;
-            }
-            hadConflictWrites = true;
-            state.stats.up.persistToMasterConflictWrites = state.stats.up.persistToMasterConflictWrites + 1;
-            _context3.next = 42;
-            return state.input.forkInstance.bulkWrite(conflictWriteFork, 'replication-up-write-conflict');
-          case 42:
-            forkWriteResult = _context3.sent;
-            /**
-             * Errors in the forkWriteResult must not be handled
-             * because they have been caused by a write to the forkInstance
-             * in between which will anyway trigger a new upstream cycle
-             * that will then resolved the conflict again.
-             */
-            useMetaWrites = [];
-            Object.keys(forkWriteResult.success).forEach(function (docId) {
-              useMetaWrites.push(conflictWriteMeta[docId]);
-            });
-            if (!(useMetaWrites.length > 0)) {
-              _context3.next = 48;
-              break;
-            }
-            _context3.next = 48;
-            return state.input.metaInstance.bulkWrite(useMetaWrites, 'replication-up-write-conflict-meta');
-          case 48:
-            /**
-             * For better performance we do not await checkpoint writes,
-             * but to ensure order on parallel checkpoint writes,
-             * we have to use a queue.
-             */
-            state.checkpointQueue = state.checkpointQueue.then(function () {
-              return setCheckpoint(state, 'up', useCheckpoint);
-            });
-            return _context3.abrupt("return", hadConflictWrites);
-          case 50:
-          case "end":
-            return _context3.stop();
+        /**
+         * If the master state is equal to the
+         * fork state, we can assume that the document state is already
+         * replicated.
+         */
+        if (assumedMasterDoc &&
+        // if the isResolvedConflict is correct, we do not have to compare the documents.
+        assumedMasterDoc.metaDocument.isResolvedConflict !== fullDocData._rev && (await state.input.conflictHandler({
+          realMasterState: assumedMasterDoc.docData,
+          newDocumentState: docData
+        }, 'upstream-check-if-equal')).isEqual ||
+        /**
+         * If the master works with _rev fields,
+         * we use that to check if our current doc state
+         * is different from the assumedMasterDoc.
+         */
+
+        assumedMasterDoc && assumedMasterDoc.docData._rev && parseRevision(fullDocData._rev).height === fullDocData._meta[state.input.identifier]) {
+          return;
         }
-      }, _callee3);
-    })))["catch"](function (unhandledError) {
+        writeRowsToMasterIds.push(docId);
+        writeRowsToMaster[docId] = {
+          assumedMasterState: assumedMasterDoc ? assumedMasterDoc.docData : undefined,
+          newDocumentState: docData
+        };
+        writeRowsToMeta[docId] = getMetaWriteRow(state, docData, assumedMasterDoc ? assumedMasterDoc.metaDocument : undefined);
+      }));
+      if (writeRowsToMasterIds.length === 0) {
+        return false;
+      }
+      var writeRowsArray = Object.values(writeRowsToMaster);
+      var conflictIds = new Set();
+      var conflictsById = {};
+
+      /**
+       * To always respect the push.batchSize,
+       * we have to split the write rows into batches
+       * to ensure that replicationHandler.masterWrite() is never
+       * called with more documents than what the batchSize limits.
+       */
+      var writeBatches = batchArray(writeRowsArray, state.input.pushBatchSize);
+      await Promise.all(writeBatches.map(async writeBatch => {
+        var masterWriteResult = await replicationHandler.masterWrite(writeBatch);
+        masterWriteResult.forEach(conflictDoc => {
+          var id = conflictDoc[state.primaryPath];
+          conflictIds.add(id);
+          conflictsById[id] = conflictDoc;
+        });
+      }));
+      var useWriteRowsToMeta = [];
+      writeRowsToMasterIds.forEach(docId => {
+        if (!conflictIds.has(docId)) {
+          state.events.processed.up.next(writeRowsToMaster[docId]);
+          useWriteRowsToMeta.push(writeRowsToMeta[docId]);
+        }
+      });
+      if (useWriteRowsToMeta.length > 0) {
+        await state.input.metaInstance.bulkWrite(useWriteRowsToMeta, 'replication-up-write-meta');
+        // TODO what happens when we have conflicts here?
+      }
+
+      /**
+       * Resolve conflicts by writing a new document
+       * state to the fork instance and the 'real' master state
+       * to the meta instance.
+       * Non-409 errors will be detected by resolveConflictError()
+       */
+      var hadConflictWrites = false;
+      if (conflictIds.size > 0) {
+        state.stats.up.persistToMasterHadConflicts = state.stats.up.persistToMasterHadConflicts + 1;
+        var conflictWriteFork = [];
+        var conflictWriteMeta = {};
+        await Promise.all(Object.entries(conflictsById).map(([docId, realMasterState]) => {
+          var writeToMasterRow = writeRowsToMaster[docId];
+          var input = {
+            newDocumentState: writeToMasterRow.newDocumentState,
+            assumedMasterState: writeToMasterRow.assumedMasterState,
+            realMasterState
+          };
+          return resolveConflictError(state, input, forkStateById[docId]).then(resolved => {
+            if (resolved) {
+              state.events.resolvedConflicts.next({
+                input,
+                output: resolved.output
+              });
+              conflictWriteFork.push({
+                previous: forkStateById[docId],
+                document: resolved.resolvedDoc
+              });
+              var assumedMasterDoc = assumedMasterState[docId];
+              conflictWriteMeta[docId] = getMetaWriteRow(state, ensureNotFalsy(realMasterState), assumedMasterDoc ? assumedMasterDoc.metaDocument : undefined, resolved.resolvedDoc._rev);
+            }
+          });
+        }));
+        if (conflictWriteFork.length > 0) {
+          hadConflictWrites = true;
+          state.stats.up.persistToMasterConflictWrites = state.stats.up.persistToMasterConflictWrites + 1;
+          var forkWriteResult = await state.input.forkInstance.bulkWrite(conflictWriteFork, 'replication-up-write-conflict');
+          /**
+           * Errors in the forkWriteResult must not be handled
+           * because they have been caused by a write to the forkInstance
+           * in between which will anyway trigger a new upstream cycle
+           * that will then resolved the conflict again.
+           */
+          var useMetaWrites = [];
+          Object.keys(forkWriteResult.success).forEach(docId => {
+            useMetaWrites.push(conflictWriteMeta[docId]);
+          });
+          if (useMetaWrites.length > 0) {
+            await state.input.metaInstance.bulkWrite(useMetaWrites, 'replication-up-write-conflict-meta');
+          }
+          // TODO what to do with conflicts while writing to the metaInstance?
+        }
+      }
+
+      /**
+       * For better performance we do not await checkpoint writes,
+       * but to ensure order on parallel checkpoint writes,
+       * we have to use a queue.
+       */
+      state.checkpointQueue = state.checkpointQueue.then(() => setCheckpoint(state, 'up', useCheckpoint));
+      return hadConflictWrites;
+    }).catch(unhandledError => {
       state.events.error.next(unhandledError);
       return false;
     });

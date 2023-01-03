@@ -1,15 +1,7 @@
 import { flatClone } from '../../plugins/utils';
 export var COUCHDB_NEW_REPLICATION_PLUGIN_IDENTITY_PREFIX = 'couchdb';
 export function mergeUrlQueryParams(params) {
-  return Object.entries(params).filter(function (_ref) {
-    var _k = _ref[0],
-      value = _ref[1];
-    return typeof value !== 'undefined';
-  }).map(function (_ref2) {
-    var key = _ref2[0],
-      value = _ref2[1];
-    return key + '=' + value;
-  }).join('&');
+  return Object.entries(params).filter(([_k, value]) => typeof value !== 'undefined').map(([key, value]) => key + '=' + value).join('&');
 }
 export function couchDBDocToRxDocData(primaryPath, couchDocData) {
   var doc = couchSwapIdToPrimary(primaryPath, couchDocData);

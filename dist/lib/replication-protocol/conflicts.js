@@ -1,16 +1,12 @@
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.defaultConflictHandler = void 0;
 exports.resolveConflictError = resolveConflictError;
-var _regenerator = _interopRequireDefault(require("@babel/runtime/regenerator"));
-var _asyncToGenerator2 = _interopRequireDefault(require("@babel/runtime/helpers/asyncToGenerator"));
-var _fastDeepEqual = _interopRequireDefault(require("fast-deep-equal"));
 var _utils = require("../plugins/utils");
-var defaultConflictHandler = function defaultConflictHandler(i, _context) {
+var defaultConflictHandler = function (i, _context) {
   /**
    * If the documents are deep equal,
    * we have no conflict.
@@ -18,7 +14,7 @@ var defaultConflictHandler = function defaultConflictHandler(i, _context) {
    * check some properties, like the updatedAt time,
    * for better performance, because deepEqual is expensive.
    */
-  if ((0, _fastDeepEqual["default"])(i.newDocumentState, i.realMasterState)) {
+  if ((0, _utils.deepEqual)(i.newDocumentState, i.realMasterState)) {
     return Promise.resolve({
       isEqual: true
     });
@@ -43,51 +39,35 @@ var defaultConflictHandler = function defaultConflictHandler(i, _context) {
  * Conflicts are only solved in the upstream, never in the downstream.
  */
 exports.defaultConflictHandler = defaultConflictHandler;
-function resolveConflictError(_x, _x2, _x3) {
-  return _resolveConflictError.apply(this, arguments);
-}
-function _resolveConflictError() {
-  _resolveConflictError = (0, _asyncToGenerator2["default"])( /*#__PURE__*/_regenerator["default"].mark(function _callee(state, input, forkState) {
-    var conflictHandler, conflictHandlerOutput, resolvedDoc;
-    return _regenerator["default"].wrap(function _callee$(_context2) {
-      while (1) switch (_context2.prev = _context2.next) {
-        case 0:
-          conflictHandler = state.input.conflictHandler;
-          _context2.next = 3;
-          return conflictHandler(input, 'replication-resolve-conflict');
-        case 3:
-          conflictHandlerOutput = _context2.sent;
-          if (!conflictHandlerOutput.isEqual) {
-            _context2.next = 8;
-            break;
-          }
-          return _context2.abrupt("return", undefined);
-        case 8:
-          /**
-           * We have a resolved conflict,
-           * use the resolved document data.
-           */
-          resolvedDoc = Object.assign({}, conflictHandlerOutput.documentData, {
-            /**
-             * Because the resolved conflict is written to the fork,
-             * we have to keep/update the forks _meta data, not the masters.
-             */
-            _meta: (0, _utils.flatClone)(forkState._meta),
-            _rev: (0, _utils.getDefaultRevision)(),
-            _attachments: (0, _utils.flatClone)(forkState._attachments)
-          });
-          resolvedDoc._meta.lwt = (0, _utils.now)();
-          resolvedDoc._rev = (0, _utils.createRevision)(state.input.identifier, forkState);
-          return _context2.abrupt("return", {
-            resolvedDoc: resolvedDoc,
-            output: conflictHandlerOutput
-          });
-        case 12:
-        case "end":
-          return _context2.stop();
-      }
-    }, _callee);
-  }));
-  return _resolveConflictError.apply(this, arguments);
+async function resolveConflictError(state, input, forkState) {
+  var conflictHandler = state.input.conflictHandler;
+  var conflictHandlerOutput = await conflictHandler(input, 'replication-resolve-conflict');
+  if (conflictHandlerOutput.isEqual) {
+    /**
+     * Documents are equal,
+     * so this is not a conflict -> do nothing.
+     */
+    return undefined;
+  } else {
+    /**
+     * We have a resolved conflict,
+     * use the resolved document data.
+     */
+    var resolvedDoc = Object.assign({}, conflictHandlerOutput.documentData, {
+      /**
+       * Because the resolved conflict is written to the fork,
+       * we have to keep/update the forks _meta data, not the masters.
+       */
+      _meta: (0, _utils.flatClone)(forkState._meta),
+      _rev: (0, _utils.getDefaultRevision)(),
+      _attachments: (0, _utils.flatClone)(forkState._attachments)
+    });
+    resolvedDoc._meta.lwt = (0, _utils.now)();
+    resolvedDoc._rev = (0, _utils.createRevision)(state.input.identifier, forkState);
+    return {
+      resolvedDoc,
+      output: conflictHandlerOutput
+    };
+  }
 }
 //# sourceMappingURL=conflicts.js.map

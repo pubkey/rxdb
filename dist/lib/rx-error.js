@@ -24,12 +24,10 @@ function parametersToString(parameters) {
   var ret = '';
   if (Object.keys(parameters).length === 0) return ret;
   ret += 'Given parameters: {\n';
-  ret += Object.keys(parameters).map(function (k) {
+  ret += Object.keys(parameters).map(k => {
     var paramStr = '[object Object]';
     try {
-      paramStr = JSON.stringify(parameters[k], function (_k, v) {
-        return v === undefined ? null : v;
-      }, 2);
+      paramStr = JSON.stringify(parameters[k], (_k, v) => v === undefined ? null : v, 2);
     } catch (e) {}
     return k + ':' + paramStr;
   }).join('\n');
@@ -40,12 +38,11 @@ function messageForError(message, code, parameters) {
   return 'RxError (' + code + '):' + '\n' + message + '\n' + parametersToString(parameters);
 }
 var RxError = /*#__PURE__*/function (_Error) {
-  (0, _inheritsLoose2["default"])(RxError, _Error);
+  (0, _inheritsLoose2.default)(RxError, _Error);
   // always true, use this to detect if its an rxdb-error
 
-  function RxError(code, message) {
+  function RxError(code, message, parameters = {}) {
     var _this;
-    var parameters = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
     var mes = messageForError(message, code, parameters);
     _this = _Error.call(this, mes) || this;
     _this.code = code;
@@ -58,27 +55,26 @@ var RxError = /*#__PURE__*/function (_Error) {
   _proto.toString = function toString() {
     return this.message;
   };
-  (0, _createClass2["default"])(RxError, [{
+  (0, _createClass2.default)(RxError, [{
     key: "name",
-    get: function get() {
+    get: function () {
       return 'RxError (' + this.code + ')';
     }
   }, {
     key: "typeError",
-    get: function get() {
+    get: function () {
       return false;
     }
   }]);
   return RxError;
-}( /*#__PURE__*/(0, _wrapNativeSuper2["default"])(Error));
+}( /*#__PURE__*/(0, _wrapNativeSuper2.default)(Error));
 exports.RxError = RxError;
 var RxTypeError = /*#__PURE__*/function (_TypeError) {
-  (0, _inheritsLoose2["default"])(RxTypeError, _TypeError);
+  (0, _inheritsLoose2.default)(RxTypeError, _TypeError);
   // always true, use this to detect if its an rxdb-error
 
-  function RxTypeError(code, message) {
+  function RxTypeError(code, message, parameters = {}) {
     var _this2;
-    var parameters = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
     var mes = messageForError(message, code, parameters);
     _this2 = _TypeError.call(this, mes) || this;
     _this2.code = code;
@@ -91,19 +87,19 @@ var RxTypeError = /*#__PURE__*/function (_TypeError) {
   _proto2.toString = function toString() {
     return this.message;
   };
-  (0, _createClass2["default"])(RxTypeError, [{
+  (0, _createClass2.default)(RxTypeError, [{
     key: "name",
-    get: function get() {
+    get: function () {
       return 'RxTypeError (' + this.code + ')';
     }
   }, {
     key: "typeError",
-    get: function get() {
+    get: function () {
       return true;
     }
   }]);
   return RxTypeError;
-}( /*#__PURE__*/(0, _wrapNativeSuper2["default"])(TypeError));
+}( /*#__PURE__*/(0, _wrapNativeSuper2.default)(TypeError));
 exports.RxTypeError = RxTypeError;
 function newRxError(code, parameters) {
   return new RxError(code, _overwritable.overwritable.tunnelErrorMessage(code), parameters);

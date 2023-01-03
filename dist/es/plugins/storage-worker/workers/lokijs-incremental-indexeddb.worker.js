@@ -5,6 +5,6 @@ var storage = getRxStorageLoki({
   adapter: new LokiIncrementalIndexedDBAdapter()
 });
 wrappedWorkerRxStorage({
-  storage: storage
+  storage
 });
 //# sourceMappingURL=lokijs-incremental-indexeddb.worker.js.map

@@ -30,28 +30,27 @@ var DocumentCache = /*#__PURE__*/function () {
    * A method that can create a RxDocument by the given document data.
    */
   documentCreator) {
-    var _this = this;
     this.cacheItemByDocId = new Map();
-    this.registry = typeof FinalizationRegistry === 'function' ? new FinalizationRegistry(function (docMeta) {
+    this.registry = typeof FinalizationRegistry === 'function' ? new FinalizationRegistry(docMeta => {
       var docId = docMeta.docId;
-      var cacheItem = _this.cacheItemByDocId.get(docId);
+      var cacheItem = this.cacheItemByDocId.get(docId);
       if (cacheItem) {
-        cacheItem.documentByRevisionHeight["delete"](docMeta.revisionHeight);
+        cacheItem.documentByRevisionHeight.delete(docMeta.revisionHeight);
         if (cacheItem.documentByRevisionHeight.size === 0) {
           /**
            * No state of the document is cached anymore,
            * so we can clean up.
            */
-          _this.cacheItemByDocId["delete"](docId);
+          this.cacheItemByDocId.delete(docId);
         }
       }
     }) : undefined;
     this.primaryPath = primaryPath;
     this.changes$ = changes$;
     this.documentCreator = documentCreator;
-    changes$.subscribe(function (changeEvent) {
+    changes$.subscribe(changeEvent => {
       var docId = changeEvent.documentId;
-      var cacheItem = _this.cacheItemByDocId.get(docId);
+      var cacheItem = this.cacheItemByDocId.get(docId);
       if (cacheItem) {
         var documentData = (0, _rxChangeEvent.getDocumentDataOfRxChangeEvent)(changeEvent);
         cacheItem.latestDoc = documentData;
@@ -67,9 +66,7 @@ var DocumentCache = /*#__PURE__*/function () {
   _proto.getCachedRxDocument = function getCachedRxDocument(docData) {
     var docId = docData[this.primaryPath];
     var revisionHeight = (0, _utils.parseRevision)(docData._rev).height;
-    var cacheItem = (0, _utils.getFromMapOrFill)(this.cacheItemByDocId, docId, function () {
-      return getNewCacheItem(docData);
-    });
+    var cacheItem = (0, _utils.getFromMapOrFill)(this.cacheItemByDocId, docId, () => getNewCacheItem(docData));
     var cachedRxDocumentWeakRef = cacheItem.documentByRevisionHeight.get(revisionHeight);
     var cachedRxDocument = cachedRxDocumentWeakRef ? cachedRxDocumentWeakRef.deref() : undefined;
     if (!cachedRxDocument) {
@@ -78,8 +75,8 @@ var DocumentCache = /*#__PURE__*/function () {
       cacheItem.documentByRevisionHeight.set(revisionHeight, createWeakRefWithFallback(cachedRxDocument));
       if (this.registry) {
         this.registry.register(cachedRxDocument, {
-          docId: docId,
-          revisionHeight: revisionHeight
+          docId,
+          revisionHeight
         });
       }
     }
@@ -120,7 +117,7 @@ function createWeakRefWithFallback(obj) {
     return new WeakRef(obj);
   } else {
     return {
-      deref: function deref() {
+      deref() {
         return obj;
       }
     };

@@ -5,7 +5,7 @@ import { getLokiSortComparator, RX_STORAGE_NAME_LOKIJS } from './lokijs-helper';
 import { ensureRxStorageInstanceParamsAreCorrect } from '../../rx-storage-helper';
 import { DEFAULT_CHECKPOINT_SCHEMA } from '../../rx-schema-helper';
 export var RxStorageLokiStatics = {
-  prepareQuery: function prepareQuery(_schema, mutateableQuery) {
+  prepareQuery(_schema, mutateableQuery) {
     mutateableQuery = flatClone(mutateableQuery);
     if (Object.keys(ensureNotFalsy(mutateableQuery.selector)).length > 0) {
       mutateableQuery.selector = {
@@ -20,7 +20,7 @@ export var RxStorageLokiStatics = {
     }
     return mutateableQuery;
   },
-  getSortComparator: function getSortComparator(schema, query) {
+  getSortComparator(schema, query) {
     return getLokiSortComparator(schema, query);
   },
   /**
@@ -33,8 +33,8 @@ export var RxStorageLokiStatics = {
    * Instead we create a fake Resultset and apply the prototype method Resultset.prototype.find(),
    * same with Collection.
    */
-  getQueryMatcher: function getQueryMatcher(_schema, query) {
-    var fun = function fun(doc) {
+  getQueryMatcher(_schema, query) {
+    var fun = doc => {
       if (doc._deleted) {
         return false;
       }
@@ -77,8 +77,7 @@ export var RxStorageLoki = /*#__PURE__*/function () {
   };
   return RxStorageLoki;
 }();
-export function getRxStorageLoki() {
-  var databaseSettings = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+export function getRxStorageLoki(databaseSettings = {}) {
   var storage = new RxStorageLoki(databaseSettings);
   return storage;
 }

@@ -5,7 +5,7 @@ export var RxDBCleanupPlugin = {
   prototypes: {},
   hooks: {
     createRxCollection: {
-      after: function after(i) {
+      after: i => {
         startCleanupForRxCollection(i.collection);
       }
     }

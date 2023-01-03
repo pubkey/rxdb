@@ -46,7 +46,7 @@ var validCouchDBStringRegex = new RegExp(validCouchDBStringRegexStr);
 export function validateDatabaseName(name) {
   if (typeof name !== 'string' || name.length === 0) {
     throw newRxTypeError('UT1', {
-      name: name
+      name
     });
   }
 

@@ -15,28 +15,28 @@ var mingoInitDone = false;
 export function getMingoQuery(selector) {
   if (!mingoInitDone) {
     useOperators(OperatorType.PIPELINE, {
-      $sort: $sort,
-      $project: $project
+      $sort,
+      $project
     });
     useOperators(OperatorType.QUERY, {
-      $and: $and,
-      $eq: $eq,
-      $elemMatch: $elemMatch,
-      $exists: $exists,
-      $gt: $gt,
-      $gte: $gte,
-      $in: $in,
-      $lt: $lt,
-      $lte: $lte,
-      $ne: $ne,
-      $nin: $nin,
-      $mod: $mod,
-      $nor: $nor,
-      $not: $not,
-      $or: $or,
-      $regex: $regex,
-      $size: $size,
-      $type: $type
+      $and,
+      $eq,
+      $elemMatch,
+      $exists,
+      $gt,
+      $gte,
+      $in,
+      $lt,
+      $lte,
+      $ne,
+      $nin,
+      $mod,
+      $nor,
+      $not,
+      $or,
+      $regex,
+      $size,
+      $type
     });
     mingoInitDone = true;
   }

@@ -12,7 +12,7 @@ export function createAnswer(msg, ret) {
     connectionId: msg.connectionId,
     answerTo: msg.requestId,
     method: msg.method,
-    "return": ret
+    return: ret
   };
 }
 //# sourceMappingURL=storage-remote-helpers.js.map

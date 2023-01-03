@@ -1,150 +1,82 @@
-import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
-import _regeneratorRuntime from "@babel/runtime/regenerator";
 import { newRxError } from '../../rx-error';
-import deepEqual from 'fast-deep-equal';
 import objectPath from 'object-path';
-import { clone, ensureNotFalsy, now, objectPathMonad, toArray } from '../../plugins/utils';
+import { clone, deepEqual, ensureNotFalsy, now, objectPathMonad, toArray } from '../../plugins/utils';
 import modifyjs from 'modifyjs';
 import { overwritable } from '../..';
-export function updateCRDT(_x) {
-  return _updateCRDT.apply(this, arguments);
-}
-function _updateCRDT() {
-  _updateCRDT = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee2(entry) {
-    var _this = this;
-    var jsonSchema, crdtOptions, storageToken;
-    return _regeneratorRuntime.wrap(function _callee2$(_context3) {
-      while (1) switch (_context3.prev = _context3.next) {
-        case 0:
-          entry = overwritable.deepFreezeWhenDevMode(entry);
-          jsonSchema = this.collection.schema.jsonSchema;
-          if (jsonSchema.crdt) {
-            _context3.next = 4;
-            break;
-          }
-          throw newRxError('CRDT1', {
-            schema: jsonSchema,
-            queryObj: entry
-          });
-        case 4:
-          crdtOptions = ensureNotFalsy(jsonSchema.crdt);
-          _context3.next = 7;
-          return this.collection.database.storageToken;
-        case 7:
-          storageToken = _context3.sent;
-          return _context3.abrupt("return", this.incrementalModify(function (docData) {
-            var crdtDocField = clone(objectPath.get(docData, crdtOptions.field));
-            var operation = {
-              body: toArray(entry),
-              creator: storageToken,
-              time: now()
-            };
+export async function updateCRDT(entry) {
+  entry = overwritable.deepFreezeWhenDevMode(entry);
+  var jsonSchema = this.collection.schema.jsonSchema;
+  if (!jsonSchema.crdt) {
+    throw newRxError('CRDT1', {
+      schema: jsonSchema,
+      queryObj: entry
+    });
+  }
+  var crdtOptions = ensureNotFalsy(jsonSchema.crdt);
+  var storageToken = await this.collection.database.storageToken;
+  return this.incrementalModify(docData => {
+    var crdtDocField = clone(objectPath.get(docData, crdtOptions.field));
+    var operation = {
+      body: toArray(entry),
+      creator: storageToken,
+      time: now()
+    };
 
-            /**
-             * A new write will ALWAYS be an operation in the last
-             * array which was non existing before.
-             */
-            var lastAr = [operation];
-            crdtDocField.operations.push(lastAr);
-            crdtDocField.hash = hashCRDTOperations(_this.collection.database.hashFunction, crdtDocField);
-            docData = runOperationOnDocument(_this.collection.database.storage.statics, _this.collection.schema.jsonSchema, docData, operation);
-            objectPath.set(docData, crdtOptions.field, crdtDocField);
-            return docData;
-          }, RX_CRDT_CONTEXT));
-        case 9:
-        case "end":
-          return _context3.stop();
-      }
-    }, _callee2, this);
-  }));
-  return _updateCRDT.apply(this, arguments);
+    /**
+     * A new write will ALWAYS be an operation in the last
+     * array which was non existing before.
+     */
+    var lastAr = [operation];
+    crdtDocField.operations.push(lastAr);
+    crdtDocField.hash = hashCRDTOperations(this.collection.database.hashFunction, crdtDocField);
+    docData = runOperationOnDocument(this.collection.database.storage.statics, this.collection.schema.jsonSchema, docData, operation);
+    objectPath.set(docData, crdtOptions.field, crdtDocField);
+    return docData;
+  }, RX_CRDT_CONTEXT);
 }
-export function insertCRDT(_x2) {
-  return _insertCRDT.apply(this, arguments);
-}
-function _insertCRDT() {
-  _insertCRDT = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee4(entry) {
-    var _this2 = this;
-    var jsonSchema, crdtOptions, storageToken, operation, insertData, crdtDocField, lastAr, result;
-    return _regeneratorRuntime.wrap(function _callee4$(_context5) {
-      while (1) switch (_context5.prev = _context5.next) {
-        case 0:
-          entry = overwritable.deepFreezeWhenDevMode(entry);
-          jsonSchema = this.schema.jsonSchema;
-          if (jsonSchema.crdt) {
-            _context5.next = 4;
-            break;
-          }
-          throw newRxError('CRDT1', {
-            schema: jsonSchema,
-            queryObj: entry
-          });
-        case 4:
-          crdtOptions = ensureNotFalsy(jsonSchema.crdt);
-          _context5.next = 7;
-          return this.database.storageToken;
-        case 7:
-          storageToken = _context5.sent;
-          operation = {
-            body: Array.isArray(entry) ? entry : [entry],
-            creator: storageToken,
-            time: now()
-          };
-          insertData = {};
-          insertData = runOperationOnDocument(this.database.storage.statics, this.schema.jsonSchema, insertData, operation);
-          crdtDocField = {
-            operations: [],
-            hash: ''
-          };
-          objectPath.set(insertData, crdtOptions.field, crdtDocField);
-          lastAr = [operation];
-          crdtDocField.operations.push(lastAr);
-          crdtDocField.hash = hashCRDTOperations(this.database.hashFunction, crdtDocField);
-          _context5.next = 18;
-          return this.insert(insertData)["catch"]( /*#__PURE__*/function () {
-            var _ref6 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee3(err) {
-              var doc;
-              return _regeneratorRuntime.wrap(function _callee3$(_context4) {
-                while (1) switch (_context4.prev = _context4.next) {
-                  case 0:
-                    if (!(err.code === 'CONFLICT')) {
-                      _context4.next = 7;
-                      break;
-                    }
-                    _context4.next = 3;
-                    return _this2.findOne(err.parameters.id).exec(true);
-                  case 3:
-                    doc = _context4.sent;
-                    return _context4.abrupt("return", doc.updateCRDT(entry));
-                  case 7:
-                    throw err;
-                  case 8:
-                  case "end":
-                    return _context4.stop();
-                }
-              }, _callee3);
-            }));
-            return function (_x4) {
-              return _ref6.apply(this, arguments);
-            };
-          }());
-        case 18:
-          result = _context5.sent;
-          return _context5.abrupt("return", result);
-        case 20:
-        case "end":
-          return _context5.stop();
-      }
-    }, _callee4, this);
-  }));
-  return _insertCRDT.apply(this, arguments);
+export async function insertCRDT(entry) {
+  entry = overwritable.deepFreezeWhenDevMode(entry);
+  var jsonSchema = this.schema.jsonSchema;
+  if (!jsonSchema.crdt) {
+    throw newRxError('CRDT1', {
+      schema: jsonSchema,
+      queryObj: entry
+    });
+  }
+  var crdtOptions = ensureNotFalsy(jsonSchema.crdt);
+  var storageToken = await this.database.storageToken;
+  var operation = {
+    body: Array.isArray(entry) ? entry : [entry],
+    creator: storageToken,
+    time: now()
+  };
+  var insertData = {};
+  insertData = runOperationOnDocument(this.database.storage.statics, this.schema.jsonSchema, insertData, operation);
+  var crdtDocField = {
+    operations: [],
+    hash: ''
+  };
+  objectPath.set(insertData, crdtOptions.field, crdtDocField);
+  var lastAr = [operation];
+  crdtDocField.operations.push(lastAr);
+  crdtDocField.hash = hashCRDTOperations(this.database.hashFunction, crdtDocField);
+  var result = await this.insert(insertData).catch(async err => {
+    if (err.code === 'CONFLICT') {
+      // was a conflict, update document instead of inserting
+      var doc = await this.findOne(err.parameters.id).exec(true);
+      return doc.updateCRDT(entry);
+    } else {
+      throw err;
+    }
+  });
+  return result;
 }
 export function sortOperationComparator(a, b) {
   return a.creator > b.creator ? 1 : -1;
 }
 function runOperationOnDocument(storageStatics, schema, docData, operation) {
   var entryParts = operation.body;
-  entryParts.forEach(function (entryPart) {
+  entryParts.forEach(entryPart => {
     var isMatching;
     if (entryPart.selector) {
       var preparedQuery = storageStatics.prepareQuery(schema, {
@@ -170,10 +102,8 @@ function runOperationOnDocument(storageStatics, schema, docData, operation) {
   return docData;
 }
 export function hashCRDTOperations(hashFunction, crdts) {
-  var hashObj = crdts.operations.map(function (operations) {
-    return operations.map(function (op) {
-      return op.creator;
-    });
+  var hashObj = crdts.operations.map(operations => {
+    return operations.map(op => op.creator);
   });
   var hash = hashFunction(JSON.stringify(hashObj));
   return hash;
@@ -238,24 +168,22 @@ export function mergeCRDTFields(hashFunction, crdtsA, crdtsB) {
   // the value with most operations must be A to
   // ensure we not miss out rows when iterating over both fields.
   if (crdtsA.operations.length < crdtsB.operations.length) {
-    var _ref = [crdtsB, crdtsA];
-    crdtsA = _ref[0];
-    crdtsB = _ref[1];
+    [crdtsA, crdtsB] = [crdtsB, crdtsA];
   }
   var ret = {
     operations: [],
     hash: ''
   };
-  crdtsA.operations.forEach(function (row, index) {
+  crdtsA.operations.forEach((row, index) => {
     var mergedOps = [];
     var ids = new Set(); // used to deduplicate
 
-    row.forEach(function (op) {
+    row.forEach(op => {
       ids.add(op.creator);
       mergedOps.push(op);
     });
     if (crdtsB.operations[index]) {
-      crdtsB.operations[index].forEach(function (op) {
+      crdtsB.operations[index].forEach(op => {
         if (!ids.has(op.creator)) {
           mergedOps.push(op);
         }
@@ -272,8 +200,8 @@ export function rebuildFromCRDT(storageStatics, schema, docData, crdts) {
     _deleted: false
   };
   objectPath.set(base, ensureNotFalsy(schema.crdt).field, crdts);
-  crdts.operations.forEach(function (operations) {
-    operations.forEach(function (op) {
+  crdts.operations.forEach(operations => {
+    operations.forEach(op => {
       base = runOperationOnDocument(storageStatics, schema, base, op);
     });
   });
@@ -283,7 +211,7 @@ export function getCRDTConflictHandler(hashFunction, storageStatics, schema) {
   var crdtOptions = ensureNotFalsy(schema.crdt);
   var crdtField = crdtOptions.field;
   var getCRDTValue = objectPathMonad(crdtField);
-  var conflictHandler = function conflictHandler(i, _context) {
+  var conflictHandler = (i, _context) => {
     var newDocCrdt = getCRDTValue(i.newDocumentState);
     var masterDocCrdt = getCRDTValue(i.realMasterState);
     if (newDocCrdt.hash === masterDocCrdt.hash) {
@@ -305,7 +233,7 @@ export var RxDBcrdtPlugin = {
   name: 'crdt',
   rxdb: true,
   prototypes: {
-    RxDocument: function RxDocument(proto) {
+    RxDocument: proto => {
       proto.updateCRDT = updateCRDT;
       var oldRemove = proto.remove;
       proto.remove = function () {
@@ -342,20 +270,20 @@ export var RxDBcrdtPlugin = {
           throw newRxError('CRDT2', {
             id: this.primary,
             args: {
-              context: context
+              context
             }
           });
         }
       };
     },
-    RxCollection: function RxCollection(proto) {
+    RxCollection: proto => {
       proto.insertCRDT = insertCRDT;
     }
   },
   overwritable: {},
   hooks: {
     preCreateRxCollection: {
-      after: function after(data) {
+      after: data => {
         if (!data.schema.crdt) {
           return;
         }
@@ -369,8 +297,9 @@ export var RxDBcrdtPlugin = {
       }
     },
     createRxCollection: {
-      after: function after(_ref2) {
-        var collection = _ref2.collection;
+      after: ({
+        collection
+      }) => {
         if (!collection.schema.jsonSchema.crdt) {
           return;
         }
@@ -386,15 +315,13 @@ export var RxDBcrdtPlugin = {
         if (overwritable.isDevMode()) {
           var bulkWriteBefore = collection.storageInstance.bulkWrite.bind(collection.storageInstance);
           collection.storageInstance.bulkWrite = function (writes, context) {
-            writes.forEach(function (write) {
+            writes.forEach(write => {
               var newDocState = clone(write.document);
               var crdts = getCrdt(newDocState);
               var rebuild = rebuildFromCRDT(collection.database.storage.statics, collection.schema.jsonSchema, newDocState, crdts);
               function docWithoutMeta(doc) {
                 var ret = {};
-                Object.entries(doc).forEach(function (_ref3) {
-                  var k = _ref3[0],
-                    v = _ref3[1];
+                Object.entries(doc).forEach(([k, v]) => {
                   if (!k.startsWith('_')) {
                     ret[k] = v;
                   }
@@ -412,7 +339,7 @@ export var RxDBcrdtPlugin = {
                   document: newDocState,
                   args: {
                     hash: crdts.hash,
-                    recalculatedHash: recalculatedHash
+                    recalculatedHash
                   }
                 });
               }
@@ -421,52 +348,33 @@ export var RxDBcrdtPlugin = {
           };
         }
         var bulkInsertBefore = collection.bulkInsert.bind(collection);
-        collection.bulkInsert = /*#__PURE__*/function () {
-          var _ref4 = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee(docsData) {
-            var storageToken, useDocsData;
-            return _regeneratorRuntime.wrap(function _callee$(_context2) {
-              while (1) switch (_context2.prev = _context2.next) {
-                case 0:
-                  _context2.next = 2;
-                  return collection.database.storageToken;
-                case 2:
-                  storageToken = _context2.sent;
-                  useDocsData = docsData.map(function (docData) {
-                    var setMe = {};
-                    Object.entries(docData).forEach(function (_ref5) {
-                      var key = _ref5[0],
-                        value = _ref5[1];
-                      if (!key.startsWith('_') && key !== crdtField) {
-                        setMe[key] = value;
-                      }
-                    });
-                    var crdtOperations = {
-                      operations: [[{
-                        creator: storageToken,
-                        body: [{
-                          ifMatch: {
-                            $set: setMe
-                          }
-                        }],
-                        time: now()
-                      }]],
-                      hash: ''
-                    };
-                    crdtOperations.hash = hashCRDTOperations(collection.database.hashFunction, crdtOperations);
-                    objectPath.set(docData, crdtOptions.field, crdtOperations);
-                    return docData;
-                  });
-                  return _context2.abrupt("return", bulkInsertBefore(useDocsData));
-                case 5:
-                case "end":
-                  return _context2.stop();
+        collection.bulkInsert = async function (docsData) {
+          var storageToken = await collection.database.storageToken;
+          var useDocsData = docsData.map(docData => {
+            var setMe = {};
+            Object.entries(docData).forEach(([key, value]) => {
+              if (!key.startsWith('_') && key !== crdtField) {
+                setMe[key] = value;
               }
-            }, _callee);
-          }));
-          return function (_x3) {
-            return _ref4.apply(this, arguments);
-          };
-        }();
+            });
+            var crdtOperations = {
+              operations: [[{
+                creator: storageToken,
+                body: [{
+                  ifMatch: {
+                    $set: setMe
+                  }
+                }],
+                time: now()
+              }]],
+              hash: ''
+            };
+            crdtOperations.hash = hashCRDTOperations(collection.database.hashFunction, crdtOperations);
+            objectPath.set(docData, crdtOptions.field, crdtOperations);
+            return docData;
+          });
+          return bulkInsertBefore(useDocsData);
+        };
       }
     }
   }

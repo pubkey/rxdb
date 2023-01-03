@@ -10,18 +10,13 @@ export var ChangeEventBuffer = /*#__PURE__*/function () {
    */
 
   function ChangeEventBuffer(collection) {
-    var _this = this;
     this.subs = [];
     this.limit = 100;
     this.counter = 0;
     this.eventCounterMap = new WeakMap();
     this.buffer = [];
     this.collection = collection;
-    this.subs.push(this.collection.$.pipe(filter(function (cE) {
-      return !cE.isLocal;
-    })).subscribe(function (cE) {
-      return _this._handleChangeEvent(cE);
-    }));
+    this.subs.push(this.collection.$.pipe(filter(cE => !cE.isLocal)).subscribe(cE => this._handleChangeEvent(cE)));
   }
   var _proto = ChangeEventBuffer.prototype;
   _proto._handleChangeEvent = function _handleChangeEvent(changeEvent) {
@@ -71,9 +66,7 @@ export var ChangeEventBuffer = /*#__PURE__*/function () {
     if (ret === null) {
       throw new Error('out of bounds');
     } else {
-      ret.forEach(function (cE) {
-        return fn(cE);
-      });
+      ret.forEach(cE => fn(cE));
     }
   }
 
@@ -88,15 +81,13 @@ export var ChangeEventBuffer = /*#__PURE__*/function () {
     // because it did not correctly reassigned the previousData of the changeevents
     // this should be added to the event-reduce library and not be done in RxDB
     var docEventMap = {};
-    changeEvents.forEach(function (changeEvent) {
+    changeEvents.forEach(changeEvent => {
       docEventMap[changeEvent.documentId] = changeEvent;
     });
     return Object.values(docEventMap);
   };
   _proto.destroy = function destroy() {
-    this.subs.forEach(function (sub) {
-      return sub.unsubscribe();
-    });
+    this.subs.forEach(sub => sub.unsubscribe());
   };
   return ChangeEventBuffer;
 }();

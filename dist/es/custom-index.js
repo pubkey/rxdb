@@ -26,7 +26,7 @@ export function getIndexableStringMonad(schema, index) {
    * to save performance when the returned
    * function is called many times.
    */
-  var fieldNameProperties = index.map(function (fieldName) {
+  var fieldNameProperties = index.map(fieldName => {
     var schemaPart = getSchemaByObjectPath(schema, fieldName);
     if (!schemaPart) {
       throw new Error('not in schema: ' + fieldName);
@@ -37,16 +37,16 @@ export function getIndexableStringMonad(schema, index) {
       parsedLengths = getStringLengthOfIndexNumber(schemaPart);
     }
     return {
-      fieldName: fieldName,
-      schemaPart: schemaPart,
-      parsedLengths: parsedLengths,
+      fieldName,
+      schemaPart,
+      parsedLengths,
       hasComplexPath: fieldName.includes('.'),
       getValueFn: objectPathMonad(fieldName)
     };
   });
-  var ret = function ret(docData) {
+  var ret = function (docData) {
     var str = '';
-    fieldNameProperties.forEach(function (props) {
+    fieldNameProperties.forEach(props => {
       var schemaPart = props.schemaPart;
       var type = schemaPart.type;
       var fieldValue = props.getValueFn(docData);
@@ -82,8 +82,8 @@ export function getStringLengthOfIndexNumber(schemaPart) {
     decimals = multipleOfParts[1].length;
   }
   return {
-    nonDecimals: nonDecimals,
-    decimals: decimals,
+    nonDecimals,
+    decimals,
     roundedMinimum: minimum
   };
 }
@@ -98,7 +98,7 @@ export function getNumberIndexString(parsedLengths, fieldValue) {
 }
 export function getStartIndexStringFromLowerBound(schema, index, lowerBound, inclusiveStart) {
   var str = '';
-  index.forEach(function (fieldName, idx) {
+  index.forEach((fieldName, idx) => {
     var schemaPart = getSchemaByObjectPath(schema, fieldName);
     var bound = lowerBound[idx];
     var type = schemaPart.type;
@@ -138,7 +138,7 @@ export function getStartIndexStringFromLowerBound(schema, index, lowerBound, inc
 }
 export function getStartIndexStringFromUpperBound(schema, index, upperBound, inclusiveEnd) {
   var str = '';
-  index.forEach(function (fieldName, idx) {
+  index.forEach((fieldName, idx) => {
     var schemaPart = getSchemaByObjectPath(schema, fieldName);
     var bound = upperBound[idx];
     var type = schemaPart.type;

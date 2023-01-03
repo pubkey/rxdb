@@ -7,6 +7,6 @@ var storage = (0, _storageLokijs.getRxStorageLoki)({
   adapter: new LokiIndexedDBAdapter()
 });
 (0, _storageWorker.wrappedWorkerRxStorage)({
-  storage: storage
+  storage
 });
 //# sourceMappingURL=lokijs-indexeddb.worker.js.map

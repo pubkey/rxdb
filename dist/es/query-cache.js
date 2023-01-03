@@ -29,7 +29,7 @@ export function createQueryCache() {
 export function uncacheRxQuery(queryCache, rxQuery) {
   rxQuery.uncached = true;
   var stringRep = rxQuery.toString();
-  queryCache._map["delete"](stringRep);
+  queryCache._map.delete(stringRep);
 }
 export function countRxQuerySubscribers(rxQuery) {
   return rxQuery.refCount$.observers.length;
@@ -43,39 +43,32 @@ export var DEFAULT_UNEXECUTED_LIFETME = 30 * 1000;
  * Notice that this runs often and should block the cpu as less as possible
  * This is a monad which makes it easier to unit test
  */
-export var defaultCacheReplacementPolicyMonad = function defaultCacheReplacementPolicyMonad(tryToKeepMax, unExecutedLifetime) {
-  return function (_collection, queryCache) {
-    if (queryCache._map.size < tryToKeepMax) {
-      return;
+export var defaultCacheReplacementPolicyMonad = (tryToKeepMax, unExecutedLifetime) => (_collection, queryCache) => {
+  if (queryCache._map.size < tryToKeepMax) {
+    return;
+  }
+  var minUnExecutedLifetime = now() - unExecutedLifetime;
+  var maybeUncash = [];
+  var queriesInCache = Array.from(queryCache._map.values());
+  for (var rxQuery of queriesInCache) {
+    // filter out queries with subscribers
+    if (countRxQuerySubscribers(rxQuery) > 0) {
+      continue;
     }
-    var minUnExecutedLifetime = now() - unExecutedLifetime;
-    var maybeUncash = [];
-    var queriesInCache = Array.from(queryCache._map.values());
-    for (var _i = 0, _queriesInCache = queriesInCache; _i < _queriesInCache.length; _i++) {
-      var rxQuery = _queriesInCache[_i];
-      // filter out queries with subscribers
-      if (countRxQuerySubscribers(rxQuery) > 0) {
-        continue;
-      }
-      // directly uncache queries that never executed and are older then unExecutedLifetime
-      if (rxQuery._lastEnsureEqual === 0 && rxQuery._creationTime < minUnExecutedLifetime) {
-        uncacheRxQuery(queryCache, rxQuery);
-        continue;
-      }
-      maybeUncash.push(rxQuery);
+    // directly uncache queries that never executed and are older then unExecutedLifetime
+    if (rxQuery._lastEnsureEqual === 0 && rxQuery._creationTime < minUnExecutedLifetime) {
+      uncacheRxQuery(queryCache, rxQuery);
+      continue;
     }
-    var mustUncache = maybeUncash.length - tryToKeepMax;
-    if (mustUncache <= 0) {
-      return;
-    }
-    var sortedByLastUsage = maybeUncash.sort(function (a, b) {
-      return a._lastEnsureEqual - b._lastEnsureEqual;
-    });
-    var toRemove = sortedByLastUsage.slice(0, mustUncache);
-    toRemove.forEach(function (rxQuery) {
-      return uncacheRxQuery(queryCache, rxQuery);
-    });
-  };
+    maybeUncash.push(rxQuery);
+  }
+  var mustUncache = maybeUncash.length - tryToKeepMax;
+  if (mustUncache <= 0) {
+    return;
+  }
+  var sortedByLastUsage = maybeUncash.sort((a, b) => a._lastEnsureEqual - b._lastEnsureEqual);
+  var toRemove = sortedByLastUsage.slice(0, mustUncache);
+  toRemove.forEach(rxQuery => uncacheRxQuery(queryCache, rxQuery));
 };
 export var defaultCacheReplacementPolicy = defaultCacheReplacementPolicyMonad(DEFAULT_TRY_TO_KEEP_MAX, DEFAULT_UNEXECUTED_LIFETME);
 export var COLLECTIONS_WITH_RUNNING_CLEANUP = new WeakSet();
@@ -97,14 +90,12 @@ export function triggerCacheReplacement(rxCollection) {
    * Do not run directly to not reduce result latency of a new query
    */
   nextTick() // wait at least one tick
-  .then(function () {
-    return requestIdlePromise(200);
-  }) // and then wait for the CPU to be idle
-  .then(function () {
+  .then(() => requestIdlePromise(200)) // and then wait for the CPU to be idle
+  .then(() => {
     if (!rxCollection.destroyed) {
       rxCollection.cacheReplacementPolicy(rxCollection, rxCollection._queryCache);
     }
-    COLLECTIONS_WITH_RUNNING_CLEANUP["delete"](rxCollection);
+    COLLECTIONS_WITH_RUNNING_CLEANUP.delete(rxCollection);
   });
 }
 //# sourceMappingURL=query-cache.js.map

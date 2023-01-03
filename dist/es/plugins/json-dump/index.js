@@ -5,55 +5,39 @@ import { createRxQuery, queryCollection, _getDefaultQuery } from '../../rx-query
 import { newRxError } from '../../rx-error';
 import { flatClone, getDefaultRevision, now } from '../../plugins/utils';
 function dumpRxDatabase(collections) {
-  var _this = this;
   var json = {
     name: this.name,
     instanceToken: this.token,
     collections: []
   };
-  var useCollections = Object.keys(this.collections).filter(function (colName) {
-    return !collections || collections.includes(colName);
-  }).filter(function (colName) {
-    return colName.charAt(0) !== '_';
-  }).map(function (colName) {
-    return _this.collections[colName];
-  });
-  return Promise.all(useCollections.map(function (col) {
-    return col.exportJSON();
-  })).then(function (cols) {
+  var useCollections = Object.keys(this.collections).filter(colName => !collections || collections.includes(colName)).filter(colName => colName.charAt(0) !== '_').map(colName => this.collections[colName]);
+  return Promise.all(useCollections.map(col => col.exportJSON())).then(cols => {
     json.collections = cols;
     return json;
   });
 }
-var importDumpRxDatabase = function importDumpRxDatabase(dump) {
-  var _this2 = this;
+var importDumpRxDatabase = function (dump) {
   /**
    * collections must be created before the import
    * because we do not know about the other collection-settings here
    */
-  var missingCollections = dump.collections.filter(function (col) {
-    return !_this2.collections[col.name];
-  }).map(function (col) {
-    return col.name;
-  });
+  var missingCollections = dump.collections.filter(col => !this.collections[col.name]).map(col => col.name);
   if (missingCollections.length > 0) {
     throw newRxError('JD1', {
-      missingCollections: missingCollections
+      missingCollections
     });
   }
-  return Promise.all(dump.collections.map(function (colDump) {
-    return _this2.collections[colDump.name].importJSON(colDump);
-  }));
+  return Promise.all(dump.collections.map(colDump => this.collections[colDump.name].importJSON(colDump)));
 };
-var dumpRxCollection = function dumpRxCollection() {
+var dumpRxCollection = function () {
   var json = {
     name: this.name,
     schemaHash: this.schema.hash,
     docs: []
   };
   var query = createRxQuery('find', _getDefaultQuery(), this);
-  return queryCollection(query).then(function (docs) {
-    json.docs = docs.map(function (docData) {
+  return queryCollection(query).then(docs => {
+    json.docs = docs.map(docData => {
       docData = flatClone(docData);
       delete docData._rev;
       delete docData._attachments;
@@ -71,7 +55,7 @@ function importDumpRxCollection(exportedJSON) {
     });
   }
   var docs = exportedJSON.docs;
-  return this.storageInstance.bulkWrite(docs.map(function (docData) {
+  return this.storageInstance.bulkWrite(docs.map(docData => {
     var document = Object.assign({}, docData, {
       _meta: {
         lwt: now()
@@ -81,7 +65,7 @@ function importDumpRxCollection(exportedJSON) {
       _deleted: false
     });
     return {
-      document: document
+      document
     };
   }), 'json-dump-import');
 }
@@ -89,11 +73,11 @@ export var RxDBJsonDumpPlugin = {
   name: 'json-dump',
   rxdb: true,
   prototypes: {
-    RxDatabase: function RxDatabase(proto) {
+    RxDatabase: proto => {
       proto.exportJSON = dumpRxDatabase;
       proto.importJSON = importDumpRxDatabase;
     },
-    RxCollection: function RxCollection(proto) {
+    RxCollection: proto => {
       proto.exportJSON = dumpRxCollection;
       proto.importJSON = importDumpRxCollection;
     }

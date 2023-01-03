@@ -1,7 +1,5 @@
 export function runXTimes(xTimes, fn) {
-  new Array(xTimes).fill(0).forEach(function (_v, idx) {
-    return fn(idx);
-  });
+  new Array(xTimes).fill(0).forEach((_v, idx) => fn(idx));
 }
 export function ensureNotFalsy(obj) {
   if (!obj) {

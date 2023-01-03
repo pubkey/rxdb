@@ -11,7 +11,7 @@ export function rxCollectionProperties() {
     var pseudoInstance = new RxCollectionBase();
     var ownProperties = Object.getOwnPropertyNames(pseudoInstance);
     var prototypeProperties = Object.getOwnPropertyNames(Object.getPrototypeOf(pseudoInstance));
-    _rxCollectionProperties = [].concat(ownProperties, prototypeProperties);
+    _rxCollectionProperties = [...ownProperties, ...prototypeProperties];
   }
   return _rxCollectionProperties;
 }
@@ -25,7 +25,7 @@ export function rxDatabaseProperties() {
     var pseudoInstance = new RxDatabaseBase('pseudoInstance', 'memory');
     var ownProperties = Object.getOwnPropertyNames(pseudoInstance);
     var prototypeProperties = Object.getOwnPropertyNames(Object.getPrototypeOf(pseudoInstance));
-    _rxDatabaseProperties = [].concat(ownProperties, prototypeProperties);
+    _rxDatabaseProperties = [...ownProperties, ...prototypeProperties];
     pseudoInstance.destroy();
   }
   return _rxDatabaseProperties;
@@ -42,7 +42,7 @@ export function rxDocumentProperties() {
     var reserved = ['deleted', 'synced'];
     var ownProperties = Object.getOwnPropertyNames(pseudoRxDocument);
     var prototypeProperties = Object.getOwnPropertyNames(basePrototype);
-    _rxDocumentProperties = [].concat(ownProperties, prototypeProperties, reserved);
+    _rxDocumentProperties = [...ownProperties, ...prototypeProperties, ...reserved];
   }
   return _rxDocumentProperties;
 }

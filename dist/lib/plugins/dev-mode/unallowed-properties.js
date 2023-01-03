@@ -53,7 +53,7 @@ var validCouchDBStringRegex = new RegExp(validCouchDBStringRegexStr);
 function validateDatabaseName(name) {
   if (typeof name !== 'string' || name.length === 0) {
     throw (0, _rxError.newRxTypeError)('UT1', {
-      name: name
+      name
     });
   }
 

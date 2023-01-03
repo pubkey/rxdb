@@ -16,32 +16,26 @@ var _modifyjs = _interopRequireDefault(require("modifyjs"));
  */
 
 function incrementalUpdate(updateObj) {
-  return this.incrementalModify(function (docData) {
-    var newDocData = (0, _modifyjs["default"])(docData, updateObj);
+  return this.incrementalModify(docData => {
+    var newDocData = (0, _modifyjs.default)(docData, updateObj);
     return newDocData;
   });
 }
 function update(updateObj) {
   var oldDocData = this._data;
-  var newDocData = (0, _modifyjs["default"])(oldDocData, updateObj);
+  var newDocData = (0, _modifyjs.default)(oldDocData, updateObj);
   return this._saveData(newDocData, oldDocData);
 }
 function RxQueryUpdate(updateObj) {
-  return this.exec().then(function (docs) {
+  return this.exec().then(docs => {
     if (!docs) {
       return null;
     }
     if (Array.isArray(docs)) {
-      return Promise.all(docs.map(function (doc) {
-        return doc.update(updateObj);
-      })).then(function () {
-        return docs;
-      });
+      return Promise.all(docs.map(doc => doc.update(updateObj))).then(() => docs);
     } else {
       // via findOne()
-      return docs.update(updateObj).then(function () {
-        return docs;
-      });
+      return docs.update(updateObj).then(() => docs);
     }
   });
 }
@@ -49,11 +43,11 @@ var RxDBUpdatePlugin = {
   name: 'update',
   rxdb: true,
   prototypes: {
-    RxDocument: function RxDocument(proto) {
+    RxDocument: proto => {
       proto.update = update;
       proto.incrementalUpdate = incrementalUpdate;
     },
-    RxQuery: function RxQuery(proto) {
+    RxQuery: proto => {
       proto.update = RxQueryUpdate;
     }
   }

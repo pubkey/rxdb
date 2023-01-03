@@ -18,23 +18,19 @@ export function getQueryPlan(schema, query) {
   } else {
     indexes.push([primaryPath]);
   }
-  var optimalSortIndex = query.sort.map(function (sortField) {
-    return Object.keys(sortField)[0];
-  });
+  var optimalSortIndex = query.sort.map(sortField => Object.keys(sortField)[0]);
   var optimalSortIndexCompareString = optimalSortIndex.join(',');
   /**
    * Most storages do not support descending indexes
    * so having a 'desc' in the sorting, means we always have to re-sort the results.
    */
-  var hasDescSorting = !!query.sort.find(function (sortField) {
-    return Object.values(sortField)[0] === 'desc';
-  });
+  var hasDescSorting = !!query.sort.find(sortField => Object.values(sortField)[0] === 'desc');
   var currentBestQuality = -1;
   var currentBestQueryPlan;
-  indexes.forEach(function (index) {
+  indexes.forEach(index => {
     var inclusiveEnd = true;
     var inclusiveStart = true;
-    var opts = index.map(function (indexField) {
+    var opts = index.map(indexField => {
       var matcher = selector[indexField];
       var operators = matcher ? Object.keys(matcher) : [];
       var matcherOpts = {};
@@ -46,7 +42,7 @@ export function getQueryPlan(schema, query) {
           inclusiveEnd: true
         };
       } else {
-        operators.forEach(function (operator) {
+        operators.forEach(operator => {
           if (LOGICAL_OPERATORS.has(operator)) {
             var operatorValue = matcher[operator];
             var partialOpts = getMatcherQueryOpts(operator, operatorValue);
@@ -77,15 +73,11 @@ export function getQueryPlan(schema, query) {
       return matcherOpts;
     });
     var queryPlan = {
-      index: index,
-      startKeys: opts.map(function (opt) {
-        return opt.startKey;
-      }),
-      endKeys: opts.map(function (opt) {
-        return opt.endKey;
-      }),
-      inclusiveEnd: inclusiveEnd,
-      inclusiveStart: inclusiveStart,
+      index,
+      startKeys: opts.map(opt => opt.startKey),
+      endKeys: opts.map(opt => opt.endKey),
+      inclusiveEnd,
+      inclusiveStart,
       sortFieldsSameAsIndexFields: !hasDescSorting && optimalSortIndexCompareString === index.join(','),
       selectorSatisfiedByIndex: isSelectorSatisfiedByIndex(index, query.selector)
     };
@@ -117,31 +109,23 @@ export var LOWER_BOUND_LOGICAL_OPERATORS = new Set(['$eq', '$gt', '$gte']);
 export var UPPER_BOUND_LOGICAL_OPERATORS = new Set(['$eq', '$lt', '$lte']);
 export function isSelectorSatisfiedByIndex(index, selector) {
   var selectorEntries = Object.entries(selector);
-  var hasNonMatchingOperator = selectorEntries.find(function (_ref) {
-    var fieldName = _ref[0],
-      operation = _ref[1];
+  var hasNonMatchingOperator = selectorEntries.find(([fieldName, operation]) => {
     if (!index.includes(fieldName)) {
       return true;
     }
-    var hasNonLogicOperator = Object.entries(operation).find(function (_ref2) {
-      var op = _ref2[0],
-        _value = _ref2[1];
-      return !LOGICAL_OPERATORS.has(op);
-    });
+    var hasNonLogicOperator = Object.entries(operation).find(([op, _value]) => !LOGICAL_OPERATORS.has(op));
     return hasNonLogicOperator;
   });
   if (hasNonMatchingOperator) {
     return false;
   }
   var prevLowerBoundaryField;
-  var hasMoreThenOneLowerBoundaryField = index.find(function (fieldName) {
+  var hasMoreThenOneLowerBoundaryField = index.find(fieldName => {
     var operation = selector[fieldName];
     if (!operation) {
       return false;
     }
-    var hasLowerLogicOp = Object.keys(operation).find(function (key) {
-      return LOWER_BOUND_LOGICAL_OPERATORS.has(key);
-    });
+    var hasLowerLogicOp = Object.keys(operation).find(key => LOWER_BOUND_LOGICAL_OPERATORS.has(key));
     if (prevLowerBoundaryField && hasLowerLogicOp) {
       return true;
     } else if (hasLowerLogicOp !== '$eq') {
@@ -153,14 +137,12 @@ export function isSelectorSatisfiedByIndex(index, selector) {
     return false;
   }
   var prevUpperBoundaryField;
-  var hasMoreThenOneUpperBoundaryField = index.find(function (fieldName) {
+  var hasMoreThenOneUpperBoundaryField = index.find(fieldName => {
     var operation = selector[fieldName];
     if (!operation) {
       return false;
     }
-    var hasUpperLogicOp = Object.keys(operation).find(function (key) {
-      return UPPER_BOUND_LOGICAL_OPERATORS.has(key);
-    });
+    var hasUpperLogicOp = Object.keys(operation).find(key => UPPER_BOUND_LOGICAL_OPERATORS.has(key));
     if (prevUpperBoundaryField && hasUpperLogicOp) {
       return true;
     } else if (hasUpperLogicOp !== '$eq') {
@@ -210,15 +192,11 @@ export function getMatcherQueryOpts(operator, operatorValue) {
 export function rateQueryPlan(schema, query, queryPlan) {
   var quality = 0;
   var pointsPerMatchingKey = 10;
-  var idxOfFirstMinStartKey = queryPlan.startKeys.findIndex(function (keyValue) {
-    return keyValue === INDEX_MIN;
-  });
+  var idxOfFirstMinStartKey = queryPlan.startKeys.findIndex(keyValue => keyValue === INDEX_MIN);
   if (idxOfFirstMinStartKey > 0) {
     quality = quality + idxOfFirstMinStartKey * pointsPerMatchingKey;
   }
-  var idxOfFirstMaxEndKey = queryPlan.endKeys.findIndex(function (keyValue) {
-    return keyValue === INDEX_MAX;
-  });
+  var idxOfFirstMaxEndKey = queryPlan.endKeys.findIndex(keyValue => keyValue === INDEX_MAX);
   if (idxOfFirstMaxEndKey > 0) {
     quality = quality + idxOfFirstMaxEndKey * pointsPerMatchingKey;
   }

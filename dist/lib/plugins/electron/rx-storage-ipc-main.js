@@ -16,26 +16,26 @@ function exposeIpcMainRxStorage(args) {
   var channelId = [_electronHelper.IPC_RENDERER_KEY_PREFIX, args.key].join('|');
   var messages$ = new _rxjs.Subject();
   var openRenderers = new Set();
-  args.ipcMain.on(channelId, function (event, message) {
+  args.ipcMain.on(channelId, (event, message) => {
     openRenderers.add(event.sender);
     if (message) {
       messages$.next(message);
     }
   });
-  var send = function send(msg) {
+  var send = msg => {
     /**
      * TODO we could improve performance
      * by only sending the message to the 'correct' sender
      * and removing senders whose browser window is closed.
      */
-    openRenderers.forEach(function (sender) {
+    openRenderers.forEach(sender => {
       sender.send(channelId, msg);
     });
   };
   (0, _storageRemote.exposeRxStorageRemote)({
     storage: args.storage,
-    messages$: messages$,
-    send: send
+    messages$,
+    send
   });
 }
 //# sourceMappingURL=rx-storage-ipc-main.js.map

@@ -1,5 +1,3 @@
-import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
-import _regeneratorRuntime from "@babel/runtime/regenerator";
 import { PROMISE_RESOLVE_TRUE } from '../../plugins/utils';
 import { REPLICATION_STATE_BY_COLLECTION } from '../replication';
 import { DEFAULT_CLEANUP_POLICY } from './cleanup-helper';
@@ -12,154 +10,76 @@ import { DEFAULT_CLEANUP_POLICY } from './cleanup-helper';
  * not affect the performance of other, more important tasks.
  */
 var RXSOTRAGE_CLEANUP_QUEUE = PROMISE_RESOLVE_TRUE;
-export function startCleanupForRxCollection(_x) {
-  return _startCleanupForRxCollection.apply(this, arguments);
+export async function startCleanupForRxCollection(rxCollection) {
+  var rxDatabase = rxCollection.database;
+  var cleanupPolicy = Object.assign({}, DEFAULT_CLEANUP_POLICY, rxDatabase.cleanupPolicy ? rxDatabase.cleanupPolicy : {});
+
+  /**
+   * Wait until minimumDatabaseInstanceAge is reached
+   * or collection is destroyed.
+   */
+  await rxCollection.promiseWait(cleanupPolicy.minimumCollectionAge);
+  if (rxCollection.destroyed) {
+    return;
+  }
+  if (cleanupPolicy.waitForLeadership) {
+    await rxDatabase.waitForLeadership();
+  }
+  if (rxCollection.destroyed) {
+    return;
+  }
+
+  // initially cleanup the collection
+  await cleanupRxCollection(rxCollection, cleanupPolicy);
+
+  /**
+   * Afterwards we listen to deletes
+   * and only re-run the cleanup after
+   * minimumDeletedTime is reached.
+   */
+  await runCleanupAfterDelete(rxCollection, cleanupPolicy);
 }
 
 /**
  * Runs the cleanup for a single RxCollection
  */
-function _startCleanupForRxCollection() {
-  _startCleanupForRxCollection = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee(rxCollection) {
-    var rxDatabase, cleanupPolicy;
-    return _regeneratorRuntime.wrap(function _callee$(_context) {
-      while (1) switch (_context.prev = _context.next) {
-        case 0:
-          rxDatabase = rxCollection.database;
-          cleanupPolicy = Object.assign({}, DEFAULT_CLEANUP_POLICY, rxDatabase.cleanupPolicy ? rxDatabase.cleanupPolicy : {});
-          /**
-           * Wait until minimumDatabaseInstanceAge is reached
-           * or collection is destroyed.
-           */
-          _context.next = 4;
-          return rxCollection.promiseWait(cleanupPolicy.minimumCollectionAge);
-        case 4:
-          if (!rxCollection.destroyed) {
-            _context.next = 6;
-            break;
+export async function cleanupRxCollection(rxCollection, cleanupPolicy) {
+  var rxDatabase = rxCollection.database;
+  var storageInstance = rxCollection.storageInstance;
+
+  // run cleanup() until it returns true
+  var isDone = false;
+  while (!isDone && !rxCollection.destroyed) {
+    if (cleanupPolicy.awaitReplicationsInSync) {
+      var replicationStates = REPLICATION_STATE_BY_COLLECTION.get(rxCollection);
+      if (replicationStates) {
+        await Promise.all(replicationStates.map(replicationState => {
+          if (!replicationState.isStopped()) {
+            return replicationState.awaitInSync();
           }
-          return _context.abrupt("return");
-        case 6:
-          if (!cleanupPolicy.waitForLeadership) {
-            _context.next = 9;
-            break;
-          }
-          _context.next = 9;
-          return rxDatabase.waitForLeadership();
-        case 9:
-          if (!rxCollection.destroyed) {
-            _context.next = 11;
-            break;
-          }
-          return _context.abrupt("return");
-        case 11:
-          _context.next = 13;
-          return cleanupRxCollection(rxCollection, cleanupPolicy);
-        case 13:
-          _context.next = 15;
-          return runCleanupAfterDelete(rxCollection, cleanupPolicy);
-        case 15:
-        case "end":
-          return _context.stop();
+        }));
       }
-    }, _callee);
-  }));
-  return _startCleanupForRxCollection.apply(this, arguments);
-}
-export function cleanupRxCollection(_x2, _x3) {
-  return _cleanupRxCollection.apply(this, arguments);
-}
-function _cleanupRxCollection() {
-  _cleanupRxCollection = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee2(rxCollection, cleanupPolicy) {
-    var rxDatabase, storageInstance, isDone, replicationStates;
-    return _regeneratorRuntime.wrap(function _callee2$(_context2) {
-      while (1) switch (_context2.prev = _context2.next) {
-        case 0:
-          rxDatabase = rxCollection.database;
-          storageInstance = rxCollection.storageInstance; // run cleanup() until it returns true
-          isDone = false;
-        case 3:
-          if (!(!isDone && !rxCollection.destroyed)) {
-            _context2.next = 19;
-            break;
-          }
-          if (!cleanupPolicy.awaitReplicationsInSync) {
-            _context2.next = 9;
-            break;
-          }
-          replicationStates = REPLICATION_STATE_BY_COLLECTION.get(rxCollection);
-          if (!replicationStates) {
-            _context2.next = 9;
-            break;
-          }
-          _context2.next = 9;
-          return Promise.all(replicationStates.map(function (replicationState) {
-            if (!replicationState.isStopped()) {
-              return replicationState.awaitInSync();
-            }
-          }));
-        case 9:
-          _context2.next = 11;
-          return rxDatabase.requestIdlePromise();
-        case 11:
-          if (!rxCollection.destroyed) {
-            _context2.next = 13;
-            break;
-          }
-          return _context2.abrupt("return");
-        case 13:
-          RXSOTRAGE_CLEANUP_QUEUE = RXSOTRAGE_CLEANUP_QUEUE.then(function () {
-            if (rxCollection.destroyed) {
-              return true;
-            }
-            return storageInstance.cleanup(cleanupPolicy.minimumDeletedTime);
-          });
-          _context2.next = 16;
-          return RXSOTRAGE_CLEANUP_QUEUE;
-        case 16:
-          isDone = _context2.sent;
-          _context2.next = 3;
-          break;
-        case 19:
-        case "end":
-          return _context2.stop();
+    }
+    await rxDatabase.requestIdlePromise();
+    if (rxCollection.destroyed) {
+      return;
+    }
+    RXSOTRAGE_CLEANUP_QUEUE = RXSOTRAGE_CLEANUP_QUEUE.then(() => {
+      if (rxCollection.destroyed) {
+        return true;
       }
-    }, _callee2);
-  }));
-  return _cleanupRxCollection.apply(this, arguments);
+      return storageInstance.cleanup(cleanupPolicy.minimumDeletedTime);
+    });
+    isDone = await RXSOTRAGE_CLEANUP_QUEUE;
+  }
 }
-export function runCleanupAfterDelete(_x4, _x5) {
-  return _runCleanupAfterDelete.apply(this, arguments);
-}
-function _runCleanupAfterDelete() {
-  _runCleanupAfterDelete = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee3(rxCollection, cleanupPolicy) {
-    return _regeneratorRuntime.wrap(function _callee3$(_context3) {
-      while (1) switch (_context3.prev = _context3.next) {
-        case 0:
-          if (rxCollection.destroyed) {
-            _context3.next = 9;
-            break;
-          }
-          _context3.next = 3;
-          return rxCollection.promiseWait(cleanupPolicy.runEach);
-        case 3:
-          if (!rxCollection.destroyed) {
-            _context3.next = 5;
-            break;
-          }
-          return _context3.abrupt("return");
-        case 5:
-          _context3.next = 7;
-          return cleanupRxCollection(rxCollection, cleanupPolicy);
-        case 7:
-          _context3.next = 0;
-          break;
-        case 9:
-        case "end":
-          return _context3.stop();
-      }
-    }, _callee3);
-  }));
-  return _runCleanupAfterDelete.apply(this, arguments);
+export async function runCleanupAfterDelete(rxCollection, cleanupPolicy) {
+  while (!rxCollection.destroyed) {
+    await rxCollection.promiseWait(cleanupPolicy.runEach);
+    if (rxCollection.destroyed) {
+      return;
+    }
+    await cleanupRxCollection(rxCollection, cleanupPolicy);
+  }
 }
 //# sourceMappingURL=cleanup.js.map

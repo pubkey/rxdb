@@ -1,5 +1,6 @@
 import type { DeepReadonlyObject } from '../../types';
 export declare function deepFreeze<T>(o: T): T;
+export declare function deepEqual<T>(obj1: T, obj2: T): boolean;
 /**
  * To get specific nested path values from objects,
  * RxDB normally uses the 'object-path' npm module.

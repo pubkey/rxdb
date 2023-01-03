@@ -1,5 +1,3 @@
-import _asyncToGenerator from "@babel/runtime/helpers/asyncToGenerator";
-import _regeneratorRuntime from "@babel/runtime/regenerator";
 import { Subject } from 'rxjs';
 import { getStartIndexStringFromLowerBound, getStartIndexStringFromUpperBound } from '../../custom-index';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
@@ -23,7 +21,6 @@ export var RxStorageInstanceMemory = /*#__PURE__*/function () {
   }
   var _proto = RxStorageInstanceMemory.prototype;
   _proto.bulkWrite = function bulkWrite(documentWrites, context) {
-    var _this = this;
     ensureNotRemoved(this);
     var ret = {
       success: {},
@@ -36,14 +33,14 @@ export var RxStorageInstanceMemory = /*#__PURE__*/function () {
      * Do inserts/updates
      */
     var stateByIndex = Object.values(this.internals.byIndex);
-    categorized.bulkInsertDocs.forEach(function (writeRow) {
-      var docId = writeRow.document[_this.primaryPath];
-      putWriteRowToState(docId, _this.internals, stateByIndex, writeRow, undefined);
+    categorized.bulkInsertDocs.forEach(writeRow => {
+      var docId = writeRow.document[this.primaryPath];
+      putWriteRowToState(docId, this.internals, stateByIndex, writeRow, undefined);
       ret.success[docId] = writeRow.document;
     });
-    categorized.bulkUpdateDocs.forEach(function (writeRow) {
-      var docId = writeRow.document[_this.primaryPath];
-      putWriteRowToState(docId, _this.internals, stateByIndex, writeRow, _this.internals.documents.get(docId));
+    categorized.bulkUpdateDocs.forEach(writeRow => {
+      var docId = writeRow.document[this.primaryPath];
+      putWriteRowToState(docId, this.internals, stateByIndex, writeRow, this.internals.documents.get(docId));
       ret.success[docId] = writeRow.document;
     });
 
@@ -51,14 +48,14 @@ export var RxStorageInstanceMemory = /*#__PURE__*/function () {
      * Handle attachments
      */
     var attachmentsMap = this.internals.attachments;
-    categorized.attachmentsAdd.forEach(function (attachment) {
+    categorized.attachmentsAdd.forEach(attachment => {
       attachmentsMap.set(attachmentMapKey(attachment.documentId, attachment.attachmentId), attachment.attachmentData);
     });
-    categorized.attachmentsUpdate.forEach(function (attachment) {
+    categorized.attachmentsUpdate.forEach(attachment => {
       attachmentsMap.set(attachmentMapKey(attachment.documentId, attachment.attachmentId), attachment.attachmentData);
     });
-    categorized.attachmentsRemove.forEach(function (attachment) {
-      attachmentsMap["delete"](attachmentMapKey(attachment.documentId, attachment.attachmentId));
+    categorized.attachmentsRemove.forEach(attachment => {
+      attachmentsMap.delete(attachmentMapKey(attachment.documentId, attachment.attachmentId));
     });
     if (categorized.eventBulk.events.length > 0) {
       var lastState = getNewestOfDocumentStates(this.primaryPath, Object.values(ret.success));
@@ -71,10 +68,9 @@ export var RxStorageInstanceMemory = /*#__PURE__*/function () {
     return Promise.resolve(ret);
   };
   _proto.findDocumentsById = function findDocumentsById(docIds, withDeleted) {
-    var _this2 = this;
     var ret = {};
-    docIds.forEach(function (docId) {
-      var docInDb = _this2.internals.documents.get(docId);
+    docIds.forEach(docId => {
+      var docInDb = this.internals.documents.get(docId);
       if (docInDb && (!docInDb._deleted || withDeleted)) {
         ret[docId] = docInDb;
       }
@@ -134,31 +130,13 @@ export var RxStorageInstanceMemory = /*#__PURE__*/function () {
       documents: rows
     });
   };
-  _proto.count = /*#__PURE__*/function () {
-    var _count = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee(preparedQuery) {
-      var result;
-      return _regeneratorRuntime.wrap(function _callee$(_context) {
-        while (1) switch (_context.prev = _context.next) {
-          case 0:
-            _context.next = 2;
-            return this.query(preparedQuery);
-          case 2:
-            result = _context.sent;
-            return _context.abrupt("return", {
-              count: result.documents.length,
-              mode: 'fast'
-            });
-          case 4:
-          case "end":
-            return _context.stop();
-        }
-      }, _callee, this);
-    }));
-    function count(_x) {
-      return _count.apply(this, arguments);
-    }
-    return count;
-  }();
+  _proto.count = async function count(preparedQuery) {
+    var result = await this.query(preparedQuery);
+    return {
+      count: result.documents.length,
+      mode: 'fast'
+    };
+  };
   _proto.getChangedDocumentsSince = function getChangedDocumentsSince(limit, checkpoint) {
     var sinceLwt = checkpoint ? checkpoint.lwt : RX_META_LWT_MINIMUM;
     var sinceId = checkpoint ? checkpoint.id : '';
@@ -219,27 +197,12 @@ export var RxStorageInstanceMemory = /*#__PURE__*/function () {
     ensureNotRemoved(this);
     return this.internals.changes$.asObservable();
   };
-  _proto.remove = /*#__PURE__*/function () {
-    var _remove = _asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee2() {
-      return _regeneratorRuntime.wrap(function _callee2$(_context2) {
-        while (1) switch (_context2.prev = _context2.next) {
-          case 0:
-            ensureNotRemoved(this);
-            this.internals.removed = true;
-            this.storage.collectionStates["delete"](getMemoryCollectionKey(this.databaseName, this.collectionName));
-            _context2.next = 5;
-            return this.close();
-          case 5:
-          case "end":
-            return _context2.stop();
-        }
-      }, _callee2, this);
-    }));
-    function remove() {
-      return _remove.apply(this, arguments);
-    }
-    return remove;
-  }();
+  _proto.remove = async function remove() {
+    ensureNotRemoved(this);
+    this.internals.removed = true;
+    this.storage.collectionStates.delete(getMemoryCollectionKey(this.databaseName, this.collectionName));
+    await this.close();
+  };
   _proto.close = function close() {
     if (this.closed) {
       return Promise.reject(new Error('already closed'));

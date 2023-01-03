@@ -13,12 +13,10 @@ function parametersToString(parameters) {
   var ret = '';
   if (Object.keys(parameters).length === 0) return ret;
   ret += 'Given parameters: {\n';
-  ret += Object.keys(parameters).map(function (k) {
+  ret += Object.keys(parameters).map(k => {
     var paramStr = '[object Object]';
     try {
-      paramStr = JSON.stringify(parameters[k], function (_k, v) {
-        return v === undefined ? null : v;
-      }, 2);
+      paramStr = JSON.stringify(parameters[k], (_k, v) => v === undefined ? null : v, 2);
     } catch (e) {}
     return k + ':' + paramStr;
   }).join('\n');
@@ -32,9 +30,8 @@ export var RxError = /*#__PURE__*/function (_Error) {
   _inheritsLoose(RxError, _Error);
   // always true, use this to detect if its an rxdb-error
 
-  function RxError(code, message) {
+  function RxError(code, message, parameters = {}) {
     var _this;
-    var parameters = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
     var mes = messageForError(message, code, parameters);
     _this = _Error.call(this, mes) || this;
     _this.code = code;
@@ -49,12 +46,12 @@ export var RxError = /*#__PURE__*/function (_Error) {
   };
   _createClass(RxError, [{
     key: "name",
-    get: function get() {
+    get: function () {
       return 'RxError (' + this.code + ')';
     }
   }, {
     key: "typeError",
-    get: function get() {
+    get: function () {
       return false;
     }
   }]);
@@ -64,9 +61,8 @@ export var RxTypeError = /*#__PURE__*/function (_TypeError) {
   _inheritsLoose(RxTypeError, _TypeError);
   // always true, use this to detect if its an rxdb-error
 
-  function RxTypeError(code, message) {
+  function RxTypeError(code, message, parameters = {}) {
     var _this2;
-    var parameters = arguments.length > 2 && arguments[2] !== undefined ? arguments[2] : {};
     var mes = messageForError(message, code, parameters);
     _this2 = _TypeError.call(this, mes) || this;
     _this2.code = code;
@@ -81,12 +77,12 @@ export var RxTypeError = /*#__PURE__*/function (_TypeError) {
   };
   _createClass(RxTypeError, [{
     key: "name",
-    get: function get() {
+    get: function () {
       return 'RxTypeError (' + this.code + ')';
     }
   }, {
     key: "typeError",
-    get: function get() {
+    get: function () {
       return true;
     }
   }]);

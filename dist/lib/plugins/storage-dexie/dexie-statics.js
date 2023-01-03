@@ -10,7 +10,7 @@ var _queryPlanner = require("../../query-planner");
 var _rxSchemaHelper = require("../../rx-schema-helper");
 var _rxQueryMingo = require("../../rx-query-mingo");
 var RxStorageDexieStatics = {
-  prepareQuery: function prepareQuery(schema, mutateableQuery) {
+  prepareQuery(schema, mutateableQuery) {
     if (!mutateableQuery.sort) {
       throw (0, _rxError.newRxError)('SNH', {
         query: mutateableQuery
@@ -24,16 +24,16 @@ var RxStorageDexieStatics = {
     var queryPlan = (0, _queryPlanner.getQueryPlan)(schema, mutateableQuery);
     return {
       query: mutateableQuery,
-      queryPlan: queryPlan
+      queryPlan
     };
   },
-  getSortComparator: function getSortComparator(schema, preparedQuery) {
+  getSortComparator(schema, preparedQuery) {
     return (0, _dexieHelper.getDexieSortComparator)(schema, preparedQuery.query);
   },
-  getQueryMatcher: function getQueryMatcher(_schema, preparedQuery) {
+  getQueryMatcher(_schema, preparedQuery) {
     var query = preparedQuery.query;
     var mingoQuery = (0, _rxQueryMingo.getMingoQuery)(query.selector);
-    var fun = function fun(doc) {
+    var fun = doc => {
       if (doc._deleted) {
         return false;
       }

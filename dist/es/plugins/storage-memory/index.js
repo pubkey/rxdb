@@ -9,13 +9,12 @@ import { createMemoryStorageInstance } from './rx-storage-instance-memory';
  * to test filesystem-like and multiInstance behaviors.
  */
 var COLLECTION_STATES = new Map();
-export function getRxStorageMemory() {
-  var settings = arguments.length > 0 && arguments[0] !== undefined ? arguments[0] : {};
+export function getRxStorageMemory(settings = {}) {
   var storage = {
     name: 'memory',
     statics: RxStorageDexieStatics,
     collectionStates: COLLECTION_STATES,
-    createStorageInstance: function createStorageInstance(params) {
+    createStorageInstance(params) {
       ensureRxStorageInstanceParamsAreCorrect(params);
 
       // TODO we should not need to append the schema version here.

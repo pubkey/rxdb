@@ -18,7 +18,7 @@ Object.keys(_nosqlQueryBuilder).forEach(function (key) {
   if (key in exports && exports[key] === _nosqlQueryBuilder[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _nosqlQueryBuilder[key];
     }
   });
@@ -57,14 +57,14 @@ var RxDBQueryBuilderPlugin = {
   name: 'query-builder',
   rxdb: true,
   prototypes: {
-    RxQuery: function RxQuery(proto) {
-      ['where', 'equals', 'eq', 'or', 'nor', 'and', 'mod', 'exists', 'elemMatch', 'sort'].forEach(function (attribute) {
+    RxQuery(proto) {
+      ['where', 'equals', 'eq', 'or', 'nor', 'and', 'mod', 'exists', 'elemMatch', 'sort'].forEach(attribute => {
         applyBuildingStep(proto, attribute);
       });
-      _nosqlQueryBuilder.OTHER_MANGO_ATTRIBUTES.forEach(function (attribute) {
+      _nosqlQueryBuilder.OTHER_MANGO_ATTRIBUTES.forEach(attribute => {
         applyBuildingStep(proto, attribute);
       });
-      _nosqlQueryBuilder.OTHER_MANGO_OPERATORS.forEach(function (operator) {
+      _nosqlQueryBuilder.OTHER_MANGO_OPERATORS.forEach(operator => {
         applyBuildingStep(proto, operator);
       });
     }

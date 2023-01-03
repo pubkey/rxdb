@@ -7,15 +7,16 @@ import { flatClone, isMaybeReadonlyArray, RX_META_LWT_MINIMUM, sortObject, trimD
  * with a given version.
  */
 export function getPseudoSchemaForVersion(version, primaryKey) {
-  var _properties;
   var pseudoSchema = fillWithDefaultSettings({
-    version: version,
+    version,
     type: 'object',
     primaryKey: primaryKey,
-    properties: (_properties = {}, _properties[primaryKey] = {
-      type: 'string',
-      maxLength: 100
-    }, _properties),
+    properties: {
+      [primaryKey]: {
+        type: 'string',
+        maxLength: 100
+      }
+    },
     required: [primaryKey]
   });
   return pseudoSchema;
@@ -39,9 +40,9 @@ export function fillPrimaryKey(primaryPath, jsonSchema, documentData) {
   if (existingPrimary && existingPrimary !== newPrimary) {
     throw newRxError('DOC19', {
       args: {
-        documentData: documentData,
-        existingPrimary: existingPrimary,
-        newPrimary: newPrimary
+        documentData,
+        existingPrimary,
+        newPrimary
       },
       schema: jsonSchema
     });
@@ -65,13 +66,13 @@ export function getComposedPrimaryKeyOfDocumentData(jsonSchema, documentData) {
     return documentData[jsonSchema.primaryKey];
   }
   var compositePrimary = jsonSchema.primaryKey;
-  return compositePrimary.fields.map(function (field) {
+  return compositePrimary.fields.map(field => {
     var value = objectPath.get(documentData, field);
     if (typeof value === 'undefined') {
       throw newRxError('DOC18', {
         args: {
-          field: field,
-          documentData: documentData
+          field,
+          documentData
         }
       });
     }
@@ -152,11 +153,7 @@ export function fillWithDefaultSettings(schemaObj) {
 
   // final fields are always required
   var finalFields = getFinalFields(schemaObj);
-  schemaObj.required = schemaObj.required.concat(finalFields).filter(function (field) {
-    return !field.includes('.');
-  }).filter(function (elem, pos, arr) {
-    return arr.indexOf(elem) === pos;
-  }); // unique;
+  schemaObj.required = schemaObj.required.concat(finalFields).filter(field => !field.includes('.')).filter((elem, pos, arr) => arr.indexOf(elem) === pos); // unique;
 
   // version is 0 by default
   schemaObj.version = schemaObj.version || 0;
@@ -166,7 +163,7 @@ export function fillWithDefaultSettings(schemaObj) {
    * All indexes must have the primaryKey to ensure a deterministic sort order.
    */
   if (schemaObj.indexes) {
-    schemaObj.indexes = schemaObj.indexes.map(function (index) {
+    schemaObj.indexes = schemaObj.indexes.map(index => {
       var arIndex = isMaybeReadonlyArray(index) ? index.slice(0) : [index];
       if (!arIndex.includes(primaryPath)) {
         var modifiedIndex = arIndex.slice(0);
@@ -208,9 +205,7 @@ export var RX_META_SCHEMA = {
  * @return field-names of the final-fields
  */
 export function getFinalFields(jsonSchema) {
-  var ret = Object.keys(jsonSchema.properties).filter(function (key) {
-    return jsonSchema.properties[key]["final"];
-  });
+  var ret = Object.keys(jsonSchema.properties).filter(key => jsonSchema.properties[key].final);
 
   // primary is also final
   var primaryPath = getPrimaryFieldOfPrimaryKey(jsonSchema.primaryKey);
@@ -218,9 +213,7 @@ export function getFinalFields(jsonSchema) {
 
   // fields of composite primary are final
   if (typeof jsonSchema.primaryKey !== 'string') {
-    jsonSchema.primaryKey.fields.forEach(function (field) {
-      return ret.push(field);
-    });
+    jsonSchema.primaryKey.fields.forEach(field => ret.push(field));
   }
   return ret;
 }

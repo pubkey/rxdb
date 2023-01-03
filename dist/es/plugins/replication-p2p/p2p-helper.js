@@ -13,13 +13,7 @@ export function isMasterInP2PReplication(hashFunction, ownStorageToken, otherSto
 }
 export function sendMessageAndAwaitAnswer(handler, peer, message) {
   var requestId = message.id;
-  var answerPromise = firstValueFrom(handler.response$.pipe(filter(function (d) {
-    return d.peer === peer;
-  }), filter(function (d) {
-    return d.response.id === requestId;
-  }), map(function (d) {
-    return d.response;
-  })));
+  var answerPromise = firstValueFrom(handler.response$.pipe(filter(d => d.peer === peer), filter(d => d.response.id === requestId), map(d => d.response)));
   handler.send(peer, message);
   return answerPromise;
 }

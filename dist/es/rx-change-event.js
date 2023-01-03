@@ -51,23 +51,21 @@ export function rxChangeEventToEventReduceChangeEvent(rxChangeEvent) {
 export function flattenEvents(input) {
   var output = [];
   if (Array.isArray(input)) {
-    input.forEach(function (inputItem) {
+    input.forEach(inputItem => {
       var add = flattenEvents(inputItem);
       output = output.concat(add);
     });
   } else {
     if (input.id && input.events) {
       // is bulk
-      input.events.forEach(function (ev) {
-        return output.push(ev);
-      });
+      input.events.forEach(ev => output.push(ev));
     } else {
       output.push(input);
     }
   }
   var usedIds = new Set();
   var nonDuplicate = [];
-  output.forEach(function (ev) {
+  output.forEach(ev => {
     if (!usedIds.has(ev.eventId)) {
       usedIds.add(ev.eventId);
       nonDuplicate.push(ev);

@@ -12,7 +12,7 @@ var SPECIAL_PROPERTIES = ['__proto__', 'constructor', 'prototype'];
  * Merges 'from' into 'to' without overwriting existing properties.
  */
 export function merge(to, from) {
-  Object.keys(from).forEach(function (key) {
+  Object.keys(from).forEach(key => {
     if (SPECIAL_PROPERTIES.includes(key)) {
       return;
     }

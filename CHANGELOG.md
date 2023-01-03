@@ -5,7 +5,7 @@
 
 <!-- ADD new changes here! -->
 
-### 14.0.0-beta.4 (3 January 2023)
+### 14.0.0-beta.5 (3 January 2023)
 
 - CHANGE Do not use hash for revisions but use database instance token instead.
 - Remove the deprecated PouchDB RxStorage.
@@ -39,7 +39,6 @@
   - [destructuring](https://caniuse.com/?search=destructuring)
   - [default parameters](https://caniuse.com/?search=default%20parameters)
   - [object spread](https://caniuse.com/?search=Object%20spread)
-
 
 <!-- /CHANGELOG NEWEST -->
 

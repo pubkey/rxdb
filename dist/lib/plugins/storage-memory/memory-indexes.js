@@ -10,16 +10,14 @@ var _rxSchemaHelper = require("../../rx-schema-helper");
 var _utils = require("../../plugins/utils");
 function addIndexesToInternalsState(state, schema) {
   var primaryPath = (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(schema.primaryKey);
-  var useIndexes = !schema.indexes ? [] : schema.indexes.map(function (row) {
-    return (0, _utils.toArray)(row);
-  });
+  var useIndexes = !schema.indexes ? [] : schema.indexes.map(row => (0, _utils.toArray)(row));
 
   // we need this as default index
   useIndexes.push([primaryPath]);
 
   // we need this index for running cleanup()
   useIndexes.push(['_meta.lwt', primaryPath]);
-  useIndexes.forEach(function (indexAr) {
+  useIndexes.forEach(indexAr => {
     /**
      * Running a query will only return non-deleted documents
      * so all indexes must have the the deleted field as first index field.

@@ -29,9 +29,7 @@ export var NoSqlQueryBuilderClass = /*#__PURE__*/function () {
         queryBuilder.skip(mangoQuery.skip);
       }
       if (mangoQuery.sort) {
-        mangoQuery.sort.forEach(function (s) {
-          return queryBuilder.sort(s);
-        });
+        mangoQuery.sort.forEach(s => queryBuilder.sort(s));
       }
     }
   }
@@ -232,7 +230,6 @@ export var NoSqlQueryBuilderClass = /*#__PURE__*/function () {
    *     query.sort([['field', 1], ['test', -1]]);
    */;
   _proto.sort = function sort(arg) {
-    var _this = this;
     if (!arg) return this;
     var len;
     var type = typeof arg;
@@ -262,9 +259,7 @@ export var NoSqlQueryBuilderClass = /*#__PURE__*/function () {
     // .sort({ field: 1, test: -1 })
     if (isObject(arg)) {
       var keys = Object.keys(arg);
-      keys.forEach(function (field) {
-        return push(_this.options, field, arg[field]);
-      });
+      keys.forEach(field => push(this.options, field, arg[field]));
       return this;
     }
     throw newRxTypeError('MQ3', {
@@ -284,7 +279,7 @@ export var NoSqlQueryBuilderClass = /*#__PURE__*/function () {
     }
     if (!canMerge(source)) {
       throw newRxTypeError('MQ4', {
-        source: source
+        source
       });
     }
     if (source instanceof NoSqlQueryBuilderClass) {
@@ -329,7 +324,7 @@ export var NoSqlQueryBuilderClass = /*#__PURE__*/function () {
   _proto._ensurePath = function _ensurePath(method) {
     if (!this._path) {
       throw newRxError('MQ5', {
-        method: method
+        method
       });
     }
   };
@@ -347,19 +342,18 @@ export var NoSqlQueryBuilderClass = /*#__PURE__*/function () {
       query.sort = mQuerySortToRxDBSort(this.options.sort);
     }
     return {
-      query: query,
+      query,
       path: this._path
     };
   };
   return NoSqlQueryBuilderClass;
 }();
 export function mQuerySortToRxDBSort(sort) {
-  return Object.entries(sort).map(function (_ref) {
-    var _part;
-    var k = _ref[0],
-      v = _ref[1];
+  return Object.entries(sort).map(([k, v]) => {
     var direction = v === 1 ? 'asc' : 'desc';
-    var part = (_part = {}, _part[k] = direction, _part);
+    var part = {
+      [k]: direction
+    };
     return part;
   });
 }
@@ -410,9 +404,9 @@ OTHER_MANGO_OPERATORS.forEach(function ($conditional) {
 function push(opts, field, value) {
   if (Array.isArray(opts.sort)) {
     throw newRxTypeError('MQ6', {
-      opts: opts,
-      field: field,
-      value: value
+      opts,
+      field,
+      value
     });
   }
   if (value && value.$meta) {
@@ -426,8 +420,8 @@ function push(opts, field, value) {
   if (!/^(?:ascending|asc|descending|desc|1|-1)$/.test(val)) {
     if (Array.isArray(value)) value = '[' + value + ']';
     throw newRxTypeError('MQ7', {
-      field: field,
-      value: value
+      field,
+      value
     });
   }
   // store `sort` in a sane format
@@ -439,9 +433,9 @@ function _pushArr(opts, field, value) {
   opts.sort = opts.sort || [];
   if (!Array.isArray(opts.sort)) {
     throw newRxTypeError('MQ8', {
-      opts: opts,
-      field: field,
-      value: value
+      opts,
+      field,
+      value
     });
   }
 

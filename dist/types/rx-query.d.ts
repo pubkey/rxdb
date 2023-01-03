@@ -130,4 +130,4 @@ export declare function queryCollection<RxDocType>(rxQuery: RxQuery<RxDocType> |
  * Returns the document id otherwise.
  */
 export declare function isFindOneByIdQuery(primaryPath: string, query: MangoQuery<any>): false | string;
-export declare function isInstanceOf(obj: any): boolean;
+export declare function isRxQuery(obj: any): boolean;

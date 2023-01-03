@@ -9,7 +9,7 @@ Object.keys(_rxStorageIpcRenderer).forEach(function (key) {
   if (key in exports && exports[key] === _rxStorageIpcRenderer[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _rxStorageIpcRenderer[key];
     }
   });
@@ -20,7 +20,7 @@ Object.keys(_rxStorageIpcMain).forEach(function (key) {
   if (key in exports && exports[key] === _rxStorageIpcMain[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
-    get: function get() {
+    get: function () {
       return _rxStorageIpcMain[key];
     }
   });
