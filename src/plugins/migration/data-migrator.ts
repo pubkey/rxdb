@@ -16,7 +16,6 @@ import {
     clone,
     toPromise,
     flatClone,
-    getHeightOfRevision,
     createRevision,
     PROMISE_RESOLVE_VOID,
     PROMISE_RESOLVE_FALSE,
