@@ -19,5 +19,5 @@
   "rebaseStalePrs": true,
   "prHourlyLimit": 2,
   "prCreation": "not-pending",
-  "dependencyDashboard": false
+  "dependencyDashboard": true
 }
