@@ -35,6 +35,9 @@
   - [Arrow functions](https://caniuse.com/arrow-functions)
   - [for...of](https://caniuse.com/?search=for...of)
   - [shorthand properties](https://caniuse.com/mdn-javascript_operators_object_initializer_shorthand_property_names)
+  - [Spread operator](https://caniuse.com/?search=spread%20operator)
+  - [destructuring](https://caniuse.com/?search=destructuring)
+  - [default parameters](https://caniuse.com/?search=default%20parameters)
 
 
 <!-- /CHANGELOG NEWEST -->

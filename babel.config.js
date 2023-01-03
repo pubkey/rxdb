@@ -5,26 +5,15 @@ const plugins = [
         'loose': true
     }],
     '@babel/transform-literals',
-    '@babel/transform-function-name',
     '@babel/transform-block-scoped-functions',
     ['@babel/plugin-transform-classes', {
         'loose': true
     }],
     '@babel/transform-object-super',
-    ['@babel/transform-computed-properties', {
-        'loose': true
-    }],
     '@babel/transform-sticky-regex',
     '@babel/transform-unicode-regex',
-    ['@babel/transform-spread', {
-        'loose': true
-    }],
-    '@babel/transform-parameters',
-    ['@babel/transform-destructuring', {
-        'loose': true
-    }],
     '@babel/transform-block-scoping',
-    '@babel/plugin-transform-member-expression-literals',
+    ' ',
     '@babel/transform-property-literals',
     ['@babel/transform-runtime', {
         'regenerator': true
