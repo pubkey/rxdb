@@ -1,6 +1,6 @@
 import assert from 'assert';
 import config from './config';
-import * as faker from 'faker';
+import { faker } from '@faker-js/faker';
 
 import * as humansCollection from '../helper/humans-collection';
 

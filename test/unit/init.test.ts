@@ -7,7 +7,7 @@ import {
 } from 'broadcast-channel';
 
 // set faker seed
-import faker from 'faker';
+import { faker } from '@faker-js/faker';
 faker.seed(123);
 
 // add dev-mode plugin
