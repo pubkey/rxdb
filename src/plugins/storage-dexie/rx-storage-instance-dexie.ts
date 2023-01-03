@@ -81,7 +81,7 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
 
 
         /**
-         * Check some assumtions to ensure RxDB
+         * Check some assumptions to ensure RxDB
          * does not call the storage with an invalid write.
          */
         documentWrites.forEach(row => {
