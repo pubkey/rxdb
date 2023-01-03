@@ -13,8 +13,7 @@ const plugins = [
     '@babel/transform-sticky-regex',
     '@babel/transform-unicode-regex',
     '@babel/transform-block-scoping',
-    ' ',
-    '@babel/transform-property-literals',
+    '@babel/plugin-transform-member-expression-literals',
     ['@babel/transform-runtime', {
         'regenerator': true
     }],
