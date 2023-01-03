@@ -92,7 +92,6 @@ export interface RxPlugin {
         checkAdapter?: Function;
         tunnelErrorMessage?: Function;
     };
-    // TODO add typings to hook functions
     hooks?: {
         preAddRxPlugin?: RxPluginHooks<RxPluginPreAddRxPluginArgs>;
         preCreateRxDatabase?: RxPluginHooks<any>;

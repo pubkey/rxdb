@@ -23,6 +23,7 @@ var _metaInstance = require("./meta-instance");
  * and still can have fast event based sync when the client is not offline.
  */
 function startReplicationDownstream(state) {
+  var identifierHash = (0, _utils.defaultHashFunction)(state.input.identifier);
   var replicationHandler = state.input.replicationHandler;
 
   // used to detect which tasks etc can in it at which order.
@@ -306,10 +307,11 @@ function startReplicationDownstream(state) {
                     previous: forkStateFullDoc,
                     document: newForkState
                   };
+                  forkWriteRow.document._rev = (0, _utils.createRevision)(identifierHash, forkWriteRow.previous);
                   writeRowsToFork.push(forkWriteRow);
                   writeRowsToForkById[docId] = forkWriteRow;
                   writeRowsToMeta[docId] = (0, _metaInstance.getMetaWriteRow)(state, masterState, assumedMaster ? assumedMaster.metaDocument : undefined);
-                case 26:
+                case 27:
                 case "end":
                   return _context.stop();
               }

@@ -32,9 +32,24 @@ export var RxStorageInstanceDexie = /*#__PURE__*/function () {
         while (1) switch (_context2.prev = _context2.next) {
           case 0:
             ensureNotClosed(this);
-            _context2.next = 3;
+
+            /**
+             * Check some assumptions to ensure RxDB
+             * does not call the storage with an invalid write.
+             */
+            documentWrites.forEach(function (row) {
+              // ensure revision is set
+              if (!row.document._rev || row.previous && !row.previous._rev) {
+                throw newRxError('SNH', {
+                  args: {
+                    row: row
+                  }
+                });
+              }
+            });
+            _context2.next = 4;
             return this.internals;
-          case 3:
+          case 4:
             state = _context2.sent;
             ret = {
               success: {},
@@ -44,7 +59,7 @@ export var RxStorageInstanceDexie = /*#__PURE__*/function () {
               return writeRow.document[_this.primaryPath];
             });
             categorized = null;
-            _context2.next = 9;
+            _context2.next = 10;
             return state.dexieDb.transaction('rw', state.dexieTable, state.dexieDeletedTable, /*#__PURE__*/_asyncToGenerator( /*#__PURE__*/_regeneratorRuntime.mark(function _callee() {
               var docsInDbMap, docsInDbWithInternals, bulkPutDocs, bulkRemoveDocs, bulkPutDeletedDocs, bulkRemoveDeletedDocs;
               return _regeneratorRuntime.wrap(function _callee$(_context) {
@@ -111,7 +126,7 @@ export var RxStorageInstanceDexie = /*#__PURE__*/function () {
                 }
               }, _callee);
             })));
-          case 9:
+          case 10:
             if (ensureNotFalsy(categorized).eventBulk.events.length > 0) {
               lastState = getNewestOfDocumentStates(this.primaryPath, Object.values(ret.success));
               ensureNotFalsy(categorized).eventBulk.checkpoint = {
@@ -125,7 +140,7 @@ export var RxStorageInstanceDexie = /*#__PURE__*/function () {
               this.changes$.next(ensureNotFalsy(categorized).eventBulk);
             }
             return _context2.abrupt("return", ret);
-          case 11:
+          case 12:
           case "end":
             return _context2.stop();
         }
