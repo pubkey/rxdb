@@ -8,12 +8,12 @@ import type {
     RxDocumentData,
     MangoQuerySelector
 } from '../../types';
-import deepEqual from 'fast-deep-equal';
 import { newRxError, newRxTypeError } from '../../rx-error';
 import {
     massageSelector
 } from 'pouchdb-selector-core';
 import { RxStorageDexieStatics } from '../storage-dexie';
+import { deepEqual } from '../utils';
 
 /**
  * accidentally passing a non-valid object into the query params

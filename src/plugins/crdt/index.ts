@@ -1,5 +1,4 @@
 import { newRxError } from '../../rx-error';
-import deepEqual from 'fast-deep-equal';
 import objectPath from 'object-path';
 import type {
     CRDTDocumentField,
@@ -18,6 +17,7 @@ import type {
 } from '../../types';
 import {
     clone,
+    deepEqual,
     ensureNotFalsy,
     now,
     objectPathMonad,

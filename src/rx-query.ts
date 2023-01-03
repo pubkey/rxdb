@@ -737,6 +737,6 @@ export function isFindOneByIdQuery(
 
 
 
-export function isInstanceOf(obj: any): boolean {
+export function isInstanceOfRxQuery(obj: any): boolean {
     return obj instanceof RxQueryBase;
 }

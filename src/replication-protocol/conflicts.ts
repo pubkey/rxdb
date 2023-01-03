@@ -1,4 +1,3 @@
-import deepEqual from 'fast-deep-equal';
 import type {
     RxConflictHandler,
     RxConflictHandlerInput,
@@ -10,7 +9,8 @@ import {
     getDefaultRevision,
     createRevision,
     now,
-    flatClone
+    flatClone,
+    deepEqual
 } from '../plugins/utils';
 
 export const defaultConflictHandler: RxConflictHandler<any> = function (

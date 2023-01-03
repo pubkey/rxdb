@@ -1,6 +1,7 @@
 import type {
     DeepReadonlyObject
 } from '../../types';
+import equal from 'fast-deep-equal/es6';
 
 export function deepFreeze<T>(o: T): T {
     Object.freeze(o);
@@ -22,6 +23,11 @@ export function deepFreeze<T>(o: T): T {
         }
     });
     return o;
+}
+
+
+export function deepEqual<T>(obj1: T, obj2: T): boolean {
+    return equal(obj1, obj2);
 }
 
 

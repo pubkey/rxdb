@@ -1,10 +1,9 @@
-import deepEqual from 'fast-deep-equal';
-
 import {
     overwriteGetterForCaching,
     flatClone,
     isMaybeReadonlyArray,
-    fastUnsecureHash
+    fastUnsecureHash,
+    deepEqual
 } from './plugins/utils';
 import {
     newRxError,
@@ -167,7 +166,7 @@ export function createRxSchema<T>(
     return schema;
 }
 
-export function isInstanceOf(obj: any): boolean {
+export function isInstanceOfRxSchema(obj: any): boolean {
     return obj instanceof RxSchema;
 }
 

@@ -4,6 +4,7 @@ import type {
     RxStorageInstanceCreationParams
 } from '../../types';
 import {
+    deepEqual,
     ensureNotFalsy
 } from '../../plugins/utils';
 import { createAnswer, createErrorAnswer } from './storage-remote-helpers';
@@ -13,7 +14,6 @@ import type {
     RxStorageRemoteExposeSettings,
     RxStorageRemoteExposeType
 } from './storage-remote-types';
-import deepEqual from 'fast-deep-equal';
 
 /**
  * Run this on the 'remote' part,

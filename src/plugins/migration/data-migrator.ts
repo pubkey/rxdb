@@ -11,7 +11,6 @@ import {
     Subject,
     Observable
 } from 'rxjs';
-import deepEqual from 'fast-deep-equal';
 import {
     clone,
     toPromise,
@@ -21,7 +20,8 @@ import {
     PROMISE_RESOLVE_FALSE,
     PROMISE_RESOLVE_NULL,
     getDefaultRxDocumentMeta,
-    now
+    now,
+    deepEqual
 } from '../../plugins/utils';
 import {
     createRxSchema
