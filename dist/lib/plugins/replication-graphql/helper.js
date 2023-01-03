@@ -6,7 +6,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.GRAPHQL_REPLICATION_PLUGIN_IDENTITY_PREFIX = void 0;
 exports.graphQLRequest = graphQLRequest;
 var _utils = require("../../plugins/utils");
-var GRAPHQL_REPLICATION_PLUGIN_IDENTITY_PREFIX = 'rxdb-replication-graphql-';
+var GRAPHQL_REPLICATION_PLUGIN_IDENTITY_PREFIX = 'graphql';
 exports.GRAPHQL_REPLICATION_PLUGIN_IDENTITY_PREFIX = GRAPHQL_REPLICATION_PLUGIN_IDENTITY_PREFIX;
 function graphQLRequest(httpUrl, clientState, queryParams) {
   var headers = new Headers(clientState.headers || {});

@@ -459,9 +459,7 @@ function _migrateDocuments2() {
                * data changed, increase revision height
                * so replicating instances use our new document data
                */
-              var newHeight = (0, _utils.getHeightOfRevision)(docData._rev) + 1;
-              var newRevision = newHeight + '-' + (0, _utils.createRevision)(oldCollection.newestCollection.database.token);
-              migratedDocData._rev = newRevision;
+              migratedDocData._rev = (0, _utils.createRevision)(oldCollection.newestCollection.database.token, docData);
             }
             if (migratedDocData) {
               /**

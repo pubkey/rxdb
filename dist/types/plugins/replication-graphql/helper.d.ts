@@ -1,5 +1,5 @@
 import { RxGraphQLReplicationClientState, RxGraphQLReplicationQueryBuilderResponseObject } from '../../types';
-export declare const GRAPHQL_REPLICATION_PLUGIN_IDENTITY_PREFIX = "rxdb-replication-graphql-";
+export declare const GRAPHQL_REPLICATION_PLUGIN_IDENTITY_PREFIX = "graphql";
 export interface GraphQLError {
     message: string;
     locations: Array<{

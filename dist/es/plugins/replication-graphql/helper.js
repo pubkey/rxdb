@@ -1,5 +1,5 @@
 import { ensureNotFalsy } from '../../plugins/utils';
-export var GRAPHQL_REPLICATION_PLUGIN_IDENTITY_PREFIX = 'rxdb-replication-graphql-';
+export var GRAPHQL_REPLICATION_PLUGIN_IDENTITY_PREFIX = 'graphql';
 export function graphQLRequest(httpUrl, clientState, queryParams) {
   var headers = new Headers(clientState.headers || {});
   headers.append('Content-Type', 'application/json');

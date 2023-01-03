@@ -5,7 +5,7 @@
 
 <!-- ADD new changes here! -->
 
-### 14.0.0-beta.2 (2 January 2023)
+### 14.0.0-beta.3 (3 January 2023)
 
 - CHANGE Do not use hash for revisions but use database instance token instead.
 - Remove the deprecated PouchDB RxStorage.

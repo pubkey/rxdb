@@ -136,10 +136,6 @@ function fillWithDefaultSettings(schemaObj) {
   // encrypted must be array
   schemaObj.encrypted = schemaObj.encrypted ? schemaObj.encrypted.slice(0) : [];
 
-  /**
-   * TODO we should not need to add the internal fields to the schema.
-   * Better remove the fields before validation.
-   */
   // add _rev
   schemaObj.properties._rev = {
     type: 'string',

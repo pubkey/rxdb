@@ -117,7 +117,7 @@ export var RxReplicationState = /*#__PURE__*/function () {
               forkInstance: this.collection.storageInstance,
               metaInstance: this.metaInstance,
               hashFunction: database.hashFunction,
-              identifier: 'rx-replication-' + this.replicationIdentifierHash,
+              identifier: 'rxdbreplication' + this.replicationIdentifierHash,
               conflictHandler: this.collection.conflictHandler,
               replicationHandler: {
                 masterChangeStream$: this.remoteEvents$.asObservable().pipe(mergeMap( /*#__PURE__*/function () {

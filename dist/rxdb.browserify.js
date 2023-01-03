@@ -2913,6 +2913,9 @@ exports.getHeightOfRevision = getHeightOfRevision;
 exports.parseRevision = parseRevision;
 function parseRevision(revision) {
   var split = revision.split('-');
+  if (split.length !== 2) {
+    throw new Error('malformated revision: ' + revision);
+  }
   return {
     height: parseInt(split[0], 10),
     hash: split[1]
@@ -8775,10 +8778,6 @@ function fillWithDefaultSettings(schemaObj) {
   // encrypted must be array
   schemaObj.encrypted = schemaObj.encrypted ? schemaObj.encrypted.slice(0) : [];
 
-  /**
-   * TODO we should not need to add the internal fields to the schema.
-   * Better remove the fields before validation.
-   */
   // add _rev
   schemaObj.properties._rev = {
     type: 'string',

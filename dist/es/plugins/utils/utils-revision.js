@@ -1,5 +1,8 @@
 export function parseRevision(revision) {
   var split = revision.split('-');
+  if (split.length !== 2) {
+    throw new Error('malformated revision: ' + revision);
+  }
   return {
     height: parseInt(split[0], 10),
     hash: split[1]
