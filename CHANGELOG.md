@@ -29,6 +29,7 @@
 - ADD non-incremental `RxDocument` methods `patch()` and `modify()`
 - ADD typings to the query selector
 - CHANGE start replication via pure functions instead of RxCollection methods.
+- FIX replication does not provide a `._rev` to the storage write when a conflict is resolved.
 
 <!-- /CHANGELOG NEWEST -->
 

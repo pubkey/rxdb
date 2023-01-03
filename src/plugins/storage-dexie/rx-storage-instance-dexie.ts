@@ -51,10 +51,10 @@ import { newRxError } from '../../rx-error';
 let instanceId = now();
 
 export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
-RxDocType,
-DexieStorageInternals,
-DexieSettings,
-RxStorageDefaultCheckpoint
+    RxDocType,
+    DexieStorageInternals,
+    DexieSettings,
+    RxStorageDefaultCheckpoint
 > {
     public readonly primaryPath: StringKeys<RxDocumentData<RxDocType>>;
     private changes$: Subject<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, RxStorageDefaultCheckpoint>> = new Subject();
@@ -78,6 +78,27 @@ RxStorageDefaultCheckpoint
         context: string
     ): Promise<RxStorageBulkWriteResponse<RxDocType>> {
         ensureNotClosed(this);
+
+
+        /**
+         * Check some assumtions to ensure RxDB
+         * does not call the storage with an invalid write.
+         */
+        documentWrites.forEach(row => {
+            // ensure revision is set
+            if (
+                !row.document._rev ||
+                (
+                    row.previous &&
+                    !row.previous._rev
+                )
+            ) {
+                throw newRxError('SNH', { args: { row } });
+            }
+        });
+
+
+
         const state = await this.internals;
         const ret: RxStorageBulkWriteResponse<RxDocType> = {
             success: {},
@@ -226,9 +247,9 @@ RxStorageDefaultCheckpoint
         limit: number,
         checkpoint?: RxStorageDefaultCheckpoint
     ): Promise<{
-            documents: RxDocumentData<RxDocType>[];
-            checkpoint: RxStorageDefaultCheckpoint;
-        }> {
+        documents: RxDocumentData<RxDocType>[];
+        checkpoint: RxStorageDefaultCheckpoint;
+    }> {
         ensureNotClosed(this);
         const sinceLwt = checkpoint ? checkpoint.lwt : RX_META_LWT_MINIMUM;
         const sinceId = checkpoint ? checkpoint.id : '';

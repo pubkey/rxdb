@@ -15,6 +15,8 @@ import type {
     DocumentsWithCheckpoint
 } from '../types';
 import {
+    createRevision,
+    defaultHashFunction,
     ensureNotFalsy,
     flatClone,
     getDefaultRevision,
@@ -44,6 +46,7 @@ import {
 export function startReplicationDownstream<RxDocType, CheckpointType = any>(
     state: RxStorageInstanceReplicationState<RxDocType>
 ) {
+    const identifierHash = defaultHashFunction(state.input.identifier);
     const replicationHandler = state.input.replicationHandler;
 
     // used to detect which tasks etc can in it at which order.
@@ -365,7 +368,6 @@ export function startReplicationDownstream<RxDocType, CheckpointType = any>(
                                 _rev: getDefaultRevision(),
                                 _attachments: {}
                             });
-
                         /**
                          * If the remote works with revisions,
                          * we store the height of the next fork-state revision
@@ -384,6 +386,10 @@ export function startReplicationDownstream<RxDocType, CheckpointType = any>(
                             document: newForkState
                         };
 
+                        forkWriteRow.document._rev = createRevision(
+                            identifierHash,
+                            forkWriteRow.previous
+                        );
                         writeRowsToFork.push(forkWriteRow);
                         writeRowsToForkById[docId] = forkWriteRow;
                         writeRowsToMeta[docId] = getMetaWriteRow(
