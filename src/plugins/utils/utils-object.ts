@@ -1,7 +1,7 @@
 import type {
     DeepReadonlyObject
 } from '../../types';
-import equal from 'fast-deep-equal/es6';
+import equal from 'fast-deep-equal';
 
 export function deepFreeze<T>(o: T): T {
     Object.freeze(o);
