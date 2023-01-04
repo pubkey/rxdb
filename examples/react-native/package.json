@@ -12,7 +12,7 @@
     "test:bundle": "rimraf -f ./dist && rimraf -f ./expo && EXPO_DEBUG=true expo export --public-url https://example.com/"
   },
   "devDependencies": {
-    "@babel/core": "7.20.7",
+    "@babel/core": "7.20.12",
     "babel-preset-expo": "9.2.2",
     "expo-cli": "6.0.8",
     "jest": "26.6.3",
