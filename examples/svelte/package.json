@@ -23,7 +23,7 @@
     "rollup-plugin-terser": "7.0.2",
     "rxdb": "file:rxdb-local.tgz",
     "rxjs": "7.8.0",
-    "svelte": "3.49.0",
+    "svelte": "3.55.0",
     "testcafe": "1.20.1"
   },
   "dependencies": {
