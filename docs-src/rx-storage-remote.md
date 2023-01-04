@@ -52,7 +52,7 @@ The remote storage plugin contains helper functions to create a remote storage o
 ```ts
 // Create a remote storage Websocket server in Node.js
 import { getRxStorageMemory } from 'rxdb/plugins/storage-memory';
-import { startRxStorageRemoteWebsocketServer } from 'rxdb/plugins/storage-remote';
+import { startRxStorageRemoteWebsocketServer } from 'rxdb/plugins/storage-remote-websocket';
 const server = await startRxStorageRemoteWebsocketServer({
     port: 8080,
     storage: getRxStorageMemory()
@@ -60,7 +60,7 @@ const server = await startRxStorageRemoteWebsocketServer({
 
 
 // Connect to the remote storage on the client
-import { getRxStorageRemoteWebsocket } from 'rxdb/plugins/storage-remote';
+import { getRxStorageRemoteWebsocket } from 'rxdb/plugins/storage-remote-websocket';
 const myDb = await createRxDatabase({
     storage: getRxStorageRemoteWebsocket({
         statics,

@@ -13,17 +13,19 @@ import {
     startSocketServer,
     WebsocketWithRefCount
 } from '../replication-websocket';
-import { exposeRxStorageRemote } from './remote';
-import { getRxStorageRemote } from './rx-storage-remote';
-import { createErrorAnswer } from './storage-remote-helpers';
+import { exposeRxStorageRemote } from '../storage-remote/remote';
+import { getRxStorageRemote } from '../storage-remote/rx-storage-remote';
+import { createErrorAnswer } from '../storage-remote/storage-remote-helpers';
 import type {
     MessageFromRemote,
     MessageToRemote,
-    RxStorageRemoteExposeSettings,
+    RxStorageRemoteExposeSettings
+} from '../storage-remote/storage-remote-types';
+import type {
     RxStorageRemoteWebsocketClientOptions,
     RxStorageRemoteWebsocketServerOptions,
     RxStorageRemoteWebsocketServerState
-} from './storage-remote-types';
+} from './types';
 export function startRxStorageRemoteWebsocketServer(
     options: RxStorageRemoteWebsocketServerOptions
 ): RxStorageRemoteWebsocketServerState {
@@ -102,3 +104,7 @@ export function getRxStorageRemoteWebsocket(options: RxStorageRemoteWebsocketCli
     });
     return storage;
 }
+
+
+export * from './types';
+

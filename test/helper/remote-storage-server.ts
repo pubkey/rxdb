@@ -1,6 +1,6 @@
 import {
     startRxStorageRemoteWebsocketServer
-} from '../../plugins/storage-remote';
+} from '../../plugins/storage-remote-websocket';
 import { getRxStorageMemory } from '../../plugins/storage-memory';
 
 export async function startRemoteStorageServer(port: number) {

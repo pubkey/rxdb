@@ -187,6 +187,13 @@
       "es2015": "./dist/es/plugins/storage-remote/index.js",
       "default": "./dist/es/plugins/storage-remote/index.js"
     },
+    "./plugins/storage-remote-websocket": {
+      "types": "./dist/types/plugins/storage-remote-websocket/index.d.ts",
+      "node": "./dist/lib/plugins/storage-remote-websocket/index.js",
+      "require": "./dist/lib/plugins/storage-remote-websocket/index.js",
+      "es2015": "./dist/es/plugins/storage-remote-websocket/index.js",
+      "default": "./dist/es/plugins/storage-remote-websocket/index.js"
+    },
     "./plugins/storage-worker": {
       "types": "./dist/types/plugins/storage-worker/index.d.ts",
       "node": "./dist/lib/plugins/storage-worker/index.js",
