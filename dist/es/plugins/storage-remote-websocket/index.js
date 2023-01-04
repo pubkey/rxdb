@@ -1,29 +1,22 @@
-"use strict";
-
-Object.defineProperty(exports, "__esModule", {
-  value: true
-});
-exports.getRxStorageRemoteWebsocket = getRxStorageRemoteWebsocket;
-exports.startRxStorageRemoteWebsocketServer = startRxStorageRemoteWebsocketServer;
-var _rxjs = require("rxjs");
-var _utils = require("../../plugins/utils");
-var _replicationWebsocket = require("../replication-websocket");
-var _remote = require("./remote");
-var _rxStorageRemote = require("./rx-storage-remote");
-var _storageRemoteHelpers = require("./storage-remote-helpers");
-function startRxStorageRemoteWebsocketServer(options) {
-  var serverState = (0, _replicationWebsocket.startSocketServer)(options);
+import { Subject } from 'rxjs';
+import { getFromMapOrThrow } from '../../plugins/utils';
+import { getWebSocket, startSocketServer } from '../replication-websocket';
+import { exposeRxStorageRemote } from '../storage-remote/remote';
+import { getRxStorageRemote } from '../storage-remote/rx-storage-remote';
+import { createErrorAnswer } from '../storage-remote/storage-remote-helpers';
+export function startRxStorageRemoteWebsocketServer(options) {
+  var serverState = startSocketServer(options);
   var websocketByConnectionId = new Map();
-  var messages$ = new _rxjs.Subject();
+  var messages$ = new Subject();
   var exposeSettings = {
     messages$: messages$.asObservable(),
     storage: options.storage,
     send(msg) {
-      var ws = (0, _utils.getFromMapOrThrow)(websocketByConnectionId, msg.connectionId);
+      var ws = getFromMapOrThrow(websocketByConnectionId, msg.connectionId);
       ws.send(JSON.stringify(msg));
     }
   };
-  var exposeState = (0, _remote.exposeRxStorageRemote)(exposeSettings);
+  var exposeState = exposeRxStorageRemote(exposeSettings);
   serverState.onConnection$.subscribe(ws => {
     var onCloseHandlers = [];
     ws.onclose = () => {
@@ -38,7 +31,7 @@ function startRxStorageRemoteWebsocketServer(options) {
          * it is an error.
          */
         if (message.method !== 'create') {
-          ws.send(JSON.stringify((0, _storageRemoteHelpers.createErrorAnswer)(message, new Error('First call must be a create call but is: ' + JSON.stringify(message)))));
+          ws.send(JSON.stringify(createErrorAnswer(message, new Error('First call must be a create call but is: ' + JSON.stringify(message)))));
           return;
         }
         websocketByConnectionId.set(connectionId, ws);
@@ -59,12 +52,12 @@ function startRxStorageRemoteWebsocketServer(options) {
  * and open/close the websocket client depending on the counter.
  */
 var WebsocketClientByUrl = new Map();
-function getRxStorageRemoteWebsocket(options) {
+export function getRxStorageRemoteWebsocket(options) {
   var identifier = options.url + 'rx-remote-storage-websocket';
-  var messages$ = new _rxjs.Subject();
-  var websocketClientPromise = WebsocketClientByUrl.has(options.url) ? (0, _utils.getFromMapOrThrow)(WebsocketClientByUrl, options.url) : (0, _replicationWebsocket.getWebSocket)(options.url, identifier);
+  var messages$ = new Subject();
+  var websocketClientPromise = WebsocketClientByUrl.has(options.url) ? getFromMapOrThrow(WebsocketClientByUrl, options.url) : getWebSocket(options.url, identifier);
   WebsocketClientByUrl.set(options.url, websocketClientPromise);
-  var storage = (0, _rxStorageRemote.getRxStorageRemote)({
+  var storage = getRxStorageRemote({
     identifier,
     statics: options.statics,
     messages$,
@@ -77,4 +70,5 @@ function getRxStorageRemoteWebsocket(options) {
   });
   return storage;
 }
-//# sourceMappingURL=websocket.js.map
+export * from './types';
+//# sourceMappingURL=index.js.map
