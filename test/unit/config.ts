@@ -14,7 +14,7 @@ import {
     RxStorageDexieStatics
 } from '../../plugins/storage-dexie';
 import { getRxStorageWorker } from '../../plugins/storage-worker';
-import { getRxStorageRemoteWebsocket } from '../../plugins/storage-remote';
+import { getRxStorageRemoteWebsocket } from '../../plugins/storage-remote-websocket';
 import { getRxStorageMemory } from '../../plugins/storage-memory';
 import { CUSTOM_STORAGE } from './custom-storage';
 import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv';
