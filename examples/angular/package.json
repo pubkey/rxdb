@@ -52,7 +52,7 @@
     "express": "4.18.2",
     "express-pouchdb": "4.2.0",
     "font-awesome": "4.7.0",
-    "mocha": "9.0.2",
+    "mocha": "9.2.2",
     "pouchdb-server": "4.2.0",
     "roboto-npm-webfont": "1.0.1",
     "rxdb": "file:rxdb-local.tgz",
