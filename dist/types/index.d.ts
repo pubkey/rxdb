@@ -2,8 +2,6 @@
  * this is the main entry-point
  * for when the you call "import from 'rxdb'".
  */
-import './types/modules/mocha.parallel.d';
-import './types/modules/modifiyjs.d';
 export { addRxPlugin } from './plugin';
 export * from './rx-database';
 export * from './rx-error';

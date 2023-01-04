@@ -12,8 +12,6 @@ Object.defineProperty(exports, "addRxPlugin", {
     return _plugin.addRxPlugin;
   }
 });
-require("./types/modules/mocha.parallel.d");
-require("./types/modules/modifiyjs.d");
 var _plugin = require("./plugin");
 var _rxDatabase = require("./rx-database");
 Object.keys(_rxDatabase).forEach(function (key) {
