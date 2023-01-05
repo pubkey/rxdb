@@ -20,7 +20,7 @@ jobs:
   core:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set node version
         uses: actions/setup-node@v3
         with:
@@ -51,7 +51,7 @@ jobs:
   storage-lokijs:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set node version
         uses: actions/setup-node@v3
         with:
@@ -95,7 +95,7 @@ jobs:
   storage-memory:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set node version
         uses: actions/setup-node@v3
         with:
@@ -150,7 +150,7 @@ jobs:
   storage-remote:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set node version
         uses: actions/setup-node@v3
         with:
@@ -184,7 +184,7 @@ jobs:
   storage-worker-dexie:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set node version
         uses: actions/setup-node@v3
         with:
@@ -224,7 +224,7 @@ jobs:
   storage-dexie:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set node version
         uses: actions/setup-node@v3
         with:
@@ -270,7 +270,7 @@ jobs:
   storage-foundationdb:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set node version
         uses: actions/setup-node@v3
         with:
@@ -307,7 +307,7 @@ jobs:
   example-angular:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       #- name: install dependencies
       #  run: sudo apt-get update && sudo apt-get install -y chromium-browser
       - name: Set node version
@@ -357,7 +357,7 @@ jobs:
   test-builds:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set node version
         uses: actions/setup-node@v3
         with:
@@ -390,7 +390,7 @@ jobs:
   test-code-style:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set node version
         uses: actions/setup-node@v3
         with:
@@ -448,7 +448,7 @@ jobs:
   example-electron:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set node version
         uses: actions/setup-node@v3
         with:
@@ -476,7 +476,7 @@ jobs:
   example-react:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set node version
         uses: actions/setup-node@v3
         with:
@@ -504,7 +504,7 @@ jobs:
   example-react-native-expo:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set node version
         uses: actions/setup-node@v3
         with:
@@ -530,7 +530,7 @@ jobs:
   example-supabase:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set node version
         uses: actions/setup-node@v3
         with:
@@ -587,7 +587,7 @@ jobs:
   example-vue:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: install dependencies
         run: sudo apt-get update && sudo apt-get install -y chromium-browser
       - name: Set node version
@@ -616,7 +616,7 @@ jobs:
   example-svelte:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: install dependencies
         run: sudo apt-get update && sudo apt-get install -y chromium-browser
       - name: Set node version
@@ -644,7 +644,7 @@ jobs:
   vite-vanilla-ts:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: install dependencies
         run: sudo apt-get update && sudo apt-get install -y chromium-browser
       - name: Set node version
@@ -671,7 +671,7 @@ jobs:
   example-graphql:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: install dependencies
         run: sudo apt-get update && sudo apt-get install -y chromium-browser
       - name: Set node version
@@ -705,7 +705,7 @@ jobs:
   example-flutter:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set node version
         uses: actions/setup-node@v3
         with:
@@ -754,7 +754,7 @@ jobs:
   test-tutorials:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set node version
         uses: actions/setup-node@v3
         with:
@@ -772,7 +772,7 @@ jobs:
   test-multiple-times-lokijs:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Set node version
         uses: actions/setup-node@v3
         with:
