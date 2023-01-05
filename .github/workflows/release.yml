@@ -43,7 +43,7 @@ jobs:
           git config --local user.name "github-actions[bot]"
 
       - name: Reuse npm cache folder
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         env:
           cache-name: cache-node-modules
         with:
