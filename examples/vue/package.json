@@ -42,7 +42,7 @@
     "concurrently": "7.6.0",
     "copy-webpack-plugin": "11.0.0",
     "eslint": "8.16.0",
-    "eslint-plugin-vue": "8.7.1",
+    "eslint-plugin-vue": "9.8.0",
     "local-web-server": "5.2.1",
     "node-sass": "6.0.1",
     "sass-loader": "12.6.0",
