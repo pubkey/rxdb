@@ -475,7 +475,7 @@
     "firebase-tools": "11.19.0",
     "get-port": "5.1.1",
     "gitbook-cli": "2.3.2",
-    "graphql-subscriptions": "1.2.1",
+    "graphql-subscriptions": "2.0.0",
     "gzip-size-cli": "5.1.0",
     "html-webpack-plugin": "5.5.0",
     "karma": "6.4.1",
