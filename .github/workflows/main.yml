@@ -27,7 +27,7 @@ jobs:
           node-version-file: '.nvmrc'
 
       - name: Reuse npm cache folder
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         env:
           cache-name: cache-node-modules
         with:
@@ -58,7 +58,7 @@ jobs:
           node-version-file: '.nvmrc'
 
       - name: Reuse npm cache folder
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         env:
           cache-name: cache-node-modules
         with:
@@ -102,7 +102,7 @@ jobs:
           node-version-file: '.nvmrc'
 
       - name: Reuse npm cache folder
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         env:
           cache-name: cache-node-modules
         with:
@@ -157,7 +157,7 @@ jobs:
           node-version-file: '.nvmrc'
 
       - name: Reuse npm cache folder
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         env:
           cache-name: cache-node-modules
         with:
@@ -191,7 +191,7 @@ jobs:
           node-version-file: '.nvmrc'
 
       - name: Reuse npm cache folder
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         env:
           cache-name: cache-node-modules
         with:
@@ -231,7 +231,7 @@ jobs:
           node-version-file: '.nvmrc'
 
       - name: Reuse npm cache folder
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         env:
           cache-name: cache-node-modules
         with:
@@ -277,7 +277,7 @@ jobs:
           node-version-file: '.nvmrc'
 
       - name: Reuse npm cache folder
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         env:
           cache-name: cache-node-modules
         with:
@@ -316,7 +316,7 @@ jobs:
           node-version-file: '.nvmrc'
 
       - name: Reuse npm cache folder
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         env:
           cache-name: cache-node-modules
         with:
@@ -364,7 +364,7 @@ jobs:
           node-version-file: '.nvmrc'
 
       - name: Reuse npm cache folder
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         env:
           cache-name: cache-node-modules
         with:
@@ -397,7 +397,7 @@ jobs:
           node-version-file: '.nvmrc'
 
       - name: Reuse npm cache folder
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         env:
           cache-name: cache-node-modules
         with:
@@ -536,7 +536,7 @@ jobs:
         with:
           node-version-file: '.nvmrc'
       - name: Reuse npm cache folder
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         env:
           cache-name: cache-node-modules
         with:
@@ -549,7 +549,7 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-npm-supabase-x2
       - name: Cache Docker layers
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: /tmp/.buildx-cache
           key: ${{ runner.os }}-buildx-supabase-${{ github.sha }}
@@ -716,7 +716,7 @@ jobs:
           channel: 'stable'
       - run: flutter --version
       - name: Reuse npm cache folder
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         env:
           cache-name: cache-node-modules
         with:
