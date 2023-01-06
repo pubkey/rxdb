@@ -26,7 +26,8 @@ import {
     awaitRxStorageReplicationInSync,
     defaultHashFunction,
     getComposedPrimaryKeyOfDocumentData,
-    setCheckpoint
+    setCheckpoint,
+    deepEqual
 } from '../../';
 
 
@@ -35,7 +36,6 @@ import {
     RX_LOCAL_DOCUMENT_SCHEMA
 } from '../../plugins/local-documents';
 import * as schemas from '../helper/schemas';
-import deepEqual from 'fast-deep-equal';
 
 import {
     clone,

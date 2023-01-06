@@ -6,6 +6,7 @@ export * from './utils-document';
 export * from './utils-hash';
 export * from './utils-promise';
 export * from './utils-string';
+export * from './utils-object-deep-equal';
 export * from './utils-object';
 export * from './utils-error';
 export * from './utils-time';
