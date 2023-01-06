@@ -216,7 +216,7 @@ export function setDefaultStorage(storageKey: string) {
         case 'dexie-worker':
             const dexieMemoryWorkerPath = require('path').join(
                 '../../../../dist/lib/plugins/storage-worker/workers/',
-                'dexie-memory.worker.js'
+                'memory.worker.js'
             );
             console.log('dexieMemoryWorkerPath: ' + dexieMemoryWorkerPath);
             config.storage = {
