@@ -2,10 +2,10 @@
  * this plugin adds the RxCollection.syncGraphQl()-function to rxdb
  * you can use it to sync collections with a remote graphql endpoint.
  */
-import objectPath from 'object-path';
 import {
     ensureNotFalsy,
-    fastUnsecureHash
+    fastUnsecureHash,
+    getProperty
 } from '../../plugins/utils';
 
 import {
@@ -127,10 +127,8 @@ export function replicateGraphQL<RxDocType, CheckpointType>(
                 if (result.errors) {
                     throw result.errors;
                 }
-
                 const dataPath = pull.dataPath || ['data', Object.keys(result.data)[0]];
-                let data: any = objectPath.get(result, dataPath);
-
+                let data: any = getProperty(result, dataPath);
                 if (pull.responseModifier) {
                     data = await pull.responseModifier(
                         data,
@@ -165,7 +163,7 @@ export function replicateGraphQL<RxDocType, CheckpointType>(
                     throw result.errors;
                 }
                 const dataPath = Object.keys(result.data)[0];
-                const data: any = objectPath.get(result.data, dataPath);
+                const data: any = getProperty(result.data, dataPath);
                 return data;
             },
             batchSize: push.batchSize,

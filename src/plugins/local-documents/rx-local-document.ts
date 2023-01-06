@@ -1,4 +1,3 @@
-import objectPath from 'object-path';
 import { Observable } from 'rxjs';
 import {
     distinctUntilChanged,
@@ -34,6 +33,7 @@ import {
     getDefaultRxDocumentMeta,
     getFromMapOrThrow,
     getFromObjectOrThrow,
+    getProperty,
     RXJS_SHARE_REPLAY_DEFAULTS
 } from '../../plugins/utils';
 import { getLocalDocStateByParent, LOCAL_DOC_STATE_BY_PARENT_RESOLVED } from './local-documents-helper';
@@ -100,7 +100,7 @@ const RxLocalDocumentPrototype: any = {
             });
         }
 
-        let valueObj = objectPath.get(this._data, objPath);
+        let valueObj = getProperty(this._data, objPath);
         valueObj = overwritable.deepFreezeWhenDevMode(valueObj);
         return valueObj;
     },
@@ -119,7 +119,7 @@ const RxLocalDocumentPrototype: any = {
         }
         return this.$
             .pipe(
-                map(data => objectPath.get(data, objPath)),
+                map(data => getProperty(data, objPath)),
                 distinctUntilChanged()
             );
     },

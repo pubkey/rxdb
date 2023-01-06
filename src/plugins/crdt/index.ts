@@ -1,5 +1,4 @@
 import { newRxError } from '../../rx-error';
-import objectPath from 'object-path';
 import type {
     CRDTDocumentField,
     CRDTEntry,
@@ -19,8 +18,10 @@ import {
     clone,
     deepEqual,
     ensureNotFalsy,
+    getProperty,
     now,
     objectPathMonad,
+    setProperty,
     toArray
 } from '../../plugins/utils';
 import modifyjs from 'modifyjs';
@@ -50,7 +51,7 @@ export async function updateCRDT<RxDocType>(
     const storageToken = await this.collection.database.storageToken;
 
     return this.incrementalModify((docData) => {
-        const crdtDocField: CRDTDocumentField<RxDocType> = clone(objectPath.get(docData as any, crdtOptions.field));
+        const crdtDocField: CRDTDocumentField<RxDocType> = clone(getProperty(docData as any, crdtOptions.field));
         const operation: CRDTOperation<RxDocType> = {
             body: toArray(entry),
             creator: storageToken,
@@ -71,7 +72,7 @@ export async function updateCRDT<RxDocType>(
             docData,
             operation
         );
-        objectPath.set(docData, crdtOptions.field, crdtDocField);
+        setProperty(docData, crdtOptions.field, crdtDocField);
         return docData;
     }, RX_CRDT_CONTEXT);
 }
@@ -109,7 +110,7 @@ export async function insertCRDT<RxDocType>(
         operations: [],
         hash: ''
     };
-    objectPath.set(insertData as any, crdtOptions.field, crdtDocField);
+    setProperty(insertData as any, crdtOptions.field, crdtDocField);
 
     const lastAr: CRDTOperation<RxDocType>[] = [operation];
     crdtDocField.operations.push(lastAr);
@@ -288,7 +289,7 @@ export function rebuildFromCRDT<RxDocType>(
     let base: WithDeleted<RxDocType> = {
         _deleted: false
     } as any;
-    objectPath.set(base, ensureNotFalsy(schema.crdt).field, crdts);
+    setProperty(base, ensureNotFalsy(schema.crdt).field, crdts);
     crdts.operations.forEach(operations => {
         operations.forEach(op => {
             base = runOperationOnDocument(
@@ -502,7 +503,7 @@ export const RxDBcrdtPlugin: RxPlugin = {
                             hash: ''
                         };
                         crdtOperations.hash = hashCRDTOperations(collection.database.hashFunction, crdtOperations);
-                        objectPath.set(docData, crdtOptions.field, crdtOperations);
+                        setProperty(docData, crdtOptions.field, crdtOperations);
                         return docData;
                     });
                     return bulkInsertBefore(useDocsData);

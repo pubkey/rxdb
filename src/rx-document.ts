@@ -1,4 +1,3 @@
-import objectPath from 'object-path';
 import {
     Observable
 } from 'rxjs';
@@ -16,7 +15,8 @@ import {
     flatClone,
     PROMISE_RESOLVE_NULL,
     RXJS_SHARE_REPLAY_DEFAULTS,
-    getFromObjectOrThrow
+    getFromObjectOrThrow,
+    getProperty
 } from './plugins/utils';
 import {
     newRxError
@@ -134,7 +134,7 @@ export const basePrototype = {
 
         return this.$
             .pipe(
-                map(data => objectPath.get(data, path)),
+                map(data => getProperty(data, path)),
                 distinctUntilChanged()
             );
     },
@@ -187,7 +187,7 @@ export const basePrototype = {
      */
     get(this: RxDocument, objPath: string): any | null {
         if (!this._data) return undefined;
-        let valueObj = objectPath.get(this._data, objPath);
+        let valueObj = getProperty(this._data, objPath);
 
         // direct return if array or non-object
         if (

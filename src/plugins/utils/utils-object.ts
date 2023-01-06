@@ -28,7 +28,7 @@ export function deepFreeze<T>(o: T): T {
 
 /**
  * To get specific nested path values from objects,
- * RxDB normally uses the 'object-path' npm module.
+ * RxDB normally uses the 'dot-prop' npm module.
  * But when performance is really relevant, this is not fast enough.
  * Instead we use a monad that can prepare some stuff up front
  * and we can re-use the generated function.
