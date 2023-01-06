@@ -4,7 +4,7 @@
         // Target latest version of ECMAScript.
         "target": "esnext",
         // Search under node_modules for non-relative imports.
-        "moduleResolution": "NodeNext",
+        "moduleResolution": "node",
         // Process & infer types from .js files.
         "allowJs": false,
         // Enable strictest settings like strictNullChecks & noImplicitAny.
