@@ -472,7 +472,7 @@
     "express-pouchdb": "4.2.0",
     "fake-indexeddb": "4.0.1",
     "@faker-js/faker": "7.6.0",
-    "firebase-tools": "11.19.0",
+    "firebase-tools": "11.20.0",
     "get-port": "5.1.1",
     "gitbook-cli": "2.3.2",
     "graphql-subscriptions": "2.0.0",
