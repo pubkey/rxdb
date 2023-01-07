@@ -1,8 +1,8 @@
 import { ensureRxStorageInstanceParamsAreCorrect } from '../../rx-storage-helper';
+import { RxStorageDefaultStatics } from '../../rx-storage-statics';
 import type {
     RxStorageInstanceCreationParams
 } from '../../types';
-import { RxStorageDexieStatics } from '../storage-dexie/dexie-statics';
 import type {
     RxStorageFoundationDB,
     RxStorageFoundationDBInstanceCreationOptions,
@@ -31,7 +31,7 @@ export function getRxStorageFoundationDB(
 
     const storage: RxStorageFoundationDB = {
         name: 'foundationdb',
-        statics: RxStorageDexieStatics,
+        statics: RxStorageDefaultStatics,
         createStorageInstance<RxDocType>(
             params: RxStorageInstanceCreationParams<RxDocType, RxStorageFoundationDBInstanceCreationOptions>
         ): Promise<RxStorageInstanceFoundationDB<RxDocType>> {

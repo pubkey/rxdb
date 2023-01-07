@@ -8,16 +8,19 @@ import type {
     RxStorageStatics,
     DexiePreparedQuery,
     FilledMangoQuery
-} from '../../types';
-import {
-    getDexieSortComparator
-} from './dexie-helper';
-import { newRxError } from '../../rx-error';
-import { getQueryPlan } from '../../query-planner';
-import { DEFAULT_CHECKPOINT_SCHEMA } from '../../rx-schema-helper';
-import { getMingoQuery } from '../../rx-query-mingo';
+} from './types';
+import { newRxError } from './rx-error';
+import { getQueryPlan } from './query-planner';
+import { DEFAULT_CHECKPOINT_SCHEMA } from './rx-schema-helper';
+import { getMingoQuery } from './rx-query-mingo';
+import { MangoQuery } from './types';
 
-export const RxStorageDexieStatics: RxStorageStatics = {
+/**
+ * Most RxStorage implementations use these static functions.
+ * But you can use anything that implements the interface,
+ * for example if your underlying database already has a query engine.
+ */
+export const RxStorageDefaultStatics: RxStorageStatics = {
     prepareQuery<RxDocType>(
         schema: RxJsonSchema<RxDocumentData<RxDocType>>,
         mutateableQuery: FilledMangoQuery<RxDocType>
@@ -48,7 +51,7 @@ export const RxStorageDexieStatics: RxStorageStatics = {
         schema: RxJsonSchema<RxDocumentData<RxDocType>>,
         preparedQuery: DexiePreparedQuery<RxDocType>
     ): DeterministicSortComparator<RxDocType> {
-        return getDexieSortComparator(schema, preparedQuery.query);
+        return getDefaultSortComparator(schema, preparedQuery.query);
     },
 
     getQueryMatcher<RxDocType>(
@@ -75,3 +78,46 @@ export const RxStorageDexieStatics: RxStorageStatics = {
     checkpointSchema: DEFAULT_CHECKPOINT_SCHEMA
 
 };
+
+function sortDirectionToMingo(direction: 'asc' | 'desc'): 1 | -1 {
+    if (direction === 'asc') {
+        return 1;
+    } else {
+        return -1;
+    }
+}
+
+/**
+ * This function is at dexie-helper
+ * because we need it in multiple places.
+ */
+export function getDefaultSortComparator<RxDocType>(
+    _schema: RxJsonSchema<RxDocumentData<RxDocType>>,
+    query: MangoQuery<RxDocType>
+): DeterministicSortComparator<RxDocType> {
+    const mingoSortObject: {
+        [fieldName: string]: 1 | -1;
+    } = {};
+
+    if (!query.sort) {
+        throw newRxError('SNH', { query });
+    }
+
+    query.sort.forEach(sortBlock => {
+        const key = Object.keys(sortBlock)[0];
+        const direction = Object.values(sortBlock)[0];
+        mingoSortObject[key] = sortDirectionToMingo(direction);
+    });
+
+    const fun: DeterministicSortComparator<RxDocType> = (a: RxDocType, b: RxDocType) => {
+        const sorted = getMingoQuery({}).find([a, b], {}).sort(mingoSortObject);
+        const first = sorted.next();
+        if (first === a) {
+            return -1;
+        } else {
+            return 1;
+        }
+    };
+
+    return fun;
+}

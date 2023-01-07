@@ -37,7 +37,6 @@ import {
     PROMISE_RESOLVE_VOID,
     RX_META_LWT_MINIMUM
 } from '../../plugins/utils';
-import { RxStorageDexieStatics } from '../storage-dexie/dexie-statics';
 import {
     boundGE,
     boundGT,
@@ -62,6 +61,7 @@ import type {
     RxStorageMemoryInstanceCreationOptions,
     RxStorageMemorySettings
 } from './memory-types';
+import { RxStorageDefaultStatics } from '../../rx-storage-statics';
 
 export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
     RxDocType,
@@ -198,7 +198,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
 
         let queryMatcher: QueryMatcher<RxDocumentData<RxDocType>> | false = false;
         if (!queryPlan.selectorSatisfiedByIndex) {
-            queryMatcher = RxStorageDexieStatics.getQueryMatcher(
+            queryMatcher = RxStorageDefaultStatics.getQueryMatcher(
                 this.schema,
                 preparedQuery
             );
@@ -269,7 +269,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         }
 
         if (mustManuallyResort) {
-            const sortComparator = RxStorageDexieStatics.getSortComparator(this.schema, preparedQuery);
+            const sortComparator = RxStorageDefaultStatics.getSortComparator(this.schema, preparedQuery);
             rows = rows.sort(sortComparator);
         }
 

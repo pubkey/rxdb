@@ -1,9 +1,5 @@
 import type {
-    DeterministicSortComparator
-} from 'event-reduce-js';
-import type {
     DexieStorageInternals,
-    MangoQuery,
     RxDocumentData,
     RxJsonSchema
 } from '../../types';
@@ -15,13 +11,15 @@ import {
     getPrimaryFieldOfPrimaryKey,
     getSchemaByObjectPath
 } from '../../rx-schema-helper';
-import { getMingoQuery } from '../../rx-query-mingo';
+import { RxStorageDefaultStatics } from '../../rx-storage-statics';
 
 export const DEXIE_DOCS_TABLE_NAME = 'docs';
 export const DEXIE_DELETED_DOCS_TABLE_NAME = 'deleted-docs';
 export const DEXIE_CHANGES_TABLE_NAME = 'changes';
 
 export const RX_STORAGE_NAME_DEXIE = 'dexie';
+
+export const RxStorageDexieStatics = RxStorageDefaultStatics;
 
 const DEXIE_STATE_DB_BY_NAME: Map<string, DexieStorageInternals> = new Map();
 const REF_COUNT_PER_DEXIE_DB: Map<DexieStorageInternals, number> = new Map();
@@ -86,51 +84,6 @@ export async function closeDexieDb(statePromise: DexieStorageInternals) {
         REF_COUNT_PER_DEXIE_DB.set(statePromise, newCount);
     }
 }
-
-
-function sortDirectionToMingo(direction: 'asc' | 'desc'): 1 | -1 {
-    if (direction === 'asc') {
-        return 1;
-    } else {
-        return -1;
-    }
-}
-
-/**
- * This function is at dexie-helper
- * because we need it in multiple places.
- */
-export function getDexieSortComparator<RxDocType>(
-    _schema: RxJsonSchema<RxDocumentData<RxDocType>>,
-    query: MangoQuery<RxDocType>
-): DeterministicSortComparator<RxDocType> {
-    const mingoSortObject: {
-        [fieldName: string]: 1 | -1;
-    } = {};
-
-    if (!query.sort) {
-        throw newRxError('SNH', { query });
-    }
-
-    query.sort.forEach(sortBlock => {
-        const key = Object.keys(sortBlock)[0];
-        const direction = Object.values(sortBlock)[0];
-        mingoSortObject[key] = sortDirectionToMingo(direction);
-    });
-
-    const fun: DeterministicSortComparator<RxDocType> = (a: RxDocType, b: RxDocType) => {
-        const sorted = getMingoQuery({}).find([a, b], {}).sort(mingoSortObject);
-        const first = sorted.next();
-        if (first === a) {
-            return -1;
-        } else {
-            return 1;
-        }
-    };
-
-    return fun;
-}
-
 
 export function ensureNoBooleanIndex(schema: RxJsonSchema<any>) {
     if (!schema.indexes) {

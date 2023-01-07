@@ -1,4 +1,5 @@
 import { QueryMatcher } from 'event-reduce-js';
+import { RxStorageDefaultStatics } from '../../rx-storage-statics';
 import type {
     DexiePreparedQuery,
     RxDocumentData,
@@ -10,7 +11,6 @@ import {
     DEXIE_DOCS_TABLE_NAME,
     fromDexieToStorage
 } from './dexie-helper';
-import { RxStorageDexieStatics } from './dexie-statics';
 import type { RxStorageInstanceDexie } from './rx-storage-instance-dexie';
 
 
@@ -67,7 +67,7 @@ export async function dexieQuery<RxDocType>(
 
     let queryMatcher: QueryMatcher<RxDocumentData<RxDocType>> | false = false;
     if (!queryPlan.selectorSatisfiedByIndex) {
-        queryMatcher = RxStorageDexieStatics.getQueryMatcher(
+        queryMatcher = RxStorageDefaultStatics.getQueryMatcher(
             instance.schema,
             preparedQuery
         );
@@ -157,7 +157,7 @@ export async function dexieQuery<RxDocType>(
 
 
     if (!queryPlan.sortFieldsSameAsIndexFields) {
-        const sortComparator = RxStorageDexieStatics.getSortComparator(instance.schema, preparedQuery);
+        const sortComparator = RxStorageDefaultStatics.getSortComparator(instance.schema, preparedQuery);
         rows = rows.sort(sortComparator);
     }
 

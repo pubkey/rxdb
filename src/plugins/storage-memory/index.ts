@@ -1,7 +1,6 @@
 import { ensureRxStorageInstanceParamsAreCorrect } from '../../rx-storage-helper';
 import type { RxStorageInstanceCreationParams } from '../../types';
 import { flatClone } from '../../plugins/utils';
-import { RxStorageDexieStatics } from '../storage-dexie/dexie-statics';
 import type {
     RxStorageMemory,
     RxStorageMemoryInstanceCreationOptions,
@@ -11,6 +10,7 @@ import {
     createMemoryStorageInstance,
     RxStorageInstanceMemory
 } from './rx-storage-instance-memory';
+import { RxStorageDexieStatics } from '../storage-dexie';
 
 /**
  * Keep the state even when the storage instance is closed.

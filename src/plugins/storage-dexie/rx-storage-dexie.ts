@@ -4,6 +4,7 @@ import type {
 } from '../../types';
 import {
     ensureNoBooleanIndex,
+    RxStorageDexieStatics,
     RX_STORAGE_NAME_DEXIE
 } from './dexie-helper';
 import type {
@@ -15,7 +16,6 @@ import {
     RxStorageInstanceDexie
 } from './rx-storage-instance-dexie';
 import { ensureRxStorageInstanceParamsAreCorrect } from '../../rx-storage-helper';
-import { RxStorageDexieStatics } from './dexie-statics';
 
 
 
