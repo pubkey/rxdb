@@ -1,5 +1,5 @@
+import { RxStorageDefaultStatics } from '../../rx-storage-statics';
 import { dexieReplaceIfStartsWithPipe, DEXIE_DOCS_TABLE_NAME, fromDexieToStorage } from './dexie-helper';
-import { RxStorageDexieStatics } from './dexie-statics';
 export function getKeyRangeByQueryPlan(queryPlan, IDBKeyRange) {
   if (!IDBKeyRange) {
     if (typeof window === 'undefined') {
@@ -33,7 +33,7 @@ export async function dexieQuery(instance, preparedQuery) {
   var queryPlan = preparedQuery.queryPlan;
   var queryMatcher = false;
   if (!queryPlan.selectorSatisfiedByIndex) {
-    queryMatcher = RxStorageDexieStatics.getQueryMatcher(instance.schema, preparedQuery);
+    queryMatcher = RxStorageDefaultStatics.getQueryMatcher(instance.schema, preparedQuery);
   }
   var keyRange = getKeyRangeByQueryPlan(queryPlan, state.dexieDb._options.IDBKeyRange);
   var queryPlanFields = queryPlan.index;
@@ -93,7 +93,7 @@ export async function dexieQuery(instance, preparedQuery) {
     });
   });
   if (!queryPlan.sortFieldsSameAsIndexFields) {
-    var sortComparator = RxStorageDexieStatics.getSortComparator(instance.schema, preparedQuery);
+    var sortComparator = RxStorageDefaultStatics.getSortComparator(instance.schema, preparedQuery);
     rows = rows.sort(sortComparator);
   }
 

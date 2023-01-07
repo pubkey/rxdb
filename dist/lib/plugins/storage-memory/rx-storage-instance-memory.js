@@ -10,10 +10,10 @@ var _customIndex = require("../../custom-index");
 var _rxSchemaHelper = require("../../rx-schema-helper");
 var _rxStorageHelper = require("../../rx-storage-helper");
 var _utils = require("../../plugins/utils");
-var _dexieStatics = require("../storage-dexie/dexie-statics");
 var _binarySearchBounds = require("./binary-search-bounds");
 var _memoryHelper = require("./memory-helper");
 var _memoryIndexes = require("./memory-indexes");
+var _rxStorageStatics = require("../../rx-storage-statics");
 var RxStorageInstanceMemory = /*#__PURE__*/function () {
   function RxStorageInstanceMemory(storage, databaseName, collectionName, schema, internals, options, settings) {
     this.closed = false;
@@ -92,7 +92,7 @@ var RxStorageInstanceMemory = /*#__PURE__*/function () {
     var skipPlusLimit = skip + limit;
     var queryMatcher = false;
     if (!queryPlan.selectorSatisfiedByIndex) {
-      queryMatcher = _dexieStatics.RxStorageDexieStatics.getQueryMatcher(this.schema, preparedQuery);
+      queryMatcher = _rxStorageStatics.RxStorageDefaultStatics.getQueryMatcher(this.schema, preparedQuery);
     }
     var queryPlanFields = queryPlan.index;
     var mustManuallyResort = !queryPlan.sortFieldsSameAsIndexFields;
@@ -127,7 +127,7 @@ var RxStorageInstanceMemory = /*#__PURE__*/function () {
       indexOfLower++;
     }
     if (mustManuallyResort) {
-      var sortComparator = _dexieStatics.RxStorageDexieStatics.getSortComparator(this.schema, preparedQuery);
+      var sortComparator = _rxStorageStatics.RxStorageDefaultStatics.getSortComparator(this.schema, preparedQuery);
       rows = rows.sort(sortComparator);
     }
 

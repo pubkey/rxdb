@@ -18,6 +18,7 @@ export * from './rx-query-helper';
 export * from './rx-schema';
 export * from './rx-schema-helper';
 export * from './rx-storage-helper';
+export * from './rx-storage-statics';
 export * from './replication-protocol/index';
 export * from './rx-storage-multiinstance';
 export * from './custom-index';

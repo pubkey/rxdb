@@ -1,7 +1,6 @@
-import { ensureNoBooleanIndex, RX_STORAGE_NAME_DEXIE } from './dexie-helper';
+import { ensureNoBooleanIndex, RxStorageDexieStatics, RX_STORAGE_NAME_DEXIE } from './dexie-helper';
 import { createDexieStorageInstance } from './rx-storage-instance-dexie';
 import { ensureRxStorageInstanceParamsAreCorrect } from '../../rx-storage-helper';
-import { RxStorageDexieStatics } from './dexie-statics';
 export var RxStorageDexie = /*#__PURE__*/function () {
   function RxStorageDexie(settings) {
     this.name = RX_STORAGE_NAME_DEXIE;

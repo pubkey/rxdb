@@ -1,7 +1,7 @@
 import { ensureRxStorageInstanceParamsAreCorrect } from '../../rx-storage-helper';
 import { flatClone } from '../../plugins/utils';
-import { RxStorageDexieStatics } from '../storage-dexie/dexie-statics';
 import { createMemoryStorageInstance } from './rx-storage-instance-memory';
+import { RxStorageDefaultStatics } from '../../rx-storage-statics';
 
 /**
  * Keep the state even when the storage instance is closed.
@@ -12,7 +12,7 @@ var COLLECTION_STATES = new Map();
 export function getRxStorageMemory(settings = {}) {
   var storage = {
     name: 'memory',
-    statics: RxStorageDexieStatics,
+    statics: RxStorageDefaultStatics,
     collectionStates: COLLECTION_STATES,
     createStorageInstance(params) {
       ensureRxStorageInstanceParamsAreCorrect(params);

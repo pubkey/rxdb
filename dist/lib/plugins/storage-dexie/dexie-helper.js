@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.RX_STORAGE_NAME_DEXIE = exports.DEXIE_PIPE_SUBSTITUTE = exports.DEXIE_DOCS_TABLE_NAME = exports.DEXIE_DELETED_DOCS_TABLE_NAME = exports.DEXIE_CHANGES_TABLE_NAME = void 0;
+exports.RxStorageDexieStatics = exports.RX_STORAGE_NAME_DEXIE = exports.DEXIE_PIPE_SUBSTITUTE = exports.DEXIE_DOCS_TABLE_NAME = exports.DEXIE_DELETED_DOCS_TABLE_NAME = exports.DEXIE_CHANGES_TABLE_NAME = void 0;
 exports.closeDexieDb = closeDexieDb;
 exports.dexieReplaceIfStartsWithPipe = dexieReplaceIfStartsWithPipe;
 exports.dexieReplaceIfStartsWithPipeRevert = dexieReplaceIfStartsWithPipeRevert;
@@ -11,14 +11,13 @@ exports.ensureNoBooleanIndex = ensureNoBooleanIndex;
 exports.fromDexieToStorage = fromDexieToStorage;
 exports.fromStorageToDexie = fromStorageToDexie;
 exports.getDexieDbWithTables = getDexieDbWithTables;
-exports.getDexieSortComparator = getDexieSortComparator;
 exports.getDexieStoreSchema = getDexieStoreSchema;
 exports.getDocsInDb = getDocsInDb;
 var _dexie = require("dexie");
 var _utils = require("../utils");
 var _rxError = require("../../rx-error");
 var _rxSchemaHelper = require("../../rx-schema-helper");
-var _rxQueryMingo = require("../../rx-query-mingo");
+var _rxStorageStatics = require("../../rx-storage-statics");
 var DEXIE_DOCS_TABLE_NAME = 'docs';
 exports.DEXIE_DOCS_TABLE_NAME = DEXIE_DOCS_TABLE_NAME;
 var DEXIE_DELETED_DOCS_TABLE_NAME = 'deleted-docs';
@@ -27,6 +26,8 @@ var DEXIE_CHANGES_TABLE_NAME = 'changes';
 exports.DEXIE_CHANGES_TABLE_NAME = DEXIE_CHANGES_TABLE_NAME;
 var RX_STORAGE_NAME_DEXIE = 'dexie';
 exports.RX_STORAGE_NAME_DEXIE = RX_STORAGE_NAME_DEXIE;
+var RxStorageDexieStatics = _rxStorageStatics.RxStorageDefaultStatics;
+exports.RxStorageDexieStatics = RxStorageDexieStatics;
 var DEXIE_STATE_DB_BY_NAME = new Map();
 var REF_COUNT_PER_DEXIE_DB = new Map();
 function getDexieDbWithTables(databaseName, collectionName, settings, schema) {
@@ -80,41 +81,6 @@ async function closeDexieDb(statePromise) {
   } else {
     REF_COUNT_PER_DEXIE_DB.set(statePromise, newCount);
   }
-}
-function sortDirectionToMingo(direction) {
-  if (direction === 'asc') {
-    return 1;
-  } else {
-    return -1;
-  }
-}
-
-/**
- * This function is at dexie-helper
- * because we need it in multiple places.
- */
-function getDexieSortComparator(_schema, query) {
-  var mingoSortObject = {};
-  if (!query.sort) {
-    throw (0, _rxError.newRxError)('SNH', {
-      query
-    });
-  }
-  query.sort.forEach(sortBlock => {
-    var key = Object.keys(sortBlock)[0];
-    var direction = Object.values(sortBlock)[0];
-    mingoSortObject[key] = sortDirectionToMingo(direction);
-  });
-  var fun = (a, b) => {
-    var sorted = (0, _rxQueryMingo.getMingoQuery)({}).find([a, b], {}).sort(mingoSortObject);
-    var first = sorted.next();
-    if (first === a) {
-      return -1;
-    } else {
-      return 1;
-    }
-  };
-  return fun;
 }
 function ensureNoBooleanIndex(schema) {
   if (!schema.indexes) {

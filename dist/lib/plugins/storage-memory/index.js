@@ -9,7 +9,6 @@ var _exportNames = {
 exports.getRxStorageMemory = getRxStorageMemory;
 var _rxStorageHelper = require("../../rx-storage-helper");
 var _utils = require("../../plugins/utils");
-var _dexieStatics = require("../storage-dexie/dexie-statics");
 var _rxStorageInstanceMemory = require("./rx-storage-instance-memory");
 Object.keys(_rxStorageInstanceMemory).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
@@ -22,6 +21,7 @@ Object.keys(_rxStorageInstanceMemory).forEach(function (key) {
     }
   });
 });
+var _rxStorageStatics = require("../../rx-storage-statics");
 var _memoryHelper = require("./memory-helper");
 Object.keys(_memoryHelper).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
@@ -79,7 +79,7 @@ var COLLECTION_STATES = new Map();
 function getRxStorageMemory(settings = {}) {
   var storage = {
     name: 'memory',
-    statics: _dexieStatics.RxStorageDexieStatics,
+    statics: _rxStorageStatics.RxStorageDefaultStatics,
     collectionStates: COLLECTION_STATES,
     createStorageInstance(params) {
       (0, _rxStorageHelper.ensureRxStorageInstanceParamsAreCorrect)(params);

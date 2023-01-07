@@ -1,17 +1,17 @@
-import type { DeterministicSortComparator } from 'event-reduce-js';
-import type { DexieStorageInternals, MangoQuery, RxDocumentData, RxJsonSchema } from '../../types';
+import type { DexieStorageInternals, RxDocumentData, RxJsonSchema } from '../../types';
 import { DexieSettings } from '../../types';
 export declare const DEXIE_DOCS_TABLE_NAME = "docs";
 export declare const DEXIE_DELETED_DOCS_TABLE_NAME = "deleted-docs";
 export declare const DEXIE_CHANGES_TABLE_NAME = "changes";
 export declare const RX_STORAGE_NAME_DEXIE = "dexie";
+export declare const RxStorageDexieStatics: Readonly<{
+    prepareQuery<RxDocType>(schema: RxJsonSchema<RxDocumentData<RxDocType>>, mutateableQuery: import("../../types").FilledMangoQuery<RxDocType>): any;
+    getSortComparator<RxDocType_1>(schema: RxJsonSchema<RxDocumentData<RxDocType_1>>, preparedQuery: any): import("event-reduce-js").DeterministicSortComparator<RxDocType_1>;
+    getQueryMatcher<RxDocType_2>(schema: RxJsonSchema<RxDocumentData<RxDocType_2>>, preparedQuery: any): import("event-reduce-js").QueryMatcher<RxDocumentData<RxDocType_2>>;
+    checkpointSchema: import("../../types").DeepReadonlyObject<import("../../types").JsonSchema<any>>;
+}>;
 export declare function getDexieDbWithTables(databaseName: string, collectionName: string, settings: DexieSettings, schema: RxJsonSchema<any>): DexieStorageInternals;
 export declare function closeDexieDb(statePromise: DexieStorageInternals): Promise<void>;
-/**
- * This function is at dexie-helper
- * because we need it in multiple places.
- */
-export declare function getDexieSortComparator<RxDocType>(_schema: RxJsonSchema<RxDocumentData<RxDocType>>, query: MangoQuery<RxDocType>): DeterministicSortComparator<RxDocType>;
 export declare function ensureNoBooleanIndex(schema: RxJsonSchema<any>): void;
 /**
  * It is not possible to set non-javascript-variable-syntax

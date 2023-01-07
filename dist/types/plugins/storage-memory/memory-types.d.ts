@@ -1,5 +1,5 @@
 import { Subject } from 'rxjs';
-import type { DexiePreparedQuery, EventBulk, RxAttachmentWriteData, RxConflictResultionTask, RxDocumentData, RxStorage, RxStorageChangeEvent, RxStorageDefaultCheckpoint } from '../../types';
+import type { DefaultPreparedQuery, EventBulk, RxAttachmentWriteData, RxConflictResultionTask, RxDocumentData, RxStorage, RxStorageChangeEvent, RxStorageDefaultCheckpoint } from '../../types';
 export type RxStorageMemorySettings = {};
 export type RxStorageMemoryInstanceCreationOptions = {};
 export type RxStorageMemory = RxStorage<MemoryStorageInternals<any>, RxStorageMemoryInstanceCreationOptions> & {
@@ -61,4 +61,4 @@ export type DocWithIndexString<RxDocType> = {
     doc: RxDocumentData<RxDocType>;
     indexString: string;
 };
-export type MemoryPreparedQuery<DocType> = DexiePreparedQuery<DocType>;
+export type MemoryPreparedQuery<DocType> = DefaultPreparedQuery<DocType>;
