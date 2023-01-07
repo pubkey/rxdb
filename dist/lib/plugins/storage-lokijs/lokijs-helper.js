@@ -20,7 +20,6 @@ var _unload = require("unload");
 var _utils = require("../utils");
 var _lokiSaveQueue = require("./loki-save-queue");
 var _rxError = require("../../rx-error");
-var _objectPath = _interopRequireDefault(require("object-path"));
 var _rxStorageMultiinstance = require("../../rx-storage-multiinstance");
 var _leaderElection = require("../leader-election");
 var CHANGES_COLLECTION_SUFFIX = '-rxdb-changes';
@@ -202,8 +201,8 @@ function getLokiSortComparator(_schema, query) {
       var fieldName = Object.keys(sortPart)[0];
       var direction = Object.values(sortPart)[0];
       var directionMultiplier = direction === 'asc' ? 1 : -1;
-      var valueA = _objectPath.default.get(a, fieldName);
-      var valueB = _objectPath.default.get(b, fieldName);
+      var valueA = (0, _utils.getProperty)(a, fieldName);
+      var valueB = (0, _utils.getProperty)(b, fieldName);
       if (valueA === valueB) {
         return false;
       } else {

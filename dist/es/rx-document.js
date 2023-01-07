@@ -1,6 +1,5 @@
-import objectPath from 'object-path';
 import { distinctUntilChanged, filter, map, shareReplay, startWith } from 'rxjs/operators';
-import { clone, trimDots, pluginMissing, flatClone, PROMISE_RESOLVE_NULL, RXJS_SHARE_REPLAY_DEFAULTS, getFromObjectOrThrow } from './plugins/utils';
+import { clone, trimDots, pluginMissing, flatClone, PROMISE_RESOLVE_NULL, RXJS_SHARE_REPLAY_DEFAULTS, getFromObjectOrThrow, getProperty } from './plugins/utils';
 import { newRxError } from './rx-error';
 import { runPluginHooks } from './hooks';
 import { getDocumentDataOfRxChangeEvent } from './rx-change-event';
@@ -82,7 +81,7 @@ export var basePrototype = {
         });
       }
     }
-    return this.$.pipe(map(data => objectPath.get(data, path)), distinctUntilChanged());
+    return this.$.pipe(map(data => getProperty(data, path)), distinctUntilChanged());
   },
   /**
    * populate the given path
@@ -126,7 +125,7 @@ export var basePrototype = {
    */
   get(objPath) {
     if (!this._data) return undefined;
-    var valueObj = objectPath.get(this._data, objPath);
+    var valueObj = getProperty(this._data, objPath);
 
     // direct return if array or non-object
     if (typeof valueObj !== 'object' || Array.isArray(valueObj)) {

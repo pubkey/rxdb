@@ -1,7 +1,3 @@
-/**
- * does additional checks over the schema-json
- * to ensure nothing is broken or not supported
- */
 import type { RxJsonSchema } from '../../types';
 /**
  * checks if the fieldname is allowed

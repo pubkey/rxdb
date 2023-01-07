@@ -1,11 +1,9 @@
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.clone = void 0;
-exports.deepEqual = deepEqual;
 exports.deepFreeze = deepFreeze;
 exports.firstPropertyNameOfObject = firstPropertyNameOfObject;
 exports.firstPropertyValueOfObject = firstPropertyValueOfObject;
@@ -16,7 +14,6 @@ exports.objectPathMonad = objectPathMonad;
 exports.overwriteGetterForCaching = overwriteGetterForCaching;
 exports.sortObject = sortObject;
 exports.stringifyFilter = stringifyFilter;
-var _fastDeepEqual = _interopRequireDefault(require("fast-deep-equal"));
 function deepFreeze(o) {
   Object.freeze(o);
   Object.getOwnPropertyNames(o).forEach(function (prop) {
@@ -26,13 +23,10 @@ function deepFreeze(o) {
   });
   return o;
 }
-function deepEqual(obj1, obj2) {
-  return (0, _fastDeepEqual.default)(obj1, obj2);
-}
 
 /**
  * To get specific nested path values from objects,
- * RxDB normally uses the 'object-path' npm module.
+ * RxDB normally uses the 'dot-prop' npm module.
  * But when performance is really relevant, this is not fast enough.
  * Instead we use a monad that can prepare some stuff up front
  * and we can re-use the generated function.

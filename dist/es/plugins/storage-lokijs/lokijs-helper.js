@@ -1,10 +1,9 @@
 import { createLokiLocalState } from './rx-storage-instance-loki';
 import lokijs from 'lokijs';
 import { add as unloadAdd } from 'unload';
-import { ensureNotFalsy, flatClone, promiseWait, randomCouchString } from '../utils';
+import { ensureNotFalsy, flatClone, getProperty, promiseWait, randomCouchString } from '../utils';
 import { LokiSaveQueue } from './loki-save-queue';
 import { newRxError } from '../../rx-error';
-import objectPath from 'object-path';
 import { getBroadcastChannelReference } from '../../rx-storage-multiinstance';
 import { getLeaderElectorByBroadcastChannel } from '../leader-election';
 export var CHANGES_COLLECTION_SUFFIX = '-rxdb-changes';
@@ -180,8 +179,8 @@ export function getLokiSortComparator(_schema, query) {
       var fieldName = Object.keys(sortPart)[0];
       var direction = Object.values(sortPart)[0];
       var directionMultiplier = direction === 'asc' ? 1 : -1;
-      var valueA = objectPath.get(a, fieldName);
-      var valueB = objectPath.get(b, fieldName);
+      var valueA = getProperty(a, fieldName);
+      var valueB = getProperty(b, fieldName);
       if (valueA === valueB) {
         return false;
       } else {

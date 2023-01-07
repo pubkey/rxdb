@@ -1,6 +1,5 @@
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -10,7 +9,6 @@ exports.createRxDocumentConstructor = createRxDocumentConstructor;
 exports.createWithConstructor = createWithConstructor;
 exports.defineGetterSetter = defineGetterSetter;
 exports.isRxDocument = isRxDocument;
-var _objectPath = _interopRequireDefault(require("object-path"));
 var _operators = require("rxjs/operators");
 var _utils = require("./plugins/utils");
 var _rxError = require("./rx-error");
@@ -94,7 +92,7 @@ var basePrototype = {
         });
       }
     }
-    return this.$.pipe((0, _operators.map)(data => _objectPath.default.get(data, path)), (0, _operators.distinctUntilChanged)());
+    return this.$.pipe((0, _operators.map)(data => (0, _utils.getProperty)(data, path)), (0, _operators.distinctUntilChanged)());
   },
   /**
    * populate the given path
@@ -138,7 +136,7 @@ var basePrototype = {
    */
   get(objPath) {
     if (!this._data) return undefined;
-    var valueObj = _objectPath.default.get(this._data, objPath);
+    var valueObj = (0, _utils.getProperty)(this._data, objPath);
 
     // direct return if array or non-object
     if (typeof valueObj !== 'object' || Array.isArray(valueObj)) {

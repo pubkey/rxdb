@@ -11,7 +11,6 @@ var _exportNames = {
 exports.RxGraphQLReplicationState = void 0;
 exports.replicateGraphQL = replicateGraphQL;
 var _inheritsLoose2 = _interopRequireDefault(require("@babel/runtime/helpers/inheritsLoose"));
-var _objectPath = _interopRequireDefault(require("object-path"));
 var _utils = require("../../plugins/utils");
 var _helper = require("./helper");
 Object.keys(_helper).forEach(function (key) {
@@ -134,7 +133,7 @@ function replicateGraphQL({
           throw result.errors;
         }
         var dataPath = pull.dataPath || ['data', Object.keys(result.data)[0]];
-        var data = _objectPath.default.get(result, dataPath);
+        var data = (0, _utils.getProperty)(result, dataPath);
         if (pull.responseModifier) {
           data = await pull.responseModifier(data, 'handler', lastPulledCheckpoint);
         }
@@ -160,7 +159,7 @@ function replicateGraphQL({
           throw result.errors;
         }
         var dataPath = Object.keys(result.data)[0];
-        var data = _objectPath.default.get(result.data, dataPath);
+        var data = (0, _utils.getProperty)(result.data, dataPath);
         return data;
       },
       batchSize: push.batchSize,

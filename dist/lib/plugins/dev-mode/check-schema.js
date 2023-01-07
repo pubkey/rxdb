@@ -1,6 +1,5 @@
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -8,7 +7,6 @@ exports.checkFieldNameRegex = checkFieldNameRegex;
 exports.checkPrimaryKey = checkPrimaryKey;
 exports.checkSchema = checkSchema;
 exports.validateFieldsDeep = validateFieldsDeep;
-var _objectPath = _interopRequireDefault(require("object-path"));
 var _rxError = require("../../rx-error");
 var _rxSchemaHelper = require("../../rx-schema-helper");
 var _utils = require("../../plugins/utils");
@@ -404,8 +402,8 @@ function checkSchema(jsonSchema) {
   }).filter(key => key !== '').filter((elem, pos, arr) => arr.indexOf(elem) === pos) // unique
   .filter(key => {
     // check if this path defines an index
-    var value = _objectPath.default.get(jsonSchema, key);
-    return !!value.index;
+    var value = (0, _utils.getProperty)(jsonSchema, key);
+    return value && !!value.index;
   }).forEach(key => {
     // replace inner properties
     key = key.replace('properties.', ''); // first
@@ -427,7 +425,7 @@ function checkSchema(jsonSchema) {
   }, []).filter((elem, pos, arr) => arr.indexOf(elem) === pos) // from now on working only with unique indexes
   .map(indexPath => {
     var realPath = getSchemaPropertyRealPath(indexPath); // real path in the collection schema
-    var schemaObj = _objectPath.default.get(jsonSchema, realPath); // get the schema of the indexed property
+    var schemaObj = (0, _utils.getProperty)(jsonSchema, realPath); // get the schema of the indexed property
     if (!schemaObj || typeof schemaObj !== 'object') {
       throw (0, _rxError.newRxError)('SC21', {
         index: indexPath,
@@ -460,8 +458,8 @@ function checkSchema(jsonSchema) {
   }).filter(key => key !== '' && key !== 'attachments').filter((elem, pos, arr) => arr.indexOf(elem) === pos) // unique
   .filter(key => {
     // check if this path defines an encrypted field
-    var value = _objectPath.default.get(jsonSchema, key);
-    return !!value.encrypted;
+    var value = (0, _utils.getProperty)(jsonSchema, key);
+    return value && !!value.encrypted;
   }).forEach(key => {
     // replace inner properties
     key = key.replace('properties.', ''); // first
@@ -478,7 +476,7 @@ function checkSchema(jsonSchema) {
       // real path in the collection schema
       var realPath = getSchemaPropertyRealPath(propPath);
       // get the schema of the indexed property
-      var schemaObj = _objectPath.default.get(jsonSchema, realPath);
+      var schemaObj = (0, _utils.getProperty)(jsonSchema, realPath);
       if (!schemaObj || typeof schemaObj !== 'object') {
         throw (0, _rxError.newRxError)('SC28', {
           field: propPath,

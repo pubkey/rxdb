@@ -1,12 +1,11 @@
 import _inheritsLoose from "@babel/runtime/helpers/inheritsLoose";
-import objectPath from 'object-path';
 import { distinctUntilChanged, filter, map, shareReplay, startWith } from 'rxjs/operators';
 import { overwritable } from '../../overwritable';
 import { getDocumentDataOfRxChangeEvent } from '../../rx-change-event';
 import { basePrototype, createRxDocumentConstructor } from '../../rx-document';
 import { newRxError, newRxTypeError } from '../../rx-error';
 import { writeSingle } from '../../rx-storage-helper';
-import { flatClone, getDefaultRevision, getDefaultRxDocumentMeta, getFromMapOrThrow, getFromObjectOrThrow, RXJS_SHARE_REPLAY_DEFAULTS } from '../../plugins/utils';
+import { flatClone, getDefaultRevision, getDefaultRxDocumentMeta, getFromMapOrThrow, getFromObjectOrThrow, getProperty, RXJS_SHARE_REPLAY_DEFAULTS } from '../../plugins/utils';
 import { getLocalDocStateByParent, LOCAL_DOC_STATE_BY_PARENT_RESOLVED } from './local-documents-helper';
 var RxDocumentParent = createRxDocumentConstructor();
 var RxLocalDocumentClass = /*#__PURE__*/function (_RxDocumentParent) {
@@ -58,7 +57,7 @@ var RxLocalDocumentPrototype = {
         objPath
       });
     }
-    var valueObj = objectPath.get(this._data, objPath);
+    var valueObj = getProperty(this._data, objPath);
     valueObj = overwritable.deepFreezeWhenDevMode(valueObj);
     return valueObj;
   },
@@ -74,7 +73,7 @@ var RxLocalDocumentPrototype = {
         throw newRxError('LD4');
       }
     }
-    return this.$.pipe(map(data => objectPath.get(data, objPath)), distinctUntilChanged());
+    return this.$.pipe(map(data => getProperty(data, objPath)), distinctUntilChanged());
   },
   async incrementalModify(mutationFunction) {
     var state = await getLocalDocStateByParent(this.parent);

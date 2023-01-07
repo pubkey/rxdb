@@ -91,6 +91,28 @@ Object.keys(_utilsString).forEach(function (key) {
     }
   });
 });
+var _utilsObjectDeepEqual = require("./utils-object-deep-equal");
+Object.keys(_utilsObjectDeepEqual).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (key in exports && exports[key] === _utilsObjectDeepEqual[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function () {
+      return _utilsObjectDeepEqual[key];
+    }
+  });
+});
+var _utilsObjectDotProp = require("./utils-object-dot-prop");
+Object.keys(_utilsObjectDotProp).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (key in exports && exports[key] === _utilsObjectDotProp[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function () {
+      return _utilsObjectDotProp[key];
+    }
+  });
+});
 var _utilsObject = require("./utils-object");
 Object.keys(_utilsObject).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;

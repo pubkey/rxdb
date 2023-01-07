@@ -6,7 +6,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.createRxLocalDocument = createRxLocalDocument;
 var _inheritsLoose2 = _interopRequireDefault(require("@babel/runtime/helpers/inheritsLoose"));
-var _objectPath = _interopRequireDefault(require("object-path"));
 var _operators = require("rxjs/operators");
 var _overwritable = require("../../overwritable");
 var _rxChangeEvent = require("../../rx-change-event");
@@ -65,7 +64,7 @@ var RxLocalDocumentPrototype = {
         objPath
       });
     }
-    var valueObj = _objectPath.default.get(this._data, objPath);
+    var valueObj = (0, _utils.getProperty)(this._data, objPath);
     valueObj = _overwritable.overwritable.deepFreezeWhenDevMode(valueObj);
     return valueObj;
   },
@@ -81,7 +80,7 @@ var RxLocalDocumentPrototype = {
         throw (0, _rxError.newRxError)('LD4');
       }
     }
-    return this.$.pipe((0, _operators.map)(data => _objectPath.default.get(data, objPath)), (0, _operators.distinctUntilChanged)());
+    return this.$.pipe((0, _operators.map)(data => (0, _utils.getProperty)(data, objPath)), (0, _operators.distinctUntilChanged)());
   },
   async incrementalModify(mutationFunction) {
     var state = await (0, _localDocumentsHelper.getLocalDocStateByParent)(this.parent);

@@ -1,6 +1,5 @@
-import objectPath from 'object-path';
 import { newRxError } from './rx-error';
-import { flatClone, isMaybeReadonlyArray, RX_META_LWT_MINIMUM, sortObject, trimDots } from './plugins/utils';
+import { flatClone, getProperty, isMaybeReadonlyArray, RX_META_LWT_MINIMUM, sortObject, trimDots } from './plugins/utils';
 
 /**
  * Helper function to create a valid RxJsonSchema
@@ -30,7 +29,7 @@ export function getSchemaByObjectPath(rxJsonSchema, path) {
   usePath = usePath.replace(/\./g, '.properties.');
   usePath = 'properties.' + usePath;
   usePath = trimDots(usePath);
-  var ret = objectPath.get(rxJsonSchema, usePath);
+  var ret = getProperty(rxJsonSchema, usePath);
   return ret;
 }
 export function fillPrimaryKey(primaryPath, jsonSchema, documentData) {
@@ -67,7 +66,7 @@ export function getComposedPrimaryKeyOfDocumentData(jsonSchema, documentData) {
   }
   var compositePrimary = jsonSchema.primaryKey;
   return compositePrimary.fields.map(field => {
-    var value = objectPath.get(documentData, field);
+    var value = getProperty(documentData, field);
     if (typeof value === 'undefined') {
       throw newRxError('DOC18', {
         args: {

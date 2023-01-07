@@ -1,7 +1,6 @@
 import { useOperators, OperatorType } from 'mingo/core';
 import { Query } from 'mingo/query';
-import { $sort } from 'mingo/operators/pipeline/sort';
-import { $project } from 'mingo/operators/pipeline/project';
+import { $sort, $project } from 'mingo/operators/pipeline';
 import { $and, $eq, $elemMatch, $exists, $gt, $gte, $in, $lt, $lte, $ne, $nin, $mod, $nor, $not, $or, $regex, $size, $type } from 'mingo/operators/query';
 var mingoInitDone = false;
 

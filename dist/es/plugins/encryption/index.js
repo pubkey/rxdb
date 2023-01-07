@@ -5,12 +5,11 @@
  */
 import AES from 'crypto-js/aes';
 import * as cryptoEnc from 'crypto-js/enc-utf8';
-import objectPath from 'object-path';
 import { wrapRxStorageInstance } from '../../plugin-helpers';
 import { INTERNAL_STORE_SCHEMA_TITLE } from '../../rx-database-internal-store';
 import { newRxError, newRxTypeError } from '../../rx-error';
 import { hasEncryption } from '../../rx-storage-helper';
-import { b64DecodeUnicode, b64EncodeUnicode, clone, ensureNotFalsy, flatClone } from '../../plugins/utils';
+import { b64DecodeUnicode, b64EncodeUnicode, clone, ensureNotFalsy, flatClone, getProperty, setProperty } from '../../plugins/utils';
 export var MINIMUM_PASSWORD_LENGTH = 8;
 export function encryptString(value, password) {
   var encrypted = AES.encrypt(value, password);
@@ -71,13 +70,13 @@ export function wrappedKeyEncryptionStorage(args) {
       function modifyToStorage(docData) {
         docData = cloneWithoutAttachments(docData);
         ensureNotFalsy(params.schema.encrypted).forEach(path => {
-          var value = objectPath.get(docData, path);
+          var value = getProperty(docData, path);
           if (typeof value === 'undefined') {
             return;
           }
           var stringValue = JSON.stringify(value);
           var encrypted = encryptString(stringValue, password);
-          objectPath.set(docData, path, encrypted);
+          setProperty(docData, path, encrypted);
         });
 
         // handle attachments
@@ -98,13 +97,13 @@ export function wrappedKeyEncryptionStorage(args) {
       function modifyFromStorage(docData) {
         docData = cloneWithoutAttachments(docData);
         ensureNotFalsy(params.schema.encrypted).forEach(path => {
-          var value = objectPath.get(docData, path);
+          var value = getProperty(docData, path);
           if (typeof value === 'undefined') {
             return;
           }
           var decrypted = decryptString(value, password);
           var decryptedParsed = JSON.parse(decrypted);
-          objectPath.set(docData, path, decryptedParsed);
+          setProperty(docData, path, decryptedParsed);
         });
         return docData;
       }

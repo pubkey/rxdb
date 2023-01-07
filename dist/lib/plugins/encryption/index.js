@@ -10,7 +10,6 @@ exports.encryptString = encryptString;
 exports.wrappedKeyEncryptionStorage = wrappedKeyEncryptionStorage;
 var _aes = _interopRequireDefault(require("crypto-js/aes"));
 var cryptoEnc = _interopRequireWildcard(require("crypto-js/enc-utf8"));
-var _objectPath = _interopRequireDefault(require("object-path"));
 var _pluginHelpers = require("../../plugin-helpers");
 var _rxDatabaseInternalStore = require("../../rx-database-internal-store");
 var _rxError = require("../../rx-error");
@@ -85,13 +84,13 @@ function wrappedKeyEncryptionStorage(args) {
       function modifyToStorage(docData) {
         docData = cloneWithoutAttachments(docData);
         (0, _utils.ensureNotFalsy)(params.schema.encrypted).forEach(path => {
-          var value = _objectPath.default.get(docData, path);
+          var value = (0, _utils.getProperty)(docData, path);
           if (typeof value === 'undefined') {
             return;
           }
           var stringValue = JSON.stringify(value);
           var encrypted = encryptString(stringValue, password);
-          _objectPath.default.set(docData, path, encrypted);
+          (0, _utils.setProperty)(docData, path, encrypted);
         });
 
         // handle attachments
@@ -112,13 +111,13 @@ function wrappedKeyEncryptionStorage(args) {
       function modifyFromStorage(docData) {
         docData = cloneWithoutAttachments(docData);
         (0, _utils.ensureNotFalsy)(params.schema.encrypted).forEach(path => {
-          var value = _objectPath.default.get(docData, path);
+          var value = (0, _utils.getProperty)(docData, path);
           if (typeof value === 'undefined') {
             return;
           }
           var decrypted = decryptString(value, password);
           var decryptedParsed = JSON.parse(decrypted);
-          _objectPath.default.set(docData, path, decryptedParsed);
+          (0, _utils.setProperty)(docData, path, decryptedParsed);
         });
         return docData;
       }

@@ -1,6 +1,5 @@
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -13,7 +12,6 @@ exports.getPrimaryFieldOfPrimaryKey = getPrimaryFieldOfPrimaryKey;
 exports.getPseudoSchemaForVersion = getPseudoSchemaForVersion;
 exports.getSchemaByObjectPath = getSchemaByObjectPath;
 exports.normalizeRxJsonSchema = normalizeRxJsonSchema;
-var _objectPath = _interopRequireDefault(require("object-path"));
 var _rxError = require("./rx-error");
 var _utils = require("./plugins/utils");
 /**
@@ -44,7 +42,7 @@ function getSchemaByObjectPath(rxJsonSchema, path) {
   usePath = usePath.replace(/\./g, '.properties.');
   usePath = 'properties.' + usePath;
   usePath = (0, _utils.trimDots)(usePath);
-  var ret = _objectPath.default.get(rxJsonSchema, usePath);
+  var ret = (0, _utils.getProperty)(rxJsonSchema, usePath);
   return ret;
 }
 function fillPrimaryKey(primaryPath, jsonSchema, documentData) {
@@ -81,7 +79,7 @@ function getComposedPrimaryKeyOfDocumentData(jsonSchema, documentData) {
   }
   var compositePrimary = jsonSchema.primaryKey;
   return compositePrimary.fields.map(field => {
-    var value = _objectPath.default.get(documentData, field);
+    var value = (0, _utils.getProperty)(documentData, field);
     if (typeof value === 'undefined') {
       throw (0, _rxError.newRxError)('DOC18', {
         args: {

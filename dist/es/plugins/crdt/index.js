@@ -1,6 +1,5 @@
 import { newRxError } from '../../rx-error';
-import objectPath from 'object-path';
-import { clone, deepEqual, ensureNotFalsy, now, objectPathMonad, toArray } from '../../plugins/utils';
+import { clone, deepEqual, ensureNotFalsy, getProperty, now, objectPathMonad, setProperty, toArray } from '../../plugins/utils';
 import modifyjs from 'modifyjs';
 import { overwritable } from '../..';
 export async function updateCRDT(entry) {
@@ -15,7 +14,7 @@ export async function updateCRDT(entry) {
   var crdtOptions = ensureNotFalsy(jsonSchema.crdt);
   var storageToken = await this.collection.database.storageToken;
   return this.incrementalModify(docData => {
-    var crdtDocField = clone(objectPath.get(docData, crdtOptions.field));
+    var crdtDocField = clone(getProperty(docData, crdtOptions.field));
     var operation = {
       body: toArray(entry),
       creator: storageToken,
@@ -30,7 +29,7 @@ export async function updateCRDT(entry) {
     crdtDocField.operations.push(lastAr);
     crdtDocField.hash = hashCRDTOperations(this.collection.database.hashFunction, crdtDocField);
     docData = runOperationOnDocument(this.collection.database.storage.statics, this.collection.schema.jsonSchema, docData, operation);
-    objectPath.set(docData, crdtOptions.field, crdtDocField);
+    setProperty(docData, crdtOptions.field, crdtDocField);
     return docData;
   }, RX_CRDT_CONTEXT);
 }
@@ -56,7 +55,7 @@ export async function insertCRDT(entry) {
     operations: [],
     hash: ''
   };
-  objectPath.set(insertData, crdtOptions.field, crdtDocField);
+  setProperty(insertData, crdtOptions.field, crdtDocField);
   var lastAr = [operation];
   crdtDocField.operations.push(lastAr);
   crdtDocField.hash = hashCRDTOperations(this.database.hashFunction, crdtDocField);
@@ -199,7 +198,7 @@ export function rebuildFromCRDT(storageStatics, schema, docData, crdts) {
   var base = {
     _deleted: false
   };
-  objectPath.set(base, ensureNotFalsy(schema.crdt).field, crdts);
+  setProperty(base, ensureNotFalsy(schema.crdt).field, crdts);
   crdts.operations.forEach(operations => {
     operations.forEach(op => {
       base = runOperationOnDocument(storageStatics, schema, base, op);
@@ -370,7 +369,7 @@ export var RxDBcrdtPlugin = {
               hash: ''
             };
             crdtOperations.hash = hashCRDTOperations(collection.database.hashFunction, crdtOperations);
-            objectPath.set(docData, crdtOptions.field, crdtOperations);
+            setProperty(docData, crdtOptions.field, crdtOperations);
             return docData;
           });
           return bulkInsertBefore(useDocsData);
