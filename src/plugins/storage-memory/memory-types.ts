@@ -1,6 +1,6 @@
 import { Subject } from 'rxjs';
 import type {
-    DexiePreparedQuery,
+    DefaultPreparedQuery,
     EventBulk,
     RxAttachmentWriteData,
     RxConflictResultionTask,
@@ -76,4 +76,4 @@ export type DocWithIndexString<RxDocType> = {
     indexString: string;
 };
 
-export type MemoryPreparedQuery<DocType> = DexiePreparedQuery<DocType>;
+export type MemoryPreparedQuery<DocType> = DefaultPreparedQuery<DocType>;

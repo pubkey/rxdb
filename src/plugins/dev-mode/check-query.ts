@@ -2,11 +2,11 @@ import type {
     RxPluginPreCreateRxQueryArgs,
     MangoQuery,
     RxPluginPrePrepareQueryArgs,
-    DexiePreparedQuery,
     FilledMangoQuery,
     RxJsonSchema,
     RxDocumentData,
-    MangoQuerySelector
+    MangoQuerySelector,
+    DefaultPreparedQuery
 } from '../../types';
 import { newRxError, newRxTypeError } from '../../rx-error';
 import {
@@ -159,7 +159,7 @@ export function areSelectorsSatisfiedByIndex<RxDocType>(
     schema: RxJsonSchema<RxDocumentData<RxDocType>>,
     query: FilledMangoQuery<RxDocType>
 ): boolean {
-    const preparedQuery: DexiePreparedQuery<any> = RxStorageDexieStatics.prepareQuery(
+    const preparedQuery: DefaultPreparedQuery<any> = RxStorageDexieStatics.prepareQuery(
         schema,
         query
     );

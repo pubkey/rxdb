@@ -101,7 +101,7 @@ export type {
     RxStorageInstance,
     RxStorageDefaultCheckpoint,
     CategorizeBulkWriteRowsOutput,
-    DexiePreparedQuery,
+    DefaultPreparedQuery,
     RxStorageCountResult,
 
     // conflict handling

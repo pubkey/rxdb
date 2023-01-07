@@ -23,7 +23,8 @@ import type {
     Override,
     RxConflictResultionTask,
     RxConflictResultionTaskSolution,
-    RxJsonSchema
+    RxJsonSchema,
+    RxQueryPlan
 } from './';
 import type {
     Observable
@@ -168,6 +169,10 @@ export type RxStorageStatics = Readonly<{
     checkpointSchema: DeepReadonly<JsonSchema>;
 }>;
 
+export type DefaultPreparedQuery<RxDocType> = {
+    query: FilledMangoQuery<RxDocType>;
+    queryPlan: RxQueryPlan;
+};
 
 export interface RxStorageInstance<
     /**

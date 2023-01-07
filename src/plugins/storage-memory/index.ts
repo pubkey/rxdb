@@ -10,7 +10,7 @@ import {
     createMemoryStorageInstance,
     RxStorageInstanceMemory
 } from './rx-storage-instance-memory';
-import { RxStorageDexieStatics } from '../storage-dexie';
+import { RxStorageDefaultStatics } from '../../rx-storage-statics';
 
 /**
  * Keep the state even when the storage instance is closed.
@@ -25,7 +25,7 @@ export function getRxStorageMemory(
 
     const storage: RxStorageMemory = {
         name: 'memory',
-        statics: RxStorageDexieStatics,
+        statics: RxStorageDefaultStatics,
         collectionStates: COLLECTION_STATES,
         createStorageInstance<RxDocType>(
             params: RxStorageInstanceCreationParams<RxDocType, RxStorageMemoryInstanceCreationOptions>

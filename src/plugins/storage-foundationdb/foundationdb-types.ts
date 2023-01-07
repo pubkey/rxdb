@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
 import type {
-    DexiePreparedQuery,
+    DefaultPreparedQuery,
     EventBulk,
     RxAttachmentWriteData,
     RxDocumentData,
@@ -67,4 +67,4 @@ export type RxStorageFoundationDB = RxStorage<FoundationDBStorageInternals<any>,
 };
 
 
-export type FoundationDBPreparedQuery<DocType> = DexiePreparedQuery<DocType>;
+export type FoundationDBPreparedQuery<DocType> = DefaultPreparedQuery<DocType>;

@@ -6,14 +6,15 @@ import type {
     RxDocumentData,
     RxJsonSchema,
     RxStorageStatics,
-    DexiePreparedQuery,
     FilledMangoQuery,
-    MangoQuery
+    MangoQuery,
+    DefaultPreparedQuery
 } from './types';
 import { newRxError } from './rx-error';
 import { getQueryPlan } from './query-planner';
 import { DEFAULT_CHECKPOINT_SCHEMA } from './rx-schema-helper';
 import { getMingoQuery } from './rx-query-mingo';
+
 
 /**
  * Most RxStorage implementations use these static functions.
@@ -24,7 +25,7 @@ export const RxStorageDefaultStatics: RxStorageStatics = {
     prepareQuery<RxDocType>(
         schema: RxJsonSchema<RxDocumentData<RxDocType>>,
         mutateableQuery: FilledMangoQuery<RxDocType>
-    ): DexiePreparedQuery<RxDocType> {
+    ): DefaultPreparedQuery<RxDocType> {
 
         if (!mutateableQuery.sort) {
             throw newRxError('SNH', {
@@ -49,14 +50,14 @@ export const RxStorageDefaultStatics: RxStorageStatics = {
 
     getSortComparator<RxDocType>(
         schema: RxJsonSchema<RxDocumentData<RxDocType>>,
-        preparedQuery: DexiePreparedQuery<RxDocType>
+        preparedQuery: DefaultPreparedQuery<RxDocType>
     ): DeterministicSortComparator<RxDocType> {
         return getDefaultSortComparator(schema, preparedQuery.query);
     },
 
     getQueryMatcher<RxDocType>(
         _schema: RxJsonSchema<RxDocType>,
-        preparedQuery: DexiePreparedQuery<RxDocType>
+        preparedQuery: DefaultPreparedQuery<RxDocType>
     ): QueryMatcher<RxDocumentData<RxDocType>> {
         const query = preparedQuery.query;
         const mingoQuery = getMingoQuery(query.selector);

@@ -26,10 +26,10 @@ import type {
     RxConflictResultionTaskSolution,
     RxStorageDefaultCheckpoint,
     CategorizeBulkWriteRowsOutput,
-    RxStorageCountResult
+    RxStorageCountResult,
+    DefaultPreparedQuery
 } from '../../types';
 import {
-    DexiePreparedQuery,
     DexieSettings,
     DexieStorageInternals
 } from '../../types/plugins/dexie';
@@ -226,7 +226,7 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
         return ret;
     }
 
-    query(preparedQuery: DexiePreparedQuery<RxDocType>): Promise<RxStorageQueryResult<RxDocType>> {
+    query(preparedQuery: DefaultPreparedQuery<RxDocType>): Promise<RxStorageQueryResult<RxDocType>> {
         ensureNotClosed(this);
         return dexieQuery(
             this,
@@ -234,7 +234,7 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
         );
     }
     async count(
-        preparedQuery: DexiePreparedQuery<RxDocType>
+        preparedQuery: DefaultPreparedQuery<RxDocType>
     ): Promise<RxStorageCountResult> {
         const result = await dexieCount(this, preparedQuery);
         return {

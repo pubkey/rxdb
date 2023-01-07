@@ -1,7 +1,7 @@
 import { QueryMatcher } from 'event-reduce-js';
 import { RxStorageDefaultStatics } from '../../rx-storage-statics';
 import type {
-    DexiePreparedQuery,
+    DefaultPreparedQuery,
     RxDocumentData,
     RxQueryPlan,
     RxStorageQueryResult
@@ -55,7 +55,7 @@ export function getKeyRangeByQueryPlan(
  */
 export async function dexieQuery<RxDocType>(
     instance: RxStorageInstanceDexie<RxDocType>,
-    preparedQuery: DexiePreparedQuery<RxDocType>
+    preparedQuery: DefaultPreparedQuery<RxDocType>
 ): Promise<RxStorageQueryResult<RxDocType>> {
     const state = await instance.internals;
     const query = preparedQuery.query;
@@ -188,7 +188,7 @@ export async function dexieQuery<RxDocType>(
 
 export async function dexieCount<RxDocType>(
     instance: RxStorageInstanceDexie<RxDocType>,
-    preparedQuery: DexiePreparedQuery<RxDocType>
+    preparedQuery: DefaultPreparedQuery<RxDocType>
 ): Promise<number> {
     const state = await instance.internals;
     const queryPlan = preparedQuery.queryPlan;
