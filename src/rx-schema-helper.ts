@@ -1,4 +1,3 @@
-import objectPath from 'object-path';
 import { newRxError } from './rx-error';
 import type {
     CompositePrimaryKey,
@@ -12,6 +11,7 @@ import type {
 } from './types';
 import {
     flatClone,
+    getProperty,
     isMaybeReadonlyArray,
     RX_META_LWT_MINIMUM,
     sortObject,
@@ -53,7 +53,7 @@ export function getSchemaByObjectPath<T = any>(
     usePath = 'properties.' + usePath;
     usePath = trimDots(usePath);
 
-    const ret = objectPath.get(rxJsonSchema, usePath);
+    const ret = getProperty(rxJsonSchema, usePath);
     return ret;
 }
 
@@ -111,7 +111,7 @@ export function getComposedPrimaryKeyOfDocumentData<RxDocType>(
 
     const compositePrimary: CompositePrimaryKey<RxDocType> = jsonSchema.primaryKey as any;
     return compositePrimary.fields.map(field => {
-        const value = objectPath.get(documentData as any, field as string);
+        const value = getProperty(documentData as any, field as string);
         if (typeof value === 'undefined') {
             throw newRxError('DOC18', { args: { field, documentData } });
         }

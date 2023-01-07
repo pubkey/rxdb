@@ -5,7 +5,6 @@
  */
 import AES from 'crypto-js/aes';
 import * as cryptoEnc from 'crypto-js/enc-utf8';
-import objectPath from 'object-path';
 import { wrapRxStorageInstance } from '../../plugin-helpers';
 import {
     INTERNAL_STORE_SCHEMA_TITLE
@@ -26,7 +25,9 @@ import {
     b64EncodeUnicode,
     clone,
     ensureNotFalsy,
-    flatClone
+    flatClone,
+    getProperty,
+    setProperty
 } from '../../plugins/utils';
 
 export const MINIMUM_PASSWORD_LENGTH: 8 = 8;
@@ -121,14 +122,14 @@ export function wrappedKeyEncryptionStorage<Internals, InstanceCreationOptions>(
                     docData = cloneWithoutAttachments(docData);
                     ensureNotFalsy(params.schema.encrypted)
                         .forEach(path => {
-                            const value = objectPath.get(docData, path);
+                            const value = getProperty(docData, path);
                             if (typeof value === 'undefined') {
                                 return;
                             }
 
                             const stringValue = JSON.stringify(value);
                             const encrypted = encryptString(stringValue, password);
-                            objectPath.set(docData, path, encrypted);
+                            setProperty(docData, path, encrypted);
                         });
 
                     // handle attachments
@@ -153,13 +154,13 @@ export function wrappedKeyEncryptionStorage<Internals, InstanceCreationOptions>(
                     docData = cloneWithoutAttachments(docData);
                     ensureNotFalsy(params.schema.encrypted)
                         .forEach(path => {
-                            const value = objectPath.get(docData, path);
+                            const value = getProperty(docData, path);
                             if (typeof value === 'undefined') {
                                 return;
                             }
                             const decrypted = decryptString(value, password);
                             const decryptedParsed = JSON.parse(decrypted);
-                            objectPath.set(docData, path, decryptedParsed);
+                            setProperty(docData, path, decryptedParsed);
                         });
                     return docData;
                 }

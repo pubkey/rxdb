@@ -1,7 +1,6 @@
 import type {
     DeepReadonlyObject
 } from '../../types';
-import equal from 'fast-deep-equal';
 
 export function deepFreeze<T>(o: T): T {
     Object.freeze(o);
@@ -26,14 +25,10 @@ export function deepFreeze<T>(o: T): T {
 }
 
 
-export function deepEqual<T>(obj1: T, obj2: T): boolean {
-    return equal(obj1, obj2);
-}
-
 
 /**
  * To get specific nested path values from objects,
- * RxDB normally uses the 'object-path' npm module.
+ * RxDB normally uses the 'dot-prop' npm module.
  * But when performance is really relevant, this is not fast enough.
  * Instead we use a monad that can prepare some stuff up front
  * and we can re-use the generated function.

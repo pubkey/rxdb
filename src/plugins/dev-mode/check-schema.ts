@@ -2,8 +2,6 @@
  * does additional checks over the schema-json
  * to ensure nothing is broken or not supported
  */
-
-import objectPath from 'object-path';
 import {
     newRxError
 } from '../../rx-error';
@@ -16,7 +14,7 @@ import type {
     TopLevelProperty
 } from '../../types';
 import {
-    flattenObject, isMaybeReadonlyArray,
+    flattenObject, getProperty, isMaybeReadonlyArray,
     trimDots
 } from '../../plugins/utils';
 import { rxDocumentProperties } from './entity-properties';
@@ -458,8 +456,8 @@ export function checkSchema(jsonSchema: RxJsonSchema<any>) {
         .filter(key => key !== '')
         .filter((elem, pos, arr) => arr.indexOf(elem) === pos) // unique
         .filter(key => { // check if this path defines an index
-            const value = objectPath.get(jsonSchema, key);
-            return !!value.index;
+            const value = getProperty(jsonSchema, key);
+            return value && !!value.index;
         })
         .forEach(key => { // replace inner properties
             key = key.replace('properties.', ''); // first
@@ -483,7 +481,7 @@ export function checkSchema(jsonSchema: RxJsonSchema<any>) {
         .filter((elem, pos, arr) => arr.indexOf(elem) === pos) // from now on working only with unique indexes
         .map(indexPath => {
             const realPath = getSchemaPropertyRealPath(indexPath); // real path in the collection schema
-            const schemaObj = objectPath.get(jsonSchema, realPath); // get the schema of the indexed property
+            const schemaObj = getProperty(jsonSchema, realPath); // get the schema of the indexed property
             if (!schemaObj || typeof schemaObj !== 'object') {
                 throw newRxError('SC21', {
                     index: indexPath,
@@ -524,8 +522,8 @@ export function checkSchema(jsonSchema: RxJsonSchema<any>) {
         .filter((elem, pos, arr) => arr.indexOf(elem) === pos) // unique
         .filter(key => {
             // check if this path defines an encrypted field
-            const value = objectPath.get(jsonSchema, key);
-            return !!value.encrypted;
+            const value = getProperty(jsonSchema, key);
+            return value && !!value.encrypted;
         })
         .forEach(key => { // replace inner properties
             key = key.replace('properties.', ''); // first
@@ -543,7 +541,7 @@ export function checkSchema(jsonSchema: RxJsonSchema<any>) {
                 // real path in the collection schema
                 const realPath = getSchemaPropertyRealPath(propPath);
                 // get the schema of the indexed property
-                const schemaObj = objectPath.get(jsonSchema, realPath);
+                const schemaObj = getProperty(jsonSchema, realPath);
                 if (!schemaObj || typeof schemaObj !== 'object') {
                     throw newRxError('SC28', {
                         field: propPath,
