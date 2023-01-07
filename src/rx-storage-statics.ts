@@ -7,13 +7,13 @@ import type {
     RxJsonSchema,
     RxStorageStatics,
     DexiePreparedQuery,
-    FilledMangoQuery
+    FilledMangoQuery,
+    MangoQuery
 } from './types';
 import { newRxError } from './rx-error';
 import { getQueryPlan } from './query-planner';
 import { DEFAULT_CHECKPOINT_SCHEMA } from './rx-schema-helper';
 import { getMingoQuery } from './rx-query-mingo';
-import { MangoQuery } from './types';
 
 /**
  * Most RxStorage implementations use these static functions.
