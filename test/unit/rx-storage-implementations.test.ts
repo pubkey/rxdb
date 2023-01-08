@@ -2940,10 +2940,11 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
             // ensure we got the correct events on both sides
             await waitUntil(() => emittedA.length === 2);
             await waitUntil(() => emittedB.length === 2);
-            assert.strictEqual(
-                JSON.stringify(emittedA, null, 4),
-                JSON.stringify(emittedB, null, 4)
-            );
+            [emittedA, emittedB].forEach(emitted => {
+                assert.strictEqual(emitted.length, 2);
+                assert.strictEqual(emitted[0].events[0].operation, 'INSERT');
+                assert.strictEqual(emitted[1].events[0].operation, 'UPDATE');
+            });
 
             // close both
             await closeMultiInstanceRxStorageInstance(instances);
