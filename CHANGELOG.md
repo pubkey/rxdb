@@ -39,6 +39,7 @@
   - [destructuring](https://caniuse.com/?search=destructuring)
   - [default parameters](https://caniuse.com/?search=default%20parameters)
   - [object spread](https://caniuse.com/?search=Object%20spread)
+- FIX(remote storage) ensure caching works properly even on parallel create-calls
 
 <!-- /CHANGELOG NEWEST -->
 

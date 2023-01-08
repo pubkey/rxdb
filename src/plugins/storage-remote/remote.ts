@@ -21,7 +21,7 @@ import type {
  */
 export function exposeRxStorageRemote(settings: RxStorageRemoteExposeSettings): RxStorageRemoteExposeType {
     type InstanceState = {
-        storageInstance: RxStorageInstance<any, any, any>;
+        storageInstancePromise: Promise<RxStorageInstance<any, any, any>>;
         connectionIds: Set<string>;
         params: RxStorageInstanceCreationParams<any, any>;
     };
@@ -55,31 +55,17 @@ export function exposeRxStorageRemote(settings: RxStorageRemoteExposeSettings): 
         let state = instanceByFullName.get(fullName);
         if (!state) {
             try {
-                const newRxStorageInstance = await settings.storage.createStorageInstance(params);
                 state = {
-                    storageInstance: newRxStorageInstance,
+                    /**
+                     * We work with a promise here to ensure
+                     * that parallel create-calls will still end up
+                     * with exactly one instance and not more.
+                     */
+                    storageInstancePromise: settings.storage.createStorageInstance(params),
                     connectionIds: new Set(),
                     params
                 };
                 instanceByFullName.set(fullName, state);
-
-                /**
-                 * Automatically subscribe to the streams$
-                 * because we always need them.
-                 * Also ensure that changestream events are multicasted
-                 * to all subscribers.
-                 */
-                state.storageInstance.changeStream().subscribe(changes => {
-                    Array.from(ensureNotFalsy(state).connectionIds).forEach(id => {
-                        const message: MessageFromRemote = {
-                            connectionId: id,
-                            answerTo: 'changestream',
-                            method: 'changeStream',
-                            return: changes
-                        };
-                        settings.send(message);
-                    });
-                });
             } catch (err: any) {
                 settings.send(createErrorAnswer(msg, err));
                 return;
@@ -88,12 +74,30 @@ export function exposeRxStorageRemote(settings: RxStorageRemoteExposeSettings): 
             // if instance already existed, ensure that the schema is equal
             if (!deepEqual(params.schema, state.params.schema)) {
                 settings.send(createErrorAnswer(msg, new Error('Remote storage: schema not equal to existing storage')));
+                return;
             }
         }
         state.connectionIds.add(msg.connectionId);
         const subs: Subscription[] = [];
+
+        const storageInstance = await state.storageInstancePromise;
+        /**
+         * Automatically subscribe to the changeStream()
+         * because we always need them.
+         */
         subs.push(
-            state.storageInstance.conflictResultionTasks().subscribe(conflicts => {
+            storageInstance.changeStream().subscribe(changes => {
+                const message: MessageFromRemote = {
+                    connectionId,
+                    answerTo: 'changestream',
+                    method: 'changeStream',
+                    return: changes
+                };
+                settings.send(message);
+            })
+        );
+        subs.push(
+            storageInstance.conflictResultionTasks().subscribe(conflicts => {
                 const message: MessageFromRemote = {
                     connectionId,
                     answerTo: 'conflictResultionTasks',
@@ -130,7 +134,7 @@ export function exposeRxStorageRemote(settings: RxStorageRemoteExposeSettings): 
                         subs.forEach(sub => sub.unsubscribe());
                         return;
                     }
-                    result = await (ensureNotFalsy(state).storageInstance as any)[message.method](
+                    result = await (storageInstance as any)[message.method](
                         message.params[0],
                         message.params[1],
                         message.params[2],
