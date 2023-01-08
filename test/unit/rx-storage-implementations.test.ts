@@ -2916,11 +2916,32 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     skip: 0
                 }
             );
-
             const foundViaQuery = await instances.b.query(preparedQuery);
             assert.strictEqual(foundViaQuery.documents.length, 1);
-            const foundViaQueryDoc = foundViaQuery.documents.find(doc => doc.key === writeData.key);
-            assert.ok(foundViaQueryDoc);
+            const foundViaQueryDoc = ensureNotFalsy(foundViaQuery.documents.find(doc => doc.key === writeData.key));
+
+            // update on B
+            const newDoc: typeof foundViaQueryDoc = clone(foundViaQueryDoc);
+            newDoc.value = 'updatedB';
+            newDoc._rev = createRevision(randomCouchString(10), foundViaQueryDoc);
+            const updateBResult = await instances.b.bulkWrite([{
+                previous: foundViaQueryDoc,
+                document: newDoc
+            }], testContext);
+            assert.deepStrictEqual(updateBResult.error, {});
+
+            // check update on A
+            const foundAgainOnA = await instances.a.query(preparedQuery);
+            const foundViaQueryDocA = ensureNotFalsy(foundAgainOnA.documents.find(doc => doc.key === writeData.key));
+            assert.deepEqual(foundViaQueryDocA.value, 'updatedB');
+
+            // ensure we got the correct events on both sides
+            await waitUntil(() => emittedA.length === 2);
+            await waitUntil(() => emittedB.length === 2);
+            assert.strictEqual(
+                JSON.stringify(emittedA, null, 4),
+                JSON.stringify(emittedB, null, 4)
+            );
 
             // close both
             await closeMultiInstanceRxStorageInstance(instances);
