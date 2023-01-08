@@ -1,4 +1,3 @@
-import { ensureNotFalsy } from 'event-reduce-js';
 import { firstValueFrom, filter, Subject } from 'rxjs';
 import { randomCouchString } from '../../plugins/utils';
 export var RxStorageRemote = /*#__PURE__*/function () {
@@ -15,10 +14,11 @@ export var RxStorageRemote = /*#__PURE__*/function () {
     return this.requestIdSeed + '|' + newId;
   };
   _proto.createStorageInstance = async function createStorageInstance(params) {
+    var connectionId = 'c|' + this.getRequestId();
     var requestId = this.getRequestId();
     var waitForOkPromise = firstValueFrom(this.settings.messages$.pipe(filter(msg => msg.answerTo === requestId)));
     this.settings.send({
-      connectionId: this.getRequestId(),
+      connectionId,
       method: 'create',
       requestId,
       params
@@ -29,7 +29,7 @@ export var RxStorageRemote = /*#__PURE__*/function () {
     }
     return new RxStorageInstanceRemote(this, params.databaseName, params.collectionName, params.schema, {
       params,
-      connectionId: ensureNotFalsy(waitForOkResult.connectionId)
+      connectionId
     }, params.options);
   };
   return RxStorageRemote;

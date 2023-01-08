@@ -5,7 +5,6 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.RxStorageRemote = exports.RxStorageInstanceRemote = void 0;
 exports.getRxStorageRemote = getRxStorageRemote;
-var _eventReduceJs = require("event-reduce-js");
 var _rxjs = require("rxjs");
 var _utils = require("../../plugins/utils");
 var RxStorageRemote = /*#__PURE__*/function () {
@@ -22,10 +21,11 @@ var RxStorageRemote = /*#__PURE__*/function () {
     return this.requestIdSeed + '|' + newId;
   };
   _proto.createStorageInstance = async function createStorageInstance(params) {
+    var connectionId = 'c|' + this.getRequestId();
     var requestId = this.getRequestId();
     var waitForOkPromise = (0, _rxjs.firstValueFrom)(this.settings.messages$.pipe((0, _rxjs.filter)(msg => msg.answerTo === requestId)));
     this.settings.send({
-      connectionId: this.getRequestId(),
+      connectionId,
       method: 'create',
       requestId,
       params
@@ -36,7 +36,7 @@ var RxStorageRemote = /*#__PURE__*/function () {
     }
     return new RxStorageInstanceRemote(this, params.databaseName, params.collectionName, params.schema, {
       params,
-      connectionId: (0, _eventReduceJs.ensureNotFalsy)(waitForOkResult.connectionId)
+      connectionId
     }, params.options);
   };
   return RxStorageRemote;
