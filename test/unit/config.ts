@@ -13,7 +13,6 @@ import {
     getRxStorageDexie,
     RxStorageDexieStatics
 } from '../../plugins/storage-dexie';
-import { getRxStorageWorker } from '../../plugins/storage-worker';
 import { getRxStorageRemoteWebsocket } from '../../plugins/storage-remote-websocket';
 import { getRxStorageMemory } from '../../plugins/storage-memory';
 import { CUSTOM_STORAGE } from './custom-storage';
@@ -208,38 +207,6 @@ export function setDefaultStorage(storageKey: string) {
                 },
                 hasPersistence: true,
                 hasMultiInstance: true,
-                hasCouchDBReplication: false,
-                hasAttachments: false,
-                hasRegexSupport: true
-            };
-            break;
-        case 'dexie-worker':
-            const dexieMemoryWorkerPath = require('path').join(
-                '../../../../dist/lib/plugins/storage-worker/workers/',
-                'memory.worker.js'
-            );
-            console.log('dexieMemoryWorkerPath: ' + dexieMemoryWorkerPath);
-            config.storage = {
-                name: storageKey,
-                getStorage: () => getRxStorageWorker(
-                    {
-                        statics: RxStorageDexieStatics,
-                        workerInput: dexieMemoryWorkerPath
-                    }
-                ),
-                getPerformanceStorage() {
-                    return {
-                        storage: getRxStorageWorker(
-                            {
-                                statics: RxStorageDexieStatics,
-                                workerInput: dexieMemoryWorkerPath
-                            }
-                        ),
-                        description: 'dexie-worker-memory'
-                    };
-                },
-                hasPersistence: false,
-                hasMultiInstance: false,
                 hasCouchDBReplication: false,
                 hasAttachments: false,
                 hasRegexSupport: true
