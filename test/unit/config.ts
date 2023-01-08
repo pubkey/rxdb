@@ -14,10 +14,8 @@ import {
 } from '../../plugins/pouchdb';
 import { getRxStorageLoki } from '../../plugins/lokijs';
 import {
-    getRxStorageDexie,
-    RxStorageDexieStatics
+    getRxStorageDexie
 } from '../../plugins/dexie';
-import { getRxStorageWorker } from '../../plugins/worker';
 import { getRxStorageMemory } from '../../plugins/memory';
 import { CUSTOM_STORAGE } from './custom-storage';
 import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv';
@@ -253,39 +251,6 @@ export function setDefaultStorage(storageKey: string) {
                 hasRegexSupport: true
             };
             break;
-        case 'dexie-worker':
-            const dexieMemoryWorkerPath = require('path').join(
-                '../../../../dist/lib/plugins/worker/workers/',
-                'dexie-memory.worker.js'
-            );
-            console.log('dexieMemoryWorkerPath: ' + dexieMemoryWorkerPath);
-            config.storage = {
-                name: 'dexie-worker',
-                getStorage: () => getRxStorageWorker(
-                    {
-                        statics: RxStorageDexieStatics,
-                        workerInput: dexieMemoryWorkerPath
-                    }
-                ),
-                getPerformanceStorage() {
-                    return {
-                        storage: getRxStorageWorker(
-                            {
-                                statics: RxStorageDexieStatics,
-                                workerInput: dexieMemoryWorkerPath
-                            }
-                        ),
-                        description: 'dexie-worker-memory'
-                    };
-                },
-                hasPersistence: false,
-                hasMultiInstance: false,
-                hasCouchDBReplication: false,
-                hasAttachments: false,
-                hasRegexSupport: true
-            };
-            break;
-
         case 'foundationdb':
             const foundationDBAPIVersion = 620;
 
