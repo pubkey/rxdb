@@ -14,13 +14,13 @@ In the worker process JavaScript file, you have wrap the original RxStorage with
 ```ts
 // shared-worker.ts
 
-import { exposeSharedWorkerRxStorage } from 'rxdb-premium/plugins/worker';
+import { exposeWorkerRxStorage } from 'rxdb-premium/plugins/storage-worker';
 import { 
     getRxStorageIndexedDB,
     RxStorageIndexedDBStatics
 } from 'rxdb-premium/plugins/indexeddb';
 
-exposeSharedWorkerRxStorage({
+exposeWorkerRxStorage({
     /**
      * You can wrap any implementation of the RxStorage interface
      * into a worker.
@@ -36,7 +36,7 @@ exposeSharedWorkerRxStorage({
 import {
     createRxDatabase
 } from 'rxdb';
-import { getRxStorageSharedWorker } from 'rxdb-premium/plugins/worker';
+import { getRxStorageSharedWorker } from 'rxdb-premium/plugins/storage-worker';
 import { getRxStorageIndexedDB } from 'rxdb/plugins/indexeddb';
 
 
@@ -68,12 +68,15 @@ The `shared-worker.js` must be a self containing JavaScript file that contains a
 To make it easier for you, RxDB ships with pre-bundles worker files that are ready to use.
 You can find them in the folder `node_modules/rxdb-premium/dist/workers` after you have installed the [RxDB Premium Plugin](https://rxdb.info/premium.html). From there you can copy them to a location where it can be served from the webserver and then use their path to create the `RxDatabase`
 
+Any valid `worker.js` JavaScript file can be used both, for normal Workers and SharedWorkers.
+
+
 ```ts
 import {
     createRxDatabase
 } from 'rxdb';
-import { getRxStorageSharedWorker } from 'rxdb-premium/plugins/worker';
-import { RxStorageLokiStatics } from 'rxdb/plugins/storage-lokijs';
+import { getRxStorageSharedWorker } from 'rxdb-premium/plugins/storage-worker';
+import { RxStorageLokiStatics } from 'rxdb/plugins/lokijs';
 const database = await createRxDatabase({
     name: 'mydatabase',
     storage: getRxStorageSharedWorker(
@@ -97,7 +100,7 @@ When a SharedWorker RxStorage is used, it is recommended to run the replication 
 ```ts
 // shared-worker.ts
 
-import { exposeSharedWorkerRxStorage } from 'rxdb-premium/plugins/worker';
+import { exposeSharedWorkerRxStorage } from 'rxdb-premium/plugins/storage-worker';
 import { 
     getRxStorageIndexedDB,
     RxStorageIndexedDBStatics

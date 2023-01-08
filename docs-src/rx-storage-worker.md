@@ -1,18 +1,18 @@
 # Worker RxStorage
 
-With the worker plugin, you can put the `RxStorage` of your database inside of a WebWorker (in browsers) or a Worker Thread (in node.js). By doing so, you can take CPU load from the main process and move it into the worker's process which can improve the perceived performance of your application. RxDB uses [threads.js](https://github.com/andywer/threads.js/) to create the Worker process an to communicate with it.
+With the worker plugin, you can put the `RxStorage` of your database inside of a WebWorker (in browsers) or a Worker Thread (in node.js). By doing so, you can take CPU load from the main process and move it into the worker's process which can improve the perceived performance of your application. Notice that for browsers, it is recommend to use the [SharedWorker](./rx-storage-shared-worker.md) instead to get a better performance.
 
-**NOTICE:** In browsers, it is recommended to use the [Shared Worker RxStorage](./rx-storage-shared-worker.md) instead because it has better performance benefits.
+**NOTICE:** This plugin is part of [RxDB premium](https://rxdb.info/premium.html). It is not part of the default RxDB module.
 
 ## On the worker process
 
 ```ts
 // worker.ts
 
-import { wrappedWorkerRxStorage } from 'rxdb/plugins/worker';
-import { getRxStorageLoki } from 'rxdb/plugins/storage-lokijs';
+import { exposeWorkerRxStorage } from 'rxdb-premium/plugins/storage-worker';
+import { getRxStorageLoki } from 'rxdb/plugins/lokijs';
 
-wrappedWorkerRxStorage({
+exposeWorkerRxStorage({
     /**
      * You can wrap any implementation of the RxStorage interface
      * into a worker.
@@ -29,8 +29,8 @@ wrappedWorkerRxStorage({
 import {
     createRxDatabase
 } from 'rxdb';
-import { getRxStorageWorker } from 'rxdb/plugins/worker';
-import { RxStorageLokiStatics } from 'rxdb/plugins/storage-lokijs';
+import { getRxStorageWorker } from 'rxdb-premium/plugins/storage-worker';
+import { RxStorageLokiStatics } from 'rxdb/plugins/lokijs';
 
 
 const database = await createRxDatabase({
@@ -57,16 +57,19 @@ const database = await createRxDatabase({
 
 ## Pre-build workers
 
-In the browsers, the `worker.js` must be a self containing JavaScript file that contains all dependencies in a bundle.
-To make it easier for you, RxDB ships with [pre-bundles worker files](https://github.com/pubkey/rxdb/tree/master/dist/workers) that are ready to use.
-You can copy them to a location where it can be served from the webserver and then use their path to create the `RxDatabase`
+The `worker.js` must be a self containing JavaScript file that contains all dependencies in a bundle.
+To make it easier for you, RxDB ships with pre-bundles worker files that are ready to use.
+You can find them in the folder `node_modules/rxdb-premium/dist/workers` after you have installed the [RxDB Premium Plugin](https://rxdb.info/premium.html). From there you can copy them to a location where it can be served from the webserver and then use their path to create the `RxDatabase`.
+
+Any valid `worker.js` JavaScript file can be used both, for normal Workers and SharedWorkers.
+
 
 ```ts
 import {
     createRxDatabase
 } from 'rxdb';
-import { getRxStorageWorker } from 'rxdb/plugins/worker';
-import { RxStorageLokiStatics } from 'rxdb/plugins/storage-lokijs';
+import { getRxStorageWorker } from 'rxdb-premium/plugins/storage-worker';
+import { RxStorageLokiStatics } from 'rxdb/plugins/lokijs';
 const database = await createRxDatabase({
     name: 'mydatabase',
     storage: getRxStorageWorker(
@@ -107,6 +110,5 @@ const databaseTwo = await createRxDatabase({
 });
 
 ```
-
 
 
