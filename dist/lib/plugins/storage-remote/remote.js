@@ -34,9 +34,13 @@ function exposeRxStorageRemote(settings) {
     var state = instanceByFullName.get(fullName);
     if (!state) {
       try {
-        var newRxStorageInstance = await settings.storage.createStorageInstance(params);
         state = {
-          storageInstance: newRxStorageInstance,
+          /**
+           * We work with a promise here to ensure
+           * that parallel create-calls will still end up
+           * with exactly one instance and not more.
+           */
+          storageInstancePromise: settings.storage.createStorageInstance(params),
           connectionIds: new Set(),
           params
         };
@@ -49,15 +53,17 @@ function exposeRxStorageRemote(settings) {
       // if instance already existed, ensure that the schema is equal
       if (!(0, _utils.deepEqual)(params.schema, state.params.schema)) {
         settings.send((0, _storageRemoteHelpers.createErrorAnswer)(msg, new Error('Remote storage: schema not equal to existing storage')));
+        return;
       }
     }
     state.connectionIds.add(msg.connectionId);
     var subs = [];
+    var storageInstance = await state.storageInstancePromise;
     /**
-     * Automatically subscribe to the streams$
+     * Automatically subscribe to the changeStream()
      * because we always need them.
      */
-    subs.push(state.storageInstance.changeStream().subscribe(changes => {
+    subs.push(storageInstance.changeStream().subscribe(changes => {
       var message = {
         connectionId,
         answerTo: 'changestream',
@@ -66,7 +72,7 @@ function exposeRxStorageRemote(settings) {
       };
       settings.send(message);
     }));
-    subs.push(state.storageInstance.conflictResultionTasks().subscribe(conflicts => {
+    subs.push(storageInstance.conflictResultionTasks().subscribe(conflicts => {
       var message = {
         connectionId,
         answerTo: 'conflictResultionTasks',
@@ -96,7 +102,7 @@ function exposeRxStorageRemote(settings) {
           subs.forEach(sub => sub.unsubscribe());
           return;
         }
-        result = await (0, _utils.ensureNotFalsy)(state).storageInstance[message.method](message.params[0], message.params[1], message.params[2], message.params[3]);
+        result = await storageInstance[message.method](message.params[0], message.params[1], message.params[2], message.params[3]);
         if (message.method === 'close' || message.method === 'remove') {
           subs.forEach(sub => sub.unsubscribe());
           (0, _utils.ensureNotFalsy)(state).connectionIds.delete(connectionId);
