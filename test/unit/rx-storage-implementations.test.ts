@@ -2931,9 +2931,11 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
             assert.deepStrictEqual(updateBResult.error, {});
 
             // check update on A
-            const foundAgainOnA = await instances.a.query(preparedQuery);
-            const foundViaQueryDocA = ensureNotFalsy(foundAgainOnA.documents.find(doc => doc.key === writeData.key));
-            assert.deepEqual(foundViaQueryDocA.value, 'updatedB');
+            await waitUntil(async () => {
+                const foundAgainOnA = await instances.a.query(preparedQuery);
+                const foundViaQueryDocA = ensureNotFalsy(foundAgainOnA.documents.find(doc => doc.key === writeData.key));
+                return foundViaQueryDocA.value === 'updatedB';
+            });
 
             // ensure we got the correct events on both sides
             await waitUntil(() => emittedA.length === 2);
