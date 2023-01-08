@@ -15,7 +15,7 @@ The change would make all RxDocuments immutable. When you subscribe to a query a
 
 Related: https://discord.com/channels/969553741705539624/994394488694898840/1036030989006274561
 
-## Use exports field in package.json
+## Use exports field in package.json [DONE]
 
 See [#3422](https://github.com/pubkey/rxdb/issues/3422)
 Fixed in [#4196](https://github.com/pubkey/rxdb/pull/4196)
