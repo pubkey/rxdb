@@ -1,4 +1,3 @@
-import { ensureNotFalsy } from 'event-reduce-js';
 import {
     firstValueFrom,
     filter,
@@ -55,13 +54,14 @@ export class RxStorageRemote implements RxStorage<RxStorageRemoteInternals, any>
     async createStorageInstance<RxDocType>(
         params: RxStorageInstanceCreationParams<RxDocType, any>
     ): Promise<RxStorageInstanceRemote<RxDocType>> {
+        const connectionId = 'c|' + this.getRequestId();
 
         const requestId = this.getRequestId();
         const waitForOkPromise = firstValueFrom(this.settings.messages$.pipe(
             filter(msg => msg.answerTo === requestId)
         ));
         this.settings.send({
-            connectionId: this.getRequestId(),
+            connectionId,
             method: 'create',
             requestId,
             params
@@ -78,7 +78,7 @@ export class RxStorageRemote implements RxStorage<RxStorageRemoteInternals, any>
             params.schema,
             {
                 params,
-                connectionId: ensureNotFalsy(waitForOkResult.connectionId)
+                connectionId
             },
             params.options
         );

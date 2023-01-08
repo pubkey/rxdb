@@ -62,6 +62,24 @@ export function exposeRxStorageRemote(settings: RxStorageRemoteExposeSettings): 
                     params
                 };
                 instanceByFullName.set(fullName, state);
+
+                /**
+                 * Automatically subscribe to the streams$
+                 * because we always need them.
+                 * Also ensure that changestream events are multicasted
+                 * to all subscribers.
+                 */
+                state.storageInstance.changeStream().subscribe(changes => {
+                    Array.from(ensureNotFalsy(state).connectionIds).forEach(id => {
+                        const message: MessageFromRemote = {
+                            connectionId: id,
+                            answerTo: 'changestream',
+                            method: 'changeStream',
+                            return: changes
+                        };
+                        settings.send(message);
+                    });
+                });
             } catch (err: any) {
                 settings.send(createErrorAnswer(msg, err));
                 return;
@@ -74,22 +92,6 @@ export function exposeRxStorageRemote(settings: RxStorageRemoteExposeSettings): 
         }
         state.connectionIds.add(msg.connectionId);
         const subs: Subscription[] = [];
-        /**
-         * Automatically subscribe to the streams$
-         * because we always need them.
-         */
-        subs.push(
-            state.storageInstance.changeStream().subscribe(changes => {
-                const message: MessageFromRemote = {
-                    connectionId,
-                    answerTo: 'changestream',
-                    method: 'changeStream',
-                    return: changes
-                };
-
-                settings.send(message);
-            })
-        );
         subs.push(
             state.storageInstance.conflictResultionTasks().subscribe(conflicts => {
                 const message: MessageFromRemote = {

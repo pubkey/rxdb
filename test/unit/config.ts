@@ -295,7 +295,7 @@ export function setDefaultStorage(storageKey: string) {
                 hasMultiInstance: true,
                 hasCouchDBReplication: false,
                 hasAttachments: false,
-                hasRegexSupport: false
+                hasRegexSupport: false // TODO why does setting this to true this not work?
             };
             break;
         default:
