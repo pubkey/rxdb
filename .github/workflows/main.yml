@@ -181,46 +181,6 @@ jobs:
         with:
           run: npm run test:browser:remote
 
-  storage-worker-dexie:
-    runs-on: ubuntu-20.04
-    steps:
-      - uses: actions/checkout@v3
-      - name: Set node version
-        uses: actions/setup-node@v3
-        with:
-          node-version-file: '.nvmrc'
-
-      - name: Reuse npm cache folder
-        uses: actions/cache@v3
-        env:
-          cache-name: cache-node-modules
-        with:
-          path: |
-            ~/.npm
-            ./node_modules
-          key: ${{ runner.os }}-npm-loki-worker-x8-${{ hashFiles('**/package.json') }}
-          restore-keys: |
-            ${{ runner.os }}-npm-loki-worker-x8-
-
-      - name: install npm dependencies
-        run: npm install
-      
-      - name: build
-        run: npm run build
-
-      - name: npm run test:node:dexie-worker
-        run: npm run test:node:dexie-worker
-
-      - run: npm run test:performance:dexie-worker
-
-      # TODO this randomly fails,
-      # I think node.js has a problem with spawning too many workers at once.
-      # So we should retry this in a newer node version.
-      #- name: npm run test:fast:dexie-worker
-      #  run: npm run test:fast:dexie-worker
-
-  # run the node tests for the Dexie.js RxStorage in a different
-  # task to run in parallel.
   storage-dexie:
     runs-on: ubuntu-20.04
     steps:
