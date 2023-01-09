@@ -32,7 +32,7 @@ describe('performance.test.ts', () => {
 
         const collectionsAmount = 4;
         const docsAmount = 600;
-        const parallelQueryAmount = 5;
+        const parallelQueryAmount = 4;
 
         let runsDone = 0;
         while (runsDone < runs) {
