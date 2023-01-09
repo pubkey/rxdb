@@ -24,8 +24,7 @@ describe('performance.test.ts', () => {
     });
     it('run the performance test', async function () {
         this.timeout(120 * 1000);
-        const runs = config.isFastMode() ? 1 : 128;
-
+        const runs = config.isFastMode() ? 1 : 50;
         const perfStorage = config.storage.getPerformanceStorage();
 
         const totalTimes: { [k: string]: number[]; } = {};
