@@ -5,14 +5,16 @@
 
 <!-- ADD new changes here! -->
 
-### 14.0.0-beta.12 (8 January 2023)
+### 14.0.0-beta.13 (9 January 2023)
 
-#### Removing deprecated features
+#
+### Removing deprecated features
 - Remove the deprecated PouchDB RxStorage.
 - REMOVE old `replication-couchdb` plugin. Rename `replication-couchdb-new` to `replication-couchdb`.
 - Remove depricated `skipIfSame` from `putAttachment()`
 
-#### API changes
+#
+### API changes
 - CHANGE use plain json errors inside of RxError parameters to make debugging easier.
 - CHANGE Make RxDocuments immutable
 - ADD `RxDocument.getLatest()`
@@ -28,7 +30,8 @@
 - ADD typings to the query selector
 - CHANGE start replication via pure functions instead of RxCollection methods.
 
-#### Performance improvements
+#
+### Performance improvements
 - CHANGE Do not use hash for revisions but use database instance token instead.
 - CHANGE crunch multiple incremental (aka 'atomic') operations into a single database write. Also batch writes to multiple documents into a single write.
 - CHANGE to reduce bundle size and improve performance, the following JavaScript features will no longer be transpiled:
@@ -41,7 +44,8 @@
   - [default parameters](https://caniuse.com/?search=default%20parameters)
   - [object spread](https://caniuse.com/?search=Object%20spread)
 
-#### Bugfixes
+#
+### Bugfixes
 - CHANGE (memory RxStorage) do not clean up database state on closing of the storage, only on `remove()`.
 - FIX CouchDB replication: Use correct default fetch method.
 - FIX schema hashing should respect the sort order [#4005](https://github.com/pubkey/rxdb/pull/4005)
@@ -49,9 +53,9 @@
 - FIX(remote storage) ensure caching works properly even on parallel create-calls
 - FIX(replication) Composite Primary Keys broken on replicated collections [#4190](https://github.com/pubkey/rxdb/pull/4190)
 
-#### Other changes
+#
+### Other changes
 - REMOVE deprecated `babel-plugin-transform-async-to-promises` plugin.
-
 
 <!-- /CHANGELOG NEWEST -->
 
