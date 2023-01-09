@@ -621,9 +621,6 @@ describe('replication.test.js', () => {
 
             await replicationState.awaitInitialReplication();
 
-
-            await wait(1000);
-
             // clean up afterwards
             db.destroy();
         });
