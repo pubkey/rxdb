@@ -1,7 +1,7 @@
 {
   "name": "rxdb",
   "description": "A realtime Database for JavaScript applications",
-  "version": "14.0.0-beta.13",
+  "version": "14.0.0-beta.14",
   "author": "pubkey",
   "repository": {
     "type": "git",
@@ -430,8 +430,8 @@
     "@types/node": "18.11.18",
     "@types/request": "2.48.8",
     "@types/request-promise-native": "1.0.18",
-    "@typescript-eslint/eslint-plugin": "5.48.0",
-    "@typescript-eslint/parser": "5.48.0",
+    "@typescript-eslint/eslint-plugin": "5.48.1",
+    "@typescript-eslint/parser": "5.48.1",
     "assert": "2.0.0",
     "async-test-util": "2.0.0",
     "babel-loader": "9.1.2",

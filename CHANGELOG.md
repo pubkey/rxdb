@@ -5,16 +5,14 @@
 
 <!-- ADD new changes here! -->
 
-### 14.0.0-beta.13 (9 January 2023)
+### 14.0.0-beta.14 (9 January 2023)
 
 #
-### Removing deprecated features
 - Remove the deprecated PouchDB RxStorage.
 - REMOVE old `replication-couchdb` plugin. Rename `replication-couchdb-new` to `replication-couchdb`.
 - Remove depricated `skipIfSame` from `putAttachment()`
 
 #
-### API changes
 - CHANGE use plain json errors inside of RxError parameters to make debugging easier.
 - CHANGE Make RxDocuments immutable
 - ADD `RxDocument.getLatest()`
@@ -31,7 +29,6 @@
 - CHANGE start replication via pure functions instead of RxCollection methods.
 
 #
-### Performance improvements
 - CHANGE Do not use hash for revisions but use database instance token instead.
 - CHANGE crunch multiple incremental (aka 'atomic') operations into a single database write. Also batch writes to multiple documents into a single write.
 - CHANGE to reduce bundle size and improve performance, the following JavaScript features will no longer be transpiled:
@@ -45,7 +42,6 @@
   - [object spread](https://caniuse.com/?search=Object%20spread)
 
 #
-### Bugfixes
 - CHANGE (memory RxStorage) do not clean up database state on closing of the storage, only on `remove()`.
 - FIX CouchDB replication: Use correct default fetch method.
 - FIX schema hashing should respect the sort order [#4005](https://github.com/pubkey/rxdb/pull/4005)
@@ -55,7 +51,6 @@
 - FIX(sqlite) $in Query not working SQLite [#4278](https://github.com/pubkey/rxdb/issues/4278)
 
 #
-### Other changes
 - REMOVE deprecated `babel-plugin-transform-async-to-promises` plugin.
 
 <!-- /CHANGELOG NEWEST -->
