@@ -173,11 +173,15 @@ export interface SimpleHeroArrayDocumentType {
     name: string;
     skills: string[];
 }
-export function simpleHeroArray(): SimpleHeroArrayDocumentType {
-    return {
+export function simpleHeroArray(partial: Partial<SimpleHeroArrayDocumentType> = {}): SimpleHeroArrayDocumentType {
+    const defaultObj = {
         name: randomString(6),
         skills: new Array(3).fill(0).map(() => randomString(6))
     };
+    return Object.assign(
+        defaultObj,
+        partial
+    );
 }
 
 export interface EncryptedHumanDocumentType {

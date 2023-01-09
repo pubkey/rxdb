@@ -18,7 +18,12 @@ import {
 } from '../../plugins/dev-mode';
 import { EXAMPLE_REVISION_1 } from '../helper/revisions';
 import * as schemas from '../helper/schemas';
-import { HeroArrayDocumentType, human, nestedHuman, NestedHumanDocumentType } from '../helper/schema-objects';
+import {
+    HeroArrayDocumentType,
+    human,
+    nestedHuman,
+    NestedHumanDocumentType
+} from '../helper/schema-objects';
 
 const TEST_CONTEXT = 'rx-storage-query-correctness.test.ts';
 config.parallel('rx-storage-query-correctness.test.ts', () => {
@@ -408,6 +413,60 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                     'bbb',
                     'aaa'
                 ]
+            }
+        ]
+    });
+    testCorrectQueries<schemas.HumanDocumentType>({
+        testTitle: '$in',
+        data: [
+            human('aa', 10, 'alice'),
+            human('bb', 20, 'bob'),
+            human('cc', 30, 'carol'),
+            human('dd', 40, 'dave'),
+            human('ee', 50, 'eve')
+        ],
+        schema: schemas.human,
+        queries: [
+            {
+                info: 'get first',
+                query: {
+                    selector: {
+                        firstName: {
+                            $in: ['alice']
+                        },
+                    },
+                    sort: [{ name: 'asc' }]
+                },
+                expectedResultDocIds: [
+                    'aa'
+                ]
+            },
+            {
+                info: 'get by multiple',
+                query: {
+                    selector: {
+                        firstName: {
+                            $in: ['alice', 'bob']
+                        },
+                    },
+                    sort: [{ name: 'asc' }]
+                },
+                expectedResultDocIds: [
+                    'aa',
+                    'bb'
+                ]
+            },
+            {
+                info: 'get none matching',
+                query: {
+                    selector: {
+                        firstName: {
+                            $in: ['foobar', 'barfoo']
+                        },
+                    },
+                    sort: [{ name: 'asc' }]
+                },
+                expectedResultDocIds: []
             }
         ]
     });
