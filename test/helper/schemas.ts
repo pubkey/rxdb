@@ -960,6 +960,7 @@ export function averageSchema(): RxJsonSchema<AverageSchemaDocumentType> {
         ],
         indexes: [
             'var1',
+            'var2',
             'deep.deep1',
             // one compound index
             [
