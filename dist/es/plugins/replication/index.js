@@ -10,7 +10,7 @@ import { RxDBLeaderElectionPlugin } from '../leader-election';
 import { ensureNotFalsy, errorToPlainJson, fastUnsecureHash, flatClone, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_TRUE, toArray } from '../../plugins/utils';
 import { awaitRxStorageReplicationFirstInSync, awaitRxStorageReplicationInSync, cancelRxStorageReplication, replicateRxStorageInstance, RX_REPLICATION_META_INSTANCE_SCHEMA } from '../../replication-protocol';
 import { newRxError } from '../../rx-error';
-import { awaitRetry, DEFAULT_MODIFIER, swapDefaultDeletedTodeletedField, swapdeletedFieldToDefaultDeleted } from './replication-helper';
+import { awaitRetry, DEFAULT_MODIFIER, swapDefaultDeletedTodeletedField, handlePulledDocuments } from './replication-helper';
 import { addConnectedStorageToCollection } from '../../rx-database-internal-store';
 import { addRxPlugin } from '../../plugin';
 export var REPLICATION_STATE_BY_COLLECTION = new WeakMap();
@@ -108,9 +108,7 @@ export var RxReplicationState = /*#__PURE__*/function () {
             return ev;
           }
           var useEv = flatClone(ev);
-          if (this.deletedField !== '_deleted') {
-            useEv.documents = useEv.documents.map(doc => swapdeletedFieldToDefaultDeleted(this.deletedField, doc));
-          }
+          useEv.documents = handlePulledDocuments(this.collection, this.deletedField, useEv.documents);
           useEv.documents = await Promise.all(useEv.documents.map(d => pullModifier(d)));
           return useEv;
         })),
@@ -149,9 +147,7 @@ export var RxReplicationState = /*#__PURE__*/function () {
             };
           }
           var useResult = flatClone(result);
-          if (this.deletedField !== '_deleted') {
-            useResult.documents = useResult.documents.map(doc => swapdeletedFieldToDefaultDeleted(this.deletedField, doc));
-          }
+          useResult.documents = handlePulledDocuments(this.collection, this.deletedField, useResult.documents);
           useResult.documents = await Promise.all(useResult.documents.map(d => pullModifier(d)));
           return useResult;
         },
@@ -206,7 +202,7 @@ export var RxReplicationState = /*#__PURE__*/function () {
           if (this.isStopped()) {
             return [];
           }
-          var conflicts = ensureNotFalsy(result).map(doc => swapdeletedFieldToDefaultDeleted(this.deletedField, doc));
+          var conflicts = handlePulledDocuments(this.collection, this.deletedField, ensureNotFalsy(result));
           return conflicts;
         }
       }

@@ -117,9 +117,7 @@ var RxReplicationState = /*#__PURE__*/function () {
             return ev;
           }
           var useEv = (0, _utils.flatClone)(ev);
-          if (this.deletedField !== '_deleted') {
-            useEv.documents = useEv.documents.map(doc => (0, _replicationHelper.swapdeletedFieldToDefaultDeleted)(this.deletedField, doc));
-          }
+          useEv.documents = (0, _replicationHelper.handlePulledDocuments)(this.collection, this.deletedField, useEv.documents);
           useEv.documents = await Promise.all(useEv.documents.map(d => pullModifier(d)));
           return useEv;
         })),
@@ -158,9 +156,7 @@ var RxReplicationState = /*#__PURE__*/function () {
             };
           }
           var useResult = (0, _utils.flatClone)(result);
-          if (this.deletedField !== '_deleted') {
-            useResult.documents = useResult.documents.map(doc => (0, _replicationHelper.swapdeletedFieldToDefaultDeleted)(this.deletedField, doc));
-          }
+          useResult.documents = (0, _replicationHelper.handlePulledDocuments)(this.collection, this.deletedField, useResult.documents);
           useResult.documents = await Promise.all(useResult.documents.map(d => pullModifier(d)));
           return useResult;
         },
@@ -215,7 +211,7 @@ var RxReplicationState = /*#__PURE__*/function () {
           if (this.isStopped()) {
             return [];
           }
-          var conflicts = (0, _utils.ensureNotFalsy)(result).map(doc => (0, _replicationHelper.swapdeletedFieldToDefaultDeleted)(this.deletedField, doc));
+          var conflicts = (0, _replicationHelper.handlePulledDocuments)(this.collection, this.deletedField, (0, _utils.ensureNotFalsy)(result));
           return conflicts;
         }
       }
