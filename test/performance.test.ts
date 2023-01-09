@@ -24,7 +24,7 @@ describe('performance.test.ts', () => {
     });
     it('run the performance test', async function () {
         this.timeout(120 * 1000);
-        const runs = config.isFastMode() ? 1 : 48;
+        const runs = config.isFastMode() ? 1 : 128;
 
         const perfStorage = config.storage.getPerformanceStorage();
 
@@ -36,8 +36,7 @@ describe('performance.test.ts', () => {
 
         let runsDone = 0;
         while (runsDone < runs) {
-            await awaitBetweenTest();
-
+            console.log('runsDone: ' + runsDone + ' of ' + runs);
             runsDone++;
 
             let time = performance.now();
@@ -55,6 +54,7 @@ describe('performance.test.ts', () => {
                 time = performance.now();
             };
 
+            await awaitBetweenTest();
             updateTime();
 
             // create database
@@ -139,6 +139,7 @@ describe('performance.test.ts', () => {
             const queryResult = await query.exec();
             updateTime('find-by-query');
             assert.strictEqual(queryResult.length, docsAmount + 1);
+            await awaitBetweenTest();
 
             // find by multiple queries in parallel
             updateTime();
@@ -156,7 +157,7 @@ describe('performance.test.ts', () => {
             let parallelSum = 0;
             parallelResult.forEach(r => parallelSum = parallelSum + r.length);
             assert.strictEqual(parallelSum, docsAmount);
-
+            await awaitBetweenTest();
 
             // run count query
             updateTime();
@@ -213,6 +214,6 @@ export function averageOfTimeValues(
 
 async function awaitBetweenTest() {
     await requestIdlePromise();
-    await wait(100);
+    await wait(20);
     await requestIdlePromise();
 }
