@@ -52,6 +52,7 @@
 - FIX replication does not provide a `._rev` to the storage write when a conflict is resolved.
 - FIX(remote storage) ensure caching works properly even on parallel create-calls
 - FIX(replication) Composite Primary Keys broken on replicated collections [#4190](https://github.com/pubkey/rxdb/pull/4190)
+- FIX(sqlite) $in Query not working SQLite [#4278](https://github.com/pubkey/rxdb/issues/4278)
 
 #
 ### Other changes
