@@ -37,7 +37,7 @@ import {
     createRxDatabase
 } from 'rxdb';
 import { getRxStorageSharedWorker } from 'rxdb-premium/plugins/storage-worker';
-import { getRxStorageIndexedDB } from 'rxdb/plugins/indexeddb';
+import { getRxStorageIndexedDB } from 'rxdb/plugins/storage-indexeddb';
 
 
 const database = await createRxDatabase({
@@ -76,7 +76,7 @@ import {
     createRxDatabase
 } from 'rxdb';
 import { getRxStorageSharedWorker } from 'rxdb-premium/plugins/storage-worker';
-import { RxStorageLokiStatics } from 'rxdb/plugins/lokijs';
+import { RxStorageLokiStatics } from 'rxdb/plugins/storage-lokijs';
 const database = await createRxDatabase({
     name: 'mydatabase',
     storage: getRxStorageSharedWorker(
@@ -104,7 +104,7 @@ import { exposeSharedWorkerRxStorage } from 'rxdb-premium/plugins/storage-worker
 import { 
     getRxStorageIndexedDB,
     RxStorageIndexedDBStatics
-} from 'rxdb-premium/plugins/indexeddb';
+} from 'rxdb-premium/plugins/storage-indexeddb';
 import {
     createRxDatabase,
     addRxPlugin

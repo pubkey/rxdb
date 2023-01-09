@@ -12,7 +12,7 @@ The sharding plugin works as a wrapper around any other `RxStorage`. The shardin
 ```ts
 import {
     getRxStorageSharding
-} from 'rxdb-premium/plugins/sharding';
+} from 'rxdb-premium/plugins/storage-sharding';
 
 import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
 

@@ -24,7 +24,7 @@ import {
 } from 'rxdb';
 import {
     getRxStorageIndexedDB
-} from 'rxdb-premium/plugins/indexeddb';
+} from 'rxdb-premium/plugins/storage-indexeddb';
 
 const db = await createRxDatabase({
     name: 'exampledb',
@@ -49,7 +49,7 @@ You can do that by using the [fake-indexeddb](https://github.com/dumbmatter/fake
 
 ```ts
 import { createRxDatabase } from 'rxdb';
-import { getRxStorageIndexedDB } from 'rxdb-premium/plugins/indexeddb';
+import { getRxStorageIndexedDB } from 'rxdb-premium/plugins/storage-indexeddb';
 
 //> npm install fake-indexeddb --save
 const fakeIndexedDB = require('fake-indexeddb');
