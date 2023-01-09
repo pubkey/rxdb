@@ -47,6 +47,7 @@
 - FIX schema hashing should respect the sort order [#4005](https://github.com/pubkey/rxdb/pull/4005)
 - FIX replication does not provide a `._rev` to the storage write when a conflict is resolved.
 - FIX(remote storage) ensure caching works properly even on parallel create-calls
+- FIX(replication) Composite Primary Keys broken on replicated collections [#4190](https://github.com/pubkey/rxdb/pull/4190)
 
 #### Other changes
 - REMOVE deprecated `babel-plugin-transform-async-to-promises` plugin.

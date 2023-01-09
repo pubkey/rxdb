@@ -51,7 +51,7 @@ import {
     awaitRetry,
     DEFAULT_MODIFIER,
     swapDefaultDeletedTodeletedField,
-    swapdeletedFieldToDefaultDeleted
+    handlePulledDocuments
 } from './replication-helper';
 import {
     addConnectedStorageToCollection
@@ -166,9 +166,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                             return ev;
                         }
                         const useEv = flatClone(ev);
-                        if (this.deletedField !== '_deleted') {
-                            useEv.documents = useEv.documents.map(doc => swapdeletedFieldToDefaultDeleted(this.deletedField, doc));
-                        }
+                        useEv.documents = handlePulledDocuments(this.collection, this.deletedField, useEv.documents);
                         useEv.documents = await Promise.all(
                             useEv.documents.map(d => pullModifier(d))
                         );
@@ -218,9 +216,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                     }
 
                     const useResult = flatClone(result);
-                    if (this.deletedField !== '_deleted') {
-                        useResult.documents = useResult.documents.map(doc => swapdeletedFieldToDefaultDeleted(this.deletedField, doc));
-                    }
+                    useResult.documents = handlePulledDocuments(this.collection, this.deletedField, useResult.documents);
                     useResult.documents = await Promise.all(
                         useResult.documents.map(d => pullModifier(d))
                     );
@@ -283,7 +279,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                     if (this.isStopped()) {
                         return [];
                     }
-                    const conflicts = ensureNotFalsy(result).map(doc => swapdeletedFieldToDefaultDeleted(this.deletedField, doc));
+                    const conflicts = handlePulledDocuments(this.collection, this.deletedField, ensureNotFalsy(result));
                     return conflicts;
                 }
             }

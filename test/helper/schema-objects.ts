@@ -409,12 +409,16 @@ export type HumanWithCompositePrimary = {
         age: number;
     };
 };
-export function humanWithCompositePrimary(): HumanWithCompositePrimary {
-    return {
+export function humanWithCompositePrimary(partial: Partial<HumanWithCompositePrimary> = {}): HumanWithCompositePrimary {
+    const defaultObj = {
         firstName: faker.name.firstName(),
         lastName: faker.name.lastName(),
         info: {
             age: randomNumber(10, 50)
         }
     };
+    return Object.assign(
+        defaultObj,
+        partial
+    );
 }

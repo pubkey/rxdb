@@ -27,7 +27,10 @@ import {
     rxStorageInstanceToReplicationHandler,
     normalizeMangoQuery,
     RxError,
-    RxTypeError
+    RxTypeError,
+    createRxDatabase,
+    RxReplicationPullStreamItem,
+    lastOfArray
 } from '../../';
 
 import {
@@ -39,6 +42,7 @@ import type {
     ReplicationPushHandler,
     RxReplicationWriteToMasterRow
 } from '../../src/types';
+import { Subject } from 'rxjs';
 
 
 type CheckpointType = any;
@@ -569,6 +573,59 @@ describe('replication.test.js', () => {
         });
     });
     config.parallel('issues', () => {
+        it('#4190 Composite Primary Keys broken on replicated collections', async () => {
+            const db = await createRxDatabase({
+                name: randomCouchString(10),
+                storage: config.storage.getStorage(),
+                eventReduce: true,
+                ignoreDuplicate: true
+            });
+            const collections = await db.addCollections({
+                mycollection: {
+                    schema: schemas.humanCompositePrimary
+                }
+            });
+            const mycollection: RxCollection<schemaObjects.HumanWithCompositePrimary> = collections.mycollection;
 
+            const pullStream$ = new Subject<RxReplicationPullStreamItem<any, CheckpointType>>();
+            let fetched = false;
+            const replicationState = replicateRxCollection({
+                replicationIdentifier: 'replicate-' + randomCouchString(10),
+                collection: mycollection,
+                pull: {
+                    // eslint-disable-next-line require-await
+                    handler: async (lastCheckpoint) => {
+                        const docs: schemaObjects.HumanWithCompositePrimary[] = (fetched) ?
+                            [] :
+                            [schemaObjects.humanWithCompositePrimary()];
+                        fetched = true;
+                        const lastDoc = lastOfArray(docs);
+                        return {
+                            documents: docs,
+                            checkpoint: !lastDoc
+                                ? lastCheckpoint
+                                : {
+                                    id: mycollection.schema.getPrimaryOfDocumentData(lastDoc),
+                                    updatedAt: new Date().getTime()
+                                }
+                        };
+                    },
+                    batchSize: 1,
+                    stream$: pullStream$.asObservable()
+                },
+            });
+
+            replicationState.error$.subscribe((err) => {
+                throw Error(err.message);
+            });
+
+            await replicationState.awaitInitialReplication();
+
+
+            await wait(1000);
+
+            // clean up afterwards
+            db.destroy();
+        });
     });
 });
