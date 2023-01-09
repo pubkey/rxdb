@@ -820,7 +820,7 @@ config.parallel('rx-schema.test.js', () => {
             const query = cols.items.find({
                 selector: {
                     'fileInfo.watch.time': {
-                        $gt: -9999999999999999999999999999
+                        $gt: -999999999999999
                     }
                 },
                 sort: [

@@ -85,7 +85,7 @@ config.parallel('query-builder.test.js', () => {
             const startQuery: MangoQuery = {
                 selector: {
                     age: {
-                        $gt: -9999999999999999999999999999
+                        $gt: -999999999999999
                     }
                 },
                 sort: [{ age: 'asc' }]
@@ -99,7 +99,7 @@ config.parallel('query-builder.test.js', () => {
             const builder2 = createQueryBuilder();
             builder2
                 .where('age')
-                .gt(-9999999999999999999999999999)
+                .gt(-999999999999999)
                 .sort('age');
             const builtJson = builder2.toJSON();
             assert.deepStrictEqual(startQuery, builtJson.query);
