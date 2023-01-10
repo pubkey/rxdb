@@ -99,23 +99,26 @@ describe('performance.test.ts', () => {
             updateTime('time-to-first-insert');
             await awaitBetweenTest();
 
-            // insert documents
+            // insert documents (in batches)
             const docIds: string[] = [];
-            const docsData = new Array(docsAmount)
-                .fill(0)
-                .map((_v, idx) => {
-                    const data = schemaObjects.averageSchema({
-                        var1: (idx % 2) + '',
-                        var2: idx % parallelQueryAmount
+            const insertBatches = 3;
+            const docsPerBatch = docsAmount / insertBatches;
+            for (let i = 0; i < insertBatches; i++) {
+                const docsData = new Array(docsPerBatch)
+                    .fill(0)
+                    .map((_v, idx) => {
+                        const data = schemaObjects.averageSchema({
+                            var1: (idx % 2) + '',
+                            var2: idx % parallelQueryAmount
+                        });
+                        docIds.push(data.id);
+                        return data;
                     });
-                    docIds.push(data.id);
-                    return data;
-                });
-
-            updateTime();
-            await collection.bulkInsert(docsData);
-            updateTime('insert-documents');
-            await awaitBetweenTest();
+                updateTime();
+                await collection.bulkInsert(docsData);
+                updateTime('insert-documents-' + docsPerBatch);
+                await awaitBetweenTest();
+            }
 
             /**
              * Find by id,
