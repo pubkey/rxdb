@@ -142,7 +142,6 @@ describe('performance.test.ts', () => {
                     { var1: 'asc' }
                 ]
             });
-            console.dir(query.getPreparedQuery());
             const queryResult = await query.exec();
             updateTime('find-by-query');
             assert.strictEqual(queryResult.length, docsAmount + 1);
