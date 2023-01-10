@@ -66,9 +66,3 @@ const db = await createRxDatabase({
   }
 });
 ```
-
-
-## This does not work in PouchDB
-
-Because it is not possible to purge deleted documents in PouchDB,
-the cleanup will not work with the PouchDB RxStorage, there it will only run a compaction instead.

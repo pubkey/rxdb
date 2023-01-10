@@ -12,12 +12,12 @@ The storage migration **drops deleted documents** and filters them out during th
 
 ## Usage
 
-Lets say you want to migrate from PouchDB to the [Dexie.js](./rx-storage-dexie.md) RxStorage.
+Lets say you want to migrate from LokiJs to the [Dexie.js](./rx-storage-dexie.md) RxStorage.
 
 ```ts
 import {
-    getRxStoragePouch
-} from 'rxdb/plugins/pouchdb';
+    getRxStorageLoki
+} from 'rxdb/plugins/storage-loki';
 import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
 
 // create the new RxDatabase
@@ -35,7 +35,7 @@ await migrateStorage(
      * new database has a different name.
      */
     'myOldDatabaseName',
-    getRxStoragePouch(), // RxStorage of the old database
+    getRxStorageLoki(), // RxStorage of the old database
     500, // batch size
     // 
     (input: AfterMigrateBatchHandlerInput) => {
@@ -62,8 +62,8 @@ The you can run the migration by providing the old storage:
 ```ts
 /* ... */
 import {
-    getRxStoragePouch
-} from 'rxdb-old/plugins/pouchdb'; // <- import from the old RxDB version
+    getRxStorageLoki
+} from 'rxdb-old/plugins/storage-loki'; // <- import from the old RxDB version
 
 await migrateStorage(
     db as any,
@@ -73,7 +73,7 @@ await migrateStorage(
      * new database has a different name.
      */
     'myOldDatabaseName',
-    getRxStoragePouch(), // RxStorage of the old database
+    getRxStorageLoki(), // RxStorage of the old database
     500, // batch size
     // 
     (input: AfterMigrateBatchHandlerInput) => {

@@ -33,11 +33,6 @@ The SQLite storage has the best performance when RxDB is used on **Node.js**, **
 To use RxDB on the server side, the FoundationDB RxStorage provides a way of having a secure, fault-tolerant and performant storage. [Read more](./rx-storage-foundationdb.md)
 
 
-### PouchDB [[deprecated]](https://rxdb.info/questions-answers.html#why-is-the-pouchdb-rxstorage-deprecated)
-
-The PouchDB RxStorage is based on the [PouchDB](https://github.com/pouchdb/pouchdb) database. It is the most battle proven RxStorage and has a big ecosystem of adapters. PouchDB does a lot of overhead to enable CouchDB replication which makes the PouchDB RxStorage one of the slowest. Since version `13.12.0` the PouchDB RxStorage is [deprecated](https://rxdb.info/questions-answers.html#why-is-the-pouchdb-rxstorage-deprecated) and should no longer be used.[Read more about the PouchDB RxStorage](./rx-storage-pouchdb.md)
-
-
 ### Worker [[premium](https://rxdb.info/premium.html)]
 
 The worker RxStorage is a wrapper around any other RxStorage which allows to run the storage in a WebWorker (in browsers) or a Worker Thread (in Node.js). By doing so, you can take CPU load from the main process and move it into the worker's process which can improve the perceived performance of your application. [Read more](./rx-storage-worker.md)
@@ -75,8 +70,6 @@ A big difference in the RxStorage implementations is the performance. In differe
 **LokiJS** stores all data in memory and only saves to disc occasionally (or on exit). Therefore it has a very fast read/write performance, but loading all data into memory on the first page load can take longer for big amounts of documents. Also this storage can only be used when all data fits into the memory at least once.
 
 The Premium **sharding** RxStorage is only useful when big amounts of documents have to be stored or queries. In the CI performance test, we only insert a small amount of documents so that the performance actually decreases when sharding is used.
-
-The **PouchDB** RxStorage is slow because it has to handle all revisions of a document on writes and queries. This makes PouchDB the only storage where it is possible to replicate with a CouchDB compatible endpoint.
 
 Many storages run lazy, so it makes no sense to compare the time which is required to create a database with collections. Instead we measure the **time-to-first-insert** which is the whole timespan from database creation until the first single document write is done.
 

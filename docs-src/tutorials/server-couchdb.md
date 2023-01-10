@@ -5,6 +5,10 @@ It starts a server that is compatible with the [CouchDB replication protocol](ht
 
 **NOTICE**: The CouchDB server plugin can only be used with the [PouchDB RxStorage](../rx-storage-pouchdb.md).
 
+## IMPORTANT:
+The PouchDB RxStorage and CouchDB Server Plugin [is deprecated](https://rxdb.info/questions-answers.html#why-is-the-pouchdb-rxstorage-deprecated) and should no longer be used in new projects.
+
+
 The CouchDB server plugin is useful
 
 - To simulate the couchdb in developer-mode without setting up a real one

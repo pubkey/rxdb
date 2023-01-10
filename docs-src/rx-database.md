@@ -179,19 +179,6 @@ import { removeRxDatabase } from 'rxdb';
 removeRxDatabase('mydatabasename', 'localstorage');
 ```
 
-### checkAdapter()
-Checks if the given PouchDB adapter can be used with RxDB in the current environment.
-
-```javascript
-// must be imported from the pouchdb plugin
-import { 
-    checkAdapter
-} from 'rxdb/plugins/pouchdb';
-
-const ok = await checkAdapter('idb');
-console.dir(ok); // true on most browsers, false on nodejs
-```
-
 ### isRxDatabase
 Returns true if the given object is an instance of RxDatabase. Returns false if not.
 ```javascript

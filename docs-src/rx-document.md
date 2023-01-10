@@ -168,7 +168,8 @@ myDocument.$
 ```
 
 ### remove()
-This removes the document from the collection. Notice that this will not purge the document from the store but set `_deleted:true` like described in the [pouchdb-docs](https://pouchdb.com/guides/updating-deleting.html#deleting-documents) in option 3.
+This removes the document from the collection. Notice that this will not purge the document from the store but set `_deleted:true` so that it will be no longer returned on queries.
+To fully purge a document, use the [cleanup plugin](./cleanup.md).
 ```js
 myDocument.remove();
 ```

@@ -1,7 +1,6 @@
 # RxStorage LokiJS
 
-Instead of using PouchDB or [Dexie.js](./rx-storage-dexie.md) as underlying storage engine, you can also use [LokiJS](https://github.com/techfort/LokiJS).
-LokiJS has the main benefit of having a better performance. It can do this because it is an **in-memory** database that processes all data in memory and only saves to disc when the app is closed or an interval is reached.
+The LokiJS RxStorage is based on [LokiJS](https://github.com/techfort/LokiJS) which has the main benefit of having a better performance. It can do this because it is an **in-memory** database that processes all data in memory and only saves to disc when the app is closed or an interval is reached.
 
 ### Pros
 
@@ -43,7 +42,7 @@ const db = await createRxDatabase({
 
 ## Adapters
 
-Like PouchDB, LokiJS is based on adapters that determine where to store persistend data. For LokiJS there are adapters for IndexedDB, AWS S3, the NodeJS filesystem or NativeScript.
+LokiJS is based on adapters that determine where to store persistend data. For LokiJS there are adapters for IndexedDB, AWS S3, the NodeJS filesystem or NativeScript.
 Find more about the possible adapters at the [LokiJS docs](https://github.com/techfort/LokiJS/blob/master/tutorials/Persistence%20Adapters.md).
 
 ## Multi-Tab support

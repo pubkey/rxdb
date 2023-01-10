@@ -68,7 +68,7 @@ addRxPlugin(myPlugin);
 
 ## rxdb
 
-The `rxdb`-property signals that this plugin is an rxdb-plugin and not a pouchdb-plugin. The value should always be `true`.
+The `rxdb`-property signals that this plugin is an rxdb-plugin. The value should always be `true`.
 
 ## prototypes
 

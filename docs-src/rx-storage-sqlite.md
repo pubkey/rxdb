@@ -5,7 +5,7 @@ This storage is based on [SQLite](https://www.sqlite.org/index.html) and is made
 
 ### Pros
 
-- Much faster compared to the PouchDB+SQLite `RxStorage`
+- Fast
 - Small build size
 
 ### Cons
