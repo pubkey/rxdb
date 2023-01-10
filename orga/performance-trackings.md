@@ -1021,3 +1021,15 @@ AFTER:
 }
 
 
+## 10 January 2023
+
+Improve IndexedDB performance.
+
+### Bulk Get By ID
+Before: 'performanceResult: 8.710000000614674
+After:  'performanceResult: 6.390000000456348
+
+### Query
+Before: 'performanceResult: 6.247500000195577
+After:  'performanceResult: 6.067500000400469
+
