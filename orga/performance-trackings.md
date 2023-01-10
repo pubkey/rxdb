@@ -1033,3 +1033,6 @@ After:  'performanceResult: 6.390000000456348
 Before: 'performanceResult: 6.247500000195577
 After:  'performanceResult: 6.067500000400469
 
+### Bulk Insert
+Before: 'performanceResult: 34.99750000052154
+After:  'performanceResult: 33.30000000083819

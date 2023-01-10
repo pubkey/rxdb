@@ -245,26 +245,28 @@ export function categorizeBulkWriteRows<RxDocType>(
              * this can happen on replication.
              */
             const insertedIsDeleted = writeRow.document._deleted ? true : false;
-            Object.entries(writeRow.document._attachments).forEach(([attachmentId, attachmentData]) => {
-                if (
-                    !(attachmentData as RxAttachmentWriteData).data
-                ) {
-                    attachmentError = {
-                        documentId: id as any,
-                        isError: true,
-                        status: 510,
-                        writeRow,
-                        attachmentId
-                    };
-                    errors[id as any] = attachmentError;
-                } else {
-                    attachmentsAdd.push({
-                        documentId: id as any,
-                        attachmentId,
-                        attachmentData: attachmentData as any
-                    });
-                }
-            });
+            if (hasAttachments) {
+                Object.entries(writeRow.document._attachments).forEach(([attachmentId, attachmentData]) => {
+                    if (
+                        !(attachmentData as RxAttachmentWriteData).data
+                    ) {
+                        attachmentError = {
+                            documentId: id as any,
+                            isError: true,
+                            status: 510,
+                            writeRow,
+                            attachmentId
+                        };
+                        errors[id as any] = attachmentError;
+                    } else {
+                        attachmentsAdd.push({
+                            documentId: id as any,
+                            attachmentId,
+                            attachmentData: attachmentData as any
+                        });
+                    }
+                });
+            }
             if (!attachmentError) {
                 if (hasAttachments) {
                     bulkInsertDocs.push(stripAttachmentsDataFromRow(writeRow));
@@ -316,72 +318,75 @@ export function categorizeBulkWriteRows<RxDocType>(
             // handle attachments data
 
             const updatedRow: BulkWriteRowProcessed<RxDocType> = hasAttachments ? stripAttachmentsDataFromRow(writeRow) : writeRow as any;
-            if (writeRow.document._deleted) {
-                /**
-                 * Deleted documents must have cleared all their attachments.
-                 */
-                if (writeRow.previous) {
-                    Object
-                        .keys(writeRow.previous._attachments)
-                        .forEach(attachmentId => {
-                            attachmentsRemove.push({
-                                documentId: id as any,
-                                attachmentId
+            if (hasAttachments) {
+                if (writeRow.document._deleted) {
+                    /**
+                     * Deleted documents must have cleared all their attachments.
+                     */
+                    if (writeRow.previous) {
+                        Object
+                            .keys(writeRow.previous._attachments)
+                            .forEach(attachmentId => {
+                                attachmentsRemove.push({
+                                    documentId: id as any,
+                                    attachmentId
+                                });
                             });
-                        });
-                }
-            } else {
-                // first check for errors
-                Object
-                    .entries(writeRow.document._attachments)
-                    .find(([attachmentId, attachmentData]) => {
-                        const previousAttachmentData = writeRow.previous ? writeRow.previous._attachments[attachmentId] : undefined;
-                        if (
-                            !previousAttachmentData &&
-                            !(attachmentData as RxAttachmentWriteData).data
-                        ) {
-                            attachmentError = {
-                                documentId: id as any,
-                                documentInDb,
-                                isError: true,
-                                status: 510,
-                                writeRow,
-                                attachmentId
-                            };
-                        }
-                        return true;
-                    });
-                if (!attachmentError) {
+                    }
+                } else {
+                    // first check for errors
                     Object
                         .entries(writeRow.document._attachments)
-                        .forEach(([attachmentId, attachmentData]) => {
+                        .find(([attachmentId, attachmentData]) => {
                             const previousAttachmentData = writeRow.previous ? writeRow.previous._attachments[attachmentId] : undefined;
-                            if (!previousAttachmentData) {
-                                attachmentsAdd.push({
+                            if (
+                                !previousAttachmentData &&
+                                !(attachmentData as RxAttachmentWriteData).data
+                            ) {
+                                attachmentError = {
                                     documentId: id as any,
-                                    attachmentId,
-                                    attachmentData: attachmentData as any
-                                });
-                            } else {
-                                const newDigest = updatedRow.document._attachments[attachmentId].digest;
-                                if (
-                                    (attachmentData as RxAttachmentWriteData).data &&
-                                    /**
-                                     * Performance shortcut,
-                                     * do not update the attachment data if it did not change.
-                                     */
-                                    previousAttachmentData.digest !== newDigest
-                                ) {
-                                    attachmentsUpdate.push({
+                                    documentInDb,
+                                    isError: true,
+                                    status: 510,
+                                    writeRow,
+                                    attachmentId
+                                };
+                            }
+                            return true;
+                        });
+                    if (!attachmentError) {
+                        Object
+                            .entries(writeRow.document._attachments)
+                            .forEach(([attachmentId, attachmentData]) => {
+                                const previousAttachmentData = writeRow.previous ? writeRow.previous._attachments[attachmentId] : undefined;
+                                if (!previousAttachmentData) {
+                                    attachmentsAdd.push({
                                         documentId: id as any,
                                         attachmentId,
-                                        attachmentData: attachmentData as RxAttachmentWriteData
+                                        attachmentData: attachmentData as any
                                     });
+                                } else {
+                                    const newDigest = updatedRow.document._attachments[attachmentId].digest;
+                                    if (
+                                        (attachmentData as RxAttachmentWriteData).data &&
+                                        /**
+                                         * Performance shortcut,
+                                         * do not update the attachment data if it did not change.
+                                         */
+                                        previousAttachmentData.digest !== newDigest
+                                    ) {
+                                        attachmentsUpdate.push({
+                                            documentId: id as any,
+                                            attachmentId,
+                                            attachmentData: attachmentData as RxAttachmentWriteData
+                                        });
+                                    }
                                 }
-                            }
-                        });
+                            });
+                    }
                 }
             }
+
             if (attachmentError) {
                 errors[id as any] = attachmentError;
             } else {
