@@ -34,9 +34,9 @@ const db = await createRxDatabase({
          * You can change the batchSize to optimize the query time
          * for specific queries.
          * You should only change this value when you are also doing performance measurements.
-         * [default=50]
+         * [default=300]
          */
-        batchSize: 50
+        batchSize: 300
     })
 });
 ```
