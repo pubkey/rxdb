@@ -381,7 +381,6 @@
     "dexie": "4.0.0-alpha.4",
     "event-reduce-js": "2.1.0",
     "firebase": "9.15.0",
-    "foundationdb": "1.1.3",
     "get-graphql-from-jsonschema": "8.1.0",
     "graphql": "15.8.0",
     "graphql-ws": "5.11.2",
