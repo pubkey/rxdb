@@ -398,7 +398,7 @@
     "socket.io-client": "4.5.4",
     "unload": "2.4.1",
     "util": "0.12.5",
-    "ws": "8.11.0",
+    "ws": "8.12.0",
     "z-schema": "5.0.5"
   },
   "devDependencies": {
