@@ -168,7 +168,11 @@ describe('performance.test.ts', () => {
             // run count query
             updateTime();
             const countQuery = collection.count({
-                selector: {}
+                selector: {
+                    var1: {
+                        $eq: '1'
+                    }
+                }
             });
             const countQueryResult = await countQuery.exec();
             updateTime('count');
