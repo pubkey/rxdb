@@ -24,14 +24,15 @@ describe('performance.test.ts', () => {
     });
     it('run the performance test', async function () {
         this.timeout(120 * 1000);
-        const runs = config.isFastMode() ? 1 : 50;
+        const runs = config.isFastMode() ? 1 : 40;
         const perfStorage = config.storage.getPerformanceStorage();
 
         const totalTimes: { [k: string]: number[]; } = {};
 
         const collectionsAmount = 4;
-        const docsAmount = 600;
+        const docsAmount = 1200;
         const parallelQueryAmount = 4;
+        const insertBatches = docsAmount / 200;
 
         let runsDone = 0;
         while (runsDone < runs) {
@@ -101,7 +102,6 @@ describe('performance.test.ts', () => {
 
             // insert documents (in batches)
             const docIds: string[] = [];
-            const insertBatches = 3;
             const docsPerBatch = docsAmount / insertBatches;
             for (let i = 0; i < insertBatches; i++) {
                 const docsData = new Array(docsPerBatch)
@@ -136,8 +136,13 @@ describe('performance.test.ts', () => {
             // find by query
             updateTime();
             const query = collection.find({
-                selector: {}
+                selector: {},
+                sort: [
+                    { var2: 'asc' },
+                    { var1: 'asc' }
+                ]
             });
+            console.dir(query.getPreparedQuery());
             const queryResult = await query.exec();
             updateTime('find-by-query');
             assert.strictEqual(queryResult.length, docsAmount + 1);
