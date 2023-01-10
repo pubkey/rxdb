@@ -220,6 +220,6 @@ export function averageOfTimeValues(
 
 async function awaitBetweenTest() {
     await requestIdlePromise();
-    await wait(20);
+    await wait(100);
     await requestIdlePromise();
 }
