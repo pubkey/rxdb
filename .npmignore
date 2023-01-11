@@ -23,6 +23,6 @@ perf.md
 log.txt
 processed.txt
 
-## Do not ignore the babel.config.js because
+## Do not ignore the babel.config.cjs because
 ## it is used in other packages like the premium package.
-# babel.config.js
+# babel.config.cjs

@@ -6,6 +6,8 @@ import {
     enforceOptions as broadcastChannelEnforceOptions
 } from 'broadcast-channel';
 import * as path from 'path';
+import { fileURLToPath } from 'url';
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 import parallel from 'mocha.parallel';
 import type { RxTestStorage } from '../../';
 import { getRxStorageLoki } from '../../plugins/storage-lokijs';
@@ -82,11 +84,7 @@ const config: {
     storage: {} as any,
     isNotOneOfTheseStorages(storageNames: string[]) {
         const isName = this.storage.name;
-        if (storageNames.includes(isName)) {
-            return false;
-        } else {
-            return true;
-        }
+        return !storageNames.includes(isName);
     }
 };
 
