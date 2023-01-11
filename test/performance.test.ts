@@ -30,7 +30,7 @@ describe('performance.test.ts', () => {
         const totalTimes: { [k: string]: number[]; } = {};
 
         const collectionsAmount = 4;
-        const docsAmount = 1200;
+        const docsAmount = 800;
         const parallelQueryAmount = 4;
         const insertBatches = docsAmount / 200;
 
