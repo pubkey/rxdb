@@ -1027,7 +1027,8 @@ Improve IndexedDB performance.
 
 ### Bulk Get By ID
 Before: 'performanceResult: 8.710000000614674
-After:  'performanceResult: 6.390000000456348
+Mid: 6.327500000409782
+After: 5.875000000093133
 
 ### Query
 Before: 'performanceResult: 6.247500000195577
