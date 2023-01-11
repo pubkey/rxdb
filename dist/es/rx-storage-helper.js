@@ -146,24 +146,26 @@ bulkWriteRows, context) {
        * this can happen on replication.
        */
       var insertedIsDeleted = writeRow.document._deleted ? true : false;
-      Object.entries(writeRow.document._attachments).forEach(([attachmentId, attachmentData]) => {
-        if (!attachmentData.data) {
-          attachmentError = {
-            documentId: id,
-            isError: true,
-            status: 510,
-            writeRow,
-            attachmentId
-          };
-          errors[id] = attachmentError;
-        } else {
-          attachmentsAdd.push({
-            documentId: id,
-            attachmentId,
-            attachmentData: attachmentData
-          });
-        }
-      });
+      if (hasAttachments) {
+        Object.entries(writeRow.document._attachments).forEach(([attachmentId, attachmentData]) => {
+          if (!attachmentData.data) {
+            attachmentError = {
+              documentId: id,
+              isError: true,
+              status: 510,
+              writeRow,
+              attachmentId
+            };
+            errors[id] = attachmentError;
+          } else {
+            attachmentsAdd.push({
+              documentId: id,
+              attachmentId,
+              attachmentData: attachmentData
+            });
+          }
+        });
+      }
       if (!attachmentError) {
         if (hasAttachments) {
           bulkInsertDocs.push(stripAttachmentsDataFromRow(writeRow));
@@ -206,59 +208,61 @@ bulkWriteRows, context) {
       // handle attachments data
 
       var updatedRow = hasAttachments ? stripAttachmentsDataFromRow(writeRow) : writeRow;
-      if (writeRow.document._deleted) {
-        /**
-         * Deleted documents must have cleared all their attachments.
-         */
-        if (writeRow.previous) {
-          Object.keys(writeRow.previous._attachments).forEach(attachmentId => {
-            attachmentsRemove.push({
-              documentId: id,
-              attachmentId
-            });
-          });
-        }
-      } else {
-        // first check for errors
-        Object.entries(writeRow.document._attachments).find(([attachmentId, attachmentData]) => {
-          var previousAttachmentData = writeRow.previous ? writeRow.previous._attachments[attachmentId] : undefined;
-          if (!previousAttachmentData && !attachmentData.data) {
-            attachmentError = {
-              documentId: id,
-              documentInDb,
-              isError: true,
-              status: 510,
-              writeRow,
-              attachmentId
-            };
-          }
-          return true;
-        });
-        if (!attachmentError) {
-          Object.entries(writeRow.document._attachments).forEach(([attachmentId, attachmentData]) => {
-            var previousAttachmentData = writeRow.previous ? writeRow.previous._attachments[attachmentId] : undefined;
-            if (!previousAttachmentData) {
-              attachmentsAdd.push({
+      if (hasAttachments) {
+        if (writeRow.document._deleted) {
+          /**
+           * Deleted documents must have cleared all their attachments.
+           */
+          if (writeRow.previous) {
+            Object.keys(writeRow.previous._attachments).forEach(attachmentId => {
+              attachmentsRemove.push({
                 documentId: id,
-                attachmentId,
-                attachmentData: attachmentData
+                attachmentId
               });
-            } else {
-              var newDigest = updatedRow.document._attachments[attachmentId].digest;
-              if (attachmentData.data &&
-              /**
-               * Performance shortcut,
-               * do not update the attachment data if it did not change.
-               */
-              previousAttachmentData.digest !== newDigest) {
-                attachmentsUpdate.push({
+            });
+          }
+        } else {
+          // first check for errors
+          Object.entries(writeRow.document._attachments).find(([attachmentId, attachmentData]) => {
+            var previousAttachmentData = writeRow.previous ? writeRow.previous._attachments[attachmentId] : undefined;
+            if (!previousAttachmentData && !attachmentData.data) {
+              attachmentError = {
+                documentId: id,
+                documentInDb,
+                isError: true,
+                status: 510,
+                writeRow,
+                attachmentId
+              };
+            }
+            return true;
+          });
+          if (!attachmentError) {
+            Object.entries(writeRow.document._attachments).forEach(([attachmentId, attachmentData]) => {
+              var previousAttachmentData = writeRow.previous ? writeRow.previous._attachments[attachmentId] : undefined;
+              if (!previousAttachmentData) {
+                attachmentsAdd.push({
                   documentId: id,
                   attachmentId,
                   attachmentData: attachmentData
                 });
+              } else {
+                var newDigest = updatedRow.document._attachments[attachmentId].digest;
+                if (attachmentData.data &&
+                /**
+                 * Performance shortcut,
+                 * do not update the attachment data if it did not change.
+                 */
+                previousAttachmentData.digest !== newDigest) {
+                  attachmentsUpdate.push({
+                    documentId: id,
+                    attachmentId,
+                    attachmentData: attachmentData
+                  });
+                }
               }
-            }
-          });
+            });
+          }
         }
       }
       if (attachmentError) {
