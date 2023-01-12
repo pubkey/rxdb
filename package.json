@@ -481,6 +481,7 @@
     "mocha": "10.2.0",
     "mocha.parallel": "0.15.6",
     "nconf": "0.12.0",
+    "node-fetch": "2.6.7",
     "node-pre-gyp": "0.17.0",
     "pouchdb": "8.0.0",
     "pre-commit": "1.2.2",
