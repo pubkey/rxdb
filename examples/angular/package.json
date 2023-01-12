@@ -67,7 +67,7 @@
     "@angular/cli": "15.1.1",
     "@angular/compiler-cli": "15.1.0",
     "@angular/language-service": "15.1.0",
-    "@nguniversal/builders": "15.0.0",
+    "@nguniversal/builders": "15.1.0",
     "@types/express": "4.17.15",
     "@types/mocha": "10.0.1",
     "@types/node": "18.11.18",
