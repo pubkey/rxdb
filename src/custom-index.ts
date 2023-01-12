@@ -74,14 +74,16 @@ export function getIndexableStringMonad<RxDocType>(
     });
 
 
+    /**
+     * @hotPath Performance of this function is very critical!
+     */
     const ret = function (docData: RxDocumentData<RxDocType>): string {
         let str = '';
-        fieldNameProperties.forEach(props => {
+        for (let i = 0; i < fieldNameProperties.length; ++i) {
+            const props = fieldNameProperties[i];
             const schemaPart = props.schemaPart;
             const type = schemaPart.type;
-
             let fieldValue = props.getValueFn(docData);
-
             if (type === 'string') {
                 if (!fieldValue) {
                     fieldValue = '';
@@ -100,7 +102,7 @@ export function getIndexableStringMonad<RxDocType>(
                     fieldValue
                 );
             }
-        });
+        }
         return str;
     };
     return ret;

@@ -34,12 +34,14 @@ export function ucfirst(str: string): string {
  */
 export function trimDots(str: string): string {
     // start
-    while (str.charAt(0) === '.')
+    while (str.charAt(0) === '.') {
         str = str.substr(1);
+    }
 
     // end
-    while (str.slice(-1) === '.')
+    while (str.slice(-1) === '.') {
         str = str.slice(0, -1);
+    }
 
     return str;
 }

@@ -13,6 +13,7 @@ import {
     flatClone,
     getProperty,
     isMaybeReadonlyArray,
+    REGEX_ALL_DOTS,
     RX_META_LWT_MINIMUM,
     sortObject,
     trimDots
@@ -49,7 +50,7 @@ export function getSchemaByObjectPath<T = any>(
     path: keyof T | string
 ): JsonSchema {
     let usePath: string = path as string;
-    usePath = usePath.replace(/\./g, '.properties.');
+    usePath = usePath.replace(REGEX_ALL_DOTS, '.properties.');
     usePath = 'properties.' + usePath;
     usePath = trimDots(usePath);
 
