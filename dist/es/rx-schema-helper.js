@@ -1,6 +1,5 @@
 import { newRxError } from './rx-error';
-import { flatClone, getProperty, isMaybeReadonlyArray, RX_META_LWT_MINIMUM, sortObject, trimDots } from './plugins/utils';
-
+import { flatClone, getProperty, isMaybeReadonlyArray, REGEX_ALL_DOTS, RX_META_LWT_MINIMUM, sortObject, trimDots } from './plugins/utils';
 /**
  * Helper function to create a valid RxJsonSchema
  * with a given version.
@@ -26,14 +25,17 @@ export function getPseudoSchemaForVersion(version, primaryKey) {
  */
 export function getSchemaByObjectPath(rxJsonSchema, path) {
   var usePath = path;
-  usePath = usePath.replace(/\./g, '.properties.');
+  usePath = usePath.replace(REGEX_ALL_DOTS, '.properties.');
   usePath = 'properties.' + usePath;
   usePath = trimDots(usePath);
   var ret = getProperty(rxJsonSchema, usePath);
   return ret;
 }
 export function fillPrimaryKey(primaryPath, jsonSchema, documentData) {
-  var cloned = flatClone(documentData);
+  // optimization shortcut.
+  if (typeof jsonSchema.primaryKey === 'string') {
+    return documentData;
+  }
   var newPrimary = getComposedPrimaryKeyOfDocumentData(jsonSchema, documentData);
   var existingPrimary = documentData[primaryPath];
   if (existingPrimary && existingPrimary !== newPrimary) {
@@ -46,8 +48,8 @@ export function fillPrimaryKey(primaryPath, jsonSchema, documentData) {
       schema: jsonSchema
     });
   }
-  cloned[primaryPath] = newPrimary;
-  return cloned;
+  documentData[primaryPath] = newPrimary;
+  return documentData;
 }
 export function getPrimaryFieldOfPrimaryKey(primaryKey) {
   if (typeof primaryKey === 'string') {
@@ -215,6 +217,21 @@ export function getFinalFields(jsonSchema) {
     jsonSchema.primaryKey.fields.forEach(field => ret.push(field));
   }
   return ret;
+}
+
+/**
+ * fills all unset fields with default-values if set
+ * @hotPath
+ */
+export function fillObjectWithDefaults(rxSchema, obj) {
+  var defaultKeys = Object.keys(rxSchema.defaultValues);
+  for (var i = 0; i < defaultKeys.length; ++i) {
+    var key = defaultKeys[i];
+    if (!obj.hasOwnProperty(key) || typeof obj[key] === 'undefined') {
+      obj[key] = rxSchema.defaultValues[key];
+    }
+  }
+  return obj;
 }
 export var DEFAULT_CHECKPOINT_SCHEMA = {
   type: 'object',

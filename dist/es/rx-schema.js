@@ -1,5 +1,5 @@
 import _createClass from "@babel/runtime/helpers/createClass";
-import { overwriteGetterForCaching, flatClone, isMaybeReadonlyArray, fastUnsecureHash, deepEqual } from './plugins/utils';
+import { overwriteGetterForCaching, isMaybeReadonlyArray, fastUnsecureHash, deepEqual } from './plugins/utils';
 import { newRxError } from './rx-error';
 import { runPluginHooks } from './hooks';
 import { defineGetterSetter } from './rx-document';
@@ -32,15 +32,6 @@ export var RxSchema = /*#__PURE__*/function () {
         });
       }
     });
-  }
-
-  /**
-   * fills all unset fields with default-values if set
-   */;
-  _proto.fillObjectWithDefaults = function fillObjectWithDefaults(obj) {
-    obj = flatClone(obj);
-    Object.entries(this.defaultValues).filter(([k]) => !obj.hasOwnProperty(k) || typeof obj[k] === 'undefined').forEach(([k, v]) => obj[k] = v);
-    return obj;
   }
 
   /**

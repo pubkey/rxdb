@@ -22,11 +22,12 @@ export var RxStorageInstanceMemory = /*#__PURE__*/function () {
   var _proto = RxStorageInstanceMemory.prototype;
   _proto.bulkWrite = function bulkWrite(documentWrites, context) {
     ensureNotRemoved(this);
+    var primaryPath = this.primaryPath;
     var ret = {
       success: {},
       error: {}
     };
-    var categorized = categorizeBulkWriteRows(this, this.primaryPath, this.internals.documents, documentWrites, context);
+    var categorized = categorizeBulkWriteRows(this, primaryPath, this.internals.documents, documentWrites, context);
     ret.error = categorized.errors;
 
     /**
@@ -34,12 +35,12 @@ export var RxStorageInstanceMemory = /*#__PURE__*/function () {
      */
     var stateByIndex = Object.values(this.internals.byIndex);
     categorized.bulkInsertDocs.forEach(writeRow => {
-      var docId = writeRow.document[this.primaryPath];
+      var docId = writeRow.document[primaryPath];
       putWriteRowToState(docId, this.internals, stateByIndex, writeRow, undefined);
       ret.success[docId] = writeRow.document;
     });
     categorized.bulkUpdateDocs.forEach(writeRow => {
-      var docId = writeRow.document[this.primaryPath];
+      var docId = writeRow.document[primaryPath];
       putWriteRowToState(docId, this.internals, stateByIndex, writeRow, this.internals.documents.get(docId));
       ret.success[docId] = writeRow.document;
     });
@@ -51,16 +52,18 @@ export var RxStorageInstanceMemory = /*#__PURE__*/function () {
     categorized.attachmentsAdd.forEach(attachment => {
       attachmentsMap.set(attachmentMapKey(attachment.documentId, attachment.attachmentId), attachment.attachmentData);
     });
-    categorized.attachmentsUpdate.forEach(attachment => {
-      attachmentsMap.set(attachmentMapKey(attachment.documentId, attachment.attachmentId), attachment.attachmentData);
-    });
-    categorized.attachmentsRemove.forEach(attachment => {
-      attachmentsMap.delete(attachmentMapKey(attachment.documentId, attachment.attachmentId));
-    });
+    if (this.schema.attachments) {
+      categorized.attachmentsUpdate.forEach(attachment => {
+        attachmentsMap.set(attachmentMapKey(attachment.documentId, attachment.attachmentId), attachment.attachmentData);
+      });
+      categorized.attachmentsRemove.forEach(attachment => {
+        attachmentsMap.delete(attachmentMapKey(attachment.documentId, attachment.attachmentId));
+      });
+    }
     if (categorized.eventBulk.events.length > 0) {
-      var lastState = getNewestOfDocumentStates(this.primaryPath, Object.values(ret.success));
+      var lastState = getNewestOfDocumentStates(primaryPath, Object.values(ret.success));
       categorized.eventBulk.checkpoint = {
-        id: lastState[this.primaryPath],
+        id: lastState[primaryPath],
         lwt: lastState._meta.lwt
       };
       this.internals.changes$.next(categorized.eventBulk);

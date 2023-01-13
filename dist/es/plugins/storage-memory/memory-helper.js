@@ -12,23 +12,28 @@ export function ensureNotRemoved(instance) {
 export function attachmentMapKey(documentId, attachmentId) {
   return documentId + '||' + attachmentId;
 }
-var SORT_BY_INDEX_STRING = (a, b) => {
+function sortByIndexStringComparator(a, b) {
   if (a.indexString < b.indexString) {
     return -1;
   } else {
     return 1;
   }
-};
+}
+
+/**
+ * @hotPath
+ */
 export function putWriteRowToState(docId, state, stateByIndex, row, docInState) {
   state.documents.set(docId, row.document);
-  stateByIndex.forEach(byIndex => {
+  for (var i = 0; i < stateByIndex.length; ++i) {
+    var byIndex = stateByIndex[i];
     var docsWithIndex = byIndex.docsWithIndex;
     var newIndexString = byIndex.getIndexableString(row.document);
     var [, insertPosition] = pushAtSortPosition(docsWithIndex, {
       id: docId,
       doc: row.document,
       indexString: newIndexString
-    }, SORT_BY_INDEX_STRING, true);
+    }, sortByIndexStringComparator, true);
 
     /**
      * Remove previous if it was in the state
@@ -37,7 +42,8 @@ export function putWriteRowToState(docId, state, stateByIndex, row, docInState) 
       var previousIndexString = byIndex.getIndexableString(docInState);
       if (previousIndexString === newIndexString) {
         /**
-         * Index not changed -> The old doc must be before or after the new one.
+         * Performance shortcut.
+         * If index was not changed -> The old doc must be before or after the new one.
          */
         var prev = docsWithIndex[insertPosition - 1];
         if (prev && prev.id === docId) {
@@ -65,7 +71,7 @@ export function putWriteRowToState(docId, state, stateByIndex, row, docInState) 
         docsWithIndex.splice(indexBefore, 1);
       }
     }
-  });
+  }
 }
 export function removeDocFromState(primaryPath, schema, state, doc) {
   var docId = doc[primaryPath];

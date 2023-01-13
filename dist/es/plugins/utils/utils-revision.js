@@ -8,8 +8,13 @@ export function parseRevision(revision) {
     hash: split[1]
   };
 }
+
+/**
+ * @hotPath
+ */
 export function getHeightOfRevision(revision) {
-  return parseRevision(revision).height;
+  var ret = parseInt(revision.split('-')[0], 10);
+  return ret;
 }
 
 /**

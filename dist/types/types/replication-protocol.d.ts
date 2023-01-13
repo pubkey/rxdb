@@ -57,6 +57,14 @@ export type RxReplicationWriteToMasterRow<RxDocType> = {
     newDocumentState: WithDeleted<RxDocType>;
 };
 
+/**
+ * Meta data that can be used
+ * by some plugins to do hacky stuff.
+ */
+export type RxReplicationWriteToMasterMeta = {
+    callId: string;
+};
+
 
 export type DocumentsWithCheckpoint<RxDocType, CheckpointType> = {
     documents: WithDeleted<RxDocType>[];
@@ -65,12 +73,12 @@ export type DocumentsWithCheckpoint<RxDocType, CheckpointType> = {
 
 
 export type RxReplicationPullStreamItem<RxDocType, MasterCheckpointType> = DocumentsWithCheckpoint<RxDocType, MasterCheckpointType> |
-/**
-     * Emit this when the masterChangeStream$ might have missed out
-     * some events because the fork lost the connection to the master.
-     * Like when the user went offline and reconnects.
-     */
-'RESYNC';
+    /**
+         * Emit this when the masterChangeStream$ might have missed out
+         * some events because the fork lost the connection to the master.
+         * Like when the user went offline and reconnects.
+         */
+    'RESYNC';
 
 /**
  * The replication handler contains all logic
@@ -101,7 +109,8 @@ export type RxReplicationHandler<RxDocType, MasterCheckpointType> = {
      * (otherwise returns an empty array.)
      */
     masterWrite(
-        rows: RxReplicationWriteToMasterRow<RxDocType>[]
+        rows: RxReplicationWriteToMasterRow<RxDocType>[],
+        meta: RxReplicationWriteToMasterMeta
     ): Promise<WithDeleted<RxDocType>[]>;
 };
 

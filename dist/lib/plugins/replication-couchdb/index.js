@@ -103,9 +103,10 @@ function replicateCouchDB(options) {
     };
   }
   var replicationPrimitivesPush;
+  var revisionByCallId = new Map();
   if (options.push) {
     replicationPrimitivesPush = {
-      async handler(rows) {
+      async handler(rows, meta) {
         /**
          * @link https://docs.couchdb.org/en/3.2.2-docs/api/database/bulk-api.html#db-bulk-docs
          */
@@ -127,6 +128,20 @@ function replicateCouchDB(options) {
           body: JSON.stringify(body)
         });
         var responseJson = await response.json();
+
+        /**
+         * CouchDB creates the new document revision
+         * and we have to remember it here so that
+         * we can later inject them into the assumedMasterState
+         * of the meta storage instance.
+         */
+        var revisions = new Map();
+        responseJson.filter(row => row.ok).forEach(row => revisions.set(row.id, row.rev));
+        if (revisions.size > 0) {
+          revisionByCallId.set(meta.callId, revisions);
+        }
+
+        // get conflicting writes
         var conflicts = responseJson.filter(row => {
           var isConflict = row.error === 'conflict';
           if (!row.ok && !isConflict) {
@@ -157,10 +172,39 @@ function replicateCouchDB(options) {
   var replicationState = new RxCouchDBReplicationState(options.url, options.fetch ? options.fetch : (0, _couchdbHelper.getDefaultFetch)(), _couchdbHelper.COUCHDB_NEW_REPLICATION_PLUGIN_IDENTITY_PREFIX + (0, _utils.fastUnsecureHash)(options.url), collection, replicationPrimitivesPull, replicationPrimitivesPush, options.live, options.retryTime, options.autoStart);
 
   /**
+   * Wrap the meta instance to make it store
+   * the server-side generated revisions from CouchDB
+   * so that the assumedMasterState contains the correct _rev value.
+   */
+  if (options.push) {
+    var startBefore = replicationState.start.bind(replicationState);
+    replicationState.start = async () => {
+      var startResult = await startBefore();
+      var metaInstance = (0, _utils.ensureNotFalsy)(replicationState.metaInstance);
+      var bulkWriteBefore = metaInstance.bulkWrite.bind(metaInstance);
+      metaInstance.bulkWrite = function (writeRows, context) {
+        if (context.startsWith('replication-up-write-meta')) {
+          var callId = (0, _utils.ensureNotFalsy)((0, _utils.lastOfArray)(context.split('-')));
+          var revisions = (0, _utils.getFromMapOrThrow)(revisionByCallId, callId);
+          revisionByCallId.delete(callId);
+          writeRows.forEach(row => {
+            var docId = row.document.itemId;
+            row.document.data = (0, _utils.flatClone)(row.document.data);
+            var revision = (0, _utils.getFromMapOrThrow)(revisions, docId);
+            row.document.data._rev = revision;
+          });
+        }
+        return bulkWriteBefore(writeRows, context);
+      };
+      return startResult;
+    };
+  }
+
+  /**
    * Use long polling to get live changes for the pull.stream$
    */
   if (options.live && options.pull) {
-    var startBefore = replicationState.start.bind(replicationState);
+    var _startBefore = replicationState.start.bind(replicationState);
     replicationState.start = () => {
       var since = 'now';
       var batchSize = options.pull && options.pull.batchSize ? options.pull.batchSize : 20;
@@ -199,7 +243,7 @@ function replicateCouchDB(options) {
           });
         }
       })();
-      return startBefore();
+      return _startBefore();
     };
   }
   (0, _replication.startReplicationOnLeaderShip)(options.waitForLeadership, replicationState);

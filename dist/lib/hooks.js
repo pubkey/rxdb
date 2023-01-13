@@ -91,7 +91,9 @@ var HOOKS = {
 };
 exports.HOOKS = HOOKS;
 function runPluginHooks(hookKey, obj) {
-  HOOKS[hookKey].forEach(fun => fun(obj));
+  if (HOOKS[hookKey]) {
+    HOOKS[hookKey].forEach(fun => fun(obj));
+  }
 }
 
 /**

@@ -81,7 +81,9 @@ export var HOOKS = {
   postRemoveRxDatabase: []
 };
 export function runPluginHooks(hookKey, obj) {
-  HOOKS[hookKey].forEach(fun => fun(obj));
+  if (HOOKS[hookKey]) {
+    HOOKS[hookKey].forEach(fun => fun(obj));
+  }
 }
 
 /**

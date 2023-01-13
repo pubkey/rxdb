@@ -16,19 +16,20 @@ var _rxStorageHelper = require("./rx-storage-helper");
  * This also clones the data.
  */
 function fillObjectDataBeforeInsert(schema, data) {
-  var useJson = schema.fillObjectWithDefaults(data);
-  useJson = (0, _rxSchemaHelper.fillPrimaryKey)(schema.primaryPath, schema.jsonSchema, useJson);
-  useJson._meta = (0, _utils.getDefaultRxDocumentMeta)();
-  if (!useJson.hasOwnProperty('_deleted')) {
-    useJson._deleted = false;
+  data = (0, _utils.flatClone)(data);
+  data = (0, _rxSchemaHelper.fillObjectWithDefaults)(schema, data);
+  data = (0, _rxSchemaHelper.fillPrimaryKey)(schema.primaryPath, schema.jsonSchema, data);
+  data._meta = (0, _utils.getDefaultRxDocumentMeta)();
+  if (!data.hasOwnProperty('_deleted')) {
+    data._deleted = false;
   }
-  if (!useJson.hasOwnProperty('_attachments')) {
-    useJson._attachments = {};
+  if (!data.hasOwnProperty('_attachments')) {
+    data._attachments = {};
   }
-  if (!useJson.hasOwnProperty('_rev')) {
-    useJson._rev = (0, _utils.getDefaultRevision)();
+  if (!data.hasOwnProperty('_rev')) {
+    data._rev = (0, _utils.getDefaultRevision)();
   }
-  return useJson;
+  return data;
 }
 
 /**
