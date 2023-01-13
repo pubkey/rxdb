@@ -59,7 +59,7 @@ export const RxDBDevModePlugin: RxPlugin = {
             [
                 '-------------- RxDB dev-mode warning -------------------------------',
                 'you are seing this because you use the RxDB dev-mode plugin https://rxdb.info/dev-mode.html',
-                'This is great in developement mode, because it will run many checks to ensure',
+                'This is great in development mode, because it will run many checks to ensure',
                 'that you use RxDB correct. If you see this in production mode,',
                 'you did something wrong because the dev-mode plugin will decrease the performance.',
                 '',
