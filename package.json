@@ -389,7 +389,7 @@
     "js-base64": "3.7.4",
     "jsonschema-key-compression": "1.6.1",
     "lokijs": "1.5.12",
-    "mingo": "6.2.5",
+    "mingo": "6.2.7",
     "modifyjs": "0.3.1",
     "oblivious-set": "1.1.1",
     "pouchdb-selector-core": "8.0.0",
