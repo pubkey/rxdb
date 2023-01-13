@@ -5,6 +5,7 @@ import type {
     RxCollection,
     RxDocumentData,
     RxReplicationPullStreamItem,
+    RxReplicationWriteToMasterMeta,
     RxReplicationWriteToMasterRow,
     WithDeleted
 } from '../../types';
@@ -67,7 +68,10 @@ export type ReplicationPullOptions<RxDocType, CheckpointType> = {
  * Returns the current master state of all conflicting writes,
  * so that they can be resolved on the client.
  */
-export type ReplicationPushHandler<RxDocType> = (docs: RxReplicationWriteToMasterRow<RxDocType>[]) => Promise<WithDeleted<RxDocType>[]>;
+export type ReplicationPushHandler<RxDocType> = (
+    docs: RxReplicationWriteToMasterRow<RxDocType>[],
+    meta: RxReplicationWriteToMasterMeta
+) => Promise<WithDeleted<RxDocType>[]>;
 export type ReplicationPushOptions<RxDocType> = {
     /**
      * A handler that sends the new local changes

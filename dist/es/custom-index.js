@@ -44,28 +44,36 @@ export function getIndexableStringMonad(schema, index) {
       getValueFn: objectPathMonad(fieldName)
     };
   });
+
+  /**
+   * @hotPath Performance of this function is very critical!
+   */
   var ret = function (docData) {
     var str = '';
-    fieldNameProperties.forEach(props => {
+    for (var i = 0; i < fieldNameProperties.length; ++i) {
+      var props = fieldNameProperties[i];
       var schemaPart = props.schemaPart;
       var type = schemaPart.type;
       var fieldValue = props.getValueFn(docData);
       if (type === 'string') {
+        // is string
         if (!fieldValue) {
           fieldValue = '';
         }
         str += fieldValue.padEnd(schemaPart.maxLength, ' ');
       } else if (type === 'boolean') {
+        // is boolean
         var boolToStr = fieldValue ? '1' : '0';
         str += boolToStr;
       } else {
-        var parsedLengths = ensureNotFalsy(props.parsedLengths);
+        // is number
+        var parsedLengths = props.parsedLengths;
         if (!fieldValue) {
           fieldValue = 0;
         }
         str += getNumberIndexString(parsedLengths, fieldValue);
       }
-    });
+    }
     return str;
   };
   return ret;

@@ -151,7 +151,7 @@ export var RxReplicationState = /*#__PURE__*/function () {
           useResult.documents = await Promise.all(useResult.documents.map(d => pullModifier(d)));
           return useResult;
         },
-        masterWrite: async rows => {
+        masterWrite: async (rows, meta) => {
           if (!this.push) {
             return [];
           }
@@ -172,7 +172,7 @@ export var RxReplicationState = /*#__PURE__*/function () {
           var result = null;
           while (!done && !this.isStopped()) {
             try {
-              result = await this.push.handler(useRows);
+              result = await this.push.handler(useRows, meta);
               /**
                * It is a common problem that people have wrongly behaving backend
                * that do not return an array with the conflicts on push requests.

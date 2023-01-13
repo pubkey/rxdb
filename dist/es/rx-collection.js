@@ -1,6 +1,6 @@
 import _createClass from "@babel/runtime/helpers/createClass";
 import { filter, mergeMap } from 'rxjs/operators';
-import { ucfirst, flatClone, promiseSeries, pluginMissing, ensureNotFalsy, getFromMapOrThrow, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_VOID, getDefaultRxDocumentMeta, getDefaultRevision } from './plugins/utils';
+import { ucfirst, flatClone, promiseSeries, pluginMissing, ensureNotFalsy, getFromMapOrThrow, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_VOID } from './plugins/utils';
 import { fillObjectDataBeforeInsert, createRxCollectionStorageInstance, removeCollectionStorages } from './rx-collection-helper';
 import { createRxQuery, _getDefaultQuery } from './rx-query';
 import { newRxError, newRxTypeError } from './rx-error';
@@ -108,11 +108,9 @@ export var RxCollectionBase = /*#__PURE__*/function () {
     return this.getDataMigrator().migratePromise(batchSize);
   };
   _proto.insert = async function insert(json) {
-    // TODO do we need fillObjectDataBeforeInsert() here because it is also run at bulkInsert() later
-    var useJson = fillObjectDataBeforeInsert(this.schema, json);
-    var writeResult = await this.bulkInsert([useJson]);
+    var writeResult = await this.bulkInsert([json]);
     var isError = writeResult.error[0];
-    throwIfIsStorageWriteError(this, useJson[this.schema.primaryPath], json, isError);
+    throwIfIsStorageWriteError(this, json[this.schema.primaryPath], json, isError);
     var insertResult = ensureNotFalsy(writeResult.success[0]);
     return insertResult;
   };
@@ -120,13 +118,14 @@ export var RxCollectionBase = /*#__PURE__*/function () {
     /**
      * Optimization shortcut,
      * do nothing when called with an empty array
-     */
+    */
     if (docsData.length === 0) {
       return {
         success: [],
         error: []
       };
     }
+    var primaryPath = this.schema.primaryPath;
     var useDocs = docsData.map(docData => {
       var useDocData = fillObjectDataBeforeInsert(this.schema, docData);
       return useDocData;
@@ -138,23 +137,16 @@ export var RxCollectionBase = /*#__PURE__*/function () {
     })) : useDocs;
     var docsMap = new Map();
     var insertRows = docs.map(doc => {
-      docsMap.set(doc[this.schema.primaryPath], doc);
-      var docData = Object.assign(doc, {
-        _attachments: {},
-        _meta: getDefaultRxDocumentMeta(),
-        _rev: getDefaultRevision(),
-        _deleted: false
-      });
+      docsMap.set(doc[primaryPath], doc);
       var row = {
-        document: docData
+        document: doc
       };
       return row;
     });
     var results = await this.storageInstance.bulkWrite(insertRows, 'rx-collection-bulk-insert');
 
     // create documents
-    var successDocData = Object.values(results.success);
-    var rxDocuments = successDocData.map(writtenDocData => this._docCache.getCachedRxDocument(writtenDocData));
+    var rxDocuments = Object.values(results.success).map(writtenDocData => this._docCache.getCachedRxDocument(writtenDocData));
     if (this.hasHooks('post', 'insert')) {
       await Promise.all(rxDocuments.map(doc => {
         return this._runHooks('post', 'insert', docsMap.get(doc.primary), doc);

@@ -11,5 +11,6 @@ export * from './utils-object-dot-prop';
 export * from './utils-object';
 export * from './utils-error';
 export * from './utils-time';
+export * from './utils-regex';
 export * from './utils-other';
 //# sourceMappingURL=index.js.map

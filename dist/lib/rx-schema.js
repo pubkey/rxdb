@@ -47,15 +47,6 @@ var RxSchema = /*#__PURE__*/function () {
   }
 
   /**
-   * fills all unset fields with default-values if set
-   */;
-  _proto.fillObjectWithDefaults = function fillObjectWithDefaults(obj) {
-    obj = (0, _utils.flatClone)(obj);
-    Object.entries(this.defaultValues).filter(([k]) => !obj.hasOwnProperty(k) || typeof obj[k] === 'undefined').forEach(([k, v]) => obj[k] = v);
-    return obj;
-  }
-
-  /**
    * creates the schema-based document-prototype,
    * see RxCollection.getDocumentPrototype()
    */;

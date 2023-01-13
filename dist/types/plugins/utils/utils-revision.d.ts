@@ -3,6 +3,9 @@ export declare function parseRevision(revision: string): {
     height: number;
     hash: string;
 };
+/**
+ * @hotPath
+ */
 export declare function getHeightOfRevision(revision: string): number;
 /**
  * Creates the next write revision for a given document.

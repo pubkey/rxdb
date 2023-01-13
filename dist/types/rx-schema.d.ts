@@ -21,10 +21,6 @@ export declare class RxSchema<RxDocType = any> {
      */
     validateChange(dataBefore: any, dataAfter: any): void;
     /**
-     * fills all unset fields with default-values if set
-     */
-    fillObjectWithDefaults(obj: any): any;
-    /**
      * creates the schema-based document-prototype,
      * see RxCollection.getDocumentPrototype()
      */

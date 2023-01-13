@@ -146,6 +146,17 @@ Object.keys(_utilsTime).forEach(function (key) {
     }
   });
 });
+var _utilsRegex = require("./utils-regex");
+Object.keys(_utilsRegex).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (key in exports && exports[key] === _utilsRegex[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function () {
+      return _utilsRegex[key];
+    }
+  });
+});
 var _utilsOther = require("./utils-other");
 Object.keys(_utilsOther).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;

@@ -1,5 +1,5 @@
-import { createRevision, getDefaultRevision, getDefaultRxDocumentMeta, now } from './plugins/utils';
-import { fillPrimaryKey } from './rx-schema-helper';
+import { createRevision, flatClone, getDefaultRevision, getDefaultRxDocumentMeta, now } from './plugins/utils';
+import { fillObjectWithDefaults, fillPrimaryKey } from './rx-schema-helper';
 import { runAsyncPluginHooks } from './hooks';
 import { getAllCollectionDocuments } from './rx-database-internal-store';
 import { flatCloneDocWithMeta } from './rx-storage-helper';
@@ -9,19 +9,20 @@ import { flatCloneDocWithMeta } from './rx-storage-helper';
  * This also clones the data.
  */
 export function fillObjectDataBeforeInsert(schema, data) {
-  var useJson = schema.fillObjectWithDefaults(data);
-  useJson = fillPrimaryKey(schema.primaryPath, schema.jsonSchema, useJson);
-  useJson._meta = getDefaultRxDocumentMeta();
-  if (!useJson.hasOwnProperty('_deleted')) {
-    useJson._deleted = false;
+  data = flatClone(data);
+  data = fillObjectWithDefaults(schema, data);
+  data = fillPrimaryKey(schema.primaryPath, schema.jsonSchema, data);
+  data._meta = getDefaultRxDocumentMeta();
+  if (!data.hasOwnProperty('_deleted')) {
+    data._deleted = false;
   }
-  if (!useJson.hasOwnProperty('_attachments')) {
-    useJson._attachments = {};
+  if (!data.hasOwnProperty('_attachments')) {
+    data._attachments = {};
   }
-  if (!useJson.hasOwnProperty('_rev')) {
-    useJson._rev = getDefaultRevision();
+  if (!data.hasOwnProperty('_rev')) {
+    data._rev = getDefaultRevision();
   }
-  return useJson;
+  return data;
 }
 
 /**

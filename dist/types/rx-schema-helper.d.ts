@@ -1,4 +1,5 @@
 import type { DeepReadonly, JsonSchema, PrimaryKey, RxDocumentData, RxJsonSchema, RxStorageDefaultCheckpoint, StringKeys } from './types';
+import type { RxSchema } from './rx-schema';
 /**
  * Helper function to create a valid RxJsonSchema
  * with a given version.
@@ -38,4 +39,9 @@ export declare const RX_META_SCHEMA: JsonSchema;
  * @return field-names of the final-fields
  */
 export declare function getFinalFields<T = any>(jsonSchema: RxJsonSchema<T>): string[];
+/**
+ * fills all unset fields with default-values if set
+ * @hotPath
+ */
+export declare function fillObjectWithDefaults(rxSchema: RxSchema<any>, obj: any): any;
 export declare const DEFAULT_CHECKPOINT_SCHEMA: DeepReadonly<JsonSchema<RxStorageDefaultCheckpoint>>;
