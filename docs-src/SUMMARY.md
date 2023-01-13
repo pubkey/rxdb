@@ -111,6 +111,7 @@
 * [LeaderElection](./leader-election.md)
 
 * [RxStorage](./rx-storage.md)
+    * [RxStorage Performance](./rx-storage-performance.md)
     * [RxStorage Dexie.js](./rx-storage-dexie.md)
     * [RxStorage LokiJS](./rx-storage-lokijs.md)
     * [RxStorage Memory](./rx-storage-memory.md)
