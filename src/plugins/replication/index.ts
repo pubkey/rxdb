@@ -223,7 +223,8 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                     return useResult;
                 },
                 masterWrite: async (
-                    rows: RxReplicationWriteToMasterRow<RxDocType>[]
+                    rows: RxReplicationWriteToMasterRow<RxDocType>[],
+                    meta
                 ) => {
                     if (!this.push) {
                         return [];
@@ -248,7 +249,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                     let result: WithDeleted<RxDocType>[] = null as any;
                     while (!done && !this.isStopped()) {
                         try {
-                            result = await this.push.handler(useRows);
+                            result = await this.push.handler(useRows, meta);
                             /**
                              * It is a common problem that people have wrongly behaving backend
                              * that do not return an array with the conflicts on push requests.

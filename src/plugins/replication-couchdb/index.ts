@@ -5,7 +5,9 @@ import {
     ensureNotFalsy,
     errorToPlainJson,
     fastUnsecureHash,
-    flatClone
+    flatClone,
+    getFromMapOrThrow,
+    lastOfArray
 } from '../../plugins/utils';
 
 import { RxDBLeaderElectionPlugin } from '../leader-election';
@@ -17,7 +19,8 @@ import type {
     RxReplicationPullStreamItem,
     CouchdbChangesResult,
     CouchBulkDocResultRow,
-    CouchAllDocsResponse
+    CouchAllDocsResponse,
+    RxReplicationWriteToMasterMeta
 } from '../../types';
 import {
     RxReplicationState,
@@ -121,10 +124,12 @@ export function replicateCouchDB<RxDocType>(
     }
 
     let replicationPrimitivesPush: ReplicationPushOptions<RxDocType> | undefined;
+    const revisionByCallId: Map<string, Map<string, string>> = new Map();
     if (options.push) {
         replicationPrimitivesPush = {
             async handler(
-                rows: RxReplicationWriteToMasterRow<RxDocType>[]
+                rows: RxReplicationWriteToMasterRow<RxDocType>[],
+                meta: RxReplicationWriteToMasterMeta
             ) {
                 /**
                  * @link https://docs.couchdb.org/en/3.2.2-docs/api/database/bulk-api.html#db-bulk-docs
@@ -152,6 +157,22 @@ export function replicateCouchDB<RxDocType>(
                 );
                 const responseJson: CouchBulkDocResultRow[] = await response.json();
 
+                /**
+                 * CouchDB creates the new document revision
+                 * and we have to remember it here so that
+                 * we can later inject them into the assumedMasterState
+                 * of the meta storage instance.
+                 */
+                const revisions = new Map<string, string>();
+                responseJson
+                    .filter(row => row.ok)
+                    .forEach(row => revisions.set(row.id, row.rev));
+                if (revisions.size > 0) {
+                    revisionByCallId.set(meta.callId, revisions);
+                }
+
+
+                // get conflicting writes
                 const conflicts = responseJson.filter(row => {
                     const isConflict = row.error === 'conflict';
                     if (!row.ok && !isConflict) {
@@ -191,6 +212,37 @@ export function replicateCouchDB<RxDocType>(
         options.retryTime,
         options.autoStart
     );
+
+    /**
+     * Wrap the meta instance to make it store
+     * the server-side generated revisions from CouchDB
+     * so that the assumedMasterState contains the correct _rev value.
+     */
+    if (options.push) {
+        const startBefore = replicationState.start.bind(replicationState);
+        replicationState.start = async () => {
+            const startResult = await startBefore();
+            const metaInstance = ensureNotFalsy(replicationState.metaInstance);
+            const bulkWriteBefore = metaInstance.bulkWrite.bind(metaInstance);
+            metaInstance.bulkWrite = function (writeRows, context) {
+                if (context.startsWith('replication-up-write-meta')) {
+                    const callId = ensureNotFalsy(lastOfArray(context.split('-')));
+                    const revisions = getFromMapOrThrow(revisionByCallId, callId);
+                    revisionByCallId.delete(callId);
+                    writeRows.forEach(row => {
+                        const docId = row.document.itemId;
+                        row.document.data = flatClone(row.document.data);
+                        const revision = getFromMapOrThrow(revisions, docId);
+                        row.document.data._rev = revision;
+                    });
+                }
+                return bulkWriteBefore(writeRows, context);
+            };
+            return startResult;
+        };
+
+    }
+
 
     /**
      * Use long polling to get live changes for the pull.stream$

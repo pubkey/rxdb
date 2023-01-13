@@ -11,6 +11,7 @@ import * as schemaObjects from '../helper/schema-objects';
 import * as humansCollection from '../helper/humans-collection';
 
 import {
+    randomCouchString,
     RxCollection
 } from '../../';
 
@@ -214,7 +215,6 @@ describe('replication-couchdb.test.ts', () => {
         });
     });
     describe('live:true', () => {
-
         async function syncLive<RxDocType>(
             collection: RxCollection<RxDocType>,
             server: any
@@ -261,5 +261,70 @@ describe('replication-couchdb.test.ts', () => {
             server.close();
         });
     });
-    describe('ISSUES', () => { });
+    describe('ISSUES', () => {
+        it('#4299 CouchDB push is throwing error because of missing revision', async () => {
+            if (
+                !config.platform.isNode() // runs only in node
+            ) {
+                return;
+            }
+            const server = await SpawnServer.spawn();
+
+            // create a collection
+            const collection = await humansCollection.create(0);
+
+            // insert a document
+            let doc = await collection.insert({
+                passportId: 'foobar',
+                firstName: 'Bob',
+                lastName: 'Kelso',
+                age: 56,
+            });
+
+            const replicationState = replicateCouchDB({
+                url: server.url,
+                collection,
+                live: true,
+                pull: {
+                    batchSize: 60,
+                    heartbeat: 60000,
+                },
+                push: {
+                    batchSize: 60,
+                },
+            });
+
+            replicationState.error$.subscribe((err) => {
+                console.log('error');
+                throw Error(err.message);
+            });
+
+            await replicationState.awaitInitialReplication();
+
+            // Edit the item multiple times
+            // In this test the replication usually fails on the first edit
+            // But in production it is pretty random, I've added 3 edits just in case
+            doc = await doc.update({
+                $set: {
+                    firstName: '1' + randomCouchString(10),
+                },
+            });
+
+            doc = await doc.update({
+                $set: {
+                    firstName: '2' + randomCouchString(10),
+                },
+            });
+
+            doc = await doc.update({
+                $set: {
+                    firstName: '3' + randomCouchString(10),
+                },
+            });
+            assert.ok(doc);
+
+            await replicationState.awaitInSync();
+            await collection.database.destroy();
+        });
+    });
 });
