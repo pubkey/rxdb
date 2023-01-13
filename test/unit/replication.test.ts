@@ -93,9 +93,10 @@ describe('replication.test.js', () => {
             remoteCollection.database.token
         );
         const handler: ReplicationPushHandler<TestDocType> = async (
-            rows: RxReplicationWriteToMasterRow<TestDocType>[]
+            rows: RxReplicationWriteToMasterRow<TestDocType>[],
+            meta
         ) => {
-            const result = await helper.masterWrite(rows);
+            const result = await helper.masterWrite(rows, meta);
             return result;
         };
         return handler;
@@ -126,11 +127,11 @@ describe('replication.test.js', () => {
                 },
                 push: {
                     batchSize,
-                    handler: (docs) => {
+                    handler: (docs, meta) => {
                         if (docs.length > batchSize) {
                             throw new Error('push got more docs then the batch size');
                         }
-                        return pushHandler(docs);
+                        return pushHandler(docs, meta);
                     }
                 }
             });
@@ -322,11 +323,11 @@ describe('replication.test.js', () => {
                     handler: getPullHandler(remoteCollection)
                 },
                 push: {
-                    handler: (docs) => {
+                    handler: (docs, meta) => {
                         if (docs.length === 0 || docs.length > batchSize) {
                             throw new Error('push.batchSize(' + batchSize + ') not respected ' + docs.length);
                         }
-                        return getPushHandler(remoteCollection)(docs);
+                        return getPushHandler(remoteCollection)(docs, meta);
                     },
                     batchSize
                 }
@@ -537,9 +538,9 @@ describe('replication.test.js', () => {
                     }
                 },
                 push: {
-                    handler: async (docs) => {
+                    handler: async (docs, meta) => {
                         await continues;
-                        return getPushHandler(remoteCollection)(docs);
+                        return getPushHandler(remoteCollection)(docs, meta);
                     }
                 },
                 autoStart: false

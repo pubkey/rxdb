@@ -342,9 +342,10 @@ config.parallel('crdt.test.js', () => {
                     remoteCollection.database.token
                 );
                 const handler: ReplicationPushHandler<TestDocType> = async (
-                    rows: RxReplicationWriteToMasterRow<TestDocType>[]
+                    rows: RxReplicationWriteToMasterRow<TestDocType>[],
+                    meta
                 ) => {
-                    const result = await helper.masterWrite(rows);
+                    const result = await helper.masterWrite(rows, meta);
                     return result;
                 };
                 return handler;
@@ -375,8 +376,8 @@ config.parallel('crdt.test.js', () => {
                     },
                     push: {
                         batchSize: 10,
-                        async handler(docs) {
-                            const ret = await pushHandler(docs);
+                        async handler(docs, meta) {
+                            const ret = await pushHandler(docs, meta);
                             return ret;
                         }
                     }
