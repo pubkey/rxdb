@@ -1109,3 +1109,37 @@ A1:
 A2:
 72.52
 72.16
+
+
+# 13 January 2023
+Goal: Improve indexeddb find by id
+
+Before:
+53.45
+53.05
+54.12000000011176
+
+A1: (use nested row instead of attaching indexes to document data)
+52.269999999832365
+50.759999999962744
+
+A2: (rxdb core update)
+50.48999999994412
+51.420000000111756
+
+
+# 13 January 2023
+Goal: Improve indexeddb insert performance
+
+BEFORE:
+62.90000000018627
+61.62999999979511
+
+
+A1: (always use .put instead of .add)
+60.14999999990687
+60.24999999990687
+
+A2: (shorter index names)
+59.07000000011176
+59.05000000037253
