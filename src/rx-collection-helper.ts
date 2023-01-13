@@ -10,11 +10,13 @@ import type {
 } from './types';
 import {
     createRevision,
+    flatClone,
     getDefaultRevision,
     getDefaultRxDocumentMeta,
     now
 } from './plugins/utils';
 import {
+    fillObjectWithDefaults,
     fillPrimaryKey
 } from './rx-schema-helper';
 import type { RxSchema } from './rx-schema';
@@ -30,23 +32,24 @@ export function fillObjectDataBeforeInsert<RxDocType>(
     schema: RxSchema<RxDocType>,
     data: Partial<RxDocumentData<RxDocType>> | any
 ): RxDocumentData<RxDocType> {
-    let useJson = schema.fillObjectWithDefaults(data);
-    useJson = fillPrimaryKey(
+    data = flatClone(data);
+    data = fillObjectWithDefaults(schema, data);
+    data = fillPrimaryKey(
         schema.primaryPath,
         schema.jsonSchema,
-        useJson
+        data
     );
-    useJson._meta = getDefaultRxDocumentMeta();
-    if (!useJson.hasOwnProperty('_deleted')) {
-        useJson._deleted = false;
+    data._meta = getDefaultRxDocumentMeta();
+    if (!data.hasOwnProperty('_deleted')) {
+        data._deleted = false;
     }
-    if (!useJson.hasOwnProperty('_attachments')) {
-        useJson._attachments = {};
+    if (!data.hasOwnProperty('_attachments')) {
+        data._attachments = {};
     }
-    if (!useJson.hasOwnProperty('_rev')) {
-        useJson._rev = getDefaultRevision();
+    if (!data.hasOwnProperty('_rev')) {
+        data._rev = getDefaultRevision();
     }
-    return useJson;
+    return data;
 }
 
 /**

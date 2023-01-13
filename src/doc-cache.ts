@@ -6,7 +6,7 @@ import type {
 import {
     getFromMapOrFill,
     getFromMapOrThrow,
-    parseRevision
+    getHeightOfRevision
 } from './plugins/utils';
 import {
     overwritable
@@ -108,7 +108,7 @@ export class DocumentCache<RxDocType, OrmMethods> {
      */
     public getCachedRxDocument(docData: RxDocumentData<RxDocType>): RxDocument<RxDocType, OrmMethods> {
         const docId: string = (docData as any)[this.primaryPath];
-        const revisionHeight = parseRevision(docData._rev).height;
+        const revisionHeight = getHeightOfRevision(docData._rev);
         const cacheItem = getFromMapOrFill<string, CacheItem<RxDocType, OrmMethods>>(
             this.cacheItemByDocId,
             docId,

@@ -19,7 +19,8 @@ import {
     getFinalFields,
     getPreviousVersions,
     getSchemaByObjectPath,
-    fillWithDefaultSettings
+    fillWithDefaultSettings,
+    fillObjectWithDefaults
 } from '../../';
 
 config.parallel('rx-schema.test.js', () => {
@@ -745,8 +746,7 @@ config.parallel('rx-schema.test.js', () => {
                     const data = {
                         foo: 'bar'
                     };
-                    const filled = schema.fillObjectWithDefaults(data);
-                    assert.ok(data !== filled);
+                    const filled = fillObjectWithDefaults(schema, data);
                     assert.strictEqual(filled.foo, 'bar');
                     assert.strictEqual(filled.age, 20);
                 });
@@ -757,9 +757,8 @@ config.parallel('rx-schema.test.js', () => {
                         age: 40
                     };
                     const data2 = clone(data);
-                    const filled = schema.fillObjectWithDefaults(data);
-                    const filled2 = schema.fillObjectWithDefaults(data2);
-                    assert.ok(data !== filled);
+                    const filled = fillObjectWithDefaults(schema, data);
+                    const filled2 = fillObjectWithDefaults(schema, data2);
                     assert.strictEqual(filled.foo, 'bar');
                     assert.strictEqual(filled.age, 40);
                     assert.strictEqual(filled2.foo, 'bar');

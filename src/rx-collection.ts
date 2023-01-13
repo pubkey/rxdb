@@ -11,9 +11,7 @@ import {
     ensureNotFalsy,
     getFromMapOrThrow,
     PROMISE_RESOLVE_FALSE,
-    PROMISE_RESOLVE_VOID,
-    getDefaultRxDocumentMeta,
-    getDefaultRevision
+    PROMISE_RESOLVE_VOID
 } from './plugins/utils';
 import {
     fillObjectDataBeforeInsert,
@@ -67,7 +65,6 @@ import type {
     RxCacheReplacementPolicy,
     RxStorageWriteError,
     RxDocumentData,
-    RxDocumentWriteData,
     RxStorageInstanceCreationParams,
     BulkWriteRow,
     RxChangeEvent,
@@ -275,14 +272,10 @@ export class RxCollectionBase<
     async insert(
         json: RxDocumentType | RxDocument
     ): Promise<RxDocument<RxDocumentType, OrmMethods>> {
-
-        // TODO do we need fillObjectDataBeforeInsert() here because it is also run at bulkInsert() later
-        const useJson: RxDocumentWriteData<RxDocumentType> = fillObjectDataBeforeInsert(this.schema, json);
-
-        const writeResult = await this.bulkInsert([useJson]);
+        const writeResult = await this.bulkInsert([json as any]);
 
         const isError = writeResult.error[0];
-        throwIfIsStorageWriteError(this as any, useJson[this.schema.primaryPath] as any, json, isError);
+        throwIfIsStorageWriteError(this as any, (json as any)[this.schema.primaryPath] as any, json, isError);
         const insertResult = ensureNotFalsy(writeResult.success[0]);
         return insertResult;
     }
@@ -296,7 +289,7 @@ export class RxCollectionBase<
         /**
          * Optimization shortcut,
          * do nothing when called with an empty array
-         */
+        */
         if (docsData.length === 0) {
             return {
                 success: [],
@@ -304,6 +297,7 @@ export class RxCollectionBase<
             };
         }
 
+        const primaryPath = this.schema.primaryPath;
         const useDocs = docsData.map(docData => {
             const useDocData = fillObjectDataBeforeInsert(this.schema, docData);
             return useDocData;
@@ -319,14 +313,8 @@ export class RxCollectionBase<
             ) : useDocs;
         const docsMap: Map<string, RxDocumentType> = new Map();
         const insertRows: BulkWriteRow<RxDocumentType>[] = docs.map(doc => {
-            docsMap.set((doc as any)[this.schema.primaryPath] as any, doc);
-            const docData = Object.assign(doc, {
-                _attachments: {},
-                _meta: getDefaultRxDocumentMeta(),
-                _rev: getDefaultRevision(),
-                _deleted: false
-            });
-            const row: BulkWriteRow<RxDocumentType> = { document: docData };
+            docsMap.set((doc as any)[primaryPath] as any, doc);
+            const row: BulkWriteRow<RxDocumentType> = { document: doc };
             return row;
         });
         const results = await this.storageInstance.bulkWrite(
@@ -335,8 +323,7 @@ export class RxCollectionBase<
         );
 
         // create documents
-        const successDocData: RxDocumentData<RxDocumentType>[] = Object.values(results.success);
-        const rxDocuments: any[] = successDocData
+        const rxDocuments = Object.values(results.success)
             .map((writtenDocData) => this._docCache.getCachedRxDocument(writtenDocData));
 
         if (this.hasHooks('post', 'insert')) {

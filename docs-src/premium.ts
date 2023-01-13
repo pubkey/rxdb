@@ -98,7 +98,7 @@ window.onload = async function () {
 export const PACKAGE_PRICE: { [k: string]: number; } = {
     browser: 0.55,
     native: 0.65,
-    performance: 0.20
+    performance: 0.30
 };
 
 /**

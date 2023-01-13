@@ -13,9 +13,14 @@ export function parseRevision(revision: string): { height: number; hash: string;
     };
 }
 
+/**
+ * @hotPath
+ */
 export function getHeightOfRevision(revision: string): number {
-    return parseRevision(revision).height;
+    const ret = parseInt(revision.split('-')[0], 10);
+    return ret;
 }
+
 
 /**
  * Creates the next write revision for a given document.

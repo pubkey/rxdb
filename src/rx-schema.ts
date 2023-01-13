@@ -1,6 +1,5 @@
 import {
     overwriteGetterForCaching,
-    flatClone,
     isMaybeReadonlyArray,
     fastUnsecureHash,
     deepEqual
@@ -92,18 +91,6 @@ export class RxSchema<RxDocType = any> {
                 });
             }
         });
-    }
-
-    /**
-     * fills all unset fields with default-values if set
-     */
-    fillObjectWithDefaults(obj: any): any {
-        obj = flatClone(obj);
-        Object
-            .entries(this.defaultValues)
-            .filter(([k]) => !obj.hasOwnProperty(k) || typeof obj[k] === 'undefined')
-            .forEach(([k, v]) => obj[k] = v);
-        return obj;
     }
 
     /**

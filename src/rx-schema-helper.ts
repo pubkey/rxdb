@@ -18,6 +18,7 @@ import {
     sortObject,
     trimDots
 } from './plugins/utils';
+import type { RxSchema } from './rx-schema';
 
 /**
  * Helper function to create a valid RxJsonSchema
@@ -63,7 +64,11 @@ export function fillPrimaryKey<T>(
     jsonSchema: RxJsonSchema<T>,
     documentData: RxDocumentData<T>
 ): RxDocumentData<T> {
-    const cloned = flatClone(documentData);
+    // optimization shortcut.
+    if (typeof jsonSchema.primaryKey === 'string') {
+        return documentData;
+    }
+
     const newPrimary = getComposedPrimaryKeyOfDocumentData<T>(
         jsonSchema,
         documentData
@@ -85,8 +90,8 @@ export function fillPrimaryKey<T>(
             });
     }
 
-    (cloned as any)[primaryPath] = newPrimary;
-    return cloned;
+    (documentData as any)[primaryPath] = newPrimary;
+    return documentData;
 }
 
 export function getPrimaryFieldOfPrimaryKey<RxDocType>(
@@ -275,6 +280,20 @@ export function getFinalFields<T = any>(
     return ret;
 }
 
+/**
+ * fills all unset fields with default-values if set
+ * @hotPath
+ */
+export function fillObjectWithDefaults(rxSchema: RxSchema<any>, obj: any): any {
+    const defaultKeys = Object.keys(rxSchema.defaultValues);
+    for (let i = 0; i < defaultKeys.length; ++i) {
+        const key = defaultKeys[i];
+        if (!obj.hasOwnProperty(key) || typeof obj[key] === 'undefined') {
+            obj[key] = rxSchema.defaultValues[key];
+        }
+    }
+    return obj;
+}
 
 export const DEFAULT_CHECKPOINT_SCHEMA: DeepReadonly<JsonSchema<RxStorageDefaultCheckpoint>> = {
     type: 'object',

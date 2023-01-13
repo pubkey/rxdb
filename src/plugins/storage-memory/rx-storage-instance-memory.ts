@@ -90,6 +90,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         context: string
     ): Promise<RxStorageBulkWriteResponse<RxDocType>> {
         ensureNotRemoved(this);
+        const primaryPath = this.primaryPath;
 
         const ret: RxStorageBulkWriteResponse<RxDocType> = {
             success: {},
@@ -98,7 +99,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
 
         const categorized = categorizeBulkWriteRows<RxDocType>(
             this,
-            this.primaryPath as any,
+            primaryPath as any,
             this.internals.documents,
             documentWrites,
             context
@@ -111,7 +112,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         const stateByIndex = Object.values(this.internals.byIndex);
 
         categorized.bulkInsertDocs.forEach(writeRow => {
-            const docId = writeRow.document[this.primaryPath];
+            const docId = writeRow.document[primaryPath];
             putWriteRowToState(
                 docId as any,
                 this.internals,
@@ -123,7 +124,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         });
 
         categorized.bulkUpdateDocs.forEach(writeRow => {
-            const docId = writeRow.document[this.primaryPath];
+            const docId = writeRow.document[primaryPath];
             putWriteRowToState(
                 docId as any,
                 this.internals,
@@ -144,24 +145,26 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
                 attachment.attachmentData
             );
         });
-        categorized.attachmentsUpdate.forEach(attachment => {
-            attachmentsMap.set(
-                attachmentMapKey(attachment.documentId, attachment.attachmentId),
-                attachment.attachmentData
-            );
-        });
-        categorized.attachmentsRemove.forEach(attachment => {
-            attachmentsMap.delete(
-                attachmentMapKey(attachment.documentId, attachment.attachmentId)
-            );
-        });
+        if (this.schema.attachments) {
+            categorized.attachmentsUpdate.forEach(attachment => {
+                attachmentsMap.set(
+                    attachmentMapKey(attachment.documentId, attachment.attachmentId),
+                    attachment.attachmentData
+                );
+            });
+            categorized.attachmentsRemove.forEach(attachment => {
+                attachmentsMap.delete(
+                    attachmentMapKey(attachment.documentId, attachment.attachmentId)
+                );
+            });
+        }
         if (categorized.eventBulk.events.length > 0) {
             const lastState = getNewestOfDocumentStates(
-                this.primaryPath as any,
+                primaryPath as any,
                 Object.values(ret.success)
             );
             categorized.eventBulk.checkpoint = {
-                id: lastState[this.primaryPath],
+                id: lastState[primaryPath],
                 lwt: lastState._meta.lwt
             };
             this.internals.changes$.next(categorized.eventBulk);

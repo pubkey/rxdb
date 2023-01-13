@@ -83,7 +83,9 @@ export const HOOKS: { [k: string]: any[]; } = {
 };
 
 export function runPluginHooks(hookKey: string, obj: any) {
-    HOOKS[hookKey].forEach(fun => fun(obj));
+    if (HOOKS[hookKey]) {
+        HOOKS[hookKey].forEach(fun => fun(obj));
+    }
 }
 
 
