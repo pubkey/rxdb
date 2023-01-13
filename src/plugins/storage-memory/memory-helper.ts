@@ -36,16 +36,19 @@ export function attachmentMapKey(documentId: string, attachmentId: string): stri
     return documentId + '||' + attachmentId;
 }
 
-const SORT_BY_INDEX_STRING = (a: DocWithIndexString<any>, b: DocWithIndexString<any>) => {
+function sortByIndexStringComparator<RxDocType>(a: DocWithIndexString<RxDocType>, b: DocWithIndexString<RxDocType>) {
     if (a.indexString < b.indexString) {
         return -1;
     } else {
         return 1;
     }
-};
+}
 
 
 
+/**
+ * @hotPath
+ */
 export function putWriteRowToState<RxDocType>(
     docId: string,
     state: MemoryStorageInternals<RxDocType>,
@@ -54,7 +57,8 @@ export function putWriteRowToState<RxDocType>(
     docInState?: RxDocumentData<RxDocType>
 ) {
     state.documents.set(docId, row.document as any);
-    stateByIndex.forEach(byIndex => {
+    for (let i = 0; i < stateByIndex.length; ++i) {
+        const byIndex = stateByIndex[i];
         const docsWithIndex = byIndex.docsWithIndex;
         const newIndexString = byIndex.getIndexableString(row.document as any);
         const [, insertPosition] = pushAtSortPosition(
@@ -64,7 +68,7 @@ export function putWriteRowToState<RxDocType>(
                 doc: row.document,
                 indexString: newIndexString
             },
-            SORT_BY_INDEX_STRING,
+            sortByIndexStringComparator,
             true
         );
 
@@ -75,7 +79,8 @@ export function putWriteRowToState<RxDocType>(
             const previousIndexString = byIndex.getIndexableString(docInState);
             if (previousIndexString === newIndexString) {
                 /**
-                 * Index not changed -> The old doc must be before or after the new one.
+                 * Performance shortcut.
+                 * If index was not changed -> The old doc must be before or after the new one.
                  */
                 const prev = docsWithIndex[insertPosition - 1];
                 if (prev && prev.id === docId) {
@@ -107,7 +112,7 @@ export function putWriteRowToState<RxDocType>(
                 docsWithIndex.splice(indexBefore, 1);
             }
         }
-    });
+    }
 }
 
 

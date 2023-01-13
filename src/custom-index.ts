@@ -85,15 +85,18 @@ export function getIndexableStringMonad<RxDocType>(
             const type = schemaPart.type;
             let fieldValue = props.getValueFn(docData);
             if (type === 'string') {
+                // is string
                 if (!fieldValue) {
                     fieldValue = '';
                 }
                 str += fieldValue.padEnd(schemaPart.maxLength as number, ' ');
             } else if (type === 'boolean') {
+                // is boolean
                 const boolToStr = fieldValue ? '1' : '0';
                 str += boolToStr;
             } else {
-                const parsedLengths = ensureNotFalsy(props.parsedLengths);
+                // is number
+                const parsedLengths = props.parsedLengths as ParsedLengths;
                 if (!fieldValue) {
                     fieldValue = 0;
                 }
