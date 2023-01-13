@@ -50,6 +50,7 @@
 - FIX(replication) Composite Primary Keys broken on replicated collections [#4190](https://github.com/pubkey/rxdb/pull/4190)
 - FIX(sqlite) $in Query not working SQLite [#4278](https://github.com/pubkey/rxdb/issues/4278)
 - FIX CouchDB push is throwing error because of missing revision [#4299](https://github.com/pubkey/rxdb/pull/4299)
+- ADD dev-mode shows a `console.warn` to ensure people do not use it in production.
 
 #
 - REMOVE deprecated `babel-plugin-transform-async-to-promises` plugin.

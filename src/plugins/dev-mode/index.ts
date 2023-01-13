@@ -54,6 +54,21 @@ export const DEV_MODE_PLUGIN_NAME = 'dev-mode';
 export const RxDBDevModePlugin: RxPlugin = {
     name: DEV_MODE_PLUGIN_NAME,
     rxdb: true,
+    init: () => {
+        console.warn(
+            [
+                '-------------- RxDB dev-mode warning -------------------------------',
+                'you are seing this because you use the RxDB dev-mode plugin https://rxdb.info/dev-mode.html',
+                'This is great in developement mode, because it will run many checks to ensure',
+                'that you use RxDB correct. If you see this in production mode,',
+                'you did something wrong because the dev-mode plugin will decrease the performance.',
+                '',
+                '🤗 Hint: To get the most out of RxDB, check out the Premium Plugins',
+                'to get access to faster storages and more professional features: https://rxdb.info/premium.html',
+                '---------------------------------------------------------------------'
+            ].join('\n')
+        );
+    },
     overwritable: {
         isDevMode() {
             return true;
