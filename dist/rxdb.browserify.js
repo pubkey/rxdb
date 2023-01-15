@@ -2059,6 +2059,8 @@ doNotUseTextEncoder) {
    * But to make RxDB work in other JavaScript runtimes,
    * like when using it in flutter or QuickJS, we need to
    * make it work even when there is no TextEncoder.
+   *
+   * TODO is a text encoder really faster then using charCodeAt?
    */
   if (typeof TextEncoder !== 'undefined' && !doNotUseTextEncoder) {
     encoded = new TextEncoder().encode(inputString);
@@ -8477,6 +8479,8 @@ var _rxError = require("./rx-error");
 var _queryPlanner = require("./query-planner");
 var _rxSchemaHelper = require("./rx-schema-helper");
 var _rxQueryMingo = require("./rx-query-mingo");
+var _util = require("mingo/util");
+var _utils = require("./plugins/utils");
 /**
  * Most RxStorage implementations use these static functions.
  * But you can use anything that implements the interface,
@@ -8522,44 +8526,43 @@ var RxStorageDefaultStatics = {
   },
   checkpointSchema: _rxSchemaHelper.DEFAULT_CHECKPOINT_SCHEMA
 };
-exports.RxStorageDefaultStatics = RxStorageDefaultStatics;
-function sortDirectionToMingo(direction) {
-  if (direction === 'asc') {
-    return 1;
-  } else {
-    return -1;
-  }
-}
 
 /**
- * This function is at dexie-helper
- * because we need it in multiple places.
+ * Default mango query sort comparator.
+ * @hotPath
  */
+exports.RxStorageDefaultStatics = RxStorageDefaultStatics;
 function getDefaultSortComparator(_schema, query) {
-  var mingoSortObject = {};
   if (!query.sort) {
     throw (0, _rxError.newRxError)('SNH', {
       query
     });
   }
+  var sortParts = [];
   query.sort.forEach(sortBlock => {
     var key = Object.keys(sortBlock)[0];
     var direction = Object.values(sortBlock)[0];
-    mingoSortObject[key] = sortDirectionToMingo(direction);
+    sortParts.push({
+      key,
+      direction,
+      getValueFn: (0, _utils.objectPathMonad)(key)
+    });
   });
   var fun = (a, b) => {
-    var sorted = (0, _rxQueryMingo.getMingoQuery)({}).find([a, b], {}).sort(mingoSortObject);
-    var first = sorted.next();
-    if (first === a) {
-      return -1;
-    } else {
-      return 1;
+    for (var i = 0; i < sortParts.length; ++i) {
+      var sortPart = sortParts[i];
+      var valueA = sortPart.getValueFn(a);
+      var valueB = sortPart.getValueFn(b);
+      if (valueA !== valueB) {
+        var ret = sortPart.direction === 'asc' ? (0, _util.DEFAULT_COMPARATOR)(valueA, valueB) : (0, _util.DEFAULT_COMPARATOR)(valueB, valueA);
+        return ret;
+      }
     }
   };
   return fun;
 }
 
-},{"./query-planner":29,"./rx-error":44,"./rx-query-mingo":46,"./rx-schema-helper":48}],53:[function(require,module,exports){
+},{"./plugins/utils":12,"./query-planner":29,"./rx-error":44,"./rx-query-mingo":46,"./rx-schema-helper":48,"mingo/util":508}],53:[function(require,module,exports){
 "use strict";
 
 require("./noConflict");

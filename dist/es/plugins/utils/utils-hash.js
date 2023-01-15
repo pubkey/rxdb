@@ -28,6 +28,8 @@ doNotUseTextEncoder) {
    * But to make RxDB work in other JavaScript runtimes,
    * like when using it in flutter or QuickJS, we need to
    * make it work even when there is no TextEncoder.
+   *
+   * TODO is a text encoder really faster then using charCodeAt?
    */
   if (typeof TextEncoder !== 'undefined' && !doNotUseTextEncoder) {
     encoded = new TextEncoder().encode(inputString);

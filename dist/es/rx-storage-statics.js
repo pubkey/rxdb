@@ -2,6 +2,8 @@ import { newRxError } from './rx-error';
 import { getQueryPlan } from './query-planner';
 import { DEFAULT_CHECKPOINT_SCHEMA } from './rx-schema-helper';
 import { getMingoQuery } from './rx-query-mingo';
+import { DEFAULT_COMPARATOR as mingoSortComparator } from 'mingo/util';
+import { objectPathMonad } from './plugins/utils';
 
 /**
  * Most RxStorage implementations use these static functions.
@@ -48,37 +50,36 @@ export var RxStorageDefaultStatics = {
   },
   checkpointSchema: DEFAULT_CHECKPOINT_SCHEMA
 };
-function sortDirectionToMingo(direction) {
-  if (direction === 'asc') {
-    return 1;
-  } else {
-    return -1;
-  }
-}
 
 /**
- * This function is at dexie-helper
- * because we need it in multiple places.
+ * Default mango query sort comparator.
+ * @hotPath
  */
 export function getDefaultSortComparator(_schema, query) {
-  var mingoSortObject = {};
   if (!query.sort) {
     throw newRxError('SNH', {
       query
     });
   }
+  var sortParts = [];
   query.sort.forEach(sortBlock => {
     var key = Object.keys(sortBlock)[0];
     var direction = Object.values(sortBlock)[0];
-    mingoSortObject[key] = sortDirectionToMingo(direction);
+    sortParts.push({
+      key,
+      direction,
+      getValueFn: objectPathMonad(key)
+    });
   });
   var fun = (a, b) => {
-    var sorted = getMingoQuery({}).find([a, b], {}).sort(mingoSortObject);
-    var first = sorted.next();
-    if (first === a) {
-      return -1;
-    } else {
-      return 1;
+    for (var i = 0; i < sortParts.length; ++i) {
+      var sortPart = sortParts[i];
+      var valueA = sortPart.getValueFn(a);
+      var valueB = sortPart.getValueFn(b);
+      if (valueA !== valueB) {
+        var ret = sortPart.direction === 'asc' ? mingoSortComparator(valueA, valueB) : mingoSortComparator(valueB, valueA);
+        return ret;
+      }
     }
   };
   return fun;
