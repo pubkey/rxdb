@@ -6,9 +6,12 @@
  * @link https://github.com/GitbookIO/gitbook-cli/issues/48
  */
 
-const path = require('path');
-const walkSync = require('walk-sync');
-const fs = require('fs');
+import path from 'path';
+import { fileURLToPath } from 'url';
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+import walkSync from 'walk-sync';
+import fs from 'fs';
 
 
 function run() {

@@ -2,10 +2,13 @@
  * this script processes the profile and cleans up afterwards
  * @link https://nodejs.org/en/docs/guides/simple-profiling/
  */
-const path = require('path');
-const walkSync = require('walk-sync');
-const shell = require('shelljs');
-const del = require('delete');
+import path from 'path';
+import { fileURLToPath } from 'url';
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+import walkSync from 'walk-sync';
+import shell from 'shelljs';
+import del from 'delete';
 
 const run = async () => {
     const isolateFolder = path.join(__dirname, '../');

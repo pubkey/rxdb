@@ -1,4 +1,6 @@
 const path = require('path');
+import { fileURLToPath } from 'url';
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const fs = require('fs');
 const express = require('express');
 const cors = require('cors');

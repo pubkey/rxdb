@@ -4,14 +4,19 @@
  * @link https://github.com/pubkey/rxdb/pull/4196#issuecomment-1364369523
  */
 
-const path = require('path');
-const fs = require('fs');
-const rimraf = require('rimraf');
-const assert = require('assert');
+import path from 'path';
+import { fileURLToPath } from 'url';
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+import fs from 'fs';
+import rimraf from 'rimraf';
+import assert from 'assert';
 
 async function run() {
     const rootPackageJsonPath = path.join(__dirname, '../', 'package.json');
-    const packageJson = require(rootPackageJsonPath);
+    const packageJson = await import(rootPackageJsonPath, {
+        assert: { type: 'json' }
+    });
     const pluginsFolderPath = path.join(__dirname, '../plugins');
 
     const pluginsSrcFolderPath = path.join(__dirname, '../src/plugins');
@@ -22,7 +27,7 @@ async function run() {
 
     // write package.json files
     const usedPluginNames = new Set();
-    const plugins = packageJson.exports;
+    const plugins = packageJson.default.exports;
     Object.keys(plugins)
         .filter(pluginPath => pluginPath !== '.' && pluginPath !== './package.json')
         .forEach((pluginPath) => {

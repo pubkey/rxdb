@@ -21,6 +21,8 @@ import * as schemas from '../helper/schemas';
 
 import { waitUntil } from 'async-test-util';
 import * as path from 'path';
+import { fileURLToPath } from 'url';
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 import * as fs from 'fs';
 import { LeaderElector } from 'broadcast-channel';
 import { HumanDocumentType } from '../helper/schemas';
@@ -128,11 +130,7 @@ describe('rx-storage-lokijs.test.js', () => {
                 const leaderAmount = getLeaders().length;
                 if (leaderAmount > 1) {
                     throw new Error('duplicate leaders detected');
-                } else if (leaderAmount === 1) {
-                    return true;
-                } else {
-                    return false;
-                }
+                } else return leaderAmount === 1;
             }, 50 * 1000, 200);
 
             // add some collections after leader is elected

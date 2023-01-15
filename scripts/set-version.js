@@ -4,8 +4,11 @@
  */
 
 
-const path = require('path');
-const fs = require('fs');
+import path from 'path';
+import { fileURLToPath } from 'url';
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+import fs from 'fs';
 
 const args = process.argv;
 const version = args[2];
