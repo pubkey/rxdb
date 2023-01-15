@@ -20,13 +20,6 @@ export declare function stackCheckpoints<CheckpointType>(checkpoints: Checkpoint
 export declare function storageChangeEventToRxChangeEvent<DocType>(isLocal: boolean, rxStorageChangeEvent: RxStorageChangeEvent<DocType>, rxCollection?: RxCollection): RxChangeEvent<DocType>;
 export declare function throwIfIsStorageWriteError<RxDocType>(collection: RxCollection<RxDocType>, documentId: string, writeData: RxDocumentWriteData<RxDocType> | RxDocType, error: RxStorageWriteError<RxDocType> | undefined): void;
 /**
- * From a list of documents,
- * it will return the document that has the 'newest' state
- * which must be used to create the correct checkpoint
- * for the whole list.
- */
-export declare function getNewestOfDocumentStates<RxDocType>(primaryPath: string, docs: RxDocumentData<RxDocType>[]): RxDocumentData<RxDocType>;
-/**
  * Analyzes a list of BulkWriteRows and determines
  * which documents must be inserted, updated or deleted
  * and which events must be emitted and which documents cause a conflict

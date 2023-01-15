@@ -41,34 +41,40 @@ var RxStorageInstanceMemory = /*#__PURE__*/function () {
      * Do inserts/updates
      */
     var stateByIndex = Object.values(this.internals.byIndex);
-    categorized.bulkInsertDocs.forEach(writeRow => {
+    var bulkInsertDocs = categorized.bulkInsertDocs;
+    for (var i = 0; i < bulkInsertDocs.length; ++i) {
+      var writeRow = bulkInsertDocs[i];
       var docId = writeRow.document[primaryPath];
       (0, _memoryHelper.putWriteRowToState)(docId, this.internals, stateByIndex, writeRow, undefined);
       ret.success[docId] = writeRow.document;
-    });
-    categorized.bulkUpdateDocs.forEach(writeRow => {
-      var docId = writeRow.document[primaryPath];
-      (0, _memoryHelper.putWriteRowToState)(docId, this.internals, stateByIndex, writeRow, this.internals.documents.get(docId));
-      ret.success[docId] = writeRow.document;
-    });
+    }
+    var bulkUpdateDocs = categorized.bulkUpdateDocs;
+    for (var _i = 0; _i < bulkUpdateDocs.length; ++_i) {
+      var _writeRow = bulkUpdateDocs[_i];
+      var _docId = _writeRow.document[primaryPath];
+      (0, _memoryHelper.putWriteRowToState)(_docId, this.internals, stateByIndex, _writeRow, this.internals.documents.get(_docId));
+      ret.success[_docId] = _writeRow.document;
+    }
 
     /**
      * Handle attachments
      */
-    var attachmentsMap = this.internals.attachments;
-    categorized.attachmentsAdd.forEach(attachment => {
-      attachmentsMap.set((0, _memoryHelper.attachmentMapKey)(attachment.documentId, attachment.attachmentId), attachment.attachmentData);
-    });
     if (this.schema.attachments) {
-      categorized.attachmentsUpdate.forEach(attachment => {
+      var attachmentsMap = this.internals.attachments;
+      categorized.attachmentsAdd.forEach(attachment => {
         attachmentsMap.set((0, _memoryHelper.attachmentMapKey)(attachment.documentId, attachment.attachmentId), attachment.attachmentData);
       });
-      categorized.attachmentsRemove.forEach(attachment => {
-        attachmentsMap.delete((0, _memoryHelper.attachmentMapKey)(attachment.documentId, attachment.attachmentId));
-      });
+      if (this.schema.attachments) {
+        categorized.attachmentsUpdate.forEach(attachment => {
+          attachmentsMap.set((0, _memoryHelper.attachmentMapKey)(attachment.documentId, attachment.attachmentId), attachment.attachmentData);
+        });
+        categorized.attachmentsRemove.forEach(attachment => {
+          attachmentsMap.delete((0, _memoryHelper.attachmentMapKey)(attachment.documentId, attachment.attachmentId));
+        });
+      }
     }
     if (categorized.eventBulk.events.length > 0) {
-      var lastState = (0, _rxStorageHelper.getNewestOfDocumentStates)(primaryPath, Object.values(ret.success));
+      var lastState = (0, _utils.ensureNotFalsy)(categorized.newestRow).document;
       categorized.eventBulk.checkpoint = {
         id: lastState[primaryPath],
         lwt: lastState._meta.lwt
@@ -79,12 +85,13 @@ var RxStorageInstanceMemory = /*#__PURE__*/function () {
   };
   _proto.findDocumentsById = function findDocumentsById(docIds, withDeleted) {
     var ret = {};
-    docIds.forEach(docId => {
+    for (var i = 0; i < docIds.length; ++i) {
+      var docId = docIds[i];
       var docInDb = this.internals.documents.get(docId);
       if (docInDb && (!docInDb._deleted || withDeleted)) {
         ret[docId] = docInDb;
       }
-    });
+    }
     return Promise.resolve(ret);
   };
   _proto.query = function query(preparedQuery) {

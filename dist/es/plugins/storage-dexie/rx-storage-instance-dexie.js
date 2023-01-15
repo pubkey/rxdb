@@ -3,7 +3,7 @@ import { now, PROMISE_RESOLVE_VOID, RX_META_LWT_MINIMUM, sortDocumentsByLastWrit
 import { closeDexieDb, fromDexieToStorage, fromStorageToDexie, getDexieDbWithTables, getDocsInDb, RX_STORAGE_NAME_DEXIE } from './dexie-helper';
 import { dexieCount, dexieQuery } from './dexie-query';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
-import { categorizeBulkWriteRows, getNewestOfDocumentStates } from '../../rx-storage-helper';
+import { categorizeBulkWriteRows } from '../../rx-storage-helper';
 import { addRxStorageMultiInstanceSupport } from '../../rx-storage-multiinstance';
 import { newRxError } from '../../rx-error';
 var instanceId = now();
@@ -45,7 +45,7 @@ export var RxStorageInstanceDexie = /*#__PURE__*/function () {
       error: {}
     };
     var documentKeys = documentWrites.map(writeRow => writeRow.document[this.primaryPath]);
-    var categorized = null;
+    var categorized;
     await state.dexieDb.transaction('rw', state.dexieTable, state.dexieDeletedTable, async () => {
       var docsInDbMap = new Map();
       var docsInDbWithInternals = await getDocsInDb(this.internals, documentKeys);
@@ -95,15 +95,16 @@ export var RxStorageInstanceDexie = /*#__PURE__*/function () {
       });
       await Promise.all([bulkPutDocs.length > 0 ? state.dexieTable.bulkPut(bulkPutDocs.map(d => fromStorageToDexie(d))) : PROMISE_RESOLVE_VOID, bulkRemoveDocs.length > 0 ? state.dexieTable.bulkDelete(bulkRemoveDocs) : PROMISE_RESOLVE_VOID, bulkPutDeletedDocs.length > 0 ? state.dexieDeletedTable.bulkPut(bulkPutDeletedDocs.map(d => fromStorageToDexie(d))) : PROMISE_RESOLVE_VOID, bulkRemoveDeletedDocs.length > 0 ? state.dexieDeletedTable.bulkDelete(bulkRemoveDeletedDocs) : PROMISE_RESOLVE_VOID]);
     });
-    if (ensureNotFalsy(categorized).eventBulk.events.length > 0) {
-      var lastState = getNewestOfDocumentStates(this.primaryPath, Object.values(ret.success));
-      ensureNotFalsy(categorized).eventBulk.checkpoint = {
+    categorized = ensureNotFalsy(categorized);
+    if (categorized.eventBulk.events.length > 0) {
+      var lastState = ensureNotFalsy(categorized.newestRow).document;
+      categorized.eventBulk.checkpoint = {
         id: lastState[this.primaryPath],
         lwt: lastState._meta.lwt
       };
       var endTime = now();
-      ensureNotFalsy(categorized).eventBulk.events.forEach(event => event.endTime = endTime);
-      this.changes$.next(ensureNotFalsy(categorized).eventBulk);
+      categorized.eventBulk.events.forEach(event => event.endTime = endTime);
+      this.changes$.next(categorized.eventBulk);
     }
     return ret;
   };

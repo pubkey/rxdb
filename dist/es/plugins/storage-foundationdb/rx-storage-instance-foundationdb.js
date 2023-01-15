@@ -7,7 +7,7 @@ import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
 //     keySelector as foundationDBKeySelector,
 //     StreamingMode as foundationDBStreamingMode
 // } from 'foundationdb';
-import { categorizeBulkWriteRows, getNewestOfDocumentStates } from '../../rx-storage-helper';
+import { categorizeBulkWriteRows } from '../../rx-storage-helper';
 import { CLEANUP_INDEX, getFoundationDBIndexName } from './foundationdb-helpers';
 import { getIndexableStringMonad, getStartIndexStringFromLowerBound, getStartIndexStringFromUpperBound } from '../../custom-index';
 import { ensureNotFalsy, lastOfArray, now, PROMISE_RESOLVE_VOID, toArray } from '../../plugins/utils';
@@ -98,19 +98,20 @@ export var RxStorageInstanceFoundationDB = /*#__PURE__*/function () {
       });
       return ret;
     });
+    categorized = ensureNotFalsy(categorized);
     /**
      * The events must be emitted AFTER the transaction
      * has finished.
      * Otherwise an observable changestream might cause a read
      * to a document that does not already exist outside of the transaction.
      */
-    if (ensureNotFalsy(categorized).eventBulk.events.length > 0) {
-      var lastState = getNewestOfDocumentStates(this.primaryPath, Object.values(result.success));
-      ensureNotFalsy(categorized).eventBulk.checkpoint = {
+    if (categorized.eventBulk.events.length > 0) {
+      var lastState = ensureNotFalsy(categorized.newestRow).document;
+      categorized.eventBulk.checkpoint = {
         id: lastState[this.primaryPath],
         lwt: lastState._meta.lwt
       };
-      this.changes$.next(ensureNotFalsy(categorized).eventBulk);
+      this.changes$.next(categorized.eventBulk);
     }
     return result;
   };

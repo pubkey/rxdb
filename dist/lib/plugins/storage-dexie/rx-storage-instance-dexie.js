@@ -52,7 +52,7 @@ var RxStorageInstanceDexie = /*#__PURE__*/function () {
       error: {}
     };
     var documentKeys = documentWrites.map(writeRow => writeRow.document[this.primaryPath]);
-    var categorized = null;
+    var categorized;
     await state.dexieDb.transaction('rw', state.dexieTable, state.dexieDeletedTable, async () => {
       var docsInDbMap = new Map();
       var docsInDbWithInternals = await (0, _dexieHelper.getDocsInDb)(this.internals, documentKeys);
@@ -102,15 +102,16 @@ var RxStorageInstanceDexie = /*#__PURE__*/function () {
       });
       await Promise.all([bulkPutDocs.length > 0 ? state.dexieTable.bulkPut(bulkPutDocs.map(d => (0, _dexieHelper.fromStorageToDexie)(d))) : _utils.PROMISE_RESOLVE_VOID, bulkRemoveDocs.length > 0 ? state.dexieTable.bulkDelete(bulkRemoveDocs) : _utils.PROMISE_RESOLVE_VOID, bulkPutDeletedDocs.length > 0 ? state.dexieDeletedTable.bulkPut(bulkPutDeletedDocs.map(d => (0, _dexieHelper.fromStorageToDexie)(d))) : _utils.PROMISE_RESOLVE_VOID, bulkRemoveDeletedDocs.length > 0 ? state.dexieDeletedTable.bulkDelete(bulkRemoveDeletedDocs) : _utils.PROMISE_RESOLVE_VOID]);
     });
-    if ((0, _utils.ensureNotFalsy)(categorized).eventBulk.events.length > 0) {
-      var lastState = (0, _rxStorageHelper.getNewestOfDocumentStates)(this.primaryPath, Object.values(ret.success));
-      (0, _utils.ensureNotFalsy)(categorized).eventBulk.checkpoint = {
+    categorized = (0, _utils.ensureNotFalsy)(categorized);
+    if (categorized.eventBulk.events.length > 0) {
+      var lastState = (0, _utils.ensureNotFalsy)(categorized.newestRow).document;
+      categorized.eventBulk.checkpoint = {
         id: lastState[this.primaryPath],
         lwt: lastState._meta.lwt
       };
       var endTime = (0, _utils.now)();
-      (0, _utils.ensureNotFalsy)(categorized).eventBulk.events.forEach(event => event.endTime = endTime);
-      this.changes$.next((0, _utils.ensureNotFalsy)(categorized).eventBulk);
+      categorized.eventBulk.events.forEach(event => event.endTime = endTime);
+      this.changes$.next(categorized.eventBulk);
     }
     return ret;
   };

@@ -81,22 +81,6 @@ export function throwIfIsStorageWriteError(collection, documentId, writeData, er
 }
 
 /**
- * From a list of documents,
- * it will return the document that has the 'newest' state
- * which must be used to create the correct checkpoint
- * for the whole list.
- */
-export function getNewestOfDocumentStates(primaryPath, docs) {
-  var ret = null;
-  docs.forEach(doc => {
-    if (!ret || doc._meta.lwt > ret._meta.lwt || doc._meta.lwt === ret._meta.lwt && doc[primaryPath] > ret[primaryPath]) {
-      ret = doc;
-    }
-  });
-  return ensureNotFalsy(ret);
-}
-
-/**
  * Analyzes a list of BulkWriteRows and determines
  * which documents must be inserted, updated or deleted
  * and which events must be emitted and which documents cause a conflict
@@ -136,6 +120,7 @@ bulkWriteRows, context) {
   var attachmentsUpdate = [];
   var startTime = now();
   var docsByIdIsMap = typeof docsInDb.get === 'function';
+  var newestRow;
   bulkWriteRows.forEach(writeRow => {
     var id = writeRow.document[primaryPath];
     var documentInDb = docsByIdIsMap ? docsInDb.get(id) : docsInDb[id];
@@ -171,6 +156,9 @@ bulkWriteRows, context) {
           bulkInsertDocs.push(stripAttachmentsDataFromRow(writeRow));
         } else {
           bulkInsertDocs.push(writeRow);
+        }
+        if (!newestRow || newestRow.document._meta.lwt < writeRow.document._meta.lwt) {
+          newestRow = writeRow;
         }
       }
       if (!insertedIsDeleted) {
@@ -269,6 +257,9 @@ bulkWriteRows, context) {
         errors[id] = attachmentError;
       } else {
         bulkUpdateDocs.push(updatedRow);
+        if (!newestRow || newestRow.document._meta.lwt < updatedRow.document._meta.lwt) {
+          newestRow = updatedRow;
+        }
       }
       var writeDoc = writeRow.document;
       var eventDocumentData = null;
@@ -307,6 +298,7 @@ bulkWriteRows, context) {
   return {
     bulkInsertDocs,
     bulkUpdateDocs,
+    newestRow,
     errors,
     changedDocumentIds,
     eventBulk,

@@ -3,7 +3,7 @@ import { flatClone, now, ensureNotFalsy, isMaybeReadonlyArray, getFromMapOrThrow
 import { newRxError } from '../../rx-error';
 import { closeLokiCollections, getLokiDatabase, OPEN_LOKIJS_STORAGE_INSTANCES, LOKIJS_COLLECTION_DEFAULT_OPTIONS, stripLokiKey, getLokiSortComparator, getLokiLeaderElector, requestRemoteInstance, mustUseLocalState, handleRemoteRequest, RX_STORAGE_NAME_LOKIJS } from './lokijs-helper';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
-import { categorizeBulkWriteRows, getNewestOfDocumentStates } from '../../rx-storage-helper';
+import { categorizeBulkWriteRows } from '../../rx-storage-helper';
 import { addRxStorageMultiInstanceSupport, removeBroadcastChannelReference } from '../../rx-storage-multiinstance';
 var instanceId = now();
 export var RxStorageInstanceLoki = /*#__PURE__*/function () {
@@ -98,7 +98,7 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
     });
     localState.databaseState.saveQueue.addWrite();
     if (categorized.eventBulk.events.length > 0) {
-      var lastState = getNewestOfDocumentStates(this.primaryPath, Object.values(ret.success));
+      var lastState = ensureNotFalsy(categorized.newestRow).document;
       categorized.eventBulk.checkpoint = {
         id: lastState[this.primaryPath],
         lwt: lastState._meta.lwt
