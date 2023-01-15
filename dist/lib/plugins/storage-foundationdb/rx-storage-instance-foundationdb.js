@@ -105,19 +105,20 @@ var RxStorageInstanceFoundationDB = /*#__PURE__*/function () {
       });
       return ret;
     });
+    categorized = (0, _utils.ensureNotFalsy)(categorized);
     /**
      * The events must be emitted AFTER the transaction
      * has finished.
      * Otherwise an observable changestream might cause a read
      * to a document that does not already exist outside of the transaction.
      */
-    if ((0, _utils.ensureNotFalsy)(categorized).eventBulk.events.length > 0) {
-      var lastState = (0, _rxStorageHelper.getNewestOfDocumentStates)(this.primaryPath, Object.values(result.success));
-      (0, _utils.ensureNotFalsy)(categorized).eventBulk.checkpoint = {
+    if (categorized.eventBulk.events.length > 0) {
+      var lastState = (0, _utils.ensureNotFalsy)(categorized.newestRow).document;
+      categorized.eventBulk.checkpoint = {
         id: lastState[this.primaryPath],
         lwt: lastState._meta.lwt
       };
-      this.changes$.next((0, _utils.ensureNotFalsy)(categorized).eventBulk);
+      this.changes$.next(categorized.eventBulk);
     }
     return result;
   };

@@ -106,7 +106,7 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
     });
     localState.databaseState.saveQueue.addWrite();
     if (categorized.eventBulk.events.length > 0) {
-      var lastState = (0, _rxStorageHelper.getNewestOfDocumentStates)(this.primaryPath, Object.values(ret.success));
+      var lastState = (0, _utils.ensureNotFalsy)(categorized.newestRow).document;
       categorized.eventBulk.checkpoint = {
         id: lastState[this.primaryPath],
         lwt: lastState._meta.lwt

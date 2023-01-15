@@ -323,4 +323,10 @@ export type CategorizeBulkWriteRowsOutput<RxDocType> = {
         attachmentId: string;
         attachmentData: RxAttachmentWriteData;
     }[];
+    /**
+     * Contains the non-error document row that
+     * has the newest _meta.lwt time.
+     * Empty if no successful write exists.
+     */
+    newestRow?: BulkWriteRowProcessed<RxDocType>;
 };

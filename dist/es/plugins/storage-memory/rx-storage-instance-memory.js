@@ -1,8 +1,8 @@
 import { Subject } from 'rxjs';
 import { getStartIndexStringFromLowerBound, getStartIndexStringFromUpperBound } from '../../custom-index';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
-import { categorizeBulkWriteRows, getNewestOfDocumentStates } from '../../rx-storage-helper';
-import { getFromMapOrThrow, lastOfArray, now, PROMISE_RESOLVE_TRUE, PROMISE_RESOLVE_VOID, RX_META_LWT_MINIMUM } from '../../plugins/utils';
+import { categorizeBulkWriteRows } from '../../rx-storage-helper';
+import { ensureNotFalsy, getFromMapOrThrow, lastOfArray, now, PROMISE_RESOLVE_TRUE, PROMISE_RESOLVE_VOID, RX_META_LWT_MINIMUM } from '../../plugins/utils';
 import { boundGE, boundGT, boundLE } from './binary-search-bounds';
 import { attachmentMapKey, compareDocsWithIndex, ensureNotRemoved, getMemoryCollectionKey, putWriteRowToState, removeDocFromState } from './memory-helper';
 import { addIndexesToInternalsState, getMemoryIndexName } from './memory-indexes';
@@ -34,34 +34,40 @@ export var RxStorageInstanceMemory = /*#__PURE__*/function () {
      * Do inserts/updates
      */
     var stateByIndex = Object.values(this.internals.byIndex);
-    categorized.bulkInsertDocs.forEach(writeRow => {
+    var bulkInsertDocs = categorized.bulkInsertDocs;
+    for (var i = 0; i < bulkInsertDocs.length; ++i) {
+      var writeRow = bulkInsertDocs[i];
       var docId = writeRow.document[primaryPath];
       putWriteRowToState(docId, this.internals, stateByIndex, writeRow, undefined);
       ret.success[docId] = writeRow.document;
-    });
-    categorized.bulkUpdateDocs.forEach(writeRow => {
-      var docId = writeRow.document[primaryPath];
-      putWriteRowToState(docId, this.internals, stateByIndex, writeRow, this.internals.documents.get(docId));
-      ret.success[docId] = writeRow.document;
-    });
+    }
+    var bulkUpdateDocs = categorized.bulkUpdateDocs;
+    for (var _i = 0; _i < bulkUpdateDocs.length; ++_i) {
+      var _writeRow = bulkUpdateDocs[_i];
+      var _docId = _writeRow.document[primaryPath];
+      putWriteRowToState(_docId, this.internals, stateByIndex, _writeRow, this.internals.documents.get(_docId));
+      ret.success[_docId] = _writeRow.document;
+    }
 
     /**
      * Handle attachments
      */
-    var attachmentsMap = this.internals.attachments;
-    categorized.attachmentsAdd.forEach(attachment => {
-      attachmentsMap.set(attachmentMapKey(attachment.documentId, attachment.attachmentId), attachment.attachmentData);
-    });
     if (this.schema.attachments) {
-      categorized.attachmentsUpdate.forEach(attachment => {
+      var attachmentsMap = this.internals.attachments;
+      categorized.attachmentsAdd.forEach(attachment => {
         attachmentsMap.set(attachmentMapKey(attachment.documentId, attachment.attachmentId), attachment.attachmentData);
       });
-      categorized.attachmentsRemove.forEach(attachment => {
-        attachmentsMap.delete(attachmentMapKey(attachment.documentId, attachment.attachmentId));
-      });
+      if (this.schema.attachments) {
+        categorized.attachmentsUpdate.forEach(attachment => {
+          attachmentsMap.set(attachmentMapKey(attachment.documentId, attachment.attachmentId), attachment.attachmentData);
+        });
+        categorized.attachmentsRemove.forEach(attachment => {
+          attachmentsMap.delete(attachmentMapKey(attachment.documentId, attachment.attachmentId));
+        });
+      }
     }
     if (categorized.eventBulk.events.length > 0) {
-      var lastState = getNewestOfDocumentStates(primaryPath, Object.values(ret.success));
+      var lastState = ensureNotFalsy(categorized.newestRow).document;
       categorized.eventBulk.checkpoint = {
         id: lastState[primaryPath],
         lwt: lastState._meta.lwt
@@ -72,12 +78,13 @@ export var RxStorageInstanceMemory = /*#__PURE__*/function () {
   };
   _proto.findDocumentsById = function findDocumentsById(docIds, withDeleted) {
     var ret = {};
-    docIds.forEach(docId => {
+    for (var i = 0; i < docIds.length; ++i) {
+      var docId = docIds[i];
       var docInDb = this.internals.documents.get(docId);
       if (docInDb && (!docInDb._deleted || withDeleted)) {
         ret[docId] = docInDb;
       }
-    });
+    }
     return Promise.resolve(ret);
   };
   _proto.query = function query(preparedQuery) {
