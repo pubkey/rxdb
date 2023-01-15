@@ -8,12 +8,18 @@ import type {
     RxStorageStatics,
     FilledMangoQuery,
     MangoQuery,
-    DefaultPreparedQuery
+    DefaultPreparedQuery,
+    MangoQuerySortDirection
 } from './types';
 import { newRxError } from './rx-error';
 import { getQueryPlan } from './query-planner';
 import { DEFAULT_CHECKPOINT_SCHEMA } from './rx-schema-helper';
 import { getMingoQuery } from './rx-query-mingo';
+
+import {
+    DEFAULT_COMPARATOR as mingoSortComparator
+} from 'mingo/util';
+import { objectPathMonad, ObjectPathMonadFunction } from './plugins/utils';
 
 
 /**
@@ -80,43 +86,41 @@ export const RxStorageDefaultStatics: RxStorageStatics = {
 
 };
 
-function sortDirectionToMingo(direction: 'asc' | 'desc'): 1 | -1 {
-    if (direction === 'asc') {
-        return 1;
-    } else {
-        return -1;
-    }
-}
-
 /**
- * This function is at dexie-helper
- * because we need it in multiple places.
+ * Default mango query sort comparator.
+ * @hotPath
  */
 export function getDefaultSortComparator<RxDocType>(
     _schema: RxJsonSchema<RxDocumentData<RxDocType>>,
     query: MangoQuery<RxDocType>
 ): DeterministicSortComparator<RxDocType> {
-    const mingoSortObject: {
-        [fieldName: string]: 1 | -1;
-    } = {};
-
     if (!query.sort) {
         throw newRxError('SNH', { query });
     }
 
+    const sortParts: {
+        key: string;
+        direction: MangoQuerySortDirection;
+        getValueFn: ObjectPathMonadFunction<RxDocType>;
+    }[] = [];
     query.sort.forEach(sortBlock => {
         const key = Object.keys(sortBlock)[0];
         const direction = Object.values(sortBlock)[0];
-        mingoSortObject[key] = sortDirectionToMingo(direction);
+        sortParts.push({
+            key,
+            direction,
+            getValueFn: objectPathMonad(key)
+        });
     });
-
     const fun: DeterministicSortComparator<RxDocType> = (a: RxDocType, b: RxDocType) => {
-        const sorted = getMingoQuery({}).find([a, b], {}).sort(mingoSortObject);
-        const first = sorted.next();
-        if (first === a) {
-            return -1;
-        } else {
-            return 1;
+        for (let i = 0; i < sortParts.length; ++i) {
+            const sortPart = sortParts[i];
+            const valueA = sortPart.getValueFn(a);
+            const valueB = sortPart.getValueFn(b);
+            if (valueA !== valueB) {
+                const ret = sortPart.direction === 'asc' ? mingoSortComparator(valueA, valueB) : mingoSortComparator(valueB, valueA);
+                return ret as any;
+            }
         }
     };
 

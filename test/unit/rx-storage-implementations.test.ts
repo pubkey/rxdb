@@ -162,8 +162,6 @@ declare type NestedDoc = {
 const testContext = 'rx-storage-implementations.test.ts';
 
 config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.storage.name + ')', () => {
-    describe('statics', () => {
-    });
     describe('RxStorageInstance', () => {
         describe('creation', () => {
             it('open and close', async () => {

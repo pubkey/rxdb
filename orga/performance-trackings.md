@@ -1143,3 +1143,62 @@ A1: (always use .put instead of .add)
 A2: (shorter index names)
 59.07000000011176
 59.05000000037253
+
+
+# 14 January 2024
+Goal: Improve sharding performance
+
+## Get shard index
+
+Before:
+93.37000000029802
+93.39999999850988
+
+After:
+93.15000000149011
+92.71000000238419
+
+## BulkWrite
+
+Before:
+61.17999999821186
+61.3
+
+A1:
+59.35999999940395
+60.05
+57.920000000298025
+
+## find by id
+Before:
+7.060000000894069
+7.129999996721745
+6.969999997317791
+
+After:
+4.509999997913837
+4.589999994635582
+
+## query
+Before:
+111.52000000029803
+114.04000000059605
+108.9300000011921
+
+A1:: (use sorted-array-merge)
+52.52000000178814
+54
+
+
+## improve default sortComparator
+Before:
+2660
+2651
+2654
+
+A1: Reuse query object
+2506.91745699942
+
+A2: Rewrite to own sort function
+146.54432300
+140.800432999
