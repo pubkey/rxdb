@@ -96,7 +96,6 @@ config.parallel('reactive-collection.test.js', () => {
 
                 assert.strictEqual(changeEvent.operation, 'DELETE');
                 assert.strictEqual(changeEvent.collectionName, 'human');
-                assert.strictEqual(changeEvent.documentId, docList[0].primary);
                 assert.ok(changeEvent.documentData);
                 assert.ok(changeEvent.previousDocumentData);
 

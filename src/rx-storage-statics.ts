@@ -97,7 +97,6 @@ export function getDefaultSortComparator<RxDocType>(
     if (!query.sort) {
         throw newRxError('SNH', { query });
     }
-
     const sortParts: {
         key: string;
         direction: MangoQuerySortDirection;
