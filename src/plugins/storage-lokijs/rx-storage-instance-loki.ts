@@ -54,7 +54,7 @@ import type {
 } from 'lokijs';
 import type { RxStorageLoki } from './rx-storage-lokijs';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
-import { categorizeBulkWriteRows, getNewestOfDocumentStates } from '../../rx-storage-helper';
+import { categorizeBulkWriteRows } from '../../rx-storage-helper';
 import { addRxStorageMultiInstanceSupport, removeBroadcastChannelReference } from '../../rx-storage-multiinstance';
 
 let instanceId = now();
@@ -186,10 +186,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         localState.databaseState.saveQueue.addWrite();
 
         if (categorized.eventBulk.events.length > 0) {
-            const lastState = getNewestOfDocumentStates(
-                this.primaryPath as any,
-                Object.values(ret.success)
-            );
+            const lastState = ensureNotFalsy(categorized.newestRow).document;
             categorized.eventBulk.checkpoint = {
                 id: lastState[this.primaryPath],
                 lwt: lastState._meta.lwt

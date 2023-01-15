@@ -9,8 +9,7 @@ import {
 } from '../../custom-index';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
 import {
-    categorizeBulkWriteRows,
-    getNewestOfDocumentStates
+    categorizeBulkWriteRows
 } from '../../rx-storage-helper';
 import type {
     BulkWriteRow,
@@ -30,6 +29,7 @@ import type {
     StringKeys
 } from '../../types';
 import {
+    ensureNotFalsy,
     getFromMapOrThrow,
     lastOfArray,
     now,
@@ -111,7 +111,9 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
          */
         const stateByIndex = Object.values(this.internals.byIndex);
 
-        categorized.bulkInsertDocs.forEach(writeRow => {
+        const bulkInsertDocs = categorized.bulkInsertDocs;
+        for (let i = 0; i < bulkInsertDocs.length; ++i) {
+            const writeRow = bulkInsertDocs[i];
             const docId = writeRow.document[primaryPath];
             putWriteRowToState(
                 docId as any,
@@ -121,9 +123,11 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
                 undefined
             );
             ret.success[docId as any] = writeRow.document;
-        });
+        }
 
-        categorized.bulkUpdateDocs.forEach(writeRow => {
+        const bulkUpdateDocs = categorized.bulkUpdateDocs;
+        for (let i = 0; i < bulkUpdateDocs.length; ++i) {
+            const writeRow = bulkUpdateDocs[i];
             const docId = writeRow.document[primaryPath];
             putWriteRowToState(
                 docId as any,
@@ -133,36 +137,36 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
                 this.internals.documents.get(docId as any)
             );
             ret.success[docId as any] = writeRow.document;
-        });
+        }
 
         /**
          * Handle attachments
          */
-        const attachmentsMap = this.internals.attachments;
-        categorized.attachmentsAdd.forEach(attachment => {
-            attachmentsMap.set(
-                attachmentMapKey(attachment.documentId, attachment.attachmentId),
-                attachment.attachmentData
-            );
-        });
         if (this.schema.attachments) {
-            categorized.attachmentsUpdate.forEach(attachment => {
+            const attachmentsMap = this.internals.attachments;
+            categorized.attachmentsAdd.forEach(attachment => {
                 attachmentsMap.set(
                     attachmentMapKey(attachment.documentId, attachment.attachmentId),
                     attachment.attachmentData
                 );
             });
-            categorized.attachmentsRemove.forEach(attachment => {
-                attachmentsMap.delete(
-                    attachmentMapKey(attachment.documentId, attachment.attachmentId)
-                );
-            });
+            if (this.schema.attachments) {
+                categorized.attachmentsUpdate.forEach(attachment => {
+                    attachmentsMap.set(
+                        attachmentMapKey(attachment.documentId, attachment.attachmentId),
+                        attachment.attachmentData
+                    );
+                });
+                categorized.attachmentsRemove.forEach(attachment => {
+                    attachmentsMap.delete(
+                        attachmentMapKey(attachment.documentId, attachment.attachmentId)
+                    );
+                });
+            }
         }
+
         if (categorized.eventBulk.events.length > 0) {
-            const lastState = getNewestOfDocumentStates(
-                primaryPath as any,
-                Object.values(ret.success)
-            );
+            const lastState = ensureNotFalsy(categorized.newestRow).document;
             categorized.eventBulk.checkpoint = {
                 id: lastState[primaryPath],
                 lwt: lastState._meta.lwt
@@ -177,7 +181,8 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         withDeleted: boolean
     ): Promise<RxDocumentDataById<RxDocType>> {
         const ret: RxDocumentDataById<RxDocType> = {};
-        docIds.forEach(docId => {
+        for (let i = 0; i < docIds.length; ++i) {
+            const docId = docIds[i];
             const docInDb = this.internals.documents.get(docId);
             if (
                 docInDb &&
@@ -188,7 +193,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
             ) {
                 ret[docId] = docInDb;
             }
-        });
+        }
         return Promise.resolve(ret);
     }
 

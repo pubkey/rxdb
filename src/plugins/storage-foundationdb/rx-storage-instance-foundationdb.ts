@@ -36,8 +36,7 @@ import type {
 //     StreamingMode as foundationDBStreamingMode
 // } from 'foundationdb';
 import {
-    categorizeBulkWriteRows,
-    getNewestOfDocumentStates
+    categorizeBulkWriteRows
 } from '../../rx-storage-helper';
 import {
 
@@ -177,22 +176,20 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
 
             return ret;
         });
+        categorized = ensureNotFalsy(categorized);
         /**
          * The events must be emitted AFTER the transaction
          * has finished.
          * Otherwise an observable changestream might cause a read
          * to a document that does not already exist outside of the transaction.
          */
-        if (ensureNotFalsy(categorized).eventBulk.events.length > 0) {
-            const lastState = getNewestOfDocumentStates<any>(
-                this.primaryPath as any,
-                Object.values(result.success)
-            );
-            ensureNotFalsy(categorized).eventBulk.checkpoint = {
+        if (categorized.eventBulk.events.length > 0) {
+            const lastState = ensureNotFalsy(categorized.newestRow).document;
+            categorized.eventBulk.checkpoint = {
                 id: lastState[this.primaryPath],
                 lwt: lastState._meta.lwt
             };
-            this.changes$.next(ensureNotFalsy(categorized).eventBulk);
+            this.changes$.next(categorized.eventBulk);
         }
         return result;
     }

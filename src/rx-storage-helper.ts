@@ -146,33 +146,6 @@ export function throwIfIsStorageWriteError<RxDocType>(
 
 
 /**
- * From a list of documents,
- * it will return the document that has the 'newest' state
- * which must be used to create the correct checkpoint
- * for the whole list.
- */
-export function getNewestOfDocumentStates<RxDocType>(
-    primaryPath: string,
-    docs: RxDocumentData<RxDocType>[]
-): RxDocumentData<RxDocType> {
-    let ret: RxDocumentData<RxDocType> | null = null;
-    docs.forEach(doc => {
-        if (
-            !ret ||
-            doc._meta.lwt > ret._meta.lwt ||
-            (
-                doc._meta.lwt === ret._meta.lwt &&
-                (doc as any)[primaryPath] > (ret as any)[primaryPath]
-            )
-        ) {
-            ret = doc;
-        }
-
-    });
-    return ensureNotFalsy(ret as any);
-}
-
-/**
  * Analyzes a list of BulkWriteRows and determines
  * which documents must be inserted, updated or deleted
  * and which events must be emitted and which documents cause a conflict
@@ -233,6 +206,7 @@ export function categorizeBulkWriteRows<RxDocType>(
     const startTime = now();
 
     const docsByIdIsMap = typeof docsInDb.get === 'function';
+    let newestRow: BulkWriteRowProcessed<RxDocType> | undefined;
 
     bulkWriteRows.forEach(writeRow => {
         const id = writeRow.document[primaryPath];
@@ -272,6 +246,12 @@ export function categorizeBulkWriteRows<RxDocType>(
                     bulkInsertDocs.push(stripAttachmentsDataFromRow(writeRow));
                 } else {
                     bulkInsertDocs.push(writeRow as any);
+                }
+                if (
+                    !newestRow ||
+                    newestRow.document._meta.lwt < writeRow.document._meta.lwt
+                ) {
+                    newestRow = writeRow as any;
                 }
             }
 
@@ -391,6 +371,12 @@ export function categorizeBulkWriteRows<RxDocType>(
                 errors[id as any] = attachmentError;
             } else {
                 bulkUpdateDocs.push(updatedRow);
+                if (
+                    !newestRow ||
+                    newestRow.document._meta.lwt < updatedRow.document._meta.lwt
+                ) {
+                    newestRow = updatedRow as any;
+                }
             }
 
             const writeDoc = writeRow.document;
@@ -430,6 +416,7 @@ export function categorizeBulkWriteRows<RxDocType>(
     return {
         bulkInsertDocs,
         bulkUpdateDocs,
+        newestRow,
         errors,
         changedDocumentIds,
         eventBulk,

@@ -44,7 +44,7 @@ import {
 } from './dexie-helper';
 import { dexieCount, dexieQuery } from './dexie-query';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
-import { categorizeBulkWriteRows, getNewestOfDocumentStates } from '../../rx-storage-helper';
+import { categorizeBulkWriteRows } from '../../rx-storage-helper';
 import { addRxStorageMultiInstanceSupport } from '../../rx-storage-multiinstance';
 import { newRxError } from '../../rx-error';
 
@@ -106,7 +106,7 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
         };
 
         const documentKeys: string[] = documentWrites.map(writeRow => writeRow.document[this.primaryPath] as any);
-        let categorized: CategorizeBulkWriteRowsOutput<RxDocType> | undefined = null as any;
+        let categorized: CategorizeBulkWriteRowsOutput<RxDocType> | undefined;
         await state.dexieDb.transaction(
             'rw',
             state.dexieTable,
@@ -177,18 +177,16 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
                 ]);
             });
 
-        if (ensureNotFalsy(categorized).eventBulk.events.length > 0) {
-            const lastState = getNewestOfDocumentStates(
-                this.primaryPath as any,
-                Object.values(ret.success)
-            );
-            ensureNotFalsy(categorized).eventBulk.checkpoint = {
+        categorized = ensureNotFalsy(categorized);
+        if (categorized.eventBulk.events.length > 0) {
+            const lastState = ensureNotFalsy(categorized.newestRow).document;
+            categorized.eventBulk.checkpoint = {
                 id: lastState[this.primaryPath],
                 lwt: lastState._meta.lwt
             };
             const endTime = now();
-            ensureNotFalsy(categorized).eventBulk.events.forEach(event => (event as any).endTime = endTime);
-            this.changes$.next(ensureNotFalsy(categorized).eventBulk);
+            categorized.eventBulk.events.forEach(event => (event as any).endTime = endTime);
+            this.changes$.next(categorized.eventBulk);
         }
 
         return ret;
