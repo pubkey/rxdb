@@ -242,7 +242,16 @@ header .text {
     float: left;
     padding-right: 15px;
 }
-
+@media (max-width: 390px) {
+    header .text {
+        padding-right: 6px;
+    }
+}
+@media (max-width: 340px) {
+    header .text {
+        padding-right: 4px;
+    }
+}
 header .logo .text {
     font-size: var(--fontSizes-xl);
     padding-top: 18px;
@@ -1032,7 +1041,7 @@ header .logo img {
     float: right;
 }
 
-@media (max-width: 460px) {
+@media (max-width: 520px) {
     .star-at-github {
         display: none;
     }

@@ -7,7 +7,7 @@ import type { RxDocumentData, RxJsonSchema, RxStorageStatics, MangoQuery } from 
  */
 export declare const RxStorageDefaultStatics: RxStorageStatics;
 /**
- * This function is at dexie-helper
- * because we need it in multiple places.
+ * Default mango query sort comparator.
+ * @hotPath
  */
 export declare function getDefaultSortComparator<RxDocType>(_schema: RxJsonSchema<RxDocumentData<RxDocType>>, query: MangoQuery<RxDocType>): DeterministicSortComparator<RxDocType>;
