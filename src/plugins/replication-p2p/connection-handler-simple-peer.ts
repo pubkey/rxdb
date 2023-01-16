@@ -23,7 +23,7 @@ export function getConnectionHandlerSimplePeer(
     serverUrl: string,
     wrtc?: any
 ): P2PConnectionHandlerCreator {
-    const io = require('socket.io-client');
+    const { io } = require('socket.io-client');
 
 
     const creator: P2PConnectionHandlerCreator = (options) => {
