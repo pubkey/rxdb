@@ -15,8 +15,8 @@ import {
     getDocumentOrmPrototype,
     getDocumentPrototype,
     addRxPlugin,
-    blobBufferUtil,
-    RxCollection
+    RxCollection,
+    createBlob
 } from '../../';
 
 
@@ -751,7 +751,7 @@ describe('rx-document.test.js', () => {
             const doc = await c.insert(schemaObjects.human());
             await doc.putAttachment({
                 id: 'sampledata',
-                data: blobBufferUtil.createBlobBuffer('foo bar', 'application/octet-stream'),
+                data: createBlob('foo bar', 'application/octet-stream'),
                 type: 'application/octet-stream'
             });
 

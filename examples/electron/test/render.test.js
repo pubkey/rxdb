@@ -2,8 +2,8 @@ const assert = require('assert');
 const {
     createRxDatabase,
     addRxPlugin,
-    blobBufferUtil,
-    getBroadcastChannelReference
+    getBroadcastChannelReference,
+    createBlob
 } = require('rxdb');
 const { RxDBLeaderElectionPlugin } = require('rxdb/plugins/leader-election');
 const { RxDBAttachmentsPlugin } = require('rxdb/plugins/attachments');
@@ -63,7 +63,7 @@ module.exports = (function () {
             assert.ok(doc);
 
             const dataString = 'foo bar asldfkjalkdsfj';
-            const attachmentData = blobBufferUtil.createBlobBuffer(dataString, 'text/plain');
+            const attachmentData = createBlob(dataString, 'text/plain');
             const attachment = await doc.putAttachment({
                 id: 'cat.jpg',
                 data: attachmentData,

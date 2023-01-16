@@ -8,7 +8,6 @@ import {
     randomCouchString,
     sortObject,
     now,
-    blobBufferUtil,
     sortDocumentsByLastWriteTime,
     RxDocumentData,
     ensureInteger,
@@ -16,7 +15,13 @@ import {
     b64DecodeUnicode,
     b64EncodeUnicode,
     batchArray,
-    clone as rxdbClone
+    clone as rxdbClone,
+    isBlob,
+    createBlob,
+    blobToString,
+    getBlobSize,
+    blobToBase64String,
+    createBlobFromBase64
 } from '../../';
 import config from './config';
 
@@ -128,7 +133,7 @@ describe('util.test.js', () => {
         ];
         cloneMethods.forEach(method => {
             it('run once', async () => {
-                if(!config.isFastMode()){
+                if (!config.isFastMode()) {
                     await wait(200);
                 }
                 let obj = {
@@ -240,91 +245,86 @@ describe('util.test.js', () => {
             assert.ok(decoded);
         });
     });
-    describe('blobBufferUtil', () => {
+    describe('blob util', () => {
         it('should be able to run all functions', async () => {
             const text = 'foobar';
-            const blobBuffer = blobBufferUtil.createBlobBuffer(text, 'plain/text');
-            assert.ok(blobBufferUtil.isBlobBuffer(blobBuffer));
-            const asString = await blobBufferUtil.toString(blobBuffer);
+            const blob = createBlob(text, 'plain/text');
+            assert.ok(isBlob(blob));
+            const asString = await blobToString(blob);
             assert.strictEqual(text, asString);
         });
         it('should be able to run often in circle', async () => {
             const text = 'foobar';
-            let blobBuffer = blobBufferUtil.createBlobBuffer(text, 'plain/text');
-            let asString = await blobBufferUtil.toString(blobBuffer);
-            blobBuffer = blobBufferUtil.createBlobBuffer(asString, 'plain/text');
-            asString = await blobBufferUtil.toString(blobBuffer);
-            blobBuffer = blobBufferUtil.createBlobBuffer(asString, 'plain/text');
-            asString = await blobBufferUtil.toString(blobBuffer);
+            let blob = createBlob(text, 'plain/text');
+            let asString = await blobToString(blob);
+            blob = createBlob(asString, 'plain/text');
+            asString = await blobToString(blob);
+            blob = createBlob(asString, 'plain/text');
+            asString = await blobToString(blob);
 
             assert.strictEqual(text, asString);
         });
         it('.size() should return a deterministic value', () => {
             const amount = 30;
             const str = randomCouchString(amount);
-            const blobBuffer = blobBufferUtil.createBlobBuffer(str, 'plain/text');
-            const size = blobBufferUtil.size(blobBuffer);
+            const blob = createBlob(str, 'plain/text');
+            const size = getBlobSize(blob);
             assert.strictEqual(size, amount);
         });
         it('should do the correct base64 conversion', async () => {
             const plain = 'aaa';
             const base64 = 'YWFh';
 
-            const blobBuffer = blobBufferUtil.createBlobBuffer(plain, 'plain/text');
+            const blob = createBlob(plain, 'plain/text');
             assert.strictEqual(
-                await blobBufferUtil.toBase64String(blobBuffer),
+                await blobToBase64String(blob),
                 base64
             );
             assert.strictEqual(
-                await blobBufferUtil.toString(blobBuffer),
+                await blobToString(blob),
                 plain
             );
 
-            const blobBufferFromb64 = await blobBufferUtil.createBlobBufferFromBase64(base64, 'plain/text');
+            const blobFromb64 = await createBlobFromBase64(base64, 'plain/text');
             assert.strictEqual(
-                await blobBufferUtil.toBase64String(blobBufferFromb64),
+                await blobToBase64String(blobFromb64),
                 base64
             );
             assert.strictEqual(
-                await blobBufferUtil.toString(blobBufferFromb64),
+                await blobToString(blobFromb64),
                 plain
             );
         });
         it('should work with non latin-1 chars', async () => {
             const plain = 'aäß';
             const base64 = 'YcOkw58=';
-            const blobBuffer = blobBufferUtil.createBlobBuffer(plain, 'plain/text');
+            const blob = createBlob(plain, 'plain/text');
             assert.strictEqual(
-                await blobBufferUtil.toString(blobBuffer),
+                await blobToString(blob),
                 plain
             );
             assert.strictEqual(
-                await blobBufferUtil.toBase64String(blobBuffer),
+                await blobToBase64String(blob),
                 base64
             );
             assert.strictEqual(
-                await blobBufferUtil.toString(blobBuffer),
+                await blobToString(blob),
                 plain
             );
-            const blobBufferFromb64 = await blobBufferUtil.createBlobBufferFromBase64(base64, 'plain/text');
+            const blobFromb64 = await createBlobFromBase64(base64, 'plain/text');
             assert.strictEqual(
-                await blobBufferUtil.toString(blobBufferFromb64),
+                await blobToString(blobFromb64),
                 plain
             );
             assert.strictEqual(
-                await blobBufferUtil.toBase64String(blobBufferFromb64),
+                await blobToBase64String(blobFromb64),
                 base64
             );
             assert.strictEqual(
-                await blobBufferUtil.toString(blobBufferFromb64),
+                await blobToString(blobFromb64),
                 plain
             );
         });
-        // it('should not loose information on transformations', () => {
-        //     const baseInput = 'U2FsdGVkX1+Ir6zTZzI4qonSi65Ur30bpTGGs0AZI47raNL2mi2KN2VyabAwzJ5s';
-        //     const blobBuffer = blobBufferUtil.createBlobBufferFromBase64(baseInput, 'plain/text');
-
-        // });
     });
     describe('.deepFreezeWhenDevMode()', () => {
         it('should not allow to mutate the object', () => {
@@ -487,3 +487,4 @@ describe('util.test.js', () => {
         });
     });
 });
+

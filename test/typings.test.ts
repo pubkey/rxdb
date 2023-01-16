@@ -24,7 +24,7 @@ describe('typings.test.js', function () {
             RxAttachment,
             RxPlugin,
             addRxPlugin,
-            blobBufferUtil
+            createBlob
         } from '${config.rootPath}';
         import {
             getRxStorageMemory
@@ -474,7 +474,7 @@ describe('typings.test.js', function () {
                     const oneDoc: RxDocument<DocType> = result;
                     const attachment: RxAttachment<DocType> = await oneDoc.putAttachment({
                         id: 'cat.txt',
-                        data: blobBufferUtil.createBlobBuffer('foo bar', 'text/plain'),
+                        data: createBlob('foo bar', 'text/plain'),
                         type: 'text/plain'
                     });
                 });

@@ -11,7 +11,7 @@ import {
     createRxDatabase,
     RxCollection,
     randomCouchString,
-    blobBufferUtil,
+    createBlob
 } from '../../';
 
 import AsyncTestUtil from 'async-test-util';
@@ -357,7 +357,7 @@ config.parallel('import-export.test.js', () => {
             const doc = await sourceCol.findOne().exec(true);
             await doc.putAttachment({
                 id: 'cat.txt',
-                data: blobBufferUtil.createBlobBuffer('meow', 'text/plain'),
+                data: createBlob('meow', 'text/plain'),
                 type: 'text/plain'
             });
             const json = await sourceCol.exportJSON();

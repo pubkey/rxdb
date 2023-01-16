@@ -1,10 +1,6 @@
 # RxDB Electron example
 
-This is an example usage of RxDB with Electron trough the `RxDB server plugin`. It implements a simple heroes-list which can be filled by the user.
-
-
-For an example with Electron [`remote`](https://github.com/electron/remote) module check [examples/electron-remote](../electron-remote)
-
+This is an example usage of RxDB with the [Electron RxStorage](https://rxdb.info/electron.html). It implements a simple heroes-list which can be filled by the user.
 
 # Try it out
 1. clone the whole [RxDB-repo](https://github.com/pubkey/rxdb)
@@ -17,3 +13,4 @@ For an example with Electron [`remote`](https://github.com/electron/remote) modu
 ## Related
 
 - [Comparison of Electron Databases](https://rxdb.info/electron-database.html)
+- [RxStorage Electron IpcRenderer & IpcMain](https://rxdb.info/electron.html)
