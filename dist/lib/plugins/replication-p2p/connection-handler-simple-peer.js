@@ -13,7 +13,9 @@ var _rxError = require("../../rx-error");
  * Returns a connection handler that uses simple-peer and the signaling server.
  */
 function getConnectionHandlerSimplePeer(serverUrl, wrtc) {
-  var io = require('socket.io-client');
+  var {
+    io
+  } = require('socket.io-client');
   var creator = options => {
     var socket = io(serverUrl);
     var peerId = (0, _utils.randomCouchString)(10);

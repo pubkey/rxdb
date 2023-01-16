@@ -1,5 +1,5 @@
 import { map } from 'rxjs/operators';
-import { blobBufferUtil, flatClone, PROMISE_RESOLVE_VOID } from '../../plugins/utils';
+import { blobToBase64String, blobToString, createBlobFromBase64, flatClone, getBlobSize, PROMISE_RESOLVE_VOID } from '../../plugins/utils';
 import { newRxError } from '../../rx-error';
 function ensureSchemaSupportsAttachments(doc) {
   var schemaJson = doc.collection.schema.jsonSchema;
@@ -49,12 +49,12 @@ export var RxAttachment = /*#__PURE__*/function () {
    */;
   _proto.getData = async function getData() {
     var plainDataBase64 = await this.doc.collection.storageInstance.getAttachmentData(this.doc.primary, this.id);
-    var ret = await blobBufferUtil.createBlobBufferFromBase64(plainDataBase64, this.type);
+    var ret = await createBlobFromBase64(plainDataBase64, this.type);
     return ret;
   };
   _proto.getStringData = async function getStringData() {
     var data = await this.getData();
-    var asString = await blobBufferUtil.toString(data);
+    var asString = await blobToString(data);
     return asString;
   };
   return RxAttachment;
@@ -70,8 +70,8 @@ export function fromStorageInstanceResult(id, attachmentData, rxDocument) {
 }
 export async function putAttachment(attachmentData) {
   ensureSchemaSupportsAttachments(this);
-  var dataSize = blobBufferUtil.size(attachmentData.data);
-  var dataString = await blobBufferUtil.toBase64String(attachmentData.data);
+  var dataSize = getBlobSize(attachmentData.data);
+  var dataString = await blobToBase64String(attachmentData.data);
   var id = attachmentData.id;
   var type = attachmentData.type;
   var data = dataString;

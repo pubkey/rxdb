@@ -62,7 +62,7 @@ function prepareFolders(database, options) {
 }
 async function writeToFile(location, data) {
   if (typeof data !== 'string') {
-    data = await _utils.blobBufferUtil.toString(data);
+    data = await (0, _utils.blobToString)(data);
   }
   return new Promise(function (res, rej) {
     fs.writeFile(location, data, 'utf-8', err => {

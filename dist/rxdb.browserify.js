@@ -1531,14 +1531,14 @@ Object.keys(_utilsArray).forEach(function (key) {
     }
   });
 });
-var _utilsBlobBuffer = require("./utils-blob-buffer");
-Object.keys(_utilsBlobBuffer).forEach(function (key) {
+var _utilsBlob = require("./utils-blob");
+Object.keys(_utilsBlob).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
-  if (key in exports && exports[key] === _utilsBlobBuffer[key]) return;
+  if (key in exports && exports[key] === _utilsBlob[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
     get: function () {
-      return _utilsBlobBuffer[key];
+      return _utilsBlob[key];
     }
   });
 });
@@ -1686,7 +1686,7 @@ Object.keys(_utilsOther).forEach(function (key) {
   });
 });
 
-},{"./utils-array":13,"./utils-base64":14,"./utils-blob-buffer":15,"./utils-document":16,"./utils-error":17,"./utils-hash":18,"./utils-object":21,"./utils-object-deep-equal":19,"./utils-object-dot-prop":20,"./utils-other":22,"./utils-promise":23,"./utils-regex":24,"./utils-revision":25,"./utils-string":26,"./utils-time":27}],13:[function(require,module,exports){
+},{"./utils-array":13,"./utils-base64":14,"./utils-blob":15,"./utils-document":16,"./utils-error":17,"./utils-hash":18,"./utils-object":21,"./utils-object-deep-equal":19,"./utils-object-dot-prop":20,"./utils-other":22,"./utils-promise":23,"./utils-regex":24,"./utils-revision":25,"./utils-string":26,"./utils-time":27}],13:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1820,78 +1820,74 @@ function arrayBufferToBase64(buffer) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.blobBufferUtil = void 0;
+exports.blobToBase64String = blobToBase64String;
+exports.blobToString = blobToString;
+exports.createBlob = createBlob;
+exports.createBlobFromBase64 = createBlobFromBase64;
+exports.getBlobSize = getBlobSize;
+exports.isBlob = isBlob;
 var _utilsBase = require("./utils-base64");
 /**
- * This is an abstraction over the Blob/Buffer data structure.
- * We need this because it behaves different in different JavaScript runtimes.
- * Since RxDB 13.0.0 we switch to Blob-only because Node.js does not support
- * the Blob data structure which is also supported by the browsers.
+ * Since RxDB 13.0.0 we only use Blob instead of falling back to Buffer,
+ * because Node.js >18 supports Blobs anyway.
  */
-var blobBufferUtil = {
-  /**
-   * depending if we are on node or browser,
-   * we have to use Buffer(node) or Blob(browser)
-   */
-  createBlobBuffer(data, type) {
-    var blobBuffer = new Blob([data], {
-      type
-    });
-    return blobBuffer;
-  },
-  /**
-   * depending if we are on node or browser,
-   * we have to use Buffer(node) or Blob(browser)
-   */
-  async createBlobBufferFromBase64(base64String, type) {
-    var base64Response = await fetch("data:" + type + ";base64," + base64String);
-    var blob = await base64Response.blob();
-    return blob;
-  },
-  isBlobBuffer(data) {
-    if (data instanceof Blob || typeof Buffer !== 'undefined' && Buffer.isBuffer(data)) {
-      return true;
-    } else {
-      return false;
-    }
-  },
-  toString(blobBuffer) {
-    /**
-     * in the electron-renderer we have a typed array insteaf of a blob
-     * so we have to transform it.
-     * @link https://github.com/pubkey/rxdb/issues/1371
-     */
-    var blobBufferType = Object.prototype.toString.call(blobBuffer);
-    if (blobBufferType === '[object Uint8Array]') {
-      blobBuffer = new Blob([blobBuffer]);
-    }
-    if (typeof blobBuffer === 'string') {
-      return Promise.resolve(blobBuffer);
-    }
-    return blobBuffer.text();
-  },
-  async toBase64String(blobBuffer) {
-    if (typeof blobBuffer === 'string') {
-      return blobBuffer;
-    }
-
-    /**
-     * in the electron-renderer we have a typed array insteaf of a blob
-     * so we have to transform it.
-     * @link https://github.com/pubkey/rxdb/issues/1371
-     */
-    var blobBufferType = Object.prototype.toString.call(blobBuffer);
-    if (blobBufferType === '[object Uint8Array]') {
-      blobBuffer = new Blob([blobBuffer]);
-    }
-    var arrayBuffer = await fetch(URL.createObjectURL(blobBuffer)).then(res => res.arrayBuffer());
-    return (0, _utilsBase.arrayBufferToBase64)(arrayBuffer);
-  },
-  size(blobBuffer) {
-    return blobBuffer.size;
+/**
+ * depending if we are on node or browser,
+ * we have to use Buffer(node) or Blob(browser)
+ */
+function createBlob(data, type) {
+  var blob = new Blob([data], {
+    type
+  });
+  return blob;
+}
+async function createBlobFromBase64(base64String, type) {
+  var base64Response = await fetch("data:" + type + ";base64," + base64String);
+  var blob = await base64Response.blob();
+  return blob;
+}
+function isBlob(data) {
+  if (data instanceof Blob || typeof Buffer !== 'undefined' && Buffer.isBuffer(data)) {
+    return true;
+  } else {
+    return false;
   }
-};
-exports.blobBufferUtil = blobBufferUtil;
+}
+function blobToString(blob) {
+  /**
+   * in the electron-renderer we have a typed array insteaf of a blob
+   * so we have to transform it.
+   * @link https://github.com/pubkey/rxdb/issues/1371
+   */
+  var blobType = Object.prototype.toString.call(blob);
+  if (blobType === '[object Uint8Array]') {
+    blob = new Blob([blob]);
+  }
+  if (typeof blob === 'string') {
+    return Promise.resolve(blob);
+  }
+  return blob.text();
+}
+async function blobToBase64String(blob) {
+  if (typeof blob === 'string') {
+    return blob;
+  }
+
+  /**
+   * in the electron-renderer we have a typed array insteaf of a blob
+   * so we have to transform it.
+   * @link https://github.com/pubkey/rxdb/issues/1371
+   */
+  var blobType = Object.prototype.toString.call(blob);
+  if (blobType === '[object Uint8Array]') {
+    blob = new Blob([blob]);
+  }
+  var arrayBuffer = await fetch(URL.createObjectURL(blob)).then(res => res.arrayBuffer());
+  return (0, _utilsBase.arrayBufferToBase64)(arrayBuffer);
+}
+function getBlobSize(blob) {
+  return blob.size;
+}
 
 }).call(this)}).call(this,require("buffer").Buffer)
 },{"./utils-base64":14,"buffer":99}],16:[function(require,module,exports){

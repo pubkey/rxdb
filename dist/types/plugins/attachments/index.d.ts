@@ -1,4 +1,4 @@
-import type { RxDocument, RxPlugin, BlobBuffer, OldRxCollection, RxAttachmentData, RxDocumentData, RxAttachmentCreator } from '../../types';
+import type { RxDocument, RxPlugin, OldRxCollection, RxAttachmentData, RxDocumentData, RxAttachmentCreator } from '../../types';
 /**
  * an RxAttachment is basically just the attachment-stub
  * wrapped so that you can access the attachment-data
@@ -14,7 +14,7 @@ export declare class RxAttachment {
     /**
      * returns the data for the attachment
      */
-    getData(): Promise<BlobBuffer>;
+    getData(): Promise<Blob>;
     getStringData(): Promise<string>;
 }
 export declare function fromStorageInstanceResult<RxDocType>(id: string, attachmentData: RxAttachmentData, rxDocument: RxDocument<RxDocType>): RxAttachment;

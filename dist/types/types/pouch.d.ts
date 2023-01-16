@@ -146,14 +146,12 @@ export type CouchAttachmentMeta = {
     revpos: number;
 };
 
-export type BlobBuffer = Buffer | Blob;
-
 export type CouchAttachmentWithData = CouchAttachmentMeta & {
     /**
      * Base64 string with the data
      * or directly a buffer
      */
-    data: BlobBuffer;
+    data: Blob;
     type: string;
     /**
      * If set, must be false

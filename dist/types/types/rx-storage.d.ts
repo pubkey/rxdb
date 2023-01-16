@@ -140,12 +140,12 @@ export type RxAttachmentData = RxAttachmentDataBase & {
 export type RxAttachmentWriteData = RxAttachmentDataBase & {
     /**
      * The data of the attachment. As string in base64 format.
-     * In the past we used BlobBuffer internally but it created many
+     * In the past we used Blob internally but it created many
      * problems because of then we need the full data (for encryption/compression)
-     * so we anyway have to get the string value out of the BlobBuffer.
+     * so we anyway have to get the string value out of the Blob.
      *
-     * Also using BlobBuffer has no performance benefit because in some RxStorage implementations,
-     * it just keeps the transaction open for longer because the BlobBuffer
+     * Also using Blob has no performance benefit because in some RxStorage implementations,
+     * it just keeps the transaction open for longer because the Blob
      * has be be read.
      */
     data: string;

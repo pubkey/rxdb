@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import { blobBufferUtil, now } from '../../plugins/utils';
+import { blobToString, now } from '../../plugins/utils';
 
 /**
  * ensure that the given folder exists
@@ -46,7 +46,7 @@ export function prepareFolders(database, options) {
 }
 export async function writeToFile(location, data) {
   if (typeof data !== 'string') {
-    data = await blobBufferUtil.toString(data);
+    data = await blobToString(data);
   }
   return new Promise(function (res, rej) {
     fs.writeFile(location, data, 'utf-8', err => {

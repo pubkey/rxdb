@@ -14,14 +14,14 @@ Object.keys(_utilsArray).forEach(function (key) {
     }
   });
 });
-var _utilsBlobBuffer = require("./utils-blob-buffer");
-Object.keys(_utilsBlobBuffer).forEach(function (key) {
+var _utilsBlob = require("./utils-blob");
+Object.keys(_utilsBlob).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
-  if (key in exports && exports[key] === _utilsBlobBuffer[key]) return;
+  if (key in exports && exports[key] === _utilsBlob[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
     get: function () {
-      return _utilsBlobBuffer[key];
+      return _utilsBlob[key];
     }
   });
 });

@@ -61,12 +61,12 @@ var RxAttachment = /*#__PURE__*/function () {
    */;
   _proto.getData = async function getData() {
     var plainDataBase64 = await this.doc.collection.storageInstance.getAttachmentData(this.doc.primary, this.id);
-    var ret = await _utils.blobBufferUtil.createBlobBufferFromBase64(plainDataBase64, this.type);
+    var ret = await (0, _utils.createBlobFromBase64)(plainDataBase64, this.type);
     return ret;
   };
   _proto.getStringData = async function getStringData() {
     var data = await this.getData();
-    var asString = await _utils.blobBufferUtil.toString(data);
+    var asString = await (0, _utils.blobToString)(data);
     return asString;
   };
   return RxAttachment;
@@ -83,8 +83,8 @@ function fromStorageInstanceResult(id, attachmentData, rxDocument) {
 }
 async function putAttachment(attachmentData) {
   ensureSchemaSupportsAttachments(this);
-  var dataSize = _utils.blobBufferUtil.size(attachmentData.data);
-  var dataString = await _utils.blobBufferUtil.toBase64String(attachmentData.data);
+  var dataSize = (0, _utils.getBlobSize)(attachmentData.data);
+  var dataString = await (0, _utils.blobToBase64String)(attachmentData.data);
   var id = attachmentData.id;
   var type = attachmentData.type;
   var data = dataString;

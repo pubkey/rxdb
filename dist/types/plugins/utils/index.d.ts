@@ -1,5 +1,5 @@
 export * from './utils-array';
-export * from './utils-blob-buffer';
+export * from './utils-blob';
 export * from './utils-base64';
 export * from './utils-revision';
 export * from './utils-document';
