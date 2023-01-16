@@ -7,7 +7,7 @@ const GraphQLServer = require('./graphql-server');
 const SignalingServer = require('./signaling-server');
 const { startRemoteStorageServer } = require('./remote-storage-server');
 const {
-    blobBufferUtil
+    blobToBase64String
 } = require('../../');
 export const TEST_STATIC_FILE_SERVER_PORT = 18001;
 export function startTestServers() {
@@ -42,7 +42,7 @@ export function startTestServers() {
         );
         const buffer = fs.readFileSync(filePath);
         const blob = new Blob([buffer]);
-        const base64String = await blobBufferUtil.toBase64String(blob);
+        const base64String = await blobToBase64String(blob);
         res.set('Content-Type', 'text/html');
         res.send(base64String);
     });

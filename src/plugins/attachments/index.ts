@@ -3,8 +3,11 @@ import {
 } from 'rxjs/operators';
 
 import {
-    blobBufferUtil,
+    blobToBase64String,
+    blobToString,
+    createBlobFromBase64,
     flatClone,
+    getBlobSize,
     PROMISE_RESOLVE_VOID
 } from '../../plugins/utils';
 import {
@@ -13,7 +16,6 @@ import {
 import type {
     RxDocument,
     RxPlugin,
-    BlobBuffer,
     OldRxCollection,
     RxDocumentWriteData,
     RxAttachmentData,
@@ -80,12 +82,12 @@ export class RxAttachment {
     /**
      * returns the data for the attachment
      */
-    async getData(): Promise<BlobBuffer> {
+    async getData(): Promise<Blob> {
         const plainDataBase64 = await this.doc.collection.storageInstance.getAttachmentData(
             this.doc.primary,
             this.id
         );
-        const ret = await blobBufferUtil.createBlobBufferFromBase64(
+        const ret = await createBlobFromBase64(
             plainDataBase64,
             this.type as any
         );
@@ -94,7 +96,7 @@ export class RxAttachment {
 
     async getStringData(): Promise<string> {
         const data = await this.getData();
-        const asString = await blobBufferUtil.toString(data);
+        const asString = await blobToString(data);
         return asString;
     }
 }
@@ -119,8 +121,8 @@ export async function putAttachment<RxDocType>(
 ): Promise<RxAttachment> {
     ensureSchemaSupportsAttachments(this);
 
-    const dataSize = blobBufferUtil.size(attachmentData.data);
-    const dataString = await blobBufferUtil.toBase64String(attachmentData.data);
+    const dataSize = getBlobSize(attachmentData.data);
+    const dataString = await blobToBase64String(attachmentData.data);
 
     const id = attachmentData.id;
     const type = attachmentData.type;

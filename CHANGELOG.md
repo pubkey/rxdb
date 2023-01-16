@@ -51,7 +51,7 @@
 - FIX(sqlite) $in Query not working SQLite [#4278](https://github.com/pubkey/rxdb/issues/4278)
 - FIX CouchDB push is throwing error because of missing revision [#4299](https://github.com/pubkey/rxdb/pull/4299)
 - ADD dev-mode shows a `console.warn` to ensure people do not use it in production.
-
+- Remove the usage of `Buffer`. We now use `Blob` everywhere.
 #
 - REMOVE deprecated `babel-plugin-transform-async-to-promises` plugin.
 

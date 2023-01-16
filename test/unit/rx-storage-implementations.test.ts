@@ -8,7 +8,6 @@ import {
     getPseudoSchemaForVersion,
     lastOfArray,
     writeSingle,
-    blobBufferUtil,
     flattenEvents,
     flatClone,
     RxJsonSchema,
@@ -25,7 +24,10 @@ import {
     stackCheckpoints,
     deepFreeze,
     stripAttachmentsDataFromDocument,
-    getAttachmentSize
+    getAttachmentSize,
+    blobToBase64String,
+    createBlob,
+    getBlobSize
 } from '../../';
 import Ajv from 'ajv';
 import {
@@ -2318,11 +2320,11 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 const attachmentData = new Array(20).fill('a').join('');
 
 
-                const dataBlobBuffer = blobBufferUtil.createBlobBuffer(
+                const dataBlob = createBlob(
                     attachmentData,
                     'text/plain'
                 );
-                const dataStringBase64 = await blobBufferUtil.toBase64String(dataBlobBuffer);
+                const dataStringBase64 = await blobToBase64String(dataBlob);
                 const dataLength = getAttachmentSize(dataStringBase64);
 
                 const writeData: RxDocumentWriteData<TestDocType> = {
@@ -2376,12 +2378,12 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 });
 
                 const attachmentData = new Array(20).fill('a').join('');
-                const dataBlobBuffer = blobBufferUtil.createBlobBuffer(
+                const dataBlob = createBlob(
                     attachmentData,
                     'text/plain'
                 );
 
-                const dataStringBase64 = await blobBufferUtil.toBase64String(dataBlobBuffer);
+                const dataStringBase64 = await blobToBase64String(dataBlob);
                 const dataLength = getAttachmentSize(dataStringBase64);
 
                 const writeData: RxDocumentWriteData<TestDocType> = {
@@ -2486,8 +2488,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
 
                 let previous: RxDocumentData<TestDocType> | undefined;
 
-                const dataBlobBuffer = blobBufferUtil.createBlobBuffer(randomString(20), 'text/plain');
-                const dataStringBase64 = await blobBufferUtil.toBase64String(dataBlobBuffer);
+                const dataBlob = createBlob(randomString(20), 'text/plain');
+                const dataStringBase64 = await blobToBase64String(dataBlob);
                 const writeData: RxDocumentWriteData<TestDocType> = {
                     key: 'foobar',
                     value: 'one',
@@ -2498,7 +2500,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     },
                     _attachments: {
                         foo: {
-                            length: blobBufferUtil.size(dataBlobBuffer),
+                            length: getBlobSize(dataBlob),
                             data: dataStringBase64,
                             type: 'text/plain'
                         }
@@ -2524,11 +2526,11 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
 
                 writeData._attachments = flatClone(previous._attachments) as any;
 
-                const data2 = blobBufferUtil.createBlobBuffer(randomString(20), 'text/plain');
-                const dataString2 = await blobBufferUtil.toBase64String(data2);
+                const data2 = createBlob(randomString(20), 'text/plain');
+                const dataString2 = await blobToBase64String(data2);
                 writeData._attachments.bar = {
                     data: dataString2,
-                    length: blobBufferUtil.size(data2),
+                    length: getBlobSize(data2),
                     type: 'text/plain'
                 };
                 writeData._rev = EXAMPLE_REVISION_2;
@@ -2567,8 +2569,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     multiInstance: false
                 });
 
-                const data = blobBufferUtil.createBlobBuffer(randomString(20), 'text/plain');
-                const dataString = await blobBufferUtil.toBase64String(data);
+                const data = createBlob(randomString(20), 'text/plain');
+                const dataString = await blobToBase64String(data);
                 const writeData: RxDocumentWriteData<TestDocType> = {
                     key: 'foobar',
                     value: 'one',
@@ -2579,7 +2581,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     },
                     _attachments: {
                         foo: {
-                            length: blobBufferUtil.size(data),
+                            length: getBlobSize(data),
                             data: dataString,
                             type: 'text/plain'
                         }

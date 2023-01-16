@@ -11,12 +11,12 @@ import {
     promiseWait,
     clone,
     getHeightOfRevision,
-    blobBufferUtil,
     lastOfArray,
     RxStorageInstance,
     now,
     addRxPlugin,
-    RxCollection
+    RxCollection,
+    createBlob
 } from '../../';
 
 import {
@@ -944,7 +944,7 @@ config.parallel('data-migration.test.ts', () => {
                 return;
             }
             const attachmentData = AsyncTestUtil.randomString(20);
-            const dataBlobBuffer = blobBufferUtil.createBlobBuffer(
+            const dataBlob = createBlob(
                 attachmentData,
                 'text/plain'
             );
@@ -955,7 +955,7 @@ config.parallel('data-migration.test.ts', () => {
                 }
             }, randomCouchString(10), false, {
                 id: 'foo',
-                data: dataBlobBuffer,
+                data: dataBlob,
                 type: 'text/plain'
             });
             const olds = await _getOldCollections(col.getDataMigrator());

@@ -11,13 +11,16 @@ import {
     randomCouchString,
     RxDocument,
     RxJsonSchema,
-    blobBufferUtil,
     MigrationStrategies,
     WithAttachmentsData,
     RxCollection,
     ensureNotFalsy,
     b64DecodeUnicode,
-    RxStorageInstance
+    RxStorageInstance,
+    blobToBase64String,
+    createBlobFromBase64,
+    createBlob,
+    blobToString
 } from '../../';
 import { HumanDocumentType } from '../helper/schemas';
 import { RxDocumentWriteData } from '../../src/types';
@@ -97,7 +100,7 @@ config.parallel('attachments.test.ts', () => {
 
             const fileSource = await fetch(attachmentUrl);
             const fileData = await fileSource.blob();
-            const b64stringBrowser = await blobBufferUtil.toBase64String(fileData);
+            const b64stringBrowser = await blobToBase64String(fileData);
 
             assert.strictEqual(
                 b64stringBrowser,
@@ -113,12 +116,12 @@ config.parallel('attachments.test.ts', () => {
             const fileData = await fileSource.blob();
             await renderImageBlob(fileData);
 
-            const b64string = await blobBufferUtil.toBase64String(fileData);
-            const blobBuffer = await blobBufferUtil.createBlobBufferFromBase64(
+            const b64string = await blobToBase64String(fileData);
+            const blob = await createBlobFromBase64(
                 b64string,
                 'image/png'
             );
-            await renderImageBlob(blobBuffer as Blob);
+            await renderImageBlob(blob);
         });
     });
 
@@ -128,7 +131,7 @@ config.parallel('attachments.test.ts', () => {
             const doc = await c.findOne().exec(true);
             const attachment = await doc.putAttachment({
                 id: 'cat.txt',
-                data: blobBufferUtil.createBlobBuffer('meow', 'text/plain'),
+                data: createBlob('meow', 'text/plain'),
                 type: 'text/plain'
             });
             assert.ok(attachment);
@@ -141,12 +144,12 @@ config.parallel('attachments.test.ts', () => {
             let doc = await c.findOne().exec(true);
             await doc.putAttachment({
                 id: 'cat.txt',
-                data: blobBufferUtil.createBlobBuffer('meow', 'text/plain'),
+                data: createBlob('meow', 'text/plain'),
                 type: 'text/plain'
             });
             await doc.putAttachment({
                 id: 'cat2.txt',
-                data: blobBufferUtil.createBlobBuffer('meowmeow', 'text/plain'),
+                data: createBlob('meowmeow', 'text/plain'),
                 type: 'text/plain'
             });
 
@@ -169,7 +172,7 @@ config.parallel('attachments.test.ts', () => {
                     .fill(0)
                     .map(() => doc.putAttachment({
                         id: AsyncTestUtil.randomString(5) + '.txt',
-                        data: blobBufferUtil.createBlobBuffer('meow I am a kitty with a knife ' + AsyncTestUtil.randomString(5), 'text/plain'),
+                        data: createBlob('meow I am a kitty with a knife ' + AsyncTestUtil.randomString(5), 'text/plain'),
                         type: 'text/plain'
                     }))
             );
@@ -182,7 +185,7 @@ config.parallel('attachments.test.ts', () => {
             const doc = await c.findOne().exec(true);
             await doc.putAttachment({
                 id: 'cat2.txt',
-                data: blobBufferUtil.createBlobBuffer([
+                data: createBlob([
                     AsyncTestUtil.randomString(100),
                     AsyncTestUtil.randomString(100),
                     AsyncTestUtil.randomString(100)
@@ -198,7 +201,7 @@ config.parallel('attachments.test.ts', () => {
             let doc = await c.findOne().exec(true);
             await doc.putAttachment({
                 id: 'cat.txt',
-                data: blobBufferUtil.createBlobBuffer('meow I am a kitty with a knife', 'text/plain'),
+                data: createBlob('meow I am a kitty with a knife', 'text/plain'),
                 type: 'text/plain'
             });
             doc = await c.findOne().exec(true);
@@ -211,7 +214,7 @@ config.parallel('attachments.test.ts', () => {
             let doc = await c.findOne().exec(true);
             await doc.putAttachment({
                 id: 'cat.txt',
-                data: blobBufferUtil.createBlobBuffer('meow I am a kitty with a knife', 'text/plain'),
+                data: createBlob('meow I am a kitty with a knife', 'text/plain'),
                 type: 'text/plain'
             });
 
@@ -247,7 +250,7 @@ config.parallel('attachments.test.ts', () => {
             const docAge = doc.age;
             await doc.putAttachment({
                 id: 'cat.txt',
-                data: blobBufferUtil.createBlobBuffer('meow I am a kitty with a knife', 'text/plain'),
+                data: createBlob('meow I am a kitty with a knife', 'text/plain'),
                 type: 'text/plain'
             });
             await db.destroy();
@@ -276,7 +279,7 @@ config.parallel('attachments.test.ts', () => {
             const attachmentId = 'cat.txt';
             await doc.putAttachment({
                 id: attachmentId,
-                data: blobBufferUtil.createBlobBuffer('meow I am a kitty with a knife', 'text/plain'),
+                data: createBlob('meow I am a kitty with a knife', 'text/plain'),
                 type: 'text/plain'
             });
             await c.storageInstance.getAttachmentData(doc.primary, attachmentId);
@@ -301,13 +304,13 @@ config.parallel('attachments.test.ts', () => {
             const dat = AsyncTestUtil.randomString(100) + ' ' + AsyncTestUtil.randomString(100);
             await doc.putAttachment({
                 id: 'cat.txt',
-                data: blobBufferUtil.createBlobBuffer(dat, 'text/plain'),
+                data: createBlob(dat, 'text/plain'),
                 type: 'text/plain'
             });
             doc = await c.findOne().exec(true);
             const attachment: any = doc.getAttachment('cat.txt');
             const data = await attachment.getData();
-            const dataString = await blobBufferUtil.toString(data);
+            const dataString = await blobToString(data);
             assert.strictEqual(dataString, dat);
             c.database.destroy();
         });
@@ -319,7 +322,7 @@ config.parallel('attachments.test.ts', () => {
             const dat = AsyncTestUtil.randomString(100) + ' ' + AsyncTestUtil.randomString(100);
             await doc.putAttachment({
                 id: 'cat.txt',
-                data: blobBufferUtil.createBlobBuffer(dat, 'text/plain'),
+                data: createBlob(dat, 'text/plain'),
                 type: 'text/plain'
             });
             doc = await c.findOne().exec(true);
@@ -335,7 +338,7 @@ config.parallel('attachments.test.ts', () => {
             let doc = await c.findOne().exec(true);
             await doc.putAttachment({
                 id: 'cat.txt',
-                data: blobBufferUtil.createBlobBuffer('meow I am a kitty with a knife', 'text/plain'),
+                data: createBlob('meow I am a kitty with a knife', 'text/plain'),
                 type: 'text/plain'
             });
             doc = await c.findOne().exec(true);
@@ -361,7 +364,7 @@ config.parallel('attachments.test.ts', () => {
                     .fill(0)
                     .map(() => doc.putAttachment({
                         id: AsyncTestUtil.randomString(5) + '.txt',
-                        data: blobBufferUtil.createBlobBuffer('meow I am a kitty with a knife ' + AsyncTestUtil.randomString(500), 'text/plain'),
+                        data: createBlob('meow I am a kitty with a knife ' + AsyncTestUtil.randomString(500), 'text/plain'),
                         type: 'text/plain'
                     }))
             );
@@ -375,14 +378,14 @@ config.parallel('attachments.test.ts', () => {
             let doc = await c.findOne().exec(true);
             await doc.putAttachment({
                 id: 'janosch.txt',
-                data: blobBufferUtil.createBlobBuffer('foo bar', 'text/plain'),
+                data: createBlob('foo bar', 'text/plain'),
                 type: 'text/plain'
             });
             doc = await c.findOne().exec(true);
             const attachments = doc.allAttachments();
             const attachment = attachments[0];
             const data = await attachment.getData();
-            const dataString = await blobBufferUtil.toString(data);
+            const dataString = await blobToString(data);
             assert.deepStrictEqual(dataString, 'foo bar');
             c.database.destroy();
         });
@@ -394,7 +397,7 @@ config.parallel('attachments.test.ts', () => {
             await AsyncTestUtil.assertThrows(
                 () => doc.putAttachment({
                     id: AsyncTestUtil.randomString(5) + '.txt',
-                    data: blobBufferUtil.createBlobBuffer('meow I am a kitty with a knife ', 'text/plain'),
+                    data: createBlob('meow I am a kitty with a knife ', 'text/plain'),
                     type: 'text/plain'
                 }),
                 'RxError',
@@ -410,7 +413,7 @@ config.parallel('attachments.test.ts', () => {
             const insertData = 'foo bar aaa';
             const attachment = await doc.putAttachment({
                 id: 'cat.txt',
-                data: blobBufferUtil.createBlobBuffer(insertData, 'text/plain'),
+                data: createBlob(insertData, 'text/plain'),
                 type: 'text/plain'
             });
 
@@ -418,7 +421,7 @@ config.parallel('attachments.test.ts', () => {
             // the data stored in the storage must be encrypted
             const lowLevelStorage: RxStorageInstance<HumanDocumentType, any, any> = (doc.collection.storageInstance.originalStorageInstance as any).originalStorageInstance;
             const encryptedData = await lowLevelStorage.getAttachmentData(doc.primary, 'cat.txt');
-            const dataStringBase64 = await blobBufferUtil.toString(encryptedData);
+            const dataStringBase64 = await blobToString(encryptedData);
             const dataString = b64DecodeUnicode(dataStringBase64);
             console.dir(dataString);
             assert.notStrictEqual(dataString, insertData);
@@ -460,7 +463,7 @@ config.parallel('attachments.test.ts', () => {
             const doc = await c.findOne().exec(true);
             await doc.putAttachment({
                 id: 'cat.txt',
-                data: blobBufferUtil.createBlobBuffer('foo bar', 'text/plain'),
+                data: createBlob('foo bar', 'text/plain'),
                 type: 'text/plain'
             });
 
@@ -525,7 +528,7 @@ config.parallel('attachments.test.ts', () => {
 
             const putAttachment = await doc.putAttachment({
                 id: 'cat.txt',
-                data: blobBufferUtil.createBlobBuffer('meow I am a kitty', 'text/plain'),
+                data: createBlob('meow I am a kitty', 'text/plain'),
                 type: 'text/plain'
             });
 
@@ -588,7 +591,7 @@ config.parallel('attachments.test.ts', () => {
             });
             await doc.putAttachment({
                 id: 'foobar',
-                data: blobBufferUtil.createBlobBuffer('barfoo', 'text/plain'),
+                data: createBlob('barfoo', 'text/plain'),
                 type: 'text/plain'
             });
             await db.destroy();
@@ -657,7 +660,7 @@ config.parallel('attachments.test.ts', () => {
             });
             await doc.putAttachment({
                 id: 'foobar',
-                data: blobBufferUtil.createBlobBuffer('barfoo', 'text/plain'),
+                data: createBlob('barfoo', 'text/plain'),
                 type: 'text/plain'
             });
             await db.destroy();
@@ -718,7 +721,7 @@ config.parallel('attachments.test.ts', () => {
             });
             await doc.putAttachment({
                 id: 'foobar',
-                data: blobBufferUtil.createBlobBuffer('barfoo1', 'text/plain'),
+                data: createBlob('barfoo1', 'text/plain'),
                 type: 'text/plain'
             });
             await db.destroy();
@@ -733,11 +736,11 @@ config.parallel('attachments.test.ts', () => {
                         throw new Error('oldDoc._attachments missing');
                     }
                     const myAttachment = oldDoc._attachments.foobar;
-                    const blobBuffer = await blobBufferUtil.createBlobBuffer(
+                    const blob = await createBlob(
                         'barfoo2',
                         myAttachment.type
                     );
-                    (myAttachment as any).data = await blobBufferUtil.toBase64String(blobBuffer);
+                    (myAttachment as any).data = await blobToBase64String(blob);
 
                     oldDoc._attachments = {
                         foobar: myAttachment
@@ -786,7 +789,7 @@ config.parallel('attachments.test.ts', () => {
             const doc = await c.humans.findOne().exec();
             const attachment = await doc.putAttachment({
                 id: 'cat.txt',
-                data: blobBufferUtil.createBlobBuffer('meow I am a kitty', 'text/plain'),
+                data: createBlob('meow I am a kitty', 'text/plain'),
                 type: 'text/plain'
             });
 
@@ -827,7 +830,7 @@ config.parallel('attachments.test.ts', () => {
             const doc = await myCollection.findOne('mydoc').exec();
             await doc.putAttachment({
                 id: 'sampledata',
-                data: blobBufferUtil.createBlobBuffer('foo bar', 'text/plain'),
+                data: createBlob('foo bar', 'text/plain'),
                 type: 'application/octet-stream'
             });
 

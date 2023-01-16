@@ -170,7 +170,7 @@ When you store `RxAttachment`s together with your document, they can also be cha
 You can do this by mutating the `oldDoc._attachments` property.
 
 ```js
-import { blobBufferUtil } from 'rxdb';
+import { createBlob } from 'rxdb';
 const migrationStrategies = {
       1: async function(oldDoc){
         // do nothing with _attachments to keep all attachments and have them in the new collection version.
@@ -183,7 +183,7 @@ const migrationStrategies = {
       }
       3: async function(oldDoc){
         // update the data field of a single attachment to change its data. 
-        oldDoc._attachments.myFile.data = await blobBufferUtil.createBlobBuffer(
+        oldDoc._attachments.myFile.data = await createBlob(
           'my new text',
           oldDoc._attachments.myFile.content_type
         );

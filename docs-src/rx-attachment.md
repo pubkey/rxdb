@@ -57,7 +57,7 @@ Adds an attachment to a `RxDocument`. Returns a Promise with the new attachment.
 const attachment = await myDocument.putAttachment(
     {
         id,     // (string) name of the attachment like 'cat.jpg'
-        data,   // (string|Blob|Buffer) data of the attachment
+        data,   // (string|Blob) data of the attachment
         type    // (string) type of the attachment-data like 'image/jpeg'
     }
 );
@@ -131,11 +131,11 @@ await attachment.remove();
 
 ## getData()
 
-Returns a Promise which resolves the attachment's data as `Blob` or `Buffer`. (async)
+Returns a Promise which resolves the attachment's data as `Blob`. (async)
 
 ```javascript
 const attachment = myDocument.getAttachment('cat.jpg');
-const blobBuffer = await attachment.getData();
+const blob = await attachment.getData();
 ```
 
 ## getStringData()

@@ -3,10 +3,9 @@ import * as path from 'path';
 import {
     BackupMetaFileContent,
     BackupOptions,
-    BlobBuffer,
     RxDatabase
 } from '../../types';
-import { blobBufferUtil, now } from '../../plugins/utils';
+import { blobToString, now } from '../../plugins/utils';
 
 /**
  * ensure that the given folder exists
@@ -62,10 +61,10 @@ export function prepareFolders(
 
 export async function writeToFile(
     location: string,
-    data: string | BlobBuffer
+    data: string | Blob
 ): Promise<void> {
     if (typeof data !== 'string') {
-        data = await blobBufferUtil.toString(data);
+        data = await blobToString(data);
     }
     return new Promise(function (res, rej) {
         fs.writeFile(
