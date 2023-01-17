@@ -6,8 +6,8 @@ export declare const DEXIE_CHANGES_TABLE_NAME = "changes";
 export declare const RX_STORAGE_NAME_DEXIE = "dexie";
 export declare const RxStorageDexieStatics: Readonly<{
     prepareQuery<RxDocType>(schema: RxJsonSchema<RxDocumentData<RxDocType>>, mutateableQuery: import("../../types").FilledMangoQuery<RxDocType>): any;
-    getSortComparator<RxDocType_1>(schema: RxJsonSchema<RxDocumentData<RxDocType_1>>, preparedQuery: any): import("event-reduce-js").DeterministicSortComparator<RxDocType_1>;
-    getQueryMatcher<RxDocType_2>(schema: RxJsonSchema<RxDocumentData<RxDocType_2>>, preparedQuery: any): import("event-reduce-js").QueryMatcher<RxDocumentData<RxDocType_2>>;
+    getSortComparator<RxDocType_1>(schema: RxJsonSchema<RxDocumentData<RxDocType_1>>, preparedQuery: any): import("../../types").DeterministicSortComparator<RxDocType_1>;
+    getQueryMatcher<RxDocType_2>(schema: RxJsonSchema<RxDocumentData<RxDocType_2>>, preparedQuery: any): import("../../types").QueryMatcher<RxDocumentData<RxDocType_2>>;
     checkpointSchema: import("../../types").DeepReadonlyObject<import("../../types").JsonSchema<any>>;
 }>;
 export declare function getDexieDbWithTables(databaseName: string, collectionName: string, settings: DexieSettings, schema: RxJsonSchema<any>): DexieStorageInternals;

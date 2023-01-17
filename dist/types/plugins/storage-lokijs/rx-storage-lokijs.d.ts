@@ -1,5 +1,4 @@
-import type { DeterministicSortComparator, QueryMatcher } from 'event-reduce-js';
-import type { FilledMangoQuery, LokiDatabaseSettings, LokiSettings, LokiStorageInternals, RxDocumentData, RxJsonSchema, RxStorage, RxStorageInstanceCreationParams, RxStorageStatics } from '../../types';
+import type { DeterministicSortComparator, FilledMangoQuery, LokiDatabaseSettings, LokiSettings, LokiStorageInternals, QueryMatcher, RxDocumentData, RxJsonSchema, RxStorage, RxStorageInstanceCreationParams, RxStorageStatics } from '../../types';
 import { RxStorageInstanceLoki } from './rx-storage-instance-loki';
 import type { LeaderElector } from 'broadcast-channel';
 export declare const RxStorageLokiStatics: RxStorageStatics;

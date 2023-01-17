@@ -100,3 +100,13 @@ export type RxTestStorage = {
 
 
 export type HashFunction = (input: string) => string;
+
+
+export declare type QueryMatcher<DocType> = (doc: DocType) => boolean;
+/**
+ * To have a deterministic sorting, we cannot return 0,
+ * we only return 1 or -1.
+ * This ensures that we always end with the same output array, no mather of the
+ * pre-sorting of the input array.
+ */
+export declare type DeterministicSortComparator<DocType> = (a: DocType, b: DocType) => 1 | -1;
