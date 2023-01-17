@@ -1,4 +1,3 @@
-import { QueryMatcher } from 'event-reduce-js';
 import {
     Observable,
     Subject
@@ -14,6 +13,7 @@ import {
 import type {
     BulkWriteRow,
     EventBulk,
+    QueryMatcher,
     RxConflictResultionTask,
     RxConflictResultionTaskSolution,
     RxDocumentData,

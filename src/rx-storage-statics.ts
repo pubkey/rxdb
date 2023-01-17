@@ -1,15 +1,13 @@
 import type {
-    DeterministicSortComparator,
-    QueryMatcher
-} from 'event-reduce-js';
-import type {
     RxDocumentData,
     RxJsonSchema,
     RxStorageStatics,
     FilledMangoQuery,
     MangoQuery,
     DefaultPreparedQuery,
-    MangoQuerySortDirection
+    MangoQuerySortDirection,
+    DeterministicSortComparator,
+    QueryMatcher
 } from './types';
 import { newRxError } from './rx-error';
 import { getQueryPlan } from './query-planner';

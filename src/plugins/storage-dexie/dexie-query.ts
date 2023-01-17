@@ -1,7 +1,7 @@
-import { QueryMatcher } from 'event-reduce-js';
 import { RxStorageDefaultStatics } from '../../rx-storage-statics';
 import type {
     DefaultPreparedQuery,
+    QueryMatcher,
     RxDocumentData,
     RxQueryPlan,
     RxStorageQueryResult

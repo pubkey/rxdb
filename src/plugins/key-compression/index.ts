@@ -3,10 +3,6 @@
  * if you dont use this, ensure that you set disableKeyComression to false in your schema
  */
 
-import type {
-    DeterministicSortComparator,
-    QueryMatcher
-} from 'event-reduce-js';
 import {
     createCompressionTable,
     CompressionTable,
@@ -34,7 +30,9 @@ import type {
     RxStorageStatics,
     FilledMangoQuery,
     PreparedQuery,
-    RxDocumentWriteData
+    RxDocumentWriteData,
+    DeterministicSortComparator,
+    QueryMatcher
 } from '../../types';
 import {
     flatClone,

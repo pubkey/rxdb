@@ -1,14 +1,12 @@
-import type {
-    DeterministicSortComparator,
-    QueryMatcher
-} from 'event-reduce-js';
 import lokijs from 'lokijs';
 import type {
+    DeterministicSortComparator,
     FilledMangoQuery,
     LokiDatabaseSettings,
     LokiSettings,
     LokiStorageInternals,
     MangoQuery,
+    QueryMatcher,
     RxDocumentData,
     RxDocumentWriteData,
     RxJsonSchema,

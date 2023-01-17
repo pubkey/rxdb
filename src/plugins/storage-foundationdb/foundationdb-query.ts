@@ -1,9 +1,9 @@
-import { QueryMatcher } from 'event-reduce-js';
 import {
     getStartIndexStringFromLowerBound,
     getStartIndexStringFromUpperBound
 } from '../../custom-index';
 import type {
+    QueryMatcher,
     RxDocumentData,
     RxStorageQueryResult
 } from '../../types';

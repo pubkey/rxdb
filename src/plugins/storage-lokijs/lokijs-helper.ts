@@ -1,6 +1,7 @@
 import { createLokiLocalState, RxStorageInstanceLoki } from './rx-storage-instance-loki';
 import lokijs, { Collection } from 'lokijs';
 import type {
+    DeterministicSortComparator,
     LokiDatabaseSettings,
     LokiDatabaseState,
     LokiLocalDatabaseState,
@@ -17,7 +18,6 @@ import {
 } from 'unload';
 import { ensureNotFalsy, flatClone, getProperty, promiseWait, randomCouchString } from '../utils';
 import { LokiSaveQueue } from './loki-save-queue';
-import type { DeterministicSortComparator } from 'event-reduce-js';
 import { newRxError } from '../../rx-error';
 import {
     LeaderElector,

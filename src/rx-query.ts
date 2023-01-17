@@ -41,11 +41,11 @@ import type {
     PreparedQuery,
     RxChangeEvent,
     RxDocumentWriteData,
-    RxDocumentData
+    RxDocumentData,
+    QueryMatcher
 } from './types';
 import { calculateNewResults } from './event-reduce';
 import { triggerCacheReplacement } from './query-cache';
-import type { QueryMatcher } from 'event-reduce-js';
 import { normalizeMangoQuery } from './rx-query-helper';
 
 let _queryCount = 0;
