@@ -967,7 +967,11 @@ export function averageSchema(): RxJsonSchema<AverageSchemaDocumentType> {
                 'var2',
                 'var1'
             ]
-        ]
+        ],
+        sharding: {
+            shards: 6,
+            mode: 'collection'
+        }
     };
     return ret;
 }
