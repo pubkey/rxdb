@@ -8961,10 +8961,10 @@ function fromByteArray (uint8) {
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.AbstractNode = void 0;
-var util_1 = require("./util");
-var find_similar_node_1 = require("./find-similar-node");
-var AbstractNode = /** @class */ (function () {
-    function AbstractNode(level, rootNode, type) {
+const util_1 = require("./util");
+const find_similar_node_1 = require("./find-similar-node");
+class AbstractNode {
+    constructor(level, rootNode, type) {
         this.level = level;
         this.id = (0, util_1.nextNodeId)();
         this.deleted = false;
@@ -8974,26 +8974,25 @@ var AbstractNode = /** @class */ (function () {
             this.rootNode.addNode(this);
         }
     }
-    AbstractNode.prototype.isEqualToOtherNode = function (otherNode, 
+    isEqualToOtherNode(otherNode, 
     // optimisation shortcut, is faster if own string already known
-    ownString) {
-        if (ownString === void 0) { ownString = this.toString(); }
-        var ret = ownString === otherNode.toString();
+    ownString = this.toString()) {
+        const ret = ownString === otherNode.toString();
         return ret;
-    };
+    }
     // deletes the whole node
-    AbstractNode.prototype.remove = function () {
+    remove() {
         this.ensureNotDeleted('remove');
         // console.log('AbstractNode().remove() node: ' + this.id);
         // console.log(this.toJSON(true));
         if (this.isInternalNode()) {
-            var useNode = this;
+            const useNode = this;
             if (useNode.parents.size > 0) {
                 throw new Error('cannot remove node with parents ' + this.id);
             }
         }
         if (this.branches) {
-            var useNode = this;
+            const useNode = this;
             if (useNode.branches.areBranchesStrictEqual()) {
                 useNode.branches.getBranch('0').parents.remove(useNode);
             }
@@ -9004,10 +9003,9 @@ var AbstractNode = /** @class */ (function () {
         }
         this.deleted = true;
         this.rootNode.removeNode(this);
-    };
-    AbstractNode.prototype.toJSON = function (withId) {
-        if (withId === void 0) { withId = false; }
-        var ret = {
+    }
+    toJSON(withId = false) {
+        const ret = {
             id: withId ? this.id : undefined,
             deleted: withId ? this.deleted : undefined,
             type: this.type,
@@ -9020,22 +9018,22 @@ var AbstractNode = /** @class */ (function () {
             ret.value = this.asLeafNode().value;
         }
         if (this.branches && !this.branches.deleted) {
-            var branches = this.branches;
+            const branches = this.branches;
             ret.branches = {
                 '0': branches.getBranch('0').toJSON(withId),
                 '1': branches.getBranch('1').toJSON(withId)
             };
         }
         return ret;
-    };
+    }
     // a strange string-representation
     // to make an equal check between nodes
-    AbstractNode.prototype.toString = function () {
-        var ret = '' +
+    toString() {
+        let ret = '' +
             '<' +
             this.type + ':' + this.level;
         if (this.branches) {
-            var branches = this.branches;
+            const branches = this.branches;
             ret += '|0:' + branches.getBranch('0');
             ret += '|1:' + branches.getBranch('1');
         }
@@ -9044,43 +9042,42 @@ var AbstractNode = /** @class */ (function () {
         }
         ret += '>';
         return ret;
-    };
-    AbstractNode.prototype.isRootNode = function () {
+    }
+    isRootNode() {
         return this.type === 'RootNode';
-    };
-    AbstractNode.prototype.isInternalNode = function () {
+    }
+    isInternalNode() {
         return this.type === 'InternalNode';
-    };
-    AbstractNode.prototype.isLeafNode = function () {
+    }
+    isLeafNode() {
         return this.type === 'LeafNode';
-    };
-    AbstractNode.prototype.asRootNode = function () {
+    }
+    asRootNode() {
         if (!this.isRootNode()) {
             throw new Error('ouch');
         }
         return this;
-    };
-    AbstractNode.prototype.asInternalNode = function () {
+    }
+    asInternalNode() {
         if (!this.isInternalNode()) {
             throw new Error('ouch');
         }
         return this;
-    };
-    AbstractNode.prototype.asLeafNode = function () {
+    }
+    asLeafNode() {
         if (!this.isLeafNode()) {
             throw new Error('ouch');
         }
         return this;
-    };
-    AbstractNode.prototype.ensureNotDeleted = function (op) {
-        if (op === void 0) { op = 'unknown'; }
+    }
+    ensureNotDeleted(op = 'unknown') {
         if (this.deleted) {
             throw new Error('forbidden operation ' + op + ' on deleted node ' + this.id);
         }
-    };
-    AbstractNode.prototype.log = function () {
+    }
+    log() {
         console.log(JSON.stringify(this.toJSON(true), null, 2));
-    };
+    }
     /**
  * by the elimination-rule of bdd,
  * if two branches of the same level are equal,
@@ -9089,35 +9086,34 @@ var AbstractNode = /** @class */ (function () {
  * See page 21 at:
  * @link https://people.eecs.berkeley.edu/~sseshia/219c/lectures/BinaryDecisionDiagrams.pdf
  */
-    AbstractNode.prototype.applyEliminationRule = function (
+    applyEliminationRule(
     // can be provided for better performance
     nodesOfSameLevel) {
-        var _this = this;
         this.ensureNotDeleted('applyEliminationRule');
         if (!nodesOfSameLevel) {
             nodesOfSameLevel = this.rootNode.getNodesOfLevel(this.level);
         }
-        var other = (0, find_similar_node_1.findSimilarNode)(this, nodesOfSameLevel);
+        const other = (0, find_similar_node_1.findSimilarNode)(this, nodesOfSameLevel);
         if (other) {
             // console.log('applyEliminationRule() remove:' + this.id + '; other: ' + other.id);
             // keep 'other', remove 'this'
             // move own parents to other
-            var ownParents = this.parents.getAll();
-            var parentsWithStrictEqualBranches_1 = [];
-            ownParents.forEach(function (parent) {
+            const ownParents = this.parents.getAll();
+            const parentsWithStrictEqualBranches = [];
+            ownParents.forEach((parent) => {
                 // console.log('ownParent: ' + parent.id);
-                var branchKey = parent.branches.getKeyOfNode(_this);
+                const branchKey = parent.branches.getKeyOfNode(this);
                 // console.log('branchKey: ' + branchKey);
                 parent.branches.setBranch(branchKey, other);
                 if (parent.branches.areBranchesStrictEqual()) {
-                    parentsWithStrictEqualBranches_1.push(parent);
+                    parentsWithStrictEqualBranches.push(parent);
                 }
                 // remove parents from own list
                 // this will auto-remove the connection to the other '1'-branch
-                _this.parents.remove(parent);
+                this.parents.remove(parent);
             });
             // parents that now have equal branches, must be removed again
-            parentsWithStrictEqualBranches_1.forEach(function (node) {
+            parentsWithStrictEqualBranches.forEach(node => {
                 if (node.isInternalNode()) {
                     // console.log('trigger applyReductionRule from applyEliminationRule');
                     node.applyReductionRule();
@@ -9128,9 +9124,8 @@ var AbstractNode = /** @class */ (function () {
         else {
             return false;
         }
-    };
-    return AbstractNode;
-}());
+    }
+}
 exports.AbstractNode = AbstractNode;
 
 },{"./find-similar-node":74,"./util":87}],70:[function(require,module,exports){
@@ -9140,22 +9135,22 @@ exports.ensureNodesNotStrictEqual = exports.Branches = void 0;
 /**
  * represents the branches of a single node
  */
-var Branches = /** @class */ (function () {
-    function Branches(node) {
+class Branches {
+    constructor(node) {
         this.node = node;
         this.deleted = false;
         this.branches = {};
     }
-    Branches.prototype.setBranch = function (which, branchNode) {
-        var previous = this.branches[which];
+    setBranch(which, branchNode) {
+        const previous = this.branches[which];
         if (previous === branchNode) {
             return;
         }
         // set new branch
         this.branches[which] = branchNode;
         branchNode.parents.add(this.node);
-    };
-    Branches.prototype.getKeyOfNode = function (node) {
+    }
+    getKeyOfNode(node) {
         if (this.getBranch('0') === node) {
             return '0';
         }
@@ -9165,17 +9160,17 @@ var Branches = /** @class */ (function () {
         else {
             throw new Error('none matched');
         }
-    };
-    Branches.prototype.getBranch = function (which) {
+    }
+    getBranch(which) {
         return this.branches[which];
-    };
-    Branches.prototype.getBothBranches = function () {
+    }
+    getBothBranches() {
         return [
             this.getBranch('0'),
             this.getBranch('1')
         ];
-    };
-    Branches.prototype.hasBranchAsNode = function (node) {
+    }
+    hasBranchAsNode(node) {
         if (this.getBranch('0') === node ||
             this.getBranch('1') === node) {
             return true;
@@ -9183,8 +9178,8 @@ var Branches = /** @class */ (function () {
         else {
             return false;
         }
-    };
-    Branches.prototype.hasNodeIdAsBranch = function (id) {
+    }
+    hasNodeIdAsBranch(id) {
         if (this.getBranch('0').id === id ||
             this.getBranch('1').id === id) {
             return true;
@@ -9192,16 +9187,15 @@ var Branches = /** @class */ (function () {
         else {
             return false;
         }
-    };
-    Branches.prototype.areBranchesStrictEqual = function () {
+    }
+    areBranchesStrictEqual() {
         return this.branches['0'] === this.branches['1'];
-    };
-    Branches.prototype.hasEqualBranches = function () {
+    }
+    hasEqualBranches() {
         return JSON.stringify(this.branches['0']) ===
             JSON.stringify(this.branches['1']);
-    };
-    return Branches;
-}());
+    }
+}
 exports.Branches = Branches;
 function ensureNodesNotStrictEqual(node1, node2) {
     if (node1 === node2) {
@@ -9212,76 +9206,38 @@ exports.ensureNodesNotStrictEqual = ensureNodesNotStrictEqual;
 
 },{}],71:[function(require,module,exports){
 "use strict";
-var __values = (this && this.__values) || function(o) {
-    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
-    if (m) return m.call(o);
-    if (o && typeof o.length === "number") return {
-        next: function () {
-            if (o && i >= o.length) o = void 0;
-            return { value: o && o[i++], done: !o };
-        }
-    };
-    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
-};
-var __read = (this && this.__read) || function (o, n) {
-    var m = typeof Symbol === "function" && o[Symbol.iterator];
-    if (!m) return o;
-    var i = m.call(o), r, ar = [], e;
-    try {
-        while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
-    }
-    catch (error) { e = { error: error }; }
-    finally {
-        try {
-            if (r && !r.done && (m = i["return"])) m.call(i);
-        }
-        finally { if (e) throw e.error; }
-    }
-    return ar;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createBddFromTruthTable = void 0;
-var root_node_1 = require("./root-node");
-var util_1 = require("./util");
-var internal_node_1 = require("./internal-node");
-var leaf_node_1 = require("./leaf-node");
+const root_node_1 = require("./root-node");
+const util_1 = require("./util");
+const internal_node_1 = require("./internal-node");
+const leaf_node_1 = require("./leaf-node");
 function createBddFromTruthTable(truthTable) {
-    var e_1, _a;
-    var root = new root_node_1.RootNode();
-    var firstKey = truthTable.keys().next().value;
-    var keyLength = firstKey.length;
-    var mustBeSize = Math.pow(2, keyLength);
+    const root = new root_node_1.RootNode();
+    const firstKey = truthTable.keys().next().value;
+    const keyLength = firstKey.length;
+    const mustBeSize = Math.pow(2, keyLength);
     if (truthTable.size !== mustBeSize) {
         throw new Error('truth table has missing entries');
     }
-    try {
-        for (var truthTable_1 = __values(truthTable), truthTable_1_1 = truthTable_1.next(); !truthTable_1_1.done; truthTable_1_1 = truthTable_1.next()) {
-            var _b = __read(truthTable_1_1.value, 2), stateSet = _b[0], value = _b[1];
-            var lastNode = root;
-            // itterate over each char of the state
-            for (var i = 0; i < (stateSet.length - 1); i++) {
-                var level = i + 1;
-                var state = stateSet.charAt(i);
-                // if node for this state-char not exists, add new one
-                if (!lastNode.branches.getBranch(state)) {
-                    lastNode.branches.setBranch(state, new internal_node_1.InternalNode(level, root, lastNode));
-                }
-                lastNode = lastNode.branches.getBranch(state);
+    for (const [stateSet, value] of truthTable) {
+        let lastNode = root;
+        // itterate over each char of the state
+        for (let i = 0; i < (stateSet.length - 1); i++) {
+            const level = i + 1;
+            const state = stateSet.charAt(i);
+            // if node for this state-char not exists, add new one
+            if (!lastNode.branches.getBranch(state)) {
+                lastNode.branches.setBranch(state, new internal_node_1.InternalNode(level, root, lastNode));
             }
-            // last node is leaf-node
-            var lastState = (0, util_1.lastChar)(stateSet);
-            if (lastNode.branches.getBranch(lastState)) {
-                throw new Error('leafNode already exists, this should not happen');
-            }
-            lastNode.branches.setBranch(lastState, new leaf_node_1.LeafNode(stateSet.length, root, value, lastNode));
+            lastNode = lastNode.branches.getBranch(state);
         }
-    }
-    catch (e_1_1) { e_1 = { error: e_1_1 }; }
-    finally {
-        try {
-            if (truthTable_1_1 && !truthTable_1_1.done && (_a = truthTable_1.return)) _a.call(truthTable_1);
+        // last node is leaf-node
+        const lastState = (0, util_1.lastChar)(stateSet);
+        if (lastNode.branches.getBranch(lastState)) {
+            throw new Error('leafNode already exists, this should not happen');
         }
-        finally { if (e_1) throw e_1.error; }
+        lastNode.branches.setBranch(lastState, new leaf_node_1.LeafNode(stateSet.length, root, value, lastNode));
     }
     return root;
 }
@@ -9296,28 +9252,28 @@ exports.getNodesRecursive = exports.ensureCorrectBdd = void 0;
  * to ensure everything is correct
  */
 function ensureCorrectBdd(bdd) {
-    var jsonString = JSON.stringify(bdd.toJSON(true));
-    var allNodes = [];
-    var nodesById = new Map();
-    bdd.getLevels().forEach(function (level) {
-        var levelNodes = bdd.getNodesOfLevel(level);
-        levelNodes.forEach(function (node) {
+    const jsonString = JSON.stringify(bdd.toJSON(true));
+    let allNodes = [];
+    const nodesById = new Map();
+    bdd.getLevels().forEach(level => {
+        const levelNodes = bdd.getNodesOfLevel(level);
+        levelNodes.forEach(node => {
             nodesById.set(node.id, node);
         });
         allNodes = allNodes.concat(levelNodes);
     });
-    var recursiveNodes = getNodesRecursive(bdd);
+    const recursiveNodes = getNodesRecursive(bdd);
     if (allNodes.length !== recursiveNodes.size) {
-        var allNodesIds_1 = allNodes.map(function (n) { return n.id; }).sort();
-        var recursiveNodesIds = Array.from(recursiveNodes).map(function (n) { return n.id; }).sort();
-        var nodesOnlyInRecursive = recursiveNodesIds.filter(function (id) { return !allNodesIds_1.includes(id); });
+        const allNodesIds = allNodes.map(n => n.id).sort();
+        const recursiveNodesIds = Array.from(recursiveNodes).map(n => n.id).sort();
+        const nodesOnlyInRecursive = recursiveNodesIds.filter(id => !allNodesIds.includes(id));
         //        console.log(JSON.stringify(allNodes.map(n => n.id).sort(), null, 2));
         //      console.log(JSON.stringify(Array.from(recursiveNodes).map(n => n.id).sort(), null, 2));
         if (recursiveNodes.size > allNodes.length) {
-            var firstId_1 = nodesOnlyInRecursive[0];
-            var referenceToFirst = allNodes.find(function (n) {
+            const firstId = nodesOnlyInRecursive[0];
+            const referenceToFirst = allNodes.find(n => {
                 if (n.isInternalNode()) {
-                    return n.branches.hasNodeIdAsBranch(firstId_1);
+                    return n.branches.hasNodeIdAsBranch(firstId);
                 }
                 return false;
             });
@@ -9330,11 +9286,11 @@ function ensureCorrectBdd(bdd) {
             'recursiveNodes: ' + recursiveNodes.size + ' ' +
             'nodesOnlyInRecursive: ' + nodesOnlyInRecursive.join(', ') + ' ');
     }
-    allNodes.forEach(function (node) {
+    allNodes.forEach(node => {
         if (node.isRootNode()) {
             return;
         }
-        var useNode = node;
+        const useNode = node;
         if (node.deleted) {
             throw new Error('ensureCorrectBdd() ' +
                 'bdd includes a deleted node');
@@ -9345,24 +9301,24 @@ function ensureCorrectBdd(bdd) {
                 'node has no parent ' + useNode.id);
         }
         if (useNode.isInternalNode()) {
-            var internalNode_1 = useNode;
-            var bothBranches = internalNode_1.branches.getBothBranches();
+            const internalNode = useNode;
+            const bothBranches = internalNode.branches.getBothBranches();
             // a node should not have 2 equal branches
-            if (internalNode_1.branches.areBranchesStrictEqual()) {
+            if (internalNode.branches.areBranchesStrictEqual()) {
                 throw new Error('ensureCorrectBdd() ' +
                     'node has two equal branches: ' +
-                    bothBranches.map(function (n) { return n.id; }).join(', '));
+                    bothBranches.map(n => n.id).join(', '));
             }
             // each branch should have the node as parent
-            bothBranches.forEach(function (branch) {
-                if (!branch.parents.has(internalNode_1)) {
+            bothBranches.forEach(branch => {
+                if (!branch.parents.has(internalNode)) {
                     throw new Error('ensureCorrectBdd() ' +
                         'branch must have the node as parent');
                 }
             });
         }
         // each parent should have the child as branch
-        useNode.parents.getAll().forEach(function (parent) {
+        useNode.parents.getAll().forEach(parent => {
             if (!parent.branches.hasBranchAsNode(useNode)) {
                 throw new Error('ensureCorrectBdd() ' +
                     'parent node does not have child as branch');
@@ -9375,15 +9331,14 @@ function ensureCorrectBdd(bdd) {
     }
 }
 exports.ensureCorrectBdd = ensureCorrectBdd;
-function getNodesRecursive(node, set) {
-    if (set === void 0) { set = new Set(); }
+function getNodesRecursive(node, set = new Set()) {
     set.add(node);
     if (!node.isLeafNode()) {
-        var useNode = node;
-        var branch1 = useNode.branches.getBranch('0');
+        const useNode = node;
+        const branch1 = useNode.branches.getBranch('0');
         set.add(branch1);
         getNodesRecursive(branch1, set);
-        var branch2 = useNode.branches.getBranch('1');
+        const branch2 = useNode.branches.getBranch('1');
         set.add(branch2);
         getNodesRecursive(branch2, set);
     }
@@ -9395,15 +9350,15 @@ exports.getNodesRecursive = getNodesRecursive;
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.fillTruthTable = void 0;
-var util_1 = require("./util");
+const util_1 = require("./util");
 /**
  * fills each missing row of a table
  * with the given value
  */
 function fillTruthTable(truthTable, inputLength, value) {
-    var endInput = (0, util_1.maxBinaryWithLength)(inputLength);
-    var currentInput = (0, util_1.minBinaryWithLength)(inputLength);
-    var done = false;
+    const endInput = (0, util_1.maxBinaryWithLength)(inputLength);
+    let currentInput = (0, util_1.minBinaryWithLength)(inputLength);
+    let done = false;
     while (!done) {
         if (!truthTable.has(currentInput)) {
             truthTable.set(currentInput, value);
@@ -9428,9 +9383,9 @@ exports.findSimilarNode = void 0;
  * @hotpath
  */
 function findSimilarNode(own, others) {
-    var ownString = own.toString();
-    for (var i = 0; i < others.length; i++) {
-        var other = others[i];
+    const ownString = own.toString();
+    for (let i = 0; i < others.length; i++) {
+        const other = others[i];
         if (own !== other &&
             !other.deleted &&
             own.isEqualToOtherNode(other, ownString)) {
@@ -9445,7 +9400,11 @@ exports.findSimilarNode = findSimilarNode;
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -9470,55 +9429,37 @@ __exportStar(require("./util"), exports);
 
 },{"./abstract-node":69,"./branches":70,"./create-bdd-from-truth-table":71,"./ensure-correct-bdd":72,"./fill-truth-table":73,"./find-similar-node":74,"./internal-node":76,"./leaf-node":77,"./minimal-string/index":80,"./optimize-brute-force":84,"./parents":85,"./root-node":86,"./util":87}],76:[function(require,module,exports){
 "use strict";
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        if (typeof b !== "function" && b !== null)
-            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.InternalNode = void 0;
-var branches_1 = require("./branches");
-var parents_1 = require("./parents");
-var abstract_node_1 = require("./abstract-node");
-var InternalNode = /** @class */ (function (_super) {
-    __extends(InternalNode, _super);
-    function InternalNode(level, rootNode, parent) {
-        var _this = _super.call(this, level, rootNode, 'InternalNode') || this;
-        _this.branches = new branches_1.Branches(_this);
-        _this.parents = new parents_1.Parents(_this);
-        _this.parents.add(parent);
-        return _this;
+const branches_1 = require("./branches");
+const parents_1 = require("./parents");
+const abstract_node_1 = require("./abstract-node");
+class InternalNode extends abstract_node_1.AbstractNode {
+    constructor(level, rootNode, parent) {
+        super(level, rootNode, 'InternalNode');
+        this.branches = new branches_1.Branches(this);
+        this.parents = new parents_1.Parents(this);
+        this.parents.add(parent);
     }
     /**
      * by the reduction-rule of bdd,
      * if both branches are equal,
      * we can remove this node from the bdd
      */
-    InternalNode.prototype.applyReductionRule = function () {
+    applyReductionRule() {
         // console.log('applyReductionRule() ' + this.id);
-        var _this = this;
         if (this.branches.hasEqualBranches()) {
             this.ensureNotDeleted('applyReductionRule');
-            var keepBranch_1 = this.branches.getBranch('0');
+            const keepBranch = this.branches.getBranch('0');
             // move own parents to keepBranch
-            var ownParents = this.parents.getAll();
-            ownParents.forEach(function (parent) {
+            const ownParents = this.parents.getAll();
+            ownParents.forEach(parent => {
                 // console.log('ownParent: ' + parent.id);
-                var branchKey = parent.branches.getKeyOfNode(_this);
-                parent.branches.setBranch(branchKey, keepBranch_1);
+                const branchKey = parent.branches.getKeyOfNode(this);
+                parent.branches.setBranch(branchKey, keepBranch);
                 // remove parents from own list
                 // this will auto-remove the connection to the other '1'-branch
-                _this.parents.remove(parent);
+                this.parents.remove(parent);
                 // if parent has now two equal branches,
                 // we have to apply the reduction again
                 // to ensure we end in a valid state
@@ -9529,85 +9470,65 @@ var InternalNode = /** @class */ (function (_super) {
             return true;
         }
         return false;
-    };
-    return InternalNode;
-}(abstract_node_1.AbstractNode));
+    }
+}
 exports.InternalNode = InternalNode;
 
 },{"./abstract-node":69,"./branches":70,"./parents":85}],77:[function(require,module,exports){
 "use strict";
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        if (typeof b !== "function" && b !== null)
-            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.LeafNode = void 0;
-var parents_1 = require("./parents");
-var abstract_node_1 = require("./abstract-node");
-var util_1 = require("./util");
-var LeafNode = /** @class */ (function (_super) {
-    __extends(LeafNode, _super);
-    function LeafNode(level, rootNode, value, parent) {
-        var _this = _super.call(this, level, rootNode, 'LeafNode') || this;
-        _this.value = value;
-        _this.parents = new parents_1.Parents(_this);
-        _this.parents.add(parent);
-        return _this;
+const parents_1 = require("./parents");
+const abstract_node_1 = require("./abstract-node");
+const util_1 = require("./util");
+class LeafNode extends abstract_node_1.AbstractNode {
+    constructor(level, rootNode, value, parent) {
+        super(level, rootNode, 'LeafNode');
+        this.value = value;
+        this.parents = new parents_1.Parents(this);
+        this.parents.add(parent);
     }
-    LeafNode.prototype.removeIfValueEquals = function (value) {
-        var _this = this;
+    removeIfValueEquals(value) {
         this.ensureNotDeleted();
         if (this.value !== value) {
             return false;
         }
-        var parents = this.parents.getAll();
-        parents.forEach(function (parent) {
-            var branchKey = parent.branches.getKeyOfNode(_this);
-            var otherBranch = parent.branches.getBranch((0, util_1.oppositeBoolean)(branchKey));
-            _this.parents.remove(parent);
+        const parents = this.parents.getAll();
+        parents.forEach(parent => {
+            const branchKey = parent.branches.getKeyOfNode(this);
+            const otherBranch = parent.branches.getBranch((0, util_1.oppositeBoolean)(branchKey));
+            this.parents.remove(parent);
             parent.branches.setBranch(branchKey, otherBranch);
             if (parent.isInternalNode()) {
                 parent.applyReductionRule();
             }
         });
         return true;
-    };
-    return LeafNode;
-}(abstract_node_1.AbstractNode));
+    }
+}
 exports.LeafNode = LeafNode;
 
 },{"./abstract-node":69,"./parents":85,"./util":87}],78:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.nodeToString = exports.bddToMinimalString = void 0;
-var string_format_1 = require("./string-format");
-var string_format_2 = require("./string-format");
+const string_format_1 = require("./string-format");
+const string_format_2 = require("./string-format");
 function bddToMinimalString(bdd) {
-    var ret = '';
-    var currentCharCode = string_format_2.FIRST_CHAR_CODE_FOR_ID;
+    let ret = '';
+    let currentCharCode = string_format_2.FIRST_CHAR_CODE_FOR_ID;
     // add leaf node count
-    var leafNodeAmount = bdd.getLeafNodes().length;
+    const leafNodeAmount = bdd.getLeafNodes().length;
     if (leafNodeAmount > 99) {
         throw new Error('cannot build string with too many leaf nodes');
     }
     ret += leafNodeAmount.toString().padStart(2, '0');
-    var levelsHighestFirst = bdd.levels.slice().reverse();
-    var idByNode = new Map();
-    levelsHighestFirst.forEach(function (level) {
-        var nodes = bdd.getNodesOfLevel(level);
-        nodes.forEach(function (node) {
-            var stringRep = nodeToString(node, idByNode, currentCharCode);
+    const levelsHighestFirst = bdd.levels.slice().reverse();
+    const idByNode = new Map();
+    levelsHighestFirst.forEach(level => {
+        const nodes = bdd.getNodesOfLevel(level);
+        nodes.forEach(node => {
+            const stringRep = nodeToString(node, idByNode, currentCharCode);
             currentCharCode = stringRep.nextCode;
             idByNode.set(node, stringRep.id);
             ret += stringRep.str;
@@ -9617,26 +9538,26 @@ function bddToMinimalString(bdd) {
 }
 exports.bddToMinimalString = bddToMinimalString;
 function nodeToString(node, idByNode, lastCode) {
-    var nextId = (0, string_format_1.getNextCharId)(lastCode);
+    const nextId = (0, string_format_1.getNextCharId)(lastCode);
     switch (node.type) {
         case 'LeafNode':
-            var valueChar = (0, string_format_1.getCharOfValue)(node.asLeafNode().value);
+            const valueChar = (0, string_format_1.getCharOfValue)(node.asLeafNode().value);
             return {
                 id: nextId.char,
                 nextCode: nextId.nextCode,
                 str: nextId.char + valueChar
             };
         case 'InternalNode':
-            var branch0Id = idByNode.get(node.asInternalNode().branches.getBranch('0'));
-            var branch1Id = idByNode.get(node.asInternalNode().branches.getBranch('1'));
+            const branch0Id = idByNode.get(node.asInternalNode().branches.getBranch('0'));
+            const branch1Id = idByNode.get(node.asInternalNode().branches.getBranch('1'));
             return {
                 id: nextId.char,
                 nextCode: nextId.nextCode,
                 str: nextId.char + branch0Id + branch1Id + (0, string_format_1.getCharOfLevel)(node.level)
             };
         case 'RootNode':
-            var branch0IdRoot = idByNode.get(node.asRootNode().branches.getBranch('0'));
-            var branch1IdRoot = idByNode.get(node.asRootNode().branches.getBranch('1'));
+            const branch0IdRoot = idByNode.get(node.asRootNode().branches.getBranch('0'));
+            const branch1IdRoot = idByNode.get(node.asRootNode().branches.getBranch('1'));
             return {
                 id: nextId.char,
                 nextCode: nextId.nextCode,
@@ -9663,8 +9584,8 @@ exports.bddToSimpleBdd = bddToSimpleBdd;
  * @recursive
  */
 function nodeToSimpleBddNode(node) {
-    var branch0 = node.branches.getBranch('0');
-    var branch1 = node.branches.getBranch('1');
+    const branch0 = node.branches.getBranch('0');
+    const branch1 = node.branches.getBranch('1');
     return {
         l: node.level,
         0: branch0.isLeafNode() ? branch0.asLeafNode().value : nodeToSimpleBddNode(branch0),
@@ -9677,7 +9598,11 @@ exports.nodeToSimpleBddNode = nodeToSimpleBddNode;
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
-    Object.defineProperty(o, k2, { enumerable: true, get: function() { return m[k]; } });
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
 }) : (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
     o[k2] = m[k];
@@ -9696,39 +9621,39 @@ __exportStar(require("./bdd-to-simple-bdd"), exports);
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.minimalStringToSimpleBdd = void 0;
-var util_1 = require("../util");
-var string_format_1 = require("./string-format");
+const util_1 = require("../util");
+const string_format_1 = require("./string-format");
 function minimalStringToSimpleBdd(str) {
-    var nodesById = new Map();
+    const nodesById = new Map();
     // parse leaf nodes
-    var leafNodeAmount = parseInt(str.charAt(0) + str.charAt(1), 10);
-    var lastLeafNodeChar = (2 + leafNodeAmount * 2);
-    var leafNodeChars = str.substring(2, lastLeafNodeChar);
-    var leafNodeChunks = (0, util_1.splitStringToChunks)(leafNodeChars, 2);
-    for (var i = 0; i < leafNodeChunks.length; i++) {
-        var chunk = leafNodeChunks[i];
-        var id = chunk.charAt(0);
-        var value = (0, string_format_1.getNumberOfChar)(chunk.charAt(1));
+    const leafNodeAmount = parseInt(str.charAt(0) + str.charAt(1), 10);
+    const lastLeafNodeChar = (2 + leafNodeAmount * 2);
+    const leafNodeChars = str.substring(2, lastLeafNodeChar);
+    const leafNodeChunks = (0, util_1.splitStringToChunks)(leafNodeChars, 2);
+    for (let i = 0; i < leafNodeChunks.length; i++) {
+        const chunk = leafNodeChunks[i];
+        const id = chunk.charAt(0);
+        const value = (0, string_format_1.getNumberOfChar)(chunk.charAt(1));
         nodesById.set(id, value);
     }
     // parse internal nodes
-    var internalNodeChars = str.substring(lastLeafNodeChar, str.length - 3);
-    var internalNodeChunks = (0, util_1.splitStringToChunks)(internalNodeChars, 4);
-    for (var i = 0; i < internalNodeChunks.length; i++) {
-        var chunk = internalNodeChunks[i];
-        var id = chunk.charAt(0);
-        var idOf0Branch = chunk.charAt(1);
-        var idOf1Branch = chunk.charAt(2);
-        var level = (0, string_format_1.getNumberOfChar)(chunk.charAt(3));
+    const internalNodeChars = str.substring(lastLeafNodeChar, str.length - 3);
+    const internalNodeChunks = (0, util_1.splitStringToChunks)(internalNodeChars, 4);
+    for (let i = 0; i < internalNodeChunks.length; i++) {
+        const chunk = internalNodeChunks[i];
+        const id = chunk.charAt(0);
+        const idOf0Branch = chunk.charAt(1);
+        const idOf1Branch = chunk.charAt(2);
+        const level = (0, string_format_1.getNumberOfChar)(chunk.charAt(3));
         if (!nodesById.has(idOf0Branch)) {
             throw new Error('missing node with id ' + idOf0Branch);
         }
         if (!nodesById.has(idOf1Branch)) {
             throw new Error('missing node with id ' + idOf1Branch);
         }
-        var node0 = nodesById.get(idOf0Branch);
-        var node1 = nodesById.get(idOf1Branch);
-        var node = {
+        const node0 = nodesById.get(idOf0Branch);
+        const node1 = nodesById.get(idOf1Branch);
+        const node = {
             l: level,
             0: node0,
             1: node1
@@ -9736,13 +9661,13 @@ function minimalStringToSimpleBdd(str) {
         nodesById.set(id, node);
     }
     // parse root node
-    var last3 = str.slice(-3);
-    var idOf0 = last3.charAt(0);
-    var idOf1 = last3.charAt(1);
-    var levelOfRoot = (0, string_format_1.getNumberOfChar)(last3.charAt(2));
-    var nodeOf0 = nodesById.get(idOf0);
-    var nodeOf1 = nodesById.get(idOf1);
-    var rootNode = {
+    const last3 = str.slice(-3);
+    const idOf0 = last3.charAt(0);
+    const idOf1 = last3.charAt(1);
+    const levelOfRoot = (0, string_format_1.getNumberOfChar)(last3.charAt(2));
+    const nodeOf0 = nodesById.get(idOf0);
+    const nodeOf1 = nodesById.get(idOf1);
+    const rootNode = {
         l: levelOfRoot,
         0: nodeOf0,
         1: nodeOf1,
@@ -9755,13 +9680,13 @@ exports.minimalStringToSimpleBdd = minimalStringToSimpleBdd;
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.resolveWithSimpleBdd = void 0;
-var util_1 = require("../util");
+const util_1 = require("../util");
 function resolveWithSimpleBdd(simpleBdd, fns, input) {
-    var currentNode = simpleBdd;
-    var currentLevel = simpleBdd.l;
+    let currentNode = simpleBdd;
+    let currentLevel = simpleBdd.l;
     while (true) {
-        var booleanResult = fns[currentLevel](input);
-        var branchKey = (0, util_1.booleanToBooleanString)(booleanResult);
+        const booleanResult = fns[currentLevel](input);
+        const branchKey = (0, util_1.booleanToBooleanString)(booleanResult);
         currentNode = currentNode[branchKey];
         if (typeof currentNode === 'number' || typeof currentNode === 'string') {
             return currentNode;
@@ -9807,17 +9732,17 @@ Rules for the string:
 // we use this because 39 is the quotes which causes problems
 exports.CHAR_CODE_OFFSET = 40; // String.fromCharCode(33) === ')'
 function getCharOfLevel(level) {
-    var charCode = exports.CHAR_CODE_OFFSET + level;
+    const charCode = exports.CHAR_CODE_OFFSET + level;
     return String.fromCharCode(charCode);
 }
 exports.getCharOfLevel = getCharOfLevel;
 function getNumberOfChar(char) {
-    var charCode = char.charCodeAt(0);
+    const charCode = char.charCodeAt(0);
     return charCode - exports.CHAR_CODE_OFFSET;
 }
 exports.getNumberOfChar = getNumberOfChar;
 function getCharOfValue(value) {
-    var charCode = exports.CHAR_CODE_OFFSET + value;
+    const charCode = exports.CHAR_CODE_OFFSET + value;
     return String.fromCharCode(charCode);
 }
 exports.getCharOfValue = getCharOfValue;
@@ -9827,9 +9752,9 @@ function getNextCharId(lastCode) {
     if (lastCode >= 128 && lastCode <= 160) {
         lastCode = 161;
     }
-    var char = String.fromCharCode(lastCode);
+    const char = String.fromCharCode(lastCode);
     return {
-        char: char,
+        char,
         nextCode: lastCode + 1
     };
 }
@@ -9837,77 +9762,14 @@ exports.getNextCharId = getNextCharId;
 
 },{}],84:[function(require,module,exports){
 "use strict";
-var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
-    function adopt(value) { return value instanceof P ? value : new P(function (resolve) { resolve(value); }); }
-    return new (P || (P = Promise))(function (resolve, reject) {
-        function fulfilled(value) { try { step(generator.next(value)); } catch (e) { reject(e); } }
-        function rejected(value) { try { step(generator["throw"](value)); } catch (e) { reject(e); } }
-        function step(result) { result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected); }
-        step((generator = generator.apply(thisArg, _arguments || [])).next());
-    });
-};
-var __generator = (this && this.__generator) || function (thisArg, body) {
-    var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
-    return g = { next: verb(0), "throw": verb(1), "return": verb(2) }, typeof Symbol === "function" && (g[Symbol.iterator] = function() { return this; }), g;
-    function verb(n) { return function (v) { return step([n, v]); }; }
-    function step(op) {
-        if (f) throw new TypeError("Generator is already executing.");
-        while (_) try {
-            if (f = 1, y && (t = op[0] & 2 ? y["return"] : op[0] ? y["throw"] || ((t = y["return"]) && t.call(y), 0) : y.next) && !(t = t.call(y, op[1])).done) return t;
-            if (y = 0, t) op = [op[0] & 2, t.value];
-            switch (op[0]) {
-                case 0: case 1: t = op; break;
-                case 4: _.label++; return { value: op[1], done: false };
-                case 5: _.label++; y = op[1]; op = [0]; continue;
-                case 7: op = _.ops.pop(); _.trys.pop(); continue;
-                default:
-                    if (!(t = _.trys, t = t.length > 0 && t[t.length - 1]) && (op[0] === 6 || op[0] === 2)) { _ = 0; continue; }
-                    if (op[0] === 3 && (!t || (op[1] > t[0] && op[1] < t[3]))) { _.label = op[1]; break; }
-                    if (op[0] === 6 && _.label < t[1]) { _.label = t[1]; t = op; break; }
-                    if (t && _.label < t[2]) { _.label = t[2]; _.ops.push(op); break; }
-                    if (t[2]) _.ops.pop();
-                    _.trys.pop(); continue;
-            }
-            op = body.call(thisArg, _);
-        } catch (e) { op = [6, e]; y = 0; } finally { f = t = 0; }
-        if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
-    }
-};
-var __values = (this && this.__values) || function(o) {
-    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
-    if (m) return m.call(o);
-    if (o && typeof o.length === "number") return {
-        next: function () {
-            if (o && i >= o.length) o = void 0;
-            return { value: o && o[i++], done: !o };
-        }
-    };
-    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
-};
-var __read = (this && this.__read) || function (o, n) {
-    var m = typeof Symbol === "function" && o[Symbol.iterator];
-    if (!m) return o;
-    var i = m.call(o), r, ar = [], e;
-    try {
-        while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
-    }
-    catch (error) { e = { error: error }; }
-    finally {
-        try {
-            if (r && !r.done && (m = i["return"])) m.call(i);
-        }
-        finally { if (e) throw e.error; }
-    }
-    return ar;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getArrayWithIndexes = exports.changeKeyOrder = exports.shuffleBooleanOrdering = exports.optimizeBruteForce = exports.defaultCompareResults = void 0;
-var create_bdd_from_truth_table_1 = require("./create-bdd-from-truth-table");
-var util_1 = require("./util");
+const create_bdd_from_truth_table_1 = require("./create-bdd-from-truth-table");
+const util_1 = require("./util");
 /**
  * returns the bdd with less nodes
  */
-var defaultCompareResults = function (a, b) {
+const defaultCompareResults = function (a, b) {
     if (a.countNodes() <= b.countNodes()) {
         return a;
     }
@@ -9921,151 +9783,116 @@ exports.defaultCompareResults = defaultCompareResults;
  * by randomly sorting the array
  * and checking the resulting bdd
  */
-function optimizeBruteForce(_a) {
-    var truthTable = _a.truthTable, _b = _a.iterations, iterations = _b === void 0 ? Infinity : _b, _c = _a.onBetterBdd, onBetterBdd = _c === void 0 ? function () { return null; } : _c, _d = _a.compareResults, compareResults = _d === void 0 ? exports.defaultCompareResults : _d, _e = _a.afterBddCreation, afterBddCreation = _e === void 0 ? function () { return null; } : _e, _f = _a.log, log = _f === void 0 ? false : _f;
-    return __awaiter(this, void 0, void 0, function () {
-        var initialBdd, currentBestResult, t, _loop_1;
-        return __generator(this, function (_g) {
-            switch (_g.label) {
-                case 0:
-                    initialBdd = (0, create_bdd_from_truth_table_1.createBddFromTruthTable)(truthTable);
-                    afterBddCreation(initialBdd);
-                    initialBdd.minimize();
-                    currentBestResult = {
-                        truthTable: truthTable,
-                        bdd: initialBdd
-                    };
-                    if (log) {
-                        initialBdd.log();
-                        console.log('initial nodes amount: ' + initialBdd.countNodes());
-                    }
-                    t = 0;
-                    _loop_1 = function () {
-                        var shuffledOrdering, nextBdd, newNodesByLevel, lastLevel, newSortedLevels, lastLevelSet, betterBdd;
-                        return __generator(this, function (_h) {
-                            switch (_h.label) {
-                                case 0:
-                                    t++;
-                                    if (log) {
-                                        console.log('-'.repeat(50));
-                                        console.log('optimizeBruteForce() itterate once');
-                                    }
-                                    shuffledOrdering = shuffleBooleanOrdering(truthTable);
-                                    nextBdd = (0, create_bdd_from_truth_table_1.createBddFromTruthTable)(shuffledOrdering.newTable);
-                                    newNodesByLevel = new Map();
-                                    lastLevel = (0, util_1.lastOfArray)(nextBdd.getLevels());
-                                    newSortedLevels = [];
-                                    nextBdd.getLevels()
-                                        .filter(function (level) { return level !== lastLevel; })
-                                        .forEach(function (level) {
-                                        var newLevel = shuffledOrdering.mappingBeforeToAfter[level];
-                                        newSortedLevels.push(newLevel);
-                                        var levelSet = new Set();
-                                        newNodesByLevel.set(newLevel, levelSet);
-                                        nextBdd.getNodesOfLevel(level).forEach(function (node) {
-                                            node.level = newLevel;
-                                            levelSet.add(node);
-                                        });
-                                    });
-                                    lastLevelSet = new Set();
-                                    nextBdd.getNodesOfLevel(lastLevel).forEach(function (node) { return lastLevelSet.add(node); });
-                                    newNodesByLevel.set(lastLevel, lastLevelSet);
-                                    newSortedLevels.push(lastLevel);
-                                    nextBdd.nodesByLevel = newNodesByLevel;
-                                    nextBdd.levels = newSortedLevels;
-                                    afterBddCreation(nextBdd);
-                                    nextBdd.minimize();
-                                    if (log) {
-                                        console.log('got new bdd with nodes amount of ' + nextBdd.countNodes());
-                                        //            nextBdd.log();
-                                        console.dir(shuffledOrdering.mappingBeforeToAfter);
-                                    }
-                                    return [4 /*yield*/, compareResults(currentBestResult.bdd, nextBdd)];
-                                case 1:
-                                    betterBdd = _h.sent();
-                                    if (betterBdd.type !== 'RootNode') {
-                                        throw new Error('compareResults did not return a bdd');
-                                    }
-                                    if (betterBdd === nextBdd) {
-                                        if (log) {
-                                            console.log('#'.repeat(50));
-                                            console.log('found better bdd ' + nextBdd.countNodes());
-                                        }
-                                        currentBestResult = {
-                                            bdd: nextBdd,
-                                            truthTable: shuffledOrdering.newTable
-                                        };
-                                        onBetterBdd(currentBestResult);
-                                    }
-                                    return [2 /*return*/];
-                            }
-                        });
-                    };
-                    _g.label = 1;
-                case 1:
-                    if (!(t < iterations)) return [3 /*break*/, 3];
-                    return [5 /*yield**/, _loop_1()];
-                case 2:
-                    _g.sent();
-                    return [3 /*break*/, 1];
-                case 3: return [2 /*return*/, currentBestResult];
-            }
+async function optimizeBruteForce({ truthTable, iterations = Infinity, onBetterBdd = () => null, compareResults = exports.defaultCompareResults, afterBddCreation = () => null, log = false }) {
+    const initialBdd = (0, create_bdd_from_truth_table_1.createBddFromTruthTable)(truthTable);
+    afterBddCreation(initialBdd);
+    initialBdd.minimize();
+    let currentBestResult = {
+        truthTable,
+        bdd: initialBdd
+    };
+    if (log) {
+        initialBdd.log();
+        console.log('initial nodes amount: ' + initialBdd.countNodes());
+    }
+    let t = 0;
+    while (t < iterations) {
+        t++;
+        if (log) {
+            console.log('-'.repeat(50));
+            console.log('optimizeBruteForce() itterate once');
+        }
+        const shuffledOrdering = shuffleBooleanOrdering(truthTable);
+        const nextBdd = (0, create_bdd_from_truth_table_1.createBddFromTruthTable)(shuffledOrdering.newTable);
+        // change the levels of each node
+        const newNodesByLevel = new Map();
+        const lastLevel = (0, util_1.lastOfArray)(nextBdd.getLevels());
+        const newSortedLevels = [];
+        nextBdd.getLevels()
+            .filter(level => level !== lastLevel)
+            .forEach(level => {
+            const newLevel = shuffledOrdering.mappingBeforeToAfter[level];
+            newSortedLevels.push(newLevel);
+            const levelSet = new Set();
+            newNodesByLevel.set(newLevel, levelSet);
+            nextBdd.getNodesOfLevel(level).forEach(node => {
+                node.level = newLevel;
+                levelSet.add(node);
+            });
         });
-    });
+        const lastLevelSet = new Set();
+        nextBdd.getNodesOfLevel(lastLevel).forEach(node => lastLevelSet.add(node));
+        newNodesByLevel.set(lastLevel, lastLevelSet);
+        newSortedLevels.push(lastLevel);
+        nextBdd.nodesByLevel = newNodesByLevel;
+        nextBdd.levels = newSortedLevels;
+        afterBddCreation(nextBdd);
+        nextBdd.minimize();
+        if (log) {
+            console.log('got new bdd with nodes amount of ' + nextBdd.countNodes());
+            //            nextBdd.log();
+            console.dir(shuffledOrdering.mappingBeforeToAfter);
+        }
+        const betterBdd = await compareResults(currentBestResult.bdd, nextBdd);
+        if (betterBdd.type !== 'RootNode') {
+            throw new Error('compareResults did not return a bdd');
+        }
+        if (betterBdd === nextBdd) {
+            if (log) {
+                console.log('#'.repeat(50));
+                console.log('found better bdd ' + nextBdd.countNodes());
+            }
+            currentBestResult = {
+                bdd: nextBdd,
+                truthTable: shuffledOrdering.newTable
+            };
+            onBetterBdd(currentBestResult);
+        }
+    }
+    return currentBestResult;
 }
 exports.optimizeBruteForce = optimizeBruteForce;
 function shuffleBooleanOrdering(truthTable) {
-    var e_1, _a;
-    var firstKey = (0, util_1.firstKeyOfMap)(truthTable);
-    var arrayWithIndexes = getArrayWithIndexes(firstKey.length);
-    var shuffled = (0, util_1.shuffleArray)(arrayWithIndexes);
-    var mapping = {};
-    var mappingBeforeToAfter = {};
-    shuffled.forEach(function (indexBefore, indexAfter) {
+    const firstKey = (0, util_1.firstKeyOfMap)(truthTable);
+    const arrayWithIndexes = getArrayWithIndexes(firstKey.length);
+    const shuffled = (0, util_1.shuffleArray)(arrayWithIndexes);
+    const mapping = {};
+    const mappingBeforeToAfter = {};
+    shuffled.forEach((indexBefore, indexAfter) => {
         mapping[indexAfter] = indexBefore;
         mappingBeforeToAfter[indexBefore] = indexAfter;
     });
-    var newTable = new Map();
-    try {
-        for (var _b = __values(truthTable.entries()), _c = _b.next(); !_c.done; _c = _b.next()) {
-            var _d = __read(_c.value, 2), key = _d[0], value = _d[1];
-            var newKey = changeKeyOrder(key, mapping);
-            newTable.set(newKey, value);
-        }
-    }
-    catch (e_1_1) { e_1 = { error: e_1_1 }; }
-    finally {
-        try {
-            if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
-        }
-        finally { if (e_1) throw e_1.error; }
+    const newTable = new Map();
+    for (const [key, value] of truthTable.entries()) {
+        const newKey = changeKeyOrder(key, mapping);
+        newTable.set(newKey, value);
     }
     return {
-        newTable: newTable,
-        mapping: mapping,
-        mappingBeforeToAfter: mappingBeforeToAfter
+        newTable,
+        mapping,
+        mappingBeforeToAfter
     };
 }
 exports.shuffleBooleanOrdering = shuffleBooleanOrdering;
 function changeKeyOrder(oldKey, mappingBeforeToAfter) {
-    var chars = oldKey
+    const chars = oldKey
         .split('')
-        .map(function (char, indexBefore) {
+        .map((char, indexBefore) => {
         return {
-            char: char,
-            indexBefore: indexBefore,
+            char,
+            indexBefore,
             indexAfter: mappingBeforeToAfter[indexBefore]
         };
     })
-        .sort(function (a, b) { return a.indexAfter - b.indexAfter; })
-        .map(function (charObj) { return charObj.char; })
+        .sort((a, b) => a.indexAfter - b.indexAfter)
+        .map(charObj => charObj.char)
         .join('');
     return chars;
 }
 exports.changeKeyOrder = changeKeyOrder;
 function getArrayWithIndexes(size) {
-    var ret = [];
-    var last = 0;
+    const ret = [];
+    let last = 0;
     while (last < size) {
         ret.push(last);
         last++;
@@ -10076,216 +9903,148 @@ exports.getArrayWithIndexes = getArrayWithIndexes;
 
 },{"./create-bdd-from-truth-table":71,"./util":87}],85:[function(require,module,exports){
 "use strict";
-var __values = (this && this.__values) || function(o) {
-    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
-    if (m) return m.call(o);
-    if (o && typeof o.length === "number") return {
-        next: function () {
-            if (o && i >= o.length) o = void 0;
-            return { value: o && o[i++], done: !o };
-        }
-    };
-    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Parents = void 0;
 /**
  * represents the parents of a single node
  */
-var Parents = /** @class */ (function () {
-    function Parents(node) {
+class Parents {
+    constructor(node) {
         this.node = node;
         this.parents = new Set();
     }
-    Parents.prototype.remove = function (node) {
+    remove(node) {
         this.parents.delete(node);
         if (this.parents.size === 0) {
             this.node.remove();
         }
-    };
-    Parents.prototype.getAll = function () {
+    }
+    getAll() {
         return Array.from(this.parents);
-    };
-    Parents.prototype.add = function (node) {
+    }
+    add(node) {
         if (this.node.level === node.level) {
             throw new Error('a node cannot be parent of a node with the same level');
         }
         this.parents.add(node);
-    };
-    Parents.prototype.has = function (node) {
+    }
+    has(node) {
         return this.parents.has(node);
-    };
-    Parents.prototype.toString = function () {
-        var e_1, _a;
-        var ret = [];
-        try {
-            for (var _b = __values(this.parents), _c = _b.next(); !_c.done; _c = _b.next()) {
-                var parent_1 = _c.value;
-                ret.push(parent_1.id);
-            }
-        }
-        catch (e_1_1) { e_1 = { error: e_1_1 }; }
-        finally {
-            try {
-                if (_c && !_c.done && (_a = _b.return)) _a.call(_b);
-            }
-            finally { if (e_1) throw e_1.error; }
+    }
+    toString() {
+        const ret = [];
+        for (const parent of this.parents) {
+            ret.push(parent.id);
         }
         return ret.join(', ');
-    };
-    Object.defineProperty(Parents.prototype, "size", {
-        get: function () {
-            return this.parents.size;
-        },
-        enumerable: false,
-        configurable: true
-    });
-    return Parents;
-}());
+    }
+    get size() {
+        return this.parents.size;
+    }
+}
 exports.Parents = Parents;
 
 },{}],86:[function(require,module,exports){
 "use strict";
-var __extends = (this && this.__extends) || (function () {
-    var extendStatics = function (d, b) {
-        extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (Object.prototype.hasOwnProperty.call(b, p)) d[p] = b[p]; };
-        return extendStatics(d, b);
-    };
-    return function (d, b) {
-        if (typeof b !== "function" && b !== null)
-            throw new TypeError("Class extends value " + String(b) + " is not a constructor or null");
-        extendStatics(d, b);
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
-})();
-var __values = (this && this.__values) || function(o) {
-    var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
-    if (m) return m.call(o);
-    if (o && typeof o.length === "number") return {
-        next: function () {
-            if (o && i >= o.length) o = void 0;
-            return { value: o && o[i++], done: !o };
-        }
-    };
-    throw new TypeError(s ? "Object is not iterable." : "Symbol.iterator is not defined.");
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RootNode = void 0;
-var abstract_node_1 = require("./abstract-node");
-var branches_1 = require("./branches");
-var util_1 = require("./util");
-var minimal_string_1 = require("./minimal-string");
-var RootNode = /** @class */ (function (_super) {
-    __extends(RootNode, _super);
-    function RootNode() {
-        var _this = _super.call(this, 0, null, 'RootNode') || this;
-        _this.branches = new branches_1.Branches(_this);
-        _this.levels = [];
-        _this.nodesByLevel = new Map();
-        _this.levels.push(0);
-        var level0Set = new Set();
-        level0Set.add(_this);
-        _this.nodesByLevel.set(0, level0Set);
-        return _this;
+const abstract_node_1 = require("./abstract-node");
+const branches_1 = require("./branches");
+const util_1 = require("./util");
+const minimal_string_1 = require("./minimal-string");
+class RootNode extends abstract_node_1.AbstractNode {
+    constructor() {
+        super(0, null, 'RootNode');
+        this.branches = new branches_1.Branches(this);
+        this.levels = [];
+        this.nodesByLevel = new Map();
+        this.levels.push(0);
+        const level0Set = new Set();
+        level0Set.add(this);
+        this.nodesByLevel.set(0, level0Set);
     }
-    RootNode.prototype.addNode = function (node) {
-        var level = node.level;
+    addNode(node) {
+        const level = node.level;
         if (!this.levels.includes(level)) {
             this.levels.push(level);
         }
         this.ensureLevelSetExists(level);
-        var set = this.nodesByLevel.get(level);
+        const set = this.nodesByLevel.get(level);
         set === null || set === void 0 ? void 0 : set.add(node);
-    };
-    RootNode.prototype.removeNode = function (node) {
-        var set = this.nodesByLevel.get(node.level);
+    }
+    removeNode(node) {
+        const set = this.nodesByLevel.get(node.level);
         if (!set.has(node)) {
             throw new Error('removed non-existing node ' + node.id);
         }
         set.delete(node);
-    };
-    RootNode.prototype.ensureLevelSetExists = function (level) {
+    }
+    ensureLevelSetExists(level) {
         if (!this.nodesByLevel.has(level)) {
             this.nodesByLevel.set(level, new Set());
         }
-    };
-    RootNode.prototype.getLevels = function () {
-        return Array.from(this.levels).sort(function (a, b) { return a - b; });
-    };
-    RootNode.prototype.getNodesOfLevel = function (level) {
+    }
+    getLevels() {
+        return Array.from(this.levels).sort((a, b) => a - b);
+    }
+    getNodesOfLevel(level) {
         this.ensureLevelSetExists(level);
-        var set = this.nodesByLevel.get(level);
+        const set = this.nodesByLevel.get(level);
         return Array.from(set);
-    };
-    RootNode.prototype.countNodes = function () {
-        var _this = this;
-        var ret = 0;
-        this.getLevels().forEach(function (level) {
-            var nodesAmount = _this.getNodesOfLevel(level).length;
+    }
+    countNodes() {
+        let ret = 0;
+        this.getLevels().forEach(level => {
+            const nodesAmount = this.getNodesOfLevel(level).length;
             ret = ret + nodesAmount;
         });
         return ret;
-    };
+    }
     /**
      * applies the reduction rules to the whole bdd
      */
-    RootNode.prototype.minimize = function (logState) {
-        var e_1, _a;
-        if (logState === void 0) { logState = false; }
+    minimize(logState = false) {
         // console.log('minimize(): START ###############');
-        var done = false;
+        let done = false;
         while (!done) {
             if (logState) {
                 console.log('minimize() itterate once');
             }
-            var successCount = 0;
-            var lastLevel = (0, util_1.lastOfArray)(this.getLevels());
+            let successCount = 0;
+            let lastLevel = (0, util_1.lastOfArray)(this.getLevels());
             while (lastLevel > 0) {
-                var nodes = this.getNodesOfLevel(lastLevel);
+                const nodes = this.getNodesOfLevel(lastLevel);
                 if (logState) {
                     console.log('minimize() run for level ' + lastLevel +
                         ' with ' + nodes.length + ' nodes');
                     // console.dir(nodes);
                 }
-                var nodeCount = 0;
-                try {
-                    for (var nodes_1 = (e_1 = void 0, __values(nodes)), nodes_1_1 = nodes_1.next(); !nodes_1_1.done; nodes_1_1 = nodes_1.next()) {
-                        var node = nodes_1_1.value;
-                        nodeCount++;
-                        // do not run that often because it is expensive
-                        if (logState && nodeCount % 4000 === 0) {
-                            console.log('minimize() node #' + node.id);
-                        }
-                        if (node.isLeafNode()) {
-                            // console.log('have leaf node ' + node.id);
-                            var reductionDone = node.asLeafNode().applyEliminationRule();
-                            if (reductionDone) {
-                                successCount++;
-                            }
-                        }
-                        if (!node.deleted && node.isInternalNode()) {
-                            var useNode = node;
-                            var reductionDone = useNode.applyReductionRule();
-                            var eliminationDone = false;
-                            if (!useNode.deleted) {
-                                // not might now be deleted from reduction-rule
-                                eliminationDone = useNode.applyEliminationRule(nodes);
-                            }
-                            if (reductionDone || eliminationDone) {
-                                successCount++;
-                            }
+                let nodeCount = 0;
+                for (const node of nodes) {
+                    nodeCount++;
+                    // do not run that often because it is expensive
+                    if (logState && nodeCount % 4000 === 0) {
+                        console.log('minimize() node #' + node.id);
+                    }
+                    if (node.isLeafNode()) {
+                        // console.log('have leaf node ' + node.id);
+                        const reductionDone = node.asLeafNode().applyEliminationRule();
+                        if (reductionDone) {
+                            successCount++;
                         }
                     }
-                }
-                catch (e_1_1) { e_1 = { error: e_1_1 }; }
-                finally {
-                    try {
-                        if (nodes_1_1 && !nodes_1_1.done && (_a = nodes_1.return)) _a.call(nodes_1);
+                    if (!node.deleted && node.isInternalNode()) {
+                        const useNode = node;
+                        const reductionDone = useNode.applyReductionRule();
+                        let eliminationDone = false;
+                        if (!useNode.deleted) {
+                            // not might now be deleted from reduction-rule
+                            eliminationDone = useNode.applyEliminationRule(nodes);
+                        }
+                        if (reductionDone || eliminationDone) {
+                            successCount++;
+                        }
                     }
-                    finally { if (e_1) throw e_1.error; }
                 }
                 lastLevel--;
             }
@@ -10300,80 +10059,52 @@ var RootNode = /** @class */ (function (_super) {
                 }
             }
         }
-    };
-    RootNode.prototype.getLeafNodes = function () {
-        var lastLevel = (0, util_1.lastOfArray)(this.getLevels());
-        var leafNodes = this.getNodesOfLevel(lastLevel).reverse();
+    }
+    getLeafNodes() {
+        const lastLevel = (0, util_1.lastOfArray)(this.getLevels());
+        const leafNodes = this.getNodesOfLevel(lastLevel).reverse();
         return leafNodes;
-    };
+    }
     /**
      * strips all leaf-nodes
      * with the given value
      */
-    RootNode.prototype.removeIrrelevantLeafNodes = function (leafNodeValue) {
-        var e_2, _a;
-        var done = false;
+    removeIrrelevantLeafNodes(leafNodeValue) {
+        let done = false;
         while (!done) {
-            var countRemoved = 0;
-            var leafNodes = this.getLeafNodes();
-            try {
-                for (var leafNodes_1 = (e_2 = void 0, __values(leafNodes)), leafNodes_1_1 = leafNodes_1.next(); !leafNodes_1_1.done; leafNodes_1_1 = leafNodes_1.next()) {
-                    var leafNode = leafNodes_1_1.value;
-                    var removed = leafNode.removeIfValueEquals(leafNodeValue);
-                    if (removed) {
-                        countRemoved++;
-                    }
+            let countRemoved = 0;
+            const leafNodes = this.getLeafNodes();
+            for (const leafNode of leafNodes) {
+                const removed = leafNode.removeIfValueEquals(leafNodeValue);
+                if (removed) {
+                    countRemoved++;
                 }
-            }
-            catch (e_2_1) { e_2 = { error: e_2_1 }; }
-            finally {
-                try {
-                    if (leafNodes_1_1 && !leafNodes_1_1.done && (_a = leafNodes_1.return)) _a.call(leafNodes_1);
-                }
-                finally { if (e_2) throw e_2.error; }
             }
             this.minimize();
             if (countRemoved === 0) {
                 done = true;
             }
         }
-    };
-    RootNode.prototype.resolve = function (fns, booleanFunctionInput) {
-        var currentNode = this;
+    }
+    resolve(fns, booleanFunctionInput) {
+        let currentNode = this;
         while (true) {
-            var booleanResult = fns[currentNode.level](booleanFunctionInput);
-            var branchKey = (0, util_1.booleanToBooleanString)(booleanResult);
+            const booleanResult = fns[currentNode.level](booleanFunctionInput);
+            const branchKey = (0, util_1.booleanToBooleanString)(booleanResult);
             currentNode = currentNode.branches.getBranch(branchKey);
             if (currentNode.isLeafNode()) {
                 return currentNode.asLeafNode().value;
             }
         }
-    };
-    RootNode.prototype.toSimpleBdd = function () {
+    }
+    toSimpleBdd() {
         return (0, minimal_string_1.bddToSimpleBdd)(this);
-    };
-    return RootNode;
-}(abstract_node_1.AbstractNode));
+    }
+}
 exports.RootNode = RootNode;
 
 },{"./abstract-node":69,"./branches":70,"./minimal-string":80,"./util":87}],87:[function(require,module,exports){
 "use strict";
-var __read = (this && this.__read) || function (o, n) {
-    var m = typeof Symbol === "function" && o[Symbol.iterator];
-    if (!m) return o;
-    var i = m.call(o), r, ar = [], e;
-    try {
-        while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
-    }
-    catch (error) { e = { error: error }; }
-    finally {
-        try {
-            if (r && !r.done && (m = i["return"])) m.call(i);
-        }
-        finally { if (e) throw e.error; }
-    }
-    return ar;
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.splitStringToChunks = exports.lastOfArray = exports.shuffleArray = exports.firstKeyOfMap = exports.getNextStateSet = exports.maxBinaryWithLength = exports.minBinaryWithLength = exports.binaryToDecimal = exports.oppositeBinary = exports.decimalToPaddedBinary = exports.nextNodeId = exports.lastChar = exports.oppositeBoolean = exports.booleanToBooleanString = exports.booleanStringToBoolean = void 0;
 function booleanStringToBoolean(str) {
@@ -10410,20 +10141,19 @@ exports.lastChar = lastChar;
 /**
  * @link https://stackoverflow.com/a/1349426
  */
-function makeid(length) {
-    if (length === void 0) { length = 6; }
-    var result = '';
-    var characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-    var charactersLength = characters.length;
-    for (var i = 0; i < length; i++) {
+function makeid(length = 6) {
+    let result = '';
+    const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+    const charactersLength = characters.length;
+    for (let i = 0; i < length; i++) {
         result += characters.charAt(Math.floor(Math.random() * charactersLength));
     }
     return result;
 }
-var nodeIdPrefix = makeid(4);
-var lastIdGen = 0;
+const nodeIdPrefix = makeid(4);
+let lastIdGen = 0;
 function nextNodeId() {
-    var ret = 'node_' + nodeIdPrefix + '_' + lastIdGen;
+    const ret = 'node_' + nodeIdPrefix + '_' + lastIdGen;
     lastIdGen++;
     return ret;
 }
@@ -10432,8 +10162,8 @@ exports.nextNodeId = nextNodeId;
  * @link https://stackoverflow.com/a/16155417
  */
 function decimalToPaddedBinary(decimal, padding) {
-    var binary = (decimal >>> 0).toString(2);
-    var padded = binary.padStart(padding, '0');
+    const binary = (decimal >>> 0).toString(2);
+    const padded = binary.padStart(padding, '0');
     return padded;
 }
 exports.decimalToPaddedBinary = decimalToPaddedBinary;
@@ -10454,22 +10184,22 @@ function binaryToDecimal(binary) {
 }
 exports.binaryToDecimal = binaryToDecimal;
 function minBinaryWithLength(length) {
-    return new Array(length).fill(0).map(function () { return '0'; }).join('');
+    return new Array(length).fill(0).map(() => '0').join('');
 }
 exports.minBinaryWithLength = minBinaryWithLength;
 function maxBinaryWithLength(length) {
-    return new Array(length).fill(0).map(function () { return '1'; }).join('');
+    return new Array(length).fill(0).map(() => '1').join('');
 }
 exports.maxBinaryWithLength = maxBinaryWithLength;
 function getNextStateSet(stateSet) {
-    var decimal = binaryToDecimal(stateSet);
-    var increase = decimal + 1;
-    var binary = decimalToPaddedBinary(increase, stateSet.length);
+    const decimal = binaryToDecimal(stateSet);
+    const increase = decimal + 1;
+    const binary = decimalToPaddedBinary(increase, stateSet.length);
     return binary;
 }
 exports.getNextStateSet = getNextStateSet;
 function firstKeyOfMap(map) {
-    var iterator1 = map.keys();
+    const iterator1 = map.keys();
     return iterator1.next().value;
 }
 exports.firstKeyOfMap = firstKeyOfMap;
@@ -10478,10 +10208,9 @@ exports.firstKeyOfMap = firstKeyOfMap;
  * @link https://stackoverflow.com/a/6274381
  */
 function shuffleArray(a) {
-    var _a;
-    for (var i = a.length - 1; i > 0; i--) {
-        var j = Math.floor(Math.random() * (i + 1));
-        _a = __read([a[j], a[i]], 2), a[i] = _a[0], a[j] = _a[1];
+    for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
     }
     return a;
 }
@@ -10494,8 +10223,8 @@ exports.lastOfArray = lastOfArray;
  * @link https://stackoverflow.com/a/6259536
  */
 function splitStringToChunks(str, chunkSize) {
-    var chunks = [];
-    for (var i = 0, charsLength = str.length; i < charsLength; i += chunkSize) {
+    const chunks = [];
+    for (let i = 0, charsLength = str.length; i < charsLength; i += chunkSize) {
         chunks.push(str.substring(i, i + chunkSize));
     }
     return chunks;
@@ -20541,66 +20270,66 @@ function _tryIdleCall(idleQueue) {
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.unknownAction = exports.runFullQueryAgain = exports.removeExistingAndInsertAtSortPosition = exports.insertAtSortPosition = exports.alwaysWrong = exports.replaceExisting = exports.removeExisting = exports.removeLastInsertLast = exports.removeFirstInsertFirst = exports.removeLastInsertFirst = exports.removeFirstInsertLast = exports.removeLastItem = exports.removeFirstItem = exports.insertLast = exports.insertFirst = exports.doNothing = void 0;
-var array_push_at_sort_position_1 = require("array-push-at-sort-position");
-var doNothing = function (_input) { };
+const array_push_at_sort_position_1 = require("array-push-at-sort-position");
+const doNothing = (_input) => { };
 exports.doNothing = doNothing;
-var insertFirst = function (input) {
+const insertFirst = (input) => {
     input.previousResults.unshift(input.changeEvent.doc);
     if (input.keyDocumentMap) {
         input.keyDocumentMap.set(input.changeEvent.id, input.changeEvent.doc);
     }
 };
 exports.insertFirst = insertFirst;
-var insertLast = function (input) {
+const insertLast = (input) => {
     input.previousResults.push(input.changeEvent.doc);
     if (input.keyDocumentMap) {
         input.keyDocumentMap.set(input.changeEvent.id, input.changeEvent.doc);
     }
 };
 exports.insertLast = insertLast;
-var removeFirstItem = function (input) {
-    var first = input.previousResults.shift();
+const removeFirstItem = (input) => {
+    const first = input.previousResults.shift();
     if (input.keyDocumentMap && first) {
         input.keyDocumentMap.delete(first[input.queryParams.primaryKey]);
     }
 };
 exports.removeFirstItem = removeFirstItem;
-var removeLastItem = function (input) {
-    var last = input.previousResults.pop();
+const removeLastItem = (input) => {
+    const last = input.previousResults.pop();
     if (input.keyDocumentMap && last) {
         input.keyDocumentMap.delete(last[input.queryParams.primaryKey]);
     }
 };
 exports.removeLastItem = removeLastItem;
-var removeFirstInsertLast = function (input) {
+const removeFirstInsertLast = (input) => {
     (0, exports.removeFirstItem)(input);
     (0, exports.insertLast)(input);
 };
 exports.removeFirstInsertLast = removeFirstInsertLast;
-var removeLastInsertFirst = function (input) {
+const removeLastInsertFirst = (input) => {
     (0, exports.removeLastItem)(input);
     (0, exports.insertFirst)(input);
 };
 exports.removeLastInsertFirst = removeLastInsertFirst;
-var removeFirstInsertFirst = function (input) {
+const removeFirstInsertFirst = (input) => {
     (0, exports.removeFirstItem)(input);
     (0, exports.insertFirst)(input);
 };
 exports.removeFirstInsertFirst = removeFirstInsertFirst;
-var removeLastInsertLast = function (input) {
+const removeLastInsertLast = (input) => {
     (0, exports.removeLastItem)(input);
     (0, exports.insertLast)(input);
 };
 exports.removeLastInsertLast = removeLastInsertLast;
-var removeExisting = function (input) {
+const removeExisting = (input) => {
     if (input.keyDocumentMap) {
         input.keyDocumentMap.delete(input.changeEvent.id);
     }
     // find index of document
-    var primary = input.queryParams.primaryKey;
-    var results = input.previousResults;
-    for (var i = 0; i < results.length; i++) {
-        var item = results[i];
+    const primary = input.queryParams.primaryKey;
+    const results = input.previousResults;
+    for (let i = 0; i < results.length; i++) {
+        const item = results[i];
         // remove
         // console.dir(item);
         if (item[primary] === input.changeEvent.id) {
@@ -20610,13 +20339,13 @@ var removeExisting = function (input) {
     }
 };
 exports.removeExisting = removeExisting;
-var replaceExisting = function (input) {
+const replaceExisting = (input) => {
     // find index of document
-    var doc = input.changeEvent.doc;
-    var primary = input.queryParams.primaryKey;
-    var results = input.previousResults;
-    for (var i = 0; i < results.length; i++) {
-        var item = results[i];
+    const doc = input.changeEvent.doc;
+    const primary = input.queryParams.primaryKey;
+    const results = input.previousResults;
+    for (let i = 0; i < results.length; i++) {
+        const item = results[i];
         // replace
         if (item[primary] === input.changeEvent.id) {
             results[i] = doc;
@@ -20633,8 +20362,8 @@ exports.replaceExisting = replaceExisting;
  * it must be later optimised out
  * otherwise there is something broken
  */
-var alwaysWrong = function (input) {
-    var wrongHuman = {
+const alwaysWrong = (input) => {
+    const wrongHuman = {
         _id: 'wrongHuman' + new Date().getTime()
     };
     input.previousResults.length = 0; // clear array
@@ -20645,9 +20374,9 @@ var alwaysWrong = function (input) {
     }
 };
 exports.alwaysWrong = alwaysWrong;
-var insertAtSortPosition = function (input) {
-    var docId = input.changeEvent.id;
-    var doc = input.changeEvent.doc;
+const insertAtSortPosition = (input) => {
+    const docId = input.changeEvent.id;
+    const doc = input.changeEvent.doc;
     if (input.keyDocumentMap) {
         if (input.keyDocumentMap.has(docId)) {
             /**
@@ -20659,7 +20388,7 @@ var insertAtSortPosition = function (input) {
         input.keyDocumentMap.set(docId, doc);
     }
     else {
-        var isDocInResults = input.previousResults.find(function (d) { return d[input.queryParams.primaryKey] === docId; });
+        const isDocInResults = input.previousResults.find((d) => d[input.queryParams.primaryKey] === docId);
         /**
          * If document is already in results,
          * we cannot add it again because it would throw on non-deterministic ordering.
@@ -20671,16 +20400,16 @@ var insertAtSortPosition = function (input) {
     (0, array_push_at_sort_position_1.pushAtSortPosition)(input.previousResults, doc, input.queryParams.sortComparator, true);
 };
 exports.insertAtSortPosition = insertAtSortPosition;
-var removeExistingAndInsertAtSortPosition = function (input) {
+const removeExistingAndInsertAtSortPosition = (input) => {
     (0, exports.removeExisting)(input);
     (0, exports.insertAtSortPosition)(input);
 };
 exports.removeExistingAndInsertAtSortPosition = removeExistingAndInsertAtSortPosition;
-var runFullQueryAgain = function (_input) {
+const runFullQueryAgain = (_input) => {
     throw new Error('Action runFullQueryAgain must be implemented by yourself');
 };
 exports.runFullQueryAgain = runFullQueryAgain;
-var unknownAction = function (_input) {
+const unknownAction = (_input) => {
     throw new Error('Action unknownAction should never be called');
 };
 exports.unknownAction = unknownAction;
@@ -20689,7 +20418,7 @@ exports.unknownAction = unknownAction;
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.actionFunctions = exports.orderedActionList = void 0;
-var action_functions_1 = require("./action-functions");
+const action_functions_1 = require("./action-functions");
 /**
  * all actions ordered by performance-cost
  * cheapest first
@@ -20736,10 +20465,10 @@ exports.actionFunctions = {
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.resolveInput = exports.getSimpleBdd = exports.minimalBddString = void 0;
-var binary_decision_diagram_1 = require("binary-decision-diagram");
-var states_1 = require("../states");
+const binary_decision_diagram_1 = require("binary-decision-diagram");
+const states_1 = require("../states");
 exports.minimalBddString = '14a2b0c/d1e,f+g5h.i4j*k-l)m(n6ohk1pdf1qef1rin-sjn-ton-ugn-vmn-whn-xkn-yln-zdf5{ef5|wx5}df7~dz7ef7¡bk7¢e{7£g|7¤ry7¥dp7¦gk7§eq7¨gt7©ac7ªmv7«gu7¬nm7­iy7®nw7¯¤s8°«¦8±¬k8²ªm8³®v8´«n8µ¬n8¶vm8·xv8¸mn8¹­j8º®m8»xm8¼­¹3½}~3¾©°3¿¢3À¡£3Ám±3Â®º3Ãmº3Ä©´3Åb®3Æmµ3Çm»3Èx»3Ékn3Êm¸3Ë¼j6ÌÂm6ÍÆÃ6ÎÈm6Ïnm6ÐÊÇ6ÑÌÎ,ÒÍÐ,ÓÅÉ,Ô²¶,Õ³·,Ö®n,×º»,Ømf9ÙËÁ9Úym9ÛmÏ9ÜÑÒ9Ýz{2Þpq2ß½¿2à¾À2á¥§2â°¨2ãÄÓ2ä´Ö2åÝn0æÞn0çØÛ0èÙÜ0éßn0êàã0ë²Ô0ì¯Õ0íán0îâä0ï¹×0ðçv/ñåæ/òçë/óèì/ôéí/õêî/öÚy/÷òm(øóï(ùöy(ú÷ø:ûôõ:ümù:ýðñ4þúû4ÿþý*Āüm*ÿĀ.';
-var simpleBdd;
+let simpleBdd;
 function getSimpleBdd() {
     if (!simpleBdd) {
         simpleBdd = (0, binary_decision_diagram_1.minimalStringToSimpleBdd)(exports.minimalBddString);
@@ -20747,7 +20476,7 @@ function getSimpleBdd() {
     return simpleBdd;
 }
 exports.getSimpleBdd = getSimpleBdd;
-var resolveInput = function (input) {
+const resolveInput = (input) => {
     return (0, binary_decision_diagram_1.resolveWithSimpleBdd)(getSimpleBdd(), states_1.stateResolveFunctionByIndex, input);
 };
 exports.resolveInput = resolveInput;
@@ -20770,35 +20499,35 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.runAction = exports.calculateActionFunction = exports.calculateActionName = exports.calculateActionFromMap = void 0;
-var states_1 = require("./states");
-var actions_1 = require("./actions");
-var bdd_generated_1 = require("./bdd/bdd.generated");
+const states_1 = require("./states");
+const actions_1 = require("./actions");
+const bdd_generated_1 = require("./bdd/bdd.generated");
 __exportStar(require("./states"), exports);
 __exportStar(require("./util"), exports);
 function calculateActionFromMap(stateSetToActionMap, input) {
-    var stateSet = (0, states_1.getStateSet)(input);
-    var actionName = stateSetToActionMap.get(stateSet);
+    const stateSet = (0, states_1.getStateSet)(input);
+    const actionName = stateSetToActionMap.get(stateSet);
     if (!actionName) {
         return {
             action: 'runFullQueryAgain',
-            stateSet: stateSet
+            stateSet
         };
     }
     else {
         return {
             action: actionName,
-            stateSet: stateSet
+            stateSet
         };
     }
 }
 exports.calculateActionFromMap = calculateActionFromMap;
 function calculateActionName(input) {
-    var resolvedActionId = (0, bdd_generated_1.resolveInput)(input);
+    const resolvedActionId = (0, bdd_generated_1.resolveInput)(input);
     return actions_1.orderedActionList[resolvedActionId];
 }
 exports.calculateActionName = calculateActionName;
 function calculateActionFunction(input) {
-    var actionName = calculateActionName(input);
+    const actionName = calculateActionName(input);
     return actions_1.actionFunctions[actionName];
 }
 exports.calculateActionFunction = calculateActionFunction;
@@ -20808,12 +20537,12 @@ exports.calculateActionFunction = calculateActionFunction;
  * @returns the new results
  */
 function runAction(action, queryParams, changeEvent, previousResults, keyDocumentMap) {
-    var fn = actions_1.actionFunctions[action];
+    const fn = actions_1.actionFunctions[action];
     fn({
-        queryParams: queryParams,
-        changeEvent: changeEvent,
-        previousResults: previousResults,
-        keyDocumentMap: keyDocumentMap
+        queryParams,
+        changeEvent,
+        previousResults,
+        keyDocumentMap
     });
     return previousResults;
 }
@@ -20837,7 +20566,7 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.logStateSet = exports.getStateSet = exports.resolveState = exports.stateResolveFunctionByIndex = exports.stateResolveFunctions = exports.orderedStateList = void 0;
-var state_resolver_1 = require("./state-resolver");
+const state_resolver_1 = require("./state-resolver");
 __exportStar(require("./state-resolver"), exports);
 /**
  * all states ordered by performance-cost
@@ -20908,7 +20637,7 @@ exports.stateResolveFunctionByIndex = {
     18: state_resolver_1.doesMatchNow
 };
 function resolveState(stateName, input) {
-    var fn = exports.stateResolveFunctions[stateName];
+    const fn = exports.stateResolveFunctions[stateName];
     if (!fn) {
         throw new Error('resolveState() has no function for ' + stateName);
     }
@@ -20916,18 +20645,18 @@ function resolveState(stateName, input) {
 }
 exports.resolveState = resolveState;
 function getStateSet(input) {
-    var set = '';
-    for (var i = 0; i < exports.orderedStateList.length; i++) {
-        var name_1 = exports.orderedStateList[i];
-        var value = resolveState(name_1, input);
-        var add = value ? '1' : '0';
+    let set = '';
+    for (let i = 0; i < exports.orderedStateList.length; i++) {
+        const name = exports.orderedStateList[i];
+        const value = resolveState(name, input);
+        const add = value ? '1' : '0';
         set += add;
     }
     return set;
 }
 exports.getStateSet = getStateSet;
 function logStateSet(stateSet) {
-    exports.orderedStateList.forEach(function (state, index) {
+    exports.orderedStateList.forEach((state, index) => {
         console.log('state: ' + state + ' : ' + stateSet[index]);
     });
 }
@@ -20937,16 +20666,16 @@ exports.logStateSet = logStateSet;
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.wasResultsEmpty = exports.doesMatchNow = exports.wasMatching = exports.isSortedAfterLast = exports.isSortedBeforeFirst = exports.wasSortedAfterLast = exports.wasSortedBeforeFirst = exports.wasLast = exports.wasFirst = exports.wasInResult = exports.sortParamsChanged = exports.wasLimitReached = exports.previousUnknown = exports.isUpdate = exports.isInsert = exports.isDelete = exports.hasSkip = exports.isFindOne = exports.hasLimit = void 0;
-var util_1 = require("../util");
-var hasLimit = function (input) {
+const util_1 = require("../util");
+const hasLimit = (input) => {
     return !!input.queryParams.limit;
 };
 exports.hasLimit = hasLimit;
-var isFindOne = function (input) {
+const isFindOne = (input) => {
     return input.queryParams.limit === 1;
 };
 exports.isFindOne = isFindOne;
-var hasSkip = function (input) {
+const hasSkip = (input) => {
     if (input.queryParams.skip && input.queryParams.skip > 0) {
         return true;
     }
@@ -20955,40 +20684,40 @@ var hasSkip = function (input) {
     }
 };
 exports.hasSkip = hasSkip;
-var isDelete = function (input) {
+const isDelete = (input) => {
     return input.changeEvent.operation === 'DELETE';
 };
 exports.isDelete = isDelete;
-var isInsert = function (input) {
+const isInsert = (input) => {
     return input.changeEvent.operation === 'INSERT';
 };
 exports.isInsert = isInsert;
-var isUpdate = function (input) {
+const isUpdate = (input) => {
     return input.changeEvent.operation === 'UPDATE';
 };
 exports.isUpdate = isUpdate;
-var previousUnknown = function (input) {
+const previousUnknown = (input) => {
     return input.changeEvent.previous === util_1.UNKNOWN_VALUE;
 };
 exports.previousUnknown = previousUnknown;
-var wasLimitReached = function (input) {
+const wasLimitReached = (input) => {
     return (0, exports.hasLimit)(input) && input.previousResults.length >= input.queryParams.limit;
 };
 exports.wasLimitReached = wasLimitReached;
-var sortParamsChanged = function (input) {
-    var sortFields = input.queryParams.sortFields;
-    var prev = input.changeEvent.previous;
-    var doc = input.changeEvent.doc;
+const sortParamsChanged = (input) => {
+    const sortFields = input.queryParams.sortFields;
+    const prev = input.changeEvent.previous;
+    const doc = input.changeEvent.doc;
     if (!doc) {
         return false;
     }
     if (!prev || prev === util_1.UNKNOWN_VALUE) {
         return true;
     }
-    for (var i = 0; i < sortFields.length; i++) {
-        var field = sortFields[i];
-        var beforeData = (0, util_1.getProperty)(prev, field);
-        var afterData = (0, util_1.getProperty)(doc, field);
+    for (let i = 0; i < sortFields.length; i++) {
+        const field = sortFields[i];
+        const beforeData = (0, util_1.getProperty)(prev, field);
+        const afterData = (0, util_1.getProperty)(doc, field);
         if (beforeData !== afterData) {
             return true;
         }
@@ -20996,17 +20725,17 @@ var sortParamsChanged = function (input) {
     return false;
 };
 exports.sortParamsChanged = sortParamsChanged;
-var wasInResult = function (input) {
-    var id = input.changeEvent.id;
+const wasInResult = (input) => {
+    const id = input.changeEvent.id;
     if (input.keyDocumentMap) {
-        var has = input.keyDocumentMap.has(id);
+        const has = input.keyDocumentMap.has(id);
         return has;
     }
     else {
-        var primary = input.queryParams.primaryKey;
-        var results = input.previousResults;
-        for (var i = 0; i < results.length; i++) {
-            var item = results[i];
+        const primary = input.queryParams.primaryKey;
+        const results = input.previousResults;
+        for (let i = 0; i < results.length; i++) {
+            const item = results[i];
             if (item[primary] === id) {
                 return true;
             }
@@ -21015,8 +20744,8 @@ var wasInResult = function (input) {
     }
 };
 exports.wasInResult = wasInResult;
-var wasFirst = function (input) {
-    var first = input.previousResults[0];
+const wasFirst = (input) => {
+    const first = input.previousResults[0];
     if (first && first[input.queryParams.primaryKey] === input.changeEvent.id) {
         return true;
     }
@@ -21025,8 +20754,8 @@ var wasFirst = function (input) {
     }
 };
 exports.wasFirst = wasFirst;
-var wasLast = function (input) {
-    var last = (0, util_1.lastOfArray)(input.previousResults);
+const wasLast = (input) => {
+    const last = (0, util_1.lastOfArray)(input.previousResults);
     if (last && last[input.queryParams.primaryKey] === input.changeEvent.id) {
         return true;
     }
@@ -21035,12 +20764,12 @@ var wasLast = function (input) {
     }
 };
 exports.wasLast = wasLast;
-var wasSortedBeforeFirst = function (input) {
-    var prev = input.changeEvent.previous;
+const wasSortedBeforeFirst = (input) => {
+    const prev = input.changeEvent.previous;
     if (!prev || prev === util_1.UNKNOWN_VALUE) {
         return false;
     }
-    var first = input.previousResults[0];
+    const first = input.previousResults[0];
     if (!first) {
         return false;
     }
@@ -21053,107 +20782,82 @@ var wasSortedBeforeFirst = function (input) {
     if (first[input.queryParams.primaryKey] === input.changeEvent.id) {
         return true;
     }
-    var comp = input.queryParams.sortComparator(prev, first);
+    const comp = input.queryParams.sortComparator(prev, first);
     return comp < 0;
 };
 exports.wasSortedBeforeFirst = wasSortedBeforeFirst;
-var wasSortedAfterLast = function (input) {
-    var prev = input.changeEvent.previous;
+const wasSortedAfterLast = (input) => {
+    const prev = input.changeEvent.previous;
     if (!prev || prev === util_1.UNKNOWN_VALUE) {
         return false;
     }
-    var last = (0, util_1.lastOfArray)(input.previousResults);
+    const last = (0, util_1.lastOfArray)(input.previousResults);
     if (!last) {
         return false;
     }
     if (last[input.queryParams.primaryKey] === input.changeEvent.id) {
         return true;
     }
-    var comp = input.queryParams.sortComparator(prev, last);
+    const comp = input.queryParams.sortComparator(prev, last);
     return comp > 0;
 };
 exports.wasSortedAfterLast = wasSortedAfterLast;
-var isSortedBeforeFirst = function (input) {
-    var doc = input.changeEvent.doc;
+const isSortedBeforeFirst = (input) => {
+    const doc = input.changeEvent.doc;
     if (!doc) {
         return false;
     }
-    var first = input.previousResults[0];
+    const first = input.previousResults[0];
     if (!first) {
         return false;
     }
     if (first[input.queryParams.primaryKey] === input.changeEvent.id) {
         return true;
     }
-    var comp = input.queryParams.sortComparator(doc, first);
+    const comp = input.queryParams.sortComparator(doc, first);
     return comp < 0;
 };
 exports.isSortedBeforeFirst = isSortedBeforeFirst;
-var isSortedAfterLast = function (input) {
-    var doc = input.changeEvent.doc;
+const isSortedAfterLast = (input) => {
+    const doc = input.changeEvent.doc;
     if (!doc) {
         return false;
     }
-    var last = (0, util_1.lastOfArray)(input.previousResults);
+    const last = (0, util_1.lastOfArray)(input.previousResults);
     if (!last) {
         return false;
     }
     if (last[input.queryParams.primaryKey] === input.changeEvent.id) {
         return true;
     }
-    var comp = input.queryParams.sortComparator(doc, last);
+    const comp = input.queryParams.sortComparator(doc, last);
     return comp > 0;
 };
 exports.isSortedAfterLast = isSortedAfterLast;
-var wasMatching = function (input) {
-    var prev = input.changeEvent.previous;
+const wasMatching = (input) => {
+    const prev = input.changeEvent.previous;
     if (!prev || prev === util_1.UNKNOWN_VALUE) {
         return false;
     }
     return input.queryParams.queryMatcher(prev);
 };
 exports.wasMatching = wasMatching;
-var doesMatchNow = function (input) {
-    var doc = input.changeEvent.doc;
+const doesMatchNow = (input) => {
+    const doc = input.changeEvent.doc;
     if (!doc) {
         return false;
     }
-    var ret = input.queryParams.queryMatcher(doc);
+    const ret = input.queryParams.queryMatcher(doc);
     return ret;
 };
 exports.doesMatchNow = doesMatchNow;
-var wasResultsEmpty = function (input) {
+const wasResultsEmpty = (input) => {
     return input.previousResults.length === 0;
 };
 exports.wasResultsEmpty = wasResultsEmpty;
 
 },{"../util":412}],412:[function(require,module,exports){
 "use strict";
-var __read = (this && this.__read) || function (o, n) {
-    var m = typeof Symbol === "function" && o[Symbol.iterator];
-    if (!m) return o;
-    var i = m.call(o), r, ar = [], e;
-    try {
-        while ((n === void 0 || n-- > 0) && !(r = i.next()).done) ar.push(r.value);
-    }
-    catch (error) { e = { error: error }; }
-    finally {
-        try {
-            if (r && !r.done && (m = i["return"])) m.call(i);
-        }
-        finally { if (e) throw e.error; }
-    }
-    return ar;
-};
-var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
-    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
-        if (ar || !(i in from)) {
-            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
-            ar[i] = from[i];
-        }
-    }
-    return to.concat(ar || Array.prototype.slice.call(from));
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getProperty = exports.isObject = exports.roundToTwoDecimals = exports.mergeSets = exports.ensureNotFalsy = exports.flatClone = exports.cloneMap = exports.objectToMap = exports.mapToObject = exports.replaceCharAt = exports.getSortFieldsOfQuery = exports.normalizeSortField = exports.tryToFillPreviousDoc = exports.shuffleArray = exports.randomOfArray = exports.lastOfArray = exports.UNKNOWN_VALUE = void 0;
 exports.UNKNOWN_VALUE = 'UNKNOWN';
@@ -21169,7 +20873,7 @@ function randomOfArray(items) {
 }
 exports.randomOfArray = randomOfArray;
 function shuffleArray(arr) {
-    return arr.slice().sort(function () { return (Math.random() - 0.5); });
+    return arr.slice().sort(() => (Math.random() - 0.5));
 }
 exports.shuffleArray = shuffleArray;
 /**
@@ -21178,18 +20882,18 @@ exports.shuffleArray = shuffleArray;
  * @mutate the changeEvent of input
  */
 function tryToFillPreviousDoc(input) {
-    var prev = input.changeEvent.previous;
+    const prev = input.changeEvent.previous;
     if (prev === exports.UNKNOWN_VALUE) {
-        var id_1 = input.changeEvent.id;
-        var primary_1 = input.queryParams.primaryKey;
+        const id = input.changeEvent.id;
+        const primary = input.queryParams.primaryKey;
         if (input.keyDocumentMap) {
-            var doc = input.keyDocumentMap.get(id_1);
+            const doc = input.keyDocumentMap.get(id);
             if (doc) {
                 input.changeEvent.previous = doc;
             }
         }
         else {
-            var found = input.previousResults.find(function (item) { return item[primary_1] === id_1; });
+            const found = input.previousResults.find(item => item[primary] === id);
             if (found) {
                 input.changeEvent.previous = found;
             }
@@ -21216,9 +20920,9 @@ function getSortFieldsOfQuery(query) {
         // if no sort-order is set, use the primary key
         return ['_id'];
     }
-    return query.sort.map(function (maybeArray) {
+    return query.sort.map(maybeArray => {
         if (Array.isArray(maybeArray)) {
-            return maybeArray[0].map(function (field) { return normalizeSortField(field); });
+            return maybeArray[0].map(field => normalizeSortField(field));
         }
         else {
             return normalizeSortField(maybeArray);
@@ -21234,25 +20938,24 @@ function replaceCharAt(str, index, replacement) {
 }
 exports.replaceCharAt = replaceCharAt;
 function mapToObject(map) {
-    var ret = {};
-    map.forEach(function (value, key) {
+    const ret = {};
+    map.forEach((value, key) => {
         ret[key] = value;
     });
     return ret;
 }
 exports.mapToObject = mapToObject;
 function objectToMap(object) {
-    var ret = new Map();
-    Object.entries(object).forEach(function (_a) {
-        var _b = __read(_a, 2), k = _b[0], v = _b[1];
+    const ret = new Map();
+    Object.entries(object).forEach(([k, v]) => {
         ret.set(k, v);
     });
     return ret;
 }
 exports.objectToMap = objectToMap;
 function cloneMap(map) {
-    var ret = new Map();
-    map.forEach(function (value, key) {
+    const ret = new Map();
+    map.forEach((value, key) => {
         ret[key] = value;
     });
     return ret;
@@ -21275,9 +20978,9 @@ function ensureNotFalsy(obj) {
 }
 exports.ensureNotFalsy = ensureNotFalsy;
 function mergeSets(sets) {
-    var ret = new Set();
-    sets.forEach(function (set) {
-        ret = new Set(__spreadArray(__spreadArray([], __read(ret), false), __read(set), false));
+    let ret = new Set();
+    sets.forEach(set => {
+        ret = new Set([...ret, ...set]);
     });
     return ret;
 }
@@ -21290,7 +20993,7 @@ function roundToTwoDecimals(num) {
 }
 exports.roundToTwoDecimals = roundToTwoDecimals;
 function isObject(value) {
-    var type = typeof value;
+    const type = typeof value;
     return value !== null && (type === 'object' || type === 'function');
 }
 exports.isObject = isObject;
@@ -21301,12 +21004,12 @@ function getProperty(object, path, value) {
     if (!isObject(object) || typeof path !== 'string') {
         return value === undefined ? object : value;
     }
-    var pathArray = path.split('.');
+    const pathArray = path.split('.');
     if (pathArray.length === 0) {
         return value;
     }
-    for (var index = 0; index < pathArray.length; index++) {
-        var key = pathArray[index];
+    for (let index = 0; index < pathArray.length; index++) {
+        const key = pathArray[index];
         if (isStringIndex(object, key)) {
             object = index === pathArray.length - 1 ? undefined : null;
         }
@@ -21330,7 +21033,7 @@ function getProperty(object, path, value) {
 exports.getProperty = getProperty;
 function isStringIndex(object, key) {
     if (typeof key !== 'number' && Array.isArray(object)) {
-        var index = Number.parseInt(key, 10);
+        const index = Number.parseInt(key, 10);
         return Number.isInteger(index) && object[index] === object[key];
     }
     return false;
