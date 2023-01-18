@@ -18,7 +18,6 @@ export const RX_REPLICATION_META_INSTANCE_SCHEMA: RxJsonSchema<RxDocumentData<Rx
     primaryKey: {
         key: 'id',
         fields: [
-            'replicationIdentifier',
             'itemId',
             'isCheckpoint'
         ],
@@ -33,15 +32,13 @@ export const RX_REPLICATION_META_INSTANCE_SCHEMA: RxJsonSchema<RxDocumentData<Rx
             minLength: 1,
             maxLength: 100
         },
-        replicationIdentifier: {
-            type: 'string'
-        },
         isCheckpoint: {
             type: 'string',
             enum: [
                 '0',
                 '1'
             ],
+            minLength: 1,
             maxLength: 1
         },
         itemId: {
@@ -57,7 +54,6 @@ export const RX_REPLICATION_META_INSTANCE_SCHEMA: RxJsonSchema<RxDocumentData<Rx
     },
     required: [
         'id',
-        'replicationIdentifier',
         'isCheckpoint',
         'itemId',
         'data'
@@ -73,16 +69,15 @@ export function getAssumedMasterState<RxDocType>(
     state: RxStorageInstanceReplicationState<RxDocType>,
     docIds: string[]
 ): Promise<ById<{
-        docData: WithDeleted<RxDocType>;
-        metaDocument: RxDocumentData<RxStorageReplicationMeta>;
-    }>> {
+    docData: WithDeleted<RxDocType>;
+    metaDocument: RxDocumentData<RxStorageReplicationMeta>;
+}>> {
     return state.input.metaInstance.findDocumentsById(
         docIds.map(docId => {
             const useId = getComposedPrimaryKeyOfDocumentData(
                 RX_REPLICATION_META_INSTANCE_SCHEMA,
                 {
                     itemId: docId,
-                    replicationIdentifier: state.checkpointKey,
                     isCheckpoint: '0'
                 }
             );
@@ -121,7 +116,6 @@ export function getMetaWriteRow<RxDocType>(
         previous
     ) : {
         id: '',
-        replicationIdentifier: state.checkpointKey,
         isCheckpoint: '0',
         itemId: docId,
         data: newMasterDocState,

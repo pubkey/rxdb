@@ -25,8 +25,7 @@ export async function getLastCheckpointDoc<RxDocType, CheckpointType>(
         RX_REPLICATION_META_INSTANCE_SCHEMA,
         {
             isCheckpoint: '1',
-            itemId: direction,
-            replicationIdentifier: state.checkpointKey
+            itemId: direction
         }
     );
     const checkpointResult = await state.input.metaInstance.findDocumentsById(
@@ -79,7 +78,6 @@ export async function setCheckpoint<RxDocType, CheckpointType>(
             id: '',
             isCheckpoint: '1',
             itemId: direction,
-            replicationIdentifier: state.checkpointKey,
             _deleted: false,
             _attachments: {},
             data: checkpoint,
