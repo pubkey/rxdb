@@ -10,6 +10,7 @@ import {
     randomCouchString,
     createRxSchema,
     RxJsonSchema,
+    defaultHashSha256,
 } from '../../';
 
 
@@ -28,7 +29,7 @@ config.parallel('population.test.js', () => {
                             maxLength: 100
                         }
                     }
-                });
+                }, defaultHashSha256);
                 assert.strictEqual(schema.constructor.name, 'RxSchema');
             });
             /**
@@ -48,7 +49,7 @@ config.parallel('population.test.js', () => {
                             maxLength: 100
                         }
                     }
-                });
+                }, defaultHashSha256);
                 assert.strictEqual(schema.constructor.name, 'RxSchema');
             });
             it('should allow to create a schema with a relation in nested', () => {
@@ -71,7 +72,7 @@ config.parallel('population.test.js', () => {
                             }
                         }
                     }
-                });
+                }, defaultHashSha256);
                 assert.strictEqual(schema.constructor.name, 'RxSchema');
             });
             it('should allow to create relation of array', () => {
@@ -92,7 +93,7 @@ config.parallel('population.test.js', () => {
                             }
                         }
                     }
-                });
+                }, defaultHashSha256);
                 assert.strictEqual(schema.constructor.name, 'RxSchema');
             });
             it('should allow to create relation with nullable string', () => {
@@ -113,7 +114,7 @@ config.parallel('population.test.js', () => {
                             }
                         }
                     }
-                });
+                }, defaultHashSha256);
                 assert.strictEqual(schema.constructor.name, 'RxSchema');
             });
         });
@@ -133,7 +134,7 @@ config.parallel('population.test.js', () => {
                                 ref: 'human'
                             }
                         }
-                    }),
+                    }, defaultHashSha256),
                     Error
                 );
             });
@@ -155,7 +156,7 @@ config.parallel('population.test.js', () => {
                                 }
                             }
                         }
-                    }),
+                    }, defaultHashSha256),
                     Error
                 );
             });

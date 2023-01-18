@@ -1,7 +1,6 @@
 import {
     ensureNotFalsy,
     errorToPlainJson,
-    fastUnsecureHash,
     flatClone,
     lastOfArray
 } from '../../plugins/utils';
@@ -304,7 +303,7 @@ export function replicateFirestore<RxDocType>(
 
     const replicationState = new RxFirestoreReplicationState<RxDocType>(
         options.firestore,
-        FIRESTORE_REPLICATION_PLUGIN_IDENTITY_PREFIX + fastUnsecureHash(options.firestore.projectId),
+        FIRESTORE_REPLICATION_PLUGIN_IDENTITY_PREFIX + options.collection.database.hashFunction(options.firestore.projectId),
         collection,
         replicationPrimitivesPull,
         replicationPrimitivesPush,

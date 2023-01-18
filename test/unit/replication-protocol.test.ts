@@ -24,7 +24,7 @@ import {
     rxStorageInstanceToReplicationHandler,
     cancelRxStorageReplication,
     awaitRxStorageReplicationInSync,
-    defaultHashFunction,
+    defaultHashSha256,
     getComposedPrimaryKeyOfDocumentData,
     setCheckpoint,
     deepEqual
@@ -269,7 +269,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                     pullBatchSize: 100,
                     pushBatchSize: 100,
                     conflictHandler: THROWING_CONFLICT_HANDLER,
-                    hashFunction: defaultHashFunction
+                    hashFunction: defaultHashSha256
                 });
 
                 await awaitRxStorageReplicationFirstInSync(replicationState);
@@ -337,7 +337,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 pullBatchSize: 100,
                 pushBatchSize: 100,
                 conflictHandler: THROWING_CONFLICT_HANDLER,
-                hashFunction: defaultHashFunction
+                hashFunction: defaultHashSha256
             });
             await awaitRxStorageReplicationFirstInSync(replicationState);
 
@@ -373,7 +373,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 pullBatchSize: 100,
                 pushBatchSize: 100,
                 conflictHandler: THROWING_CONFLICT_HANDLER,
-                hashFunction: defaultHashFunction
+                hashFunction: defaultHashSha256
             });
             await awaitRxStorageReplicationFirstInSync(replicationState);
 
@@ -408,7 +408,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 pullBatchSize: 100,
                 pushBatchSize: 100,
                 conflictHandler: HIGHER_AGE_CONFLICT_HANDLER,
-                hashFunction: defaultHashFunction
+                hashFunction: defaultHashSha256
             });
 
             const passportId = 'foobar';
@@ -491,7 +491,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 pullBatchSize: 100,
                 pushBatchSize: 100,
                 conflictHandler: THROWING_CONFLICT_HANDLER,
-                hashFunction: defaultHashFunction
+                hashFunction: defaultHashSha256
             });
 
             const replicationStateBtoMaster = replicateRxStorageInstance({
@@ -502,7 +502,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 pullBatchSize: 100,
                 pushBatchSize: 100,
                 conflictHandler: THROWING_CONFLICT_HANDLER,
-                hashFunction: defaultHashFunction
+                hashFunction: defaultHashSha256
             });
 
             // insert a document on A
@@ -544,7 +544,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 pullBatchSize: 100,
                 pushBatchSize: 100,
                 conflictHandler: THROWING_CONFLICT_HANDLER,
-                hashFunction: defaultHashFunction
+                hashFunction: defaultHashSha256
             });
             const replicationStateBtoC = replicateRxStorageInstance({
                 identifier: randomCouchString(10),
@@ -554,7 +554,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 pullBatchSize: 100,
                 pushBatchSize: 100,
                 conflictHandler: THROWING_CONFLICT_HANDLER,
-                hashFunction: defaultHashFunction
+                hashFunction: defaultHashSha256
             });
             const replicationStateCtoMaster = replicateRxStorageInstance({
                 identifier: randomCouchString(10),
@@ -564,7 +564,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 pullBatchSize: 100,
                 pushBatchSize: 100,
                 conflictHandler: THROWING_CONFLICT_HANDLER,
-                hashFunction: defaultHashFunction
+                hashFunction: defaultHashSha256
             });
 
             // insert a document on A
@@ -655,7 +655,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 pullBatchSize: 100,
                 pushBatchSize: 100,
                 conflictHandler: THROWING_CONFLICT_HANDLER,
-                hashFunction: defaultHashFunction
+                hashFunction: defaultHashSha256
             });
             const replicationStateBtoMaster = replicateRxStorageInstance({
                 identifier: randomCouchString(10),
@@ -665,7 +665,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 pullBatchSize: 100,
                 pushBatchSize: 100,
                 conflictHandler: THROWING_CONFLICT_HANDLER,
-                hashFunction: defaultHashFunction
+                hashFunction: defaultHashSha256
             });
 
             // insert a document on A
@@ -717,7 +717,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 pullBatchSize: 100,
                 pushBatchSize: 100,
                 conflictHandler: THROWING_CONFLICT_HANDLER,
-                hashFunction: defaultHashFunction
+                hashFunction: defaultHashSha256
             });
             await awaitRxStorageReplicationFirstInSync(replicationState);
 
@@ -761,7 +761,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 pullBatchSize: 100,
                 pushBatchSize: 100,
                 conflictHandler: HIGHER_AGE_CONFLICT_HANDLER,
-                hashFunction: defaultHashFunction
+                hashFunction: defaultHashSha256
             });
 
             await awaitRxStorageReplicationFirstInSync(replicationState);
@@ -829,7 +829,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 pullBatchSize: 100,
                 pushBatchSize: 100,
                 conflictHandler: HIGHER_AGE_CONFLICT_HANDLER,
-                hashFunction: defaultHashFunction
+                hashFunction: defaultHashSha256
             });
 
             await awaitRxStorageReplicationFirstInSync(replicationState);
@@ -875,7 +875,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                  * we await 50 milliseconds.
                  */
                 waitBeforePersist: () => promiseWait(70),
-                hashFunction: defaultHashFunction
+                hashFunction: defaultHashSha256
             });
 
             // insert
@@ -974,7 +974,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 pullBatchSize: Math.ceil(writeAmount / 4),
                 pushBatchSize: Math.ceil(writeAmount / 4),
                 conflictHandler: HIGHER_AGE_CONFLICT_HANDLER,
-                hashFunction: defaultHashFunction
+                hashFunction: defaultHashSha256
             });
 
             // insert
@@ -1101,7 +1101,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 pullBatchSize: 100,
                 pushBatchSize: 100,
                 conflictHandler: THROWING_CONFLICT_HANDLER as any,
-                hashFunction: defaultHashFunction
+                hashFunction: defaultHashSha256
             });
             await awaitRxStorageReplicationFirstInSync(replicationState);
 
@@ -1156,7 +1156,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 pullBatchSize: 100,
                 pushBatchSize: 100,
                 conflictHandler: THROWING_CONFLICT_HANDLER,
-                hashFunction: defaultHashFunction
+                hashFunction: defaultHashSha256
             });
 
             await awaitRxStorageReplicationFirstInSync(replicationState);

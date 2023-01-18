@@ -19,7 +19,7 @@ import type {
     RxStorageWriteErrorConflict
 } from './types';
 import {
-    fastUnsecureHash,
+    defaultHashSha256,
     flatClone,
     getFromMapOrThrow,
     requestIdleCallbackIfAvailable
@@ -67,7 +67,7 @@ export function wrappedValidateStorageFactory(
     function initValidator(
         schema: RxJsonSchema<any>
     ): ValidatorFunction {
-        const hash = fastUnsecureHash(JSON.stringify(schema));
+        const hash = defaultHashSha256(JSON.stringify(schema));
         if (!VALIDATOR_CACHE.has(hash)) {
             const validator = getValidator(schema);
             VALIDATOR_CACHE.set(hash, validator);

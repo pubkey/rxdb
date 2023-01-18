@@ -4,7 +4,6 @@
 import {
     ensureNotFalsy,
     errorToPlainJson,
-    fastUnsecureHash,
     flatClone,
     getFromMapOrThrow,
     lastOfArray
@@ -204,7 +203,7 @@ export function replicateCouchDB<RxDocType>(
     const replicationState = new RxCouchDBReplicationState<RxDocType>(
         options.url,
         options.fetch ? options.fetch : getDefaultFetch(),
-        COUCHDB_NEW_REPLICATION_PLUGIN_IDENTITY_PREFIX + fastUnsecureHash(options.url),
+        COUCHDB_NEW_REPLICATION_PLUGIN_IDENTITY_PREFIX + options.collection.database.hashFunction(options.url),
         collection,
         replicationPrimitivesPull,
         replicationPrimitivesPush,

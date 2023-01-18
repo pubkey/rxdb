@@ -16,7 +16,6 @@ import type {
 } from '../types';
 import {
     createRevision,
-    defaultHashFunction,
     ensureNotFalsy,
     flatClone,
     getDefaultRevision,
@@ -46,7 +45,7 @@ import {
 export function startReplicationDownstream<RxDocType, CheckpointType = any>(
     state: RxStorageInstanceReplicationState<RxDocType>
 ) {
-    const identifierHash = defaultHashFunction(state.input.identifier);
+    const identifierHash = state.input.hashFunction(state.input.identifier);
     const replicationHandler = state.input.replicationHandler;
 
     // used to detect which tasks etc can in it at which order.

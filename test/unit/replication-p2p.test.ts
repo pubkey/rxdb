@@ -13,7 +13,7 @@ import * as humansCollection from '../helper/humans-collection';
 import {
     randomCouchString,
     RxCollection,
-    defaultHashFunction,
+    defaultHashSha256,
     ensureNotFalsy
 } from '../../';
 
@@ -59,8 +59,8 @@ describe('replication-p2p.test.ts', () => {
                 const id1 = randomString(7);
                 const id2 = randomString(7);
                 it('should have exactly one master ' + id1 + ' - ' + id2, () => {
-                    const isMasterA = isMasterInP2PReplication(defaultHashFunction, id1, id2);
-                    const isMasterB = isMasterInP2PReplication(defaultHashFunction, id2, id1);
+                    const isMasterA = isMasterInP2PReplication(defaultHashSha256, id1, id2);
+                    const isMasterB = isMasterInP2PReplication(defaultHashSha256, id2, id1);
                     assert.ok(isMasterA !== isMasterB);
                 });
             });

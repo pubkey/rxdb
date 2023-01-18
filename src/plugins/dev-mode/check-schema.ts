@@ -30,7 +30,7 @@ export function checkFieldNameRegex(fieldName: string) {
         return;
     }
 
-    if (['properties', 'language'].includes(fieldName)) {
+    if (['properties'].includes(fieldName)) {
         throw newRxError('SC23', {
             fieldName
         });

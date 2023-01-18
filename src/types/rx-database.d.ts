@@ -29,6 +29,14 @@ export interface RxDatabaseCreator<Internals = any, InstanceCreationOptions = an
      */
     localDocuments?: boolean;
 
+    /**
+     * Hash method used to hash strings and json-stringified objects.
+     * This hash does not have to be cryptographically secure,
+     * but it is very important that is does have not create
+     * collisions.
+     * Default is the sha256 from the ohash library
+     * @link https://www.npmjs.com/package/ohash
+     */
     hashFunction?: HashFunction;
 
     /**
@@ -43,11 +51,11 @@ export type RxDatabase<
     Internals = any,
     InstanceCreationOptions = any,
 > = RxDatabaseBase<
-Internals,
-InstanceCreationOptions,
-Collections
+    Internals,
+    InstanceCreationOptions,
+    Collections
 > &
-Collections & RxDatabaseGenerated<Collections>;
+    Collections & RxDatabaseGenerated<Collections>;
 
 export type AllMigrationStates = {
     collection: RxCollection;
@@ -56,16 +64,16 @@ export type AllMigrationStates = {
 
 export interface RxLocalDocumentMutation<StorageType> {
     insertLocal<LocalDocType = any>(id: string, data: LocalDocType): Promise<
-    RxLocalDocument<StorageType, LocalDocType>
+        RxLocalDocument<StorageType, LocalDocType>
     >;
     upsertLocal<LocalDocType = any>(id: string, data: LocalDocType): Promise<
-    RxLocalDocument<StorageType, LocalDocType>
+        RxLocalDocument<StorageType, LocalDocType>
     >;
     getLocal<LocalDocType = any>(id: string): Promise<
-    RxLocalDocument<StorageType, LocalDocType> | null
+        RxLocalDocument<StorageType, LocalDocType> | null
     >;
     getLocal$<LocalDocType = any>(id: string): Observable<
-    RxLocalDocument<StorageType, LocalDocType> | null
+        RxLocalDocument<StorageType, LocalDocType> | null
     >;
 }
 

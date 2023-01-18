@@ -1,7 +1,6 @@
 import {
     overwriteGetterForCaching,
     isMaybeReadonlyArray,
-    fastUnsecureHash,
     deepEqual
 } from './plugins/utils';
 import {
@@ -16,7 +15,9 @@ import {
 
 import type {
     DeepMutable,
-    DeepReadonly, MaybeReadonly,
+    DeepReadonly,
+    HashFunction,
+    MaybeReadonly,
     RxDocumentData,
     RxJsonSchema,
     StringKeys
@@ -36,7 +37,8 @@ export class RxSchema<RxDocType = any> {
     public finalFields: string[];
 
     constructor(
-        public readonly jsonSchema: RxJsonSchema<RxDocumentData<RxDocType>>
+        public readonly jsonSchema: RxJsonSchema<RxDocumentData<RxDocType>>,
+        public readonly hashFunction: HashFunction
     ) {
         this.indexes = getIndexes(this.jsonSchema);
 
@@ -65,12 +67,15 @@ export class RxSchema<RxDocType = any> {
 
     /**
      * @overrides itself on the first call
+     *
+     * TODO this should be a pure function that
+     * caches the hash in a WeakMap.
      */
     public get hash(): string {
         return overwriteGetterForCaching(
             this,
             'hash',
-            fastUnsecureHash(JSON.stringify(this.jsonSchema))
+            this.hashFunction(JSON.stringify(this.jsonSchema))
         );
     }
 
@@ -138,6 +143,7 @@ export function getPreviousVersions(schema: RxJsonSchema<any>): number[] {
 
 export function createRxSchema<T>(
     jsonSchema: RxJsonSchema<T>,
+    hashFunction: HashFunction,
     runPreCreateHooks = true
 ): RxSchema<T> {
     if (runPreCreateHooks) {
@@ -148,7 +154,7 @@ export function createRxSchema<T>(
     useJsonSchema = normalizeRxJsonSchema(useJsonSchema);
     overwritable.deepFreezeWhenDevMode(useJsonSchema);
 
-    const schema = new RxSchema(useJsonSchema);
+    const schema = new RxSchema(useJsonSchema, hashFunction);
     runPluginHooks('createRxSchema', schema);
     return schema;
 }
