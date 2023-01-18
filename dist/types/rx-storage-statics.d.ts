@@ -1,5 +1,4 @@
-import type { DeterministicSortComparator } from 'event-reduce-js';
-import type { RxDocumentData, RxJsonSchema, RxStorageStatics, MangoQuery } from './types';
+import type { RxDocumentData, RxJsonSchema, RxStorageStatics, MangoQuery, DeterministicSortComparator } from './types';
 /**
  * Most RxStorage implementations use these static functions.
  * But you can use anything that implements the interface,

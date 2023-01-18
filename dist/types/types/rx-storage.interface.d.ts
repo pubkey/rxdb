@@ -1,8 +1,4 @@
 import type {
-    DeterministicSortComparator,
-    QueryMatcher
-} from 'event-reduce-js';
-import type {
     BulkWriteRow,
     EventBulk,
     PreparedQuery,
@@ -16,11 +12,13 @@ import type {
 } from './rx-storage';
 import type {
     DeepReadonly,
+    DeterministicSortComparator,
     JsonSchema,
     MangoQuery,
     MangoQuerySelector,
     MangoQuerySortPart,
     Override,
+    QueryMatcher,
     RxConflictResultionTask,
     RxConflictResultionTaskSolution,
     RxJsonSchema,
@@ -77,35 +75,35 @@ export interface RxStorage<Internals, InstanceCreationOptions> {
  * so we do not have to do many if-field-exist tests in the internals.
  */
 export type FilledMangoQuery<RxDocType> = Override<
-MangoQuery<RxDocType>,
-{
-    /**
-         * The selector is required here.
-         */
-    selector: MangoQuerySelector<RxDocType>;
+    MangoQuery<RxDocType>,
+    {
+        /**
+             * The selector is required here.
+             */
+        selector: MangoQuerySelector<RxDocType>;
 
-    /**
-         * In contrast to the user-provided MangoQuery,
-         * the sorting is required here because
-         * RxDB has to ensure that the primary key is always
-         * part of the sort params.
-         */
-    sort: MangoQuerySortPart<RxDocType>[];
+        /**
+             * In contrast to the user-provided MangoQuery,
+             * the sorting is required here because
+             * RxDB has to ensure that the primary key is always
+             * part of the sort params.
+             */
+        sort: MangoQuerySortPart<RxDocType>[];
 
-    /**
-         * In the normalized mango query,
-         * the index must always be a string[],
-         * never just a string.
-         * This makes it easier to use the query because
-         * we do not have to do an array check.
-         */
-    index?: string[];
+        /**
+             * In the normalized mango query,
+             * the index must always be a string[],
+             * never just a string.
+             * This makes it easier to use the query because
+             * we do not have to do an array check.
+             */
+        index?: string[];
 
-    /**
-         * Skip must be set which defaults to 0
-         */
-    skip: number;
-}
+        /**
+             * Skip must be set which defaults to 0
+             */
+        skip: number;
+    }
 >;
 
 /**
@@ -221,10 +219,10 @@ export interface RxStorageInstance<
          */
         context: string
     ): Promise<
-    /**
-         * returns the response, split into success and error lists.
-         */
-    RxStorageBulkWriteResponse<RxDocType>
+        /**
+             * returns the response, split into success and error lists.
+             */
+        RxStorageBulkWriteResponse<RxDocType>
     >;
 
     /**
@@ -335,11 +333,11 @@ export interface RxStorageInstance<
          */
         minimumDeletedTime: number
     ): Promise<
-    /**
-         * True if all docs cleaned up,
-         * false if there are more docs to clean up
-         */
-    boolean
+        /**
+             * True if all docs cleaned up,
+             * false if there are more docs to clean up
+             */
+        boolean
     >;
 
     /**

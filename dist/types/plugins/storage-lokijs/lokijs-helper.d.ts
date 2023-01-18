@@ -1,7 +1,6 @@
 import { RxStorageInstanceLoki } from './rx-storage-instance-loki';
 import { Collection } from 'lokijs';
-import type { LokiDatabaseSettings, LokiDatabaseState, LokiLocalDatabaseState, MangoQuery, RxDocumentData, RxJsonSchema } from '../../types';
-import type { DeterministicSortComparator } from 'event-reduce-js';
+import type { DeterministicSortComparator, LokiDatabaseSettings, LokiDatabaseState, LokiLocalDatabaseState, MangoQuery, RxDocumentData, RxJsonSchema } from '../../types';
 import { LeaderElector } from 'broadcast-channel';
 export declare const CHANGES_COLLECTION_SUFFIX = "-rxdb-changes";
 export declare const LOKI_BROADCAST_CHANNEL_MESSAGE_TYPE = "rxdb-lokijs-remote-request";
