@@ -8,7 +8,7 @@ import {
     randomCouchString,
     RxDatabase,
     isRxDatabaseFirstTimeInstantiated,
-    fastUnsecureHash
+    defaultHashSha256
 } from '../../';
 
 import AsyncTestUtil from 'async-test-util';
@@ -146,7 +146,7 @@ config.parallel('rx-database.test.js', () => {
                     name: randomCouchString(10),
                     storage: config.storage.getStorage(),
                     hashFunction(i: string) {
-                        return fastUnsecureHash(i) + 'xxx';
+                        return defaultHashSha256(i) + 'xxx';
                     }
                 });
                 const hash = db.hashFunction('foobar');

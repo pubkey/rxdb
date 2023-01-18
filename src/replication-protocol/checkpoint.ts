@@ -10,7 +10,6 @@ import type {
 import {
     createRevision,
     ensureNotFalsy,
-    fastUnsecureHash,
     getDefaultRevision,
     getDefaultRxDocumentMeta,
     getFromObjectOrThrow,
@@ -143,7 +142,7 @@ export async function setCheckpoint<RxDocType, CheckpointType>(
 export function getCheckpointKey<RxDocType>(
     input: RxStorageInstanceReplicationInput<RxDocType>
 ): string {
-    const hash = fastUnsecureHash([
+    const hash = input.hashFunction([
         input.identifier,
         input.forkInstance.databaseName,
         input.forkInstance.collectionName

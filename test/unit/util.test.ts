@@ -4,8 +4,8 @@
 import assert from 'assert';
 import AsyncTestUtil, { wait } from 'async-test-util';
 import {
-    fastUnsecureHash,
     randomCouchString,
+    defaultHashSha256,
     sortObject,
     now,
     sortDocumentsByLastWriteTime,
@@ -34,82 +34,24 @@ import { EXAMPLE_REVISION_1 } from '../helper/revisions';
 import { BIG_BASE64 } from '../helper/big-base64';
 
 describe('util.test.js', () => {
-    describe('.fastUnsecureHash()', () => {
-        function ensureSameHashWithoutTextEncoder(str: string) {
-            const hashWith = fastUnsecureHash(str);
-            const hashWithout = fastUnsecureHash(str, true);
-            assert.strictEqual(hashWith, hashWithout);
-        }
+    describe('.defaultHashSha256()', () => {
         it('should work with a string', () => {
-            const hash = fastUnsecureHash('foobar');
+            const hash = defaultHashSha256('foobar');
             assert.strictEqual(typeof hash, 'string');
             assert.ok(hash.length > 0);
-            ensureSameHashWithoutTextEncoder('foobar');
         });
         it('should get the same hash twice', () => {
             const str = randomCouchString(10);
-            const hash = fastUnsecureHash(str);
-            const hash2 = fastUnsecureHash(str);
+            const hash = defaultHashSha256(str);
+            const hash2 = defaultHashSha256(str);
             assert.strictEqual(hash, hash2);
-            ensureSameHashWithoutTextEncoder(str);
         });
         it('should work with a very large string', () => {
             const str = randomCouchString(5000);
-            const hash = fastUnsecureHash(str);
+            const hash = defaultHashSha256(str);
             assert.strictEqual(typeof hash, 'string');
             assert.ok(hash.length > 0);
-            ensureSameHashWithoutTextEncoder(str);
         });
-
-
-        // // TESTS for the performance of different javascript hash functions.
-        // const MurmurHash3 = require('imurmurhash');
-        // const mmh3 = require('murmurhash3'); // Node native C++ binding
-        // const murmurhash = require('murmurhash');
-        // const fnv1a = require('fnv1a');
-        // const hashSum = require('hash-sum');
-        // const ohash = require('ohash');
-
-        // /**
-        //  * @link https://stackoverflow.com/questions/6122571/simple-non-secure-hash-function-for-javascript#comment67396297_6122571
-        //  */
-        // function hashJoaat(b) {
-        //     for (var a = 0, c = b.length; c--;)a += b.charCodeAt(c), a += a << 10, a ^= a >> 6; a += a << 3; a ^= a >> 11; return ((a + (a << 15) & 4294967295) >>> 0).toString(16)
-        // }
-
-        // [
-        //     (str: string) => murmurhash.v3(str).toString(36),
-        //     (str: string) => fastUnsecureHash(str),
-        //     (str: string) => hashSum(str),
-        //     (str: string) => fnv1a(str).toString(36),
-        //     (str: string) => mmh3.murmur32HexSync(str).toString(36),
-        //     (str: string) => murmurhash.v2(str).toString(36),
-        //     (str: string) => ohash.murmurHash(str),
-        //     (str: string) => hashJoaat(str),
-        //     (str: string) => {
-        //         const hashState = new MurmurHash3('string');
-        //         hashState.hash(str);
-        //         return hashState.result();
-        //     },
-        //     (str: string) => Md5.hash(str)
-        // ].forEach(method => {
-        //     it('run once', async () => {
-        //         await wait(1000);
-        //         let str = randomCouchString(20000);
-        //         const start = performance.now();
-        //         let t = 0;
-        //         while (t < 6000) {
-        //             t++;
-        //             method(str);
-        //             str += '-';
-        //         }
-
-        //         console.log('sample: ' + method(str));
-
-        //         const time = performance.now() - start;
-        //         console.log('time ' + time);
-        //     });
-        // });
     });
     describe('.sortObject()', () => {
         it('should sort when regex in object', () => {

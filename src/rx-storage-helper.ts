@@ -32,7 +32,7 @@ import type {
 } from './types';
 import {
     createRevision,
-    defaultHashFunction,
+    defaultHashSha256,
     ensureNotFalsy,
     firstPropertyValueOfObject,
     flatClone,
@@ -448,7 +448,7 @@ export function attachmentWriteDataToNormalData(writeData: RxAttachmentData | Rx
         return writeData as any;
     }
     const ret: RxAttachmentData = {
-        digest: defaultHashFunction(data),
+        digest: defaultHashSha256(data),
         length: getAttachmentSize(data),
         type: writeData.type
     };

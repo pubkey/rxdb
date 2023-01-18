@@ -37,7 +37,7 @@ import {
     ensureNotFalsy,
     getDefaultRevision,
     getDefaultRxDocumentMeta,
-    defaultHashFunction
+    defaultHashSha256
 } from './plugins/utils';
 import {
     newRxError
@@ -268,7 +268,7 @@ export class RxDatabaseBase<
             const collectionName: keyof CreatedCollections = name as any;
             const rxJsonSchema = (args as RxCollectionCreator<any>).schema;
             jsonSchemas[collectionName] = rxJsonSchema;
-            const schema = createRxSchema(rxJsonSchema);
+            const schema = createRxSchema(rxJsonSchema, this.hashFunction);
             schemas[collectionName] = schema;
 
             // collection already exists
@@ -552,7 +552,7 @@ export function createRxDatabase<
         cleanupPolicy,
         allowSlowCount = false,
         localDocuments = false,
-        hashFunction = defaultHashFunction
+        hashFunction = defaultHashSha256
     }: RxDatabaseCreator<Internals, InstanceCreationOptions>
 ): Promise<
     RxDatabase<Collections, Internals, InstanceCreationOptions>

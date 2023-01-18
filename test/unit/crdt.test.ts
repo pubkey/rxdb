@@ -13,7 +13,7 @@ import {
     RxCollection,
     CRDTDocumentField,
     fillWithDefaultSettings,
-    defaultHashFunction,
+    defaultHashSha256,
     RxConflictHandlerOutput,
     rxStorageInstanceToReplicationHandler,
     RxReplicationWriteToMasterRow,
@@ -231,7 +231,7 @@ config.parallel('crdt.test.js', () => {
     });
 
     describe('.updateCRDT()', () => {
-        return;
+        return; // TODO
         it('should update the document via CRDT', async () => {
             const collection = await getCRDTCollection();
             const doc = await collection.insert(schemaObjects.human('foobar', 1));
@@ -278,7 +278,7 @@ config.parallel('crdt.test.js', () => {
     describe('conflict handling', () => {
         const schema = enableCRDTinSchema(fillWithDefaultSettings(schemas.human));
         const conflictHandler = getCRDTConflictHandler<WithCRDTs<schemas.HumanDocumentType>>(
-            defaultHashFunction,
+            defaultHashSha256,
             config.storage.getStorage().statics,
             schema
         );

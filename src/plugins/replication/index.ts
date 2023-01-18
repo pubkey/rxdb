@@ -33,7 +33,6 @@ import { RxDBLeaderElectionPlugin } from '../leader-election';
 import {
     ensureNotFalsy,
     errorToPlainJson,
-    fastUnsecureHash,
     flatClone,
     PROMISE_RESOLVE_FALSE,
     PROMISE_RESOLVE_TRUE,
@@ -426,7 +425,7 @@ export function replicateRxCollection<RxDocType, CheckpointType>(
     }: ReplicationOptions<RxDocType, CheckpointType>
 ): RxReplicationState<RxDocType, CheckpointType> {
     addRxPlugin(RxDBLeaderElectionPlugin);
-    const replicationIdentifierHash = fastUnsecureHash(
+    const replicationIdentifierHash = collection.database.hashFunction(
         [
             collection.database.name,
             collection.name,

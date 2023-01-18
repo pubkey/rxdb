@@ -263,7 +263,7 @@ export async function createOldCollection(
         dataMigrator,
         newestCollection: dataMigrator.newestCollection,
         database,
-        schema: createRxSchema(schemaObj, false),
+        schema: createRxSchema(schemaObj, database.hashFunction, false),
         storageInstance
     };
 

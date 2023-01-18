@@ -16,7 +16,8 @@ import {
     getDocumentPrototype,
     addRxPlugin,
     RxCollection,
-    createBlob
+    createBlob,
+    defaultHashSha256
 } from '../../';
 
 
@@ -30,7 +31,7 @@ describe('rx-document.test.js', () => {
     config.parallel('prototype-merge', () => {
         describe('RxSchema.getDocumentPrototype()', () => {
             it('should get an object with all main-fields', () => {
-                const schema = createRxSchema(schemas.human);
+                const schema = createRxSchema(schemas.human, defaultHashSha256);
                 assert.ok(schema);
                 const proto = schema.getDocumentPrototype();
                 assert.ok(proto);

@@ -4,7 +4,6 @@
  */
 import {
     ensureNotFalsy,
-    fastUnsecureHash,
     getProperty
 } from '../../plugins/utils';
 
@@ -174,7 +173,7 @@ export function replicateGraphQL<RxDocType, CheckpointType>(
     const graphqlReplicationState = new RxGraphQLReplicationState(
         url,
         mutateableClientState,
-        GRAPHQL_REPLICATION_PLUGIN_IDENTITY_PREFIX + fastUnsecureHash(url.http ? url.http : url.ws as any),
+        GRAPHQL_REPLICATION_PLUGIN_IDENTITY_PREFIX + collection.database.hashFunction(url.http ? url.http : url.ws as any),
         collection,
         deletedField,
         replicationPrimitivesPull,
