@@ -349,7 +349,7 @@ function attachmentWriteDataToNormalData(writeData) {
     return writeData;
   }
   var ret = {
-    digest: (0, _utils.defaultHashFunction)(data),
+    digest: (0, _utils.defaultHashSha256)(data),
     length: getAttachmentSize(data),
     type: writeData.type
   };

@@ -93,6 +93,7 @@ var RxReplicationState = /*#__PURE__*/function () {
     var pushModifier = this.push && this.push.modifier ? this.push.modifier : _replicationHelper.DEFAULT_MODIFIER;
     var database = this.collection.database;
     var metaInstanceCollectionName = this.collection.name + '-rx-replication-' + this.replicationIdentifierHash;
+    var metaInstanceSchema = (0, _replicationProtocol.getRxReplicationMetaInstanceSchema)(this.collection.schema.jsonSchema);
     var [metaInstance] = await Promise.all([this.collection.database.storage.createStorageInstance({
       databaseName: database.name,
       collectionName: metaInstanceCollectionName,
@@ -100,8 +101,8 @@ var RxReplicationState = /*#__PURE__*/function () {
       multiInstance: database.multiInstance,
       // TODO is this always false?
       options: {},
-      schema: _replicationProtocol.RX_REPLICATION_META_INSTANCE_SCHEMA
-    }), (0, _rxDatabaseInternalStore.addConnectedStorageToCollection)(this.collection, metaInstanceCollectionName, _replicationProtocol.RX_REPLICATION_META_INSTANCE_SCHEMA)]);
+      schema: metaInstanceSchema
+    }), (0, _rxDatabaseInternalStore.addConnectedStorageToCollection)(this.collection, metaInstanceCollectionName, metaInstanceSchema)]);
     this.metaInstance = metaInstance;
     this.internalReplicationState = (0, _replicationProtocol.replicateRxStorageInstance)({
       pushBatchSize: this.push && this.push.batchSize ? this.push.batchSize : 100,
@@ -322,7 +323,7 @@ function replicateRxCollection({
   autoStart = true
 }) {
   (0, _plugin.addRxPlugin)(_leaderElection.RxDBLeaderElectionPlugin);
-  var replicationIdentifierHash = (0, _utils.fastUnsecureHash)([collection.database.name, collection.name, replicationIdentifier].join('|'));
+  var replicationIdentifierHash = collection.database.hashFunction([collection.database.name, collection.name, replicationIdentifier].join('|'));
   var replicationState = new RxReplicationState(replicationIdentifierHash, collection, deletedField, pull, push, live, retryTime, autoStart);
   startReplicationOnLeaderShip(waitForLeadership, replicationState);
   return replicationState;

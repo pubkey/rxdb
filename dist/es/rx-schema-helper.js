@@ -1,5 +1,5 @@
 import { newRxError } from './rx-error';
-import { flatClone, getProperty, isMaybeReadonlyArray, REGEX_ALL_DOTS, RX_META_LWT_MINIMUM, sortObject, trimDots } from './plugins/utils';
+import { ensureNotFalsy, flatClone, getProperty, isMaybeReadonlyArray, REGEX_ALL_DOTS, RX_META_LWT_MINIMUM, sortObject, trimDots } from './plugins/utils';
 /**
  * Helper function to create a valid RxJsonSchema
  * with a given version.
@@ -57,6 +57,11 @@ export function getPrimaryFieldOfPrimaryKey(primaryKey) {
   } else {
     return primaryKey.key;
   }
+}
+export function getLengthOfPrimaryKey(schema) {
+  var primaryPath = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
+  var schemaPart = getSchemaByObjectPath(schema, primaryPath);
+  return ensureNotFalsy(schemaPart.maxLength);
 }
 
 /**

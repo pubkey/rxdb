@@ -176,7 +176,7 @@ export async function createOldCollection(version, schemaObj, dataMigrator) {
     dataMigrator,
     newestCollection: dataMigrator.newestCollection,
     database,
-    schema: createRxSchema(schemaObj, false),
+    schema: createRxSchema(schemaObj, database.hashFunction, false),
     storageInstance
   };
   ret.storageInstance = getWrappedStorageInstance(ret.database, storageInstance, schemaObj);

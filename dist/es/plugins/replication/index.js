@@ -7,8 +7,8 @@
 
 import { BehaviorSubject, combineLatest, mergeMap, Subject } from 'rxjs';
 import { RxDBLeaderElectionPlugin } from '../leader-election';
-import { ensureNotFalsy, errorToPlainJson, fastUnsecureHash, flatClone, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_TRUE, toArray } from '../../plugins/utils';
-import { awaitRxStorageReplicationFirstInSync, awaitRxStorageReplicationInSync, cancelRxStorageReplication, replicateRxStorageInstance, RX_REPLICATION_META_INSTANCE_SCHEMA } from '../../replication-protocol';
+import { ensureNotFalsy, errorToPlainJson, flatClone, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_TRUE, toArray } from '../../plugins/utils';
+import { awaitRxStorageReplicationFirstInSync, awaitRxStorageReplicationInSync, cancelRxStorageReplication, getRxReplicationMetaInstanceSchema, replicateRxStorageInstance } from '../../replication-protocol';
 import { newRxError } from '../../rx-error';
 import { awaitRetry, DEFAULT_MODIFIER, swapDefaultDeletedTodeletedField, handlePulledDocuments } from './replication-helper';
 import { addConnectedStorageToCollection } from '../../rx-database-internal-store';
@@ -84,6 +84,7 @@ export var RxReplicationState = /*#__PURE__*/function () {
     var pushModifier = this.push && this.push.modifier ? this.push.modifier : DEFAULT_MODIFIER;
     var database = this.collection.database;
     var metaInstanceCollectionName = this.collection.name + '-rx-replication-' + this.replicationIdentifierHash;
+    var metaInstanceSchema = getRxReplicationMetaInstanceSchema(this.collection.schema.jsonSchema);
     var [metaInstance] = await Promise.all([this.collection.database.storage.createStorageInstance({
       databaseName: database.name,
       collectionName: metaInstanceCollectionName,
@@ -91,8 +92,8 @@ export var RxReplicationState = /*#__PURE__*/function () {
       multiInstance: database.multiInstance,
       // TODO is this always false?
       options: {},
-      schema: RX_REPLICATION_META_INSTANCE_SCHEMA
-    }), addConnectedStorageToCollection(this.collection, metaInstanceCollectionName, RX_REPLICATION_META_INSTANCE_SCHEMA)]);
+      schema: metaInstanceSchema
+    }), addConnectedStorageToCollection(this.collection, metaInstanceCollectionName, metaInstanceSchema)]);
     this.metaInstance = metaInstance;
     this.internalReplicationState = replicateRxStorageInstance({
       pushBatchSize: this.push && this.push.batchSize ? this.push.batchSize : 100,
@@ -312,7 +313,7 @@ export function replicateRxCollection({
   autoStart = true
 }) {
   addRxPlugin(RxDBLeaderElectionPlugin);
-  var replicationIdentifierHash = fastUnsecureHash([collection.database.name, collection.name, replicationIdentifier].join('|'));
+  var replicationIdentifierHash = collection.database.hashFunction([collection.database.name, collection.name, replicationIdentifier].join('|'));
   var replicationState = new RxReplicationState(replicationIdentifierHash, collection, deletedField, pull, push, live, retryTime, autoStart);
   startReplicationOnLeaderShip(waitForLeadership, replicationState);
   return replicationState;

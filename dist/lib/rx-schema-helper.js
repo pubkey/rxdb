@@ -9,6 +9,7 @@ exports.fillPrimaryKey = fillPrimaryKey;
 exports.fillWithDefaultSettings = fillWithDefaultSettings;
 exports.getComposedPrimaryKeyOfDocumentData = getComposedPrimaryKeyOfDocumentData;
 exports.getFinalFields = getFinalFields;
+exports.getLengthOfPrimaryKey = getLengthOfPrimaryKey;
 exports.getPrimaryFieldOfPrimaryKey = getPrimaryFieldOfPrimaryKey;
 exports.getPseudoSchemaForVersion = getPseudoSchemaForVersion;
 exports.getSchemaByObjectPath = getSchemaByObjectPath;
@@ -72,6 +73,11 @@ function getPrimaryFieldOfPrimaryKey(primaryKey) {
   } else {
     return primaryKey.key;
   }
+}
+function getLengthOfPrimaryKey(schema) {
+  var primaryPath = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
+  var schemaPart = getSchemaByObjectPath(schema, primaryPath);
+  return (0, _utils.ensureNotFalsy)(schemaPart.maxLength);
 }
 
 /**

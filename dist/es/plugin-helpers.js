@@ -1,6 +1,6 @@
 import { mergeMap } from 'rxjs/operators';
 import { getPrimaryFieldOfPrimaryKey } from './rx-schema-helper';
-import { fastUnsecureHash, flatClone, getFromMapOrThrow, requestIdleCallbackIfAvailable } from './plugins/utils';
+import { defaultHashSha256, flatClone, getFromMapOrThrow, requestIdleCallbackIfAvailable } from './plugins/utils';
 /**
  * cache the validators by the schema-hash
  * so we can reuse them when multiple collections have the same schema
@@ -26,7 +26,7 @@ validatorKey) {
   }
   var VALIDATOR_CACHE = getFromMapOrThrow(VALIDATOR_CACHE_BY_VALIDATOR_KEY, validatorKey);
   function initValidator(schema) {
-    var hash = fastUnsecureHash(JSON.stringify(schema));
+    var hash = defaultHashSha256(JSON.stringify(schema));
     if (!VALIDATOR_CACHE.has(hash)) {
       var validator = getValidator(schema);
       VALIDATOR_CACHE.set(hash, validator);

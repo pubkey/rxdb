@@ -5,7 +5,7 @@
 import { overwritable } from './overwritable';
 import { newRxError } from './rx-error';
 import { fillPrimaryKey, getPrimaryFieldOfPrimaryKey } from './rx-schema-helper';
-import { createRevision, defaultHashFunction, ensureNotFalsy, firstPropertyValueOfObject, flatClone, getDefaultRevision, getDefaultRxDocumentMeta, now, randomCouchString } from './plugins/utils';
+import { createRevision, defaultHashSha256, ensureNotFalsy, firstPropertyValueOfObject, flatClone, getDefaultRevision, getDefaultRxDocumentMeta, now, randomCouchString } from './plugins/utils';
 export var INTERNAL_STORAGE_NAME = '_rxdb_internal';
 export var RX_DATABASE_LOCAL_DOCS_STORAGE_NAME = 'rxdatabase_storage_local';
 export async function getSingleDocument(storageInstance, documentId) {
@@ -326,7 +326,7 @@ export function attachmentWriteDataToNormalData(writeData) {
     return writeData;
   }
   var ret = {
-    digest: defaultHashFunction(data),
+    digest: defaultHashSha256(data),
     length: getAttachmentSize(data),
     type: writeData.type
   };

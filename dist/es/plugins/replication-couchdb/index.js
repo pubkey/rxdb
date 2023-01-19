@@ -2,7 +2,7 @@ import _inheritsLoose from "@babel/runtime/helpers/inheritsLoose";
 /**
  * This plugin can be used to sync collections with a remote CouchDB endpoint.
  */
-import { ensureNotFalsy, errorToPlainJson, fastUnsecureHash, flatClone, getFromMapOrThrow, lastOfArray } from '../../plugins/utils';
+import { ensureNotFalsy, errorToPlainJson, flatClone, getFromMapOrThrow, lastOfArray } from '../../plugins/utils';
 import { RxDBLeaderElectionPlugin } from '../leader-election';
 import { RxReplicationState, startReplicationOnLeaderShip } from '../replication';
 import { addRxPlugin, newRxError } from '../../index';
@@ -135,7 +135,7 @@ export function replicateCouchDB(options) {
       modifier: options.push.modifier
     };
   }
-  var replicationState = new RxCouchDBReplicationState(options.url, options.fetch ? options.fetch : getDefaultFetch(), COUCHDB_NEW_REPLICATION_PLUGIN_IDENTITY_PREFIX + fastUnsecureHash(options.url), collection, replicationPrimitivesPull, replicationPrimitivesPush, options.live, options.retryTime, options.autoStart);
+  var replicationState = new RxCouchDBReplicationState(options.url, options.fetch ? options.fetch : getDefaultFetch(), COUCHDB_NEW_REPLICATION_PLUGIN_IDENTITY_PREFIX + options.collection.database.hashFunction(options.url), collection, replicationPrimitivesPull, replicationPrimitivesPush, options.live, options.retryTime, options.autoStart);
 
   /**
    * Wrap the meta instance to make it store

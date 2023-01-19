@@ -149,7 +149,7 @@ var RxDatabaseBase = /*#__PURE__*/function () {
       var collectionName = name;
       var rxJsonSchema = args.schema;
       jsonSchemas[collectionName] = rxJsonSchema;
-      var schema = (0, _rxSchema.createRxSchema)(rxJsonSchema);
+      var schema = (0, _rxSchema.createRxSchema)(rxJsonSchema, this.hashFunction);
       schemas[collectionName] = schema;
 
       // collection already exists
@@ -383,7 +383,7 @@ function createRxDatabase({
   cleanupPolicy,
   allowSlowCount = false,
   localDocuments = false,
-  hashFunction = _utils.defaultHashFunction
+  hashFunction = _utils.defaultHashSha256
 }) {
   (0, _hooks.runPluginHooks)('preCreateRxDatabase', {
     storage,

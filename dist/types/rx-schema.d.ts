@@ -1,16 +1,20 @@
-import type { DeepMutable, DeepReadonly, MaybeReadonly, RxDocumentData, RxJsonSchema, StringKeys } from './types';
+import type { DeepMutable, DeepReadonly, HashFunction, MaybeReadonly, RxDocumentData, RxJsonSchema, StringKeys } from './types';
 export declare class RxSchema<RxDocType = any> {
     readonly jsonSchema: RxJsonSchema<RxDocumentData<RxDocType>>;
+    readonly hashFunction: HashFunction;
     indexes: MaybeReadonly<string[]>[];
     readonly primaryPath: StringKeys<RxDocumentData<RxDocType>>;
     finalFields: string[];
-    constructor(jsonSchema: RxJsonSchema<RxDocumentData<RxDocType>>);
+    constructor(jsonSchema: RxJsonSchema<RxDocumentData<RxDocType>>, hashFunction: HashFunction);
     get version(): number;
     get defaultValues(): {
         [P in keyof RxDocType]: RxDocType[P];
     };
     /**
      * @overrides itself on the first call
+     *
+     * TODO this should be a pure function that
+     * caches the hash in a WeakMap.
      */
     get hash(): string;
     /**
@@ -32,7 +36,7 @@ export declare function getIndexes<RxDocType = any>(jsonSchema: RxJsonSchema<RxD
  * array with previous version-numbers
  */
 export declare function getPreviousVersions(schema: RxJsonSchema<any>): number[];
-export declare function createRxSchema<T>(jsonSchema: RxJsonSchema<T>, runPreCreateHooks?: boolean): RxSchema<T>;
+export declare function createRxSchema<T>(jsonSchema: RxJsonSchema<T>, hashFunction: HashFunction, runPreCreateHooks?: boolean): RxSchema<T>;
 export declare function isRxSchema(obj: any): boolean;
 /**
  * Used as helper function the generate the document type out of the schema via typescript.

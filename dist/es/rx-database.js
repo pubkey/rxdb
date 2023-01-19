@@ -1,6 +1,6 @@
 import _createClass from "@babel/runtime/helpers/createClass";
 import { IdleQueue } from 'custom-idle-queue';
-import { pluginMissing, flatClone, PROMISE_RESOLVE_FALSE, randomCouchString, ensureNotFalsy, getDefaultRevision, getDefaultRxDocumentMeta, defaultHashFunction } from './plugins/utils';
+import { pluginMissing, flatClone, PROMISE_RESOLVE_FALSE, randomCouchString, ensureNotFalsy, getDefaultRevision, getDefaultRxDocumentMeta, defaultHashSha256 } from './plugins/utils';
 import { newRxError } from './rx-error';
 import { createRxSchema } from './rx-schema';
 import { runPluginHooks, runAsyncPluginHooks } from './hooks';
@@ -136,7 +136,7 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
       var collectionName = name;
       var rxJsonSchema = args.schema;
       jsonSchemas[collectionName] = rxJsonSchema;
-      var schema = createRxSchema(rxJsonSchema);
+      var schema = createRxSchema(rxJsonSchema, this.hashFunction);
       schemas[collectionName] = schema;
 
       // collection already exists
@@ -370,7 +370,7 @@ export function createRxDatabase({
   cleanupPolicy,
   allowSlowCount = false,
   localDocuments = false,
-  hashFunction = defaultHashFunction
+  hashFunction = defaultHashSha256
 }) {
   runPluginHooks('preCreateRxDatabase', {
     storage,

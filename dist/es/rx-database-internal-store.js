@@ -1,7 +1,7 @@
 import { isBulkWriteConflictError, newRxError } from './rx-error';
 import { fillWithDefaultSettings, getComposedPrimaryKeyOfDocumentData } from './rx-schema-helper';
 import { getSingleDocument, writeSingle } from './rx-storage-helper';
-import { clone, ensureNotFalsy, fastUnsecureHash, getDefaultRevision, getDefaultRxDocumentMeta, randomCouchString } from './plugins/utils';
+import { clone, ensureNotFalsy, getDefaultRevision, getDefaultRxDocumentMeta, randomCouchString } from './plugins/utils';
 export var INTERNAL_CONTEXT_COLLECTION = 'collection';
 export var INTERNAL_CONTEXT_STORAGE_TOKEN = 'storage-token';
 
@@ -95,7 +95,7 @@ export async function ensureStorageTokenDocumentExists(rxDatabase) {
    * and only fetch the existing one if a conflict happened.
    */
   var storageToken = randomCouchString(10);
-  var passwordHash = rxDatabase.password ? fastUnsecureHash(rxDatabase.password) : undefined;
+  var passwordHash = rxDatabase.password ? rxDatabase.hashFunction(rxDatabase.password) : undefined;
   var docData = {
     id: STORAGE_TOKEN_DOCUMENT_ID,
     context: INTERNAL_CONTEXT_STORAGE_TOKEN,

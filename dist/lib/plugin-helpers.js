@@ -33,7 +33,7 @@ validatorKey) {
   }
   var VALIDATOR_CACHE = (0, _utils.getFromMapOrThrow)(VALIDATOR_CACHE_BY_VALIDATOR_KEY, validatorKey);
   function initValidator(schema) {
-    var hash = (0, _utils.fastUnsecureHash)(JSON.stringify(schema));
+    var hash = (0, _utils.defaultHashSha256)(JSON.stringify(schema));
     if (!VALIDATOR_CACHE.has(hash)) {
       var validator = getValidator(schema);
       VALIDATOR_CACHE.set(hash, validator);

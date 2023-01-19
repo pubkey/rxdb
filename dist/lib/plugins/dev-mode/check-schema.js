@@ -26,7 +26,7 @@ function checkFieldNameRegex(fieldName) {
   if (fieldName === '_deleted') {
     return;
   }
-  if (['properties', 'language'].includes(fieldName)) {
+  if (['properties'].includes(fieldName)) {
     throw (0, _rxError.newRxError)('SC23', {
       fieldName
     });

@@ -18,8 +18,9 @@ var _rxDocument = require("./rx-document");
 var _rxSchemaHelper = require("./rx-schema-helper");
 var _overwritable = require("./overwritable");
 var RxSchema = /*#__PURE__*/function () {
-  function RxSchema(jsonSchema) {
+  function RxSchema(jsonSchema, hashFunction) {
     this.jsonSchema = jsonSchema;
+    this.hashFunction = hashFunction;
     this.indexes = getIndexes(this.jsonSchema);
 
     // primary is always required
@@ -74,11 +75,14 @@ var RxSchema = /*#__PURE__*/function () {
 
     /**
      * @overrides itself on the first call
+     *
+     * TODO this should be a pure function that
+     * caches the hash in a WeakMap.
      */
   }, {
     key: "hash",
     get: function () {
-      return (0, _utils.overwriteGetterForCaching)(this, 'hash', (0, _utils.fastUnsecureHash)(JSON.stringify(this.jsonSchema)));
+      return (0, _utils.overwriteGetterForCaching)(this, 'hash', this.hashFunction(JSON.stringify(this.jsonSchema)));
     }
   }]);
   return RxSchema;
@@ -96,14 +100,14 @@ function getPreviousVersions(schema) {
   var c = 0;
   return new Array(version).fill(0).map(() => c++);
 }
-function createRxSchema(jsonSchema, runPreCreateHooks = true) {
+function createRxSchema(jsonSchema, hashFunction, runPreCreateHooks = true) {
   if (runPreCreateHooks) {
     (0, _hooks.runPluginHooks)('preCreateRxSchema', jsonSchema);
   }
   var useJsonSchema = (0, _rxSchemaHelper.fillWithDefaultSettings)(jsonSchema);
   useJsonSchema = (0, _rxSchemaHelper.normalizeRxJsonSchema)(useJsonSchema);
   _overwritable.overwritable.deepFreezeWhenDevMode(useJsonSchema);
-  var schema = new RxSchema(useJsonSchema);
+  var schema = new RxSchema(useJsonSchema, hashFunction);
   (0, _hooks.runPluginHooks)('createRxSchema', schema);
   return schema;
 }

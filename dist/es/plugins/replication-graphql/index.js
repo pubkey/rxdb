@@ -3,7 +3,7 @@ import _inheritsLoose from "@babel/runtime/helpers/inheritsLoose";
  * this plugin adds the RxCollection.syncGraphQl()-function to rxdb
  * you can use it to sync collections with a remote graphql endpoint.
  */
-import { ensureNotFalsy, fastUnsecureHash, getProperty } from '../../plugins/utils';
+import { ensureNotFalsy, getProperty } from '../../plugins/utils';
 import { graphQLRequest as _graphQLRequest, GRAPHQL_REPLICATION_PLUGIN_IDENTITY_PREFIX } from './helper';
 import { RxDBLeaderElectionPlugin } from '../leader-election';
 import { RxReplicationState, startReplicationOnLeaderShip } from '../replication';
@@ -107,7 +107,7 @@ export function replicateGraphQL({
       modifier: push.modifier
     };
   }
-  var graphqlReplicationState = new RxGraphQLReplicationState(url, mutateableClientState, GRAPHQL_REPLICATION_PLUGIN_IDENTITY_PREFIX + fastUnsecureHash(url.http ? url.http : url.ws), collection, deletedField, replicationPrimitivesPull, replicationPrimitivesPush, live, retryTime, autoStart);
+  var graphqlReplicationState = new RxGraphQLReplicationState(url, mutateableClientState, GRAPHQL_REPLICATION_PLUGIN_IDENTITY_PREFIX + collection.database.hashFunction(url.http ? url.http : url.ws), collection, deletedField, replicationPrimitivesPull, replicationPrimitivesPush, live, retryTime, autoStart);
   var mustUseSocket = url.ws && pull && pull.streamQueryBuilder && live;
   var startBefore = graphqlReplicationState.start.bind(graphqlReplicationState);
   graphqlReplicationState.start = () => {

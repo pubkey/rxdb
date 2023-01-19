@@ -9,12 +9,10 @@ exports.setCheckpoint = setCheckpoint;
 var _rxSchemaHelper = require("../rx-schema-helper");
 var _rxStorageHelper = require("../rx-storage-helper");
 var _utils = require("../plugins/utils");
-var _metaInstance = require("./meta-instance");
 async function getLastCheckpointDoc(state, direction) {
-  var checkpointDocId = (0, _rxSchemaHelper.getComposedPrimaryKeyOfDocumentData)(_metaInstance.RX_REPLICATION_META_INSTANCE_SCHEMA, {
+  var checkpointDocId = (0, _rxSchemaHelper.getComposedPrimaryKeyOfDocumentData)(state.input.metaInstance.schema, {
     isCheckpoint: '1',
-    itemId: direction,
-    replicationIdentifier: state.checkpointKey
+    itemId: direction
   });
   var checkpointResult = await state.input.metaInstance.findDocumentsById([checkpointDocId], false);
   var checkpointDoc = checkpointResult[checkpointDocId];
@@ -51,14 +49,13 @@ async function setCheckpoint(state, direction, checkpoint) {
       id: '',
       isCheckpoint: '1',
       itemId: direction,
-      replicationIdentifier: state.checkpointKey,
       _deleted: false,
       _attachments: {},
       data: checkpoint,
       _meta: (0, _utils.getDefaultRxDocumentMeta)(),
       _rev: (0, _utils.getDefaultRevision)()
     };
-    newDoc.id = (0, _rxSchemaHelper.getComposedPrimaryKeyOfDocumentData)(_metaInstance.RX_REPLICATION_META_INSTANCE_SCHEMA, newDoc);
+    newDoc.id = (0, _rxSchemaHelper.getComposedPrimaryKeyOfDocumentData)(state.input.metaInstance.schema, newDoc);
     while (true) {
       /**
        * Instead of just storign the new checkpoint,
@@ -92,7 +89,7 @@ async function setCheckpoint(state, direction, checkpoint) {
   }
 }
 function getCheckpointKey(input) {
-  var hash = (0, _utils.fastUnsecureHash)([input.identifier, input.forkInstance.databaseName, input.forkInstance.collectionName].join('||'));
+  var hash = input.hashFunction([input.identifier, input.forkInstance.databaseName, input.forkInstance.collectionName].join('||'));
   return 'rx-storage-replication-' + hash;
 }
 //# sourceMappingURL=checkpoint.js.map

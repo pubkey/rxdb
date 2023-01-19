@@ -1,12 +1,10 @@
 import { getComposedPrimaryKeyOfDocumentData } from '../rx-schema-helper';
 import { stackCheckpoints } from '../rx-storage-helper';
-import { createRevision, ensureNotFalsy, fastUnsecureHash, getDefaultRevision, getDefaultRxDocumentMeta, getFromObjectOrThrow, now } from '../plugins/utils';
-import { RX_REPLICATION_META_INSTANCE_SCHEMA } from './meta-instance';
+import { createRevision, ensureNotFalsy, getDefaultRevision, getDefaultRxDocumentMeta, getFromObjectOrThrow, now } from '../plugins/utils';
 export async function getLastCheckpointDoc(state, direction) {
-  var checkpointDocId = getComposedPrimaryKeyOfDocumentData(RX_REPLICATION_META_INSTANCE_SCHEMA, {
+  var checkpointDocId = getComposedPrimaryKeyOfDocumentData(state.input.metaInstance.schema, {
     isCheckpoint: '1',
-    itemId: direction,
-    replicationIdentifier: state.checkpointKey
+    itemId: direction
   });
   var checkpointResult = await state.input.metaInstance.findDocumentsById([checkpointDocId], false);
   var checkpointDoc = checkpointResult[checkpointDocId];
@@ -43,14 +41,13 @@ export async function setCheckpoint(state, direction, checkpoint) {
       id: '',
       isCheckpoint: '1',
       itemId: direction,
-      replicationIdentifier: state.checkpointKey,
       _deleted: false,
       _attachments: {},
       data: checkpoint,
       _meta: getDefaultRxDocumentMeta(),
       _rev: getDefaultRevision()
     };
-    newDoc.id = getComposedPrimaryKeyOfDocumentData(RX_REPLICATION_META_INSTANCE_SCHEMA, newDoc);
+    newDoc.id = getComposedPrimaryKeyOfDocumentData(state.input.metaInstance.schema, newDoc);
     while (true) {
       /**
        * Instead of just storign the new checkpoint,
@@ -84,7 +81,7 @@ export async function setCheckpoint(state, direction, checkpoint) {
   }
 }
 export function getCheckpointKey(input) {
-  var hash = fastUnsecureHash([input.identifier, input.forkInstance.databaseName, input.forkInstance.collectionName].join('||'));
+  var hash = input.hashFunction([input.identifier, input.forkInstance.databaseName, input.forkInstance.collectionName].join('||'));
   return 'rx-storage-replication-' + hash;
 }
 //# sourceMappingURL=checkpoint.js.map

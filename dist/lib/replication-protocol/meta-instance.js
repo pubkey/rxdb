@@ -3,59 +3,61 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.RX_REPLICATION_META_INSTANCE_SCHEMA = void 0;
 exports.getAssumedMasterState = getAssumedMasterState;
 exports.getMetaWriteRow = getMetaWriteRow;
+exports.getRxReplicationMetaInstanceSchema = getRxReplicationMetaInstanceSchema;
 var _rxSchemaHelper = require("../rx-schema-helper");
 var _rxStorageHelper = require("../rx-storage-helper");
 var _utils = require("../plugins/utils");
-var RX_REPLICATION_META_INSTANCE_SCHEMA = (0, _rxSchemaHelper.fillWithDefaultSettings)({
-  primaryKey: {
-    key: 'id',
-    fields: ['replicationIdentifier', 'itemId', 'isCheckpoint'],
-    separator: '|'
-  },
-  type: 'object',
-  version: 0,
-  additionalProperties: false,
-  properties: {
-    id: {
-      type: 'string',
-      minLength: 1,
-      maxLength: 100
+function getRxReplicationMetaInstanceSchema(replicatedDocumentsSchema) {
+  var parentPrimaryKeyLength = (0, _rxSchemaHelper.getLengthOfPrimaryKey)(replicatedDocumentsSchema);
+  var metaInstanceSchema = (0, _rxSchemaHelper.fillWithDefaultSettings)({
+    primaryKey: {
+      key: 'id',
+      fields: ['itemId', 'isCheckpoint'],
+      separator: '|'
     },
-    replicationIdentifier: {
-      type: 'string'
+    type: 'object',
+    version: 0,
+    additionalProperties: false,
+    properties: {
+      id: {
+        type: 'string',
+        minLength: 1,
+        // add +1 for the '|' and +1 for the 'isCheckpoint' flag
+        maxLength: parentPrimaryKeyLength + 2
+      },
+      isCheckpoint: {
+        type: 'string',
+        enum: ['0', '1'],
+        minLength: 1,
+        maxLength: 1
+      },
+      itemId: {
+        type: 'string',
+        maxLength: parentPrimaryKeyLength
+      },
+      data: {
+        type: 'object',
+        additionalProperties: true
+      },
+      isResolvedConflict: {
+        type: 'string'
+      }
     },
-    isCheckpoint: {
-      type: 'string',
-      enum: ['0', '1'],
-      maxLength: 1
-    },
-    itemId: {
-      type: 'string'
-    },
-    data: {
-      type: 'object',
-      additionalProperties: true
-    },
-    isResolvedConflict: {
-      type: 'string'
-    }
-  },
-  required: ['id', 'replicationIdentifier', 'isCheckpoint', 'itemId', 'data']
-});
+    required: ['id', 'isCheckpoint', 'itemId', 'data']
+  });
+  return metaInstanceSchema;
+}
 
 /**
  * Returns the document states of what the fork instance
  * assumes to be the latest state on the master instance.
  */
-exports.RX_REPLICATION_META_INSTANCE_SCHEMA = RX_REPLICATION_META_INSTANCE_SCHEMA;
 function getAssumedMasterState(state, docIds) {
   return state.input.metaInstance.findDocumentsById(docIds.map(docId => {
-    var useId = (0, _rxSchemaHelper.getComposedPrimaryKeyOfDocumentData)(RX_REPLICATION_META_INSTANCE_SCHEMA, {
+    var useId = (0, _rxSchemaHelper.getComposedPrimaryKeyOfDocumentData)(state.input.metaInstance.schema, {
       itemId: docId,
-      replicationIdentifier: state.checkpointKey,
       isCheckpoint: '0'
     });
     return useId;
@@ -74,7 +76,6 @@ function getMetaWriteRow(state, newMasterDocState, previous, isResolvedConflict)
   var docId = newMasterDocState[state.primaryPath];
   var newMeta = previous ? (0, _rxStorageHelper.flatCloneDocWithMeta)(previous) : {
     id: '',
-    replicationIdentifier: state.checkpointKey,
     isCheckpoint: '0',
     itemId: docId,
     data: newMasterDocState,
@@ -88,7 +89,7 @@ function getMetaWriteRow(state, newMasterDocState, previous, isResolvedConflict)
   newMeta.data = newMasterDocState;
   newMeta.isResolvedConflict = isResolvedConflict;
   newMeta._meta.lwt = (0, _utils.now)();
-  newMeta.id = (0, _rxSchemaHelper.getComposedPrimaryKeyOfDocumentData)(RX_REPLICATION_META_INSTANCE_SCHEMA, newMeta);
+  newMeta.id = (0, _rxSchemaHelper.getComposedPrimaryKeyOfDocumentData)(state.input.metaInstance.schema, newMeta);
   newMeta._rev = (0, _utils.createRevision)(state.input.identifier, previous);
   return {
     previous,

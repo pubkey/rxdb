@@ -20,7 +20,7 @@ var _metaInstance = require("./meta-instance");
  * and still can have fast event based sync when the client is not offline.
  */
 function startReplicationDownstream(state) {
-  var identifierHash = (0, _utils.defaultHashFunction)(state.input.identifier);
+  var identifierHash = state.input.hashFunction(state.input.identifier);
   var replicationHandler = state.input.replicationHandler;
 
   // used to detect which tasks etc can in it at which order.
@@ -276,7 +276,14 @@ function startReplicationDownstream(state) {
         }
       }).then(() => {
         if (useMetaWriteRows.length > 0) {
-          return state.input.metaInstance.bulkWrite(useMetaWriteRows, 'replication-down-write-meta');
+          return state.input.metaInstance.bulkWrite(useMetaWriteRows, 'replication-down-write-meta').then(metaWriteResult => {
+            Object.entries(metaWriteResult.error).forEach(([docId, writeError]) => {
+              state.events.error.next((0, _rxError.newRxError)('RC_PULL', {
+                id: docId,
+                writeError
+              }));
+            });
+          });
         }
       }).then(() => {
         /**

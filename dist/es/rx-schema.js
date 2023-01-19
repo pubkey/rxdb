@@ -1,13 +1,14 @@
 import _createClass from "@babel/runtime/helpers/createClass";
-import { overwriteGetterForCaching, isMaybeReadonlyArray, fastUnsecureHash, deepEqual } from './plugins/utils';
+import { overwriteGetterForCaching, isMaybeReadonlyArray, deepEqual } from './plugins/utils';
 import { newRxError } from './rx-error';
 import { runPluginHooks } from './hooks';
 import { defineGetterSetter } from './rx-document';
 import { fillWithDefaultSettings, getComposedPrimaryKeyOfDocumentData, getFinalFields, getPrimaryFieldOfPrimaryKey, normalizeRxJsonSchema } from './rx-schema-helper';
 import { overwritable } from './overwritable';
 export var RxSchema = /*#__PURE__*/function () {
-  function RxSchema(jsonSchema) {
+  function RxSchema(jsonSchema, hashFunction) {
     this.jsonSchema = jsonSchema;
+    this.hashFunction = hashFunction;
     this.indexes = getIndexes(this.jsonSchema);
 
     // primary is always required
@@ -62,11 +63,14 @@ export var RxSchema = /*#__PURE__*/function () {
 
     /**
      * @overrides itself on the first call
+     *
+     * TODO this should be a pure function that
+     * caches the hash in a WeakMap.
      */
   }, {
     key: "hash",
     get: function () {
-      return overwriteGetterForCaching(this, 'hash', fastUnsecureHash(JSON.stringify(this.jsonSchema)));
+      return overwriteGetterForCaching(this, 'hash', this.hashFunction(JSON.stringify(this.jsonSchema)));
     }
   }]);
   return RxSchema;
@@ -83,14 +87,14 @@ export function getPreviousVersions(schema) {
   var c = 0;
   return new Array(version).fill(0).map(() => c++);
 }
-export function createRxSchema(jsonSchema, runPreCreateHooks = true) {
+export function createRxSchema(jsonSchema, hashFunction, runPreCreateHooks = true) {
   if (runPreCreateHooks) {
     runPluginHooks('preCreateRxSchema', jsonSchema);
   }
   var useJsonSchema = fillWithDefaultSettings(jsonSchema);
   useJsonSchema = normalizeRxJsonSchema(useJsonSchema);
   overwritable.deepFreezeWhenDevMode(useJsonSchema);
-  var schema = new RxSchema(useJsonSchema);
+  var schema = new RxSchema(useJsonSchema, hashFunction);
   runPluginHooks('createRxSchema', schema);
   return schema;
 }

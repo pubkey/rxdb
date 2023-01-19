@@ -1,5 +1,5 @@
 import _inheritsLoose from "@babel/runtime/helpers/inheritsLoose";
-import { ensureNotFalsy, errorToPlainJson, fastUnsecureHash, flatClone, lastOfArray } from '../../plugins/utils';
+import { ensureNotFalsy, errorToPlainJson, flatClone, lastOfArray } from '../../plugins/utils';
 import { doc, query, where, orderBy, limit, getDocs, onSnapshot, runTransaction, writeBatch, serverTimestamp, waitForPendingWrites, documentId } from 'firebase/firestore';
 import { RxDBLeaderElectionPlugin } from '../leader-election';
 import { RxReplicationState, startReplicationOnLeaderShip } from '../replication';
@@ -183,7 +183,7 @@ export function replicateFirestore(options) {
       modifier: options.push.modifier
     };
   }
-  var replicationState = new RxFirestoreReplicationState(options.firestore, FIRESTORE_REPLICATION_PLUGIN_IDENTITY_PREFIX + fastUnsecureHash(options.firestore.projectId), collection, replicationPrimitivesPull, replicationPrimitivesPush, options.live, options.retryTime, options.autoStart);
+  var replicationState = new RxFirestoreReplicationState(options.firestore, FIRESTORE_REPLICATION_PLUGIN_IDENTITY_PREFIX + options.collection.database.hashFunction(options.firestore.projectId), collection, replicationPrimitivesPull, replicationPrimitivesPush, options.live, options.retryTime, options.autoStart);
 
   /**
    * Use long polling to get live changes for the pull.stream$

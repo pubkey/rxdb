@@ -194,7 +194,7 @@ async function createOldCollection(version, schemaObj, dataMigrator) {
     dataMigrator,
     newestCollection: dataMigrator.newestCollection,
     database,
-    schema: (0, _rxSchema.createRxSchema)(schemaObj, false),
+    schema: (0, _rxSchema.createRxSchema)(schemaObj, database.hashFunction, false),
     storageInstance
   };
   ret.storageInstance = (0, _rxStorageHelper.getWrappedStorageInstance)(ret.database, storageInstance, schemaObj);

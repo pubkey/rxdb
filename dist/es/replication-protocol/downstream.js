@@ -1,7 +1,7 @@
 import { firstValueFrom, filter } from 'rxjs';
 import { newRxError } from '../rx-error';
 import { stackCheckpoints } from '../rx-storage-helper';
-import { createRevision, defaultHashFunction, ensureNotFalsy, flatClone, getDefaultRevision, getDefaultRxDocumentMeta, parseRevision, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_VOID } from '../plugins/utils';
+import { createRevision, ensureNotFalsy, flatClone, getDefaultRevision, getDefaultRxDocumentMeta, parseRevision, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_VOID } from '../plugins/utils';
 import { getLastCheckpointDoc, setCheckpoint } from './checkpoint';
 import { writeDocToDocState } from './helper';
 import { getAssumedMasterState, getMetaWriteRow } from './meta-instance';
@@ -15,7 +15,7 @@ import { getAssumedMasterState, getMetaWriteRow } from './meta-instance';
  * and still can have fast event based sync when the client is not offline.
  */
 export function startReplicationDownstream(state) {
-  var identifierHash = defaultHashFunction(state.input.identifier);
+  var identifierHash = state.input.hashFunction(state.input.identifier);
   var replicationHandler = state.input.replicationHandler;
 
   // used to detect which tasks etc can in it at which order.
@@ -271,7 +271,14 @@ export function startReplicationDownstream(state) {
         }
       }).then(() => {
         if (useMetaWriteRows.length > 0) {
-          return state.input.metaInstance.bulkWrite(useMetaWriteRows, 'replication-down-write-meta');
+          return state.input.metaInstance.bulkWrite(useMetaWriteRows, 'replication-down-write-meta').then(metaWriteResult => {
+            Object.entries(metaWriteResult.error).forEach(([docId, writeError]) => {
+              state.events.error.next(newRxError('RC_PULL', {
+                id: docId,
+                writeError
+              }));
+            });
+          });
         }
       }).then(() => {
         /**
