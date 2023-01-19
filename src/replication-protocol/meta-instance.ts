@@ -1,6 +1,7 @@
 import {
     fillWithDefaultSettings,
-    getComposedPrimaryKeyOfDocumentData
+    getComposedPrimaryKeyOfDocumentData,
+    getLengthOfPrimaryKey
 } from '../rx-schema-helper';
 import { flatCloneDocWithMeta } from '../rx-storage-helper';
 import type {
@@ -14,55 +15,62 @@ import type {
 } from '../types';
 import { getDefaultRevision, createRevision, now } from '../plugins/utils';
 
-export const RX_REPLICATION_META_INSTANCE_SCHEMA: RxJsonSchema<RxDocumentData<RxStorageReplicationMeta>> = fillWithDefaultSettings({
-    primaryKey: {
-        key: 'id',
-        fields: [
-            'replicationIdentifier',
-            'itemId',
-            'isCheckpoint'
-        ],
-        separator: '|'
-    },
-    type: 'object',
-    version: 0,
-    additionalProperties: false,
-    properties: {
-        id: {
-            type: 'string',
-            minLength: 1,
-            maxLength: 100
-        },
-        replicationIdentifier: {
-            type: 'string'
-        },
-        isCheckpoint: {
-            type: 'string',
-            enum: [
-                '0',
-                '1'
+
+export function getRxReplicationMetaInstanceSchema(
+    replicatedDocumentsSchema: RxJsonSchema<RxDocumentData<any>>
+): RxJsonSchema<RxDocumentData<RxStorageReplicationMeta>> {
+    const parentPrimaryKeyLength = getLengthOfPrimaryKey(replicatedDocumentsSchema);
+
+    const metaInstanceSchema: RxJsonSchema<RxDocumentData<RxStorageReplicationMeta>> = fillWithDefaultSettings({
+        primaryKey: {
+            key: 'id',
+            fields: [
+                'itemId',
+                'isCheckpoint'
             ],
-            maxLength: 1
+            separator: '|'
         },
-        itemId: {
-            type: 'string'
+        type: 'object',
+        version: 0,
+        additionalProperties: false,
+        properties: {
+            id: {
+                type: 'string',
+                minLength: 1,
+                // add +1 for the '|' and +1 for the 'isCheckpoint' flag
+                maxLength: parentPrimaryKeyLength + 2
+            },
+            isCheckpoint: {
+                type: 'string',
+                enum: [
+                    '0',
+                    '1'
+                ],
+                minLength: 1,
+                maxLength: 1
+            },
+            itemId: {
+                type: 'string',
+                maxLength: parentPrimaryKeyLength
+            },
+            data: {
+                type: 'object',
+                additionalProperties: true
+            },
+            isResolvedConflict: {
+                type: 'string'
+            }
         },
-        data: {
-            type: 'object',
-            additionalProperties: true
-        },
-        isResolvedConflict: {
-            type: 'string'
-        }
-    },
-    required: [
-        'id',
-        'replicationIdentifier',
-        'isCheckpoint',
-        'itemId',
-        'data'
-    ]
-});
+        required: [
+            'id',
+            'isCheckpoint',
+            'itemId',
+            'data'
+        ]
+    });
+    return metaInstanceSchema;
+}
+
 
 
 /**
@@ -73,16 +81,15 @@ export function getAssumedMasterState<RxDocType>(
     state: RxStorageInstanceReplicationState<RxDocType>,
     docIds: string[]
 ): Promise<ById<{
-        docData: WithDeleted<RxDocType>;
-        metaDocument: RxDocumentData<RxStorageReplicationMeta>;
-    }>> {
+    docData: WithDeleted<RxDocType>;
+    metaDocument: RxDocumentData<RxStorageReplicationMeta>;
+}>> {
     return state.input.metaInstance.findDocumentsById(
         docIds.map(docId => {
             const useId = getComposedPrimaryKeyOfDocumentData(
-                RX_REPLICATION_META_INSTANCE_SCHEMA,
+                state.input.metaInstance.schema,
                 {
                     itemId: docId,
-                    replicationIdentifier: state.checkpointKey,
                     isCheckpoint: '0'
                 }
             );
@@ -121,7 +128,6 @@ export function getMetaWriteRow<RxDocType>(
         previous
     ) : {
         id: '',
-        replicationIdentifier: state.checkpointKey,
         isCheckpoint: '0',
         itemId: docId,
         data: newMasterDocState,
@@ -136,7 +142,7 @@ export function getMetaWriteRow<RxDocType>(
     newMeta.isResolvedConflict = isResolvedConflict;
     newMeta._meta.lwt = now();
     newMeta.id = getComposedPrimaryKeyOfDocumentData(
-        RX_REPLICATION_META_INSTANCE_SCHEMA,
+        state.input.metaInstance.schema,
         newMeta
     );
     newMeta._rev = createRevision(

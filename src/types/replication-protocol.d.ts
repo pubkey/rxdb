@@ -24,13 +24,6 @@ export type RxStorageReplicationMeta = {
     itemId: string;
 
     /**
-     * input.identifier of the replication state,
-     * used to not mix up different data
-     * when the instance is used in more then one replication.
-     */
-    replicationIdentifier: string;
-
-    /**
      * True if the doc data is about a checkpoint,
      * False if it is about a document state from the master.
      * Stored as a string so it can be used

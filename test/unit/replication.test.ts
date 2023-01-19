@@ -30,7 +30,8 @@ import {
     RxTypeError,
     createRxDatabase,
     RxReplicationPullStreamItem,
-    lastOfArray
+    lastOfArray,
+    RxJsonSchema
 } from '../../';
 
 import {
@@ -49,7 +50,6 @@ type CheckpointType = any;
 
 describe('replication.test.js', () => {
     const REPLICATION_IDENTIFIER_TEST = 'replication-ident-tests';
-
     type TestDocType = schemaObjects.HumanWithTimestampDocumentType;
     async function getTestCollections(docsAmount: { local: number; remote: number; }): Promise<{
         localCollection: RxCollection<TestDocType, {}, {}, {}>;
@@ -62,6 +62,10 @@ describe('replication.test.js', () => {
             remoteCollection
         };
     }
+
+    const storageWithValidation = wrappedValidateAjvStorage({
+        storage: config.storage.getStorage()
+    });
 
     /**
      * Creates a pull handler that always returns
@@ -219,9 +223,7 @@ describe('replication.test.js', () => {
             const otherSchemaCollection = await humansCollection.createBySchema(
                 otherSchema,
                 undefined,
-                wrappedValidateAjvStorage({
-                    storage: config.storage.getStorage()
-                })
+                storageWithValidation
             );
 
             const replicationState = replicateRxCollection({
@@ -624,6 +626,78 @@ describe('replication.test.js', () => {
 
             // clean up afterwards
             db.destroy();
+        });
+        it('#4315 Id length limit reached with composite key', async () => {
+            const primaryKeyLength = 1000;
+            async function getCollection(): Promise<RxCollection<TestDocType>> {
+                const db = await createRxDatabase({
+                    name: randomCouchString(10),
+                    storage: storageWithValidation,
+                    eventReduce: true,
+                    ignoreDuplicate: true
+                });
+                const schema: RxJsonSchema<TestDocType> = clone(schemas.humanWithTimestamp);
+                schema.properties.id.maxLength = primaryKeyLength;
+                const collections = await db.addCollections({
+                    mycollection: {
+                        schema
+                    }
+                });
+                const mycollection: RxCollection<TestDocType> = collections.mycollection;
+                return mycollection;
+            }
+
+            const remoteCollection = await getCollection();
+            const localCollection = await getCollection();
+
+
+            const docA = schemaObjects.humanWithTimestamp({
+                id: randomCouchString(primaryKeyLength)
+            });
+            await remoteCollection.insert(docA);
+            const docB = schemaObjects.humanWithTimestamp({
+                id: randomCouchString(primaryKeyLength)
+            });
+            await localCollection.insert(docB);
+
+            const pullHandler = getPullHandler(remoteCollection);
+            const pushHandler = getPushHandler(remoteCollection);
+            const batchSize = 10;
+            const replicationState = replicateRxCollection({
+                collection: localCollection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: false,
+                pull: {
+                    batchSize,
+                    handler: (lastPulledCheckpoint: CheckpointType, pullBatchSize: number) => {
+                        return pullHandler(lastPulledCheckpoint, pullBatchSize);
+                    }
+                },
+                push: {
+                    batchSize,
+                    handler: (docs, meta) => {
+                        return pushHandler(docs, meta);
+                    }
+                }
+            });
+            replicationState.error$.subscribe(err => {
+                console.log('got error :');
+                console.log(JSON.stringify(err, null, 4));
+                throw err;
+            });
+
+
+            await replicationState.awaitInitialReplication();
+
+            const docsLocal = await localCollection.find().exec();
+            const docsRemote = await remoteCollection.find().exec();
+
+            assert.strictEqual(docsLocal.length, 2);
+            assert.strictEqual(docsRemote.length, 2);
+
+
+            remoteCollection.database.destroy();
+            localCollection.database.destroy();
         });
     });
 });
