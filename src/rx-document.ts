@@ -95,6 +95,7 @@ export const basePrototype = {
             map(changeEvent => getDocumentDataOfRxChangeEvent(changeEvent)),
             startWith(_this.collection._docCache.getLatestDocumentData(this.primary)),
             distinctUntilChanged((prev, curr) => prev._rev === curr._rev),
+            map(docData => (this as RxDocument<any>).collection._docCache.getCachedRxDocument(docData)),
             shareReplay(RXJS_SHARE_REPLAY_DEFAULTS)
         );
     },
