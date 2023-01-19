@@ -428,7 +428,16 @@ export function startReplicationDownstream<RxDocType, CheckpointType = any>(
                     return state.input.metaInstance.bulkWrite(
                         useMetaWriteRows,
                         'replication-down-write-meta'
-                    );
+                    ).then(metaWriteResult => {
+                        Object
+                            .entries(metaWriteResult.error)
+                            .forEach(([docId, writeError]) => {
+                                state.events.error.next(newRxError('RC_PULL', {
+                                    id: docId,
+                                    writeError
+                                }));
+                            });
+                    });
                 }
             }).then(() => {
                 /**

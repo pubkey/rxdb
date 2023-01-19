@@ -10,6 +10,7 @@ import type {
     StringKeys
 } from './types';
 import {
+    ensureNotFalsy,
     flatClone,
     getProperty,
     isMaybeReadonlyArray,
@@ -102,6 +103,14 @@ export function getPrimaryFieldOfPrimaryKey<RxDocType>(
     } else {
         return (primaryKey as CompositePrimaryKey<RxDocType>).key;
     }
+}
+
+export function getLengthOfPrimaryKey<RxDocType>(
+    schema: RxJsonSchema<RxDocumentData<RxDocType>>
+): number {
+    const primaryPath = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
+    const schemaPart = getSchemaByObjectPath(schema, primaryPath);
+    return ensureNotFalsy(schemaPart.maxLength);
 }
 
 /**

@@ -42,8 +42,8 @@ import {
     awaitRxStorageReplicationFirstInSync,
     awaitRxStorageReplicationInSync,
     cancelRxStorageReplication,
-    replicateRxStorageInstance,
-    RX_REPLICATION_META_INSTANCE_SCHEMA
+    getRxReplicationMetaInstanceSchema,
+    replicateRxStorageInstance
 } from '../../replication-protocol';
 import { newRxError } from '../../rx-error';
 import {
@@ -133,6 +133,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
 
         const database = this.collection.database;
         const metaInstanceCollectionName = this.collection.name + '-rx-replication-' + this.replicationIdentifierHash;
+        const metaInstanceSchema = getRxReplicationMetaInstanceSchema(this.collection.schema.jsonSchema);
         const [metaInstance] = await Promise.all([
             this.collection.database.storage.createStorageInstance({
                 databaseName: database.name,
@@ -140,12 +141,12 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                 databaseInstanceToken: database.token,
                 multiInstance: database.multiInstance, // TODO is this always false?
                 options: {},
-                schema: RX_REPLICATION_META_INSTANCE_SCHEMA
+                schema: metaInstanceSchema
             }),
             addConnectedStorageToCollection(
                 this.collection,
                 metaInstanceCollectionName,
-                RX_REPLICATION_META_INSTANCE_SCHEMA
+                metaInstanceSchema
             )
         ]);
         this.metaInstance = metaInstance;

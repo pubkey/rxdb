@@ -19,7 +19,7 @@ import {
     getFromObjectOrThrow,
     awaitRxStorageReplicationIdle,
     promiseWait,
-    RX_REPLICATION_META_INSTANCE_SCHEMA,
+    getRxReplicationMetaInstanceSchema,
     RxStorageReplicationMeta,
     rxStorageInstanceToReplicationHandler,
     cancelRxStorageReplication,
@@ -27,7 +27,8 @@ import {
     defaultHashSha256,
     getComposedPrimaryKeyOfDocumentData,
     setCheckpoint,
-    deepEqual
+    deepEqual,
+    RxJsonSchema
 } from '../../';
 
 
@@ -158,12 +159,12 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
 
         return storageInstance;
     }
-    async function createMetaInstance(): Promise<RxStorageInstance<RxStorageReplicationMeta, any, any>> {
+    async function createMetaInstance(parentSchema: RxJsonSchema<RxDocumentData<any>>): Promise<RxStorageInstance<RxStorageReplicationMeta, any, any>> {
         const instance = await config.storage.getStorage().createStorageInstance<RxStorageReplicationMeta>({
             databaseInstanceToken: randomCouchString(10),
             databaseName: randomCouchString(12),
             collectionName: randomCouchString(12),
-            schema: RX_REPLICATION_META_INSTANCE_SCHEMA,
+            schema: getRxReplicationMetaInstanceSchema(parentSchema),
             options: {},
             multiInstance: true
         });
@@ -250,7 +251,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
             it('#3627 should not write a duplicate checkpoint', async () => {
                 const masterInstance = await createRxStorageInstance(1);
                 const forkInstance = await createRxStorageInstance(0);
-                const metaInstance = await createMetaInstance();
+                const metaInstance = await createMetaInstance(forkInstance.schema);
 
                 const writeResult = await masterInstance.bulkWrite([{
                     document: getDocData()
@@ -277,11 +278,10 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
 
 
                 const checkpointDocId = getComposedPrimaryKeyOfDocumentData(
-                    RX_REPLICATION_META_INSTANCE_SCHEMA,
+                    metaInstance.schema,
                     {
                         isCheckpoint: '1',
-                        itemId: 'down',
-                        replicationIdentifier: replicationState.checkpointKey
+                        itemId: 'down'
                     }
                 );
                 let checkpointDocBefore: any;
@@ -323,7 +323,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
         it('it should write the initial data and also the ongoing insert', async () => {
             const masterInstance = await createRxStorageInstance(1);
             const forkInstance = await createRxStorageInstance(0);
-            const metaInstance = await createMetaInstance();
+            const metaInstance = await createMetaInstance(forkInstance.schema);
 
             const replicationState = replicateRxStorageInstance({
                 identifier: randomCouchString(10),
@@ -362,7 +362,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
         it('it should write the initial data and also the ongoing insert', async () => {
             const masterInstance = await createRxStorageInstance(0);
             const forkInstance = await createRxStorageInstance(1);
-            const metaInstance = await createMetaInstance();
+            const metaInstance = await createMetaInstance(forkInstance.schema);
 
 
             const replicationState = replicateRxStorageInstance({
@@ -398,7 +398,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
         it('should replicate the insert and the update and the delete', async () => {
             const masterInstance = await createRxStorageInstance(0);
             const forkInstance = await createRxStorageInstance(1);
-            const metaInstance = await createMetaInstance();
+            const metaInstance = await createMetaInstance(forkInstance.schema);
 
             const replicationState = replicateRxStorageInstance({
                 identifier: randomCouchString(10),
@@ -479,9 +479,9 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
         it('should be able to replicate A->Master<-B', async () => {
             const masterInstance = await createRxStorageInstance(0);
             const forkInstanceA = await createRxStorageInstance(0);
-            const metaInstanceA = await createMetaInstance();
+            const metaInstanceA = await createMetaInstance(forkInstanceA.schema);
             const forkInstanceB = await createRxStorageInstance(0);
-            const metaInstanceB = await createMetaInstance();
+            const metaInstanceB = await createMetaInstance(forkInstanceB.schema);
 
             const replicationStateAtoMaster = replicateRxStorageInstance({
                 identifier: randomCouchString(10),
@@ -530,11 +530,11 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
         it('should be able to replicate A->B->C->Master', async () => {
             const masterInstance = await createRxStorageInstance(0);
             const forkInstanceA = await createRxStorageInstance(0);
-            const metaInstanceA = await createMetaInstance();
+            const metaInstanceA = await createMetaInstance(forkInstanceA.schema);
             const forkInstanceB = await createRxStorageInstance(0);
-            const metaInstanceB = await createMetaInstance();
+            const metaInstanceB = await createMetaInstance(forkInstanceB.schema);
             const forkInstanceC = await createRxStorageInstance(0);
-            const metaInstanceC = await createMetaInstance();
+            const metaInstanceC = await createMetaInstance(forkInstanceC.schema);
 
             const replicationStateAtoB = replicateRxStorageInstance({
                 identifier: randomCouchString(10),
@@ -642,9 +642,9 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
             const masterInstanceB = await createRxStorageInstance(0, databaseName, collectionName);
 
             const forkInstanceA = await createRxStorageInstance(0);
-            const metaInstanceA = await createMetaInstance();
+            const metaInstanceA = await createMetaInstance(forkInstanceA.schema);
             const forkInstanceB = await createRxStorageInstance(0);
-            const metaInstanceB = await createMetaInstance();
+            const metaInstanceB = await createMetaInstance(forkInstanceB.schema);
 
 
             const replicationStateAtoMaster = replicateRxStorageInstance({
@@ -696,7 +696,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
         it('both have inserted the exact same document -> no conflict handler must be called', async () => {
             const masterInstance = await createRxStorageInstance(0);
             const forkInstance = await createRxStorageInstance(0);
-            const metaInstance = await createMetaInstance();
+            const metaInstance = await createMetaInstance(forkInstance.schema);
             const instances = [masterInstance, forkInstance];
 
             const document = getDocData();
@@ -731,7 +731,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
         it('both have inserted the same document with different properties', async () => {
             const masterInstance = await createRxStorageInstance(0);
             const forkInstance = await createRxStorageInstance(0);
-            const metaInstance = await createMetaInstance();
+            const metaInstance = await createMetaInstance(forkInstance.schema);
             const instances = [masterInstance, forkInstance];
             const document = getDocData();
             await Promise.all(
@@ -788,7 +788,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
         it('both have updated the document with different values', async () => {
             const masterInstance = await createRxStorageInstance(0);
             const forkInstance = await createRxStorageInstance(0);
-            const metaInstance = await createMetaInstance();
+            const metaInstance = await createMetaInstance(forkInstance.schema);
             const instances = [masterInstance, forkInstance];
 
             const document = getDocData();
@@ -842,7 +842,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
 
             const masterInstance = await createRxStorageInstance(0);
             const forkInstance = await createRxStorageInstance(0);
-            const metaInstance = await createMetaInstance();
+            const metaInstance = await createMetaInstance(forkInstance.schema);
 
             /**
             * Wrap bulkWrite() to count the calls
@@ -963,7 +963,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
 
             const masterInstance = await createRxStorageInstance(0);
             const forkInstance = await createRxStorageInstance(0);
-            const metaInstance = await createMetaInstance();
+            const metaInstance = await createMetaInstance(forkInstance.schema);
 
             const instances = [masterInstance, forkInstance];
             const replicationState = replicateRxStorageInstance({
@@ -1073,7 +1073,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 options: {},
                 multiInstance: true
             });
-            const metaInstance = await createMetaInstance();
+            const metaInstance = await createMetaInstance(forkInstance.schema);
 
             // add master doc
             // check ongoing doc
@@ -1136,7 +1136,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
 
             const masterInstance = await createRxStorageInstance(0);
             const forkInstance = await createRxStorageInstance(0);
-            const metaInstance = await createMetaInstance();
+            const metaInstance = await createMetaInstance(forkInstance.schema);
 
             await masterInstance.bulkWrite(
                 new Array(writeAmount)

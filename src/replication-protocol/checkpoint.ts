@@ -15,14 +15,13 @@ import {
     getFromObjectOrThrow,
     now
 } from '../plugins/utils';
-import { RX_REPLICATION_META_INSTANCE_SCHEMA } from './meta-instance';
 
 export async function getLastCheckpointDoc<RxDocType, CheckpointType>(
     state: RxStorageInstanceReplicationState<RxDocType>,
     direction: RxStorageReplicationDirection
 ): Promise<undefined | CheckpointType> {
     const checkpointDocId = getComposedPrimaryKeyOfDocumentData(
-        RX_REPLICATION_META_INSTANCE_SCHEMA,
+        state.input.metaInstance.schema,
         {
             isCheckpoint: '1',
             itemId: direction
@@ -85,7 +84,7 @@ export async function setCheckpoint<RxDocType, CheckpointType>(
             _rev: getDefaultRevision()
         };
         newDoc.id = getComposedPrimaryKeyOfDocumentData(
-            RX_REPLICATION_META_INSTANCE_SCHEMA,
+            state.input.metaInstance.schema,
             newDoc
         );
         while (true) {
