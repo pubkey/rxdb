@@ -9,6 +9,7 @@ If you are a **single developer** and you use RxDB in your **side project**, you
 
 
 - Set `"type": "module"` in the `package.json` and fix every problem that occurs with that change. [related](https://github.com/pubkey/rxdb/pull/4202)
+- Update **all** open PRs from the renovate bot and ensure that the CI is green. https://github.com/pubkey/rxdb/pulls?q=is%3Apr+is%3Aopen+by%3A%40renovate
 
 (This list will be regulary updated with new Tasks)
 
