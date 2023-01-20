@@ -49,7 +49,7 @@ export declare interface RxDocumentBase<RxDocType, OrmMethods = {}> {
     collection: RxCollection<RxDocType, OrmMethods>;
     readonly deleted: boolean;
 
-    readonly $: Observable<DeepReadonly<RxDocumentData<RxDocType>>>;
+    readonly $: Observable<RxDocument<RxDocType, OrmMethods>>;
     readonly deleted$: Observable<boolean>;
 
     readonly primary: string;

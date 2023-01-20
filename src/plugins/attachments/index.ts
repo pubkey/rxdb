@@ -245,8 +245,8 @@ export const RxDBAttachmentsPlugin: RxPlugin = {
                 get: function allAttachments$(this: RxDocument) {
                     return this.$
                         .pipe(
-                            map(data => Object.entries(
-                                data._attachments
+                            map(rxDocument => Object.entries(
+                                rxDocument.toJSON(true)._attachments
                             )),
                             map(entries => {
                                 return (entries as any)

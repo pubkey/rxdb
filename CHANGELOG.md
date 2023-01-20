@@ -27,6 +27,7 @@
 - ADD non-incremental `RxDocument` methods `patch()` and `modify()`
 - ADD typings to the query selector
 - CHANGE start replication via pure functions instead of RxCollection methods.
+- CHANGE `RxDocument.$` emits `RxDocument` instances instead of the plain document data.
 
 #
 - CHANGE Do not use hash for revisions but use database instance token instead.
