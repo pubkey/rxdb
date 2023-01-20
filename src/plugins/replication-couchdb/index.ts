@@ -79,6 +79,15 @@ export function replicateCouchDB<RxDocType>(
     const collection = options.collection;
     addRxPlugin(RxDBLeaderElectionPlugin);
 
+    if (!options.url.endsWith('/')) {
+        throw newRxError('RX_COUCHDB_1', {
+            args: {
+                collection: options.collection.name,
+                url: options.url
+            }
+        });
+    }
+
     options = flatClone(options);
     if (!options.url.endsWith('/')) {
         options.url = options.url + '/';
@@ -107,6 +116,8 @@ export function replicateCouchDB<RxDocType>(
 
                 const response = await replicationState.fetch(url);
                 const jsonResponse: CouchdbChangesResult = await response.json();
+                console.log('# pull handler jsonResponse:');
+                console.dir(jsonResponse);
                 const documents: WithDeleted<RxDocType>[] = jsonResponse.results
                     .map(row => couchDBDocToRxDocData(collection.schema.primaryPath, ensureNotFalsy(row.doc)));
                 return {
@@ -144,6 +155,11 @@ export function replicateCouchDB<RxDocType>(
                     })
                 };
 
+                console.log('# couchdb resplication push: ' + url);
+                console.dir('url: ' + url);
+                console.dir(body);
+
+
                 const response = await replicationState.fetch(
                     url,
                     {
@@ -155,6 +171,8 @@ export function replicateCouchDB<RxDocType>(
                     }
                 );
                 const responseJson: CouchBulkDocResultRow[] = await response.json();
+                console.log('# couchdb resplication push response:');
+                console.dir(responseJson);
 
                 /**
                  * CouchDB creates the new document revision
@@ -190,7 +208,8 @@ export function replicateCouchDB<RxDocType>(
                 });
                 const conflictResponse = await replicationState.fetch(getConflictDocsUrl);
                 const conflictResponseJson: CouchAllDocsResponse = await conflictResponse.json();
-                const conflictDocsMasterState: WithDeleted<RxDocType>[] = conflictResponseJson.rows
+                const conflictResponseRows = conflictResponseJson.rows;
+                const conflictDocsMasterState: WithDeleted<RxDocType>[] = conflictResponseRows
                     .map(r => couchDBDocToRxDocData(collection.schema.primaryPath, r.doc));
 
                 return conflictDocsMasterState;

@@ -20,7 +20,7 @@ import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv';
 import { isPromise } from 'async-test-util';
 
 
-const ENV_VARIABLES = detect().name === 'node' ? process.env : (window as any).__karma__.config.env;
+export const ENV_VARIABLES = detect().name === 'node' ? process.env : (window as any).__karma__.config.env;
 
 function isFastMode(): boolean {
     try {
@@ -75,7 +75,9 @@ const config: {
     storage: RxTestStorage;
     isNotOneOfTheseStorages: (names: string[]) => boolean;
 } = {
-    platform: detect(),
+    platform: Object.assign({}, detect(), {
+        isNode: () => detect().name === 'node'
+    }),
     parallel: useParallel,
     rootPath: '',
     isFastMode,

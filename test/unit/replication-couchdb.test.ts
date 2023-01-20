@@ -5,12 +5,13 @@
  */
 
 import assert from 'assert';
-import config from './config';
+import config, { ENV_VARIABLES } from './config';
 
 import * as schemaObjects from '../helper/schema-objects';
 import * as humansCollection from '../helper/humans-collection';
 
 import {
+    addRxPlugin,
     randomCouchString,
     RxCollection
 } from '../../';
@@ -21,10 +22,14 @@ import {
     replicateCouchDB
 } from '../../plugins/replication-couchdb';
 
+import { RxDBUpdatePlugin } from '../../plugins/update';
+addRxPlugin(RxDBUpdatePlugin);
+
 import { CouchAllDocsResponse } from '../../src/types';
 import { filter, firstValueFrom } from 'rxjs';
 import { waitUntil } from 'async-test-util';
 import { ensureCollectionsHaveEqualState } from '../helper/test-util';
+
 
 describe('replication-couchdb.test.ts', () => {
     if (
@@ -35,10 +40,12 @@ describe('replication-couchdb.test.ts', () => {
     }
     const SpawnServer = require('../helper/spawn-server');
 
-    async function getAllServerDocs(serverUrl: string) {
+    async function getAllServerDocs(serverUrl: string): Promise<any[]> {
         const url = serverUrl + '_all_docs?' + mergeUrlQueryParams({ include_docs: true });
         const response = await fetch(url);
         const result: CouchAllDocsResponse = await response.json();
+        console.log('# getAllServerDocs() response: ' + url);
+        console.dir(result);
         return result.rows.map(row => row.doc);
     }
 
@@ -76,6 +83,25 @@ describe('replication-couchdb.test.ts', () => {
         await syncOnce(c2, server);
         await syncOnce(c1, server);
     }
+
+    describe('init', () => {
+        it('wait until CouchDB server is reachable', async function () {
+            this.timeout(500 * 1000);
+            if (!ENV_VARIABLES.NATIVE_COUCHDB) {
+                return;
+            }
+            await waitUntil(async () => {
+                try {
+                    await SpawnServer.spawn();
+                    console.log('# could reach CouchDB server!');
+                    return true;
+                } catch (err) {
+                    console.log('# could NOT reach CouchDB server, will retry.');
+                    return false;
+                }
+            }, undefined, 500);
+        });
+    });
 
     describe('live:false', () => {
         it('finish sync once without data', async () => {
@@ -263,11 +289,8 @@ describe('replication-couchdb.test.ts', () => {
     });
     describe('ISSUES', () => {
         it('#4299 CouchDB push is throwing error because of missing revision', async () => {
-            if (
-                !config.platform.isNode() // runs only in node
-            ) {
-                return;
-            }
+
+
             const server = await SpawnServer.spawn();
 
             // create a collection
