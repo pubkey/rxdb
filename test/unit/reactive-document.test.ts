@@ -23,6 +23,7 @@ import type {
     RxChangeEvent
 } from '../../src/types';
 import { HumanDocumentType } from '../helper/schemas';
+import { firstValueFrom } from 'rxjs';
 
 config.parallel('reactive-document.test.js', () => {
     describe('.save()', () => {
@@ -141,6 +142,19 @@ config.parallel('reactive-document.test.js', () => {
             });
         });
         describe('negative', () => { });
+    });
+    describe('.$', () => {
+        it('should emit a RxDocument, not only the document data', async () => {
+            const c = await humansCollection.create(1);
+            const doc = await c.findOne().exec(true);
+
+            const firstEmitPromise = firstValueFrom(doc.$);
+            doc.incrementalPatch({ age: 100 });
+
+            const emitted = await firstEmitPromise;
+            assert.ok(emitted.$);
+            c.database.destroy();
+        });
     });
     describe('.get$()', () => {
         describe('positive', () => {
