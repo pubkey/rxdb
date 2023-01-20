@@ -157,7 +157,7 @@ export var RxDBAttachmentsPlugin = {
       proto.allAttachments = allAttachments;
       Object.defineProperty(proto, 'allAttachments$', {
         get: function allAttachments$() {
-          return this.$.pipe(map(data => Object.entries(data._attachments)), map(entries => {
+          return this.$.pipe(map(rxDocument => Object.entries(rxDocument.toJSON(true)._attachments)), map(entries => {
             return entries.map(([id, attachmentData]) => {
               return fromStorageInstanceResult(id, attachmentData, this);
             });
