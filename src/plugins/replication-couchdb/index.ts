@@ -116,8 +116,6 @@ export function replicateCouchDB<RxDocType>(
 
                 const response = await replicationState.fetch(url);
                 const jsonResponse: CouchdbChangesResult = await response.json();
-                console.log('# pull handler jsonResponse:');
-                console.dir(jsonResponse);
                 const documents: WithDeleted<RxDocType>[] = jsonResponse.results
                     .map(row => couchDBDocToRxDocData(collection.schema.primaryPath, ensureNotFalsy(row.doc)));
                 return {
@@ -155,11 +153,6 @@ export function replicateCouchDB<RxDocType>(
                     })
                 };
 
-                console.log('# couchdb resplication push: ' + url);
-                console.dir('url: ' + url);
-                console.dir(body);
-
-
                 const response = await replicationState.fetch(
                     url,
                     {
@@ -171,8 +164,6 @@ export function replicateCouchDB<RxDocType>(
                     }
                 );
                 const responseJson: CouchBulkDocResultRow[] = await response.json();
-                console.log('# couchdb resplication push response:');
-                console.dir(responseJson);
 
                 /**
                  * CouchDB creates the new document revision
