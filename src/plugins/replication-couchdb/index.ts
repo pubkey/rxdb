@@ -79,6 +79,15 @@ export function replicateCouchDB<RxDocType>(
     const collection = options.collection;
     addRxPlugin(RxDBLeaderElectionPlugin);
 
+    if (!options.url.endsWith('/')) {
+        throw newRxError('RX_COUCHDB_1', {
+            args: {
+                collection: options.collection.name,
+                url: options.url
+            }
+        });
+    }
+
     options = flatClone(options);
     if (!options.url.endsWith('/')) {
         options.url = options.url + '/';
@@ -190,7 +199,8 @@ export function replicateCouchDB<RxDocType>(
                 });
                 const conflictResponse = await replicationState.fetch(getConflictDocsUrl);
                 const conflictResponseJson: CouchAllDocsResponse = await conflictResponse.json();
-                const conflictDocsMasterState: WithDeleted<RxDocType>[] = conflictResponseJson.rows
+                const conflictResponseRows = conflictResponseJson.rows;
+                const conflictDocsMasterState: WithDeleted<RxDocType>[] = conflictResponseRows
                     .map(r => couchDBDocToRxDocData(collection.schema.primaryPath, r.doc));
 
                 return conflictDocsMasterState;

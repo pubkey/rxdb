@@ -219,7 +219,8 @@ jobs:
         with:
           run: npm run test:browser:dexie
 
-      - run: npm run test:firestore-replication
+      - run: npm run test:replication-couchdb
+      - run: npm run test:replication-firestore
 
       - name: performance test
         uses: GabrielBB/xvfb-action@v1
