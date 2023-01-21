@@ -6,7 +6,7 @@
     "preinstall": "(cd ../../ && npx yarn@1.13.0 pack ../../ --filename ./examples/svelte/rxdb-local.tgz)",
     "build": "rollup -c",
     "dev": "rollup -c -w",
-    "start": "sirv public --no-clear",
+    "start": "sirv public --no-clear --port 5000",
     "test:e2e": "testcafe chrome -e test/ --hostname localhost --selector-timeout 8000",
     "test": "npm run build && concurrently \"npm run start\" \"npm run test:e2e\" --kill-others --success first"
   },
