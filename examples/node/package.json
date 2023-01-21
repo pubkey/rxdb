@@ -6,7 +6,7 @@
   "scripts": {
     "preinstall": "node ./scripts/ensure-equal-versions.js",
     "start": "node src/app.js",
-    "clear": "rimraf -rf heroesdb-rxdb*",
+    "clear": "rimraf heroesdb-rxdb*",
     "test": "npm run clear && node src/test.js"
   },
   "author": "salomonelli",
