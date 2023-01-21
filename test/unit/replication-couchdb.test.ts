@@ -44,8 +44,6 @@ describe('replication-couchdb.test.ts', () => {
         const url = serverUrl + '_all_docs?' + mergeUrlQueryParams({ include_docs: true });
         const response = await fetch(url);
         const result: CouchAllDocsResponse = await response.json();
-        console.log('# getAllServerDocs() response: ' + url);
-        console.dir(result);
         return result.rows.map(row => row.doc);
     }
 

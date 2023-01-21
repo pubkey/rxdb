@@ -16,7 +16,6 @@ import {
     sortObject,
     stringifyFilter,
     pluginMissing,
-    clone,
     overwriteGetterForCaching,
     now,
     PROMISE_RESOLVE_FALSE,
@@ -362,7 +361,7 @@ export class RxQueryBase<
             schema,
             normalizeMangoQuery(
                 this.collection.schema.jsonSchema,
-                clone(this.mangoQuery)
+                this.mangoQuery
             )
         );
 
@@ -402,7 +401,7 @@ export class RxQueryBase<
             // can be mutated by the hooks so we have to deep clone first.
             mangoQuery: normalizeMangoQuery<RxDocType>(
                 this.collection.schema.jsonSchema,
-                clone(this.mangoQuery)
+                this.mangoQuery
             )
         };
         runPluginHooks('prePrepareQuery', hookInput);
