@@ -38,7 +38,7 @@ dependencies:
   # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: 1.0.2
   flutter_qjs: 0.3.7
-  shared_preferences: 2.0.15
+  shared_preferences: 2.0.17
   rxdart: 0.27.5
   json_serializable: 6.5.2
 
