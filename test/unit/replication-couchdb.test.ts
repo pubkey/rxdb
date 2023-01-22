@@ -31,9 +31,7 @@ import { filter, firstValueFrom } from 'rxjs';
 import { waitUntil } from 'async-test-util';
 import { ensureCollectionsHaveEqualState } from '../helper/test-util';
 
-// Using node-fetch@2 to be able to add credentials, nothing else
-// If your CouchDB instance doesn't have authentication, you can use the default fetch
-const fetchWithCouchDBAuth = getFetchWithCouchDBAuthorization('root', 'root');
+const fetchWithCouchDBAuth = ENV_VARIABLES.NATIVE_COUCHDB ? getFetchWithCouchDBAuthorization('root', 'root') : fetch;
 
 describe('replication-couchdb.test.ts', () => {
     if (
