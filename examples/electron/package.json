@@ -11,7 +11,7 @@
     "test": "mocha"
   },
   "dependencies": {
-    "electron": "22.0.2",
+    "electron": "22.0.3",
     "rxdb": "file:rxdb-local.tgz",
     "rxjs": "7.8.0"
   },
