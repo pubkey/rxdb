@@ -1,5 +1,5 @@
 import type { RxDocumentData, StringKeys, WithDeleted } from '../../types';
-import { flatClone } from '../../plugins/utils';
+import { b64EncodeUnicode, flatClone } from '../../plugins/utils';
 import { URLQueryParams } from './couchdb-types';
 
 
@@ -87,9 +87,7 @@ export function getFetchWithCouchDBAuthorization(username: string, password: str
         if (!options.headers) {
             options.headers = {};
         }
-        (options as any).headers['Authorization'] = `Basic ${Buffer.from(
-            username + ':' + password
-        ).toString('base64')}`;
+        (options as any).headers['Authorization'] = 'Basic ' + b64EncodeUnicode(username + ':' + password);
         return fetch(url, options);
     };
     return ret;
