@@ -80,7 +80,7 @@ export function replicateCouchDB<RxDocType>(
     addRxPlugin(RxDBLeaderElectionPlugin);
 
     if (!options.url.endsWith('/')) {
-        throw newRxError('RX_COUCHDB_1', {
+        throw newRxError('RC_COUCHDB_1', {
             args: {
                 collection: options.collection.name,
                 url: options.url
@@ -116,6 +116,11 @@ export function replicateCouchDB<RxDocType>(
 
                 const response = await replicationState.fetch(url);
                 const jsonResponse: CouchdbChangesResult = await response.json();
+                if (!jsonResponse.results) {
+                    throw newRxError('RC_COUCHDB_2', {
+                        args: { jsonResponse }
+                    });
+                }
                 const documents: WithDeleted<RxDocType>[] = jsonResponse.results
                     .map(row => couchDBDocToRxDocData(collection.schema.primaryPath, ensureNotFalsy(row.doc)));
                 return {
