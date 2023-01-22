@@ -366,7 +366,7 @@
     "rxjs": "^7.8.0"
   },
   "dependencies": {
-    "@babel/runtime": "7.20.7",
+    "@babel/runtime": "7.20.13",
     "@types/clone": "2.1.1",
     "@types/cors": "2.8.13",
     "@types/express": "4.17.15",
@@ -416,7 +416,7 @@
     "@babel/plugin-transform-runtime": "7.19.6",
     "@babel/plugin-transform-spread": "7.20.7",
     "@babel/plugin-transform-template-literals": "7.18.9",
-    "@babel/plugin-transform-typescript": "7.20.7",
+    "@babel/plugin-transform-typescript": "7.20.13",
     "@babel/polyfill": "7.12.1",
     "@babel/preset-env": "7.20.2",
     "@babel/preset-typescript": "7.18.6",
