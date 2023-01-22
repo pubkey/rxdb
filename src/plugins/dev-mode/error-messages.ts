@@ -156,6 +156,7 @@ export const ERROR_MESSAGES = {
     RC_PUSH_NO_AR: 'RxReplication push handler did not return an array with the conflicts',
     RC_P2P_PEER: 'RxReplication P2P Peer has error',
     RX_COUCHDB_1: 'replicateCouchDB() url must end with a slash like \'https://example.com/mydatabase/\'',
+    RX_COUCHDB_2: 'replicateCouchDB() did not get valid result with rows.',
 
     // plugins/dev-mode/check-schema.js
     SC1: 'fieldnames do not match the regex',

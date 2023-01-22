@@ -116,6 +116,11 @@ export function replicateCouchDB<RxDocType>(
 
                 const response = await replicationState.fetch(url);
                 const jsonResponse: CouchdbChangesResult = await response.json();
+                if (!jsonResponse.results) {
+                    throw newRxError('RX_COUCHDB_2', {
+                        args: { jsonResponse }
+                    });
+                }
                 const documents: WithDeleted<RxDocType>[] = jsonResponse.results
                     .map(row => couchDBDocToRxDocData(collection.schema.primaryPath, ensureNotFalsy(row.doc)));
                 return {

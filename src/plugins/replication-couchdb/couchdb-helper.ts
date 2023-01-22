@@ -76,3 +76,21 @@ export function getDefaultFetch() {
         return fetch;
     }
 }
+
+/**
+ * Returns a fetch handler that contains the username and password
+ * in the Authorization header
+ */
+export function getFetchWithCouchDBAuthorization(username: string, password: string): typeof fetch {
+    const ret: typeof fetch = (url, options) => {
+        options = Object.assign({}, options);
+        if (!options.headers) {
+            options.headers = {};
+        }
+        (options as any).headers['Authorization'] = `Basic ${Buffer.from(
+            username + ':' + password
+        ).toString('base64')}`;
+        return fetch(url, options);
+    };
+    return ret;
+}

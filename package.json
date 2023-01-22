@@ -325,7 +325,7 @@
     "test:performance:custom:browser": "npm run transpile && cross-env DEFAULT_STORAGE=custom CI=true karma start ./config/karma.performance.conf.js --single-run",
     "test:performance:custom:node": "npm run transpile && cross-env DEFAULT_STORAGE=custom mocha --config ./config/.mocharc.js ./test_tmp/performance.test.js --unhandled-rejections=strict --expose-gc",
     "test:performance": "npm run build && npm run test:performance:lokijs:browser && npm run test:performance:lokijs:node && npm run test:performance:dexie && npm run test:performance:memory:browser && npm run test:performance:memory:node && npm run test:performance:foundationdb",
-    "couch:start": "docker run -p 5984:5984 --rm --name rxdb-couchdb couchdb:2.3.1",
+    "couch:start": "docker run -p 5984:5984 -e COUCHDB_USER=root -e COUCHDB_PASSWORD=root --rm --name rxdb-couchdb couchdb:3.3.1",
     "couch:stop": "docker rm -f rxdb-couchdb",
     "dockertest": "docker run -it -v $(pwd):/usr/src/app markadams/chromium-xvfb-js:latest-onbuild",
     "profile": "npm run transpile && rm -f isolate-* && cross-env STORAGE=memory NODE_ENV=fast NODE_PROF=true mocha --config ./config/.mocharc.js ./test_tmp/performance.test.js --v8-prof --expose-gc && node scripts/profile.js",
