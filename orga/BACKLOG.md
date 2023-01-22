@@ -35,6 +35,20 @@ The current implementation has some flaws and should be completely rewritten.
 * It does not migrate the revisions of documents which causes a problem when replication is used
 * It is not able to migrate attachments
 
+
+## query normalization and optimization
+
+Create a package that normalizes and optimizes mango queries.
+
+optimization: Use $eq instead of $in if $in value has only one item
+optimization: if field is an enum use $in instead of other operators with $in: [all enum values that match the operators]
+optimization: query always returns empty-array if $eq does not match schema
+optimization: detect can-never-match queries (p.e. impossible $eq values or empty $in array)
+optimization: merge $and operators
+
+## Add plugin for [Pocketbase](https://pocketbase.io/) replication
+
+
 ## make a debugger UI
 
 See https://github.com/pubkey/rxdb/issues/3286
