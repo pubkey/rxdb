@@ -18,5 +18,5 @@
   ],
   "rebaseStalePrs": true,
   "prHourlyLimit": 8,
-  "dependencyDashboard": true
+  "dependencyDashboard": false
 }
