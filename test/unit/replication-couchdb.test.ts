@@ -264,8 +264,15 @@ describe('replication-couchdb.test.ts', () => {
             const c1 = await humansCollection.create(0);
             const c2 = await humansCollection.create(0);
 
-            await syncLive(c1, server);
-            await syncLive(c2, server);
+            const replicationState1 = await syncLive(c1, server);
+            const replicationState2 = await syncLive(c2, server);
+            const awaitInSync = () => Promise.all([
+                replicationState1.awaitInSync(),
+                replicationState2.awaitInSync()
+            ]).then(() => Promise.all([
+                replicationState1.awaitInSync(),
+                replicationState2.awaitInSync()
+            ]));
 
             const foundPromise = firstValueFrom(
                 c2.find().$.pipe(
@@ -274,6 +281,7 @@ describe('replication-couchdb.test.ts', () => {
             );
 
             await c1.insert(schemaObjects.human('foobar'));
+            await awaitInSync();
 
             // wait until it is on the server
             await waitUntil(async () => {
@@ -283,6 +291,27 @@ describe('replication-couchdb.test.ts', () => {
 
             const endResult = await foundPromise;
             assert.strictEqual(endResult[0].passportId, 'foobar');
+
+            const doc1 = await c1.findOne().exec(true);
+            const doc2 = await c1.findOne().exec(true);
+
+            // edit on one side
+            await doc1.incrementalPatch({ age: 20 });
+            await awaitInSync();
+            assert.strictEqual(doc2.getLatest().age, 20);
+
+            // edit on one side again
+            await doc1.incrementalPatch({ age: 21 });
+            await awaitInSync();
+            assert.strictEqual(doc2.getLatest().age, 21);
+
+
+            // edit on other side
+            await doc2.incrementalPatch({ age: 22 });
+            await awaitInSync();
+            assert.strictEqual(doc1.getLatest().age, 22);
+
+            process.exit();
 
             c1.database.destroy();
             c2.database.destroy();
