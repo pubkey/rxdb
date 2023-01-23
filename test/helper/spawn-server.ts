@@ -49,15 +49,13 @@ export async function spawn(
         const controller = new AbortController();
         setTimeout(() => controller.abort(), 1000);
         const authFetch = getFetchWithCouchDBAuthorization('root', 'root');
-        const putDatabaseResponse = await authFetch(
+        await authFetch(
             url,
             {
                 method: 'PUT',
                 signal: controller.signal
             }
         );
-        console.log('# putDatabaseResponse');
-        console.dir(await putDatabaseResponse.json());
         return {
             dbName: databaseName,
             url,
