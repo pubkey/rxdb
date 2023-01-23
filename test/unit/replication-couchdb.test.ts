@@ -311,8 +311,6 @@ describe('replication-couchdb.test.ts', () => {
             await awaitInSync();
             assert.strictEqual(doc1.getLatest().age, 22);
 
-            process.exit();
-
             c1.database.destroy();
             c2.database.destroy();
             server.close();
