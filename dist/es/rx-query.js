@@ -1,7 +1,7 @@
 import _createClass from "@babel/runtime/helpers/createClass";
 import { BehaviorSubject, firstValueFrom, merge } from 'rxjs';
 import { mergeMap, filter, map, startWith, distinctUntilChanged, shareReplay } from 'rxjs/operators';
-import { sortObject, stringifyFilter, pluginMissing, clone, overwriteGetterForCaching, now, PROMISE_RESOLVE_FALSE, RXJS_SHARE_REPLAY_DEFAULTS, ensureNotFalsy, areRxDocumentArraysEqual } from './plugins/utils';
+import { sortObject, stringifyFilter, pluginMissing, overwriteGetterForCaching, now, PROMISE_RESOLVE_FALSE, RXJS_SHARE_REPLAY_DEFAULTS, ensureNotFalsy, areRxDocumentArraysEqual } from './plugins/utils';
 import { newRxError } from './rx-error';
 import { runPluginHooks } from './hooks';
 import { calculateNewResults } from './event-reduce';
@@ -203,7 +203,7 @@ export var RxQueryBase = /*#__PURE__*/function () {
     var hookInput = {
       rxQuery: this,
       // can be mutated by the hooks so we have to deep clone first.
-      mangoQuery: normalizeMangoQuery(this.collection.schema.jsonSchema, clone(this.mangoQuery))
+      mangoQuery: normalizeMangoQuery(this.collection.schema.jsonSchema, this.mangoQuery)
     };
     runPluginHooks('prePrepareQuery', hookInput);
     var value = this.collection.database.storage.statics.prepareQuery(this.collection.schema.jsonSchema, hookInput.mangoQuery);
@@ -334,7 +334,7 @@ export var RxQueryBase = /*#__PURE__*/function () {
        * so that it does not contain modifications from the hooks
        * like the key compression.
        */
-      var usePreparedQuery = this.collection.database.storage.statics.prepareQuery(schema, normalizeMangoQuery(this.collection.schema.jsonSchema, clone(this.mangoQuery)));
+      var usePreparedQuery = this.collection.database.storage.statics.prepareQuery(schema, normalizeMangoQuery(this.collection.schema.jsonSchema, this.mangoQuery));
       return overwriteGetterForCaching(this, 'queryMatcher', this.collection.database.storage.statics.getQueryMatcher(schema, usePreparedQuery));
     }
   }, {

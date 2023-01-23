@@ -107,6 +107,8 @@ export declare const ERROR_MESSAGES: {
     RC_PUSH: string;
     RC_PUSH_NO_AR: string;
     RC_P2P_PEER: string;
+    RC_COUCHDB_1: string;
+    RC_COUCHDB_2: string;
     SC1: string;
     SC2: string;
     SC3: string;
