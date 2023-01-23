@@ -319,11 +319,7 @@ describe('replication-couchdb.test.ts', () => {
                     batchSize: 60,
                 },
             });
-
-            replicationState.error$.subscribe((err) => {
-                console.log('error');
-                throw Error(err.message);
-            });
+            ensureReplicationHasNoErrors(replicationState);
 
             await replicationState.awaitInitialReplication();
 
@@ -350,6 +346,40 @@ describe('replication-couchdb.test.ts', () => {
             assert.ok(doc);
 
             await replicationState.awaitInSync();
+            await collection.database.destroy();
+        });
+        it('#4319 CouchDB Replication fails on deleted documents', async () => {
+            const server = await SpawnServer.spawn();
+            const collection = await humansCollection.create(0);
+            const replicationState = replicateCouchDB({
+                url: server.url,
+                collection,
+                fetch: fetchWithCouchDBAuth,
+                live: true,
+                pull: {},
+                push: {},
+            });
+            ensureReplicationHasNoErrors(replicationState);
+            await replicationState.awaitInitialReplication();
+
+
+            // insert 3
+            await collection.bulkInsert([
+                schemaObjects.human('1'),
+                schemaObjects.human('2'),
+                schemaObjects.human('3')
+            ]);
+
+            // delete 2
+            await collection.findOne('1').remove();
+            await collection.findOne('2').remove();
+            await replicationState.awaitInSync();
+
+            // check server
+            const serverDocs = await getAllServerDocs(server.url);
+            assert.strictEqual(serverDocs.length, 1);
+            assert.strictEqual(serverDocs[0]._id, '3');
+
             await collection.database.destroy();
         });
     });
