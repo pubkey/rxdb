@@ -5,6 +5,7 @@
 
 import { randomString } from 'async-test-util';
 import { PROMISE_RESOLVE_VOID } from '../../';
+import { getFetchWithCouchDBAuthorization } from '../../plugins/replication-couchdb';
 import { ENV_VARIABLES } from '../unit/config';
 import { nextPort } from './port-manager';
 
@@ -47,7 +48,8 @@ export async function spawn(
 
         const controller = new AbortController();
         setTimeout(() => controller.abort(), 1000);
-        const putDatabaseResponse = await fetch(
+        const authFetch = getFetchWithCouchDBAuthorization('root', 'root');
+        const putDatabaseResponse = await authFetch(
             url,
             {
                 method: 'PUT',

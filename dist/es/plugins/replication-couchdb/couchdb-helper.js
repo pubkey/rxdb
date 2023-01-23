@@ -1,4 +1,4 @@
-import { flatClone } from '../../plugins/utils';
+import { b64EncodeUnicode, flatClone } from '../../plugins/utils';
 export var COUCHDB_NEW_REPLICATION_PLUGIN_IDENTITY_PREFIX = 'couchdb';
 export function mergeUrlQueryParams(params) {
   return Object.entries(params).filter(([_k, value]) => typeof value !== 'undefined').map(([key, value]) => key + '=' + value).join('&');
@@ -44,5 +44,21 @@ export function getDefaultFetch() {
   } else {
     return fetch;
   }
+}
+
+/**
+ * Returns a fetch handler that contains the username and password
+ * in the Authorization header
+ */
+export function getFetchWithCouchDBAuthorization(username, password) {
+  var ret = (url, options) => {
+    options = Object.assign({}, options);
+    if (!options.headers) {
+      options.headers = {};
+    }
+    options.headers['Authorization'] = 'Basic ' + b64EncodeUnicode(username + ':' + password);
+    return fetch(url, options);
+  };
+  return ret;
 }
 //# sourceMappingURL=couchdb-helper.js.map

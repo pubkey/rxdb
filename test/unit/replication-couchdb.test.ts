@@ -19,7 +19,8 @@ import {
 import {
     mergeUrlQueryParams,
     RxCouchDBReplicationState,
-    replicateCouchDB
+    replicateCouchDB,
+    getFetchWithCouchDBAuthorization
 } from '../../plugins/replication-couchdb';
 
 import { RxDBUpdatePlugin } from '../../plugins/update';
@@ -30,6 +31,7 @@ import { filter, firstValueFrom } from 'rxjs';
 import { waitUntil } from 'async-test-util';
 import { ensureCollectionsHaveEqualState } from '../helper/test-util';
 
+const fetchWithCouchDBAuth = ENV_VARIABLES.NATIVE_COUCHDB ? getFetchWithCouchDBAuthorization('root', 'root') : fetch;
 
 describe('replication-couchdb.test.ts', () => {
     if (
@@ -42,7 +44,7 @@ describe('replication-couchdb.test.ts', () => {
 
     async function getAllServerDocs(serverUrl: string): Promise<any[]> {
         const url = serverUrl + '_all_docs?' + mergeUrlQueryParams({ include_docs: true });
-        const response = await fetch(url);
+        const response = await fetchWithCouchDBAuth(url);
         const result: CouchAllDocsResponse = await response.json();
         return result.rows.map(row => row.doc);
     }
@@ -65,6 +67,7 @@ describe('replication-couchdb.test.ts', () => {
         const replicationState = replicateCouchDB({
             collection,
             url: server.url,
+            fetch: fetchWithCouchDBAuth,
             live: false,
             pull: {},
             push: {}
@@ -246,6 +249,7 @@ describe('replication-couchdb.test.ts', () => {
             const replicationState = replicateCouchDB<RxDocType>({
                 collection,
                 url: server.url,
+                fetch: fetchWithCouchDBAuth,
                 live: true,
                 pull: {},
                 push: {}
@@ -305,6 +309,7 @@ describe('replication-couchdb.test.ts', () => {
             const replicationState = replicateCouchDB({
                 url: server.url,
                 collection,
+                fetch: fetchWithCouchDBAuth,
                 live: true,
                 pull: {
                     batchSize: 60,

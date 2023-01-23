@@ -1,5 +1,5 @@
 import type { RxDocumentData, StringKeys, WithDeleted } from '../../types';
-import { flatClone } from '../../plugins/utils';
+import { b64EncodeUnicode, flatClone } from '../../plugins/utils';
 import { URLQueryParams } from './couchdb-types';
 
 
@@ -75,4 +75,20 @@ export function getDefaultFetch() {
     } else {
         return fetch;
     }
+}
+
+/**
+ * Returns a fetch handler that contains the username and password
+ * in the Authorization header
+ */
+export function getFetchWithCouchDBAuthorization(username: string, password: string): typeof fetch {
+    const ret: typeof fetch = (url, options) => {
+        options = Object.assign({}, options);
+        if (!options.headers) {
+            options.headers = {};
+        }
+        (options as any).headers['Authorization'] = 'Basic ' + b64EncodeUnicode(username + ':' + password);
+        return fetch(url, options);
+    };
+    return ret;
 }

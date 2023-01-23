@@ -65,6 +65,14 @@ exports.RxCouchDBReplicationState = RxCouchDBReplicationState;
 function replicateCouchDB(options) {
   var collection = options.collection;
   (0, _index.addRxPlugin)(_leaderElection.RxDBLeaderElectionPlugin);
+  if (!options.url.endsWith('/')) {
+    throw (0, _index.newRxError)('RC_COUCHDB_1', {
+      args: {
+        collection: options.collection.name,
+        url: options.url
+      }
+    });
+  }
   options = (0, _utils.flatClone)(options);
   if (!options.url.endsWith('/')) {
     options.url = options.url + '/';
@@ -89,6 +97,13 @@ function replicateCouchDB(options) {
         });
         var response = await replicationState.fetch(url);
         var jsonResponse = await response.json();
+        if (!jsonResponse.results) {
+          throw (0, _index.newRxError)('RC_COUCHDB_2', {
+            args: {
+              jsonResponse
+            }
+          });
+        }
         var documents = jsonResponse.results.map(row => (0, _couchdbHelper.couchDBDocToRxDocData)(collection.schema.primaryPath, (0, _utils.ensureNotFalsy)(row.doc)));
         return {
           documents,
@@ -162,7 +177,8 @@ function replicateCouchDB(options) {
         });
         var conflictResponse = await replicationState.fetch(getConflictDocsUrl);
         var conflictResponseJson = await conflictResponse.json();
-        var conflictDocsMasterState = conflictResponseJson.rows.map(r => (0, _couchdbHelper.couchDBDocToRxDocData)(collection.schema.primaryPath, r.doc));
+        var conflictResponseRows = conflictResponseJson.rows;
+        var conflictDocsMasterState = conflictResponseRows.map(r => (0, _couchdbHelper.couchDBDocToRxDocData)(collection.schema.primaryPath, r.doc));
         return conflictDocsMasterState;
       },
       batchSize: options.push.batchSize,

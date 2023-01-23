@@ -6,16 +6,16 @@
     "preinstall": "(cd ../../ && npx yarn@1.13.0 pack ../../ --filename ./examples/svelte/rxdb-local.tgz)",
     "build": "rollup -c",
     "dev": "rollup -c -w",
-    "start": "sirv public --no-clear",
+    "start": "sirv public --no-clear --port 5000",
     "test:e2e": "testcafe chrome -e test/ --hostname localhost --selector-timeout 8000",
     "test": "npm run build && concurrently \"npm run start\" \"npm run test:e2e\" --kill-others --success first"
   },
   "devDependencies": {
-    "@rollup/plugin-commonjs": "24.0.0",
+    "@rollup/plugin-commonjs": "24.0.1",
     "@rollup/plugin-node-resolve": "15.0.1",
     "async-test-util": "2.0.0",
     "concurrently": "7.6.0",
-    "rollup": "3.10.0",
+    "rollup": "3.10.1",
     "rollup-plugin-css-only": "4.3.0",
     "rollup-plugin-livereload": "2.0.5",
     "rollup-plugin-node-builtins": "2.1.2",
@@ -28,6 +28,6 @@
   },
   "dependencies": {
     "@rollup/plugin-json": "6.0.0",
-    "sirv-cli": "1.0.14"
+    "sirv-cli": "2.0.2"
   }
 }

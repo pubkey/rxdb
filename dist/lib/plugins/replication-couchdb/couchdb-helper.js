@@ -8,6 +8,7 @@ exports.couchDBDocToRxDocData = couchDBDocToRxDocData;
 exports.couchSwapIdToPrimary = couchSwapIdToPrimary;
 exports.couchSwapPrimaryToId = couchSwapPrimaryToId;
 exports.getDefaultFetch = getDefaultFetch;
+exports.getFetchWithCouchDBAuthorization = getFetchWithCouchDBAuthorization;
 exports.mergeUrlQueryParams = mergeUrlQueryParams;
 var _utils = require("../../plugins/utils");
 var COUCHDB_NEW_REPLICATION_PLUGIN_IDENTITY_PREFIX = 'couchdb';
@@ -56,5 +57,21 @@ function getDefaultFetch() {
   } else {
     return fetch;
   }
+}
+
+/**
+ * Returns a fetch handler that contains the username and password
+ * in the Authorization header
+ */
+function getFetchWithCouchDBAuthorization(username, password) {
+  var ret = (url, options) => {
+    options = Object.assign({}, options);
+    if (!options.headers) {
+      options.headers = {};
+    }
+    options.headers['Authorization'] = 'Basic ' + (0, _utils.b64EncodeUnicode)(username + ':' + password);
+    return fetch(url, options);
+  };
+  return ret;
 }
 //# sourceMappingURL=couchdb-helper.js.map

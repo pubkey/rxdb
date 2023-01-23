@@ -12,3 +12,8 @@ export declare function couchSwapPrimaryToId<RxDocType>(primaryKey: StringKeys<R
     _id: string;
 };
 export declare function getDefaultFetch(): typeof fetch;
+/**
+ * Returns a fetch handler that contains the username and password
+ * in the Authorization header
+ */
+export declare function getFetchWithCouchDBAuthorization(username: string, password: string): typeof fetch;

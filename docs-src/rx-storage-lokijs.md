@@ -2,6 +2,9 @@
 
 The LokiJS RxStorage is based on [LokiJS](https://github.com/techfort/LokiJS) which has the main benefit of having a better performance. It can do this because it is an **in-memory** database that processes all data in memory and only saves to disc when the app is closed or an interval is reached.
 
+**WARNING:** The LokiJS project itself is [no longer](https://github.com/techfort/LokiJS/issues/917) in development or maintained. Bugs that occur outside of the RxDB layer will likely not be fixed. It is recommended to use another [RxStorage](./rx-storage.md) instead.
+
+
 ### Pros
 
 - Queries can run faster because all data is processed in memory.
@@ -9,7 +12,7 @@ The LokiJS RxStorage is based on [LokiJS](https://github.com/techfort/LokiJS) wh
 
 ### Cons
 
-- It does not support attachments. (Make a pull request)
+- It does not support attachments.
 - Data can be lost when the JavaScript process is killed ungracefully like when the browser crashes or the power of the PC is terminated.
 - All data must fit into the memory.
 - Slow initialisation time when used with `multiInstance: true` because it has to await the leader election process.

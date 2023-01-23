@@ -133,6 +133,30 @@ Also when your bearer token changes over time, you can set a new custom `fetch` 
 replicationState.fetch = newCustomFetchMethod;
 ```
 
+Also there is a helper method `getFetchWithCouchDBAuthorization()` to create a fetch handler with authorization:
+
+```ts
+
+import { 
+    replicateCouchDB,
+    getFetchWithCouchDBAuthorization
+} from 'rxdb/plugins/replication-couchdb';
+
+const replicationState = replicateCouchDB(
+    {
+        collection: myRxCollection,
+        url: 'http://example.com/db/humans',
+        /**
+         * Add the custom fetch function here.
+         */
+        fetch: getFetchWithCouchDBAuthorization('myUsername', 'myPassword'),
+        pull: {},
+        push: {}
+    }
+);
+```
+
+
 ## Known problems
 
 ### Database missing
