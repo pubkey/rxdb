@@ -114,7 +114,6 @@ export function setDefaultStorage(storageKey: string) {
                 },
                 hasPersistence: true,
                 hasMultiInstance: false,
-                hasCouchDBReplication: false,
                 hasAttachments: true,
                 hasRegexSupport: true
             };
@@ -139,7 +138,6 @@ export function setDefaultStorage(storageKey: string) {
                 },
                 hasPersistence: false,
                 hasMultiInstance: false,
-                hasCouchDBReplication: false,
                 hasAttachments: true,
                 hasRegexSupport: true
             };
@@ -171,7 +169,6 @@ export function setDefaultStorage(storageKey: string) {
                 },
                 hasPersistence: true,
                 hasMultiInstance: true,
-                hasCouchDBReplication: false,
                 hasAttachments: false,
                 hasRegexSupport: true
             };
@@ -209,7 +206,6 @@ export function setDefaultStorage(storageKey: string) {
                 },
                 hasPersistence: true,
                 hasMultiInstance: true,
-                hasCouchDBReplication: false,
                 hasAttachments: false,
                 hasRegexSupport: true
             };
@@ -237,7 +233,6 @@ export function setDefaultStorage(storageKey: string) {
                 },
                 hasPersistence: true,
                 hasMultiInstance: false,
-                hasCouchDBReplication: false,
                 hasAttachments: true,
                 hasRegexSupport: true
             };
@@ -262,7 +257,6 @@ export function setDefaultStorage(storageKey: string) {
                 },
                 hasPersistence: false,
                 hasMultiInstance: true,
-                hasCouchDBReplication: false,
                 hasAttachments: false,
                 hasRegexSupport: true
             };

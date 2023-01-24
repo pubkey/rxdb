@@ -92,7 +92,6 @@ export type RxTestStorage = {
      */
     readonly hasPersistence: boolean;
     readonly hasMultiInstance: boolean;
-    readonly hasCouchDBReplication: boolean;
     readonly hasAttachments: boolean;
     // true if the storage supports $regex queries, false if not.
     readonly hasRegexSupport: boolean;
