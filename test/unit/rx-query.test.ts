@@ -109,10 +109,6 @@ describe('rx-query.test.ts', () => {
             col.database.destroy();
         });
         it('ISSUE #190: should contain the regex', async () => {
-            if (!config.storage.hasRegexSupport) {
-                return;
-            }
-
             const col = await humansCollection.create(0);
             const queryWithoutRegex = col.find();
             const queryWithRegex = queryWithoutRegex.where('color').regex(new RegExp(/foobar/g));
@@ -1073,10 +1069,6 @@ describe('rx-query.test.ts', () => {
          * via gitter at 11 November 2019 10:10
          */
         it('gitter: query with regex does not return correct results', async () => {
-            if (!config.storage.hasRegexSupport) {
-                return;
-            }
-
             // create a schema
             const mySchema = {
                 version: 0,

@@ -818,9 +818,6 @@ describe('rx-collection.test.ts', () => {
                 });
             });
             config.parallel('.regex()', () => {
-                if (!config.storage.hasRegexSupport) {
-                    return;
-                }
                 describe('positive', () => {
                     it('find the one where the regex matches', async () => {
                         const c = await humansCollection.create(10);

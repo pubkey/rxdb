@@ -114,8 +114,7 @@ export function setDefaultStorage(storageKey: string) {
                 },
                 hasPersistence: true,
                 hasMultiInstance: false,
-                hasAttachments: true,
-                hasRegexSupport: true
+                hasAttachments: true
             };
             break;
         /**
@@ -138,8 +137,7 @@ export function setDefaultStorage(storageKey: string) {
                 },
                 hasPersistence: false,
                 hasMultiInstance: false,
-                hasAttachments: true,
-                hasRegexSupport: true
+                hasAttachments: true
             };
             break;
         case 'lokijs':
@@ -169,8 +167,7 @@ export function setDefaultStorage(storageKey: string) {
                 },
                 hasPersistence: true,
                 hasMultiInstance: true,
-                hasAttachments: false,
-                hasRegexSupport: true
+                hasAttachments: false
             };
             break;
         case 'dexie':
@@ -206,8 +203,7 @@ export function setDefaultStorage(storageKey: string) {
                 },
                 hasPersistence: true,
                 hasMultiInstance: true,
-                hasAttachments: false,
-                hasRegexSupport: true
+                hasAttachments: false
             };
             break;
         case 'foundationdb':
@@ -233,8 +229,7 @@ export function setDefaultStorage(storageKey: string) {
                 },
                 hasPersistence: true,
                 hasMultiInstance: false,
-                hasAttachments: true,
-                hasRegexSupport: true
+                hasAttachments: true
             };
             break;
         case 'remote':
@@ -257,8 +252,7 @@ export function setDefaultStorage(storageKey: string) {
                 },
                 hasPersistence: false,
                 hasMultiInstance: true,
-                hasAttachments: false,
-                hasRegexSupport: true
+                hasAttachments: false
             };
             break;
         default:
