@@ -63,6 +63,7 @@ export interface MangoQueryOperators<PathValueType> {
     $in?: PathValueType[];
     $nin?: PathValueType[];
     $regex?: string | RegExp;
+    $options?: string;
     $exists?: boolean;
     $type?: 'null' | 'boolean' | 'number' | 'string' | 'array' | 'object';
     $mod?: number;
