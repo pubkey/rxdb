@@ -434,39 +434,39 @@ describe('util.test.js', () => {
         it('should return the correct parsed RegExp', () => {
             const tests: {
                 regex: RegExp;
-                shouldBe: ParsedRegex;
+                should: ParsedRegex;
             }[] = [
                     {
                         regex: /some regex/gi,
-                        shouldBe: {
+                        should: {
                             pattern: 'some regex',
                             flags: 'gi'
                         }
                     },
                     {
                         regex: /with\/backslash/gi,
-                        shouldBe: {
+                        should: {
                             pattern: 'with\\/backslash',
                             flags: 'gi'
                         }
                     },
                     {
                         regex: /^dummy.*[a-z]$/gim,
-                        shouldBe: {
+                        should: {
                             pattern: '^dummy.*[a-z]$',
                             flags: 'gim'
                         }
                     },
                     {
                         regex: /\/singlehash/i,
-                        shouldBe: {
+                        should: {
                             pattern: '\\/singlehash',
                             flags: 'i'
                         }
                     },
                     {
                         regex: /no-flags/,
-                        shouldBe: {
+                        should: {
                             pattern: 'no-flags',
                             flags: ''
                         }
@@ -475,7 +475,7 @@ describe('util.test.js', () => {
             tests.forEach(test => {
                 const parsed = parseRegex(test.regex);
                 try {
-                    assert.deepStrictEqual(parsed, test.shouldBe);
+                    assert.deepStrictEqual(parsed, test.should);
                 } catch (err) {
                     console.log('ERROR: Regex: ' + test.regex.toString());
                     console.dir(parsed);
