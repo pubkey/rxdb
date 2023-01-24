@@ -55,6 +55,7 @@
 - Remove the usage of `Buffer`. We now use `Blob` everywhere.
 - FIX import of socket.io [#4307](https://github.com/pubkey/rxdb/pull/4307)
 - FIX Id length limit reached with composite key [#4315](https://github.com/pubkey/rxdb/issues/4315)
+- FIX `$regex` query not working on remote storage.
 
 #
 - REMOVE deprecated `babel-plugin-transform-async-to-promises` plugin.

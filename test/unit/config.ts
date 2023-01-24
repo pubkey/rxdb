@@ -114,9 +114,7 @@ export function setDefaultStorage(storageKey: string) {
                 },
                 hasPersistence: true,
                 hasMultiInstance: false,
-                hasCouchDBReplication: false,
-                hasAttachments: true,
-                hasRegexSupport: true
+                hasAttachments: true
             };
             break;
         /**
@@ -139,9 +137,7 @@ export function setDefaultStorage(storageKey: string) {
                 },
                 hasPersistence: false,
                 hasMultiInstance: false,
-                hasCouchDBReplication: false,
-                hasAttachments: true,
-                hasRegexSupport: true
+                hasAttachments: true
             };
             break;
         case 'lokijs':
@@ -171,9 +167,7 @@ export function setDefaultStorage(storageKey: string) {
                 },
                 hasPersistence: true,
                 hasMultiInstance: true,
-                hasCouchDBReplication: false,
-                hasAttachments: false,
-                hasRegexSupport: true
+                hasAttachments: false
             };
             break;
         case 'dexie':
@@ -209,9 +203,7 @@ export function setDefaultStorage(storageKey: string) {
                 },
                 hasPersistence: true,
                 hasMultiInstance: true,
-                hasCouchDBReplication: false,
-                hasAttachments: false,
-                hasRegexSupport: true
+                hasAttachments: false
             };
             break;
         case 'foundationdb':
@@ -237,9 +229,7 @@ export function setDefaultStorage(storageKey: string) {
                 },
                 hasPersistence: true,
                 hasMultiInstance: false,
-                hasCouchDBReplication: false,
-                hasAttachments: true,
-                hasRegexSupport: true
+                hasAttachments: true
             };
             break;
         case 'remote':
@@ -262,9 +252,7 @@ export function setDefaultStorage(storageKey: string) {
                 },
                 hasPersistence: false,
                 hasMultiInstance: true,
-                hasCouchDBReplication: false,
-                hasAttachments: false,
-                hasRegexSupport: false // TODO why does setting this to true this not work?
+                hasAttachments: false
             };
             break;
         default:

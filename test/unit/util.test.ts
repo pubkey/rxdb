@@ -21,7 +21,9 @@ import {
     blobToString,
     getBlobSize,
     blobToBase64String,
-    createBlobFromBase64
+    createBlobFromBase64,
+    ParsedRegex,
+    parseRegex
 } from '../../';
 import config from './config';
 
@@ -426,6 +428,66 @@ describe('util.test.js', () => {
                 objectPathMonad('not.here.nes.ted')(docData),
                 undefined
             );
+        });
+    });
+    describe('.parseRegex()', () => {
+        it('should return the correct parsed RegExp', () => {
+            const tests: {
+                regex: RegExp;
+                should: ParsedRegex;
+            }[] = [
+                    {
+                        regex: /some regex/gi,
+                        should: {
+                            pattern: 'some regex',
+                            flags: 'gi'
+                        }
+                    },
+                    {
+                        regex: /with\/backslash/gi,
+                        should: {
+                            pattern: 'with\\/backslash',
+                            flags: 'gi'
+                        }
+                    },
+                    {
+                        regex: /^dummy.*[a-z]$/gim,
+                        should: {
+                            pattern: '^dummy.*[a-z]$',
+                            flags: 'gim'
+                        }
+                    },
+                    {
+                        regex: /\/singlehash/i,
+                        should: {
+                            pattern: '\\/singlehash',
+                            flags: 'i'
+                        }
+                    },
+                    {
+                        regex: /no-flags/,
+                        should: {
+                            pattern: 'no-flags',
+                            flags: ''
+                        }
+                    }
+                ];
+            tests.forEach(test => {
+                const parsed = parseRegex(test.regex);
+                try {
+                    assert.deepStrictEqual(parsed, test.should);
+                } catch (err) {
+                    console.log('ERROR: Regex: ' + test.regex.toString());
+                    console.dir(parsed);
+                    throw err;
+                }
+
+                const rebuild = new RegExp(parsed.pattern, parsed.flags);
+                assert.strictEqual(
+                    test.regex.toString(),
+                    rebuild.toString()
+                );
+            });
         });
     });
 });
