@@ -134,6 +134,10 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
     if (!localState) {
       return (0, _lokijsHelper.requestRemoteInstance)(this, 'query', [preparedQuery]);
     }
+    if (preparedQuery.selector) {
+      preparedQuery = (0, _utils.flatClone)(preparedQuery);
+      preparedQuery.selector = (0, _lokijsHelper.transformRegexToRegExp)(preparedQuery.selector);
+    }
     var query = localState.collection.chain().find(preparedQuery.selector);
     if (preparedQuery.sort) {
       query = query.sort((0, _lokijsHelper.getLokiSortComparator)(this.schema, preparedQuery));

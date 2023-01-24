@@ -1,7 +1,7 @@
 import { Subject } from 'rxjs';
 import { flatClone, now, ensureNotFalsy, isMaybeReadonlyArray, getFromMapOrThrow, getSortDocumentsByLastWriteTimeComparator, RX_META_LWT_MINIMUM, lastOfArray } from '../utils';
 import { newRxError } from '../../rx-error';
-import { closeLokiCollections, getLokiDatabase, OPEN_LOKIJS_STORAGE_INSTANCES, LOKIJS_COLLECTION_DEFAULT_OPTIONS, stripLokiKey, getLokiSortComparator, getLokiLeaderElector, requestRemoteInstance, mustUseLocalState, handleRemoteRequest, RX_STORAGE_NAME_LOKIJS } from './lokijs-helper';
+import { closeLokiCollections, getLokiDatabase, OPEN_LOKIJS_STORAGE_INSTANCES, LOKIJS_COLLECTION_DEFAULT_OPTIONS, stripLokiKey, getLokiSortComparator, getLokiLeaderElector, requestRemoteInstance, mustUseLocalState, handleRemoteRequest, RX_STORAGE_NAME_LOKIJS, transformRegexToRegExp } from './lokijs-helper';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
 import { categorizeBulkWriteRows } from '../../rx-storage-helper';
 import { addRxStorageMultiInstanceSupport, removeBroadcastChannelReference } from '../../rx-storage-multiinstance';
@@ -125,6 +125,10 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
     var localState = await mustUseLocalState(this);
     if (!localState) {
       return requestRemoteInstance(this, 'query', [preparedQuery]);
+    }
+    if (preparedQuery.selector) {
+      preparedQuery = flatClone(preparedQuery);
+      preparedQuery.selector = transformRegexToRegExp(preparedQuery.selector);
     }
     var query = localState.collection.chain().find(preparedQuery.selector);
     if (preparedQuery.sort) {

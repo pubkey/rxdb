@@ -4,6 +4,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.normalizeMangoQuery = normalizeMangoQuery;
+exports.normalizeQueryRegex = normalizeQueryRegex;
 var _queryPlanner = require("./query-planner");
 var _rxSchemaHelper = require("./rx-schema-helper");
 var _utils = require("./plugins/utils");
@@ -13,6 +14,12 @@ var _utils = require("./plugins/utils");
  */
 function normalizeMangoQuery(schema, mangoQuery) {
   var primaryKey = (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(schema.primaryKey);
+  mangoQuery = (0, _utils.flatClone)(mangoQuery);
+
+  // regex normalization must run before deep clone because deep clone cannot clone RegExp
+  if (mangoQuery.selector) {
+    mangoQuery.selector = normalizeQueryRegex(mangoQuery.selector);
+  }
   var normalizedMangoQuery = (0, _utils.clone)(mangoQuery);
   if (typeof normalizedMangoQuery.skip !== 'number') {
     normalizedMangoQuery.skip = 0;
@@ -136,5 +143,30 @@ function normalizeMangoQuery(schema, mangoQuery) {
     }
   }
   return normalizedMangoQuery;
+}
+
+/**
+ * @recursive
+ * @mutates the input so that we do not have to deep clone
+ */
+function normalizeQueryRegex(selector) {
+  if (typeof selector !== 'object') {
+    return selector;
+  }
+  var keys = Object.keys(selector);
+  var ret = {};
+  keys.forEach(key => {
+    var value = selector[key];
+    if (key === '$regex' && value instanceof RegExp) {
+      var parsed = (0, _utils.parseRegex)(value);
+      ret.$regex = parsed.pattern;
+      ret.$options = parsed.flags;
+    } else if (Array.isArray(value)) {
+      ret[key] = value.map(item => normalizeQueryRegex(item));
+    } else {
+      ret[key] = normalizeQueryRegex(value);
+    }
+  });
+  return ret;
 }
 //# sourceMappingURL=rx-query-helper.js.map

@@ -13,6 +13,7 @@ exports.handleRemoteRequest = handleRemoteRequest;
 exports.mustUseLocalState = mustUseLocalState;
 exports.requestRemoteInstance = requestRemoteInstance;
 exports.stripLokiKey = stripLokiKey;
+exports.transformRegexToRegExp = transformRegexToRegExp;
 exports.waitUntilHasLeader = waitUntilHasLeader;
 var _rxStorageInstanceLoki = require("./rx-storage-instance-loki");
 var _lokijs = _interopRequireDefault(require("lokijs"));
@@ -398,5 +399,33 @@ async function mustUseLocalState(instance) {
     // other is leader, send message to remote leading instance
     return false;
   }
+}
+
+/**
+ * LokiJS does not understand the 'official' $regex operator,
+ * so we have to transform these back into RegExp objects.
+ * @recursive
+ */
+function transformRegexToRegExp(selector) {
+  if (typeof selector !== 'object') {
+    return selector;
+  }
+  var keys = Object.keys(selector);
+  var ret = {};
+  keys.forEach(key => {
+    var value = selector[key];
+    if (key === '$options') {
+      return;
+    }
+    if (key === '$regex' && !(value instanceof RegExp)) {
+      var opts = selector['$options'];
+      ret[key] = new RegExp(value, opts);
+    } else if (Array.isArray(value)) {
+      ret[key] = value.map(item => transformRegexToRegExp(item));
+    } else {
+      ret[key] = transformRegexToRegExp(value);
+    }
+  });
+  return ret;
 }
 //# sourceMappingURL=lokijs-helper.js.map

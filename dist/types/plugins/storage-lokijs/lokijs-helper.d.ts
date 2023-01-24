@@ -42,3 +42,9 @@ export declare function waitUntilHasLeader(leaderElector: LeaderElector): Promis
  * Returns false if a remote instance must be used.
  */
 export declare function mustUseLocalState(instance: RxStorageInstanceLoki<any>): Promise<LokiLocalDatabaseState | false>;
+/**
+ * LokiJS does not understand the 'official' $regex operator,
+ * so we have to transform these back into RegExp objects.
+ * @recursive
+ */
+export declare function transformRegexToRegExp(selector: any): any;

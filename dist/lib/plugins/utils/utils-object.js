@@ -165,13 +165,7 @@ function deepClone(src) {
   var dest = {};
   // eslint-disable-next-line guard-for-in
   for (var key in src) {
-    // TODO we should not be required to deep clone RegEx objects,
-    // this must be fixed in RxDB.
-    if (src[key] instanceof RegExp) {
-      dest[key] = src[key];
-    } else {
-      dest[key] = deepClone(src[key]);
-    }
+    dest[key] = deepClone(src[key]);
   }
   return dest;
 }

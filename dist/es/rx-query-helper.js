@@ -1,6 +1,6 @@
 import { LOGICAL_OPERATORS } from './query-planner';
 import { getPrimaryFieldOfPrimaryKey } from './rx-schema-helper';
-import { clone, firstPropertyNameOfObject, toArray, isMaybeReadonlyArray } from './plugins/utils';
+import { clone, firstPropertyNameOfObject, toArray, isMaybeReadonlyArray, parseRegex, flatClone } from './plugins/utils';
 
 /**
  * Normalize the query to ensure we have all fields set
@@ -8,6 +8,12 @@ import { clone, firstPropertyNameOfObject, toArray, isMaybeReadonlyArray } from 
  */
 export function normalizeMangoQuery(schema, mangoQuery) {
   var primaryKey = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
+  mangoQuery = flatClone(mangoQuery);
+
+  // regex normalization must run before deep clone because deep clone cannot clone RegExp
+  if (mangoQuery.selector) {
+    mangoQuery.selector = normalizeQueryRegex(mangoQuery.selector);
+  }
   var normalizedMangoQuery = clone(mangoQuery);
   if (typeof normalizedMangoQuery.skip !== 'number') {
     normalizedMangoQuery.skip = 0;
@@ -131,5 +137,30 @@ export function normalizeMangoQuery(schema, mangoQuery) {
     }
   }
   return normalizedMangoQuery;
+}
+
+/**
+ * @recursive
+ * @mutates the input so that we do not have to deep clone
+ */
+export function normalizeQueryRegex(selector) {
+  if (typeof selector !== 'object') {
+    return selector;
+  }
+  var keys = Object.keys(selector);
+  var ret = {};
+  keys.forEach(key => {
+    var value = selector[key];
+    if (key === '$regex' && value instanceof RegExp) {
+      var parsed = parseRegex(value);
+      ret.$regex = parsed.pattern;
+      ret.$options = parsed.flags;
+    } else if (Array.isArray(value)) {
+      ret[key] = value.map(item => normalizeQueryRegex(item));
+    } else {
+      ret[key] = normalizeQueryRegex(value);
+    }
+  });
+  return ret;
 }
 //# sourceMappingURL=rx-query-helper.js.map
