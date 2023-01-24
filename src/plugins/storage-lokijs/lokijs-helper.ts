@@ -470,3 +470,36 @@ export async function mustUseLocalState(
         return false;
     }
 }
+
+
+/**
+ * LokiJS does not understand the 'official' $regex operator,
+ * so we have to transform these back into RegExp objects.
+ * @recursive
+ */
+export function transformRegexToRegExp(selector: any) {
+    if (typeof selector !== 'object') {
+        return selector;
+    }
+
+    const keys = Object.keys(selector);
+    const ret: any = {};
+    keys.forEach(key => {
+        const value: any = selector[key];
+        if (key === '$options') {
+            return;
+        }
+        if (
+            key === '$regex' &&
+            !(value instanceof RegExp)
+        ) {
+            const opts = selector['$options'];
+            ret[key] = new RegExp(value, opts);
+        } else if (Array.isArray(value)) {
+            ret[key] = value.map(item => transformRegexToRegExp(item));
+        } else {
+            ret[key] = transformRegexToRegExp(value);
+        }
+    });
+    return ret;
+}

@@ -3,7 +3,6 @@ import { getPrimaryFieldOfPrimaryKey } from './rx-schema-helper';
 import type {
     FilledMangoQuery,
     MangoQuery,
-    MangoQuerySelector,
     RxDocumentData,
     RxJsonSchema
 } from './types';
@@ -163,7 +162,7 @@ export function normalizeMangoQuery<RxDocType>(
  * @recursive
  * @mutates the input so that we do not have to deep clone
  */
-export function normalizeQueryRegex<T>(
+export function normalizeQueryRegex(
     selector: any
 ): any {
     if (typeof selector !== 'object') {
@@ -178,12 +177,11 @@ export function normalizeQueryRegex<T>(
             key === '$regex' &&
             value instanceof RegExp
         ) {
-            console.log('is regex !!');
             const parsed = parseRegex(value);
             ret.$regex = parsed.pattern;
             ret.$options = parsed.flags;
         } else if (Array.isArray(value)) {
-            ret[key] = value.map(item => normalizeQueryRegex(item))
+            ret[key] = value.map(item => normalizeQueryRegex(item));
         } else {
             ret[key] = normalizeQueryRegex(value);
         }

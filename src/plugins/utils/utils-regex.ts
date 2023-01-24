@@ -8,7 +8,7 @@ export const REGEX_ALL_PIPES = /\|/g;
 export type ParsedRegex = {
     pattern: string;
     flags: string;
-}
+};
 
 /**
  * @link https://stackoverflow.com/a/26034888/3443137
@@ -19,5 +19,5 @@ export function parseRegex(regex: RegExp): ParsedRegex {
     return {
         pattern: matches[2],
         flags: matches[3]
-    }
+    };
 }

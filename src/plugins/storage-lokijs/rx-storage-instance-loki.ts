@@ -47,7 +47,8 @@ import {
     requestRemoteInstance,
     mustUseLocalState,
     handleRemoteRequest,
-    RX_STORAGE_NAME_LOKIJS
+    RX_STORAGE_NAME_LOKIJS,
+    transformRegexToRegExp
 } from './lokijs-helper';
 import type {
     Collection
@@ -218,6 +219,11 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         const localState = await mustUseLocalState(this);
         if (!localState) {
             return requestRemoteInstance(this, 'query', [preparedQuery]);
+        }
+
+        if (preparedQuery.selector) {
+            preparedQuery = flatClone(preparedQuery);
+            preparedQuery.selector = transformRegexToRegExp(preparedQuery.selector);
         }
 
         let query = localState.collection
