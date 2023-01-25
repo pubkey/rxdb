@@ -56,7 +56,7 @@
 - FIX import of socket.io [#4307](https://github.com/pubkey/rxdb/pull/4307)
 - FIX Id length limit reached with composite key [#4315](https://github.com/pubkey/rxdb/issues/4315)
 - FIX `$regex` query not working on remote storage.
-
+- FIX SQLite must store attachments data as Blob instead of base64 string to reduce the database size.
 #
 - REMOVE deprecated `babel-plugin-transform-async-to-promises` plugin.
 
