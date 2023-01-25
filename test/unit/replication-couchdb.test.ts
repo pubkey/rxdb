@@ -258,6 +258,12 @@ describe('replication-couchdb.test.ts', () => {
             await replicationState.awaitInitialReplication();
             return replicationState;
         }
+		
+		function delay(time: number): Promise<void> {
+            return new Promise<void>((resolve) =>
+                setTimeout(resolve, time * 1000)
+            );
+        }
 
         it('should stream changes over the replication to a query', async () => {
             const server = await SpawnServer.spawn();
@@ -310,6 +316,34 @@ describe('replication-couchdb.test.ts', () => {
             await doc2.incrementalPatch({ age: 22 });
             await awaitInSync();
             assert.strictEqual(doc1.getLatest().age, 22);
+			
+			// Edit on the server and wait for it to be pulled
+            const doc = await fetchWithCouchDBAuth(
+                server.url + '/' + doc1.passportId,
+                {
+                    method: 'GET',
+                }
+            );
+
+            const docJson = await doc.json();
+            fetchWithCouchDBAuth(server.url + '/' + doc1.passportId, {
+                body: JSON.stringify({
+                    ...docJson,
+                    firstName: 'edited remotely',
+                }),
+                method: 'PUT',
+            });
+
+            await awaitInSync();
+            // Delay for a second to make sure the change is pulled
+            // Even though it should be instanenous
+            // But just in case
+            await delay(3);
+            const editedDoc = await c1.findOne().exec(true);
+            assert.strictEqual(
+                editedDoc.getLatest().firstName,
+                'edited remotely'
+            );
 
             c1.database.destroy();
             c2.database.destroy();
