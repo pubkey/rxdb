@@ -3,7 +3,7 @@ import { RxSchema } from '../../rx-schema';
 import { RxStorageInstance } from '../rx-storage.interface';
 import {
     WithAttachments
-} from '../pouch';
+} from '../couchdb';
 import { RxCollection } from '../rx-collection';
 import { RxDatabase } from '../rx-database';
 import { MaybePromise } from '../util';

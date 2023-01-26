@@ -16,8 +16,7 @@ import {
     batchArray,
     ensureNotFalsy,
     parseRevision,
-    PROMISE_RESOLVE_FALSE,
-    randomCouchString
+    PROMISE_RESOLVE_FALSE
 } from '../plugins/utils';
 import {
     getLastCheckpointDoc,
@@ -196,7 +195,6 @@ export function startReplicationUpstream<RxDocType, CheckpointType>(
         docs: RxDocumentData<RxDocType>[],
         checkpoint: CheckpointType
     ): Promise<boolean> {
-        const callId = randomCouchString(10);
         state.stats.up.persistToMaster = state.stats.up.persistToMaster + 1;
 
         /**
@@ -302,7 +300,7 @@ export function startReplicationUpstream<RxDocType, CheckpointType>(
             const writeBatches = batchArray(writeRowsArray, state.input.pushBatchSize);
             await Promise.all(
                 writeBatches.map(async (writeBatch) => {
-                    const masterWriteResult = await replicationHandler.masterWrite(writeBatch, { callId });
+                    const masterWriteResult = await replicationHandler.masterWrite(writeBatch);
                     masterWriteResult.forEach(conflictDoc => {
                         const id = (conflictDoc as any)[state.primaryPath];
                         conflictIds.add(id);
@@ -325,7 +323,7 @@ export function startReplicationUpstream<RxDocType, CheckpointType>(
             if (useWriteRowsToMeta.length > 0) {
                 await state.input.metaInstance.bulkWrite(
                     useWriteRowsToMeta,
-                    'replication-up-write-meta-' + callId
+                    'replication-up-write-meta'
                 );
                 // TODO what happens when we have conflicts here?
             }

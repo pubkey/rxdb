@@ -50,14 +50,6 @@ export type RxReplicationWriteToMasterRow<RxDocType> = {
     newDocumentState: WithDeleted<RxDocType>;
 };
 
-/**
- * Meta data that can be used
- * by some plugins to do hacky stuff.
- */
-export type RxReplicationWriteToMasterMeta = {
-    callId: string;
-};
-
 
 export type DocumentsWithCheckpoint<RxDocType, CheckpointType> = {
     documents: WithDeleted<RxDocType>[];
@@ -102,8 +94,7 @@ export type RxReplicationHandler<RxDocType, MasterCheckpointType> = {
      * (otherwise returns an empty array.)
      */
     masterWrite(
-        rows: RxReplicationWriteToMasterRow<RxDocType>[],
-        meta: RxReplicationWriteToMasterMeta
+        rows: RxReplicationWriteToMasterRow<RxDocType>[]
     ): Promise<WithDeleted<RxDocType>[]>;
 };
 
