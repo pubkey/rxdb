@@ -1,6 +1,6 @@
 import { firstValueFrom, filter } from 'rxjs';
 import { stackCheckpoints } from '../rx-storage-helper';
-import { batchArray, ensureNotFalsy, parseRevision, PROMISE_RESOLVE_FALSE, randomCouchString } from '../plugins/utils';
+import { batchArray, ensureNotFalsy, parseRevision, PROMISE_RESOLVE_FALSE } from '../plugins/utils';
 import { getLastCheckpointDoc, setCheckpoint } from './checkpoint';
 import { resolveConflictError } from './conflicts';
 import { writeDocToDocState } from './helper';
@@ -122,7 +122,6 @@ export function startReplicationUpstream(state) {
    * false if not.
    */
   function persistToMaster(docs, checkpoint) {
-    var callId = randomCouchString(10);
     state.stats.up.persistToMaster = state.stats.up.persistToMaster + 1;
 
     /**
@@ -197,9 +196,7 @@ export function startReplicationUpstream(state) {
        */
       var writeBatches = batchArray(writeRowsArray, state.input.pushBatchSize);
       await Promise.all(writeBatches.map(async writeBatch => {
-        var masterWriteResult = await replicationHandler.masterWrite(writeBatch, {
-          callId
-        });
+        var masterWriteResult = await replicationHandler.masterWrite(writeBatch);
         masterWriteResult.forEach(conflictDoc => {
           var id = conflictDoc[state.primaryPath];
           conflictIds.add(id);
@@ -214,7 +211,7 @@ export function startReplicationUpstream(state) {
         }
       });
       if (useWriteRowsToMeta.length > 0) {
-        await state.input.metaInstance.bulkWrite(useWriteRowsToMeta, 'replication-up-write-meta-' + callId);
+        await state.input.metaInstance.bulkWrite(useWriteRowsToMeta, 'replication-up-write-meta');
         // TODO what happens when we have conflicts here?
       }
 

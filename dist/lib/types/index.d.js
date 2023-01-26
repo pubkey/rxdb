@@ -3,14 +3,14 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-var _pouch = require("./pouch");
-Object.keys(_pouch).forEach(function (key) {
+var _couchdb = require("./couchdb");
+Object.keys(_couchdb).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
-  if (key in exports && exports[key] === _pouch[key]) return;
+  if (key in exports && exports[key] === _couchdb[key]) return;
   Object.defineProperty(exports, key, {
     enumerable: true,
     get: function () {
-      return _pouch[key];
+      return _couchdb[key];
     }
   });
 });

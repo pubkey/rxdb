@@ -1,4 +1,4 @@
-export * from './pouch';
+export * from './couchdb';
 export * from './rx-attachment';
 export * from './rx-collection';
 export * from './rx-database';

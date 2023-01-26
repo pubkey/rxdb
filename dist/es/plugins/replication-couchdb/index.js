@@ -2,7 +2,7 @@ import _inheritsLoose from "@babel/runtime/helpers/inheritsLoose";
 /**
  * This plugin can be used to sync collections with a remote CouchDB endpoint.
  */
-import { ensureNotFalsy, errorToPlainJson, flatClone, getFromMapOrThrow, lastOfArray } from '../../plugins/utils';
+import { ensureNotFalsy, errorToPlainJson, flatClone, getFromMapOrThrow } from '../../plugins/utils';
 import { RxDBLeaderElectionPlugin } from '../leader-election';
 import { RxReplicationState, startReplicationOnLeaderShip } from '../replication';
 import { addRxPlugin, newRxError } from '../../index';
@@ -30,7 +30,9 @@ export var RxCouchDBReplicationState = /*#__PURE__*/function (_RxReplicationStat
 }(RxReplicationState);
 export function replicateCouchDB(options) {
   var collection = options.collection;
+  var conflictHandler = collection.conflictHandler;
   addRxPlugin(RxDBLeaderElectionPlugin);
+  var primaryPath = options.collection.schema.primaryPath;
   if (!options.url.endsWith('/')) {
     throw newRxError('RC_COUCHDB_1', {
       args: {
@@ -84,19 +86,63 @@ export function replicateCouchDB(options) {
     };
   }
   var replicationPrimitivesPush;
-  var revisionByCallId = new Map();
   if (options.push) {
     replicationPrimitivesPush = {
-      async handler(rows, meta) {
+      async handler(rows) {
+        var conflicts = [];
+        var pushRowsById = new Map();
+        rows.forEach(row => {
+          var id = row.newDocumentState[primaryPath];
+          pushRowsById.set(id, row);
+        });
+
+        /**
+         * First get the current master state from the remote
+         * to check for conflicts
+         */
+        var docsByIdResponse = await replicationState.fetch(options.url + '_all_docs?' + mergeUrlQueryParams({}), {
+          method: 'POST',
+          headers: {
+            'content-type': 'application/json'
+          },
+          body: JSON.stringify({
+            keys: rows.map(row => row.newDocumentState[primaryPath]),
+            include_docs: true,
+            deleted: 'ok'
+          })
+        });
+        var docsByIdRows = await docsByIdResponse.json();
+        var nonConflictRows = [];
+        var remoteRevById = new Map();
+        await Promise.all(docsByIdRows.rows.map(async row => {
+          if (!row.doc) {
+            nonConflictRows.push(getFromMapOrThrow(pushRowsById, row.key));
+            return;
+          }
+          var realMasterState = couchDBDocToRxDocData(primaryPath, row.doc);
+          var pushRow = getFromMapOrThrow(pushRowsById, row.id);
+          var conflictHandlerResult = await conflictHandler({
+            realMasterState,
+            newDocumentState: pushRow.assumedMasterState
+          }, 'couchdb-push-1');
+          if (conflictHandlerResult.isEqual) {
+            remoteRevById.set(row.id, row.doc._rev);
+            nonConflictRows.push(pushRow);
+          } else {
+            conflicts.push(realMasterState);
+          }
+        }));
+
         /**
          * @link https://docs.couchdb.org/en/3.2.2-docs/api/database/bulk-api.html#db-bulk-docs
          */
         var url = options.url + '_bulk_docs?' + mergeUrlQueryParams({});
         var body = {
-          docs: rows.map(row => {
+          docs: nonConflictRows.map(row => {
+            var docId = row.newDocumentState[primaryPath];
             var sendDoc = flatClone(row.newDocumentState);
-            if (row.assumedMasterState) {
-              sendDoc._rev = ensureNotFalsy(row.assumedMasterState._rev);
+            if (remoteRevById.has(docId)) {
+              sendDoc._rev = getFromMapOrThrow(remoteRevById, docId);
             }
             return couchSwapPrimaryToId(collection.schema.primaryPath, sendDoc);
           })
@@ -110,42 +156,34 @@ export function replicateCouchDB(options) {
         });
         var responseJson = await response.json();
 
-        /**
-         * CouchDB creates the new document revision
-         * and we have to remember it here so that
-         * we can later inject them into the assumedMasterState
-         * of the meta storage instance.
-         */
-        var revisions = new Map();
-        responseJson.filter(row => row.ok).forEach(row => revisions.set(row.id, row.rev));
-        if (revisions.size > 0) {
-          revisionByCallId.set(meta.callId, revisions);
-        }
-
         // get conflicting writes
-        var conflicts = responseJson.filter(row => {
-          var isConflict = row.error === 'conflict';
-          if (!row.ok && !isConflict) {
+        var conflictAgainIds = [];
+        responseJson.forEach(writeResultRow => {
+          var isConflict = writeResultRow.error === 'conflict';
+          if (!writeResultRow.ok && !isConflict) {
             throw newRxError('SNH', {
               args: {
-                row
+                writeResultRow
               }
             });
           }
-          return isConflict;
+          if (isConflict) {
+            conflictAgainIds.push(writeResultRow.id);
+          }
         });
-        if (conflicts.length === 0) {
-          return [];
+        if (conflictAgainIds.length === 0) {
+          return conflicts;
         }
         var getConflictDocsUrl = options.url + '_all_docs?' + mergeUrlQueryParams({
           include_docs: true,
-          keys: JSON.stringify(conflicts.map(c => c.id))
+          keys: JSON.stringify(conflictAgainIds)
         });
         var conflictResponse = await replicationState.fetch(getConflictDocsUrl);
         var conflictResponseJson = await conflictResponse.json();
-        var conflictResponseRows = conflictResponseJson.rows;
-        var conflictDocsMasterState = conflictResponseRows.map(r => couchDBDocToRxDocData(collection.schema.primaryPath, r.doc));
-        return conflictDocsMasterState;
+        conflictResponseJson.rows.forEach(conflictAgainRow => {
+          conflicts.push(couchDBDocToRxDocData(collection.schema.primaryPath, conflictAgainRow.doc));
+        });
+        return conflicts;
       },
       batchSize: options.push.batchSize,
       modifier: options.push.modifier
@@ -154,39 +192,10 @@ export function replicateCouchDB(options) {
   var replicationState = new RxCouchDBReplicationState(options.url, options.fetch ? options.fetch : getDefaultFetch(), COUCHDB_NEW_REPLICATION_PLUGIN_IDENTITY_PREFIX + options.collection.database.hashFunction(options.url), collection, replicationPrimitivesPull, replicationPrimitivesPush, options.live, options.retryTime, options.autoStart);
 
   /**
-   * Wrap the meta instance to make it store
-   * the server-side generated revisions from CouchDB
-   * so that the assumedMasterState contains the correct _rev value.
-   */
-  if (options.push) {
-    var startBefore = replicationState.start.bind(replicationState);
-    replicationState.start = async () => {
-      var startResult = await startBefore();
-      var metaInstance = ensureNotFalsy(replicationState.metaInstance);
-      var bulkWriteBefore = metaInstance.bulkWrite.bind(metaInstance);
-      metaInstance.bulkWrite = function (writeRows, context) {
-        if (context.startsWith('replication-up-write-meta')) {
-          var callId = ensureNotFalsy(lastOfArray(context.split('-')));
-          var revisions = getFromMapOrThrow(revisionByCallId, callId);
-          revisionByCallId.delete(callId);
-          writeRows.forEach(row => {
-            var docId = row.document.itemId;
-            row.document.data = flatClone(row.document.data);
-            var revision = getFromMapOrThrow(revisions, docId);
-            row.document.data._rev = revision;
-          });
-        }
-        return bulkWriteBefore(writeRows, context);
-      };
-      return startResult;
-    };
-  }
-
-  /**
    * Use long polling to get live changes for the pull.stream$
    */
   if (options.live && options.pull) {
-    var _startBefore = replicationState.start.bind(replicationState);
+    var startBefore = replicationState.start.bind(replicationState);
     replicationState.start = () => {
       var since = 'now';
       var batchSize = options.pull && options.pull.batchSize ? options.pull.batchSize : 20;
@@ -225,7 +234,7 @@ export function replicateCouchDB(options) {
           });
         }
       })();
-      return _startBefore();
+      return startBefore();
     };
   }
   startReplicationOnLeaderShip(options.waitForLeadership, replicationState);

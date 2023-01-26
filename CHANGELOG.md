@@ -5,7 +5,7 @@
 
 <!-- ADD new changes here! -->
 
-### 14.0.0-beta.29 (24 January 2023)
+### 14.0.0-beta.30 (26 January 2023)
 
 #
 - Remove the deprecated PouchDB RxStorage.

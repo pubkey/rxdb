@@ -5,7 +5,6 @@ import type {
     RxCollection,
     RxDocumentData,
     RxReplicationPullStreamItem,
-    RxReplicationWriteToMasterMeta,
     RxReplicationWriteToMasterRow,
     WithDeleted
 } from '../../types';
@@ -69,8 +68,7 @@ export type ReplicationPullOptions<RxDocType, CheckpointType> = {
  * so that they can be resolved on the client.
  */
 export type ReplicationPushHandler<RxDocType> = (
-    docs: RxReplicationWriteToMasterRow<RxDocType>[],
-    meta: RxReplicationWriteToMasterMeta
+    docs: RxReplicationWriteToMasterRow<RxDocType>[]
 ) => Promise<WithDeleted<RxDocType>[]>;
 export type ReplicationPushOptions<RxDocType> = {
     /**
