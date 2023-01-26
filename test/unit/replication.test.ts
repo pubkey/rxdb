@@ -97,10 +97,9 @@ describe('replication.test.js', () => {
             remoteCollection.database.token
         );
         const handler: ReplicationPushHandler<TestDocType> = async (
-            rows: RxReplicationWriteToMasterRow<TestDocType>[],
-            meta
+            rows: RxReplicationWriteToMasterRow<TestDocType>[]
         ) => {
-            const result = await helper.masterWrite(rows, meta);
+            const result = await helper.masterWrite(rows);
             return result;
         };
         return handler;
@@ -131,11 +130,11 @@ describe('replication.test.js', () => {
                 },
                 push: {
                     batchSize,
-                    handler: (docs, meta) => {
+                    handler: (docs) => {
                         if (docs.length > batchSize) {
                             throw new Error('push got more docs then the batch size');
                         }
-                        return pushHandler(docs, meta);
+                        return pushHandler(docs);
                     }
                 }
             });
@@ -325,11 +324,11 @@ describe('replication.test.js', () => {
                     handler: getPullHandler(remoteCollection)
                 },
                 push: {
-                    handler: (docs, meta) => {
+                    handler: (docs) => {
                         if (docs.length === 0 || docs.length > batchSize) {
                             throw new Error('push.batchSize(' + batchSize + ') not respected ' + docs.length);
                         }
-                        return getPushHandler(remoteCollection)(docs, meta);
+                        return getPushHandler(remoteCollection)(docs);
                     },
                     batchSize
                 }
@@ -540,9 +539,9 @@ describe('replication.test.js', () => {
                     }
                 },
                 push: {
-                    handler: async (docs, meta) => {
+                    handler: async (docs) => {
                         await continues;
-                        return getPushHandler(remoteCollection)(docs, meta);
+                        return getPushHandler(remoteCollection)(docs);
                     }
                 },
                 autoStart: false
@@ -675,8 +674,8 @@ describe('replication.test.js', () => {
                 },
                 push: {
                     batchSize,
-                    handler: (docs, meta) => {
-                        return pushHandler(docs, meta);
+                    handler: (docs) => {
+                        return pushHandler(docs);
                     }
                 }
             });
