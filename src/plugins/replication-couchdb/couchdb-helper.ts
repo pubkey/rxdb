@@ -24,6 +24,8 @@ export function couchDBDocToRxDocData<RxDocType>(
     // ensure deleted flag is set.
     doc._deleted = !!doc._deleted;
 
+    delete doc._rev;
+
     return doc;
 }
 

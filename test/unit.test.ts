@@ -23,6 +23,7 @@ import './unit/rx-storage-query-correctness.test';
 import './unit/rx-storage-lokijs.test';
 import './unit/rx-storage-dexie.test';
 
+import './unit/replication-couchdb.test';
 import './unit/instance-of-check.test';
 import './unit/rx-schema.test';
 import './unit/bug-report.test';
@@ -52,7 +53,6 @@ import './unit/orm.test';
 import './unit/replication-protocol.test';
 import './unit/replication.test';
 import './unit/replication-graphql.test';
-import './unit/replication-couchdb.test';
 import './unit/replication-websocket.test';
 import './unit/replication-p2p.test';
 import './unit/crdt.test';

@@ -293,8 +293,8 @@ describe('replication-couchdb.test.ts', () => {
 
             // wait until it is on the server
             await waitUntil(async () => {
-                const serverDocs = await getAllServerDocs(server.url);
-                return serverDocs.length === 1;
+                const serverDocsInner = await getAllServerDocs(server.url);
+                return serverDocsInner.length === 1;
             });
 
             const endResult = await foundPromise;
@@ -336,7 +336,6 @@ describe('replication-couchdb.test.ts', () => {
 
             c1.database.destroy();
             c2.database.destroy();
-            process.exit();
             server.close();
         });
     });
