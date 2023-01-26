@@ -18,8 +18,7 @@ import type {
     CouchdbChangesResult,
     CouchBulkDocResultRow,
     CouchAllDocsResponse,
-    RxConflictHandler,
-    RxDocumentData
+    RxConflictHandler
 } from '../../types';
 import {
     RxReplicationState,
@@ -42,8 +41,7 @@ import {
     COUCHDB_NEW_REPLICATION_PLUGIN_IDENTITY_PREFIX,
     mergeUrlQueryParams,
     couchSwapPrimaryToId,
-    getDefaultFetch,
-    couchSwapIdToPrimary
+    getDefaultFetch
 } from './couchdb-helper';
 
 export * from './couchdb-helper';
