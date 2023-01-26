@@ -143,9 +143,6 @@ export function replicateCouchDB<RxDocType>(
             async handler(
                 rows: RxReplicationWriteToMasterRow<RxDocType>[]
             ) {
-                console.log('------------------- push handler:!!!!');
-                console.dir(rows);
-
                 const conflicts: WithDeleted<RxDocType>[] = [];
                 const pushRowsById = new Map<string, RxReplicationWriteToMasterRow<RxDocType>>();
                 rows.forEach(row => {
@@ -176,8 +173,6 @@ export function replicateCouchDB<RxDocType>(
                 const remoteRevById = new Map<string, string>();
                 await Promise.all(
                     docsByIdRows.rows.map(async (row) => {
-                        console.log('row::');
-                        console.dir(row);
                         if (!row.doc) {
                             nonConflictRows.push(getFromMapOrThrow(pushRowsById, row.key));
                             return;
@@ -188,9 +183,6 @@ export function replicateCouchDB<RxDocType>(
                             realMasterState,
                             newDocumentState: pushRow.assumedMasterState
                         }, 'couchdb-push-1');
-                        console.log('conflictHandlerResult:');
-                        console.dir({ realMasterState, newDocumentState: pushRow.assumedMasterState });
-                        console.dir(conflictHandlerResult);
                         if (conflictHandlerResult.isEqual) {
                             remoteRevById.set(row.id, row.doc._rev);
                             nonConflictRows.push(pushRow);
@@ -199,14 +191,6 @@ export function replicateCouchDB<RxDocType>(
                         }
                     })
                 );
-                console.log('docsByIdRows:');
-                console.dir(docsByIdRows);
-                console.log('nonConflictRows:');
-                console.dir(nonConflictRows);
-                console.log('conflicts:');
-                console.dir(conflicts);
-                console.log('remoteRevById:');
-                console.dir(remoteRevById);
 
                 /**
                  * @link https://docs.couchdb.org/en/3.2.2-docs/api/database/bulk-api.html#db-bulk-docs
@@ -215,7 +199,6 @@ export function replicateCouchDB<RxDocType>(
                 const body = {
                     docs: nonConflictRows.map(row => {
                         const docId = (row.newDocumentState as any)[primaryPath];
-                        console.log('remoteRevById.has(docId): ' + remoteRevById.has(docId));
                         const sendDoc = flatClone(row.newDocumentState);
                         if (remoteRevById.has(docId)) {
                             (sendDoc as any)._rev = getFromMapOrThrow(remoteRevById, docId);
@@ -235,8 +218,6 @@ export function replicateCouchDB<RxDocType>(
                     }
                 );
                 const responseJson: CouchBulkDocResultRow[] = await response.json();
-                console.log('write docs response:');
-                console.dir({ body, responseJson });
 
                 // get conflicting writes
                 const conflictAgainIds: string[] = [];

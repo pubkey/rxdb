@@ -262,11 +262,6 @@ describe('replication-couchdb.test.ts', () => {
         it('should stream changes over the replication to a query', async () => {
             const server = await SpawnServer.spawn();
             const c1 = await humansCollection.create(0);
-            c1.$.subscribe(ev => {
-                console.log('--- col1.$:');
-                console.dir(ev);
-                console.log('--- col1.$ END');
-            });
             const c2 = await humansCollection.create(0);
 
             const replicationState1 = await syncLive(c1, server);
@@ -303,36 +298,20 @@ describe('replication-couchdb.test.ts', () => {
             const doc1 = await c1.findOne().exec(true);
             const doc2 = await c2.findOne().exec(true);
 
-            console.log('---------------- 1');
-
             // edit on one side
             await doc1.incrementalPatch({ age: 20 });
             await awaitInSync();
             await waitUntil(() => doc2.getLatest().age === 20);
-
-            console.log('---------------- 2');
-
 
             // edit on one side again
             await doc1.incrementalPatch({ age: 21 });
             await awaitInSync();
             await waitUntil(() => doc2.getLatest().age === 21);
 
-            console.log('---------------- 3');
-
-
             // edit on other side
             await doc2.incrementalPatch({ age: 22 });
             await awaitInSync();
-            replicationState2.cancel(); // TODO remove this line
-            console.log('---------------- 3.1');
-            const serverDocs = await getAllServerDocs(server.url);
-            console.log('server docs:');
-            console.dir(serverDocs);
             await waitUntil(() => doc1.getLatest().age === 22);
-
-            console.log('---------------- 4');
-
 
             c1.database.destroy();
             c2.database.destroy();

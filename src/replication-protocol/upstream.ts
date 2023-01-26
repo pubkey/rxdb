@@ -16,8 +16,7 @@ import {
     batchArray,
     ensureNotFalsy,
     parseRevision,
-    PROMISE_RESOLVE_FALSE,
-    randomCouchString
+    PROMISE_RESOLVE_FALSE
 } from '../plugins/utils';
 import {
     getLastCheckpointDoc,
