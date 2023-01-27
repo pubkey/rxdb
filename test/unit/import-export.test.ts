@@ -15,7 +15,7 @@ import {
 } from '../../';
 
 import AsyncTestUtil from 'async-test-util';
-import config, { getEncryptedStorage } from './config';
+import config, { getEncryptedStorage, getPassword } from './config';
 import { HumanDocumentType } from './../helper/schemas';
 
 config.parallel('import-export.test.js', () => {
@@ -34,7 +34,7 @@ config.parallel('import-export.test.js', () => {
                 const db = await createRxDatabase<{ enchuman: RxCollection<schemaObjects.EncryptedObjectHumanDocumentType>; }>({
                     name: randomCouchString(10),
                     storage: getEncryptedStorage(),
-                    password: randomCouchString(10)
+                    password: await getPassword()
                 });
                 const cols = await db.addCollections({
                     enchuman: {
@@ -128,7 +128,7 @@ config.parallel('import-export.test.js', () => {
                 const db = await createRxDatabase<{ enchuman: RxCollection<schemaObjects.EncryptedObjectHumanDocumentType>; }>({
                     name: randomCouchString(10),
                     storage: getEncryptedStorage(),
-                    password: randomCouchString(10)
+                    password: await getPassword()
                 });
                 const cols = await db.addCollections({
                     enchuman: {
@@ -154,7 +154,7 @@ config.parallel('import-export.test.js', () => {
                 const db = await createRxDatabase<{ enchuman: RxCollection<schemaObjects.EncryptedObjectHumanDocumentType>; }>({
                     name: randomCouchString(10),
                     storage: getEncryptedStorage(),
-                    password: randomCouchString(10)
+                    password: await getPassword()
                 });
                 const cols = await db.addCollections({
                     enchuman: {
@@ -186,7 +186,7 @@ config.parallel('import-export.test.js', () => {
                 const db = await createRxDatabase<{ enchuman: RxCollection<schemaObjects.EncryptedObjectHumanDocumentType>; }>({
                     name: randomCouchString(10),
                     storage: getEncryptedStorage(),
-                    password: randomCouchString(10)
+                    password: await getPassword()
                 });
                 const cols = await db.addCollections({
                     enchuman: {

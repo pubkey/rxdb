@@ -7,7 +7,7 @@ import {
 } from 'broadcast-channel';
 import * as path from 'path';
 import parallel from 'mocha.parallel';
-import type { RxStorage, RxTestStorage } from '../../';
+import { randomCouchString, RxStorage, RxTestStorage } from '../../';
 import { getRxStorageLoki } from '../../plugins/storage-lokijs';
 import {
     getRxStorageDexie,
@@ -108,6 +108,13 @@ export function getEncryptedStorage(): RxStorage<any, any> {
     return ret;
 }
 
+export function getPassword(): Promise<string> {
+    if (config.storage.hasEncryption) {
+        return config.storage.hasEncryption();
+    } else {
+        return Promise.resolve(randomCouchString(10));
+    }
+}
 
 export function setDefaultStorage(storageKey: string) {
     if (storageKey === CUSTOM_STORAGE.name || storageKey === 'custom') {

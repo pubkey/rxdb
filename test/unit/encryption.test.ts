@@ -1,5 +1,5 @@
 import assert from 'assert';
-import config, { getEncryptedStorage } from './config';
+import config, { getEncryptedStorage, getPassword } from './config';
 import AsyncTestUtil from 'async-test-util';
 
 import * as schemas from '../helper/schemas';
@@ -33,7 +33,7 @@ config.parallel('encryption.test.ts', () => {
             name: randomCouchString(10),
             storage,
             eventReduce: true,
-            password: randomCouchString(10)
+            password: await getPassword()
         });
         // setTimeout(() => db.destroy(), dbLifetime);
         const collections = await db.addCollections({
@@ -92,7 +92,7 @@ config.parallel('encryption.test.ts', () => {
         });
     });
     describe('RxDatabase creation', () => {
-        it('should crash with invalid password (no string)', async () => {
+        it('should crash with invalid password (empty object)', async () => {
             await AsyncTestUtil.assertThrows(
                 () => createRxDatabase({
                     name: randomCouchString(10),
@@ -103,12 +103,12 @@ config.parallel('encryption.test.ts', () => {
                 'EN1'
             );
         });
-        it('should crash with invalid password (too short)', async () => {
+        it('should crash with invalid password (empty string)', async () => {
             await AsyncTestUtil.assertThrows(
                 () => createRxDatabase({
                     name: randomCouchString(10),
                     storage,
-                    password: randomCouchString(4)
+                    password: ''
                 }),
                 'RxError',
                 'EN2'
@@ -116,7 +116,7 @@ config.parallel('encryption.test.ts', () => {
         });
         it('BUG: should have stored the password hash when creating the database', async () => {
             const name = randomCouchString(10);
-            const password = randomCouchString(10);
+            const password = await getPassword();
             const db = await createRxDatabase({
                 name,
                 storage,
@@ -154,14 +154,14 @@ config.parallel('encryption.test.ts', () => {
             const db = await createRxDatabase({
                 name,
                 storage,
-                password: randomCouchString(10),
+                password: await getPassword(),
                 ignoreDuplicate: true
             });
             await db.storageToken;
             const db2 = await createRxDatabase({
                 name,
                 storage,
-                password: randomCouchString(10),
+                password: await getPassword(),
                 ignoreDuplicate: true
             });
 
@@ -189,7 +189,7 @@ config.parallel('encryption.test.ts', () => {
             const db = await createRxDatabase({
                 name: randomCouchString(10),
                 storage,
-                password: randomCouchString(12)
+                password: await getPassword()
             });
             const collections = await db.addCollections({
                 humanenc: {
@@ -215,7 +215,7 @@ config.parallel('encryption.test.ts', () => {
             const db = await createRxDatabase({
                 name: randomCouchString(10),
                 storage,
-                password: randomCouchString(10)
+                password: await getPassword()
             });
             const c = await db.addCollections({
                 enchuman: {
@@ -250,7 +250,7 @@ config.parallel('encryption.test.ts', () => {
             const db = await createRxDatabase({
                 name: randomCouchString(10),
                 storage,
-                password: randomCouchString(10)
+                password: await getPassword()
             });
             const c = await db.addCollections({
                 enchuman: {
@@ -284,7 +284,7 @@ config.parallel('encryption.test.ts', () => {
             }
 
             const name = randomCouchString(10) + '837';
-            const password = randomCouchString(10);
+            const password = await getPassword();
 
             // 1. create and destroy encrypted db
             const db1 = await createRxDatabase({
@@ -299,7 +299,7 @@ config.parallel('encryption.test.ts', () => {
             const db2 = await createRxDatabase({
                 name,
                 storage,
-                password: 'foobarfoobar'
+                password: await getPassword()
             });
 
             await AsyncTestUtil.assertThrows(
@@ -348,7 +348,7 @@ config.parallel('encryption.test.ts', () => {
             const db = await createRxDatabase({
                 name: dbName,
                 storage,
-                password: 'myLongAndStupidPassword'
+                password: await getPassword()
             });
 
             const collections = await db.addCollections({
@@ -402,7 +402,7 @@ config.parallel('encryption.test.ts', () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
                     storage,
-                    password: randomCouchString(20)
+                    password: await getPassword()
                 });
                 const colName = randomCouchString(10);
                 const collections = await db.addCollections({
@@ -452,7 +452,7 @@ config.parallel('encryption.test.ts', () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
                     storage,
-                    password: randomCouchString(20)
+                    password: await getPassword()
                 });
 
                 const colName = randomCouchString(10);

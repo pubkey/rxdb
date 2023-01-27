@@ -8,7 +8,7 @@
 import assert from 'assert';
 import AsyncTestUtil, { wait, waitUntil } from 'async-test-util';
 
-import config, { getEncryptedStorage } from './config';
+import config, { getEncryptedStorage, getPassword } from './config';
 import {
     isRxDatabase,
     createRxDatabase,
@@ -167,7 +167,7 @@ config.parallel('cross-instance.test.js', () => {
         });
         it('should work with encrypted fields', async () => {
             const name = randomCouchString(10);
-            const password = randomCouchString(10);
+            const password = await getPassword();
             const db1 = await createRxDatabase({
                 name,
                 storage: getEncryptedStorage(),
@@ -227,7 +227,7 @@ config.parallel('cross-instance.test.js', () => {
         });
         it('should work with nested encrypted fields', async () => {
             const name = randomCouchString(10);
-            const password = randomCouchString(10);
+            const password = await getPassword();
             const db1 = await createRxDatabase({
                 name,
                 storage: getEncryptedStorage(),

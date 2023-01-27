@@ -14,7 +14,7 @@ import {
     firstValueFrom
 } from 'rxjs';
 
-import config, { getEncryptedStorage } from './config';
+import config, { getEncryptedStorage, getPassword } from './config';
 import * as schemaObjects from '../helper/schema-objects';
 import {
     HumanWithTimestampDocumentType
@@ -1859,7 +1859,7 @@ describe('replication-graphql.test.ts', () => {
                     multiInstance: true,
                     eventReduce: true,
                     ignoreDuplicate: true,
-                    password: randomCouchString(10)
+                    password: await getPassword()
                 });
                 const schema: RxJsonSchema<HumanWithTimestampDocumentType> = clone(schemas.humanWithTimestamp);
                 schema.encrypted = ['name'];
@@ -2117,7 +2117,7 @@ describe('replication-graphql.test.ts', () => {
                     multiInstance: true,
                     eventReduce: true,
                     ignoreDuplicate: true,
-                    password: randomCouchString(10)
+                    password: await getPassword()
                 });
                 const schema: RxJsonSchema<any> = clone(schemas.humanWithTimestampAllIndex);
                 schema.encrypted = ['name'];
@@ -2168,7 +2168,7 @@ describe('replication-graphql.test.ts', () => {
                     multiInstance: true,
                     eventReduce: true,
                     ignoreDuplicate: true,
-                    password: randomCouchString(10)
+                    password: await getPassword()
                 });
                 const schema: RxJsonSchema<any> = clone(schemas.humanWithTimestampAllIndex);
                 schema.encrypted = ['name'];

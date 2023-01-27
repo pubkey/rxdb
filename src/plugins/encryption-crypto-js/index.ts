@@ -77,10 +77,10 @@ export function wrappedKeyEncryptionCryptoJsStorage<Internals, InstanceCreationO
                     const retInstance = await args.storage.createStorageInstance(params);
                     if (
                         params.schema.title === INTERNAL_STORE_SCHEMA_TITLE &&
-                        params.password
+                        params.password !== 'undefined'
                     ) {
                         try {
-                            validatePassword(params.password);
+                            validatePassword(params.password as any);
                         } catch (err) {
                             /**
                              * Even if the checks fail,
@@ -201,13 +201,13 @@ function cloneWithoutAttachments<T>(data: RxDocumentWriteData<T>): RxDocumentDat
     return data as any;
 }
 
-function validatePassword(password: any) {
-    if (password && typeof password !== 'string') {
+function validatePassword(password: string) {
+    if (typeof password !== 'string') {
         throw newRxTypeError('EN1', {
             password
         });
     }
-    if (password && password.length < MINIMUM_PASSWORD_LENGTH) {
+    if (password.length < MINIMUM_PASSWORD_LENGTH) {
         throw newRxError('EN2', {
             minPassLength: MINIMUM_PASSWORD_LENGTH,
             password
