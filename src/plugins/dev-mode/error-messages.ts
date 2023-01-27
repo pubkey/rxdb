@@ -125,6 +125,7 @@ export const ERROR_MESSAGES = {
     EN1: 'password is no string',
     EN2: 'validatePassword: min-length of password not complied',
     EN3: 'Schema contains encrypted properties but no password is given',
+    EN4: 'Password not valid',
 
     // plugins/json-dump.js
     JD1: 'You must create the collections before you can import their data',
