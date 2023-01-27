@@ -103,7 +103,7 @@ export type RxTestStorage = {
      * hasEncryption must contain a function that is able
      * to create a new password.
      */
-    readonly hasEncryption: () => Promise<string>;
+    readonly hasEncryption?: () => Promise<string>;
 };
 
 
