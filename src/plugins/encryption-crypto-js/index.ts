@@ -61,7 +61,7 @@ export type InternalStorePasswordDocType = InternalStoreDocType<{
     hash: string;
 }>;
 
-export function wrappedKeyEncryptionStorage<Internals, InstanceCreationOptions>(
+export function wrappedKeyEncryptionCryptoJsStorage<Internals, InstanceCreationOptions>(
     args: {
         storage: RxStorage<Internals, InstanceCreationOptions>;
     }

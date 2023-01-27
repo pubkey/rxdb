@@ -16,11 +16,11 @@ The encryption plugin is a wrapper around any other [RxStorage](./rx-storage.md)
 - To define a field as being encrypted, you have to add it to the `encrypted` in the schema.
 
 ```ts
-import { wrappedKeyEncryptionStorage } from 'rxdb/plugins/encryption';
+import { wrappedKeyEncryptionCryptoJsStorage } from 'rxdb/plugins/encryption-crypto-js';
 import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
 
 
-const encryptedDexieStorage = wrappedKeyEncryptionStorage({
+const encryptedDexieStorage = wrappedKeyEncryptionCryptoJsStorage({
     storage: getRxStorageDexie()
 });
 

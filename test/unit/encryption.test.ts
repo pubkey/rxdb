@@ -20,14 +20,16 @@ import {
 import {
     encryptString,
     decryptString,
-    wrappedKeyEncryptionStorage
-} from '../../plugins/encryption';
+    wrappedKeyEncryptionCryptoJsStorage
+} from '../../plugins/encryption-crypto-js';
 
 
 config.parallel('encryption.test.ts', () => {
-    const storage = wrappedKeyEncryptionStorage({
-        storage: config.storage.getStorage()
-    });
+    const storage = config.storage.hasEncryption ?
+        config.storage.getStorage() :
+        wrappedKeyEncryptionCryptoJsStorage({
+            storage: config.storage.getStorage()
+        });
 
     async function createEncryptedCollection(
         amount: number = 10

@@ -44,8 +44,8 @@ import {
     wrappedKeyCompressionStorage
 } from '../../plugins/key-compression';
 import {
-    wrappedKeyEncryptionStorage
-} from '../../plugins/encryption';
+    wrappedKeyEncryptionCryptoJsStorage
+} from '../../plugins/encryption-crypto-js';
 import * as schemas from '../helper/schemas';
 import {
     GRAPHQL_PATH,
@@ -1858,7 +1858,7 @@ describe('replication-graphql.test.ts', () => {
             it('should work with encryption', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    storage: wrappedKeyEncryptionStorage({
+                    storage: wrappedKeyEncryptionCryptoJsStorage({
                         storage: config.storage.getStorage(),
                     }),
                     multiInstance: true,
@@ -2118,7 +2118,7 @@ describe('replication-graphql.test.ts', () => {
             it('push not working on slow db', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    storage: wrappedKeyEncryptionStorage({
+                    storage: wrappedKeyEncryptionCryptoJsStorage({
                         storage: config.storage.getStorage(),
                     }),
                     multiInstance: true,
@@ -2171,7 +2171,7 @@ describe('replication-graphql.test.ts', () => {
             it('push not working when big amount of docs was pulled before', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    storage: wrappedKeyEncryptionStorage({
+                    storage: wrappedKeyEncryptionCryptoJsStorage({
                         storage: config.storage.getStorage(),
                     }),
                     multiInstance: true,

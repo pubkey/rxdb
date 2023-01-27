@@ -114,7 +114,8 @@ export function setDefaultStorage(storageKey: string) {
                 },
                 hasPersistence: true,
                 hasMultiInstance: false,
-                hasAttachments: true
+                hasAttachments: true,
+                hasEncryption: false
             };
             break;
         /**
@@ -137,7 +138,8 @@ export function setDefaultStorage(storageKey: string) {
                 },
                 hasPersistence: false,
                 hasMultiInstance: false,
-                hasAttachments: true
+                hasAttachments: true,
+                hasEncryption: false
             };
             break;
         case 'lokijs':
@@ -167,7 +169,8 @@ export function setDefaultStorage(storageKey: string) {
                 },
                 hasPersistence: true,
                 hasMultiInstance: true,
-                hasAttachments: false
+                hasAttachments: false,
+                hasEncryption: false
             };
             break;
         case 'dexie':
@@ -203,7 +206,8 @@ export function setDefaultStorage(storageKey: string) {
                 },
                 hasPersistence: true,
                 hasMultiInstance: true,
-                hasAttachments: false
+                hasAttachments: false,
+                hasEncryption: false
             };
             break;
         case 'foundationdb':
@@ -229,7 +233,8 @@ export function setDefaultStorage(storageKey: string) {
                 },
                 hasPersistence: true,
                 hasMultiInstance: false,
-                hasAttachments: true
+                hasAttachments: true,
+                hasEncryption: false
             };
             break;
         case 'remote':
@@ -252,7 +257,8 @@ export function setDefaultStorage(storageKey: string) {
                 },
                 hasPersistence: false,
                 hasMultiInstance: true,
-                hasAttachments: false
+                hasAttachments: false,
+                hasEncryption: false
             };
             break;
         default:

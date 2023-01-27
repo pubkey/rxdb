@@ -24,8 +24,8 @@ import * as schemaObjects from './../helper/schema-objects';
 import * as humansCollection from './../helper/humans-collection';
 import { HumanDocumentType } from './../helper/schemas';
 import {
-    wrappedKeyEncryptionStorage
-} from '../../plugins/encryption';
+    wrappedKeyEncryptionCryptoJsStorage
+} from '../../plugins/encryption-crypto-js';
 
 config.parallel('cross-instance.test.js', () => {
     if (!config.storage.hasMultiInstance) {
@@ -173,7 +173,7 @@ config.parallel('cross-instance.test.js', () => {
             const password = randomCouchString(10);
             const db1 = await createRxDatabase({
                 name,
-                storage: wrappedKeyEncryptionStorage({
+                storage: wrappedKeyEncryptionCryptoJsStorage({
                     storage: config.storage.getStorage(),
                 }),
                 password,
@@ -182,7 +182,7 @@ config.parallel('cross-instance.test.js', () => {
             });
             const db2 = await createRxDatabase({
                 name,
-                storage: wrappedKeyEncryptionStorage({
+                storage: wrappedKeyEncryptionCryptoJsStorage({
                     storage: config.storage.getStorage(),
                 }),
                 password,
@@ -237,7 +237,7 @@ config.parallel('cross-instance.test.js', () => {
             const password = randomCouchString(10);
             const db1 = await createRxDatabase({
                 name,
-                storage: wrappedKeyEncryptionStorage({
+                storage: wrappedKeyEncryptionCryptoJsStorage({
                     storage: config.storage.getStorage(),
                 }),
                 password,
@@ -246,7 +246,7 @@ config.parallel('cross-instance.test.js', () => {
             });
             const db2 = await createRxDatabase({
                 name,
-                storage: wrappedKeyEncryptionStorage({
+                storage: wrappedKeyEncryptionCryptoJsStorage({
                     storage: config.storage.getStorage(),
                 }),
                 password,

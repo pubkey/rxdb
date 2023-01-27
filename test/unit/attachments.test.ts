@@ -25,8 +25,8 @@ import {
 import { HumanDocumentType } from '../helper/schemas';
 import { RxDocumentWriteData } from '../../src/types';
 import {
-    wrappedKeyEncryptionStorage
-} from '../../plugins/encryption';
+    wrappedKeyEncryptionCryptoJsStorage
+} from '../../plugins/encryption-crypto-js';
 
 const STATIC_FILE_SERVER_URL = 'http://localhost:18001/';
 
@@ -45,7 +45,7 @@ config.parallel('attachments.test.ts', () => {
         const db = await createRxDatabase<{ [prop: string]: RxCollection<HumanDocumentType>; }>({
             name: randomCouchString(10),
             password: 'foooooobaaaar',
-            storage: wrappedKeyEncryptionStorage({
+            storage: wrappedKeyEncryptionCryptoJsStorage({
                 storage: config.storage.getStorage()
             }),
             multiInstance,
@@ -908,7 +908,7 @@ config.parallel('attachments.test.ts', () => {
             const name = randomCouchString(10);
 
             // create an encrypted storage
-            const encryptedStorage = wrappedKeyEncryptionStorage({
+            const encryptedStorage = wrappedKeyEncryptionCryptoJsStorage({
                 storage: config.storage.getStorage(),
             });
 
