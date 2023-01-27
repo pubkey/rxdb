@@ -1,5 +1,5 @@
 import assert from 'assert';
-import config from './config';
+import config, { getEncryptedStorage } from './config';
 import AsyncTestUtil from 'async-test-util';
 
 import * as humansCollection from '../helper/humans-collection';
@@ -24,9 +24,6 @@ import {
 } from '../../';
 import { HumanDocumentType } from '../helper/schemas';
 import { RxDocumentWriteData } from '../../src/types';
-import {
-    wrappedKeyEncryptionCryptoJsStorage
-} from '../../plugins/encryption-crypto-js';
 
 const STATIC_FILE_SERVER_URL = 'http://localhost:18001/';
 
@@ -45,9 +42,7 @@ config.parallel('attachments.test.ts', () => {
         const db = await createRxDatabase<{ [prop: string]: RxCollection<HumanDocumentType>; }>({
             name: randomCouchString(10),
             password: 'foooooobaaaar',
-            storage: wrappedKeyEncryptionCryptoJsStorage({
-                storage: config.storage.getStorage()
-            }),
+            storage: getEncryptedStorage(),
             multiInstance,
             eventReduce: true,
             ignoreDuplicate: true
@@ -908,9 +903,7 @@ config.parallel('attachments.test.ts', () => {
             const name = randomCouchString(10);
 
             // create an encrypted storage
-            const encryptedStorage = wrappedKeyEncryptionCryptoJsStorage({
-                storage: config.storage.getStorage(),
-            });
+            const encryptedStorage = getEncryptedStorage();
 
             // create a database
             const db = await createRxDatabase({

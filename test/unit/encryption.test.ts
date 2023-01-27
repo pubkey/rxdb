@@ -1,5 +1,5 @@
 import assert from 'assert';
-import config from './config';
+import config, { getEncryptedStorage } from './config';
 import AsyncTestUtil from 'async-test-util';
 
 import * as schemas from '../helper/schemas';
@@ -19,17 +19,12 @@ import {
 
 import {
     encryptString,
-    decryptString,
-    wrappedKeyEncryptionCryptoJsStorage
+    decryptString
 } from '../../plugins/encryption-crypto-js';
 
 
 config.parallel('encryption.test.ts', () => {
-    const storage = config.storage.hasEncryption ?
-        config.storage.getStorage() :
-        wrappedKeyEncryptionCryptoJsStorage({
-            storage: config.storage.getStorage()
-        });
+    const storage = getEncryptedStorage();
 
     async function createEncryptedCollection(
         amount: number = 10
