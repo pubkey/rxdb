@@ -15,11 +15,8 @@ import {
 } from '../../';
 
 import AsyncTestUtil from 'async-test-util';
-import config from './config';
+import config, { getEncryptedStorage } from './config';
 import { HumanDocumentType } from './../helper/schemas';
-import {
-    wrappedKeyEncryptionStorage
-} from '../../plugins/encryption';
 
 config.parallel('import-export.test.js', () => {
     describe('Collection', () => {
@@ -36,9 +33,7 @@ config.parallel('import-export.test.js', () => {
             it('export encrypted as decrypted', async () => {
                 const db = await createRxDatabase<{ enchuman: RxCollection<schemaObjects.EncryptedObjectHumanDocumentType>; }>({
                     name: randomCouchString(10),
-                    storage: wrappedKeyEncryptionStorage({
-                        storage: config.storage.getStorage()
-                    }),
+                    storage: getEncryptedStorage(),
                     password: randomCouchString(10)
                 });
                 const cols = await db.addCollections({
@@ -132,9 +127,7 @@ config.parallel('import-export.test.js', () => {
             it('export encrypted as decrypted', async () => {
                 const db = await createRxDatabase<{ enchuman: RxCollection<schemaObjects.EncryptedObjectHumanDocumentType>; }>({
                     name: randomCouchString(10),
-                    storage: wrappedKeyEncryptionStorage({
-                        storage: config.storage.getStorage()
-                    }),
+                    storage: getEncryptedStorage(),
                     password: randomCouchString(10)
                 });
                 const cols = await db.addCollections({
@@ -160,9 +153,7 @@ config.parallel('import-export.test.js', () => {
             it('export with multiple collections', async () => {
                 const db = await createRxDatabase<{ enchuman: RxCollection<schemaObjects.EncryptedObjectHumanDocumentType>; }>({
                     name: randomCouchString(10),
-                    storage: wrappedKeyEncryptionStorage({
-                        storage: config.storage.getStorage()
-                    }),
+                    storage: getEncryptedStorage(),
                     password: randomCouchString(10)
                 });
                 const cols = await db.addCollections({
@@ -194,9 +185,7 @@ config.parallel('import-export.test.js', () => {
             it('export 1 of 2 collections', async () => {
                 const db = await createRxDatabase<{ enchuman: RxCollection<schemaObjects.EncryptedObjectHumanDocumentType>; }>({
                     name: randomCouchString(10),
-                    storage: wrappedKeyEncryptionStorage({
-                        storage: config.storage.getStorage()
-                    }),
+                    storage: getEncryptedStorage(),
                     password: randomCouchString(10)
                 });
                 const cols = await db.addCollections({

@@ -7,7 +7,7 @@ import {
 } from 'broadcast-channel';
 import * as path from 'path';
 import parallel from 'mocha.parallel';
-import type { RxTestStorage } from '../../';
+import type { RxStorage, RxTestStorage } from '../../';
 import { getRxStorageLoki } from '../../plugins/storage-lokijs';
 import {
     getRxStorageDexie,
@@ -18,6 +18,10 @@ import { getRxStorageMemory } from '../../plugins/storage-memory';
 import { CUSTOM_STORAGE } from './custom-storage';
 import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv';
 import { isPromise } from 'async-test-util';
+
+import {
+    wrappedKeyEncryptionCryptoJsStorage
+} from '../../plugins/encryption-crypto-js';
 
 
 export const ENV_VARIABLES = detect().name === 'node' ? process.env : (window as any).__karma__.config.env;
@@ -95,6 +99,16 @@ const config: {
 const DEFAULT_STORAGE = ENV_VARIABLES.DEFAULT_STORAGE as string;
 console.log('DEFAULT_STORAGE: ' + DEFAULT_STORAGE);
 
+export function getEncryptedStorage(): RxStorage<any, any> {
+    const ret = config.storage.hasEncryption ?
+        config.storage.getStorage() :
+        wrappedKeyEncryptionCryptoJsStorage({
+            storage: config.storage.getStorage()
+        });
+    return ret;
+}
+
+
 export function setDefaultStorage(storageKey: string) {
     if (storageKey === CUSTOM_STORAGE.name || storageKey === 'custom') {
         config.storage = CUSTOM_STORAGE;
@@ -114,7 +128,8 @@ export function setDefaultStorage(storageKey: string) {
                 },
                 hasPersistence: true,
                 hasMultiInstance: false,
-                hasAttachments: true
+                hasAttachments: true,
+                hasEncryption: false
             };
             break;
         /**
@@ -137,7 +152,8 @@ export function setDefaultStorage(storageKey: string) {
                 },
                 hasPersistence: false,
                 hasMultiInstance: false,
-                hasAttachments: true
+                hasAttachments: true,
+                hasEncryption: false
             };
             break;
         case 'lokijs':
@@ -167,7 +183,8 @@ export function setDefaultStorage(storageKey: string) {
                 },
                 hasPersistence: true,
                 hasMultiInstance: true,
-                hasAttachments: false
+                hasAttachments: false,
+                hasEncryption: false
             };
             break;
         case 'dexie':
@@ -203,7 +220,8 @@ export function setDefaultStorage(storageKey: string) {
                 },
                 hasPersistence: true,
                 hasMultiInstance: true,
-                hasAttachments: false
+                hasAttachments: false,
+                hasEncryption: false
             };
             break;
         case 'foundationdb':
@@ -229,7 +247,8 @@ export function setDefaultStorage(storageKey: string) {
                 },
                 hasPersistence: true,
                 hasMultiInstance: false,
-                hasAttachments: true
+                hasAttachments: true,
+                hasEncryption: false
             };
             break;
         case 'remote':
@@ -252,7 +271,8 @@ export function setDefaultStorage(storageKey: string) {
                 },
                 hasPersistence: false,
                 hasMultiInstance: true,
-                hasAttachments: false
+                hasAttachments: false,
+                hasEncryption: false
             };
             break;
         default:

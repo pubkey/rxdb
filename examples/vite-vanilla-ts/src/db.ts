@@ -2,7 +2,7 @@ import { createRxDatabase, addRxPlugin } from 'rxdb';
 import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
 import { wrappedKeyCompressionStorage } from 'rxdb/plugins/key-compression';
 import { RxDBQueryBuilderPlugin } from 'rxdb/plugins/query-builder';
-import { wrappedKeyEncryptionStorage } from 'rxdb/plugins/encryption';
+import { wrappedKeyEncryptionCryptoJsStorage } from 'rxdb/plugins/encryption-crypto-js';
 import { HeroSchema, MyDatabaseCollections } from './schema';
 
 addRxPlugin(RxDBQueryBuilderPlugin);
@@ -10,7 +10,7 @@ addRxPlugin(RxDBQueryBuilderPlugin);
 const _create = async () => {
   const database = await createRxDatabase<MyDatabaseCollections>({
     name: 'rxdbdemo',
-    storage: wrappedKeyEncryptionStorage({
+    storage: wrappedKeyEncryptionCryptoJsStorage({
       storage: wrappedKeyCompressionStorage({
         storage: getRxStorageDexie(),
       }),

@@ -14,7 +14,7 @@ import {
     firstValueFrom
 } from 'rxjs';
 
-import config from './config';
+import config, { getEncryptedStorage } from './config';
 import * as schemaObjects from '../helper/schema-objects';
 import {
     HumanWithTimestampDocumentType
@@ -43,9 +43,6 @@ import {
 import {
     wrappedKeyCompressionStorage
 } from '../../plugins/key-compression';
-import {
-    wrappedKeyEncryptionStorage
-} from '../../plugins/encryption';
 import * as schemas from '../helper/schemas';
 import {
     GRAPHQL_PATH,
@@ -1858,9 +1855,7 @@ describe('replication-graphql.test.ts', () => {
             it('should work with encryption', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    storage: wrappedKeyEncryptionStorage({
-                        storage: config.storage.getStorage(),
-                    }),
+                    storage: getEncryptedStorage(),
                     multiInstance: true,
                     eventReduce: true,
                     ignoreDuplicate: true,
@@ -2118,9 +2113,7 @@ describe('replication-graphql.test.ts', () => {
             it('push not working on slow db', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    storage: wrappedKeyEncryptionStorage({
-                        storage: config.storage.getStorage(),
-                    }),
+                    storage: getEncryptedStorage(),
                     multiInstance: true,
                     eventReduce: true,
                     ignoreDuplicate: true,
@@ -2171,9 +2164,7 @@ describe('replication-graphql.test.ts', () => {
             it('push not working when big amount of docs was pulled before', async () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
-                    storage: wrappedKeyEncryptionStorage({
-                        storage: config.storage.getStorage(),
-                    }),
+                    storage: getEncryptedStorage(),
                     multiInstance: true,
                     eventReduce: true,
                     ignoreDuplicate: true,

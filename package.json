@@ -201,12 +201,12 @@
       "es2015": "./dist/es/plugins/attachments/index.js",
       "default": "./dist/es/plugins/attachments/index.js"
     },
-    "./plugins/encryption": {
-      "types": "./dist/types/plugins/encryption/index.d.ts",
-      "node": "./dist/lib/plugins/encryption/index.js",
-      "require": "./dist/lib/plugins/encryption/index.js",
-      "es2015": "./dist/es/plugins/encryption/index.js",
-      "default": "./dist/es/plugins/encryption/index.js"
+    "./plugins/encryption-crypto-js": {
+      "types": "./dist/types/plugins/encryption-crypto-js/index.d.ts",
+      "node": "./dist/lib/plugins/encryption-crypto-js/index.js",
+      "require": "./dist/lib/plugins/encryption-crypto-js/index.js",
+      "es2015": "./dist/es/plugins/encryption-crypto-js/index.js",
+      "default": "./dist/es/plugins/encryption-crypto-js/index.js"
     },
     "./plugins/json-dump": {
       "types": "./dist/types/plugins/json-dump/index.d.ts",
@@ -314,7 +314,7 @@
     "test:full": "npm run transpile && mocha ./test_tmp/unit/full.node.js",
     "test:typings": "npm run transpile && cross-env DEFAULT_STORAGE=memory NODE_ENV=fast mocha --config ./config/.mocharc.js ./test_tmp/typings.test.js",
     "test:typings:ci": "npm run transpile && mocha --config ./config/.mocharc.js ./test_tmp/typings.test.js",
-    "test:deps": "npm run build && dependency-check ./package.json ./dist/lib/index.js ./dist/lib/plugins/validate-is-my-json-valid/index.js ./dist/lib/plugins/validate-ajv/index.js ./dist/lib/plugins/update/index.js ./dist/lib/plugins/key-compression/index.js ./dist/lib/plugins/dev-mode/index.js ./dist/lib/plugins/encryption/index.js ./dist/lib/plugins/replication-graphql/index.js ./dist/lib/plugins/replication-p2p/index.js ./dist/lib/plugins/replication-websocket/index.js ./dist/lib/plugins/replication-firestore/index.js ./dist/lib/plugins/validate-z-schema/index.js ./dist/lib/plugins/storage-lokijs/index.js ./dist/lib/plugins/storage-dexie/index.js ./dist/lib/plugins/storage-memory/index.js --no-dev --ignore-module util --ignore-module url --ignore-module ws --ignore-module graphql --ignore-module as-typed --ignore-module \"@types/*\"",
+    "test:deps": "npm run build && dependency-check ./package.json ./dist/lib/index.js ./dist/lib/plugins/validate-is-my-json-valid/index.js ./dist/lib/plugins/validate-ajv/index.js ./dist/lib/plugins/update/index.js ./dist/lib/plugins/key-compression/index.js ./dist/lib/plugins/dev-mode/index.js ./dist/lib/plugins/encryption-crypto-js/index.js ./dist/lib/plugins/replication-graphql/index.js ./dist/lib/plugins/replication-p2p/index.js ./dist/lib/plugins/replication-websocket/index.js ./dist/lib/plugins/replication-firestore/index.js ./dist/lib/plugins/validate-z-schema/index.js ./dist/lib/plugins/storage-lokijs/index.js ./dist/lib/plugins/storage-dexie/index.js ./dist/lib/plugins/storage-memory/index.js --no-dev --ignore-module util --ignore-module url --ignore-module ws --ignore-module graphql --ignore-module as-typed --ignore-module \"@types/*\"",
     "test:circular": "npm run build && madge --circular ./dist/es/index.js && madge --circular ./dist/es/plugins/storage-dexie/index.js",
     "test:performance:lokijs:browser": "npm run transpile && cross-env DEFAULT_STORAGE=lokijs CI=true karma start ./config/karma.performance.conf.js --single-run",
     "test:performance:lokijs:node": "npm run transpile && cross-env DEFAULT_STORAGE=lokijs mocha --config ./config/.mocharc.js ./test_tmp/performance.test.js --unhandled-rejections=strict --expose-gc",

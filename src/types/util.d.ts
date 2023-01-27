@@ -93,6 +93,14 @@ export type RxTestStorage = {
     readonly hasPersistence: boolean;
     readonly hasMultiInstance: boolean;
     readonly hasAttachments: boolean;
+    /**
+     * To make it possible to test alternative encryption plugins,
+     * you can specify hasEncryption=true to signal
+     * the test runner that the given storage already contains an
+     * encryption plugin that should be used to test encryption tests.
+     * Otherwise the encryption-crypto-js plugin will be tested.
+     */
+    readonly hasEncryption: boolean;
 };
 
 
