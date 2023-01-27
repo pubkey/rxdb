@@ -2766,8 +2766,10 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.RANDOM_STRING = void 0;
+exports.arrayBufferToString = arrayBufferToString;
 exports.isFolderPath = isFolderPath;
 exports.randomCouchString = randomCouchString;
+exports.stringToArrayBuffer = stringToArrayBuffer;
 exports.trimDots = trimDots;
 exports.ucfirst = ucfirst;
 /**
@@ -2827,6 +2829,21 @@ function isFolderPath(name) {
   } else {
     return false;
   }
+}
+
+/**
+ * @link https://gist.github.com/andreburgaud/6f73fd2d690b629346b8
+ */
+function arrayBufferToString(buf) {
+  return String.fromCharCode.apply(null, new Uint16Array(buf));
+}
+function stringToArrayBuffer(str) {
+  var buf = new ArrayBuffer(str.length * 2);
+  var bufView = new Uint16Array(buf);
+  for (var i = 0, strLen = str.length; i < strLen; i++) {
+    bufView[i] = str.charCodeAt(i);
+  }
+  return buf;
 }
 
 },{}],27:[function(require,module,exports){
@@ -5332,7 +5349,7 @@ async function ensureStorageTokenDocumentExists(rxDatabase) {
    * and only fetch the existing one if a conflict happened.
    */
   var storageToken = (0, _utils.randomCouchString)(10);
-  var passwordHash = rxDatabase.password ? rxDatabase.hashFunction(rxDatabase.password) : undefined;
+  var passwordHash = rxDatabase.password ? rxDatabase.hashFunction(JSON.stringify(rxDatabase.password)) : undefined;
   var docData = {
     id: STORAGE_TOKEN_DOCUMENT_ID,
     context: INTERNAL_CONTEXT_STORAGE_TOKEN,

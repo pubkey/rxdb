@@ -86,6 +86,7 @@ export declare const ERROR_MESSAGES: {
     EN1: string;
     EN2: string;
     EN3: string;
+    EN4: string;
     JD1: string;
     JD2: string;
     JD3: string;

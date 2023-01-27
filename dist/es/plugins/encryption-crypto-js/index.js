@@ -32,12 +32,12 @@ export function decryptString(cipherText, password) {
   var ret = decrypted.toString(cryptoEnc);
   return ret;
 }
-export function wrappedKeyEncryptionStorage(args) {
+export function wrappedKeyEncryptionCryptoJsStorage(args) {
   return Object.assign({}, args.storage, {
     async createStorageInstance(params) {
       if (!hasEncryption(params.schema)) {
         var retInstance = await args.storage.createStorageInstance(params);
-        if (params.schema.title === INTERNAL_STORE_SCHEMA_TITLE && params.password) {
+        if (params.schema.title === INTERNAL_STORE_SCHEMA_TITLE && params.password !== 'undefined') {
           try {
             validatePassword(params.password);
           } catch (err) {
@@ -128,12 +128,12 @@ function cloneWithoutAttachments(data) {
   return data;
 }
 function validatePassword(password) {
-  if (password && typeof password !== 'string') {
+  if (typeof password !== 'string') {
     throw newRxTypeError('EN1', {
       password
     });
   }
-  if (password && password.length < MINIMUM_PASSWORD_LENGTH) {
+  if (password.length < MINIMUM_PASSWORD_LENGTH) {
     throw newRxError('EN2', {
       minPassLength: MINIMUM_PASSWORD_LENGTH,
       password

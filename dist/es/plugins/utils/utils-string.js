@@ -55,4 +55,19 @@ export function isFolderPath(name) {
     return false;
   }
 }
+
+/**
+ * @link https://gist.github.com/andreburgaud/6f73fd2d690b629346b8
+ */
+export function arrayBufferToString(buf) {
+  return String.fromCharCode.apply(null, new Uint16Array(buf));
+}
+export function stringToArrayBuffer(str) {
+  var buf = new ArrayBuffer(str.length * 2);
+  var bufView = new Uint16Array(buf);
+  for (var i = 0, strLen = str.length; i < strLen; i++) {
+    bufView[i] = str.charCodeAt(i);
+  }
+  return buf;
+}
 //# sourceMappingURL=utils-string.js.map

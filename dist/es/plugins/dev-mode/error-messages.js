@@ -107,10 +107,11 @@ export var ERROR_MESSAGES = {
   DM3: 'migration already running',
   // plugins/attachments.js
   AT1: 'to use attachments, please define this in your schema',
-  // plugins/encryption.js
+  // plugins/encryption-crypto-js.js
   EN1: 'password is no string',
   EN2: 'validatePassword: min-length of password not complied',
   EN3: 'Schema contains encrypted properties but no password is given',
+  EN4: 'Password not valid',
   // plugins/json-dump.js
   JD1: 'You must create the collections before you can import their data',
   JD2: 'RxCollection.importJSON(): the imported json relies on a different schema',

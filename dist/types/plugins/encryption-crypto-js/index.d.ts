@@ -5,6 +5,6 @@ export declare function decryptString(cipherText: string, password: any): string
 export type InternalStorePasswordDocType = InternalStoreDocType<{
     hash: string;
 }>;
-export declare function wrappedKeyEncryptionStorage<Internals, InstanceCreationOptions>(args: {
+export declare function wrappedKeyEncryptionCryptoJsStorage<Internals, InstanceCreationOptions>(args: {
     storage: RxStorage<Internals, InstanceCreationOptions>;
 }): RxStorage<Internals, InstanceCreationOptions>;

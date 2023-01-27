@@ -7,7 +7,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.MINIMUM_PASSWORD_LENGTH = void 0;
 exports.decryptString = decryptString;
 exports.encryptString = encryptString;
-exports.wrappedKeyEncryptionStorage = wrappedKeyEncryptionStorage;
+exports.wrappedKeyEncryptionCryptoJsStorage = wrappedKeyEncryptionCryptoJsStorage;
 var _aes = _interopRequireDefault(require("crypto-js/aes"));
 var cryptoEnc = _interopRequireWildcard(require("crypto-js/enc-utf8"));
 var _pluginHelpers = require("../../plugin-helpers");
@@ -46,12 +46,12 @@ function decryptString(cipherText, password) {
   var ret = decrypted.toString(cryptoEnc);
   return ret;
 }
-function wrappedKeyEncryptionStorage(args) {
+function wrappedKeyEncryptionCryptoJsStorage(args) {
   return Object.assign({}, args.storage, {
     async createStorageInstance(params) {
       if (!(0, _rxStorageHelper.hasEncryption)(params.schema)) {
         var retInstance = await args.storage.createStorageInstance(params);
-        if (params.schema.title === _rxDatabaseInternalStore.INTERNAL_STORE_SCHEMA_TITLE && params.password) {
+        if (params.schema.title === _rxDatabaseInternalStore.INTERNAL_STORE_SCHEMA_TITLE && params.password !== 'undefined') {
           try {
             validatePassword(params.password);
           } catch (err) {
@@ -142,12 +142,12 @@ function cloneWithoutAttachments(data) {
   return data;
 }
 function validatePassword(password) {
-  if (password && typeof password !== 'string') {
+  if (typeof password !== 'string') {
     throw (0, _rxError.newRxTypeError)('EN1', {
       password
     });
   }
-  if (password && password.length < MINIMUM_PASSWORD_LENGTH) {
+  if (password.length < MINIMUM_PASSWORD_LENGTH) {
     throw (0, _rxError.newRxError)('EN2', {
       minPassLength: MINIMUM_PASSWORD_LENGTH,
       password

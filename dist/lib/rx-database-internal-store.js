@@ -112,7 +112,7 @@ async function ensureStorageTokenDocumentExists(rxDatabase) {
    * and only fetch the existing one if a conflict happened.
    */
   var storageToken = (0, _utils.randomCouchString)(10);
-  var passwordHash = rxDatabase.password ? rxDatabase.hashFunction(rxDatabase.password) : undefined;
+  var passwordHash = rxDatabase.password ? rxDatabase.hashFunction(JSON.stringify(rxDatabase.password)) : undefined;
   var docData = {
     id: STORAGE_TOKEN_DOCUMENT_ID,
     context: INTERNAL_CONTEXT_STORAGE_TOKEN,
