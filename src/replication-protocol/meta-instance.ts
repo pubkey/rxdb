@@ -17,11 +17,12 @@ import { getDefaultRevision, createRevision, now } from '../plugins/utils';
 
 
 export function getRxReplicationMetaInstanceSchema(
-    replicatedDocumentsSchema: RxJsonSchema<RxDocumentData<any>>
+    replicatedDocumentsSchema: RxJsonSchema<RxDocumentData<any>>,
+    encrypted: boolean
 ): RxJsonSchema<RxDocumentData<RxStorageReplicationMeta>> {
     const parentPrimaryKeyLength = getLengthOfPrimaryKey(replicatedDocumentsSchema);
 
-    const metaInstanceSchema: RxJsonSchema<RxDocumentData<RxStorageReplicationMeta>> = fillWithDefaultSettings({
+    const baseSchema: RxJsonSchema<RxStorageReplicationMeta> = {
         primaryKey: {
             key: 'id',
             fields: [
@@ -67,7 +68,11 @@ export function getRxReplicationMetaInstanceSchema(
             'itemId',
             'data'
         ]
-    });
+    };
+    if (encrypted) {
+        baseSchema.encrypted = ['data'];
+    }
+    const metaInstanceSchema: RxJsonSchema<RxDocumentData<RxStorageReplicationMeta>> = fillWithDefaultSettings(baseSchema);
     return metaInstanceSchema;
 }
 

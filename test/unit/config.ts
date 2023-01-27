@@ -99,11 +99,11 @@ const config: {
 const DEFAULT_STORAGE = ENV_VARIABLES.DEFAULT_STORAGE as string;
 console.log('DEFAULT_STORAGE: ' + DEFAULT_STORAGE);
 
-export function getEncryptedStorage(): RxStorage<any, any> {
+export function getEncryptedStorage(baseStorage = config.storage.getStorage()): RxStorage<any, any> {
     const ret = config.storage.hasEncryption ?
-        config.storage.getStorage() :
+        baseStorage :
         wrappedKeyEncryptionCryptoJsStorage({
-            storage: config.storage.getStorage()
+            storage: baseStorage
         });
     return ret;
 }

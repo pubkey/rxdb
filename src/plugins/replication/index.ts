@@ -56,6 +56,7 @@ import {
     addConnectedStorageToCollection
 } from '../../rx-database-internal-store';
 import { addRxPlugin } from '../../plugin';
+import { hasEncryption } from '../../rx-storage-helper';
 
 
 export const REPLICATION_STATE_BY_COLLECTION: WeakMap<RxCollection, RxReplicationState<any, any>[]> = new WeakMap();
@@ -133,7 +134,10 @@ export class RxReplicationState<RxDocType, CheckpointType> {
 
         const database = this.collection.database;
         const metaInstanceCollectionName = this.collection.name + '-rx-replication-' + this.replicationIdentifierHash;
-        const metaInstanceSchema = getRxReplicationMetaInstanceSchema(this.collection.schema.jsonSchema);
+        const metaInstanceSchema = getRxReplicationMetaInstanceSchema(
+            this.collection.schema.jsonSchema,
+            hasEncryption(this.collection.schema.jsonSchema)
+        );
         const [metaInstance] = await Promise.all([
             this.collection.database.storage.createStorageInstance({
                 databaseName: database.name,
@@ -141,7 +145,8 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                 databaseInstanceToken: database.token,
                 multiInstance: database.multiInstance, // TODO is this always false?
                 options: {},
-                schema: metaInstanceSchema
+                schema: metaInstanceSchema,
+                password: database.password
             }),
             addConnectedStorageToCollection(
                 this.collection,

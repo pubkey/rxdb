@@ -59,6 +59,7 @@
 - FIX SQLite must store attachments data as Blob instead of base64 string to reduce the database size.
 - FIX CouchDB replication conflict handling
 - CHANGE Encryption plugin was renamed to `encryption-crypto-js`
+- FIX replication state meta data must also be encrypted.
 
 #
 - REMOVE deprecated `babel-plugin-transform-async-to-promises` plugin.

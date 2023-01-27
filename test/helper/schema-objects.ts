@@ -189,11 +189,11 @@ export interface EncryptedHumanDocumentType {
     firstName: string;
     secret: string;
 }
-export function encryptedHuman(): EncryptedHumanDocumentType {
+export function encryptedHuman(secret = randomString(12)): EncryptedHumanDocumentType {
     return {
         passportId: randomString(12),
         firstName: faker.name.firstName(),
-        secret: randomString(12)
+        secret
     };
 }
 

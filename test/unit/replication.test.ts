@@ -47,10 +47,48 @@ import { Subject } from 'rxjs';
 
 
 type CheckpointType = any;
+type TestDocType = schemaObjects.HumanWithTimestampDocumentType;
+
+/**
+ * Creates a pull handler that always returns
+ * all documents.
+ */
+export function getPullHandler(
+    remoteCollection: RxCollection<TestDocType, {}, {}, {}>
+): ReplicationPullHandler<TestDocType, CheckpointType> {
+    const helper = rxStorageInstanceToReplicationHandler(
+        remoteCollection.storageInstance,
+        remoteCollection.database.conflictHandler as any,
+        remoteCollection.database.token
+    );
+    const handler: ReplicationPullHandler<TestDocType, CheckpointType> = async (
+        latestPullCheckpoint: CheckpointType | null,
+        batchSize: number
+    ) => {
+        const result = await helper.masterChangesSince(latestPullCheckpoint, batchSize);
+        return result;
+    };
+    return handler;
+}
+export function getPushHandler(
+    remoteCollection: RxCollection<TestDocType, {}, {}, {}>
+): ReplicationPushHandler<TestDocType> {
+    const helper = rxStorageInstanceToReplicationHandler(
+        remoteCollection.storageInstance,
+        remoteCollection.conflictHandler,
+        remoteCollection.database.token
+    );
+    const handler: ReplicationPushHandler<TestDocType> = async (
+        rows: RxReplicationWriteToMasterRow<TestDocType>[]
+    ) => {
+        const result = await helper.masterWrite(rows);
+        return result;
+    };
+    return handler;
+}
 
 describe('replication.test.js', () => {
     const REPLICATION_IDENTIFIER_TEST = 'replication-ident-tests';
-    type TestDocType = schemaObjects.HumanWithTimestampDocumentType;
     async function getTestCollections(docsAmount: { local: number; remote: number; }): Promise<{
         localCollection: RxCollection<TestDocType, {}, {}, {}>;
         remoteCollection: RxCollection<TestDocType, {}, {}, {}>;
@@ -67,43 +105,6 @@ describe('replication.test.js', () => {
         storage: config.storage.getStorage()
     });
 
-    /**
-     * Creates a pull handler that always returns
-     * all documents.
-     */
-    function getPullHandler(
-        remoteCollection: RxCollection<TestDocType, {}, {}, {}>
-    ): ReplicationPullHandler<TestDocType, CheckpointType> {
-        const helper = rxStorageInstanceToReplicationHandler(
-            remoteCollection.storageInstance,
-            remoteCollection.database.conflictHandler as any,
-            remoteCollection.database.token
-        );
-        const handler: ReplicationPullHandler<TestDocType, CheckpointType> = async (
-            latestPullCheckpoint: CheckpointType | null,
-            batchSize: number
-        ) => {
-            const result = await helper.masterChangesSince(latestPullCheckpoint, batchSize);
-            return result;
-        };
-        return handler;
-    }
-    function getPushHandler(
-        remoteCollection: RxCollection<TestDocType, {}, {}, {}>
-    ): ReplicationPushHandler<TestDocType> {
-        const helper = rxStorageInstanceToReplicationHandler(
-            remoteCollection.storageInstance,
-            remoteCollection.conflictHandler,
-            remoteCollection.database.token
-        );
-        const handler: ReplicationPushHandler<TestDocType> = async (
-            rows: RxReplicationWriteToMasterRow<TestDocType>[]
-        ) => {
-            const result = await helper.masterWrite(rows);
-            return result;
-        };
-        return handler;
-    }
     config.parallel('non-live replication', () => {
         it('should replicate both sides', async () => {
             const docsPerSide = 15;

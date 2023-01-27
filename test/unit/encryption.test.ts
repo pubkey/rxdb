@@ -14,24 +14,36 @@ import {
     RxCollection,
     STORAGE_TOKEN_DOCUMENT_ID,
     InternalStoreStorageTokenDocType,
-    ensureNoStartupErrors
+    ensureNoStartupErrors,
+    ensureNotFalsy,
+    getComposedPrimaryKeyOfDocumentData,
+    getFromMapOrThrow
 } from '../../';
 
 import {
     encryptString,
     decryptString
 } from '../../plugins/encryption-crypto-js';
+import { replicateRxCollection } from '../../plugins/replication';
+import { getPullHandler, getPushHandler } from './replication.test';
+import { getRxStorageMemory, RxStorageInstanceMemory } from '../../plugins/storage-memory';
 
 
 config.parallel('encryption.test.ts', () => {
     const storage = getEncryptedStorage();
 
     async function createEncryptedCollection(
-        amount: number = 10
+        amount: number = 10,
+        useStorage?: typeof storage
     ): Promise<RxCollection<schemaObjects.EncryptedHumanDocumentType>> {
+        if (useStorage) {
+            useStorage = getEncryptedStorage(useStorage);
+        } else {
+            useStorage = storage;
+        }
         const db = await createRxDatabase<{ encryptedhuman: RxCollection<schemaObjects.EncryptedHumanDocumentType>; }>({
             name: randomCouchString(10),
-            storage,
+            storage: useStorage,
             eventReduce: true,
             password: await getPassword()
         });
@@ -275,6 +287,45 @@ config.parallel('encryption.test.ts', () => {
             assert.strictEqual(newSecret.name, docNew.get('secret.name'));
             assert.strictEqual(newSecret.subname, docNew.get('secret.subname'));
             db.destroy();
+        });
+    });
+    describe('replication', () => {
+        it('replication state meta should not contain a secret in cleartext', async () => {
+            const clientCollection = await createEncryptedCollection(0, getRxStorageMemory());
+            const remoteCollection = await createEncryptedCollection(0, getRxStorageMemory());
+            const secret = 'secret-' + randomCouchString(10);
+            const human = schemaObjects.encryptedHuman(secret);
+            await remoteCollection.insert(human);
+
+            const replicationState = replicateRxCollection({
+                collection: clientCollection,
+                replicationIdentifier: randomCouchString(10),
+                live: true,
+                pull: {
+                    handler: getPullHandler(remoteCollection as any)
+                },
+                push: {
+                    handler: getPushHandler(remoteCollection as any)
+                }
+            });
+            await replicationState.awaitInSync();
+            const replicatedDoc = await clientCollection.findOne(human.passportId).exec(true);
+            assert.strictEqual(replicatedDoc.secret, secret);
+
+            const metaInstance: RxStorageInstanceMemory<any> = ensureNotFalsy(replicationState.metaInstance) as any;
+            const metaDocId = getComposedPrimaryKeyOfDocumentData(
+                metaInstance.schema,
+                {
+                    itemId: human.passportId,
+                    isCheckpoint: '0'
+                }
+            );
+            const metaDoc = getFromMapOrThrow(metaInstance.internals.documents, metaDocId);
+            const asString = JSON.stringify(metaDoc);
+            assert.ok(!asString.includes(secret));
+
+            clientCollection.database.destroy();
+            remoteCollection.database.destroy();
         });
     });
     describe('ISSUES', () => {
