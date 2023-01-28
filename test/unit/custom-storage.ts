@@ -7,4 +7,4 @@
  * - Run 'npm run transpile && cross-env DEFAULT_STORAGE=dexie NODE_ENV=fast mocha --config ./config/.mocharc.js ./test_tmp/unit.test.js'
  */
 import type { RxTestStorage } from '../../';
-export const CUSTOM_STORAGE: RxTestStorage = {} as any;
+export const CUSTOM_STORAGE: RxTestStorage = { name: 'broken'} as any;

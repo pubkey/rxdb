@@ -85,7 +85,7 @@ const config: {
     parallel: useParallel,
     rootPath: '',
     isFastMode,
-    storage: {} as any,
+    storage: undefined as any,
     isNotOneOfTheseStorages(storageNames: string[]) {
         const isName = this.storage.name;
         if (storageNames.includes(isName)) {
@@ -99,22 +99,6 @@ const config: {
 const DEFAULT_STORAGE = ENV_VARIABLES.DEFAULT_STORAGE as string;
 console.log('DEFAULT_STORAGE: ' + DEFAULT_STORAGE);
 
-export function getEncryptedStorage(baseStorage = config.storage.getStorage()): RxStorage<any, any> {
-    const ret = config.storage.hasEncryption ?
-        baseStorage :
-        wrappedKeyEncryptionCryptoJsStorage({
-            storage: baseStorage
-        });
-    return ret;
-}
-
-export function getPassword(): Promise<string> {
-    if (config.storage.hasEncryption) {
-        return config.storage.hasEncryption();
-    } else {
-        return Promise.resolve(randomCouchString(10));
-    }
-}
 
 export function setDefaultStorage(storageKey: string) {
     if (storageKey === CUSTOM_STORAGE.name || storageKey === 'custom') {
@@ -283,6 +267,23 @@ export function setDefaultStorage(storageKey: string) {
 
 setDefaultStorage(DEFAULT_STORAGE);
 console.log('# use RxStorage: ' + config.storage.name);
+
+export function getEncryptedStorage(baseStorage = config.storage.getStorage()): RxStorage<any, any> {
+    const ret = config.storage.hasEncryption ?
+        baseStorage :
+        wrappedKeyEncryptionCryptoJsStorage({
+            storage: baseStorage
+        });
+    return ret;
+}
+
+export function getPassword(): Promise<string> {
+    if (config.storage.hasEncryption) {
+        return config.storage.hasEncryption();
+    } else {
+        return Promise.resolve(randomCouchString(10));
+    }
+}
 
 if (config.platform.name === 'node') {
     process.setMaxListeners(100);
