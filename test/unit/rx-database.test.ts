@@ -95,7 +95,7 @@ config.parallel('rx-database.test.js', () => {
                     return;
                 }
                 const name = randomCouchString(10);
-                const password = randomCouchString(12);
+                const password = await getPassword();
                 const db = await createRxDatabase({
                     name,
                     storage: config.storage.getStorage(),
@@ -113,7 +113,7 @@ config.parallel('rx-database.test.js', () => {
             });
             it('should not forget the options', async () => {
                 const name = randomCouchString(10);
-                const password = randomCouchString(12);
+                const password = await getPassword();
                 const db = await createRxDatabase({
                     name,
                     storage: config.storage.getStorage(),
@@ -128,7 +128,7 @@ config.parallel('rx-database.test.js', () => {
             });
             it('should not forget the instanceCreationOptions', async () => {
                 const name = randomCouchString(10);
-                const password = randomCouchString(12);
+                const password = await getPassword();
                 const db = await createRxDatabase({
                     name,
                     storage: config.storage.getStorage(),
