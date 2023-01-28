@@ -1900,7 +1900,7 @@ describe('replication-graphql.test.ts', () => {
                     multiInstance: true,
                     eventReduce: true,
                     ignoreDuplicate: true,
-                    password: randomCouchString(10)
+                    password: await getPassword()
                 });
                 const schema = clone(schemas.humanWithTimestamp);
                 schema.keyCompression = true;
@@ -1941,7 +1941,7 @@ describe('replication-graphql.test.ts', () => {
                     multiInstance: true,
                     eventReduce: true,
                     ignoreDuplicate: true,
-                    password: randomCouchString(10)
+                    password: await getPassword()
                 });
                 const collections = await db.addCollections({
                     humans: {
@@ -2226,7 +2226,7 @@ describe('replication-graphql.test.ts', () => {
                     }),
                     multiInstance: false,
                     eventReduce: true,
-                    password: randomCouchString(10)
+                    password: await getPassword()
                 });
                 const schema: RxJsonSchema<any> = clone(schemas.humanWithTimestampAllIndex);
                 const collections = await db.addCollections({
@@ -2301,7 +2301,7 @@ describe('replication-graphql.test.ts', () => {
                     storage: config.storage.getStorage(),
                     multiInstance: false,
                     eventReduce: true,
-                    password: randomCouchString(10),
+                    password: await getPassword()
                 });
                 const schema: RxJsonSchema<any> = clone(schemas.humanWithTimestampAllIndex);
                 const collections = await db.addCollections({

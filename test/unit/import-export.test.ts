@@ -232,11 +232,9 @@ config.parallel('import-export.test.js', () => {
             });
             describe('negative', () => {
                 it('should not import if schema is different', async () => {
-
                     const db = await createRxDatabase<{ human: RxCollection<HumanDocumentType>; }>({
                         name: randomCouchString(10),
                         storage: config.storage.getStorage(),
-                        password: null,
                         multiInstance: true
                     });
                     const cols = await db.addCollections({
@@ -249,7 +247,6 @@ config.parallel('import-export.test.js', () => {
                     const db2 = await createRxDatabase<{ human: RxCollection<schemaObjects.NestedHumanDocumentType>; }>({
                         name: randomCouchString(10),
                         storage: config.storage.getStorage(),
-                        password: null,
                         multiInstance: true
                     });
                     const cols2 = await db2.addCollections({

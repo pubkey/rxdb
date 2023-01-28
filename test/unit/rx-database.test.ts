@@ -1,4 +1,4 @@
-import config from './config';
+import config, { getPassword } from './config';
 import assert from 'assert';
 
 import {
@@ -32,7 +32,7 @@ config.parallel('rx-database.test.js', () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
                     storage: config.storage.getStorage(),
-                    password: randomCouchString(12)
+                    password: await getPassword()
                 });
                 assert.ok(isRxDatabase(db));
                 db.destroy();
@@ -503,14 +503,14 @@ config.parallel('rx-database.test.js', () => {
             const db = await createRxDatabase({
                 name,
                 storage: config.storage.getStorage(),
-                password: 'fo222222obar'
+                password: await getPassword()
             });
             await db.remove();
 
             const db2 = await createRxDatabase({
                 name,
                 storage: config.storage.getStorage(),
-                password: 'foo2222333333bar2'
+                password: await getPassword()
             });
             await db2.remove();
         });

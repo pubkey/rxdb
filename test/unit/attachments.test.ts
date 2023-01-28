@@ -1,5 +1,5 @@
 import assert from 'assert';
-import config, { getEncryptedStorage } from './config';
+import config, { getEncryptedStorage, getPassword } from './config';
 import AsyncTestUtil from 'async-test-util';
 
 import * as humansCollection from '../helper/humans-collection';
@@ -41,7 +41,7 @@ config.parallel('attachments.test.ts', () => {
         }
         const db = await createRxDatabase<{ [prop: string]: RxCollection<HumanDocumentType>; }>({
             name: randomCouchString(10),
-            password: 'foooooobaaaar',
+            password: await getPassword(),
             storage: getEncryptedStorage(),
             multiInstance,
             eventReduce: true,
@@ -909,7 +909,7 @@ config.parallel('attachments.test.ts', () => {
             const db = await createRxDatabase({
                 name,
                 storage: encryptedStorage,
-                password: 'password',
+                password: await getPassword(),
                 eventReduce: false,
                 multiInstance: true,
                 ignoreDuplicate: true
