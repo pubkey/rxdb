@@ -14,6 +14,7 @@ var _rxError = require("../../rx-error");
 var _replicationHelper = require("./replication-helper");
 var _rxDatabaseInternalStore = require("../../rx-database-internal-store");
 var _plugin = require("../../plugin");
+var _rxStorageHelper = require("../../rx-storage-helper");
 /**
  * This plugin contains the primitives to create
  * a RxDB client-server replication.
@@ -93,7 +94,7 @@ var RxReplicationState = /*#__PURE__*/function () {
     var pushModifier = this.push && this.push.modifier ? this.push.modifier : _replicationHelper.DEFAULT_MODIFIER;
     var database = this.collection.database;
     var metaInstanceCollectionName = this.collection.name + '-rx-replication-' + this.replicationIdentifierHash;
-    var metaInstanceSchema = (0, _replicationProtocol.getRxReplicationMetaInstanceSchema)(this.collection.schema.jsonSchema);
+    var metaInstanceSchema = (0, _replicationProtocol.getRxReplicationMetaInstanceSchema)(this.collection.schema.jsonSchema, (0, _rxStorageHelper.hasEncryption)(this.collection.schema.jsonSchema));
     var [metaInstance] = await Promise.all([this.collection.database.storage.createStorageInstance({
       databaseName: database.name,
       collectionName: metaInstanceCollectionName,
@@ -101,7 +102,8 @@ var RxReplicationState = /*#__PURE__*/function () {
       multiInstance: database.multiInstance,
       // TODO is this always false?
       options: {},
-      schema: metaInstanceSchema
+      schema: metaInstanceSchema,
+      password: database.password
     }), (0, _rxDatabaseInternalStore.addConnectedStorageToCollection)(this.collection, metaInstanceCollectionName, metaInstanceSchema)]);
     this.metaInstance = metaInstance;
     this.internalReplicationState = (0, _replicationProtocol.replicateRxStorageInstance)({

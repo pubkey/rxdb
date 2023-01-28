@@ -1,5 +1,5 @@
 import type { BulkWriteRow, ById, RxDocumentData, RxJsonSchema, RxStorageInstanceReplicationState, RxStorageReplicationMeta, WithDeleted } from '../types';
-export declare function getRxReplicationMetaInstanceSchema(replicatedDocumentsSchema: RxJsonSchema<RxDocumentData<any>>): RxJsonSchema<RxDocumentData<RxStorageReplicationMeta>>;
+export declare function getRxReplicationMetaInstanceSchema(replicatedDocumentsSchema: RxJsonSchema<RxDocumentData<any>>, encrypted: boolean): RxJsonSchema<RxDocumentData<RxStorageReplicationMeta>>;
 /**
  * Returns the document states of what the fork instance
  * assumes to be the latest state on the master instance.

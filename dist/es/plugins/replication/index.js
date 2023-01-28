@@ -13,6 +13,7 @@ import { newRxError } from '../../rx-error';
 import { awaitRetry, DEFAULT_MODIFIER, swapDefaultDeletedTodeletedField, handlePulledDocuments } from './replication-helper';
 import { addConnectedStorageToCollection } from '../../rx-database-internal-store';
 import { addRxPlugin } from '../../plugin';
+import { hasEncryption } from '../../rx-storage-helper';
 export var REPLICATION_STATE_BY_COLLECTION = new WeakMap();
 export var RxReplicationState = /*#__PURE__*/function () {
   function RxReplicationState(
@@ -84,7 +85,7 @@ export var RxReplicationState = /*#__PURE__*/function () {
     var pushModifier = this.push && this.push.modifier ? this.push.modifier : DEFAULT_MODIFIER;
     var database = this.collection.database;
     var metaInstanceCollectionName = this.collection.name + '-rx-replication-' + this.replicationIdentifierHash;
-    var metaInstanceSchema = getRxReplicationMetaInstanceSchema(this.collection.schema.jsonSchema);
+    var metaInstanceSchema = getRxReplicationMetaInstanceSchema(this.collection.schema.jsonSchema, hasEncryption(this.collection.schema.jsonSchema));
     var [metaInstance] = await Promise.all([this.collection.database.storage.createStorageInstance({
       databaseName: database.name,
       collectionName: metaInstanceCollectionName,
@@ -92,7 +93,8 @@ export var RxReplicationState = /*#__PURE__*/function () {
       multiInstance: database.multiInstance,
       // TODO is this always false?
       options: {},
-      schema: metaInstanceSchema
+      schema: metaInstanceSchema,
+      password: database.password
     }), addConnectedStorageToCollection(this.collection, metaInstanceCollectionName, metaInstanceSchema)]);
     this.metaInstance = metaInstance;
     this.internalReplicationState = replicateRxStorageInstance({

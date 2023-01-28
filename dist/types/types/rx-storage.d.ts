@@ -219,7 +219,7 @@ export type RxStorageInstanceCreationParams<RxDocType, InstanceCreationOptions> 
      * process relies on the same storage.
      */
     multiInstance: boolean;
-    password?: string;
+    password?: string | any;
 };
 
 export type ChangeStreamOptions = {

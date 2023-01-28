@@ -9,9 +9,9 @@ exports.getRxReplicationMetaInstanceSchema = getRxReplicationMetaInstanceSchema;
 var _rxSchemaHelper = require("../rx-schema-helper");
 var _rxStorageHelper = require("../rx-storage-helper");
 var _utils = require("../plugins/utils");
-function getRxReplicationMetaInstanceSchema(replicatedDocumentsSchema) {
+function getRxReplicationMetaInstanceSchema(replicatedDocumentsSchema, encrypted) {
   var parentPrimaryKeyLength = (0, _rxSchemaHelper.getLengthOfPrimaryKey)(replicatedDocumentsSchema);
-  var metaInstanceSchema = (0, _rxSchemaHelper.fillWithDefaultSettings)({
+  var baseSchema = {
     primaryKey: {
       key: 'id',
       fields: ['itemId', 'isCheckpoint'],
@@ -46,7 +46,11 @@ function getRxReplicationMetaInstanceSchema(replicatedDocumentsSchema) {
       }
     },
     required: ['id', 'isCheckpoint', 'itemId', 'data']
-  });
+  };
+  if (encrypted) {
+    baseSchema.encrypted = ['data'];
+  }
+  var metaInstanceSchema = (0, _rxSchemaHelper.fillWithDefaultSettings)(baseSchema);
   return metaInstanceSchema;
 }
 

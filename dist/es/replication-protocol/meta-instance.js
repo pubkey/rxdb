@@ -1,9 +1,9 @@
 import { fillWithDefaultSettings, getComposedPrimaryKeyOfDocumentData, getLengthOfPrimaryKey } from '../rx-schema-helper';
 import { flatCloneDocWithMeta } from '../rx-storage-helper';
 import { getDefaultRevision, createRevision, now } from '../plugins/utils';
-export function getRxReplicationMetaInstanceSchema(replicatedDocumentsSchema) {
+export function getRxReplicationMetaInstanceSchema(replicatedDocumentsSchema, encrypted) {
   var parentPrimaryKeyLength = getLengthOfPrimaryKey(replicatedDocumentsSchema);
-  var metaInstanceSchema = fillWithDefaultSettings({
+  var baseSchema = {
     primaryKey: {
       key: 'id',
       fields: ['itemId', 'isCheckpoint'],
@@ -38,7 +38,11 @@ export function getRxReplicationMetaInstanceSchema(replicatedDocumentsSchema) {
       }
     },
     required: ['id', 'isCheckpoint', 'itemId', 'data']
-  });
+  };
+  if (encrypted) {
+    baseSchema.encrypted = ['data'];
+  }
+  var metaInstanceSchema = fillWithDefaultSettings(baseSchema);
   return metaInstanceSchema;
 }
 
