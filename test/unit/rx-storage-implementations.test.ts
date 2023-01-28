@@ -224,6 +224,9 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
              * the encryption RxStorage wrapper.
              */
             it('must throw if encryption is defined in schema is set but no encryption plugin is used', async () => {
+                if (config.storage.hasEncryption) {
+                    return;
+                }
                 const schema = getPseudoSchemaForVersion<TestDocType>(0, 'key');
                 schema.attachments = {
                     encrypted: true
