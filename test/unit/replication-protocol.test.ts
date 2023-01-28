@@ -164,7 +164,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
             databaseInstanceToken: randomCouchString(10),
             databaseName: randomCouchString(12),
             collectionName: randomCouchString(12),
-            schema: getRxReplicationMetaInstanceSchema(parentSchema),
+            schema: getRxReplicationMetaInstanceSchema(parentSchema, false),
             options: {},
             multiInstance: true
         });
