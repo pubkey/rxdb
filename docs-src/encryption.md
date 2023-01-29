@@ -1,19 +1,22 @@
 # Encryption
 
-With the encryption plugin you can define properties of your documents to be stored encrypted. This ensure that when your users device is stolen, the encrypted data cannot be read out of the hard drive.
-The encryption and decryption happens internally, so when you work with a `RxDocument`, you can access any property like normal. **But** encrypted fields cannot be used inside of a query.
+With the encryption plugins you can define properties of your documents to be stored encrypted. This ensure that when your users device is stolen, the encrypted data cannot be read out of the hard drive.
+The encryption and decryption happens internally, so when you work with a `RxDocument`, you can access any property like normal, **but** encrypted fields cannot be used as operators in a query.
 
-The encryption-module is using the `AES` algorithm of the [crypto-js](https://www.npmjs.com/package/crypto-js) library.
+RxDB currently has two plugins for encryption:
+
+- The free `encryption-crypto-js` plugin that is based on the `AES` algorithm of the [crypto-js](https://www.npmjs.com/package/crypto-js) library
+- The [premium](./premium.html) `encryption-web-crypto` plugin that is based on the native [Web Crypto API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API) which makes it faster and more secure to use.
 
 
 ## Usage
 
-The encryption plugin is a wrapper around any other [RxStorage](./rx-storage.md). 
+An encryption plugin is a wrapper around any other [RxStorage](./rx-storage.md). 
 
 - You first have to wrap your RxStorage with the encryption
 - Then use that as `RxStorage` when calling `createRxDatabase()`
-- Also you have to set a **password** when creating the database. In most use cases you would ask the user to input the password when starting the application.
-- To define a field as being encrypted, you have to add it to the `encrypted` in the schema.
+- Also you have to set a **password** when creating the database. The format of the password depends on which encryption plugin is used.
+- To define a field as being encrypted, you have to add it to the `encrypted` fields list in the schema.
 
 ```ts
 import { wrappedKeyEncryptionCryptoJsStorage } from 'rxdb/plugins/encryption-crypto-js';
@@ -54,9 +57,30 @@ await db.addCollections({
         schema
     }
 })
-
 ```
 
+Or with the `web-crypto` premium plugin:
+
+```ts
+import { wrappedKeyEncryptionWebCryptoStorage, createPassword } from 'rxdb-premium/plugins/encryption-web-crypto';
+import { getRxStorageIndexedDB } from 'rxdb-premium/plugins/storage-indexeddb';
+
+
+const encryptedIndexedDbStorage = wrappedKeyEncryptionWebCryptoStorage({
+    storage: getRxStorageIndexedDB()
+});
+
+/**
+ * Algorithm can be oneOf: 'AES-CTR' | 'AES-CBC' | 'AES-GCM'
+ */
+const freshPassword = await createPassword('AES-CTR');
+
+const db = await createRxDatabase<RxStylechaseCollections>({
+    name: 'mydatabase',
+    storage: encryptedIndexedDbStorage,
+    password: freshPassword
+});
+```
 
 ## Changing the password
 
@@ -65,7 +89,7 @@ At the moment it is not possible to change the password. Opening an existing dat
 
 ## Encrypted attachments
 
-To store the attachments data encrypted, you have to set `encrypted: true` in the `attachments` property of the schema.
+To store the [attachments](./rx-attachment.md) data encrypted, you have to set `encrypted: true` in the `attachments` property of the schema.
 
 
 ```ts
