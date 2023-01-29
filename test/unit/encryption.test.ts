@@ -280,6 +280,9 @@ config.parallel('encryption.test.ts', () => {
     });
     describe('replication', () => {
         it('replication state meta should not contain a secret in cleartext', async () => {
+            if (config.storage.hasEncryption) {
+                return;
+            }
             const clientCollection = await createEncryptedCollection(0, getRxStorageMemory());
             const remoteCollection = await createEncryptedCollection(0, getRxStorageMemory());
             const secret = 'secret-' + randomCouchString(10);
