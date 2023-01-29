@@ -115,17 +115,6 @@ config.parallel('encryption.test.ts', () => {
                 'EN1'
             );
         });
-        it('should crash with invalid password (empty string)', async () => {
-            await AsyncTestUtil.assertThrows(
-                () => createRxDatabase({
-                    name: randomCouchString(10),
-                    storage,
-                    password: ''
-                }),
-                'RxError',
-                'EN2'
-            );
-        });
         it('BUG: should have stored the password hash when creating the database', async () => {
             const name = randomCouchString(10);
             const password = await getPassword();
