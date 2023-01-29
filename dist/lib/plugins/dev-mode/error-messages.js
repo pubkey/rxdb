@@ -114,7 +114,7 @@ var ERROR_MESSAGES = {
   // plugins/attachments.js
   AT1: 'to use attachments, please define this in your schema',
   // plugins/encryption-crypto-js.js
-  EN1: 'password is no string',
+  EN1: 'password is not valid',
   EN2: 'validatePassword: min-length of password not complied',
   EN3: 'Schema contains encrypted properties but no password is given',
   EN4: 'Password not valid',

@@ -11,7 +11,6 @@ exports.wrappedKeyEncryptionCryptoJsStorage = wrappedKeyEncryptionCryptoJsStorag
 var _aes = _interopRequireDefault(require("crypto-js/aes"));
 var cryptoEnc = _interopRequireWildcard(require("crypto-js/enc-utf8"));
 var _pluginHelpers = require("../../plugin-helpers");
-var _rxDatabaseInternalStore = require("../../rx-database-internal-store");
 var _rxError = require("../../rx-error");
 var _rxStorageHelper = require("../../rx-storage-helper");
 var _utils = require("../../plugins/utils");
@@ -49,20 +48,11 @@ function decryptString(cipherText, password) {
 function wrappedKeyEncryptionCryptoJsStorage(args) {
   return Object.assign({}, args.storage, {
     async createStorageInstance(params) {
+      if (typeof params.password !== 'undefined') {
+        validatePassword(params.password);
+      }
       if (!(0, _rxStorageHelper.hasEncryption)(params.schema)) {
         var retInstance = await args.storage.createStorageInstance(params);
-        if (params.schema.title === _rxDatabaseInternalStore.INTERNAL_STORE_SCHEMA_TITLE && params.password !== 'undefined') {
-          try {
-            validatePassword(params.password);
-          } catch (err) {
-            /**
-             * Even if the checks fail,
-             * we have to clean up.
-             */
-            await retInstance.close();
-            throw err;
-          }
-        }
         return retInstance;
       }
       if (!params.password) {
