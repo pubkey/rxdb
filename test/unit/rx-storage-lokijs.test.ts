@@ -59,14 +59,14 @@ describe('rx-storage-lokijs.test.js', () => {
             const col1 = await humansCollections.createMultiInstance(
                 databaseName,
                 0,
-                null,
+                undefined,
                 getRxStorageLoki()
             );
             await col1.database.waitForLeadership();
             const col2 = await humansCollections.createMultiInstance(
                 databaseName,
                 0,
-                null,
+                undefined,
                 getRxStorageLoki()
             );
             await col1.insert(schemaObjects.human());
@@ -111,7 +111,7 @@ describe('rx-storage-lokijs.test.js', () => {
                     .map(() => humansCollections.createMultiInstance(
                         databaseName,
                         0,
-                        null,
+                        undefined,
                         getRxStorageLoki()
                     ))
             );
@@ -142,7 +142,7 @@ describe('rx-storage-lokijs.test.js', () => {
                         const col = await humansCollections.createMultiInstance(
                             databaseName,
                             0,
-                            null,
+                            undefined,
                             getRxStorageLoki()
                         );
                         cols.push(col);
@@ -185,14 +185,14 @@ describe('rx-storage-lokijs.test.js', () => {
             const col1 = await humansCollections.createMultiInstance(
                 databaseName,
                 0,
-                null,
+                undefined,
                 getRxStorageLoki()
             );
             await col1.database.waitForLeadership();
             const col2 = await humansCollections.createMultiInstance(
                 databaseName,
                 0,
-                null,
+                undefined,
                 getRxStorageLoki()
             );
             let lastResult1: any[];
