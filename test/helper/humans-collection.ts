@@ -270,7 +270,7 @@ export async function createDeepNested(
 export async function createMultiInstance(
     name: string,
     amount = 0,
-    password = null,
+    password = undefined,
     storage: RxStorage<any, any> = config.storage.getStorage()
 ): Promise<RxCollection<HumanDocumentType, {}, {}>> {
     if (!config.storage.hasMultiInstance) {
