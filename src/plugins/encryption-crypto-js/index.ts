@@ -6,9 +6,6 @@
 import AES from 'crypto-js/aes';
 import * as cryptoEnc from 'crypto-js/enc-utf8';
 import { wrapRxStorageInstance } from '../../plugin-helpers';
-import {
-    INTERNAL_STORE_SCHEMA_TITLE
-} from '../../rx-database-internal-store';
 import { newRxError, newRxTypeError } from '../../rx-error';
 import { hasEncryption } from '../../rx-storage-helper';
 import type {
@@ -73,23 +70,12 @@ export function wrappedKeyEncryptionCryptoJsStorage<Internals, InstanceCreationO
             async createStorageInstance<RxDocType>(
                 params: RxStorageInstanceCreationParams<RxDocType, any>
             ) {
+                if (typeof params.password !== 'undefined') {
+                    validatePassword(params.password as any);
+                }
+
                 if (!hasEncryption(params.schema)) {
                     const retInstance = await args.storage.createStorageInstance(params);
-                    if (
-                        params.schema.title === INTERNAL_STORE_SCHEMA_TITLE &&
-                        params.password !== 'undefined'
-                    ) {
-                        try {
-                            validatePassword(params.password as any);
-                        } catch (err) {
-                            /**
-                             * Even if the checks fail,
-                             * we have to clean up.
-                             */
-                            await retInstance.close();
-                            throw err;
-                        }
-                    }
                     return retInstance;
                 }
 

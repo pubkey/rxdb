@@ -281,7 +281,7 @@ export function getPassword(): Promise<string> {
     if (config.storage.hasEncryption) {
         return config.storage.hasEncryption();
     } else {
-        return Promise.resolve(randomCouchString(10));
+        return Promise.resolve('test-password-' + randomCouchString(10));
     }
 }
 
