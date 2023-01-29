@@ -1,7 +1,7 @@
 {
   "name": "rxdb",
   "description": "A realtime Database for JavaScript applications",
-  "version": "14.0.0-beta.36",
+  "version": "14.0.0-beta.37",
   "author": "pubkey",
   "repository": {
     "type": "git",
@@ -477,7 +477,7 @@
     "karma-spec-reporter": "0.0.36",
     "karma-webpack": "5.0.0",
     "leveldown": "6.1.1",
-    "madge": "5.0.1",
+    "madge": "5.0.2",
     "memdown": "6.1.1",
     "mini-css-extract-plugin": "2.7.2",
     "mocha": "10.2.0",
