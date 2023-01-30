@@ -1202,3 +1202,4 @@ A1: Reuse query object
 A2: Rewrite to own sort function
 146.54432300
 140.800432999
+
