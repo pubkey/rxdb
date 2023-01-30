@@ -58,7 +58,7 @@
     "rxdb": "file:rxdb-local.tgz",
     "rxjs": "7.8.0",
     "stream": "0.0.2",
-    "tslib": "2.4.1",
+    "tslib": "2.5.0",
     "material-design-icons": "3.0.1",
     "zone.js": "0.12.0"
   },
