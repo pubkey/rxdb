@@ -68,7 +68,7 @@
     "@angular/compiler-cli": "15.1.2",
     "@angular/language-service": "15.1.2",
     "@nguniversal/builders": "15.1.0",
-    "@types/express": "4.17.15",
+    "@types/express": "4.17.16",
     "@types/mocha": "10.0.1",
     "@types/node": "18.11.18",
     "async-test-util": "2.0.0",
