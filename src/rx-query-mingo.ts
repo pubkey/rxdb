@@ -1,7 +1,3 @@
-/**
- * TODO
- * FIX @link https://github.com/kofrasa/mingo/issues/308
- */
 import { useOperators, OperatorType } from 'mingo/core';
 import { Query } from 'mingo/query';
 import type { MangoQuerySelector } from './types';
