@@ -1,4 +1,4 @@
-# Replication with CouchDB (new, beta)
+# Replication with CouchDB
 
 A plugin to replicate between a RxCollection and a CouchDB server.
 

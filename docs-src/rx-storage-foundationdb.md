@@ -1,4 +1,4 @@
-# RxStorage FoundationDB (beta)
+# RxStorage FoundationDB
 
 To use RxDB on the server side, the [FoundationDB](https://www.foundationdb.org/) [RxStorage](./rx-storage.md) provides a way of having a secure, fault-tolerant and performant storage.
 

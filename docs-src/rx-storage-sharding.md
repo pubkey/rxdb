@@ -1,4 +1,4 @@
-# Sharding RxStorage (beta)
+# Sharding RxStorage
 
 With the sharding plugin, you can improve the write and query times of **some** `RxStorage` implementations.
 For example on [slow IndexedDB](./slow-indexeddb.md), a performance gain of **30-50% on reads**, and **25% on writes** can be achieved by using multiple IndexedDB Stores instead of putting all documents into the same store.
