@@ -6,7 +6,7 @@ The encryption and decryption happens internally, so when you work with a `RxDoc
 RxDB currently has two plugins for encryption:
 
 - The free `encryption-crypto-js` plugin that is based on the `AES` algorithm of the [crypto-js](https://www.npmjs.com/package/crypto-js) library
-- The [premium](./premium.html) `encryption-web-crypto` plugin that is based on the native [Web Crypto API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API) which makes it faster and more secure to use.
+- The [premium](./premium.html) `encryption-web-crypto` plugin that is based on the native [Web Crypto API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API) which makes it faster and more secure to use. Document inserts are about 10x faster compared to `crypto-js`.
 
 
 ## Usage
