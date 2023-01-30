@@ -59,7 +59,7 @@ await db.addCollections({
 })
 ```
 
-Or with the `web-crypto` premium plugin:
+Or with the `web-crypto` [premium](./premium.html) plugin:
 
 ```ts
 import { wrappedKeyEncryptionWebCryptoStorage, createPassword } from 'rxdb-premium/plugins/encryption-web-crypto';
