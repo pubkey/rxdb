@@ -70,22 +70,24 @@ const encryptedIndexedDbStorage = wrappedKeyEncryptionWebCryptoStorage({
     storage: getRxStorageIndexedDB()
 });
 
-/**
- * Algorithm can be oneOf: 'AES-CTR' | 'AES-CBC' | 'AES-GCM'
- */
-const freshPassword = await createPassword('AES-CTR');
+const myPasswordObject = {
+    // Algorithm can be oneOf: 'AES-CTR' | 'AES-CBC' | 'AES-GCM'
+    algorithm: 'AES-CTR',
+    password: 'myRandomPasswordWithMin8Length'
+};
 
 const db = await createRxDatabase<RxStylechaseCollections>({
     name: 'mydatabase',
     storage: encryptedIndexedDbStorage,
-    password: freshPassword
+    password: myPasswordObject
 });
 ```
 
 ## Changing the password
 
-At the moment it is not possible to change the password. Opening an existing database with a different password will throw an error. To change the password you can use the [storage migration plugin](./storage-migration.md).
-
+The password is set database specific and it is not possible to change the password of a database. Opening an existing database with a different password will throw an error. To change the password you can either :
+- Use the [storage migration plugin](./storage-migration.md) to migrate the database state into a new database.
+- Store a randomly created meta-password in a different RxDatabase as a value of a [local document](./rx-local-document.md). Encrypt the meta password with the actual user password and read it out before creating the actual database.
 
 ## Encrypted attachments
 
