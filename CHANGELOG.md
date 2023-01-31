@@ -60,6 +60,7 @@
 - FIX CouchDB replication conflict handling
 - CHANGE Encryption plugin was renamed to `encryption-crypto-js`
 - FIX replication state meta data must also be encrypted.
+- FIX crash with null in selector [#4369](https://github.com/pubkey/rxdb/pull/4369)
 
 #
 - REMOVE deprecated `babel-plugin-transform-async-to-promises` plugin.
