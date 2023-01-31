@@ -19,7 +19,7 @@
     "jest-expo": "47.0.1",
     "react-native-gesture-handler": "2.9.0",
     "react-test-renderer": "18.2.0",
-    "rimraf": "3.0.2",
+    "rimraf": "4.1.2",
     "schedule": "0.5.0"
   },
   "main": "node_modules/expo/AppEntry.js",
