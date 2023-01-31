@@ -39,7 +39,7 @@ The worker RxStorage is a wrapper around any other RxStorage which allows to run
 
 ### SharedWorker [[premium](https://rxdb.info/premium.html)]
 
-The worker RxStorage is a wrapper around any other RxStorage which allows to run the storage in a SharedWorker (only in browsers). By doing so, you can take CPU load from the main process and move it into the worker's process which can improve the perceived performance of your application. [Read more](./rx-storage-worker.md)
+The worker RxStorage is a wrapper around any other RxStorage which allows to run the storage in a SharedWorker (only in browsers). By doing so, you can take CPU load from the main process and move it into the worker's process which can improve the perceived performance of your application. [Read more](./rx-storage-shared-worker.md)
 
 
 ### Remote
