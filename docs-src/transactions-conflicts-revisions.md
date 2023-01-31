@@ -1,6 +1,6 @@
 # Transactions, Conflicts and Revisions
 
-In contrast to most SQL databases, RxDB does not have the concept of relational, ACID transactions. Instead, RxDB has to apply different techniques that better suite the offline-first, client side world where it is not possible to create a transaction between multiple maybe-offline client devices.
+In contrast to most SQL databases, RxDB does not have the concept of relational, ACID transactions. Instead, RxDB has to apply different techniques that better suit the offline-first, client side world where it is not possible to create a transaction between multiple maybe-offline client devices.
 
 ## Why RxDB does not have transactions
 
