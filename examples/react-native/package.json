@@ -9,7 +9,7 @@
     "android": "expo start --android",
     "ios": "expo start --ios",
     "test": "jest",
-    "test:bundle": "rimraf -f ./dist && rimraf -f ./expo && EXPO_DEBUG=true expo export --public-url https://example.com/"
+    "test:bundle": "rimraf -rf ./dist && rimraf -rf ./expo && EXPO_DEBUG=true expo export --public-url https://example.com/"
   },
   "devDependencies": {
     "@babel/core": "7.20.12",
