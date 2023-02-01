@@ -161,8 +161,15 @@ export function replicateGraphQL<RxDocType, CheckpointType>(
                 if (result.errors) {
                     throw result.errors;
                 }
-                const dataPath = Object.keys(result.data)[0];
-                const data: any = getProperty(result.data, dataPath);
+                const dataPath = push.dataPath || Object.keys(result.data)[0];
+                let data: any = getProperty(result.data, dataPath);
+
+                if (push.responseModifier) {
+                    data = await push.responseModifier(
+                        data,
+                    );
+                }
+
                 return data;
             },
             batchSize: push.batchSize,
