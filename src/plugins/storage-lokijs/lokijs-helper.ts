@@ -478,7 +478,7 @@ export async function mustUseLocalState(
  * @recursive
  */
 export function transformRegexToRegExp(selector: any) {
-    if (typeof selector !== 'object') {
+    if (typeof selector !== 'object' || selector === null) {
         return selector;
     }
 
