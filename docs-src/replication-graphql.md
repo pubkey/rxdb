@@ -416,8 +416,7 @@ type PushResponse {
 }
 
 type Mutation {
-    # Returns a list of all conflicts
-    # If no document write caused a conflict, return an empty list.
+    # Returns a PushResponse type that contains the conflicts along with other information
     pushHuman(rows: [HumanInputPushRow!]): PushResponse!
 }
 ```
