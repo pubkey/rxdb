@@ -543,6 +543,34 @@ describe('other', () => {
                         schema: heroSchema
                     };
                 });
+                it('nested selector type not working', () => {
+                    type DocType = {
+                        id?: string;
+                        timestamp: number;
+                        meta: {
+                            user: string;
+                        };
+                    };
+                    type RxCollectionIssue = RxCollection<DocType>;
+                    const collection: RxCollectionIssue = {} as any;
+                    const query = collection.find({
+                        selector: {
+                            'meta.user': 'foobar',
+                            id: {
+                                $exists: true
+                            },
+                            timestamp: {
+                                $exists: true,
+                                $gt: 1000
+                            }
+                        },
+                        limit: 10,
+                        sort: [
+                            { id: 'asc' },
+                            { timestamp: 'asc' }
+                        ]
+                    });
+                });
             });
         });
     });
