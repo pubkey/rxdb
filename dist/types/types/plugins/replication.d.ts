@@ -22,6 +22,8 @@ export type ReplicationPullHandlerResult<RxDocType, CheckpointType> = {
     documents: WithDeleted<RxDocType>[];
 };
 
+export type ReplicationPushHandlerResult<RxDocType> = RxDocType[]
+
 export type ReplicationPullHandler<RxDocType, CheckpointType> = (
     lastPulledCheckpoint: CheckpointType,
     batchSize: number

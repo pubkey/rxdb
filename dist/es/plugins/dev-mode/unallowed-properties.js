@@ -54,7 +54,12 @@ export function validateDatabaseName(name) {
   if (isFolderPath(name)) {
     return true;
   }
-  if (!name.match(validCouchDBStringRegex)) {
+  if (!name.match(validCouchDBStringRegex) &&
+  /**
+   * The string ':memory:' is used in the SQLite RxStorage
+   * to persist data into a memory state. Often used in tests.
+   */
+  name !== ':memory:') {
     throw newRxError('UT2', {
       regex: validCouchDBStringRegexStr,
       givenName: name
