@@ -23,3 +23,5 @@ release-body.md
 /test-db-*
 dist/typings
 *-debug.log
+dist
+docs
