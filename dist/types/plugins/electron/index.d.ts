@@ -1,2 +1,0 @@
-export * from './rx-storage-ipc-renderer';
-export * from './rx-storage-ipc-main';
