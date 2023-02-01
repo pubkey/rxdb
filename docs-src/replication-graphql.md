@@ -131,8 +131,8 @@ const pullQueryBuilder = (checkpoint, limit) => {
      */
     if (!checkpoint) {
         checkpoint = {
-            id: '',
-            updatedAt: 0
+            id: "",
+            updatedAt: 0,
         };
     }
     const query = `query PullHuman($checkpoint: CheckpointInput, $limit: Int!) {
@@ -154,8 +154,8 @@ const pullQueryBuilder = (checkpoint, limit) => {
         query,
         variables: {
             checkpoint,
-            limit
-        }
+            limit,
+        },
     };
 };
 ```
@@ -207,7 +207,7 @@ const replicationState = replicateGraphQL(
 For the push-replication, you also need a `queryBuilder`. Here, the builder receives a changed document as input which has to be send to the server. It also returns a GraphQL-Query and its data.
 
 ```js
-const pushQueryBuilder = rows => {
+const pushQueryBuilder = (rows) => {
     const query = `
     mutation PushHuman($writeRows: [HumanInputPushRow!]) {
         pushHuman(writeRows: $writeRows) {
@@ -220,11 +220,11 @@ const pushQueryBuilder = rows => {
     }
     `;
     const variables = {
-        writeRows: rows
+        writeRows: rows,
     };
     return {
         query,
-        variables
+        variables,
     };
 };
 ```
@@ -232,38 +232,36 @@ const pushQueryBuilder = rows => {
 With the queryBuilder, you can then setup the push-replication.
 
 ```js
-const replicationState = replicateGraphQL(
-    {
-        collection: myRxCollection,
-        // urls to the GraphQL endpoints
-        url: {
-            http: 'http://example.com/graphql'
-        },
-        push: {
-            queryBuilder: pushQueryBuilder, // the queryBuilder from above
-            /**
-             * batchSize (optional)
-             * Amount of document that will be pushed to the server in a single request.
-             */
-            batchSize: 5,
-            /**
-             * modifier (optional)
-             * Modifies all pushed documents before they are send to the GraphQL endpoint.
-             * Returning null will skip the document.
-             */
-            modifier: doc => doc
-        },
-        headers: {
-            Authorization: 'Bearer abcde...'
-        },
-        pull: {
-            /* ... */
-        },
+const replicationState = replicateGraphQL({
+    collection: myRxCollection,
+    // urls to the GraphQL endpoints
+    url: {
+        http: "http://example.com/graphql",
+    },
+    push: {
+        queryBuilder: pushQueryBuilder, // the queryBuilder from above
+        /**
+         * batchSize (optional)
+         * Amount of document that will be pushed to the server in a single request.
+         */
+        batchSize: 5,
+        /**
+         * modifier (optional)
+         * Modifies all pushed documents before they are send to the GraphQL endpoint.
+         * Returning null will skip the document.
+         */
+        modifier: (doc) => doc,
+        dataPath: undefined, // (optional) specifies the object path to access the conflicting document(s). Otherwise, the first result of the response data is used.
+    },
+    headers: {
+        Authorization: "Bearer abcde...",
+    },
+    pull: {
         /* ... */
-    }
-);
+    },
+    /* ... */
+});
 ```
-
 
 #### Pull Stream
 
@@ -290,8 +288,8 @@ const pullStreamQueryBuilder = (headers) => {
     return {
         query,
         variables: {
-            headers
-        }
+            headers,
+        },
     };
 };
 ```
@@ -299,48 +297,52 @@ const pullStreamQueryBuilder = (headers) => {
 With the `pullStreamQueryBuilder` you can then start a realtime replication.
 
 ```js
-const replicationState = replicateGraphQL(
-    {
-        collection: myRxCollection,
-        // urls to the GraphQL endpoints
-        url: {
-            http: 'http://example.com/graphql',
-            ws: 'ws://example.com/subscriptions' // <- The websocket has to use a different url.
-        },
-        push: {
-            batchSize: 100,
-            queryBuilder: pushQueryBuilder
-        },
-        headers: {
-            Authorization: 'Bearer abcde...'
-        },
-        pull: {
-            batchSize: 100,
-            queryBuilder: pullQueryBuilder,
-            streamQueryBuilder: pullStreamQueryBuilder
-        },
-        deletedField: 'deleted'
-    }
-);
+const replicationState = replicateGraphQL({
+    collection: myRxCollection,
+    // urls to the GraphQL endpoints
+    url: {
+        http: "http://example.com/graphql",
+        ws: "ws://example.com/subscriptions", // <- The websocket has to use a different url.
+    },
+    push: {
+        batchSize: 100,
+        queryBuilder: pushQueryBuilder,
+    },
+    headers: {
+        Authorization: "Bearer abcde...",
+    },
+    pull: {
+        batchSize: 100,
+        queryBuilder: pullQueryBuilder,
+        streamQueryBuilder: pullStreamQueryBuilder,
+    },
+    deletedField: "deleted",
+});
 ```
 
 **NOTICE**: If it is not possible to create a websocket server on your backend, you can use any other method of pull out the ongoing events from the backend and then you can send them into `RxReplicationState.emitEvent()`.
-
 
 ### Transforming null to undefined in optional fields
 
 GraphQL fills up non-existent optional values with `null` while RxDB required them to be `undefined`.
 Therefore, if your schema contains optional properties, you have to transform the pulled data to switch out `null` to `undefined`
+
 ```js
 const replicationState: RxGraphQLReplicationState<RxDocType> = replicateGraphQL(
     {
         collection: myRxCollection,
-        url: {/* ... */},
-        headers: {/* ... */},
-        push: {/* ... */},
+        url: {
+            /* ... */
+        },
+        headers: {
+            /* ... */
+        },
+        push: {
+            /* ... */
+        },
         pull: {
             queryBuilder: pullQueryBuilder,
-            modifier: (doc => {
+            modifier: (doc) => {
                 //Wwe have to remove optional non-existend field values
                 // they are set as null by GraphQL but should be undefined
                 Object.entries(doc).forEach(([k, v]) => {
@@ -349,7 +351,7 @@ const replicationState: RxGraphQLReplicationState<RxDocType> = replicateGraphQL(
                     }
                 });
                 return doc;
-            })
+            },
         },
         /* ... */
     }
@@ -362,17 +364,21 @@ With the `pull.responseModifier` you can modify the whole response from the Grap
 For example if your endpoint is not capable of returning a valid checkpoint, but instead only returns the plain document array, you can use the `responseModifier` to aggregate the checkpoint from the returned documents.
 
 ```js
-import {
-
-} from 'rxdb';
+import {} from "rxdb";
 const replicationState: RxGraphQLReplicationState<RxDocType> = replicateGraphQL(
     {
         collection: myRxCollection,
-        url: {/* ... */},
-        headers: {/* ... */},
-        push: {/* ... */},
+        url: {
+            /* ... */
+        },
+        headers: {
+            /* ... */
+        },
+        push: {
+            /* ... */
+        },
         pull: {
-            responseModifier: async function(
+            responseModifier: async function (
                 plainResponse, // the exact response that was returned from the server
                 origin, // either 'handler' if plainResponse came from the pull.handler, or 'stream' if it came from the pull.stream
                 requestCheckpoint // if origin==='handler', the requestCheckpoint contains the checkpoint that was send to the backend
@@ -384,24 +390,69 @@ const replicationState: RxGraphQLReplicationState<RxDocType> = replicateGraphQL(
                 const docs = plainResponse;
                 return {
                     documents: docs,
-                    checkpoint: docs.length === 0 ? requestCheckpoint : {
-                        name: lastOfArray(docs).name,
-                        updatedAt: lastOfArray(docs).updatedAt
-                    }
+                    checkpoint:
+                        docs.length === 0
+                            ? requestCheckpoint
+                            : {
+                                  name: lastOfArray(docs).name,
+                                  updatedAt: lastOfArray(docs).updatedAt,
+                              },
                 };
-            }
+            },
         },
         /* ... */
     }
 );
 ```
 
+### push.responseModifier
 
+It's also possible to modify the response of a push mutation. For example if your server returns more than the just conflicting docs:
+
+```graphql
+type PushResponse {
+    conflicts: [Human]
+    conflictMessages: [ReplicationConflictMessage]
+}
+
+type Mutation {
+    # Returns a list of all conflicts
+    # If no document write caused a conflict, return an empty list.
+    pushHuman(rows: [HumanInputPushRow!]): PushResponse!
+}
+```
+
+```js
+import {} from "rxdb";
+const replicationState: RxGraphQLReplicationState<RxDocType> = replicateGraphQL(
+    {
+        collection: myRxCollection,
+        url: {
+            /* ... */
+        },
+        headers: {
+            /* ... */
+        },
+        push: {
+            responseModifier: async function (plainResponse) {
+                /**
+                 * In this example we aggregate the conflicting documents from a response object
+                 */
+                const pullResponse = plainResponse;
+                return plainResponse.conflicts;
+            },
+        },
+        pull: {
+            /* ... */
+        },
+        /* ... */
+    }
+);
+```
 
 #### Helper Functions
 
 RxDB provides the helper functions `graphQLSchemaFromRxSchema()`, `pullQueryBuilderFromRxSchema()`, `pullStreamBuilderFromRxSchema()` and `pushQueryBuilderFromRxSchema()` that can be used to generate handlers and schemas from the `RxJsonSchema`. To learn how to use them, please inspect the [GraphQL Example](https://github.com/pubkey/rxdb/tree/master/examples/graphql).
-
 
 ### RxGraphQLReplicationState
 
@@ -413,7 +464,7 @@ Changes the headers for the replication after it has been set up.
 
 ```js
 replicationState.setHeaders({
-    Authorization: `...`
+    Authorization: `...`,
 });
 ```
 
@@ -422,24 +473,20 @@ replicationState.setHeaders({
 The underlying fetch framework uses a `same-origin` policy for credentials per default. That means, cookies and session data is only shared if you backend and frontend run on the same domain and port. Pass the credential parameter to `include` cookies in requests to servers from different origins via:
 
 ```js
-replicationState.setCredentials('include');
+replicationState.setCredentials("include");
 ```
 
 or directly pass it in the the `syncGraphQL`:
 
 ```js
-replicateGraphQL(
-    {
-        collection: myRxCollection,
-        /* ... */
-        credentials: 'include',
-        /* ... */
-    }
-);
+replicateGraphQL({
+    collection: myRxCollection,
+    /* ... */
+    credentials: "include",
+    /* ... */
+});
 ```
 
 See [the fetch spec](https://fetch.spec.whatwg.org/#concept-request-credentials-mode) for more information about available options.
 
-
 **NOTICE:** To play around, check out the full example of the RxDB [GraphQL replication with server and client](https://github.com/pubkey/rxdb/tree/master/examples/graphql)
-
