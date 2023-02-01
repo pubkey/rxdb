@@ -22,6 +22,8 @@ export type ReplicationPullHandlerResult<RxDocType, CheckpointType> = {
     documents: WithDeleted<RxDocType>[];
 };
 
+export type ReplicationPushHandlerResult<RxDocType> = RxDocType[];
+
 export type ReplicationPullHandler<RxDocType, CheckpointType> = (
     lastPulledCheckpoint: CheckpointType,
     batchSize: number
@@ -84,6 +86,8 @@ export type ReplicationPushOptions<RxDocType> = {
      * they are send into the push handler.
      */
     modifier?: (docData: WithDeleted<RxDocType>) => MaybePromise<any>;
+
+
 
     /**
      * How many local changes to process at once.
