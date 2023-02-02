@@ -65,7 +65,8 @@ import {
     flatCloneDocWithMeta,
     getSingleDocument,
     getWrappedStorageInstance,
-    INTERNAL_STORAGE_NAME
+    INTERNAL_STORAGE_NAME,
+    WrappedRxStorageInstance
 } from './rx-storage-helper';
 import type { RxBackupState } from './plugins/backup';
 import { ObliviousSet } from 'oblivious-set';
@@ -94,6 +95,13 @@ export class RxDatabaseBase<
 > {
 
     public readonly idleQueue: IdleQueue = new IdleQueue();
+
+    /**
+     * Contains all known non-closed storage instances
+     * that belong to this database.
+     * Used in plugins and unit tests.
+     */
+    public readonly storageInstances = new Set<WrappedRxStorageInstance<any, Internals, InstanceCreationOptions>>();
 
     constructor(
         public readonly name: string,
