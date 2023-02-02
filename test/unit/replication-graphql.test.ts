@@ -61,7 +61,7 @@ import {
     buildSchema,
     parse as parseQuery
 } from 'graphql';
-import { RxDocumentData } from '../../src/types';
+import { ReplicationPushHandlerResult, RxDocumentData } from '../../src/types';
 import { enableKeyCompression } from '../helper/schemas';
 
 declare type WithDeleted<T> = T & { deleted: boolean; };
@@ -1046,6 +1046,45 @@ describe('replication-graphql.test.ts', () => {
 
                 const docsOnServer = server.getDocuments();
                 assert.strictEqual(docsOnServer.length, batchSize);
+
+                server.close();
+                c.database.destroy();
+            });
+            it('should respect the push.responseModifier', async () => {
+                const [c, server] = await Promise.all([
+                    humansCollection.createHumanWithTimestamp(batchSize),
+                    SpawnServer.spawn()
+                ]);
+
+                let responseHaveBeenCalledTimes = 0;
+                const replicationState = replicateGraphQL({
+                    collection: c,
+                    url: server.url,
+                    push: {
+                        batchSize,
+                        queryBuilder: pushQueryBuilder,
+                        responseModifier(
+                            originalResponse: ReplicationPushHandlerResult<HumanWithTimestampDocumentType>,
+                        ) {
+                            responseHaveBeenCalledTimes += 1;
+                            return originalResponse;
+                        }
+                    },
+                    live: false,
+                    retryTime: 1000,
+                    deletedField: 'deleted'
+                });
+                ensureReplicationHasNoErrors(replicationState);
+
+
+                await replicationState.awaitInitialReplication();
+
+                const docsOnServer = server.getDocuments();
+                assert.strictEqual(docsOnServer.length, batchSize);
+                assert.strictEqual(
+                    responseHaveBeenCalledTimes,
+                    1
+                );
 
                 server.close();
                 c.database.destroy();
