@@ -87,8 +87,6 @@ export type ReplicationPushOptions<RxDocType> = {
      */
     modifier?: (docData: WithDeleted<RxDocType>) => MaybePromise<any>;
 
-
-
     /**
      * How many local changes to process at once.
      */
