@@ -7,13 +7,11 @@
 
 ### 14.0.0-beta.38 (30 January 2023)
 
-#
 - Remove the deprecated PouchDB RxStorage.
 - REMOVE old `replication-couchdb` plugin. Rename `replication-couchdb-new` to `replication-couchdb`.
 - Remove depricated `skipIfSame` from `putAttachment()`
-
-#
 - CHANGE use plain json errors inside of RxError parameters to make debugging easier.
+
 - CHANGE Make RxDocuments immutable
 - ADD `RxDocument.getLatest()`
 - CHANGE `RxCollection.findByIds()` now returns a `RxQuery`.
@@ -29,9 +27,9 @@
 - CHANGE start replication via pure functions instead of RxCollection methods.
 - CHANGE `RxDocument.$` emits `RxDocument` instances instead of the plain document data.
 
-#
 - CHANGE Do not use hash for revisions but use database instance token instead.
 - CHANGE crunch multiple incremental (aka 'atomic') operations into a single database write. Also batch writes to multiple documents into a single write.
+- REMOVE deprecated `babel-plugin-transform-async-to-promises` plugin.
 - CHANGE to reduce bundle size and improve performance, the following JavaScript features will no longer be transpiled:
   - [async/await](https://caniuse.com/async-functions)
   - [Arrow functions](https://caniuse.com/arrow-functions)
@@ -42,7 +40,6 @@
   - [default parameters](https://caniuse.com/?search=default%20parameters)
   - [object spread](https://caniuse.com/?search=Object%20spread)
 
-#
 - CHANGE (memory RxStorage) do not clean up database state on closing of the storage, only on `remove()`.
 - FIX CouchDB replication: Use correct default fetch method.
 - FIX schema hashing should respect the sort order [#4005](https://github.com/pubkey/rxdb/pull/4005)
@@ -61,9 +58,7 @@
 - CHANGE Encryption plugin was renamed to `encryption-crypto-js`
 - FIX replication state meta data must also be encrypted.
 - FIX crash with null in selector [#4369](https://github.com/pubkey/rxdb/pull/4369)
-
-#
-- REMOVE deprecated `babel-plugin-transform-async-to-promises` plugin.
+- ADD Ability to use a responseModifier for GraphQL push replication [#4385](https://github.com/pubkey/rxdb/pull/4385)
 
 <!-- /CHANGELOG NEWEST -->
 
