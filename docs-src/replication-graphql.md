@@ -361,7 +361,7 @@ const replicationState: RxGraphQLReplicationState<RxDocType> = replicateGraphQL(
 With the `pull.responseModifier` you can modify the whole response from the GraphQL endpoint **before** it is processed by RxDB.
 For example if your endpoint is not capable of returning a valid checkpoint, but instead only returns the plain document array, you can use the `responseModifier` to aggregate the checkpoint from the returned documents.
 
-```js
+```ts
 import {
 
 } from 'rxdb';
@@ -396,7 +396,42 @@ const replicationState: RxGraphQLReplicationState<RxDocType> = replicateGraphQL(
 );
 ```
 
+### push.responseModifier
 
+It's also possible to modify the response of a push mutation. For example if your server returns more than the just conflicting docs:
+
+```graphql
+type PushResponse {
+    conflicts: [Human]
+    conflictMessages: [ReplicationConflictMessage]
+}
+
+type Mutation {
+    # Returns a PushResponse type that contains the conflicts along with other information
+    pushHuman(rows: [HumanInputPushRow!]): PushResponse!
+}
+```
+
+```ts
+import {} from "rxdb";
+const replicationState: RxGraphQLReplicationState<RxDocType> = replicateGraphQL(
+    {
+        collection: myRxCollection,
+        url: {/* ... */},
+        headers: {/* ... */},
+        push: {
+            responseModifier: async function (plainResponse) {
+                /**
+                 * In this example we aggregate the conflicting documents from a response object
+                 */
+                return plainResponse.conflicts;
+            },
+        },
+        pull: {/* ... */},
+        /* ... */
+    }
+);
+```
 
 #### Helper Functions
 
@@ -442,4 +477,3 @@ See [the fetch spec](https://fetch.spec.whatwg.org/#concept-request-credentials-
 
 
 **NOTICE:** To play around, check out the full example of the RxDB [GraphQL replication with server and client](https://github.com/pubkey/rxdb/tree/master/examples/graphql)
-
