@@ -2,9 +2,6 @@ import { Subject } from 'rxjs';
 import type {
     WebSocket
 } from 'ws';
-import type {
-    RxStorage
-} from '../../types';
 import {
     getFromMapOrThrow
 } from '../../plugins/utils';
@@ -22,6 +19,7 @@ import type {
     RxStorageRemoteExposeSettings
 } from '../storage-remote/storage-remote-types';
 import type {
+    RxStorageRemoteWebsocketClient,
     RxStorageRemoteWebsocketClientOptions,
     RxStorageRemoteWebsocketServerOptions,
     RxStorageRemoteWebsocketServerState
@@ -31,12 +29,12 @@ export function startRxStorageRemoteWebsocketServer(
 ): RxStorageRemoteWebsocketServerState {
     const serverState = startSocketServer(options);
 
-
     const websocketByConnectionId = new Map<string, WebSocket>();
     const messages$ = new Subject<MessageToRemote>();
     const exposeSettings: RxStorageRemoteExposeSettings = {
         messages$: messages$.asObservable(),
         storage: options.storage,
+        customRequestHandler: options.customRequestHandler,
         send(msg) {
             const ws = getFromMapOrThrow(websocketByConnectionId, msg.connectionId);
             ws.send(JSON.stringify(msg));
@@ -83,7 +81,7 @@ export function startRxStorageRemoteWebsocketServer(
  */
 const WebsocketClientByUrl = new Map<string, Promise<WebsocketWithRefCount>>();
 
-export function getRxStorageRemoteWebsocket(options: RxStorageRemoteWebsocketClientOptions): RxStorage<any, any> {
+export function getRxStorageRemoteWebsocket(options: RxStorageRemoteWebsocketClientOptions): RxStorageRemoteWebsocketClient {
     const identifier = options.url + 'rx-remote-storage-websocket';
     const messages$ = new Subject<MessageFromRemote>();
     const websocketClientPromise = WebsocketClientByUrl.has(options.url) ?

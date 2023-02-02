@@ -3,10 +3,15 @@ import type {
 } from '../replication-websocket';
 import type { ServerOptions, ClientOptions } from 'ws';
 import type { RxStorage, RxStorageStatics } from '../../types';
-import type { RxStorageRemoteExposeType } from '../storage-remote/storage-remote-types';
+import type {
+    CustomRequestHandler,
+    RxStorageRemoteExposeType
+} from '../storage-remote/storage-remote-types';
+import { RxStorageRemote } from '../storage-remote';
 
 export type RxStorageRemoteWebsocketServerOptions = ServerOptions & {
     storage: RxStorage<any, any>;
+    customRequestHandler?: CustomRequestHandler<any, any>;
 };
 
 export type RxStorageRemoteWebsocketServerState = {
@@ -18,3 +23,5 @@ export type RxStorageRemoteWebsocketClientOptions = ClientOptions & {
     statics: RxStorageStatics;
     url: string;
 };
+
+export type RxStorageRemoteWebsocketClient = RxStorageRemote;
