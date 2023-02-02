@@ -418,7 +418,6 @@ config.parallel('attachments.test.ts', () => {
             const encryptedData = await lowLevelStorage.getAttachmentData(doc.primary, 'cat.txt');
             const dataStringBase64 = await blobToString(encryptedData);
             const dataString = b64DecodeUnicode(dataStringBase64);
-            console.dir(dataString);
             assert.notStrictEqual(dataString, insertData);
 
             // getting the data again must be decrypted

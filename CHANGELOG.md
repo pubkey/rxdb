@@ -42,7 +42,8 @@
   - [default parameters](https://caniuse.com/?search=default%20parameters)
   - [object spread](https://caniuse.com/?search=Object%20spread)
 
-#
+Bugfixes: 
+
 - CHANGE (memory RxStorage) do not clean up database state on closing of the storage, only on `remove()`.
 - FIX CouchDB replication: Use correct default fetch method.
 - FIX schema hashing should respect the sort order [#4005](https://github.com/pubkey/rxdb/pull/4005)
@@ -61,6 +62,7 @@
 - CHANGE Encryption plugin was renamed to `encryption-crypto-js`
 - FIX replication state meta data must also be encrypted.
 - FIX crash with null in selector [#4369](https://github.com/pubkey/rxdb/pull/4369)
+- FIX storage instances MUST NOT mutate the given database- and collection-name.
 
 #
 - REMOVE deprecated `babel-plugin-transform-async-to-promises` plugin.
