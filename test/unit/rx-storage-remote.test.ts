@@ -28,6 +28,7 @@ import {
 } from '../helper/schema-objects';
 import { nextPort } from '../helper/port-manager';
 import * as humansCollections from '../helper/humans-collection';
+import * as schemaObjects from '../helper/schema-objects';
 import {
     getRxStorageRemoteWebsocket,
     startRxStorageRemoteWebsocketServer
@@ -59,6 +60,7 @@ config.parallel('rx-storage-remote.test.ts', () => {
                 port,
                 database: colServer.database
             });
+            assert.ok(server);
 
             const colClient = await humansCollections.create(
                 0, undefined, false, false,
@@ -67,13 +69,20 @@ config.parallel('rx-storage-remote.test.ts', () => {
                     url: 'ws://localhost:' + port
                 })
             );
+            const cols = [colServer, colClient];
 
+            await colServer.insert(schemaObjects.human());
+            await colClient.insert(schemaObjects.human());
 
-            console.log('.-----------------');
-            process.exit();
+            await Promise.all(
+                cols.map(async (col) => {
+                    const docs = await col.find().exec();
+                    assert.strictEqual(docs.length, 2);
+                })
+            );
 
-            colServer.database.destroy();
-            colClient.database.destroy();
+            await colClient.database.destroy();
+            await colServer.database.destroy();
         });
     });
     describe('custom requests', () => {

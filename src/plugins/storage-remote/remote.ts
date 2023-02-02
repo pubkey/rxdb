@@ -68,16 +68,14 @@ export function exposeRxStorageRemote(settings: RxStorageRemoteExposeSettings): 
                     collectionName
                 }));
             }
-
             const schema = params.schema;
-            const collection = (settings as RxStorageRemoteExposeSettingsRxDatabase).database.collections[collectionName];
-            if (deepEqual(schema, storageInstance.schema)) {
+            if (!deepEqual(schema, storageInstance.schema)) {
                 throw new Error('Wrong schema ' + JSON.stringify({
                     schema,
                     existingSchema: storageInstance.schema
                 }));
             }
-            return Promise.resolve(collection.internalStorageInstance);
+            return Promise.resolve(storageInstance);
         } else {
             throw new Error('no base given');
         }
@@ -208,6 +206,19 @@ export function exposeRxStorageRemote(settings: RxStorageRemoteExposeSettings): 
                 }
                 let result;
                 try {
+                    if (
+                        message.method === 'close' &&
+                        (settings as RxStorageRemoteExposeSettingsRxDatabase).database
+                    ) {
+                        /**
+                         * Do not close the storageInstance if it was taken from
+                         * a running RxDatabase.
+                         * In that case we only close the instance
+                         * when the RxDatabase gets destroyed.
+                         */
+                        settings.send(createAnswer(message, null));
+                        return;
+                    }
                     /**
                      * On calls to 'close()',
                      * we only close the main instance if there are no other
