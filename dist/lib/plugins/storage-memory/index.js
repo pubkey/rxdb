@@ -8,7 +8,6 @@ var _exportNames = {
 };
 exports.getRxStorageMemory = getRxStorageMemory;
 var _rxStorageHelper = require("../../rx-storage-helper");
-var _utils = require("../../plugins/utils");
 var _rxStorageInstanceMemory = require("./rx-storage-instance-memory");
 Object.keys(_rxStorageInstanceMemory).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
@@ -83,10 +82,6 @@ function getRxStorageMemory(settings = {}) {
     collectionStates: COLLECTION_STATES,
     createStorageInstance(params) {
       (0, _rxStorageHelper.ensureRxStorageInstanceParamsAreCorrect)(params);
-
-      // TODO we should not need to append the schema version here.
-      params = (0, _utils.flatClone)(params);
-      params.collectionName = params.collectionName + '-' + params.schema.version;
       var useSettings = Object.assign({}, settings, params.options);
       return (0, _rxStorageInstanceMemory.createMemoryStorageInstance)(this, params, useSettings);
     }

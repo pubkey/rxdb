@@ -384,7 +384,7 @@ export async function mustUseLocalState(instance) {
  * @recursive
  */
 export function transformRegexToRegExp(selector) {
-  if (typeof selector !== 'object') {
+  if (typeof selector !== 'object' || selector === null) {
     return selector;
   }
   var keys = Object.keys(selector);

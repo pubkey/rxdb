@@ -1,8 +1,8 @@
 import { pushAtSortPosition } from 'array-push-at-sort-position';
 import { newRxError } from '../../rx-error';
 import { boundEQ } from './binary-search-bounds';
-export function getMemoryCollectionKey(databaseName, collectionName) {
-  return databaseName + '--memory--' + collectionName;
+export function getMemoryCollectionKey(databaseName, collectionName, schemaVersion) {
+  return [databaseName, collectionName, schemaVersion].join('--memory--');
 }
 export function ensureNotRemoved(instance) {
   if (instance.internals.removed) {

@@ -34,6 +34,8 @@ function startRxStorageRemoteWebsocketServer(options) {
   var exposeSettings = {
     messages$: messages$.asObservable(),
     storage: options.storage,
+    database: options.database,
+    customRequestHandler: options.customRequestHandler,
     send(msg) {
       var ws = (0, _utils.getFromMapOrThrow)(websocketByConnectionId, msg.connectionId);
       ws.send(JSON.stringify(msg));
@@ -53,7 +55,7 @@ function startRxStorageRemoteWebsocketServer(options) {
          * If first message is not 'create',
          * it is an error.
          */
-        if (message.method !== 'create') {
+        if (message.method !== 'create' && message.method !== 'custom') {
           ws.send(JSON.stringify((0, _storageRemoteHelpers.createErrorAnswer)(message, new Error('First call must be a create call but is: ' + JSON.stringify(message)))));
           return;
         }
