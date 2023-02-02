@@ -413,7 +413,11 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
 
         this.internals.removed = true;
         this.storage.collectionStates.delete(
-            getMemoryCollectionKey(this.databaseName, this.collectionName)
+            getMemoryCollectionKey(
+                this.databaseName,
+                this.collectionName,
+                this.schema.version
+            )
         );
         await this.close();
     }
@@ -441,7 +445,11 @@ export function createMemoryStorageInstance<RxDocType>(
     params: RxStorageInstanceCreationParams<RxDocType, RxStorageMemoryInstanceCreationOptions>,
     settings: RxStorageMemorySettings
 ): Promise<RxStorageInstanceMemory<RxDocType>> {
-    const collectionKey = getMemoryCollectionKey(params.databaseName, params.collectionName);
+    const collectionKey = getMemoryCollectionKey(
+        params.databaseName,
+        params.collectionName,
+        params.schema.version
+    );
 
     let internals = storage.collectionStates.get(collectionKey);
     if (!internals) {
