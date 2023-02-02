@@ -12,7 +12,8 @@ import {
     getPrimaryFieldOfPrimaryKey,
     clone,
     getQueryPlan,
-    deepFreeze
+    deepFreeze,
+    RxStorageDefaultStatics
 } from '../../';
 import {
     areSelectorsSatisfiedByIndex
@@ -26,6 +27,12 @@ import {
     NestedHumanDocumentType
 } from '../helper/schema-objects';
 import { nextPort } from '../helper/port-manager';
+import * as humansCollections from '../helper/humans-collection';
+import {
+    getRxStorageRemoteWebsocket,
+    startRxStorageRemoteWebsocketServer
+} from '../../plugins/storage-remote-websocket';
+import { getRxStorageMemory, } from '../../plugins/storage-memory';
 
 const TEST_CONTEXT = 'rx-storage-remote.test.ts';
 config.parallel('rx-storage-remote.test.ts', () => {
@@ -44,6 +51,31 @@ config.parallel('rx-storage-remote.test.ts', () => {
     ) {
         return;
     }
+    describe('remote RxDatabase', () => {
+        it('should have the same data on both sides', async () => {
+            const port = await nextPort();
+            const colServer = await humansCollections.create(0, undefined, false, false, getRxStorageMemory());
+            const server = await startRxStorageRemoteWebsocketServer({
+                port,
+                database: colServer.database
+            });
+
+            const colClient = await humansCollections.create(
+                0, undefined, false, false,
+                getRxStorageRemoteWebsocket({
+                    statics: RxStorageDefaultStatics,
+                    url: 'ws://localhost:' + port
+                })
+            );
+
+
+            console.log('.-----------------');
+            process.exit();
+
+            colServer.database.destroy();
+            colClient.database.destroy();
+        });
+    });
     describe('custom requests', () => {
         it('should send the message and get the answer', async () => {
             const port = await nextPort();

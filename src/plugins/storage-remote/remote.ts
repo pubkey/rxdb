@@ -18,6 +18,7 @@ import type {
     RxStorageRemoteExposeSettingsRxStorage,
     RxStorageRemoteExposeType
 } from './storage-remote-types';
+import { INTERNAL_STORAGE_NAME } from '../../rx-storage-helper';
 
 /**
  * Run this on the 'remote' part,
@@ -58,13 +59,22 @@ export function exposeRxStorageRemote(settings: RxStorageRemoteExposeSettings): 
         if ((settings as RxStorageRemoteExposeSettingsRxStorage).storage) {
             return (settings as RxStorageRemoteExposeSettingsRxStorage).storage.createStorageInstance(params);
         } else if ((settings as RxStorageRemoteExposeSettingsRxDatabase).database) {
+            const storageInstances = Array.from((settings as RxStorageRemoteExposeSettingsRxDatabase).database.storageInstances);
             const collectionName = params.collectionName;
-            const schema: RxJsonSchema<RxDocumentData<RxDocType>> = params.schema;
+            const storageInstance = storageInstances.find(instance => instance.collectionName === collectionName);
+            if (!storageInstance) {
+                console.dir(storageInstances);
+                throw new Error('storageInstance does not exist ' + JSON.stringify({
+                    collectionName
+                }));
+            }
+
+            const schema = params.schema;
             const collection = (settings as RxStorageRemoteExposeSettingsRxDatabase).database.collections[collectionName];
-            if (deepEqual(schema, collection.schema.jsonSchema)) {
+            if (deepEqual(schema, storageInstance.schema)) {
                 throw new Error('Wrong schema ' + JSON.stringify({
                     schema,
-                    collectionSchema: collection.schema.jsonSchema
+                    existingSchema: storageInstance.schema
                 }));
             }
             return Promise.resolve(collection.internalStorageInstance);
@@ -173,8 +183,13 @@ export function exposeRxStorageRemote(settings: RxStorageRemoteExposeSettings): 
 
         // also close the connection when the collection gets destroyed
         if ((settings as RxStorageRemoteExposeSettingsRxDatabase).database) {
-            const collection = (settings as RxStorageRemoteExposeSettingsRxDatabase).database.collections[collectionName];
-            collection.onDestroy.push(() => closeThisConnection());
+            const database = (settings as RxStorageRemoteExposeSettingsRxDatabase).database;
+            const collection = database.collections[collectionName];
+            if (collection) {
+                collection.onDestroy.push(() => closeThisConnection());
+            } else {
+                database.onDestroy.push(() => closeThisConnection());
+            }
         }
 
         subs.push(

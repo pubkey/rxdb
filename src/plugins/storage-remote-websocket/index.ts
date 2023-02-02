@@ -33,7 +33,8 @@ export function startRxStorageRemoteWebsocketServer(
     const messages$ = new Subject<MessageToRemote>();
     const exposeSettings: RxStorageRemoteExposeSettings = {
         messages$: messages$.asObservable(),
-        storage: options.storage,
+        storage: options.storage as any,
+        database: options.database as any,
         customRequestHandler: options.customRequestHandler,
         send(msg) {
             const ws = getFromMapOrThrow(websocketByConnectionId, msg.connectionId);
@@ -56,7 +57,11 @@ export function startRxStorageRemoteWebsocketServer(
                  * it is an error.
                  */
                 if (message.method !== 'create') {
-                    ws.send(JSON.stringify(createErrorAnswer(message, new Error('First call must be a create call but is: ' + JSON.stringify(message)))));
+                    ws.send(
+                        JSON.stringify(
+                            createErrorAnswer(message, new Error('First call must be a create call but is: ' + JSON.stringify(message)))
+                        )
+                    );
                     return;
                 }
                 websocketByConnectionId.set(connectionId, ws);

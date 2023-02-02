@@ -2,7 +2,7 @@ import type {
     WebsocketServerState
 } from '../replication-websocket';
 import type { ServerOptions, ClientOptions } from 'ws';
-import type { RxStorage, RxStorageStatics } from '../../types';
+import type { RxDatabase, RxStorage, RxStorageStatics } from '../../types';
 import type {
     CustomRequestHandler,
     RxStorageRemoteExposeType
@@ -10,7 +10,8 @@ import type {
 import { RxStorageRemote } from '../storage-remote';
 
 export type RxStorageRemoteWebsocketServerOptions = ServerOptions & {
-    storage: RxStorage<any, any>;
+    storage?: RxStorage<any, any>;
+    database?: RxDatabase;
     customRequestHandler?: CustomRequestHandler<any, any>;
 };
 
