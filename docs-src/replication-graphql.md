@@ -361,7 +361,7 @@ const replicationState: RxGraphQLReplicationState<RxDocType> = replicateGraphQL(
 With the `pull.responseModifier` you can modify the whole response from the GraphQL endpoint **before** it is processed by RxDB.
 For example if your endpoint is not capable of returning a valid checkpoint, but instead only returns the plain document array, you can use the `responseModifier` to aggregate the checkpoint from the returned documents.
 
-```js
+```ts
 import {
 
 } from 'rxdb';
@@ -412,7 +412,7 @@ type Mutation {
 }
 ```
 
-```js
+```ts
 import {} from "rxdb";
 const replicationState: RxGraphQLReplicationState<RxDocType> = replicateGraphQL(
     {
@@ -424,7 +424,6 @@ const replicationState: RxGraphQLReplicationState<RxDocType> = replicateGraphQL(
                 /**
                  * In this example we aggregate the conflicting documents from a response object
                  */
-                const pullResponse = plainResponse;
                 return plainResponse.conflicts;
             },
         },
