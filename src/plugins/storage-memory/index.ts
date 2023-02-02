@@ -1,6 +1,5 @@
 import { ensureRxStorageInstanceParamsAreCorrect } from '../../rx-storage-helper';
 import type { RxStorageInstanceCreationParams } from '../../types';
-import { flatClone } from '../../plugins/utils';
 import type {
     RxStorageMemory,
     RxStorageMemoryInstanceCreationOptions,
@@ -31,11 +30,6 @@ export function getRxStorageMemory(
             params: RxStorageInstanceCreationParams<RxDocType, RxStorageMemoryInstanceCreationOptions>
         ): Promise<RxStorageInstanceMemory<RxDocType>> {
             ensureRxStorageInstanceParamsAreCorrect(params);
-
-            // TODO we should not need to append the schema version here.
-            params = flatClone(params);
-            params.collectionName = params.collectionName + '-' + params.schema.version;
-
             const useSettings = Object.assign(
                 {},
                 settings,

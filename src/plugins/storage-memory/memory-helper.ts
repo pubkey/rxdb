@@ -18,9 +18,14 @@ import { boundEQ } from './binary-search-bounds';
 
 export function getMemoryCollectionKey(
     databaseName: string,
-    collectionName: string
+    collectionName: string,
+    schemaVersion: number
 ): string {
-    return databaseName + '--memory--' + collectionName;
+    return [
+        databaseName,
+        collectionName,
+        schemaVersion
+    ].join('--memory--');
 }
 
 
