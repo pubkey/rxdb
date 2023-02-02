@@ -56,7 +56,10 @@ export function startRxStorageRemoteWebsocketServer(
                  * If first message is not 'create',
                  * it is an error.
                  */
-                if (message.method !== 'create') {
+                if (
+                    message.method !== 'create' &&
+                    message.method !== 'custom'
+                ) {
                     ws.send(
                         JSON.stringify(
                             createErrorAnswer(message, new Error('First call must be a create call but is: ' + JSON.stringify(message)))

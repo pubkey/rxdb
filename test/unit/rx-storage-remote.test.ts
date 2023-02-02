@@ -3,29 +3,8 @@ import assert from 'assert';
 
 import config from './config';
 import {
-    RxJsonSchema,
-    randomCouchString,
-    MangoQuery,
-    fillWithDefaultSettings,
-    normalizeMangoQuery,
-    now,
-    getPrimaryFieldOfPrimaryKey,
-    clone,
-    getQueryPlan,
-    deepFreeze,
     RxStorageDefaultStatics
 } from '../../';
-import {
-    areSelectorsSatisfiedByIndex
-} from '../../plugins/dev-mode';
-import { EXAMPLE_REVISION_1 } from '../helper/revisions';
-import * as schemas from '../helper/schemas';
-import {
-    HeroArrayDocumentType,
-    human,
-    nestedHuman,
-    NestedHumanDocumentType
-} from '../helper/schema-objects';
 import { nextPort } from '../helper/port-manager';
 import * as humansCollections from '../helper/humans-collection';
 import * as schemaObjects from '../helper/schema-objects';
@@ -35,7 +14,6 @@ import {
 } from '../../plugins/storage-remote-websocket';
 import { getRxStorageMemory, } from '../../plugins/storage-memory';
 
-const TEST_CONTEXT = 'rx-storage-remote.test.ts';
 config.parallel('rx-storage-remote.test.ts', () => {
     /**
      * Notice: Most use cases for the remote storage
@@ -90,8 +68,23 @@ config.parallel('rx-storage-remote.test.ts', () => {
             const port = await nextPort();
             const server = await startRxStorageRemoteWebsocketServer({
                 port,
-                storage: getRxStorageMemory()
+                storage: getRxStorageMemory(),
+                customRequestHandler: (input: any) => {
+                    if (input === 'foobar') {
+                        return 'barfoo';
+                    } else {
+                        throw new Error('input not matching');
+                    }
+                }
             });
+            assert.ok(server);
+            const clientStorage = getRxStorageRemoteWebsocket({
+                statics: RxStorageDefaultStatics,
+                url: 'ws://localhost:' + port
+            });
+
+            const result = await clientStorage.customRequest('foobar');
+            assert.strictEqual(result, 'barfoo');
         });
     });
 });

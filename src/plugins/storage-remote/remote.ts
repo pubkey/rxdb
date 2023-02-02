@@ -1,7 +1,5 @@
 import { filter, Subscription } from 'rxjs';
 import type {
-    RxDocumentData,
-    RxJsonSchema,
     RxStorageInstance,
     RxStorageInstanceCreationParams
 } from '../../types';
@@ -18,7 +16,6 @@ import type {
     RxStorageRemoteExposeSettingsRxStorage,
     RxStorageRemoteExposeType
 } from './storage-remote-types';
-import { INTERNAL_STORAGE_NAME } from '../../rx-storage-helper';
 
 /**
  * Run this on the 'remote' part,

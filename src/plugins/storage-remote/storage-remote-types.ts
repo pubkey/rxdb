@@ -1,5 +1,6 @@
 import type { Observable } from 'rxjs';
 import type {
+    MaybePromise,
     PlainJsonError,
     RxDatabase,
     RxStorage,
@@ -75,4 +76,4 @@ export type RxStorageRemoteExposeType = {
  * If set, the clients can send RxDB-unrelated custom messages
  * to the remote storage and it will  answer them.
  */
-export type CustomRequestHandler<In, Out> = (data: In) => Promise<Out>;
+export type CustomRequestHandler<In, Out> = (data: In) => MaybePromise<Out>;
