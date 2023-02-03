@@ -5,7 +5,7 @@
 
 <!-- ADD new changes here! -->
 
-### 14.0.0-beta.40 (3 February 2023)
+### 14.0.0-beta.41 (3 February 2023)
 
 - Remove the deprecated PouchDB RxStorage.
 - REMOVE old `replication-couchdb` plugin. Rename `replication-couchdb-new` to `replication-couchdb`.
