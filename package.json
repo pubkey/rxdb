@@ -489,7 +489,7 @@
     "random-int": "3.0.0",
     "readline": "1.3.0",
     "rimraf": "4.1.2",
-    "rollup": "3.12.1",
+    "rollup": "3.13.0",
     "rxjs": "7.8.0",
     "shelljs": "0.8.5",
     "socket.io": "4.5.4",
