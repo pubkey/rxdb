@@ -20,7 +20,7 @@ import { $exists } from 'mingo/operators/query/element/exists';
 import { $nin } from 'mingo/operators/query/comparison/nin';
 import { $in } from 'mingo/operators/query/comparison/in';
 import { $size } from 'mingo/operators/query/array/size';
-import { $type } from 'mingo/operators/expression/type/type';
+import { $type } from 'mingo/operators/query/element/type';
 
 let mingoInitDone = false;
 
