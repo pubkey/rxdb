@@ -6767,7 +6767,7 @@ var _exists = require("mingo/operators/query/element/exists");
 var _nin = require("mingo/operators/query/comparison/nin");
 var _in = require("mingo/operators/query/comparison/in");
 var _size = require("mingo/operators/query/array/size");
-var _type = require("mingo/operators/expression/type/type");
+var _type = require("mingo/operators/query/element/type");
 var mingoInitDone = false;
 
 /**
@@ -6808,7 +6808,7 @@ function getMingoQuery(selector) {
   return new _query.Query(selector);
 }
 
-},{"mingo/core":417,"mingo/operators/expression/type/type":421,"mingo/operators/pipeline/project":422,"mingo/operators/pipeline/sort":423,"mingo/operators/query/array/elemMatch":424,"mingo/operators/query/array/size":425,"mingo/operators/query/comparison/eq":426,"mingo/operators/query/comparison/gt":427,"mingo/operators/query/comparison/gte":428,"mingo/operators/query/comparison/in":429,"mingo/operators/query/comparison/lt":430,"mingo/operators/query/comparison/lte":431,"mingo/operators/query/comparison/ne":432,"mingo/operators/query/comparison/nin":433,"mingo/operators/query/element/exists":434,"mingo/operators/query/evaluation/mod":435,"mingo/operators/query/evaluation/regex":436,"mingo/operators/query/logical/and":437,"mingo/operators/query/logical/nor":438,"mingo/operators/query/logical/not":439,"mingo/operators/query/logical/or":440,"mingo/query":441}],47:[function(require,module,exports){
+},{"mingo/core":417,"mingo/operators/pipeline/project":421,"mingo/operators/pipeline/sort":422,"mingo/operators/query/array/elemMatch":423,"mingo/operators/query/array/size":424,"mingo/operators/query/comparison/eq":425,"mingo/operators/query/comparison/gt":426,"mingo/operators/query/comparison/gte":427,"mingo/operators/query/comparison/in":428,"mingo/operators/query/comparison/lt":429,"mingo/operators/query/comparison/lte":430,"mingo/operators/query/comparison/ne":431,"mingo/operators/query/comparison/nin":432,"mingo/operators/query/element/exists":433,"mingo/operators/query/element/type":434,"mingo/operators/query/evaluation/mod":435,"mingo/operators/query/evaluation/regex":436,"mingo/operators/query/logical/and":437,"mingo/operators/query/logical/nor":438,"mingo/operators/query/logical/not":439,"mingo/operators/query/logical/or":440,"mingo/query":441}],47:[function(require,module,exports){
 "use strict";
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
@@ -22780,34 +22780,6 @@ function compare(a, b, f) {
 
 },{"../core":417,"../query":441,"../util":442}],421:[function(require,module,exports){
 "use strict";
-/**
- * Type Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#type-expression-operators
- */
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.$type = void 0;
-var core_1 = require("../../../core");
-var util_1 = require("../../../util");
-function $type(obj, expr, options) {
-    var val = (0, core_1.computeValue)(obj, expr, null, options);
-    var typename = (0, util_1.getType)(val);
-    var nativeType = typename.toLowerCase();
-    switch (nativeType) {
-        case "boolean":
-            return "bool";
-        case "number":
-            if (val.toString().indexOf(".") >= 0)
-                return "double";
-            return val >= util_1.MIN_INT && val <= util_1.MAX_INT ? "int" : "long";
-        case "regexp":
-            return "regex";
-        default:
-            return nativeType;
-    }
-}
-exports.$type = $type;
-
-},{"../../../core":417,"../../../util":442}],422:[function(require,module,exports){
-"use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.$project = void 0;
 var core_1 = require("../../core");
@@ -23003,7 +22975,7 @@ function validateExpression(expr, options) {
     }
 }
 
-},{"../../core":417,"../../util":442}],423:[function(require,module,exports){
+},{"../../core":417,"../../util":442}],422:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.$sort = void 0;
@@ -23108,7 +23080,7 @@ function collationComparator(spec) {
     };
 }
 
-},{"../../util":442}],424:[function(require,module,exports){
+},{"../../util":442}],423:[function(require,module,exports){
 "use strict";
 // Query Array Operators: https://docs.mongodb.com/manual/reference/operator/query-array/
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -23119,7 +23091,7 @@ var _predicates_1 = require("../../_predicates");
  */
 exports.$elemMatch = (0, _predicates_1.createQueryOperator)(_predicates_1.$elemMatch);
 
-},{"../../_predicates":420}],425:[function(require,module,exports){
+},{"../../_predicates":420}],424:[function(require,module,exports){
 "use strict";
 // Query Array Operators: https://docs.mongodb.com/manual/reference/operator/query-array/
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -23130,7 +23102,7 @@ var _predicates_1 = require("../../_predicates");
  */
 exports.$size = (0, _predicates_1.createQueryOperator)(_predicates_1.$size);
 
-},{"../../_predicates":420}],426:[function(require,module,exports){
+},{"../../_predicates":420}],425:[function(require,module,exports){
 "use strict";
 // Query Comparison Operators: https://docs.mongodb.com/manual/reference/operator/query-comparison/
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -23141,7 +23113,7 @@ var _predicates_1 = require("../../_predicates");
  */
 exports.$eq = (0, _predicates_1.createQueryOperator)(_predicates_1.$eq);
 
-},{"../../_predicates":420}],427:[function(require,module,exports){
+},{"../../_predicates":420}],426:[function(require,module,exports){
 "use strict";
 // Query Comparison Operators: https://docs.mongodb.com/manual/reference/operator/query-comparison/
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -23152,7 +23124,7 @@ var _predicates_1 = require("../../_predicates");
  */
 exports.$gt = (0, _predicates_1.createQueryOperator)(_predicates_1.$gt);
 
-},{"../../_predicates":420}],428:[function(require,module,exports){
+},{"../../_predicates":420}],427:[function(require,module,exports){
 "use strict";
 // Query Comparison Operators: https://docs.mongodb.com/manual/reference/operator/query-comparison/
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -23163,7 +23135,7 @@ var _predicates_1 = require("../../_predicates");
  */
 exports.$gte = (0, _predicates_1.createQueryOperator)(_predicates_1.$gte);
 
-},{"../../_predicates":420}],429:[function(require,module,exports){
+},{"../../_predicates":420}],428:[function(require,module,exports){
 "use strict";
 // Query Comparison Operators: https://docs.mongodb.com/manual/reference/operator/query-comparison/
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -23174,7 +23146,7 @@ var _predicates_1 = require("../../_predicates");
  */
 exports.$in = (0, _predicates_1.createQueryOperator)(_predicates_1.$in);
 
-},{"../../_predicates":420}],430:[function(require,module,exports){
+},{"../../_predicates":420}],429:[function(require,module,exports){
 "use strict";
 // Query Comparison Operators: https://docs.mongodb.com/manual/reference/operator/query-comparison/
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -23185,7 +23157,7 @@ var _predicates_1 = require("../../_predicates");
  */
 exports.$lt = (0, _predicates_1.createQueryOperator)(_predicates_1.$lt);
 
-},{"../../_predicates":420}],431:[function(require,module,exports){
+},{"../../_predicates":420}],430:[function(require,module,exports){
 "use strict";
 // Query Comparison Operators: https://docs.mongodb.com/manual/reference/operator/query-comparison/
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -23196,7 +23168,7 @@ var _predicates_1 = require("../../_predicates");
  */
 exports.$lte = (0, _predicates_1.createQueryOperator)(_predicates_1.$lte);
 
-},{"../../_predicates":420}],432:[function(require,module,exports){
+},{"../../_predicates":420}],431:[function(require,module,exports){
 "use strict";
 // Query Comparison Operators: https://docs.mongodb.com/manual/reference/operator/query-comparison/
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -23207,7 +23179,7 @@ var _predicates_1 = require("../../_predicates");
  */
 exports.$ne = (0, _predicates_1.createQueryOperator)(_predicates_1.$ne);
 
-},{"../../_predicates":420}],433:[function(require,module,exports){
+},{"../../_predicates":420}],432:[function(require,module,exports){
 "use strict";
 // Query Comparison Operators: https://docs.mongodb.com/manual/reference/operator/query-comparison/
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -23218,7 +23190,7 @@ var _predicates_1 = require("../../_predicates");
  */
 exports.$nin = (0, _predicates_1.createQueryOperator)(_predicates_1.$nin);
 
-},{"../../_predicates":420}],434:[function(require,module,exports){
+},{"../../_predicates":420}],433:[function(require,module,exports){
 "use strict";
 // Query Element Operators: https://docs.mongodb.com/manual/reference/operator/query-element/
 Object.defineProperty(exports, "__esModule", { value: true });
@@ -23228,6 +23200,17 @@ var _predicates_1 = require("../../_predicates");
  * Matches documents that have the specified field.
  */
 exports.$exists = (0, _predicates_1.createQueryOperator)(_predicates_1.$exists);
+
+},{"../../_predicates":420}],434:[function(require,module,exports){
+"use strict";
+// Query Element Operators: https://docs.mongodb.com/manual/reference/operator/query-element/
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$type = void 0;
+var _predicates_1 = require("../../_predicates");
+/**
+ * Selects documents if a field is of the specified type.
+ */
+exports.$type = (0, _predicates_1.createQueryOperator)(_predicates_1.$type);
 
 },{"../../_predicates":420}],435:[function(require,module,exports){
 "use strict";

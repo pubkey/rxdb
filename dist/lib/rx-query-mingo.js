@@ -25,7 +25,7 @@ var _exists = require("mingo/operators/query/element/exists");
 var _nin = require("mingo/operators/query/comparison/nin");
 var _in = require("mingo/operators/query/comparison/in");
 var _size = require("mingo/operators/query/array/size");
-var _type = require("mingo/operators/expression/type/type");
+var _type = require("mingo/operators/query/element/type");
 var mingoInitDone = false;
 
 /**
