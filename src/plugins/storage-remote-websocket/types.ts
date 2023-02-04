@@ -11,7 +11,7 @@ import { RxStorageRemote } from '../storage-remote';
 
 export type RxStorageRemoteWebsocketServerOptions = ServerOptions & {
     storage?: RxStorage<any, any>;
-    database?: RxDatabase;
+    database?: RxDatabase<any, any, any>;
     customRequestHandler?: CustomRequestHandler<any, any>;
 };
 
