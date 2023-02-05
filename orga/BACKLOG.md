@@ -45,7 +45,7 @@ Create a package that normalizes and optimizes mango queries.
 - optimization: query always returns empty-array if $eq does not match schema
 - optimization: detect can-never-match queries (p.e. impossible $eq values or empty $in array)
 - optimization: merge $and operators
-- Used index for $regex query if possible https://www.mongodb.com/docs/manual/reference/operator/query/regex/#index-use
+- Use index for $regex query if possible https://www.mongodb.com/docs/manual/reference/operator/query/regex/#index-use
 
 ## Add plugin for [Pocketbase](https://pocketbase.io/) replication
 
