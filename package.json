@@ -473,7 +473,7 @@
     "karma-mocha": "2.0.1",
     "karma-opera-launcher": "1.0.0",
     "karma-safari-launcher": "1.0.0",
-    "karma-sourcemap-loader": "0.3.8",
+    "karma-sourcemap-loader": "0.4.0",
     "karma-spec-reporter": "0.0.36",
     "karma-webpack": "5.0.0",
     "leveldown": "6.1.1",
