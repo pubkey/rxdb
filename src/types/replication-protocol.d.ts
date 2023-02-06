@@ -153,6 +153,11 @@ export type RxStorageInstanceReplicationInput<RxDocType> = {
     waitBeforePersist?: () => Promise<any>;
 
     hashFunction: HashFunction;
+
+    initialCheckpoint?: {
+        upstream?: any;
+        downstream?: any;
+    };
 };
 
 export type RxStorageInstanceReplicationState<RxDocType> = {

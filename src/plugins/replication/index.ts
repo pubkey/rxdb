@@ -159,6 +159,10 @@ export class RxReplicationState<RxDocType, CheckpointType> {
         this.internalReplicationState = replicateRxStorageInstance({
             pushBatchSize: this.push && this.push.batchSize ? this.push.batchSize : 100,
             pullBatchSize: this.pull && this.pull.batchSize ? this.pull.batchSize : 100,
+            initialCheckpoint: {
+                upstream: this.push ? this.push.initialCheckpoint : undefined,
+                downstream: this.pull ? this.pull.initialCheckpoint : undefined
+            },
             forkInstance: this.collection.storageInstance,
             metaInstance: this.metaInstance,
             hashFunction: database.hashFunction,

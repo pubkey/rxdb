@@ -691,6 +691,38 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
             await cleanUp(replicationStateAtoMaster, masterInstanceA);
             await cleanUp(replicationStateBtoMaster, masterInstanceB);
         });
+        it('should respect the given local start checkpoint', async () => {
+            const masterInstance = await createRxStorageInstance(0);
+            const forkInstance = await createRxStorageInstance(0);
+            const metaInstance = await createMetaInstance(forkInstance.schema);
+
+            let lastForkCheckpoint: any;
+            forkInstance.changeStream().subscribe(cE => lastForkCheckpoint = cE.checkpoint);
+            await forkInstance.bulkWrite(
+                [{ document: getDocData() }],
+                testContext
+            );
+
+            const replicationState = replicateRxStorageInstance({
+                identifier: randomCouchString(10),
+                replicationHandler: rxStorageInstanceToReplicationHandler(masterInstance, HIGHER_AGE_CONFLICT_HANDLER, randomCouchString(10)),
+                forkInstance,
+                metaInstance,
+                pullBatchSize: 100,
+                pushBatchSize: 100,
+                conflictHandler: HIGHER_AGE_CONFLICT_HANDLER,
+                hashFunction: defaultHashSha256,
+                initialCheckpoint: {
+                    upstream: lastForkCheckpoint
+                }
+            });
+            await awaitRxStorageReplicationFirstInSync(replicationState);
+
+            const masterDocs = await runQuery(masterInstance);
+            assert.strictEqual(masterDocs.length, 0);
+
+            await cleanUp(replicationState, masterInstance);
+        });
     });
     describe('conflict handling', () => {
         it('both have inserted the exact same document -> no conflict handler must be called', async () => {

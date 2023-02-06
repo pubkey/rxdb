@@ -521,7 +521,6 @@ describe('replication.test.js', () => {
             await localCollection.remove();
             await localCollection.database.destroy();
 
-
             const localCollection2 = await humansCollection.createHumanWithTimestamp(0, localDbName, false);
 
             let continueReplication: Function | null = undefined as any;
@@ -572,6 +571,60 @@ describe('replication.test.js', () => {
             );
 
             localCollection2.database.destroy();
+            remoteCollection.database.destroy();
+        });
+        it('should respect the initial push checkpoint', async () => {
+            const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 0 });
+
+            let lastLocalCheckpoint: any;
+            localCollection.checkpoint$.subscribe(checkpoint => lastLocalCheckpoint = checkpoint);
+            await localCollection.insert(schemaObjects.humanWithTimestamp());
+
+            const replicationState = replicateRxCollection({
+                collection: localCollection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: true,
+                pull: {
+                    handler: getPullHandler(remoteCollection)
+                },
+                push: {
+                    handler: getPushHandler(remoteCollection),
+                    initialCheckpoint: lastLocalCheckpoint
+                }
+            });
+            await replicationState.awaitInitialReplication();
+
+            const remoteDocs = await remoteCollection.find().exec();
+            assert.deepEqual(remoteDocs.length, 0);
+
+            localCollection.database.destroy();
+            remoteCollection.database.destroy();
+        });
+        it('should respect the initial pull checkpoint', async () => {
+            const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 0 });
+
+            let lastRemoteCheckpoint: any;
+            remoteCollection.checkpoint$.subscribe(checkpoint => lastRemoteCheckpoint = checkpoint);
+            await remoteCollection.insert(schemaObjects.humanWithTimestamp());
+
+            const replicationState = replicateRxCollection({
+                collection: localCollection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: true,
+                pull: {
+                    handler: getPullHandler(remoteCollection),
+                    initialCheckpoint: lastRemoteCheckpoint
+                },
+                push: {
+                    handler: getPushHandler(remoteCollection),
+                }
+            });
+            await replicationState.awaitInitialReplication();
+
+            const localDocs = await localCollection.find().exec();
+            assert.deepEqual(localDocs.length, 0);
+
+            localCollection.database.destroy();
             remoteCollection.database.destroy();
         });
     });

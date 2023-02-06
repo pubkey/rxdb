@@ -26,6 +26,7 @@
 - ADD typings to the query selector
 - CHANGE start replication via pure functions instead of RxCollection methods.
 - CHANGE `RxDocument.$` emits `RxDocument` instances instead of the plain document data.
+- ADD `push.initialCheckpoint` to start a replication from a given checkpoint.
 
 - CHANGE Do not use hash for revisions but use database instance token instead.
 - CHANGE crunch multiple incremental (aka 'atomic') operations into a single database write. Also batch writes to multiple documents into a single write.

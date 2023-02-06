@@ -1,5 +1,6 @@
 import {
     filter,
+    map,
     mergeMap
 } from 'rxjs/operators';
 
@@ -170,6 +171,7 @@ export class RxCollectionBase<
 
     public _queryCache: QueryCache = createQueryCache();
     public $: Observable<RxChangeEvent<RxDocumentType>> = {} as any;
+    public checkpoint$: Observable<any> = {} as any;
     public _changeEventBuffer: ChangeEventBuffer = {} as ChangeEventBuffer;
 
 
@@ -196,10 +198,16 @@ export class RxCollectionBase<
             result => this._runHooks('post', 'save', result)
         );
 
-        this.$ = this.database.eventBulks$.pipe(
+        const collectionEventBulks$ = this.database.eventBulks$.pipe(
             filter(changeEventBulk => changeEventBulk.collectionName === this.name),
+        );
+        this.$ = collectionEventBulks$.pipe(
             mergeMap(changeEventBulk => changeEventBulk.events),
         );
+        this.checkpoint$ = collectionEventBulks$.pipe(
+            map(changeEventBulk => changeEventBulk.checkpoint),
+        );
+
         this._changeEventBuffer = createChangeEventBuffer(this.asRxCollection);
         this._docCache = new DocumentCache(
             this.schema.primaryPath,

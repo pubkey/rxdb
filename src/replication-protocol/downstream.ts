@@ -42,9 +42,23 @@ import {
  * We need this to be able to do initial syncs
  * and still can have fast event based sync when the client is not offline.
  */
-export function startReplicationDownstream<RxDocType, CheckpointType = any>(
+export async function startReplicationDownstream<RxDocType, CheckpointType = any>(
     state: RxStorageInstanceReplicationState<RxDocType>
 ) {
+    if (
+        state.input.initialCheckpoint &&
+        state.input.initialCheckpoint.downstream
+    ) {
+        const checkpointDoc = await getLastCheckpointDoc(state, 'down');
+        if (!checkpointDoc) {
+            await setCheckpoint(
+                state,
+                'down',
+                state.input.initialCheckpoint.downstream
+            );
+        }
+    }
+
     const identifierHash = state.input.hashFunction(state.input.identifier);
     const replicationHandler = state.input.replicationHandler;
 
