@@ -63,6 +63,7 @@ Bugfixes:
 - FIX storage instances MUST NOT mutate the given database- and collection-name.
 - REMOVE deprecated `babel-plugin-transform-async-to-promises` plugin.
 - ADD Ability to use a responseModifier for GraphQL push replication [#4385](https://github.com/pubkey/rxdb/pull/4385)
+- FIX Add null check for isRxDocument [#4406](https://github.com/pubkey/rxdb/pull/4406)
 
 <!-- /CHANGELOG NEWEST -->
 
