@@ -94,22 +94,6 @@
     * [Examples](./rx-query.md#examples)
     * [isRxQuery()](./rx-query.md#isrxquery)
 
-* [RxAttachment](./rx-attachment.md)
-
-* [Middleware-hooks](./middleware.md)
-
-* [ORM/DRM](./orm.md)
-
-* [Population](./population.md)
-
-* [Encryption](./encryption.md)
-
-* [Key Compression](./key-compression.md)
-
-* [DataMigration](./data-migration.md)
-
-* [LeaderElection](./leader-election.md)
-
 * [RxStorage](./rx-storage.md)
     * [RxStorage Performance](./rx-storage-performance.md)
     * [RxStorage Dexie.js](./rx-storage-dexie.md)
@@ -132,6 +116,26 @@
     * [Replication CouchDB](./replication-couchdb.md)
     * [Replication P2P](./replication-p2p.md)
     * [Replication Firestore](./replication-firestore.md)
+
+* [RxAttachment](./rx-attachment.md)
+
+* [Middleware-hooks](./middleware.md)
+
+* [ORM/DRM](./orm.md)
+
+* [Population](./population.md)
+
+* [Encryption](./encryption.md)
+    * [Encryption crypto-js](./encryption-crypto-js.md)
+    * [Encryption WebCrypto](./encryption-web-crypto.md)
+
+
+* [Key Compression](./key-compression.md)
+
+* [DataMigration](./data-migration.md)
+
+* [LeaderElection](./leader-election.md)
+
 
 * [Cleanup](./cleanup.md)
 

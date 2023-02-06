@@ -112,7 +112,7 @@ export type RxDumpCollectionAsAny<T> = { [P in keyof T]: any };
 
 interface RxDumpCollectionBase {
     name: string;
-    passwordHash: string | null;
+    passwordHash?: string;
     schemaHash: string;
 }
 export interface RxDumpCollection<RxDocumentType> extends RxDumpCollectionBase {

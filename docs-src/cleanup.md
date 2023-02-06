@@ -1,4 +1,4 @@
-# Cleanup (beta)
+# Cleanup
 
 To make the replication work, and for other reasons, RxDB has to keep deleted documents in the storage.
 This ensures that when a client is offline, the deletion state is still known and can be replicated with the backend when the client goes online again.

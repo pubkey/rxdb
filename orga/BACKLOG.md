@@ -40,11 +40,12 @@ The current implementation has some flaws and should be completely rewritten.
 
 Create a package that normalizes and optimizes mango queries.
 
-optimization: Use $eq instead of $in if $in value has only one item
-optimization: if field is an enum use $in instead of other operators with $in: [all enum values that match the operators]
-optimization: query always returns empty-array if $eq does not match schema
-optimization: detect can-never-match queries (p.e. impossible $eq values or empty $in array)
-optimization: merge $and operators
+- optimization: Use $eq instead of $in if $in value has only one item
+- optimization: if field is an enum use $in instead of other operators with $in: [all enum values that match the operators]
+- optimization: query always returns empty-array if $eq does not match schema
+- optimization: detect can-never-match queries (p.e. impossible $eq values or empty $in array)
+- optimization: merge $and operators
+- Use index for $regex query if possible https://www.mongodb.com/docs/manual/reference/operator/query/regex/#index-use
 
 ## Add plugin for [Pocketbase](https://pocketbase.io/) replication
 

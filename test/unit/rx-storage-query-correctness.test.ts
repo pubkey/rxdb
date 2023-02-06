@@ -546,4 +546,134 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
             },
         ]
     });
+    testCorrectQueries({
+        testTitle: '$eq null',
+        data: [
+            {
+                foo: '1',
+                bar: 'test'
+            },
+            {
+                foo: '2',
+                bar: null
+            }
+        ],
+        schema: {
+            version: 0,
+            primaryKey: 'foo',
+            type: 'object',
+            properties: {
+                foo: {
+                    type: 'string',
+                    maxLength: 100
+                },
+                bar: {
+                    oneOf: [
+                        {
+                            type: 'string'
+                        },
+                        {
+                            type: 'null'
+                        }
+                    ]
+                },
+            },
+            required: ['foo', 'bar'],
+        },
+        queries: [
+            {
+                info: '$eq string',
+                query: {
+                    selector: {
+                        bar: {
+                            $eq: 'test'
+                        }
+                    },
+                    sort: [{ foo: 'asc' }]
+                },
+                expectedResultDocIds: [
+                    '1'
+                ]
+            },
+            {
+                info: '$eq null',
+                query: {
+                    selector: {
+                        bar: {
+                            $eq: null
+                        }
+                    },
+                    sort: [{ foo: 'asc' }]
+                },
+                expectedResultDocIds: [
+                    '2'
+                ]
+            },
+        ]
+    });
+    testCorrectQueries({
+        testTitle: '$type',
+        data: [
+            {
+                foo: '1',
+                bar: 'test'
+            },
+            {
+                foo: '2',
+                bar: 2.0
+            }
+        ],
+        schema: {
+            version: 0,
+            primaryKey: 'foo',
+            type: 'object',
+            properties: {
+                foo: {
+                    type: 'string',
+                    maxLength: 100
+                },
+                bar: {
+                    oneOf: [
+                        {
+                            type: 'string'
+                        },
+                        {
+                            type: 'number'
+                        }
+                    ]
+                },
+            },
+            required: ['foo', 'bar'],
+        },
+        queries: [
+            {
+                info: '$type string',
+                query: {
+                    selector: {
+                        bar: {
+                            $type: 'string'
+                        }
+                    },
+                    sort: [{ foo: 'asc' }]
+                },
+                expectedResultDocIds: [
+                    '1'
+                ]
+            },
+            {
+                info: '$type number',
+                query: {
+                    selector: {
+                        bar: {
+                            $type: 'number'
+                        }
+                    },
+                    sort: [{ foo: 'asc' }]
+                },
+                expectedResultDocIds: [
+                    '2'
+                ]
+            },
+        ]
+    });
 });

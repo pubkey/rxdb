@@ -532,9 +532,11 @@ rxJsonSchema) {
       return database.lockedRun(() => storageInstance.cleanup(minDeletedTime));
     },
     remove() {
+      database.storageInstances.delete(ret);
       return database.lockedRun(() => storageInstance.remove());
     },
     close() {
+      database.storageInstances.delete(ret);
       return database.lockedRun(() => storageInstance.close());
     },
     changeStream() {
@@ -565,6 +567,7 @@ rxJsonSchema) {
       });
     }
   };
+  database.storageInstances.add(ret);
   return ret;
 }
 

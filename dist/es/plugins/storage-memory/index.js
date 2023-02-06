@@ -1,5 +1,4 @@
 import { ensureRxStorageInstanceParamsAreCorrect } from '../../rx-storage-helper';
-import { flatClone } from '../../plugins/utils';
 import { createMemoryStorageInstance } from './rx-storage-instance-memory';
 import { RxStorageDefaultStatics } from '../../rx-storage-statics';
 
@@ -16,10 +15,6 @@ export function getRxStorageMemory(settings = {}) {
     collectionStates: COLLECTION_STATES,
     createStorageInstance(params) {
       ensureRxStorageInstanceParamsAreCorrect(params);
-
-      // TODO we should not need to append the schema version here.
-      params = flatClone(params);
-      params.collectionName = params.collectionName + '-' + params.schema.version;
       var useSettings = Object.assign({}, settings, params.options);
       return createMemoryStorageInstance(this, params, useSettings);
     }

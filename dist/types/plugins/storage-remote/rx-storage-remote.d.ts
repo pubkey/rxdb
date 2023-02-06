@@ -10,6 +10,7 @@ export declare class RxStorageRemote implements RxStorage<RxStorageRemoteInterna
     constructor(settings: RxStorageRemoteSettings);
     getRequestId(): string;
     createStorageInstance<RxDocType>(params: RxStorageInstanceCreationParams<RxDocType, any>): Promise<RxStorageInstanceRemote<RxDocType>>;
+    customRequest<In, Out>(data: In): Promise<Out>;
 }
 export declare class RxStorageInstanceRemote<RxDocType> implements RxStorageInstance<RxDocType, RxStorageRemoteInternals, any, any> {
     readonly storage: RxStorageRemote;

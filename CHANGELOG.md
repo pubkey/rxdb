@@ -5,15 +5,13 @@
 
 <!-- ADD new changes here! -->
 
-### 14.0.0-beta.36 (29 January 2023)
+### 14.0.0-beta.41 (3 February 2023)
 
-#
 - Remove the deprecated PouchDB RxStorage.
 - REMOVE old `replication-couchdb` plugin. Rename `replication-couchdb-new` to `replication-couchdb`.
 - Remove depricated `skipIfSame` from `putAttachment()`
-
-#
 - CHANGE use plain json errors inside of RxError parameters to make debugging easier.
+
 - CHANGE Make RxDocuments immutable
 - ADD `RxDocument.getLatest()`
 - CHANGE `RxCollection.findByIds()` now returns a `RxQuery`.
@@ -29,9 +27,9 @@
 - CHANGE start replication via pure functions instead of RxCollection methods.
 - CHANGE `RxDocument.$` emits `RxDocument` instances instead of the plain document data.
 
-#
 - CHANGE Do not use hash for revisions but use database instance token instead.
 - CHANGE crunch multiple incremental (aka 'atomic') operations into a single database write. Also batch writes to multiple documents into a single write.
+- REMOVE deprecated `babel-plugin-transform-async-to-promises` plugin.
 - CHANGE to reduce bundle size and improve performance, the following JavaScript features will no longer be transpiled:
   - [async/await](https://caniuse.com/async-functions)
   - [Arrow functions](https://caniuse.com/arrow-functions)
@@ -42,7 +40,7 @@
   - [default parameters](https://caniuse.com/?search=default%20parameters)
   - [object spread](https://caniuse.com/?search=Object%20spread)
 
-#
+Bugfixes: 
 - CHANGE (memory RxStorage) do not clean up database state on closing of the storage, only on `remove()`.
 - FIX CouchDB replication: Use correct default fetch method.
 - FIX schema hashing should respect the sort order [#4005](https://github.com/pubkey/rxdb/pull/4005)
@@ -51,7 +49,7 @@
 - FIX(replication) Composite Primary Keys broken on replicated collections [#4190](https://github.com/pubkey/rxdb/pull/4190)
 - FIX(sqlite) $in Query not working SQLite [#4278](https://github.com/pubkey/rxdb/issues/4278)
 - FIX CouchDB push is throwing error because of missing revision [#4299](https://github.com/pubkey/rxdb/pull/4299)
-- ADD dev-mode shows a `console.warn` to ensure people do not use it in production.
+- ADD dev-mode shows a `console.warn()` to ensure people do not use it in production.
 - Remove the usage of `Buffer`. We now use `Blob` everywhere.
 - FIX import of socket.io [#4307](https://github.com/pubkey/rxdb/pull/4307)
 - FIX Id length limit reached with composite key [#4315](https://github.com/pubkey/rxdb/issues/4315)
@@ -60,9 +58,10 @@
 - FIX CouchDB replication conflict handling
 - CHANGE Encryption plugin was renamed to `encryption-crypto-js`
 - FIX replication state meta data must also be encrypted.
-
-#
+- FIX crash with null in selector [#4369](https://github.com/pubkey/rxdb/pull/4369)
+- FIX storage instances MUST NOT mutate the given database- and collection-name.
 - REMOVE deprecated `babel-plugin-transform-async-to-promises` plugin.
+- ADD Ability to use a responseModifier for GraphQL push replication [#4385](https://github.com/pubkey/rxdb/pull/4385)
 
 <!-- /CHANGELOG NEWEST -->
 

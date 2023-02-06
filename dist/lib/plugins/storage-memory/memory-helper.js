@@ -12,8 +12,8 @@ exports.removeDocFromState = removeDocFromState;
 var _arrayPushAtSortPosition = require("array-push-at-sort-position");
 var _rxError = require("../../rx-error");
 var _binarySearchBounds = require("./binary-search-bounds");
-function getMemoryCollectionKey(databaseName, collectionName) {
-  return databaseName + '--memory--' + collectionName;
+function getMemoryCollectionKey(databaseName, collectionName, schemaVersion) {
+  return [databaseName, collectionName, schemaVersion].join('--memory--');
 }
 function ensureNotRemoved(instance) {
   if (instance.internals.removed) {

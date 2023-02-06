@@ -8,6 +8,7 @@ exports.wrappedValidateStorageFactory = wrappedValidateStorageFactory;
 var _operators = require("rxjs/operators");
 var _rxSchemaHelper = require("./rx-schema-helper");
 var _utils = require("./plugins/utils");
+var _rxjs = require("rxjs");
 /**
  * cache the validators by the schema-hash
  * so we can reuse them when multiple collections have the same schema
@@ -123,6 +124,7 @@ function wrapRxStorageInstance(instance, modifyToStorage, modifyFromStorage, mod
     ret.writeRow.document = await fromStorage(ret.writeRow.document);
     return ret;
   }
+  var processingChangesCount$ = new _rxjs.BehaviorSubject(0);
   var wrappedInstance = {
     databaseName: instance.databaseName,
     internals: instance.internals,
@@ -156,6 +158,14 @@ function wrapRxStorageInstance(instance, modifyToStorage, modifyFromStorage, mod
         promises.push(errorFromStorage(error).then(err => ret.error[k] = err));
       });
       await Promise.all(promises);
+
+      /**
+       * By definition, all change events must be emitted
+       * BEFORE the write call resolves.
+       * To ensure that even when the modifiers are async,
+       * we wait here until the processing queue is empty.
+       */
+      await (0, _rxjs.firstValueFrom)(processingChangesCount$.pipe((0, _operators.filter)(v => v === 0)));
       return ret;
     },
     query: preparedQuery => {
@@ -188,7 +198,7 @@ function wrapRxStorageInstance(instance, modifyToStorage, modifyFromStorage, mod
       });
     },
     changeStream: () => {
-      return instance.changeStream().pipe((0, _operators.mergeMap)(async eventBulk => {
+      return instance.changeStream().pipe((0, _operators.tap)(() => processingChangesCount$.next(processingChangesCount$.getValue() + 1)), (0, _operators.mergeMap)(async eventBulk => {
         var useEvents = await Promise.all(eventBulk.events.map(async event => {
           var [documentData, previousDocumentData] = await Promise.all([fromStorage(event.documentData), fromStorage(event.previousDocumentData)]);
           var ev = {
@@ -210,7 +220,7 @@ function wrapRxStorageInstance(instance, modifyToStorage, modifyFromStorage, mod
           context: eventBulk.context
         };
         return ret;
-      }));
+      }), (0, _operators.tap)(() => processingChangesCount$.next(processingChangesCount$.getValue() - 1)));
     },
     conflictResultionTasks: () => {
       return instance.conflictResultionTasks().pipe((0, _operators.mergeMap)(async task => {

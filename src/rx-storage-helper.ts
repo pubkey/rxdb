@@ -726,11 +726,13 @@ export function getWrappedStorageInstance<
             );
         },
         remove() {
+            database.storageInstances.delete(ret);
             return database.lockedRun(
                 () => storageInstance.remove()
             );
         },
         close() {
+            database.storageInstances.delete(ret);
             return database.lockedRun(
                 () => storageInstance.close()
             );
@@ -771,6 +773,7 @@ export function getWrappedStorageInstance<
         }
     };
 
+    database.storageInstances.add(ret);
     return ret;
 }
 

@@ -187,6 +187,7 @@ ul.checked li:before {
     float: left;
     padding-right: 10px;
     margin-top: -11px;
+    font-weight: bold;
 }
 
 

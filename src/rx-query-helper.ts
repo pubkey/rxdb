@@ -165,7 +165,7 @@ export function normalizeMangoQuery<RxDocType>(
 export function normalizeQueryRegex(
     selector: any
 ): any {
-    if (typeof selector !== 'object') {
+    if (typeof selector !== 'object' || selector === null) {
         return selector;
     }
 

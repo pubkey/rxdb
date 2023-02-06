@@ -1,4 +1,4 @@
-# Remote RxStorage (beta)
+# Remote RxStorage
 
 The Remote [RxStorage](./rx-storage.md) is made to use a remote storage and communicate with it over an asynchronous message channel.
 The remote part could be on another JavaScript process or even on a different host machine.
@@ -47,19 +47,29 @@ exposeRxStorageRemote({
 ## Usage with a Websocket server
 
 The remote storage plugin contains helper functions to create a remote storage over a WebSocket server.
-
+This is often used in Node.js to give one microservice access to another services database **without** having to replicate the full database state.
 
 ```ts
-// Create a remote storage Websocket server in Node.js
+// server.js
 import { getRxStorageMemory } from 'rxdb/plugins/storage-memory';
 import { startRxStorageRemoteWebsocketServer } from 'rxdb/plugins/storage-remote-websocket';
-const server = await startRxStorageRemoteWebsocketServer({
+
+// either you can create the server based on a RxDatabase
+const serverBasedOnDatabase = await startRxStorageRemoteWebsocketServer({
+    port: 8080,
+    database: myRxDatabase
+});
+
+// or you can create the server based on a pure RxStorage
+const serverBasedOn = await startRxStorageRemoteWebsocketServer({
     port: 8080,
     storage: getRxStorageMemory()
 });
+```
 
+```ts
+// client.js
 
-// Connect to the remote storage on the client
 import { getRxStorageRemoteWebsocket } from 'rxdb/plugins/storage-remote-websocket';
 const myDb = await createRxDatabase({
     storage: getRxStorageRemoteWebsocket({

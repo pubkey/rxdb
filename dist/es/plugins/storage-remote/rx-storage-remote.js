@@ -32,6 +32,26 @@ export var RxStorageRemote = /*#__PURE__*/function () {
       connectionId
     }, params.options);
   };
+  _proto.customRequest = async function customRequest(data) {
+    var connectionId = 'custom|request';
+    var requestId = this.getRequestId();
+    var waitForAnswerPromise = firstValueFrom(this.settings.messages$.pipe(filter(msg => msg.answerTo === requestId)));
+    this.settings.send({
+      connectionId,
+      method: 'custom',
+      requestId,
+      params: data
+    });
+    var response = await waitForAnswerPromise;
+    if (response.error) {
+      throw new Error('could not run customRequest(): ' + JSON.stringify({
+        data,
+        error: response.error
+      }));
+    } else {
+      return response.return;
+    }
+  };
   return RxStorageRemote;
 }();
 export var RxStorageInstanceRemote = /*#__PURE__*/function () {

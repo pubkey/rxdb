@@ -158,8 +158,11 @@ function replicateGraphQL({
         if (result.errors) {
           throw result.errors;
         }
-        var dataPath = Object.keys(result.data)[0];
+        var dataPath = push.dataPath || Object.keys(result.data)[0];
         var data = (0, _utils.getProperty)(result.data, dataPath);
+        if (push.responseModifier) {
+          data = await push.responseModifier(data);
+        }
         return data;
       },
       batchSize: push.batchSize,

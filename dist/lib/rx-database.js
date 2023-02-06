@@ -32,6 +32,12 @@ var _rxCollectionHelper = require("./rx-collection-helper");
 var USED_DATABASE_NAMES = new Set();
 var DB_COUNT = 0;
 var RxDatabaseBase = /*#__PURE__*/function () {
+  /**
+   * Contains all known non-closed storage instances
+   * that belong to this database.
+   * Used in plugins and unit tests.
+   */
+
   function RxDatabaseBase(name,
   /**
    * Uniquely identifies the instance
@@ -43,6 +49,7 @@ var RxDatabaseBase = /*#__PURE__*/function () {
    */
   internalStore, hashFunction, cleanupPolicy, allowSlowCount) {
     this.idleQueue = new _customIdleQueue.IdleQueue();
+    this.storageInstances = new Set();
     this._subs = [];
     this.startupErrors = [];
     this.onDestroy = [];

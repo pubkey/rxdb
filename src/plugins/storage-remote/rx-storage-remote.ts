@@ -83,6 +83,29 @@ export class RxStorageRemote implements RxStorage<RxStorageRemoteInternals, any>
             params.options
         );
     }
+
+    async customRequest<In, Out>(data: In): Promise<Out> {
+        const connectionId = 'custom|request';
+        const requestId = this.getRequestId();
+        const waitForAnswerPromise = firstValueFrom(this.settings.messages$.pipe(
+            filter(msg => msg.answerTo === requestId)
+        ));
+        this.settings.send({
+            connectionId,
+            method: 'custom',
+            requestId,
+            params: data
+        });
+        const response = await waitForAnswerPromise;
+        if (response.error) {
+            throw new Error('could not run customRequest(): ' + JSON.stringify({
+                data,
+                error: response.error
+            }));
+        } else {
+            return response.return;
+        }
+    }
 }
 
 export class RxStorageInstanceRemote<RxDocType> implements RxStorageInstance<RxDocType, RxStorageRemoteInternals, any, any> {

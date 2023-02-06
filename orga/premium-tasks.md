@@ -16,7 +16,8 @@ If you are a **single developer** and you use RxDB in your **side project**, you
 
 
 
-### Tasks already in progress (do no work on these!)
+
+## Tasks already in progress (do no work on these!)
 
 #### Task: Fix [this bug](https://github.com/mafintosh/is-my-json-valid/pull/192) in the `is-my-json-valid` library, AND enable the unit tests for the plugin `rxdb/plugins/validate-is-my-json-valid`
 - Solution: https://github.com/pubkey/rxdb/pull/3935

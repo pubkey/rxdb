@@ -167,14 +167,21 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
     describe('RxStorageInstance', () => {
         describe('creation', () => {
             it('open and close', async () => {
+                const collectionName = randomCouchString(12);
+                const databaseName = randomCouchString(12);
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
                     databaseInstanceToken: randomCouchString(10),
-                    databaseName: randomCouchString(12),
-                    collectionName: randomCouchString(12),
+                    databaseName,
+                    collectionName,
                     schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                     options: {},
                     multiInstance: false
                 });
+
+                // it must have not mutated the collectionName
+                assert.strictEqual(storageInstance.collectionName, collectionName);
+                assert.strictEqual(storageInstance.databaseName, databaseName);
+
                 await storageInstance.close();
             });
             it('open many instances on the same database name', async () => {
@@ -2989,18 +2996,20 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
             await instances.b.close();
         });
         it('should not mix up documents stored with different schema versions', async () => {
+            const databaseName = randomCouchString(10);
+            const collectionName = randomCouchString(10);
             const storageInstanceV0 = await config.storage.getStorage().createStorageInstance<TestDocType>({
                 databaseInstanceToken: randomCouchString(10),
-                databaseName: randomCouchString(12),
-                collectionName: randomCouchString(12),
+                databaseName,
+                collectionName,
                 schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                 options: {},
                 multiInstance: false
             });
             const storageInstanceV1 = await config.storage.getStorage().createStorageInstance<TestDocType>({
                 databaseInstanceToken: randomCouchString(10),
-                databaseName: randomCouchString(12),
-                collectionName: randomCouchString(12),
+                databaseName,
+                collectionName,
                 schema: getPseudoSchemaForVersion<TestDocType>(1, 'key'),
                 options: {},
                 multiInstance: false

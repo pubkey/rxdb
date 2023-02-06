@@ -217,7 +217,7 @@ var RxStorageInstanceMemory = /*#__PURE__*/function () {
   _proto.remove = async function remove() {
     (0, _memoryHelper.ensureNotRemoved)(this);
     this.internals.removed = true;
-    this.storage.collectionStates.delete((0, _memoryHelper.getMemoryCollectionKey)(this.databaseName, this.collectionName));
+    this.storage.collectionStates.delete((0, _memoryHelper.getMemoryCollectionKey)(this.databaseName, this.collectionName, this.schema.version));
     await this.close();
   };
   _proto.close = function close() {
@@ -238,7 +238,7 @@ var RxStorageInstanceMemory = /*#__PURE__*/function () {
 }();
 exports.RxStorageInstanceMemory = RxStorageInstanceMemory;
 function createMemoryStorageInstance(storage, params, settings) {
-  var collectionKey = (0, _memoryHelper.getMemoryCollectionKey)(params.databaseName, params.collectionName);
+  var collectionKey = (0, _memoryHelper.getMemoryCollectionKey)(params.databaseName, params.collectionName, params.schema.version);
   var internals = storage.collectionStates.get(collectionKey);
   if (!internals) {
     internals = {

@@ -2,6 +2,7 @@ import { IdleQueue } from 'custom-idle-queue';
 import type { LeaderElector } from 'broadcast-channel';
 import type { CollectionsOfDatabase, RxDatabase, RxCollectionCreator, RxCollection, RxDumpDatabase, RxDumpDatabaseAny, AllMigrationStates, BackupOptions, RxStorage, RxStorageInstance, RxChangeEvent, RxDatabaseCreator, RxChangeEventBulk, RxDocumentData, RxCleanupPolicy, InternalStoreDocType, InternalStoreStorageTokenDocType, RxTypeError, RxError, HashFunction, MaybePromise } from './types';
 import { Subject, Subscription, Observable } from 'rxjs';
+import { WrappedRxStorageInstance } from './rx-storage-helper';
 import type { RxBackupState } from './plugins/backup';
 import { ObliviousSet } from 'oblivious-set';
 export declare class RxDatabaseBase<Internals, InstanceCreationOptions, Collections = CollectionsOfDatabase> {
@@ -25,6 +26,12 @@ export declare class RxDatabaseBase<Internals, InstanceCreationOptions, Collecti
     readonly cleanupPolicy?: Partial<RxCleanupPolicy> | undefined;
     readonly allowSlowCount?: boolean | undefined;
     readonly idleQueue: IdleQueue;
+    /**
+     * Contains all known non-closed storage instances
+     * that belong to this database.
+     * Used in plugins and unit tests.
+     */
+    readonly storageInstances: Set<WrappedRxStorageInstance<any, Internals, InstanceCreationOptions>>;
     constructor(name: string, 
     /**
      * Uniquely identifies the instance

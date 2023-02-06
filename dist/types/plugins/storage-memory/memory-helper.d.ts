@@ -1,7 +1,7 @@
 import type { BulkWriteRow, RxDocumentData, RxJsonSchema } from '../../types';
 import type { DocWithIndexString, MemoryStorageInternals, MemoryStorageInternalsByIndex } from './memory-types';
 import type { RxStorageInstanceMemory } from './rx-storage-instance-memory';
-export declare function getMemoryCollectionKey(databaseName: string, collectionName: string): string;
+export declare function getMemoryCollectionKey(databaseName: string, collectionName: string, schemaVersion: number): string;
 export declare function ensureNotRemoved(instance: RxStorageInstanceMemory<any>): void;
 export declare function attachmentMapKey(documentId: string, attachmentId: string): string;
 /**

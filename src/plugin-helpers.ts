@@ -1,4 +1,4 @@
-import { mergeMap } from 'rxjs/operators';
+import { filter, mergeMap, tap } from 'rxjs/operators';
 import { getPrimaryFieldOfPrimaryKey } from './rx-schema-helper';
 import { WrappedRxStorageInstance } from './rx-storage-helper';
 import type {
@@ -24,6 +24,7 @@ import {
     getFromMapOrThrow,
     requestIdleCallbackIfAvailable
 } from './plugins/utils';
+import { BehaviorSubject, firstValueFrom } from 'rxjs';
 
 
 type WrappedStorageFunction = <Internals, InstanceCreationOptions>(
@@ -178,6 +179,8 @@ export function wrapRxStorageInstance<RxDocType>(
     }
 
 
+    const processingChangesCount$ = new BehaviorSubject(0);
+
     const wrappedInstance: WrappedRxStorageInstance<RxDocType, any, any> = {
         databaseName: instance.databaseName,
         internals: instance.internals,
@@ -221,6 +224,18 @@ export function wrapRxStorageInstance<RxDocType>(
                 );
             });
             await Promise.all(promises);
+
+            /**
+             * By definition, all change events must be emitted
+             * BEFORE the write call resolves.
+             * To ensure that even when the modifiers are async,
+             * we wait here until the processing queue is empty.
+             */
+            await firstValueFrom(
+                processingChangesCount$.pipe(
+                    filter(v => v === 0)
+                )
+            );
             return ret;
         },
         query: (preparedQuery) => {
@@ -264,6 +279,7 @@ export function wrapRxStorageInstance<RxDocType>(
         },
         changeStream: () => {
             return instance.changeStream().pipe(
+                tap(() => processingChangesCount$.next(processingChangesCount$.getValue() + 1)),
                 mergeMap(async (eventBulk) => {
                     const useEvents = await Promise.all(
                         eventBulk.events.map(async (event) => {
@@ -294,7 +310,8 @@ export function wrapRxStorageInstance<RxDocType>(
                         context: eventBulk.context
                     };
                     return ret;
-                })
+                }),
+                tap(() => processingChangesCount$.next(processingChangesCount$.getValue() - 1))
             );
         },
         conflictResultionTasks: () => {

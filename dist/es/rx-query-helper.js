@@ -144,7 +144,7 @@ export function normalizeMangoQuery(schema, mangoQuery) {
  * @mutates the input so that we do not have to deep clone
  */
 export function normalizeQueryRegex(selector) {
-  if (typeof selector !== 'object') {
+  if (typeof selector !== 'object' || selector === null) {
     return selector;
   }
   var keys = Object.keys(selector);

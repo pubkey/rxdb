@@ -12,6 +12,8 @@ import type {
     MessageFromRemote,
     MessageToRemote,
     RxStorageRemoteExposeSettings,
+    RxStorageRemoteExposeSettingsRxDatabase,
+    RxStorageRemoteExposeSettingsRxStorage,
     RxStorageRemoteExposeType
 } from './storage-remote-types';
 
@@ -29,18 +31,69 @@ export function exposeRxStorageRemote(settings: RxStorageRemoteExposeSettings): 
 
 
     settings.messages$.pipe(
+        filter(msg => msg.method === 'custom')
+    ).subscribe(async (msg) => {
+        if (!settings.customRequestHandler) {
+            settings.send(createErrorAnswer(
+                msg,
+                new Error('Remote storage: cannot resolve custom request because settings.customRequestHandler is not set')
+            ));
+        } else {
+            try {
+                const result = await settings.customRequestHandler(msg.params);
+                settings.send(createAnswer(msg, result));
+            } catch (err: any) {
+                settings.send(createErrorAnswer(
+                    msg,
+                    err
+                ));
+            }
+        }
+    });
+
+
+    function getRxStorageInstance<RxDocType>(params: any): Promise<RxStorageInstance<RxDocType, any, any, any>> {
+        if ((settings as RxStorageRemoteExposeSettingsRxStorage).storage) {
+            return (settings as RxStorageRemoteExposeSettingsRxStorage).storage.createStorageInstance(params);
+        } else if ((settings as RxStorageRemoteExposeSettingsRxDatabase).database) {
+            const storageInstances = Array.from((settings as RxStorageRemoteExposeSettingsRxDatabase).database.storageInstances);
+            const collectionName = params.collectionName;
+            const storageInstance = storageInstances.find(instance => instance.collectionName === collectionName);
+            if (!storageInstance) {
+                console.dir(storageInstances);
+                throw new Error('storageInstance does not exist ' + JSON.stringify({
+                    collectionName
+                }));
+            }
+            const schema = params.schema;
+            if (!deepEqual(schema, storageInstance.schema)) {
+                throw new Error('Wrong schema ' + JSON.stringify({
+                    schema,
+                    existingSchema: storageInstance.schema
+                }));
+            }
+            return Promise.resolve(storageInstance);
+        } else {
+            throw new Error('no base given');
+        }
+    }
+
+    settings.messages$.pipe(
         filter(msg => msg.method === 'create')
     ).subscribe(async (msg) => {
         const connectionId = msg.connectionId;
+
         /**
          * Do an isArray check here
          * for runtime check types to ensure we have
          * instance creation params and not method input params.
-         */
+        */
         if (Array.isArray(msg.params)) {
             return;
         }
         const params = msg.params;
+        const collectionName = params.collectionName;
+
         /**
          * We de-duplicate the storage instances.
          * This makes sense in many environments like
@@ -61,7 +114,7 @@ export function exposeRxStorageRemote(settings: RxStorageRemoteExposeSettings): 
                      * that parallel create-calls will still end up
                      * with exactly one instance and not more.
                      */
-                    storageInstancePromise: settings.storage.createStorageInstance(params),
+                    storageInstancePromise: getRxStorageInstance(params),
                     connectionIds: new Set(),
                     params
                 };
@@ -107,12 +160,42 @@ export function exposeRxStorageRemote(settings: RxStorageRemoteExposeSettings): 
                 settings.send(message);
             })
         );
+
+
+        let connectionClosed = false;
+        function closeThisConnection() {
+            if (connectionClosed) {
+                return;
+            }
+            connectionClosed = true;
+            subs.forEach(sub => sub.unsubscribe());
+            ensureNotFalsy(state).connectionIds.delete(connectionId);
+            instanceByFullName.delete(fullName);
+            /**
+             * TODO how to notify the other ports on remove() ?
+             */
+        }
+
+        // also close the connection when the collection gets destroyed
+        if ((settings as RxStorageRemoteExposeSettingsRxDatabase).database) {
+            const database = (settings as RxStorageRemoteExposeSettingsRxDatabase).database;
+            const collection = database.collections[collectionName];
+            if (collection) {
+                collection.onDestroy.push(() => closeThisConnection());
+            } else {
+                database.onDestroy.push(() => closeThisConnection());
+            }
+        }
+
         subs.push(
             settings.messages$.pipe(
                 filter(subMsg => (subMsg as MessageToRemote).connectionId === connectionId)
             ).subscribe(async (plainMessage) => {
                 const message: MessageToRemote = plainMessage as any;
-                if (message.method === 'create') {
+                if (
+                    message.method === 'create' ||
+                    message.method === 'custom'
+                ) {
                     return;
                 }
                 if (!Array.isArray(message.params)) {
@@ -120,6 +203,19 @@ export function exposeRxStorageRemote(settings: RxStorageRemoteExposeSettings): 
                 }
                 let result;
                 try {
+                    if (
+                        message.method === 'close' &&
+                        (settings as RxStorageRemoteExposeSettingsRxDatabase).database
+                    ) {
+                        /**
+                         * Do not close the storageInstance if it was taken from
+                         * a running RxDatabase.
+                         * In that case we only close the instance
+                         * when the RxDatabase gets destroyed.
+                         */
+                        settings.send(createAnswer(message, null));
+                        return;
+                    }
                     /**
                      * On calls to 'close()',
                      * we only close the main instance if there are no other
@@ -144,12 +240,7 @@ export function exposeRxStorageRemote(settings: RxStorageRemoteExposeSettings): 
                         message.method === 'close' ||
                         message.method === 'remove'
                     ) {
-                        subs.forEach(sub => sub.unsubscribe());
-                        ensureNotFalsy(state).connectionIds.delete(connectionId);
-                        instanceByFullName.delete(fullName);
-                        /**
-                         * TODO how to notify the other ports on remove() ?
-                         */
+                        closeThisConnection();
                     }
                     settings.send(createAnswer(message, result));
                 } catch (err: any) {
