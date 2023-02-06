@@ -156,6 +156,7 @@ export type RxStorageInstanceReplicationInput<RxDocType> = {
 
     initialCheckpoint?: {
         upstream?: any;
+        downstream?: any;
     };
 };
 

@@ -471,7 +471,7 @@ Returns `true` if the replication is stopped. This can be if a non-live replicat
 replicationState.isStopped(); // true/false
 ```
 
-### Setting a custom push.initialCheckpoint (beta)
+### Setting a custom initialCheckpoint (beta)
 
 By default, the push replication will start from the beginning of time and push all documents from there to the remote.
 By setting a custom `push.initialCheckpoint`, you can tell the replication to only push writes that are newer than the given checkpoint.
@@ -481,7 +481,6 @@ After a migration has run, the collection with the new version would push all mi
 This might not be desired, for example when you already have run the migration on the backend server.
 
 ```ts
-
 // store the latest checkpoint of a collection
 let lastLocalCheckpoint: any;
 myCollection.checkpoint$.subscribe(checkpoint => lastLocalCheckpoint = checkpoint);
@@ -489,11 +488,29 @@ myCollection.checkpoint$.subscribe(checkpoint => lastLocalCheckpoint = checkpoin
 // start the replication but only push documents that are newer than the lastLocalCheckpoint
 const replicationState = replicateRxCollection({
     collection: myCollection,
-    replicationIdentifier: 'my-custom-replication-with-init-checkpoint,
+    replicationIdentifier: 'my-custom-replication-with-init-checkpoint',
     /* ... */
     push: {
         handler: /* ... */,
         initialCheckpoint: lastLocalCheckpoint
+    }
+});
+```
+
+The same can be done for the other direction by setting a `pull.initialCheckpoint`. Notice that here we need the remote checkpoint from the backend instead of the one from the RxDB storage.
+
+```ts
+// get the last pull checkpoint from the server
+const lastRemoteCheckpoint = await (await fetch('http://example.com/pull-checkpoint')).json();
+
+// start the replication but only pull documents that are newer than the lastRemoteCheckpoint
+const replicationState = replicateRxCollection({
+    collection: myCollection,
+    replicationIdentifier: 'my-custom-replication-with-init-checkpoint',
+    /* ... */
+    pull: {
+        handler: /* ... */,
+        initialCheckpoint: lastRemoteCheckpoint
     }
 });
 ```
