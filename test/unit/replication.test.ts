@@ -574,6 +574,34 @@ describe('replication.test.js', () => {
             localCollection2.database.destroy();
             remoteCollection.database.destroy();
         });
+        it('should respect the initial push checkpoint', async () => {
+            const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 0 });
+
+            let lastLocalCheckpoint: any;
+            localCollection.checkpoint$.subscribe(checkpoint => lastLocalCheckpoint = checkpoint);
+            await localCollection.insert(schemaObjects.humanWithTimestamp());
+
+
+            const replicationState = replicateRxCollection({
+                collection: localCollection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: true,
+                pull: {
+                    handler: getPullHandler(remoteCollection)
+                },
+                push: {
+                    handler: getPushHandler(remoteCollection),
+                    initialCheckpoint: lastLocalCheckpoint
+                }
+            });
+            await replicationState.awaitInitialReplication();
+
+            const remoteDocs = await remoteCollection.find().exec();
+            assert.deepEqual(remoteDocs.length, 0);
+
+            localCollection.database.destroy();
+            remoteCollection.database.destroy();
+        });
     });
     config.parallel('issues', () => {
         it('#4190 Composite Primary Keys broken on replicated collections', async () => {
