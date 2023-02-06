@@ -91,6 +91,12 @@ export type ReplicationPushOptions<RxDocType> = {
      * How many local changes to process at once.
      */
     batchSize?: number;
+
+    /**
+     * If set, the push replication
+     * will start from the given checkpoint.
+     */
+    initialCheckpoint?: any;
 };
 
 
