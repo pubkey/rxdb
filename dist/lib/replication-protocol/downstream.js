@@ -19,7 +19,13 @@ var _metaInstance = require("./meta-instance");
  * We need this to be able to do initial syncs
  * and still can have fast event based sync when the client is not offline.
  */
-function startReplicationDownstream(state) {
+async function startReplicationDownstream(state) {
+  if (state.input.initialCheckpoint && state.input.initialCheckpoint.downstream) {
+    var checkpointDoc = await (0, _checkpoint.getLastCheckpointDoc)(state, 'down');
+    if (!checkpointDoc) {
+      await (0, _checkpoint.setCheckpoint)(state, 'down', state.input.initialCheckpoint.downstream);
+    }
+  }
   var identifierHash = state.input.hashFunction(state.input.identifier);
   var replicationHandler = state.input.replicationHandler;
 

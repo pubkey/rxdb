@@ -14,7 +14,13 @@ import { getAssumedMasterState, getMetaWriteRow } from './meta-instance';
  * We need this to be able to do initial syncs
  * and still can have fast event based sync when the client is not offline.
  */
-export function startReplicationDownstream(state) {
+export async function startReplicationDownstream(state) {
+  if (state.input.initialCheckpoint && state.input.initialCheckpoint.downstream) {
+    var checkpointDoc = await getLastCheckpointDoc(state, 'down');
+    if (!checkpointDoc) {
+      await setCheckpoint(state, 'down', state.input.initialCheckpoint.downstream);
+    }
+  }
   var identifierHash = state.input.hashFunction(state.input.identifier);
   var replicationHandler = state.input.replicationHandler;
 

@@ -62,6 +62,12 @@ export type ReplicationPullOptions<RxDocType, CheckpointType> = {
      * - the ones from the pull stream
      */
     modifier?: (docData: any) => MaybePromise<WithDeleted<RxDocType>>;
+
+    /**
+     * If set, the push replication
+     * will start from the given checkpoint.
+     */
+    initialCheckpoint?: any;
 };
 
 /**
@@ -91,6 +97,12 @@ export type ReplicationPushOptions<RxDocType> = {
      * How many local changes to process at once.
      */
     batchSize?: number;
+
+    /**
+     * If set, the push replication
+     * will start from the given checkpoint.
+     */
+    initialCheckpoint?: any;
 };
 
 

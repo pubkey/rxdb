@@ -354,8 +354,7 @@ export function createWithConstructor(constructor, collection, jsonData) {
   return doc;
 }
 export function isRxDocument(obj) {
-  if (typeof obj === 'undefined') return false;
-  return !!obj.isInstanceOfRxDocument;
+  return typeof obj === 'object' && obj !== null && 'isInstanceOfRxDocument' in obj;
 }
 export function beforeDocumentUpdateWrite(collection, newData, oldData) {
   /**

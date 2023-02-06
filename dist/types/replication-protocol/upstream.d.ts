@@ -7,4 +7,4 @@ import type { RxStorageInstanceReplicationState } from '../types';
  *   In contrast to the master, the fork can be assumed to never loose connection,
  *   so we do not have to prepare for missed out events.
  */
-export declare function startReplicationUpstream<RxDocType, CheckpointType>(state: RxStorageInstanceReplicationState<RxDocType>): void;
+export declare function startReplicationUpstream<RxDocType, CheckpointType>(state: RxStorageInstanceReplicationState<RxDocType>): Promise<void>;

@@ -41,6 +41,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
     this._docCache = {};
     this._queryCache = (0, _queryCache.createQueryCache)();
     this.$ = {};
+    this.checkpoint$ = {};
     this._changeEventBuffer = {};
     this.onDestroy = [];
     this.destroyed = false;
@@ -62,7 +63,9 @@ var RxCollectionBase = /*#__PURE__*/function () {
   _proto.prepare = async function prepare() {
     this.storageInstance = (0, _rxStorageHelper.getWrappedStorageInstance)(this.database, this.internalStorageInstance, this.schema.jsonSchema);
     this.incrementalWriteQueue = new _incrementalWrite.IncrementalWriteQueue(this.storageInstance, this.schema.primaryPath, (newData, oldData) => (0, _rxDocument.beforeDocumentUpdateWrite)(this, newData, oldData), result => this._runHooks('post', 'save', result));
-    this.$ = this.database.eventBulks$.pipe((0, _operators.filter)(changeEventBulk => changeEventBulk.collectionName === this.name), (0, _operators.mergeMap)(changeEventBulk => changeEventBulk.events));
+    var collectionEventBulks$ = this.database.eventBulks$.pipe((0, _operators.filter)(changeEventBulk => changeEventBulk.collectionName === this.name));
+    this.$ = collectionEventBulks$.pipe((0, _operators.mergeMap)(changeEventBulk => changeEventBulk.events));
+    this.checkpoint$ = collectionEventBulks$.pipe((0, _operators.map)(changeEventBulk => changeEventBulk.checkpoint));
     this._changeEventBuffer = (0, _changeEventBuffer.createChangeEventBuffer)(this.asRxCollection);
     this._docCache = new _docCache.DocumentCache(this.schema.primaryPath, this.$.pipe((0, _operators.filter)(cE => !cE.isLocal)), docData => (0, _rxDocumentPrototypeMerge.createNewRxDocument)(this.asRxCollection, docData));
 

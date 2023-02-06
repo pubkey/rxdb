@@ -19,7 +19,13 @@ var _metaInstance = require("./meta-instance");
  *   In contrast to the master, the fork can be assumed to never loose connection,
  *   so we do not have to prepare for missed out events.
  */
-function startReplicationUpstream(state) {
+async function startReplicationUpstream(state) {
+  if (state.input.initialCheckpoint && state.input.initialCheckpoint.upstream) {
+    var checkpointDoc = await (0, _checkpoint.getLastCheckpointDoc)(state, 'up');
+    if (!checkpointDoc) {
+      await (0, _checkpoint.setCheckpoint)(state, 'up', state.input.initialCheckpoint.upstream);
+    }
+  }
   var replicationHandler = state.input.replicationHandler;
   state.streamQueue.up = state.streamQueue.up.then(() => {
     return upstreamInitialSync().then(() => {

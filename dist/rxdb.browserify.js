@@ -3433,7 +3433,13 @@ var _metaInstance = require("./meta-instance");
  * We need this to be able to do initial syncs
  * and still can have fast event based sync when the client is not offline.
  */
-function startReplicationDownstream(state) {
+async function startReplicationDownstream(state) {
+  if (state.input.initialCheckpoint && state.input.initialCheckpoint.downstream) {
+    var checkpointDoc = await (0, _checkpoint.getLastCheckpointDoc)(state, 'down');
+    if (!checkpointDoc) {
+      await (0, _checkpoint.setCheckpoint)(state, 'down', state.input.initialCheckpoint.downstream);
+    }
+  }
   var identifierHash = state.input.hashFunction(state.input.identifier);
   var replicationHandler = state.input.replicationHandler;
 
@@ -4118,7 +4124,13 @@ var _metaInstance = require("./meta-instance");
  *   In contrast to the master, the fork can be assumed to never loose connection,
  *   so we do not have to prepare for missed out events.
  */
-function startReplicationUpstream(state) {
+async function startReplicationUpstream(state) {
+  if (state.input.initialCheckpoint && state.input.initialCheckpoint.upstream) {
+    var checkpointDoc = await (0, _checkpoint.getLastCheckpointDoc)(state, 'up');
+    if (!checkpointDoc) {
+      await (0, _checkpoint.setCheckpoint)(state, 'up', state.input.initialCheckpoint.upstream);
+    }
+  }
   var replicationHandler = state.input.replicationHandler;
   state.streamQueue.up = state.streamQueue.up.then(() => {
     return upstreamInitialSync().then(() => {
@@ -4636,6 +4648,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
     this._docCache = {};
     this._queryCache = (0, _queryCache.createQueryCache)();
     this.$ = {};
+    this.checkpoint$ = {};
     this._changeEventBuffer = {};
     this.onDestroy = [];
     this.destroyed = false;
@@ -4657,7 +4670,9 @@ var RxCollectionBase = /*#__PURE__*/function () {
   _proto.prepare = async function prepare() {
     this.storageInstance = (0, _rxStorageHelper.getWrappedStorageInstance)(this.database, this.internalStorageInstance, this.schema.jsonSchema);
     this.incrementalWriteQueue = new _incrementalWrite.IncrementalWriteQueue(this.storageInstance, this.schema.primaryPath, (newData, oldData) => (0, _rxDocument.beforeDocumentUpdateWrite)(this, newData, oldData), result => this._runHooks('post', 'save', result));
-    this.$ = this.database.eventBulks$.pipe((0, _operators.filter)(changeEventBulk => changeEventBulk.collectionName === this.name), (0, _operators.mergeMap)(changeEventBulk => changeEventBulk.events));
+    var collectionEventBulks$ = this.database.eventBulks$.pipe((0, _operators.filter)(changeEventBulk => changeEventBulk.collectionName === this.name));
+    this.$ = collectionEventBulks$.pipe((0, _operators.mergeMap)(changeEventBulk => changeEventBulk.events));
+    this.checkpoint$ = collectionEventBulks$.pipe((0, _operators.map)(changeEventBulk => changeEventBulk.checkpoint));
     this._changeEventBuffer = (0, _changeEventBuffer.createChangeEventBuffer)(this.asRxCollection);
     this._docCache = new _docCache.DocumentCache(this.schema.primaryPath, this.$.pipe((0, _operators.filter)(cE => !cE.isLocal)), docData => (0, _rxDocumentPrototypeMerge.createNewRxDocument)(this.asRxCollection, docData));
 
@@ -6412,8 +6427,7 @@ function createWithConstructor(constructor, collection, jsonData) {
   return doc;
 }
 function isRxDocument(obj) {
-  if (typeof obj === 'undefined') return false;
-  return !!obj.isInstanceOfRxDocument;
+  return typeof obj === 'object' && obj !== null && 'isInstanceOfRxDocument' in obj;
 }
 function beforeDocumentUpdateWrite(collection, newData, oldData) {
   /**

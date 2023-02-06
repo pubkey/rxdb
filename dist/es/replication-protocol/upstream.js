@@ -14,7 +14,13 @@ import { getAssumedMasterState, getMetaWriteRow } from './meta-instance';
  *   In contrast to the master, the fork can be assumed to never loose connection,
  *   so we do not have to prepare for missed out events.
  */
-export function startReplicationUpstream(state) {
+export async function startReplicationUpstream(state) {
+  if (state.input.initialCheckpoint && state.input.initialCheckpoint.upstream) {
+    var checkpointDoc = await getLastCheckpointDoc(state, 'up');
+    if (!checkpointDoc) {
+      await setCheckpoint(state, 'up', state.input.initialCheckpoint.upstream);
+    }
+  }
   var replicationHandler = state.input.replicationHandler;
   state.streamQueue.up = state.streamQueue.up.then(() => {
     return upstreamInitialSync().then(() => {

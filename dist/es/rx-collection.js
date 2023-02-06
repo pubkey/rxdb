@@ -1,5 +1,5 @@
 import _createClass from "@babel/runtime/helpers/createClass";
-import { filter, mergeMap } from 'rxjs/operators';
+import { filter, map, mergeMap } from 'rxjs/operators';
 import { ucfirst, flatClone, promiseSeries, pluginMissing, ensureNotFalsy, getFromMapOrThrow, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_VOID } from './plugins/utils';
 import { fillObjectDataBeforeInsert, createRxCollectionStorageInstance, removeCollectionStorages } from './rx-collection-helper';
 import { createRxQuery, _getDefaultQuery } from './rx-query';
@@ -32,6 +32,7 @@ export var RxCollectionBase = /*#__PURE__*/function () {
     this._docCache = {};
     this._queryCache = createQueryCache();
     this.$ = {};
+    this.checkpoint$ = {};
     this._changeEventBuffer = {};
     this.onDestroy = [];
     this.destroyed = false;
@@ -53,7 +54,9 @@ export var RxCollectionBase = /*#__PURE__*/function () {
   _proto.prepare = async function prepare() {
     this.storageInstance = getWrappedStorageInstance(this.database, this.internalStorageInstance, this.schema.jsonSchema);
     this.incrementalWriteQueue = new IncrementalWriteQueue(this.storageInstance, this.schema.primaryPath, (newData, oldData) => beforeDocumentUpdateWrite(this, newData, oldData), result => this._runHooks('post', 'save', result));
-    this.$ = this.database.eventBulks$.pipe(filter(changeEventBulk => changeEventBulk.collectionName === this.name), mergeMap(changeEventBulk => changeEventBulk.events));
+    var collectionEventBulks$ = this.database.eventBulks$.pipe(filter(changeEventBulk => changeEventBulk.collectionName === this.name));
+    this.$ = collectionEventBulks$.pipe(mergeMap(changeEventBulk => changeEventBulk.events));
+    this.checkpoint$ = collectionEventBulks$.pipe(map(changeEventBulk => changeEventBulk.checkpoint));
     this._changeEventBuffer = createChangeEventBuffer(this.asRxCollection);
     this._docCache = new DocumentCache(this.schema.primaryPath, this.$.pipe(filter(cE => !cE.isLocal)), docData => createNewRxDocument(this.asRxCollection, docData));
 

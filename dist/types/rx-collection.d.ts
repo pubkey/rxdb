@@ -52,6 +52,7 @@ export declare class RxCollectionBase<InstanceCreationOptions, RxDocumentType = 
     _docCache: DocumentCache<RxDocumentType, OrmMethods>;
     _queryCache: QueryCache;
     $: Observable<RxChangeEvent<RxDocumentType>>;
+    checkpoint$: Observable<any>;
     _changeEventBuffer: ChangeEventBuffer;
     /**
      * When the collection is destroyed,

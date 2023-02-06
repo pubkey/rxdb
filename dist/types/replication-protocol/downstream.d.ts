@@ -7,4 +7,4 @@ import type { RxStorageInstanceReplicationState } from '../types';
  * We need this to be able to do initial syncs
  * and still can have fast event based sync when the client is not offline.
  */
-export declare function startReplicationDownstream<RxDocType, CheckpointType = any>(state: RxStorageInstanceReplicationState<RxDocType>): void;
+export declare function startReplicationDownstream<RxDocType, CheckpointType = any>(state: RxStorageInstanceReplicationState<RxDocType>): Promise<void>;
