@@ -495,8 +495,7 @@ export function createWithConstructor<RxDocType>(
 }
 
 export function isRxDocument(obj: any): boolean {
-    if (typeof obj === 'undefined') return false;
-    return !!obj.isInstanceOfRxDocument;
+    return typeof obj === 'object' && obj !== null && 'isInstanceOfRxDocument' in obj;
 }
 
 

@@ -30,5 +30,38 @@ config.parallel('instance-of-check.test.js', () => {
         assert.strictEqual(false, isRxQuery(anyObj));
         assert.strictEqual(false, isRxDocument(anyObj));
         assert.strictEqual(false, isRxSchema(anyObj));
+
+        // undefined
+        assert.strictEqual(false, isRxDatabase(undefined));
+        assert.strictEqual(false, isRxCollection(undefined));
+        assert.strictEqual(false, isRxQuery(undefined));
+        assert.strictEqual(false, isRxDocument(undefined));
+        assert.strictEqual(false, isRxSchema(undefined));
+
+        // null
+        assert.strictEqual(false, isRxDatabase(null));
+        assert.strictEqual(false, isRxCollection(null));
+        assert.strictEqual(false, isRxQuery(null));
+        assert.strictEqual(false, isRxDocument(null));
+        assert.strictEqual(false, isRxSchema(null));
+
+        // primitives
+        assert.strictEqual(false, isRxDatabase(1));
+        assert.strictEqual(false, isRxCollection(1));
+        assert.strictEqual(false, isRxQuery(1));
+        assert.strictEqual(false, isRxDocument(1));
+        assert.strictEqual(false, isRxSchema(1));
+
+        assert.strictEqual(false, isRxDatabase('hello'));
+        assert.strictEqual(false, isRxCollection('hello'));
+        assert.strictEqual(false, isRxQuery('hello'));
+        assert.strictEqual(false, isRxDocument('hello'));
+        assert.strictEqual(false, isRxSchema('hello'));
+
+        assert.strictEqual(false, isRxDatabase(true));
+        assert.strictEqual(false, isRxCollection(true));
+        assert.strictEqual(false, isRxQuery(true));
+        assert.strictEqual(false, isRxDocument(true));
+        assert.strictEqual(false, isRxSchema(true));
     });
 });
