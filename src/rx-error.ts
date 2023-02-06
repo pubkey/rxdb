@@ -22,11 +22,13 @@ function parametersToString(parameters: any): string {
         .map(k => {
             let paramStr = '[object Object]';
             try {
-                paramStr = JSON.stringify(
-                    parameters[k],
-                    (_k, v) => v === undefined ? null : v,
-                    2
-                );
+                if (k === 'errors') {
+                    paramStr = parameters[k].map((err: any) => JSON.stringify(err, Object.getOwnPropertyNames(err)));
+                } else {
+                    paramStr = JSON.stringify(parameters[k], function (_k, v) {
+                        return v === undefined ? null : v;
+                    }, 2);
+                }
             } catch (e) { }
             return k + ':' + paramStr;
         })

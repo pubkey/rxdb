@@ -50,6 +50,7 @@ import { Subject } from 'rxjs';
 import {
     firestoreRowToDocData,
     FIRESTORE_REPLICATION_PLUGIN_IDENTITY_PREFIX,
+    getContentByIds,
     isoStringToServerTimestamp,
     serverTimestampToIsoString,
     stripPrimaryKey,
@@ -131,7 +132,6 @@ export function replicateFirestore<RxDocType>(
                         where(serverTimestampField, '==', lastServerTimestamp),
                         where(primaryPath, '>', lastPulledCheckpoint.id),
                         orderBy(primaryPath, 'asc'),
-                        orderBy(serverTimestampField, 'asc'),
                         limit(batchSize)
                     );
                 } else {
@@ -236,14 +236,20 @@ export function replicateFirestore<RxDocType>(
                     /**
                      * @link https://stackoverflow.com/a/48423626/3443137
                      */
-                    const docsInDbResult = await getDocs(
-                        query(
-                            options.firestore.collection,
-                            where(documentId(), 'in', docIds)
-                        )
-                    );
+
+                    const getQuery = (ids: string[]) => {
+                        return getDocs(
+                            query(
+                                options.firestore.collection,
+                                where(documentId(), 'in', ids)
+                            )
+                        );
+                    };
+
+                    const docsInDbResult = await getContentByIds<RxDocType>(docIds, getQuery);
+
                     const docsInDbById: ById<RxDocType> = {};
-                    docsInDbResult.docs.forEach(row => {
+                    docsInDbResult.forEach(row => {
                         const docDataInDb = stripServerTimestampField(serverTimestampField, row.data());
                         const docId = row.id;
                         (docDataInDb as any)[primaryPath] = docId;
