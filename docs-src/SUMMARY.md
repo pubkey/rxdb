@@ -163,7 +163,7 @@
     * [Use RxDB with Typescript](./tutorials/typescript.md)
 
 * Opinions
-    * [About Offline First](./offline-first.md)
+    * [Offline First](./offline-first.md)
     * [Downsides of Offline First](./downsides-of-offline-first.md)
     * [Slow IndexedDB](./slow-indexeddb.md)
     * [Why NoSQL](./why-nosql.md)
@@ -171,6 +171,7 @@
     * [React Native Database](./react-native-database.md)
     * [Capacitor Database](./capacitor-database.md)
     * [Electron Database](./electron-database.md)
+    * [Node.js Database](./nodejs-database.md)
 
 * [Questions & Answers](./questions-answers.md)
 
