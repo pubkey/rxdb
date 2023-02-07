@@ -20,7 +20,7 @@
     "testcafe": "2.1.0",
     "typescript": "4.9.5",
     "vite": "4.1.1",
-    "vite-plugin-top-level-await": "1.2.3"
+    "vite-plugin-top-level-await": "1.2.4"
   },
   "dependencies": {
     "rxdb": "file:rxdb-local.tgz",
