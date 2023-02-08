@@ -71,7 +71,7 @@ window.onload = async function () {
             // only every second interval so we have a pause in between
             if (beatInfo.period % 2 === 0) {
                 try {
-                    await beatingValuesDoc.atomicUpdate(docData => {
+                    await beatingValuesDoc.incrementalModify(docData => {
                         if (docData.beatPeriod >= beatInfo.period) {
                             return docData;
                         }
@@ -110,7 +110,7 @@ window.onload = async function () {
         fromEvent(window, 'scroll'),
         fromEvent(window, 'resize')
     ).subscribe(() => {
-        mousePointerDoc.atomicPatch({
+        mousePointerDoc.incrementalPatch({
             x: currentMousePosition[0],
             y: currentMousePosition[1],
             time: now()
