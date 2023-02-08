@@ -1,6 +1,6 @@
 # Node.js Database
 
-[RxDB](https://rxdb.info) is a fast, reactive realtime NoSQL **database** made for **JavaScript** applications like Websites, hybrid Apps, Electron-Apps, Progressive Web Apps and **Node.js**. While RxDB was initially created to be used with UI applications, it has been matured and optimized to make it usefull for pure server-side use cases. It can be used as embedded, local database inside of the Node.js JavaScript process, or it can be used similar to a database server that Node.js can connect to. The [RxStorage](./rx-storage.md) layer makes it possible to switch out the underlaying storage engine which makes RxDB a very flexible database that can be optimized for many scenarios.
+[RxDB](https://rxdb.info) is a fast, reactive realtime NoSQL **database** made for **JavaScript** applications like Websites, hybrid Apps, Electron-Apps, Progressive Web Apps and **Node.js**. While RxDB was initially created to be used with UI applications, it has been matured and optimized to make it useful for pure server-side use cases. It can be used as embedded, local database inside of the Node.js JavaScript process, or it can be used similar to a database server that Node.js can connect to. The [RxStorage](./rx-storage.md) layer makes it possible to switch out the underlying storage engine which makes RxDB a very flexible database that can be optimized for many scenarios.
 
 
 ## Persistend Database
