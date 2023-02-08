@@ -179,6 +179,7 @@
 
 * Release Notes
     * [CHANGELOG](https://github.com/pubkey/rxdb/blob/master/CHANGELOG.md)
+    * [14.0.0](./releases/14.0.0.md)
     * [13.0.0](./releases/13.0.0.md)
     * [12.0.0](./releases/12.0.0.md)
     * [11.0.0](./releases/11.0.0.md)
