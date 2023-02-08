@@ -9,7 +9,7 @@
 
 <!-- RELEASE BELOW -->
 
-### 14.0.0 (8 February 2023)
+### 14.0.0 (8 February 2023) BREAKING [read the announcement](https://rxdb.info/releases/14.0.0.html)
 
 - Remove the deprecated PouchDB RxStorage.
 - REMOVE old `replication-couchdb` plugin. Rename `replication-couchdb-new` to `replication-couchdb`.
