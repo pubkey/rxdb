@@ -18,9 +18,8 @@
     "local-web-server": "5.2.1"
   },
   "scripts": {
-    "preinstall": "npm run preinstall:rxdb && npm run preinstall:versions",
+    "preinstall": "npm run preinstall:rxdb",
     "preinstall:rxdb": "(cd ../../ && npx yarn@1.13.0 pack ../../ --filename ./examples/react/rxdb-local.tgz)",
-    "preinstall:versions": "node ./scripts/ensure-equal-versions.js",
     "dev": "PORT=8888 react-scripts start",
     "build": "react-scripts build",
     "build:serve": "ws -p 8888 -d build/",
