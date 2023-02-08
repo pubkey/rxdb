@@ -5,7 +5,11 @@
 
 <!-- ADD new changes here! -->
 
-### 14.0.0-beta.42 (6 February 2023)
+<!-- /CHANGELOG NEWEST -->
+
+<!-- RELEASE BELOW -->
+
+### 14.0.0 (8 February 2023)
 
 - Remove the deprecated PouchDB RxStorage.
 - REMOVE old `replication-couchdb` plugin. Rename `replication-couchdb-new` to `replication-couchdb`.
@@ -64,10 +68,6 @@ Bugfixes:
 - REMOVE deprecated `babel-plugin-transform-async-to-promises` plugin.
 - ADD Ability to use a responseModifier for GraphQL push replication [#4385](https://github.com/pubkey/rxdb/pull/4385)
 - FIX Add null check for isRxDocument [#4406](https://github.com/pubkey/rxdb/pull/4406)
-
-<!-- /CHANGELOG NEWEST -->
-
-<!-- RELEASE BELOW -->
 
 ### 13.17.1 (30 December 2022)
 
