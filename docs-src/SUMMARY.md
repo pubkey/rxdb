@@ -186,3 +186,7 @@
     * [10.0.0](./releases/10.0.0.md)
     * [9.0.0](./releases/9.0.0.md)
     * [8.0.0](./releases/8.0.0.md)
+
+* Deprecated
+    * [RxStorage PouchDB](./rx-storage-pouchdb.md)
+    * [RxStorage PouchDB Adapters](./adapters.md)
