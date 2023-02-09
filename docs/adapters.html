@@ -4,7 +4,7 @@
     <head>
         <meta charset="UTF-8">
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-        <title>Query Optimizer · RxDB - JavaScript Database</title>
+        <title>RxStorage PouchDB Adapters · RxDB - JavaScript Database</title>
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="description" content="">
         <meta name="generator" content="GitBook 3.2.3">
@@ -63,10 +63,8 @@
     <link rel="shortcut icon" href="gitbook/images/favicon.ico" type="image/x-icon">
 
     
-    <link rel="next" href="storage-migration.html" />
     
-    
-    <link rel="prev" href="plugins.html" />
+    <link rel="prev" href="rx-storage-pouchdb.html" />
     
 
     </head>
@@ -1834,7 +1832,7 @@
             
         </li>
     
-        <li class="chapter active" data-level="3.8" data-path="query-optimizer.html">
+        <li class="chapter " data-level="3.8" data-path="query-optimizer.html">
             
                 <a href="query-optimizer.html">
             
@@ -2230,7 +2228,7 @@
             
         </li>
     
-        <li class="chapter " data-level="3.17.2" data-path="adapters.html">
+        <li class="chapter active" data-level="3.17.2" data-path="adapters.html">
             
                 <a href="adapters.html">
             
@@ -2278,7 +2276,7 @@
     <!-- Title -->
     <h1>
         <i class="fa fa-circle-o-notch fa-spin"></i>
-        <a href="." >Query Optimizer</a>
+        <a href="." >RxStorage PouchDB Adapters</a>
     </h1>
 </div>
 
@@ -2293,67 +2291,218 @@
     
                                 <section class="normal markdown-section">
                                 
-                                <h1 id="query-optimizer">Query Optimizer</h1>
-<p>The query optimizer can be used to determine which index is the best to use for a given query.
-Because RxDB is used in client side applications, it cannot do any background checks or measurements to optimize the query plan because that would cause significant performance problems.</p>
-<p><strong>NOTICE:</strong> The query optimizer is part of the <a href="https://rxdb.info/premium.html" target="_blank">RxDB Premium</a> plugin that must be purchased. It is not part of the default RxDB module.</p>
-<h2 id="usage">Usage</h2>
-<pre><code class="lang-ts"><span class="hljs-keyword">import</span> {
-    findBestIndex
-} from <span class="hljs-string">&apos;rxdb-premium/plugins/query-optimizer&apos;</span>;
+                                <h1 id="pouchdb-adapters">PouchDB Adapters</h1>
+<p>When you use PouchDB <code>RxStorage</code>, there are many adapters that define where the data has to be stored.
+Depending on which environment you work in, you can choose between different adapters. For example, in the browser you want to store the data inside of IndexedDB but on NodeJS you want to store the data on the filesystem.</p>
+<p>This page is an overview over the different adapters with recommendations on what to use where.</p>
+<p><strong>Please always ensure that your pouchdb adapter-version is the same as <code>pouchdb-core</code> in the <a href="https://github.com/pubkey/rxdb/blob/master/package.json" target="_blank">rxdb package.json</a>. Otherwise, you might have strange problems</strong></p>
+<h2 id="important">IMPORTANT:</h2>
+<p>The PouchDB RxStorage <a href="https://rxdb.info/questions-answers.html#why-is-the-pouchdb-rxstorage-deprecated" target="_blank">is deprecated</a> and should no longer be used in new projects.</p>
+<h1 id="any-environment">Any environment</h1>
+<h2 id="memory">Memory</h2>
+<p>In any environment, you can use the memory-adapter. It stores the data in the javascript runtime memory. This means it is not persistent and the data is lost when the process terminates.</p>
+<p>Use this adapter when:</p>
+<ul>
+<li>You want to have really good performance</li>
+<li>You do not want persistent state, for example in your test suite</li>
+</ul>
+<pre><code class="lang-js"><span class="hljs-keyword">import</span> {
+    createRxDatabase
+} <span class="hljs-keyword">from</span> <span class="hljs-string">&apos;rxdb&apos;</span>
+<span class="hljs-keyword">import</span> {
+    getRxStoragePouch
+} <span class="hljs-keyword">from</span> <span class="hljs-string">&apos;rxdb/plugins/pouchdb&apos;</span>;
+<span class="hljs-comment">// npm install pouchdb-adapter-memory --save</span>
+addPouchPlugin(<span class="hljs-built_in">require</span>(<span class="hljs-string">&apos;pouchdb-adapter-memory&apos;</span>));
 
-<span class="hljs-keyword">import</span> { 
-    getRxStorageIndexedDB
-} from <span class="hljs-string">&apos;rxdb-premium/plugins/indexeddb&apos;</span>;
-
-<span class="hljs-keyword">const</span> bestIndexes = await findBestIndex({
-    schema: myRxJsonSchema,
-    <span class="hljs-comment">/**
-     * In this example we use the IndexedDB RxStorage,
-     * but any other storage can be used for testing.
-     */</span>
-    storage: getRxStorageIndexedDB(),
-    <span class="hljs-comment">/**
-     * Multiple queries can be optimized at the same time
-     * which decreases the overall runtime.
-     */</span>
-    queries: {
-        <span class="hljs-comment">/**
-         * Queries can be mapped by a query id,
-         * here we use myFirstQuery as query id.
-         */</span>
-        myFirstQuery: {
-            selector: {
-                age: {
-                    $gt: <span class="hljs-number">10</span>
-                }
-            },
-        },
-        mySecondQuery: {
-            selector: {
-                age: {
-                    $gt: <span class="hljs-number">10</span>
-                },
-                lastName: {
-                    $eq: <span class="hljs-string">&apos;Nakamoto&apos;</span>
-                }
-            },
-        }
-    },
-    testData: [<span class="hljs-comment">/** data for the documents. **/</span>]
+<span class="hljs-keyword">const</span> database = <span class="hljs-keyword">await</span> createRxDatabase({
+    name: <span class="hljs-string">&apos;mydatabase&apos;</span>,
+    storage: getRxStoragePouch(<span class="hljs-string">&apos;memory&apos;</span>)
 });
 </code></pre>
-<h2 id="important-details">Important details</h2>
-<ul>
-<li><p>This is a build time tool. You should use it to find the best indexes for your queries during <strong>build time</strong>. Then you store these results and you application can use the best indexes during <strong>run time</strong>.</p>
-</li>
-<li><p>It makes no sense to run time optimization with a different <code>RxStorage</code> (+settings) that what you use in production. The result of the query optimizer is heavily dependent on the RxStorage an JavaScript runtime. For example it makes no sense to run the optimization in Node.js and then use the optimized indexes in the browser.</p>
-</li>
-<li><p>It is very important the you use <strong>production like</strong> <code>testData</code>. Finding the best index heavily depends on data distribution and amount of stored/queried documents. For example if you store and query users with an <code>age</code> field, it makes no sense to just use a random number for the age because in production the <code>age</code> of your users is not equally distributed.</p>
-</li>
-<li><p>The higher you set <code>runs</code>, the more test cycles will be performed and the more <strong>significant</strong> will be the time measurements which leads to a better index selection.</p>
-</li>
-</ul>
+<h2 id="memdown">Memdown</h2>
+<p>With RxDB you can also use adapters that implement <a href="https://github.com/Level/abstract-leveldown" target="_blank">abstract-leveldown</a> like the memdown-adapter.</p>
+<pre><code class="lang-js"><span class="hljs-comment">// npm install memdown --save</span>
+<span class="hljs-comment">// npm install pouchdb-adapter-leveldb --save</span>
+addPouchPlugin(<span class="hljs-built_in">require</span>(<span class="hljs-string">&apos;pouchdb-adapter-leveldb&apos;</span>)); <span class="hljs-comment">// leveldown adapters need the leveldb plugin to work</span>
+
+<span class="hljs-keyword">const</span> memdown = <span class="hljs-built_in">require</span>(<span class="hljs-string">&apos;memdown&apos;</span>);
+
+<span class="hljs-keyword">const</span> database = <span class="hljs-keyword">await</span> createRxDatabase({
+    name: <span class="hljs-string">&apos;mydatabase&apos;</span>,
+    storage: getRxStoragePouch(memdown) <span class="hljs-comment">// the full leveldown-module</span>
+});
+</code></pre>
+<h1 id="browser">Browser</h1>
+<h2 id="indexeddb">IndexedDB</h2>
+<p>The IndexedDB adapter stores the data inside of <a href="https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API" target="_blank">IndexedDB</a> use this in browsers environments as default.</p>
+<pre><code class="lang-js"><span class="hljs-comment">// npm install pouchdb-adapter-idb --save</span>
+addPouchPlugin(<span class="hljs-built_in">require</span>(<span class="hljs-string">&apos;pouchdb-adapter-idb&apos;</span>));
+
+<span class="hljs-keyword">const</span> database = <span class="hljs-keyword">await</span> createRxDatabase({
+    name: <span class="hljs-string">&apos;mydatabase&apos;</span>,
+    storage: getRxStoragePouch(<span class="hljs-string">&apos;idb&apos;</span>)
+});
+</code></pre>
+<h2 id="indexeddb">IndexedDB</h2>
+<p>A reimplementation of the indexeddb adapter which uses native secondary indexes. Should have a much better performance but can behave <a href="https://github.com/pouchdb/pouchdb/tree/master/packages/node_modules/pouchdb-adapter-indexeddb#differences-between-couchdb-and-pouchdbs-find-implementations-under-indexeddb" target="_blank">different on some edge cases</a>.</p>
+<p><strong>Notice</strong>: Multiple users have reported problems with this adapter. It is <strong>not</strong> recommended to use this adapter.</p>
+<pre><code class="lang-js"><span class="hljs-comment">// npm install pouchdb-adapter-indexeddb --save</span>
+addPouchPlugin(<span class="hljs-built_in">require</span>(<span class="hljs-string">&apos;pouchdb-adapter-indexeddb&apos;</span>));
+
+<span class="hljs-keyword">const</span> database = <span class="hljs-keyword">await</span> createRxDatabase({
+    name: <span class="hljs-string">&apos;mydatabase&apos;</span>,
+    storage: getRxStoragePouch(<span class="hljs-string">&apos;indexeddb&apos;</span>)
+});
+</code></pre>
+<h2 id="websql">Websql</h2>
+<p>This adapter stores the data inside of websql. It has a different performance behavior. <a href="https://softwareengineering.stackexchange.com/questions/220254/why-is-web-sql-database-deprecated" target="_blank">Websql is deprecated</a>. You should not use the websql adapter unless you have a really good reason.</p>
+<pre><code class="lang-js"><span class="hljs-comment">// npm install pouchdb-adapter-websql --save</span>
+addPouchPlugin(<span class="hljs-built_in">require</span>(<span class="hljs-string">&apos;pouchdb-adapter-websql&apos;</span>));
+
+<span class="hljs-keyword">const</span> database = <span class="hljs-keyword">await</span> createRxDatabase({
+    name: <span class="hljs-string">&apos;mydatabase&apos;</span>,
+    storage: getRxStoragePouch(<span class="hljs-string">&apos;websql&apos;</span>)
+});
+</code></pre>
+<h1 id="nodejs">NodeJS</h1>
+<h2 id="leveldown">leveldown</h2>
+<p>This adapter uses a <a href="https://github.com/Level/leveldown" target="_blank">LevelDB C++ binding</a> to store that data on the filesystem. It has the best performance compared to other filesystem adapters. This adapter can <strong>not</strong> be used when multiple nodejs-processes access the same filesystem folders for storage.</p>
+<pre><code class="lang-js"><span class="hljs-comment">// npm install leveldown --save</span>
+<span class="hljs-comment">// npm install pouchdb-adapter-leveldb --save</span>
+addPouchPlugin(<span class="hljs-built_in">require</span>(<span class="hljs-string">&apos;pouchdb-adapter-leveldb&apos;</span>)); <span class="hljs-comment">// leveldown adapters need the leveldb plugin to work</span>
+<span class="hljs-keyword">const</span> leveldown = <span class="hljs-built_in">require</span>(<span class="hljs-string">&apos;leveldown&apos;</span>);
+
+<span class="hljs-keyword">const</span> database = <span class="hljs-keyword">await</span> createRxDatabase({
+    name: <span class="hljs-string">&apos;mydatabase&apos;</span>,
+    storage: getRxStoragePouch(leveldown) <span class="hljs-comment">// the full leveldown-module</span>
+});
+
+<span class="hljs-comment">// or use a specific folder to store the data</span>
+<span class="hljs-keyword">const</span> database = <span class="hljs-keyword">await</span> createRxDatabase({
+    name: <span class="hljs-string">&apos;/root/user/project/mydatabase&apos;</span>,
+    storage: getRxStoragePouch(leveldown) <span class="hljs-comment">// the full leveldown-module</span>
+});
+</code></pre>
+<h2 id="node-websql">Node-Websql</h2>
+<p>This adapter uses the <a href="https://github.com/nolanlawson/node-websql" target="_blank">node-websql</a>-shim to store data on the filesystem. Its advantages are that it does not need a leveldb build and it can be used when multiple nodejs-processes use the same database-files.</p>
+<pre><code class="lang-js"><span class="hljs-comment">// npm install pouchdb-adapter-node-websql --save</span>
+addPouchPlugin(<span class="hljs-built_in">require</span>(<span class="hljs-string">&apos;pouchdb-adapter-node-websql&apos;</span>));
+
+<span class="hljs-keyword">const</span> database = <span class="hljs-keyword">await</span> createRxDatabase({
+    name: <span class="hljs-string">&apos;mydatabase&apos;</span>,
+    storage: getRxStoragePouch(<span class="hljs-string">&apos;websql&apos;</span>) <span class="hljs-comment">// the name of your adapter</span>
+});
+
+<span class="hljs-comment">// or use a specific folder to store the data</span>
+<span class="hljs-keyword">const</span> database = <span class="hljs-keyword">await</span> createRxDatabase({
+    name: <span class="hljs-string">&apos;/root/user/project/mydatabase&apos;</span>,
+    storage: getRxStoragePouch(<span class="hljs-string">&apos;websql&apos;</span>) <span class="hljs-comment">// the name of your adapter</span>
+});
+</code></pre>
+<h1 id="react-native">React-Native</h1>
+<h2 id="react-native-sqlite">react-native-sqlite</h2>
+<p>Uses ReactNative SQLite as storage. Claims to be much faster than the asyncstorage adapter.
+To use it, you have to do some steps from <a href="https://dev.to/craftzdog/hacking-pouchdb-to-use-on-react-native-1gjh" target="_blank">this tutorial</a>.</p>
+<p>First install <code>pouchdb-adapter-react-native-sqlite</code> and <code>react-native-sqlite-2</code>.</p>
+<pre><code class="lang-bash">npm install pouchdb-adapter-react-native-sqlite react-native-sqlite-2
+</code></pre>
+<p>Then you have to <a href="https://facebook.github.io/react-native/docs/linking-libraries-ios" target="_blank">link</a> the library.</p>
+<pre><code class="lang-bash">react-native link react-native-sqlite-2
+</code></pre>
+<p>You also have to add some polyfills which are need but not included in react-native.</p>
+<pre><code class="lang-bash">npm install base-64 events
+</code></pre>
+<pre><code class="lang-js"><span class="hljs-keyword">import</span> { decode, encode } <span class="hljs-keyword">from</span> <span class="hljs-string">&apos;base-64&apos;</span>
+
+<span class="hljs-keyword">if</span> (!global.btoa) {
+    global.btoa = encode;
+}
+
+<span class="hljs-keyword">if</span> (!global.atob) {
+    global.atob = decode;
+}
+
+<span class="hljs-comment">// Avoid using node dependent modules</span>
+process.browser = <span class="hljs-literal">true</span>;
+</code></pre>
+<p>Then you can use it inside of your code.</p>
+<pre><code class="lang-js"><span class="hljs-keyword">import</span> { createRxDatabase } <span class="hljs-keyword">from</span> <span class="hljs-string">&apos;rxdb&apos;</span>;
+<span class="hljs-keyword">import</span> { addPouchPlugin, getRxStoragePouch } <span class="hljs-keyword">from</span> <span class="hljs-string">&apos;rxdb/plugins/pouchdb&apos;</span>;
+<span class="hljs-keyword">import</span> SQLite <span class="hljs-keyword">from</span> <span class="hljs-string">&apos;react-native-sqlite-2&apos;</span>
+<span class="hljs-keyword">import</span> SQLiteAdapterFactory <span class="hljs-keyword">from</span> <span class="hljs-string">&apos;pouchdb-adapter-react-native-sqlite&apos;</span>
+
+<span class="hljs-keyword">const</span> SQLiteAdapter = SQLiteAdapterFactory(SQLite)
+
+addPouchPlugin(SQLiteAdapter);
+addPouchPlugin(<span class="hljs-built_in">require</span>(<span class="hljs-string">&apos;pouchdb-adapter-http&apos;</span>));
+
+<span class="hljs-keyword">const</span> database = <span class="hljs-keyword">await</span> createRxDatabase({
+    name: <span class="hljs-string">&apos;mydatabase&apos;</span>,
+    storage: getRxStoragePouch(<span class="hljs-string">&apos;react-native-sqlite&apos;</span>) <span class="hljs-comment">// the name of your adapter</span>
+});
+</code></pre>
+<h2 id="asyncstorage">asyncstorage</h2>
+<p>Uses react-native&apos;s <a href="https://facebook.github.io/react-native/docs/asyncstorage" target="_blank">asyncstorage</a>.</p>
+<p><strong>Notice</strong>: There are <a href="https://github.com/pubkey/rxdb/issues/2286" target="_blank">known problems</a> with this adapter and it is <strong>not</strong> recommended to use it.</p>
+<pre><code class="lang-js"><span class="hljs-comment">// npm install pouchdb-adapter-asyncstorage --save</span>
+addPouchPlugin(<span class="hljs-built_in">require</span>(<span class="hljs-string">&apos;pouchdb-adapter-asyncstorage&apos;</span>));
+
+<span class="hljs-keyword">const</span> database = <span class="hljs-keyword">await</span> createRxDatabase({
+    name: <span class="hljs-string">&apos;mydatabase&apos;</span>,
+    storage: getRxStoragePouch(<span class="hljs-string">&apos;node-asyncstorage&apos;</span>) <span class="hljs-comment">// the name of your adapter</span>
+});
+</code></pre>
+<h2 id="asyncstorage-down">asyncstorage-down</h2>
+<p>A leveldown adapter that stores on asyncstorage.</p>
+<pre><code class="lang-js"><span class="hljs-comment">// npm install pouchdb-adapter-asyncstorage-down --save</span>
+addPouchPlugin(<span class="hljs-built_in">require</span>(<span class="hljs-string">&apos;pouchdb-adapter-leveldb&apos;</span>)); <span class="hljs-comment">// leveldown adapters need the leveldb plugin to work</span>
+
+<span class="hljs-keyword">const</span> asyncstorageDown = <span class="hljs-built_in">require</span>(<span class="hljs-string">&apos;asyncstorage-down&apos;</span>);
+
+<span class="hljs-keyword">const</span> database = <span class="hljs-keyword">await</span> createRxDatabase({
+    name: <span class="hljs-string">&apos;mydatabase&apos;</span>,
+    storage: getRxStoragePouch(asyncstorageDown) <span class="hljs-comment">// the full leveldown-module</span>
+});
+</code></pre>
+<h1 id="cordova--phonegap--capacitor">Cordova / Phonegap / Capacitor</h1>
+<h2 id="cordova-sqlite">cordova-sqlite</h2>
+<p>Uses cordova&apos;s global <code>cordova.sqlitePlugin</code>. It can be used with cordova and capacitor.</p>
+<pre><code class="lang-js"><span class="hljs-comment">// npm install pouchdb-adapter-cordova-sqlite --save</span>
+addPouchPlugin(<span class="hljs-built_in">require</span>(<span class="hljs-string">&apos;pouchdb-adapter-cordova-sqlite&apos;</span>));
+
+<span class="hljs-comment">/**
+ * In capacitor/cordova you have to wait until all plugins are loaded and &apos;window.sqlitePlugin&apos;
+ * can be accessed.
+ * This function waits until document deviceready is called which ensures that everything is loaded.
+ * @link https://cordova.apache.org/docs/de/latest/cordova/events/events.deviceready.html
+ */</span>
+<span class="hljs-keyword">export</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">awaitCapacitorDeviceReady</span>(<span class="hljs-params"></span>): <span class="hljs-title">Promise</span>&lt;<span class="hljs-title">void</span>&gt; </span>{
+    <span class="hljs-keyword">return</span> <span class="hljs-keyword">new</span> <span class="hljs-built_in">Promise</span>(res =&gt; {
+        <span class="hljs-built_in">document</span>.addEventListener(<span class="hljs-string">&apos;deviceready&apos;</span>, () =&gt; {
+            res();
+        });
+    });
+}
+
+<span class="hljs-keyword">async</span> <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">getDatabase</span>(<span class="hljs-params"></span>)</span>{
+
+    <span class="hljs-comment">// first wait until the deviceready event is fired</span>
+    <span class="hljs-keyword">await</span> awaitCapacitorDeviceReady();
+
+    <span class="hljs-keyword">const</span> database = <span class="hljs-keyword">await</span> createRxDatabase({
+        name: <span class="hljs-string">&apos;mydatabase&apos;</span>,
+        storage: getRxStoragePouch(
+            <span class="hljs-string">&apos;cordova-sqlite&apos;</span>,
+            <span class="hljs-comment">// pouch settings are passed as second parameter</span>
+            {
+                <span class="hljs-comment">// for ios devices, the cordova-sqlite adapter needs to know where to save the data.</span>
+                iosDatabaseLocation: <span class="hljs-string">&apos;Library&apos;</span>
+            }
+        )
+    });
+}
+</code></pre>
 
                                 
                                 </section>
@@ -2381,14 +2530,10 @@ Because RxDB is used in client side applications, it cannot do any background ch
 
             
                 
-                <a href="plugins.html" class="navigation navigation-prev " aria-label="Previous page: Creating Plugins">
+                <a href="rx-storage-pouchdb.html" class="navigation navigation-prev navigation-unique" aria-label="Previous page: RxStorage PouchDB">
                     <i class="fa fa-angle-left"></i>
                 </a>
                 
-                
-                <a href="storage-migration.html" class="navigation navigation-next " aria-label="Next page: Storage Migration">
-                    <i class="fa fa-angle-right"></i>
-                </a>
                 
             
         
@@ -2397,7 +2542,7 @@ Because RxDB is used in client side applications, it cannot do any background ch
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Query Optimizer","level":"3.8","depth":1,"next":{"title":"Storage Migration","level":"3.9","depth":1,"path":"storage-migration.md","ref":"./storage-migration.md","articles":[]},"previous":{"title":"Creating Plugins","level":"3.7","depth":1,"path":"plugins.md","ref":"./plugins.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./analytics.js","./next-button.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - JavaScript Database","links":{"sidebar":{"RxDB":"/","Follow @twitter ":"https://twitter.com/intent/user?screen_name=rxdbjs","Chat @discord ":"https://discord.gg/tqt9ZttJfD","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"query-optimizer.md","mtime":"","type":"markdown"},"gitbook":{"version":"3.2.3","time":""},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"RxStorage PouchDB Adapters","level":"3.17.2","depth":2,"previous":{"title":"RxStorage PouchDB","level":"3.17.1","depth":2,"path":"rx-storage-pouchdb.md","ref":"./rx-storage-pouchdb.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./analytics.js","./next-button.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - JavaScript Database","links":{"sidebar":{"RxDB":"/","Follow @twitter ":"https://twitter.com/intent/user?screen_name=rxdbjs","Chat @discord ":"https://discord.gg/tqt9ZttJfD","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"adapters.md","mtime":"","type":"markdown"},"gitbook":{"version":"3.2.3","time":""},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>

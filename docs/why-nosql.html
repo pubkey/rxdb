@@ -2107,7 +2107,20 @@
             
         </li>
     
-        <li class="chapter " data-level="3.16.2" data-path="releases/13.0.0.html">
+        <li class="chapter " data-level="3.16.2" data-path="releases/14.0.0.html">
+            
+                <a href="releases/14.0.0.html">
+            
+                    
+                    14.0.0
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="3.16.3" data-path="releases/13.0.0.html">
             
                 <a href="releases/13.0.0.html">
             
@@ -2120,7 +2133,7 @@
             
         </li>
     
-        <li class="chapter " data-level="3.16.3" data-path="releases/12.0.0.html">
+        <li class="chapter " data-level="3.16.4" data-path="releases/12.0.0.html">
             
                 <a href="releases/12.0.0.html">
             
@@ -2133,7 +2146,7 @@
             
         </li>
     
-        <li class="chapter " data-level="3.16.4" data-path="releases/11.0.0.html">
+        <li class="chapter " data-level="3.16.5" data-path="releases/11.0.0.html">
             
                 <a href="releases/11.0.0.html">
             
@@ -2146,7 +2159,7 @@
             
         </li>
     
-        <li class="chapter " data-level="3.16.5" data-path="releases/10.0.0.html">
+        <li class="chapter " data-level="3.16.6" data-path="releases/10.0.0.html">
             
                 <a href="releases/10.0.0.html">
             
@@ -2159,7 +2172,7 @@
             
         </li>
     
-        <li class="chapter " data-level="3.16.6" data-path="releases/9.0.0.html">
+        <li class="chapter " data-level="3.16.7" data-path="releases/9.0.0.html">
             
                 <a href="releases/9.0.0.html">
             
@@ -2172,12 +2185,57 @@
             
         </li>
     
-        <li class="chapter " data-level="3.16.7" data-path="releases/8.0.0.html">
+        <li class="chapter " data-level="3.16.8" data-path="releases/8.0.0.html">
             
                 <a href="releases/8.0.0.html">
             
                     
                     8.0.0
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        <li class="chapter " data-level="3.17" >
+            
+                <span>
+            
+                    
+                    Deprecated
+            
+                </span>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="3.17.1" data-path="rx-storage-pouchdb.html">
+            
+                <a href="rx-storage-pouchdb.html">
+            
+                    
+                    RxStorage PouchDB
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="3.17.2" data-path="adapters.html">
+            
+                <a href="adapters.html">
+            
+                    
+                    RxStorage PouchDB Adapters
             
                 </a>
             
@@ -2364,7 +2422,7 @@ On a NoSQL database, validating a changed document is trivial. The client sends 
 <p>To use an offline first database in the frontend, you have to make it compatible with your backend APIs.
 Making software things compatible often means you have to find the <strong>lowest common denominator</strong>.
 When you have SQLite in the frontend and want to replicate it with the backend, the backend also has to use SQLite. You cannot even use PostgreSQL because it has a different SQL dialect and some queries might fail. But you do not want to let the frontend dictate which technologies to use in the backend just to make replication work.</p>
-<p>With NoSQL, you just have documents and writes to these documents. You can build a document based layer on top of everything by <strong>removing</strong> functionality. It can be built on top of SQL, but also on top of a graph database or even on top of a key-value store like <a href="adapters.md#leveldown">levelDB</a> or <a href="rx-storage-foundationdb.html">FoundationDB</a>.</p>
+<p>With NoSQL, you just have documents and writes to these documents. You can build a document based layer on top of everything by <strong>removing</strong> functionality. It can be built on top of SQL, but also on top of a graph database or even on top of a key-value store like <a href="adapters.html#leveldown">levelDB</a> or <a href="rx-storage-foundationdb.html">FoundationDB</a>.</p>
 <p>With that document layer you can build a <a href="replication.html">replication API</a> that serves documents sorted by the last update time and there you have a realtime replication.</p>
 <h2 id="caching-query-results">Caching query results</h2>
 <p>Memory is limited and this is especially true for client side applications where you never know how much free RAM the device really has. You want to have a fast realtime UI, so your database must be able to cache query results.</p>

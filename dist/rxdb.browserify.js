@@ -21235,7 +21235,7 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
      *
      * @author Dan Kogai (https://github.com/dankogai)
      */
-    var version = '3.7.4';
+    var version = '3.7.5';
     /**
      * @deprecated use lowercase `version`.
      */
@@ -21256,10 +21256,7 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
     var _fromCC = String.fromCharCode.bind(String);
     var _U8Afrom = typeof Uint8Array.from === 'function'
         ? Uint8Array.from.bind(Uint8Array)
-        : function (it, fn) {
-            if (fn === void 0) { fn = function (x) { return x; }; }
-            return new Uint8Array(Array.prototype.slice.call(it, 0).map(fn));
-        };
+        : function (it) { return new Uint8Array(Array.prototype.slice.call(it, 0)); };
     var _mkUriSafe = function (src) { return src
         .replace(/=/g, '').replace(/[+\/]/g, function (m0) { return m0 == '+' ? '-' : '_'; }); };
     var _tidyB64 = function (s) { return s.replace(/[^A-Za-z0-9\+\/]/g, ''); };
@@ -21423,7 +21420,7 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
     //
     var _toUint8Array = _hasBuffer
         ? function (a) { return _U8Afrom(Buffer.from(a, 'base64')); }
-        : function (a) { return _U8Afrom(_atob(a), function (c) { return c.charCodeAt(0); }); };
+        : function (a) { return _U8Afrom(_atob(a).split('').map(function (c) { return c.charCodeAt(0); })); };
     /**
      * converts a Base64 string to a Uint8Array.
      */

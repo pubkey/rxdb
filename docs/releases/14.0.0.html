@@ -4,7 +4,7 @@
     <head>
         <meta charset="UTF-8">
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-        <title>Use RxDB with Typescript · RxDB - JavaScript Database</title>
+        <title>14.0.0 · RxDB - JavaScript Database</title>
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="description" content="">
         <meta name="generator" content="GitBook 3.2.3">
@@ -62,6 +62,8 @@
     <link rel="apple-touch-icon-precomposed" sizes="152x152" href="../gitbook/images/apple-touch-icon-precomposed-152.png">
     <link rel="shortcut icon" href="../gitbook/images/favicon.ico" type="image/x-icon">
 
+    
+    <link rel="next" href="13.0.0.html" />
     
     
 
@@ -1896,9 +1898,9 @@
             <ul class="articles">
                 
     
-        <li class="chapter active" data-level="3.12.1" data-path="typescript.html">
+        <li class="chapter " data-level="3.12.1" data-path="../tutorials/typescript.html">
             
-                <a href="typescript.html">
+                <a href="../tutorials/typescript.html">
             
                     
                     Use RxDB with Typescript
@@ -2103,9 +2105,9 @@
             
         </li>
     
-        <li class="chapter " data-level="3.16.2" data-path="../releases/14.0.0.html">
+        <li class="chapter active" data-level="3.16.2" data-path="14.0.0.html">
             
-                <a href="../releases/14.0.0.html">
+                <a href="14.0.0.html">
             
                     
                     14.0.0
@@ -2116,9 +2118,9 @@
             
         </li>
     
-        <li class="chapter " data-level="3.16.3" data-path="../releases/13.0.0.html">
+        <li class="chapter " data-level="3.16.3" data-path="13.0.0.html">
             
-                <a href="../releases/13.0.0.html">
+                <a href="13.0.0.html">
             
                     
                     13.0.0
@@ -2129,9 +2131,9 @@
             
         </li>
     
-        <li class="chapter " data-level="3.16.4" data-path="../releases/12.0.0.html">
+        <li class="chapter " data-level="3.16.4" data-path="12.0.0.html">
             
-                <a href="../releases/12.0.0.html">
+                <a href="12.0.0.html">
             
                     
                     12.0.0
@@ -2142,9 +2144,9 @@
             
         </li>
     
-        <li class="chapter " data-level="3.16.5" data-path="../releases/11.0.0.html">
+        <li class="chapter " data-level="3.16.5" data-path="11.0.0.html">
             
-                <a href="../releases/11.0.0.html">
+                <a href="11.0.0.html">
             
                     
                     11.0.0
@@ -2155,9 +2157,9 @@
             
         </li>
     
-        <li class="chapter " data-level="3.16.6" data-path="../releases/10.0.0.html">
+        <li class="chapter " data-level="3.16.6" data-path="10.0.0.html">
             
-                <a href="../releases/10.0.0.html">
+                <a href="10.0.0.html">
             
                     
                     10.0.0
@@ -2168,9 +2170,9 @@
             
         </li>
     
-        <li class="chapter " data-level="3.16.7" data-path="../releases/9.0.0.html">
+        <li class="chapter " data-level="3.16.7" data-path="9.0.0.html">
             
-                <a href="../releases/9.0.0.html">
+                <a href="9.0.0.html">
             
                     
                     9.0.0
@@ -2181,9 +2183,9 @@
             
         </li>
     
-        <li class="chapter " data-level="3.16.8" data-path="../releases/8.0.0.html">
+        <li class="chapter " data-level="3.16.8" data-path="8.0.0.html">
             
-                <a href="../releases/8.0.0.html">
+                <a href="8.0.0.html">
             
                     
                     8.0.0
@@ -2274,7 +2276,7 @@
     <!-- Title -->
     <h1>
         <i class="fa fa-circle-o-notch fa-spin"></i>
-        <a href=".." >Use RxDB with Typescript</a>
+        <a href=".." >14.0.0</a>
     </h1>
 </div>
 
@@ -2289,208 +2291,134 @@
     
                                 <section class="normal markdown-section">
                                 
-                                <h1 id="using-rxdb-with-typescript">Using RxDB with TypeScript</h1>
-<!-- IMPORTANT: When you edit this file, apply the same changes to test/tutorials/src/typescript.ts -->
-<p>In this tutorial you will learn how to use RxDB with TypeScript.
-We will create a basic database with one collection and several ORM-methods, fully typed!</p>
-<p>RxDB directly comes with its typings and you do not have to install anything else, however the latest version of RxDB (v9+) requires that you are using Typescript v3.8 or higher.
-Our way to go is</p>
+                                <h1 id="1400">14.0.0</h1>
+<p>The release <code>14.0.0</code> is used for major refactorings and API changes.
+The replication or the storage layer have only been touched marginally.</p>
+<p>Notice that only the major changes are listed here. All minor changes can be found in the <a href="https://github.com/pubkey/rxdb/blob/master/CHANGELOG.md" target="_blank">changelog</a>.</p>
+<h2 id="removing-deprecated-features">Removing deprecated features</h2>
+<p>The PouchDB RxStorage was deprecated in 13 and has now finally been removed, see <a href="../questions-answers.html#why-is-the-pouchdb-rxstorage-deprecated">here</a>.
+Also the old <code>replication-couchdb</code> plugin was removed. Instead we had the <code>replication-couchdb-new</code> plugin which was now renamed to <code>replication-couchdb</code>.</p>
+<h2 id="api-changes">API changes</h2>
+<h3 id="rxdocument-objects-are-now-immutable">RxDocument objects are now immutable</h3>
+<p>At the previous version of RxDB, RxDocuments mutate themself when they receive ChangeEvents from the database. For example when you have a document where <code>name = &apos;foo&apos;</code> and some update changes the state to <code>name = &apos;bar&apos;</code> in the database, then the previous JavaScript object changed its own property to the have <code>doc.name === &apos;bar&apos;</code>.
+This feature was great when you use a RxDocument with some change-detection like in angular or vue templates. You can use document properties directly in the template and all updates will be reflected in the view, without having to use observables or subscriptions.</p>
+<p>However this behavior is also confusing many times. When the state in the database is changed, it is not clear at which exact point of time the objects attribute changes. Also the self mutating behavior created some problem with vue- and react-devtools because of how they clone objects.</p>
+<p>In RxDB v14, all RxDocuments are immutable. When you subscribe to a query and the same document is returned in the results, this will always be a new JavaScript object.</p>
+<p>Also <code>RxDocument.$</code> now emits <code>RxDocument</code> instances instead of the plain document data.</p>
+<h3 id="refactor-findbyids">Refactor <code>findByIds()</code></h3>
+<p>In the past, the functions <code>findByIds</code> and <code>findByIds$</code> directly returned the result set. This was confusing, instead they now return a <code>RxQuery</code> object that works exactly like any other database query.</p>
+<pre><code class="lang-ts"><span class="hljs-keyword">const</span> results = await myRxCollection.findByIds([<span class="hljs-string">&apos;foo&apos;</span>, <span class="hljs-string">&apos;bar&apos;</span>]).exec();
+<span class="hljs-keyword">const</span> results$ = await myRxCollection.findByIds([<span class="hljs-string">&apos;foo&apos;</span>, <span class="hljs-string">&apos;bar&apos;</span>]).$;
+</code></pre>
+<h3 id="rename-to-rxdocument-updatemodify-functions">Rename to RxDocument update/modify functions</h3>
+<p>Related issue <a href="https://github.com/pubkey/rxdb/issues/4180" target="_blank">#4180</a>.</p>
+<p>In the past the naming of the document mutation methods is confusing.
+For example <code>update()</code> works completely different to <code>atomicUpdate()</code> and so on.
+The naming of all functions was unified and all methods do now have an incremental and a non-incremental version (previously known as <code>atomic</code>):</p>
 <ul>
-<li>First define what the documents look like</li>
-<li>Then define what the collections look like</li>
-<li>Then define what the database looks like</li>
+<li>RENAME <code>atomicUpdate()</code> to <code>incrementalModify()</code></li>
+<li>RENAME <code>atomicPatch()</code> to <code>incrementalPatch()</code></li>
+<li>RENAME <code>atomicUpsert()</code> to <code>incrementalUpsert()</code></li>
+<li>ADD <code>RxDocument().incrementalUpdate()</code></li>
+<li>ADD <code>RxDocument.incrementalRemove()</code></li>
+<li>ADD non-incremental <code>RxDocument</code> methods <code>patch()</code> and <code>modify()</code></li>
 </ul>
-<h2 id="declare-the-types">Declare the types</h2>
-<p>First you import the types from RxDB.</p>
-<pre><code class="lang-typescript"><span class="hljs-keyword">import</span> {
-    createRxDatabase,
-    RxDatabase,
-    RxCollection,
-    RxJsonSchema,
-    RxDocument,
-} from <span class="hljs-string">&apos;rxdb&apos;</span>;
+<h3 id="replication-is-started-with-a-pure-function">Replication is started with a pure function</h3>
+<p>In the past, to start a replication, the replication plugin was added to RxDB and a method on the RxCollection was called like <code>myRxCollection.syncGraphQL()</code>.
+This caused many problems with tree shaking bailouts and having the correct typings.
+So instead of having class method on the RxCollection, the replications are now started like:</p>
+<pre><code class="lang-ts"><span class="hljs-keyword">import</span> { replicateCouchDB } from <span class="hljs-string">&apos;rxdb/plugins/replication-couchdb&apos;</span>;
+<span class="hljs-keyword">const</span> replicationState = replicateCouchDB({ <span class="hljs-comment">/* ... */</span> });
 </code></pre>
-<h2 id="create-the-base-document-type">Create the base document type</h2>
-<p>First we have to define the TypeScript type of the documents of a collection:</p>
-<h3 id="option-a-create-the-document-type-from-the-schema">Option A: Create the document type from the schema</h3>
-<pre><code class="lang-typescript"><span class="hljs-keyword">import</span> {
-    toTypedRxJsonSchema,
-    ExtractDocumentTypeFromTypedRxJsonSchema,
-    RxJsonSchema
-} from <span class="hljs-string">&apos;rxdb&apos;</span>;
-<span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> heroSchemaLiteral = {
-    title: <span class="hljs-string">&apos;hero schema&apos;</span>,
-    description: <span class="hljs-string">&apos;describes a human being&apos;</span>,
-    version: <span class="hljs-number">0</span>,
-    keyCompression: <span class="hljs-literal">true</span>,
-    primaryKey: <span class="hljs-string">&apos;passportId&apos;</span>,
-    <span class="hljs-keyword">type</span>: <span class="hljs-string">&apos;object&apos;</span>,
-    properties: {
-        passportId: {
-            <span class="hljs-keyword">type</span>: <span class="hljs-string">&apos;string&apos;</span>
-        },
-        firstName: {
-            <span class="hljs-keyword">type</span>: <span class="hljs-string">&apos;string&apos;</span>
-        },
-        lastName: {
-            <span class="hljs-keyword">type</span>: <span class="hljs-string">&apos;string&apos;</span>
-        },
-        age: {
-            <span class="hljs-keyword">type</span>: <span class="hljs-string">&apos;integer&apos;</span>
-        }
-    },
-    required: [<span class="hljs-string">&apos;firstName&apos;</span>, <span class="hljs-string">&apos;lastName&apos;</span>, <span class="hljs-string">&apos;passportId&apos;</span>],
-    indexes: [<span class="hljs-string">&apos;firstName&apos;</span>]
-} as <span class="hljs-keyword">const</span>; <span class="hljs-comment">// &lt;- It is important to set &apos;as const&apos; to preserve the literal type</span>
-<span class="hljs-keyword">const</span> schemaTyped = toTypedRxJsonSchema(heroSchemaLiteral);
-
-<span class="hljs-comment">// aggregate the document type from the schema</span>
-<span class="hljs-keyword">type</span> HeroDocType = ExtractDocumentTypeFromTypedRxJsonSchema&lt;<span class="hljs-keyword">typeof</span> schemaTyped&gt;;
-
-<span class="hljs-comment">// create the typed RxJsonSchema from the literal typed object.</span>
-<span class="hljs-keyword">const</span> heroSchema: RxJsonSchema&lt;HeroDocType&gt; = heroSchemaLiteral;
+<h3 id="storage-plugins-are-prefixed-with-storage-">Storage plugins are prefixed with <code>storage-</code></h3>
+<p>For better naming, all storage plugins have been prefixed with <code>storage-</code> so the imports have been changed:</p>
+<pre><code class="lang-ts"><span class="hljs-comment">// Instead of </span>
+<span class="hljs-keyword">import</span> { getRxStorageDexie } from <span class="hljs-string">&apos;rxdb/plugins/dexie&apos;</span>;
+<span class="hljs-comment">// it is now</span>
+<span class="hljs-keyword">import</span> { getRxStorageDexie } from <span class="hljs-string">&apos;rxdb/plugins/storage-dexie&apos;</span>;
 </code></pre>
-<h3 id="option-b-manually-type-the-document-type">Option B: Manually type the document type</h3>
-<pre><code class="lang-typescript"><span class="hljs-keyword">type</span> HeroDocType = {
-    passportId: <span class="hljs-built_in">string</span>;
-    firstName: <span class="hljs-built_in">string</span>;
-    lastName: <span class="hljs-built_in">string</span>;
-    age?: <span class="hljs-built_in">number</span>; <span class="hljs-comment">// optional</span>
-};
+<h3 id="encryption-plugin-was-renamed-to-encryption-crypto-js">Encryption plugin was renamed to <code>encryption-crypto-js</code></h3>
+<p>To make it possible to have alternative encryption plugins, the <code>encryption</code> plugin was renamed to <code>encryption-crypto-js</code>.</p>
+<pre><code class="lang-ts"><span class="hljs-comment">// Instead of </span>
+<span class="hljs-keyword">import</span> { wrappedKeyEncryptionStorage } from <span class="hljs-string">&apos;rxdb/plugins/encryption&apos;</span>;
+<span class="hljs-comment">// it is now</span>
+<span class="hljs-keyword">import</span> { wrappedKeyEncryptionCryptoJsStorage } from <span class="hljs-string">&apos;rxdb/plugins/encryption-crypto-js&apos;</span>;
 </code></pre>
-<h3 id="option-c-generate-the-document-type-from-schema-during-build-time">Option C: Generate the document type from schema during build time</h3>
-<p>If your schema is in a <code>.json</code> file or generated from somewhere else, you might generate the typings with the <a href="https://www.npmjs.com/package/json-schema-to-typescript" target="_blank">json-schema-to-typescript</a> module.</p>
-<h2 id="types-for-the-orm-methods">Types for the ORM methods</h2>
-<p>We also add some ORM-methods for the document.</p>
-<pre><code class="lang-typescript"><span class="hljs-keyword">type</span> HeroDocMethods = {
-    scream: (v: <span class="hljs-built_in">string</span>) =&gt; <span class="hljs-built_in">string</span>;
-};
-</code></pre>
-<p>We can merge these into our HeroDocument.</p>
-<pre><code class="lang-typescript"><span class="hljs-keyword">type</span> HeroDocument = RxDocument&lt;HeroDocType, HeroDocMethods&gt;;
-</code></pre>
-<p>Now we can define type for the collection which contains the documents.</p>
-<pre><code class="lang-typescript">
-<span class="hljs-comment">// we declare one static ORM-method for the collection</span>
-<span class="hljs-keyword">type</span> HeroCollectionMethods = {
-    countAllDocuments: () =&gt; Promise&lt;<span class="hljs-built_in">number</span>&gt;;
-}
-
-<span class="hljs-comment">// and then merge all our types</span>
-<span class="hljs-keyword">type</span> HeroCollection = RxCollection&lt;HeroDocType, HeroDocMethods, HeroCollectionMethods&gt;;
-</code></pre>
-<p>Before we can define the database, we make a helper-type which contains all collections of it.</p>
-<pre><code class="lang-typescript"><span class="hljs-keyword">type</span> MyDatabaseCollections = {
-    heroes: HeroCollection
-}
-</code></pre>
-<p>Now the database.</p>
-<pre><code class="lang-typescript"><span class="hljs-keyword">type</span> MyDatabase = RxDatabase&lt;MyDatabaseCollections&gt;;
-</code></pre>
-<h2 id="using-the-types">Using the types</h2>
-<p>Now that we have declare all our types, we can use them.</p>
-<pre><code class="lang-typescript">
-<span class="hljs-comment">/**
- * create database and collections
- */</span>
-<span class="hljs-keyword">const</span> myDatabase: MyDatabase = await createRxDatabase&lt;MyDatabaseCollections&gt;({
-    name: <span class="hljs-string">&apos;mydb&apos;</span>,
-    storage: getRxStorageDexie()
-});
-
-<span class="hljs-keyword">const</span> heroSchema: RxJsonSchema&lt;HeroDocType&gt; = {
-    title: <span class="hljs-string">&apos;human schema&apos;</span>,
-    description: <span class="hljs-string">&apos;describes a human being&apos;</span>,
-    version: <span class="hljs-number">0</span>,
-    keyCompression: <span class="hljs-literal">true</span>,
-    primaryKey: <span class="hljs-string">&apos;passportId&apos;</span>,
-    <span class="hljs-keyword">type</span>: <span class="hljs-string">&apos;object&apos;</span>,
-    properties: {
-        passportId: {
-            <span class="hljs-keyword">type</span>: <span class="hljs-string">&apos;string&apos;</span>
-        },
-        firstName: {
-            <span class="hljs-keyword">type</span>: <span class="hljs-string">&apos;string&apos;</span>
-        },
-        lastName: {
-            <span class="hljs-keyword">type</span>: <span class="hljs-string">&apos;string&apos;</span>
-        },
-        age: {
-            <span class="hljs-keyword">type</span>: <span class="hljs-string">&apos;integer&apos;</span>
-        }
-    },
-    required: [<span class="hljs-string">&apos;passportId&apos;</span>, <span class="hljs-string">&apos;firstName&apos;</span>, <span class="hljs-string">&apos;lastName&apos;</span>]
-};
-
-<span class="hljs-keyword">const</span> heroDocMethods: HeroDocMethods = {
-    scream: <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"><span class="hljs-keyword">this</span>: HeroDocument, what: <span class="hljs-built_in">string</span></span>) </span>{
-        <span class="hljs-keyword">return</span> <span class="hljs-keyword">this</span>.firstName + <span class="hljs-string">&apos; screams: &apos;</span> + what.toUpperCase();
-    }
-};
-
-<span class="hljs-keyword">const</span> heroCollectionMethods: HeroCollectionMethods = {
-    countAllDocuments: async <span class="hljs-function"><span class="hljs-keyword">function</span>(<span class="hljs-params"><span class="hljs-keyword">this</span>: HeroCollection</span>) </span>{
-        <span class="hljs-keyword">const</span> allDocs = await <span class="hljs-keyword">this</span>.find().exec();
-        <span class="hljs-keyword">return</span> allDocs.length;
-    }
-};
-
-await myDatabase.addCollections({
-    heroes: {
-        schema: heroSchema,
-        methods: heroDocMethods,
-        statics: heroCollectionMethods
-    }
-});
-
-<span class="hljs-comment">// add a postInsert-hook</span>
-myDatabase.heroes.postInsert(
-    <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">myPostInsertHook</span>(<span class="hljs-params">
-        <span class="hljs-keyword">this</span>: HeroCollection, <span class="hljs-comment">// own collection is bound to the scope</span>
-        docData: HeroDocType, <span class="hljs-comment">// documents data</span>
-        doc: HeroDocument <span class="hljs-comment">// RxDocument</span>
-    </span>) </span>{
-        <span class="hljs-built_in">console</span>.log(<span class="hljs-string">&apos;insert to &apos;</span> + <span class="hljs-keyword">this</span>.name + <span class="hljs-string">&apos;-collection: &apos;</span> + doc.firstName);
-    },
-    <span class="hljs-literal">false</span> <span class="hljs-comment">// not async</span>
-);
-
-<span class="hljs-comment">/**
- * use the database
- */</span>
-
-<span class="hljs-comment">// insert a document</span>
-<span class="hljs-keyword">const</span> hero: HeroDocument = await myDatabase.heroes.insert({
-    passportId: <span class="hljs-string">&apos;myId&apos;</span>,
-    firstName: <span class="hljs-string">&apos;piotr&apos;</span>,
-    lastName: <span class="hljs-string">&apos;potter&apos;</span>,
-    age: <span class="hljs-number">5</span>
-});
-
-<span class="hljs-comment">// access a property</span>
-<span class="hljs-built_in">console</span>.log(hero.firstName);
-
-<span class="hljs-comment">// use a orm method</span>
-hero.scream(<span class="hljs-string">&apos;AAH!&apos;</span>);
-
-<span class="hljs-comment">// use a static orm method from the collection</span>
-<span class="hljs-keyword">const</span> amount: <span class="hljs-built_in">number</span> = await myDatabase.heroes.countAllDocuments();
-<span class="hljs-built_in">console</span>.log(amount);
-
-
-<span class="hljs-comment">/**
- * clean up
- */</span>
-myDatabase.destroy();
-</code></pre>
-<h2 id="known-problems">Known Problems</h2>
-<p>RxDB uses the <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakRef" target="_blank">WeakRef API</a>. If your typescript bundler throws the error <code>TS2304: Cannot find name &apos;WeakRef&apos;</code>, you have to add <code>ES2021.WeakRef</code> to <code>compilerOptions.lib</code> in your <code>tsconfig.json</code>.</p>
-<pre><code class="lang-json">{
-    <span class="hljs-string">&quot;compilerOptions&quot;</span>: {
-        <span class="hljs-string">&quot;lib&quot;</span>: [<span class="hljs-string">&quot;ES2020&quot;</span>, <span class="hljs-string">&quot;ES2021.WeakRef&quot;</span>]
-    }
-}
-</code></pre>
+<h3 id="rewrite-the-worker-plugin">Rewrite the <code>worker</code> plugin</h3>
+<p>In the past, the <a href="../rx-storage-worker.html">worker plugin</a> was based on the <a href="https://www.npmjs.com/package/threads" target="_blank">threads</a> library. It was completely rewritten and uses the plain JavaScript API together with the <a href="../rx-storage-remote.html">remote storage plugin</a>. <strong>BUT</strong> notice that the worker plugin has moved into the <a href="https://rxdb.info/premium.html" target="_blank">RxDB Premium</a> package.</p>
+<h2 id="performance-improvements">Performance improvements</h2>
+<h3 id="do-not-use-hash-for-revisions-done">Do not use hash for revisions [DONE]</h3>
+<p>In the past, the <code>_rev</code> field of a RxDocument dat was filled with a hash of the documents data. This was not the best solution because:</p>
+<ul>
+<li>Hashing in JavaScript is slow, not running hashes on insert improves performance by about 33%</li>
+<li>When 2 clients do the exact same write to the document, it is not clear from comparing the document states because they will have the exact same hash which makes some conflict resolution strategies impossible to implement.</li>
+</ul>
+<p>Instead we now use just use the RxDatabase.token together with the revision height.</p>
+<h3 id="batch-up-incremental-operations">Batch up incremental operations</h3>
+<p>When making multiple writes to different (or the same) document, in the past RxDB made one write call to the strorage. When doing fast writes, like when you writhe the current mouse position to a document, the writes could have queued up to the point where the users recognizes performance lag.
+In RxDB v14, pending document updates are batched up into single storage writes for better performance.</p>
+<h3 id="improved-tree-shaking">Improved tree shaking</h3>
+<p>Many changes have been made to improve <a href="https://webpack.js.org/guides/tree-shaking/" target="_blank">tree shakability</a> of RxDB which results in smaller bundle sizes and a faster application startup.</p>
+<h3 id="refactor-the-document-cache">Refactor the document cache</h3>
+<p>The whole RxDocument cache was refactored. It now runs based on the <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/WeakRef" target="_blank">WeakRef API</a> and automatically cleans up cached documents that are no longer referenced. This reduces the use memory and makes RxDB more suitable for being used in Node.js on the server side.</p>
+<p>Notice that the WeakRef API is only featured in <a href="https://caniuse.com/?search=weakref" target="_blank">modern browsers</a> so RxDB will no longer run on ie11.</p>
+<h3 id="no-longer-transpile-some-modern-javascript-features">No longer transpile some modern JavaScript features</h3>
+<p>To reduce the bundle size and improve performance, the following JavaScript features will no longer be transpiled because they are natively supported in modern browsers anyway:</p>
+<ul>
+<li><a href="https://caniuse.com/async-functions" target="_blank">async/await</a></li>
+<li><a href="https://caniuse.com/arrow-functions" target="_blank">Arrow functions</a></li>
+<li><a href="https://caniuse.com/?search=for...of" target="_blank">for...of</a></li>
+<li><a href="https://caniuse.com/mdn-javascript_operators_object_initializer_shorthand_property_names" target="_blank">shorthand properties</a></li>
+<li><a href="https://caniuse.com/?search=spread%20operator" target="_blank">Spread operator</a></li>
+<li><a href="https://caniuse.com/?search=destructuring" target="_blank">destructuring</a></li>
+<li><a href="https://caniuse.com/?search=default%20parameters" target="_blank">default parameters</a></li>
+<li><a href="https://caniuse.com/?search=Object%20spread" target="_blank">object spread</a></li>
+</ul>
+<p>All these optimizations together reduced the <a href="https://github.com/pubkey/rxdb/blob/master/config/bundle-size.js" target="_blank">test-bundle</a> size from <code>74148</code> bytes down to <code>36007</code> bytes.</p>
+<h2 id="other-changes">Other changes</h2>
+<ul>
+<li>ADD <code>push/pull.initialCheckpoint</code> to start a replication from a given checkpoint.</li>
+<li>The following plugins are out of beta mode:<ul>
+<li><a href="../rx-storage-sharding.html">RxStorage Sharding</a></li>
+<li><a href="../rx-storage-remote.html">RxStorage Remote</a></li>
+<li><a href="../rx-storage-foundationdb.html">RxStorage FoundationDB</a></li>
+<li><a href="../replication-couchdb.html">New Replication CouchDB</a></li>
+<li><a href="../cleanup.html">Cleanup Plugin</a></li>
+</ul>
+</li>
+</ul>
+<h2 id="bugfixes">Bugfixes</h2>
+<ul>
+<li>CHANGE (memory RxStorage) do not clean up database state on closing of the storage, only on <code>remove()</code>.</li>
+<li>FIX CouchDB replication: Use correct default fetch method.</li>
+<li>FIX schema hashing should respect the sort order <a href="https://github.com/pubkey/rxdb/pull/4005" target="_blank">#4005</a></li>
+<li>FIX replication does not provide a <code>._rev</code> to the storage write when a conflict is resolved.</li>
+<li>FIX(remote storage) ensure caching works properly even on parallel create-calls</li>
+<li>FIX(replication) Composite Primary Keys broken on replicated collections <a href="https://github.com/pubkey/rxdb/pull/4190" target="_blank">#4190</a></li>
+<li>FIX(sqlite) $in Query not working SQLite <a href="https://github.com/pubkey/rxdb/issues/4278" target="_blank">#4278</a></li>
+<li>FIX CouchDB push is throwing error because of missing revision <a href="https://github.com/pubkey/rxdb/pull/4299" target="_blank">#4299</a></li>
+<li>ADD dev-mode shows a <code>console.warn()</code> to ensure people do not use it in production.</li>
+<li>Remove the usage of <code>Buffer</code>. We now use <code>Blob</code> everywhere.</li>
+<li>FIX import of socket.io <a href="https://github.com/pubkey/rxdb/pull/4307" target="_blank">#4307</a></li>
+<li>FIX Id length limit reached with composite key <a href="https://github.com/pubkey/rxdb/issues/4315" target="_blank">#4315</a></li>
+<li>FIX <code>$regex</code> query not working on remote storage.</li>
+<li>FIX SQLite must store attachments data as Blob instead of base64 string to reduce the database size.</li>
+<li>FIX CouchDB replication conflict handling</li>
+<li>CHANGE Encryption plugin was renamed to <code>encryption-crypto-js</code></li>
+<li>FIX replication state meta data must also be encrypted.</li>
+</ul>
+<h2 id="migration-from-13xx-to-1400">Migration from 13.x.x to 14.0.0</h2>
+<p>The way RxDB hashes and normalizes a schema has changed. To migrate stored data between the RxDB versions, therefore you have to increase your schema version by <code>1</code> and add a migration strategy.</p>
+<p>For some storages, the stored data of the previous RxDB versions is not compatible with RxDB <code>14.0.0</code>. So if you want to keep that data, you have to migrate it in a way. For most use cases you might want to just drop the data from the client and re-sync it again from the backend. To keep the data locally, you might want to use the <a href="../storage-migration.html">storage migration plugin</a>.</p>
+<h2 id="you-can-help">You can help!</h2>
+<p>There are many things that can be done by <strong>you</strong> to improve RxDB:</p>
+<ul>
+<li>Check the <a href="https://github.com/pubkey/rxdb/blob/master/orga/BACKLOG.md" target="_blank">BACKLOG</a> for features that would be great to have.</li>
+<li>Check the <a href="https://github.com/pubkey/rxdb/blob/master/orga/before-next-major.md" target="_blank">breaking backlog</a> for breaking changes that must be implemented in the future but where I did not have the time yet.</li>
+<li>Check the <a href="https://github.com/pubkey/rxdb/search?q=TODO" target="_blank">TODOs</a> in the code. There are many small improvements that can be done for performance and build size.</li>
+<li>Review the code and add tests. I am only a single human with a laptop. My code is not perfect and much small improvements can be done when people review the code and help me to clarify undefined behaviors.</li>
+<li>Update the <a href="https://github.com/pubkey/rxdb/tree/master/examples" target="_blank">example projects</a> many of them are outdated and need updates.</li>
+</ul>
 
                                 
                                 </section>
@@ -2519,6 +2447,10 @@ myDatabase.destroy();
             
                 
                 
+                <a href="13.0.0.html" class="navigation navigation-next navigation-unique" aria-label="Next page: 13.0.0">
+                    <i class="fa fa-angle-right"></i>
+                </a>
+                
             
         
     </div>
@@ -2526,7 +2458,7 @@ myDatabase.destroy();
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Use RxDB with Typescript","level":"3.12.1","depth":2,"next":{"title":"Opinions","level":"3.13","depth":1,"ref":"","articles":[{"title":"Offline First","level":"3.13.1","depth":2,"path":"offline-first.md","ref":"./offline-first.md","articles":[]},{"title":"Downsides of Offline First","level":"3.13.2","depth":2,"path":"downsides-of-offline-first.md","ref":"./downsides-of-offline-first.md","articles":[]},{"title":"Slow IndexedDB","level":"3.13.3","depth":2,"path":"slow-indexeddb.md","ref":"./slow-indexeddb.md","articles":[]},{"title":"Why NoSQL","level":"3.13.4","depth":2,"path":"why-nosql.md","ref":"./why-nosql.md","articles":[]},{"title":"Alternatives","level":"3.13.5","depth":2,"path":"alternatives.md","ref":"./alternatives.md","articles":[]},{"title":"React Native Database","level":"3.13.6","depth":2,"path":"react-native-database.md","ref":"./react-native-database.md","articles":[]},{"title":"Capacitor Database","level":"3.13.7","depth":2,"path":"capacitor-database.md","ref":"./capacitor-database.md","articles":[]},{"title":"Electron Database","level":"3.13.8","depth":2,"path":"electron-database.md","ref":"./electron-database.md","articles":[]},{"title":"Node.js Database","level":"3.13.9","depth":2,"path":"nodejs-database.md","ref":"./nodejs-database.md","articles":[]}]},"previous":{"title":"Tutorials","level":"3.12","depth":1,"ref":"","articles":[{"title":"Use RxDB with Typescript","level":"3.12.1","depth":2,"path":"tutorials/typescript.md","ref":"./tutorials/typescript.md","articles":[]}]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./analytics.js","./next-button.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - JavaScript Database","links":{"sidebar":{"RxDB":"/","Follow @twitter ":"https://twitter.com/intent/user?screen_name=rxdbjs","Chat @discord ":"https://discord.gg/tqt9ZttJfD","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"tutorials/typescript.md","mtime":"","type":"markdown"},"gitbook":{"version":"3.2.3","time":""},"basePath":"..","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"14.0.0","level":"3.16.2","depth":2,"next":{"title":"13.0.0","level":"3.16.3","depth":2,"path":"releases/13.0.0.md","ref":"./releases/13.0.0.md","articles":[]},"previous":{"title":"CHANGELOG","level":"3.16.1","depth":2,"url":"https://github.com/pubkey/rxdb/blob/master/CHANGELOG.md","ref":"https://github.com/pubkey/rxdb/blob/master/CHANGELOG.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./analytics.js","./next-button.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"Edit This Page","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - JavaScript Database","links":{"sidebar":{"RxDB":"/","Follow @twitter ":"https://twitter.com/intent/user?screen_name=rxdbjs","Chat @discord ":"https://discord.gg/tqt9ZttJfD","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"releases/14.0.0.md","mtime":"","type":"markdown"},"gitbook":{"version":"3.2.3","time":""},"basePath":"..","book":{"language":""}});
         });
     </script>
 </div>
