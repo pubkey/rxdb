@@ -16,9 +16,9 @@
     "concurrently": "7.6.0",
     "local-web-server": "5.3.0",
     "normalize.css": "8.0.1",
-    "pouchdb-adapter-http": "8.0.0",
-    "pouchdb-adapter-localstorage": "8.0.0",
-    "pouchdb-replication": "8.0.0",
+    "pouchdb-adapter-http": "8.0.1",
+    "pouchdb-adapter-localstorage": "8.0.1",
+    "pouchdb-replication": "8.0.1",
     "pouchdb-server": "4.2.0"
   },
   "devDependencies": {
