@@ -16,8 +16,8 @@
     "test": "concurrently \"npm run server\" \"npm run build:serve\" \"npm run test:run\" --kill-others --success first"
   },
   "dependencies": {
-    "pouchdb-adapter-http": "8.0.0",
-    "pouchdb-adapter-idb": "8.0.0",
+    "pouchdb-adapter-http": "8.0.1",
+    "pouchdb-adapter-idb": "8.0.1",
     "pouchdb-server": "4.2.0",
     "random-int": "3.0.0",
     "register-service-worker": "1.7.2",
