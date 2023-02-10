@@ -47,6 +47,10 @@ Create a package that normalizes and optimizes mango queries.
 - optimization: merge $and operators
 - Use index for $regex query if possible https://www.mongodb.com/docs/manual/reference/operator/query/regex/#index-use
 
+## Add plugin for attachments compression
+
+Attachments can get quite big. Use compression when the api is available on firefox: https://caniuse.com/?search=compressionstream
+
 ## Add plugin for [Pocketbase](https://pocketbase.io/) replication
 
 
