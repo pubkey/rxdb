@@ -3,6 +3,8 @@
 
 <!-- CHANGELOG NEWEST -->
 
+- FIX(websocket remote storage) custom request not working with multiple clients
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

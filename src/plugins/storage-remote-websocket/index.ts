@@ -3,12 +3,11 @@ import type {
     WebSocket
 } from 'ws';
 import {
-    getFromMapOrThrow
+    getFromMapOrThrow, randomCouchString
 } from '../../plugins/utils';
 import {
     getWebSocket,
-    startSocketServer,
-    WebsocketWithRefCount
+    startSocketServer
 } from '../replication-websocket';
 import { exposeRxStorageRemote } from '../storage-remote/remote';
 import { getRxStorageRemote } from '../storage-remote/rx-storage-remote';
@@ -81,21 +80,16 @@ export function startRxStorageRemoteWebsocketServer(
 
 
 
-/**
- * Reuse connections to the same url.
- * This makes testing easier because we do not run into a connection limit.
- * It might be better to instead track the amount of open storage instances
- * and open/close the websocket client depending on the counter.
- */
-const WebsocketClientByUrl = new Map<string, Promise<WebsocketWithRefCount>>();
-
-export function getRxStorageRemoteWebsocket(options: RxStorageRemoteWebsocketClientOptions): RxStorageRemoteWebsocketClient {
-    const identifier = options.url + 'rx-remote-storage-websocket';
+export function getRxStorageRemoteWebsocket(
+    options: RxStorageRemoteWebsocketClientOptions
+): RxStorageRemoteWebsocketClient {
+    const identifier = [
+        options.url,
+        'rx-remote-storage-websocket',
+        options.disableCache ? randomCouchString() : ''
+    ].join('');
     const messages$ = new Subject<MessageFromRemote>();
-    const websocketClientPromise = WebsocketClientByUrl.has(options.url) ?
-        getFromMapOrThrow(WebsocketClientByUrl, options.url) :
-        getWebSocket(options.url, identifier);
-    WebsocketClientByUrl.set(options.url, websocketClientPromise);
+    const websocketClientPromise = getWebSocket(options.url, identifier);
     const storage = getRxStorageRemote({
         identifier,
         statics: options.statics,

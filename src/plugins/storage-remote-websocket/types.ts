@@ -23,6 +23,12 @@ export type RxStorageRemoteWebsocketServerState = {
 export type RxStorageRemoteWebsocketClientOptions = ClientOptions & {
     statics: RxStorageStatics;
     url: string;
+    /**
+     * By default, sockets are cached and reused by url.
+     * You can disable this behavior by setting reuseSocketConnection=false
+     * This can be usefull in tests to simpulate multiple clients.
+     */
+    disableCache?: boolean;
 };
 
 export type RxStorageRemoteWebsocketClient = RxStorageRemote;
