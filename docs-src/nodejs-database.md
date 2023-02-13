@@ -3,6 +3,10 @@
 [RxDB](https://rxdb.info) is a fast, reactive realtime NoSQL **database** made for **JavaScript** applications like Websites, hybrid Apps, Electron-Apps, Progressive Web Apps and **Node.js**. While RxDB was initially created to be used with UI applications, it has been matured and optimized to make it useful for pure server-side use cases. It can be used as embedded, local database inside of the Node.js JavaScript process, or it can be used similar to a database server that Node.js can connect to. The [RxStorage](./rx-storage.md) layer makes it possible to switch out the underlying storage engine which makes RxDB a very flexible database that can be optimized for many scenarios.
 
 
+<p align="center">
+  <img src="./files/icons/nodejs.svg" alt="Node.js" width="70" />
+</p>
+
 ## Persistend Database
 
 To get a "normal" database where the data is persisted to a file system, RxDB provides multiple storage implementations.
@@ -133,6 +137,8 @@ The replication copies over the whole database set to other instances live-repli
 Sometimes however you might not want to store the full dataset on each microservice. Then it is better to use the remote RxStorage and connect it to the "main" database. The remote storage will run all operations the main database and return the result to the calling database.
 
 
-## Other Node.js Databases
+## Follow up on RxDB+Node.js
 
-I created [a list of Node.js database alternatives](./alternatives.md) that you will help you to pick a database if you do not want to use RxDB.
+- Check out the [RxDB Nodejs example](https://github.com/pubkey/rxdb/tree/master/examples/node).
+- If you haven't done yet, you should start learning about RxDB with the [Quickstart Tutorial](./quickstart.md).
+- I created [a list of embedded JavaSCript databases](./alternatives.md) that you will help you to pick a database if you do not want to use RxDB.
