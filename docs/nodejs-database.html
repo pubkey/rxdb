@@ -2295,6 +2295,10 @@
                                 
                                 <h1 id="nodejs-database">Node.js Database</h1>
 <p><a href="https://rxdb.info" target="_blank">RxDB</a> is a fast, reactive realtime NoSQL <strong>database</strong> made for <strong>JavaScript</strong> applications like Websites, hybrid Apps, Electron-Apps, Progressive Web Apps and <strong>Node.js</strong>. While RxDB was initially created to be used with UI applications, it has been matured and optimized to make it useful for pure server-side use cases. It can be used as embedded, local database inside of the Node.js JavaScript process, or it can be used similar to a database server that Node.js can connect to. The <a href="rx-storage.html">RxStorage</a> layer makes it possible to switch out the underlying storage engine which makes RxDB a very flexible database that can be optimized for many scenarios.</p>
+<p align="center">
+  <img src="files/icons/nodejs.svg" alt="Node.js" width="70">
+</p>
+
 <h2 id="persistend-database">Persistend Database</h2>
 <p>To get a &quot;normal&quot; database where the data is persisted to a file system, RxDB provides multiple storage implementations.</p>
 <p>The <a href="rx-storage-foundationdb.html">FoundationDB</a> storage connects to a <a href="https://github.com/apple/foundationdb" target="_blank">FoundationDB</a> cluster which itself is just a distributed key-value engine. RxDB adds the NoSQL query-engine, indexes and other features on top of it.
@@ -2397,8 +2401,12 @@ node --max-old-space-size=8192 index.js
 To share the database state with other instances, RxDB provides two different methods. One is <a href="replication.html">replication</a> and the other is the <a href="rx-storage-remote.html">remote RxStorage</a>.
 The replication copies over the whole database set to other instances live-replicates all ongoing writes. This has the benefit of scaling better because each of your microservice will run queries on its own copy of the dataset.
 Sometimes however you might not want to store the full dataset on each microservice. Then it is better to use the remote RxStorage and connect it to the &quot;main&quot; database. The remote storage will run all operations the main database and return the result to the calling database.</p>
-<h2 id="other-nodejs-databases">Other Node.js Databases</h2>
-<p>I created <a href="alternatives.html">a list of Node.js database alternatives</a> that you will help you to pick a database if you do not want to use RxDB.</p>
+<h2 id="follow-up-on-rxdbnodejs">Follow up on RxDB+Node.js</h2>
+<ul>
+<li>Check out the <a href="https://github.com/pubkey/rxdb/tree/master/examples/node" target="_blank">RxDB Nodejs example</a>.</li>
+<li>If you haven&apos;t done yet, you should start learning about RxDB with the <a href="quickstart.html">Quickstart Tutorial</a>.</li>
+<li>I created <a href="alternatives.html">a list of embedded JavaSCript databases</a> that you will help you to pick a database if you do not want to use RxDB.</li>
+</ul>
 
                                 
                                 </section>

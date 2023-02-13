@@ -33,8 +33,8 @@ export var RxStorageRemote = /*#__PURE__*/function () {
     }, params.options);
   };
   _proto.customRequest = async function customRequest(data) {
-    var connectionId = 'custom|request';
     var requestId = this.getRequestId();
+    var connectionId = 'custom|request|' + requestId;
     var waitForAnswerPromise = firstValueFrom(this.settings.messages$.pipe(filter(msg => msg.answerTo === requestId)));
     this.settings.send({
       connectionId,

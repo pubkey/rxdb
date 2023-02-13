@@ -2292,7 +2292,7 @@
                                 <section class="normal markdown-section">
                                 
                                 <h1 id="1400">14.0.0</h1>
-<p>The release <code>14.0.0</code> is used for major refactorings and API changes.
+<p>The release <a href="https://rxdb.info/releases/14.0.0.html" target="_blank">14.0.0</a> is used for major refactorings and API changes.
 The replication or the storage layer have only been touched marginally.</p>
 <p>Notice that only the major changes are listed here. All minor changes can be found in the <a href="https://github.com/pubkey/rxdb/blob/master/CHANGELOG.md" target="_blank">changelog</a>.</p>
 <h2 id="removing-deprecated-features">Removing deprecated features</h2>
@@ -2347,7 +2347,7 @@ So instead of having class method on the RxCollection, the replications are now 
 <h3 id="rewrite-the-worker-plugin">Rewrite the <code>worker</code> plugin</h3>
 <p>In the past, the <a href="../rx-storage-worker.html">worker plugin</a> was based on the <a href="https://www.npmjs.com/package/threads" target="_blank">threads</a> library. It was completely rewritten and uses the plain JavaScript API together with the <a href="../rx-storage-remote.html">remote storage plugin</a>. <strong>BUT</strong> notice that the worker plugin has moved into the <a href="https://rxdb.info/premium.html" target="_blank">RxDB Premium</a> package.</p>
 <h2 id="performance-improvements">Performance improvements</h2>
-<h3 id="do-not-use-hash-for-revisions-done">Do not use hash for revisions [DONE]</h3>
+<h3 id="do-not-use-hash-for-revisions">Do not use hash for revisions</h3>
 <p>In the past, the <code>_rev</code> field of a RxDocument dat was filled with a hash of the documents data. This was not the best solution because:</p>
 <ul>
 <li>Hashing in JavaScript is slow, not running hashes on insert improves performance by about 33%</li>

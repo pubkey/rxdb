@@ -3,13 +3,15 @@
 
 <!-- CHANGELOG NEWEST -->
 
-- FIX(websocket remote storage) custom request not working with multiple clients
-
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 14.0.1 (13 February 2023)
+
+- FIX(websocket remote storage) custom request not working with multiple clients
 
 ### 14.0.0 (8 February 2023) BREAKING [read the announcement](https://rxdb.info/releases/14.0.0.html)
 

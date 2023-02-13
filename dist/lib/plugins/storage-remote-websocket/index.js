@@ -69,19 +69,10 @@ function startRxStorageRemoteWebsocketServer(options) {
     exposeState
   };
 }
-
-/**
- * Reuse connections to the same url.
- * This makes testing easier because we do not run into a connection limit.
- * It might be better to instead track the amount of open storage instances
- * and open/close the websocket client depending on the counter.
- */
-var WebsocketClientByUrl = new Map();
 function getRxStorageRemoteWebsocket(options) {
-  var identifier = options.url + 'rx-remote-storage-websocket';
+  var identifier = [options.url, 'rx-remote-storage-websocket', options.disableCache ? (0, _utils.randomCouchString)() : ''].join('');
   var messages$ = new _rxjs.Subject();
-  var websocketClientPromise = WebsocketClientByUrl.has(options.url) ? (0, _utils.getFromMapOrThrow)(WebsocketClientByUrl, options.url) : (0, _replicationWebsocket.getWebSocket)(options.url, identifier);
-  WebsocketClientByUrl.set(options.url, websocketClientPromise);
+  var websocketClientPromise = (0, _replicationWebsocket.getWebSocket)(options.url, identifier);
   var storage = (0, _rxStorageRemote.getRxStorageRemote)({
     identifier,
     statics: options.statics,
