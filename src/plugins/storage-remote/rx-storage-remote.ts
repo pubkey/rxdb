@@ -85,8 +85,8 @@ export class RxStorageRemote implements RxStorage<RxStorageRemoteInternals, any>
     }
 
     async customRequest<In, Out>(data: In): Promise<Out> {
-        const connectionId = 'custom|request';
         const requestId = this.getRequestId();
+        const connectionId = 'custom|request|' + requestId;
         const waitForAnswerPromise = firstValueFrom(this.settings.messages$.pipe(
             filter(msg => msg.answerTo === requestId)
         ));

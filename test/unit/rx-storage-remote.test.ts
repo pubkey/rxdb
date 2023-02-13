@@ -86,5 +86,40 @@ config.parallel('rx-storage-remote.test.ts', () => {
             const result = await clientStorage.customRequest('foobar');
             assert.strictEqual(result, 'barfoo');
         });
+        it('should work with multiple clients doing custom requests', async () => {
+            const port = await nextPort();
+            type Message = {
+                identifier: string;
+            };
+            type Response = {
+                response: true;
+                identifier: string;
+            };
+            const server = await startRxStorageRemoteWebsocketServer({
+                port,
+                storage: getRxStorageMemory(),
+                customRequestHandler(input: Message) {
+                    return {
+                        response: true,
+                        identifier: input.identifier
+                    };
+                }
+            });
+            assert.ok(server);
+            const clientsAmount = 5;
+            await Promise.all(
+                new Array(clientsAmount).fill(0).map(async (_v, idx) => {
+                    const clientStorage = getRxStorageRemoteWebsocket({
+                        statics: RxStorageDefaultStatics,
+                        url: 'ws://localhost:' + port,
+                        disableCache: true
+                    });
+                    const result = await clientStorage.customRequest<Message, Response>({
+                        identifier: 'idx-' + idx
+                    });
+                    assert.strictEqual(result.identifier, 'idx-' + idx);
+                })
+            );
+        });
     });
 });
