@@ -9,6 +9,8 @@
 
 <!-- RELEASE BELOW -->
 
+### 14.0.2 (15 February 2023)
+
 ### 14.0.1 (13 February 2023)
 
 - FIX(websocket remote storage) custom request not working with multiple clients
