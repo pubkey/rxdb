@@ -126,9 +126,6 @@
 * [Population](./population.md)
 
 * [Encryption](./encryption.md)
-    * [Encryption crypto-js](./encryption-crypto-js.md)
-    * [Encryption WebCrypto](./encryption-web-crypto.md)
-
 
 * [Key Compression](./key-compression.md)
 

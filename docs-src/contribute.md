@@ -39,7 +39,7 @@ If you need help with your contribution, ask at [discord](https://discord.gg/tqt
 # Docs
 
 The source of the documentation is at the `docs-src`-folder.
-To read the docs locally, run `npm run docs:install && npm run docs:serve` and open [http://localhost:4000/](http://localhost:4000/)
+To read the docs locally, run `npm run docs:install && npm run docs:serve` and open `http://localhost:4000/`
 
 
 
