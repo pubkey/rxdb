@@ -1,7 +1,7 @@
 {
   "name": "rxdb",
   "description": "A realtime Database for JavaScript applications",
-  "version": "14.0.1",
+  "version": "14.0.3",
   "author": "pubkey",
   "repository": {
     "type": "git",
@@ -401,7 +401,7 @@
     "socket.io-client": "4.6.0",
     "unload": "2.4.1",
     "util": "0.12.5",
-    "ws": "8.12.0",
+    "ws": "8.12.1",
     "z-schema": "5.0.5"
   },
   "devDependencies": {
@@ -433,8 +433,8 @@
     "@types/node": "18.13.0",
     "@types/request": "2.48.8",
     "@types/request-promise-native": "1.0.18",
-    "@typescript-eslint/eslint-plugin": "5.51.0",
-    "@typescript-eslint/parser": "5.51.0",
+    "@typescript-eslint/eslint-plugin": "5.52.0",
+    "@typescript-eslint/parser": "5.52.0",
     "assert": "2.0.0",
     "async-test-util": "2.0.0",
     "babel-loader": "9.1.2",
@@ -459,7 +459,7 @@
     "express-graphql": "0.12.0",
     "express-pouchdb": "4.2.0",
     "fake-indexeddb": "4.0.1",
-    "firebase-tools": "11.22.0",
+    "firebase-tools": "11.23.1",
     "get-port": "5.1.1",
     "gitbook-cli": "2.3.2",
     "graphql-subscriptions": "2.0.0",
