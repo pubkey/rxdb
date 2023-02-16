@@ -24,7 +24,9 @@
     "live-query",
     "reactive",
     "replication",
-    "realtime"
+    "realtime",
+    "local database",
+    "embedded database"
   ],
   "license": "Apache-2.0",
   "main": "./dist/lib/index.js",
