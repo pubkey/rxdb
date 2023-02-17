@@ -187,3 +187,6 @@
 * Deprecated
     * [RxStorage PouchDB](./rx-storage-pouchdb.md)
     * [RxStorage PouchDB Adapters](./adapters.md)
+
+
+* [Imprint](./imprint.html)
