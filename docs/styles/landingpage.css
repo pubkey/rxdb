@@ -243,16 +243,19 @@ header .text {
     float: left;
     padding-right: 15px;
 }
+
 @media (max-width: 390px) {
     header .text {
         padding-right: 6px;
     }
 }
+
 @media (max-width: 340px) {
     header .text {
         padding-right: 4px;
     }
 }
+
 header .logo .text {
     font-size: var(--fontSizes-xl);
     padding-top: 18px;
@@ -842,7 +845,7 @@ header .logo img {
 }
 
 .block.sixth .buy-option-features {
-    padding-bottom: 20px;
+    padding-bottom: 40px;
     font-size: 1em;
 }
 
@@ -1403,7 +1406,7 @@ samp .cm-comment {
     .price-calculator-inner {
         width: 96%;
         margin-left: 2%;
-        }
+    }
 }
 
 
@@ -1593,4 +1596,16 @@ samp .cm-comment {
     .premium-request iframe {
         width: 100%;
     }
+}
+
+
+footer {
+    text-align: center;
+    padding: 20px;
+    color: white !important;
+    font-weight: bold;
+}
+
+footer a:visited {
+    color: white;
 }
