@@ -189,4 +189,4 @@
     * [RxStorage PouchDB Adapters](./adapters.md)
 
 
-* [Imprint](./imprint.html)
+* [Imprint](https://rxdb.info/imprint.html)
