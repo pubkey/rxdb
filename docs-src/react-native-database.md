@@ -38,7 +38,7 @@ AsyncStorage is fine when only a small amount of data needs to be stored and whe
 
 SQLite is a SQL based relational database written in C that was crafted to be embed inside of applications. Operations are written in the SQL query language and SQLite generally follows the PostgreSQL syntax.
 
-To use SQLite in React Native, you first have to include the SQLite library itself as a plugin. There a different project out there that that can be used, but I would recommend to use the [react-native-quick-sqlite](https://github.com/ospfranco/react-native-quick-sqlite) project.
+To use SQLite in React Native, you first have to include the SQLite library itself as a plugin. There a different project out there that can be used, but I would recommend to use the [react-native-quick-sqlite](https://github.com/ospfranco/react-native-quick-sqlite) project.
 
 First you have to install the library into your React Native project via `npm install react-native-quick-sqlite`.
 In your code you can then import the library and create a database connection:
