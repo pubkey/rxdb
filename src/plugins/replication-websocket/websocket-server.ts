@@ -21,10 +21,7 @@ import { Subject } from 'rxjs';
 
 export function startSocketServer(options: ServerOptions): WebsocketServerState {
     const { WebSocketServer } = require('isomorphic-ws' + '');
-    const wss = new WebSocketServer({
-        port: options.port,
-        path: options.path
-    });
+    const wss = new WebSocketServer(options);
     let closed = false;
     function closeServer() {
         if (closed) {
@@ -62,9 +59,8 @@ export function startSocketServer(options: ServerOptions): WebsocketServerState 
 }
 
 export function startWebsocketServer(options: WebsocketServerOptions): WebsocketServerState {
-    const serverState = startSocketServer(options);
-
-    const database = options.database;
+    const { database, ...wsOptions } = options;
+    const serverState = startSocketServer(wsOptions);
 
     // auto close when the database gets destroyed
     database.onDestroy.push(() => serverState.close());
