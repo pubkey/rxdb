@@ -3,6 +3,8 @@
 
 <!-- CHANGELOG NEWEST -->
 
+- websocket-replication: pass all websocket options to constructor [#4449](https://github.com/pubkey/rxdb/pull/4449)
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
