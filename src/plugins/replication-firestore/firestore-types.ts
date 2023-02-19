@@ -6,7 +6,8 @@ import {
 
 import {
     CollectionReference,
-    Firestore
+    Firestore,
+    QuerySnapshot
 } from 'firebase/firestore';
 
 export type FirestoreCheckpointType = {
@@ -51,3 +52,5 @@ export type SyncOptionsFirestore<RxDocType> = Omit<
     pull?: Omit<ReplicationPullOptions<RxDocType, FirestoreCheckpointType>, 'handler' | 'stream$'>;
     push?: Omit<ReplicationPushOptions<RxDocType>, 'handler'>;
 };
+
+export type GetQuery<RxDocType> = (ids: string[]) => Promise<QuerySnapshot<RxDocType>>;
