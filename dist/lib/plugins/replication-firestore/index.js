@@ -90,7 +90,7 @@ function replicateFirestore(options) {
         if (lastPulledCheckpoint) {
           var lastServerTimestamp = (0, _firestoreHelper.isoStringToServerTimestamp)(lastPulledCheckpoint.serverTimestamp);
           newerQuery = (0, _firestore.query)(options.firestore.collection, (0, _firestore.where)(serverTimestampField, '>', lastServerTimestamp), (0, _firestore.orderBy)(serverTimestampField, 'asc'), (0, _firestore.limit)(batchSize));
-          sameTimeQuery = (0, _firestore.query)(options.firestore.collection, (0, _firestore.where)(serverTimestampField, '==', lastServerTimestamp), (0, _firestore.where)(primaryPath, '>', lastPulledCheckpoint.id), (0, _firestore.orderBy)(primaryPath, 'asc'), (0, _firestore.orderBy)(serverTimestampField, 'asc'), (0, _firestore.limit)(batchSize));
+          sameTimeQuery = (0, _firestore.query)(options.firestore.collection, (0, _firestore.where)(serverTimestampField, '==', lastServerTimestamp), (0, _firestore.where)(primaryPath, '>', lastPulledCheckpoint.id), (0, _firestore.orderBy)(primaryPath, 'asc'), (0, _firestore.limit)(batchSize));
         } else {
           newerQuery = (0, _firestore.query)(options.firestore.collection, (0, _firestore.orderBy)(serverTimestampField, 'asc'), (0, _firestore.limit)(batchSize));
         }
@@ -169,9 +169,13 @@ function replicateFirestore(options) {
           /**
            * @link https://stackoverflow.com/a/48423626/3443137
            */
-          var docsInDbResult = await (0, _firestore.getDocs)((0, _firestore.query)(options.firestore.collection, (0, _firestore.where)((0, _firestore.documentId)(), 'in', docIds)));
+
+          var getQuery = ids => {
+            return (0, _firestore.getDocs)((0, _firestore.query)(options.firestore.collection, (0, _firestore.where)((0, _firestore.documentId)(), 'in', ids)));
+          };
+          var docsInDbResult = await (0, _firestoreHelper.getContentByIds)(docIds, getQuery);
           var docsInDbById = {};
-          docsInDbResult.docs.forEach(row => {
+          docsInDbResult.forEach(row => {
             var docDataInDb = (0, _firestoreHelper.stripServerTimestampField)(serverTimestampField, row.data());
             var docId = row.id;
             docDataInDb[primaryPath] = docId;

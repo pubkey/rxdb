@@ -3,14 +3,16 @@
 
 <!-- CHANGELOG NEWEST -->
 
-- websocket-replication: pass all websocket options to constructor [#4449](https://github.com/pubkey/rxdb/pull/4449)
-- FIX Firebase Replication Issues [#4405](https://github.com/pubkey/rxdb/pull/4405)
-
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 14.0.4 (19 February 2023)
+
+- websocket-replication: pass all websocket options to constructor [#4449](https://github.com/pubkey/rxdb/pull/4449)
+- FIX Firebase Replication Issues [#4405](https://github.com/pubkey/rxdb/pull/4405)
 
 ### 14.0.3 (15 February 2023)
 

@@ -1,5 +1,5 @@
 import { ReplicationOptions, ReplicationPullOptions, ReplicationPushOptions } from '../../types';
-import { CollectionReference, Firestore } from 'firebase/firestore';
+import { CollectionReference, Firestore, QuerySnapshot } from 'firebase/firestore';
 export type FirestoreCheckpointType = {
     id: string;
     /**
@@ -37,3 +37,4 @@ export type SyncOptionsFirestore<RxDocType> = Omit<ReplicationOptions<RxDocType,
     pull?: Omit<ReplicationPullOptions<RxDocType, FirestoreCheckpointType>, 'handler' | 'stream$'>;
     push?: Omit<ReplicationPushOptions<RxDocType>, 'handler'>;
 };
+export type GetQuery<RxDocType> = (ids: string[]) => Promise<QuerySnapshot<RxDocType>>;

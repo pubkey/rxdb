@@ -29,4 +29,19 @@ export function stripPrimaryKey(primaryPath, docData) {
   delete docData[primaryPath];
   return docData;
 }
+
+// https://stackoverflow.com/questions/61354866/is-there-a-workaround-for-the-firebase-query-in-limit-to-10
+export function getContentByIds(ids, getQuery) {
+  var batches = [];
+  while (ids.length) {
+    // firestore limits batches to 10
+    var batch = ids.splice(0, 10);
+
+    // add the batch request to to a queue
+    batches.push(getQuery(batch));
+  }
+
+  // after all of the data is fetched, return it
+  return Promise.all(batches).then(content => content.map(i => i.docs).flat());
+}
 //# sourceMappingURL=firestore-helper.js.map

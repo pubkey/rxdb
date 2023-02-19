@@ -5,10 +5,7 @@ export function startSocketServer(options) {
   var {
     WebSocketServer
   } = require('isomorphic-ws' + '');
-  var wss = new WebSocketServer({
-    port: options.port,
-    path: options.path
-  });
+  var wss = new WebSocketServer(options);
   var closed = false;
   function closeServer() {
     if (closed) {
@@ -43,8 +40,11 @@ export function startSocketServer(options) {
   };
 }
 export function startWebsocketServer(options) {
-  var serverState = startSocketServer(options);
-  var database = options.database;
+  var {
+    database,
+    ...wsOptions
+  } = options;
+  var serverState = startSocketServer(wsOptions);
 
   // auto close when the database gets destroyed
   database.onDestroy.push(() => serverState.close());

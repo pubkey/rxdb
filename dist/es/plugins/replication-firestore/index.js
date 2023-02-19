@@ -5,7 +5,7 @@ import { RxDBLeaderElectionPlugin } from '../leader-election';
 import { RxReplicationState, startReplicationOnLeaderShip } from '../replication';
 import { addRxPlugin, getSchemaByObjectPath, newRxError } from '../../';
 import { Subject } from 'rxjs';
-import { firestoreRowToDocData, FIRESTORE_REPLICATION_PLUGIN_IDENTITY_PREFIX, isoStringToServerTimestamp, serverTimestampToIsoString, stripPrimaryKey, stripServerTimestampField } from './firestore-helper';
+import { firestoreRowToDocData, FIRESTORE_REPLICATION_PLUGIN_IDENTITY_PREFIX, getContentByIds, isoStringToServerTimestamp, serverTimestampToIsoString, stripPrimaryKey, stripServerTimestampField } from './firestore-helper';
 export * from './firestore-helper';
 export * from './firestore-types';
 export var RxFirestoreReplicationState = /*#__PURE__*/function (_RxReplicationState) {
@@ -56,7 +56,7 @@ export function replicateFirestore(options) {
         if (lastPulledCheckpoint) {
           var lastServerTimestamp = isoStringToServerTimestamp(lastPulledCheckpoint.serverTimestamp);
           newerQuery = query(options.firestore.collection, where(serverTimestampField, '>', lastServerTimestamp), orderBy(serverTimestampField, 'asc'), limit(batchSize));
-          sameTimeQuery = query(options.firestore.collection, where(serverTimestampField, '==', lastServerTimestamp), where(primaryPath, '>', lastPulledCheckpoint.id), orderBy(primaryPath, 'asc'), orderBy(serverTimestampField, 'asc'), limit(batchSize));
+          sameTimeQuery = query(options.firestore.collection, where(serverTimestampField, '==', lastServerTimestamp), where(primaryPath, '>', lastPulledCheckpoint.id), orderBy(primaryPath, 'asc'), limit(batchSize));
         } else {
           newerQuery = query(options.firestore.collection, orderBy(serverTimestampField, 'asc'), limit(batchSize));
         }
@@ -135,9 +135,13 @@ export function replicateFirestore(options) {
           /**
            * @link https://stackoverflow.com/a/48423626/3443137
            */
-          var docsInDbResult = await getDocs(query(options.firestore.collection, where(documentId(), 'in', docIds)));
+
+          var getQuery = ids => {
+            return getDocs(query(options.firestore.collection, where(documentId(), 'in', ids)));
+          };
+          var docsInDbResult = await getContentByIds(docIds, getQuery);
           var docsInDbById = {};
-          docsInDbResult.docs.forEach(row => {
+          docsInDbResult.forEach(row => {
             var docDataInDb = stripServerTimestampField(serverTimestampField, row.data());
             var docId = row.id;
             docDataInDb[primaryPath] = docId;
