@@ -270,6 +270,19 @@ config.parallel('population.test.js', () => {
             });
         });
     });
+    describe('RxQuery().populate()', () => {
+        describe('positive', () => {
+            it('populates all top-level-field', async () => {
+                const col = await humansCollection.createRelated();
+                const docs = await col.find().populate('bestFriend').exec(true);
+                const doc = docs[0];
+                const friend = doc.bestFriend;
+                assert.ok(isRxDocument(friend));
+                assert.strictEqual(friend.name, doc.bestFriend);
+                col.database.destroy();
+            });
+        });
+    });
     describe('RxDocument populate via pseudo-proxy', () => {
         describe('positive', () => {
             it('populate top-level-field', async () => {
