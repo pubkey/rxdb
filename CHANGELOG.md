@@ -4,6 +4,7 @@
 <!-- CHANGELOG NEWEST -->
 
 - websocket-replication: pass all websocket options to constructor [#4449](https://github.com/pubkey/rxdb/pull/4449)
+- FIX Firebase Replication Issues [#4405](https://github.com/pubkey/rxdb/pull/4405)
 
 <!-- ADD new changes here! -->
 
