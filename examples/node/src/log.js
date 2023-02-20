@@ -1,4 +1,4 @@
-const chalk = require('chalk');
+import chalk from 'chalk';
 
 const intro = () => {
     console.log(chalk.green('########################################################'));
