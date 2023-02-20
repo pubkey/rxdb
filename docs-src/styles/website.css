@@ -135,3 +135,28 @@ details summary {
 details summary:hover {
     text-decoration: underline;
 }
+
+
+/* remove the broken font-setttings icon */
+.book-header .font-settings {
+    display: none;
+}
+
+
+#rxdb-call-to-action-button {
+    background-color: var(--color-top);
+    color: white;
+    text-align: center;
+    padding-left: 15px;
+    padding-right: 15px;
+    line-height: 40px;
+    border-radius: 7px;
+    height: 40px;
+    margin-top: 5px;
+    vertical-align: middle;
+}
+
+#rxdb-call-to-action-button:hover {
+    text-decoration: underline;
+    box-shadow: 2px 2px 13px #ca007c, -2px -1px 14px #ff009e;
+}

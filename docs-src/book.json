@@ -24,8 +24,8 @@
         "favicon": "./files/logo/icon.ico",
         "edit-link": {
             "base": "https://github.com/pubkey/rxdb/tree/master/docs-src",
-            "label": "Edit This Page"
-        },
+            "label": ""
+        },        
         "github": {
             "url": "https://github.com/pubkey/rxdb"
         },

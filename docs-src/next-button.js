@@ -54,3 +54,72 @@ function runAddingNextButtons() {
 
 }
 runAddingNextButtons();
+
+
+
+
+
+var callToActions = [
+    {
+        text: 'Follow at ',
+        keyword: '@twitter',
+        url: 'https://twitter.com/intent/user?screen_name=rxdbjs'
+    },
+    {
+        text: 'Chat at ',
+        keyword: '@discord',
+        url: 'https://discord.gg/tqt9ZttJfD'
+    },
+    {
+        text: 'Star at ',
+        keyword: '@github',
+        url: 'https://github.com/pubkey/rxdb'
+    },
+];
+function insertAfter(referenceNode, newNode) {
+    referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
+}
+var callToActionButtonId = 'rxdb-call-to-action-button';
+function setCallToActionOnce() {
+    var randId = new Date().getTime() % callToActions.length;
+    var callToAction = callToActions[randId];
+    var alreadyThere = document.querySelector('#' + callToActionButtonId);
+    if (alreadyThere) {
+        alreadyThere.parentNode.removeChild(alreadyThere);
+    }
+
+
+    var postitionReferenceElement = document.querySelector('.btn.pull-left.js-toolbar-action');
+    if (!postitionReferenceElement) {
+        // not loaded yet!
+        return;
+    }
+
+    var newElement = document.createElement('a');
+    newElement.classList.add('btn');
+    newElement.classList.add('pull-left');
+    newElement.classList.add('js-toolbar-action');
+    newElement.id = callToActionButtonId;
+    newElement.innerHTML = callToAction.text + ' <b>' + callToAction.keyword + '</b>';
+    newElement.href = callToAction.url;
+    newElement.target = '_blank';
+
+
+    insertAfter(postitionReferenceElement, newElement);
+}
+function runSettingCallToActionButton() {
+    setCallToActionOnce();
+    /**
+     * Gitbook does a strange page change handling,
+     * so we have to re-run the function
+     * because listening to history changes did not work.
+     */
+    setInterval(function () {
+        var alreadyThere = document.querySelector('#' + callToActionButtonId);
+        // only add if not exists already, like on a page change.
+        if (!alreadyThere) {
+            setCallToActionOnce();
+        }
+    }, 100);
+}
+runSettingCallToActionButton();
