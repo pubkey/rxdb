@@ -367,7 +367,7 @@
     "rxjs": "^7.8.0"
   },
   "dependencies": {
-    "@babel/runtime": "7.20.13",
+    "@babel/runtime": "7.21.0",
     "@types/clone": "2.1.1",
     "@types/cors": "2.8.13",
     "@types/express": "4.17.17",
@@ -405,8 +405,8 @@
     "z-schema": "5.0.5"
   },
   "devDependencies": {
-    "@babel/cli": "7.20.7",
-    "@babel/core": "7.20.12",
+    "@babel/cli": "7.21.0",
+    "@babel/core": "7.21.0",
     "@babel/plugin-external-helpers": "7.18.6",
     "@babel/plugin-proposal-class-properties": "7.18.6",
     "@babel/plugin-proposal-object-rest-spread": "7.20.7",
@@ -414,14 +414,14 @@
     "@babel/plugin-transform-member-expression-literals": "7.18.6",
     "@babel/plugin-transform-modules-commonjs": "7.20.11",
     "@babel/plugin-transform-property-literals": "7.18.6",
-    "@babel/plugin-transform-runtime": "7.19.6",
+    "@babel/plugin-transform-runtime": "7.21.0",
     "@babel/plugin-transform-spread": "7.20.7",
     "@babel/plugin-transform-template-literals": "7.18.9",
-    "@babel/plugin-transform-typescript": "7.20.13",
+    "@babel/plugin-transform-typescript": "7.21.0",
     "@babel/polyfill": "7.12.1",
     "@babel/preset-env": "7.20.2",
-    "@babel/preset-typescript": "7.18.6",
-    "@babel/types": "7.20.7",
+    "@babel/preset-typescript": "7.21.0",
+    "@babel/types": "7.21.0",
     "@faker-js/faker": "7.6.0",
     "@rollup/plugin-commonjs": "24.0.1",
     "@rollup/plugin-node-resolve": "15.0.1",
