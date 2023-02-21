@@ -62,7 +62,7 @@ export const RxStorageLokiStatics: RxStorageStatics = {
 
     /**
      * Returns a function that determines if a document matches a query selector.
-     * It is important to have the exact same logix as lokijs uses, to be sure
+     * It is important to have the exact same logic as lokijs uses, to be sure
      * that the event-reduce algorithm works correct.
      * But LokisJS does not export such a function, the query logic is deep inside of
      * the Resultset prototype.
@@ -116,7 +116,7 @@ export class RxStorageLoki implements RxStorage<LokiStorageInternals, LokiSettin
          * Count the instances that currently use the elector.
          * If is goes to zero again, the elector can be closed.
          */
-        intancesCount: number;
+        instancesCount: number;
     }> = new Map();
 
     constructor(

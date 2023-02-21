@@ -338,7 +338,7 @@ describe('rx-storage-lokijs.test.js', () => {
                     /**
                      * Do not set a persistence adapter.
                      * It is allowed to use setTimeout in the persistence
-                     * because it is required to have it to determine when the database is isdle.
+                     * because it is required to have it to determine when the database is idle.
                      * Also the persistence happens in the background so it is not that bad
                      * if the setTimeout takes longer because the browser throttled the tab.
                      */

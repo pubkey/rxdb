@@ -25,7 +25,7 @@ export class AppComponent {
   ngOnInit() { }
 
   /**
-   * this method exists to play arround with the typings
+   * this method exists to play around with the typings
    */
   foo() {
     // const x: number = this.editedHero.hpPercent();

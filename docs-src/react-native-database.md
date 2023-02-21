@@ -200,7 +200,7 @@ According to the roadmap, despite being essentially feature-complete, Watermelon
   <img src="./files/alternatives/firebase.svg" alt="Firebase" width="80" />
 </p>
 
-Firestore is a cloud based database technologie that stores data on clients devices and replicates it with the Firebase cloud service that is run by google. It has many features like observability and authentication.
+Firestore is a cloud based database technology that stores data on clients devices and replicates it with the Firebase cloud service that is run by google. It has many features like observability and authentication.
 The main lacking feature is the non-complete offline first support because clients cannot start the application while being offline because then the authentication does not work. After they are authenticated, being offline is no longer a problem.
 Also using firestore creates a vendor lock-in because it is not possible to replicate with a custom self hosted backend.
 

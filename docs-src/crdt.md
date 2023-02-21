@@ -265,7 +265,7 @@ When any instances makes a write to the document, it is required to update the C
 
 ## Why not automerge.js or yjs?
 
-There are already CRDT libraries out there that have been considered to be used with RxDB. The biggeste ones are [automerge](https://github.com/automerge/automerge) and [yjs](https://github.com/yjs/yjs). The decision was made to not use these but instead go for a more NoSQL way of designing the CRDT format because:
+There are already CRDT libraries out there that have been considered to be used with RxDB. The biggest ones are [automerge](https://github.com/automerge/automerge) and [yjs](https://github.com/yjs/yjs). The decision was made to not use these but instead go for a more NoSQL way of designing the CRDT format because:
 
 - Users do not have to learn a new syntax but instead can use the NoSQL operations which they already know.
 - RxDB is often used to [replicate](./replication.md) data with any custom backend on an already existing infrastructure. Using NoSQL operators instead of binary data in CRDTs, makes it easy to implement the exact same logic on these backends so that the backend can also do document writes and still be compliant to the RxDB CRDT plugin.

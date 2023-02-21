@@ -166,7 +166,7 @@ export function sortObject(obj: any, noArraySort = false): any {
  * Deep clone a plain json object.
  * Does not work with recursive stuff
  * or non-plain-json.
- * IMPORANT: Performance of this is very important,
+ * IMPORTANT: Performance of this is very important,
  * do not change it without running performance tests!
  *
  * @link https://github.com/zxdong262/deep-copy/blob/master/src/index.ts

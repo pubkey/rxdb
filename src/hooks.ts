@@ -62,7 +62,7 @@ export const HOOKS: { [k: string]: any[]; } = {
     /**
      * runs on the document-data before the document is migrated
      * {
-     *   doc: Object, // originam doc-data
+     *   doc: Object, // original doc-data
      *   migrated: // migrated doc-data after run through migration-strategies
      * }
      */

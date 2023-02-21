@@ -224,15 +224,15 @@ async function run() {
 
 
     /**
-     * We await the inital replication
+     * We await the initial replication
      * so that the client never shows outdated data.
      * You should not do this if you want to have an
-     * offline-first client, because the inital sync
+     * offline-first client, because the initial sync
      * will not run through without a connection to the
      * server.
      */
     heroesList.innerHTML = 'Await initial replication..';
-    // TODO this did full block the laoding because awaitInitialReplication() never resolves if other tab is leader
+    // TODO this did full block the loading because awaitInitialReplication() never resolves if other tab is leader
     // await replicationState.awaitInitialReplication();
 
     // subscribe to heroes list and render the list on change

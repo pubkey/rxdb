@@ -67,7 +67,7 @@ if (config.platform.name === 'node') {
 
 /**
  * MONKEYPATCH console.error on firefox
- * this is needed because core-js has its own non-catched-promise-behavior
+ * this is needed because core-js has its own non-caught-promise-behavior
  * and spams the console with useless error-logs.
  */
 if (config.platform.name === 'firefox') {

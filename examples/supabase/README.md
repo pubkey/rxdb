@@ -31,7 +31,7 @@ See more at [src/replication.ts](./src/replication.ts).
 Conflicts are resolved on the client side which makes it easier to have a plain, dumb supabase backend without any complex SQL statements.
 
 To be able to **detect** and **resolve** conflicts, an additional field `replicationRevision` is added to each document/row.
-To ensure this field is updated on each write, we add the `preInsert`, `preRemove`, `preSave` hooks [when creating the database](./src/database.ts). These hooks automatically increase the revision `height` and `hash`. This works simliar to RxDB's internal [revision handling](../../docs-src/transactions-conflicts-revisions.md).
+To ensure this field is updated on each write, we add the `preInsert`, `preRemove`, `preSave` hooks [when creating the database](./src/database.ts). These hooks automatically increase the revision `height` and `hash`. This works similar to RxDB's internal [revision handling](../../docs-src/transactions-conflicts-revisions.md).
 
 ![Supabase Table](./images/supabase-table.png)
 

@@ -171,7 +171,7 @@ export class RxDatabaseBase<
     public _subs: Subscription[] = [];
 
     /**
-     * Beceause having unhandled exceptions would fail,
+     * Because having unhandled exceptions would fail,
      * we have to store the async errors of the constructor here
      * so we can throw them later.
      */
@@ -455,7 +455,7 @@ export class RxDatabaseBase<
 
         /**
          * Destroying the pseudo instance will throw
-         * because stulff is missing
+         * because stuff is missing
          * TODO we should not need the pseudo instance on runtime.
          * we should generate the property list on build time.
          */

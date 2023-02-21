@@ -215,7 +215,7 @@ config.parallel('crdt.test.js', () => {
      * call them because it might break the document state
      * when the operations are not CRDTs.
      */
-    describe('dissallowed methods', () => {
+    describe('disallowed methods', () => {
         it('should throw the correct errors', async () => {
             const collection = await getCRDTCollection();
             const doc = await collection.insert(schemaObjects.human('foobar', 1));

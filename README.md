@@ -281,7 +281,7 @@ const mySchema = {
     title: "hero schema",
     version: 0,                 // <- incremental version-number
     description: "describes a simple hero",
-    primaryKey: 'name',         // <- 'name' is the primary key for the coollection, it must be unique, required and of the type string 
+    primaryKey: 'name',         // <- 'name' is the primary key for the collection, it must be unique, required and of the type string 
     type: "object",
     properties: {
         name: {

@@ -38,7 +38,7 @@ export function isBlob(data: any): boolean {
 
 export function blobToString(blob: Blob | string): Promise<string> {
     /**
-     * in the electron-renderer we have a typed array insteaf of a blob
+     * in the electron-renderer we have a typed array instead of a blob
      * so we have to transform it.
      * @link https://github.com/pubkey/rxdb/issues/1371
      */
@@ -59,7 +59,7 @@ export async function blobToBase64String(blob: Blob | string): Promise<string> {
     }
 
     /**
-     * in the electron-renderer we have a typed array insteaf of a blob
+     * in the electron-renderer we have a typed array instead of a blob
      * so we have to transform it.
      * @link https://github.com/pubkey/rxdb/issues/1371
      */

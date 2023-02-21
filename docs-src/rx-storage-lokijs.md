@@ -45,7 +45,7 @@ const db = await createRxDatabase({
 
 ## Adapters
 
-LokiJS is based on adapters that determine where to store persistend data. For LokiJS there are adapters for IndexedDB, AWS S3, the NodeJS filesystem or NativeScript.
+LokiJS is based on adapters that determine where to store persistent data. For LokiJS there are adapters for IndexedDB, AWS S3, the NodeJS filesystem or NativeScript.
 Find more about the possible adapters at the [LokiJS docs](https://github.com/techfort/LokiJS/blob/master/tutorials/Persistence%20Adapters.md).
 
 ## Multi-Tab support

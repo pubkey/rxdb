@@ -60,7 +60,7 @@ When a document is send to the backend and the backend detected a conflict (by c
 
 A conflict handler is a JavaScript function that has two tasks:
 - Detect if a conflict exists
-- Solve exististing conflicts 
+- Solve existing conflicts 
 
 Because the conflict handler also is used for conflict detection, it will run many times on pull-, push- and write operations of RxDB. Most of the time it will detect that there is no conflict and then return.
 

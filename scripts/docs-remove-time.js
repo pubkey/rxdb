@@ -1,6 +1,6 @@
 /**
  * Gitbook will change each file on rebuild by adding a new timestamp.
- * This causes many git diffs that are ugly and changd on each single release.
+ * This causes many git diffs that are ugly and changed on each single release.
  *
  * Instead we remove the timestamp because we do not need it anyway.
  * @link https://github.com/GitbookIO/gitbook-cli/issues/48

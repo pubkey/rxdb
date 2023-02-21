@@ -172,7 +172,7 @@ describe('util.test.js', () => {
                     afterDot &&
                     afterDot.length > 2
                 ) {
-                    throw new Error('too many decmials on ' + asString);
+                    throw new Error('too many decimals on ' + asString);
                 }
             });
 

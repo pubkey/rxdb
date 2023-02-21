@@ -341,7 +341,7 @@ const replicationState: RxGraphQLReplicationState<RxDocType> = replicateGraphQL(
         pull: {
             queryBuilder: pullQueryBuilder,
             modifier: (doc => {
-                //Wwe have to remove optional non-existend field values
+                //Wwe have to remove optional non-existent field values
                 // they are set as null by GraphQL but should be undefined
                 Object.entries(doc).forEach(([k, v]) => {
                     if (v === null) {

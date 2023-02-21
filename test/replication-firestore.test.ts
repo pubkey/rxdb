@@ -41,11 +41,11 @@ import { ensureCollectionsHaveEqualState, ensureReplicationHasNoErrors } from '.
 
 
 /**
- * The tests for the firstore replication plugin
+ * The tests for the firestore replication plugin
  * do not run in the normal test suite
- * because it is too slow to setup the firstore backend emulators.
+ * because it is too slow to setup the firestore backend emulators.
  */
-describe('replication-firstore.test.js', () => {
+describe('replication-firestore.test.js', () => {
     /**
      * Use a low batchSize in all tests
      * to make it easier to test boundaries.

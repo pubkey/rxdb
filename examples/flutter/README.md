@@ -7,7 +7,7 @@ This is an example of how to use [RxDB](https://rxdb.info/) as a database inside
 
 ## How it works technically
 
-RxDB is written in TypeScript and compiled to JavaScript. To run it in a Flutter application, the [flutter_qjs](https://pub.dev/packages/flutter_qjs) library is used to spawn a QuickJS JavaScript runtime. RxDB itself runs in that runtime and communicates with the flutter dart runtime. To store data persistend, the [LokiJS RxStorage](https://rxdb.info/rx-storage-lokijs.html) is used together with a custom storage adapter that persists the database inside of the [shared_preferences](https://pub.dev/packages/shared_preferences) data.
+RxDB is written in TypeScript and compiled to JavaScript. To run it in a Flutter application, the [flutter_qjs](https://pub.dev/packages/flutter_qjs) library is used to spawn a QuickJS JavaScript runtime. RxDB itself runs in that runtime and communicates with the flutter dart runtime. To store data persistent, the [LokiJS RxStorage](https://rxdb.info/rx-storage-lokijs.html) is used together with a custom storage adapter that persists the database inside of the [shared_preferences](https://pub.dev/packages/shared_preferences) data.
 
 
 ## In JavaScript

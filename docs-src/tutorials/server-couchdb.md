@@ -148,7 +148,7 @@ Start with creating the database and collection.
 import { createRxDatabase, getRxStoragePouch } from 'rxdb';
 import { addPouchPlugin } from 'rxdb/plugins/pouchdb';
 
-// we need the http-plugin to relicate over http
+// we need the http-plugin to replicate over http
 import * as PouchHttpPlugin from 'pouchdb-adapter-http';
 addPouchPlugin(PouchHttpPlugin);
 

@@ -121,7 +121,7 @@ export type RxJsonSchema<
     keyCompression?: boolean;
     /**
      * if not set, rxdb will set 'false' as default
-     * Having additionalProperties: true is not allwed on the root level to ensure
+     * Having additionalProperties: true is not allowed on the root level to ensure
      * that property names do not clash with properties of the RxDocument class
      * or ORM methods.
      */

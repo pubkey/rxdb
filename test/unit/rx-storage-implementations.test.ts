@@ -3147,7 +3147,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
         });
     });
     describe('migration', () => {
-        it('documents that are stored on different schema versions, should not interfer', async () => {
+        it('documents that are stored on different schema versions, should not interfere', async () => {
             const storage = config.storage.getStorage();
             const databaseName = randomCouchString(12);
             const collectionName = randomCouchString(12);

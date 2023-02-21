@@ -114,7 +114,7 @@ config.parallel('reactive-document.test.js', () => {
             });
         });
         describe('negative', () => {
-            it('cannot observe non-existend field', async () => {
+            it('cannot observe non-existent field', async () => {
                 const c = await humansCollection.create();
                 const doc: any = await c.findOne().exec();
                 await AsyncTestUtil.assertThrows(
