@@ -16,5 +16,5 @@ export const environment: EnvironmentParams = {
     addRxDBPlugins() { },
     getRxStorage() {
         return getRxStorageDexie();
-    },
+    }
 };
