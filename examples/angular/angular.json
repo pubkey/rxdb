@@ -100,12 +100,23 @@
             "optimization": false
           },
           "configurations": {
+            "development": {
+              "outputHashing": "media",
+              "fileReplacements": [
+                {
+                  "replace": "src/environments/environment.ts",
+                  "with": "src/environments/environment.ssr.dev.ts"
+                }
+              ],
+              "sourceMap": true,
+              "optimization": false
+            },
             "production": {
               "outputHashing": "media",
               "fileReplacements": [
                 {
                   "replace": "src/environments/environment.ts",
-                  "with": "src/environments/environment.prod.ts"
+                  "with": "src/environments/environment.ssr.prod.ts"
                 }
               ],
               "sourceMap": false,

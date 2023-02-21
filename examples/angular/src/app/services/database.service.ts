@@ -1,6 +1,5 @@
 import {
-    Injectable,
-    isDevMode
+    Injectable
 } from '@angular/core';
 
 // import typings
@@ -11,29 +10,21 @@ import {
 } from './../RxDB.d';
 
 import {
-    createRxDatabase,
-    addRxPlugin,
-    RxStorage
-} from 'rxdb';
-import {
-    getRxStorageDexie
-} from 'rxdb/plugins/storage-dexie';
-import {
-    getRxStorageMemory
-} from 'rxdb/plugins/storage-memory';
+    environment
+} from '../../environments/environment';
 
-import { RxDBLeaderElectionPlugin } from 'rxdb/plugins/leader-election';
-import { wrappedValidateAjvStorage } from 'rxdb/plugins/validate-ajv';
 import {
-    SYNC_PORT,
+    createRxDatabase
+} from 'rxdb';
+
+import {
     HERO_COLLECTION_NAME,
-    DATABASE_NAME,
-    IS_SERVER_SIDE_RENDERING
+    DATABASE_NAME
 } from '../../shared';
-import { HERO_SCHEMA, RxHeroDocumentType } from '../schemas/hero.schema';
 import {
-    replicateWithWebsocketServer
-} from 'rxdb/plugins/replication-websocket';
+    HERO_SCHEMA,
+    RxHeroDocumentType
+} from '../schemas/hero.schema';
 
 import { replicateCouchDB } from 'rxdb/plugins/replication-couchdb';
 
@@ -49,82 +40,44 @@ const collectionSettings = {
     }
 };
 
-const syncHost = IS_SERVER_SIDE_RENDERING ? 'localhost' : window.location.hostname;
-const syncURL = 'http://' + syncHost + ':' + SYNC_PORT + '/' + DATABASE_NAME;
-console.log('syncURL: ' + syncURL);
+console.log('syncURL: ' + environment.rxdbSyncUrl);
 
 
 function doSync(): boolean {
-    if (IS_SERVER_SIDE_RENDERING) {
+    if (environment.isServerSideRendering) {
         return false;
     }
 
-    if (global.window.location.hash == '#nosync') {
+    if (window.location.hash == '#nosync') {
         return false;
     }
     return true;
 }
 
 
-/**
- * Loads RxDB plugins
- */
-async function loadRxDBPlugins(): Promise<void> {
-    if (IS_SERVER_SIDE_RENDERING) {
-    } else {
-        // then we also need the leader election
-        addRxPlugin(RxDBLeaderElectionPlugin);
-    }
-
-
-    /**
-     * to reduce the build-size,
-     * we use some modules in dev-mode only
-     */
-    if (isDevMode() && !IS_SERVER_SIDE_RENDERING) {
-        await Promise.all([
-
-            // add dev-mode plugin
-            // which does many checks and add full error-messages
-            import('rxdb/plugins/dev-mode').then(
-                module => addRxPlugin(module.RxDBDevModePlugin)
-            )
-        ]);
-    } else { }
-
-}
 
 /**
  * creates the database
  */
 async function _create(): Promise<RxHeroesDatabase> {
-
-    await loadRxDBPlugins();
-
-
-    let storage: RxStorage<any, any> = IS_SERVER_SIDE_RENDERING ? getRxStorageMemory() : getRxStorageDexie();
-    if (isDevMode()) {
-        // we use the schema-validation only in dev-mode
-        // this validates each document if it is matching the jsonschema
-        storage = wrappedValidateAjvStorage({ storage });
-    }
+    environment.addRxDBPlugins();
 
     console.log('DatabaseService: creating database..');
     const db = await createRxDatabase<RxHeroesCollections>({
         name: DATABASE_NAME,
-        storage,
-        multiInstance: !IS_SERVER_SIDE_RENDERING
+        storage: environment.getRxStorage(),
+        multiInstance: environment.multiInstance
         // password: 'myLongAndStupidPassword' // no password needed
     });
     console.log('DatabaseService: created database');
 
-    if (!IS_SERVER_SIDE_RENDERING) {
+    if (!environment.isServerSideRendering) {
         // write to window for debugging
         (window as any)['db'] = db;
     }
 
     // show leadership in title
-    if (!IS_SERVER_SIDE_RENDERING) {
+    if (environment.multiInstance) {
         db.waitForLeadership()
             .then(() => {
                 console.log('isLeader now');
@@ -164,7 +117,7 @@ async function _create(): Promise<RxHeroesDatabase> {
                 try {
                     // create the CouchDB database
                     await fetch(
-                        syncURL + col.name + '/',
+                        environment.rxdbSyncUrl + col.name + '/',
                         {
                             method: 'PUT'
                         }
@@ -176,11 +129,11 @@ async function _create(): Promise<RxHeroesDatabase> {
          * For server side rendering,
          * we just run a one-time replication to ensure the client has the same data as the server.
          */
-        if (IS_SERVER_SIDE_RENDERING) {
+        if (environment.isServerSideRendering) {
             console.log('DatabaseService: await initial replication to ensure SSR has all data');
             const firstReplication = await replicateCouchDB({
                 collection: db.hero,
-                url: syncURL + db.hero.name + '/',
+                url: environment.rxdbSyncUrl + db.hero.name + '/',
                 live: false,
                 pull: {},
                 push: {}
@@ -194,7 +147,7 @@ async function _create(): Promise<RxHeroesDatabase> {
         console.log('DatabaseService: start ongoing replication');
         const ongoingReplication = replicateCouchDB({
             collection: db.hero,
-            url: syncURL + db.hero.name + '/',
+            url: environment.rxdbSyncUrl + db.hero.name + '/',
             live: true,
             pull: {},
             push: {}
