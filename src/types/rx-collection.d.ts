@@ -20,7 +20,7 @@ export interface NumberFunctionMap {
 
 /**
  * Params to create a new collection.
- * Notice the name of the collection is set onle level higher
+ * Notice the name of the collection is set one level higher
  * when calling addCollections()
  */
 export type RxCollectionCreator<RxDocType = any> = {

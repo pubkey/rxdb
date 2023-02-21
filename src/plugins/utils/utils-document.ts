@@ -47,7 +47,7 @@ export function stripMetaDataFromDocument<RxDocType>(docData: RxDocumentData<RxD
 
 
 /**
- * Faster way to check the equalness of document lists
+ * Faster way to check the equality of document lists
  * compared to doing a deep-equal.
  * Here we only check the ids and revisions.
  */

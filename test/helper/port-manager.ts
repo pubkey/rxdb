@@ -15,7 +15,7 @@ let portQueue: Promise<number> = PROMISE_RESOLVE_VOID as any;
 /**
  * Returns an unused port.
  * Used to ensure that different tests
- * do not accidentiall use the same port.
+ * do not accidentally use the same port.
  */
 export function nextPort(): Promise<number> {
     portQueue = portQueue.then(async () => {

@@ -585,7 +585,7 @@ config.parallel('local-documents.test.ts', () => {
                 storage: config.storage.getStorage(),
             });
 
-            type DocData = { id: string; boudariesGrp: { bndrPlnId: string; bndrPlnNm: string; }[]; };
+            type DocData = { id: string; boundariesGrp: { bndrPlnId: string; bndrPlnNm: string; }[]; };
             const boundaryMgmtSchema: RxJsonSchema<DocData> = {
                 version: 0,
                 type: 'object',
@@ -595,7 +595,7 @@ config.parallel('local-documents.test.ts', () => {
                         type: 'string',
                         maxLength: 100
                     },
-                    boudariesGrp: {
+                    boundariesGrp: {
                         type: 'array',
                         uniqueItems: false,
                         items: {
@@ -629,7 +629,7 @@ config.parallel('local-documents.test.ts', () => {
             // insert non-local
             await boundaryMgmtCol.insert({
                 id: randomCouchString(12),
-                boudariesGrp: [groups]
+                boundariesGrp: [groups]
             });
 
             await boundaryMgmtCol.insertLocal('metadata', {
@@ -652,7 +652,7 @@ config.parallel('local-documents.test.ts', () => {
             const data = await boundaryMgmtCol.findOne().exec(true);
             const json = data.toJSON();
 
-            assert.deepStrictEqual(json.boudariesGrp[0], groups);
+            assert.deepStrictEqual(json.boundariesGrp[0], groups);
 
             db.destroy();
         });

@@ -5,7 +5,7 @@ import type {
 export function parseRevision(revision: string): { height: number; hash: string; } {
     const split = revision.split('-');
     if (split.length !== 2) {
-        throw new Error('malformated revision: ' + revision);
+        throw new Error('malformatted revision: ' + revision);
     }
     return {
         height: parseInt(split[0], 10),
@@ -30,8 +30,8 @@ export function createRevision<RxDocType>(
     previousDocData?: RxDocumentData<RxDocType>
 ): string {
     const previousRevision = previousDocData ? previousDocData._rev : null;
-    const previousRevisionHeigth = previousRevision ? parseRevision(previousRevision).height : 0;
-    const newRevisionHeight = previousRevisionHeigth + 1;
+    const previousRevisionHeight = previousRevision ? parseRevision(previousRevision).height : 0;
+    const newRevisionHeight = previousRevisionHeight + 1;
     return newRevisionHeight + '-' + databaseInstanceToken;
 }
 

@@ -62,7 +62,7 @@ describe('event-reduce.test.js', () => {
             res2.map(d => d.toJSON())
         );
     }
-    async function testQueryResultForEqualness<RxDocType>(
+    async function testQueryResultForEquality<RxDocType>(
         col1: RxCollection<RxDocType, {}, {}>,
         col2: RxCollection<RxDocType, {}, {}>,
         queries: MangoQuery<RxDocType>[]
@@ -103,7 +103,7 @@ describe('event-reduce.test.js', () => {
         const colNoEventReduce = await createCollection(false);
         const colWithEventReduce = await createCollection(true);
 
-        await testQueryResultForEqualness(
+        await testQueryResultForEquality(
             colNoEventReduce,
             colWithEventReduce,
             queries
@@ -117,7 +117,7 @@ describe('event-reduce.test.js', () => {
                 })
         );
 
-        await testQueryResultForEqualness(
+        await testQueryResultForEquality(
             colNoEventReduce,
             colWithEventReduce,
             queries
@@ -136,7 +136,7 @@ describe('event-reduce.test.js', () => {
             })
         );
 
-        await testQueryResultForEqualness(
+        await testQueryResultForEquality(
             colNoEventReduce,
             colWithEventReduce,
             queries
@@ -165,7 +165,7 @@ describe('event-reduce.test.js', () => {
         const colNoEventReduce = await createCollection(false, storage, true);
         const colWithEventReduce = await createCollection(true, storage, true);
 
-        await testQueryResultForEqualness(
+        await testQueryResultForEquality(
             colNoEventReduce,
             colWithEventReduce,
             queries
@@ -192,7 +192,7 @@ describe('event-reduce.test.js', () => {
                     await colWithEventReduce.insert(docData);
                 })
         );
-        await testQueryResultForEqualness(
+        await testQueryResultForEquality(
             colNoEventReduce,
             colWithEventReduce,
             queries
@@ -208,7 +208,7 @@ describe('event-reduce.test.js', () => {
         await colNoEventReduce.insert(insertForSortTest);
         await colWithEventReduce.insert(insertForSortTest);
 
-        await testQueryResultForEqualness(
+        await testQueryResultForEquality(
             colNoEventReduce,
             colWithEventReduce,
             queries
@@ -251,7 +251,7 @@ describe('event-reduce.test.js', () => {
 
             ];
 
-            await testQueryResultForEqualness(
+            await testQueryResultForEquality(
                 colNoEventReduce,
                 colWithEventReduce,
                 queries
@@ -264,7 +264,7 @@ describe('event-reduce.test.js', () => {
             await colNoEventReduce.bulkInsert(docsData);
             await colWithEventReduce.bulkInsert(docsData);
 
-            await testQueryResultForEqualness(
+            await testQueryResultForEquality(
                 colNoEventReduce,
                 colWithEventReduce,
                 queries
@@ -284,7 +284,7 @@ describe('event-reduce.test.js', () => {
                 })
             );
 
-            await testQueryResultForEqualness(
+            await testQueryResultForEquality(
                 colNoEventReduce,
                 colWithEventReduce,
                 queries
@@ -304,7 +304,7 @@ describe('event-reduce.test.js', () => {
                 })
             );
 
-            await testQueryResultForEqualness(
+            await testQueryResultForEquality(
                 colNoEventReduce,
                 colWithEventReduce,
                 queries
@@ -324,7 +324,7 @@ describe('event-reduce.test.js', () => {
                 })
             );
 
-            await testQueryResultForEqualness(
+            await testQueryResultForEquality(
                 colNoEventReduce,
                 colWithEventReduce,
                 queries

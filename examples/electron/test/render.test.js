@@ -19,7 +19,7 @@ addRxPlugin(RxDBAttachmentsPlugin);
  */
 module.exports = (function () {
     const runTests = async function () {
-        // issue #587 Icorrect working attachments in electron-render
+        // issue #587 Incorrect working attachments in electron-render
         await (async function () {
             const db = await createRxDatabase({
                 // generate simple random ID to avoid conflicts when running tests at the same time

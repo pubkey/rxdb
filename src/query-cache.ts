@@ -49,7 +49,7 @@ export function countRxQuerySubscribers(rxQuery: RxQuery): number {
 
 
 export const DEFAULT_TRY_TO_KEEP_MAX = 100;
-export const DEFAULT_UNEXECUTED_LIFETME = 30 * 1000;
+export const DEFAULT_UNEXECUTED_LIFETIME = 30 * 1000;
 
 /**
  * The default cache replacement policy
@@ -72,7 +72,7 @@ export const defaultCacheReplacementPolicyMonad: (
     }
 
     const minUnExecutedLifetime = now() - unExecutedLifetime;
-    const maybeUncash: RxQuery[] = [];
+    const maybeUncache: RxQuery[] = [];
 
     const queriesInCache = Array.from(queryCache._map.values());
     for (const rxQuery of queriesInCache) {
@@ -85,15 +85,15 @@ export const defaultCacheReplacementPolicyMonad: (
             uncacheRxQuery(queryCache, rxQuery);
             continue;
         }
-        maybeUncash.push(rxQuery);
+        maybeUncache.push(rxQuery);
     }
 
-    const mustUncache = maybeUncash.length - tryToKeepMax;
+    const mustUncache = maybeUncache.length - tryToKeepMax;
     if (mustUncache <= 0) {
         return;
     }
 
-    const sortedByLastUsage = maybeUncash.sort((a, b) => a._lastEnsureEqual - b._lastEnsureEqual);
+    const sortedByLastUsage = maybeUncache.sort((a, b) => a._lastEnsureEqual - b._lastEnsureEqual);
     const toRemove = sortedByLastUsage.slice(0, mustUncache);
     toRemove.forEach(rxQuery => uncacheRxQuery(queryCache, rxQuery));
 };
@@ -101,7 +101,7 @@ export const defaultCacheReplacementPolicyMonad: (
 
 export const defaultCacheReplacementPolicy: RxCacheReplacementPolicy = defaultCacheReplacementPolicyMonad(
     DEFAULT_TRY_TO_KEEP_MAX,
-    DEFAULT_UNEXECUTED_LIFETME
+    DEFAULT_UNEXECUTED_LIFETIME
 );
 
 export const COLLECTIONS_WITH_RUNNING_CLEANUP: WeakSet<RxCollection> = new WeakSet();

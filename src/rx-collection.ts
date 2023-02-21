@@ -263,7 +263,7 @@ export class RxCollectionBase<
     }
 
 
-    // overwritte by migration-plugin
+    // overwritten by migration-plugin
     migrationNeeded(): Promise<boolean> {
         throw pluginMissing('migration');
     }
@@ -536,7 +536,7 @@ export class RxCollectionBase<
                 queryObj = _getDefaultQuery();
             }
 
-            // cannot have limit on findOne queries because it will be overwritte
+            // cannot have limit on findOne queries because it will be overwritten
             if ((queryObj as MangoQuery).limit) {
                 throw newRxError('QU6');
             }

@@ -898,7 +898,7 @@ header .logo img {
 
 /**
  * NEUMORPHISM STUFF
- * Generate circles shaddows: https://neumorphism.io/#1a202c
+ * Generate circles shadows: https://neumorphism.io/#1a202c
  */
 .neumorphism-circle-xl {
     border-radius: 50%;
@@ -977,15 +977,15 @@ header .logo img {
     background-color: var(--color-bottom);
 }
 
-.hover-shaddow-top:hover {
+.hover-shadow-top:hover {
     box-shadow: 2px 2px 10px var(--color-top), -2px -1px 10px var(--color-top);
 }
 
-.hover-shaddow-middle:hover {
+.hover-shadow-middle:hover {
     box-shadow: 2px 2px 10px var(--color-middle), -2px -1px 10px var(--color-middle);
 }
 
-.hover-shaddow-bottom:hover {
+.hover-shadow-bottom:hover {
     box-shadow: 2px 2px 10px var(--color-bottom), -2px -1px 10px var(--color-bottom);
 }
 

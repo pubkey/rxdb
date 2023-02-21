@@ -362,7 +362,7 @@ config.parallel('data-migration.test.ts', () => {
                     const oldCollections = await _getOldCollections(col.getDataMigrator());
                     const oldCol = lastOfArray(oldCollections);
 
-                    // simluate prerun of migrate()
+                    // simulate prerun of migrate()
                     const oldDocs = await getBatchOfOldCollection(oldCol as any, 10);
                     const tryDoc = oldDocs.shift();
                     const actions = await _migrateDocuments(oldCol as any, [tryDoc]);

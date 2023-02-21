@@ -17,7 +17,7 @@ export function setupHeroEditor({
     heroColorElement.value = '';
   };
 
-  const saveHeroe = async (name: string, color: string) => {
+  const saveHeroes = async (name: string, color: string) => {
     const db$ = await db();
     await db$.heroes
       .insert({
@@ -33,7 +33,7 @@ export function setupHeroEditor({
     heroName = heroNameElement.value;
     heroColor = heroColorElement.value;
     if (heroName.length > 0 && heroColor.length > 0) {
-      saveHeroe(heroName, heroColor);
+      saveHeroes(heroName, heroColor);
     } else {
       alert('Please fill all the fields');
     }

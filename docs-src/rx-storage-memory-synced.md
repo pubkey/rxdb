@@ -37,7 +37,7 @@ import {
  */
 const parentStorage = getRxStorageIndexedDB();
 
-// wrap the persistend storage with the memory synced one.
+// wrap the persistent storage with the memory synced one.
 const storage = getMemorySyncedRxStorage({
     storage: parentStorage
 });

@@ -76,7 +76,7 @@ export class HeroesListComponent {
     }
 
     /**
-     * this method exists to play arround with the typings
+     * this method exists to play around with the typings
      */
     async foo(): Promise<string> {
         const db = this.dbService.db;

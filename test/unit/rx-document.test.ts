@@ -194,7 +194,7 @@ describe('rx-document.test.js', () => {
 
                 c.database.destroy();
             });
-            it('delete all in parrallel', async () => {
+            it('delete all in parallel', async () => {
                 const c = await humansCollection.create(5);
                 const docs = await c.find().exec();
                 const fns: any[] = [];

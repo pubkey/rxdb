@@ -89,7 +89,7 @@ export async function setCheckpoint<RxDocType, CheckpointType>(
         );
         while (true) {
             /**
-             * Instead of just storign the new checkpoint,
+             * Instead of just storing the new checkpoint,
              * we have to stack up the checkpoint with the previous one.
              * This is required for plugins like the sharding RxStorage
              * where the changeStream events only contain a Partial of the

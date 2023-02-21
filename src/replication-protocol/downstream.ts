@@ -232,7 +232,7 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
         state.stats.down.persistFromMaster = state.stats.down.persistFromMaster + 1;
 
         /**
-         * Add the new docs to the non-persistend list
+         * Add the new docs to the non-persistent list
          */
         docs.forEach(docData => {
             const docId: string = (docData as any)[state.primaryPath];

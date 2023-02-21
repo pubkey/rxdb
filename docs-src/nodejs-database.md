@@ -7,7 +7,7 @@
   <img src="./files/icons/nodejs.svg" alt="Node.js" width="70" />
 </p>
 
-## Persistend Database
+## Persistent Database
 
 To get a "normal" database where the data is persisted to a file system, RxDB provides multiple storage implementations.
 
@@ -106,7 +106,7 @@ node --max-old-space-size=8192 index.js
 
 ## Hybrid In-memory-persistence-synced storage
 
-If you want to have the performance of an **in-memory database** but require persistency of the data, you can use the [memory-synced storage](./rx-storage-memory-synced.md). On database creation it will load all data into the memory and on writes it will first write the data into memory and later also write it to the persistend storage in the background. In the following example the FoundationDB storage is used, but any other RxStorage can be used as persistence layer.
+If you want to have the performance of an **in-memory database** but require persistency of the data, you can use the [memory-synced storage](./rx-storage-memory-synced.md). On database creation it will load all data into the memory and on writes it will first write the data into memory and later also write it to the persistent storage in the background. In the following example the FoundationDB storage is used, but any other RxStorage can be used as persistence layer.
 
 
 ```typescript
@@ -125,7 +125,7 @@ const db = await createRxDatabase({
 });
 ```
 
-While this approach gives you a database with great performance and persistend, it has two major downsides:
+While this approach gives you a database with great performance and persistent, it has two major downsides:
 - The database size is limited to the memory size
 - Writes can be lost when the Node.js process exists between a write to the memory state and the background persisting.
 

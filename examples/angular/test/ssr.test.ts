@@ -15,7 +15,7 @@ describe('ssr.test.ts', function () {
         return content.body;
     }
 
-    it('wait for first request until the server has bootet', async () => {
+    it('wait for first request until the server has booted', async () => {
         await waitUntil(
             async () => {
                 try {

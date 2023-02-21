@@ -16,7 +16,7 @@ RxDB has different implementations to validate data, each of them is based on a 
 
 ### validate-ajv
 
-A validation-module that does the schema-validation. This one is using [ajv](https://github.com/epoberezkin/ajv) as validator which is a bit faster. Better compliant to the jsonschema-standart but also has a bigger build-size.
+A validation-module that does the schema-validation. This one is using [ajv](https://github.com/epoberezkin/ajv) as validator which is a bit faster. Better compliant to the jsonschema-standard but also has a bigger build-size.
 
 ```javascript
 import { wrappedValidateAjvStorage } from 'rxdb/plugins/validate-ajv';

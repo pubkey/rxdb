@@ -369,7 +369,7 @@ export class NoSqlQueryBuilderClass<DocType> {
     /**
      * Make sure _path is set.
      *
-     * @parmam {String} method
+     * @param {String} method
      */
     _ensurePath(method: any) {
         if (!this._path) {

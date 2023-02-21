@@ -132,7 +132,7 @@ export type PlainJsonError = {
 
 
 /**
- * Error that can happer per document when
+ * Error that can happen per document when
  * RxStorage.bulkWrite() is called
  */
 export type RxStorageWriteErrorBase<RxDocType> = {

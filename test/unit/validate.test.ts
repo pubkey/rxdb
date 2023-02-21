@@ -428,7 +428,7 @@ validationImplementations.forEach(
                     );
                     db.destroy();
                 });
-                it('should get no event on non-succes-insert', async () => {
+                it('should get no event on non-success-insert', async () => {
                     const db = await createRxDatabase({
                         name: randomCouchString(10),
                         storage

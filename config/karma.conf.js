@@ -110,7 +110,7 @@ if (process.env.CI) {
      */
     // configuration.reporters = [];
 
-    // how many browser should be started simultanous
+    // how many browser should be started simultaneously
     configuration.concurrency = 1;
 }
 

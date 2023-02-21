@@ -26,7 +26,7 @@ export type RxStorageRemoteWebsocketClientOptions = ClientOptions & {
     /**
      * By default, sockets are cached and reused by url.
      * You can disable this behavior by setting reuseSocketConnection=false
-     * This can be useful in tests to simpulate multiple clients.
+     * This can be useful in tests to simulate multiple clients.
      */
     disableCache?: boolean;
 };

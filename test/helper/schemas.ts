@@ -568,7 +568,7 @@ export const notExistingIndex: RxJsonSchema<{ passportId: string; address: { str
 };
 
 export const compoundIndex: RxJsonSchema<CompoundIndexDocumentType> = overwritable.deepFreezeWhenDevMode({
-    title: 'compund index',
+    title: 'compound index',
     version: 0,
     description: 'this schema has a compoundIndex',
     primaryKey: 'passportId',
@@ -623,7 +623,7 @@ export const compoundIndexNoString: RxJsonSchema<CompoundIndexNoStringDocumentTy
 } as RxJsonSchema<CompoundIndexNoStringDocumentType>;
 
 export const wrongCompoundFormat: RxJsonSchema<CompoundIndexDocumentType> = {
-    title: 'compund index',
+    title: 'compound index',
     version: 0,
     description: 'this schema has a compoundIndex',
     keyCompression: false,
@@ -726,7 +726,7 @@ export const simpleArrayHero: RxJsonSchema<SimpleHeroArrayDocumentType> = overwr
 export const primaryHumanLiteral = overwritable.deepFreezeWhenDevMode({
     title: 'human schema with primary',
     version: 0,
-    description: 'describes a human being with passsportID as primary',
+    description: 'describes a human being with passportID as primary',
     keyCompression: false,
     primaryKey: 'passportId',
     type: 'object',

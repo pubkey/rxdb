@@ -24,7 +24,7 @@ export type RxStorageFoundationDBSettings = {
     batchSize?: number;
 };
 export type RxStorageFoundationDBInstanceCreationOptions = {
-    // can be overwritte per instance
+    // can be overwritten per instance
     batchSize?: number;
 };
 

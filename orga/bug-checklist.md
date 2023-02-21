@@ -1,6 +1,6 @@
 # Bug checklist
 
-This is a list of stuff wich could be done to analyse a bug you have found in RxDB.
+This is a list of stuff which could be done to analyse a bug you have found in RxDB.
 
 
 ## Different browsers

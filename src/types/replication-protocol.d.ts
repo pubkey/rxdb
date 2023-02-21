@@ -148,7 +148,7 @@ export type RxStorageInstanceReplicationInput<RxDocType> = {
      * renders.
      *
      * But: The longer you wait here, the higher is the risk of losing fork
-     * writes when the replicatoin is destroyed unexpected.
+     * writes when the replication is destroyed unexpected.
      */
     waitBeforePersist?: () => Promise<any>;
 
@@ -184,7 +184,7 @@ export type RxStorageInstanceReplicationState<RxDocType> = {
          */
         canceled: BehaviorSubject<boolean>;
         /**
-         * Contains true if the replication is duing something
+         * Contains true if the replication is doing something
          * at this point in time.
          * If this is false, it means that the replication
          * is idle AND in sync.

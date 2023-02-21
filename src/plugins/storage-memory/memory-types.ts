@@ -33,7 +33,7 @@ export type MemoryStorageInternals<RxDocType> = {
     /**
      * We re-use the memory state when multiple instances
      * are created with the same params.
-     * If refCount beomces 0, we can delete the state.
+     * If refCount becomes 0, we can delete the state.
      */
     refCount: number;
     /**
