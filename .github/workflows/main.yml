@@ -315,6 +315,11 @@ jobs:
         working-directory: ./examples/angular
         run: npm run test:ssr
 
+
+      - name: Capacitor build
+        working-directory: ./examples/angular
+        run: npm run build:capacitor
+
   test-builds:
     runs-on: ubuntu-20.04
     steps:

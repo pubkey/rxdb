@@ -8,6 +8,7 @@ import {
 } from '../shared';
 
 export const environment: EnvironmentParams = {
+    name: 'ssr-prod',
     production: true,
     isCapacitor: false,
     isServerSideRendering: true,

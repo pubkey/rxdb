@@ -10,6 +10,7 @@ import { addRxPlugin } from 'rxdb';
 import { RxDBLeaderElectionPlugin } from 'rxdb/plugins/leader-election';
 
 export const environment: EnvironmentParams = {
+  name: 'web-prod',
   production: true,
   isCapacitor: false,
   isServerSideRendering: false,

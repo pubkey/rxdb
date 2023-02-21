@@ -28,7 +28,9 @@
     "dev:ssr": "ng run angular:serve-ssr",
     "serve:ssr": "node dist/angular/server/main.js",
     "build:ssr": "ng build --configuration production && ng run angular:server:production",
-    "prerender": "ng run angular:prerender"
+    "prerender": "ng run angular:prerender",
+    "start:android": "npx cap open android",
+    "build:capacitor": "node --max_old_space_size=4096 ./node_modules/@angular/cli/bin/ng build --configuration capacitor --aot && npx cap sync"
   },
   "private": true,
   "author": "pubkey",

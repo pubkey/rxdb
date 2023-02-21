@@ -14,6 +14,7 @@ import {
 } from 'rxdb/plugins/dev-mode';
 
 export const environment: EnvironmentParams = {
+  name: 'web-dev',
   production: false,
   isCapacitor: false,
   isServerSideRendering: false,

@@ -16,6 +16,7 @@ import {
 
 
 export const environment: EnvironmentParams = {
+    name: 'ssr-dev',
     production: false,
     isCapacitor: false,
     isServerSideRendering: true,
