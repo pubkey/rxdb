@@ -3,6 +3,7 @@
 
 <!-- CHANGELOG NEWEST -->
 - ADD(utils) export `RXDB_VERSION` variable.
+- REFACTOR(RxStorageStatics) use the same query matcher and sort function everywhere, not dependend by storage implementation.
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

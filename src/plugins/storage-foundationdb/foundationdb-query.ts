@@ -8,12 +8,12 @@ import type {
     RxStorageQueryResult
 } from '../../types';
 import { ensureNotFalsy } from '../../plugins/utils';
-import { RxStorageDexieStatics } from '../storage-dexie';
 import { getFoundationDBIndexName } from './foundationdb-helpers';
 import type {
     FoundationDBPreparedQuery
 } from './foundationdb-types';
 import { RxStorageInstanceFoundationDB } from './rx-storage-instance-foundationdb';
+import { getQueryMatcher, getSortComparator } from '../../rx-query-helper';
 
 export async function queryFoundationDB<RxDocType>(
     instance: RxStorageInstanceFoundationDB<RxDocType>,
@@ -30,9 +30,9 @@ export async function queryFoundationDB<RxDocType>(
 
     let queryMatcher: QueryMatcher<RxDocumentData<RxDocType>> | false = false;
     if (!queryPlan.selectorSatisfiedByIndex) {
-        queryMatcher = RxStorageDexieStatics.getQueryMatcher(
+        queryMatcher = getQueryMatcher(
             instance.schema,
-            preparedQuery
+            preparedQuery.query
         );
     }
 
@@ -102,7 +102,7 @@ export async function queryFoundationDB<RxDocType>(
         return innerResult;
     });
     if (mustManuallyResort) {
-        const sortComparator = RxStorageDexieStatics.getSortComparator(instance.schema, preparedQuery);
+        const sortComparator = getSortComparator(instance.schema, preparedQuery.query);
         result = result.sort(sortComparator);
     }
 

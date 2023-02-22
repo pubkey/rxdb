@@ -27,7 +27,9 @@ import {
     getAttachmentSize,
     blobToBase64String,
     createBlob,
-    getBlobSize
+    getBlobSize,
+    getSortComparator,
+    getQueryMatcher
 } from '../../';
 import Ajv from 'ajv';
 import {
@@ -1024,14 +1026,9 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     ],
                     skip: 0
                 };
-                const preparedQuery = config.storage.getStorage().statics.prepareQuery(
+                const comparator = getSortComparator(
                     storageInstance.schema,
                     query
-                );
-
-                const comparator = config.storage.getStorage().statics.getSortComparator(
-                    storageInstance.schema,
-                    preparedQuery
                 );
 
                 const doc1: any = schemaObjects.human();
@@ -1072,14 +1069,10 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     ],
                     skip: 0
                 };
-                const preparedQuery = config.storage.getStorage().statics.prepareQuery(
+
+                const comparator = getSortComparator(
                     storageInstance.schema,
                     query
-                );
-
-                const comparator = config.storage.getStorage().statics.getSortComparator(
-                    storageInstance.schema,
-                    preparedQuery
                 );
 
                 const docs: TestDocType[] = [
@@ -1134,14 +1127,9 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     skip: 0
                 };
 
-                const preparedQuery = config.storage.getStorage().statics.prepareQuery(
+                const comparator = getSortComparator(
                     storageInstance.schema,
                     query
-                );
-
-                const comparator = config.storage.getStorage().statics.getSortComparator(
-                    storageInstance.schema,
-                    preparedQuery
                 );
 
                 const docs: TestDocType[] = [
@@ -1190,12 +1178,9 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     skip: 0
                 };
 
-                const queryMatcher = config.storage.getStorage().statics.getQueryMatcher(
+                const queryMatcher = getQueryMatcher(
                     storageInstance.schema,
-                    config.storage.getStorage().statics.prepareQuery(
-                        storageInstance.schema,
-                        query
-                    )
+                    query
                 );
 
                 const doc1: any = schemaObjects.human();
@@ -1229,12 +1214,9 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     skip: 0
                 };
 
-                const queryMatcher = config.storage.getStorage().statics.getQueryMatcher(
+                const queryMatcher = getQueryMatcher(
                     storageInstance.schema,
-                    config.storage.getStorage().statics.prepareQuery(
-                        storageInstance.schema,
-                        query
-                    )
+                    query
                 );
 
                 const doc1: any = schemaObjects.human();
@@ -1260,12 +1242,9 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     skip: 0
                 };
 
-                const queryMatcher = config.storage.getStorage().statics.getQueryMatcher(
+                const queryMatcher = getQueryMatcher(
                     schema,
-                    config.storage.getStorage().statics.prepareQuery(
-                        schema,
-                        query
-                    )
+                    query
                 );
 
                 const notMatchingDoc = {
@@ -1505,9 +1484,9 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                         query
                     );
                     const docsViaQuery = (await storageInstance.query(preparedQuery)).documents;
-                    const sortComparator = config.storage.getStorage().statics.getSortComparator(
+                    const sortComparator = getSortComparator(
                         storageInstance.schema,
-                        preparedQuery
+                        query
                     );
                     const docsViaSort = shuffleArray(docs).sort(sortComparator);
                     assert.deepStrictEqual(docsViaQuery, docsViaSort);

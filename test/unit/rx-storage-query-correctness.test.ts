@@ -11,7 +11,9 @@ import {
     getPrimaryFieldOfPrimaryKey,
     clone,
     getQueryPlan,
-    deepFreeze
+    deepFreeze,
+    getQueryMatcher,
+    getSortComparator
 } from '../../';
 import {
     areSelectorsSatisfiedByIndex
@@ -105,8 +107,8 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
 
 
                 // Test output of RxStorageStatics
-                const queryMatcher = config.storage.getStorage().statics.getQueryMatcher(schema, preparedQuery);
-                const sortComparator = config.storage.getStorage().statics.getSortComparator(schema, preparedQuery);
+                const queryMatcher = getQueryMatcher(schema, normalizedQuery);
+                const sortComparator = getSortComparator(schema, normalizedQuery);
                 const staticsResult = rawDocsData.slice(0)
                     .filter(d => queryMatcher(d))
                     .sort(sortComparator)

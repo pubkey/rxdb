@@ -1,4 +1,4 @@
-import { RxStorageDefaultStatics } from '../../rx-storage-statics';
+import { getQueryMatcher, getSortComparator } from '../../rx-query-helper';
 import type {
     DefaultPreparedQuery,
     QueryMatcher,
@@ -67,9 +67,9 @@ export async function dexieQuery<RxDocType>(
 
     let queryMatcher: QueryMatcher<RxDocumentData<RxDocType>> | false = false;
     if (!queryPlan.selectorSatisfiedByIndex) {
-        queryMatcher = RxStorageDefaultStatics.getQueryMatcher(
+        queryMatcher = getQueryMatcher(
             instance.schema,
-            preparedQuery
+            preparedQuery.query
         );
     }
 
@@ -157,7 +157,7 @@ export async function dexieQuery<RxDocType>(
 
 
     if (!queryPlan.sortFieldsSameAsIndexFields) {
-        const sortComparator = RxStorageDefaultStatics.getSortComparator(instance.schema, preparedQuery);
+        const sortComparator = getSortComparator(instance.schema, preparedQuery.query);
         rows = rows.sort(sortComparator);
     }
 
