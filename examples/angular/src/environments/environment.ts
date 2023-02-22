@@ -1,16 +1,32 @@
-// This file can be replaced during build by using the `fileReplacements` array.
-// `ng build --prod` replaces `environment.ts` with `environment.prod.ts`.
-// The list of file replacements can be found in `angular.json`.
+import { EnvironmentParams } from './environment.d';
+import {
+  getRxStorageDexie
+} from 'rxdb/plugins/storage-dexie';
+import { wrappedValidateAjvStorage } from 'rxdb/plugins/validate-ajv';
+import {
+  SYNC_PORT,
+  DATABASE_NAME
+} from '../shared';
+import { addRxPlugin } from 'rxdb';
+import { RxDBLeaderElectionPlugin } from 'rxdb/plugins/leader-election';
+import {
+  RxDBDevModePlugin
+} from 'rxdb/plugins/dev-mode';
 
-export const environment = {
-  production: false
+export const environment: EnvironmentParams = {
+  name: 'web-dev',
+  production: false,
+  isCapacitor: false,
+  isServerSideRendering: false,
+  multiInstance: true,
+  rxdbSyncUrl: 'http://' + window.location.hostname + ':' + SYNC_PORT + '/' + DATABASE_NAME,
+  addRxDBPlugins() {
+    addRxPlugin(RxDBDevModePlugin);
+    addRxPlugin(RxDBLeaderElectionPlugin);
+  },
+  getRxStorage() {
+    return wrappedValidateAjvStorage({
+      storage: getRxStorageDexie()
+    });
+  },
 };
-
-/*
- * For easier debugging in development mode, you can import the following file
- * to ignore zone related error stack frames such as `zone.run`, `zoneDelegate.invokeTask`.
- *
- * This import should be commented out in production mode because it will have a negative impact
- * on performance if an error is thrown.
- */
-// import 'zone.js/plugins/zone-error';  // Included with Angular CLI.

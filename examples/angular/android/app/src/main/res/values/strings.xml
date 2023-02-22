@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">angular</string>
+    <string name="title_activity_main">angular</string>
+    <string name="package_name">info.rxdb.example</string>
+    <string name="custom_url_scheme">info.rxdb.example</string>
+</resources>

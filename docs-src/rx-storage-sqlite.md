@@ -135,6 +135,15 @@ const myRxDatabase = await createRxDatabase({
 
 - [expo-sqlite](https://www.npmjs.com/package/expo-sqlite) cannot be used on android (but it works on iOS) because it uses an [outdated SQLite version](https://expo.canny.io/feature-requests/p/expo-sqlite-ship-newer-sqlite3-version-on-android)
 
+- To debug all SQL operations, you can pass a log function to `getRxStorageSQLite()` like this:
+```ts
+const storage = getRxStorageSQLite({
+    sqliteBasics: getSQLiteBasicsCapacitor(sqlite, Capacitor),
+    // pass log function
+    log: console.log.bind(console)
+});
+```
+
 
 ## Related
 - [React Native Databases](./react-native-database.md)
