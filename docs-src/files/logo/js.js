@@ -54,6 +54,11 @@ window.renderLogo = function (selector, showText = true) {
         .attr('preserveAspectRatio', 'xMidYMin meet')
         .attr('viewBox', viewBox);
 
+    const svgInner = svg
+        .append('a')
+        .attr('href', 'https://rxdb.info/')
+        .attr('target', '_blank');
+
 
     /**
      * All elements have to be added to both groups,
@@ -62,12 +67,12 @@ window.renderLogo = function (selector, showText = true) {
      * This ensure we have to ugly stroke blinking through
      * and we do not have to work with svg masks.
      */
-    const borderedGroup = svg
+    const borderedGroup = svgInner
         .append('g')
         .style('stroke-width', strokeWidth + 'px')
         .style('stroke', 'rgb(255 255 255)')
         .style('stroke-linejoin', 'round');
-    const normalGroup = svg
+    const normalGroup = svgInner
         .append('g')
         .attr('id', 'normal-group');
     const groups = [normalGroup, borderedGroup];
