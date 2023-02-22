@@ -145,7 +145,8 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
             collectionName,
             schema: fillWithDefaultSettings(schemas.human),
             options: {},
-            multiInstance: true
+            multiInstance: true,
+            devMode: true
         });
 
         if (documentAmount > 0) {
@@ -166,7 +167,8 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
             collectionName: randomCouchString(12),
             schema: getRxReplicationMetaInstanceSchema(parentSchema, false),
             options: {},
-            multiInstance: true
+            multiInstance: true,
+            devMode: true
         });
         return instance;
     }
@@ -1095,7 +1097,8 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 collectionName: randomCouchString(10),
                 schema: RX_LOCAL_DOCUMENT_SCHEMA,
                 options: {},
-                multiInstance: true
+                multiInstance: true,
+                devMode: true
             });
             const forkInstance = await config.storage.getStorage().createStorageInstance<RxLocalDocumentData>({
                 databaseInstanceToken: randomCouchString(10),
@@ -1103,7 +1106,8 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 collectionName: randomCouchString(10),
                 schema: RX_LOCAL_DOCUMENT_SCHEMA,
                 options: {},
-                multiInstance: true
+                multiInstance: true,
+                devMode: true
             });
             const metaInstance = await createMetaInstance(forkInstance.schema);
 

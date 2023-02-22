@@ -220,7 +220,8 @@ config.parallel('rx-storage-dexie.test.js', () => {
                 collectionName: randomCouchString(12),
                 schema,
                 options: {},
-                multiInstance: false
+                multiInstance: false,
+                devMode: true
             });
 
             await storageInstance.bulkWrite(
@@ -320,7 +321,8 @@ config.parallel('rx-storage-dexie.test.js', () => {
                     collectionName: randomCouchString(12),
                     schema,
                     options: {},
-                    multiInstance: false
+                    multiInstance: false,
+                    devMode: true
                 }),
                 'RxError',
                 'DXE1'

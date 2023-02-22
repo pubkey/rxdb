@@ -91,7 +91,8 @@ validationImplementations.forEach(
                     databaseName: randomCouchString(10),
                     multiInstance: false,
                     options: {},
-                    schema: fillWithDefaultSettings(schema)
+                    schema: fillWithDefaultSettings(schema),
+                    devMode: true
                 });
             }
             function toRxDocumentData<RxDocType>(docData: RxDocType): RxDocumentData<RxDocType> {
