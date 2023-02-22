@@ -30,12 +30,14 @@ async function run() {
     }
     const versionFileContent = templateContent.replace(placeholderFlag, newVersion);
     const goalFilePath = path.join(rootPath, 'src/plugins/utils/utils-rxdb-version.ts');
-    if (fs.existsSync(goalFilePath)) {
-        await fs.promises.unlink(goalFilePath);
-    }
     await fs.promises.writeFile(
         goalFilePath,
-        versionFileContent
+        versionFileContent,
+        {
+            encoding: 'utf8',
+            // overwrite if exists
+            flag: 'w'
+        }
     );
 }
 
