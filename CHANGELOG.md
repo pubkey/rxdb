@@ -2,6 +2,8 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
+- SQLite: Added logger function
+- ADD capacitor build to angular example
 
 <!-- ADD new changes here! -->
 
