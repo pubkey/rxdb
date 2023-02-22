@@ -99,6 +99,7 @@ import {
 import { defaultConflictHandler } from './replication-protocol';
 import { IncrementalWriteQueue } from './incremental-write';
 import { beforeDocumentUpdateWrite } from './rx-document';
+import { overwritable } from './overwritable';
 
 const HOOKS_WHEN = ['pre', 'post'] as const;
 type HookWhenType = typeof HOOKS_WHEN[number];
@@ -875,7 +876,8 @@ export function createRxCollection(
         schema: schema.jsonSchema,
         options: instanceCreationOptions,
         multiInstance: database.multiInstance,
-        password: database.password
+        password: database.password,
+        devMode: overwritable.isDevMode()
     };
 
     runPluginHooks(

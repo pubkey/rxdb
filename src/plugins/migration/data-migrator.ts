@@ -63,6 +63,7 @@ import {
     INTERNAL_CONTEXT_COLLECTION
 } from '../../rx-database-internal-store';
 import { normalizeMangoQuery } from '../../rx-query-helper';
+import { overwritable } from '../../overwritable';
 
 export class DataMigrator {
 
@@ -248,7 +249,8 @@ export async function createOldCollection(
         collectionName: dataMigrator.newestCollection.name,
         schema: schemaObj,
         options: dataMigrator.newestCollection.instanceCreationOptions,
-        multiInstance: database.multiInstance
+        multiInstance: database.multiInstance,
+        devMode: overwritable.isDevMode()
     };
     runPluginHooks(
         'preCreateRxStorageInstance',

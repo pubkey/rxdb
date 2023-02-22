@@ -79,6 +79,7 @@ import {
     _collectionNamePrimary
 } from './rx-database-internal-store';
 import { removeCollectionStorages } from './rx-collection-helper';
+import { overwritable } from './overwritable';
 
 /**
  * stores the used database names
@@ -537,7 +538,8 @@ export async function createRxDatabaseStorageInstance<Internals, InstanceCreatio
             schema: INTERNAL_STORE_SCHEMA,
             options,
             multiInstance,
-            password
+            password,
+            devMode: overwritable.isDevMode()
         }
     );
     return internalStore;

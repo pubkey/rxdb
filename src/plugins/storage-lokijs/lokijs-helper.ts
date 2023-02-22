@@ -25,6 +25,7 @@ import {
 } from 'broadcast-channel';
 import { getBroadcastChannelReference } from '../../rx-storage-multiinstance';
 import { getLeaderElectorByBroadcastChannel } from '../leader-election';
+import { overwritable } from '../../overwritable';
 
 export const CHANGES_COLLECTION_SUFFIX = '-rxdb-changes';
 export const LOKI_BROADCAST_CHANNEL_MESSAGE_TYPE = 'rxdb-lokijs-remote-request';
@@ -462,7 +463,8 @@ export async function mustUseLocalState(
             collectionName: instance.collectionName,
             options: instance.options,
             schema: (instance as RxStorageInstanceLoki<any>).schema,
-            multiInstance: instance.internals.leaderElector ? true : false
+            multiInstance: instance.internals.leaderElector ? true : false,
+            devMode: overwritable.isDevMode()
         }, instance.databaseSettings);
         return ensureNotFalsy(instance.internals.localState);
     } else {
