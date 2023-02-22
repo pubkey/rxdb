@@ -24,7 +24,6 @@ import { createRxLocalDocument } from './rx-local-document';
 export const LOCAL_DOC_STATE_BY_PARENT: WeakMap<LocalDocumentParent, Promise<LocalDocumentState>> = new WeakMap();
 export const LOCAL_DOC_STATE_BY_PARENT_RESOLVED: WeakMap<LocalDocumentParent, LocalDocumentState> = new WeakMap();
 
-
 export function createLocalDocStateByParent(parent: LocalDocumentParent): void {
     const database: RxDatabase = parent.database ? parent.database : parent as any;
     const collectionName = parent.database ? parent.name : '';
@@ -106,7 +105,6 @@ export function getLocalDocStateByParent(parent: LocalDocumentParent): Promise<L
     return statePromise;
 }
 
-
 export function createLocalDocumentStorageInstance(
     databaseInstanceToken: string,
     storage: RxStorage<any, any>,
@@ -154,7 +152,6 @@ export async function removeLocalDocumentsStorageInstance(
     );
     await storageInstance.remove();
 }
-
 
 export function getCollectionLocalInstanceName(collectionName: string): string {
     return 'plugin-local-documents-' + collectionName;

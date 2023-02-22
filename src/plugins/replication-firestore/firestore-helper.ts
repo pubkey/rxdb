@@ -6,7 +6,7 @@ import type {
     WithDeleted
 } from '../../types';
 import { flatClone, now } from '../../plugins/utils';
-import { GetQuery } from './firestore-types';
+import type { GetQuery } from './firestore-types';
 
 export const FIRESTORE_REPLICATION_PLUGIN_IDENTITY_PREFIX = 'firestore';
 

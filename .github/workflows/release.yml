@@ -88,13 +88,13 @@ jobs:
           rm -rf node_modules/
           npm install
 
-      - run: npm run docs:landingpage:build
-      - run: npm run build
-
       - name: "update version and changelog"
         working-directory: "scripts"
         run: |
           node set-version.js ${{github.event.inputs.version}}
+
+      - run: npm run docs:landingpage:build
+      - run: npm run build
 
       - name: add git tag
         run: |
