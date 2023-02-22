@@ -1,10 +1,10 @@
-import {
+import type {
     ReplicationOptions,
     ReplicationPullOptions,
     ReplicationPushOptions
 } from '../../types';
 
-import {
+import type {
     CollectionReference,
     Firestore,
     QuerySnapshot

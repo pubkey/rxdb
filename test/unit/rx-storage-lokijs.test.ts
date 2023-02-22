@@ -237,7 +237,8 @@ describe('rx-storage-lokijs.test.js', () => {
                 collectionName: randomCouchString(12),
                 schema: getPseudoSchemaForVersion(0, 'key'),
                 options: {},
-                multiInstance: false
+                multiInstance: false,
+                devMode: true
             });
 
             const localState = await ensureNotFalsy(storageInstance.internals.localState);
@@ -287,7 +288,8 @@ describe('rx-storage-lokijs.test.js', () => {
                 collectionName: randomCouchString(12),
                 schema: getPseudoSchemaForVersion(0, 'key'),
                 options: {},
-                multiInstance: false
+                multiInstance: false,
+                devMode: true
             });
 
             await storageInstance.bulkWrite([{
@@ -350,7 +352,8 @@ describe('rx-storage-lokijs.test.js', () => {
                     collectionName: randomCouchString(12),
                     multiInstance: false,
                     options: {},
-                    schema: fillWithDefaultSettings(schemas.human)
+                    schema: fillWithDefaultSettings(schemas.human),
+                    devMode: true
                 });
 
                 const firstDocData = Object.assign(schemaObjects.human(), {
@@ -423,7 +426,8 @@ describe('rx-storage-lokijs.test.js', () => {
                 collectionName,
                 schema: getPseudoSchemaForVersion(0, 'key'),
                 options: {},
-                multiInstance: false
+                multiInstance: false,
+                devMode: true
             });
 
             const key = 'foobar';
@@ -447,7 +451,8 @@ describe('rx-storage-lokijs.test.js', () => {
                 collectionName,
                 schema: getPseudoSchemaForVersion(0, 'key'),
                 options: {},
-                multiInstance: false
+                multiInstance: false,
+                devMode: true
             });
 
             const docFromStorage = await storageInstance2.findDocumentsById([key], true);

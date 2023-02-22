@@ -20,10 +20,10 @@ import type {
 } from '../../types';
 import { randomCouchString } from '../../plugins/utils';
 import { createRxLocalDocument } from './rx-local-document';
+import { overwritable } from '../../overwritable';
 
 export const LOCAL_DOC_STATE_BY_PARENT: WeakMap<LocalDocumentParent, Promise<LocalDocumentState>> = new WeakMap();
 export const LOCAL_DOC_STATE_BY_PARENT_RESOLVED: WeakMap<LocalDocumentParent, LocalDocumentState> = new WeakMap();
-
 
 export function createLocalDocStateByParent(parent: LocalDocumentParent): void {
     const database: RxDatabase = parent.database ? parent.database : parent as any;
@@ -106,7 +106,6 @@ export function getLocalDocStateByParent(parent: LocalDocumentParent): Promise<L
     return statePromise;
 }
 
-
 export function createLocalDocumentStorageInstance(
     databaseInstanceToken: string,
     storage: RxStorage<any, any>,
@@ -126,7 +125,8 @@ export function createLocalDocumentStorageInstance(
         collectionName: getCollectionLocalInstanceName(collectionName),
         schema: RX_LOCAL_DOCUMENT_SCHEMA,
         options: instanceCreationOptions,
-        multiInstance
+        multiInstance,
+        devMode: overwritable.isDevMode()
     });
 }
 
@@ -154,7 +154,6 @@ export async function removeLocalDocumentsStorageInstance(
     );
     await storageInstance.remove();
 }
-
 
 export function getCollectionLocalInstanceName(collectionName: string): string {
     return 'plugin-local-documents-' + collectionName;

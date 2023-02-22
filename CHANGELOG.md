@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- ADD(utils) export `RXDB_VERSION` variable.
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

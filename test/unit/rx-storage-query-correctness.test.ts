@@ -63,7 +63,8 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                 collectionName: randomCouchString(12),
                 schema,
                 options: {},
-                multiInstance: false
+                multiInstance: false,
+                devMode: true
             });
 
 

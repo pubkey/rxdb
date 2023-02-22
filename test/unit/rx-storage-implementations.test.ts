@@ -175,7 +175,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     collectionName,
                     schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                     options: {},
-                    multiInstance: false
+                    multiInstance: false,
+                    devMode: true
                 });
 
                 // it must have not mutated the collectionName
@@ -195,7 +196,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                         collectionName: randomCouchString(12),
                         schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                         options: {},
-                        multiInstance: false
+                        multiInstance: false,
+                        devMode: true
                     }))
                 );
                 await Promise.all(instances.map(instance => instance.close()));
@@ -216,7 +218,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                         collectionName: randomCouchString(12),
                         schema,
                         options: {},
-                        multiInstance: false
+                        multiInstance: false,
+                        devMode: true
                     });
                 } catch (error: any) {
                     const errorString = error.toString();
@@ -246,7 +249,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                         collectionName: randomCouchString(12),
                         schema,
                         options: {},
-                        multiInstance: false
+                        multiInstance: false,
+                        devMode: true
                     });
                 } catch (error: any) {
                     const errorString = error.toString();
@@ -264,7 +268,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     collectionName: randomCouchString(12),
                     schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                     options: {},
-                    multiInstance: false
+                    multiInstance: false,
+                    devMode: true
                 });
 
                 const docData: RxDocumentWriteData<TestDocType> = {
@@ -296,7 +301,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     collectionName: randomCouchString(12),
                     schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                     options: {},
-                    multiInstance: false
+                    multiInstance: false,
+                    devMode: true
                 });
 
                 const writeData: RxDocumentWriteData<TestDocType> = {
@@ -358,7 +364,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     collectionName: randomCouchString(12),
                     schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                     options: {},
-                    multiInstance: false
+                    multiInstance: false,
+                    devMode: true
                 });
 
                 const writeData: RxDocumentWriteData<TestDocType> = {
@@ -405,7 +412,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     collectionName: randomCouchString(12),
                     schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                     options: {},
-                    multiInstance: false
+                    multiInstance: false,
+                    devMode: true
                 });
 
                 // make an insert
@@ -474,7 +482,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     collectionName: randomCouchString(12),
                     schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                     options: {},
-                    multiInstance: false
+                    multiInstance: false,
+                    devMode: true
                 });
 
                 const docId = 'undeleteMe';
@@ -592,7 +601,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     collectionName: randomCouchString(12),
                     schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                     options: {},
-                    multiInstance: false
+                    multiInstance: false,
+                    devMode: true
                 });
                 const docId = 'foobar';
 
@@ -657,7 +667,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     collectionName: randomCouchString(12),
                     schema: schema as any,
                     options: {},
-                    multiInstance: false
+                    multiInstance: false,
+                    devMode: true
                 });
                 const docId = 'foobar';
                 const insertData: RxDocumentWriteData<OptionalValueTestDoc> = {
@@ -725,7 +736,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     collectionName: randomCouchString(12),
                     schema: compressionState.schema,
                     options: {},
-                    multiInstance: false
+                    multiInstance: false,
+                    devMode: true
                 });
 
                 const docData = Object.assign(
@@ -766,7 +778,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     collectionName: randomCouchString(12),
                     schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                     options: {},
-                    multiInstance: false
+                    multiInstance: false,
+                    devMode: true
                 });
 
                 const key = 'foobar';
@@ -839,7 +852,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     collectionName: randomCouchString(12),
                     schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                     options: {},
-                    multiInstance: false
+                    multiInstance: false,
+                    devMode: true
                 });
                 const docData: RxDocumentWriteData<TestDocType> = {
                     key: 'foobar',
@@ -863,7 +877,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     collectionName: randomCouchString(12),
                     schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                     options: {},
-                    multiInstance: false
+                    multiInstance: false,
+                    devMode: true
                 });
                 await storageInstance2.bulkWrite(
                     [{
@@ -888,7 +903,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     collectionName: randomCouchString(12),
                     schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                     options: {},
-                    multiInstance: false
+                    multiInstance: false,
+                    devMode: true
                 });
 
                 // insert
@@ -996,7 +1012,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                         ]
                     }),
                     options: {},
-                    multiInstance: false
+                    multiInstance: false,
+                    devMode: true
                 });
 
                 const query: FilledMangoQuery<any> = {
@@ -1039,7 +1056,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     collectionName: randomCouchString(12),
                     schema: getTestDataSchema(),
                     options: {},
-                    multiInstance: false
+                    multiInstance: false,
+                    devMode: true
                 });
 
                 const matchingValue = 'foobar';
@@ -1091,7 +1109,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     collectionName: randomCouchString(12),
                     schema: getTestDataSchema(),
                     options: {},
-                    multiInstance: false
+                    multiInstance: false,
+                    devMode: true
                 });
 
                 const matchingValue = 'aaa';
@@ -1154,7 +1173,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     collectionName: randomCouchString(12),
                     schema: getPseudoSchemaForVersion(0, '_id' as any),
                     options: {},
-                    multiInstance: false
+                    multiInstance: false,
+                    devMode: true
                 });
 
                 const query: FilledMangoQuery<schemas.HumanDocumentType> = {
@@ -1197,7 +1217,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     collectionName: randomCouchString(12),
                     schema: getPseudoSchemaForVersion<{ _id: string; }>(0, '_id' as any),
                     options: {},
-                    multiInstance: false
+                    multiInstance: false,
+                    devMode: true
                 });
 
                 const query: FilledMangoQuery<{ _id: string; }> = {
@@ -1292,7 +1313,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                         collectionName: randomCouchString(12),
                         schema: getPseudoSchemaForVersion<{ key: string; value: string; }>(0, 'key'),
                         options: {},
-                        multiInstance: false
+                        multiInstance: false,
+                        devMode: true
                     });
 
                 const writeData = {
@@ -1355,7 +1377,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                         collectionName: randomCouchString(12),
                         schema: getTestDataSchema(),
                         options: {},
-                        multiInstance: false
+                        multiInstance: false,
+                        devMode: true
                     });
 
                 await storageInstance.bulkWrite([
@@ -1449,7 +1472,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                         collectionName: randomCouchString(12),
                         schema,
                         options: {},
-                        multiInstance: false
+                        multiInstance: false,
+                        devMode: true
                     });
 
                 const docData: RxDocumentWriteData<RandomDoc>[] = new Array(6)
@@ -1542,7 +1566,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                         collectionName: randomCouchString(12),
                         schema,
                         options: {},
-                        multiInstance: false
+                        multiInstance: false,
+                        devMode: true
                     });
                 const insertResult = await storageInstance.bulkWrite([
                     {
@@ -1597,7 +1622,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                         collectionName: randomCouchString(12),
                         schema,
                         options: {},
-                        multiInstance: false
+                        multiInstance: false,
+                        devMode: true
                     });
 
                 const amount = 100;
@@ -1641,7 +1667,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                         collectionName: randomCouchString(12),
                         schema,
                         options: {},
-                        multiInstance: false
+                        multiInstance: false,
+                        devMode: true
                     });
                 const preparedQueryAll = config.storage.getStorage().statics.prepareQuery<TestDocType>(
                     schema,
@@ -1696,7 +1723,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     collectionName: randomCouchString(12),
                     schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                     options: {},
-                    multiInstance: false
+                    multiInstance: false,
+                    devMode: true
                 });
 
                 const docData = {
@@ -1729,7 +1757,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     collectionName: randomCouchString(12),
                     schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                     options: {},
-                    multiInstance: false
+                    multiInstance: false,
+                    devMode: true
                 });
 
                 const insertResult = await storageInstance.bulkWrite(
@@ -1782,7 +1811,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     collectionName: randomCouchString(12),
                     schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                     options: {},
-                    multiInstance: false
+                    multiInstance: false,
+                    devMode: true
                 });
 
                 const insertResult = await storageInstance.bulkWrite(
@@ -1854,7 +1884,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     collectionName: randomCouchString(12),
                     schema: getPseudoSchemaForVersion(0, 'key'),
                     options: {},
-                    multiInstance: false
+                    multiInstance: false,
+                    devMode: true
                 });
                 let checkpoint: any;
                 async function getChanges(): Promise<RxDocumentData<{ key: string; }>[]> {
@@ -1946,7 +1977,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     collectionName: randomCouchString(12),
                     schema: getTestDataSchema(),
                     options: {},
-                    multiInstance: false
+                    multiInstance: false,
+                    devMode: true
                 });
 
                 let previous: any;
@@ -2039,7 +2071,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     collectionName: randomCouchString(12),
                     schema: getTestDataSchema(),
                     options: {},
-                    multiInstance: false
+                    multiInstance: false,
+                    devMode: true
                 });
 
                 const writeAmount = config.isFastMode() ? 40 : 100;
@@ -2091,7 +2124,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     collectionName: randomCouchString(12),
                     schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                     options: {},
-                    multiInstance: false
+                    multiInstance: false,
+                    devMode: true
                 });
 
                 const emitted: EventBulk<RxStorageChangeEvent<TestDocType>, any>[] = [];
@@ -2183,7 +2217,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     collectionName: randomCouchString(12),
                     schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                     options: {},
-                    multiInstance: false
+                    multiInstance: false,
+                    devMode: true
                 });
 
                 const emitted: EventBulk<RxStorageChangeEvent<RxDocumentData<TestDocType>>, any>[] = [];
@@ -2271,7 +2306,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     collectionName: randomCouchString(12),
                     schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                     options: {},
-                    multiInstance: false
+                    multiInstance: false,
+                    devMode: true
                 });
 
                 const emitted: EventBulk<RxStorageChangeEvent<RxDocumentData<TestDocType>>, any>[] = [];
@@ -2325,7 +2361,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                         }
                     ),
                     options: {},
-                    multiInstance: false
+                    multiInstance: false,
+                    devMode: true
                 });
                 const attachmentData = new Array(20).fill('a').join('');
 
@@ -2380,7 +2417,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                         }
                     ),
                     options: {},
-                    multiInstance: false
+                    multiInstance: false,
+                    devMode: true
                 });
                 const emitted: EventBulk<RxStorageChangeEvent<any>, any>[] = [];
                 const sub = storageInstance.changeStream().subscribe(x => {
@@ -2493,7 +2531,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                         }
                     ),
                     options: {},
-                    multiInstance: false
+                    multiInstance: false,
+                    devMode: true
                 });
 
                 let previous: RxDocumentData<TestDocType> | undefined;
@@ -2576,7 +2615,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                         }
                     ),
                     options: {},
-                    multiInstance: false
+                    multiInstance: false,
+                    devMode: true
                 });
 
                 const data = createBlob(randomString(20), 'text/plain');
@@ -2633,7 +2673,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     collectionName: randomCouchString(12),
                     schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                     options: {},
-                    multiInstance: false
+                    multiInstance: false,
+                    devMode: true
                 });
 
                 const id = 'foobar';
@@ -2732,7 +2773,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     collectionName: randomCouchString(12),
                     schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                     options: {},
-                    multiInstance: false
+                    multiInstance: false,
+                    devMode: true
                 });
 
                 let done = false;
@@ -2795,7 +2837,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     collectionName,
                     schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                     options: {},
-                    multiInstance: false
+                    multiInstance: false,
+                    devMode: true
                 });
                 await storageInstance.bulkWrite([
                     {
@@ -2818,7 +2861,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     collectionName,
                     schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                     options: {},
-                    multiInstance: false
+                    multiInstance: false,
+                    devMode: true
                 });
 
                 const docs = await storageInstance2.findDocumentsById(['foobar'], false);
@@ -2837,7 +2881,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     collectionName: randomCouchString(12),
                     schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                     options: {},
-                    multiInstance: false
+                    multiInstance: false,
+                    devMode: true
                 });
                 await storageInstance.remove();
                 await assertThrows(
@@ -2866,7 +2911,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 collectionName,
                 schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                 options: {},
-                multiInstance: true
+                multiInstance: true,
+                devMode: true
             });
             // ensure A is always leader
             if (a.internals.leaderElector) {
@@ -2881,7 +2927,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 collectionName,
                 schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                 options: {},
-                multiInstance: true
+                multiInstance: true,
+                devMode: true
             });
             return {
                 a,
@@ -3004,7 +3051,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 collectionName,
                 schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                 options: {},
-                multiInstance: false
+                multiInstance: false,
+                devMode: true
             });
             const storageInstanceV1 = await config.storage.getStorage().createStorageInstance<TestDocType>({
                 databaseInstanceToken: randomCouchString(10),
@@ -3012,7 +3060,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 collectionName,
                 schema: getPseudoSchemaForVersion<TestDocType>(1, 'key'),
                 options: {},
-                multiInstance: false
+                multiInstance: false,
+                devMode: true
             });
 
             const writeResponseV0 = await storageInstanceV0.bulkWrite(
@@ -3083,7 +3132,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 collectionName,
                 schema,
                 options: {},
-                multiInstance: false
+                multiInstance: false,
+                devMode: true
             });
 
             const writeResponse = await storageInstance1.bulkWrite(
@@ -3111,7 +3161,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 collectionName,
                 schema,
                 options: {},
-                multiInstance: false
+                multiInstance: false,
+                devMode: true
             });
 
             const allDocsQuery = config.storage.getStorage().statics.prepareQuery(
@@ -3157,7 +3208,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 collectionName,
                 schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                 options: {},
-                multiInstance: false
+                multiInstance: false,
+                devMode: true
             });
             const storageInstanceOne = await storage.createStorageInstance<TestDocType>({
                 databaseInstanceToken: randomCouchString(10),
@@ -3165,7 +3217,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 collectionName,
                 schema: getPseudoSchemaForVersion<TestDocType>(1, 'key'),
                 options: {},
-                multiInstance: false
+                multiInstance: false,
+                devMode: true
             });
 
             const writeResultZero = await storageInstanceZero.bulkWrite(

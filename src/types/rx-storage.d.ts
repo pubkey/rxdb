@@ -220,6 +220,13 @@ export type RxStorageInstanceCreationParams<RxDocType, InstanceCreationOptions> 
      */
     multiInstance: boolean;
     password?: string | any;
+
+    /**
+     * Some storages can do additional checks
+     * that are performance expensive
+     * and should only be done in dev-mode.
+     */
+    devMode: boolean;
 };
 
 export type ChangeStreamOptions = {
