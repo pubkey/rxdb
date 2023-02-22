@@ -306,7 +306,7 @@ var RxDatabaseBase = /*#__PURE__*/function () {
 
     /**
      * Destroying the pseudo instance will throw
-     * because stulff is missing
+     * because stuff is missing
      * TODO we should not need the pseudo instance on runtime.
      * we should generate the property list on build time.
      */

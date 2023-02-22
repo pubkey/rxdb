@@ -84,7 +84,7 @@ export async function awaitRxStorageReplicationIdle(state) {
     } = state.streamQueue;
     await Promise.all([up, down]);
     /**
-     * If the Promises have not been reasigned
+     * If the Promises have not been reassigned
      * after awaiting them, we know that the replication
      * is in idle state at this point in time.
      */

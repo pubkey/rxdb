@@ -45,7 +45,7 @@ export declare class RxDatabaseBase<Internals, InstanceCreationOptions, Collecti
     get $(): Observable<RxChangeEvent<any>>;
     _subs: Subscription[];
     /**
-     * Beceause having unhandled exceptions would fail,
+     * Because having unhandled exceptions would fail,
      * we have to store the async errors of the constructor here
      * so we can throw them later.
      */

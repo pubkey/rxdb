@@ -116,8 +116,8 @@ function replicateFirestore(options) {
               }
               var missingAmount = batchSize - useDocs.length;
               if (missingAmount > 0) {
-                var additonalDocs = newerQueryResult.docs.slice(0, missingAmount).filter(x => !!x);
-                useDocs = useDocs.concat(additonalDocs);
+                var additionalDocs = newerQueryResult.docs.slice(0, missingAmount).filter(x => !!x);
+                useDocs = useDocs.concat(additionalDocs);
               }
             }
           });

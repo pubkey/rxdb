@@ -144,7 +144,7 @@ export async function startReplicationDownstream(state) {
     state.stats.down.persistFromMaster = state.stats.down.persistFromMaster + 1;
 
     /**
-     * Add the new docs to the non-persistend list
+     * Add the new docs to the non-persistent list
      */
     docs.forEach(docData => {
       var docId = docData[state.primaryPath];

@@ -2336,7 +2336,7 @@ So instead of having class method on the RxCollection, the replications are now 
 </ul>
 <p>Instead we now use just use the RxDatabase.token together with the revision height.</p>
 <h3 id="batch-up-incremental-operations">Batch up incremental operations</h3>
-<p>When making multiple writes to different (or the same) document, in the past RxDB made one write call to the strorage. When doing fast writes, like when you writhe the current mouse position to a document, the writes could have queued up to the point where the users recognizes performance lag.
+<p>When making multiple writes to different (or the same) document, in the past RxDB made one write call to the storage. When doing fast writes, like when you writhe the current mouse position to a document, the writes could have queued up to the point where the users recognizes performance lag.
 In RxDB v14, pending document updates are batched up into single storage writes for better performance.</p>
 <h3 id="improved-tree-shaking">Improved tree shaking</h3>
 <p>Many changes have been made to improve <a href="https://webpack.js.org/guides/tree-shaking/" target="_blank">tree shakability</a> of RxDB which results in smaller bundle sizes and a faster application startup.</p>

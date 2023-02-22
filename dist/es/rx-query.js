@@ -495,7 +495,7 @@ function __ensureEqual(rxQuery) {
 /**
  * Runs the query over the storage instance
  * of the collection.
- * Does some optimizations to ensuer findById is used
+ * Does some optimizations to ensure findById is used
  * when specific queries are used.
  */
 export async function queryCollection(rxQuery) {

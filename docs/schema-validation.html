@@ -2286,7 +2286,7 @@ schema of your <code>RxCollection</code>.</p>
 <p>When no validation is used, any document data can be saved but there might be <strong>undefined behavior</strong> when saving data that does not comply to the schema of a <code>RxCollection</code>.</p>
 <p>RxDB has different implementations to validate data, each of them is based on a different <a href="https://json-schema.org/implementations.html" target="_blank">JSON Schema library</a>. In this example we use the <a href="rx-storage-dexie.html">Dexie.js RxStorage</a>, but you can wrap the validation around <strong>any other</strong> <a href="rx-storage.html">RxStorage</a>.</p>
 <h3 id="validate-ajv">validate-ajv</h3>
-<p>A validation-module that does the schema-validation. This one is using <a href="https://github.com/epoberezkin/ajv" target="_blank">ajv</a> as validator which is a bit faster. Better compliant to the jsonschema-standart but also has a bigger build-size.</p>
+<p>A validation-module that does the schema-validation. This one is using <a href="https://github.com/epoberezkin/ajv" target="_blank">ajv</a> as validator which is a bit faster. Better compliant to the jsonschema-standard but also has a bigger build-size.</p>
 <pre><code class="lang-javascript"><span class="hljs-keyword">import</span> { wrappedValidateAjvStorage } <span class="hljs-keyword">from</span> <span class="hljs-string">&apos;rxdb/plugins/validate-ajv&apos;</span>;
 <span class="hljs-keyword">import</span> { getRxStorageDexie } <span class="hljs-keyword">from</span> <span class="hljs-string">&apos;rxdb/plugins/storage-dexie&apos;</span>;
 

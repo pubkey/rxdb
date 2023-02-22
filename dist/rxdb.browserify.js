@@ -626,7 +626,7 @@ var HOOKS = {
   /**
    * runs on the document-data before the document is migrated
    * {
-   *   doc: Object, // originam doc-data
+   *   doc: Object, // original doc-data
    *   migrated: // migrated doc-data after run through migration-strategies
    * }
    */
@@ -1865,7 +1865,7 @@ function isBlob(data) {
 }
 function blobToString(blob) {
   /**
-   * in the electron-renderer we have a typed array insteaf of a blob
+   * in the electron-renderer we have a typed array instead of a blob
    * so we have to transform it.
    * @link https://github.com/pubkey/rxdb/issues/1371
    */
@@ -1884,7 +1884,7 @@ async function blobToBase64String(blob) {
   }
 
   /**
-   * in the electron-renderer we have a typed array insteaf of a blob
+   * in the electron-renderer we have a typed array instead of a blob
    * so we have to transform it.
    * @link https://github.com/pubkey/rxdb/issues/1371
    */
@@ -1954,7 +1954,7 @@ function stripMetaDataFromDocument(docData) {
 }
 
 /**
- * Faster way to check the equalness of document lists
+ * Faster way to check the equality of document lists
  * compared to doing a deep-equal.
  * Here we only check the ids and revisions.
  */
@@ -2530,7 +2530,7 @@ function sortObject(obj, noArraySort = false) {
  * Deep clone a plain json object.
  * Does not work with recursive stuff
  * or non-plain-json.
- * IMPORANT: Performance of this is very important,
+ * IMPORTANT: Performance of this is very important,
  * do not change it without running performance tests!
  *
  * @link https://github.com/zxdong262/deep-copy/blob/master/src/index.ts
@@ -2743,7 +2743,7 @@ exports.parseRevision = parseRevision;
 function parseRevision(revision) {
   var split = revision.split('-');
   if (split.length !== 2) {
-    throw new Error('malformated revision: ' + revision);
+    throw new Error('malformatted revision: ' + revision);
   }
   return {
     height: parseInt(split[0], 10),
@@ -2764,8 +2764,8 @@ function getHeightOfRevision(revision) {
  */
 function createRevision(databaseInstanceToken, previousDocData) {
   var previousRevision = previousDocData ? previousDocData._rev : null;
-  var previousRevisionHeigth = previousRevision ? parseRevision(previousRevision).height : 0;
-  var newRevisionHeight = previousRevisionHeigth + 1;
+  var previousRevisionHeight = previousRevision ? parseRevision(previousRevision).height : 0;
+  var newRevisionHeight = previousRevisionHeight + 1;
   return newRevisionHeight + '-' + databaseInstanceToken;
 }
 
@@ -2864,7 +2864,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.now = now;
 /**
- * Returns the current unix time in milliseconds (with two decmials!)
+ * Returns the current unix time in milliseconds (with two decimals!)
  * Because the accuracy of getTime() in javascript is bad,
  * and we cannot rely on performance.now() on all platforms,
  * this method implements a way to never return the same value twice.
@@ -2904,7 +2904,7 @@ function now() {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.QueryCache = exports.DEFAULT_UNEXECUTED_LIFETME = exports.DEFAULT_TRY_TO_KEEP_MAX = exports.COLLECTIONS_WITH_RUNNING_CLEANUP = void 0;
+exports.QueryCache = exports.DEFAULT_UNEXECUTED_LIFETIME = exports.DEFAULT_TRY_TO_KEEP_MAX = exports.COLLECTIONS_WITH_RUNNING_CLEANUP = void 0;
 exports.countRxQuerySubscribers = countRxQuerySubscribers;
 exports.createQueryCache = createQueryCache;
 exports.defaultCacheReplacementPolicyMonad = exports.defaultCacheReplacementPolicy = void 0;
@@ -2948,7 +2948,7 @@ function countRxQuerySubscribers(rxQuery) {
 }
 var DEFAULT_TRY_TO_KEEP_MAX = 100;
 exports.DEFAULT_TRY_TO_KEEP_MAX = DEFAULT_TRY_TO_KEEP_MAX;
-var DEFAULT_UNEXECUTED_LIFETME = 30 * 1000;
+var DEFAULT_UNEXECUTED_LIFETIME = 30 * 1000;
 
 /**
  * The default cache replacement policy
@@ -2956,13 +2956,13 @@ var DEFAULT_UNEXECUTED_LIFETME = 30 * 1000;
  * Notice that this runs often and should block the cpu as less as possible
  * This is a monad which makes it easier to unit test
  */
-exports.DEFAULT_UNEXECUTED_LIFETME = DEFAULT_UNEXECUTED_LIFETME;
+exports.DEFAULT_UNEXECUTED_LIFETIME = DEFAULT_UNEXECUTED_LIFETIME;
 var defaultCacheReplacementPolicyMonad = (tryToKeepMax, unExecutedLifetime) => (_collection, queryCache) => {
   if (queryCache._map.size < tryToKeepMax) {
     return;
   }
   var minUnExecutedLifetime = (0, _utils.now)() - unExecutedLifetime;
-  var maybeUncash = [];
+  var maybeUncache = [];
   var queriesInCache = Array.from(queryCache._map.values());
   for (var rxQuery of queriesInCache) {
     // filter out queries with subscribers
@@ -2974,18 +2974,18 @@ var defaultCacheReplacementPolicyMonad = (tryToKeepMax, unExecutedLifetime) => (
       uncacheRxQuery(queryCache, rxQuery);
       continue;
     }
-    maybeUncash.push(rxQuery);
+    maybeUncache.push(rxQuery);
   }
-  var mustUncache = maybeUncash.length - tryToKeepMax;
+  var mustUncache = maybeUncache.length - tryToKeepMax;
   if (mustUncache <= 0) {
     return;
   }
-  var sortedByLastUsage = maybeUncash.sort((a, b) => a._lastEnsureEqual - b._lastEnsureEqual);
+  var sortedByLastUsage = maybeUncache.sort((a, b) => a._lastEnsureEqual - b._lastEnsureEqual);
   var toRemove = sortedByLastUsage.slice(0, mustUncache);
   toRemove.forEach(rxQuery => uncacheRxQuery(queryCache, rxQuery));
 };
 exports.defaultCacheReplacementPolicyMonad = defaultCacheReplacementPolicyMonad;
-var defaultCacheReplacementPolicy = defaultCacheReplacementPolicyMonad(DEFAULT_TRY_TO_KEEP_MAX, DEFAULT_UNEXECUTED_LIFETME);
+var defaultCacheReplacementPolicy = defaultCacheReplacementPolicyMonad(DEFAULT_TRY_TO_KEEP_MAX, DEFAULT_UNEXECUTED_LIFETIME);
 exports.defaultCacheReplacementPolicy = defaultCacheReplacementPolicy;
 var COLLECTIONS_WITH_RUNNING_CLEANUP = new WeakSet();
 
@@ -3302,7 +3302,7 @@ async function setCheckpoint(state, direction, checkpoint) {
     newDoc.id = (0, _rxSchemaHelper.getComposedPrimaryKeyOfDocumentData)(state.input.metaInstance.schema, newDoc);
     while (true) {
       /**
-       * Instead of just storign the new checkpoint,
+       * Instead of just storing the new checkpoint,
        * we have to stack up the checkpoint with the previous one.
        * This is required for plugins like the sharding RxStorage
        * where the changeStream events only contain a Partial of the
@@ -3563,7 +3563,7 @@ async function startReplicationDownstream(state) {
     state.stats.down.persistFromMaster = state.stats.down.persistFromMaster + 1;
 
     /**
-     * Add the new docs to the non-persistend list
+     * Add the new docs to the non-persistent list
      */
     docs.forEach(docData => {
       var docId = docData[state.primaryPath];
@@ -3914,7 +3914,7 @@ async function awaitRxStorageReplicationIdle(state) {
     } = state.streamQueue;
     await Promise.all([up, down]);
     /**
-     * If the Promises have not been reasigned
+     * If the Promises have not been reassigned
      * after awaiting them, we know that the replication
      * is in idle state at this point in time.
      */
@@ -4241,7 +4241,7 @@ async function startReplicationUpstream(state) {
     state.stats.up.persistToMaster = state.stats.up.persistToMaster + 1;
 
     /**
-     * Add the new docs to the non-persistend list
+     * Add the new docs to the non-persistent list
      */
     docs.forEach(docData => {
       var docId = docData[state.primaryPath];
@@ -4712,7 +4712,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
     return _utils.PROMISE_RESOLVE_VOID;
   }
 
-  // overwritte by migration-plugin
+  // overwritten by migration-plugin
   ;
   _proto.migrationNeeded = function migrationNeeded() {
     throw (0, _utils.pluginMissing)('migration');
@@ -4920,7 +4920,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
         queryObj = (0, _rxQuery._getDefaultQuery)();
       }
 
-      // cannot have limit on findOne queries because it will be overwritte
+      // cannot have limit on findOne queries because it will be overwritten
       if (queryObj.limit) {
         throw (0, _rxError.newRxError)('QU6');
       }
@@ -5782,7 +5782,7 @@ var RxDatabaseBase = /*#__PURE__*/function () {
 
     /**
      * Destroying the pseudo instance will throw
-     * because stulff is missing
+     * because stuff is missing
      * TODO we should not need the pseudo instance on runtime.
      * we should generate the property list on build time.
      */
@@ -7340,7 +7340,7 @@ function __ensureEqual(rxQuery) {
 /**
  * Runs the query over the storage instance
  * of the collection.
- * Does some optimizations to ensuer findById is used
+ * Does some optimizations to ensure findById is used
  * when specific queries are used.
  */
 async function queryCollection(rxQuery) {
@@ -8413,7 +8413,7 @@ var _rxjs = require("rxjs");
 var _operators = require("rxjs/operators");
 var _broadcastChannel = require("broadcast-channel");
 /**
- * When a persistend RxStorage is used in more the one JavaScript process,
+ * When a persistent RxStorage is used in more the one JavaScript process,
  * the even stream of the changestream() function must be broadcasted to the other
  * RxStorageInstances of the same databaseName+collectionName.
  *
@@ -8423,7 +8423,7 @@ var _broadcastChannel = require("broadcast-channel");
  * Also it makes it less complex to stack up different RxStorages onto each other
  * like what we do with the in-memory plugin.
  *
- * This is intened to be used inside of createStorageInstance() of a storage.
+ * This is intended to be used inside of createStorageInstance() of a storage.
  * Do not use this if the storage anyway broadcasts the events like when using MongoDB
  * or in the future W3C might introduce a way to listen to IndexedDB changes.
  */

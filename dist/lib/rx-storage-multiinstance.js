@@ -11,7 +11,7 @@ var _rxjs = require("rxjs");
 var _operators = require("rxjs/operators");
 var _broadcastChannel = require("broadcast-channel");
 /**
- * When a persistend RxStorage is used in more the one JavaScript process,
+ * When a persistent RxStorage is used in more the one JavaScript process,
  * the even stream of the changestream() function must be broadcasted to the other
  * RxStorageInstances of the same databaseName+collectionName.
  *
@@ -21,7 +21,7 @@ var _broadcastChannel = require("broadcast-channel");
  * Also it makes it less complex to stack up different RxStorages onto each other
  * like what we do with the in-memory plugin.
  *
- * This is intened to be used inside of createStorageInstance() of a storage.
+ * This is intended to be used inside of createStorageInstance() of a storage.
  * Do not use this if the storage anyway broadcasts the events like when using MongoDB
  * or in the future W3C might introduce a way to listen to IndexedDB changes.
  */

@@ -2306,10 +2306,10 @@ wrappedRxStorage({
 <p>The RxDB source-code is transpiled from TypeScript to es5/es6 JavaScript code via babel.
 In the past we transpiled the <code>async</code> and <code>await</code> keywords with the babel plugin <code>plugin-transform-async-to-generator</code>.
 Now we use the <a href="https://github.com/rpetrich/babel-plugin-transform-async-to-promises" target="_blank">babel-plugin-transform-async-to-promises</a> plugin instead.
-It transpiles <code>asnyc</code>/<code>await</code> into native <code>Promise</code>s instead of using JavaScript generators. This has shown to decrease build size by about 10% and also improves the performance.</p>
-<h2 id="removed-deprecated-recieved-methods">Removed deprecated <code>recieved</code> methods</h2>
-<p>In the past there was a typo in all getters and methods that are called <code>recieved</code>.
-This was renamed to <code>received</code> and all misstyped methods have been deprecated.
+It transpiles <code>async</code>/<code>await</code> into native <code>Promise</code>s instead of using JavaScript generators. This has shown to decrease build size by about 10% and also improves the performance.</p>
+<h2 id="removed-deprecated-received-methods">Removed deprecated <code>received</code> methods</h2>
+<p>In the past there was a typo in all getters and methods that are called <code>received</code>.
+This was renamed to <code>received</code> and all mistyped methods have been deprecated.
 We now removed all deprecated methods, so you have to use the correctly spelled methods instead.
 <a href="https://github.com/pubkey/rxdb/pull/3392" target="_blank">See #3392</a></p>
 <h2 id="all-internal-events-are-handled-as-bulks">All internal events are handled as bulks</h2>

@@ -2277,7 +2277,7 @@
                                 <h1 id="capacitor-database">Capacitor Database</h1>
 <p><a href="https://capacitorjs.com/" target="_blank">Capacitor</a> is an open source native JavaScript runtime to build Web based Native apps. You can use it to create cross-platform iOS, Android, and Progressive Web Apps with the web technologies JavaScript, HTML, and CSS.
 It is developed by the Ionic Team and provides a great alternative to create hybrid apps. Compared to <a href="react-native-database.html">React Native</a>, Capacitor is more Web-Like because the JavaScript runtime supports most Web APIs like IndexedDB, fetch,  and so on.</p>
-<p>To read and write persistend data in Capacitor, there are multiple solutions which are shown in the following.</p>
+<p>To read and write persistent data in Capacitor, there are multiple solutions which are shown in the following.</p>
 <p><strong>NOTICE:</strong> You are reading this inside of the <a href="https://rxdb.info/" target="_blank">RxDB</a> documentation, so everything might be opinionated.</p>
 <p align="center">
   <img src="files/icons/capacitor.svg" alt="Capacitor" width="50">
@@ -2287,7 +2287,7 @@ It is developed by the Ionic Team and provides a great alternative to create hyb
 
 <h2 id="database-solutions-for-capacitor">Database Solutions for Capacitor</h2>
 <h3 id="preferences-api">Preferences API</h3>
-<p>Capacitor comes with a native <a href="https://capacitorjs.com/docs/apis/preferences" target="_blank">Preferences API</a> which is a simple, perssistent key-&gt;value store for lightweight data, similar to the browsers localstorage or React Native <a href="react-native-database.html#asyncstorage">AsyncStorage</a>.</p>
+<p>Capacitor comes with a native <a href="https://capacitorjs.com/docs/apis/preferences" target="_blank">Preferences API</a> which is a simple, persistent key-&gt;value store for lightweight data, similar to the browsers localstorage or React Native <a href="react-native-database.html#asyncstorage">AsyncStorage</a>.</p>
 <p>To use it, you first have to install it from npm <code>npm install @capacitor/preferences</code> and then you can import it and write/read data.
 Notice that all calls to the preferences API are asynchronous so they return a <code>Promise</code> that must be <code>await</code>-ed.</p>
 <pre><code class="lang-ts"><span class="hljs-keyword">import</span> { Preferences } from <span class="hljs-string">&apos;@capacitor/preferences&apos;</span>;
@@ -2344,7 +2344,7 @@ await Preferences.remove({ key: <span class="hljs-string">&apos;foo&apos;</span>
 
 
 <p><a href="https://rxdb.info/" target="_blank">RxDB</a> is an offline first, NoSQL database for JavaScript Applications like hybrid apps. Because it is reactive, you can subscribe to all state changes like the result of a query or even a single field of a document. This is great for UI-based realtime applications in a way that makes it easy to develop realtime applications like what you need in Capacitor.</p>
-<p>Because RxDB is made for Web applications, most of the <a href="rx-storage.html">available RxStorage</a> plugins can be used to store and query data in a Capacitor app. However it is recommended to use the <a href="rx-storage-sqlite.html">SQLite RxStorage</a> because it stores the data on the filesystem of the device, not in the JavaScript runtime (like IndexedDB). Storing data on the filesystem ensures it is persistend and will not be cleaned up by any process. Also the performance of SQLite is <a href="rx-storage.html#performance-comparison">much faster</a> compared to IndexedDB, because SQLite does not have to go through a browsers permission layers. For the SQLite binding you should use the <a href="https://github.com/capacitor-community/sqlite" target="_blank">@capacitor-community/sqlite</a> package.</p>
+<p>Because RxDB is made for Web applications, most of the <a href="rx-storage.html">available RxStorage</a> plugins can be used to store and query data in a Capacitor app. However it is recommended to use the <a href="rx-storage-sqlite.html">SQLite RxStorage</a> because it stores the data on the filesystem of the device, not in the JavaScript runtime (like IndexedDB). Storing data on the filesystem ensures it is persistent and will not be cleaned up by any process. Also the performance of SQLite is <a href="rx-storage.html#performance-comparison">much faster</a> compared to IndexedDB, because SQLite does not have to go through a browsers permission layers. For the SQLite binding you should use the <a href="https://github.com/capacitor-community/sqlite" target="_blank">@capacitor-community/sqlite</a> package.</p>
 <p>Because the SQLite RxStorage is part of the <a href="https://rxdb.info/premium.html" target="_blank">Premium Plugins</a> which must be purchased, it is recommended to use the <a href="rx-storage-dexie.html">Dexie.js RxStorage</a> while testing and prototyping your Capacitor app.</p>
 <p>To use the SQLite RxStorage in Capacitor you have to install all dependencies via <code>npm install rxdb rxjs rxdb-premium @capacitor-community/sqlite</code>.</p>
 <p>For iOS apps you should add a database location in your Capacitor settings:</p>

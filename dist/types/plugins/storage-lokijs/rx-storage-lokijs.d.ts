@@ -22,7 +22,7 @@ export declare class RxStorageLoki implements RxStorage<LokiStorageInternals, Lo
          * Count the instances that currently use the elector.
          * If is goes to zero again, the elector can be closed.
          */
-        intancesCount: number;
+        instancesCount: number;
     }>;
     constructor(databaseSettings: LokiDatabaseSettings);
     createStorageInstance<RxDocType>(params: RxStorageInstanceCreationParams<RxDocType, LokiSettings>): Promise<RxStorageInstanceLoki<RxDocType>>;

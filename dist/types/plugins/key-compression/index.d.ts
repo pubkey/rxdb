@@ -1,6 +1,6 @@
 /**
  * this plugin adds the keycompression-capabilities to rxdb
- * if you dont use this, ensure that you set disableKeyComression to false in your schema
+ * if you don't use this, ensure that you set disableKeyCompression to false in your schema
  */
 import { CompressionTable } from 'jsonschema-key-compression';
 import type { RxJsonSchema, RxStorage, RxDocumentData } from '../../types';

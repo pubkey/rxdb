@@ -35,7 +35,7 @@ export function countRxQuerySubscribers(rxQuery) {
   return rxQuery.refCount$.observers.length;
 }
 export var DEFAULT_TRY_TO_KEEP_MAX = 100;
-export var DEFAULT_UNEXECUTED_LIFETME = 30 * 1000;
+export var DEFAULT_UNEXECUTED_LIFETIME = 30 * 1000;
 
 /**
  * The default cache replacement policy
@@ -48,7 +48,7 @@ export var defaultCacheReplacementPolicyMonad = (tryToKeepMax, unExecutedLifetim
     return;
   }
   var minUnExecutedLifetime = now() - unExecutedLifetime;
-  var maybeUncash = [];
+  var maybeUncache = [];
   var queriesInCache = Array.from(queryCache._map.values());
   for (var rxQuery of queriesInCache) {
     // filter out queries with subscribers
@@ -60,17 +60,17 @@ export var defaultCacheReplacementPolicyMonad = (tryToKeepMax, unExecutedLifetim
       uncacheRxQuery(queryCache, rxQuery);
       continue;
     }
-    maybeUncash.push(rxQuery);
+    maybeUncache.push(rxQuery);
   }
-  var mustUncache = maybeUncash.length - tryToKeepMax;
+  var mustUncache = maybeUncache.length - tryToKeepMax;
   if (mustUncache <= 0) {
     return;
   }
-  var sortedByLastUsage = maybeUncash.sort((a, b) => a._lastEnsureEqual - b._lastEnsureEqual);
+  var sortedByLastUsage = maybeUncache.sort((a, b) => a._lastEnsureEqual - b._lastEnsureEqual);
   var toRemove = sortedByLastUsage.slice(0, mustUncache);
   toRemove.forEach(rxQuery => uncacheRxQuery(queryCache, rxQuery));
 };
-export var defaultCacheReplacementPolicy = defaultCacheReplacementPolicyMonad(DEFAULT_TRY_TO_KEEP_MAX, DEFAULT_UNEXECUTED_LIFETME);
+export var defaultCacheReplacementPolicy = defaultCacheReplacementPolicyMonad(DEFAULT_TRY_TO_KEEP_MAX, DEFAULT_UNEXECUTED_LIFETIME);
 export var COLLECTIONS_WITH_RUNNING_CLEANUP = new WeakSet();
 
 /**

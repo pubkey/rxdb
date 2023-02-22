@@ -4,7 +4,7 @@
  */
 /**
  * TODO this should be completely rewritten because:
- * - This could have been done in much less code which would be easier to uderstand
+ * - This could have been done in much less code which would be easier to understand
  *
  */
 import { Observable } from 'rxjs';

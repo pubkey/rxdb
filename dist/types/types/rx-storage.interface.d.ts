@@ -309,7 +309,7 @@ export interface RxStorageInstance<
      * Do not forget to unsubscribe.
      *
      * If the RxStorage support multi-instance,
-     * and the storage is persistend,
+     * and the storage is persistent,
      * then the emitted changes of one RxStorageInstance
      * must be also emitted to other instances with the same databaseName+collectionName.
      * See ./rx-storage-multiinstance.ts

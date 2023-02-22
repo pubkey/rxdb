@@ -328,7 +328,7 @@ var NoSqlQueryBuilderClass = /*#__PURE__*/function () {
   /**
    * Make sure _path is set.
    *
-   * @parmam {String} method
+   * @param {String} method
    */;
   _proto._ensurePath = function _ensurePath(method) {
     if (!this._path) {

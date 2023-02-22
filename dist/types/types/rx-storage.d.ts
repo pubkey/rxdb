@@ -28,7 +28,7 @@ export type RxDocumentData<T> = T & {
     };
 
     /**
-     * Contains a revision which is concated with a [height: number]-[identifier: string]
+     * Contains a revision which is concatenated with a [height: number]-[identifier: string]
      * like: '1-3hl4kj3l4kgj34g34glk'.
      * The revision is used to detect write conflicts and have a document history.
      * Revisions behave similar to couchdb revisions:
@@ -258,7 +258,7 @@ export type EventBulk<EventType, CheckpointType> = {
     /**
      * Required for replication.
      * Passing this checkpoint into getChangedDocumentsSince()
-     * must return all items that have been modied AFTER this write event.
+     * must return all items that have been modified AFTER this write event.
      */
     checkpoint: CheckpointType;
 

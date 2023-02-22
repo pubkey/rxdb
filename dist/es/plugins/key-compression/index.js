@@ -1,6 +1,6 @@
 /**
  * this plugin adds the keycompression-capabilities to rxdb
- * if you dont use this, ensure that you set disableKeyComression to false in your schema
+ * if you don't use this, ensure that you set disableKeyCompression to false in your schema
  */
 
 import { createCompressionTable, compressObject, decompressObject, compressedPath, DEFAULT_COMPRESSION_FLAG, createCompressedJsonSchema, compressQuery } from 'jsonschema-key-compression';
@@ -17,7 +17,7 @@ var COMPRESSION_STATE_BY_SCHEMA = new WeakMap();
 export function getCompressionStateByRxJsonSchema(schema) {
   /**
    * Because we cache the state by the JsonSchema,
-   * it must be ausured that the given schema object
+   * it must be assured that the given schema object
    * is never mutated.
    */
   overwritable.deepFreezeWhenDevMode(schema);
@@ -125,7 +125,7 @@ export function wrappedKeyCompressionStorage(args) {
       /**
        * Because this wrapper resolves the key-compression,
        * we can set the flag to false
-       * which allows underlying storages to detect wrong conficturations
+       * which allows underlying storages to detect wrong configurations
        * like when keyCompression is set to false but no key-compression module is used.
        */
       var childSchema = flatClone(compressionState.compressedSchema);

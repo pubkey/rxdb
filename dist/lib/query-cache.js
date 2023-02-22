@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.QueryCache = exports.DEFAULT_UNEXECUTED_LIFETME = exports.DEFAULT_TRY_TO_KEEP_MAX = exports.COLLECTIONS_WITH_RUNNING_CLEANUP = void 0;
+exports.QueryCache = exports.DEFAULT_UNEXECUTED_LIFETIME = exports.DEFAULT_TRY_TO_KEEP_MAX = exports.COLLECTIONS_WITH_RUNNING_CLEANUP = void 0;
 exports.countRxQuerySubscribers = countRxQuerySubscribers;
 exports.createQueryCache = createQueryCache;
 exports.defaultCacheReplacementPolicyMonad = exports.defaultCacheReplacementPolicy = void 0;
@@ -47,7 +47,7 @@ function countRxQuerySubscribers(rxQuery) {
 }
 var DEFAULT_TRY_TO_KEEP_MAX = 100;
 exports.DEFAULT_TRY_TO_KEEP_MAX = DEFAULT_TRY_TO_KEEP_MAX;
-var DEFAULT_UNEXECUTED_LIFETME = 30 * 1000;
+var DEFAULT_UNEXECUTED_LIFETIME = 30 * 1000;
 
 /**
  * The default cache replacement policy
@@ -55,13 +55,13 @@ var DEFAULT_UNEXECUTED_LIFETME = 30 * 1000;
  * Notice that this runs often and should block the cpu as less as possible
  * This is a monad which makes it easier to unit test
  */
-exports.DEFAULT_UNEXECUTED_LIFETME = DEFAULT_UNEXECUTED_LIFETME;
+exports.DEFAULT_UNEXECUTED_LIFETIME = DEFAULT_UNEXECUTED_LIFETIME;
 var defaultCacheReplacementPolicyMonad = (tryToKeepMax, unExecutedLifetime) => (_collection, queryCache) => {
   if (queryCache._map.size < tryToKeepMax) {
     return;
   }
   var minUnExecutedLifetime = (0, _utils.now)() - unExecutedLifetime;
-  var maybeUncash = [];
+  var maybeUncache = [];
   var queriesInCache = Array.from(queryCache._map.values());
   for (var rxQuery of queriesInCache) {
     // filter out queries with subscribers
@@ -73,18 +73,18 @@ var defaultCacheReplacementPolicyMonad = (tryToKeepMax, unExecutedLifetime) => (
       uncacheRxQuery(queryCache, rxQuery);
       continue;
     }
-    maybeUncash.push(rxQuery);
+    maybeUncache.push(rxQuery);
   }
-  var mustUncache = maybeUncash.length - tryToKeepMax;
+  var mustUncache = maybeUncache.length - tryToKeepMax;
   if (mustUncache <= 0) {
     return;
   }
-  var sortedByLastUsage = maybeUncash.sort((a, b) => a._lastEnsureEqual - b._lastEnsureEqual);
+  var sortedByLastUsage = maybeUncache.sort((a, b) => a._lastEnsureEqual - b._lastEnsureEqual);
   var toRemove = sortedByLastUsage.slice(0, mustUncache);
   toRemove.forEach(rxQuery => uncacheRxQuery(queryCache, rxQuery));
 };
 exports.defaultCacheReplacementPolicyMonad = defaultCacheReplacementPolicyMonad;
-var defaultCacheReplacementPolicy = defaultCacheReplacementPolicyMonad(DEFAULT_TRY_TO_KEEP_MAX, DEFAULT_UNEXECUTED_LIFETME);
+var defaultCacheReplacementPolicy = defaultCacheReplacementPolicyMonad(DEFAULT_TRY_TO_KEEP_MAX, DEFAULT_UNEXECUTED_LIFETIME);
 exports.defaultCacheReplacementPolicy = defaultCacheReplacementPolicy;
 var COLLECTIONS_WITH_RUNNING_CLEANUP = new WeakSet();
 

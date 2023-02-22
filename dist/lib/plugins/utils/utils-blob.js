@@ -38,7 +38,7 @@ function isBlob(data) {
 }
 function blobToString(blob) {
   /**
-   * in the electron-renderer we have a typed array insteaf of a blob
+   * in the electron-renderer we have a typed array instead of a blob
    * so we have to transform it.
    * @link https://github.com/pubkey/rxdb/issues/1371
    */
@@ -57,7 +57,7 @@ async function blobToBase64String(blob) {
   }
 
   /**
-   * in the electron-renderer we have a typed array insteaf of a blob
+   * in the electron-renderer we have a typed array instead of a blob
    * so we have to transform it.
    * @link https://github.com/pubkey/rxdb/issues/1371
    */

@@ -105,7 +105,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
     return _utils.PROMISE_RESOLVE_VOID;
   }
 
-  // overwritte by migration-plugin
+  // overwritten by migration-plugin
   ;
   _proto.migrationNeeded = function migrationNeeded() {
     throw (0, _utils.pluginMissing)('migration');
@@ -313,7 +313,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
         queryObj = (0, _rxQuery._getDefaultQuery)();
       }
 
-      // cannot have limit on findOne queries because it will be overwritte
+      // cannot have limit on findOne queries because it will be overwritten
       if (queryObj.limit) {
         throw (0, _rxError.newRxError)('QU6');
       }

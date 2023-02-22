@@ -1,7 +1,7 @@
 export function parseRevision(revision) {
   var split = revision.split('-');
   if (split.length !== 2) {
-    throw new Error('malformated revision: ' + revision);
+    throw new Error('malformatted revision: ' + revision);
   }
   return {
     height: parseInt(split[0], 10),
@@ -22,8 +22,8 @@ export function getHeightOfRevision(revision) {
  */
 export function createRevision(databaseInstanceToken, previousDocData) {
   var previousRevision = previousDocData ? previousDocData._rev : null;
-  var previousRevisionHeigth = previousRevision ? parseRevision(previousRevision).height : 0;
-  var newRevisionHeight = previousRevisionHeigth + 1;
+  var previousRevisionHeight = previousRevision ? parseRevision(previousRevision).height : 0;
+  var newRevisionHeight = previousRevisionHeight + 1;
   return newRevisionHeight + '-' + databaseInstanceToken;
 }
 //# sourceMappingURL=utils-revision.js.map

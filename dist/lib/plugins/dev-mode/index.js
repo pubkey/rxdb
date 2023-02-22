@@ -53,7 +53,7 @@ var _rxError = require("../../rx-error");
 var _utils = require("../../plugins/utils");
 /**
  * Deep freezes and object when in dev-mode.
- * Deep-Freezing has the same performaance as deep-cloning, so we only do that in dev-mode.
+ * Deep-Freezing has the same performance as deep-cloning, so we only do that in dev-mode.
  * Also we can ensure the readonly state via typescript
  * @link https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Global_Objects/Object/freeze
  */

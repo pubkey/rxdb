@@ -2280,7 +2280,7 @@
   <img src="files/icons/nodejs.svg" alt="Node.js" width="70">
 </p>
 
-<h2 id="persistend-database">Persistend Database</h2>
+<h2 id="persistent-database">Persistent Database</h2>
 <p>To get a &quot;normal&quot; database where the data is persisted to a file system, RxDB provides multiple storage implementations.</p>
 <p>The <a href="rx-storage-foundationdb.html">FoundationDB</a> storage connects to a <a href="https://github.com/apple/foundationdb" target="_blank">FoundationDB</a> cluster which itself is just a distributed key-value engine. RxDB adds the NoSQL query-engine, indexes and other features on top of it.
 It scales horizontally because you can always add more servers to the FoundationDB cluster to increase the capacity.
@@ -2357,7 +2357,7 @@ await db.addCollections({
 node --max-old-space-size=8192 index.js
 </code></pre>
 <h2 id="hybrid-in-memory-persistence-synced-storage">Hybrid In-memory-persistence-synced storage</h2>
-<p>If you want to have the performance of an <strong>in-memory database</strong> but require persistency of the data, you can use the <a href="rx-storage-memory-synced.html">memory-synced storage</a>. On database creation it will load all data into the memory and on writes it will first write the data into memory and later also write it to the persistend storage in the background. In the following example the FoundationDB storage is used, but any other RxStorage can be used as persistence layer.</p>
+<p>If you want to have the performance of an <strong>in-memory database</strong> but require persistency of the data, you can use the <a href="rx-storage-memory-synced.html">memory-synced storage</a>. On database creation it will load all data into the memory and on writes it will first write the data into memory and later also write it to the persistent storage in the background. In the following example the FoundationDB storage is used, but any other RxStorage can be used as persistence layer.</p>
 <pre><code class="lang-typescript"><span class="hljs-keyword">import</span> { createRxDatabase } from <span class="hljs-string">&apos;rxdb&apos;</span>;
 <span class="hljs-keyword">import</span> { getRxStorageFoundationDB } from <span class="hljs-string">&apos;rxdb/plugins/storage-foundationdb&apos;</span>;
 <span class="hljs-keyword">import</span> { getMemorySyncedRxStorage } from <span class="hljs-string">&apos;rxdb-premium/plugins/storage-memory-synced&apos;</span>;
@@ -2372,7 +2372,7 @@ node --max-old-space-size=8192 index.js
     })
 });
 </code></pre>
-<p>While this approach gives you a database with great performance and persistend, it has two major downsides:</p>
+<p>While this approach gives you a database with great performance and persistent, it has two major downsides:</p>
 <ul>
 <li>The database size is limited to the memory size</li>
 <li>Writes can be lost when the Node.js process exists between a write to the memory state and the background persisting.</li>

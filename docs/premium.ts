@@ -93,7 +93,7 @@ window.onload = async function () {
 
 
 /**
- * Prices are in percent of averagy salary.
+ * Prices are in percent of average salary.
  */
 export const PACKAGE_PRICE: { [k: string]: number; } = {
     browser: 0.55,

@@ -1,7 +1,7 @@
 
 function runAddingNextButtons() {
     function addNextButton() {
-        var id = 'rxdb-custon-next-button';
+        var id = 'rxdb-custom-next-button';
 
         var alreadyThere = document.querySelector('#' + id);
         if (alreadyThere) {
@@ -89,8 +89,8 @@ function setCallToActionOnce() {
     }
 
 
-    var postitionReferenceElement = document.querySelector('.btn.pull-left.js-toolbar-action');
-    if (!postitionReferenceElement) {
+    var positionReferenceElement = document.querySelector('.btn.pull-left.js-toolbar-action');
+    if (!positionReferenceElement) {
         // not loaded yet!
         return;
     }
@@ -105,7 +105,7 @@ function setCallToActionOnce() {
     newElement.target = '_blank';
 
 
-    insertAfter(postitionReferenceElement, newElement);
+    insertAfter(positionReferenceElement, newElement);
 }
 function runSettingCallToActionButton() {
     setCallToActionOnce();

@@ -1,5 +1,5 @@
 /**
- * Returns the current unix time in milliseconds (with two decmials!)
+ * Returns the current unix time in milliseconds (with two decimals!)
  * Because the accuracy of getTime() in javascript is bad,
  * and we cannot rely on performance.now() on all platforms,
  * this method implements a way to never return the same value twice.

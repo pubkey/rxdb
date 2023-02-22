@@ -109,7 +109,7 @@ export declare class NoSqlQueryBuilderClass<DocType> {
     /**
      * Make sure _path is set.
      *
-     * @parmam {String} method
+     * @param {String} method
      */
     _ensurePath(method: any): void;
     toJSON(): {

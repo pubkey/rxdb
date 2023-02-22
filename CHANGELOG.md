@@ -2,14 +2,17 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- SQLite: Added logger function
-- ADD capacitor build to angular example
 
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 14.0.5 (22 February 2023)
+
+- SQLite: Added logger function
+- ADD capacitor build to angular example
 
 ### 14.0.4 (19 February 2023)
 

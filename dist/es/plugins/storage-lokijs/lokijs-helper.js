@@ -58,7 +58,7 @@ export function getLokiDatabase(databaseName, databaseSettings) {
   if (!databaseState) {
     /**
      * We assume that as soon as an adapter is passed,
-     * the database has to be persistend.
+     * the database has to be persistent.
      */
     var hasPersistence = !!databaseSettings.adapter;
     databaseState = (async () => {

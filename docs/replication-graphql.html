@@ -2575,7 +2575,7 @@ Therefore, if your schema contains optional properties, you have to transform th
         pull: {
             queryBuilder: pullQueryBuilder,
             modifier: (doc =&gt; {
-                <span class="hljs-comment">//Wwe have to remove optional non-existend field values</span>
+                <span class="hljs-comment">//Wwe have to remove optional non-existent field values</span>
                 <span class="hljs-comment">// they are set as null by GraphQL but should be undefined</span>
                 <span class="hljs-built_in">Object</span>.entries(doc).forEach(([k, v]) =&gt; {
                     <span class="hljs-keyword">if</span> (v === <span class="hljs-literal">null</span>) {

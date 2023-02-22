@@ -25,7 +25,7 @@ export var RxStorageLokiStatics = {
   },
   /**
    * Returns a function that determines if a document matches a query selector.
-   * It is important to have the exact same logix as lokijs uses, to be sure
+   * It is important to have the exact same logic as lokijs uses, to be sure
    * that the event-reduce algorithm works correct.
    * But LokisJS does not export such a function, the query logic is deep inside of
    * the Resultset prototype.

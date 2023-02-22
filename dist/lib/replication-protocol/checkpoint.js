@@ -58,7 +58,7 @@ async function setCheckpoint(state, direction, checkpoint) {
     newDoc.id = (0, _rxSchemaHelper.getComposedPrimaryKeyOfDocumentData)(state.input.metaInstance.schema, newDoc);
     while (true) {
       /**
-       * Instead of just storign the new checkpoint,
+       * Instead of just storing the new checkpoint,
        * we have to stack up the checkpoint with the previous one.
        * This is required for plugins like the sharding RxStorage
        * where the changeStream events only contain a Partial of the

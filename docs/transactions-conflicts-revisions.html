@@ -2313,7 +2313,7 @@ With an ACID transaction you can mutate data dependent on the current state of t
 <p>A conflict handler is a JavaScript function that has two tasks:</p>
 <ul>
 <li>Detect if a conflict exists</li>
-<li>Solve exististing conflicts </li>
+<li>Solve existing conflicts </li>
 </ul>
 <p>Because the conflict handler also is used for conflict detection, it will run many times on pull-, push- and write operations of RxDB. Most of the time it will detect that there is no conflict and then return.</p>
 <p>Lets have a look at the default conflict handler of RxDB to learn how to create a custom one:</p>

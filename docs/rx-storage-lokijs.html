@@ -2313,7 +2313,7 @@
 });
 </code></pre>
 <h2 id="adapters">Adapters</h2>
-<p>LokiJS is based on adapters that determine where to store persistend data. For LokiJS there are adapters for IndexedDB, AWS S3, the NodeJS filesystem or NativeScript.
+<p>LokiJS is based on adapters that determine where to store persistent data. For LokiJS there are adapters for IndexedDB, AWS S3, the NodeJS filesystem or NativeScript.
 Find more about the possible adapters at the <a href="https://github.com/techfort/LokiJS/blob/master/tutorials/Persistence%20Adapters.md" target="_blank">LokiJS docs</a>.</p>
 <h2 id="multi-tab-support">Multi-Tab support</h2>
 <p>When you use plain LokiJS, you cannot build an app that can be used in multiple browser tabs. The reason is that LokiJS loads data in bulk and then only regularly persists the in-memory state to disc. When opened in multiple tabs, it would happen that the LokiJS instances overwrite each other and data is lost.

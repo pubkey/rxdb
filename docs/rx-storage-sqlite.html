@@ -2395,6 +2395,14 @@
 </li>
 <li><p><a href="https://www.npmjs.com/package/expo-sqlite" target="_blank">expo-sqlite</a> cannot be used on android (but it works on iOS) because it uses an <a href="https://expo.canny.io/feature-requests/p/expo-sqlite-ship-newer-sqlite3-version-on-android" target="_blank">outdated SQLite version</a></p>
 </li>
+<li><p>To debug all SQL operations, you can pass a log function to <code>getRxStorageSQLite()</code> like this:</p>
+<pre><code class="lang-ts"><span class="hljs-keyword">const</span> storage = getRxStorageSQLite({
+  sqliteBasics: getSQLiteBasicsCapacitor(sqlite, Capacitor),
+  <span class="hljs-comment">// pass log function</span>
+  log: <span class="hljs-built_in">console</span>.log.bind(<span class="hljs-built_in">console</span>)
+});
+</code></pre>
+</li>
 </ul>
 <h2 id="related">Related</h2>
 <ul>

@@ -4,7 +4,7 @@
  */
 /**
  * TODO this should be completely rewritten because:
- * - This could have been done in much less code which would be easier to uderstand
+ * - This could have been done in much less code which would be easier to understand
  *
  */
 import { Subject } from 'rxjs';
@@ -324,7 +324,7 @@ export async function _migrateDocuments(oldCollection, documentsData) {
     actions.push(action);
 
     /**
-     * Determiniticly handle the revision
+     * Deterministically handle the revision
      * so migrating the same data on multiple instances
      * will result in the same output.
      */
