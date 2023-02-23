@@ -1,5 +1,6 @@
 import {
-    ensureNotFalsy, lastOfArray
+    ensureNotFalsy,
+    lastOfArray
 } from '../';
 import { getDatabase } from './database';
 import { AVERAGE_FRONT_END_DEVELOPER_SALARY_BY_COUNTRY } from './salaries';
@@ -96,7 +97,7 @@ window.onload = async function () {
  * Prices are in percent of average salary.
  */
 export const PACKAGE_PRICE: { [k: string]: number; } = {
-    browser: 0.55,
+    browser: 0.49,
     native: 0.65,
     performance: 0.30
 };
@@ -132,7 +133,7 @@ export function calculatePrice(input: {
 
     let totalPerYear = baseFee +
         (baseFeePerDeveloper * input.teamSize) +
-        (developerSalary * (aimInPercent / 100) * input.teamSize);
+        (developerSalary * (aimInPercent / 100) * Math.pow(input.teamSize, 0.6));
 
     /**
      * Discount for 'young' companies.
