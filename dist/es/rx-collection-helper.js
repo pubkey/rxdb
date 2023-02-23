@@ -3,6 +3,7 @@ import { fillObjectWithDefaults, fillPrimaryKey } from './rx-schema-helper';
 import { runAsyncPluginHooks } from './hooks';
 import { getAllCollectionDocuments } from './rx-database-internal-store';
 import { flatCloneDocWithMeta } from './rx-storage-helper';
+import { overwritable } from './overwritable';
 
 /**
  * fills in the default data.
@@ -81,7 +82,8 @@ hashFunction) {
       databaseName,
       multiInstance: false,
       options: {},
-      schema: row.schema
+      schema: row.schema,
+      devMode: overwritable.isDevMode()
     });
     await storageInstance.remove();
     if (row.isCollection) {

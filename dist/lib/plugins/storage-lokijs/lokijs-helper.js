@@ -23,6 +23,7 @@ var _lokiSaveQueue = require("./loki-save-queue");
 var _rxError = require("../../rx-error");
 var _rxStorageMultiinstance = require("../../rx-storage-multiinstance");
 var _leaderElection = require("../leader-election");
+var _overwritable = require("../../overwritable");
 var CHANGES_COLLECTION_SUFFIX = '-rxdb-changes';
 exports.CHANGES_COLLECTION_SUFFIX = CHANGES_COLLECTION_SUFFIX;
 var LOKI_BROADCAST_CHANNEL_MESSAGE_TYPE = 'rxdb-lokijs-remote-request';
@@ -392,7 +393,8 @@ async function mustUseLocalState(instance) {
       collectionName: instance.collectionName,
       options: instance.options,
       schema: instance.schema,
-      multiInstance: instance.internals.leaderElector ? true : false
+      multiInstance: instance.internals.leaderElector ? true : false,
+      devMode: _overwritable.overwritable.isDevMode()
     }, instance.databaseSettings);
     return (0, _utils.ensureNotFalsy)(instance.internals.localState);
   } else {

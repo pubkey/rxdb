@@ -3,11 +3,16 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.getQueryMatcher = getQueryMatcher;
+exports.getSortComparator = getSortComparator;
 exports.normalizeMangoQuery = normalizeMangoQuery;
 exports.normalizeQueryRegex = normalizeQueryRegex;
 var _queryPlanner = require("./query-planner");
 var _rxSchemaHelper = require("./rx-schema-helper");
 var _utils = require("./plugins/utils");
+var _util = require("mingo/util");
+var _rxError = require("./rx-error");
+var _rxQueryMingo = require("./rx-query-mingo");
 /**
  * Normalize the query to ensure we have all fields set
  * and queries that represent the same query logic are detected as equal by the caching.
@@ -168,5 +173,67 @@ function normalizeQueryRegex(selector) {
     }
   });
   return ret;
+}
+
+/**
+ * Returns the sort-comparator,
+ * which is able to sort documents in the same way
+ * a query over the db would do.
+ */
+function getSortComparator(schema, query) {
+  if (!query.sort) {
+    throw (0, _rxError.newRxError)('SNH', {
+      query
+    });
+  }
+  var sortParts = [];
+  query.sort.forEach(sortBlock => {
+    var key = Object.keys(sortBlock)[0];
+    var direction = Object.values(sortBlock)[0];
+    sortParts.push({
+      key,
+      direction,
+      getValueFn: (0, _utils.objectPathMonad)(key)
+    });
+  });
+  var fun = (a, b) => {
+    for (var i = 0; i < sortParts.length; ++i) {
+      var sortPart = sortParts[i];
+      var valueA = sortPart.getValueFn(a);
+      var valueB = sortPart.getValueFn(b);
+      if (valueA !== valueB) {
+        var ret = sortPart.direction === 'asc' ? (0, _util.DEFAULT_COMPARATOR)(valueA, valueB) : (0, _util.DEFAULT_COMPARATOR)(valueB, valueA);
+        return ret;
+      }
+    }
+  };
+  return fun;
+}
+
+/**
+ * Returns a function
+ * that can be used to check if a document
+ * matches the query.
+ */
+function getQueryMatcher(_schema, query) {
+  if (!query.sort) {
+    throw (0, _rxError.newRxError)('SNH', {
+      query
+    });
+  }
+  var mingoQuery = (0, _rxQueryMingo.getMingoQuery)(query.selector);
+  var fun = doc => {
+    if (doc._deleted) {
+      return false;
+    }
+    var cursor = mingoQuery.find([doc]);
+    var next = cursor.next();
+    if (next) {
+      return true;
+    } else {
+      return false;
+    }
+  };
+  return fun;
 }
 //# sourceMappingURL=rx-query-helper.js.map

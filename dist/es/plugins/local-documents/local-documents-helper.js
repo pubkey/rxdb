@@ -6,6 +6,7 @@ import { fillWithDefaultSettings } from '../../rx-schema-helper';
 import { getWrappedStorageInstance, storageChangeEventToRxChangeEvent } from '../../rx-storage-helper';
 import { randomCouchString } from '../../plugins/utils';
 import { createRxLocalDocument } from './rx-local-document';
+import { overwritable } from '../../overwritable';
 export var LOCAL_DOC_STATE_BY_PARENT = new WeakMap();
 export var LOCAL_DOC_STATE_BY_PARENT_RESOLVED = new WeakMap();
 export function createLocalDocStateByParent(parent) {
@@ -71,7 +72,8 @@ export function createLocalDocumentStorageInstance(databaseInstanceToken, storag
     collectionName: getCollectionLocalInstanceName(collectionName),
     schema: RX_LOCAL_DOCUMENT_SCHEMA,
     options: instanceCreationOptions,
-    multiInstance
+    multiInstance,
+    devMode: overwritable.isDevMode()
   });
 }
 export function closeStateByParent(parent) {

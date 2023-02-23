@@ -340,15 +340,8 @@ var RxQueryBase = /*#__PURE__*/function () {
     key: "queryMatcher",
     get: function () {
       var schema = this.collection.schema.jsonSchema;
-
-      /**
-       * Instead of calling this.getPreparedQuery(),
-       * we have to prepare the query for the query matcher
-       * so that it does not contain modifications from the hooks
-       * like the key compression.
-       */
-      var usePreparedQuery = this.collection.database.storage.statics.prepareQuery(schema, (0, _rxQueryHelper.normalizeMangoQuery)(this.collection.schema.jsonSchema, this.mangoQuery));
-      return (0, _utils.overwriteGetterForCaching)(this, 'queryMatcher', this.collection.database.storage.statics.getQueryMatcher(schema, usePreparedQuery));
+      var normalizedQuery = (0, _rxQueryHelper.normalizeMangoQuery)(this.collection.schema.jsonSchema, this.mangoQuery);
+      return (0, _utils.overwriteGetterForCaching)(this, 'queryMatcher', (0, _rxQueryHelper.getQueryMatcher)(schema, normalizedQuery));
     }
   }, {
     key: "asRxQuery",

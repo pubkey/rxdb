@@ -6,7 +6,7 @@ import { newRxError } from './rx-error';
 import { runPluginHooks } from './hooks';
 import { calculateNewResults } from './event-reduce';
 import { triggerCacheReplacement } from './query-cache';
-import { normalizeMangoQuery } from './rx-query-helper';
+import { getQueryMatcher, normalizeMangoQuery } from './rx-query-helper';
 var _queryCount = 0;
 var newQueryID = function () {
   return ++_queryCount;
@@ -327,15 +327,8 @@ export var RxQueryBase = /*#__PURE__*/function () {
     key: "queryMatcher",
     get: function () {
       var schema = this.collection.schema.jsonSchema;
-
-      /**
-       * Instead of calling this.getPreparedQuery(),
-       * we have to prepare the query for the query matcher
-       * so that it does not contain modifications from the hooks
-       * like the key compression.
-       */
-      var usePreparedQuery = this.collection.database.storage.statics.prepareQuery(schema, normalizeMangoQuery(this.collection.schema.jsonSchema, this.mangoQuery));
-      return overwriteGetterForCaching(this, 'queryMatcher', this.collection.database.storage.statics.getQueryMatcher(schema, usePreparedQuery));
+      var normalizedQuery = normalizeMangoQuery(this.collection.schema.jsonSchema, this.mangoQuery);
+      return overwriteGetterForCaching(this, 'queryMatcher', getQueryMatcher(schema, normalizedQuery));
     }
   }, {
     key: "asRxQuery",

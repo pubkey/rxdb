@@ -1,7 +1,7 @@
 import { newRxError } from '../../rx-error';
 import { clone, deepEqual, ensureNotFalsy, getProperty, now, objectPathMonad, setProperty, toArray } from '../../plugins/utils';
 import modifyjs from 'modifyjs';
-import { overwritable } from '../..';
+import { getQueryMatcher, overwritable } from '../..';
 export async function updateCRDT(entry) {
   entry = overwritable.deepFreezeWhenDevMode(entry);
   var jsonSchema = this.collection.schema.jsonSchema;
@@ -78,12 +78,12 @@ function runOperationOnDocument(storageStatics, schema, docData, operation) {
   entryParts.forEach(entryPart => {
     var isMatching;
     if (entryPart.selector) {
-      var preparedQuery = storageStatics.prepareQuery(schema, {
+      var query = {
         selector: ensureNotFalsy(entryPart.selector),
         sort: [],
         skip: 0
-      });
-      var matcher = storageStatics.getQueryMatcher(schema, preparedQuery);
+      };
+      var matcher = getQueryMatcher(schema, query);
       isMatching = matcher(docData);
     } else {
       isMatching = true;

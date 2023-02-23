@@ -1,7 +1,7 @@
 import { getStartIndexStringFromLowerBound, getStartIndexStringFromUpperBound } from '../../custom-index';
 import { ensureNotFalsy } from '../../plugins/utils';
-import { RxStorageDexieStatics } from '../storage-dexie';
 import { getFoundationDBIndexName } from './foundationdb-helpers';
+import { getQueryMatcher, getSortComparator } from '../../rx-query-helper';
 export async function queryFoundationDB(instance, preparedQuery) {
   var queryPlan = preparedQuery.queryPlan;
   var query = preparedQuery.query;
@@ -12,7 +12,7 @@ export async function queryFoundationDB(instance, preparedQuery) {
   var mustManuallyResort = !queryPlan.sortFieldsSameAsIndexFields;
   var queryMatcher = false;
   if (!queryPlan.selectorSatisfiedByIndex) {
-    queryMatcher = RxStorageDexieStatics.getQueryMatcher(instance.schema, preparedQuery);
+    queryMatcher = getQueryMatcher(instance.schema, preparedQuery.query);
   }
   var dbs = await instance.internals.dbsPromise;
   var indexForName = queryPlanFields.slice(0);
@@ -58,7 +58,7 @@ export async function queryFoundationDB(instance, preparedQuery) {
     return innerResult;
   });
   if (mustManuallyResort) {
-    var sortComparator = RxStorageDexieStatics.getSortComparator(instance.schema, preparedQuery);
+    var sortComparator = getSortComparator(instance.schema, preparedQuery.query);
     result = result.sort(sortComparator);
   }
 

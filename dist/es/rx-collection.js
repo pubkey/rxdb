@@ -13,6 +13,7 @@ import { getWrappedStorageInstance, storageChangeEventToRxChangeEvent, throwIfIs
 import { defaultConflictHandler } from './replication-protocol';
 import { IncrementalWriteQueue } from './incremental-write';
 import { beforeDocumentUpdateWrite } from './rx-document';
+import { overwritable } from './overwritable';
 var HOOKS_WHEN = ['pre', 'post'];
 var HOOKS_KEYS = ['insert', 'save', 'remove', 'create'];
 var hooksApplied = false;
@@ -599,7 +600,8 @@ export function createRxCollection({
     schema: schema.jsonSchema,
     options: instanceCreationOptions,
     multiInstance: database.multiInstance,
-    password: database.password
+    password: database.password,
+    devMode: overwritable.isDevMode()
   };
   runPluginHooks('preCreateRxStorageInstance', storageInstanceCreationParams);
   return createRxCollectionStorageInstance(database, storageInstanceCreationParams).then(storageInstance => {

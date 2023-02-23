@@ -22,6 +22,7 @@ var _rxStorageHelper = require("./rx-storage-helper");
 var _replicationProtocol = require("./replication-protocol");
 var _incrementalWrite = require("./incremental-write");
 var _rxDocument = require("./rx-document");
+var _overwritable = require("./overwritable");
 var HOOKS_WHEN = ['pre', 'post'];
 var HOOKS_KEYS = ['insert', 'save', 'remove', 'create'];
 var hooksApplied = false;
@@ -608,7 +609,8 @@ function createRxCollection({
     schema: schema.jsonSchema,
     options: instanceCreationOptions,
     multiInstance: database.multiInstance,
-    password: database.password
+    password: database.password,
+    devMode: _overwritable.overwritable.isDevMode()
   };
   (0, _hooks.runPluginHooks)('preCreateRxStorageInstance', storageInstanceCreationParams);
   return (0, _rxCollectionHelper.createRxCollectionStorageInstance)(database, storageInstanceCreationParams).then(storageInstance => {

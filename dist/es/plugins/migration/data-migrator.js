@@ -18,6 +18,7 @@ import { map } from 'rxjs/operators';
 import { getWrappedStorageInstance } from '../../rx-storage-helper';
 import { getPrimaryKeyOfInternalDocument, INTERNAL_CONTEXT_COLLECTION } from '../../rx-database-internal-store';
 import { normalizeMangoQuery } from '../../rx-query-helper';
+import { overwritable } from '../../overwritable';
 export var DataMigrator = /*#__PURE__*/function () {
   function DataMigrator(newestCollection, migrationStrategies) {
     this._migrated = false;
@@ -167,7 +168,8 @@ export async function createOldCollection(version, schemaObj, dataMigrator) {
     collectionName: dataMigrator.newestCollection.name,
     schema: schemaObj,
     options: dataMigrator.newestCollection.instanceCreationOptions,
-    multiInstance: database.multiInstance
+    multiInstance: database.multiInstance,
+    devMode: overwritable.isDevMode()
   };
   runPluginHooks('preCreateRxStorageInstance', storageInstanceCreationParams);
   var storageInstance = await database.storage.createStorageInstance(storageInstanceCreationParams);

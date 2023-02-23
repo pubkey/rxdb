@@ -1,12 +1,10 @@
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.RxStorageLokiStatics = exports.RxStorageLoki = void 0;
 exports.getRxStorageLoki = getRxStorageLoki;
-var _lokijs = _interopRequireDefault(require("lokijs"));
 var _utils = require("../utils");
 var _rxStorageInstanceLoki = require("./rx-storage-instance-loki");
 var _lokijsHelper = require("./lokijs-helper");
@@ -27,41 +25,6 @@ var RxStorageLokiStatics = {
       };
     }
     return mutateableQuery;
-  },
-  getSortComparator(schema, query) {
-    return (0, _lokijsHelper.getLokiSortComparator)(schema, query);
-  },
-  /**
-   * Returns a function that determines if a document matches a query selector.
-   * It is important to have the exact same logic as lokijs uses, to be sure
-   * that the event-reduce algorithm works correct.
-   * But LokisJS does not export such a function, the query logic is deep inside of
-   * the Resultset prototype.
-   * Because I am lazy, I do not copy paste and maintain that code.
-   * Instead we create a fake Resultset and apply the prototype method Resultset.prototype.find(),
-   * same with Collection.
-   */
-  getQueryMatcher(_schema, query) {
-    var fun = doc => {
-      if (doc._deleted) {
-        return false;
-      }
-      var docWithResetDeleted = (0, _utils.flatClone)(doc);
-      docWithResetDeleted._deleted = !!docWithResetDeleted._deleted;
-      var fakeCollection = {
-        data: [docWithResetDeleted],
-        binaryIndices: {}
-      };
-      Object.setPrototypeOf(fakeCollection, _lokijs.default.Collection.prototype);
-      var fakeResultSet = {
-        collection: fakeCollection
-      };
-      Object.setPrototypeOf(fakeResultSet, _lokijs.default.Resultset.prototype);
-      fakeResultSet.find(query.selector, true);
-      var ret = fakeResultSet.filteredrows.length > 0;
-      return ret;
-    };
-    return fun;
   },
   checkpointSchema: _rxSchemaHelper.DEFAULT_CHECKPOINT_SCHEMA
 };

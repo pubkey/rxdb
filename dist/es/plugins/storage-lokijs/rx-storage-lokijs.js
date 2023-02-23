@@ -1,7 +1,6 @@
-import lokijs from 'lokijs';
 import { ensureNotFalsy, flatClone } from '../utils';
 import { createLokiStorageInstance } from './rx-storage-instance-loki';
-import { getLokiSortComparator, RX_STORAGE_NAME_LOKIJS } from './lokijs-helper';
+import { RX_STORAGE_NAME_LOKIJS } from './lokijs-helper';
 import { ensureRxStorageInstanceParamsAreCorrect } from '../../rx-storage-helper';
 import { DEFAULT_CHECKPOINT_SCHEMA } from '../../rx-schema-helper';
 export var RxStorageLokiStatics = {
@@ -19,41 +18,6 @@ export var RxStorageLokiStatics = {
       };
     }
     return mutateableQuery;
-  },
-  getSortComparator(schema, query) {
-    return getLokiSortComparator(schema, query);
-  },
-  /**
-   * Returns a function that determines if a document matches a query selector.
-   * It is important to have the exact same logic as lokijs uses, to be sure
-   * that the event-reduce algorithm works correct.
-   * But LokisJS does not export such a function, the query logic is deep inside of
-   * the Resultset prototype.
-   * Because I am lazy, I do not copy paste and maintain that code.
-   * Instead we create a fake Resultset and apply the prototype method Resultset.prototype.find(),
-   * same with Collection.
-   */
-  getQueryMatcher(_schema, query) {
-    var fun = doc => {
-      if (doc._deleted) {
-        return false;
-      }
-      var docWithResetDeleted = flatClone(doc);
-      docWithResetDeleted._deleted = !!docWithResetDeleted._deleted;
-      var fakeCollection = {
-        data: [docWithResetDeleted],
-        binaryIndices: {}
-      };
-      Object.setPrototypeOf(fakeCollection, lokijs.Collection.prototype);
-      var fakeResultSet = {
-        collection: fakeCollection
-      };
-      Object.setPrototypeOf(fakeResultSet, lokijs.Resultset.prototype);
-      fakeResultSet.find(query.selector, true);
-      var ret = fakeResultSet.filteredrows.length > 0;
-      return ret;
-    };
-    return fun;
   },
   checkpointSchema: DEFAULT_CHECKPOINT_SCHEMA
 };

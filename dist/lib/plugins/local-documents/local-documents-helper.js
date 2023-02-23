@@ -18,6 +18,7 @@ var _rxSchemaHelper = require("../../rx-schema-helper");
 var _rxStorageHelper = require("../../rx-storage-helper");
 var _utils = require("../../plugins/utils");
 var _rxLocalDocument = require("./rx-local-document");
+var _overwritable = require("../../overwritable");
 var LOCAL_DOC_STATE_BY_PARENT = new WeakMap();
 exports.LOCAL_DOC_STATE_BY_PARENT = LOCAL_DOC_STATE_BY_PARENT;
 var LOCAL_DOC_STATE_BY_PARENT_RESOLVED = new WeakMap();
@@ -85,7 +86,8 @@ function createLocalDocumentStorageInstance(databaseInstanceToken, storage, data
     collectionName: getCollectionLocalInstanceName(collectionName),
     schema: RX_LOCAL_DOCUMENT_SCHEMA,
     options: instanceCreationOptions,
-    multiInstance
+    multiInstance,
+    devMode: _overwritable.overwritable.isDevMode()
   });
 }
 function closeStateByParent(parent) {

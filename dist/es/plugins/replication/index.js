@@ -14,6 +14,7 @@ import { awaitRetry, DEFAULT_MODIFIER, swapDefaultDeletedTodeletedField, handleP
 import { addConnectedStorageToCollection } from '../../rx-database-internal-store';
 import { addRxPlugin } from '../../plugin';
 import { hasEncryption } from '../../rx-storage-helper';
+import { overwritable } from '../../overwritable';
 export var REPLICATION_STATE_BY_COLLECTION = new WeakMap();
 export var RxReplicationState = /*#__PURE__*/function () {
   function RxReplicationState(
@@ -94,7 +95,8 @@ export var RxReplicationState = /*#__PURE__*/function () {
       // TODO is this always false?
       options: {},
       schema: metaInstanceSchema,
-      password: database.password
+      password: database.password,
+      devMode: overwritable.isDevMode()
     }), addConnectedStorageToCollection(this.collection, metaInstanceCollectionName, metaInstanceSchema)]);
     this.metaInstance = metaInstance;
     this.internalReplicationState = replicateRxStorageInstance({

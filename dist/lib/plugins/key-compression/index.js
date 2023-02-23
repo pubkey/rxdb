@@ -88,33 +88,6 @@ function wrappedKeyCompressionStorage(args) {
         return args.storage.statics.prepareQuery(compressionState.compressedSchema, mutateableQuery);
       }
       return args.storage.statics.prepareQuery(schema, mutateableQuery);
-    },
-    getSortComparator(schema, preparedQuery) {
-      if (!schema.keyCompression) {
-        return args.storage.statics.getSortComparator(schema, preparedQuery);
-      } else {
-        var compressionState = getCompressionStateByRxJsonSchema(schema);
-        var comparator = args.storage.statics.getSortComparator(compressionState.schema, preparedQuery);
-        return (a, b) => {
-          var compressedDocDataA = (0, _jsonschemaKeyCompression.compressObject)(compressionState.table, a);
-          var compressedDocDataB = (0, _jsonschemaKeyCompression.compressObject)(compressionState.table, b);
-          var res = comparator(compressedDocDataA, compressedDocDataB);
-          return res;
-        };
-      }
-    },
-    getQueryMatcher(schema, preparedQuery) {
-      if (!schema.keyCompression) {
-        return args.storage.statics.getQueryMatcher(schema, preparedQuery);
-      } else {
-        var compressionState = getCompressionStateByRxJsonSchema(schema);
-        var matcher = args.storage.statics.getQueryMatcher(compressionState.schema, preparedQuery);
-        return docData => {
-          var compressedDocData = (0, _jsonschemaKeyCompression.compressObject)(compressionState.table, docData);
-          var ret = matcher(compressedDocData);
-          return ret;
-        };
-      }
     }
   });
   return Object.assign({}, args.storage, {

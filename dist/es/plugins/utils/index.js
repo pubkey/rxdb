@@ -13,4 +13,5 @@ export * from './utils-error';
 export * from './utils-time';
 export * from './utils-regex';
 export * from './utils-other';
+export * from './utils-rxdb-version';
 //# sourceMappingURL=index.js.map

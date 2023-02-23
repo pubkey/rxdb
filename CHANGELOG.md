@@ -2,14 +2,18 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- CHANGE premium plugin users can still use the code after the license has expired.
-- ADD(utils) export `RXDB_VERSION` variable.
-- REFACTOR(RxStorageStatics) use the same query matcher and sort function everywhere, not dependend by storage implementation.
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 14.1.0 (23 February 2023)
+
+- CHANGE premium plugin users can still use the code after the license has expired.
+- ADD(utils) export `RXDB_VERSION` variable.
+- REFACTOR(RxStorageStatics) use the same query matcher and sort function everywhere, not dependend by storage implementation.
 
 ### 14.0.5 (22 February 2023)
 

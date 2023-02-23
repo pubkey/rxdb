@@ -1,6 +1,9 @@
 import { LOGICAL_OPERATORS } from './query-planner';
 import { getPrimaryFieldOfPrimaryKey } from './rx-schema-helper';
-import { clone, firstPropertyNameOfObject, toArray, isMaybeReadonlyArray, parseRegex, flatClone } from './plugins/utils';
+import { clone, firstPropertyNameOfObject, toArray, isMaybeReadonlyArray, parseRegex, flatClone, objectPathMonad } from './plugins/utils';
+import { DEFAULT_COMPARATOR as mingoSortComparator } from 'mingo/util';
+import { newRxError } from './rx-error';
+import { getMingoQuery } from './rx-query-mingo';
 
 /**
  * Normalize the query to ensure we have all fields set
@@ -162,5 +165,67 @@ export function normalizeQueryRegex(selector) {
     }
   });
   return ret;
+}
+
+/**
+ * Returns the sort-comparator,
+ * which is able to sort documents in the same way
+ * a query over the db would do.
+ */
+export function getSortComparator(schema, query) {
+  if (!query.sort) {
+    throw newRxError('SNH', {
+      query
+    });
+  }
+  var sortParts = [];
+  query.sort.forEach(sortBlock => {
+    var key = Object.keys(sortBlock)[0];
+    var direction = Object.values(sortBlock)[0];
+    sortParts.push({
+      key,
+      direction,
+      getValueFn: objectPathMonad(key)
+    });
+  });
+  var fun = (a, b) => {
+    for (var i = 0; i < sortParts.length; ++i) {
+      var sortPart = sortParts[i];
+      var valueA = sortPart.getValueFn(a);
+      var valueB = sortPart.getValueFn(b);
+      if (valueA !== valueB) {
+        var ret = sortPart.direction === 'asc' ? mingoSortComparator(valueA, valueB) : mingoSortComparator(valueB, valueA);
+        return ret;
+      }
+    }
+  };
+  return fun;
+}
+
+/**
+ * Returns a function
+ * that can be used to check if a document
+ * matches the query.
+ */
+export function getQueryMatcher(_schema, query) {
+  if (!query.sort) {
+    throw newRxError('SNH', {
+      query
+    });
+  }
+  var mingoQuery = getMingoQuery(query.selector);
+  var fun = doc => {
+    if (doc._deleted) {
+      return false;
+    }
+    var cursor = mingoQuery.find([doc]);
+    var next = cursor.next();
+    if (next) {
+      return true;
+    } else {
+      return false;
+    }
+  };
+  return fun;
 }
 //# sourceMappingURL=rx-query-helper.js.map

@@ -25,6 +25,7 @@ var _rxStorageHelper = require("./rx-storage-helper");
 var _obliviousSet = require("oblivious-set");
 var _rxDatabaseInternalStore = require("./rx-database-internal-store");
 var _rxCollectionHelper = require("./rx-collection-helper");
+var _overwritable = require("./overwritable");
 /**
  * stores the used database names
  * so we can throw when the same database is created more then once.
@@ -374,7 +375,8 @@ async function createRxDatabaseStorageInstance(databaseInstanceToken, storage, d
     schema: _rxDatabaseInternalStore.INTERNAL_STORE_SCHEMA,
     options,
     multiInstance,
-    password
+    password,
+    devMode: _overwritable.overwritable.isDevMode()
   });
   return internalStore;
 }

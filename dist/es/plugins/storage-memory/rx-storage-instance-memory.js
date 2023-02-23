@@ -6,7 +6,7 @@ import { ensureNotFalsy, getFromMapOrThrow, lastOfArray, now, PROMISE_RESOLVE_TR
 import { boundGE, boundGT, boundLE } from './binary-search-bounds';
 import { attachmentMapKey, compareDocsWithIndex, ensureNotRemoved, getMemoryCollectionKey, putWriteRowToState, removeDocFromState } from './memory-helper';
 import { addIndexesToInternalsState, getMemoryIndexName } from './memory-indexes';
-import { RxStorageDefaultStatics } from '../../rx-storage-statics';
+import { getQueryMatcher, getSortComparator } from '../../rx-query-helper';
 export var RxStorageInstanceMemory = /*#__PURE__*/function () {
   function RxStorageInstanceMemory(storage, databaseName, collectionName, schema, internals, options, settings) {
     this.closed = false;
@@ -95,7 +95,7 @@ export var RxStorageInstanceMemory = /*#__PURE__*/function () {
     var skipPlusLimit = skip + limit;
     var queryMatcher = false;
     if (!queryPlan.selectorSatisfiedByIndex) {
-      queryMatcher = RxStorageDefaultStatics.getQueryMatcher(this.schema, preparedQuery);
+      queryMatcher = getQueryMatcher(this.schema, preparedQuery.query);
     }
     var queryPlanFields = queryPlan.index;
     var mustManuallyResort = !queryPlan.sortFieldsSameAsIndexFields;
@@ -130,7 +130,7 @@ export var RxStorageInstanceMemory = /*#__PURE__*/function () {
       indexOfLower++;
     }
     if (mustManuallyResort) {
-      var sortComparator = RxStorageDefaultStatics.getSortComparator(this.schema, preparedQuery);
+      var sortComparator = getSortComparator(this.schema, preparedQuery.query);
       rows = rows.sort(sortComparator);
     }
 

@@ -15,6 +15,7 @@ var _replicationHelper = require("./replication-helper");
 var _rxDatabaseInternalStore = require("../../rx-database-internal-store");
 var _plugin = require("../../plugin");
 var _rxStorageHelper = require("../../rx-storage-helper");
+var _overwritable = require("../../overwritable");
 /**
  * This plugin contains the primitives to create
  * a RxDB client-server replication.
@@ -103,7 +104,8 @@ var RxReplicationState = /*#__PURE__*/function () {
       // TODO is this always false?
       options: {},
       schema: metaInstanceSchema,
-      password: database.password
+      password: database.password,
+      devMode: _overwritable.overwritable.isDevMode()
     }), (0, _rxDatabaseInternalStore.addConnectedStorageToCollection)(this.collection, metaInstanceCollectionName, metaInstanceSchema)]);
     this.metaInstance = metaInstance;
     this.internalReplicationState = (0, _replicationProtocol.replicateRxStorageInstance)({

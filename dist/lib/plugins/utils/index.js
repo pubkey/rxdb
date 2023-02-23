@@ -168,4 +168,15 @@ Object.keys(_utilsOther).forEach(function (key) {
     }
   });
 });
+var _utilsRxdbVersion = require("./utils-rxdb-version");
+Object.keys(_utilsRxdbVersion).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (key in exports && exports[key] === _utilsRxdbVersion[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function () {
+      return _utilsRxdbVersion[key];
+    }
+  });
+});
 //# sourceMappingURL=index.js.map

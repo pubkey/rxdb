@@ -1,5 +1,5 @@
-import { ReplicationOptions, ReplicationPullOptions, ReplicationPushOptions } from '../../types';
-import { CollectionReference, Firestore, QuerySnapshot } from 'firebase/firestore';
+import type { ReplicationOptions, ReplicationPullOptions, ReplicationPushOptions } from '../../types';
+import type { CollectionReference, Firestore, QuerySnapshot } from 'firebase/firestore';
 export type FirestoreCheckpointType = {
     id: string;
     /**

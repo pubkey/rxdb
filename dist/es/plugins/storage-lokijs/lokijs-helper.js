@@ -6,6 +6,7 @@ import { LokiSaveQueue } from './loki-save-queue';
 import { newRxError } from '../../rx-error';
 import { getBroadcastChannelReference } from '../../rx-storage-multiinstance';
 import { getLeaderElectorByBroadcastChannel } from '../leader-election';
+import { overwritable } from '../../overwritable';
 export var CHANGES_COLLECTION_SUFFIX = '-rxdb-changes';
 export var LOKI_BROADCAST_CHANNEL_MESSAGE_TYPE = 'rxdb-lokijs-remote-request';
 export var LOKI_KEY_OBJECT_BROADCAST_CHANNEL_MESSAGE_TYPE = 'rxdb-lokijs-remote-request-key-object';
@@ -369,7 +370,8 @@ export async function mustUseLocalState(instance) {
       collectionName: instance.collectionName,
       options: instance.options,
       schema: instance.schema,
-      multiInstance: instance.internals.leaderElector ? true : false
+      multiInstance: instance.internals.leaderElector ? true : false,
+      devMode: overwritable.isDevMode()
     }, instance.databaseSettings);
     return ensureNotFalsy(instance.internals.localState);
   } else {

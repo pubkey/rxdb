@@ -23,7 +23,6 @@ exports.RXQUERY_QUERY_PARAMS_CACHE = RXQUERY_QUERY_PARAMS_CACHE;
 function getQueryParams(rxQuery) {
   if (!RXQUERY_QUERY_PARAMS_CACHE.has(rxQuery)) {
     var collection = rxQuery.collection;
-    var preparedQuery = rxQuery.getPreparedQuery();
     var normalizedMangoQuery = (0, _rxQueryHelper.normalizeMangoQuery)(collection.storageInstance.schema, (0, _utils.clone)(rxQuery.mangoQuery));
     var primaryKey = collection.schema.primaryPath;
 
@@ -32,7 +31,7 @@ function getQueryParams(rxQuery) {
      * that uses the hooks to ensure
      * we send for example compressed documents to be sorted by compressed queries.
      */
-    var sortComparator = collection.database.storage.statics.getSortComparator(collection.schema.jsonSchema, preparedQuery);
+    var sortComparator = (0, _rxQueryHelper.getSortComparator)(collection.schema.jsonSchema, normalizedMangoQuery);
     var useSortComparator = (docA, docB) => {
       var sortComparatorData = {
         docA,
@@ -47,7 +46,7 @@ function getQueryParams(rxQuery) {
      * that uses the hooks to ensure
      * we send for example compressed documents to match compressed queries.
      */
-    var queryMatcher = collection.database.storage.statics.getQueryMatcher(collection.schema.jsonSchema, preparedQuery);
+    var queryMatcher = (0, _rxQueryHelper.getQueryMatcher)(collection.schema.jsonSchema, normalizedMangoQuery);
     var useQueryMatcher = doc => {
       var queryMatcherData = {
         doc,

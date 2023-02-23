@@ -6,8 +6,8 @@ Object.defineProperty(exports, "__esModule", {
 exports.queryFoundationDB = queryFoundationDB;
 var _customIndex = require("../../custom-index");
 var _utils = require("../../plugins/utils");
-var _storageDexie = require("../storage-dexie");
 var _foundationdbHelpers = require("./foundationdb-helpers");
+var _rxQueryHelper = require("../../rx-query-helper");
 async function queryFoundationDB(instance, preparedQuery) {
   var queryPlan = preparedQuery.queryPlan;
   var query = preparedQuery.query;
@@ -18,7 +18,7 @@ async function queryFoundationDB(instance, preparedQuery) {
   var mustManuallyResort = !queryPlan.sortFieldsSameAsIndexFields;
   var queryMatcher = false;
   if (!queryPlan.selectorSatisfiedByIndex) {
-    queryMatcher = _storageDexie.RxStorageDexieStatics.getQueryMatcher(instance.schema, preparedQuery);
+    queryMatcher = (0, _rxQueryHelper.getQueryMatcher)(instance.schema, preparedQuery.query);
   }
   var dbs = await instance.internals.dbsPromise;
   var indexForName = queryPlanFields.slice(0);
@@ -64,7 +64,7 @@ async function queryFoundationDB(instance, preparedQuery) {
     return innerResult;
   });
   if (mustManuallyResort) {
-    var sortComparator = _storageDexie.RxStorageDexieStatics.getSortComparator(instance.schema, preparedQuery);
+    var sortComparator = (0, _rxQueryHelper.getSortComparator)(instance.schema, preparedQuery.query);
     result = result.sort(sortComparator);
   }
 

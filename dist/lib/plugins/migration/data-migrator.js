@@ -26,6 +26,7 @@ var _operators = require("rxjs/operators");
 var _rxStorageHelper = require("../../rx-storage-helper");
 var _rxDatabaseInternalStore = require("../../rx-database-internal-store");
 var _rxQueryHelper = require("../../rx-query-helper");
+var _overwritable = require("../../overwritable");
 /**
  * The DataMigrator handles the documents from collections with older schemas
  * and transforms/saves them into the newest collection
@@ -185,7 +186,8 @@ async function createOldCollection(version, schemaObj, dataMigrator) {
     collectionName: dataMigrator.newestCollection.name,
     schema: schemaObj,
     options: dataMigrator.newestCollection.instanceCreationOptions,
-    multiInstance: database.multiInstance
+    multiInstance: database.multiInstance,
+    devMode: _overwritable.overwritable.isDevMode()
   };
   (0, _hooks.runPluginHooks)('preCreateRxStorageInstance', storageInstanceCreationParams);
   var storageInstance = await database.storage.createStorageInstance(storageInstanceCreationParams);

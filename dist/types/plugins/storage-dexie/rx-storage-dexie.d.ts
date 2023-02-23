@@ -6,8 +6,6 @@ export declare class RxStorageDexie implements RxStorage<DexieStorageInternals, 
     name: string;
     statics: Readonly<{
         prepareQuery<RxDocType>(schema: import("../../types").RxJsonSchema<import("../../types").RxDocumentData<RxDocType>>, mutateableQuery: import("../../types").FilledMangoQuery<RxDocType>): any;
-        getSortComparator<RxDocType_1>(schema: import("../../types").RxJsonSchema<import("../../types").RxDocumentData<RxDocType_1>>, preparedQuery: any): import("../../types").DeterministicSortComparator<RxDocType_1>;
-        getQueryMatcher<RxDocType_2>(schema: import("../../types").RxJsonSchema<import("../../types").RxDocumentData<RxDocType_2>>, preparedQuery: any): import("../../types").QueryMatcher<import("../../types").RxDocumentData<RxDocType_2>>;
         checkpointSchema: import("../../types").DeepReadonlyObject<import("../../types").JsonSchema<any>>;
     }>;
     constructor(settings: DexieSettings);

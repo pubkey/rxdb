@@ -93,12 +93,12 @@ function runOperationOnDocument(storageStatics, schema, docData, operation) {
   entryParts.forEach(entryPart => {
     var isMatching;
     if (entryPart.selector) {
-      var preparedQuery = storageStatics.prepareQuery(schema, {
+      var query = {
         selector: (0, _utils.ensureNotFalsy)(entryPart.selector),
         sort: [],
         skip: 0
-      });
-      var matcher = storageStatics.getQueryMatcher(schema, preparedQuery);
+      };
+      var matcher = (0, _.getQueryMatcher)(schema, query);
       isMatching = matcher(docData);
     } else {
       isMatching = true;

@@ -13,7 +13,7 @@ var _utils = require("../../plugins/utils");
 var _binarySearchBounds = require("./binary-search-bounds");
 var _memoryHelper = require("./memory-helper");
 var _memoryIndexes = require("./memory-indexes");
-var _rxStorageStatics = require("../../rx-storage-statics");
+var _rxQueryHelper = require("../../rx-query-helper");
 var RxStorageInstanceMemory = /*#__PURE__*/function () {
   function RxStorageInstanceMemory(storage, databaseName, collectionName, schema, internals, options, settings) {
     this.closed = false;
@@ -102,7 +102,7 @@ var RxStorageInstanceMemory = /*#__PURE__*/function () {
     var skipPlusLimit = skip + limit;
     var queryMatcher = false;
     if (!queryPlan.selectorSatisfiedByIndex) {
-      queryMatcher = _rxStorageStatics.RxStorageDefaultStatics.getQueryMatcher(this.schema, preparedQuery);
+      queryMatcher = (0, _rxQueryHelper.getQueryMatcher)(this.schema, preparedQuery.query);
     }
     var queryPlanFields = queryPlan.index;
     var mustManuallyResort = !queryPlan.sortFieldsSameAsIndexFields;
@@ -137,7 +137,7 @@ var RxStorageInstanceMemory = /*#__PURE__*/function () {
       indexOfLower++;
     }
     if (mustManuallyResort) {
-      var sortComparator = _rxStorageStatics.RxStorageDefaultStatics.getSortComparator(this.schema, preparedQuery);
+      var sortComparator = (0, _rxQueryHelper.getSortComparator)(this.schema, preparedQuery.query);
       rows = rows.sort(sortComparator);
     }
 

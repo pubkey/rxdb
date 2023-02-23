@@ -11,6 +11,7 @@ var _rxSchemaHelper = require("./rx-schema-helper");
 var _hooks = require("./hooks");
 var _rxDatabaseInternalStore = require("./rx-database-internal-store");
 var _rxStorageHelper = require("./rx-storage-helper");
+var _overwritable = require("./overwritable");
 /**
  * fills in the default data.
  * This also clones the data.
@@ -88,7 +89,8 @@ hashFunction) {
       databaseName,
       multiInstance: false,
       options: {},
-      schema: row.schema
+      schema: row.schema,
+      devMode: _overwritable.overwritable.isDevMode()
     });
     await storageInstance.remove();
     if (row.isCollection) {

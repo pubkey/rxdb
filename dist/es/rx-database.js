@@ -11,6 +11,7 @@ import { flatCloneDocWithMeta, getSingleDocument, getWrappedStorageInstance, INT
 import { ObliviousSet } from 'oblivious-set';
 import { ensureStorageTokenDocumentExists, getAllCollectionDocuments, getPrimaryKeyOfInternalDocument, INTERNAL_CONTEXT_COLLECTION, INTERNAL_STORE_SCHEMA, _collectionNamePrimary } from './rx-database-internal-store';
 import { removeCollectionStorages } from './rx-collection-helper';
+import { overwritable } from './overwritable';
 
 /**
  * stores the used database names
@@ -361,7 +362,8 @@ export async function createRxDatabaseStorageInstance(databaseInstanceToken, sto
     schema: INTERNAL_STORE_SCHEMA,
     options,
     multiInstance,
-    password
+    password,
+    devMode: overwritable.isDevMode()
   });
   return internalStore;
 }
