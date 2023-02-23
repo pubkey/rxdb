@@ -12,13 +12,11 @@ import type {
 } from './rx-storage';
 import type {
     DeepReadonly,
-    DeterministicSortComparator,
     JsonSchema,
     MangoQuery,
     MangoQuerySelector,
     MangoQuerySortPart,
     Override,
-    QueryMatcher,
     RxConflictResultionTask,
     RxConflictResultionTaskSolution,
     RxJsonSchema,
@@ -137,26 +135,6 @@ export type RxStorageStatics = Readonly<{
          */
         mutateableQuery: FilledMangoQuery<RxDocType>
     ): PreparedQuery<RxDocType>;
-
-    /**
-     * Returns the sort-comparator,
-     * which is able to sort documents in the same way
-     * a query over the db would do.
-     */
-    getSortComparator<RxDocType>(
-        schema: RxJsonSchema<RxDocumentData<RxDocType>>,
-        preparedQuery: PreparedQuery<RxDocType>
-    ): DeterministicSortComparator<RxDocType>;
-
-    /**
-     * Returns a function
-     * that can be used to check if a document
-     * matches the query.
-     */
-    getQueryMatcher<RxDocType>(
-        schema: RxJsonSchema<RxDocumentData<RxDocType>>,
-        preparedQuery: PreparedQuery<RxDocType>
-    ): QueryMatcher<RxDocumentData<RxDocType>>;
 
     /**
      * Contains the JsonSchema that matches the checkpoint

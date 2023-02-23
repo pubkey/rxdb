@@ -13,7 +13,6 @@ import {
 } from '../../';
 
 import {
-    RxStorageDexieStatics,
     getDexieStoreSchema,
     fromDexieToStorage,
     fromStorageToDexie
@@ -22,9 +21,7 @@ import {
 import * as schemaObjects from '../helper/schema-objects';
 import {
     HumanDocumentType,
-    humanMinimal,
-    humanSchemaLiteral,
-    human
+    humanSchemaLiteral
 } from '../helper/schemas';
 import { assertThrows } from 'async-test-util';
 
@@ -35,70 +32,6 @@ config.parallel('rx-storage-dexie.test.js', () => {
     if (config.storage.name !== 'dexie') {
         return;
     }
-    describe('RxStorageDexieStatics', () => {
-        describe('.getSortComparator()', () => {
-            it('should sort in the correct order', () => {
-                const docA = schemaObjects.human(
-                    randomCouchString(10),
-                    1
-                );
-                const docB = schemaObjects.human(
-                    randomCouchString(10),
-                    2
-                );
-                const query: MangoQuery<HumanDocumentType> = {
-                    selector: {},
-                    sort: [
-                        { age: 'asc' }
-                    ]
-                };
-                const schema = fillWithDefaultSettings(human);
-                const preparedQuery = RxStorageDexieStatics.prepareQuery(
-                    schema,
-                    normalizeMangoQuery(schema, query)
-                );
-                const comparator = RxStorageDexieStatics.getSortComparator<HumanDocumentType>(
-                    humanMinimal as any,
-                    preparedQuery
-                );
-                const sortResult = comparator(docA, docB);
-                assert.strictEqual(sortResult, -1);
-                const sortResultReverse = comparator(docB, docA);
-                assert.strictEqual(sortResultReverse, 1);
-            });
-        });
-        describe('.getQueryMatcher()', () => {
-            it('should find the matching document', () => {
-                const docMatching = schemaObjects.human(
-                    randomCouchString(10),
-                    1
-                );
-                const docNotMatching = schemaObjects.human(
-                    randomCouchString(10),
-                    2
-                );
-                const query: MangoQuery = {
-                    selector: {
-                        age: 1
-                    }
-                };
-                const schema = fillWithDefaultSettings(humanMinimal);
-                const preparedQuery = RxStorageDexieStatics.prepareQuery(
-                    schema,
-                    normalizeMangoQuery(schema, query)
-                );
-                const matcher = RxStorageDexieStatics.getQueryMatcher(
-                    schema,
-                    preparedQuery
-                );
-                const matching = matcher(docMatching as any);
-                assert.ok(matching);
-
-                const notMatching = matcher(docNotMatching as any);
-                assert.strictEqual(notMatching, false);
-            });
-        });
-    });
     describe('helper', () => {
         describe('.getDexieStoreSchema()', () => {
             it('should start with the primary key', () => {

@@ -45,7 +45,7 @@ import type {
 } from './types';
 import { calculateNewResults } from './event-reduce';
 import { triggerCacheReplacement } from './query-cache';
-import { normalizeMangoQuery } from './rx-query-helper';
+import { getQueryMatcher, normalizeMangoQuery } from './rx-query-helper';
 
 let _queryCount = 0;
 const newQueryID = function (): number {
@@ -349,28 +349,16 @@ export class RxQueryBase<
      */
     get queryMatcher(): QueryMatcher<RxDocumentWriteData<RxDocType>> {
         const schema = this.collection.schema.jsonSchema;
-
-
-        /**
-         * Instead of calling this.getPreparedQuery(),
-         * we have to prepare the query for the query matcher
-         * so that it does not contain modifications from the hooks
-         * like the key compression.
-         */
-        const usePreparedQuery = this.collection.database.storage.statics.prepareQuery(
-            schema,
-            normalizeMangoQuery(
-                this.collection.schema.jsonSchema,
-                this.mangoQuery
-            )
+        const normalizedQuery = normalizeMangoQuery(
+            this.collection.schema.jsonSchema,
+            this.mangoQuery
         );
-
         return overwriteGetterForCaching(
             this,
             'queryMatcher',
-            this.collection.database.storage.statics.getQueryMatcher(
+            getQueryMatcher(
                 schema,
-                usePreparedQuery
+                normalizedQuery
             ) as any
         );
     }

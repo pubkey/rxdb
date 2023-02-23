@@ -12,13 +12,16 @@ import type {
     RxQuery,
     MangoQuery,
     RxChangeEvent,
-    PreparedQuery,
     StringKeys,
     RxDocumentData
 } from './types';
 import { rxChangeEventToEventReduceChangeEvent } from './rx-change-event';
-import { arrayFilterNotEmpty, clone, ensureNotFalsy } from './plugins/utils';
-import { normalizeMangoQuery } from './rx-query-helper';
+import {
+    arrayFilterNotEmpty,
+    clone,
+    ensureNotFalsy
+} from './plugins/utils';
+import { getQueryMatcher, getSortComparator, normalizeMangoQuery } from './rx-query-helper';
 
 export type EventReduceResultNeg = {
     runFullQueryAgain: true;
@@ -50,7 +53,6 @@ export function getQueryParams<RxDocType>(
 ): QueryParams<RxDocType> {
     if (!RXQUERY_QUERY_PARAMS_CACHE.has(rxQuery)) {
         const collection = rxQuery.collection;
-        const preparedQuery: PreparedQuery<RxDocType> = rxQuery.getPreparedQuery();
         const normalizedMangoQuery = normalizeMangoQuery(
             collection.storageInstance.schema,
             clone(rxQuery.mangoQuery)
@@ -62,9 +64,9 @@ export function getQueryParams<RxDocType>(
          * that uses the hooks to ensure
          * we send for example compressed documents to be sorted by compressed queries.
          */
-        const sortComparator = collection.database.storage.statics.getSortComparator(
+        const sortComparator = getSortComparator(
             collection.schema.jsonSchema,
-            preparedQuery
+            normalizedMangoQuery
         );
 
         const useSortComparator: DeterministicSortComparator<RxDocType> = (docA: RxDocType, docB: RxDocType) => {
@@ -81,9 +83,9 @@ export function getQueryParams<RxDocType>(
          * that uses the hooks to ensure
          * we send for example compressed documents to match compressed queries.
          */
-        const queryMatcher = collection.database.storage.statics.getQueryMatcher(
+        const queryMatcher = getQueryMatcher(
             collection.schema.jsonSchema,
-            preparedQuery
+            normalizedMangoQuery
         );
         const useQueryMatcher: QueryMatcher<RxDocumentData<RxDocType>> = (doc: RxDocumentData<RxDocType>) => {
             const queryMatcherData = {

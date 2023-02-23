@@ -30,9 +30,7 @@ import type {
     RxStorageStatics,
     FilledMangoQuery,
     PreparedQuery,
-    RxDocumentWriteData,
-    DeterministicSortComparator,
-    QueryMatcher
+    RxDocumentWriteData
 } from '../../types';
 import {
     flatClone,
@@ -50,8 +48,8 @@ declare type CompressionState = {
  * by the storage instance for better performance.
  */
 const COMPRESSION_STATE_BY_SCHEMA: WeakMap<
-RxJsonSchema<any>,
-CompressionState
+    RxJsonSchema<any>,
+    CompressionState
 > = new WeakMap();
 
 
@@ -158,48 +156,6 @@ export function wrappedKeyCompressionStorage<Internals, InstanceCreationOptions>
                     schema,
                     mutateableQuery
                 );
-            },
-            getSortComparator<RxDocType>(
-                schema: RxJsonSchema<RxDocumentData<RxDocType>>,
-                preparedQuery: PreparedQuery<RxDocType>
-            ): DeterministicSortComparator<RxDocType> {
-                if (!schema.keyCompression) {
-                    return args.storage.statics.getSortComparator(schema, preparedQuery);
-                } else {
-                    const compressionState = getCompressionStateByRxJsonSchema(schema);
-                    const comparator = args.storage.statics.getSortComparator(compressionState.schema, preparedQuery);
-                    return (a, b) => {
-                        const compressedDocDataA = compressObject(
-                            compressionState.table,
-                            a as any
-                        );
-                        const compressedDocDataB = compressObject(
-                            compressionState.table,
-                            b as any
-                        );
-                        const res = comparator(compressedDocDataA, compressedDocDataB);
-                        return res;
-                    };
-                }
-            },
-            getQueryMatcher<RxDocType>(
-                schema: RxJsonSchema<RxDocumentData<RxDocType>>,
-                preparedQuery: PreparedQuery<RxDocType>
-            ): QueryMatcher<RxDocumentData<RxDocType>> {
-                if (!schema.keyCompression) {
-                    return args.storage.statics.getQueryMatcher(schema, preparedQuery);
-                } else {
-                    const compressionState = getCompressionStateByRxJsonSchema(schema);
-                    const matcher = args.storage.statics.getQueryMatcher(compressionState.schema, preparedQuery);
-                    return (docData) => {
-                        const compressedDocData = compressObject(
-                            compressionState.table,
-                            docData
-                        );
-                        const ret = matcher(compressedDocData);
-                        return ret;
-                    };
-                }
             }
         }
     );

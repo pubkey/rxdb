@@ -26,6 +26,7 @@ import {
 } from '../../plugins/utils';
 import modifyjs from 'modifyjs';
 import {
+    getQueryMatcher,
     overwritable,
     RxCollection,
     RxDocumentWriteData,
@@ -144,12 +145,12 @@ function runOperationOnDocument<RxDocType>(
     entryParts.forEach(entryPart => {
         let isMatching: boolean;
         if (entryPart.selector) {
-            const preparedQuery = storageStatics.prepareQuery(schema, {
+            const query = {
                 selector: ensureNotFalsy(entryPart.selector),
                 sort: [],
                 skip: 0
-            });
-            const matcher = storageStatics.getQueryMatcher(schema, preparedQuery);
+            };
+            const matcher = getQueryMatcher(schema, query);
             isMatching = matcher(docData as any);
         } else {
             isMatching = true;

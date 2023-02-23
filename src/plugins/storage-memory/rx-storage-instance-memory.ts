@@ -61,7 +61,7 @@ import type {
     RxStorageMemoryInstanceCreationOptions,
     RxStorageMemorySettings
 } from './memory-types';
-import { RxStorageDefaultStatics } from '../../rx-storage-statics';
+import { getQueryMatcher, getSortComparator } from '../../rx-query-helper';
 
 export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
     RxDocType,
@@ -206,9 +206,9 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
 
         let queryMatcher: QueryMatcher<RxDocumentData<RxDocType>> | false = false;
         if (!queryPlan.selectorSatisfiedByIndex) {
-            queryMatcher = RxStorageDefaultStatics.getQueryMatcher(
+            queryMatcher = getQueryMatcher(
                 this.schema,
-                preparedQuery
+                preparedQuery.query
             );
         }
 
@@ -277,7 +277,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         }
 
         if (mustManuallyResort) {
-            const sortComparator = RxStorageDefaultStatics.getSortComparator(this.schema, preparedQuery);
+            const sortComparator = getSortComparator(this.schema, preparedQuery.query);
             rows = rows.sort(sortComparator);
         }
 
