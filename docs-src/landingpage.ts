@@ -209,6 +209,18 @@ window.onload = async function () {
 
 
 
+const maxDegree = 16;
+const minDegree = -1 * maxDegree;
+// use max values to ensure it never looks broken, even on big screens.
+function ensureInRange(val: number): number {
+    if (val < minDegree) {
+        return minDegree;
+    }
+    if (val > maxDegree) {
+        return maxDegree;
+    }
+    return val;
+}
 /**
  * @link https://armandocanals.com/posts/CSS-transform-rotating-a-3D-object-perspective-based-on-mouse-position.html
  */
@@ -221,7 +233,7 @@ function startTiltToMouse(mousePosDoc: RxLocalDocument<any, MousePositionType>) 
         const calcX = -(y - box.y - (box.height / 2)) / constrain;
         const calcY = (x - box.x - (box.width / 2)) / constrain;
 
-        return `perspective(100px)    rotateX(${calcX}deg)    rotateY(${calcY}deg) `;
+        return `perspective(100px)    rotateX(${ensureInRange(calcX)}deg)    rotateY(${ensureInRange(calcY)}deg) `;
     }
 
     function transformElement(el: any, xyEl: number[]) {
