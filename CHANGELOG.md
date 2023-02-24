@@ -3,6 +3,7 @@
 
 <!-- CHANGELOG NEWEST -->
 - REMOVE broken dev dependency [wrtc](https://www.npmjs.com/package/wrtc)
+- FIX(SQLite) broken pragma calls on iOS
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
