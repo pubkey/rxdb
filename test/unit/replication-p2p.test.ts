@@ -28,6 +28,16 @@ import {
 import { randomString, wait, waitUntil } from 'async-test-util';
 
 describe('replication-p2p.test.ts', () => {
+    if (!config.platform.isNode()) {
+        /**
+         * We cannot run these tests in Node.js
+         * because the node WebRTC polyfill is broken
+         * and does not work on mac.
+         * @link https://github.com/node-webrtc/node-webrtc/issues/729
+         */
+        return;
+    }
+
     if (
         !config.storage.hasPersistence ||
         config.storage.name === 'memory' // TODO this fails in the CI but works locally
@@ -45,14 +55,6 @@ describe('replication-p2p.test.ts', () => {
 
     let wrtc: any;
     const signalingServerUrl: string = 'ws://localhost:18006';
-    describe('init', () => {
-        it('load wrtc', () => {
-            if (!config.platform.isNode()) {
-                return;
-            }
-            wrtc = require('wrtc');
-        });
-    });
     describe('utils', () => {
         describe('.isMasterInP2PReplication()', () => {
             new Array(10).fill(0).forEach(() => {

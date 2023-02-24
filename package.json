@@ -509,7 +509,6 @@
     "webpack": "5.75.0",
     "webpack-bundle-analyzer": "4.8.0",
     "webpack-cli": "5.0.1",
-    "webpack-dev-server": "4.11.1",
-    "wrtc": "0.4.7"
+    "webpack-dev-server": "4.11.1"
   }
 }

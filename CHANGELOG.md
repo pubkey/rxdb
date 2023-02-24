@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- REMOVE broken dev dependency [wrtc](https://www.npmjs.com/package/wrtc)
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
