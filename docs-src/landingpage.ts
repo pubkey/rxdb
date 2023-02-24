@@ -209,7 +209,7 @@ window.onload = async function () {
 
 
 
-const maxDegree = 16;
+const maxDegree = 22;
 const minDegree = -1 * maxDegree;
 // use max values to ensure it never looks broken, even on big screens.
 function ensureInRange(val: number): number {
@@ -233,7 +233,7 @@ function startTiltToMouse(mousePosDoc: RxLocalDocument<any, MousePositionType>) 
         const calcX = -(y - box.y - (box.height / 2)) / constrain;
         const calcY = (x - box.x - (box.width / 2)) / constrain;
 
-        return `perspective(100px)    rotateX(${ensureInRange(calcX)}deg)    rotateY(${ensureInRange(calcY)}deg) `;
+        return `perspective(150px)    rotateX(${ensureInRange(calcX)}deg)    rotateY(${ensureInRange(calcY)}deg) `;
     }
 
     function transformElement(el: any, xyEl: number[]) {
@@ -245,6 +245,9 @@ function startTiltToMouse(mousePosDoc: RxLocalDocument<any, MousePositionType>) 
             return;
         }
         Array.from($$tiltToMouse).forEach($element => {
+            if (!isInViewport($element)) {
+                return;
+            }
             const position = ensureNotFalsy([mousePos.data.x, mousePos.data.y]).concat([$element]);
             transformElement($element, position);
         });
@@ -286,6 +289,9 @@ function startEnlargeOnMousePos(mousePosDoc: RxLocalDocument<any, MousePositionT
         }
 
         Array.from($$enlargeOnMouse).forEach($element => {
+            if (!isInViewport($element)) {
+                return;
+            }
             const elementPosition = getElementPosition($element);
 
             const dx = mousePos.data.x - elementPosition.centerX;
@@ -395,4 +401,18 @@ function shuffleWithSeed<T>(array: T[], seed: number): T[] {
 function random(seed: number) {
     const x = Math.sin(seed++) * 10000;
     return x - Math.floor(x);
+}
+
+
+/**
+ * @link https://www.javascripttutorial.net/dom/css/check-if-an-element-is-visible-in-the-viewport/
+ */
+function isInViewport(el: any) {
+    const rect = el.getBoundingClientRect();
+    return (
+        rect.top >= 0 &&
+        rect.left >= 0 &&
+        rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+        rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+    );
 }
