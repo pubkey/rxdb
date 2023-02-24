@@ -28,7 +28,7 @@ import {
 import { randomString, wait, waitUntil } from 'async-test-util';
 
 describe('replication-p2p.test.ts', () => {
-    if (!config.platform.isNode()) {
+    if (config.platform.isNode()) {
         /**
          * We cannot run these tests in Node.js
          * because the node WebRTC polyfill is broken
