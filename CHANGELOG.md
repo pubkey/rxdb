@@ -2,13 +2,17 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- REMOVE broken dev dependency [wrtc](https://www.npmjs.com/package/wrtc)
-- FIX(SQLite) broken pragma calls on iOS
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 14.1.1 (24 February 2023)
+
+- REMOVE broken dev dependency [wrtc](https://www.npmjs.com/package/wrtc)
+- FIX(SQLite) broken pragma calls on iOS
 
 ### 14.1.0 (23 February 2023)
 
