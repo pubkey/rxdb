@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- FIX ensure writing many documents at once works with every RxStorage.
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

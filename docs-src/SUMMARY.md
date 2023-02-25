@@ -158,6 +158,7 @@
 
 * Tutorials
     * [Use RxDB with Typescript](./tutorials/typescript.md)
+    * [RxDB as Node.js Database](./nodejs-database.md)
 
 * Opinions
     * [Offline First](./offline-first.md)
@@ -168,7 +169,6 @@
     * [React Native Database](./react-native-database.md)
     * [Capacitor Database](./capacitor-database.md)
     * [Electron Database](./electron-database.md)
-    * [Node.js Database](./nodejs-database.md)
 
 * [Questions & Answers](./questions-answers.md)
 
