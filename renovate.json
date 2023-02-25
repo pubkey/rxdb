@@ -17,6 +17,6 @@
     "examples/flutter"
   ],
   "rebaseStalePrs": true,
-  "prHourlyLimit": 8,
+  "prHourlyLimit": 2,
   "dependencyDashboard": false
 }
