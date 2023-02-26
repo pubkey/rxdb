@@ -79,19 +79,10 @@ config.parallel('rx-schema.test.js', () => {
                     required: ['id', 'createTime', 'updateTime'],
                 };
 
-                // add this plugin triggers the bug, but seems it's added in the test setup
-                // addRxPlugin(RxDBDevModePlugin);
-
-                // create a database
                 const db = await createRxDatabase({
-                    name: 'test-app',
-                    /**
-                     * By calling config.storage.getStorage(),
-                     * we can ensure that all variations of RxStorage are tested in the CI.
-                     */
+                    name: randomCouchString(10),
                     storage: config.storage.getStorage(),
                 });
-
                 await db.addCollections({
                     users: {
                         schema: userSchema,

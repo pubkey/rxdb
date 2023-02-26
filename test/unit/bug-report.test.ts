@@ -59,7 +59,10 @@ describe('bug-report.test.js', () => {
             }
         };
 
-        // generate a random database-name
+        /**
+         * Always generate a random database-name
+         * to ensure that different test runs do not affect each other.
+         */
         const name = randomCouchString(10);
 
         // create a database
