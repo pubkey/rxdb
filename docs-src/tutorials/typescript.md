@@ -48,7 +48,8 @@ export const heroSchemaLiteral = {
     type: 'object',
     properties: {
         passportId: {
-            type: 'string'
+            type: 'string',
+            maxLength: 100 // <- the primary key must have set maxLength
         },
         firstName: {
             type: 'string'
@@ -66,16 +67,16 @@ export const heroSchemaLiteral = {
 const schemaTyped = toTypedRxJsonSchema(heroSchemaLiteral);
 
 // aggregate the document type from the schema
-type HeroDocType = ExtractDocumentTypeFromTypedRxJsonSchema<typeof schemaTyped>;
+export type HeroDocType = ExtractDocumentTypeFromTypedRxJsonSchema<typeof schemaTyped>;
 
 // create the typed RxJsonSchema from the literal typed object.
-const heroSchema: RxJsonSchema<HeroDocType> = heroSchemaLiteral;
+export const heroSchema: RxJsonSchema<HeroDocType> = heroSchemaLiteral;
 ```
 
 ### Option B: Manually type the document type
 
 ```typescript
-type HeroDocType = {
+export type HeroDocType = {
     passportId: string;
     firstName: string;
     lastName: string;
@@ -93,7 +94,7 @@ If your schema is in a `.json` file or generated from somewhere else, you might 
 We also add some ORM-methods for the document.
 
 ```typescript
-type HeroDocMethods = {
+export type HeroDocMethods = {
     scream: (v: string) => string;
 };
 ```
@@ -101,7 +102,7 @@ type HeroDocMethods = {
 We can merge these into our HeroDocument.
 
 ```typescript
-type HeroDocument = RxDocument<HeroDocType, HeroDocMethods>;
+export type HeroDocument = RxDocument<HeroDocType, HeroDocMethods>;
 ```
 
 Now we can define type for the collection which contains the documents.
@@ -109,19 +110,19 @@ Now we can define type for the collection which contains the documents.
 ```typescript
 
 // we declare one static ORM-method for the collection
-type HeroCollectionMethods = {
+export type HeroCollectionMethods = {
     countAllDocuments: () => Promise<number>;
 }
 
 // and then merge all our types
-type HeroCollection = RxCollection<HeroDocType, HeroDocMethods, HeroCollectionMethods>;
+export type HeroCollection = RxCollection<HeroDocType, HeroDocMethods, HeroCollectionMethods>;
 ```
 
 
 Before we can define the database, we make a helper-type which contains all collections of it.
 
 ```typescript
-type MyDatabaseCollections = {
+export type MyDatabaseCollections = {
     heroes: HeroCollection
 }
 ```
@@ -129,7 +130,7 @@ type MyDatabaseCollections = {
 Now the database.
 
 ```typescript
-type MyDatabase = RxDatabase<MyDatabaseCollections>;
+export type MyDatabase = RxDatabase<MyDatabaseCollections>;
 ```
 
 ## Using the types

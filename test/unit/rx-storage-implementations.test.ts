@@ -1854,6 +1854,38 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
 
                 storageInstance.close();
             });
+            /**
+             * Some storage implementations ran into some limits
+             * like SQLite SQLITE_MAX_VARIABLE_NUMBER etc.
+             * Writing many documents must just work and the storage itself
+             * has to workaround any problems with that.
+             */
+            it('should be able to insert and fetch many documents', async () => {
+                const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
+                    databaseInstanceToken: randomCouchString(10),
+                    databaseName: randomCouchString(12),
+                    collectionName: randomCouchString(12),
+                    schema: getTestDataSchema(),
+                    options: {},
+                    multiInstance: false,
+                    devMode: true
+                });
+
+                const amount = config.isFastMode() ? 100 : 20000;
+                const writeRows = new Array(amount)
+                    .fill(0)
+                    .map(() => ({ document: getWriteData() }));
+
+                // insert
+                const writeResult = await storageInstance.bulkWrite(writeRows, 'insert-many-' + amount);
+                assert.deepStrictEqual(writeResult.error, {});
+
+                // fetch again
+                const fetchResult = await storageInstance.findDocumentsById(writeRows.map(r => r.document.key), false);
+                assert.deepEqual(Object.keys(fetchResult).length, amount);
+
+                storageInstance.remove();
+            });
         });
         describe('.getChangedDocumentsSince()', () => {
             it('should get the latest change', async () => {

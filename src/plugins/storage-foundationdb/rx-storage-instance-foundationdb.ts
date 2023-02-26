@@ -41,6 +41,7 @@ import {
 import {
 
     CLEANUP_INDEX,
+    FOUNDATION_DB_WRITE_BATCH_SIZE,
     getFoundationDBIndexName
 } from './foundationdb-helpers';
 import {
@@ -49,6 +50,7 @@ import {
     getStartIndexStringFromUpperBound
 } from '../../custom-index';
 import {
+    batchArray,
     ensureNotFalsy,
     lastOfArray,
     now,
@@ -87,111 +89,123 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
         context: string
     ): Promise<RxStorageBulkWriteResponse<RxDocType>> {
         const dbs = await this.internals.dbsPromise;
-        let categorized: CategorizeBulkWriteRowsOutput<RxDocType> | undefined = null as any;
-        const result = await dbs.root.doTransaction(async (tx: any) => {
-            const ret: RxStorageBulkWriteResponse<RxDocType> = {
-                success: {},
-                error: {}
-            };
+        const ret: RxStorageBulkWriteResponse<RxDocType> = {
+            success: {},
+            error: {}
+        };
 
-            const ids = documentWrites.map(row => (row.document as any)[this.primaryPath]);
-            const mainTx = tx.at(dbs.main.subspace);
-            const attachmentTx = tx.at(dbs.attachments.subspace);
-            const docsInDB = new Map<string, RxDocumentData<RxDocType>>();
-            /**
-             * TODO this might be faster if fdb
-             * any time adds a bulk-fetch-by-key method.
-             */
-            await Promise.all(
-                ids.map(async (id) => {
-                    const doc = await mainTx.get(id);
-                    docsInDB.set(id, doc);
-                })
-            );
-
-
-            categorized = categorizeBulkWriteRows<RxDocType>(
-                this,
-                this.primaryPath as any,
-                docsInDB,
-                documentWrites,
-                context
-            );
-
-            ret.error = categorized.errors;
-
-            // INSERTS
-            categorized.bulkInsertDocs.forEach(writeRow => {
-                const docId: string = writeRow.document[this.primaryPath] as any;
-                ret.success[docId] = writeRow.document as any;
-
-                // insert document data
-                mainTx.set(docId, writeRow.document);
-
-                // insert secondary indexes
-                Object.values(dbs.indexes).forEach(indexMeta => {
-                    const indexString = indexMeta.getIndexableString(writeRow.document as any);
-                    const indexTx = tx.at(indexMeta.db.subspace);
-                    indexTx.set(indexString, docId);
-                });
-            });
-            // UPDATES
-            categorized.bulkUpdateDocs.forEach((writeRow: BulkWriteRow<RxDocType>) => {
-                const docId: string = writeRow.document[this.primaryPath] as any;
-
-                // overwrite document data
-                mainTx.set(docId, writeRow.document);
-
-                // update secondary indexes
-                Object.values(dbs.indexes).forEach(indexMeta => {
-                    const oldIndexString = indexMeta.getIndexableString(ensureNotFalsy(writeRow.previous));
-                    const newIndexString = indexMeta.getIndexableString(writeRow.document as any);
-                    if (oldIndexString !== newIndexString) {
-                        const indexTx = tx.at(indexMeta.db.subspace);
-                        indexTx.delete(oldIndexString);
-                        indexTx.set(newIndexString, docId);
-                    }
-                });
-                ret.success[docId] = writeRow.document as any;
-            });
-
-            // attachments
-            categorized.attachmentsAdd.forEach(attachment => {
-                attachmentTx.set(
-                    attachmentMapKey(attachment.documentId, attachment.attachmentId),
-                    attachment.attachmentData
-                );
-            });
-            categorized.attachmentsUpdate.forEach(attachment => {
-                attachmentTx.set(
-                    attachmentMapKey(attachment.documentId, attachment.attachmentId),
-                    attachment.attachmentData
-                );
-            });
-            categorized.attachmentsRemove.forEach(attachment => {
-                attachmentTx.delete(
-                    attachmentMapKey(attachment.documentId, attachment.attachmentId)
-                );
-            });
-
-            return ret;
-        });
-        categorized = ensureNotFalsy(categorized);
         /**
-         * The events must be emitted AFTER the transaction
-         * has finished.
-         * Otherwise an observable changestream might cause a read
-         * to a document that does not already exist outside of the transaction.
+         * Doing too many write in a single transaction
+         * will throw with a 'Transaction exceeds byte limit'
+         * so we have to batch up the writes.
          */
-        if (categorized.eventBulk.events.length > 0) {
-            const lastState = ensureNotFalsy(categorized.newestRow).document;
-            categorized.eventBulk.checkpoint = {
-                id: lastState[this.primaryPath],
-                lwt: lastState._meta.lwt
-            };
-            this.changes$.next(categorized.eventBulk);
-        }
-        return result;
+        const writeBatches = batchArray(documentWrites, FOUNDATION_DB_WRITE_BATCH_SIZE);
+        await Promise.all(
+            writeBatches.map(async (writeBatch) => {
+                let categorized: CategorizeBulkWriteRowsOutput<RxDocType> | undefined = null as any;
+                await dbs.root.doTransaction(async (tx: any) => {
+                    const ids = writeBatch.map(row => (row.document as any)[this.primaryPath]);
+                    const mainTx = tx.at(dbs.main.subspace);
+                    const attachmentTx = tx.at(dbs.attachments.subspace);
+                    const docsInDB = new Map<string, RxDocumentData<RxDocType>>();
+                    /**
+                     * TODO this might be faster if fdb
+                     * any time adds a bulk-fetch-by-key method.
+                     */
+                    await Promise.all(
+                        ids.map(async (id) => {
+                            const doc = await mainTx.get(id);
+                            docsInDB.set(id, doc);
+                        })
+                    );
+
+
+                    categorized = categorizeBulkWriteRows<RxDocType>(
+                        this,
+                        this.primaryPath as any,
+                        docsInDB,
+                        writeBatch,
+                        context
+                    );
+
+                    Object.keys(categorized.errors).forEach(errorKey => {
+                        ret.error[errorKey] = ensureNotFalsy(categorized).errors[errorKey];
+                    });
+
+                    // INSERTS
+                    categorized.bulkInsertDocs.forEach(writeRow => {
+                        const docId: string = writeRow.document[this.primaryPath] as any;
+                        ret.success[docId] = writeRow.document as any;
+
+                        // insert document data
+                        mainTx.set(docId, writeRow.document);
+
+                        // insert secondary indexes
+                        Object.values(dbs.indexes).forEach(indexMeta => {
+                            const indexString = indexMeta.getIndexableString(writeRow.document as any);
+                            const indexTx = tx.at(indexMeta.db.subspace);
+                            indexTx.set(indexString, docId);
+                        });
+                    });
+                    // UPDATES
+                    categorized.bulkUpdateDocs.forEach((writeRow: BulkWriteRow<RxDocType>) => {
+                        const docId: string = writeRow.document[this.primaryPath] as any;
+
+                        // overwrite document data
+                        mainTx.set(docId, writeRow.document);
+
+                        // update secondary indexes
+                        Object.values(dbs.indexes).forEach(indexMeta => {
+                            const oldIndexString = indexMeta.getIndexableString(ensureNotFalsy(writeRow.previous));
+                            const newIndexString = indexMeta.getIndexableString(writeRow.document as any);
+                            if (oldIndexString !== newIndexString) {
+                                const indexTx = tx.at(indexMeta.db.subspace);
+                                indexTx.delete(oldIndexString);
+                                indexTx.set(newIndexString, docId);
+                            }
+                        });
+                        ret.success[docId] = writeRow.document as any;
+                    });
+
+                    // attachments
+                    categorized.attachmentsAdd.forEach(attachment => {
+                        attachmentTx.set(
+                            attachmentMapKey(attachment.documentId, attachment.attachmentId),
+                            attachment.attachmentData
+                        );
+                    });
+                    categorized.attachmentsUpdate.forEach(attachment => {
+                        attachmentTx.set(
+                            attachmentMapKey(attachment.documentId, attachment.attachmentId),
+                            attachment.attachmentData
+                        );
+                    });
+                    categorized.attachmentsRemove.forEach(attachment => {
+                        attachmentTx.delete(
+                            attachmentMapKey(attachment.documentId, attachment.attachmentId)
+                        );
+                    });
+                });
+                categorized = ensureNotFalsy(categorized);
+                /**
+                 * The events must be emitted AFTER the transaction
+                 * has finished.
+                 * Otherwise an observable changestream might cause a read
+                 * to a document that does not already exist outside of the transaction.
+                 */
+                if (categorized.eventBulk.events.length > 0) {
+                    const lastState = ensureNotFalsy(categorized.newestRow).document;
+                    categorized.eventBulk.checkpoint = {
+                        id: lastState[this.primaryPath],
+                        lwt: lastState._meta.lwt
+                    };
+                    this.changes$.next(categorized.eventBulk);
+                }
+            })
+        );
+
+
+        return ret;
     }
 
     async findDocumentsById(ids: string[], withDeleted: boolean): Promise<RxDocumentDataById<RxDocType>> {

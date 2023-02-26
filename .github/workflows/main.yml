@@ -261,7 +261,10 @@ jobs:
       - name: build
         run: npm run build
 
+      # Run them twice to ensure no test has persistence
       - run: npm run test:node:foundationdb
+      - run: npm run test:node:foundationdb
+
       - run: npm run test:fast:foundationdb
       - run: npm run test:performance:foundationdb
 
