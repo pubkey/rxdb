@@ -37,90 +37,100 @@ var RxStorageInstanceFoundationDB = /*#__PURE__*/function () {
   var _proto = RxStorageInstanceFoundationDB.prototype;
   _proto.bulkWrite = async function bulkWrite(documentWrites, context) {
     var dbs = await this.internals.dbsPromise;
-    var categorized = null;
-    var result = await dbs.root.doTransaction(async tx => {
-      var ret = {
-        success: {},
-        error: {}
-      };
-      var ids = documentWrites.map(row => row.document[this.primaryPath]);
-      var mainTx = tx.at(dbs.main.subspace);
-      var attachmentTx = tx.at(dbs.attachments.subspace);
-      var docsInDB = new Map();
-      /**
-       * TODO this might be faster if fdb
-       * any time adds a bulk-fetch-by-key method.
-       */
-      await Promise.all(ids.map(async id => {
-        var doc = await mainTx.get(id);
-        docsInDB.set(id, doc);
-      }));
-      categorized = (0, _rxStorageHelper.categorizeBulkWriteRows)(this, this.primaryPath, docsInDB, documentWrites, context);
-      ret.error = categorized.errors;
+    var ret = {
+      success: {},
+      error: {}
+    };
 
-      // INSERTS
-      categorized.bulkInsertDocs.forEach(writeRow => {
-        var docId = writeRow.document[this.primaryPath];
-        ret.success[docId] = writeRow.document;
-
-        // insert document data
-        mainTx.set(docId, writeRow.document);
-
-        // insert secondary indexes
-        Object.values(dbs.indexes).forEach(indexMeta => {
-          var indexString = indexMeta.getIndexableString(writeRow.document);
-          var indexTx = tx.at(indexMeta.db.subspace);
-          indexTx.set(indexString, docId);
-        });
-      });
-      // UPDATES
-      categorized.bulkUpdateDocs.forEach(writeRow => {
-        var docId = writeRow.document[this.primaryPath];
-
-        // overwrite document data
-        mainTx.set(docId, writeRow.document);
-
-        // update secondary indexes
-        Object.values(dbs.indexes).forEach(indexMeta => {
-          var oldIndexString = indexMeta.getIndexableString((0, _utils.ensureNotFalsy)(writeRow.previous));
-          var newIndexString = indexMeta.getIndexableString(writeRow.document);
-          if (oldIndexString !== newIndexString) {
-            var indexTx = tx.at(indexMeta.db.subspace);
-            indexTx.delete(oldIndexString);
-            indexTx.set(newIndexString, docId);
-          }
-        });
-        ret.success[docId] = writeRow.document;
-      });
-
-      // attachments
-      categorized.attachmentsAdd.forEach(attachment => {
-        attachmentTx.set((0, _storageMemory.attachmentMapKey)(attachment.documentId, attachment.attachmentId), attachment.attachmentData);
-      });
-      categorized.attachmentsUpdate.forEach(attachment => {
-        attachmentTx.set((0, _storageMemory.attachmentMapKey)(attachment.documentId, attachment.attachmentId), attachment.attachmentData);
-      });
-      categorized.attachmentsRemove.forEach(attachment => {
-        attachmentTx.delete((0, _storageMemory.attachmentMapKey)(attachment.documentId, attachment.attachmentId));
-      });
-      return ret;
-    });
-    categorized = (0, _utils.ensureNotFalsy)(categorized);
     /**
-     * The events must be emitted AFTER the transaction
-     * has finished.
-     * Otherwise an observable changestream might cause a read
-     * to a document that does not already exist outside of the transaction.
+     * Doing too many write in a single transaction
+     * will throw with a 'Transaction exceeds byte limit'
+     * so we have to batch up the writes.
      */
-    if (categorized.eventBulk.events.length > 0) {
-      var lastState = (0, _utils.ensureNotFalsy)(categorized.newestRow).document;
-      categorized.eventBulk.checkpoint = {
-        id: lastState[this.primaryPath],
-        lwt: lastState._meta.lwt
-      };
-      this.changes$.next(categorized.eventBulk);
-    }
-    return result;
+    var writeBatches = (0, _utils.batchArray)(documentWrites, _foundationdbHelpers.FOUNDATION_DB_WRITE_BATCH_SIZE);
+    await Promise.all(writeBatches.map(async writeBatch => {
+      var categorized = null;
+      await dbs.root.doTransaction(async tx => {
+        var ids = writeBatch.map(row => row.document[this.primaryPath]);
+        var mainTx = tx.at(dbs.main.subspace);
+        var attachmentTx = tx.at(dbs.attachments.subspace);
+        var docsInDB = new Map();
+        /**
+         * TODO this might be faster if fdb
+         * any time adds a bulk-fetch-by-key method.
+         */
+        await Promise.all(ids.map(async id => {
+          var doc = await mainTx.get(id);
+          docsInDB.set(id, doc);
+        }));
+        categorized = (0, _rxStorageHelper.categorizeBulkWriteRows)(this, this.primaryPath, docsInDB, writeBatch, context);
+        Object.keys(categorized.errors).forEach(errorKey => {
+          ret.error[errorKey] = (0, _utils.ensureNotFalsy)(categorized).errors[errorKey];
+        });
+
+        // INSERTS
+        categorized.bulkInsertDocs.forEach(writeRow => {
+          var docId = writeRow.document[this.primaryPath];
+          ret.success[docId] = writeRow.document;
+
+          // insert document data
+          mainTx.set(docId, writeRow.document);
+
+          // insert secondary indexes
+          Object.values(dbs.indexes).forEach(indexMeta => {
+            var indexString = indexMeta.getIndexableString(writeRow.document);
+            var indexTx = tx.at(indexMeta.db.subspace);
+            indexTx.set(indexString, docId);
+          });
+        });
+        // UPDATES
+        categorized.bulkUpdateDocs.forEach(writeRow => {
+          var docId = writeRow.document[this.primaryPath];
+
+          // overwrite document data
+          mainTx.set(docId, writeRow.document);
+
+          // update secondary indexes
+          Object.values(dbs.indexes).forEach(indexMeta => {
+            var oldIndexString = indexMeta.getIndexableString((0, _utils.ensureNotFalsy)(writeRow.previous));
+            var newIndexString = indexMeta.getIndexableString(writeRow.document);
+            if (oldIndexString !== newIndexString) {
+              var indexTx = tx.at(indexMeta.db.subspace);
+              indexTx.delete(oldIndexString);
+              indexTx.set(newIndexString, docId);
+            }
+          });
+          ret.success[docId] = writeRow.document;
+        });
+
+        // attachments
+        categorized.attachmentsAdd.forEach(attachment => {
+          attachmentTx.set((0, _storageMemory.attachmentMapKey)(attachment.documentId, attachment.attachmentId), attachment.attachmentData);
+        });
+        categorized.attachmentsUpdate.forEach(attachment => {
+          attachmentTx.set((0, _storageMemory.attachmentMapKey)(attachment.documentId, attachment.attachmentId), attachment.attachmentData);
+        });
+        categorized.attachmentsRemove.forEach(attachment => {
+          attachmentTx.delete((0, _storageMemory.attachmentMapKey)(attachment.documentId, attachment.attachmentId));
+        });
+      });
+      categorized = (0, _utils.ensureNotFalsy)(categorized);
+      /**
+       * The events must be emitted AFTER the transaction
+       * has finished.
+       * Otherwise an observable changestream might cause a read
+       * to a document that does not already exist outside of the transaction.
+       */
+      if (categorized.eventBulk.events.length > 0) {
+        var lastState = (0, _utils.ensureNotFalsy)(categorized.newestRow).document;
+        categorized.eventBulk.checkpoint = {
+          id: lastState[this.primaryPath],
+          lwt: lastState._meta.lwt
+        };
+        this.changes$.next(categorized.eventBulk);
+      }
+    }));
+    return ret;
   };
   _proto.findDocumentsById = async function findDocumentsById(ids, withDeleted) {
     var dbs = await this.internals.dbsPromise;

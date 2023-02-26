@@ -2,12 +2,16 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- FIX ensure writing many documents at once works with every RxStorage.
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 14.1.2 (26 February 2023)
+
+- FIX ensure writing many documents at once works with every RxStorage.
 
 ### 14.1.1 (24 February 2023)
 

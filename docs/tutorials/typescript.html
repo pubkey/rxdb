@@ -63,6 +63,8 @@
     <link rel="shortcut icon" href="../gitbook/images/favicon.ico" type="image/x-icon">
 
     
+    <link rel="next" href="../nodejs-database.html" />
+    
     
 
     </head>
@@ -1870,6 +1872,19 @@
             
         </li>
     
+        <li class="chapter " data-level="2.12.2" data-path="../nodejs-database.html">
+            
+                <a href="../nodejs-database.html">
+            
+                    
+                    RxDB as Node.js Database
+            
+                </a>
+            
+
+            
+        </li>
+    
 
             </ul>
             
@@ -1986,19 +2001,6 @@
             
                     
                     Electron Database
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="2.13.9" data-path="../nodejs-database.html">
-            
-                <a href="../nodejs-database.html">
-            
-                    
-                    Node.js Database
             
                 </a>
             
@@ -2308,7 +2310,8 @@ Our way to go is</p>
     <span class="hljs-keyword">type</span>: <span class="hljs-string">&apos;object&apos;</span>,
     properties: {
         passportId: {
-            <span class="hljs-keyword">type</span>: <span class="hljs-string">&apos;string&apos;</span>
+            <span class="hljs-keyword">type</span>: <span class="hljs-string">&apos;string&apos;</span>,
+            maxLength: <span class="hljs-number">100</span> <span class="hljs-comment">// &lt;- the primary key must have set maxLength</span>
         },
         firstName: {
             <span class="hljs-keyword">type</span>: <span class="hljs-string">&apos;string&apos;</span>
@@ -2326,13 +2329,13 @@ Our way to go is</p>
 <span class="hljs-keyword">const</span> schemaTyped = toTypedRxJsonSchema(heroSchemaLiteral);
 
 <span class="hljs-comment">// aggregate the document type from the schema</span>
-<span class="hljs-keyword">type</span> HeroDocType = ExtractDocumentTypeFromTypedRxJsonSchema&lt;<span class="hljs-keyword">typeof</span> schemaTyped&gt;;
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">type</span> HeroDocType = ExtractDocumentTypeFromTypedRxJsonSchema&lt;<span class="hljs-keyword">typeof</span> schemaTyped&gt;;
 
 <span class="hljs-comment">// create the typed RxJsonSchema from the literal typed object.</span>
-<span class="hljs-keyword">const</span> heroSchema: RxJsonSchema&lt;HeroDocType&gt; = heroSchemaLiteral;
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">const</span> heroSchema: RxJsonSchema&lt;HeroDocType&gt; = heroSchemaLiteral;
 </code></pre>
 <h3 id="option-b-manually-type-the-document-type">Option B: Manually type the document type</h3>
-<pre><code class="lang-typescript"><span class="hljs-keyword">type</span> HeroDocType = {
+<pre><code class="lang-typescript"><span class="hljs-keyword">export</span> <span class="hljs-keyword">type</span> HeroDocType = {
     passportId: <span class="hljs-built_in">string</span>;
     firstName: <span class="hljs-built_in">string</span>;
     lastName: <span class="hljs-built_in">string</span>;
@@ -2343,30 +2346,30 @@ Our way to go is</p>
 <p>If your schema is in a <code>.json</code> file or generated from somewhere else, you might generate the typings with the <a href="https://www.npmjs.com/package/json-schema-to-typescript" target="_blank">json-schema-to-typescript</a> module.</p>
 <h2 id="types-for-the-orm-methods">Types for the ORM methods</h2>
 <p>We also add some ORM-methods for the document.</p>
-<pre><code class="lang-typescript"><span class="hljs-keyword">type</span> HeroDocMethods = {
+<pre><code class="lang-typescript"><span class="hljs-keyword">export</span> <span class="hljs-keyword">type</span> HeroDocMethods = {
     scream: (v: <span class="hljs-built_in">string</span>) =&gt; <span class="hljs-built_in">string</span>;
 };
 </code></pre>
 <p>We can merge these into our HeroDocument.</p>
-<pre><code class="lang-typescript"><span class="hljs-keyword">type</span> HeroDocument = RxDocument&lt;HeroDocType, HeroDocMethods&gt;;
+<pre><code class="lang-typescript"><span class="hljs-keyword">export</span> <span class="hljs-keyword">type</span> HeroDocument = RxDocument&lt;HeroDocType, HeroDocMethods&gt;;
 </code></pre>
 <p>Now we can define type for the collection which contains the documents.</p>
 <pre><code class="lang-typescript">
 <span class="hljs-comment">// we declare one static ORM-method for the collection</span>
-<span class="hljs-keyword">type</span> HeroCollectionMethods = {
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">type</span> HeroCollectionMethods = {
     countAllDocuments: () =&gt; Promise&lt;<span class="hljs-built_in">number</span>&gt;;
 }
 
 <span class="hljs-comment">// and then merge all our types</span>
-<span class="hljs-keyword">type</span> HeroCollection = RxCollection&lt;HeroDocType, HeroDocMethods, HeroCollectionMethods&gt;;
+<span class="hljs-keyword">export</span> <span class="hljs-keyword">type</span> HeroCollection = RxCollection&lt;HeroDocType, HeroDocMethods, HeroCollectionMethods&gt;;
 </code></pre>
 <p>Before we can define the database, we make a helper-type which contains all collections of it.</p>
-<pre><code class="lang-typescript"><span class="hljs-keyword">type</span> MyDatabaseCollections = {
+<pre><code class="lang-typescript"><span class="hljs-keyword">export</span> <span class="hljs-keyword">type</span> MyDatabaseCollections = {
     heroes: HeroCollection
 }
 </code></pre>
 <p>Now the database.</p>
-<pre><code class="lang-typescript"><span class="hljs-keyword">type</span> MyDatabase = RxDatabase&lt;MyDatabaseCollections&gt;;
+<pre><code class="lang-typescript"><span class="hljs-keyword">export</span> <span class="hljs-keyword">type</span> MyDatabase = RxDatabase&lt;MyDatabaseCollections&gt;;
 </code></pre>
 <h2 id="using-the-types">Using the types</h2>
 <p>Now that we have declare all our types, we can use them.</p>
@@ -2500,6 +2503,10 @@ myDatabase.destroy();
             
                 
                 
+                <a href="../nodejs-database.html" class="navigation navigation-next navigation-unique" aria-label="Next page: RxDB as Node.js Database">
+                    <i class="fa fa-angle-right"></i>
+                </a>
+                
             
         
     </div>
@@ -2507,7 +2514,7 @@ myDatabase.destroy();
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Use RxDB with Typescript","level":"2.12.1","depth":2,"next":{"title":"Opinions","level":"2.13","depth":1,"ref":"","articles":[{"title":"Offline First","level":"2.13.1","depth":2,"path":"offline-first.md","ref":"./offline-first.md","articles":[]},{"title":"Downsides of Offline First","level":"2.13.2","depth":2,"path":"downsides-of-offline-first.md","ref":"./downsides-of-offline-first.md","articles":[]},{"title":"Slow IndexedDB","level":"2.13.3","depth":2,"path":"slow-indexeddb.md","ref":"./slow-indexeddb.md","articles":[]},{"title":"Why NoSQL","level":"2.13.4","depth":2,"path":"why-nosql.md","ref":"./why-nosql.md","articles":[]},{"title":"Alternatives","level":"2.13.5","depth":2,"path":"alternatives.md","ref":"./alternatives.md","articles":[]},{"title":"React Native Database","level":"2.13.6","depth":2,"path":"react-native-database.md","ref":"./react-native-database.md","articles":[]},{"title":"Capacitor Database","level":"2.13.7","depth":2,"path":"capacitor-database.md","ref":"./capacitor-database.md","articles":[]},{"title":"Electron Database","level":"2.13.8","depth":2,"path":"electron-database.md","ref":"./electron-database.md","articles":[]},{"title":"Node.js Database","level":"2.13.9","depth":2,"path":"nodejs-database.md","ref":"./nodejs-database.md","articles":[]}]},"previous":{"title":"Tutorials","level":"2.12","depth":1,"ref":"","articles":[{"title":"Use RxDB with Typescript","level":"2.12.1","depth":2,"path":"tutorials/typescript.md","ref":"./tutorials/typescript.md","articles":[]}]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./analytics.js","./next-button.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - JavaScript Database","links":{"sidebar":{"RxDB":"/","Follow @twitter ":"https://twitter.com/intent/user?screen_name=rxdbjs","Chat @discord ":"https://discord.gg/tqt9ZttJfD","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"tutorials/typescript.md","mtime":"","type":"markdown"},"gitbook":{"version":"3.2.3","time":""},"basePath":"..","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Use RxDB with Typescript","level":"2.12.1","depth":2,"next":{"title":"RxDB as Node.js Database","level":"2.12.2","depth":2,"path":"nodejs-database.md","ref":"./nodejs-database.md","articles":[]},"previous":{"title":"Tutorials","level":"2.12","depth":1,"ref":"","articles":[{"title":"Use RxDB with Typescript","level":"2.12.1","depth":2,"path":"tutorials/typescript.md","ref":"./tutorials/typescript.md","articles":[]},{"title":"RxDB as Node.js Database","level":"2.12.2","depth":2,"path":"nodejs-database.md","ref":"./nodejs-database.md","articles":[]}]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./analytics.js","./next-button.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/icon.ico","custom-favicon":{},"edit-link":{"label":"","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - JavaScript Database","links":{"sidebar":{"RxDB":"/","Follow @twitter ":"https://twitter.com/intent/user?screen_name=rxdbjs","Chat @discord ":"https://discord.gg/tqt9ZttJfD","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"tutorials/typescript.md","mtime":"","type":"markdown"},"gitbook":{"version":"3.2.3","time":""},"basePath":"..","book":{"language":""}});
         });
     </script>
 </div>

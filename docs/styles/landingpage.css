@@ -1057,6 +1057,12 @@ header .logo img {
 
 .tilt-to-mouse {
     will-change: transform;
+    /**
+     * @link https://stackoverflow.com/a/26301750/3443137
+     */
+    outline: 1px solid transparent;
+    image-rendering: optimizeQuality;
+    box-shadow: 0 0 0 1px transparent;
 }
 
 .enlarge-on-mouse {
