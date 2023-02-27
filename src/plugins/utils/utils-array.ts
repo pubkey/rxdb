@@ -10,7 +10,7 @@ export function lastOfArray<T>(ar: T[]): T | undefined {
  * shuffle the given array
  */
 export function shuffleArray<T>(arr: T[]): T[] {
-    return arr.sort(() => (Math.random() - 0.5));
+    return arr.slice(0).sort(() => (Math.random() - 0.5));
 }
 
 export function toArray<T>(input: T | T[] | Readonly<T> | Readonly<T[]>): T[] {
