@@ -11,6 +11,6 @@ ext {
     androidxWebkitVersion = '1.4.0'
     junitVersion = '4.13.2'
     androidxJunitVersion = '1.1.5'
-    androidxEspressoCoreVersion = '3.4.0'
+    androidxEspressoCoreVersion = '3.5.1'
     cordovaAndroidVersion = '10.1.1'
 }
