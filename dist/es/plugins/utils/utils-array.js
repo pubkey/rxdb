@@ -6,7 +6,7 @@ export function lastOfArray(ar) {
  * shuffle the given array
  */
 export function shuffleArray(arr) {
-  return arr.sort(() => Math.random() - 0.5);
+  return arr.slice(0).sort(() => Math.random() - 0.5);
 }
 export function toArray(input) {
   return Array.isArray(input) ? input.slice(0) : [input];

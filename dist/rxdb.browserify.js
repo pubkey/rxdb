@@ -1727,7 +1727,7 @@ function lastOfArray(ar) {
  * shuffle the given array
  */
 function shuffleArray(arr) {
-  return arr.sort(() => Math.random() - 0.5);
+  return arr.slice(0).sort(() => Math.random() - 0.5);
 }
 function toArray(input) {
   return Array.isArray(input) ? input.slice(0) : [input];
