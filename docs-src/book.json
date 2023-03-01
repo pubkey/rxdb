@@ -21,7 +21,7 @@
         }
     },
     "pluginsConfig": {
-        "favicon": "./files/logo/icon.ico",
+        "favicon": "./files/logo/logo.svg",
         "edit-link": {
             "base": "https://github.com/pubkey/rxdb/tree/master/docs-src",
             "label": ""
