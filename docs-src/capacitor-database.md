@@ -127,7 +127,7 @@ import {
 import {
     getRxStorageSQLite,
     getSQLiteBasicsCapacitor
-} from 'rxdb-premium/plugins/sqlite';
+} from 'rxdb-premium/plugins/storage-sqlite';
 import {
     CapacitorSQLite,
     SQLiteConnection

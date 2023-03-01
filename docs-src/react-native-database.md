@@ -134,7 +134,7 @@ import {
 import {
     getRxStorageSQLite,
     getSQLiteBasicsQuickSQLite
-} from 'rxdb-premium/plugins/sqlite';
+} from 'rxdb-premium/plugins/storage-sqlite';
 import { open } from 'react-native-quick-sqlite';
 
 // create database
