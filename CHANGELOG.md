@@ -9,6 +9,8 @@
 
 <!-- RELEASE BELOW -->
 
+### 14.1.3 (1 March 2023)
+
 ### 14.1.2 (26 February 2023)
 
 - FIX ensure writing many documents at once works with every RxStorage.
