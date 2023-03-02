@@ -99,6 +99,8 @@ jobs:
       - name: add git tag
         run: |
           git add .
+          git status .
+          git diff package.json
           git commit -m ${{github.event.inputs.version}}
           git tag ${{github.event.inputs.version}}
 
