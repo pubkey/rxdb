@@ -1,5 +1,4 @@
 import * as assert from 'assert';
-import got from 'got';
 import { waitUntil } from 'async-test-util';
 
 const baseUrl = 'http://localhost:4200/';
@@ -8,9 +7,9 @@ describe('ssr.test.ts', function () {
     this.timeout(1000 * 120);
 
     async function getHtml(url: string): Promise<string> {
-        const content = await got<string>({
-            url
-        });
+        const response = await fetch(url);
+        const content = await response.text();
+        return content;
 
         return content.body;
     }
