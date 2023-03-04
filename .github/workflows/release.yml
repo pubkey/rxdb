@@ -114,13 +114,6 @@ jobs:
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
-      - uses: ncipollo/release-action@v1
-        with:
-          prerelease: ${{ steps.vars.outputs.prerelease }}
-          tag: ${{github.event.inputs.version}}
-          bodyFile: "./release-body.md"
-          token: ${{ secrets.GITHUB_TOKEN }}
-
       # pull again to make it unlikely that we have a merge conflict.
       - run: git pull
 
@@ -129,6 +122,15 @@ jobs:
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           branch: ${{ github.ref }}
+
+      # must run after the push
+      - uses: ncipollo/release-action@v1.12.0
+        with:
+          prerelease: ${{ steps.vars.outputs.prerelease }}
+          tag: ${{github.event.inputs.version}}
+          bodyFile: "./release-body.md"
+          token: ${{ secrets.GITHUB_TOKEN }}
+
 
       # @link https://github.com/marketplace/actions/actions-for-discord
       - name: Discord notification
