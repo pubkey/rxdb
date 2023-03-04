@@ -1,4 +1,3 @@
-export * from '../../types/util';
 export * from './utils-array';
 export * from './utils-blob';
 export * from './utils-base64';
