@@ -1,7 +1,6 @@
 # RxDB Supabase example
 
-This is an example of how to use RxDB on the client and replicate with a [Supabase](https://github.com/supabase/supabase) server in **realtime**.
-
+This is an example of how to use RxDB on the client and replicate with a [Supabase](https://github.com/supabase/supabase) server in **realtime** so that the data can still be used on the client when the user goes **offline**.
 
 ## Try it out
 1. Clone the whole [RxDB-repo](https://github.com/pubkey/rxdb) via `git clone https://github.com/pubkey/rxdb.git`
