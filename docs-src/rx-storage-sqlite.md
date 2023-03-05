@@ -1,6 +1,6 @@
 # SQLite RxStorage
 
-This storage is based on [SQLite](https://www.sqlite.org/index.html) and is made to work with **Node.js**, **Electron**, **React Native**, **Cordova** and **Capacitor**.
+This [RxStorage](./rx-storage.md) is based on [SQLite](https://www.sqlite.org/index.html) and is made to work with **Node.js**, **Electron**, **React Native**, **Cordova** and **Capacitor**.
 
 
 ### Pros
@@ -73,6 +73,20 @@ const myRxDatabase = await createRxDatabase({
     })
 });
 ```
+
+If `react-native-quick-sqlite` does not work for you, as alternative you can use the [react-native-sqlite-2](https://www.npmjs.com/package/react-native-sqlite-2) library instead:
+
+```ts
+import {
+    getRxStorageSQLite,
+    getSQLiteBasicsWebSQL
+} from 'rxdb-premium/plugins/storage-sqlite';
+import SQLite from 'react-native-sqlite-2';
+const storage = getRxStorageSQLite({
+  sqliteBasics: getSQLiteBasicsWebSQL(SQLite.openDatabase)
+});
+```
+
 
 
 ## Usage with **SQLite Capacitor**
