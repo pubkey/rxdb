@@ -2,6 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
+- CHANGE increase the default batch size of the migration plugin from `10` to `200`.
 
 <!-- ADD new changes here! -->
 

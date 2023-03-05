@@ -64,6 +64,7 @@ import {
 } from '../../rx-database-internal-store';
 import { normalizeMangoQuery } from '../../rx-query-helper';
 import { overwritable } from '../../overwritable';
+import { MIGRATION_DEFAULT_BATCH_SIZE } from './migration-helpers';
 
 export class DataMigrator {
 
@@ -85,7 +86,7 @@ export class DataMigrator {
     private _migratePromise?: Promise<any>;
     private nonMigratedOldCollections: OldRxCollection[] = [];
     private allOldCollections: OldRxCollection[] = [];
-    migrate(batchSize: number = 10): Observable<MigrationState> {
+    migrate(batchSize: number = MIGRATION_DEFAULT_BATCH_SIZE): Observable<MigrationState> {
         if (this._migrated) {
             throw newRxError('DM1');
         }
@@ -597,7 +598,7 @@ export function deleteOldCollection(
  */
 export function migrateOldCollection(
     oldCollection: OldRxCollection,
-    batchSize = 10
+    batchSize = MIGRATION_DEFAULT_BATCH_SIZE
 ): Observable<any> {
     if (oldCollection._migrate) {
         // already running
