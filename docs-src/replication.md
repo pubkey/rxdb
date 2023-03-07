@@ -413,7 +413,7 @@ myRxReplicationState.active$.subscribe(bool => console.dir(bool));
 
 ### awaitInitialReplication()
 
-With `awaitInitialReplication()` you can await the initial replication that is done when a full replication cycle was finished for the first time.
+With `awaitInitialReplication()` you can await the initial replication that is done when a full replication cycle was successful finished for the first time. The returned promise will never resolve if you cancel the replication before the initial replication can be done.
 
 **WARNING:** When `multiInstance: true` and `waitForLeadership: true` and another tab is already running the replication, `awaitInitialReplication()` will not resolve until the other tab is closed and the replication starts in this tab.
 

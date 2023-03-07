@@ -1203,3 +1203,11 @@ A2: Rewrite to own sort function
 146.54432300
 140.800432999
 
+
+
+## 7 March 2023 - Improve sqlite performance
+
+### Query in serial:
+
+BEFORE:
+30.1

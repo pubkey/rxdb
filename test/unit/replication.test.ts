@@ -43,7 +43,7 @@ import type {
     ReplicationPushHandler,
     RxReplicationWriteToMasterRow
 } from '../../src/types';
-import { Subject } from 'rxjs';
+import { firstValueFrom, Subject } from 'rxjs';
 
 
 type CheckpointType = any;
@@ -235,7 +235,8 @@ describe('replication.test.js', () => {
                 },
                 push: {
                     handler: getPushHandler(remoteCollection)
-                }
+                },
+                retryTime: 100
             });
             const errors: (RxError | RxTypeError)[] = [];
             replicationState.error$.subscribe(err => errors.push(err));
@@ -254,6 +255,72 @@ describe('replication.test.js', () => {
             localCollection.database.destroy();
             remoteCollection.database.destroy();
             otherSchemaCollection.database.destroy();
+        });
+        it('should never resolve awaitInitialReplication() on erroring replication', async () => {
+            const { localCollection, remoteCollection } = await getTestCollections({ local: 10, remote: 10 });
+            const replicationState = replicateRxCollection({
+                collection: localCollection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: false,
+                pull: {
+                    handler: async () => {
+                        await wait(0);
+                        throw new Error('must throw on pull');
+                    }
+                },
+                push: {
+                    handler: async () => {
+                        await wait(0);
+                        throw new Error('must throw on push');
+                    }
+                },
+                retryTime: 100
+            });
+            await firstValueFrom(replicationState.error$);
+
+            let hasResolved = false;
+            replicationState.awaitInitialReplication().then(() => {
+                hasResolved = true;
+            });
+            await wait(config.isFastMode() ? 200 : 500);
+            assert.strictEqual(hasResolved, false);
+
+            localCollection.database.destroy();
+            remoteCollection.database.destroy();
+        });
+        it('should never resolve awaitInitialReplication() on canceled replication', async () => {
+            const { localCollection, remoteCollection } = await getTestCollections({ local: 10, remote: 10 });
+            const replicationState = replicateRxCollection({
+                collection: localCollection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: false,
+                retryTime: 100,
+                autoStart: true,
+                pull: {
+                    handler: async () => {
+                        await wait(0);
+                        throw new Error('must throw on pull');
+                    }
+                },
+                push: {
+                    handler: async () => {
+                        await wait(0);
+                        throw new Error('must throw on push');
+                    }
+                }
+            });
+            await firstValueFrom(replicationState.error$);
+            let hasResolved = false;
+            replicationState.awaitInitialReplication().then(() => {
+                hasResolved = true;
+            });
+            await replicationState.cancel();
+
+            await wait(config.isFastMode() ? 200 : 500);
+            assert.strictEqual(hasResolved, false);
+
+            localCollection.database.destroy();
+            remoteCollection.database.destroy();
         });
     });
     config.parallel('live replication', () => {

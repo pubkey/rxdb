@@ -3,7 +3,8 @@ import type {
     WebSocket
 } from 'ws';
 import {
-    getFromMapOrThrow, randomCouchString
+    getFromMapOrThrow,
+    randomCouchString
 } from '../../plugins/utils';
 import {
     getWebSocket,
