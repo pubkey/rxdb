@@ -812,7 +812,7 @@ describe('rx-query.test.ts', () => {
             c.database.destroy();
         });
         it('#585 sort by sub-path not working', async () => {
-            if (['lokijs', 'remote'].includes(config.storage.name)) {
+            if (['lokijs'].includes(config.storage.name)) {
                 // TODO fix wrong sort order in lokijs
                 return;
             }

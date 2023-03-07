@@ -932,8 +932,7 @@ describe('rx-collection.test.ts', () => {
                          * because there we use the in-memory persistence
                          * which is not really persistent between different writes.
                          */
-                        config.storage.name === 'dexie-worker' ||
-                        config.storage.name === 'remote'
+                        config.storage.name === 'dexie-worker'
                     ) {
                         return;
                     }
