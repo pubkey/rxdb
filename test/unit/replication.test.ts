@@ -256,18 +256,20 @@ describe('replication.test.js', () => {
             otherSchemaCollection.database.destroy();
         });
         it('should never resolve awaitInitialReplication() on erroring replication', async () => {
-            const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 0 });
+            const { localCollection, remoteCollection } = await getTestCollections({ local: 10, remote: 10 });
             const replicationState = replicateRxCollection({
                 collection: localCollection,
                 replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
                 live: false,
                 pull: {
-                    handler: () => {
+                    handler: async () => {
+                        await wait(0);
                         throw new Error('must throw on pull');
                     }
                 },
                 push: {
-                    handler: () => {
+                    handler: async () => {
+                        await wait(0);
                         throw new Error('must throw on push');
                     }
                 }
@@ -283,18 +285,20 @@ describe('replication.test.js', () => {
             remoteCollection.database.destroy();
         });
         it('should never resolve awaitInitialReplication() on canceled replication', async () => {
-            const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 0 });
+            const { localCollection, remoteCollection } = await getTestCollections({ local: 10, remote: 10 });
             const replicationState = replicateRxCollection({
                 collection: localCollection,
                 replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
                 live: false,
                 pull: {
-                    handler: () => {
+                    handler: async () => {
+                        await wait(0);
                         throw new Error('must throw on pull');
                     }
                 },
                 push: {
-                    handler: () => {
+                    handler: async () => {
+                        await wait(0);
                         throw new Error('must throw on push');
                     }
                 }
