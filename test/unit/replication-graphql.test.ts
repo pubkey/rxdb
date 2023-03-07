@@ -586,9 +586,6 @@ describe('replication-graphql.test.ts', () => {
                 c.database.destroy();
             });
             it('#4088 should stop retrying when canceled', async () => {
-                if (!config.storage.hasPersistence) {
-                    return;
-                }
                 const amount = batchSize * 4;
                 const testData = getTestData(amount);
 
@@ -596,9 +593,6 @@ describe('replication-graphql.test.ts', () => {
                     humansCollection.createHumanWithTimestamp(0),
                     SpawnServer.spawn(testData)
                 ]);
-
-
-
                 const replicationState = replicateGraphQL({
                     collection: c,
                     url: {
@@ -617,11 +611,12 @@ describe('replication-graphql.test.ts', () => {
                 await firstValueFrom(replicationState.error$);
                 await replicationState.cancel();
 
+                const timeoutFlag = 'timeout';
                 const firstResolved = await Promise.race([
                     replicationState.awaitInitialReplication(),
-                    wait(500).then(() => 'timeout')
+                    wait(1000).then(() => timeoutFlag)
                 ]);
-                assert.notStrictEqual(firstResolved, 'timeout');
+                assert.notStrictEqual(firstResolved, timeoutFlag);
 
                 server.close();
                 c.database.destroy();

@@ -7,11 +7,10 @@ import {
 } from 'broadcast-channel';
 import * as path from 'path';
 import parallel from 'mocha.parallel';
-import { randomCouchString, RxStorage, RxTestStorage } from '../../';
+import { randomCouchString, RxStorage, RxStorageDefaultStatics, RxTestStorage } from '../../';
 import { getRxStorageLoki } from '../../plugins/storage-lokijs';
 import {
-    getRxStorageDexie,
-    RxStorageDexieStatics
+    getRxStorageDexie
 } from '../../plugins/storage-dexie';
 import { getRxStorageRemoteWebsocket } from '../../plugins/storage-remote-websocket';
 import { getRxStorageMemory } from '../../plugins/storage-memory';
@@ -242,22 +241,22 @@ export function setDefaultStorage(storageKey: string) {
                 name: storageKey,
                 getStorage: () => {
                     return getRxStorageRemoteWebsocket({
-                        statics: RxStorageDexieStatics,
+                        statics: RxStorageDefaultStatics,
                         url: 'ws://localhost:18007'
                     });
                 },
                 getPerformanceStorage() {
                     return {
                         storage: getRxStorageRemoteWebsocket({
-                            statics: RxStorageDexieStatics,
+                            statics: RxStorageDefaultStatics,
                             url: 'ws://localhost:18007'
                         }),
                         description: 'remote+dexie+fake-indexeddb'
                     };
                 },
-                hasPersistence: false,
+                hasPersistence: true,
                 hasMultiInstance: true,
-                hasAttachments: false
+                hasAttachments: true
             };
             break;
         default:
