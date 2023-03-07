@@ -69,8 +69,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
         send: new Subject<WithDeleted<RxDocType>>(), // all documents that are send to the endpoint
         error: new Subject<RxError | RxTypeError>(), // all errors that are received from the endpoint, emits new Error() objects
         canceled: new BehaviorSubject<boolean>(false), // true when the replication was canceled
-        active: new BehaviorSubject<boolean>(false), // true when something is running, false when not
-        initialReplicationComplete: new BehaviorSubject<boolean>(false) // true the initial replication-cycle is over
+        active: new BehaviorSubject<boolean>(false) // true when something is running, false when not
     };
 
     readonly received$: Observable<RxDocumentData<RxDocType>> = this.subjects.received.asObservable();

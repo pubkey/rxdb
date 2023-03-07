@@ -589,6 +589,7 @@ describe('replication-graphql.test.ts', () => {
                 const amount = batchSize * 4;
                 const testData = getTestData(amount);
 
+                let queryBuilderCount = 0;
                 const [c, server] = await Promise.all([
                     humansCollection.createHumanWithTimestamp(0),
                     SpawnServer.spawn(testData)
@@ -601,22 +602,22 @@ describe('replication-graphql.test.ts', () => {
                     pull: {
                         batchSize,
                         queryBuilder: (checkpoint, limit) => {
+                            queryBuilderCount++;
                             return pullQueryBuilder(checkpoint, limit);
                         }
                     },
                     deletedField: 'deleted',
                     retryTime: 100
                 });
-
                 await firstValueFrom(replicationState.error$);
                 await replicationState.cancel();
+                const queryBuilderCountAfterCancel = queryBuilderCount;
 
-                const timeoutFlag = 'timeout';
-                const firstResolved = await Promise.race([
-                    replicationState.awaitInitialReplication(),
-                    wait(1000).then(() => timeoutFlag)
-                ]);
-                assert.notStrictEqual(firstResolved, timeoutFlag);
+                await wait(config.isFastMode() ? 200 : 1500);
+                assert.deepStrictEqual(
+                    queryBuilderCountAfterCancel,
+                    queryBuilderCount
+                );
 
                 server.close();
                 c.database.destroy();
@@ -954,21 +955,22 @@ describe('replication-graphql.test.ts', () => {
                 server.close();
                 db.destroy();
             });
-            it('should stop retrying when canceled', async () => {
-                if (!config.storage.hasPersistence) {
-                    return;
-                }
+            it('#4088 should stop retrying when canceled', async () => {
                 const [c, server] = await Promise.all([
                     humansCollection.createHumanWithTimestamp(batchSize),
                     SpawnServer.spawn()
                 ]);
 
+                let queryBuilderCount = 0;
                 const replicationState = replicateGraphQL({
                     collection: c,
                     url: { http: ERROR_URL },
                     push: {
                         batchSize,
-                        queryBuilder: pushQueryBuilder
+                        queryBuilder: (rows) => {
+                            queryBuilderCount++;
+                            return pushQueryBuilder(rows);
+                        }
                     },
                     live: false,
                     retryTime: 100,
@@ -977,13 +979,15 @@ describe('replication-graphql.test.ts', () => {
 
                 await replicationState.error$.pipe(
                     first()
-                ).toPromise().then(() => {
-                    replicationState.cancel();
-                });
+                ).toPromise();
+                await replicationState.cancel();
+                const queryBuilderCountAfterCancel = queryBuilderCount;
 
-                const timeout = wait(500).then(() => 'timeout');
-
-                assert.notStrictEqual(await Promise.race([replicationState.awaitInitialReplication(), timeout]), 'timeout',);
+                await wait(config.isFastMode() ? 200 : 1500);
+                assert.deepStrictEqual(
+                    queryBuilderCountAfterCancel,
+                    queryBuilderCount
+                );
 
                 await Promise.all([
                     server.close(),
@@ -992,8 +996,7 @@ describe('replication-graphql.test.ts', () => {
             });
             it('should resend cancelled documents', async () => {
                 if (
-                    !config.storage.hasPersistence ||
-                    config.storage.name === 'memory' // TODO should work on memory
+                    !config.storage.hasPersistence
                 ) {
                     return;
                 }
@@ -1004,6 +1007,7 @@ describe('replication-graphql.test.ts', () => {
 
                 server.requireHeader('Authorization', 'Bearer 1234');
 
+                // start a replication that always errors because it has no Authorization header
                 let replicationState = replicateGraphQL({
                     collection: c,
                     url: server.url,
@@ -1017,11 +1021,8 @@ describe('replication-graphql.test.ts', () => {
                 });
 
                 await firstValueFrom(replicationState.error$);
-                replicationState.cancel();
+                await replicationState.cancel();
 
-                const timeout = wait(500).then(() => 'timeout');
-
-                assert.notStrictEqual(await Promise.race([replicationState.awaitInitialReplication(), timeout]), 'timeout',);
 
                 replicationState = replicateGraphQL({
                     collection: c,

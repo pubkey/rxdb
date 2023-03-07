@@ -3,7 +3,7 @@
 
 <!-- CHANGELOG NEWEST -->
 - CHANGE increase the default batch size of the migration plugin from `10` to `200`.
-
+- FIX `awaitInitialReplication()` must not resolve on error-only replication handlers.
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

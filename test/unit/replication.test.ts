@@ -43,7 +43,7 @@ import type {
     ReplicationPushHandler,
     RxReplicationWriteToMasterRow
 } from '../../src/types';
-import { Subject } from 'rxjs';
+import { firstValueFrom, Subject } from 'rxjs';
 
 
 type CheckpointType = any;
@@ -235,7 +235,8 @@ describe('replication.test.js', () => {
                 },
                 push: {
                     handler: getPushHandler(remoteCollection)
-                }
+                },
+                retryTime: 100
             });
             const errors: (RxError | RxTypeError)[] = [];
             replicationState.error$.subscribe(err => errors.push(err));
@@ -272,13 +273,16 @@ describe('replication.test.js', () => {
                         await wait(0);
                         throw new Error('must throw on push');
                     }
-                }
+                },
+                retryTime: 100
             });
+            await firstValueFrom(replicationState.error$);
+
             let hasResolved = false;
             replicationState.awaitInitialReplication().then(() => {
                 hasResolved = true;
             });
-            await wait(config.isFastMode() ? 200 : 1500);
+            await wait(config.isFastMode() ? 200 : 500);
             assert.strictEqual(hasResolved, false);
 
             localCollection.database.destroy();
@@ -290,6 +294,8 @@ describe('replication.test.js', () => {
                 collection: localCollection,
                 replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
                 live: false,
+                retryTime: 100,
+                autoStart: true,
                 pull: {
                     handler: async () => {
                         await wait(0);
@@ -303,13 +309,14 @@ describe('replication.test.js', () => {
                     }
                 }
             });
+            await firstValueFrom(replicationState.error$);
             let hasResolved = false;
             replicationState.awaitInitialReplication().then(() => {
                 hasResolved = true;
             });
-            replicationState.cancel();
+            await replicationState.cancel();
 
-            await wait(config.isFastMode() ? 200 : 1500);
+            await wait(config.isFastMode() ? 200 : 500);
             assert.strictEqual(hasResolved, false);
 
             localCollection.database.destroy();
