@@ -255,6 +255,62 @@ describe('replication.test.js', () => {
             remoteCollection.database.destroy();
             otherSchemaCollection.database.destroy();
         });
+        it('should never resolve awaitInitialReplication() on erroring replication', async () => {
+            const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 0 });
+            const replicationState = replicateRxCollection({
+                collection: localCollection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: false,
+                pull: {
+                    handler: () => {
+                        throw new Error('must throw on pull');
+                    }
+                },
+                push: {
+                    handler: () => {
+                        throw new Error('must throw on push');
+                    }
+                }
+            });
+            let hasResolved = false;
+            replicationState.awaitInitialReplication().then(() => {
+                hasResolved = true;
+            });
+            await wait(config.isFastMode() ? 200 : 1500);
+            assert.strictEqual(hasResolved, false);
+
+            localCollection.database.destroy();
+            remoteCollection.database.destroy();
+        });
+        it('should never resolve awaitInitialReplication() on canceled replication', async () => {
+            const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 0 });
+            const replicationState = replicateRxCollection({
+                collection: localCollection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: false,
+                pull: {
+                    handler: () => {
+                        throw new Error('must throw on pull');
+                    }
+                },
+                push: {
+                    handler: () => {
+                        throw new Error('must throw on push');
+                    }
+                }
+            });
+            let hasResolved = false;
+            replicationState.awaitInitialReplication().then(() => {
+                hasResolved = true;
+            });
+            replicationState.cancel();
+
+            await wait(config.isFastMode() ? 200 : 1500);
+            assert.strictEqual(hasResolved, false);
+
+            localCollection.database.destroy();
+            remoteCollection.database.destroy();
+        });
     });
     config.parallel('live replication', () => {
         it('should replicate all writes', async () => {
