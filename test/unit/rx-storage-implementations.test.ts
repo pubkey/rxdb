@@ -2675,6 +2675,99 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
 
                 storageInstance.close();
             });
+            it('must be able to load multiple attachments data in parallel', async () => {
+                const collectionsAmount = 3;
+                const docsAmount = 3;
+                const attachmentsPerDoc = 3;
+                const databaseName = randomCouchString(10);
+                const databaseInstanceToken = randomCouchString(10);
+
+                const storageInstances = await Promise.all(
+                    new Array(collectionsAmount)
+                        .fill(0)
+                        .map(async () => {
+                            const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
+                                databaseInstanceToken,
+                                databaseName,
+                                collectionName: randomCouchString(12),
+                                schema: Object.assign(
+                                    getPseudoSchemaForVersion<TestDocType>(0, 'key'),
+                                    {
+                                        attachments: {}
+                                    }
+                                ),
+                                options: {},
+                                multiInstance: false,
+                                devMode: true
+                            });
+
+
+                            // insert documents
+                            await Promise.all(
+                                new Array(docsAmount)
+                                    .fill(0)
+                                    .map(async (_v, docId) => {
+                                        const writeData: RxDocumentWriteData<TestDocType> = {
+                                            key: docId + '',
+                                            value: randomCouchString(5),
+                                            _rev: EXAMPLE_REVISION_1,
+                                            _deleted: false,
+                                            _meta: {
+                                                lwt: now()
+                                            },
+                                            _attachments: {}
+                                        };
+
+                                        await Promise.all(
+                                            new Array(attachmentsPerDoc)
+                                                .fill(0)
+                                                .map(async (_vv, idx) => {
+                                                    const data = createBlob(randomString(200), 'text/plain');
+                                                    const dataString = await blobToBase64String(data);
+                                                    const attachmentsId = idx + '';
+                                                    writeData._attachments[attachmentsId] = {
+                                                        length: getBlobSize(data),
+                                                        data: dataString,
+                                                        type: 'text/plain'
+                                                    };
+                                                })
+                                        );
+                                        await storageInstance.bulkWrite([{ document: writeData }], testContext);
+                                    })
+                            );
+                            return storageInstance;
+                        })
+                );
+
+                const loadMe: { docId: string; attachmentId: string; }[] = [];
+                new Array(docsAmount)
+                    .fill(0)
+                    .forEach((_v, docId) => {
+                        new Array(attachmentsPerDoc)
+                            .fill(0)
+                            .forEach((_vv, attachmentId) => {
+                                loadMe.push({
+                                    docId: docId + '',
+                                    attachmentId: attachmentId + ''
+                                });
+                            });
+                    });
+
+                await Promise.all(
+                    storageInstances.map(async (storageInstance) => {
+                        await Promise.all(
+                            loadMe.map(async (v) => {
+                                const attachmentData = await storageInstance.getAttachmentData(v.docId, v.attachmentId);
+                                assert.ok(attachmentData.length > 20);
+                            })
+                        );
+                    })
+                );
+
+                await Promise.all(
+                    storageInstances.map(i => i.close())
+                );
+            });
         });
         describe('.cleanup', () => {
             it('should have cleaned up the deleted document', async () => {
