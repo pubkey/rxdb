@@ -70,7 +70,7 @@ async function startReplicationDownstream(state) {
       }
     }).then(() => {
       state.events.active.down.next(false);
-      if (!state.firstSyncDone.down.getValue()) {
+      if (!state.firstSyncDone.down.getValue() && !state.events.canceled.getValue()) {
         state.firstSyncDone.down.next(true);
       }
     });

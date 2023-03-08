@@ -2,13 +2,17 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- CHANGE increase the default batch size of the migration plugin from `10` to `200`.
-- FIX `awaitInitialReplication()` must not resolve on error-only replication handlers.
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 14.2.0 (8 March 2023)
+
+- CHANGE increase the default batch size of the migration plugin from `10` to `200`.
+- FIX `awaitInitialReplication()` must not resolve on error-only replication handlers.
 
 ### 14.1.9 (4 March 2023)
 

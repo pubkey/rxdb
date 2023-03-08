@@ -2275,7 +2275,7 @@
                                 <section class="normal markdown-section">
                                 
                                 <h1 id="sqlite-rxstorage">SQLite RxStorage</h1>
-<p>This storage is based on <a href="https://www.sqlite.org/index.html" target="_blank">SQLite</a> and is made to work with <strong>Node.js</strong>, <strong>Electron</strong>, <strong>React Native</strong>, <strong>Cordova</strong> and <strong>Capacitor</strong>.</p>
+<p>This <a href="rx-storage.html">RxStorage</a> is based on <a href="https://www.sqlite.org/index.html" target="_blank">SQLite</a> and is made to work with <strong>Node.js</strong>, <strong>Electron</strong>, <strong>React Native</strong>, <strong>Cordova</strong> and <strong>Capacitor</strong>.</p>
 <h3 id="pros">Pros</h3>
 <ul>
 <li>Fast</li>
@@ -2338,6 +2338,16 @@
     storage: getRxStorageSQLite({
         sqliteBasics: getSQLiteBasicsQuickSQLite(open)
     })
+});
+</code></pre>
+<p>If <code>react-native-quick-sqlite</code> does not work for you, as alternative you can use the <a href="https://www.npmjs.com/package/react-native-sqlite-2" target="_blank">react-native-sqlite-2</a> library instead:</p>
+<pre><code class="lang-ts"><span class="hljs-keyword">import</span> {
+    getRxStorageSQLite,
+    getSQLiteBasicsWebSQL
+} from <span class="hljs-string">&apos;rxdb-premium/plugins/storage-sqlite&apos;</span>;
+<span class="hljs-keyword">import</span> SQLite from <span class="hljs-string">&apos;react-native-sqlite-2&apos;</span>;
+<span class="hljs-keyword">const</span> storage = getRxStorageSQLite({
+  sqliteBasics: getSQLiteBasicsWebSQL(SQLite.openDatabase)
 });
 </code></pre>
 <h2 id="usage-with-sqlite-capacitor">Usage with <strong>SQLite Capacitor</strong></h2>

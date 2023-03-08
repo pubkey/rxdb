@@ -77,7 +77,7 @@ async function startReplicationUpstream(state) {
     var hadConflicts = resolvedPromises.find(r => !!r);
     if (hadConflicts) {
       await upstreamInitialSync();
-    } else if (!state.firstSyncDone.up.getValue()) {
+    } else if (!state.firstSyncDone.up.getValue() && !state.events.canceled.getValue()) {
       state.firstSyncDone.up.next(true);
     }
   }

@@ -2618,7 +2618,7 @@ myRxReplicationState.canceled$.subscribe(bool =&gt; <span class="hljs-built_in">
 myRxReplicationState.active$.subscribe(bool =&gt; <span class="hljs-built_in">console</span>.dir(bool));
 </code></pre>
 <h3 id="awaitinitialreplication">awaitInitialReplication()</h3>
-<p>With <code>awaitInitialReplication()</code> you can await the initial replication that is done when a full replication cycle was finished for the first time.</p>
+<p>With <code>awaitInitialReplication()</code> you can await the initial replication that is done when a full replication cycle was successful finished for the first time. The returned promise will never resolve if you cancel the replication before the initial replication can be done.</p>
 <p><strong>WARNING:</strong> When <code>multiInstance: true</code> and <code>waitForLeadership: true</code> and another tab is already running the replication, <code>awaitInitialReplication()</code> will not resolve until the other tab is closed and the replication starts in this tab.</p>
 <pre><code class="lang-ts">await myRxReplicationState.awaitInitialReplication();
 </code></pre>

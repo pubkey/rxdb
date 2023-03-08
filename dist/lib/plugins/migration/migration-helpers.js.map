@@ -1,0 +1,1 @@
+{"version":3,"file":"migration-helpers.js","names":["MIGRATION_DEFAULT_BATCH_SIZE","exports"],"sources":["../../../../src/plugins/migration/migration-helpers.ts"],"sourcesContent":["export const MIGRATION_DEFAULT_BATCH_SIZE = 200;\n"],"mappings":";;;;;;AAAO,IAAMA,4BAA4B,GAAG,GAAG;AAACC,OAAA,CAAAD,4BAAA,GAAAA,4BAAA"}

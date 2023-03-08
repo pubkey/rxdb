@@ -42,9 +42,7 @@ var RxReplicationState = /*#__PURE__*/function () {
       // all errors that are received from the endpoint, emits new Error() objects
       canceled: new _rxjs.BehaviorSubject(false),
       // true when the replication was canceled
-      active: new _rxjs.BehaviorSubject(false),
-      // true when something is running, false when not
-      initialReplicationComplete: new _rxjs.BehaviorSubject(false) // true the initial replication-cycle is over
+      active: new _rxjs.BehaviorSubject(false) // true when something is running, false when not
     };
     this.received$ = this.subjects.received.asObservable();
     this.send$ = this.subjects.send.asObservable();

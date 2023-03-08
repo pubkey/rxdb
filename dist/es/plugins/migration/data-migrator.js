@@ -19,6 +19,7 @@ import { getWrappedStorageInstance } from '../../rx-storage-helper';
 import { getPrimaryKeyOfInternalDocument, INTERNAL_CONTEXT_COLLECTION } from '../../rx-database-internal-store';
 import { normalizeMangoQuery } from '../../rx-query-helper';
 import { overwritable } from '../../overwritable';
+import { MIGRATION_DEFAULT_BATCH_SIZE } from './migration-helpers';
 export var DataMigrator = /*#__PURE__*/function () {
   function DataMigrator(newestCollection, migrationStrategies) {
     this._migrated = false;
@@ -31,7 +32,7 @@ export var DataMigrator = /*#__PURE__*/function () {
     this.name = newestCollection.name;
   }
   var _proto = DataMigrator.prototype;
-  _proto.migrate = function migrate(batchSize = 10) {
+  _proto.migrate = function migrate(batchSize = MIGRATION_DEFAULT_BATCH_SIZE) {
     var _this = this;
     if (this._migrated) {
       throw newRxError('DM1');
@@ -414,7 +415,7 @@ export function deleteOldCollection(oldCollection) {
 /**
  * runs the migration on all documents and deletes the storage instance afterwards
  */
-export function migrateOldCollection(oldCollection, batchSize = 10) {
+export function migrateOldCollection(oldCollection, batchSize = MIGRATION_DEFAULT_BATCH_SIZE) {
   if (oldCollection._migrate) {
     // already running
     throw newRxError('DM3');

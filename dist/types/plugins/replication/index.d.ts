@@ -27,7 +27,6 @@ export declare class RxReplicationState<RxDocType, CheckpointType> {
         error: Subject<RxError | RxTypeError>;
         canceled: BehaviorSubject<boolean>;
         active: BehaviorSubject<boolean>;
-        initialReplicationComplete: BehaviorSubject<boolean>;
     };
     readonly received$: Observable<RxDocumentData<RxDocType>>;
     readonly send$: Observable<WithDeleted<RxDocType>>;

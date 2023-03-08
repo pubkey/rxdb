@@ -2789,7 +2789,7 @@ exports.RXDB_VERSION = void 0;
 /**
  * This file is replaced in the 'npm run build:version' script.
  */
-var RXDB_VERSION = '14.1.9';
+var RXDB_VERSION = '14.2.0';
 exports.RXDB_VERSION = RXDB_VERSION;
 
 },{}],27:[function(require,module,exports){
@@ -3507,7 +3507,7 @@ async function startReplicationDownstream(state) {
       }
     }).then(() => {
       state.events.active.down.next(false);
-      if (!state.firstSyncDone.down.getValue()) {
+      if (!state.firstSyncDone.down.getValue() && !state.events.canceled.getValue()) {
         state.firstSyncDone.down.next(true);
       }
     });
@@ -4205,7 +4205,7 @@ async function startReplicationUpstream(state) {
     var hadConflicts = resolvedPromises.find(r => !!r);
     if (hadConflicts) {
       await upstreamInitialSync();
-    } else if (!state.firstSyncDone.up.getValue()) {
+    } else if (!state.firstSyncDone.up.getValue() && !state.events.canceled.getValue()) {
       state.firstSyncDone.up.next(true);
     }
   }

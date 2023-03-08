@@ -27,6 +27,7 @@ var _rxStorageHelper = require("../../rx-storage-helper");
 var _rxDatabaseInternalStore = require("../../rx-database-internal-store");
 var _rxQueryHelper = require("../../rx-query-helper");
 var _overwritable = require("../../overwritable");
+var _migrationHelpers = require("./migration-helpers");
 /**
  * The DataMigrator handles the documents from collections with older schemas
  * and transforms/saves them into the newest collection
@@ -48,7 +49,7 @@ var DataMigrator = /*#__PURE__*/function () {
     this.name = newestCollection.name;
   }
   var _proto = DataMigrator.prototype;
-  _proto.migrate = function migrate(batchSize = 10) {
+  _proto.migrate = function migrate(batchSize = _migrationHelpers.MIGRATION_DEFAULT_BATCH_SIZE) {
     var _this = this;
     if (this._migrated) {
       throw (0, _rxError.newRxError)('DM1');
@@ -432,7 +433,7 @@ function deleteOldCollection(oldCollection) {
 /**
  * runs the migration on all documents and deletes the storage instance afterwards
  */
-function migrateOldCollection(oldCollection, batchSize = 10) {
+function migrateOldCollection(oldCollection, batchSize = _migrationHelpers.MIGRATION_DEFAULT_BATCH_SIZE) {
   if (oldCollection._migrate) {
     // already running
     throw (0, _rxError.newRxError)('DM3');
