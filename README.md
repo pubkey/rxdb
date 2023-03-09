@@ -11,7 +11,7 @@
 
 <p align="center">
   <a href="https://rxdb.info/">
-    <img src="./docs-src/files/logo/logo_text.svg" width="380px" />
+    <img src="./docs-src/files/logo/logo_text.svg" width="380px" alt="JavaScript Database" />
   </a>
   <br />
   <br />
