@@ -66,11 +66,24 @@ async function run() {
      * Write to release-body.md so the github action
      * knows what to use as release body
      */
-    const releaseBodyRows = newRows.slice(0).concat([
+    let releaseBodyRows = [
+        // add this line for a backlink and to have a big image appear in peoples github newsfeed.
+        `<p align="center">
+            <a href="https://rxdb.info/">
+                <img src="https://rxdb.info/files/logo/logo_text.svg" width="380px" alt="JavaScript Database" />
+            </a>
+        </p>`,
+        '',
+        '## Changes:'
+    ];
+    releaseBodyRows.push(newRows.slice(0));
+    releaseBodyRows.push([
         '',
         '',
         '**NOTICE:** An overview about all releases can be found [at the changelog](https://github.com/pubkey/rxdb/blob/master/CHANGELOG.md)'
     ]);
+    releaseBodyRows = releaseBodyRows.flat();
+
     await fs.promises.writeFile(
         path.join(rootPath, 'release-body.md'),
         releaseBodyRows.join('\n'),
