@@ -124,6 +124,9 @@ jobs:
           branch: ${{ github.ref }}
 
       # must run after the push
+      # because it otherwise does not know
+      # about the tag and add the old source code to the release.
+      # This might be a bug.
       - uses: ncipollo/release-action@v1.12.0
         with:
           prerelease: ${{ steps.vars.outputs.prerelease }}
