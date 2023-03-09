@@ -2,12 +2,16 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- ADD docs for remote storage `customRequestHandler`
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 14.2.1 (9 March 2023)
+
+- ADD docs for remote storage `customRequestHandler`
 
 ### 14.2.0 (8 March 2023)
 

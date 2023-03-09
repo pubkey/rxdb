@@ -6,7 +6,7 @@
  * Salaries are from:
  * @link https://www.salaryexpert.com/salary/job/front-end-developer/india
  *
- * Country are from:
+ * Countries are from:
  * @link https://gist.github.com/keeguon/2310008?permalink_comment_id=4367528#gistcomment-4367528
  */
 export type AverageFrontEndDeveloperSalaryOfCountry = {
@@ -139,7 +139,7 @@ export const AVERAGE_FRONT_END_DEVELOPER_SALARY_BY_COUNTRY: AverageFrontEndDevel
     { 'name': 'Korea, Republic of', 'code': 'KR', salary: 45957 },
     // { 'name': 'Kuwait', 'code': 'KW', salary: false },
     // { 'name': 'Kyrgyzstan', 'code': 'KG', salary: false },
-    // { 'name': 'Latvia', 'code': 'LV', salary: false },
+    { 'name': 'Latvia', 'code': 'LV', salary: 26728 },
     // { 'name': 'Lebanon', 'code': 'LB', salary: false },
     // { 'name': 'Lesotho', 'code': 'LS', salary: false },
     // { 'name': 'Liberia', 'code': 'LR', salary: false },
