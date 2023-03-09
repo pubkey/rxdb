@@ -33,6 +33,7 @@ ReplicationPullOptions<RxDocType, CheckpointType>,
     streamQueryBuilder?: RxGraphQLReplicationPullStreamQueryBuilder;
     dataPath?: string;
     responseModifier?: RxGraphQLPullResponseModifier<RxDocType, CheckpointType>;
+    includeHttpHeadersWs?: boolean;
 };
 
 export type RxGraphQLPullResponseModifier<RxDocType, CheckpointType> = (
