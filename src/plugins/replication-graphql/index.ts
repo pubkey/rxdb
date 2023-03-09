@@ -198,7 +198,7 @@ export function replicateGraphQL<RxDocType, CheckpointType>(
     const startBefore = graphqlReplicationState.start.bind(graphqlReplicationState);
     graphqlReplicationState.start = () => {
         if (mustUseSocket) {
-            const httpHeaders = pull.includeHttpHeadersWs ? mutateableClientState.headers : undefined;
+            const httpHeaders = pull.includeWsHeaders ? mutateableClientState.headers : undefined;
             const wsClient = getGraphQLWebSocket(ensureNotFalsy(url.ws), httpHeaders);
 
             wsClient.on('connected', () => {
