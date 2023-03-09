@@ -13,11 +13,11 @@ The remote storage communicates over a message channel which has to implement th
 
 ```ts
 // on the client
-import { RxStorageDexieStatics } from 'rxdb/plugins/storage-dexie';
+import { RxStorageDefaultStatics } from 'rxdb';
 import { getRxStorageRemote } from 'rxdb/plugins/storage-remote';
 const storage = getRxStorageRemote({
     identifier: 'my-id',
-    statics: RxStorageDexieStatics,
+    statics: RxStorageDefaultStatics,
     messages$: new Subject(),
     send(msg) {
         // send to remote storage
@@ -77,4 +77,36 @@ const myDb = await createRxDatabase({
         url: 'ws://example.com:8080'
     })
 });
+```
+
+
+## Sending custom messages
+
+The remote storage can also be used to send custom messages to and from the remote instance.
+
+One the remote you have to define a `customRequestHandler` like:
+
+```ts
+const serverBasedOnDatabase = await startRxStorageRemoteWebsocketServer({
+    port: 8080,
+    database: myRxDatabase,
+    async customRequestHandler(msg){
+        // here you can return any JSON object as an 'answer'
+        return {
+            foo: 'bar'
+        };
+    } 
+});
+```
+
+On the client instance you can then call the `customRequest()` method:
+
+
+```ts
+const storage = getRxStorageRemoteWebsocket({
+    statics: RxStorageDefaultStatics,
+    url: 'ws://example.com:8080'
+});
+const answer = await storage.customRequest({ bar: 'foo' });
+console.dir(answer); // > { foo: 'bar' }
 ```

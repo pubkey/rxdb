@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- ADD docs for remote storage `customRequestHandler`
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
