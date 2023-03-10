@@ -75,6 +75,11 @@ var callToActions = [
         keyword: '@github',
         url: 'https://github.com/pubkey/rxdb'
     },
+    {
+        text: 'Subscribe',
+        keyword: '@newsletter',
+        url: 'http://eepurl.com/imD7WA'
+    }
 ];
 function insertAfter(referenceNode, newNode) {
     referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
