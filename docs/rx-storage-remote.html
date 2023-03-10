@@ -2281,11 +2281,11 @@ The remote storage plugin is used in many RxDB plugins like the <a href="rx-stor
 <h2 id="usage">Usage</h2>
 <p>The remote storage communicates over a message channel which has to implement the <code>messages$</code> observable and a <code>send()</code> function on both sides.</p>
 <pre><code class="lang-ts"><span class="hljs-comment">// on the client</span>
-<span class="hljs-keyword">import</span> { RxStorageDexieStatics } from <span class="hljs-string">&apos;rxdb/plugins/storage-dexie&apos;</span>;
+<span class="hljs-keyword">import</span> { RxStorageDefaultStatics } from <span class="hljs-string">&apos;rxdb&apos;</span>;
 <span class="hljs-keyword">import</span> { getRxStorageRemote } from <span class="hljs-string">&apos;rxdb/plugins/storage-remote&apos;</span>;
 <span class="hljs-keyword">const</span> storage = getRxStorageRemote({
     identifier: <span class="hljs-string">&apos;my-id&apos;</span>,
-    statics: RxStorageDexieStatics,
+    statics: RxStorageDefaultStatics,
     messages$: <span class="hljs-keyword">new</span> Subject(),
     send(msg) {
         <span class="hljs-comment">// send to remote storage</span>
@@ -2336,6 +2336,28 @@ This is often used in Node.js to give one microservice access to another service
         url: <span class="hljs-string">&apos;ws://example.com:8080&apos;</span>
     })
 });
+</code></pre>
+<h2 id="sending-custom-messages">Sending custom messages</h2>
+<p>The remote storage can also be used to send custom messages to and from the remote instance.</p>
+<p>One the remote you have to define a <code>customRequestHandler</code> like:</p>
+<pre><code class="lang-ts"><span class="hljs-keyword">const</span> serverBasedOnDatabase = await startRxStorageRemoteWebsocketServer({
+    port: <span class="hljs-number">8080</span>,
+    database: myRxDatabase,
+    async customRequestHandler(msg){
+        <span class="hljs-comment">// here you can return any JSON object as an &apos;answer&apos;</span>
+        <span class="hljs-keyword">return</span> {
+            foo: <span class="hljs-string">&apos;bar&apos;</span>
+        };
+    } 
+});
+</code></pre>
+<p>On the client instance you can then call the <code>customRequest()</code> method:</p>
+<pre><code class="lang-ts"><span class="hljs-keyword">const</span> storage = getRxStorageRemoteWebsocket({
+    statics: RxStorageDefaultStatics,
+    url: <span class="hljs-string">&apos;ws://example.com:8080&apos;</span>
+});
+<span class="hljs-keyword">const</span> answer = await storage.customRequest({ bar: <span class="hljs-string">&apos;foo&apos;</span> });
+<span class="hljs-built_in">console</span>.dir(answer); <span class="hljs-comment">// &gt; { foo: &apos;bar&apos; }</span>
 </code></pre>
 
                                 
