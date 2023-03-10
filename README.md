@@ -36,7 +36,7 @@
 	  &nbsp;
     <a href="https://twitter.com/intent/follow?screen_name=rxdbjs"><img src="https://img.shields.io/twitter/follow/rxdbjs?color=1DA1F2&label=twitter&style=flat-square"></a>
     &nbsp;
-    <a href="https://www.getrevue.co/profile/rxdbjs/"><img src="https://img.shields.io/badge/newsletter-subscribe-e05b29?style=flat-square"></a>
+    <a href="http://eepurl.com/imD7WA"><img src="https://img.shields.io/badge/newsletter-subscribe-e05b29?style=flat-square"></a>
 </p>
 
 
