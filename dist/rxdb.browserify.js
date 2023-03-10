@@ -2789,7 +2789,7 @@ exports.RXDB_VERSION = void 0;
 /**
  * This file is replaced in the 'npm run build:version' script.
  */
-var RXDB_VERSION = '14.2.1';
+var RXDB_VERSION = '14.2.3';
 exports.RXDB_VERSION = RXDB_VERSION;
 
 },{}],27:[function(require,module,exports){

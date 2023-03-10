@@ -9,6 +9,8 @@
 
 <!-- RELEASE BELOW -->
 
+### 14.2.3 (10 March 2023)
+
 ### 14.2.1 (9 March 2023)
 
 - ADD docs for remote storage `customRequestHandler`
