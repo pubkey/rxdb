@@ -20,6 +20,13 @@ const _create = async () => {
     storage: wrappedValidateAjvStorage({
       storage: getRxStorageDexie(),
     }),
+    /*
+      The line below is confusing. I understand it is needed because vite rebuilds and reruns my app for any change to the code. 
+      The documentation for ignoreDuplicate says there are RARE cases where this should be set to true, but don't all frameworks
+      rebuild the app on every change? So we would always need ignoreDuplicate: true? To be honest I think createRxDatabase
+      should just return the database if it exists, like Dexie does, without throwing an error. Alternatively the documentation 
+      for ignoreDuplicate should be updated to say set to true during development, or something to that effect. 
+    */
     ignoreDuplicate: true
   });
   await db.addCollections({ notes: { schema: noteSchema } });
