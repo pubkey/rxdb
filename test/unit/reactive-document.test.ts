@@ -195,5 +195,22 @@ config.parallel('reactive-document.test.js', () => {
         });
     });
     describe('issues', () => {
+        it('#4546 - should return the same valueObj for the same objPath', async () => {
+            const c = await humansCollection.createNested();
+            const doc = await c.findOne().exec(true);
+
+             // Call get function multiple times with the same objPath
+            const objPath = 'mainSkill';
+            const valueObj1 = doc.get(objPath);
+            const valueObj2 = doc.get(objPath);
+            const valueObj3 = doc.get(objPath);
+
+            // Ensure that all returned valueObjs are the same object using Object.is comparison
+            assert.equal(Object.is(valueObj1, valueObj2), true);
+            assert.equal(Object.is(valueObj1, valueObj3), true);
+            assert.equal(Object.is(valueObj2, valueObj3), true);
+
+            c.database.destroy();
+        });
     });
 });
