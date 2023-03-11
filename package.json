@@ -402,7 +402,7 @@
     "socket.io-client": "4.6.1",
     "unload": "2.4.1",
     "util": "0.12.5",
-    "ws": "8.12.1",
+    "ws": "8.13.0",
     "z-schema": "5.0.5"
   },
   "devDependencies": {
