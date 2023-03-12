@@ -182,12 +182,19 @@ export const basePrototype = {
             return refCollection.findOne(value).exec();
         }
     },
-
     /**
      * get data by objectPath
      */
     get(this: RxDocument, objPath: string): any | null {
-        if (!this._data) return undefined;
+        if (!this._data) {
+            return undefined;
+        }
+
+        const fromCache = this._propertyCache.get(objPath);
+        if (fromCache) {
+            return fromCache;
+        }
+
         let valueObj = getProperty(this._data, objPath);
 
         // direct return if array or non-object
@@ -209,6 +216,7 @@ export const basePrototype = {
             objPath,
             this as any
         );
+        this._propertyCache.set(objPath, valueObj);
         return valueObj;
     },
 
@@ -406,6 +414,7 @@ export function createRxDocumentConstructor(proto = basePrototype) {
 
         // assume that this is always equal to the doc-data in the database
         this._data = docData;
+        this._propertyCache = new Map<string, any>();
 
         /**
          * because of the prototype-merge,
@@ -423,7 +432,9 @@ export function defineGetterSetter(
     objPath = '',
     thisObj = false
 ) {
-    if (valueObj === null) return;
+    if (valueObj === null) {
+        return;
+    }
 
 
     let pathProperties = getSchemaByObjectPath(

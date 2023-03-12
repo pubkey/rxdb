@@ -17,7 +17,7 @@ import {
 } from '../../';
 
 import {
-    first
+    first,
 } from 'rxjs/operators';
 import type {
     RxChangeEvent
@@ -195,5 +195,29 @@ config.parallel('reactive-document.test.js', () => {
         });
     });
     describe('issues', () => {
+        it('#4546 - should return the same valueObj for the same objPath', async () => {
+            const c = await humansCollection.createNested();
+            const doc = await c.findOne().exec(true);
+
+            // Call get function multiple times with the same objPath
+            const firstValueObject = doc.mainSkill;
+            const valueObjects: typeof firstValueObject[] = [];
+            valueObjects.push(doc.get('mainSkill'));
+            valueObjects.push(doc.get('mainSkill'));
+            valueObjects.push(doc.get('mainSkill'));
+
+            // also check subscription values
+            valueObjects.push(await firstValueFrom(doc.get$('mainSkill')));
+            valueObjects.push(await firstValueFrom(doc.get$('mainSkill')));
+
+
+
+            // Ensure that all returned valueObjs are the same object using Object.is comparison
+            valueObjects.forEach(obj => {
+                assert.equal(Object.is(firstValueObject, obj), true);
+            });
+
+            c.database.destroy();
+        });
     });
 });
