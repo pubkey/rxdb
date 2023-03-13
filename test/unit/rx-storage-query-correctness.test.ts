@@ -27,6 +27,7 @@ import {
     nestedHuman,
     NestedHumanDocumentType
 } from '../helper/schema-objects';
+import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv';
 
 const TEST_CONTEXT = 'rx-storage-query-correctness.test.ts';
 config.parallel('rx-storage-query-correctness.test.ts', () => {
@@ -90,6 +91,21 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                 rawDocsData.map(document => ({ document })),
                 TEST_CONTEXT
             );
+
+            const database = await createRxDatabase({
+                name: randomCouchString(10),
+                storage: wrappedValidateAjvStorage({
+                    storage: config.storage.getStorage()
+                })
+            });
+            const collections = await database.addCollections({
+                test: {
+                    schema: input.schema
+                }
+            });
+            const collection = collections.test;
+            await collection.bulkInsert(input.data);
+
 
 
             for (const queryData of input.queries) {
@@ -171,17 +187,6 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                 }
 
                 // Test output of RxCollection.find()
-                const database = await createRxDatabase({
-                    name: randomCouchString(10),
-                    storage: config.storage.getStorage()
-                });
-                const collections = await database.addCollections({
-                    test: {
-                        schema: input.schema
-                    }
-                });
-                const collection = collections.test;
-                await collection.bulkInsert(input.data);
                 const resultFromCollection = await collection.find(queryData.query).exec();
                 const resultFromCollectionIds = resultFromCollection.map(d => d.primary);
                 try {
@@ -191,10 +196,12 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                     console.dir(queryData);
                     throw err;
                 }
-                await database.remove();
             }
 
-            storageInstance.close();
+            await Promise.all([
+                database.remove(),
+                storageInstance.close()
+            ]);
         });
     }
 
