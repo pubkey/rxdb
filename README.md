@@ -81,7 +81,7 @@ There are also plugins to replicate with any <a href="/replication-couchdb.html"
 
 RxDB is based on a [storage interface](https://rxdb.info/rx-storage.html) that enables you to swap out the underlying storage engine. This increases **code reuse** because the same database code can be used in different JavaScript environments by just switching out the storage settings.
 
-You can use RxDB on top of [IndexedDB](https://rxdb.info/rx-storage-indexeddb.html), [PouchDB](https://rxdb.info/rx-storage-pouchdb.html), [LokiJS](https://rxdb.info/rx-storage-lokijs.html), [Dexie.js](https://rxdb.info/rx-storage-dexie.html), [in-memory](https://rxdb.info/rx-storage-memory.html), [SQLite](https://rxdb.info/rx-storage-sqlite.html), in a [WebWorker](https://rxdb.info/rx-storage-worker.html) thread and even on top of [FoundationDB](https://rxdb.info/rx-storage-foundationdb.html).
+You can use RxDB on top of [IndexedDB](https://rxdb.info/rx-storage-indexeddb.html), [LokiJS](https://rxdb.info/rx-storage-lokijs.html), [Dexie.js](https://rxdb.info/rx-storage-dexie.html), [in-memory](https://rxdb.info/rx-storage-memory.html), [SQLite](https://rxdb.info/rx-storage-sqlite.html), in a [WebWorker](https://rxdb.info/rx-storage-worker.html) thread and even on top of [FoundationDB](https://rxdb.info/rx-storage-foundationdb.html).
 
 No matter what kind of runtime you have, as long as it runs JavaScript, it can run RxDB:
 
