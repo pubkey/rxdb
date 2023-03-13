@@ -709,7 +709,18 @@ describe('rx-query.test.ts', () => {
                      * to the primary key, so it can always
                      * only find one document.
                      */
-                }).exec()
+                }).exec(),
+                // same with id arrays
+                () => c.find({
+                    selector: {
+                        passportId: {
+                            $in: [
+                                docId,
+                                'foobar'
+                            ]
+                        }
+                    },
+                })
             ];
             for (const operation of operations) {
                 await operation();

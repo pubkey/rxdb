@@ -165,10 +165,17 @@ export function validateFieldsDeep(rxJsonSchema: RxJsonSchema<any>): true {
     }
 
     function traverse(currentObj: any, currentPath: any) {
-        if (!currentObj || typeof currentObj !== 'object') return;
+        if (!currentObj || typeof currentObj !== 'object') {
+            return;
+        }
         Object.keys(currentObj).forEach(attributeName => {
             const schemaObj = currentObj[attributeName];
-            if (!currentObj.properties && schemaObj && typeof schemaObj === 'object') {
+            if (
+                !currentObj.properties &&
+                schemaObj &&
+                typeof schemaObj === 'object' &&
+                !currentPath.endsWith('oneOf')
+            ) {
                 checkField(
                     attributeName,
                     schemaObj,
