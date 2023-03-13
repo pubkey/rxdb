@@ -32,11 +32,12 @@ export function getKeyRangeByQueryPlan(
      * we have to pass the keys directly, not the key arrays.
      */
     if (queryPlan.index.length === 1) {
+        const equalKeys = queryPlan.startKeys[0] === queryPlan.endKeys[0];
         ret = IDBKeyRange.bound(
             queryPlan.startKeys[0],
             queryPlan.endKeys[0],
-            queryPlan.inclusiveStart,
-            queryPlan.inclusiveEnd
+            equalKeys ? false : queryPlan.inclusiveStart,
+            equalKeys ? false : queryPlan.inclusiveEnd
         );
     } else {
         ret = IDBKeyRange.bound(
@@ -72,7 +73,6 @@ export async function dexieQuery<RxDocType>(
             preparedQuery.query
         );
     }
-
     const keyRange = getKeyRangeByQueryPlan(
         queryPlan,
         (state.dexieDb as any)._options.IDBKeyRange

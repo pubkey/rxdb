@@ -513,6 +513,30 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                 expectedResultDocIds: [
                     'ccc'
                 ]
+            },
+            {
+                info: 'match non on non-existing optional field',
+                query: {
+                    selector: {
+                        passportId: {
+                            $eq: 'foobar'
+                        },
+                        $or: [
+                            {
+                                oneOptional: {
+                                    $ne: 'foobar1'
+                                }
+                            },
+                            {
+                                oneOptional: {
+                                    $ne: 'foobar2'
+                                }
+                            }
+                        ]
+                    },
+                    sort: [{ 'passportId': 'asc' }]
+                },
+                expectedResultDocIds: []
             }
         ]
     });
