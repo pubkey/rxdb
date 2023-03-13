@@ -25,7 +25,9 @@ import {
     HeroArrayDocumentType,
     human,
     nestedHuman,
-    NestedHumanDocumentType
+    NestedHumanDocumentType,
+    simpleHumanV3,
+    SimpleHumanV3DocumentType
 } from '../helper/schema-objects';
 import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv';
 
@@ -105,8 +107,6 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
             });
             const collection = collections.test;
             await collection.bulkInsert(input.data);
-
-
 
             for (const queryData of input.queries) {
                 if (!queryData) {
@@ -446,6 +446,72 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                     'ccc',
                     'bbb',
                     'aaa'
+                ]
+            }
+        ]
+    });
+    testCorrectQueries<SimpleHumanV3DocumentType>({
+        testTitle: '$or',
+        data: [
+            simpleHumanV3({
+                passportId: 'aaa',
+                oneOptional: 'A'
+            }),
+            simpleHumanV3({
+                passportId: 'bbb',
+                oneOptional: 'B'
+            }),
+            simpleHumanV3({
+                passportId: 'ccc'
+            })
+        ],
+        schema: withIndexes(schemas.humanMinimal, [
+        ]),
+        queries: [
+            {
+                info: 'match A or B',
+                query: {
+                    selector: {
+                        $or: [
+                            {
+                                passportId: 'aaa'
+                            },
+                            {
+                                passportId: 'bbb'
+                            }
+                        ]
+                    },
+                    sort: [{ 'passportId': 'asc' }]
+                },
+                expectedResultDocIds: [
+                    'aaa',
+                    'bbb'
+                ]
+            },
+            {
+                info: 'match with optional field',
+                query: {
+                    selector: {
+                        passportId: {
+                            $eq: 'ccc'
+                        },
+                        $or: [
+                            {
+                                oneOptional: {
+                                    $ne: 'foobar1'
+                                }
+                            },
+                            {
+                                oneOptional: {
+                                    $ne: 'foobar2'
+                                }
+                            }
+                        ]
+                    },
+                    sort: [{ 'passportId': 'asc' }]
+                },
+                expectedResultDocIds: [
+                    'ccc'
                 ]
             }
         ]
