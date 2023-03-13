@@ -2789,7 +2789,7 @@ exports.RXDB_VERSION = void 0;
 /**
  * This file is replaced in the 'npm run build:version' script.
  */
-var RXDB_VERSION = '14.2.3';
+var RXDB_VERSION = '14.3.0';
 exports.RXDB_VERSION = RXDB_VERSION;
 
 },{}],27:[function(require,module,exports){
@@ -6225,7 +6225,13 @@ var basePrototype = {
    * get data by objectPath
    */
   get(objPath) {
-    if (!this._data) return undefined;
+    if (!this._data) {
+      return undefined;
+    }
+    var fromCache = this._propertyCache.get(objPath);
+    if (fromCache) {
+      return fromCache;
+    }
     var valueObj = (0, _utils.getProperty)(this._data, objPath);
 
     // direct return if array or non-object
@@ -6239,6 +6245,7 @@ var basePrototype = {
      */
     valueObj = (0, _utils.clone)(valueObj);
     defineGetterSetter(this.collection.schema, valueObj, objPath, this);
+    this._propertyCache.set(objPath, valueObj);
     return valueObj;
   },
   toJSON(withMetaFields = false) {
@@ -6393,6 +6400,7 @@ function createRxDocumentConstructor(proto = basePrototype) {
 
     // assume that this is always equal to the doc-data in the database
     this._data = docData;
+    this._propertyCache = new Map();
 
     /**
      * because of the prototype-merge,
@@ -6404,7 +6412,9 @@ function createRxDocumentConstructor(proto = basePrototype) {
   return constructor;
 }
 function defineGetterSetter(schema, valueObj, objPath = '', thisObj = false) {
-  if (valueObj === null) return;
+  if (valueObj === null) {
+    return;
+  }
   var pathProperties = (0, _rxSchemaHelper.getSchemaByObjectPath)(schema.jsonSchema, objPath);
   if (typeof pathProperties === 'undefined') return;
   if (pathProperties.properties) pathProperties = pathProperties.properties;
@@ -7443,17 +7453,36 @@ async function queryCollection(rxQuery) {
    * but instead can use findDocumentsById()
    */
   if (rxQuery.isFindOneByIdQuery) {
-    var docId = rxQuery.isFindOneByIdQuery;
-
-    // first try to fill from docCache
-    var docData = rxQuery.collection._docCache.getLatestDocumentDataIfExists(docId);
-    if (!docData) {
+    if (Array.isArray(rxQuery.isFindOneByIdQuery)) {
+      var docIds = rxQuery.isFindOneByIdQuery;
+      docIds = docIds.filter(docId => {
+        // first try to fill from docCache
+        var docData = rxQuery.collection._docCache.getLatestDocumentDataIfExists(docId);
+        if (docData) {
+          docs.push(docData);
+          return false;
+        } else {
+          return true;
+        }
+      });
       // otherwise get from storage
-      var docsMap = await collection.storageInstance.findDocumentsById([docId], false);
-      docData = docsMap[docId];
-    }
-    if (docData) {
-      docs.push(docData);
+      var docsMap = await collection.storageInstance.findDocumentsById(docIds, false);
+      Object.values(docsMap).forEach(docData => {
+        docs.push(docData);
+      });
+    } else {
+      var docId = rxQuery.isFindOneByIdQuery;
+
+      // first try to fill from docCache
+      var docData = rxQuery.collection._docCache.getLatestDocumentDataIfExists(docId);
+      if (!docData) {
+        // otherwise get from storage
+        var _docsMap = await collection.storageInstance.findDocumentsById([docId], false);
+        docData = _docsMap[docId];
+      }
+      if (docData) {
+        docs.push(docData);
+      }
     }
   } else {
     var preparedQuery = rxQuery.getPreparedQuery();
@@ -7472,11 +7501,19 @@ async function queryCollection(rxQuery) {
  * Returns the document id otherwise.
  */
 function isFindOneByIdQuery(primaryPath, query) {
+  // must have exactly one operator which must be $eq || $in
   if (!query.skip && query.selector && Object.keys(query.selector).length === 1 && query.selector[primaryPath]) {
     var value = query.selector[primaryPath];
     if (typeof value === 'string') {
       return value;
     } else if (Object.keys(value).length === 1 && typeof value.$eq === 'string') {
+      return value.$eq;
+    }
+
+    // same with $in string arrays
+    if (Object.keys(value).length === 1 && Array.isArray(value.$eq) &&
+    // must only contain strings
+    !value.$eq.find(r => typeof r !== 'string')) {
       return value.$eq;
     }
   }

@@ -14,7 +14,7 @@ export declare class RxQueryBase<RxDocType, RxQueryResult = RxDocument<RxDocType
     other: any;
     uncached: boolean;
     refCount$: BehaviorSubject<null>;
-    isFindOneByIdQuery: false | string;
+    isFindOneByIdQuery: false | string | string[];
     /**
      * Contains the current result state
      * or null if query has not run yet.
@@ -128,5 +128,5 @@ export declare function queryCollection<RxDocType>(rxQuery: RxQuery<RxDocType> |
  * Returns false if no query of that kind.
  * Returns the document id otherwise.
  */
-export declare function isFindOneByIdQuery(primaryPath: string, query: MangoQuery<any>): false | string;
+export declare function isFindOneByIdQuery(primaryPath: string, query: MangoQuery<any>): false | string | string[];
 export declare function isRxQuery(obj: any): boolean;

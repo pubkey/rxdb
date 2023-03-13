@@ -516,17 +516,36 @@ async function queryCollection(rxQuery) {
    * but instead can use findDocumentsById()
    */
   if (rxQuery.isFindOneByIdQuery) {
-    var docId = rxQuery.isFindOneByIdQuery;
-
-    // first try to fill from docCache
-    var docData = rxQuery.collection._docCache.getLatestDocumentDataIfExists(docId);
-    if (!docData) {
+    if (Array.isArray(rxQuery.isFindOneByIdQuery)) {
+      var docIds = rxQuery.isFindOneByIdQuery;
+      docIds = docIds.filter(docId => {
+        // first try to fill from docCache
+        var docData = rxQuery.collection._docCache.getLatestDocumentDataIfExists(docId);
+        if (docData) {
+          docs.push(docData);
+          return false;
+        } else {
+          return true;
+        }
+      });
       // otherwise get from storage
-      var docsMap = await collection.storageInstance.findDocumentsById([docId], false);
-      docData = docsMap[docId];
-    }
-    if (docData) {
-      docs.push(docData);
+      var docsMap = await collection.storageInstance.findDocumentsById(docIds, false);
+      Object.values(docsMap).forEach(docData => {
+        docs.push(docData);
+      });
+    } else {
+      var docId = rxQuery.isFindOneByIdQuery;
+
+      // first try to fill from docCache
+      var docData = rxQuery.collection._docCache.getLatestDocumentDataIfExists(docId);
+      if (!docData) {
+        // otherwise get from storage
+        var _docsMap = await collection.storageInstance.findDocumentsById([docId], false);
+        docData = _docsMap[docId];
+      }
+      if (docData) {
+        docs.push(docData);
+      }
     }
   } else {
     var preparedQuery = rxQuery.getPreparedQuery();
@@ -545,11 +564,19 @@ async function queryCollection(rxQuery) {
  * Returns the document id otherwise.
  */
 function isFindOneByIdQuery(primaryPath, query) {
+  // must have exactly one operator which must be $eq || $in
   if (!query.skip && query.selector && Object.keys(query.selector).length === 1 && query.selector[primaryPath]) {
     var value = query.selector[primaryPath];
     if (typeof value === 'string') {
       return value;
     } else if (Object.keys(value).length === 1 && typeof value.$eq === 'string') {
+      return value.$eq;
+    }
+
+    // same with $in string arrays
+    if (Object.keys(value).length === 1 && Array.isArray(value.$eq) &&
+    // must only contain strings
+    !value.$eq.find(r => typeof r !== 'string')) {
       return value.$eq;
     }
   }

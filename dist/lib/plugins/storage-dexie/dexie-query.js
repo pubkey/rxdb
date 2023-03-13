@@ -22,7 +22,8 @@ function getKeyRangeByQueryPlan(queryPlan, IDBKeyRange) {
    * we have to pass the keys directly, not the key arrays.
    */
   if (queryPlan.index.length === 1) {
-    ret = IDBKeyRange.bound(queryPlan.startKeys[0], queryPlan.endKeys[0], queryPlan.inclusiveStart, queryPlan.inclusiveEnd);
+    var equalKeys = queryPlan.startKeys[0] === queryPlan.endKeys[0];
+    ret = IDBKeyRange.bound(queryPlan.startKeys[0], queryPlan.endKeys[0], equalKeys ? false : queryPlan.inclusiveStart, equalKeys ? false : queryPlan.inclusiveEnd);
   } else {
     ret = IDBKeyRange.bound(queryPlan.startKeys, queryPlan.endKeys, queryPlan.inclusiveStart, queryPlan.inclusiveEnd);
   }
