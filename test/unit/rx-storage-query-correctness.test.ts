@@ -13,7 +13,8 @@ import {
     getQueryPlan,
     deepFreeze,
     getQueryMatcher,
-    getSortComparator
+    getSortComparator,
+    createRxDatabase
 } from '../../';
 import {
     areSelectorsSatisfiedByIndex
@@ -57,7 +58,7 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
         input: TestCorrectQueriesInput<RxDocType>
     ) {
         it(input.testTitle, async () => {
-            const schema = fillWithDefaultSettings(input.schema);
+            const schema = fillWithDefaultSettings(clone(input.schema));
             const primaryPath = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
             const storageInstance = await config.storage.getStorage().createStorageInstance<RxDocType>({
                 databaseInstanceToken: randomCouchString(10),
@@ -168,6 +169,29 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                         throw err;
                     }
                 }
+
+                // Test output of RxCollection.find()
+                const database = await createRxDatabase({
+                    name: randomCouchString(10),
+                    storage: config.storage.getStorage()
+                });
+                const collections = await database.addCollections({
+                    test: {
+                        schema: input.schema
+                    }
+                });
+                const collection = collections.test;
+                await collection.bulkInsert(input.data);
+                const resultFromCollection = await collection.find(queryData.query).exec();
+                const resultFromCollectionIds = resultFromCollection.map(d => d.primary);
+                try {
+                    assert.deepStrictEqual(resultFromCollectionIds, queryData.expectedResultDocIds);
+                } catch (err) {
+                    console.log('WRONG QUERY RESULTS FROM RxCollection.find(): ' + queryData.info);
+                    console.dir(queryData);
+                    throw err;
+                }
+                await database.remove();
             }
 
             storageInstance.close();
@@ -438,7 +462,7 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                             $in: ['alice']
                         },
                     },
-                    sort: [{ name: 'asc' }]
+                    sort: [{ passportId: 'asc' }]
                 },
                 expectedResultDocIds: [
                     'aa'
@@ -452,7 +476,7 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                             $in: ['alice', 'bob']
                         },
                     },
-                    sort: [{ name: 'asc' }]
+                    sort: [{ passportId: 'asc' }]
                 },
                 expectedResultDocIds: [
                     'aa',
@@ -467,9 +491,20 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                             $in: ['foobar', 'barfoo']
                         },
                     },
-                    sort: [{ name: 'asc' }]
+                    sort: [{ passportId: 'asc' }]
                 },
                 expectedResultDocIds: []
+            },
+            {
+                info: 'get by primary key',
+                query: {
+                    selector: {
+                        passportId: {
+                            $in: ['aa', 'cc', 'ee']
+                        }
+                    }
+                },
+                expectedResultDocIds: ['aa', 'cc', 'ee']
             }
         ]
     });

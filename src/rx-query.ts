@@ -77,7 +77,7 @@ export class RxQueryBase<
     // used to count the subscribers to the query
     public refCount$ = new BehaviorSubject(null);
 
-    public isFindOneByIdQuery: false | string;
+    public isFindOneByIdQuery: false | string | string[];
 
 
     /**
@@ -670,17 +670,36 @@ export async function queryCollection<RxDocType>(
      * but instead can use findDocumentsById()
      */
     if (rxQuery.isFindOneByIdQuery) {
-        const docId = rxQuery.isFindOneByIdQuery;
-
-        // first try to fill from docCache
-        let docData = rxQuery.collection._docCache.getLatestDocumentDataIfExists(docId);
-        if (!docData) {
+        if (Array.isArray(rxQuery.isFindOneByIdQuery)) {
+            let docIds = rxQuery.isFindOneByIdQuery;
+            docIds = docIds.filter(docId => {
+                // first try to fill from docCache
+                const docData = rxQuery.collection._docCache.getLatestDocumentDataIfExists(docId);
+                if (docData) {
+                    docs.push(docData);
+                    return false;
+                } else {
+                    return true;
+                }
+            });
             // otherwise get from storage
-            const docsMap = await collection.storageInstance.findDocumentsById([docId], false);
-            docData = docsMap[docId];
-        }
-        if (docData) {
-            docs.push(docData);
+            const docsMap = await collection.storageInstance.findDocumentsById(docIds, false);
+            Object.values(docsMap).forEach(docData => {
+                docs.push(docData);
+            });
+        } else {
+            const docId = rxQuery.isFindOneByIdQuery;
+
+            // first try to fill from docCache
+            let docData = rxQuery.collection._docCache.getLatestDocumentDataIfExists(docId);
+            if (!docData) {
+                // otherwise get from storage
+                const docsMap = await collection.storageInstance.findDocumentsById([docId], false);
+                docData = docsMap[docId];
+            }
+            if (docData) {
+                docs.push(docData);
+            }
         }
     } else {
         const preparedQuery = rxQuery.getPreparedQuery();
@@ -702,7 +721,8 @@ export async function queryCollection<RxDocType>(
 export function isFindOneByIdQuery(
     primaryPath: string,
     query: MangoQuery<any>
-): false | string {
+): false | string | string[] {
+    // must have exactly one operator which must be $eq || $in
     if (
         !query.skip &&
         query.selector &&
@@ -715,6 +735,16 @@ export function isFindOneByIdQuery(
         } else if (
             Object.keys(value).length === 1 &&
             typeof value.$eq === 'string'
+        ) {
+            return value.$eq;
+        }
+
+        // same with $in string arrays
+        if (
+            Object.keys(value).length === 1 &&
+            Array.isArray(value.$eq) &&
+            // must only contain strings
+            !(value.$eq as any[]).find(r => typeof r !== 'string')
         ) {
             return value.$eq;
         }

@@ -3,6 +3,7 @@
 
 <!-- CHANGELOG NEWEST -->
 - FIX RxDocument getter should return the same object on property paths [#4548](https://github.com/pubkey/rxdb/pull/4548)
+- OPTIMIZE use `findDocumentsById()` on queries that do only do an `$in` operator on the primary key.
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
