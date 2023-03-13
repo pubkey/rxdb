@@ -9,6 +9,8 @@
 
 <!-- RELEASE BELOW -->
 
+### 14.3.1 (13 March 2023)
+
 ### 14.3.0 (13 March 2023)
 
 - FIX RxDocument getter should return the same object on property paths [#4548](https://github.com/pubkey/rxdb/pull/4548)
