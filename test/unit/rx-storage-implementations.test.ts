@@ -949,6 +949,65 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
 
                 storageInstance.close();
             });
+            it('must be able create multiple storage instances on the same database and write documents', async () => {
+                const collectionsAmount = 3;
+                const docsAmount = 3;
+                const attachmentsPerDoc = 3;
+                const databaseName = randomCouchString(10);
+                const databaseInstanceToken = randomCouchString(10);
+
+                const storageInstances = await Promise.all(
+                    new Array(collectionsAmount)
+                        .fill(0)
+                        .map(async () => {
+                            const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
+                                databaseInstanceToken,
+                                databaseName,
+                                collectionName: randomCouchString(12),
+                                schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
+                                options: {},
+                                multiInstance: false,
+                                devMode: true
+                            });
+                            await Promise.all(
+                                new Array(docsAmount)
+                                    .fill(0)
+                                    .map(async (_v, docId) => {
+                                        const writeData: RxDocumentWriteData<TestDocType> = {
+                                            key: docId + '',
+                                            value: randomCouchString(5),
+                                            _rev: EXAMPLE_REVISION_1,
+                                            _deleted: false,
+                                            _meta: {
+                                                lwt: now()
+                                            },
+                                            _attachments: {}
+                                        };
+
+                                        await Promise.all(
+                                            new Array(attachmentsPerDoc)
+                                                .fill(0)
+                                                .map(async (_vv, idx) => {
+                                                    const data = createBlob(randomString(200), 'text/plain');
+                                                    const dataString = await blobToBase64String(data);
+                                                    const attachmentsId = idx + '';
+                                                    writeData._attachments[attachmentsId] = {
+                                                        length: getBlobSize(data),
+                                                        data: dataString,
+                                                        type: 'text/plain'
+                                                    };
+                                                })
+                                        );
+                                        await storageInstance.bulkWrite([{ document: writeData }], testContext);
+                                    })
+                            );
+                            return storageInstance;
+                        })
+                );
+                await Promise.all(
+                    storageInstances.map(i => i.close())
+                );
+            });
         });
         describe('.prepareQuery()', () => {
             it('must not crash', () => {
