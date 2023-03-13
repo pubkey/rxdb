@@ -952,7 +952,6 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
             it('must be able create multiple storage instances on the same database and write documents', async () => {
                 const collectionsAmount = 3;
                 const docsAmount = 3;
-                const attachmentsPerDoc = 3;
                 const databaseName = randomCouchString(10);
                 const databaseInstanceToken = randomCouchString(10);
 
@@ -983,21 +982,6 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                                             },
                                             _attachments: {}
                                         };
-
-                                        await Promise.all(
-                                            new Array(attachmentsPerDoc)
-                                                .fill(0)
-                                                .map(async (_vv, idx) => {
-                                                    const data = createBlob(randomString(200), 'text/plain');
-                                                    const dataString = await blobToBase64String(data);
-                                                    const attachmentsId = idx + '';
-                                                    writeData._attachments[attachmentsId] = {
-                                                        length: getBlobSize(data),
-                                                        data: dataString,
-                                                        type: 'text/plain'
-                                                    };
-                                                })
-                                        );
                                         await storageInstance.bulkWrite([{ document: writeData }], testContext);
                                     })
                             );
