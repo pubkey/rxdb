@@ -955,11 +955,12 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 const databaseName = randomCouchString(10);
                 const databaseInstanceToken = randomCouchString(10);
 
+                const storage = config.storage.getStorage();
                 const storageInstances = await Promise.all(
                     new Array(collectionsAmount)
                         .fill(0)
                         .map(async () => {
-                            const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
+                            const storageInstance = await storage.createStorageInstance<TestDocType>({
                                 databaseInstanceToken,
                                 databaseName,
                                 collectionName: randomCouchString(12),
@@ -2725,11 +2726,12 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 const databaseName = randomCouchString(10);
                 const databaseInstanceToken = randomCouchString(10);
 
+                const storage = config.storage.getStorage();
                 const storageInstances = await Promise.all(
                     new Array(collectionsAmount)
                         .fill(0)
                         .map(async () => {
-                            const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
+                            const storageInstance = await storage.createStorageInstance<TestDocType>({
                                 databaseInstanceToken,
                                 databaseName,
                                 collectionName: randomCouchString(12),
