@@ -1329,5 +1329,21 @@ describe('rx-query.test.ts', () => {
 
             c.database.destroy();
         });
+        it('#4552 $elemMatch query not working when there are many documents in the collection', async () => {
+            const c = await humansCollection.createNested(100);
+            const result = await c.find({
+                selector: {
+                    mainSkill: {
+                        $elemMatch: {
+                            name: {
+                                $eq: 'foobar'
+                            }
+                        }
+                    }
+                }
+            }).exec();
+            assert.strictEqual(result.length, 0);
+            c.database.remove();
+        });
     });
 });
