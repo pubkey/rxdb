@@ -665,6 +665,26 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                 ]
             },
             {
+                info: '$elemMatch with other operator',
+                query: {
+                    selector: {
+                        name: {
+                            $eq: 'foo3'
+                        },
+                        skills: {
+                            $elemMatch: {
+                                damage: 5
+                            }
+                        },
+                    },
+                    sort: [{ name: 'asc' }]
+                },
+                selectorSatisfiedByIndex: false,
+                expectedResultDocIds: [
+                    'foo3'
+                ]
+            },
+            {
                 info: '$size',
                 query: {
                     selector: {
