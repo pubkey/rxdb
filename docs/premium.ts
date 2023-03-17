@@ -99,7 +99,9 @@ window.onload = async function () {
 export const PACKAGE_PRICE: { [k: string]: number; } = {
     browser: 0.49,
     native: 0.65,
-    performance: 0.30
+    performance: 0.30,
+    // source-code access has no base price but only adds x% to the total.
+    sourcecode: 0
 };
 
 /**
@@ -126,7 +128,7 @@ export function calculatePrice(input: {
 
     let aimInPercent = 0;
     input.packages.forEach(packageKey => {
-        const priceInPercent = ensureNotFalsy(PACKAGE_PRICE[packageKey]);
+        const priceInPercent = PACKAGE_PRICE[packageKey];
         aimInPercent = aimInPercent + priceInPercent;
     });
     console.log('aimInPercent: ' + aimInPercent);
@@ -147,6 +149,22 @@ export function calculatePrice(input: {
      */
     if (input.packages.length > 1) {
         totalPerYear = totalPerYear * 0.90;
+    }
+
+    /**
+     * Add price for source-code read access
+     */
+    if (input.packages.includes('sourcecode')) {
+        totalPerYear = totalPerYear * 1.33;
+
+        /**
+         * Providing source code access is complex,
+         * so there is a minimum price.
+         */
+        const minPriceForSourceCodeAccess = 2520;
+        if (totalPerYear < minPriceForSourceCodeAccess) {
+            totalPerYear = minPriceForSourceCodeAccess;
+        }
     }
 
     /**

@@ -155,14 +155,15 @@ export function calculatePrice(input: {
      * Add price for source-code read access
      */
     if (input.packages.includes('sourcecode')) {
-        totalPerYear = totalPerYear * 1.25;
+        totalPerYear = totalPerYear * 1.33;
 
         /**
          * Providing source code access is complex,
          * so there is a minimum price.
          */
-        if (totalPerYear < 1120) {
-            totalPerYear = 1120;
+        const minPriceForSourceCodeAccess = 2520;
+        if (totalPerYear < minPriceForSourceCodeAccess) {
+            totalPerYear = minPriceForSourceCodeAccess;
         }
     }
 
