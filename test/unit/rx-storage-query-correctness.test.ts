@@ -226,7 +226,7 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
         ]),
         queries: [
             {
-                info: 'normal $gt',
+                info: 'normal $gt by number',
                 query: {
                     selector: {
                         age: {
@@ -702,6 +702,120 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
         ]
     });
     testCorrectQueries({
+        testTitle: '$eq operator',
+        data: [
+            {
+                id: 'one',
+                nonPrimaryString: 'one',
+                integer: 1,
+                number: 1,
+                boolean: true
+            }
+        ],
+        schema: {
+            version: 0,
+            primaryKey: 'id',
+            type: 'object',
+            properties: {
+                id: {
+                    type: 'string',
+                    maxLength: 100
+                },
+                nonPrimaryString: {
+                    type: 'string'
+                },
+                integer: {
+                    type: 'integer'
+                },
+                number: {
+                    type: 'number'
+                },
+                boolean: {
+                    type: 'boolean'
+                }
+            },
+            required: [
+                'id',
+                'nonPrimaryString',
+                'integer',
+                'number',
+                'boolean'
+            ],
+        },
+        queries: [
+            {
+                info: '$eq primary key',
+                query: {
+                    selector: {
+                        id: {
+                            $eq: 'one'
+                        }
+                    },
+                    sort: [{ id: 'asc' }]
+                },
+                expectedResultDocIds: [
+                    'one'
+                ]
+            },
+            {
+                info: '$eq non-primary string',
+                query: {
+                    selector: {
+                        nonPrimaryString: {
+                            $eq: 'one'
+                        }
+                    },
+                    sort: [{ id: 'asc' }]
+                },
+                expectedResultDocIds: [
+                    'one'
+                ]
+            },
+            {
+                info: '$eq integer',
+                query: {
+                    selector: {
+                        integer: {
+                            $eq: 1
+                        }
+                    },
+                    sort: [{ id: 'asc' }]
+                },
+                expectedResultDocIds: [
+                    'one'
+                ]
+            },
+            {
+                info: '$eq number',
+                query: {
+                    selector: {
+                        number: {
+                            $eq: 1
+                        }
+                    },
+                    sort: [{ id: 'asc' }]
+                },
+                expectedResultDocIds: [
+                    'one'
+                ]
+            },
+            {
+                info: '$eq boolean',
+                query: {
+                    selector: {
+                        boolean: {
+                            $eq: true
+                        }
+                    },
+                    sort: [{ id: 'asc' }]
+                },
+                expectedResultDocIds: [
+                    'one'
+                ]
+            }
+        ]
+    });
+    testCorrectQueries({
         testTitle: '$eq null',
         data: [
             {
@@ -711,6 +825,10 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
             {
                 foo: '2',
                 bar: null
+            },
+            {
+                foo: '3',
+                bar: 3
             }
         ],
         schema: {
@@ -737,20 +855,6 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
         },
         queries: [
             {
-                info: '$eq string',
-                query: {
-                    selector: {
-                        bar: {
-                            $eq: 'test'
-                        }
-                    },
-                    sort: [{ foo: 'asc' }]
-                },
-                expectedResultDocIds: [
-                    '1'
-                ]
-            },
-            {
                 info: '$eq null',
                 query: {
                     selector: {
@@ -763,7 +867,7 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                 expectedResultDocIds: [
                     '2'
                 ]
-            },
+            }
         ]
     });
     testCorrectQueries({
