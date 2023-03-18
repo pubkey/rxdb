@@ -709,7 +709,8 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                 nonPrimaryString: 'one',
                 integer: 1,
                 number: 1,
-                boolean: true
+                boolean: true,
+                null: null
             }
         ],
         schema: {
@@ -732,6 +733,9 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                 },
                 boolean: {
                     type: 'boolean'
+                },
+                null: {
+                    type: 'null'
                 }
             },
             required: [
@@ -812,60 +816,19 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                 expectedResultDocIds: [
                     'one'
                 ]
-            }
-        ]
-    });
-    testCorrectQueries({
-        testTitle: '$eq null',
-        data: [
-            {
-                foo: '1',
-                bar: 'test'
             },
-            {
-                foo: '2',
-                bar: null
-            },
-            {
-                foo: '3',
-                bar: 3
-            }
-        ],
-        schema: {
-            version: 0,
-            primaryKey: 'foo',
-            type: 'object',
-            properties: {
-                foo: {
-                    type: 'string',
-                    maxLength: 100
-                },
-                bar: {
-                    oneOf: [
-                        {
-                            type: 'string'
-                        },
-                        {
-                            type: 'null'
-                        }
-                    ]
-                },
-            },
-            required: ['foo', 'bar'],
-        },
-        queries: [
             {
                 info: '$eq null',
                 query: {
                     selector: {
-                        bar: {
+                        null: {
                             $eq: null
                         }
                     },
-                    sort: [{ foo: 'asc' }]
+                    sort: [{ id: 'asc' }]
                 },
                 expectedResultDocIds: [
-                    '2'
+                    'one'
                 ]
             }
         ]
