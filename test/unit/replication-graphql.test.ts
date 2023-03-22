@@ -1486,6 +1486,41 @@ describe('replication-graphql.test.ts', () => {
                 await server.close();
                 await c.database.destroy();
             });
+            it('should respect pull.includeWsHeaders', async () => {
+                const [c, server] = await Promise.all([
+                    humansCollection.createHumanWithTimestamp(0),
+                    SpawnServer.spawn()
+                ]);
+                server.requireHeader('token', 'Bearer token');
+                const replicationState = replicateGraphQL({
+                    collection: c,
+                    url: server.url,
+                    pull: {
+                        batchSize,
+                        queryBuilder: pullQueryBuilder,
+                        streamQueryBuilder: pullStreamQueryBuilder,
+                        includeWsHeaders: true,
+                    },
+                    headers: {
+                        token: 'Bearer token'
+                    },
+                    live: true,
+                    deletedField: 'deleted'
+                });
+                ensureReplicationHasNoErrors(replicationState);
+                await replicationState.awaitInSync();
+
+                const testDocData = getTestData(1)[0];
+
+                // Test mutation with subscription
+                await server.setDocument(testDocData);
+                await waitUntil(async () => {
+                    const docs = await c.find().exec();
+                    return docs.length === 1;
+                });
+                await server.close();
+                await c.database.destroy();
+            });
             it('should respect the pull.responseModifier', async () => {
                 const checkpointIterationModeAmount = 5;
                 const eventObservationModeAmount = 3;

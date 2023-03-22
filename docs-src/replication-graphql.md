@@ -317,7 +317,8 @@ const replicationState = replicateGraphQL(
         pull: {
             batchSize: 100,
             queryBuilder: pullQueryBuilder,
-            streamQueryBuilder: pullStreamQueryBuilder
+            streamQueryBuilder: pullStreamQueryBuilder,
+            includeWsHeaders: false, // Includes headers as connection parameter to Websocket.
         },
         deletedField: 'deleted'
     }
