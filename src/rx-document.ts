@@ -339,7 +339,7 @@ export const basePrototype = {
                 document: this
             });
         }
-        await beforeDocumentUpdateWrite(this.collection, newData, oldData);
+        await beforeDocumentUpdateWrite(this.collection, newData, oldData, this);
         const writeResult = await this.collection.storageInstance.bulkWrite([{
             previous: oldData,
             document: newData
@@ -513,7 +513,8 @@ export function isRxDocument(obj: any): boolean {
 export function beforeDocumentUpdateWrite<RxDocType>(
     collection: RxCollection<RxDocType>,
     newData: RxDocumentWriteData<RxDocType>,
-    oldData: RxDocumentData<RxDocType>
+    oldData: RxDocumentData<RxDocType>,
+    oldDocument?: RxDocument<RxDocType>
 ): Promise<any> {
     /**
      * Meta values must always be merged
@@ -531,5 +532,5 @@ export function beforeDocumentUpdateWrite<RxDocType>(
     if (overwritable.isDevMode()) {
         collection.schema.validateChange(oldData, newData);
     }
-    return collection._runHooks('pre', 'save', newData);
+    return collection._runHooks('pre', 'save', newData, oldDocument);
 }
