@@ -1,3 +1,4 @@
+import { countUntilNotMatching } from './plugins/utils';
 import { getPrimaryFieldOfPrimaryKey } from './rx-schema-helper';
 import type {
     FilledMangoQuery,
@@ -10,7 +11,18 @@ import type {
 
 
 export const INDEX_MAX = String.fromCharCode(65535);
-export const INDEX_MIN = -Infinity;
+
+/**
+ * Do not use -Infinity here because it would be
+ * transformed to null on JSON.stringify() which can break things
+ * when the query plan is send to the storage as json.
+ * @link https://stackoverflow.com/a/16644751
+ * Notice that for IndexedDB IDBKeyRange we have
+ * to transform the value back to -Infinity
+ * before we can use it in IDBKeyRange.bound.
+ *
+ */
+export const INDEX_MIN = Number.MIN_VALUE;
 
 /**
  * Returns the query plan which contains
@@ -52,13 +64,13 @@ export function getQueryPlan<RxDocType>(
             const operators = matcher ? Object.keys(matcher) : [];
 
             let matcherOpts: RxQueryPlanerOpts = {} as any;
-
             if (
                 !matcher ||
                 !operators.length
             ) {
+                const startKey = inclusiveStart ? INDEX_MIN : INDEX_MAX;
                 matcherOpts = {
-                    startKey: inclusiveStart ? INDEX_MIN : INDEX_MAX,
+                    startKey,
                     endKey: inclusiveEnd ? INDEX_MAX : INDEX_MIN,
                     inclusiveStart: true,
                     inclusiveEnd: true
@@ -86,7 +98,6 @@ export function getQueryPlan<RxDocType>(
             if (typeof matcherOpts.inclusiveEnd === 'undefined') {
                 matcherOpts.inclusiveEnd = true;
             }
-
 
             if (inclusiveStart && !matcherOpts.inclusiveStart) {
                 inclusiveStart = false;
@@ -248,22 +259,42 @@ export function rateQueryPlan<RxDocType>(
     queryPlan: RxQueryPlan
 ): number {
     let quality: number = 0;
+    const addQuality = (value: number) => {
+        if (value > 0) {
+            quality = quality + value;
+        }
+    };
 
     const pointsPerMatchingKey = 10;
-    const idxOfFirstMinStartKey = queryPlan.startKeys.findIndex(keyValue => keyValue === INDEX_MIN);
-    if (idxOfFirstMinStartKey > 0) {
-        quality = quality + (idxOfFirstMinStartKey * pointsPerMatchingKey);
-    }
 
-    const idxOfFirstMaxEndKey = queryPlan.endKeys.findIndex(keyValue => keyValue === INDEX_MAX);
-    if (idxOfFirstMaxEndKey > 0) {
-        quality = quality + (idxOfFirstMaxEndKey * pointsPerMatchingKey);
-    }
+    const nonMinKeyCount = countUntilNotMatching(queryPlan.startKeys, keyValue => keyValue !== INDEX_MIN && keyValue !== INDEX_MAX);
+    addQuality(nonMinKeyCount * pointsPerMatchingKey);
 
-    const pointsIfNoReSortMustBeDone = 5;
-    if (queryPlan.sortFieldsSameAsIndexFields) {
-        quality = quality + pointsIfNoReSortMustBeDone;
-    }
+    const nonMaxKeyCount = countUntilNotMatching(queryPlan.startKeys, keyValue => keyValue !== INDEX_MAX && keyValue !== INDEX_MIN);
+    addQuality(nonMaxKeyCount * pointsPerMatchingKey);
+
+    const equalKeyCount = countUntilNotMatching(queryPlan.startKeys, (keyValue, idx) => {
+        if (keyValue === queryPlan.endKeys[idx]) {
+            return true;
+        } else {
+            return false;
+        }
+    });
+    addQuality(equalKeyCount * pointsPerMatchingKey * 1.5);
+
+    const pointsIfNoReSortMustBeDone = queryPlan.sortFieldsSameAsIndexFields ? 5 : 0;
+    addQuality(pointsIfNoReSortMustBeDone);
+
+    // console.log('rateQueryPlan() result:');
+    // console.log({
+    //     query,
+    //     queryPlan,
+    //     nonMinKeyCount,
+    //     nonMaxKeyCount,
+    //     equalKeyCount,
+    //     pointsIfNoReSortMustBeDone,
+    //     quality
+    // });
 
     return quality;
 }

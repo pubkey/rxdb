@@ -112,6 +112,7 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                 if (!queryData) {
                     continue;
                 }
+
                 const normalizedQuery = deepFreeze(normalizeMangoQuery(schema, queryData.query));
                 const skip = normalizedQuery.skip ? normalizedQuery.skip : 0;
                 const limit = normalizedQuery.limit ? normalizedQuery.limit : Infinity;
@@ -270,7 +271,7 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                     },
                     sort: [{ passportId: 'asc' }]
                 },
-                selectorSatisfiedByIndex: false,
+                selectorSatisfiedByIndex: true,
                 expectedResultDocIds: [
                     'cc-looong-id',
                     'dd',
@@ -832,6 +833,122 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                 ]
             }
         ]
+    });
+    /**
+     * @link https://github.com/pubkey/rxdb/issues/4571
+     */
+    testCorrectQueries({
+        testTitle: '$eq operator with composite primary key',
+        data: [
+            {
+                id: 'one',
+                key: 'one|1|1',
+                string: 'one',
+                number: 1,
+                integer: 1,
+            },
+            {
+                id: 'two',
+                key: 'two|1|1',
+                string: 'two',
+                number: 1,
+                integer: 1,
+            },
+            {
+                id: 'three',
+                key: 'one|2|1',
+                string: 'one',
+                number: 2,
+                integer: 1,
+            },
+        ],
+        schema: {
+            version: 0,
+            indexes: ['string', ['number', 'integer']],
+            primaryKey: {
+                key: 'key',
+                fields: ['string', 'number', 'integer'],
+                separator: '|',
+            },
+            type: 'object',
+            properties: {
+                key: {
+                    maxLength: 100,
+                    type: 'string',
+                },
+                id: {
+                    maxLength: 100,
+                    type: 'string',
+                },
+                string: {
+                    maxLength: 50,
+                    type: 'string',
+                },
+                number: {
+                    type: 'number',
+                    minimum: 0,
+                    maximum: 100,
+                    multipleOf: 1,
+                },
+                integer: {
+                    type: 'integer',
+                    minimum: 0,
+                    maximum: 100,
+                    multipleOf: 1,
+                },
+            },
+            required: ['id', 'key', 'string', 'number', 'integer'],
+        },
+        queries: [
+            {
+                info: '$eq primary key',
+                query: {
+                    selector: {
+                        id: {
+                            $eq: 'one',
+                        },
+                    },
+                    sort: [{ id: 'asc' }],
+                },
+                expectedResultDocIds: ['one|1|1'],
+            },
+            {
+                info: '$eq by key',
+                query: {
+                    selector: {
+                        key: {
+                            $eq: 'one|1|1',
+                        },
+                    },
+                    sort: [{ id: 'asc' }],
+                },
+                expectedResultDocIds: ['one|1|1'],
+            },
+            {
+                info: '$eq by composite key fields',
+                query: {
+                    selector: {
+                        $and: [
+                            {
+                                string: {
+                                    $eq: 'one',
+                                },
+                            },
+                            {
+                                number: {
+                                    $eq: 1,
+                                },
+                                integer: {
+                                    $eq: 1,
+                                },
+                            },
+                        ],
+                    },
+                    sort: [{ number: 'desc', integer: 'desc' }],
+                },
+                expectedResultDocIds: ['one|1|1'],
+            },
+        ],
     });
     testCorrectQueries({
         testTitle: '$type',
