@@ -420,9 +420,7 @@ export async function handleRemoteRequest(
     }
 }
 
-let t = 0;
 export async function waitUntilHasLeader(leaderElector: LeaderElector) {
-    const x = t++;
     leaderElector.awaitLeadership().catch(() => { });
     await promiseWait(0);
     while (true) {
