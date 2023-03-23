@@ -274,7 +274,6 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                     conflictHandler: THROWING_CONFLICT_HANDLER,
                     hashFunction: defaultHashSha256
                 });
-
                 await awaitRxStorageReplicationFirstInSync(replicationState);
                 await awaitRxStorageReplicationInSync(replicationState);
 
