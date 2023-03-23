@@ -346,14 +346,11 @@ export async function requestRemoteInstance(
         new Promise<WinningPromise>(res => {
             timeout = setTimeout(() => {
                 console.log('TIMEOPUT ERROR');
-                res({ error: 'requestRemoteInstance() timeout errorored', retry: false });
+                res({ error: new Error('requestRemoteInstance() timeout errorored'), retry: false });
             }, 20000);
         })
     ]).then(firstResolved => {
         clearTimeout(timeout);
-        if (firstResolved.error) {
-            throw new Error(firstResolved.error);
-        }
 
         // clean up listeners
         broadcastChannel.removeEventListener('message', responseListener);
