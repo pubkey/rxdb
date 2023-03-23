@@ -46,6 +46,7 @@ Create a package that normalizes and optimizes mango queries.
 - optimization: detect can-never-match queries (p.e. impossible $eq values or empty $in array)
 - optimization: merge $and operators
 - Use index for $regex query if possible https://www.mongodb.com/docs/manual/reference/operator/query/regex/#index-use
+- If $eq on primaryKey and has other operators, use a find-by-id and the filter the results on the query operators.
 
 ## Add plugin for attachments compression
 

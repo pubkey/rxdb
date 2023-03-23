@@ -118,7 +118,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
                 // this instance is leader now, so it has to reply to queries from other instances
                 ensureNotFalsy(this.internals.leaderElector).broadcastChannel
                     .addEventListener('message', (msg) => handleRemoteRequest(copiedSelf as any, msg));
-            });
+            }).catch(() => {});
         }
     }
 

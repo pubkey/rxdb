@@ -3,6 +3,8 @@
 
 <!-- CHANGELOG NEWEST -->
 - FIX multiple problems in the query planner
+- ADD 'includeWsHeaders' property for GraphQL replication [#4533](https://github.com/pubkey/rxdb/pull/4533)
+- UPDATE [broadcast-channel](https://github.com/pubkey/broadcast-channel) to version `5.0.0`
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

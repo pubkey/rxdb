@@ -24,6 +24,7 @@ import './unit/rx-storage-lokijs.test';
 import './unit/rx-storage-dexie.test';
 import './unit/rx-storage-remote.test';
 
+
 import './unit/instance-of-check.test';
 import './unit/rx-schema.test';
 import './unit/bug-report.test';

@@ -14,7 +14,8 @@ export const GRAPHQL_WEBSOCKET_BY_URL: Map<string, WebsocketWithRefCount> = new 
 
 
 export function getGraphQLWebSocket(
-    url: string
+    url: string,
+    headers?: { [k: string]: string; }
 ): Client {
     let has = GRAPHQL_WEBSOCKET_BY_URL.get(url);
     if (!has) {
@@ -22,6 +23,7 @@ export function getGraphQLWebSocket(
             url,
             shouldRetry: () => true,
             webSocketImpl: IsomorphicWebSocket,
+            connectionParams: headers ? { headers } : undefined,
         });
         has = {
             url,
