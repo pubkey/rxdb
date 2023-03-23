@@ -3173,8 +3173,6 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
             // insert a document on A
             await instances.a.bulkWrite([{ document: getWriteData() }], testContext);
 
-            console.log('################# 1');
-
             const preparedQuery: PreparedQuery<TestDocType> = config.storage.getStorage()
                 .statics
                 .prepareQuery<TestDocType>(
@@ -3187,20 +3185,15 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     }
                 );
 
-            console.log('################# 2');
             const queryResultBefore = await instances.b.query(preparedQuery);
-            console.log('################# 3');
             assert.ok(queryResultBefore);
 
             // close A while starting a query on B
-            console.log('################# 4');
             const queryResultPromise = instances.b.query(preparedQuery);
             instances.a.close();
-            console.log('################# 5');
 
             // the query should still resolve.
             await queryResultPromise;
-            console.log('################# 6');
 
             await instances.b.close();
         });
