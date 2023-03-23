@@ -408,9 +408,14 @@ export async function handleRemoteRequest(
 
 export async function waitUntilHasLeader(leaderElector: LeaderElector) {
     while (
-        !leaderElector.hasLeader
+        !(await leaderElector.hasLeader())
     ) {
-        await leaderElector.applyOnce();
+        /**
+         * Trigger applying for leadership
+         * but do not await it in case another
+         * instance becomes leader first.
+         */
+        leaderElector.awaitLeadership();
         await promiseWait(0);
     }
 }
