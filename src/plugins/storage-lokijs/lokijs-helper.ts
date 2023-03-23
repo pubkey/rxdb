@@ -336,8 +336,6 @@ export async function requestRemoteInstance(
         databaseName: instance.databaseName,
         collectionName: instance.collectionName
     });
-
-
     let timeout: ReturnType<typeof setTimeout>;
     return Promise.race([
         leaderDeadPromise,
