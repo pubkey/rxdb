@@ -16,7 +16,7 @@ import {
     add as unloadAdd,
     AddReturn
 } from 'unload';
-import { ensureNotFalsy, flatClone, getProperty, promiseWait, randomCouchString } from '../utils';
+import { ensureNotFalsy, flatClone, getProperty, now, promiseWait, randomCouchString } from '../utils';
 import { LokiSaveQueue } from './loki-save-queue';
 import { newRxError } from '../../rx-error';
 import {
@@ -277,6 +277,7 @@ export async function requestRemoteInstance(
     operation: string,
     params: any[]
 ): Promise<any | any[]> {
+    console.log('requestRemoteInstance() - 0');
     const isRxStorageInstanceLoki = typeof (instance as any).query === 'function';
     const messageType = isRxStorageInstanceLoki ? LOKI_BROADCAST_CHANNEL_MESSAGE_TYPE : LOKI_KEY_OBJECT_BROADCAST_CHANNEL_MESSAGE_TYPE;
 
@@ -303,6 +304,7 @@ export async function requestRemoteInstance(
     });
     const requestId = randomCouchString(12);
     let responseListener: OnMessageHandler<any>;
+    console.log('requestRemoteInstance() - 1');
     const responsePromise = new Promise<WinningPromise>((res, _rej) => {
         responseListener = (msg: any) => {
             if (
@@ -337,6 +339,7 @@ export async function requestRemoteInstance(
         collectionName: instance.collectionName
     });
     let timeout: ReturnType<typeof setTimeout>;
+    console.log('requestRemoteInstance() - 2');
     return Promise.race([
         leaderDeadPromise,
         responsePromise,
@@ -349,6 +352,7 @@ export async function requestRemoteInstance(
         // })
 
     ]).then(firstResolved => {
+        console.log('requestRemoteInstance() - 3');
         if (timeout) {
             clearTimeout(timeout);
         }
@@ -358,6 +362,7 @@ export async function requestRemoteInstance(
         broadcastChannel.removeEventListener('internal', whenDeathListener);
 
         if (firstResolved.retry) {
+            console.log('requestRemoteInstance() - retry');
             /**
              * The leader died while a remote request was running
              * we re-run the whole operation.
@@ -370,6 +375,7 @@ export async function requestRemoteInstance(
             if (firstResolved.error) {
                 throw firstResolved.error;
             } else {
+                console.log('requestRemoteInstance() - return');
                 return firstResolved.result;
             }
         }
@@ -415,23 +421,34 @@ export async function handleRemoteRequest(
     }
 }
 
+let t = 0;
 export async function waitUntilHasLeader(leaderElector: LeaderElector) {
+    const x = t++;
+    console.log('waitUntilHasLeader(' + x + ') START');
+    leaderElector.awaitLeadership().catch(() => { });
     await promiseWait(0);
     while (true) {
+        console.log('waitUntilHasLeader(' + x + ') LOOP');
         const has = await leaderElector.hasLeader();
         if (
             has ||
-            leaderElector.broadcastChannel.isClosed
+            leaderElector.broadcastChannel.isClosed ||
+            leaderElector.isDead
         ) {
+            console.log('waitUntilHasLeader(' + x + ') END');
             return;
         }
 
-        /**
-         * Trigger applying for leadership
-         * but do not await it in case another
-         * instance becomes leader first.
-         */
-        leaderElector.awaitLeadership();
+        if (leaderElector.applyOnce) {
+            await leaderElector.applyOnce();
+        } else {
+            /**
+             * Trigger applying for leadership
+             * but do not await it in case another
+             * instance becomes leader first.
+             */
+            leaderElector.awaitLeadership().catch(() => { });
+        }
         await promiseWait(20);
     }
 }
