@@ -349,6 +349,7 @@ export async function requestRemoteInstance(
         //         res({ error: new Error('requestRemoteInstance() timeout errorored'), retry: false });
         //     }, 500);
         // })
+
     ]).then(firstResolved => {
         if (timeout) {
             clearTimeout(timeout);
