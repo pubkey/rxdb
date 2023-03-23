@@ -338,10 +338,22 @@ export async function requestRemoteInstance(
     });
 
 
+    let timeout: ReturnType<typeof setTimeout>;
     return Promise.race([
         leaderDeadPromise,
-        responsePromise
+        responsePromise,
+        // TODO remove timeout
+        new Promise<WinningPromise>(res => {
+            timeout = setTimeout(() => {
+                console.log('TIMEOPUT ERROR');
+                res({ error: 'requestRemoteInstance() timeout errorored', retry: false });
+            }, 20000);
+        })
     ]).then(firstResolved => {
+        clearTimeout(timeout);
+        if (firstResolved.error) {
+            throw new Error(firstResolved.error);
+        }
 
         // clean up listeners
         broadcastChannel.removeEventListener('message', responseListener);
@@ -405,18 +417,24 @@ export async function handleRemoteRequest(
     }
 }
 
-
 export async function waitUntilHasLeader(leaderElector: LeaderElector) {
-    while (
-        !(await leaderElector.hasLeader())
-    ) {
+    await promiseWait(0);
+    while (true) {
+        const has = await leaderElector.hasLeader();
+        if (
+            has ||
+            leaderElector.broadcastChannel.isClosed
+        ) {
+            return;
+        }
+
         /**
          * Trigger applying for leadership
          * but do not await it in case another
          * instance becomes leader first.
          */
         leaderElector.awaitLeadership();
-        await promiseWait(0);
+        await promiseWait(20);
     }
 }
 
