@@ -14,6 +14,13 @@ import {
 } from './dexie-helper';
 import type { RxStorageInstanceDexie } from './rx-storage-instance-dexie';
 
+export function mapKeyForKeyRange(k: any) {
+    if (k === INDEX_MIN) {
+        return -Infinity;
+    } else {
+        return k;
+    }
+}
 
 export function getKeyRangeByQueryPlan(
     queryPlan: RxQueryPlan,
@@ -27,15 +34,8 @@ export function getKeyRangeByQueryPlan(
         }
     }
 
-    function mapKey(k: any) {
-        if (k === INDEX_MIN) {
-            return -Infinity;
-        } else {
-            return k;
-        }
-    }
-    const startKeys = queryPlan.startKeys.map(mapKey);
-    const endKeys = queryPlan.endKeys.map(mapKey);
+    const startKeys = queryPlan.startKeys.map(mapKeyForKeyRange);
+    const endKeys = queryPlan.endKeys.map(mapKeyForKeyRange);
 
     let ret: any;
     /**
