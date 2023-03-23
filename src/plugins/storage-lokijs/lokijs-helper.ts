@@ -342,15 +342,17 @@ export async function requestRemoteInstance(
     return Promise.race([
         leaderDeadPromise,
         responsePromise,
-        // TODO remove timeout
-        new Promise<WinningPromise>(res => {
-            timeout = setTimeout(() => {
-                console.log('TIMEOPUT ERROR');
-                res({ error: new Error('requestRemoteInstance() timeout errorored'), retry: false });
-            }, 20000);
-        })
+        // // comment in timeout to debug
+        // new Promise<WinningPromise>(res => {
+        //     timeout = setTimeout(() => {
+        //         console.log('TIMEOPUT ERROR');
+        //         res({ error: new Error('requestRemoteInstance() timeout errorored'), retry: false });
+        //     }, 500);
+        // })
     ]).then(firstResolved => {
-        clearTimeout(timeout);
+        if (timeout) {
+            clearTimeout(timeout);
+        }
 
         // clean up listeners
         broadcastChannel.removeEventListener('message', responseListener);
