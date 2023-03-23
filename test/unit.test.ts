@@ -24,7 +24,6 @@ import './unit/rx-storage-lokijs.test';
 import './unit/rx-storage-dexie.test';
 import './unit/rx-storage-remote.test';
 
-import './unit/replication-protocol.test';
 
 import './unit/instance-of-check.test';
 import './unit/rx-schema.test';
@@ -52,6 +51,7 @@ import './unit/reactive-document.test';
 import './unit/cleanup.test';
 import './unit/hooks.test';
 import './unit/orm.test';
+import './unit/replication-protocol.test';
 import './unit/replication.test';
 import './unit/replication-graphql.test';
 import './unit/replication-couchdb.test';
