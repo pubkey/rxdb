@@ -19,7 +19,7 @@ export const INDEX_MAX = String.fromCharCode(65535);
  * @link https://stackoverflow.com/a/16644751
  *
  */
-export const INDEX_MIN = String.fromCharCode(0);
+export const INDEX_MIN = Number.MIN_VALUE;
 
 /**
  * Returns the query plan which contains
