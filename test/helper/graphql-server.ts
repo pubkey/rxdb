@@ -309,6 +309,14 @@ export async function spawn(
                 // Set up the WebSocket for handling GraphQL subscriptions
                 const subServer = useServer(
                     {
+                        onConnect: (ctx) => {
+                            if (reqHeaderName) { // Only check auth when required header was set
+                                const headers = ctx.connectionParams?.headers as Record<string, string>;
+                                if (headers[reqHeaderName] !== reqHeaderValue) {
+                                    return false;
+                                }
+                            }
+                        },
                         schema,
                         execute,
                         subscribe,

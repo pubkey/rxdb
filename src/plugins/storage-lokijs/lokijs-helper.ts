@@ -16,7 +16,13 @@ import {
     add as unloadAdd,
     AddReturn
 } from 'unload';
-import { ensureNotFalsy, flatClone, getProperty, promiseWait, randomCouchString } from '../utils';
+import {
+    ensureNotFalsy,
+    flatClone,
+    getProperty,
+    promiseWait,
+    randomCouchString
+} from '../utils';
 import { LokiSaveQueue } from './loki-save-queue';
 import { newRxError } from '../../rx-error';
 import {
@@ -336,12 +342,21 @@ export async function requestRemoteInstance(
         databaseName: instance.databaseName,
         collectionName: instance.collectionName
     });
-
-
+    let timeout: ReturnType<typeof setTimeout>;
     return Promise.race([
         leaderDeadPromise,
-        responsePromise
+        responsePromise,
+        // // comment in timeout to debug
+        // new Promise<WinningPromise>(res => {
+        //     timeout = setTimeout(() => {
+        //         res({ error: new Error('requestRemoteInstance() timeout errorored'), retry: false });
+        //     }, 500);
+        // })
+
     ]).then(firstResolved => {
+        if (timeout) {
+            clearTimeout(timeout);
+        }
 
         // clean up listeners
         broadcastChannel.removeEventListener('message', responseListener);
@@ -405,13 +420,30 @@ export async function handleRemoteRequest(
     }
 }
 
-
 export async function waitUntilHasLeader(leaderElector: LeaderElector) {
-    while (
-        !leaderElector.hasLeader
-    ) {
-        await leaderElector.applyOnce();
-        await promiseWait(0);
+    leaderElector.awaitLeadership().catch(() => { });
+    await promiseWait(0);
+    while (true) {
+        const has = await leaderElector.hasLeader();
+        if (
+            has ||
+            leaderElector.broadcastChannel.isClosed ||
+            leaderElector.isDead
+        ) {
+            return;
+        }
+
+        if (leaderElector.applyOnce) {
+            await leaderElector.applyOnce();
+        } else {
+            /**
+             * Trigger applying for leadership
+             * but do not await it in case another
+             * instance becomes leader first.
+             */
+            leaderElector.awaitLeadership().catch(() => { });
+        }
+        await promiseWait(20);
     }
 }
 
