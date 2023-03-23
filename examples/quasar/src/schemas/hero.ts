@@ -1,8 +1,7 @@
 import { RxHeroDocumentType } from 'src/types/hero';
 import { RxJsonSchema } from 'rxdb';
 
-export const schema: RxJsonSchema<RxHeroDocumentType> = {
-  $id: 'HeroSchema',
+export const HeroSchema = {
   title: 'hero schema',
   description: 'describes a simple hero',
   version: 0,
@@ -10,6 +9,9 @@ export const schema: RxJsonSchema<RxHeroDocumentType> = {
   primaryKey: 'id',
   type: 'object',
   properties: {
+    id: {
+      type: 'string',
+    },
     slug: {
       type: 'string',
       default: '',
@@ -36,8 +38,8 @@ export const schema: RxJsonSchema<RxHeroDocumentType> = {
       default: 100,
     },
     team: {
-      description: 'color of the team this hero belongs to',
       type: 'string',
+      description: 'color of the team this hero belongs to',
     },
     skills: {
       type: 'array',
@@ -64,6 +66,8 @@ export const schema: RxJsonSchema<RxHeroDocumentType> = {
     },
   },
   required: ['name', 'slug', 'color', 'hp', 'maxHP'],
-};
+} as const;
 
-export default schema;
+export const RxHeroSchema: RxJsonSchema<RxHeroDocumentType> = {
+  ...HeroSchema
+};

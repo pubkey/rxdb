@@ -160,7 +160,7 @@
     "@feathersjs/errors" "^5.0.1"
     sift "^17.0.1"
 
-"@feathersjs/schema@^5.0.1":
+"@feathersjs/schema@5.0.1", "@feathersjs/schema@^5.0.1":
   version "5.0.1"
   resolved "https://registry.yarnpkg.com/@feathersjs/schema/-/schema-5.0.1.tgz#7e1bd17261eb0efbeba65c63f0268c534e33687d"
   integrity sha512-L2EEtitnrb3zONkYPyi64vXx8JWT1yQm9V00eVGzTKqW1m/E0TDa7GHtrg8Il9Q11FJfnf/C1f4vic2j26ZHSQ==

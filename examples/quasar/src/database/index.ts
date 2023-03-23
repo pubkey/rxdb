@@ -11,7 +11,7 @@ import {
   RxHeroesCollections,
   RxHeroDocumentType,
 } from 'src/types/hero';
-import heroSchema from 'src/schemas/hero';
+import { RxHeroSchema } from 'src/schemas/hero';
 
 export async function createDatabase() {
   if (process.env.DEV) {
@@ -30,7 +30,7 @@ export async function createDatabase() {
   // await db.waitForLeadership();
   await db.addCollections({
     heroes: {
-      schema: heroSchema,
+      schema: RxHeroSchema,
       methods: {
         hpPercent(this: RxHeroDocument): number {
           return (this.hp / this.maxHP) * 100;

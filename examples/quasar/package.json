@@ -16,6 +16,7 @@
     "@feathersjs/express": "5.0.1",
     "@feathersjs/feathers": "5.0.1",
     "@feathersjs/memory": "5.0.1",
+    "@feathersjs/schema": "5.0.1",
     "@quasar/extras": "^1.0.0",
     "@vueuse/core": "^9.13.0",
     "@vueuse/rxjs": "^9.13.0",
