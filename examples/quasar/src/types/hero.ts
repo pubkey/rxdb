@@ -1,17 +1,22 @@
 import { RxDocument, RxCollection, RxDatabase } from 'rxdb';
 
-export interface RxHeroDocumentType {
+export interface Hero {
+  id: string;
   name: string;
   slug: string;
   color: string;
   maxHP: number;
   hp: number;
   team?: string;
-  skills: Array<{
+  skills?: Array<{
     name?: string;
     damage?: string;
   }>;
+  updatedAt?: number;
+  _deleted?: boolean;
 }
+
+export type RxHeroDocumentType = Hero
 
 // ORM methods
 interface RxHeroDocMethods {

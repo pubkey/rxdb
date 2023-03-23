@@ -47,18 +47,20 @@ export const useHeroListStore = defineStore('hero-list', () => {
 
   let subscription: Subscription;
   function fetch(this: HeroListStore) {
-    const query = this.database.heroes.find({
-      selector: {},
-      sort: [{ name: 'asc' }],
-    });
-
-    subscription = query.$.pipe(
-      tap(() => {
-        setTimeout(() => (loading.value = false), 1000);
-      })
-    ).subscribe((result: RxHeroDocument[]) => {
-      heroes.value = result;
-    });
+    if (process.env.CLIENT) {
+      const query = this.database.heroes.find({
+        selector: {},
+        sort: [{ name: 'asc' }],
+      });
+  
+      subscription = query.$.pipe(
+        tap(() => {
+          setTimeout(() => (loading.value = false), 1000);
+        })
+      ).subscribe((result: RxHeroDocument[]) => {
+        heroes.value = result;
+      });
+    }
   }
 
   function remove(hero: RxHeroDocument) {

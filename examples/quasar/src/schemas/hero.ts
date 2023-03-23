@@ -1,12 +1,13 @@
 import { RxHeroDocumentType } from 'src/types/hero';
 import { RxJsonSchema } from 'rxdb';
 
-const schema: RxJsonSchema<RxHeroDocumentType> = {
+export const schema: RxJsonSchema<RxHeroDocumentType> = {
+  $id: 'HeroSchema',
   title: 'hero schema',
   description: 'describes a simple hero',
   version: 0,
   keyCompression: false,
-  primaryKey: 'slug',
+  primaryKey: 'id',
   type: 'object',
   properties: {
     slug: {
@@ -55,8 +56,14 @@ const schema: RxJsonSchema<RxHeroDocumentType> = {
       },
       default: [],
     },
+    updatedAt: {
+      type: 'number'
+    },
+    _deleted: {
+      type: 'boolean'
+    },
   },
-  required: ['name', 'color', 'hp', 'maxHP', 'skills'],
+  required: ['name', 'slug', 'color', 'hp', 'maxHP'],
 };
 
 export default schema;

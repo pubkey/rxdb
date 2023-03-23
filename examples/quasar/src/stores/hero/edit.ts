@@ -12,15 +12,17 @@ export const useHeroEditStore = defineStore('hero-edit', () => {
 
   let subscription: Subscription;
   async function fetch(this: HeroEditStore, slug: string) {
-    const data = await this.database.heroes.findOne(slug).exec();
-    hero.value = data as RxHeroDocument;
-    hp.value = hero.value.hp;
-
-    subscription = hero.value.$.subscribe((_hero) => {
-      hero.value = _hero;
-      synced.value = _hero.hp === hp.value;
-      deleted.value = _hero.deleted;
-    });
+    if (process.env.CLIENT) {
+      const data = await this.database.heroes.findOne(slug).exec();
+      hero.value = data as RxHeroDocument;
+      hp.value = hero.value.hp;
+  
+      subscription = hero.value.$.subscribe((_hero) => {
+        hero.value = _hero;
+        synced.value = _hero.hp === hp.value;
+        deleted.value = _hero.deleted;
+      });
+    }
   }
 
   function resync() {

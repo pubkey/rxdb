@@ -12,14 +12,23 @@
   },
   "dependencies": {
     "@faker-js/faker": "^7.6.0",
+    "@feathersjs/configuration": "5.0.1",
+    "@feathersjs/express": "5.0.1",
+    "@feathersjs/feathers": "5.0.1",
+    "@feathersjs/memory": "5.0.1",
+    "@feathersjs/schema": "5.0.1",
     "@quasar/extras": "^1.0.0",
     "@vueuse/core": "^9.13.0",
     "@vueuse/rxjs": "^9.13.0",
+    "feathers-swagger": "3.0.0",
+    "helmet": "6.0.1",
     "pinia": "^2.0.33",
     "quasar": "^2.6.0",
     "rxdb": "^14.2.1",
+    "swagger-ui-dist": "5.0.0-alpha.4",
     "vue": "^3.0.0",
-    "vue-router": "^4.0.0"
+    "vue-router": "^4.0.0",
+    "winston": "3.8.2"
   },
   "devDependencies": {
     "@quasar/app-vite": "^1.0.0",
