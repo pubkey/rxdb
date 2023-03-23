@@ -1345,5 +1345,18 @@ describe('rx-query.test.ts', () => {
             assert.strictEqual(result.length, 0);
             c.database.remove();
         });
+        it('#4586 query-builder copies other param', async () => {
+            const col = await humansCollection.create(0);
+            const q = col.find();
+            const key = 'some-plugin-key';
+            const data = 'some-plugin-data';
+            q.other[key] = data;
+
+            const newQ = q.where('name').ne('Alice');
+
+            assert.strictEqual(newQ.other[key], data);
+
+            col.database.destroy();
+        });
     });
 });

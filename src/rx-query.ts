@@ -69,9 +69,6 @@ export class RxQueryBase<
     // used in the query-cache to determine if the RxQuery can be cleaned up.
     public _lastEnsureEqual = 0;
 
-    // used by some plugins
-    public other: any = {};
-
     public uncached = false;
 
     // used to count the subscribers to the query
@@ -103,7 +100,9 @@ export class RxQueryBase<
     constructor(
         public op: RxQueryOP,
         public mangoQuery: Readonly<MangoQuery<RxDocType>>,
-        public collection: RxCollection<RxDocType>
+        public collection: RxCollection<RxDocType>,
+        // used by some plugins
+        public other: any = {}
     ) {
         if (!mangoQuery) {
             this.mangoQuery = _getDefaultQuery();
@@ -484,15 +483,17 @@ export function tunnelQueryCache<RxDocumentType, RxQueryResult>(
 export function createRxQuery<RxDocType>(
     op: RxQueryOP,
     queryObj: MangoQuery<RxDocType>,
-    collection: RxCollection<RxDocType>
+    collection: RxCollection<RxDocType>,
+    other?: any
 ) {
     runPluginHooks('preCreateRxQuery', {
         op,
         queryObj,
-        collection
+        collection,
+        other
     });
 
-    let ret = new RxQueryBase<RxDocType>(op, queryObj, collection);
+    let ret = new RxQueryBase<RxDocType>(op, queryObj, collection, other);
 
     // ensure when created with same params, only one is created
     ret = tunnelQueryCache(ret);
