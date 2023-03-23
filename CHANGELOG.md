@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- FIX multiple problems in the query planner
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

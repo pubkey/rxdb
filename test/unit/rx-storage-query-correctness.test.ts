@@ -113,10 +113,6 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                     continue;
                 }
 
-                console.log(':::::::::::::::::::::::::::::::::');
-                console.log(':::::::::::::::::::::::::::::::::');
-                console.log(':::::::::::::::::::::::::::::::::');
-
                 const normalizedQuery = deepFreeze(normalizeMangoQuery(schema, queryData.query));
                 const skip = normalizedQuery.skip ? normalizedQuery.skip : 0;
                 const limit = normalizedQuery.limit ? normalizedQuery.limit : Infinity;
@@ -162,8 +158,6 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                 }
 
                 // Test output of RxStorageInstance.query();
-                console.log('preparedQuery:');
-                console.dir(preparedQuery);
                 const resultFromStorage = await storageInstance.query(preparedQuery);
                 const resultIds = resultFromStorage.documents.map(d => (d as any)[primaryPath]);
                 try {
@@ -277,7 +271,7 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                     },
                     sort: [{ passportId: 'asc' }]
                 },
-                selectorSatisfiedByIndex: false,
+                selectorSatisfiedByIndex: true,
                 expectedResultDocIds: [
                     'cc-looong-id',
                     'dd',
