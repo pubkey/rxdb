@@ -19,7 +19,7 @@
     "copyfiles": "2.4.1",
     "testcafe": "2.1.0",
     "typescript": "4.9.5",
-    "vite": "4.2.0",
+    "vite": "4.2.1",
     "vite-plugin-top-level-await": "1.3.0"
   },
   "dependencies": {
