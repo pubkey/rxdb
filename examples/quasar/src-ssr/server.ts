@@ -9,12 +9,8 @@
  * Make sure to yarn add / npm install (in your project root)
  * anything you import here (except for express and compression).
  */
-import { feathers } from '@feathersjs/feathers'
-import express, { static as serveStatic, json, urlencoded, rest } from '@feathersjs/express'
-import configuration from "@feathersjs/configuration";
-import swagger from 'feathers-swagger';
-import compression from 'compression';
-import helmet from "helmet";
+import { static as serveStatic } from '@feathersjs/express'
+import { createApp } from 'app/src-api';
 import {
   ssrClose,
   ssrCreate,
@@ -22,7 +18,6 @@ import {
   ssrRenderPreloadTag,
   ssrServeStaticContent,
 } from 'quasar/wrappers';
-import { HeroService } from './middlewares/heroes';
 
 /**
  * Create your webserver and return its instance.
@@ -31,45 +26,6 @@ import { HeroService } from './middlewares/heroes';
  *
  * Should NOT be async!
  */
-
-interface ServiceTypes {
-  "api/heroes": HeroService;
-}
-
-export type Application = ReturnType<typeof createApp>
-
-function createApp () {
-  const app = express(feathers<ServiceTypes>())
-    .configure(swagger({
-      idType: 'string',
-      ui: swagger.swaggerUI({
-        docsPath: '/api/docs',
-      }),
-      specs: {
-        info: {
-          title: "A test",
-          description: "A description",
-          version: "1.0.0",
-        },
-      },
-    }));
-
-
-  app.configure(configuration());
-  // Enable security, CORS, compression, favicon and body parsing
-  app.use(
-    helmet({
-      contentSecurityPolicy: false,
-    })
-  );
-  if (process.env.PROD) {
-    app.use(compression())
-  }
-  app.use(json());
-  app.use(urlencoded({ extended: true }));
-  app.configure(rest());
-  return app;
-}
 
 export const create = ssrCreate((/* { ... } */) => {
   const app = createApp();

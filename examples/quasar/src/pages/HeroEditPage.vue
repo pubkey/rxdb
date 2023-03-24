@@ -56,41 +56,28 @@
   </q-dialog>
 </template>
 
-<script lang="ts">
-import { defineComponent, ref } from 'vue';
-import { preFetch } from 'quasar/wrappers';
-import { useHeroEditStore } from 'src/stores/hero/edit';
-
-export default defineComponent({
-  preFetch: preFetch(({ store, currentRoute }) => {
-    const heroStore = useHeroEditStore(store);
-    return heroStore.fetch(currentRoute.params.slug as string);
-  }),
-});
-</script>
-
 <script setup lang="ts">
-import { onScopeDispose } from 'vue';
+import { onScopeDispose, ref } from 'vue';
 import { QForm, useQuasar } from 'quasar';
 import { storeToRefs } from 'pinia';
 import { useRouter } from 'vue-router';
 import RxInput from 'src/components/RxInput.vue';
 import RxColorInput from 'src/components/RxColorInput.vue';
+import { useHeroEditStore } from 'src/stores/hero/edit';
 
 const heroStore = useHeroEditStore();
 const { hero, hp, deleted, synced } = storeToRefs(heroStore);
 const { resync, save } = heroStore;
 
 interface HeroEditPageProps {
-  slug: string;
+  id: string;
 }
 
 const router = useRouter();
 const quasar = useQuasar();
-defineProps<HeroEditPageProps>();
+const props = defineProps<HeroEditPageProps>();
 
 const form = ref<QForm>();
-
 onScopeDispose(async () => {
   heroStore.dispose();
 });
@@ -115,4 +102,6 @@ async function onFormSubmit() {
     quasar.notify({ message: 'Something is wrong', color: 'negative' });
   }
 }
+
+await heroStore.fetch(props.id);
 </script>

@@ -20,9 +20,9 @@ const routes: RouteRecordRaw[] = [
             component: () => import('pages/HeroCreatePage.vue'),
           },
           {
-            path: ':slug',
+            path: ':id',
             name: 'hero-edit',
-            component: () => import('pages/HeroEditPage.vue'),
+            component: () => import('src/pages/HeroEditPage.vue'),
             props: true,
           },
         ],

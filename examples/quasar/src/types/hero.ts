@@ -8,10 +8,6 @@ export interface Hero {
   maxHP: number;
   hp: number;
   team?: string;
-  skills?: Array<{
-    name?: string;
-    damage?: string;
-  }>;
   updatedAt?: number;
   _deleted?: boolean;
 }

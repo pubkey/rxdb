@@ -11,6 +11,8 @@ export const HeroSchema = {
   properties: {
     id: {
       type: 'string',
+      require: true,
+      maxLength: 36
     },
     slug: {
       type: 'string',
@@ -40,23 +42,6 @@ export const HeroSchema = {
     team: {
       type: 'string',
       description: 'color of the team this hero belongs to',
-    },
-    skills: {
-      type: 'array',
-      maxItems: 5,
-      uniqueItems: true,
-      items: {
-        type: 'object',
-        properties: {
-          name: {
-            type: 'string',
-          },
-          damage: {
-            type: 'number',
-          },
-        },
-      },
-      default: [],
     },
     updatedAt: {
       type: 'number'

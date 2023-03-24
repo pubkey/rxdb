@@ -27,7 +27,11 @@ module.exports = configure(function (/* ctx */) {
     // app boot file (/src/boot)
     // --> boot files are part of "main.js"
     // https://v2.quasar.dev/quasar-cli-vite/boot-files
-    boot: [{ path: 'database', server: false }],
+    boot: [
+      { path: 'feathers/server', client: false },
+      { path: 'feathers/client', server: false },
+      { path: 'database', server: false }
+    ],
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#css
     css: ['app.scss'],

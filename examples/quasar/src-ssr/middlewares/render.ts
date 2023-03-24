@@ -1,7 +1,5 @@
 import { RenderError } from '@quasar/app-vite';
 import { ssrMiddleware } from 'quasar/wrappers';
-import { Application } from '../server';
-import { notFound } from '@feathersjs/express'
 
 // This middleware should execute as last one
 // since it captures everything and tries to
