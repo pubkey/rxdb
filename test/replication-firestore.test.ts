@@ -9,7 +9,8 @@ import assert from 'assert';
 import {
     randomCouchString,
     RxCollection,
-    ensureNotFalsy
+    ensureNotFalsy,
+    WithDeleted
 } from '../';
 
 import * as firebase from 'firebase/app';
@@ -35,9 +36,11 @@ import {
 import {
     FirestoreOptions,
     replicateFirestore,
-    RxFirestoreReplicationState
+    RxFirestoreReplicationState,
+    SyncOptionsFirestore
 } from '../plugins/replication-firestore';
 import { ensureCollectionsHaveEqualState, ensureReplicationHasNoErrors } from './helper/test-util';
+import { HumanDocumentType } from './helper/schemas';
 
 
 /**
@@ -76,13 +79,13 @@ describe('replication-firestore.test.js', () => {
             database
         };
     }
-    async function syncOnce(collection: RxCollection, firestoreState: FirestoreOptions<any>) {
+    async function syncOnce(collection: RxCollection, firestoreState: FirestoreOptions<any>, options?: Pick<SyncOptionsFirestore<any>, 'pull' | 'push'>) {
         const replicationState = replicateFirestore({
             collection,
             firestore: firestoreState,
             live: false,
-            pull: {},
-            push: {}
+            pull: options?.pull ?? {},
+            push: options?.push ?? {},
         });
         ensureReplicationHasNoErrors(replicationState);
         await replicationState.awaitInitialReplication();
@@ -104,6 +107,17 @@ describe('replication-firestore.test.js', () => {
         ensureReplicationHasNoErrors(replicationState);
         return replicationState;
     }
+
+    function makeFirestoreHumanDocument(human: HumanDocumentType) {
+        const firestoreHuman: any = { ...human };
+        firestoreHuman.id = firestoreHuman.passportId;
+        delete firestoreHuman.passportId;
+
+        firestoreHuman.serverTimestamp = serverTimestamp();
+
+        return firestoreHuman as any;
+    }
+
     describe('preconditions', () => {
         it('query sorted by server timestamp', async () => {
             const firestoreState = await getFirestoreState();
@@ -258,6 +272,60 @@ describe('replication-firestore.test.js', () => {
 
             c1.database.destroy();
             c2.database.destroy();
+        });
+    });
+
+    describe('filtered replication', () => {
+        it('should only sync filtered documents from firestore', async () => {
+            const firestoreState = getFirestoreState();
+
+            const h1 = makeFirestoreHumanDocument(schemaObjects.human('replicated', 35, 'replicated'));
+            const h2 = makeFirestoreHumanDocument(schemaObjects.human('not replicated', 27, 'not replicated'));
+
+            await setDoc(DocRef(firestoreState.collection, 'replicated'), h1);
+            await setDoc(DocRef(firestoreState.collection, 'not replicated'), h2);
+
+            const collection = await humansCollection.create(0);
+
+            await syncOnce(collection, firestoreState, {
+                pull: {
+                    filter: where('firstName', '==', 'replicated')
+                },
+                push: {},
+            });
+
+            const allLocalDocs = await collection.find().exec();
+
+            assert.strictEqual(allLocalDocs.length, 1);
+            assert.strictEqual(allLocalDocs[0].passportId, 'replicated');
+
+            collection.database.destroy();
+        });
+
+        it('should only sync filtered documents to firestore', async () => {
+            const firestoreState = getFirestoreState();
+
+            const collection = await humansCollection.create(0);
+
+
+            await collection.insert(schemaObjects.human('replicated', 35, 'filtered-replication-c2s-1'));
+            await collection.insert(schemaObjects.human('not replicated', 27, 'filtered-replication-c2s-2'));
+
+            await syncOnce(collection, firestoreState, {
+                pull: {},
+                push: {
+                    filter(human: WithDeleted<HumanDocumentType>) {
+                        return human.age > 30;
+                    },
+                },
+            });
+
+            const docsOnServer = await getAllDocsOfFirestore(firestoreState);
+
+            assert.strictEqual(docsOnServer.length, 1);
+            assert.strictEqual(docsOnServer[0].id, 'replicated');
+
+            collection.database.destroy();
         });
     });
 });

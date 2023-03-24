@@ -1,8 +1,10 @@
 import {
+    asyncFilter,
     ensureNotFalsy,
     errorToPlainJson,
     flatClone,
-    lastOfArray
+    lastOfArray,
+    toArray
 } from '../../plugins/utils';
 
 import {
@@ -112,6 +114,12 @@ export function replicateFirestore<RxDocType>(
         });
     }
 
+    const pullFilters = options.pull?.filter !== undefined
+        ? toArray(options.pull.filter)
+        : [];
+
+    const pullQuery = query(options.firestore.collection, ...pullFilters);
+
     if (options.pull) {
         replicationPrimitivesPull = {
             async handler(
@@ -123,19 +131,19 @@ export function replicateFirestore<RxDocType>(
 
                 if (lastPulledCheckpoint) {
                     const lastServerTimestamp = isoStringToServerTimestamp(lastPulledCheckpoint.serverTimestamp);
-                    newerQuery = query(options.firestore.collection,
+                    newerQuery = query(pullQuery,
                         where(serverTimestampField, '>', lastServerTimestamp),
                         orderBy(serverTimestampField, 'asc'),
                         limit(batchSize)
                     );
-                    sameTimeQuery = query(options.firestore.collection,
+                    sameTimeQuery = query(pullQuery,
                         where(serverTimestampField, '==', lastServerTimestamp),
                         where(primaryPath, '>', lastPulledCheckpoint.id),
                         orderBy(primaryPath, 'asc'),
                         limit(batchSize)
                     );
                 } else {
-                    newerQuery = query(options.firestore.collection,
+                    newerQuery = query(pullQuery,
                         orderBy(serverTimestampField, 'asc'),
                         limit(batchSize)
                     );
@@ -212,10 +220,15 @@ export function replicateFirestore<RxDocType>(
 
     let replicationPrimitivesPush: ReplicationPushOptions<RxDocType> | undefined;
     if (options.push) {
+        const pushFilter = options.push?.filter;
         replicationPrimitivesPush = {
             async handler(
                 rows: RxReplicationWriteToMasterRow<RxDocType>[]
             ) {
+                if (pushFilter !== undefined) {
+                    rows = await asyncFilter(rows, (row) => pushFilter(row.newDocumentState));
+                }
+
                 const writeRowsById: ById<RxReplicationWriteToMasterRow<RxDocType>> = {};
                 const docIds: string[] = rows.map(row => {
                     const docId = (row.newDocumentState as any)[primaryPath];
@@ -326,7 +339,7 @@ export function replicateFirestore<RxDocType>(
         const cancelBefore = replicationState.cancel.bind(replicationState);
         replicationState.start = () => {
             const lastChangeQuery = query(
-                options.firestore.collection,
+                pullQuery,
                 orderBy(serverTimestampField, 'desc'),
                 limit(1)
             );
