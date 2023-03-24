@@ -49,9 +49,6 @@ export const useHeroListStore = defineStore('hero-list', () => {
 
   let subscription: Subscription;
   async function fetch(this: HeroListStore) {
-    const data = await api.find();
-    heroes.value = data as never;
-    /*
     if (process.env.SERVER) {
       const data = await api.find();
       heroes.value = data as never;
@@ -71,7 +68,6 @@ export const useHeroListStore = defineStore('hero-list', () => {
         heroes.value = result;
       });
     }
-    */
   }
 
   function remove(hero: RxHeroDocument) {

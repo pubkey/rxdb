@@ -15,10 +15,6 @@ export const useHeroEditStore = defineStore('hero-edit', () => {
   let subscription: Subscription;
 
   async function fetch(this: HeroEditStore, id: string) {
-    const data = await api.get(id);
-    hero.value = data as never;
-    hp.value = data.hp;
-    /*
     if (process.env.SERVER) {
       const data = await api.get(id);
       hero.value = data as never;
@@ -36,7 +32,6 @@ export const useHeroEditStore = defineStore('hero-edit', () => {
         deleted.value = _hero.deleted;
       });
     }
-    */
   }
 
   function resync() {
