@@ -5,7 +5,7 @@ import { StringKeys } from './util';
 /**
  * @link https://github.com/types/lib-json-schema/blob/master/v4/index.d.ts
  */
-export type JsonSchemaTypes =  'array' | 'boolean' | 'integer' | 'number' | 'null' | 'object' | 'string' | (string & {}) | ['null', 'array'] | ['null', 'boolean'] | ['null', 'integer'] | ['null', 'number'] | ['null', 'object'] | ['null', 'string'];
+export type JsonSchemaTypes =  'array' | 'boolean' | 'integer' | 'number' | 'null' | 'object' | 'string' | (string & {});
 
 export type CompositePrimaryKey<RxDocType> = {
     /**
@@ -38,7 +38,7 @@ export type JsonSchema<RxDocType = any> = {
     oneOf?: JsonSchema[];
     additionalItems?: boolean | JsonSchema;
     additionalProperties?: boolean | JsonSchema;
-    type?: JsonSchemaTypes | JsonSchemaTypes[];
+    type?: JsonSchemaTypes | JsonSchemaTypes[] | readonly JsonSchemaTypes[];
     description?: string;
     dependencies?: {
         [key: string]: JsonSchema | string[];
