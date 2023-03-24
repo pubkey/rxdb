@@ -15,13 +15,16 @@ var {
 } = _isomorphicWs.default;
 var GRAPHQL_WEBSOCKET_BY_URL = new Map();
 exports.GRAPHQL_WEBSOCKET_BY_URL = GRAPHQL_WEBSOCKET_BY_URL;
-function getGraphQLWebSocket(url) {
+function getGraphQLWebSocket(url, headers) {
   var has = GRAPHQL_WEBSOCKET_BY_URL.get(url);
   if (!has) {
     var wsClient = (0, _graphqlWs.createClient)({
       url,
       shouldRetry: () => true,
-      webSocketImpl: IsomorphicWebSocket
+      webSocketImpl: IsomorphicWebSocket,
+      connectionParams: headers ? {
+        headers
+      } : undefined
     });
     has = {
       url,

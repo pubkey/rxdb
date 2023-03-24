@@ -115,7 +115,8 @@ export function replicateGraphQL({
   var startBefore = graphqlReplicationState.start.bind(graphqlReplicationState);
   graphqlReplicationState.start = () => {
     if (mustUseSocket) {
-      var wsClient = getGraphQLWebSocket(ensureNotFalsy(url.ws));
+      var httpHeaders = pull.includeWsHeaders ? mutateableClientState.headers : undefined;
+      var wsClient = getGraphQLWebSocket(ensureNotFalsy(url.ws), httpHeaders);
       wsClient.on('connected', () => {
         pullStream$.next('RESYNC');
       });

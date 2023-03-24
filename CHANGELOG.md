@@ -2,15 +2,19 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- FIX multiple problems in the query planner
-- ADD 'includeWsHeaders' property for GraphQL replication [#4533](https://github.com/pubkey/rxdb/pull/4533)
-- UPDATE [broadcast-channel](https://github.com/pubkey/broadcast-channel) to version `5.0.0`
-- FIX query-builder copies RxQuery's other param [#4587](https://github.com/pubkey/rxdb/pull/4587)
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 14.4.0 (24 March 2023)
+
+- FIX multiple problems in the query planner
+- ADD 'includeWsHeaders' property for GraphQL replication [#4533](https://github.com/pubkey/rxdb/pull/4533)
+- UPDATE [broadcast-channel](https://github.com/pubkey/broadcast-channel) to version `5.0.0`
+- FIX query-builder copies RxQuery's other param [#4587](https://github.com/pubkey/rxdb/pull/4587)
 
 ### 14.3.7 (18 March 2023)
 

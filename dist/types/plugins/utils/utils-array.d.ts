@@ -24,3 +24,4 @@ export declare function isMaybeReadonlyArray(x: any): x is MaybeReadonly<any[]>;
  * @link https://stackoverflow.com/a/46700791/3443137
  */
 export declare function arrayFilterNotEmpty<TValue>(value: TValue | null | undefined): value is TValue;
+export declare function countUntilNotMatching<T>(ar: T[], matchingFn: (v: T, idx: number) => boolean): number;

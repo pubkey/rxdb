@@ -1,5 +1,15 @@
 import type { FilledMangoQuery, MangoQuerySelector, RxDocumentData, RxJsonSchema, RxQueryPlan, RxQueryPlanerOpts } from './types';
 export declare const INDEX_MAX: string;
+/**
+ * Do not use -Infinity here because it would be
+ * transformed to null on JSON.stringify() which can break things
+ * when the query plan is send to the storage as json.
+ * @link https://stackoverflow.com/a/16644751
+ * Notice that for IndexedDB IDBKeyRange we have
+ * to transform the value back to -Infinity
+ * before we can use it in IDBKeyRange.bound.
+ *
+ */
 export declare const INDEX_MIN: number;
 /**
  * Returns the query plan which contains

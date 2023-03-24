@@ -25,28 +25,17 @@ Object.keys(_nosqlQueryBuilder).forEach(function (key) {
 });
 var _rxQuery = require("../../rx-query");
 var _utils = require("../../plugins/utils");
-var _hooks = require("../../hooks");
 // if the query-builder plugin is used, we have to save its last path
 var RXQUERY_OTHER_FLAG = 'queryBuilderPath';
 function runBuildingStep(rxQuery, functionName, value) {
-  var queryBuilder = (0, _nosqlQueryBuilder.createQueryBuilder)((0, _utils.clone)(rxQuery.mangoQuery));
-  if (rxQuery.other[RXQUERY_OTHER_FLAG]) {
-    queryBuilder._path = rxQuery.other[RXQUERY_OTHER_FLAG];
-  }
+  var queryBuilder = (0, _nosqlQueryBuilder.createQueryBuilder)((0, _utils.clone)(rxQuery.mangoQuery), rxQuery.other[RXQUERY_OTHER_FLAG]);
   queryBuilder[functionName](value); // run
 
   var queryBuilderJson = queryBuilder.toJSON();
-  (0, _hooks.runPluginHooks)('preCreateRxQuery', {
-    op: rxQuery.op,
-    queryObj: queryBuilderJson.query,
-    collection: rxQuery.collection
+  return (0, _rxQuery.createRxQuery)(rxQuery.op, queryBuilderJson.query, rxQuery.collection, {
+    ...rxQuery.other,
+    [RXQUERY_OTHER_FLAG]: queryBuilderJson.path
   });
-  var newQuery = new _rxQuery.RxQueryBase(rxQuery.op, queryBuilderJson.query, rxQuery.collection);
-  if (queryBuilderJson.path) {
-    newQuery.other[RXQUERY_OTHER_FLAG] = queryBuilderJson.path;
-  }
-  var tunneled = (0, _rxQuery.tunnelQueryCache)(newQuery);
-  return tunneled;
 }
 function applyBuildingStep(proto, functionName) {
   proto[functionName] = function (value) {

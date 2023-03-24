@@ -1,5 +1,13 @@
+import { INDEX_MIN } from '../../query-planner';
 import { getQueryMatcher, getSortComparator } from '../../rx-query-helper';
 import { dexieReplaceIfStartsWithPipe, DEXIE_DOCS_TABLE_NAME, fromDexieToStorage } from './dexie-helper';
+export function mapKeyForKeyRange(k) {
+  if (k === INDEX_MIN) {
+    return -Infinity;
+  } else {
+    return k;
+  }
+}
 export function getKeyRangeByQueryPlan(queryPlan, IDBKeyRange) {
   if (!IDBKeyRange) {
     if (typeof window === 'undefined') {
@@ -8,16 +16,18 @@ export function getKeyRangeByQueryPlan(queryPlan, IDBKeyRange) {
       IDBKeyRange = window.IDBKeyRange;
     }
   }
+  var startKeys = queryPlan.startKeys.map(mapKeyForKeyRange);
+  var endKeys = queryPlan.endKeys.map(mapKeyForKeyRange);
   var ret;
   /**
    * If index has only one field,
    * we have to pass the keys directly, not the key arrays.
    */
   if (queryPlan.index.length === 1) {
-    var equalKeys = queryPlan.startKeys[0] === queryPlan.endKeys[0];
-    ret = IDBKeyRange.bound(queryPlan.startKeys[0], queryPlan.endKeys[0], equalKeys ? false : queryPlan.inclusiveStart, equalKeys ? false : queryPlan.inclusiveEnd);
+    var equalKeys = startKeys[0] === endKeys[0];
+    ret = IDBKeyRange.bound(startKeys[0], endKeys[0], equalKeys ? false : queryPlan.inclusiveStart, equalKeys ? false : queryPlan.inclusiveEnd);
   } else {
-    ret = IDBKeyRange.bound(queryPlan.startKeys, queryPlan.endKeys, queryPlan.inclusiveStart, queryPlan.inclusiveEnd);
+    ret = IDBKeyRange.bound(startKeys, endKeys, queryPlan.inclusiveStart, queryPlan.inclusiveEnd);
   }
   return ret;
 }

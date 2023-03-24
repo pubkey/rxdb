@@ -1,5 +1,6 @@
 import type { DefaultPreparedQuery, RxQueryPlan, RxStorageQueryResult } from '../../types';
 import type { RxStorageInstanceDexie } from './rx-storage-instance-dexie';
+export declare function mapKeyForKeyRange(k: any): any;
 export declare function getKeyRangeByQueryPlan(queryPlan: RxQueryPlan, IDBKeyRange?: any): any;
 /**
  * Runs mango queries over the Dexie.js database.

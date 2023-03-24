@@ -18,8 +18,6 @@ export var RxQueryBase = /*#__PURE__*/function () {
 
   // used in the query-cache to determine if the RxQuery can be cleaned up.
 
-  // used by some plugins
-
   // used to count the subscribers to the query
 
   /**
@@ -27,12 +25,13 @@ export var RxQueryBase = /*#__PURE__*/function () {
    * or null if query has not run yet.
    */
 
-  function RxQueryBase(op, mangoQuery, collection) {
+  function RxQueryBase(op, mangoQuery, collection,
+  // used by some plugins
+  other = {}) {
     this.id = newQueryID();
     this._execOverDatabaseCount = 0;
     this._creationTime = now();
     this._lastEnsureEqual = 0;
-    this.other = {};
     this.uncached = false;
     this.refCount$ = new BehaviorSubject(null);
     this._result = null;
@@ -43,6 +42,7 @@ export var RxQueryBase = /*#__PURE__*/function () {
     this.op = op;
     this.mangoQuery = mangoQuery;
     this.collection = collection;
+    this.other = other;
     if (!mangoQuery) {
       this.mangoQuery = _getDefaultQuery();
     }
@@ -350,13 +350,14 @@ export function _getDefaultQuery() {
 export function tunnelQueryCache(rxQuery) {
   return rxQuery.collection._queryCache.getByQuery(rxQuery);
 }
-export function createRxQuery(op, queryObj, collection) {
+export function createRxQuery(op, queryObj, collection, other) {
   runPluginHooks('preCreateRxQuery', {
     op,
     queryObj,
-    collection
+    collection,
+    other
   });
-  var ret = new RxQueryBase(op, queryObj, collection);
+  var ret = new RxQueryBase(op, queryObj, collection, other);
 
   // ensure when created with same params, only one is created
   ret = tunnelQueryCache(ret);
