@@ -12,7 +12,7 @@ export const HeroSchema = {
     id: {
       type: 'string',
       require: true,
-      maxLength: 36
+      maxLength: 36,
     },
     slug: {
       type: 'string',
@@ -40,19 +40,19 @@ export const HeroSchema = {
       default: 100,
     },
     team: {
-      type: 'string',
+      type: ['string', 'null'],
       description: 'color of the team this hero belongs to',
     },
     updatedAt: {
-      type: 'number'
+      type: 'number',
     },
     _deleted: {
-      type: 'boolean'
+      type: 'boolean',
     },
   },
   required: ['name', 'slug', 'color', 'hp', 'maxHP'],
 } as const;
 
 export const RxHeroSchema: RxJsonSchema<RxHeroDocumentType> = {
-  ...HeroSchema
+  ...HeroSchema,
 };

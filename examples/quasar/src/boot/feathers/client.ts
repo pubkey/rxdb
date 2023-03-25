@@ -1,7 +1,7 @@
 import { boot } from 'quasar/wrappers';
 import { feathers } from '@feathersjs/feathers';
-import rest from '@feathersjs/rest-client';
-import axios from 'axios';
+import rest from '@feathersjs/rest-client'
+import axios from 'axios'
 import { configureApp } from '.';
 import type { ServiceTypes } from 'app/src-api/index';
 

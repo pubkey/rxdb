@@ -1,6 +1,6 @@
 <template>
   <q-dialog @hide="onHide" persistent :model-value="true">
-    <q-card class="my-card" style="min-width: 360px">
+    <q-card class="phe__card" style="min-width: 360px">
       <q-banner v-if="!synced" class="bg-warning">
         <span class="text-h5 text-uppercase">Warning:</span>
         <p>
@@ -24,15 +24,16 @@
       <q-card-section v-if="hero">
         <q-form ref="form" class="row q-col-gutter-sm" @submit="onFormSubmit">
           <div class="col col-12">
-            <rx-input v-model="hero.name" label="Name" readonly />
+            <rx-input v-model="hero.name" class="phe__name" label="Name" readonly />
           </div>
           <div class="col col-12">
-            <rx-color-input v-model="hero.color" label="Color" readonly />
+            <rx-color-input v-model="hero.color" class="phe__color" label="Color" readonly />
           </div>
           <div class="col col-12">
             <rx-input
               type="number"
               v-model="hp"
+              class="phe__hp"
               label="Current HP"
               :rules="[(val: number) => val >= 0 || 'HP would be equal or greater than zero']"
             />
@@ -42,13 +43,14 @@
       <q-separator />
 
       <q-card-actions align="right">
-        <q-btn v-close-popup color="primary" label="Close" icon="close" flat />
+        <q-btn v-close-popup class="phe__close" color="primary" label="Close" icon="close" flat />
         <q-btn
           :disable="deleted"
           type="submit"
           color="primary"
           label="Save"
           icon="save"
+          class="phe__save"
           @click="onFormSubmit"
         />
       </q-card-actions>

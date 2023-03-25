@@ -8,7 +8,7 @@ import { ssrMiddleware } from 'quasar/wrappers';
 export default ssrMiddleware(({ app, resolve, render, serve }) => {
   app.get(resolve.urlPath('*'), (req, res) => {
     res.setHeader('Content-Type', 'text/html');
- 
+
     render(/* the ssrContext: */ { req, res })
       .then((html) => {
         // now let's send the rendered html to the client
@@ -16,7 +16,7 @@ export default ssrMiddleware(({ app, resolve, render, serve }) => {
       })
       .catch((err: RenderError) => {
         // oops, we had an error while rendering the page
- 
+
         // we were told to redirect to another URL
         if (err.url) {
           if (err.code) {
@@ -26,7 +26,7 @@ export default ssrMiddleware(({ app, resolve, render, serve }) => {
           }
         } else if (err.code === 404) {
           // hmm, Vue Router could not find the requested route
- 
+
           // Should reach here only if no "catch-all" route
           // is defined in /src/routes
           res.status(404).send('404 | Page Not Found');
@@ -35,7 +35,7 @@ export default ssrMiddleware(({ app, resolve, render, serve }) => {
           // if we're in dev mode, then we can use Quasar CLI
           // to display a nice error page that contains the stack
           // and other useful information
- 
+
           // serve.error is available on dev only
           serve.error({ err, req, res });
         } else {
@@ -43,7 +43,7 @@ export default ssrMiddleware(({ app, resolve, render, serve }) => {
           // to display something to the client when we encounter an error
           // (for security reasons, it's not ok to display the same wealth
           // of information as we do in development)
- 
+
           // Render Error Page on production or
           // create a route (/src/routes) for an error page and redirect to it
           res.status(500).send('500 | Internal Server Error');

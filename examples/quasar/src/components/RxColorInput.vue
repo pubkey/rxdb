@@ -1,12 +1,12 @@
 <template>
-  <q-input v-bind="props" v-model="value">
+  <q-input v-bind="props" class="crci__input" v-model="value">
     <template v-for="(_, slot) in slots" :key="slot" v-slot:[slot]="scope">
       <slot :name="slot" v-bind="scope" :key="slot" />
     </template>
     <template v-slot:append>
-      <q-icon name="colorize" class="cursor-pointer">
+      <q-icon name="colorize" class="cursor-pointer crci__opener">
         <q-popup-proxy cover transition-show="scale" transition-hide="scale">
-          <q-color v-model="value" />
+          <q-color v-model="value" class="crci__picker" />
         </q-popup-proxy>
       </q-icon>
     </template>

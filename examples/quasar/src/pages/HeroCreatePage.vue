@@ -1,11 +1,12 @@
 <template>
   <q-dialog @hide="onHide" persistent :model-value="true">
-    <q-card class="my-card" style="min-width: 360px">
+    <q-card class="phc__card" style="min-width: 360px">
       <q-card-section v-if="hero">
         <q-form ref="form" class="row q-col-gutter-sm" @submit="onFormSubmit">
           <div class="col col-12">
             <rx-input
               v-model="hero.name"
+              class="phc__name"
               label="Name"
               :rules="[(val) => !!val || 'Name is required']"
             />
@@ -13,6 +14,7 @@
           <div class="col col-12">
             <rx-color-input
               v-model="hero.color"
+              class="phc__color"
               label="Color"
               :rules="[(val) => !!val || 'Color is required']"
             />
@@ -22,9 +24,10 @@
       <q-separator />
 
       <q-card-actions align="right">
-        <q-btn v-close-popup color="primary" label="Close" icon="close" flat />
+        <q-btn v-close-popup class="phc__close" color="primary" label="Close" icon="close" flat />
         <q-btn
           type="submit"
+          class="phc__save"
           color="primary"
           label="Save"
           icon="save"

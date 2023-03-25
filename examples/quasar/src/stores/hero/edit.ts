@@ -10,7 +10,7 @@ export const useHeroEditStore = defineStore('hero-edit', () => {
   const hp = ref(0);
   const deleted = ref(false);
   const synced = ref(true);
-  const api = useHeroesApi()
+  const api = useHeroesApi();
 
   let subscription: Subscription;
 

@@ -8,7 +8,11 @@
   "scripts": {
     "lint": "eslint --ext .js,.ts,.vue ./",
     "format": "prettier --write \"**/*.{js,ts,vue,scss,html,md,json}\" --ignore-path .gitignore",
-    "test": "echo \"No test specified\" && exit 0"
+    "test": "echo \"See package.json => scripts for available tests.\" && exit 0",
+    "test:e2e": "cross-env NODE_ENV=test start-test \"quasar dev\" http-get://localhost:9000 \"cypress open --e2e\"",
+    "test:e2e:ci": "cross-env NODE_ENV=test start-test \"quasar dev\" http-get://localhost:9000 \"cypress run --e2e\"",
+    "test:component": "cross-env NODE_ENV=test cypress open --component",
+    "test:component:ci": "cross-env NODE_ENV=test cypress run --component"
   },
   "dependencies": {
     "@faker-js/faker": "^7.6.0",
@@ -18,6 +22,8 @@
     "@feathersjs/memory": "5.0.1",
     "@feathersjs/rest-client": "5.0.1",
     "@feathersjs/schema": "5.0.1",
+    "@feathersjs/socketio": "5.0.1",
+    "@feathersjs/socketio-client": "5.0.2",
     "@quasar/extras": "^1.0.0",
     "@vueuse/core": "^9.13.0",
     "@vueuse/rxjs": "^9.13.0",
@@ -36,6 +42,7 @@
   },
   "devDependencies": {
     "@quasar/app-vite": "^1.0.0",
+    "@quasar/quasar-app-extension-testing-e2e-cypress": "5.1.0",
     "@types/axios": "0.14.0",
     "@types/node": "^12.20.21",
     "@typescript-eslint/eslint-plugin": "^5.10.0",
@@ -45,7 +52,9 @@
     "eslint-config-prettier": "^8.1.0",
     "eslint-plugin-vue": "^9.0.0",
     "prettier": "^2.5.1",
-    "typescript": "^4.5.4"
+    "typescript": "^4.5.4",
+    "cypress": "^12.2.0",
+    "eslint-plugin-cypress": "^2.12.1"
   },
   "engines": {
     "node": "^18 || ^16 || ^14.19",

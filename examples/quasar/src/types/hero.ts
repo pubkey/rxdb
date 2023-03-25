@@ -7,12 +7,12 @@ export interface Hero {
   color: string;
   maxHP: number;
   hp: number;
-  team?: string;
+  team?: string | null;
   updatedAt?: number;
   _deleted?: boolean;
 }
 
-export type RxHeroDocumentType = Hero
+export type RxHeroDocumentType = Hero;
 
 // ORM methods
 interface RxHeroDocMethods {

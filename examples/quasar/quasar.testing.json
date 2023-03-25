@@ -1,0 +1,8 @@
+{
+  "e2e-cypress": {
+    "runnerCommand": "cross-env NODE_ENV=test start-test \"quasar dev\" http-get://localhost:9000 \"cypress run --e2e\""
+  },
+  "component-cypress": {
+    "runnerCommand": "cross-env NODE_ENV=test cypress run --component"
+  }
+}

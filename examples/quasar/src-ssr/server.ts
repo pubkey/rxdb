@@ -9,7 +9,7 @@
  * Make sure to yarn add / npm install (in your project root)
  * anything you import here (except for express and compression).
  */
-import { static as serveStatic } from '@feathersjs/express'
+import { static as serveStatic } from '@feathersjs/express';
 import { createApp } from 'app/src-api';
 import {
   ssrClose,
@@ -33,7 +33,7 @@ export const create = ssrCreate((/* { ... } */) => {
   // place here any middlewares that
   // absolutely need to run before anything else
 
-  return app
+  return app;
 });
 
 /**

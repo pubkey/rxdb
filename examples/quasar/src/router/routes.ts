@@ -27,6 +27,11 @@ const routes: RouteRecordRaw[] = [
           },
         ],
       },
+      {
+        path: '/multi/:count/:paths(.*)*',
+        component: () => import('pages/MultiPage.vue'),
+        props: true,
+      },
     ],
   },
 

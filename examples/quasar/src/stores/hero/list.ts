@@ -10,8 +10,8 @@ export type HeroListStore = ReturnType<typeof useHeroListStore>;
 export const useHeroListStore = defineStore('hero-list', () => {
   const loading = ref(false);
   const heroes = ref<RxHeroDocument[]>();
-  const api = useHeroesApi()
-  
+  const api = useHeroesApi();
+
   const columns = computed(
     () =>
       [
@@ -50,7 +50,7 @@ export const useHeroListStore = defineStore('hero-list', () => {
   let subscription: Subscription;
   async function fetch(this: HeroListStore) {
     if (process.env.SERVER) {
-      const data = await api.find();
+      const { data } = await api.find();
       heroes.value = data as never;
     }
 
@@ -59,7 +59,7 @@ export const useHeroListStore = defineStore('hero-list', () => {
         selector: {},
         sort: [{ name: 'asc' }],
       });
-  
+
       subscription = query.$.pipe(
         tap(() => {
           setTimeout(() => (loading.value = false), 1000);

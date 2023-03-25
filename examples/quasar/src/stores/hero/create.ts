@@ -19,7 +19,7 @@ export const useHeroCreateStore = defineStore('hero-create', () => {
       slug: slug,
       color: hero.value.color || '',
       hp: 100,
-      maxHP: faker.datatype.number({ min: 100, max: 1000 })
+      maxHP: faker.datatype.number({ min: 100, max: 1000 }),
     };
     return this.database.heroes.insert(obj);
   }

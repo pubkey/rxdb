@@ -1,5 +1,5 @@
 <template>
-  <q-input v-bind="props">
+  <q-input v-bind="props" class="cri__input">
     <template v-for="(_, slot) in slots" :key="slot" v-slot:[slot]="scope">
       <slot :name="slot" v-bind="scope" :key="slot" />
     </template>

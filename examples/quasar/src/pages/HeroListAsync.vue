@@ -2,6 +2,7 @@
   <q-page class="row items-center justify-evenly">
     <q-table
       title="Treats"
+      class="phl__table"
       :rows="heroes"
       :loading="loading"
       :columns="columns"
@@ -10,23 +11,26 @@
       <template v-slot:top>
         <q-btn
           :to="{ name: 'hero-create' }"
+          class="phl__create"
           label="Create"
           icon="add"
           color="primary"
         ></q-btn>
       </template>
       <template v-slot:body-cell-actions="props">
-        <q-td :props="props" class="q-gutter-x-sm">
+        <q-td :data-slug="props.row.slug" :props="props" class="phl__actions q-gutter-x-sm">
           <q-btn
             :to="{ name: 'hero-edit', params: { id: props.value } }"
             round
             icon="edit"
+            class="phl__edit"
             color="primary"
           ></q-btn>
           <q-btn
             round
             icon="delete"
             color="negative"
+            class="phl__remove"
             @click="remove(props.row)"
           ></q-btn>
         </q-td>

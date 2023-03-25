@@ -10,7 +10,7 @@
 
 const { configure } = require('quasar/wrappers');
 
-module.exports = configure(function (/* ctx */) {
+module.exports = configure(function (ctx) {
   return {
     eslint: {
       // fix: true,
@@ -30,7 +30,8 @@ module.exports = configure(function (/* ctx */) {
     boot: [
       { path: 'feathers/server', client: false },
       { path: 'feathers/client', server: false },
-      { path: 'database', server: false }
+      { path: 'database', server: false },
+      { path: 'sync', server: false },
     ],
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-js#css

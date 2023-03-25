@@ -8,7 +8,8 @@ declare module 'pinia' {
   }
 }
 
-const databaseKey: InjectionKey<Database> = Symbol('database-key');
+export type RxDatabase = ReturnType<typeof useDatabase>;
+export const databaseKey: InjectionKey<Database> = Symbol('database-key');
 export function useDatabase() {
   const database = inject(databaseKey);
   if (!database) {
