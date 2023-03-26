@@ -1,7 +1,5 @@
 <!--
-  # STOP: DO NOT CREATE AN ISSUE!
-
-  It is very unlikely that you want to create an issue.
+  # STOP: It is very unlikely that you want to create an issue.
 
   ## Have you found a bug?
   -> Create a pull request where you tried to reproduce the problem or at least have shown that you tried to do so.
@@ -11,11 +9,7 @@
   ## Do you have a feature request?
   -> Create a pull request that shows how the RxDB API would change or how the new feature could be used.
 
-  ## Do you have a common question which cannot be solved with a PR?
-  -> Ask it at one of these places:
-    - Chat: https://discord.gg/tqt9ZttJfD
-    - Stackoverflow: https://stackoverflow.com/questions/tagged/rxdb
 
-  ## Everything else will be autoclosed. The maintainer's time is as same as valuable as yours. 
-  You are also a developer! You can fix stuff by yourself.
+All issues will be autoclosed after 14 days. If you want your issue to be seen by the maintainer or to be left open, make a PR like described  above.
+
 -->
