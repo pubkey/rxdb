@@ -138,10 +138,12 @@ function validateFieldsDeep(rxJsonSchema) {
     }
   }
   function traverse(currentObj, currentPath) {
-    if (!currentObj || typeof currentObj !== 'object') return;
+    if (!currentObj || typeof currentObj !== 'object') {
+      return;
+    }
     Object.keys(currentObj).forEach(attributeName => {
       var schemaObj = currentObj[attributeName];
-      if (!currentObj.properties && schemaObj && typeof schemaObj === 'object') {
+      if (!currentObj.properties && schemaObj && typeof schemaObj === 'object' && !currentPath.endsWith('oneOf')) {
         checkField(attributeName, schemaObj, currentPath);
       }
       var nextPath = currentPath;

@@ -69,15 +69,12 @@ export class RxQueryBase<
     // used in the query-cache to determine if the RxQuery can be cleaned up.
     public _lastEnsureEqual = 0;
 
-    // used by some plugins
-    public other: any = {};
-
     public uncached = false;
 
     // used to count the subscribers to the query
     public refCount$ = new BehaviorSubject(null);
 
-    public isFindOneByIdQuery: false | string;
+    public isFindOneByIdQuery: false | string | string[];
 
 
     /**
@@ -103,7 +100,9 @@ export class RxQueryBase<
     constructor(
         public op: RxQueryOP,
         public mangoQuery: Readonly<MangoQuery<RxDocType>>,
-        public collection: RxCollection<RxDocType>
+        public collection: RxCollection<RxDocType>,
+        // used by some plugins
+        public other: any = {}
     ) {
         if (!mangoQuery) {
             this.mangoQuery = _getDefaultQuery();
@@ -484,15 +483,17 @@ export function tunnelQueryCache<RxDocumentType, RxQueryResult>(
 export function createRxQuery<RxDocType>(
     op: RxQueryOP,
     queryObj: MangoQuery<RxDocType>,
-    collection: RxCollection<RxDocType>
+    collection: RxCollection<RxDocType>,
+    other?: any
 ) {
     runPluginHooks('preCreateRxQuery', {
         op,
         queryObj,
-        collection
+        collection,
+        other
     });
 
-    let ret = new RxQueryBase<RxDocType>(op, queryObj, collection);
+    let ret = new RxQueryBase<RxDocType>(op, queryObj, collection, other);
 
     // ensure when created with same params, only one is created
     ret = tunnelQueryCache(ret);
@@ -670,17 +671,36 @@ export async function queryCollection<RxDocType>(
      * but instead can use findDocumentsById()
      */
     if (rxQuery.isFindOneByIdQuery) {
-        const docId = rxQuery.isFindOneByIdQuery;
-
-        // first try to fill from docCache
-        let docData = rxQuery.collection._docCache.getLatestDocumentDataIfExists(docId);
-        if (!docData) {
+        if (Array.isArray(rxQuery.isFindOneByIdQuery)) {
+            let docIds = rxQuery.isFindOneByIdQuery;
+            docIds = docIds.filter(docId => {
+                // first try to fill from docCache
+                const docData = rxQuery.collection._docCache.getLatestDocumentDataIfExists(docId);
+                if (docData) {
+                    docs.push(docData);
+                    return false;
+                } else {
+                    return true;
+                }
+            });
             // otherwise get from storage
-            const docsMap = await collection.storageInstance.findDocumentsById([docId], false);
-            docData = docsMap[docId];
-        }
-        if (docData) {
-            docs.push(docData);
+            const docsMap = await collection.storageInstance.findDocumentsById(docIds, false);
+            Object.values(docsMap).forEach(docData => {
+                docs.push(docData);
+            });
+        } else {
+            const docId = rxQuery.isFindOneByIdQuery;
+
+            // first try to fill from docCache
+            let docData = rxQuery.collection._docCache.getLatestDocumentDataIfExists(docId);
+            if (!docData) {
+                // otherwise get from storage
+                const docsMap = await collection.storageInstance.findDocumentsById([docId], false);
+                docData = docsMap[docId];
+            }
+            if (docData) {
+                docs.push(docData);
+            }
         }
     } else {
         const preparedQuery = rxQuery.getPreparedQuery();
@@ -702,7 +722,8 @@ export async function queryCollection<RxDocType>(
 export function isFindOneByIdQuery(
     primaryPath: string,
     query: MangoQuery<any>
-): false | string {
+): false | string | string[] {
+    // must have exactly one operator which must be $eq || $in
     if (
         !query.skip &&
         query.selector &&
@@ -715,6 +736,16 @@ export function isFindOneByIdQuery(
         } else if (
             Object.keys(value).length === 1 &&
             typeof value.$eq === 'string'
+        ) {
+            return value.$eq;
+        }
+
+        // same with $in string arrays
+        if (
+            Object.keys(value).length === 1 &&
+            Array.isArray(value.$eq) &&
+            // must only contain strings
+            !(value.$eq as any[]).find(r => typeof r !== 'string')
         ) {
             return value.$eq;
         }

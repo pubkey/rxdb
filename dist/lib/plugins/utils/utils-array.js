@@ -5,6 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.arrayFilterNotEmpty = arrayFilterNotEmpty;
 exports.batchArray = batchArray;
+exports.countUntilNotMatching = countUntilNotMatching;
 exports.isMaybeReadonlyArray = isMaybeReadonlyArray;
 exports.lastOfArray = lastOfArray;
 exports.removeOneFromArrayIfMatches = removeOneFromArrayIfMatches;
@@ -78,5 +79,19 @@ function arrayFilterNotEmpty(value) {
     return false;
   }
   return true;
+}
+function countUntilNotMatching(ar, matchingFn) {
+  var count = 0;
+  var idx = -1;
+  for (var item of ar) {
+    idx = idx + 1;
+    var matching = matchingFn(item, idx);
+    if (matching) {
+      count = count + 1;
+    } else {
+      break;
+    }
+  }
+  return count;
 }
 //# sourceMappingURL=utils-array.js.map

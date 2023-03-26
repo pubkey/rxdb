@@ -59,6 +59,11 @@ export declare interface RxDocumentBase<RxDocType, OrmMethods = {}> {
     _data: RxDocumentData<RxDocType>;
     primaryPath: string;
     revision: string;
+    /**
+     * Used to de-duplicate the enriched property objects
+     * of the document.
+     */
+    _propertyCache: Map<string, any>;
     $emit(cE: RxChangeEvent<RxDocType>): void;
     _saveData(newData: any, oldData: any): Promise<RxDocument<RxDocType, OrmMethods>>;
     // /internal things

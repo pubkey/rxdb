@@ -29,7 +29,6 @@ export class NoSqlQueryBuilderClass<DocType> {
     public options: MQueryOptions = {};
     public _conditions: MangoQuerySelector<DocType> = {};
     public _fields: any = {};
-    public _path?: any;
     private _distinct: any;
 
     /**
@@ -41,7 +40,8 @@ export class NoSqlQueryBuilderClass<DocType> {
      *
      */
     constructor(
-        mangoQuery?: MangoQuery<DocType>
+        mangoQuery?: MangoQuery<DocType>,
+        public _path?: any
     ) {
         if (mangoQuery) {
             const queryBuilder: NoSqlQueryBuilder<DocType> = this as any;
@@ -551,6 +551,6 @@ export function canMerge(conds: any): boolean {
 }
 
 
-export function createQueryBuilder<DocType>(query?: MangoQuery<DocType>): NoSqlQueryBuilder<DocType> {
-    return new NoSqlQueryBuilderClass(query) as NoSqlQueryBuilder<DocType>;
+export function createQueryBuilder<DocType>(query?: MangoQuery<DocType>, path?: any): NoSqlQueryBuilder<DocType> {
+    return new NoSqlQueryBuilderClass(query, path) as NoSqlQueryBuilder<DocType>;
 }

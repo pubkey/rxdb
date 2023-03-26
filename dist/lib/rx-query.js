@@ -31,8 +31,6 @@ var RxQueryBase = /*#__PURE__*/function () {
 
   // used in the query-cache to determine if the RxQuery can be cleaned up.
 
-  // used by some plugins
-
   // used to count the subscribers to the query
 
   /**
@@ -40,12 +38,13 @@ var RxQueryBase = /*#__PURE__*/function () {
    * or null if query has not run yet.
    */
 
-  function RxQueryBase(op, mangoQuery, collection) {
+  function RxQueryBase(op, mangoQuery, collection,
+  // used by some plugins
+  other = {}) {
     this.id = newQueryID();
     this._execOverDatabaseCount = 0;
     this._creationTime = (0, _utils.now)();
     this._lastEnsureEqual = 0;
-    this.other = {};
     this.uncached = false;
     this.refCount$ = new _rxjs.BehaviorSubject(null);
     this._result = null;
@@ -56,6 +55,7 @@ var RxQueryBase = /*#__PURE__*/function () {
     this.op = op;
     this.mangoQuery = mangoQuery;
     this.collection = collection;
+    this.other = other;
     if (!mangoQuery) {
       this.mangoQuery = _getDefaultQuery();
     }
@@ -364,13 +364,14 @@ function _getDefaultQuery() {
 function tunnelQueryCache(rxQuery) {
   return rxQuery.collection._queryCache.getByQuery(rxQuery);
 }
-function createRxQuery(op, queryObj, collection) {
+function createRxQuery(op, queryObj, collection, other) {
   (0, _hooks.runPluginHooks)('preCreateRxQuery', {
     op,
     queryObj,
-    collection
+    collection,
+    other
   });
-  var ret = new RxQueryBase(op, queryObj, collection);
+  var ret = new RxQueryBase(op, queryObj, collection, other);
 
   // ensure when created with same params, only one is created
   ret = tunnelQueryCache(ret);
@@ -516,17 +517,36 @@ async function queryCollection(rxQuery) {
    * but instead can use findDocumentsById()
    */
   if (rxQuery.isFindOneByIdQuery) {
-    var docId = rxQuery.isFindOneByIdQuery;
-
-    // first try to fill from docCache
-    var docData = rxQuery.collection._docCache.getLatestDocumentDataIfExists(docId);
-    if (!docData) {
+    if (Array.isArray(rxQuery.isFindOneByIdQuery)) {
+      var docIds = rxQuery.isFindOneByIdQuery;
+      docIds = docIds.filter(docId => {
+        // first try to fill from docCache
+        var docData = rxQuery.collection._docCache.getLatestDocumentDataIfExists(docId);
+        if (docData) {
+          docs.push(docData);
+          return false;
+        } else {
+          return true;
+        }
+      });
       // otherwise get from storage
-      var docsMap = await collection.storageInstance.findDocumentsById([docId], false);
-      docData = docsMap[docId];
-    }
-    if (docData) {
-      docs.push(docData);
+      var docsMap = await collection.storageInstance.findDocumentsById(docIds, false);
+      Object.values(docsMap).forEach(docData => {
+        docs.push(docData);
+      });
+    } else {
+      var docId = rxQuery.isFindOneByIdQuery;
+
+      // first try to fill from docCache
+      var docData = rxQuery.collection._docCache.getLatestDocumentDataIfExists(docId);
+      if (!docData) {
+        // otherwise get from storage
+        var _docsMap = await collection.storageInstance.findDocumentsById([docId], false);
+        docData = _docsMap[docId];
+      }
+      if (docData) {
+        docs.push(docData);
+      }
     }
   } else {
     var preparedQuery = rxQuery.getPreparedQuery();
@@ -545,11 +565,19 @@ async function queryCollection(rxQuery) {
  * Returns the document id otherwise.
  */
 function isFindOneByIdQuery(primaryPath, query) {
+  // must have exactly one operator which must be $eq || $in
   if (!query.skip && query.selector && Object.keys(query.selector).length === 1 && query.selector[primaryPath]) {
     var value = query.selector[primaryPath];
     if (typeof value === 'string') {
       return value;
     } else if (Object.keys(value).length === 1 && typeof value.$eq === 'string') {
+      return value.$eq;
+    }
+
+    // same with $in string arrays
+    if (Object.keys(value).length === 1 && Array.isArray(value.$eq) &&
+    // must only contain strings
+    !value.$eq.find(r => typeof r !== 'string')) {
       return value.$eq;
     }
   }

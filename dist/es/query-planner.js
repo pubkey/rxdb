@@ -1,6 +1,18 @@
+import { countUntilNotMatching } from './plugins/utils';
 import { getPrimaryFieldOfPrimaryKey } from './rx-schema-helper';
 export var INDEX_MAX = String.fromCharCode(65535);
-export var INDEX_MIN = -Infinity;
+
+/**
+ * Do not use -Infinity here because it would be
+ * transformed to null on JSON.stringify() which can break things
+ * when the query plan is send to the storage as json.
+ * @link https://stackoverflow.com/a/16644751
+ * Notice that for IndexedDB IDBKeyRange we have
+ * to transform the value back to -Infinity
+ * before we can use it in IDBKeyRange.bound.
+ *
+ */
+export var INDEX_MIN = Number.MIN_VALUE;
 
 /**
  * Returns the query plan which contains
@@ -35,8 +47,9 @@ export function getQueryPlan(schema, query) {
       var operators = matcher ? Object.keys(matcher) : [];
       var matcherOpts = {};
       if (!matcher || !operators.length) {
+        var startKey = inclusiveStart ? INDEX_MIN : INDEX_MAX;
         matcherOpts = {
-          startKey: inclusiveStart ? INDEX_MIN : INDEX_MAX,
+          startKey,
           endKey: inclusiveEnd ? INDEX_MAX : INDEX_MIN,
           inclusiveStart: true,
           inclusiveEnd: true
@@ -191,19 +204,38 @@ export function getMatcherQueryOpts(operator, operatorValue) {
  */
 export function rateQueryPlan(schema, query, queryPlan) {
   var quality = 0;
+  var addQuality = value => {
+    if (value > 0) {
+      quality = quality + value;
+    }
+  };
   var pointsPerMatchingKey = 10;
-  var idxOfFirstMinStartKey = queryPlan.startKeys.findIndex(keyValue => keyValue === INDEX_MIN);
-  if (idxOfFirstMinStartKey > 0) {
-    quality = quality + idxOfFirstMinStartKey * pointsPerMatchingKey;
-  }
-  var idxOfFirstMaxEndKey = queryPlan.endKeys.findIndex(keyValue => keyValue === INDEX_MAX);
-  if (idxOfFirstMaxEndKey > 0) {
-    quality = quality + idxOfFirstMaxEndKey * pointsPerMatchingKey;
-  }
-  var pointsIfNoReSortMustBeDone = 5;
-  if (queryPlan.sortFieldsSameAsIndexFields) {
-    quality = quality + pointsIfNoReSortMustBeDone;
-  }
+  var nonMinKeyCount = countUntilNotMatching(queryPlan.startKeys, keyValue => keyValue !== INDEX_MIN && keyValue !== INDEX_MAX);
+  addQuality(nonMinKeyCount * pointsPerMatchingKey);
+  var nonMaxKeyCount = countUntilNotMatching(queryPlan.startKeys, keyValue => keyValue !== INDEX_MAX && keyValue !== INDEX_MIN);
+  addQuality(nonMaxKeyCount * pointsPerMatchingKey);
+  var equalKeyCount = countUntilNotMatching(queryPlan.startKeys, (keyValue, idx) => {
+    if (keyValue === queryPlan.endKeys[idx]) {
+      return true;
+    } else {
+      return false;
+    }
+  });
+  addQuality(equalKeyCount * pointsPerMatchingKey * 1.5);
+  var pointsIfNoReSortMustBeDone = queryPlan.sortFieldsSameAsIndexFields ? 5 : 0;
+  addQuality(pointsIfNoReSortMustBeDone);
+
+  // console.log('rateQueryPlan() result:');
+  // console.log({
+  //     query,
+  //     queryPlan,
+  //     nonMinKeyCount,
+  //     nonMaxKeyCount,
+  //     equalKeyCount,
+  //     pointsIfNoReSortMustBeDone,
+  //     quality
+  // });
+
   return quality;
 }
 //# sourceMappingURL=query-planner.js.map

@@ -43,11 +43,15 @@ export interface SimpleHumanV3DocumentType {
     age: number;
     oneOptional?: string;
 }
-export function simpleHumanV3(passportId = randomString(12)): SimpleHumanV3DocumentType {
-    return {
-        passportId,
+export function simpleHumanV3(partial: Partial<SimpleHumanV3DocumentType>): SimpleHumanV3DocumentType {
+    const defaultObj = {
+        passportId: randomString(12),
         age: randomNumber(10, 50)
     };
+    return Object.assign(
+        defaultObj,
+        partial
+    );
 }
 
 export interface SimpleHumanAgeDocumentType {

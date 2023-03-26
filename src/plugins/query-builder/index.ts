@@ -4,9 +4,8 @@ import {
     OTHER_MANGO_OPERATORS
 } from './mquery/nosql-query-builder';
 import type { RxPlugin, RxQuery } from '../../types';
-import { RxQueryBase, tunnelQueryCache } from '../../rx-query';
+import { createRxQuery } from '../../rx-query';
 import { clone } from '../../plugins/utils';
-import { runPluginHooks } from '../../hooks';
 
 // if the query-builder plugin is used, we have to save its last path
 const RXQUERY_OTHER_FLAG = 'queryBuilderPath';
@@ -16,37 +15,21 @@ export function runBuildingStep<RxDocumentType, RxQueryResult>(
     functionName: string,
     value: any
 ): RxQuery<RxDocumentType, RxQueryResult> {
-    const queryBuilder = createQueryBuilder(clone(rxQuery.mangoQuery));
-    if (rxQuery.other[RXQUERY_OTHER_FLAG]) {
-        queryBuilder._path = rxQuery.other[RXQUERY_OTHER_FLAG];
-    }
+    const queryBuilder = createQueryBuilder(clone(rxQuery.mangoQuery), rxQuery.other[RXQUERY_OTHER_FLAG]);
 
     (queryBuilder as any)[functionName](value); // run
 
     const queryBuilderJson = queryBuilder.toJSON();
 
-
-    runPluginHooks('preCreateRxQuery', {
-        op: rxQuery.op,
-        queryObj: queryBuilderJson.query,
-        collection: rxQuery.collection
-    });
-
-
-    const newQuery = new RxQueryBase(
+    return createRxQuery(
         rxQuery.op,
         queryBuilderJson.query,
-        rxQuery.collection
+        rxQuery.collection,
+        {
+            ...rxQuery.other,
+            [RXQUERY_OTHER_FLAG]: queryBuilderJson.path
+        }
     ) as RxQuery;
-
-
-
-    if (queryBuilderJson.path) {
-        newQuery.other[RXQUERY_OTHER_FLAG] = queryBuilderJson.path;
-    }
-
-    const tunneled = tunnelQueryCache(newQuery);
-    return tunneled;
 }
 
 export function applyBuildingStep(

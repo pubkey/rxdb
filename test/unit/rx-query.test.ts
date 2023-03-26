@@ -709,7 +709,18 @@ describe('rx-query.test.ts', () => {
                      * to the primary key, so it can always
                      * only find one document.
                      */
-                }).exec()
+                }).exec(),
+                // same with id arrays
+                () => c.find({
+                    selector: {
+                        passportId: {
+                            $in: [
+                                docId,
+                                'foobar'
+                            ]
+                        }
+                    },
+                })
             ];
             for (const operation of operations) {
                 await operation();
@@ -1317,6 +1328,35 @@ describe('rx-query.test.ts', () => {
             assert.strictEqual(queryResult.length, 0);
 
             c.database.destroy();
+        });
+        it('#4552 $elemMatch query not working when there are many documents in the collection', async () => {
+            const c = await humansCollection.createNested(100);
+            const result = await c.find({
+                selector: {
+                    mainSkill: {
+                        $elemMatch: {
+                            name: {
+                                $eq: 'foobar'
+                            }
+                        }
+                    }
+                }
+            }).exec();
+            assert.strictEqual(result.length, 0);
+            c.database.remove();
+        });
+        it('#4586 query-builder copies other param', async () => {
+            const col = await humansCollection.create(0);
+            const q = col.find();
+            const key = 'some-plugin-key';
+            const data = 'some-plugin-data';
+            q.other[key] = data;
+
+            const newQ = q.where('name').ne('Alice');
+
+            assert.strictEqual(newQ.other[key], data);
+
+            col.database.destroy();
         });
     });
 });

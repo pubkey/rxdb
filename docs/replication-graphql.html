@@ -2556,7 +2556,8 @@ The pull stream gets the <code>headers</code> of the <code>RxReplicationState</c
         pull: {
             batchSize: <span class="hljs-number">100</span>,
             queryBuilder: pullQueryBuilder,
-            streamQueryBuilder: pullStreamQueryBuilder
+            streamQueryBuilder: pullStreamQueryBuilder,
+            includeWsHeaders: <span class="hljs-literal">false</span>, <span class="hljs-comment">// Includes headers as connection parameter to Websocket.</span>
         },
         deletedField: <span class="hljs-string">&apos;deleted&apos;</span>
     }

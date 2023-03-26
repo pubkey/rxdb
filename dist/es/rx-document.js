@@ -124,7 +124,13 @@ export var basePrototype = {
    * get data by objectPath
    */
   get(objPath) {
-    if (!this._data) return undefined;
+    if (!this._data) {
+      return undefined;
+    }
+    var fromCache = this._propertyCache.get(objPath);
+    if (fromCache) {
+      return fromCache;
+    }
     var valueObj = getProperty(this._data, objPath);
 
     // direct return if array or non-object
@@ -138,6 +144,7 @@ export var basePrototype = {
      */
     valueObj = clone(valueObj);
     defineGetterSetter(this.collection.schema, valueObj, objPath, this);
+    this._propertyCache.set(objPath, valueObj);
     return valueObj;
   },
   toJSON(withMetaFields = false) {
@@ -291,6 +298,7 @@ export function createRxDocumentConstructor(proto = basePrototype) {
 
     // assume that this is always equal to the doc-data in the database
     this._data = docData;
+    this._propertyCache = new Map();
 
     /**
      * because of the prototype-merge,
@@ -302,7 +310,9 @@ export function createRxDocumentConstructor(proto = basePrototype) {
   return constructor;
 }
 export function defineGetterSetter(schema, valueObj, objPath = '', thisObj = false) {
-  if (valueObj === null) return;
+  if (valueObj === null) {
+    return;
+  }
   var pathProperties = getSchemaByObjectPath(schema.jsonSchema, objPath);
   if (typeof pathProperties === 'undefined') return;
   if (pathProperties.properties) pathProperties = pathProperties.properties;

@@ -1,3 +1,4 @@
+import { INDEX_MIN } from '../../query-planner';
 import { getQueryMatcher, getSortComparator } from '../../rx-query-helper';
 import type {
     DefaultPreparedQuery,
@@ -13,6 +14,13 @@ import {
 } from './dexie-helper';
 import type { RxStorageInstanceDexie } from './rx-storage-instance-dexie';
 
+export function mapKeyForKeyRange(k: any) {
+    if (k === INDEX_MIN) {
+        return -Infinity;
+    } else {
+        return k;
+    }
+}
 
 export function getKeyRangeByQueryPlan(
     queryPlan: RxQueryPlan,
@@ -26,22 +34,26 @@ export function getKeyRangeByQueryPlan(
         }
     }
 
+    const startKeys = queryPlan.startKeys.map(mapKeyForKeyRange);
+    const endKeys = queryPlan.endKeys.map(mapKeyForKeyRange);
+
     let ret: any;
     /**
      * If index has only one field,
      * we have to pass the keys directly, not the key arrays.
      */
     if (queryPlan.index.length === 1) {
+        const equalKeys = startKeys[0] === endKeys[0];
         ret = IDBKeyRange.bound(
-            queryPlan.startKeys[0],
-            queryPlan.endKeys[0],
-            queryPlan.inclusiveStart,
-            queryPlan.inclusiveEnd
+            startKeys[0],
+            endKeys[0],
+            equalKeys ? false : queryPlan.inclusiveStart,
+            equalKeys ? false : queryPlan.inclusiveEnd
         );
     } else {
         ret = IDBKeyRange.bound(
-            queryPlan.startKeys,
-            queryPlan.endKeys,
+            startKeys,
+            endKeys,
             queryPlan.inclusiveStart,
             queryPlan.inclusiveEnd
         );
@@ -72,7 +84,6 @@ export async function dexieQuery<RxDocType>(
             preparedQuery.query
         );
     }
-
     const keyRange = getKeyRangeByQueryPlan(
         queryPlan,
         (state.dexieDb as any)._options.IDBKeyRange

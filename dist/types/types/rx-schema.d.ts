@@ -70,6 +70,7 @@ export type JsonSchema<RxDocType = any> = {
         [key: string]: JsonSchema;
     };
     format?: 'date-time' | 'email' | 'hostname' | 'ipv4' | 'ipv6' | 'uri' | string;
+    example?: any;
 
     // RxDB-specific
     ref?: string;

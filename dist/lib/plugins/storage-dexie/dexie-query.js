@@ -6,8 +6,17 @@ Object.defineProperty(exports, "__esModule", {
 exports.dexieCount = dexieCount;
 exports.dexieQuery = dexieQuery;
 exports.getKeyRangeByQueryPlan = getKeyRangeByQueryPlan;
+exports.mapKeyForKeyRange = mapKeyForKeyRange;
+var _queryPlanner = require("../../query-planner");
 var _rxQueryHelper = require("../../rx-query-helper");
 var _dexieHelper = require("./dexie-helper");
+function mapKeyForKeyRange(k) {
+  if (k === _queryPlanner.INDEX_MIN) {
+    return -Infinity;
+  } else {
+    return k;
+  }
+}
 function getKeyRangeByQueryPlan(queryPlan, IDBKeyRange) {
   if (!IDBKeyRange) {
     if (typeof window === 'undefined') {
@@ -16,15 +25,18 @@ function getKeyRangeByQueryPlan(queryPlan, IDBKeyRange) {
       IDBKeyRange = window.IDBKeyRange;
     }
   }
+  var startKeys = queryPlan.startKeys.map(mapKeyForKeyRange);
+  var endKeys = queryPlan.endKeys.map(mapKeyForKeyRange);
   var ret;
   /**
    * If index has only one field,
    * we have to pass the keys directly, not the key arrays.
    */
   if (queryPlan.index.length === 1) {
-    ret = IDBKeyRange.bound(queryPlan.startKeys[0], queryPlan.endKeys[0], queryPlan.inclusiveStart, queryPlan.inclusiveEnd);
+    var equalKeys = startKeys[0] === endKeys[0];
+    ret = IDBKeyRange.bound(startKeys[0], endKeys[0], equalKeys ? false : queryPlan.inclusiveStart, equalKeys ? false : queryPlan.inclusiveEnd);
   } else {
-    ret = IDBKeyRange.bound(queryPlan.startKeys, queryPlan.endKeys, queryPlan.inclusiveStart, queryPlan.inclusiveEnd);
+    ret = IDBKeyRange.bound(startKeys, endKeys, queryPlan.inclusiveStart, queryPlan.inclusiveEnd);
   }
   return ret;
 }

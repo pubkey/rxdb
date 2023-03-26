@@ -22,10 +22,11 @@ var NoSqlQueryBuilderClass = /*#__PURE__*/function () {
    *     query.where('age').gte(21).exec(callback);
    *
    */
-  function NoSqlQueryBuilderClass(mangoQuery) {
+  function NoSqlQueryBuilderClass(mangoQuery, _path) {
     this.options = {};
     this._conditions = {};
     this._fields = {};
+    this._path = _path;
     if (mangoQuery) {
       var queryBuilder = this;
       if (mangoQuery.selector) {
@@ -465,7 +466,7 @@ function _pushArr(opts, field, value) {
 function canMerge(conds) {
   return conds instanceof NoSqlQueryBuilderClass || (0, _mqueryUtils.isObject)(conds);
 }
-function createQueryBuilder(query) {
-  return new NoSqlQueryBuilderClass(query);
+function createQueryBuilder(query, path) {
+  return new NoSqlQueryBuilderClass(query, path);
 }
 //# sourceMappingURL=nosql-query-builder.js.map

@@ -294,7 +294,19 @@ async function requestRemoteInstance(instance, operation, params) {
     databaseName: instance.databaseName,
     collectionName: instance.collectionName
   });
-  return Promise.race([leaderDeadPromise, responsePromise]).then(firstResolved => {
+  var timeout;
+  return Promise.race([leaderDeadPromise, responsePromise
+  // // comment in timeout to debug
+  // new Promise<WinningPromise>(res => {
+  //     timeout = setTimeout(() => {
+  //         res({ error: new Error('requestRemoteInstance() timeout errorored'), retry: false });
+  //     }, 500);
+  // })
+  ]).then(firstResolved => {
+    if (timeout) {
+      clearTimeout(timeout);
+    }
+
     // clean up listeners
     broadcastChannel.removeEventListener('message', responseListener);
     broadcastChannel.removeEventListener('internal', whenDeathListener);
@@ -347,9 +359,24 @@ async function handleRemoteRequest(instance, msg) {
   }
 }
 async function waitUntilHasLeader(leaderElector) {
-  while (!leaderElector.hasLeader) {
-    await leaderElector.applyOnce();
-    await (0, _utils.promiseWait)(0);
+  leaderElector.awaitLeadership().catch(() => {});
+  await (0, _utils.promiseWait)(0);
+  while (true) {
+    var has = await leaderElector.hasLeader();
+    if (has || leaderElector.broadcastChannel.isClosed || leaderElector.isDead) {
+      return;
+    }
+    if (leaderElector.applyOnce) {
+      await leaderElector.applyOnce();
+    } else {
+      /**
+       * Trigger applying for leadership
+       * but do not await it in case another
+       * instance becomes leader first.
+       */
+      leaderElector.awaitLeadership().catch(() => {});
+    }
+    await (0, _utils.promiseWait)(20);
   }
 }
 

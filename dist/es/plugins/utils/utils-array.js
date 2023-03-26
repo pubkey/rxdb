@@ -67,4 +67,18 @@ export function arrayFilterNotEmpty(value) {
   }
   return true;
 }
+export function countUntilNotMatching(ar, matchingFn) {
+  var count = 0;
+  var idx = -1;
+  for (var item of ar) {
+    idx = idx + 1;
+    var matching = matchingFn(item, idx);
+    if (matching) {
+      count = count + 1;
+    } else {
+      break;
+    }
+  }
+  return count;
+}
 //# sourceMappingURL=utils-array.js.map

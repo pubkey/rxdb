@@ -4,6 +4,7 @@ export declare class RxQueryBase<RxDocType, RxQueryResult = RxDocument<RxDocType
     op: RxQueryOP;
     mangoQuery: Readonly<MangoQuery<RxDocType>>;
     collection: RxCollection<RxDocType>;
+    other: any;
     id: number;
     /**
      * Some stats then are used for debugging and cache replacement policies
@@ -11,10 +12,9 @@ export declare class RxQueryBase<RxDocType, RxQueryResult = RxDocument<RxDocType
     _execOverDatabaseCount: number;
     _creationTime: number;
     _lastEnsureEqual: number;
-    other: any;
     uncached: boolean;
     refCount$: BehaviorSubject<null>;
-    isFindOneByIdQuery: false | string;
+    isFindOneByIdQuery: false | string | string[];
     /**
      * Contains the current result state
      * or null if query has not run yet.
@@ -32,7 +32,7 @@ export declare class RxQueryBase<RxDocType, RxQueryResult = RxDocument<RxDocType
          */
         time: number;
     } | null;
-    constructor(op: RxQueryOP, mangoQuery: Readonly<MangoQuery<RxDocType>>, collection: RxCollection<RxDocType>);
+    constructor(op: RxQueryOP, mangoQuery: Readonly<MangoQuery<RxDocType>>, collection: RxCollection<RxDocType>, other?: any);
     get $(): BehaviorSubject<RxQueryResult>;
     _latestChangeEvent: -1 | number;
     _lastExecStart: number;
@@ -112,7 +112,7 @@ export declare function _getDefaultQuery<RxDocType>(): MangoQuery<RxDocType>;
  * run this query through the QueryCache
  */
 export declare function tunnelQueryCache<RxDocumentType, RxQueryResult>(rxQuery: RxQueryBase<RxDocumentType, RxQueryResult>): RxQuery<RxDocumentType, RxQueryResult>;
-export declare function createRxQuery<RxDocType>(op: RxQueryOP, queryObj: MangoQuery<RxDocType>, collection: RxCollection<RxDocType>): RxQueryBase<RxDocType, RxDocument<RxDocType, {}> | RxDocument<RxDocType, {}>[]>;
+export declare function createRxQuery<RxDocType>(op: RxQueryOP, queryObj: MangoQuery<RxDocType>, collection: RxCollection<RxDocType>, other?: any): RxQueryBase<RxDocType, RxDocument<RxDocType, {}> | RxDocument<RxDocType, {}>[]>;
 /**
  * Runs the query over the storage instance
  * of the collection.
@@ -128,5 +128,5 @@ export declare function queryCollection<RxDocType>(rxQuery: RxQuery<RxDocType> |
  * Returns false if no query of that kind.
  * Returns the document id otherwise.
  */
-export declare function isFindOneByIdQuery(primaryPath: string, query: MangoQuery<any>): false | string;
+export declare function isFindOneByIdQuery(primaryPath: string, query: MangoQuery<any>): false | string | string[];
 export declare function isRxQuery(obj: any): boolean;

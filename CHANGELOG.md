@@ -9,6 +9,33 @@
 
 <!-- RELEASE BELOW -->
 
+### 14.4.0 (24 March 2023)
+
+- FIX multiple problems in the query planner
+- ADD 'includeWsHeaders' property for GraphQL replication [#4533](https://github.com/pubkey/rxdb/pull/4533)
+- UPDATE [broadcast-channel](https://github.com/pubkey/broadcast-channel) to version `5.0.0`
+- FIX query-builder copies RxQuery's other param [#4587](https://github.com/pubkey/rxdb/pull/4587)
+
+### 14.3.7 (18 March 2023)
+
+### 14.3.6 (15 March 2023)
+
+### 14.3.5 (15 March 2023)
+
+### 14.3.4 (15 March 2023)
+
+### 14.3.3 (14 March 2023)
+
+### 14.3.2 (13 March 2023)
+
+### 14.3.1 (13 March 2023)
+
+### 14.3.0 (13 March 2023)
+
+- FIX RxDocument getter should return the same object on property paths [#4548](https://github.com/pubkey/rxdb/pull/4548)
+- OPTIMIZE use `findDocumentsById()` on queries that do only do an `$in` operator on the primary key.
+- FIX `$or` query with other operator on dexie.js
+
 ### 14.2.3 (10 March 2023)
 
 ### 14.2.1 (9 March 2023)

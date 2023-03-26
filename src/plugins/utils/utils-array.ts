@@ -76,3 +76,21 @@ export function arrayFilterNotEmpty<TValue>(value: TValue | null | undefined): v
     }
     return true;
 }
+
+export function countUntilNotMatching<T>(
+    ar: T[],
+    matchingFn: (v: T, idx: number) => boolean
+): number {
+    let count = 0;
+    let idx = -1;
+    for (const item of ar) {
+        idx = idx + 1;
+        const matching = matchingFn(item, idx);
+        if (matching) {
+            count = count + 1;
+        } else {
+            break;
+        }
+    }
+    return count;
+}
