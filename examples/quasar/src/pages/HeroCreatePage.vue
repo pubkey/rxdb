@@ -24,7 +24,14 @@
       <q-separator />
 
       <q-card-actions align="right">
-        <q-btn v-close-popup class="phc__close" color="primary" label="Close" icon="close" flat />
+        <q-btn
+          v-close-popup
+          class="phc__close"
+          color="primary"
+          label="Close"
+          icon="close"
+          flat
+        />
         <q-btn
           type="submit"
           class="phc__save"

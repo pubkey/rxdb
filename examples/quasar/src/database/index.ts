@@ -14,10 +14,10 @@ import {
   RxHeroDocumentType,
 } from 'src/types/hero';
 import { RxHeroSchema } from 'src/schemas/hero';
-import { HeroesService, Hero } from 'app/src-api/heroes';
+import { HeroesService, Hero, HeroQuery } from 'app/src-ssr/api/heroes';
 import { RxDatabase } from 'src/boot/database';
 import { FeathersService } from '@feathersjs/feathers/lib';
-import { FeathersApp } from 'app/src-api';
+import { FeathersApp } from 'app/src-ssr/api';
 
 export async function createDatabase() {
   if (process.env.DEV) {
@@ -72,7 +72,7 @@ export async function createDatabase() {
 export async function syncHeroes(
   db: RxDatabase,
   heroesApi: FeathersService<FeathersApp, HeroesService>
-) {  
+) {
   const replicationState = await replicateRxCollection({
     collection: db.collections.heroes,
     /**
@@ -109,8 +109,8 @@ export async function syncHeroes(
           }
         }
 
-        console.log('pull', responses)
-        const conflicts = responses.filter(() => false).map(res => res);
+        console.log('pull', responses);
+        const conflicts = responses.filter(() => false).map((res) => res);
         return conflicts as never;
       },
       batchSize: 5,
@@ -126,19 +126,20 @@ export async function syncHeroes(
           const checkpoint = lastCheckpoint as { updatedAt?: number };
           minTimestamp = checkpoint.updatedAt || 0;
         }
+        const query: HeroQuery = {
+          $limit: batchSize,
+          updatedAt: {
+            $gte: minTimestamp,
+          }
+        }
         const { data } = await heroesApi.find({
-          query: {
-            $limit: batchSize,
-            updatedAt: {
-              $gte: minTimestamp,
-            },
-          },
+          query,
         });
-        console.log(data)
+        console.log(data);
 
         // await db.collections.heroes.bulkUpsert(data);
         const res = {
-          documents: data,
+          documents: data as never,
           checkpoint:
             data.length === 0
               ? lastCheckpoint
@@ -149,7 +150,7 @@ export async function syncHeroes(
         };
         return res;
       },
-      batchSize: 10
+      batchSize: 10,
     },
   });
   setInterval(() => replicationState.reSync(), 5 * 1000);

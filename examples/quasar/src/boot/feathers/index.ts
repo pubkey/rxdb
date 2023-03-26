@@ -1,12 +1,13 @@
 import { inject, InjectionKey } from 'vue';
-import type { HeroesService } from 'app/src-api/heroes';
-import type { FeathersApp } from 'app/src-api/index';
+import type { HeroesService } from 'app/src-ssr/api/heroes';
+import type { FeathersApp } from 'app/src-ssr/api/index';
 import { BootFileParams } from '@quasar/app-vite';
 import { FeathersService } from '@feathersjs/feathers/lib';
 
 export const apiKey: InjectionKey<FeathersApp> = Symbol('api-key');
-export const heroesApiKey: InjectionKey<FeathersService<FeathersApp, HeroesService>> =
-  Symbol('entity-api-key');
+export const heroesApiKey: InjectionKey<
+  FeathersService<FeathersApp, HeroesService>
+> = Symbol('entity-api-key');
 
 export function useApi() {
   const api = inject(apiKey);

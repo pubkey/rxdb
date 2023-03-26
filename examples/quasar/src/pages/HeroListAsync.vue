@@ -18,7 +18,11 @@
         ></q-btn>
       </template>
       <template v-slot:body-cell-actions="props">
-        <q-td :data-slug="props.row.slug" :props="props" class="phl__actions q-gutter-x-sm">
+        <q-td
+          :data-slug="props.row.slug"
+          :props="props"
+          class="phl__actions q-gutter-x-sm"
+        >
           <q-btn
             :to="{ name: 'hero-edit', params: { id: props.value } }"
             round

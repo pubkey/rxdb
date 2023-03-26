@@ -2,8 +2,12 @@
   <q-page>
     <div class="flex flex-center q-pa-sm" v-for="index in _count" :key="index">
       <q-card class="pma__card full-width" flat aquare>
-        <iframe class="pma__frame full-width" :src="url" frameborder="0"></iframe>
-      </q-card> 
+        <iframe
+          class="pma__frame full-width"
+          :src="url"
+          frameborder="0"
+        ></iframe>
+      </q-card>
     </div>
   </q-page>
 </template>
@@ -13,12 +17,12 @@ import { computed } from 'vue';
 
 interface HeroEditPageProps {
   count: string;
-  paths: string[]
+  paths: string[];
 }
 
 const props = defineProps<HeroEditPageProps>();
-const _count = computed(() => parseInt(props.count))
-const url = computed(() => `/${props.paths.join('/')}`)
+const _count = computed(() => parseInt(props.count));
+const url = computed(() => `/${props.paths.join('/')}`);
 </script>
 
 <style lang="scss">
@@ -30,4 +34,3 @@ const url = computed(() => `/${props.paths.join('/')}`)
   min-height: 540px;
 }
 </style>
-

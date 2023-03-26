@@ -586,6 +586,49 @@ jobs:
         with:
           working-directory: ./examples/vue
           run: npm run test
+  
+  example-quasar:
+    runs-on: ubuntu-20.04
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y xvfb libgtk2.0-0 libnotify-dev libgconf-2-4 libnss3 libxss1 libasound2
+          sudo apt-get install -y chromium-browser
+      - name: Set node version
+        uses: actions/setup-node@v3
+        with:
+          node-version-file: '.nvmrc'
+      - name: prepare RxDB core
+        run: |
+          npm install --legacy-peer-deps
+          npm run build
+          rm -r node_modules
+      - name: setup yarn and @quasar/cli
+        run: |
+          npm install --location=global yarn
+          npm install --location=global @quasar/cli
+      - name: Set node version
+        uses: actions/setup-node@v3
+        with:
+          working-directory: ./examples/quasar
+          node-version: lts/hydrogen
+          cache: yarn
+      - name: quasar build
+        working-directory: ./examples/quasar
+        run: |
+          rm -R -f ./node_modules/ || true
+          yarn install --immutable
+          yarn lint
+          quasar build -m ssr
+      - name: quasar test
+        uses: cypress-io/github-action@v5
+        with:
+          working-directory: ./examples/quasar
+          build: yarn quasar build -m spa
+          start: yarn test:e2e:ci
 
   example-svelte:
     runs-on: ubuntu-20.04

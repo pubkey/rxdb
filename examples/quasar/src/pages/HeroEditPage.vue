@@ -24,10 +24,20 @@
       <q-card-section v-if="hero">
         <q-form ref="form" class="row q-col-gutter-sm" @submit="onFormSubmit">
           <div class="col col-12">
-            <rx-input v-model="hero.name" class="phe__name" label="Name" readonly />
+            <rx-input
+              v-model="hero.name"
+              class="phe__name"
+              label="Name"
+              readonly
+            />
           </div>
           <div class="col col-12">
-            <rx-color-input v-model="hero.color" class="phe__color" label="Color" readonly />
+            <rx-color-input
+              v-model="hero.color"
+              class="phe__color"
+              label="Color"
+              readonly
+            />
           </div>
           <div class="col col-12">
             <rx-input
@@ -43,7 +53,14 @@
       <q-separator />
 
       <q-card-actions align="right">
-        <q-btn v-close-popup class="phe__close" color="primary" label="Close" icon="close" flat />
+        <q-btn
+          v-close-popup
+          class="phe__close"
+          color="primary"
+          label="Close"
+          icon="close"
+          flat
+        />
         <q-btn
           :disable="deleted"
           type="submit"

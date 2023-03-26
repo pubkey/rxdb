@@ -1,5 +1,5 @@
-import { Application } from 'app/src-api';
-import { migrate, seed, setup } from 'app/src-api/heroes';
+import { Application } from '../api';
+import { migrate, seed, setup } from '../api/heroes';
 import { ssrMiddleware } from 'quasar/wrappers';
 
 // "async" is optional;

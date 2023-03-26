@@ -14,7 +14,7 @@
 // ***********************************************************
 
 import './commands';
-import '@cypress/code-coverage/support'; 
+import '@cypress/code-coverage/support';
 
 // Quasar styles
 import 'quasar/src/css/index.sass'; // Or 'quasar/dist/quasar.prod.css' if no CSS preprocessor is installed

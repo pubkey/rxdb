@@ -12,7 +12,7 @@ import MultiAsync from './MultiAsync.vue';
 
 interface HeroEditPageProps {
   count: string;
-  paths: string[]
+  paths: string[];
 }
 
 const props = defineProps<HeroEditPageProps>();

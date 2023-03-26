@@ -37,6 +37,11 @@
       href="icons/favicon-16x16.png"
     />
     <link rel="icon" type="image/ico" href="favicon.ico" />
+    <script>
+      if (global === undefined) {
+        var global = window;
+      }
+    </script>
   </head>
   <body>
     <!-- quasar:entry-point -->

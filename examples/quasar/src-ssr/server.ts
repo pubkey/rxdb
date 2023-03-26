@@ -10,7 +10,7 @@
  * anything you import here (except for express and compression).
  */
 import { static as serveStatic } from '@feathersjs/express';
-import { createApp } from 'app/src-api';
+import { createApp } from './api';
 import {
   ssrClose,
   ssrCreate,

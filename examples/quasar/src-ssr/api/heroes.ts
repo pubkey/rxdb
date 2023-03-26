@@ -20,7 +20,7 @@ const HeroSchemaSchema = {
 } as const;
 
 export type Hero = FromSchema<typeof HeroSchema>;
-export type HeroQuery = FromSchema<typeof HeroSchemaSchema>;
+export type HeroQuery = FromSchema<typeof Partial<HeroSchemaSchema>>;
 
 const heroResolve = resolve<HeroQuery, HookContext>({
   _deleted(value: QueryParam) {
@@ -76,7 +76,7 @@ export function setup(app: Application | FeathersApp): void {
       description: 'Hero',
       definition: HeroSchema,
     },
-  })
+  });
   app.use('api/heroes', handler);
 
   const service = app.service('api/heroes');
@@ -89,7 +89,7 @@ export function setup(app: Application | FeathersApp): void {
       if (ctx.event === 'created') {
         hero._deleted = false;
       }
-      ctx.app.emit(ctx.event || '', hero)
+      ctx.app.emit(ctx.event || '', hero);
     }
   }
 
@@ -97,21 +97,21 @@ export function setup(app: Application | FeathersApp): void {
   function fixMeta(result: any) {
     if (result) {
       if ('_deleted' in result && typeof result._deleted === 'number') {
-        result._deleted = result._deleted === 1
+        result._deleted = result._deleted === 1;
       }
     }
   }
 
   function fixMetaGet(ctx: HookContext) {
     if (ctx.result) {
-      fixMeta(ctx.result)
+      fixMeta(ctx.result);
     }
   }
 
   function fixMetaList(ctx: HookContext) {
     if (ctx.result) {
       for (const item of ctx.result.data) {
-        fixMeta(item)
+        fixMeta(item);
       }
     }
   }
@@ -126,7 +126,7 @@ export function setup(app: Application | FeathersApp): void {
     after: {
       get: [(ctx: HookContext) => fixMetaGet(ctx)],
       find: [(ctx: HookContext) => fixMetaList(ctx)],
-    }
+    },
   });
 }
 

@@ -1,9 +1,9 @@
 import { boot } from 'quasar/wrappers';
 import { feathers } from '@feathersjs/feathers';
-import rest from '@feathersjs/rest-client'
-import axios from 'axios'
+import rest from '@feathersjs/rest-client';
+import axios from 'axios';
 import { configureApp } from '.';
-import type { ServiceTypes } from 'app/src-api/index';
+import type { ServiceTypes } from 'app/src-ssr/api/index';
 
 export default boot(async (ctx) => {
   const apiClient = axios.create({ baseURL: '/' });
