@@ -2,7 +2,8 @@ import type {
     RxPlugin,
     RxCollectionCreator,
     RxDatabaseCreator,
-    RxErrorKey
+    RxErrorKey,
+    RxDocument
 } from '../../types';
 
 import {
@@ -24,6 +25,7 @@ import { checkMangoQuery, checkQuery } from './check-query';
 import { newRxError } from '../../rx-error';
 import { DeepReadonly } from '../../types/util';
 import { deepFreeze } from '../../plugins/utils';
+import { ensurePrimaryKeyValid } from './check-document';
 
 export * from './check-schema';
 export * from './unallowed-properties';
@@ -106,6 +108,11 @@ export const RxDBDevModePlugin: RxPlugin = {
                         args
                     });
                 }
+            }
+        },
+        createRxDocument: {
+            before: function (doc: RxDocument) {
+                ensurePrimaryKeyValid(doc.primary, doc.toJSON(true));
             }
         },
         preCreateRxQuery: {

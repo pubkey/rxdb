@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- ADD (dev-mode) ensure it throws on malformated primary keys
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

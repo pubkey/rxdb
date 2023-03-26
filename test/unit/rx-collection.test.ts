@@ -5,7 +5,8 @@ import AsyncTestUtil, {
     randomBoolean,
     randomNumber,
     randomString,
-    wait
+    wait,
+    assertThrows
 } from 'async-test-util';
 
 import * as schemas from '../helper/schemas';
@@ -267,6 +268,22 @@ describe('rx-collection.test.ts', () => {
                     assert.deepStrictEqual(err.parameters.id, docData.passportId);
 
                     db.destroy();
+                });
+                it('should not allow wrong primaryKeys', async () => {
+                    const c = await humansCollection.create(10);
+                    async function ensurePrimaryKeyInsertThrows(id: string) {
+                        const doc = schemaObjects.human(id);
+                        await assertThrows(
+                            () => c.insert(doc),
+                            'RxError'
+                        );
+                    }
+                    await Promise.all([
+                        '   not-trimmed   ',
+                        'contains \n linebreak',
+                        '' // empty string
+                    ].map(id => ensurePrimaryKeyInsertThrows(id)));
+                    c.database.destroy();
                 });
             });
         });
