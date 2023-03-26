@@ -1,4 +1,8 @@
-import type { RxDocumentData, StringKeys, WithDeleted } from '../../types';
+import type {
+    RxDocumentData,
+    StringKeys,
+    WithDeleted
+} from '../../types';
 import { b64EncodeUnicode, flatClone } from '../../plugins/utils';
 import { URLQueryParams } from './couchdb-types';
 
@@ -19,7 +23,7 @@ export function couchDBDocToRxDocData<RxDocType>(
     primaryPath: string,
     couchDocData: any
 ): WithDeleted<RxDocType> {
-    const doc = couchSwapIdToPrimary(primaryPath, couchDocData);
+    const doc = couchSwapIdToPrimary(primaryPath as any, couchDocData);
 
     // ensure deleted flag is set.
     doc._deleted = !!doc._deleted;
