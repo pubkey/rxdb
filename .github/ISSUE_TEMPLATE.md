@@ -11,5 +11,4 @@
 
 
 All issues will be autoclosed after 14 days. If you want your issue to be seen by the maintainer or to be left open, make a PR like described  above.
-
 -->
