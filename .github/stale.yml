@@ -15,3 +15,7 @@ markComment: >
   If you still have a problem, make a PR with a test case or to prove that you have tried to fix the problem.
 # Comment to post when closing a stale issue. Set to `false` to disable
 closeComment: "Issues are autoclosed after some time. If you still have a problem, make a PR with a test case or to prove that you have tried to fix the problem."
+
+
+# https://github.com/probot/stale/blob/7510fac863900a98057436d308e9fe21bbe314ec/README.md?plain=1#L66
+only: issues
