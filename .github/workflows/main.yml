@@ -588,7 +588,7 @@ jobs:
           run: npm run test
   
   example-quasar:
-    runs-on: ubuntu-20.04
+    runs-on: cyancor/cypress-runner:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -616,6 +616,7 @@ jobs:
           working-directory: ./examples/quasar
           node-version: lts/hydrogen
           cache: yarn
+          cache-dependency-path: ./examples/quasar/yarn.lock
       - name: quasar build
         working-directory: ./examples/quasar
         run: |
