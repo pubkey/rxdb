@@ -134,9 +134,6 @@ emptyDatabase.importJSON(json)
 
 Writes the current (or ongoing) database state to the filesystem. [Read more](./backup.md)
 
-### server()
-Spawns a CouchDB-compatible server from the database. [Read more](./tutorials/server-couchdb.md)
-
 ### waitForLeadership()
 Returns a Promise which resolves when the RxDatabase becomes [elected leader](./leader-election.md).
 

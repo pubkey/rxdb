@@ -354,7 +354,6 @@ you need to import the [leader election plugin](./leader-election.md) so that Rx
 ## Limitations
 
  * At the moment it is not possible to replicate [attachments](./rx-attachment.md), make a pull request if you need this.
- * It is not possible to do a multi-master replication, like with CouchDB. RxDB always assumes that the backend is the single source of truth.
 
 
 ## Error handling
