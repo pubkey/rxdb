@@ -1,4 +1,4 @@
-import type { MaybeReadonly } from '../../types';
+import type { MaybePromise, MaybeReadonly } from '../../types';
 export declare function lastOfArray<T>(ar: T[]): T | undefined;
 /**
  * shuffle the given array
@@ -25,3 +25,4 @@ export declare function isMaybeReadonlyArray(x: any): x is MaybeReadonly<any[]>;
  */
 export declare function arrayFilterNotEmpty<TValue>(value: TValue | null | undefined): value is TValue;
 export declare function countUntilNotMatching<T>(ar: T[], matchingFn: (v: T, idx: number) => boolean): number;
+export declare function asyncFilter<T>(array: T[], predicate: (item: T, index: number, a: T[]) => MaybePromise<boolean>): Promise<T[]>;

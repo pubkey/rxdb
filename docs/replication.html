@@ -2575,7 +2575,6 @@ you need to import the <a href="leader-election.html">leader election plugin</a>
 <h2 id="limitations">Limitations</h2>
 <ul>
 <li>At the moment it is not possible to replicate <a href="rx-attachment.html">attachments</a>, make a pull request if you need this.</li>
-<li>It is not possible to do a multi-master replication, like with CouchDB. RxDB always assumes that the backend is the single source of truth.</li>
 </ul>
 <h2 id="error-handling">Error handling</h2>
 <p>When sending a document to the remote fails for any reason, RxDB will send it again in a later point in time.

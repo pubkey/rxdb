@@ -101,6 +101,9 @@ export var ERROR_MESSAGES = {
   DOC17: 'Since version 8.0.0 RxDocument.save() can only be called on non-temporary documents',
   DOC18: 'Document property for composed primary key is missing',
   DOC19: 'Value of primary key(s) cannot be changed',
+  DOC20: 'PrimaryKey missing',
+  DOC21: 'PrimaryKey must be equal to PrimaryKey.trim(). It cannot start or end with a whitespace',
+  DOC22: 'PrimaryKey must not contain a linebreak',
   // data-migrator.js
   DM1: 'migrate() Migration has already run',
   DM2: 'migration of document failed final document does not match final schema',

@@ -97,7 +97,11 @@ var RxStorageInstanceRemote = /*#__PURE__*/function () {
     this.storage.settings.send(message);
     var response = await responsePromise;
     if (response.error) {
-      throw new Error('could not requestRemote: ' + JSON.stringify(response.error));
+      throw new Error('could not requestRemote: ' + JSON.stringify({
+        methodName,
+        params,
+        error: response.error
+      }, null, 4));
     } else {
       return response.return;
     }

@@ -112,7 +112,7 @@ export declare function _getDefaultQuery<RxDocType>(): MangoQuery<RxDocType>;
  * run this query through the QueryCache
  */
 export declare function tunnelQueryCache<RxDocumentType, RxQueryResult>(rxQuery: RxQueryBase<RxDocumentType, RxQueryResult>): RxQuery<RxDocumentType, RxQueryResult>;
-export declare function createRxQuery<RxDocType>(op: RxQueryOP, queryObj: MangoQuery<RxDocType>, collection: RxCollection<RxDocType>, other?: any): RxQueryBase<RxDocType, RxDocument<RxDocType, {}> | RxDocument<RxDocType, {}>[]>;
+export declare function createRxQuery<RxDocType>(op: RxQueryOP, queryObj: MangoQuery<RxDocType>, collection: RxCollection<RxDocType>, other?: any): RxQueryBase<RxDocType, RxDocument<RxDocType> | RxDocument<RxDocType>[]>;
 /**
  * Runs the query over the storage instance
  * of the collection.

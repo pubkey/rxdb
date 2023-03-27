@@ -1,7 +1,14 @@
 import { Observable } from 'rxjs';
 import type { RxDocument, RxCollection, RxDocumentData, RxDocumentWriteData, UpdateQuery, CRDTEntry, ModifyFunction } from './types';
 export declare const basePrototype: {
-    readonly primaryPath: "_deleted" | "_attachments" | "_rev" | "_meta" | undefined;
+    readonly primaryPath: import("./types").StringKeys<{
+        _deleted: boolean;
+        _attachments: {
+            [attachmentId: string]: import("./types").RxAttachmentData;
+        };
+        _rev: string;
+        _meta: import("./types").RxDocumentMeta;
+    }> | undefined;
     readonly primary: any;
     readonly revision: string | undefined;
     readonly deleted$: any;
@@ -51,22 +58,22 @@ export declare const basePrototype: {
     getAttachment(): never;
     allAttachments(): never;
     readonly allAttachments$: void;
-    modify<RxDocType>(this: RxDocument<RxDocType, {}>, mutationFunction: ModifyFunction<RxDocType>, _context?: string): Promise<RxDocument>;
+    modify<RxDocType>(this: RxDocument<RxDocType>, mutationFunction: ModifyFunction<RxDocType>, _context?: string): Promise<RxDocument>;
     /**
      * runs an incremental update over the document
      * @param function that takes the document-data and returns a new data-object
      */
     incrementalModify(this: import("./types").RxDocumentBase<{}, {}>, mutationFunction: ModifyFunction<any>, _context?: string): Promise<RxDocument>;
-    patch<RxDocType_1>(this: RxDocument<RxDocType_1, {}>, patch: Partial<RxDocType_1>): Promise<RxDocument<RxDocType_1, {}>>;
+    patch<RxDocType_1>(this: RxDocument<RxDocType_1>, patch: Partial<RxDocType_1>): Promise<RxDocument<RxDocType_1, {}>>;
     /**
      * patches the given properties
      */
-    incrementalPatch<RxDocumentType = any>(this: RxDocument<RxDocumentType, {}>, patch: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType, {}>>;
+    incrementalPatch<RxDocumentType = any>(this: RxDocument<RxDocumentType>, patch: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType>>;
     /**
      * saves the new document-data
      * and handles the events
      */
-    _saveData<RxDocType_2>(this: RxDocument<RxDocType_2, {}>, newData: RxDocumentWriteData<RxDocType_2>, oldData: RxDocumentData<RxDocType_2>): Promise<RxDocument<RxDocType_2, {}>>;
+    _saveData<RxDocType_2>(this: RxDocument<RxDocType_2>, newData: RxDocumentWriteData<RxDocType_2>, oldData: RxDocumentData<RxDocType_2>): Promise<RxDocument<RxDocType_2>>;
     /**
      * Remove the document.
      * Notice that there is no hard delete,
@@ -77,7 +84,14 @@ export declare const basePrototype: {
     destroy(): never;
 };
 export declare function createRxDocumentConstructor(proto?: {
-    readonly primaryPath: "_deleted" | "_attachments" | "_rev" | "_meta" | undefined;
+    readonly primaryPath: import("./types").StringKeys<{
+        _deleted: boolean;
+        _attachments: {
+            [attachmentId: string]: import("./types").RxAttachmentData;
+        };
+        _rev: string;
+        _meta: import("./types").RxDocumentMeta;
+    }> | undefined;
     readonly primary: any;
     readonly revision: string | undefined;
     readonly deleted$: any;
@@ -127,22 +141,22 @@ export declare function createRxDocumentConstructor(proto?: {
     getAttachment(): never;
     allAttachments(): never;
     readonly allAttachments$: void;
-    modify<RxDocType>(this: RxDocument<RxDocType, {}>, mutationFunction: ModifyFunction<RxDocType>, _context?: string | undefined): Promise<import("./types").RxDocumentBase<{}, {}>>;
+    modify<RxDocType>(this: RxDocument<RxDocType>, mutationFunction: ModifyFunction<RxDocType>, _context?: string | undefined): Promise<import("./types").RxDocumentBase<{}, {}>>;
     /**
      * runs an incremental update over the document
      * @param function that takes the document-data and returns a new data-object
      */
     incrementalModify(this: import("./types").RxDocumentBase<{}, {}>, mutationFunction: ModifyFunction<any>, _context?: string | undefined): Promise<import("./types").RxDocumentBase<{}, {}>>;
-    patch<RxDocType_1>(this: RxDocument<RxDocType_1, {}>, patch: Partial<RxDocType_1>): Promise<RxDocument<RxDocType_1, {}>>;
+    patch<RxDocType_1>(this: RxDocument<RxDocType_1>, patch: Partial<RxDocType_1>): Promise<RxDocument<RxDocType_1, {}>>;
     /**
      * patches the given properties
      */
-    incrementalPatch<RxDocumentType = any>(this: RxDocument<RxDocumentType, {}>, patch: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType, {}>>;
+    incrementalPatch<RxDocumentType = any>(this: RxDocument<RxDocumentType>, patch: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType>>;
     /**
      * saves the new document-data
      * and handles the events
      */
-    _saveData<RxDocType_2>(this: RxDocument<RxDocType_2, {}>, newData: RxDocumentWriteData<RxDocType_2>, oldData: RxDocumentData<RxDocType_2>): Promise<RxDocument<RxDocType_2, {}>>;
+    _saveData<RxDocType_2>(this: RxDocument<RxDocType_2>, newData: RxDocumentWriteData<RxDocType_2>, oldData: RxDocumentData<RxDocType_2>): Promise<RxDocument<RxDocType_2>>;
     /**
      * Remove the document.
      * Notice that there is no hard delete,
@@ -154,7 +168,14 @@ export declare function createRxDocumentConstructor(proto?: {
 }): {
     (this: import("./types").RxDocumentBase<{}, {}>, collection: RxCollection, docData: RxDocumentData<any>): void;
     prototype: {
-        readonly primaryPath: "_deleted" | "_attachments" | "_rev" | "_meta" | undefined;
+        readonly primaryPath: import("./types").StringKeys<{
+            _deleted: boolean;
+            _attachments: {
+                [attachmentId: string]: import("./types").RxAttachmentData;
+            };
+            _rev: string;
+            _meta: import("./types").RxDocumentMeta;
+        }> | undefined;
         readonly primary: any;
         readonly revision: string | undefined;
         readonly deleted$: any;
@@ -204,22 +225,22 @@ export declare function createRxDocumentConstructor(proto?: {
         getAttachment(): never;
         allAttachments(): never;
         readonly allAttachments$: void;
-        modify<RxDocType>(this: RxDocument<RxDocType, {}>, mutationFunction: ModifyFunction<RxDocType>, _context?: string | undefined): Promise<import("./types").RxDocumentBase<{}, {}>>;
+        modify<RxDocType>(this: RxDocument<RxDocType>, mutationFunction: ModifyFunction<RxDocType>, _context?: string | undefined): Promise<import("./types").RxDocumentBase<{}, {}>>;
         /**
          * runs an incremental update over the document
          * @param function that takes the document-data and returns a new data-object
          */
         incrementalModify(this: import("./types").RxDocumentBase<{}, {}>, mutationFunction: ModifyFunction<any>, _context?: string | undefined): Promise<import("./types").RxDocumentBase<{}, {}>>;
-        patch<RxDocType_1>(this: RxDocument<RxDocType_1, {}>, patch: Partial<RxDocType_1>): Promise<RxDocument<RxDocType_1, {}>>;
+        patch<RxDocType_1>(this: RxDocument<RxDocType_1>, patch: Partial<RxDocType_1>): Promise<RxDocument<RxDocType_1, {}>>;
         /**
          * patches the given properties
          */
-        incrementalPatch<RxDocumentType = any>(this: RxDocument<RxDocumentType, {}>, patch: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType, {}>>;
+        incrementalPatch<RxDocumentType = any>(this: RxDocument<RxDocumentType>, patch: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType>>;
         /**
          * saves the new document-data
          * and handles the events
          */
-        _saveData<RxDocType_2>(this: RxDocument<RxDocType_2, {}>, newData: RxDocumentWriteData<RxDocType_2>, oldData: RxDocumentData<RxDocType_2>): Promise<RxDocument<RxDocType_2, {}>>;
+        _saveData<RxDocType_2>(this: RxDocument<RxDocType_2>, newData: RxDocumentWriteData<RxDocType_2>, oldData: RxDocumentData<RxDocType_2>): Promise<RxDocument<RxDocType_2>>;
         /**
          * Remove the document.
          * Notice that there is no hard delete,

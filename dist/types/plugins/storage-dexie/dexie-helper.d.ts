@@ -6,7 +6,7 @@ export declare const DEXIE_CHANGES_TABLE_NAME = "changes";
 export declare const RX_STORAGE_NAME_DEXIE = "dexie";
 export declare const RxStorageDexieStatics: Readonly<{
     prepareQuery<RxDocType>(schema: RxJsonSchema<RxDocumentData<RxDocType>>, mutateableQuery: import("../../types").FilledMangoQuery<RxDocType>): any;
-    checkpointSchema: import("../../types").DeepReadonlyObject<import("../../types").JsonSchema<any>>;
+    checkpointSchema: import("../../types").DeepReadonlyObject<import("../../types").JsonSchema>;
 }>;
 export declare function getDexieDbWithTables(databaseName: string, collectionName: string, settings: DexieSettings, schema: RxJsonSchema<any>): DexieStorageInternals;
 export declare function closeDexieDb(statePromise: DexieStorageInternals): Promise<void>;

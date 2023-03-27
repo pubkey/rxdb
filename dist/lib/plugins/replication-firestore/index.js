@@ -82,6 +82,8 @@ function replicateFirestore(options) {
       schema: collection.schema.jsonSchema
     });
   }
+  var pullFilters = options.pull?.filter !== undefined ? (0, _utils.toArray)(options.pull.filter) : [];
+  var pullQuery = (0, _firestore.query)(options.firestore.collection, ...pullFilters);
   if (options.pull) {
     replicationPrimitivesPull = {
       async handler(lastPulledCheckpoint, batchSize) {
@@ -89,10 +91,10 @@ function replicateFirestore(options) {
         var sameTimeQuery;
         if (lastPulledCheckpoint) {
           var lastServerTimestamp = (0, _firestoreHelper.isoStringToServerTimestamp)(lastPulledCheckpoint.serverTimestamp);
-          newerQuery = (0, _firestore.query)(options.firestore.collection, (0, _firestore.where)(serverTimestampField, '>', lastServerTimestamp), (0, _firestore.orderBy)(serverTimestampField, 'asc'), (0, _firestore.limit)(batchSize));
-          sameTimeQuery = (0, _firestore.query)(options.firestore.collection, (0, _firestore.where)(serverTimestampField, '==', lastServerTimestamp), (0, _firestore.where)(primaryPath, '>', lastPulledCheckpoint.id), (0, _firestore.orderBy)(primaryPath, 'asc'), (0, _firestore.limit)(batchSize));
+          newerQuery = (0, _firestore.query)(pullQuery, (0, _firestore.where)(serverTimestampField, '>', lastServerTimestamp), (0, _firestore.orderBy)(serverTimestampField, 'asc'), (0, _firestore.limit)(batchSize));
+          sameTimeQuery = (0, _firestore.query)(pullQuery, (0, _firestore.where)(serverTimestampField, '==', lastServerTimestamp), (0, _firestore.where)(primaryPath, '>', lastPulledCheckpoint.id), (0, _firestore.orderBy)(primaryPath, 'asc'), (0, _firestore.limit)(batchSize));
         } else {
-          newerQuery = (0, _firestore.query)(options.firestore.collection, (0, _firestore.orderBy)(serverTimestampField, 'asc'), (0, _firestore.limit)(batchSize));
+          newerQuery = (0, _firestore.query)(pullQuery, (0, _firestore.orderBy)(serverTimestampField, 'asc'), (0, _firestore.limit)(batchSize));
         }
         var mustsReRun = true;
         var useDocs = [];
@@ -147,8 +149,12 @@ function replicateFirestore(options) {
   }
   var replicationPrimitivesPush;
   if (options.push) {
+    var pushFilter = options.push?.filter;
     replicationPrimitivesPush = {
       async handler(rows) {
+        if (pushFilter !== undefined) {
+          rows = await (0, _utils.asyncFilter)(rows, row => pushFilter(row.newDocumentState));
+        }
         var writeRowsById = {};
         var docIds = rows.map(row => {
           var docId = row.newDocumentState[primaryPath];
@@ -230,7 +236,7 @@ function replicateFirestore(options) {
     var startBefore = replicationState.start.bind(replicationState);
     var cancelBefore = replicationState.cancel.bind(replicationState);
     replicationState.start = () => {
-      var lastChangeQuery = (0, _firestore.query)(options.firestore.collection, (0, _firestore.orderBy)(serverTimestampField, 'desc'), (0, _firestore.limit)(1));
+      var lastChangeQuery = (0, _firestore.query)(pullQuery, (0, _firestore.orderBy)(serverTimestampField, 'desc'), (0, _firestore.limit)(1));
       var unsubscribe = (0, _firestore.onSnapshot)(lastChangeQuery, _querySnapshot => {
         /**
          * There is no good way to observe the event stream in firestore.

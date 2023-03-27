@@ -1,5 +1,5 @@
 import _inheritsLoose from "@babel/runtime/helpers/inheritsLoose";
-import { ensureNotFalsy, errorToPlainJson, flatClone, lastOfArray } from '../../plugins/utils';
+import { asyncFilter, ensureNotFalsy, errorToPlainJson, flatClone, lastOfArray, toArray } from '../../plugins/utils';
 import { doc, query, where, orderBy, limit, getDocs, onSnapshot, runTransaction, writeBatch, serverTimestamp, waitForPendingWrites, documentId } from 'firebase/firestore';
 import { RxDBLeaderElectionPlugin } from '../leader-election';
 import { RxReplicationState, startReplicationOnLeaderShip } from '../replication';
@@ -48,6 +48,8 @@ export function replicateFirestore(options) {
       schema: collection.schema.jsonSchema
     });
   }
+  var pullFilters = options.pull?.filter !== undefined ? toArray(options.pull.filter) : [];
+  var pullQuery = query(options.firestore.collection, ...pullFilters);
   if (options.pull) {
     replicationPrimitivesPull = {
       async handler(lastPulledCheckpoint, batchSize) {
@@ -55,10 +57,10 @@ export function replicateFirestore(options) {
         var sameTimeQuery;
         if (lastPulledCheckpoint) {
           var lastServerTimestamp = isoStringToServerTimestamp(lastPulledCheckpoint.serverTimestamp);
-          newerQuery = query(options.firestore.collection, where(serverTimestampField, '>', lastServerTimestamp), orderBy(serverTimestampField, 'asc'), limit(batchSize));
-          sameTimeQuery = query(options.firestore.collection, where(serverTimestampField, '==', lastServerTimestamp), where(primaryPath, '>', lastPulledCheckpoint.id), orderBy(primaryPath, 'asc'), limit(batchSize));
+          newerQuery = query(pullQuery, where(serverTimestampField, '>', lastServerTimestamp), orderBy(serverTimestampField, 'asc'), limit(batchSize));
+          sameTimeQuery = query(pullQuery, where(serverTimestampField, '==', lastServerTimestamp), where(primaryPath, '>', lastPulledCheckpoint.id), orderBy(primaryPath, 'asc'), limit(batchSize));
         } else {
-          newerQuery = query(options.firestore.collection, orderBy(serverTimestampField, 'asc'), limit(batchSize));
+          newerQuery = query(pullQuery, orderBy(serverTimestampField, 'asc'), limit(batchSize));
         }
         var mustsReRun = true;
         var useDocs = [];
@@ -113,8 +115,12 @@ export function replicateFirestore(options) {
   }
   var replicationPrimitivesPush;
   if (options.push) {
+    var pushFilter = options.push?.filter;
     replicationPrimitivesPush = {
       async handler(rows) {
+        if (pushFilter !== undefined) {
+          rows = await asyncFilter(rows, row => pushFilter(row.newDocumentState));
+        }
         var writeRowsById = {};
         var docIds = rows.map(row => {
           var docId = row.newDocumentState[primaryPath];
@@ -196,7 +202,7 @@ export function replicateFirestore(options) {
     var startBefore = replicationState.start.bind(replicationState);
     var cancelBefore = replicationState.cancel.bind(replicationState);
     replicationState.start = () => {
-      var lastChangeQuery = query(options.firestore.collection, orderBy(serverTimestampField, 'desc'), limit(1));
+      var lastChangeQuery = query(pullQuery, orderBy(serverTimestampField, 'desc'), limit(1));
       var unsubscribe = onSnapshot(lastChangeQuery, _querySnapshot => {
         /**
          * There is no good way to observe the event stream in firestore.

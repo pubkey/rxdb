@@ -1713,6 +1713,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.arrayFilterNotEmpty = arrayFilterNotEmpty;
+exports.asyncFilter = asyncFilter;
 exports.batchArray = batchArray;
 exports.countUntilNotMatching = countUntilNotMatching;
 exports.isMaybeReadonlyArray = isMaybeReadonlyArray;
@@ -1792,9 +1793,9 @@ function arrayFilterNotEmpty(value) {
 function countUntilNotMatching(ar, matchingFn) {
   var count = 0;
   var idx = -1;
-  for (var item of ar) {
+  for (var _item of ar) {
     idx = idx + 1;
-    var matching = matchingFn(item, idx);
+    var matching = matchingFn(_item, idx);
     if (matching) {
       count = count + 1;
     } else {
@@ -1802,6 +1803,10 @@ function countUntilNotMatching(ar, matchingFn) {
     }
   }
   return count;
+}
+async function asyncFilter(array, predicate) {
+  var filters = await Promise.all(array.map(predicate));
+  return array.filter((...[, index]) => filters[index]);
 }
 
 },{}],14:[function(require,module,exports){
@@ -2804,7 +2809,7 @@ exports.RXDB_VERSION = void 0;
 /**
  * This file is replaced in the 'npm run build:version' script.
  */
-var RXDB_VERSION = '14.4.0';
+var RXDB_VERSION = '14.5.0';
 exports.RXDB_VERSION = RXDB_VERSION;
 
 },{}],27:[function(require,module,exports){

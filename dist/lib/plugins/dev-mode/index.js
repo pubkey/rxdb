@@ -51,6 +51,7 @@ Object.keys(_checkQuery).forEach(function (key) {
 });
 var _rxError = require("../../rx-error");
 var _utils = require("../../plugins/utils");
+var _checkDocument = require("./check-document");
 /**
  * Deep freezes and object when in dev-mode.
  * Deep-Freezing has the same performance as deep-cloning, so we only do that in dev-mode.
@@ -109,6 +110,11 @@ var RxDBDevModePlugin = {
             args
           });
         }
+      }
+    },
+    createRxDocument: {
+      before: function (doc) {
+        (0, _checkDocument.ensurePrimaryKeyValid)(doc.primary, doc.toJSON(true));
       }
     },
     preCreateRxQuery: {

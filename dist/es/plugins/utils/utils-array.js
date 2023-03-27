@@ -70,9 +70,9 @@ export function arrayFilterNotEmpty(value) {
 export function countUntilNotMatching(ar, matchingFn) {
   var count = 0;
   var idx = -1;
-  for (var item of ar) {
+  for (var _item of ar) {
     idx = idx + 1;
-    var matching = matchingFn(item, idx);
+    var matching = matchingFn(_item, idx);
     if (matching) {
       count = count + 1;
     } else {
@@ -80,5 +80,9 @@ export function countUntilNotMatching(ar, matchingFn) {
     }
   }
   return count;
+}
+export async function asyncFilter(array, predicate) {
+  var filters = await Promise.all(array.map(predicate));
+  return array.filter((...[, index]) => filters[index]);
 }
 //# sourceMappingURL=utils-array.js.map

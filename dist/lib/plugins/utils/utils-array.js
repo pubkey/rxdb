@@ -4,6 +4,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.arrayFilterNotEmpty = arrayFilterNotEmpty;
+exports.asyncFilter = asyncFilter;
 exports.batchArray = batchArray;
 exports.countUntilNotMatching = countUntilNotMatching;
 exports.isMaybeReadonlyArray = isMaybeReadonlyArray;
@@ -83,9 +84,9 @@ function arrayFilterNotEmpty(value) {
 function countUntilNotMatching(ar, matchingFn) {
   var count = 0;
   var idx = -1;
-  for (var item of ar) {
+  for (var _item of ar) {
     idx = idx + 1;
-    var matching = matchingFn(item, idx);
+    var matching = matchingFn(_item, idx);
     if (matching) {
       count = count + 1;
     } else {
@@ -93,5 +94,9 @@ function countUntilNotMatching(ar, matchingFn) {
     }
   }
   return count;
+}
+async function asyncFilter(array, predicate) {
+  var filters = await Promise.all(array.map(predicate));
+  return array.filter((...[, index]) => filters[index]);
 }
 //# sourceMappingURL=utils-array.js.map

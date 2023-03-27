@@ -6,6 +6,7 @@ import { ensureCollectionNameValid, ensureDatabaseNameIsValid } from './unallowe
 import { checkMangoQuery, checkQuery } from './check-query';
 import { newRxError } from '../../rx-error';
 import { deepFreeze } from '../../plugins/utils';
+import { ensurePrimaryKeyValid } from './check-document';
 export * from './check-schema';
 export * from './unallowed-properties';
 export * from './check-query';
@@ -67,6 +68,11 @@ export var RxDBDevModePlugin = {
             args
           });
         }
+      }
+    },
+    createRxDocument: {
+      before: function (doc) {
+        ensurePrimaryKeyValid(doc.primary, doc.toJSON(true));
       }
     },
     preCreateRxQuery: {

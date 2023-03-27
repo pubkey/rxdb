@@ -28,5 +28,11 @@ export * from './plugins/utils';
 export * from './hooks';
 export * from './query-cache';
 
-// TODO how to do 'export type * ..' ?
+/**
+ * TODO use export type * from './types';
+ * which was introduced into typescript v5.
+ * However changing this now would force all RxDB users
+ * to update to typescript@5.0.0 so we should
+ * change this in late 2023.
+ */
 //# sourceMappingURL=index.js.map
