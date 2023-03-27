@@ -3,6 +3,7 @@
 
 <!-- CHANGELOG NEWEST -->
 - ADD (dev-mode) ensure it throws on malformated primary keys
+- UPDATE typescript to [version 5](https://devblogs.microsoft.com/typescript/announcing-typescript-5-0/)
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
