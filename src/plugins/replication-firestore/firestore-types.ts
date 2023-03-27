@@ -1,12 +1,15 @@
 import type {
+    MaybePromise,
     ReplicationOptions,
     ReplicationPullOptions,
-    ReplicationPushOptions
+    ReplicationPushOptions,
+    WithDeleted
 } from '../../types';
 
 import type {
     CollectionReference,
     Firestore,
+    QueryFieldFilterConstraint,
     QuerySnapshot
 } from 'firebase/firestore';
 
@@ -32,6 +35,17 @@ export type FirestoreOptions<RxDocType> = {
     database: Firestore;
 };
 
+export type FirestoreSyncPullOptions<RxDocType> =
+    Omit<ReplicationPullOptions<RxDocType, FirestoreCheckpointType>, 'handler' | 'stream$'>
+    & {
+        filter?: QueryFieldFilterConstraint | QueryFieldFilterConstraint[];
+    };
+
+export type FirestoreSyncPushOptions<RxDocType> = Omit<ReplicationPushOptions<RxDocType>, 'handler'>
+    & {
+        filter?(item: WithDeleted<RxDocType>): MaybePromise<boolean>;
+    };
+
 export type SyncOptionsFirestore<RxDocType> = Omit<
     ReplicationOptions<RxDocType, any>,
     'pull' | 'push' | 'replicationIdentifier'
@@ -49,8 +63,8 @@ export type SyncOptionsFirestore<RxDocType> = Omit<
      * @link https://groups.google.com/g/firebase-talk/c/tAmPzPei-mE
      */
     serverTimestampField?: string;
-    pull?: Omit<ReplicationPullOptions<RxDocType, FirestoreCheckpointType>, 'handler' | 'stream$'>;
-    push?: Omit<ReplicationPushOptions<RxDocType>, 'handler'>;
+    pull?: FirestoreSyncPullOptions<RxDocType>;
+    push?: FirestoreSyncPushOptions<RxDocType>;
 };
 
 export type GetQuery<RxDocType> = (ids: string[]) => Promise<QuerySnapshot<RxDocType>>;

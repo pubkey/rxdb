@@ -4,6 +4,8 @@
 <!-- CHANGELOG NEWEST -->
 - ADD (dev-mode) ensure it throws on malformated primary keys
 - UPDATE typescript to [version 5](https://devblogs.microsoft.com/typescript/announcing-typescript-5-0/)
+- ADD(replication-firestore): add filtered replication [#4590](https://github.com/pubkey/rxdb/pull/4590)
+- FIX(typescript) schema type not working with readonly array [#4579](https://github.com/pubkey/rxdb/pull/4579)
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
