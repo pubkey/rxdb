@@ -106,3 +106,30 @@ allDocsResult.forEach(doc => {
 ```
 
 Also notice that if you do writes from non-RxDB applications, you have to keep these fields in sync. It is recommended to use the [Firestore triggers](https://firebase.google.com/docs/functions/firestore-events) to ensure that.
+
+## Filtered Replication
+
+You might need to replicate only a subset of your collection, either to or from Firestore. You can achieve this using `push.filter` and `pull.filter` options.
+
+```ts
+const replicationState = replicateFirestore(
+    {
+        collection: myRxCollection,
+        firestore: {
+            projectId,
+            database: firestoreDatabase,
+            collection: firestoreCollection
+        },
+        pull: {
+            filter: [
+                where('ownerId', '==', userId)
+            ]
+        },
+        push: {
+            filter: (item) => item.syncEnabled === true
+        }
+    }
+);
+```
+
+Keep in mind that you can not use inequality operators (<, <=, !=, not-in, >, or >=) in `pull.filter` since that would cause a conflict with ordering by `serverTimestamp`.

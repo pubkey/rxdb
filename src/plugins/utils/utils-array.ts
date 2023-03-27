@@ -1,4 +1,5 @@
 import type {
+    MaybePromise,
     MaybeReadonly
 } from '../../types';
 
@@ -93,4 +94,12 @@ export function countUntilNotMatching<T>(
         }
     }
     return count;
+}
+
+export async function asyncFilter<T>(array: T[], predicate: (item: T, index: number, a: T[]) => MaybePromise<boolean>): Promise<T[]> {
+    const filters = await Promise.all(
+        array.map(predicate)
+    );
+
+    return array.filter((...[, index]) => filters[index]);
 }
