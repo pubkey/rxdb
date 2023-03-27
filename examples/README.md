@@ -1,6 +1,6 @@
 # Example-projects with RxDB
 
-In this folder you can find some example projects with RxDB. If you have coding-skills, please help to add examples for the missing environments/frameworks.
+In this folder you can find some example projects with RxDB.
 
 
 Technology           | Status
@@ -15,6 +15,9 @@ react                | [done](./react)
 svelte               | [done](./svelte)
 vuejs                | [done](./vue)
 supabase             | [done](./supabase/)
+
+**NOTICE:** The maintainer is not able to maintain any additional example projects. If you want to add a new one, create your own repositiory and add a link to it below.
+
 
 
 ## Third Party Examples:
