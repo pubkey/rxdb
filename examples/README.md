@@ -1,6 +1,6 @@
 # Example-projects with RxDB
 
-In this folder you can find some example projects with RxDB. If you have coding-skills, please help to add examples for the missing environments/frameworks.
+In this folder you can find some example projects with RxDB.
 
 
 Technology           | Status
