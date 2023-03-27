@@ -2,11 +2,11 @@
 
 name: CI
 
-# Controls when the action will run. 
+# Controls when the action will run.
 on:
   # Triggers the workflow on push or pull request events but only for the master branch
   push:
-    branches: [ master ]
+    branches: [master]
   pull_request:
 
   # Allows you to run this workflow manually from the Actions tab
@@ -16,7 +16,6 @@ on:
 # the jobs which take longes must come before the faster ones
 # because github will start them likely earlier
 jobs:
-
   core:
     runs-on: ubuntu-20.04
     steps:
@@ -24,7 +23,7 @@ jobs:
       - name: Set node version
         uses: actions/setup-node@v3
         with:
-          node-version-file: '.nvmrc'
+          node-version-file: ".nvmrc"
 
       - name: Reuse npm cache folder
         uses: actions/cache@v3
@@ -40,10 +39,10 @@ jobs:
 
       - name: install npm dependencies
         run: npm install
-      
+
       - name: build
         run: npm run build
-      
+
       - name: test:typings
         run: npm run test:typings
 
@@ -55,7 +54,7 @@ jobs:
       - name: Set node version
         uses: actions/setup-node@v3
         with:
-          node-version-file: '.nvmrc'
+          node-version-file: ".nvmrc"
 
       - name: Reuse npm cache folder
         uses: actions/cache@v3
@@ -71,7 +70,7 @@ jobs:
 
       - name: install npm dependencies
         run: npm install
-      
+
       - name: build
         run: npm run build
 
@@ -99,7 +98,7 @@ jobs:
       - name: Set node version
         uses: actions/setup-node@v3
         with:
-          node-version-file: '.nvmrc'
+          node-version-file: ".nvmrc"
 
       - name: Reuse npm cache folder
         uses: actions/cache@v3
@@ -115,7 +114,7 @@ jobs:
 
       - name: install npm dependencies
         run: npm install
-      
+
       - name: build
         run: npm run build
 
@@ -146,7 +145,6 @@ jobs:
           npm install
           npm run test
 
-
   storage-remote:
     runs-on: ubuntu-20.04
     steps:
@@ -154,7 +152,7 @@ jobs:
       - name: Set node version
         uses: actions/setup-node@v3
         with:
-          node-version-file: '.nvmrc'
+          node-version-file: ".nvmrc"
 
       - name: Reuse npm cache folder
         uses: actions/cache@v3
@@ -170,7 +168,7 @@ jobs:
 
       - name: install npm dependencies
         run: npm install
-      
+
       - name: build
         run: npm run build
 
@@ -188,7 +186,7 @@ jobs:
       - name: Set node version
         uses: actions/setup-node@v3
         with:
-          node-version-file: '.nvmrc'
+          node-version-file: ".nvmrc"
 
       - name: Reuse npm cache folder
         uses: actions/cache@v3
@@ -204,7 +202,7 @@ jobs:
 
       - name: install npm dependencies
         run: npm install
-      
+
       - name: build
         run: npm run build
 
@@ -227,7 +225,6 @@ jobs:
         with:
           run: npm run test:performance:dexie
 
-
   storage-foundationdb:
     runs-on: ubuntu-20.04
     steps:
@@ -235,7 +232,7 @@ jobs:
       - name: Set node version
         uses: actions/setup-node@v3
         with:
-          node-version-file: '.nvmrc'
+          node-version-file: ".nvmrc"
 
       - name: Reuse npm cache folder
         uses: actions/cache@v3
@@ -257,7 +254,7 @@ jobs:
         run: npm install
 
       - run: npm install foundationdb@1.1.3
-      
+
       - name: build
         run: npm run build
 
@@ -277,7 +274,7 @@ jobs:
       - name: Set node version
         uses: actions/setup-node@v3
         with:
-          node-version-file: '.nvmrc'
+          node-version-file: ".nvmrc"
 
       - name: Reuse npm cache folder
         uses: actions/cache@v3
@@ -318,7 +315,6 @@ jobs:
         working-directory: ./examples/angular
         run: npm run test:ssr
 
-
       - name: Capacitor build
         working-directory: ./examples/angular
         run: npm run build:capacitor
@@ -330,7 +326,7 @@ jobs:
       - name: Set node version
         uses: actions/setup-node@v3
         with:
-          node-version-file: '.nvmrc'
+          node-version-file: ".nvmrc"
 
       - name: Reuse npm cache folder
         uses: actions/cache@v3
@@ -351,10 +347,11 @@ jobs:
 
       - name: measure build size
         run: npm run build:size
-        
+
       - name: test rollup build
         run: npm run build:rollup
 
+      - run: npm run docs:landingpage:build
 
   test-code-style:
     runs-on: ubuntu-20.04
@@ -363,7 +360,7 @@ jobs:
       - name: Set node version
         uses: actions/setup-node@v3
         with:
-          node-version-file: '.nvmrc'
+          node-version-file: ".nvmrc"
 
       - name: Reuse npm cache folder
         uses: actions/cache@v3
@@ -426,7 +423,7 @@ jobs:
       - name: Set node version
         uses: actions/setup-node@v3
         with:
-          node-version-file: '.nvmrc'
+          node-version-file: ".nvmrc"
 
       - name: install dependencies
         run: sudo apt-get update && sudo apt-get install -y chromium-browser
@@ -454,7 +451,7 @@ jobs:
       - name: Set node version
         uses: actions/setup-node@v3
         with:
-          node-version-file: '.nvmrc'
+          node-version-file: ".nvmrc"
       - name: install dependencies
         run: sudo apt-get update && sudo apt-get install -y chromium-browser
       - name: prepare RxDB core
@@ -482,8 +479,8 @@ jobs:
       - name: Set node version
         uses: actions/setup-node@v3
         with:
-            # TODO using latest node version does not work with expo-cli https://github.com/expo/expo-cli/issues/4478
-            node-version: 16.16.0
+          # TODO using latest node version does not work with expo-cli https://github.com/expo/expo-cli/issues/4478
+          node-version: 16.16.0
 
       - name: prepare RxDB core
         run: |
@@ -500,7 +497,6 @@ jobs:
           sudo sysctl -p
           yarn test:bundle
 
-
   example-supabase:
     runs-on: ubuntu-20.04
     steps:
@@ -508,7 +504,7 @@ jobs:
       - name: Set node version
         uses: actions/setup-node@v3
         with:
-          node-version-file: '.nvmrc'
+          node-version-file: ".nvmrc"
       - name: Reuse npm cache folder
         uses: actions/cache@v3
         env:
@@ -567,7 +563,7 @@ jobs:
       - name: Set node version
         uses: actions/setup-node@v3
         with:
-          node-version-file: '.nvmrc'
+          node-version-file: ".nvmrc"
       - name: prepare RxDB core
         run: |
           npm install --legacy-peer-deps
@@ -580,7 +576,7 @@ jobs:
           npm install --legacy-peer-deps
           npm run lint
           npm run build
-        
+
       - name: vue test
         uses: GabrielBB/xvfb-action@v1
         with:
@@ -596,7 +592,7 @@ jobs:
       - name: Set node version
         uses: actions/setup-node@v3
         with:
-          node-version-file: '.nvmrc'
+          node-version-file: ".nvmrc"
       - name: prepare RxDB core
         run: |
           npm install --legacy-peer-deps
@@ -608,7 +604,7 @@ jobs:
           npm run preinstall
           npm install --legacy-peer-deps
           npm run build
-        
+
       - name: svelte test
         uses: GabrielBB/xvfb-action@v1
         with:
@@ -624,7 +620,7 @@ jobs:
       - name: Set node version
         uses: actions/setup-node@v3
         with:
-          node-version-file: '.nvmrc'
+          node-version-file: ".nvmrc"
       - name: prepare RxDB core
         run: |
           npm install --legacy-peer-deps
@@ -641,7 +637,7 @@ jobs:
         with:
           working-directory: ./examples/vite-vanilla-ts
           run: npm run test
-          
+
   example-graphql:
     runs-on: ubuntu-20.04
     steps:
@@ -651,7 +647,7 @@ jobs:
       - name: Set node version
         uses: actions/setup-node@v3
         with:
-          node-version-file: '.nvmrc'
+          node-version-file: ".nvmrc"
       - name: prepare RxDB core
         run: |
           npm install --legacy-peer-deps
@@ -683,11 +679,11 @@ jobs:
       - name: Set node version
         uses: actions/setup-node@v3
         with:
-          node-version-file: '.nvmrc'    
+          node-version-file: ".nvmrc"
       - uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.3.4'
-          channel: 'stable'
+          flutter-version: "3.3.4"
+          channel: "stable"
       - run: flutter --version
       - name: Reuse npm cache folder
         uses: actions/cache@v3
@@ -724,7 +720,6 @@ jobs:
             flutter config --enable-linux-desktop
             flutter test integration_test/basics_test.dart -d linux
 
-
   test-tutorials:
     runs-on: ubuntu-20.04
     steps:
@@ -732,7 +727,7 @@ jobs:
       - name: Set node version
         uses: actions/setup-node@v3
         with:
-          node-version-file: '.nvmrc'
+          node-version-file: ".nvmrc"
       - name: prepare RxDB core
         run: |
           npm install
@@ -750,17 +745,15 @@ jobs:
       - name: Set node version
         uses: actions/setup-node@v3
         with:
-          node-version-file: '.nvmrc'
+          node-version-file: ".nvmrc"
       - name: prepare RxDB core
         run: |
           npm install
           npm run build
-       # in the past we had tests that failed randomly
-       # to prevent this we run the tests in fast-mode 10 times
+        # in the past we had tests that failed randomly
+        # to prevent this we run the tests in fast-mode 10 times
       - name: unit tests 10 times
         run: for i in `seq 10`; do npm run test:fast:lokijs; done
-
-
 
   # I found out that people are stupid and use the npm downloads count
   # to measure the quality of an open source project.

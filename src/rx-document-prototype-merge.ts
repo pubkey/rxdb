@@ -80,7 +80,7 @@ export function getRxDocumentConstructor<RxDocType, ORM>(
 ) {
     if (!constructorForCollection.has(rxCollection)) {
         const ret = createRxDocumentConstructor(
-            getDocumentPrototype(rxCollection)
+            getDocumentPrototype(rxCollection as any)
         );
         constructorForCollection.set(rxCollection, ret);
     }
