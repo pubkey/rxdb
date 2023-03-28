@@ -165,13 +165,14 @@ await myDatabase.destroy();
 ```
 
 ### remove()
-Removes the database and wipes all data of it from the storage.
+
+Wipes all documents from the storage. Use this to free up disc space.
 
 ```javascript
 await myDatabase.remove();
-// database is now gone
+// database instance is now gone
 
-// NOTICE: You can also remove a database without its instance
+// NOTICE: You can also clear a database without removing its instance
 import { removeRxDatabase } from 'rxdb';
 removeRxDatabase('mydatabasename', 'localstorage');
 ```
