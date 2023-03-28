@@ -13,7 +13,8 @@ import {
     getStartIndexStringFromLowerBound,
     getStartIndexStringFromUpperBound,
     fillWithDefaultSettings,
-    now
+    now,
+    getIndexStringLength
 } from '../../';
 import { EXAMPLE_REVISION_1 } from '../helper/revisions';
 import config from './config';
@@ -251,6 +252,23 @@ config.parallel('custom-index.test.ts', () => {
                 assert.ok(strA);
                 strA.split('').forEach(char => assert.strictEqual(char, ' '));
             });
+        });
+    });
+    describe('.getIndexStringLength()', () => {
+
+        [
+            ['id', 'num'],
+            ['bool', 'id', 'num']
+        ].forEach(index => {
+            const length = getIndexStringLength(
+                schema,
+                index
+            );
+            const indexString = getIndexableStringMonad(
+                schema,
+                index
+            )(getIndexTestDoc({ bool: true }));
+            assert.strictEqual(indexString.length, length);
         });
     });
     describe('.getStartIndexStringFromLowerBound()', () => {

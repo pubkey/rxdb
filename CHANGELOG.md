@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- ADD `getIndexStringLength()` helper method
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

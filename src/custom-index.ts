@@ -18,22 +18,10 @@ import {
 import { INDEX_MAX, INDEX_MIN } from './query-planner';
 
 
-/**
- * Crafts an indexable string that can be used
- * to check if a document would be sorted below or above
- * another documents, dependent on the index values.
- * @monad for better performance
- *
- * IMPORTANT: Performance is really important here
- * which is why we code so 'strange'.
- * Always run performance tests when you want to
- * change something in this method.
- */
-export function getIndexableStringMonad<RxDocType>(
+export function getIndexMeta<RxDocType>(
     schema: RxJsonSchema<RxDocumentData<RxDocType>>,
     index: string[]
-): (docData: RxDocumentData<RxDocType>) => string {
-
+) {
     /**
      * Prepare all relevant information
      * outside of the returned function
@@ -72,7 +60,26 @@ export function getIndexableStringMonad<RxDocType>(
             getValueFn: objectPathMonad(fieldName)
         };
     });
+    return fieldNameProperties;
+}
 
+
+/**
+ * Crafts an indexable string that can be used
+ * to check if a document would be sorted below or above
+ * another documents, dependent on the index values.
+ * @monad for better performance
+ *
+ * IMPORTANT: Performance is really important here
+ * which is why we code so 'strange'.
+ * Always run performance tests when you want to
+ * change something in this method.
+ */
+export function getIndexableStringMonad<RxDocType>(
+    schema: RxJsonSchema<RxDocumentData<RxDocType>>,
+    index: string[]
+): (docData: RxDocumentData<RxDocType>) => string {
+    const fieldNameProperties = getIndexMeta(schema, index);
 
     /**
      * @hotPath Performance of this function is very critical!
@@ -136,6 +143,29 @@ export function getStringLengthOfIndexNumber(
         decimals,
         roundedMinimum: minimum
     };
+}
+
+export function getIndexStringLength<RxDocType>(
+    schema: RxJsonSchema<RxDocumentData<RxDocType>>,
+    index: string[]
+): number {
+    const fieldNameProperties = getIndexMeta(schema, index);
+    let length = 0;
+    fieldNameProperties.forEach(props => {
+        const schemaPart = props.schemaPart;
+        const type = schemaPart.type;
+
+        if (type === 'string') {
+            length += schemaPart.maxLength as number;
+        } else if (type === 'boolean') {
+            length += 1;
+        } else {
+            const parsedLengths = props.parsedLengths as ParsedLengths;
+            length = length + parsedLengths.nonDecimals + parsedLengths.decimals;
+        }
+
+    });
+    return length;
 }
 
 

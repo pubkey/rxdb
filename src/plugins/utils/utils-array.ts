@@ -103,3 +103,14 @@ export async function asyncFilter<T>(array: T[], predicate: (item: T, index: num
 
     return array.filter((...[, index]) => filters[index]);
 }
+
+/**
+ * @link https://stackoverflow.com/a/3762735
+ */
+export function sumNumberArray(array: number[]): number {
+    let count = 0;
+    for (let i = array.length; i--;) {
+        count += array[i];
+    }
+    return count;
+}
