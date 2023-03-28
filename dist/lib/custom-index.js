@@ -3,6 +3,8 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.getIndexMeta = getIndexMeta;
+exports.getIndexStringLength = getIndexStringLength;
 exports.getIndexableStringMonad = getIndexableStringMonad;
 exports.getNumberIndexString = getNumberIndexString;
 exports.getStartIndexStringFromLowerBound = getStartIndexStringFromLowerBound;
@@ -17,18 +19,7 @@ var _queryPlanner = require("./query-planner");
  * so we can easily iterate over them. And sort plain arrays of document data.
  */
 
-/**
- * Crafts an indexable string that can be used
- * to check if a document would be sorted below or above
- * another documents, dependent on the index values.
- * @monad for better performance
- *
- * IMPORTANT: Performance is really important here
- * which is why we code so 'strange'.
- * Always run performance tests when you want to
- * change something in this method.
- */
-function getIndexableStringMonad(schema, index) {
+function getIndexMeta(schema, index) {
   /**
    * Prepare all relevant information
    * outside of the returned function
@@ -53,6 +44,22 @@ function getIndexableStringMonad(schema, index) {
       getValueFn: (0, _utils.objectPathMonad)(fieldName)
     };
   });
+  return fieldNameProperties;
+}
+
+/**
+ * Crafts an indexable string that can be used
+ * to check if a document would be sorted below or above
+ * another documents, dependent on the index values.
+ * @monad for better performance
+ *
+ * IMPORTANT: Performance is really important here
+ * which is why we code so 'strange'.
+ * Always run performance tests when you want to
+ * change something in this method.
+ */
+function getIndexableStringMonad(schema, index) {
+  var fieldNameProperties = getIndexMeta(schema, index);
 
   /**
    * @hotPath Performance of this function is very critical!
@@ -103,6 +110,23 @@ function getStringLengthOfIndexNumber(schemaPart) {
     decimals,
     roundedMinimum: minimum
   };
+}
+function getIndexStringLength(schema, index) {
+  var fieldNameProperties = getIndexMeta(schema, index);
+  var length = 0;
+  fieldNameProperties.forEach(props => {
+    var schemaPart = props.schemaPart;
+    var type = schemaPart.type;
+    if (type === 'string') {
+      length += schemaPart.maxLength;
+    } else if (type === 'boolean') {
+      length += 1;
+    } else {
+      var parsedLengths = props.parsedLengths;
+      length = length + parsedLengths.nonDecimals + parsedLengths.decimals;
+    }
+  });
+  return length;
 }
 function getNumberIndexString(parsedLengths, fieldValue) {
   var str = '';

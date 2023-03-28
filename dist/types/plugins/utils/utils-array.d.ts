@@ -26,3 +26,7 @@ export declare function isMaybeReadonlyArray(x: any): x is MaybeReadonly<any[]>;
 export declare function arrayFilterNotEmpty<TValue>(value: TValue | null | undefined): value is TValue;
 export declare function countUntilNotMatching<T>(ar: T[], matchingFn: (v: T, idx: number) => boolean): number;
 export declare function asyncFilter<T>(array: T[], predicate: (item: T, index: number, a: T[]) => MaybePromise<boolean>): Promise<T[]>;
+/**
+ * @link https://stackoverflow.com/a/3762735
+ */
+export declare function sumNumberArray(array: number[]): number;

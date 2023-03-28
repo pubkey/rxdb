@@ -7,19 +7,7 @@
 import { getSchemaByObjectPath } from './rx-schema-helper';
 import { ensureNotFalsy, objectPathMonad } from './plugins/utils';
 import { INDEX_MAX, INDEX_MIN } from './query-planner';
-
-/**
- * Crafts an indexable string that can be used
- * to check if a document would be sorted below or above
- * another documents, dependent on the index values.
- * @monad for better performance
- *
- * IMPORTANT: Performance is really important here
- * which is why we code so 'strange'.
- * Always run performance tests when you want to
- * change something in this method.
- */
-export function getIndexableStringMonad(schema, index) {
+export function getIndexMeta(schema, index) {
   /**
    * Prepare all relevant information
    * outside of the returned function
@@ -44,6 +32,22 @@ export function getIndexableStringMonad(schema, index) {
       getValueFn: objectPathMonad(fieldName)
     };
   });
+  return fieldNameProperties;
+}
+
+/**
+ * Crafts an indexable string that can be used
+ * to check if a document would be sorted below or above
+ * another documents, dependent on the index values.
+ * @monad for better performance
+ *
+ * IMPORTANT: Performance is really important here
+ * which is why we code so 'strange'.
+ * Always run performance tests when you want to
+ * change something in this method.
+ */
+export function getIndexableStringMonad(schema, index) {
+  var fieldNameProperties = getIndexMeta(schema, index);
 
   /**
    * @hotPath Performance of this function is very critical!
@@ -94,6 +98,23 @@ export function getStringLengthOfIndexNumber(schemaPart) {
     decimals,
     roundedMinimum: minimum
   };
+}
+export function getIndexStringLength(schema, index) {
+  var fieldNameProperties = getIndexMeta(schema, index);
+  var length = 0;
+  fieldNameProperties.forEach(props => {
+    var schemaPart = props.schemaPart;
+    var type = schemaPart.type;
+    if (type === 'string') {
+      length += schemaPart.maxLength;
+    } else if (type === 'boolean') {
+      length += 1;
+    } else {
+      var parsedLengths = props.parsedLengths;
+      length = length + parsedLengths.nonDecimals + parsedLengths.decimals;
+    }
+  });
+  return length;
 }
 export function getNumberIndexString(parsedLengths, fieldValue) {
   var str = '';

@@ -4,6 +4,13 @@
  * so we can easily iterate over them. And sort plain arrays of document data.
  */
 import type { JsonSchema, RxDocumentData, RxJsonSchema } from './types';
+import { ObjectPathMonadFunction } from './plugins/utils';
+export declare function getIndexMeta<RxDocType>(schema: RxJsonSchema<RxDocumentData<RxDocType>>, index: string[]): {
+    fieldName: string;
+    schemaPart: JsonSchema;
+    parsedLengths?: ParsedLengths | undefined;
+    getValueFn: ObjectPathMonadFunction<RxDocType>;
+}[];
 /**
  * Crafts an indexable string that can be used
  * to check if a document would be sorted below or above
@@ -22,6 +29,7 @@ declare type ParsedLengths = {
     roundedMinimum: number;
 };
 export declare function getStringLengthOfIndexNumber(schemaPart: JsonSchema): ParsedLengths;
+export declare function getIndexStringLength<RxDocType>(schema: RxJsonSchema<RxDocumentData<RxDocType>>, index: string[]): number;
 export declare function getNumberIndexString(parsedLengths: ParsedLengths, fieldValue: number): string;
 export declare function getStartIndexStringFromLowerBound(schema: RxJsonSchema<any>, index: string[], lowerBound: (string | boolean | number | null | undefined)[], inclusiveStart: boolean): string;
 export declare function getStartIndexStringFromUpperBound(schema: RxJsonSchema<any>, index: string[], upperBound: (string | boolean | number | null | undefined)[], inclusiveEnd: boolean): string;

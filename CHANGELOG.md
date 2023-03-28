@@ -2,12 +2,16 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- ADD `getIndexStringLength()` helper method
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 14.5.1 (28 March 2023)
+
+- ADD `getIndexStringLength()` helper method
 
 ### 14.5.0 (27 March 2023)
 

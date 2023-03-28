@@ -124,6 +124,8 @@ function createChangeEventBuffer(collection) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.getIndexMeta = getIndexMeta;
+exports.getIndexStringLength = getIndexStringLength;
 exports.getIndexableStringMonad = getIndexableStringMonad;
 exports.getNumberIndexString = getNumberIndexString;
 exports.getStartIndexStringFromLowerBound = getStartIndexStringFromLowerBound;
@@ -138,18 +140,7 @@ var _queryPlanner = require("./query-planner");
  * so we can easily iterate over them. And sort plain arrays of document data.
  */
 
-/**
- * Crafts an indexable string that can be used
- * to check if a document would be sorted below or above
- * another documents, dependent on the index values.
- * @monad for better performance
- *
- * IMPORTANT: Performance is really important here
- * which is why we code so 'strange'.
- * Always run performance tests when you want to
- * change something in this method.
- */
-function getIndexableStringMonad(schema, index) {
+function getIndexMeta(schema, index) {
   /**
    * Prepare all relevant information
    * outside of the returned function
@@ -174,6 +165,22 @@ function getIndexableStringMonad(schema, index) {
       getValueFn: (0, _utils.objectPathMonad)(fieldName)
     };
   });
+  return fieldNameProperties;
+}
+
+/**
+ * Crafts an indexable string that can be used
+ * to check if a document would be sorted below or above
+ * another documents, dependent on the index values.
+ * @monad for better performance
+ *
+ * IMPORTANT: Performance is really important here
+ * which is why we code so 'strange'.
+ * Always run performance tests when you want to
+ * change something in this method.
+ */
+function getIndexableStringMonad(schema, index) {
+  var fieldNameProperties = getIndexMeta(schema, index);
 
   /**
    * @hotPath Performance of this function is very critical!
@@ -224,6 +231,23 @@ function getStringLengthOfIndexNumber(schemaPart) {
     decimals,
     roundedMinimum: minimum
   };
+}
+function getIndexStringLength(schema, index) {
+  var fieldNameProperties = getIndexMeta(schema, index);
+  var length = 0;
+  fieldNameProperties.forEach(props => {
+    var schemaPart = props.schemaPart;
+    var type = schemaPart.type;
+    if (type === 'string') {
+      length += schemaPart.maxLength;
+    } else if (type === 'boolean') {
+      length += 1;
+    } else {
+      var parsedLengths = props.parsedLengths;
+      length = length + parsedLengths.nonDecimals + parsedLengths.decimals;
+    }
+  });
+  return length;
 }
 function getNumberIndexString(parsedLengths, fieldValue) {
   var str = '';
@@ -1720,6 +1744,7 @@ exports.isMaybeReadonlyArray = isMaybeReadonlyArray;
 exports.lastOfArray = lastOfArray;
 exports.removeOneFromArrayIfMatches = removeOneFromArrayIfMatches;
 exports.shuffleArray = shuffleArray;
+exports.sumNumberArray = sumNumberArray;
 exports.toArray = toArray;
 function lastOfArray(ar) {
   return ar[ar.length - 1];
@@ -1807,6 +1832,17 @@ function countUntilNotMatching(ar, matchingFn) {
 async function asyncFilter(array, predicate) {
   var filters = await Promise.all(array.map(predicate));
   return array.filter((...[, index]) => filters[index]);
+}
+
+/**
+ * @link https://stackoverflow.com/a/3762735
+ */
+function sumNumberArray(array) {
+  var count = 0;
+  for (var i = array.length; i--;) {
+    count += array[i];
+  }
+  return count;
 }
 
 },{}],14:[function(require,module,exports){
@@ -2809,7 +2845,7 @@ exports.RXDB_VERSION = void 0;
 /**
  * This file is replaced in the 'npm run build:version' script.
  */
-var RXDB_VERSION = '14.5.0';
+var RXDB_VERSION = '14.5.1';
 exports.RXDB_VERSION = RXDB_VERSION;
 
 },{}],27:[function(require,module,exports){

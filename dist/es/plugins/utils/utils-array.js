@@ -85,4 +85,15 @@ export async function asyncFilter(array, predicate) {
   var filters = await Promise.all(array.map(predicate));
   return array.filter((...[, index]) => filters[index]);
 }
+
+/**
+ * @link https://stackoverflow.com/a/3762735
+ */
+export function sumNumberArray(array) {
+  var count = 0;
+  for (var i = array.length; i--;) {
+    count += array[i];
+  }
+  return count;
+}
 //# sourceMappingURL=utils-array.js.map
