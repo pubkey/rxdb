@@ -165,7 +165,6 @@ await myDatabase.destroy();
 ```
 
 ### remove()
-
 Wipes all documents from the storage. Use this to free up disc space.
 
 ```javascript
