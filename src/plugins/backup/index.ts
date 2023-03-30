@@ -10,7 +10,6 @@ import {
     filter,
     map
 } from 'rxjs/operators';
-import { newRxError } from '../../rx-error';
 import type {
     BackupOptions,
     RxBackupWriteEvent,
@@ -20,7 +19,7 @@ import type {
     RxPlugin
 } from '../../types';
 import {
-    getFromMapOrThrow,
+    getFromMapOrCreate,
     PROMISE_RESOLVE_FALSE,
     PROMISE_RESOLVE_TRUE,
     PROMISE_RESOLVE_VOID
@@ -85,13 +84,11 @@ export async function backupSingleDocument(
 
 const BACKUP_STATES_BY_DB: WeakMap<RxDatabase, RxBackupState[]> = new WeakMap();
 function addToBackupStates(db: RxDatabase, state: RxBackupState) {
-    if (!BACKUP_STATES_BY_DB.has(db)) {
-        BACKUP_STATES_BY_DB.set(db, []);
-    }
-    const ar = getFromMapOrThrow(BACKUP_STATES_BY_DB, db);
-    if (!ar) {
-        throw newRxError('SNH');
-    }
+    const ar = getFromMapOrCreate(
+        BACKUP_STATES_BY_DB,
+        db,
+        () => []
+    );
     ar.push(state);
 }
 

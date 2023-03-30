@@ -34,6 +34,7 @@ import type {
 } from '../../types';
 import {
     flatClone,
+    getFromMapOrCreate,
     isMaybeReadonlyArray
 } from '../../plugins/utils';
 
@@ -63,69 +64,71 @@ export function getCompressionStateByRxJsonSchema(
      */
     overwritable.deepFreezeWhenDevMode(schema);
 
-    let compressionState = COMPRESSION_STATE_BY_SCHEMA.get(schema);
-    if (!compressionState) {
-        const compressionSchema: KeyCompressionJsonSchema = flatClone(schema) as any;
-        delete (compressionSchema as any).primaryKey;
+    return getFromMapOrCreate(
+        COMPRESSION_STATE_BY_SCHEMA,
+        schema,
+        () => {
+            const compressionSchema: KeyCompressionJsonSchema = flatClone(schema) as any;
+            delete (compressionSchema as any).primaryKey;
 
-        const table = createCompressionTable(
-            compressionSchema,
-            DEFAULT_COMPRESSION_FLAG,
-            [
-                /**
-                 * Do not compress the primary field
-                 * for easier debugging.
-                 */
-                getPrimaryFieldOfPrimaryKey(schema.primaryKey),
-                '_rev',
-                '_attachments',
-                '_deleted',
-                '_meta'
-            ]
-        );
+            const table = createCompressionTable(
+                compressionSchema,
+                DEFAULT_COMPRESSION_FLAG,
+                [
+                    /**
+                     * Do not compress the primary field
+                     * for easier debugging.
+                     */
+                    getPrimaryFieldOfPrimaryKey(schema.primaryKey),
+                    '_rev',
+                    '_attachments',
+                    '_deleted',
+                    '_meta'
+                ]
+            );
 
-        delete (compressionSchema as any).primaryKey;
-        const compressedSchema: RxJsonSchema<any> = createCompressedJsonSchema(
-            table,
-            compressionSchema
-        ) as RxJsonSchema<any>;
+            delete (compressionSchema as any).primaryKey;
+            const compressedSchema: RxJsonSchema<any> = createCompressedJsonSchema(
+                table,
+                compressionSchema
+            ) as RxJsonSchema<any>;
 
-        // also compress primary key
-        if (typeof schema.primaryKey !== 'string') {
-            const composedPrimary: CompositePrimaryKey<any> = schema.primaryKey;
-            const newComposedPrimary: CompositePrimaryKey<any> = {
-                key: compressedPath(table, composedPrimary.key as string),
-                fields: composedPrimary.fields.map(field => compressedPath(table, field as string)),
-                separator: composedPrimary.separator
+            // also compress primary key
+            if (typeof schema.primaryKey !== 'string') {
+                const composedPrimary: CompositePrimaryKey<any> = schema.primaryKey;
+                const newComposedPrimary: CompositePrimaryKey<any> = {
+                    key: compressedPath(table, composedPrimary.key as string),
+                    fields: composedPrimary.fields.map(field => compressedPath(table, field as string)),
+                    separator: composedPrimary.separator
+                };
+                compressedSchema.primaryKey = newComposedPrimary;
+            } else {
+                compressedSchema.primaryKey = compressedPath(table, schema.primaryKey);
+            }
+
+            /**
+             * the key compression module does not know about indexes
+             * in the schema, so we have to also compress them here.
+             */
+            if (schema.indexes) {
+                const newIndexes = schema.indexes.map(idx => {
+                    if (isMaybeReadonlyArray(idx)) {
+                        return idx.map(subIdx => compressedPath(table, subIdx));
+                    } else {
+                        return compressedPath(table, idx);
+                    }
+                });
+                compressedSchema.indexes = newIndexes;
+            }
+
+            const compressionState = {
+                table,
+                schema,
+                compressedSchema
             };
-            compressedSchema.primaryKey = newComposedPrimary;
-        } else {
-            compressedSchema.primaryKey = compressedPath(table, schema.primaryKey);
+            return compressionState;
         }
-
-        /**
-         * the key compression module does not know about indexes
-         * in the schema, so we have to also compress them here.
-         */
-        if (schema.indexes) {
-            const newIndexes = schema.indexes.map(idx => {
-                if (isMaybeReadonlyArray(idx)) {
-                    return idx.map(subIdx => compressedPath(table, subIdx));
-                } else {
-                    return compressedPath(table, idx);
-                }
-            });
-            compressedSchema.indexes = newIndexes;
-        }
-
-        compressionState = {
-            table,
-            schema,
-            compressedSchema
-        };
-        COMPRESSION_STATE_BY_SCHEMA.set(schema, compressionState);
-    }
-    return compressionState;
+    );
 }
 
 export function wrappedKeyCompressionStorage<Internals, InstanceCreationOptions>(

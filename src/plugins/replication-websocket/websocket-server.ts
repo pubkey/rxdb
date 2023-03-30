@@ -14,7 +14,7 @@ import type {
 } from './websocket-types';
 import { rxStorageInstanceToReplicationHandler } from '../../replication-protocol';
 import {
-    PROMISE_RESOLVE_VOID
+    PROMISE_RESOLVE_VOID, getFromMapOrCreate
 } from '../../plugins/utils';
 import { Subject } from 'rxjs';
 
@@ -70,16 +70,19 @@ export function startWebsocketServer(options: WebsocketServerOptions): Websocket
         if (!database.collections[collectionName]) {
             throw new Error('collection ' + collectionName + ' does not exist');
         }
-        let handler = replicationHandlerByCollection.get(collectionName);
-        if (!handler) {
-            const collection = database.collections[collectionName];
-            handler = rxStorageInstanceToReplicationHandler(
-                collection.storageInstance,
-                collection.conflictHandler,
-                database.token
-            );
-            replicationHandlerByCollection.set(collectionName, handler);
-        }
+
+        const handler = getFromMapOrCreate(
+            replicationHandlerByCollection,
+            collectionName,
+            () => {
+                const collection = database.collections[collectionName];
+                return rxStorageInstanceToReplicationHandler(
+                    collection.storageInstance,
+                    collection.conflictHandler,
+                    database.token
+                );
+            }
+        );
         return handler;
     }
 

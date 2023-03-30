@@ -19,6 +19,7 @@ import {
 import {
     ensureNotFalsy,
     flatClone,
+    getFromMapOrCreate,
     getProperty,
     promiseWait,
     randomCouchString
@@ -88,98 +89,102 @@ export function getLokiDatabase(
     databaseName: string,
     databaseSettings: LokiDatabaseSettings
 ): Promise<LokiDatabaseState> {
-    let databaseState: Promise<LokiDatabaseState> | undefined = LOKI_DATABASE_STATE_BY_NAME.get(databaseName);
-    if (!databaseState) {
-        /**
-         * We assume that as soon as an adapter is passed,
-         * the database has to be persistent.
-         */
-        const hasPersistence: boolean = !!databaseSettings.adapter;
-        databaseState = (async () => {
-            let persistenceMethod = hasPersistence ? 'adapter' : 'memory';
-            if (databaseSettings.persistenceMethod) {
-                persistenceMethod = databaseSettings.persistenceMethod;
-            }
-            const useSettings = Object.assign(
-                // defaults
-                {
-                    autoload: hasPersistence,
-                    persistenceMethod,
-                    verbose: true
-                },
-                databaseSettings,
-                // overwrites
-                {
-                    /**
-                     * RxDB uses its custom load and save handling
-                     * so we disable the LokiJS save/load handlers.
-                     */
-                    autoload: false,
-                    autosave: false,
-                    throttledSaves: false
+
+
+    return getFromMapOrCreate(
+        LOKI_DATABASE_STATE_BY_NAME,
+        databaseName,
+        () => {
+            /**
+             * We assume that as soon as an adapter is passed,
+             * the database has to be persistent.
+             */
+            const hasPersistence: boolean = !!databaseSettings.adapter;
+            const databaseState = (async () => {
+                let persistenceMethod = hasPersistence ? 'adapter' : 'memory';
+                if (databaseSettings.persistenceMethod) {
+                    persistenceMethod = databaseSettings.persistenceMethod;
                 }
-            );
-            const database = new lokijs(
-                databaseName + '.db',
-                flatClone(useSettings)
-            );
-            const lokiSaveQueue = new LokiSaveQueue(
-                database,
-                useSettings
-            );
-
-            /**
-             * Wait until all data is loaded from persistence adapter.
-             * Wrap the loading into the saveQueue to ensure that when many
-             * collections are created at the same time, the load-calls do not interfere
-             * with each other and cause error logs.
-             */
-            if (hasPersistence) {
-                const loadDatabasePromise = new Promise<void>((res, rej) => {
-                    try {
-                        database.loadDatabase({
-                            recursiveWait: false
-                        }, (err) => {
-                            if (useSettings.autoloadCallback) {
-                                useSettings.autoloadCallback(err);
-                            }
-                            if (err) {
-                                rej(err);
-                            } else {
-                                res();
-                            }
-                        });
-                    } catch (err) {
-                        rej(err);
+                const useSettings = Object.assign(
+                    // defaults
+                    {
+                        autoload: hasPersistence,
+                        persistenceMethod,
+                        verbose: true
+                    },
+                    databaseSettings,
+                    // overwrites
+                    {
+                        /**
+                         * RxDB uses its custom load and save handling
+                         * so we disable the LokiJS save/load handlers.
+                         */
+                        autoload: false,
+                        autosave: false,
+                        throttledSaves: false
                     }
-                });
-                lokiSaveQueue.saveQueue = lokiSaveQueue.saveQueue.then(() => loadDatabasePromise);
-                await loadDatabasePromise;
-            }
-
-            /**
-             * Autosave database on process end
-             */
-            const unloads: AddReturn[] = [];
-            if (hasPersistence) {
-                unloads.push(
-                    unloadAdd(() => lokiSaveQueue.run())
                 );
-            }
+                const database = new lokijs(
+                    databaseName + '.db',
+                    flatClone(useSettings)
+                );
+                const lokiSaveQueue = new LokiSaveQueue(
+                    database,
+                    useSettings
+                );
 
-            const state: LokiDatabaseState = {
-                database,
-                databaseSettings: useSettings,
-                saveQueue: lokiSaveQueue,
-                collections: {},
-                unloads
-            };
+                /**
+                 * Wait until all data is loaded from persistence adapter.
+                 * Wrap the loading into the saveQueue to ensure that when many
+                 * collections are created at the same time, the load-calls do not interfere
+                 * with each other and cause error logs.
+                 */
+                if (hasPersistence) {
+                    const loadDatabasePromise = new Promise<void>((res, rej) => {
+                        try {
+                            database.loadDatabase({
+                                recursiveWait: false
+                            }, (err) => {
+                                if (useSettings.autoloadCallback) {
+                                    useSettings.autoloadCallback(err);
+                                }
+                                if (err) {
+                                    rej(err);
+                                } else {
+                                    res();
+                                }
+                            });
+                        } catch (err) {
+                            rej(err);
+                        }
+                    });
+                    lokiSaveQueue.saveQueue = lokiSaveQueue.saveQueue.then(() => loadDatabasePromise);
+                    await loadDatabasePromise;
+                }
 
-            return state;
-        })();
-        LOKI_DATABASE_STATE_BY_NAME.set(databaseName, databaseState);
-    }
-    return databaseState;
+                /**
+                 * Autosave database on process end
+                 */
+                const unloads: AddReturn[] = [];
+                if (hasPersistence) {
+                    unloads.push(
+                        unloadAdd(() => lokiSaveQueue.run())
+                    );
+                }
+
+                const state: LokiDatabaseState = {
+                    database,
+                    databaseSettings: useSettings,
+                    saveQueue: lokiSaveQueue,
+                    collections: {},
+                    unloads
+                };
+
+                return state;
+            })();
+            return databaseState;
+        }
+    );
 }
 
 export async function closeLokiCollections(

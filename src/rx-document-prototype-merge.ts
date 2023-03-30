@@ -21,6 +21,7 @@ import {
     runPluginHooks
 } from './hooks';
 import { overwritable } from './overwritable';
+import { getFromMapOrCreate } from './plugins/utils';
 
 const constructorForCollection = new WeakMap();
 
@@ -78,13 +79,13 @@ export function getDocumentPrototype(
 export function getRxDocumentConstructor<RxDocType, ORM>(
     rxCollection: RxCollection<RxDocType, ORM>
 ) {
-    if (!constructorForCollection.has(rxCollection)) {
-        const ret = createRxDocumentConstructor(
+    return getFromMapOrCreate(
+        constructorForCollection,
+        rxCollection,
+        () => createRxDocumentConstructor(
             getDocumentPrototype(rxCollection as any)
-        );
-        constructorForCollection.set(rxCollection, ret);
-    }
-    return constructorForCollection.get(rxCollection);
+        )
+    );
 }
 
 /**

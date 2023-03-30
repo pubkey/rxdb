@@ -8,6 +8,7 @@ import ReconnectingWebSocket from 'reconnecting-websocket';
 import IsomorphicWebSocket from 'isomorphic-ws';
 import {
     errorToPlainJson,
+    getFromMapOrCreate,
     getFromMapOrThrow,
     randomCouchString,
     toArray
@@ -70,59 +71,61 @@ export async function getWebSocket(
      */
     const cacheKey = url + '|||' + databaseToken;
 
-    let has = WEBSOCKET_BY_CACHE_KEY.get(cacheKey);
-    if (!has) {
-        ensureIsWebsocket(IsomorphicWebSocket);
-        const wsClient = new ReconnectingWebSocket(
-            url,
-            [],
-            {
-                WebSocket: IsomorphicWebSocket
-            }
-        );
 
-        const connected$ = new BehaviorSubject<boolean>(false);
-        const openPromise = new Promise<void>(res => {
-            wsClient.onopen = () => {
-                connected$.next(true);
-                res();
-            };
-        });
-        wsClient.onclose = () => {
-            connected$.next(false);
-        };
+    const has = getFromMapOrCreate(
+        WEBSOCKET_BY_CACHE_KEY,
+        cacheKey,
+        () => {
+            ensureIsWebsocket(IsomorphicWebSocket);
+            const wsClient = new ReconnectingWebSocket(
+                url,
+                [],
+                {
+                    WebSocket: IsomorphicWebSocket
+                }
+            );
 
-        const message$ = new Subject<any>();
-        wsClient.onmessage = (messageObj) => {
-            const message = JSON.parse(messageObj.data);
-            message$.next(message);
-        };
-
-        const error$ = new Subject<any>();
-        wsClient.onerror = (err) => {
-            const emitError = newRxError('RC_STREAM', {
-                errors: toArray(err).map((er: any) => errorToPlainJson(er)),
-                direction: 'pull'
+            const connected$ = new BehaviorSubject<boolean>(false);
+            const openPromise = new Promise<void>(res => {
+                wsClient.onopen = () => {
+                    connected$.next(true);
+                    res();
+                };
             });
-            error$.next(emitError);
-        };
+            wsClient.onclose = () => {
+                connected$.next(false);
+            };
+
+            const message$ = new Subject<any>();
+            wsClient.onmessage = (messageObj) => {
+                const message = JSON.parse(messageObj.data);
+                message$.next(message);
+            };
+
+            const error$ = new Subject<any>();
+            wsClient.onerror = (err) => {
+                const emitError = newRxError('RC_STREAM', {
+                    errors: toArray(err).map((er: any) => errorToPlainJson(er)),
+                    direction: 'pull'
+                });
+                error$.next(emitError);
+            };
 
 
-        has = {
-            url,
-            socket: wsClient,
-            openPromise,
-            refCount: 1,
-            connected$,
-            message$,
-            error$
-        };
-        WEBSOCKET_BY_CACHE_KEY.set(cacheKey, has);
-    } else {
-        has.refCount = has.refCount + 1;
-    }
-
-
+            return {
+                url,
+                socket: wsClient,
+                openPromise,
+                refCount: 1,
+                connected$,
+                message$,
+                error$
+            };
+        },
+        (value) => {
+            value.refCount = value.refCount + 1;
+        }
+    );
     await has.openPromise;
     return has;
 }

@@ -14,7 +14,9 @@ import {
     getStartIndexStringFromUpperBound,
     fillWithDefaultSettings,
     now,
-    getIndexStringLength
+    getIndexStringLength,
+    getPrimaryKeyFromIndexableString,
+    ensureNotFalsy
 } from '../../';
 import { EXAMPLE_REVISION_1 } from '../helper/revisions';
 import config from './config';
@@ -255,20 +257,39 @@ config.parallel('custom-index.test.ts', () => {
         });
     });
     describe('.getIndexStringLength()', () => {
-
-        [
-            ['id', 'num'],
-            ['bool', 'id', 'num']
-        ].forEach(index => {
-            const length = getIndexStringLength(
-                schema,
-                index
-            );
-            const indexString = getIndexableStringMonad(
-                schema,
-                index
-            )(getIndexTestDoc({ bool: true }));
-            assert.strictEqual(indexString.length, length);
+        it('get the correct length', () => {
+            [
+                ['num', 'id'],
+                ['bool', 'num', 'id']
+            ].forEach(index => {
+                const length = getIndexStringLength(
+                    schema,
+                    index
+                );
+                const indexString = getIndexableStringMonad(
+                    schema,
+                    index
+                )(getIndexTestDoc({ bool: true }));
+                assert.strictEqual(indexString.length, length);
+            });
+        });
+    });
+    describe('.getPrimaryKeyFromIndexableString()', () => {
+        it('get the correct id', () => {
+            [
+                ['num', 'id'],
+                ['bool', 'num', 'id']
+            ].forEach(index => {
+                const indexString = getIndexableStringMonad(
+                    schema,
+                    index
+                )(getIndexTestDoc({ id: 'foobar' }));
+                const id = getPrimaryKeyFromIndexableString(
+                    indexString,
+                    ensureNotFalsy(schema.properties.id.maxLength)
+                );
+                assert.strictEqual(id, 'foobar');
+            });
         });
     });
     describe('.getStartIndexStringFromLowerBound()', () => {

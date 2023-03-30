@@ -19,7 +19,8 @@ import { rxChangeEventToEventReduceChangeEvent } from './rx-change-event';
 import {
     arrayFilterNotEmpty,
     clone,
-    ensureNotFalsy
+    ensureNotFalsy,
+    getFromMapOrCreate
 } from './plugins/utils';
 import { getQueryMatcher, getSortComparator, normalizeMangoQuery } from './rx-query-helper';
 
@@ -51,63 +52,64 @@ export const RXQUERY_QUERY_PARAMS_CACHE: WeakMap<RxQuery, QueryParams<any>> = ne
 export function getQueryParams<RxDocType>(
     rxQuery: RxQuery<RxDocType>
 ): QueryParams<RxDocType> {
-    if (!RXQUERY_QUERY_PARAMS_CACHE.has(rxQuery)) {
-        const collection = rxQuery.collection;
-        const normalizedMangoQuery = normalizeMangoQuery(
-            collection.storageInstance.schema,
-            clone(rxQuery.mangoQuery)
-        );
-        const primaryKey = collection.schema.primaryPath;
+    return getFromMapOrCreate(
+        RXQUERY_QUERY_PARAMS_CACHE,
+        rxQuery,
+        () => {
+            const collection = rxQuery.collection;
+            const normalizedMangoQuery = normalizeMangoQuery(
+                collection.storageInstance.schema,
+                clone(rxQuery.mangoQuery)
+            );
+            const primaryKey = collection.schema.primaryPath;
 
-        /**
-         * Create a custom sort comparator
-         * that uses the hooks to ensure
-         * we send for example compressed documents to be sorted by compressed queries.
-         */
-        const sortComparator = getSortComparator(
-            collection.schema.jsonSchema,
-            normalizedMangoQuery
-        );
+            /**
+             * Create a custom sort comparator
+             * that uses the hooks to ensure
+             * we send for example compressed documents to be sorted by compressed queries.
+             */
+            const sortComparator = getSortComparator(
+                collection.schema.jsonSchema,
+                normalizedMangoQuery
+            );
 
-        const useSortComparator: DeterministicSortComparator<RxDocType> = (docA: RxDocType, docB: RxDocType) => {
-            const sortComparatorData = {
-                docA,
-                docB,
-                rxQuery
+            const useSortComparator: DeterministicSortComparator<RxDocType> = (docA: RxDocType, docB: RxDocType) => {
+                const sortComparatorData = {
+                    docA,
+                    docB,
+                    rxQuery
+                };
+                return sortComparator(sortComparatorData.docA, sortComparatorData.docB);
             };
-            return sortComparator(sortComparatorData.docA, sortComparatorData.docB);
-        };
 
-        /**
-         * Create a custom query matcher
-         * that uses the hooks to ensure
-         * we send for example compressed documents to match compressed queries.
-         */
-        const queryMatcher = getQueryMatcher(
-            collection.schema.jsonSchema,
-            normalizedMangoQuery
-        );
-        const useQueryMatcher: QueryMatcher<RxDocumentData<RxDocType>> = (doc: RxDocumentData<RxDocType>) => {
-            const queryMatcherData = {
-                doc,
-                rxQuery
+            /**
+             * Create a custom query matcher
+             * that uses the hooks to ensure
+             * we send for example compressed documents to match compressed queries.
+             */
+            const queryMatcher = getQueryMatcher(
+                collection.schema.jsonSchema,
+                normalizedMangoQuery
+            );
+            const useQueryMatcher: QueryMatcher<RxDocumentData<RxDocType>> = (doc: RxDocumentData<RxDocType>) => {
+                const queryMatcherData = {
+                    doc,
+                    rxQuery
+                };
+                return queryMatcher(queryMatcherData.doc);
             };
-            return queryMatcher(queryMatcherData.doc);
-        };
 
-        const ret: QueryParams<any> = {
-            primaryKey: rxQuery.collection.schema.primaryPath as any,
-            skip: normalizedMangoQuery.skip,
-            limit: normalizedMangoQuery.limit,
-            sortFields: getSortFieldsOfQuery(primaryKey, normalizedMangoQuery) as string[],
-            sortComparator: useSortComparator,
-            queryMatcher: useQueryMatcher
-        };
-        RXQUERY_QUERY_PARAMS_CACHE.set(rxQuery, ret);
-        return ret;
-    } else {
-        return RXQUERY_QUERY_PARAMS_CACHE.get(rxQuery) as QueryParams<RxDocType>;
-    }
+            const ret: QueryParams<any> = {
+                primaryKey: rxQuery.collection.schema.primaryPath as any,
+                skip: normalizedMangoQuery.skip,
+                limit: normalizedMangoQuery.limit,
+                sortFields: getSortFieldsOfQuery(primaryKey, normalizedMangoQuery) as string[],
+                sortComparator: useSortComparator,
+                queryMatcher: useQueryMatcher
+            };
+            return ret;
+        }
+    );
 }
 
 

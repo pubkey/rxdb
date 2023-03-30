@@ -34,6 +34,7 @@ import {
     ensureNotFalsy,
     errorToPlainJson,
     flatClone,
+    getFromMapOrCreate,
     PROMISE_RESOLVE_FALSE,
     PROMISE_RESOLVE_TRUE,
     toArray
@@ -93,11 +94,11 @@ export class RxReplicationState<RxDocType, CheckpointType> {
         public retryTime?: number,
         public autoStart?: boolean,
     ) {
-        let replicationStates = REPLICATION_STATE_BY_COLLECTION.get(collection);
-        if (!replicationStates) {
-            replicationStates = [];
-            REPLICATION_STATE_BY_COLLECTION.set(collection, replicationStates);
-        }
+        const replicationStates = getFromMapOrCreate(
+            REPLICATION_STATE_BY_COLLECTION,
+            collection,
+            () => []
+        );
         replicationStates.push(this);
 
         // stop the replication when the collection gets destroyed

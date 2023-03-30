@@ -169,6 +169,16 @@ export function getIndexStringLength<RxDocType>(
 }
 
 
+export function getPrimaryKeyFromIndexableString(
+    indexableString: string,
+    primaryKeyLength: number
+): string {
+    const paddedPrimaryKey = indexableString.slice(primaryKeyLength * -1);
+    const primaryKey = paddedPrimaryKey.trimEnd();
+    return primaryKey;
+}
+
+
 export function getNumberIndexString(
     parsedLengths: ParsedLengths,
     fieldValue: number

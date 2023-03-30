@@ -1,5 +1,5 @@
 import { Client, createClient } from 'graphql-ws';
-import { getFromMapOrThrow } from '../../plugins/utils';
+import { getFromMapOrCreate, getFromMapOrThrow } from '../../plugins/utils';
 import ws from 'isomorphic-ws';
 
 const { WebSocket: IsomorphicWebSocket } = ws;
@@ -17,23 +17,27 @@ export function getGraphQLWebSocket(
     url: string,
     headers?: { [k: string]: string; }
 ): Client {
-    let has = GRAPHQL_WEBSOCKET_BY_URL.get(url);
-    if (!has) {
-        const wsClient = createClient({
-            url,
-            shouldRetry: () => true,
-            webSocketImpl: IsomorphicWebSocket,
-            connectionParams: headers ? { headers } : undefined,
-        });
-        has = {
-            url,
-            socket: wsClient,
-            refCount: 1
-        };
-        GRAPHQL_WEBSOCKET_BY_URL.set(url, has);
-    } else {
-        has.refCount = has.refCount + 1;
-    }
+
+    const has = getFromMapOrCreate(
+        GRAPHQL_WEBSOCKET_BY_URL,
+        url,
+        () => {
+            const wsClient = createClient({
+                url,
+                shouldRetry: () => true,
+                webSocketImpl: IsomorphicWebSocket,
+                connectionParams: headers ? { headers } : undefined,
+            });
+            return {
+                url,
+                socket: wsClient,
+                refCount: 1
+            };
+        },
+        (value) => {
+            value.refCount = value.refCount + 1;
+        }
+    );
     return has.socket;
 }
 
