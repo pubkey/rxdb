@@ -5,6 +5,7 @@
 
 - ADD method `getPrimaryKeyFromIndexableString()`
 - REFACTOR utils for `Map` and `WeakMap` caching
+- FIX: lost RxDocument in preSave from v14.0.0 [#4581](https://github.com/pubkey/rxdb/pull/4581)
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
