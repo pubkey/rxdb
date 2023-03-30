@@ -17,7 +17,7 @@ import type {
 import {
     clone,
     ensureNotFalsy,
-    getFromMapOrFill,
+    getFromMapOrCreate,
     getFromMapOrThrow,
     parseRevision,
     stripMetaDataFromDocument
@@ -62,7 +62,7 @@ export class IncrementalWriteQueue<RxDocType> {
         modifier: IncrementalWriteModifier<RxDocType>
     ): Promise<RxDocumentData<RxDocType>> {
         const docId: string = lastKnownDocumentState[this.primaryPath] as any;
-        const ar = getFromMapOrFill(this.queueByDocId, docId, () => []);
+        const ar = getFromMapOrCreate(this.queueByDocId, docId, () => []);
         const ret = new Promise<RxDocumentData<RxDocType>>((resolve, reject) => {
             const item: IncrementalWriteQueueItem<RxDocType> = {
                 lastKnownDocumentState,
@@ -157,7 +157,7 @@ export class IncrementalWriteQueue<RxDocType> {
                 const isConflict = isBulkWriteConflictError<RxDocType>(error);
                 if (isConflict) {
                     // had conflict -> retry afterwards
-                    const ar = getFromMapOrFill(this.queueByDocId, docId, () => []);
+                    const ar = getFromMapOrCreate(this.queueByDocId, docId, () => []);
                     /**
                      * Add the items back to this.queueByDocId
                      * by maintaining the original order.

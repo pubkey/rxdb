@@ -8,6 +8,7 @@ import type {
     RxCollection
 } from './types';
 import {
+    getFromMapOrCreate,
     nextTick,
     now,
     requestIdlePromise
@@ -23,10 +24,11 @@ export class QueryCache {
      */
     getByQuery(rxQuery: RxQuery): RxQuery {
         const stringRep = rxQuery.toString();
-        if (!this._map.has(stringRep)) {
-            this._map.set(stringRep, rxQuery);
-        }
-        return this._map.get(stringRep) as RxQuery;
+        return getFromMapOrCreate(
+            this._map,
+            stringRep,
+            () => rxQuery
+        );
     }
 }
 
@@ -67,36 +69,36 @@ export const defaultCacheReplacementPolicyMonad: (
     _collection: RxCollection,
     queryCache: QueryCache
 ) => {
-    if (queryCache._map.size < tryToKeepMax) {
-        return;
-    }
+            if (queryCache._map.size < tryToKeepMax) {
+                return;
+            }
 
-    const minUnExecutedLifetime = now() - unExecutedLifetime;
-    const maybeUncache: RxQuery[] = [];
+            const minUnExecutedLifetime = now() - unExecutedLifetime;
+            const maybeUncache: RxQuery[] = [];
 
-    const queriesInCache = Array.from(queryCache._map.values());
-    for (const rxQuery of queriesInCache) {
-        // filter out queries with subscribers
-        if (countRxQuerySubscribers(rxQuery) > 0) {
-            continue;
-        }
-        // directly uncache queries that never executed and are older then unExecutedLifetime
-        if (rxQuery._lastEnsureEqual === 0 && rxQuery._creationTime < minUnExecutedLifetime) {
-            uncacheRxQuery(queryCache, rxQuery);
-            continue;
-        }
-        maybeUncache.push(rxQuery);
-    }
+            const queriesInCache = Array.from(queryCache._map.values());
+            for (const rxQuery of queriesInCache) {
+                // filter out queries with subscribers
+                if (countRxQuerySubscribers(rxQuery) > 0) {
+                    continue;
+                }
+                // directly uncache queries that never executed and are older then unExecutedLifetime
+                if (rxQuery._lastEnsureEqual === 0 && rxQuery._creationTime < minUnExecutedLifetime) {
+                    uncacheRxQuery(queryCache, rxQuery);
+                    continue;
+                }
+                maybeUncache.push(rxQuery);
+            }
 
-    const mustUncache = maybeUncache.length - tryToKeepMax;
-    if (mustUncache <= 0) {
-        return;
-    }
+            const mustUncache = maybeUncache.length - tryToKeepMax;
+            if (mustUncache <= 0) {
+                return;
+            }
 
-    const sortedByLastUsage = maybeUncache.sort((a, b) => a._lastEnsureEqual - b._lastEnsureEqual);
-    const toRemove = sortedByLastUsage.slice(0, mustUncache);
-    toRemove.forEach(rxQuery => uncacheRxQuery(queryCache, rxQuery));
-};
+            const sortedByLastUsage = maybeUncache.sort((a, b) => a._lastEnsureEqual - b._lastEnsureEqual);
+            const toRemove = sortedByLastUsage.slice(0, mustUncache);
+            toRemove.forEach(rxQuery => uncacheRxQuery(queryCache, rxQuery));
+        };
 
 
 export const defaultCacheReplacementPolicy: RxCacheReplacementPolicy = defaultCacheReplacementPolicyMonad(

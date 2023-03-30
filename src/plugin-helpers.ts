@@ -21,6 +21,7 @@ import type {
 import {
     defaultHashSha256,
     flatClone,
+    getFromMapOrCreate,
     getFromMapOrThrow,
     requestIdleCallbackIfAvailable
 } from './plugins/utils';
@@ -60,21 +61,21 @@ export function wrappedValidateStorageFactory(
      */
     validatorKey: string
 ): WrappedStorageFunction {
-    if (!VALIDATOR_CACHE_BY_VALIDATOR_KEY.has(validatorKey)) {
-        VALIDATOR_CACHE_BY_VALIDATOR_KEY.set(validatorKey, new Map());
-    }
-    const VALIDATOR_CACHE = getFromMapOrThrow(VALIDATOR_CACHE_BY_VALIDATOR_KEY, validatorKey);
+    const VALIDATOR_CACHE = getFromMapOrCreate(
+        VALIDATOR_CACHE_BY_VALIDATOR_KEY,
+        validatorKey,
+        () => new Map()
+    );
 
     function initValidator(
         schema: RxJsonSchema<any>
     ): ValidatorFunction {
         const hash = defaultHashSha256(JSON.stringify(schema));
-        if (!VALIDATOR_CACHE.has(hash)) {
-            const validator = getValidator(schema);
-            VALIDATOR_CACHE.set(hash, validator);
-            return validator;
-        }
-        return getFromMapOrThrow(VALIDATOR_CACHE, hash);
+        return getFromMapOrCreate(
+            VALIDATOR_CACHE,
+            hash,
+            () => getValidator(schema)
+        );
     }
 
     return (args) => {

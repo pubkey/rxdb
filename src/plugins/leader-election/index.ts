@@ -16,7 +16,7 @@ import type {
     RxDatabase,
     RxPlugin
 } from '../../types';
-import { PROMISE_RESOLVE_TRUE } from '../utils';
+import { PROMISE_RESOLVE_TRUE, getFromMapOrCreate } from '../utils';
 
 const LEADER_ELECTORS_OF_DB: WeakMap<RxDatabase, LeaderElector> = new WeakMap();
 const LEADER_ELECTOR_BY_BROADCAST_CHANNEL: WeakMap<BroadcastChannel, LeaderElector> = new WeakMap();
@@ -27,12 +27,11 @@ const LEADER_ELECTOR_BY_BROADCAST_CHANNEL: WeakMap<BroadcastChannel, LeaderElect
  * Used to ensure we reuse the same elector for the channel each time.
  */
 export function getLeaderElectorByBroadcastChannel(broadcastChannel: BroadcastChannel): LeaderElector {
-    let elector = LEADER_ELECTOR_BY_BROADCAST_CHANNEL.get(broadcastChannel);
-    if (!elector) {
-        elector = createLeaderElection(broadcastChannel);
-        LEADER_ELECTOR_BY_BROADCAST_CHANNEL.set(broadcastChannel, elector);
-    }
-    return elector;
+    return getFromMapOrCreate(
+        LEADER_ELECTOR_BY_BROADCAST_CHANNEL,
+        broadcastChannel,
+        () => createLeaderElection(broadcastChannel)
+    );
 }
 
 /**

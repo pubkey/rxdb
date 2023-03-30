@@ -12,7 +12,7 @@ import type {
     RxDatabase,
     AllMigrationStates
 } from '../../types';
-import { PROMISE_RESOLVE_FALSE, RXJS_SHARE_REPLAY_DEFAULTS } from '../../plugins/utils';
+import { getFromMapOrCreate, PROMISE_RESOLVE_FALSE, RXJS_SHARE_REPLAY_DEFAULTS } from '../../plugins/utils';
 import {
     mustMigrate,
     DataMigrator
@@ -43,17 +43,14 @@ export const RxDBMigrationPlugin: RxPlugin = {
         },
         RxCollection: (proto: any) => {
             proto.getDataMigrator = function (this: RxCollection): DataMigrator {
-                if (!DATA_MIGRATOR_BY_COLLECTION.has(this)) {
-                    DATA_MIGRATOR_BY_COLLECTION.set(
-                        this,
-                        new DataMigrator(
-                            this.asRxCollection,
-                            this.migrationStrategies
-                        )
-                    );
-
-                }
-                return DATA_MIGRATOR_BY_COLLECTION.get(this) as any;
+                return getFromMapOrCreate(
+                    DATA_MIGRATOR_BY_COLLECTION,
+                    this,
+                    () => new DataMigrator(
+                        this.asRxCollection,
+                        this.migrationStrategies
+                    )
+                );
             };
             proto.migrationNeeded = function (this: RxCollection) {
                 if (this.schema.version === 0) {

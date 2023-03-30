@@ -25,22 +25,6 @@ export function getFromMapOrThrow<K, V>(map: Map<K, V> | WeakMap<any, V>, key: K
     return val;
 }
 
-export function getFromMapOrFill<K, V>(
-    map: Map<K, V> | WeakMap<any, V>,
-    key: K,
-    fillerFunction: () => V
-): V {
-    let value = map.get(key);
-    if (!value) {
-        value = fillerFunction();
-        map.set(key, value);
-    }
-    return value;
-}
-
-
-
-
 /**
  * Using shareReplay() without settings will not unsubscribe
  * if there are no more subscribers.

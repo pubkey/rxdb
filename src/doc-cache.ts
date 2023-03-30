@@ -4,7 +4,7 @@ import type {
     RxDocumentData
 } from './types';
 import {
-    getFromMapOrFill,
+    getFromMapOrCreate,
     getFromMapOrThrow,
     getHeightOfRevision
 } from './plugins/utils';
@@ -109,7 +109,7 @@ export class DocumentCache<RxDocType, OrmMethods> {
     public getCachedRxDocument(docData: RxDocumentData<RxDocType>): RxDocument<RxDocType, OrmMethods> {
         const docId: string = (docData as any)[this.primaryPath];
         const revisionHeight = getHeightOfRevision(docData._rev);
-        const cacheItem = getFromMapOrFill<string, CacheItem<RxDocType, OrmMethods>>(
+        const cacheItem = getFromMapOrCreate<string, CacheItem<RxDocType, OrmMethods>>(
             this.cacheItemByDocId,
             docId,
             () => getNewCacheItem<RxDocType, OrmMethods>(docData)
