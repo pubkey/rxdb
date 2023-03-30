@@ -10,6 +10,7 @@ exports.getRxDocumentConstructor = getRxDocumentConstructor;
 var _rxDocument = require("./rx-document");
 var _hooks = require("./hooks");
 var _overwritable = require("./overwritable");
+var _utils = require("./plugins/utils");
 /**
  * For the ORM capabilities,
  * we have to merge the document prototype
@@ -56,11 +57,7 @@ function getDocumentPrototype(rxCollection) {
   return proto;
 }
 function getRxDocumentConstructor(rxCollection) {
-  if (!constructorForCollection.has(rxCollection)) {
-    var ret = (0, _rxDocument.createRxDocumentConstructor)(getDocumentPrototype(rxCollection));
-    constructorForCollection.set(rxCollection, ret);
-  }
-  return constructorForCollection.get(rxCollection);
+  return (0, _utils.getFromMapOrCreate)(constructorForCollection, rxCollection, () => (0, _rxDocument.createRxDocumentConstructor)(getDocumentPrototype(rxCollection)));
 }
 
 /**

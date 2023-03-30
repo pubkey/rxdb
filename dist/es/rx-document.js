@@ -379,6 +379,6 @@ export function beforeDocumentUpdateWrite(collection, newData, oldData) {
   if (overwritable.isDevMode()) {
     collection.schema.validateChange(oldData, newData);
   }
-  return collection._runHooks('pre', 'save', newData);
+  return collection._runHooks('pre', 'save', newData, oldData);
 }
 //# sourceMappingURL=rx-document.js.map

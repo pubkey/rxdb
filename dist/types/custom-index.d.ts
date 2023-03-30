@@ -30,6 +30,7 @@ declare type ParsedLengths = {
 };
 export declare function getStringLengthOfIndexNumber(schemaPart: JsonSchema): ParsedLengths;
 export declare function getIndexStringLength<RxDocType>(schema: RxJsonSchema<RxDocumentData<RxDocType>>, index: string[]): number;
+export declare function getPrimaryKeyFromIndexableString(indexableString: string, primaryKeyLength: number): string;
 export declare function getNumberIndexString(parsedLengths: ParsedLengths, fieldValue: number): string;
 export declare function getStartIndexStringFromLowerBound(schema: RxJsonSchema<any>, index: string[], lowerBound: (string | boolean | number | null | undefined)[], inclusiveStart: boolean): string;
 export declare function getStartIndexStringFromUpperBound(schema: RxJsonSchema<any>, index: string[], upperBound: (string | boolean | number | null | undefined)[], inclusiveEnd: boolean): string;

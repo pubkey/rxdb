@@ -4,7 +4,7 @@
 
 import { createLeaderElection } from 'broadcast-channel';
 import { getBroadcastChannelReference, removeBroadcastChannelReference } from '../../rx-storage-multiinstance';
-import { PROMISE_RESOLVE_TRUE } from '../utils';
+import { PROMISE_RESOLVE_TRUE, getFromMapOrCreate } from '../utils';
 var LEADER_ELECTORS_OF_DB = new WeakMap();
 var LEADER_ELECTOR_BY_BROADCAST_CHANNEL = new WeakMap();
 
@@ -13,12 +13,7 @@ var LEADER_ELECTOR_BY_BROADCAST_CHANNEL = new WeakMap();
  * Used to ensure we reuse the same elector for the channel each time.
  */
 export function getLeaderElectorByBroadcastChannel(broadcastChannel) {
-  var elector = LEADER_ELECTOR_BY_BROADCAST_CHANNEL.get(broadcastChannel);
-  if (!elector) {
-    elector = createLeaderElection(broadcastChannel);
-    LEADER_ELECTOR_BY_BROADCAST_CHANNEL.set(broadcastChannel, elector);
-  }
-  return elector;
+  return getFromMapOrCreate(LEADER_ELECTOR_BY_BROADCAST_CHANNEL, broadcastChannel, () => createLeaderElection(broadcastChannel));
 }
 
 /**

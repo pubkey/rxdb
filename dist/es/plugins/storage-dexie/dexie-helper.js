@@ -1,5 +1,5 @@
 import { Dexie } from 'dexie';
-import { flatClone, toArray } from '../utils';
+import { flatClone, getFromMapOrCreate, toArray } from '../utils';
 import { newRxError } from '../../rx-error';
 import { getPrimaryFieldOfPrimaryKey, getSchemaByObjectPath } from '../../rx-schema-helper';
 import { RxStorageDefaultStatics } from '../../rx-storage-statics';
@@ -13,9 +13,8 @@ var REF_COUNT_PER_DEXIE_DB = new Map();
 export function getDexieDbWithTables(databaseName, collectionName, settings, schema) {
   var primaryPath = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
   var dexieDbName = 'rxdb-dexie-' + databaseName + '--' + schema.version + '--' + collectionName;
-  var state = DEXIE_STATE_DB_BY_NAME.get(dexieDbName);
-  if (!state) {
-    state = (async () => {
+  var state = getFromMapOrCreate(DEXIE_STATE_DB_BY_NAME, dexieDbName, () => {
+    var value = (async () => {
       /**
        * IndexedDB was not designed for dynamically adding tables on the fly,
        * so we create one dexie database per RxDB storage instance.
@@ -48,7 +47,8 @@ export function getDexieDbWithTables(databaseName, collectionName, settings, sch
     })();
     DEXIE_STATE_DB_BY_NAME.set(dexieDbName, state);
     REF_COUNT_PER_DEXIE_DB.set(state, 0);
-  }
+    return value;
+  });
   return state;
 }
 export async function closeDexieDb(statePromise) {

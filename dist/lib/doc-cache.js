@@ -66,7 +66,7 @@ var DocumentCache = /*#__PURE__*/function () {
   _proto.getCachedRxDocument = function getCachedRxDocument(docData) {
     var docId = docData[this.primaryPath];
     var revisionHeight = (0, _utils.getHeightOfRevision)(docData._rev);
-    var cacheItem = (0, _utils.getFromMapOrFill)(this.cacheItemByDocId, docId, () => getNewCacheItem(docData));
+    var cacheItem = (0, _utils.getFromMapOrCreate)(this.cacheItemByDocId, docId, () => getNewCacheItem(docData));
     var cachedRxDocumentWeakRef = cacheItem.documentByRevisionHeight.get(revisionHeight);
     var cachedRxDocument = cachedRxDocumentWeakRef ? cachedRxDocumentWeakRef.deref() : undefined;
     if (!cachedRxDocument) {

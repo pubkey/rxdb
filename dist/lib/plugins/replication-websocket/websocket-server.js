@@ -60,12 +60,10 @@ function startWebsocketServer(options) {
     if (!database.collections[collectionName]) {
       throw new Error('collection ' + collectionName + ' does not exist');
     }
-    var handler = replicationHandlerByCollection.get(collectionName);
-    if (!handler) {
+    var handler = (0, _utils.getFromMapOrCreate)(replicationHandlerByCollection, collectionName, () => {
       var collection = database.collections[collectionName];
-      handler = (0, _replicationProtocol.rxStorageInstanceToReplicationHandler)(collection.storageInstance, collection.conflictHandler, database.token);
-      replicationHandlerByCollection.set(collectionName, handler);
-    }
+      return (0, _replicationProtocol.rxStorageInstanceToReplicationHandler)(collection.storageInstance, collection.conflictHandler, database.token);
+    });
     return handler;
   }
   serverState.onConnection$.subscribe(ws => {

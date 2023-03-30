@@ -26,10 +26,7 @@ var QueryCache = /*#__PURE__*/function () {
    */
   _proto.getByQuery = function getByQuery(rxQuery) {
     var stringRep = rxQuery.toString();
-    if (!this._map.has(stringRep)) {
-      this._map.set(stringRep, rxQuery);
-    }
-    return this._map.get(stringRep);
+    return (0, _utils.getFromMapOrCreate)(this._map, stringRep, () => rxQuery);
   };
   return QueryCache;
 }();

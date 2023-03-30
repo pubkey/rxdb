@@ -8,7 +8,7 @@ import { overwritable } from '../../overwritable';
 import { wrapRxStorageInstance } from '../../plugin-helpers';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
 import { flatCloneDocWithMeta } from '../../rx-storage-helper';
-import { flatClone, isMaybeReadonlyArray } from '../../plugins/utils';
+import { flatClone, getFromMapOrCreate, isMaybeReadonlyArray } from '../../plugins/utils';
 /**
  * Cache the compression table and the compressed schema
  * by the storage instance for better performance.
@@ -21,8 +21,7 @@ export function getCompressionStateByRxJsonSchema(schema) {
    * is never mutated.
    */
   overwritable.deepFreezeWhenDevMode(schema);
-  var compressionState = COMPRESSION_STATE_BY_SCHEMA.get(schema);
-  if (!compressionState) {
+  return getFromMapOrCreate(COMPRESSION_STATE_BY_SCHEMA, schema, () => {
     var compressionSchema = flatClone(schema);
     delete compressionSchema.primaryKey;
     var table = createCompressionTable(compressionSchema, DEFAULT_COMPRESSION_FLAG, [
@@ -61,14 +60,13 @@ export function getCompressionStateByRxJsonSchema(schema) {
       });
       compressedSchema.indexes = newIndexes;
     }
-    compressionState = {
+    var compressionState = {
       table,
       schema,
       compressedSchema
     };
-    COMPRESSION_STATE_BY_SCHEMA.set(schema, compressionState);
-  }
-  return compressionState;
+    return compressionState;
+  });
 }
 export function wrappedKeyCompressionStorage(args) {
   var statics = Object.assign({}, args.storage.statics, {

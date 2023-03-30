@@ -20,14 +20,6 @@ export function getFromMapOrThrow(map, key) {
   }
   return val;
 }
-export function getFromMapOrFill(map, key, fillerFunction) {
-  var value = map.get(key);
-  if (!value) {
-    value = fillerFunction();
-    map.set(key, value);
-  }
-  return value;
-}
 
 /**
  * Using shareReplay() without settings will not unsubscribe

@@ -29,7 +29,7 @@ var IncrementalWriteQueue = /*#__PURE__*/function () {
   var _proto = IncrementalWriteQueue.prototype;
   _proto.addWrite = function addWrite(lastKnownDocumentState, modifier) {
     var docId = lastKnownDocumentState[this.primaryPath];
-    var ar = (0, _utils.getFromMapOrFill)(this.queueByDocId, docId, () => []);
+    var ar = (0, _utils.getFromMapOrCreate)(this.queueByDocId, docId, () => []);
     var ret = new Promise((resolve, reject) => {
       var item = {
         lastKnownDocumentState,
@@ -108,7 +108,7 @@ var IncrementalWriteQueue = /*#__PURE__*/function () {
       var isConflict = (0, _rxError.isBulkWriteConflictError)(error);
       if (isConflict) {
         // had conflict -> retry afterwards
-        var ar = (0, _utils.getFromMapOrFill)(this.queueByDocId, docId, () => []);
+        var ar = (0, _utils.getFromMapOrCreate)(this.queueByDocId, docId, () => []);
         /**
          * Add the items back to this.queueByDocId
          * by maintaining the original order.

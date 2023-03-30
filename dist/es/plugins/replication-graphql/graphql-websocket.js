@@ -1,13 +1,12 @@
 import { createClient } from 'graphql-ws';
-import { getFromMapOrThrow } from '../../plugins/utils';
+import { getFromMapOrCreate, getFromMapOrThrow } from '../../plugins/utils';
 import ws from 'isomorphic-ws';
 var {
   WebSocket: IsomorphicWebSocket
 } = ws;
 export var GRAPHQL_WEBSOCKET_BY_URL = new Map();
 export function getGraphQLWebSocket(url, headers) {
-  var has = GRAPHQL_WEBSOCKET_BY_URL.get(url);
-  if (!has) {
+  var has = getFromMapOrCreate(GRAPHQL_WEBSOCKET_BY_URL, url, () => {
     var wsClient = createClient({
       url,
       shouldRetry: () => true,
@@ -16,15 +15,14 @@ export function getGraphQLWebSocket(url, headers) {
         headers
       } : undefined
     });
-    has = {
+    return {
       url,
       socket: wsClient,
       refCount: 1
     };
-    GRAPHQL_WEBSOCKET_BY_URL.set(url, has);
-  } else {
-    has.refCount = has.refCount + 1;
-  }
+  }, value => {
+    value.refCount = value.refCount + 1;
+  });
   return has.socket;
 }
 export function removeGraphQLWebSocketRef(url) {

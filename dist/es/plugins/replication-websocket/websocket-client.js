@@ -1,7 +1,7 @@
 import { replicateRxCollection } from '../replication';
 import ReconnectingWebSocket from 'reconnecting-websocket';
 import IsomorphicWebSocket from 'isomorphic-ws';
-import { errorToPlainJson, getFromMapOrThrow, randomCouchString, toArray } from '../../plugins/utils';
+import { errorToPlainJson, getFromMapOrCreate, getFromMapOrThrow, randomCouchString, toArray } from '../../plugins/utils';
 import { filter, map, Subject, firstValueFrom, BehaviorSubject } from 'rxjs';
 import { newRxError } from '../../rx-error';
 /**
@@ -34,8 +34,7 @@ databaseToken) {
    * multi-instance setups.
    */
   var cacheKey = url + '|||' + databaseToken;
-  var has = WEBSOCKET_BY_CACHE_KEY.get(cacheKey);
-  if (!has) {
+  var has = getFromMapOrCreate(WEBSOCKET_BY_CACHE_KEY, cacheKey, () => {
     ensureIsWebsocket(IsomorphicWebSocket);
     var wsClient = new ReconnectingWebSocket(url, [], {
       WebSocket: IsomorphicWebSocket
@@ -63,7 +62,7 @@ databaseToken) {
       });
       error$.next(emitError);
     };
-    has = {
+    return {
       url,
       socket: wsClient,
       openPromise,
@@ -72,10 +71,9 @@ databaseToken) {
       message$,
       error$
     };
-    WEBSOCKET_BY_CACHE_KEY.set(cacheKey, has);
-  } else {
-    has.refCount = has.refCount + 1;
-  }
+  }, value => {
+    value.refCount = value.refCount + 1;
+  });
   await has.openPromise;
   return has;
 }

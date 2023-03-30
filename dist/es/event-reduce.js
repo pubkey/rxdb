@@ -1,6 +1,6 @@
 import { calculateActionName, runAction } from 'event-reduce-js';
 import { rxChangeEventToEventReduceChangeEvent } from './rx-change-event';
-import { arrayFilterNotEmpty, clone, ensureNotFalsy } from './plugins/utils';
+import { arrayFilterNotEmpty, clone, ensureNotFalsy, getFromMapOrCreate } from './plugins/utils';
 import { getQueryMatcher, getSortComparator, normalizeMangoQuery } from './rx-query-helper';
 export function getSortFieldsOfQuery(primaryKey, query) {
   if (!query.sort || query.sort.length === 0) {
@@ -11,7 +11,7 @@ export function getSortFieldsOfQuery(primaryKey, query) {
 }
 export var RXQUERY_QUERY_PARAMS_CACHE = new WeakMap();
 export function getQueryParams(rxQuery) {
-  if (!RXQUERY_QUERY_PARAMS_CACHE.has(rxQuery)) {
+  return getFromMapOrCreate(RXQUERY_QUERY_PARAMS_CACHE, rxQuery, () => {
     var collection = rxQuery.collection;
     var normalizedMangoQuery = normalizeMangoQuery(collection.storageInstance.schema, clone(rxQuery.mangoQuery));
     var primaryKey = collection.schema.primaryPath;
@@ -52,11 +52,8 @@ export function getQueryParams(rxQuery) {
       sortComparator: useSortComparator,
       queryMatcher: useQueryMatcher
     };
-    RXQUERY_QUERY_PARAMS_CACHE.set(rxQuery, ret);
     return ret;
-  } else {
-    return RXQUERY_QUERY_PARAMS_CACHE.get(rxQuery);
-  }
+  });
 }
 export function calculateNewResults(rxQuery, rxChangeEvents) {
   if (!rxQuery.collection.database.eventReduce) {

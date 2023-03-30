@@ -116,6 +116,11 @@ export function getIndexStringLength(schema, index) {
   });
   return length;
 }
+export function getPrimaryKeyFromIndexableString(indexableString, primaryKeyLength) {
+  var paddedPrimaryKey = indexableString.slice(primaryKeyLength * -1);
+  var primaryKey = paddedPrimaryKey.trimEnd();
+  return primaryKey;
+}
 export function getNumberIndexString(parsedLengths, fieldValue) {
   var str = '';
   var nonDecimalsValueAsString = (Math.floor(fieldValue) - parsedLengths.roundedMinimum).toString();

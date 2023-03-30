@@ -25,12 +25,7 @@ var LEADER_ELECTOR_BY_BROADCAST_CHANNEL = new WeakMap();
  * Used to ensure we reuse the same elector for the channel each time.
  */
 function getLeaderElectorByBroadcastChannel(broadcastChannel) {
-  var elector = LEADER_ELECTOR_BY_BROADCAST_CHANNEL.get(broadcastChannel);
-  if (!elector) {
-    elector = (0, _broadcastChannel.createLeaderElection)(broadcastChannel);
-    LEADER_ELECTOR_BY_BROADCAST_CHANNEL.set(broadcastChannel, elector);
-  }
-  return elector;
+  return (0, _utils.getFromMapOrCreate)(LEADER_ELECTOR_BY_BROADCAST_CHANNEL, broadcastChannel, () => (0, _broadcastChannel.createLeaderElection)(broadcastChannel));
 }
 
 /**

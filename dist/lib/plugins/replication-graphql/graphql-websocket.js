@@ -16,8 +16,7 @@ var {
 var GRAPHQL_WEBSOCKET_BY_URL = new Map();
 exports.GRAPHQL_WEBSOCKET_BY_URL = GRAPHQL_WEBSOCKET_BY_URL;
 function getGraphQLWebSocket(url, headers) {
-  var has = GRAPHQL_WEBSOCKET_BY_URL.get(url);
-  if (!has) {
+  var has = (0, _utils.getFromMapOrCreate)(GRAPHQL_WEBSOCKET_BY_URL, url, () => {
     var wsClient = (0, _graphqlWs.createClient)({
       url,
       shouldRetry: () => true,
@@ -26,15 +25,14 @@ function getGraphQLWebSocket(url, headers) {
         headers
       } : undefined
     });
-    has = {
+    return {
       url,
       socket: wsClient,
       refCount: 1
     };
-    GRAPHQL_WEBSOCKET_BY_URL.set(url, has);
-  } else {
-    has.refCount = has.refCount + 1;
-  }
+  }, value => {
+    value.refCount = value.refCount + 1;
+  });
   return has.socket;
 }
 function removeGraphQLWebSocketRef(url) {

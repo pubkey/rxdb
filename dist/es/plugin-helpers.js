@@ -1,6 +1,6 @@
 import { filter, mergeMap, tap } from 'rxjs/operators';
 import { getPrimaryFieldOfPrimaryKey } from './rx-schema-helper';
-import { defaultHashSha256, flatClone, getFromMapOrThrow, requestIdleCallbackIfAvailable } from './plugins/utils';
+import { defaultHashSha256, flatClone, getFromMapOrCreate, requestIdleCallbackIfAvailable } from './plugins/utils';
 import { BehaviorSubject, firstValueFrom } from 'rxjs';
 /**
  * cache the validators by the schema-hash
@@ -22,18 +22,10 @@ getValidator,
  * A string to identify the validation library.
  */
 validatorKey) {
-  if (!VALIDATOR_CACHE_BY_VALIDATOR_KEY.has(validatorKey)) {
-    VALIDATOR_CACHE_BY_VALIDATOR_KEY.set(validatorKey, new Map());
-  }
-  var VALIDATOR_CACHE = getFromMapOrThrow(VALIDATOR_CACHE_BY_VALIDATOR_KEY, validatorKey);
+  var VALIDATOR_CACHE = getFromMapOrCreate(VALIDATOR_CACHE_BY_VALIDATOR_KEY, validatorKey, () => new Map());
   function initValidator(schema) {
     var hash = defaultHashSha256(JSON.stringify(schema));
-    if (!VALIDATOR_CACHE.has(hash)) {
-      var validator = getValidator(schema);
-      VALIDATOR_CACHE.set(hash, validator);
-      return validator;
-    }
-    return getFromMapOrThrow(VALIDATOR_CACHE, hash);
+    return getFromMapOrCreate(VALIDATOR_CACHE, hash, () => getValidator(schema));
   }
   return args => {
     return Object.assign({}, args.storage, {
