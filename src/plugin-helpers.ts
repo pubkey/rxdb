@@ -22,7 +22,6 @@ import {
     defaultHashSha256,
     flatClone,
     getFromMapOrCreate,
-    getFromMapOrThrow,
     requestIdleCallbackIfAvailable
 } from './plugins/utils';
 import { BehaviorSubject, firstValueFrom } from 'rxjs';
