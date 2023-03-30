@@ -3,6 +3,8 @@
 
 <!-- CHANGELOG NEWEST -->
 
+- ADD method `getPrimaryKeyFromIndexableString()`
+- REFACTOR utils for `Map` and `WeakMap` caching
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
