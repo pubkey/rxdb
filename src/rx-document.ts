@@ -531,5 +531,5 @@ export function beforeDocumentUpdateWrite<RxDocType>(
     if (overwritable.isDevMode()) {
         collection.schema.validateChange(oldData, newData);
     }
-    return collection._runHooks('pre', 'save', newData);
+    return collection._runHooks('pre', 'save', newData, oldData);
 }

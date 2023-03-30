@@ -189,12 +189,18 @@ config.parallel('hooks.test.js', () => {
                     await c.insert(human);
                     const doc = await c.findOne(human.passportId).exec(true);
                     let count = 0;
-                    c.preSave(function (data) {
+                    c.preSave(function (data, oldData) {
                         assert.ok(data);
+                        assert.ok(oldData);
+                        if (count === 1) {
+                            assert.equal(oldData.firstName, 'foobar');
+                        }
                         count++;
                     }, false);
                     await doc.incrementalPatch({ firstName: 'foobar' });
                     assert.strictEqual(count, 1);
+                    await c.upsert(human);
+                    assert.strictEqual(count, 2);
                     c.database.destroy();
                 });
                 it('parallel', async () => {
@@ -203,8 +209,9 @@ config.parallel('hooks.test.js', () => {
                     await c.insert(human);
                     const doc = await c.findOne(human.passportId).exec(true);
                     let count = 0;
-                    c.preSave(function (data) {
+                    c.preSave(function (data, oldData) {
                         assert.ok(data);
+                        assert.ok(oldData);
                         count++;
                     }, true);
                     await doc.incrementalPatch({ firstName: 'foobar' });
