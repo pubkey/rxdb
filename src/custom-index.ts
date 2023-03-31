@@ -104,9 +104,6 @@ export function getIndexableStringMonad<RxDocType>(
             } else {
                 // is number
                 const parsedLengths = props.parsedLengths as ParsedLengths;
-                if (!fieldValue) {
-                    fieldValue = 0;
-                }
                 str += getNumberIndexString(
                     parsedLengths,
                     fieldValue
@@ -118,7 +115,11 @@ export function getIndexableStringMonad<RxDocType>(
     return ret;
 }
 
+
+
 declare type ParsedLengths = {
+    minimum: number;
+    maximum: number;
     nonDecimals: number;
     decimals: number;
     roundedMinimum: number;
@@ -139,6 +140,8 @@ export function getStringLengthOfIndexNumber(
         decimals = multipleOfParts[1].length;
     }
     return {
+        minimum,
+        maximum,
         nonDecimals,
         decimals,
         roundedMinimum: minimum
@@ -183,6 +186,25 @@ export function getNumberIndexString(
     parsedLengths: ParsedLengths,
     fieldValue: number
 ): string {
+    /**
+     * Ensure that the given value is in the boundaries
+     * of the schema, otherwise it would create a broken index string.
+     * This can happen for example if you have a minimum of 0
+     * and run a query like
+     * selector {
+     *  numField: { $gt: -1000 }
+     * }
+     */
+    if (typeof fieldValue === 'undefined') {
+        fieldValue = 0;
+    }
+    if (fieldValue < parsedLengths.minimum) {
+        fieldValue = parsedLengths.minimum;
+    }
+    if (fieldValue > parsedLengths.maximum) {
+        fieldValue = parsedLengths.maximum;
+    }
+
     let str: string = '';
     const nonDecimalsValueAsString = (Math.floor(fieldValue) - parsedLengths.roundedMinimum).toString();
     str += nonDecimalsValueAsString.padStart(parsedLengths.nonDecimals, '0');
@@ -190,7 +212,9 @@ export function getNumberIndexString(
     const splitByDecimalPoint = fieldValue.toString().split('.');
     const decimalValueAsString = splitByDecimalPoint.length > 1 ? splitByDecimalPoint[1] : '0';
 
-    str += decimalValueAsString.padEnd(parsedLengths.decimals, '0');
+    if (parsedLengths.decimals > 0) {
+        str += decimalValueAsString.padEnd(parsedLengths.decimals, '0');
+    }
     return str;
 }
 

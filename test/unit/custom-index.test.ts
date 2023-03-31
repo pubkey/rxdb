@@ -273,6 +273,67 @@ config.parallel('custom-index.test.ts', () => {
                 assert.strictEqual(indexString.length, length);
             });
         });
+        it('issue did not work with this numberValue', () => {
+            const testIndex = ['numberValue', 'key'];
+            const testSchema: RxJsonSchema<RxDocumentData<any>> = fillWithDefaultSettings({
+                version: 0,
+                type: 'object',
+                primaryKey: 'key',
+                properties: {
+                    key: {
+                        type: 'string',
+                        maxLength: 50
+                    },
+                    numberValue: {
+                        type: 'number',
+                        minimum: -10,
+                        maximum: 1000,
+                        multipleOf: 1
+                    }
+                },
+                required: [
+                    'key',
+                    'numberValue'
+                ],
+                indexes: [
+                    testIndex
+                ],
+                additionalProperties: false
+            });
+            const length = getIndexStringLength(
+                testSchema,
+                testIndex
+            );
+            const testDocs: RxDocumentData<any>[] = [
+                {
+                    id: randomString(10),
+                    numberValue: 17,
+                    _deleted: false,
+                    _attachments: {},
+                    _meta: {
+                        lwt: new Date().getTime()
+                    },
+                    _rev: EXAMPLE_REVISION_1
+                },
+                {
+                    id: randomString(10),
+                    numberValue: -5,
+                    _deleted: false,
+                    _attachments: {},
+                    _meta: {
+                        lwt: new Date().getTime()
+                    },
+                    _rev: EXAMPLE_REVISION_1
+                }
+            ];
+            testDocs.forEach(docData => {
+                const indexString = getIndexableStringMonad(
+                    testSchema,
+                    testIndex
+                )(docData);
+                assert.strictEqual(indexString.length, length);
+            });
+        });
     });
     describe('.getPrimaryKeyFromIndexableString()', () => {
         it('get the correct id', () => {

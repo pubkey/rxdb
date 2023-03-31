@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- FIX wrong index generation on some number fields that do not have decimals.
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

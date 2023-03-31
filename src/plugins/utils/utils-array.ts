@@ -114,3 +114,7 @@ export function sumNumberArray(array: number[]): number {
     }
     return count;
 }
+
+export function maxOfNumbers(arr: number[]): number {
+    return Math.max(...arr);
+}
