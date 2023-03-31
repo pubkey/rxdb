@@ -11,11 +11,7 @@ var _utils = require("../../plugins/utils");
 var DATA_MIGRATION_STATE_SUBJECT_BY_DATABASE = new WeakMap();
 exports.DATA_MIGRATION_STATE_SUBJECT_BY_DATABASE = DATA_MIGRATION_STATE_SUBJECT_BY_DATABASE;
 function getMigrationStateByDatabase(database) {
-  if (!DATA_MIGRATION_STATE_SUBJECT_BY_DATABASE.has(database)) {
-    DATA_MIGRATION_STATE_SUBJECT_BY_DATABASE.set(database, new _rxjs.BehaviorSubject([]));
-  }
-  var subject = DATA_MIGRATION_STATE_SUBJECT_BY_DATABASE.get(database);
-  return (0, _utils.ensureNotFalsy)(subject);
+  return (0, _utils.getFromMapOrCreate)(DATA_MIGRATION_STATE_SUBJECT_BY_DATABASE, database, () => new _rxjs.BehaviorSubject([]));
 }
 
 /**

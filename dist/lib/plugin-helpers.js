@@ -29,18 +29,10 @@ getValidator,
  * A string to identify the validation library.
  */
 validatorKey) {
-  if (!VALIDATOR_CACHE_BY_VALIDATOR_KEY.has(validatorKey)) {
-    VALIDATOR_CACHE_BY_VALIDATOR_KEY.set(validatorKey, new Map());
-  }
-  var VALIDATOR_CACHE = (0, _utils.getFromMapOrThrow)(VALIDATOR_CACHE_BY_VALIDATOR_KEY, validatorKey);
+  var VALIDATOR_CACHE = (0, _utils.getFromMapOrCreate)(VALIDATOR_CACHE_BY_VALIDATOR_KEY, validatorKey, () => new Map());
   function initValidator(schema) {
     var hash = (0, _utils.defaultHashSha256)(JSON.stringify(schema));
-    if (!VALIDATOR_CACHE.has(hash)) {
-      var validator = getValidator(schema);
-      VALIDATOR_CACHE.set(hash, validator);
-      return validator;
-    }
-    return (0, _utils.getFromMapOrThrow)(VALIDATOR_CACHE, hash);
+    return (0, _utils.getFromMapOrCreate)(VALIDATOR_CACHE, hash, () => getValidator(schema));
   }
   return args => {
     return Object.assign({}, args.storage, {

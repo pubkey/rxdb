@@ -1,7 +1,7 @@
 import { createLokiLocalState } from './rx-storage-instance-loki';
 import lokijs from 'lokijs';
 import { add as unloadAdd } from 'unload';
-import { ensureNotFalsy, flatClone, getProperty, promiseWait, randomCouchString } from '../utils';
+import { ensureNotFalsy, flatClone, getFromMapOrCreate, getProperty, promiseWait, randomCouchString } from '../utils';
 import { LokiSaveQueue } from './loki-save-queue';
 import { newRxError } from '../../rx-error';
 import { getBroadcastChannelReference } from '../../rx-storage-multiinstance';
@@ -55,14 +55,13 @@ export var LOKIJS_COLLECTION_DEFAULT_OPTIONS = {
 };
 var LOKI_DATABASE_STATE_BY_NAME = new Map();
 export function getLokiDatabase(databaseName, databaseSettings) {
-  var databaseState = LOKI_DATABASE_STATE_BY_NAME.get(databaseName);
-  if (!databaseState) {
+  return getFromMapOrCreate(LOKI_DATABASE_STATE_BY_NAME, databaseName, () => {
     /**
      * We assume that as soon as an adapter is passed,
      * the database has to be persistent.
      */
     var hasPersistence = !!databaseSettings.adapter;
-    databaseState = (async () => {
+    var databaseState = (async () => {
       var persistenceMethod = hasPersistence ? 'adapter' : 'memory';
       if (databaseSettings.persistenceMethod) {
         persistenceMethod = databaseSettings.persistenceMethod;
@@ -132,9 +131,8 @@ export function getLokiDatabase(databaseName, databaseSettings) {
       };
       return state;
     })();
-    LOKI_DATABASE_STATE_BY_NAME.set(databaseName, databaseState);
-  }
-  return databaseState;
+    return databaseState;
+  });
 }
 export async function closeLokiCollections(databaseName, collections) {
   var databaseState = await LOKI_DATABASE_STATE_BY_NAME.get(databaseName);

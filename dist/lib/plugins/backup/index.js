@@ -15,7 +15,6 @@ exports.backupSingleDocument = backupSingleDocument;
 var path = _interopRequireWildcard(require("path"));
 var _rxjs = require("rxjs");
 var _operators = require("rxjs/operators");
-var _rxError = require("../../rx-error");
 var _utils = require("../../plugins/utils");
 var _fileUtil = require("./file-util");
 Object.keys(_fileUtil).forEach(function (key) {
@@ -58,13 +57,7 @@ async function backupSingleDocument(rxDocument, options) {
 }
 var BACKUP_STATES_BY_DB = new WeakMap();
 function addToBackupStates(db, state) {
-  if (!BACKUP_STATES_BY_DB.has(db)) {
-    BACKUP_STATES_BY_DB.set(db, []);
-  }
-  var ar = (0, _utils.getFromMapOrThrow)(BACKUP_STATES_BY_DB, db);
-  if (!ar) {
-    throw (0, _rxError.newRxError)('SNH');
-  }
+  var ar = (0, _utils.getFromMapOrCreate)(BACKUP_STATES_BY_DB, db, () => []);
   ar.push(state);
 }
 var RxBackupState = /*#__PURE__*/function () {

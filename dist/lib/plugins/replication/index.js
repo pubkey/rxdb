@@ -59,11 +59,7 @@ var RxReplicationState = /*#__PURE__*/function () {
     this.live = live;
     this.retryTime = retryTime;
     this.autoStart = autoStart;
-    var replicationStates = REPLICATION_STATE_BY_COLLECTION.get(collection);
-    if (!replicationStates) {
-      replicationStates = [];
-      REPLICATION_STATE_BY_COLLECTION.set(collection, replicationStates);
-    }
+    var replicationStates = (0, _utils.getFromMapOrCreate)(REPLICATION_STATE_BY_COLLECTION, collection, () => []);
     replicationStates.push(this);
 
     // stop the replication when the collection gets destroyed

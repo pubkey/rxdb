@@ -124,6 +124,17 @@ Object.keys(_utilsObject).forEach(function (key) {
     }
   });
 });
+var _utilsMap = require("./utils-map");
+Object.keys(_utilsMap).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (key in exports && exports[key] === _utilsMap[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function () {
+      return _utilsMap[key];
+    }
+  });
+});
 var _utilsError = require("./utils-error");
 Object.keys(_utilsError).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;

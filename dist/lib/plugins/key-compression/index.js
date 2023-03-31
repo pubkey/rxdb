@@ -30,8 +30,7 @@ function getCompressionStateByRxJsonSchema(schema) {
    * is never mutated.
    */
   _overwritable.overwritable.deepFreezeWhenDevMode(schema);
-  var compressionState = COMPRESSION_STATE_BY_SCHEMA.get(schema);
-  if (!compressionState) {
+  return (0, _utils.getFromMapOrCreate)(COMPRESSION_STATE_BY_SCHEMA, schema, () => {
     var compressionSchema = (0, _utils.flatClone)(schema);
     delete compressionSchema.primaryKey;
     var table = (0, _jsonschemaKeyCompression.createCompressionTable)(compressionSchema, _jsonschemaKeyCompression.DEFAULT_COMPRESSION_FLAG, [
@@ -70,14 +69,13 @@ function getCompressionStateByRxJsonSchema(schema) {
       });
       compressedSchema.indexes = newIndexes;
     }
-    compressionState = {
+    var compressionState = {
       table,
       schema,
       compressedSchema
     };
-    COMPRESSION_STATE_BY_SCHEMA.set(schema, compressionState);
-  }
-  return compressionState;
+    return compressionState;
+  });
 }
 function wrappedKeyCompressionStorage(args) {
   var statics = Object.assign({}, args.storage.statics, {

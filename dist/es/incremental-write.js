@@ -1,5 +1,5 @@
 import { isBulkWriteConflictError, rxStorageWriteErrorToRxError } from './rx-error';
-import { clone, ensureNotFalsy, getFromMapOrFill, getFromMapOrThrow, parseRevision, stripMetaDataFromDocument } from './plugins/utils';
+import { clone, ensureNotFalsy, getFromMapOrCreate, getFromMapOrThrow, parseRevision, stripMetaDataFromDocument } from './plugins/utils';
 /**
  * The incremental write queue
  * batches up all incremental writes to a collection
@@ -21,7 +21,7 @@ export var IncrementalWriteQueue = /*#__PURE__*/function () {
   var _proto = IncrementalWriteQueue.prototype;
   _proto.addWrite = function addWrite(lastKnownDocumentState, modifier) {
     var docId = lastKnownDocumentState[this.primaryPath];
-    var ar = getFromMapOrFill(this.queueByDocId, docId, () => []);
+    var ar = getFromMapOrCreate(this.queueByDocId, docId, () => []);
     var ret = new Promise((resolve, reject) => {
       var item = {
         lastKnownDocumentState,
@@ -100,7 +100,7 @@ export var IncrementalWriteQueue = /*#__PURE__*/function () {
       var isConflict = isBulkWriteConflictError(error);
       if (isConflict) {
         // had conflict -> retry afterwards
-        var ar = getFromMapOrFill(this.queueByDocId, docId, () => []);
+        var ar = getFromMapOrCreate(this.queueByDocId, docId, () => []);
         /**
          * Add the items back to this.queueByDocId
          * by maintaining the original order.

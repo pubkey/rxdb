@@ -7,7 +7,7 @@
 
 import { BehaviorSubject, combineLatest, mergeMap, Subject } from 'rxjs';
 import { RxDBLeaderElectionPlugin } from '../leader-election';
-import { ensureNotFalsy, errorToPlainJson, flatClone, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_TRUE, toArray } from '../../plugins/utils';
+import { ensureNotFalsy, errorToPlainJson, flatClone, getFromMapOrCreate, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_TRUE, toArray } from '../../plugins/utils';
 import { awaitRxStorageReplicationFirstInSync, awaitRxStorageReplicationInSync, cancelRxStorageReplication, getRxReplicationMetaInstanceSchema, replicateRxStorageInstance } from '../../replication-protocol';
 import { newRxError } from '../../rx-error';
 import { awaitRetry, DEFAULT_MODIFIER, swapDefaultDeletedTodeletedField, handlePulledDocuments } from './replication-helper';
@@ -50,11 +50,7 @@ export var RxReplicationState = /*#__PURE__*/function () {
     this.live = live;
     this.retryTime = retryTime;
     this.autoStart = autoStart;
-    var replicationStates = REPLICATION_STATE_BY_COLLECTION.get(collection);
-    if (!replicationStates) {
-      replicationStates = [];
-      REPLICATION_STATE_BY_COLLECTION.set(collection, replicationStates);
-    }
+    var replicationStates = getFromMapOrCreate(REPLICATION_STATE_BY_COLLECTION, collection, () => []);
     replicationStates.push(this);
 
     // stop the replication when the collection gets destroyed

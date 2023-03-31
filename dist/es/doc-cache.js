@@ -1,4 +1,4 @@
-import { getFromMapOrFill, getFromMapOrThrow, getHeightOfRevision } from './plugins/utils';
+import { getFromMapOrCreate, getFromMapOrThrow, getHeightOfRevision } from './plugins/utils';
 import { overwritable } from './overwritable';
 import { getDocumentDataOfRxChangeEvent } from './rx-change-event';
 /**
@@ -60,7 +60,7 @@ export var DocumentCache = /*#__PURE__*/function () {
   _proto.getCachedRxDocument = function getCachedRxDocument(docData) {
     var docId = docData[this.primaryPath];
     var revisionHeight = getHeightOfRevision(docData._rev);
-    var cacheItem = getFromMapOrFill(this.cacheItemByDocId, docId, () => getNewCacheItem(docData));
+    var cacheItem = getFromMapOrCreate(this.cacheItemByDocId, docId, () => getNewCacheItem(docData));
     var cachedRxDocumentWeakRef = cacheItem.documentByRevisionHeight.get(revisionHeight);
     var cachedRxDocument = cachedRxDocumentWeakRef ? cachedRxDocumentWeakRef.deref() : undefined;
     if (!cachedRxDocument) {

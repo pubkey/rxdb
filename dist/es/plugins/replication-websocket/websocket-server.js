@@ -1,5 +1,5 @@
 import { rxStorageInstanceToReplicationHandler } from '../../replication-protocol';
-import { PROMISE_RESOLVE_VOID } from '../../plugins/utils';
+import { PROMISE_RESOLVE_VOID, getFromMapOrCreate } from '../../plugins/utils';
 import { Subject } from 'rxjs';
 export function startSocketServer(options) {
   var {
@@ -53,12 +53,10 @@ export function startWebsocketServer(options) {
     if (!database.collections[collectionName]) {
       throw new Error('collection ' + collectionName + ' does not exist');
     }
-    var handler = replicationHandlerByCollection.get(collectionName);
-    if (!handler) {
+    var handler = getFromMapOrCreate(replicationHandlerByCollection, collectionName, () => {
       var collection = database.collections[collectionName];
-      handler = rxStorageInstanceToReplicationHandler(collection.storageInstance, collection.conflictHandler, database.token);
-      replicationHandlerByCollection.set(collectionName, handler);
-    }
+      return rxStorageInstanceToReplicationHandler(collection.storageInstance, collection.conflictHandler, database.token);
+    });
     return handler;
   }
   serverState.onConnection$.subscribe(ws => {

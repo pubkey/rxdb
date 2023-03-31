@@ -10,6 +10,7 @@
 import { createRxDocumentConstructor, basePrototype, createWithConstructor as createRxDocumentWithConstructor } from './rx-document';
 import { runPluginHooks } from './hooks';
 import { overwritable } from './overwritable';
+import { getFromMapOrCreate } from './plugins/utils';
 var constructorForCollection = new WeakMap();
 export function getDocumentPrototype(rxCollection) {
   var schemaProto = rxCollection.schema.getDocumentPrototype();
@@ -47,11 +48,7 @@ export function getDocumentPrototype(rxCollection) {
   return proto;
 }
 export function getRxDocumentConstructor(rxCollection) {
-  if (!constructorForCollection.has(rxCollection)) {
-    var ret = createRxDocumentConstructor(getDocumentPrototype(rxCollection));
-    constructorForCollection.set(rxCollection, ret);
-  }
-  return constructorForCollection.get(rxCollection);
+  return getFromMapOrCreate(constructorForCollection, rxCollection, () => createRxDocumentConstructor(getDocumentPrototype(rxCollection)));
 }
 
 /**

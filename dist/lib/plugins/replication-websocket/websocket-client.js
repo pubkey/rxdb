@@ -45,8 +45,7 @@ databaseToken) {
    * multi-instance setups.
    */
   var cacheKey = url + '|||' + databaseToken;
-  var has = WEBSOCKET_BY_CACHE_KEY.get(cacheKey);
-  if (!has) {
+  var has = (0, _utils.getFromMapOrCreate)(WEBSOCKET_BY_CACHE_KEY, cacheKey, () => {
     ensureIsWebsocket(_isomorphicWs.default);
     var wsClient = new _reconnectingWebsocket.default(url, [], {
       WebSocket: _isomorphicWs.default
@@ -74,7 +73,7 @@ databaseToken) {
       });
       error$.next(emitError);
     };
-    has = {
+    return {
       url,
       socket: wsClient,
       openPromise,
@@ -83,10 +82,9 @@ databaseToken) {
       message$,
       error$
     };
-    WEBSOCKET_BY_CACHE_KEY.set(cacheKey, has);
-  } else {
-    has.refCount = has.refCount + 1;
-  }
+  }, value => {
+    value.refCount = value.refCount + 1;
+  });
   await has.openPromise;
   return has;
 }

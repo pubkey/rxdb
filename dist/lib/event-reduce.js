@@ -21,7 +21,7 @@ function getSortFieldsOfQuery(primaryKey, query) {
 var RXQUERY_QUERY_PARAMS_CACHE = new WeakMap();
 exports.RXQUERY_QUERY_PARAMS_CACHE = RXQUERY_QUERY_PARAMS_CACHE;
 function getQueryParams(rxQuery) {
-  if (!RXQUERY_QUERY_PARAMS_CACHE.has(rxQuery)) {
+  return (0, _utils.getFromMapOrCreate)(RXQUERY_QUERY_PARAMS_CACHE, rxQuery, () => {
     var collection = rxQuery.collection;
     var normalizedMangoQuery = (0, _rxQueryHelper.normalizeMangoQuery)(collection.storageInstance.schema, (0, _utils.clone)(rxQuery.mangoQuery));
     var primaryKey = collection.schema.primaryPath;
@@ -62,11 +62,8 @@ function getQueryParams(rxQuery) {
       sortComparator: useSortComparator,
       queryMatcher: useQueryMatcher
     };
-    RXQUERY_QUERY_PARAMS_CACHE.set(rxQuery, ret);
     return ret;
-  } else {
-    return RXQUERY_QUERY_PARAMS_CACHE.get(rxQuery);
-  }
+  });
 }
 function calculateNewResults(rxQuery, rxChangeEvents) {
   if (!rxQuery.collection.database.eventReduce) {

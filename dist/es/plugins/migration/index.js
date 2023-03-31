@@ -1,6 +1,6 @@
 import { combineLatest } from 'rxjs';
 import { shareReplay, switchMap } from 'rxjs/operators';
-import { PROMISE_RESOLVE_FALSE, RXJS_SHARE_REPLAY_DEFAULTS } from '../../plugins/utils';
+import { getFromMapOrCreate, PROMISE_RESOLVE_FALSE, RXJS_SHARE_REPLAY_DEFAULTS } from '../../plugins/utils';
 import { mustMigrate, DataMigrator } from './data-migrator';
 import { getMigrationStateByDatabase, onDatabaseDestroy } from './migration-state';
 export var DATA_MIGRATOR_BY_COLLECTION = new WeakMap();
@@ -20,10 +20,7 @@ export var RxDBMigrationPlugin = {
     },
     RxCollection: proto => {
       proto.getDataMigrator = function () {
-        if (!DATA_MIGRATOR_BY_COLLECTION.has(this)) {
-          DATA_MIGRATOR_BY_COLLECTION.set(this, new DataMigrator(this.asRxCollection, this.migrationStrategies));
-        }
-        return DATA_MIGRATOR_BY_COLLECTION.get(this);
+        return getFromMapOrCreate(DATA_MIGRATOR_BY_COLLECTION, this, () => new DataMigrator(this.asRxCollection, this.migrationStrategies));
       };
       proto.migrationNeeded = function () {
         if (this.schema.version === 0) {

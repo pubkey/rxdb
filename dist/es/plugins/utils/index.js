@@ -9,6 +9,7 @@ export * from './utils-string';
 export * from './utils-object-deep-equal';
 export * from './utils-object-dot-prop';
 export * from './utils-object';
+export * from './utils-map';
 export * from './utils-error';
 export * from './utils-time';
 export * from './utils-regex';

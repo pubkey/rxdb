@@ -78,14 +78,13 @@ var LOKIJS_COLLECTION_DEFAULT_OPTIONS = {
 exports.LOKIJS_COLLECTION_DEFAULT_OPTIONS = LOKIJS_COLLECTION_DEFAULT_OPTIONS;
 var LOKI_DATABASE_STATE_BY_NAME = new Map();
 function getLokiDatabase(databaseName, databaseSettings) {
-  var databaseState = LOKI_DATABASE_STATE_BY_NAME.get(databaseName);
-  if (!databaseState) {
+  return (0, _utils.getFromMapOrCreate)(LOKI_DATABASE_STATE_BY_NAME, databaseName, () => {
     /**
      * We assume that as soon as an adapter is passed,
      * the database has to be persistent.
      */
     var hasPersistence = !!databaseSettings.adapter;
-    databaseState = (async () => {
+    var databaseState = (async () => {
       var persistenceMethod = hasPersistence ? 'adapter' : 'memory';
       if (databaseSettings.persistenceMethod) {
         persistenceMethod = databaseSettings.persistenceMethod;
@@ -155,9 +154,8 @@ function getLokiDatabase(databaseName, databaseSettings) {
       };
       return state;
     })();
-    LOKI_DATABASE_STATE_BY_NAME.set(databaseName, databaseState);
-  }
-  return databaseState;
+    return databaseState;
+  });
 }
 async function closeLokiCollections(databaseName, collections) {
   var databaseState = await LOKI_DATABASE_STATE_BY_NAME.get(databaseName);

@@ -7,6 +7,7 @@ exports.getIndexMeta = getIndexMeta;
 exports.getIndexStringLength = getIndexStringLength;
 exports.getIndexableStringMonad = getIndexableStringMonad;
 exports.getNumberIndexString = getNumberIndexString;
+exports.getPrimaryKeyFromIndexableString = getPrimaryKeyFromIndexableString;
 exports.getStartIndexStringFromLowerBound = getStartIndexStringFromLowerBound;
 exports.getStartIndexStringFromUpperBound = getStartIndexStringFromUpperBound;
 exports.getStringLengthOfIndexNumber = getStringLengthOfIndexNumber;
@@ -127,6 +128,11 @@ function getIndexStringLength(schema, index) {
     }
   });
   return length;
+}
+function getPrimaryKeyFromIndexableString(indexableString, primaryKeyLength) {
+  var paddedPrimaryKey = indexableString.slice(primaryKeyLength * -1);
+  var primaryKey = paddedPrimaryKey.trimEnd();
+  return primaryKey;
 }
 function getNumberIndexString(parsedLengths, fieldValue) {
   var str = '';

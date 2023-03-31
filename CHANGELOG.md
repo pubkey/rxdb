@@ -3,14 +3,17 @@
 
 <!-- CHANGELOG NEWEST -->
 
-- ADD method `getPrimaryKeyFromIndexableString()`
-- REFACTOR utils for `Map` and `WeakMap` caching
-- FIX: lost RxDocument in preSave from v14.0.0 [#4581](https://github.com/pubkey/rxdb/pull/4581)
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 14.5.2 (30 March 2023)
+
+- ADD method `getPrimaryKeyFromIndexableString()`
+- REFACTOR utils for `Map` and `WeakMap` caching
+- FIX: lost RxDocument in preSave from v14.0.0 [#4581](https://github.com/pubkey/rxdb/pull/4581)
 
 ### 14.5.1 (28 March 2023)
 

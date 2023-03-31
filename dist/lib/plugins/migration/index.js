@@ -76,10 +76,7 @@ var RxDBMigrationPlugin = {
     },
     RxCollection: proto => {
       proto.getDataMigrator = function () {
-        if (!DATA_MIGRATOR_BY_COLLECTION.has(this)) {
-          DATA_MIGRATOR_BY_COLLECTION.set(this, new _dataMigrator.DataMigrator(this.asRxCollection, this.migrationStrategies));
-        }
-        return DATA_MIGRATOR_BY_COLLECTION.get(this);
+        return (0, _utils.getFromMapOrCreate)(DATA_MIGRATOR_BY_COLLECTION, this, () => new _dataMigrator.DataMigrator(this.asRxCollection, this.migrationStrategies));
       };
       proto.migrationNeeded = function () {
         if (this.schema.version === 0) {

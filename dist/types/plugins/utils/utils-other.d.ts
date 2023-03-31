@@ -2,7 +2,6 @@ export declare function runXTimes(xTimes: number, fn: (idx: number) => void): vo
 export declare function ensureNotFalsy<T>(obj: T | false | undefined | null): T;
 export declare function ensureInteger(obj: unknown): number;
 export declare function getFromMapOrThrow<K, V>(map: Map<K, V> | WeakMap<any, V>, key: K): V;
-export declare function getFromMapOrFill<K, V>(map: Map<K, V> | WeakMap<any, V>, key: K, fillerFunction: () => V): V;
 /**
  * Using shareReplay() without settings will not unsubscribe
  * if there are no more subscribers.

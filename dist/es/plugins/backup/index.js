@@ -1,8 +1,7 @@
 import * as path from 'path';
 import { BehaviorSubject, firstValueFrom, Subject } from 'rxjs';
 import { filter, map } from 'rxjs/operators';
-import { newRxError } from '../../rx-error';
-import { getFromMapOrThrow, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_TRUE, PROMISE_RESOLVE_VOID } from '../../plugins/utils';
+import { getFromMapOrCreate, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_TRUE, PROMISE_RESOLVE_VOID } from '../../plugins/utils';
 import { clearFolder, deleteFolder, documentFolder, ensureFolderExists, getMeta, prepareFolders, setMeta, writeJsonToFile, writeToFile } from './file-util';
 
 /**
@@ -32,13 +31,7 @@ export async function backupSingleDocument(rxDocument, options) {
 }
 var BACKUP_STATES_BY_DB = new WeakMap();
 function addToBackupStates(db, state) {
-  if (!BACKUP_STATES_BY_DB.has(db)) {
-    BACKUP_STATES_BY_DB.set(db, []);
-  }
-  var ar = getFromMapOrThrow(BACKUP_STATES_BY_DB, db);
-  if (!ar) {
-    throw newRxError('SNH');
-  }
+  var ar = getFromMapOrCreate(BACKUP_STATES_BY_DB, db, () => []);
   ar.push(state);
 }
 export var RxBackupState = /*#__PURE__*/function () {

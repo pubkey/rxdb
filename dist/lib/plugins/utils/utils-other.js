@@ -6,7 +6,6 @@ Object.defineProperty(exports, "__esModule", {
 exports.RXJS_SHARE_REPLAY_DEFAULTS = void 0;
 exports.ensureInteger = ensureInteger;
 exports.ensureNotFalsy = ensureNotFalsy;
-exports.getFromMapOrFill = getFromMapOrFill;
 exports.getFromMapOrThrow = getFromMapOrThrow;
 exports.runXTimes = runXTimes;
 function runXTimes(xTimes, fn) {
@@ -30,14 +29,6 @@ function getFromMapOrThrow(map, key) {
     throw new Error('missing value from map ' + key);
   }
   return val;
-}
-function getFromMapOrFill(map, key, fillerFunction) {
-  var value = map.get(key);
-  if (!value) {
-    value = fillerFunction();
-    map.set(key, value);
-  }
-  return value;
 }
 
 /**
