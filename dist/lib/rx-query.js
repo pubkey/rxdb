@@ -63,6 +63,13 @@ var RxQueryBase = /*#__PURE__*/function () {
   }
   var _proto = RxQueryBase.prototype;
   /**
+   * Returns an observable that emits the results
+   * This should behave like an rxjs-BehaviorSubject which means:
+   * - Emit the current result-set on subscribe
+   * - Emit the new result-set when an RxChangeEvent comes in
+   * - Do not emit anything before the first result-set was created (no null)
+   */
+  /**
    * set the new result-data as result-docs of the query
    * @param newResultData json-docs that were received from the storage
    */
@@ -336,6 +343,13 @@ var RxQueryBase = /*#__PURE__*/function () {
     }
 
     // stores the changeEvent-number of the last handled change-event
+
+    // time stamps on when the last full exec over the database has run
+    // used to properly handle events that happen while the find-query is running
+    /**
+     * ensures that the exec-runs
+     * are not run in parallel
+     */
   }, {
     key: "queryMatcher",
     get: function () {

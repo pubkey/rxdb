@@ -10,6 +10,11 @@ var _rxSchemaHelper = require("./rx-schema-helper");
 var _utils = require("./plugins/utils");
 var _rxjs = require("rxjs");
 /**
+ * Returns the validation errors.
+ * If document is fully valid, returns an empty array.
+ */
+
+/**
  * cache the validators by the schema-hash
  * so we can reuse them when multiple collections have the same schema
  */

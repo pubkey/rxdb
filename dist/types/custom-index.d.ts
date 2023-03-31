@@ -24,6 +24,8 @@ export declare function getIndexMeta<RxDocType>(schema: RxJsonSchema<RxDocumentD
  */
 export declare function getIndexableStringMonad<RxDocType>(schema: RxJsonSchema<RxDocumentData<RxDocType>>, index: string[]): (docData: RxDocumentData<RxDocType>) => string;
 declare type ParsedLengths = {
+    minimum: number;
+    maximum: number;
     nonDecimals: number;
     decimals: number;
     roundedMinimum: number;

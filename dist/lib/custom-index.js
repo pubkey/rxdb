@@ -85,9 +85,6 @@ function getIndexableStringMonad(schema, index) {
       } else {
         // is number
         var parsedLengths = props.parsedLengths;
-        if (!fieldValue) {
-          fieldValue = 0;
-        }
         str += getNumberIndexString(parsedLengths, fieldValue);
       }
     }
@@ -107,6 +104,8 @@ function getStringLengthOfIndexNumber(schemaPart) {
     decimals = multipleOfParts[1].length;
   }
   return {
+    minimum,
+    maximum,
     nonDecimals,
     decimals,
     roundedMinimum: minimum
@@ -135,12 +134,32 @@ function getPrimaryKeyFromIndexableString(indexableString, primaryKeyLength) {
   return primaryKey;
 }
 function getNumberIndexString(parsedLengths, fieldValue) {
+  /**
+   * Ensure that the given value is in the boundaries
+   * of the schema, otherwise it would create a broken index string.
+   * This can happen for example if you have a minimum of 0
+   * and run a query like
+   * selector {
+   *  numField: { $gt: -1000 }
+   * }
+   */
+  if (typeof fieldValue === 'undefined') {
+    fieldValue = 0;
+  }
+  if (fieldValue < parsedLengths.minimum) {
+    fieldValue = parsedLengths.minimum;
+  }
+  if (fieldValue > parsedLengths.maximum) {
+    fieldValue = parsedLengths.maximum;
+  }
   var str = '';
   var nonDecimalsValueAsString = (Math.floor(fieldValue) - parsedLengths.roundedMinimum).toString();
   str += nonDecimalsValueAsString.padStart(parsedLengths.nonDecimals, '0');
   var splitByDecimalPoint = fieldValue.toString().split('.');
   var decimalValueAsString = splitByDecimalPoint.length > 1 ? splitByDecimalPoint[1] : '0';
-  str += decimalValueAsString.padEnd(parsedLengths.decimals, '0');
+  if (parsedLengths.decimals > 0) {
+    str += decimalValueAsString.padEnd(parsedLengths.decimals, '0');
+  }
   return str;
 }
 function getStartIndexStringFromLowerBound(schema, index, lowerBound, inclusiveStart) {

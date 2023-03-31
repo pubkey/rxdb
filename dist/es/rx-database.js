@@ -326,6 +326,43 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
     get: function () {
       return this.observable$;
     }
+
+    /**
+     * Because having unhandled exceptions would fail,
+     * we have to store the async errors of the constructor here
+     * so we can throw them later.
+     */
+
+    /**
+     * When the database is destroyed,
+     * these functions will be called an awaited.
+     * Used to automatically clean up stuff that
+     * belongs to this collection.
+     */
+
+    /**
+     * Unique token that is stored with the data.
+     * Used to detect if the dataset has been deleted
+     * and if two RxDatabase instances work on the same dataset or not.
+     *
+     * Because reading and writing the storageToken runs in the hot path
+     * of database creation, we do not await the storageWrites but instead
+     * work with the promise when we need the value.
+     */
+
+    /**
+     * Stores the whole state of the internal storage token document.
+     * We need this in some plugins.
+     */
+
+    /**
+     * Contains the ids of all event bulks that have been emitted
+     * by the database.
+     * Used to detect duplicates that come in again via BroadcastChannel
+     * or other streams.
+     * TODO instead of having this here, we should add a test to ensure each RxStorage
+     * behaves equal and does never emit duplicate eventBulks.
+     */
   }, {
     key: "asRxDatabase",
     get: function () {

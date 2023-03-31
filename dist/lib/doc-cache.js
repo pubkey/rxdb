@@ -8,6 +8,9 @@ var _utils = require("./plugins/utils");
 var _overwritable = require("./overwritable");
 var _rxChangeEvent = require("./rx-change-event");
 /**
+ * @link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/FinalizationRegistry
+ */
+/**
  * The DocumentCache stores RxDocument objects
  * by their primary key and revision.
  * This is useful on client side applications where

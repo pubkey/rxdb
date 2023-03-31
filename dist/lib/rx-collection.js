@@ -521,6 +521,15 @@ var RxCollectionBase = /*#__PURE__*/function () {
     get: function () {
       return this.$.pipe((0, _operators.filter)(cE => cE.operation === 'DELETE'));
     }
+
+    // defaults
+
+    /**
+     * When the collection is destroyed,
+     * these functions will be called an awaited.
+     * Used to automatically clean up stuff that
+     * belongs to this collection.
+     */
   }, {
     key: "asRxCollection",
     get: function () {

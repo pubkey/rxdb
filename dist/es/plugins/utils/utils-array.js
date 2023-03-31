@@ -96,4 +96,7 @@ export function sumNumberArray(array) {
   }
   return count;
 }
+export function maxOfNumbers(arr) {
+  return Math.max(...arr);
+}
 //# sourceMappingURL=utils-array.js.map

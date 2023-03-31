@@ -9,6 +9,12 @@ exports.graphQLSchemaFromRxSchema = graphQLSchemaFromRxSchema;
 var _getGraphqlFromJsonschema = require("get-graphql-from-jsonschema");
 var _rxSchemaHelper = require("../../rx-schema-helper");
 var _utils = require("../../plugins/utils");
+/**
+ * just type some common types
+ * to have better IDE autocomplete,
+ * all strings are allowed
+ */
+
 // we use two spaces because get-graphql-from-jsonschema does also
 var SPACING = '  ';
 

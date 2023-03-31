@@ -30,3 +30,4 @@ export declare function asyncFilter<T>(array: T[], predicate: (item: T, index: n
  * @link https://stackoverflow.com/a/3762735
  */
 export declare function sumNumberArray(array: number[]): number;
+export declare function maxOfNumbers(arr: number[]): number;

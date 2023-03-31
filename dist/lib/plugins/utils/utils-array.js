@@ -9,6 +9,7 @@ exports.batchArray = batchArray;
 exports.countUntilNotMatching = countUntilNotMatching;
 exports.isMaybeReadonlyArray = isMaybeReadonlyArray;
 exports.lastOfArray = lastOfArray;
+exports.maxOfNumbers = maxOfNumbers;
 exports.removeOneFromArrayIfMatches = removeOneFromArrayIfMatches;
 exports.shuffleArray = shuffleArray;
 exports.sumNumberArray = sumNumberArray;
@@ -110,5 +111,8 @@ function sumNumberArray(array) {
     count += array[i];
   }
   return count;
+}
+function maxOfNumbers(arr) {
+  return Math.max(...arr);
 }
 //# sourceMappingURL=utils-array.js.map

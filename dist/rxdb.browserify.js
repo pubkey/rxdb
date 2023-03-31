@@ -206,9 +206,6 @@ function getIndexableStringMonad(schema, index) {
       } else {
         // is number
         var parsedLengths = props.parsedLengths;
-        if (!fieldValue) {
-          fieldValue = 0;
-        }
         str += getNumberIndexString(parsedLengths, fieldValue);
       }
     }
@@ -228,6 +225,8 @@ function getStringLengthOfIndexNumber(schemaPart) {
     decimals = multipleOfParts[1].length;
   }
   return {
+    minimum,
+    maximum,
     nonDecimals,
     decimals,
     roundedMinimum: minimum
@@ -256,12 +255,32 @@ function getPrimaryKeyFromIndexableString(indexableString, primaryKeyLength) {
   return primaryKey;
 }
 function getNumberIndexString(parsedLengths, fieldValue) {
+  /**
+   * Ensure that the given value is in the boundaries
+   * of the schema, otherwise it would create a broken index string.
+   * This can happen for example if you have a minimum of 0
+   * and run a query like
+   * selector {
+   *  numField: { $gt: -1000 }
+   * }
+   */
+  if (typeof fieldValue === 'undefined') {
+    fieldValue = 0;
+  }
+  if (fieldValue < parsedLengths.minimum) {
+    fieldValue = parsedLengths.minimum;
+  }
+  if (fieldValue > parsedLengths.maximum) {
+    fieldValue = parsedLengths.maximum;
+  }
   var str = '';
   var nonDecimalsValueAsString = (Math.floor(fieldValue) - parsedLengths.roundedMinimum).toString();
   str += nonDecimalsValueAsString.padStart(parsedLengths.nonDecimals, '0');
   var splitByDecimalPoint = fieldValue.toString().split('.');
   var decimalValueAsString = splitByDecimalPoint.length > 1 ? splitByDecimalPoint[1] : '0';
-  str += decimalValueAsString.padEnd(parsedLengths.decimals, '0');
+  if (parsedLengths.decimals > 0) {
+    str += decimalValueAsString.padEnd(parsedLengths.decimals, '0');
+  }
   return str;
 }
 function getStartIndexStringFromLowerBound(schema, index, lowerBound, inclusiveStart) {
@@ -354,6 +373,9 @@ exports.DocumentCache = void 0;
 var _utils = require("./plugins/utils");
 var _overwritable = require("./overwritable");
 var _rxChangeEvent = require("./rx-change-event");
+/**
+ * @link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/FinalizationRegistry
+ */
 /**
  * The DocumentCache stores RxDocument objects
  * by their primary key and revision.
@@ -1210,6 +1232,11 @@ var _rxSchemaHelper = require("./rx-schema-helper");
 var _utils = require("./plugins/utils");
 var _rxjs = require("rxjs");
 /**
+ * Returns the validation errors.
+ * If document is fully valid, returns an empty array.
+ */
+
+/**
  * cache the validators by the schema-hash
  * so we can reuse them when multiple collections have the same schema
  */
@@ -1748,6 +1775,7 @@ exports.batchArray = batchArray;
 exports.countUntilNotMatching = countUntilNotMatching;
 exports.isMaybeReadonlyArray = isMaybeReadonlyArray;
 exports.lastOfArray = lastOfArray;
+exports.maxOfNumbers = maxOfNumbers;
 exports.removeOneFromArrayIfMatches = removeOneFromArrayIfMatches;
 exports.shuffleArray = shuffleArray;
 exports.sumNumberArray = sumNumberArray;
@@ -1849,6 +1877,9 @@ function sumNumberArray(array) {
     count += array[i];
   }
   return count;
+}
+function maxOfNumbers(arr) {
+  return Math.max(...arr);
 }
 
 },{}],14:[function(require,module,exports){
@@ -2860,7 +2891,7 @@ exports.RXDB_VERSION = void 0;
 /**
  * This file is replaced in the 'npm run build:version' script.
  */
-var RXDB_VERSION = '14.5.2';
+var RXDB_VERSION = '14.6.0';
 exports.RXDB_VERSION = RXDB_VERSION;
 
 },{}],28:[function(require,module,exports){
@@ -5253,6 +5284,15 @@ var RxCollectionBase = /*#__PURE__*/function () {
     get: function () {
       return this.$.pipe((0, _operators.filter)(cE => cE.operation === 'DELETE'));
     }
+
+    // defaults
+
+    /**
+     * When the collection is destroyed,
+     * these functions will be called an awaited.
+     * Used to automatically clean up stuff that
+     * belongs to this collection.
+     */
   }, {
     key: "asRxCollection",
     get: function () {
@@ -5942,6 +5982,43 @@ var RxDatabaseBase = /*#__PURE__*/function () {
     get: function () {
       return this.observable$;
     }
+
+    /**
+     * Because having unhandled exceptions would fail,
+     * we have to store the async errors of the constructor here
+     * so we can throw them later.
+     */
+
+    /**
+     * When the database is destroyed,
+     * these functions will be called an awaited.
+     * Used to automatically clean up stuff that
+     * belongs to this collection.
+     */
+
+    /**
+     * Unique token that is stored with the data.
+     * Used to detect if the dataset has been deleted
+     * and if two RxDatabase instances work on the same dataset or not.
+     *
+     * Because reading and writing the storageToken runs in the hot path
+     * of database creation, we do not await the storageWrites but instead
+     * work with the promise when we need the value.
+     */
+
+    /**
+     * Stores the whole state of the internal storage token document.
+     * We need this in some plugins.
+     */
+
+    /**
+     * Contains the ids of all event bulks that have been emitted
+     * by the database.
+     * Used to detect duplicates that come in again via BroadcastChannel
+     * or other streams.
+     * TODO instead of having this here, we should add a test to ensure each RxStorage
+     * behaves equal and does never emit duplicate eventBulks.
+     */
   }, {
     key: "asRxDatabase",
     get: function () {
@@ -7097,6 +7174,13 @@ var RxQueryBase = /*#__PURE__*/function () {
   }
   var _proto = RxQueryBase.prototype;
   /**
+   * Returns an observable that emits the results
+   * This should behave like an rxjs-BehaviorSubject which means:
+   * - Emit the current result-set on subscribe
+   * - Emit the new result-set when an RxChangeEvent comes in
+   * - Do not emit anything before the first result-set was created (no null)
+   */
+  /**
    * set the new result-data as result-docs of the query
    * @param newResultData json-docs that were received from the storage
    */
@@ -7370,6 +7454,13 @@ var RxQueryBase = /*#__PURE__*/function () {
     }
 
     // stores the changeEvent-number of the last handled change-event
+
+    // time stamps on when the last full exec over the database has run
+    // used to properly handle events that happen while the find-query is running
+    /**
+     * ensures that the exec-runs
+     * are not run in parallel
+     */
   }, {
     key: "queryMatcher",
     get: function () {

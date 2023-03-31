@@ -2,12 +2,16 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- FIX wrong index generation on some number fields that do not have decimals.
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 14.6.0 (31 March 2023)
+
+- FIX wrong index generation on some number fields that do not have decimals.
 
 ### 14.5.2 (30 March 2023)
 

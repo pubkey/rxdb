@@ -2,6 +2,12 @@ import { filter, mergeMap, tap } from 'rxjs/operators';
 import { getPrimaryFieldOfPrimaryKey } from './rx-schema-helper';
 import { defaultHashSha256, flatClone, getFromMapOrCreate, requestIdleCallbackIfAvailable } from './plugins/utils';
 import { BehaviorSubject, firstValueFrom } from 'rxjs';
+
+/**
+ * Returns the validation errors.
+ * If document is fully valid, returns an empty array.
+ */
+
 /**
  * cache the validators by the schema-hash
  * so we can reuse them when multiple collections have the same schema

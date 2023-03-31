@@ -225,6 +225,7 @@ var RxP2PReplicationPool = /*#__PURE__*/function () {
     await this.connectionHandler.destroy();
   };
   return RxP2PReplicationPool;
-}();
+}(); // export * from './connection-handler-webtorrent';
+// export * from './connection-handler-p2pcf';
 exports.RxP2PReplicationPool = RxP2PReplicationPool;
 //# sourceMappingURL=index.js.map

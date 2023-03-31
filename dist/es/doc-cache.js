@@ -1,6 +1,11 @@
 import { getFromMapOrCreate, getFromMapOrThrow, getHeightOfRevision } from './plugins/utils';
 import { overwritable } from './overwritable';
 import { getDocumentDataOfRxChangeEvent } from './rx-change-event';
+
+/**
+ * @link https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/FinalizationRegistry
+ */
+
 /**
  * The DocumentCache stores RxDocument objects
  * by their primary key and revision.
