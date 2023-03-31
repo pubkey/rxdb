@@ -189,6 +189,11 @@ export function getNumberIndexString(
     /**
      * Ensure that the given value is in the boundaries
      * of the schema, otherwise it would create a broken index string.
+     * This can happen for example if you have a minimum of 0
+     * and run a query like
+     * selector {
+     *  numField: { $gt: -1000 }
+     * }
      */
     if (typeof fieldValue === 'undefined') {
         fieldValue = 0;
@@ -200,8 +205,6 @@ export function getNumberIndexString(
         fieldValue = parsedLengths.maximum;
     }
 
-
-
     let str: string = '';
     const nonDecimalsValueAsString = (Math.floor(fieldValue) - parsedLengths.roundedMinimum).toString();
     str += nonDecimalsValueAsString.padStart(parsedLengths.nonDecimals, '0');
@@ -211,19 +214,6 @@ export function getNumberIndexString(
 
     if (parsedLengths.decimals > 0) {
         str += decimalValueAsString.padEnd(parsedLengths.decimals, '0');
-    }
-
-    if (
-        (parsedLengths.decimals + parsedLengths.nonDecimals) !== str.length
-    ) {
-        console.log('------------ getNumberIndexString(' + fieldValue + ')');
-        console.dir({
-            parsedLengths,
-            nonDecimalsValueAsString,
-            splitByDecimalPoint,
-            decimalValueAsString
-        });
-        throw new Error('getNumberIndexString() wrong return length "' + str + '"');
     }
     return str;
 }
