@@ -161,6 +161,8 @@ export function getIndexStringLength<RxDocType>(
             length += 1;
         } else {
             const parsedLengths = props.parsedLengths as ParsedLengths;
+            console.log('props: ' + props.fieldName);
+            console.dir(parsedLengths);
             length = length + parsedLengths.nonDecimals + parsedLengths.decimals;
         }
 
@@ -183,14 +185,41 @@ export function getNumberIndexString(
     parsedLengths: ParsedLengths,
     fieldValue: number
 ): string {
+    console.log('------------ getNumberIndexString(' + fieldValue + ')');
+    console.dir(parsedLengths);
+
     let str: string = '';
+
+    console.log('1-len: ' + str.length);
+
     const nonDecimalsValueAsString = (Math.floor(fieldValue) - parsedLengths.roundedMinimum).toString();
+    console.log('nonDecimalsValueAsString.padStart(parsedLengths.nonDecimals, \'0\'): ' + nonDecimalsValueAsString.padStart(parsedLengths.nonDecimals, '0'));
     str += nonDecimalsValueAsString.padStart(parsedLengths.nonDecimals, '0');
+    console.log('2-len: ' + str.length);
 
     const splitByDecimalPoint = fieldValue.toString().split('.');
     const decimalValueAsString = splitByDecimalPoint.length > 1 ? splitByDecimalPoint[1] : '0';
+    console.log('3-len: ' + str.length);
 
-    str += decimalValueAsString.padEnd(parsedLengths.decimals, '0');
+    console.log('decimalValueAsString.padEnd(parsedLengths.decimals, \'0\'): ' + decimalValueAsString.padEnd(parsedLengths.decimals, '0'));
+    if (parsedLengths.decimals > 0) {
+        str += decimalValueAsString.padEnd(parsedLengths.decimals, '0');
+    }
+
+    console.log('4-len: ' + str.length);
+    console.log('getNumberIndexString(' + fieldValue + '): "' + str + '"');
+
+    console.dir({
+        nonDecimalsValueAsString,
+        splitByDecimalPoint,
+        decimalValueAsString
+    });
+    console.log('------------ getNumberIndexString() END');
+    if (
+        (parsedLengths.decimals + parsedLengths.nonDecimals) !== str.length
+    ) {
+        throw new Error('AAAAAAAAAAAAAAAAa wrong return length');
+    }
     return str;
 }
 
