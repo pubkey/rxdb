@@ -286,7 +286,7 @@ config.parallel('custom-index.test.ts', () => {
                     },
                     numberValue: {
                         type: 'number',
-                        minimum: 0,
+                        minimum: -10,
                         maximum: 1000,
                         multipleOf: 1
                     }
@@ -304,21 +304,35 @@ config.parallel('custom-index.test.ts', () => {
                 testSchema,
                 testIndex
             );
-            const docData: RxDocumentData<any> = {
-                id: randomString(10),
-                numberValue: 17,
-                _deleted: false,
-                _attachments: {},
-                _meta: {
-                    lwt: new Date().getTime()
+            const testDocs: RxDocumentData<any>[] = [
+                {
+                    id: randomString(10),
+                    numberValue: 17,
+                    _deleted: false,
+                    _attachments: {},
+                    _meta: {
+                        lwt: new Date().getTime()
+                    },
+                    _rev: EXAMPLE_REVISION_1
                 },
-                _rev: EXAMPLE_REVISION_1
-            };
-            const indexString = getIndexableStringMonad(
-                testSchema,
-                testIndex
-            )(docData);
-            assert.strictEqual(indexString.length, length);
+                {
+                    id: randomString(10),
+                    numberValue: -5,
+                    _deleted: false,
+                    _attachments: {},
+                    _meta: {
+                        lwt: new Date().getTime()
+                    },
+                    _rev: EXAMPLE_REVISION_1
+                }
+            ];
+            testDocs.forEach(docData => {
+                const indexString = getIndexableStringMonad(
+                    testSchema,
+                    testIndex
+                )(docData);
+                assert.strictEqual(indexString.length, length);
+            });
         });
     });
     describe('.getPrimaryKeyFromIndexableString()', () => {

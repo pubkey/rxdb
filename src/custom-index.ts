@@ -104,9 +104,6 @@ export function getIndexableStringMonad<RxDocType>(
             } else {
                 // is number
                 const parsedLengths = props.parsedLengths as ParsedLengths;
-                if (!fieldValue) {
-                    fieldValue = 0;
-                }
                 str += getNumberIndexString(
                     parsedLengths,
                     fieldValue
@@ -118,7 +115,11 @@ export function getIndexableStringMonad<RxDocType>(
     return ret;
 }
 
+
+
 declare type ParsedLengths = {
+    minimum: number;
+    maximum: number;
     nonDecimals: number;
     decimals: number;
     roundedMinimum: number;
@@ -139,6 +140,8 @@ export function getStringLengthOfIndexNumber(
         decimals = multipleOfParts[1].length;
     }
     return {
+        minimum,
+        maximum,
         nonDecimals,
         decimals,
         roundedMinimum: minimum
@@ -161,8 +164,6 @@ export function getIndexStringLength<RxDocType>(
             length += 1;
         } else {
             const parsedLengths = props.parsedLengths as ParsedLengths;
-            console.log('props: ' + props.fieldName);
-            console.dir(parsedLengths);
             length = length + parsedLengths.nonDecimals + parsedLengths.decimals;
         }
 
@@ -185,40 +186,44 @@ export function getNumberIndexString(
     parsedLengths: ParsedLengths,
     fieldValue: number
 ): string {
-    console.log('------------ getNumberIndexString(' + fieldValue + ')');
-    console.dir(parsedLengths);
+    /**
+     * Ensure that the given value is in the boundaries
+     * of the schema, otherwise it would create a broken index string.
+     */
+    if (typeof fieldValue === 'undefined') {
+        fieldValue = 0;
+    }
+    if (fieldValue < parsedLengths.minimum) {
+        fieldValue = parsedLengths.minimum;
+    }
+    if (fieldValue > parsedLengths.maximum) {
+        fieldValue = parsedLengths.maximum;
+    }
+
+
 
     let str: string = '';
-
-    console.log('1-len: ' + str.length);
-
     const nonDecimalsValueAsString = (Math.floor(fieldValue) - parsedLengths.roundedMinimum).toString();
-    console.log('nonDecimalsValueAsString.padStart(parsedLengths.nonDecimals, \'0\'): ' + nonDecimalsValueAsString.padStart(parsedLengths.nonDecimals, '0'));
     str += nonDecimalsValueAsString.padStart(parsedLengths.nonDecimals, '0');
-    console.log('2-len: ' + str.length);
 
     const splitByDecimalPoint = fieldValue.toString().split('.');
     const decimalValueAsString = splitByDecimalPoint.length > 1 ? splitByDecimalPoint[1] : '0';
-    console.log('3-len: ' + str.length);
 
-    console.log('decimalValueAsString.padEnd(parsedLengths.decimals, \'0\'): ' + decimalValueAsString.padEnd(parsedLengths.decimals, '0'));
     if (parsedLengths.decimals > 0) {
         str += decimalValueAsString.padEnd(parsedLengths.decimals, '0');
     }
 
-    console.log('4-len: ' + str.length);
-    console.log('getNumberIndexString(' + fieldValue + '): "' + str + '"');
-
-    console.dir({
-        nonDecimalsValueAsString,
-        splitByDecimalPoint,
-        decimalValueAsString
-    });
-    console.log('------------ getNumberIndexString() END');
     if (
         (parsedLengths.decimals + parsedLengths.nonDecimals) !== str.length
     ) {
-        throw new Error('AAAAAAAAAAAAAAAAa wrong return length');
+        console.log('------------ getNumberIndexString(' + fieldValue + ')');
+        console.dir({
+            parsedLengths,
+            nonDecimalsValueAsString,
+            splitByDecimalPoint,
+            decimalValueAsString
+        });
+        throw new Error('getNumberIndexString() wrong return length "' + str + '"');
     }
     return str;
 }
