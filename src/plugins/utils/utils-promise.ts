@@ -25,19 +25,27 @@ export const PROMISE_RESOLVE_NULL: Promise<null> = Promise.resolve(null);
 export const PROMISE_RESOLVE_VOID: Promise<void> = Promise.resolve();
 
 
+/**
+ * If multiple operations wait for an requestIdlePromise
+ * we do not want them to resolve all at the same time.
+ * So we have to queue the calls.
+ */
+let idlePromiseQueue = PROMISE_RESOLVE_VOID;
 export function requestIdlePromise(timeout: number | null = null) {
-    if (
-        typeof window === 'object' &&
-        (window as any)['requestIdleCallback']
-    ) {
-        return new Promise(
-            res => (window as any)['requestIdleCallback'](res, {
-                timeout
-            })
-        );
-    } else {
-        return promiseWait(0);
-    }
+    return new Promise(res => {
+        idlePromiseQueue = idlePromiseQueue.then(() => {
+            if (
+                typeof window === 'object' &&
+                (window as any)['requestIdleCallback']
+            ) {
+                (window as any)['requestIdleCallback'](res, {
+                    timeout
+                });
+            } else {
+                promiseWait(0).then(res);
+            }
+        });
+    });
 }
 
 

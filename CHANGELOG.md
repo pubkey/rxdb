@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- FIX `requestIdlePromise()` must run in a queue.
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
