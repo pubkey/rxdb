@@ -126,6 +126,9 @@ export type {
     DocumentsWithCheckpoint,
     RxReplicationPullStreamItem,
     ReplicationPullHandlerResult,
+    ReplicationOptions,
+    ReplicationPullOptions,
+    ReplicationPushOptions,
 
     // crdt
     UpdateQuery,
