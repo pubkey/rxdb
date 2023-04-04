@@ -3,6 +3,7 @@
 
 <!-- CHANGELOG NEWEST -->
 - FIX `requestIdlePromise()` must run in a queue.
+- ADD Export ReplicationOptions type [#4606](https://github.com/pubkey/rxdb/pull/4606)
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
