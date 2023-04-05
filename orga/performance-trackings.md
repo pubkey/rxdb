@@ -1211,3 +1211,89 @@ A2: Rewrite to own sort function
 
 BEFORE:
 30.1
+
+
+
+## 4 April 2023 - improve OPFS strorage performance 
+
+#### (time-to-first-insert)
+
+BEFORE:
+performanceResult: 54.26
+
+
+LOG LOG: 'performanceResult: 52.08'
+
+
+AFTER:
+'performanceResult: 13.66'
+
+
+#### find-by-id
+
+BEFORE:
+
+'performanceResult: 34.82'
+'performanceResult: 35.26'
+
+AFTER:
+
+'performanceResult: 20.15'
+'performanceResult: 20.65'
+
+AFTER2:
+19.03
+18.9
+
+AFTER3:
+performanceResult: 12.59
+performanceResult: 12.78
+
+AFTERR4:
+performanceResult: 12.87
+
+### insert documents
+
+BEFORE:
+'performanceResult: 34.52'
+LOG LOG: 'performanceResult: 34.1'
+
+
+bulkWrite(20000) 1 - 290.4000000022352
+file-system-access.worker.js:9220 bulkWrite(20000) 2 - 352.5
+file-system-access.worker.js:9230 bulkWrite(20000) 3 - 352.6000000014901
+context.js:265 .
+file-system-access.worker.js:9236 bulkWrite(20000) 4 - 461.6000000014901
+file-system-access.worker.js:9252 bulkWrite(20000) 5 - 1091.6000000014901
+context.js:265 .
+file-system-access.worker.js:9257 bulkWrite(20000) 6 - 1428.9000000022352
+context.js:265 
+
+
+### Query
+
+BEFORE:
+'performanceResult: 11.38'
+'performanceResult: 11.17'
+
+AFTER:
+performanceResult: 10.91
+'performanceResult: 10.38'
+
+
+### init storage
+
+BEFORE:
+performanceResult: 16.97
+
+AFTER:
+performanceResult: 15.95
+performanceResult: 15.77
+
+AFTER2:
+performanceResult: 14.7
+performanceResult: 13.83
+
+AFTER3:
+performanceResult: 12.86
+performanceResult: 12.33

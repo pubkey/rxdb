@@ -53,14 +53,16 @@ config.parallel('key-compression.test.js', () => {
             c.database.destroy();
         });
     });
-    describe('integration into pouchDB', () => {
+    describe('integration into the RxStorage', () => {
         it('should have saved a compressed document', async () => {
             const c = await getCollection();
             const docData = schemaObjects.simpleHuman();
             await c.insert(docData);
 
 
-            const internalInstance: RxStorageInstance<schemaObjects.SimpleHumanDocumentType, any, any> = await (c.storageInstance.originalStorageInstance as any)
+            const internalInstance: RxStorageInstance<
+                schemaObjects.SimpleHumanDocumentType, any, any
+            > = await (c.storageInstance.originalStorageInstance as any)
                 .originalStorageInstance;
 
             const storageDocs = await internalInstance.findDocumentsById([docData.passportId], true);

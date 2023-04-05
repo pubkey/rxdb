@@ -2829,7 +2829,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 });
 
                 const id = 'foobar';
-                const nonDeletedId = 'foobar2';
+                const nonDeletedId = 'nonDeletedId';
 
                 /**
                  * Insert one that does not get deleted
@@ -3081,6 +3081,11 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 multiInstance: true,
                 devMode: true
             });
+
+            // run a fetch on both instances to ensure the setup has finished
+            await a.findDocumentsById(['foobar'], true);
+            await b.findDocumentsById(['foobar'], true);
+
             return {
                 a,
                 b
@@ -3090,6 +3095,26 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
             await instances.a.close();
             await instances.b.close();
         }
+        it('should update the state on the other instance', async () => {
+            const instances = await getMultiInstanceRxStorageInstance();
+
+            await instances.a.bulkWrite([{
+                document: getWriteData({ key: 'a' })
+            }], testContext);
+            await instances.b.bulkWrite([{
+                document: getWriteData({ key: 'b' })
+            }], testContext);
+            const allIds = ['a', 'b'];
+
+            const resultA = await instances.a.findDocumentsById(allIds, true);
+            assert.deepStrictEqual(Object.keys(resultA), allIds);
+
+            const resultB = await instances.b.findDocumentsById(allIds, true);
+            assert.deepStrictEqual(Object.keys(resultB), allIds);
+
+            await instances.a.close();
+            await instances.b.close();
+        });
         it('should be able to write and read documents', async () => {
             const instances = await getMultiInstanceRxStorageInstance();
 

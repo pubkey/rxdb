@@ -858,86 +858,84 @@ config.parallel('data-migration.test.ts', () => {
     describe('major versions', () => {
     });
     describe('issues', () => {
-        describe('#212 migration runs into infinity-loop', () => {
-            it('reproduce and fix', async () => {
-                const dbName = randomCouchString(10);
-                const schema0 = {
-                    title: 'hero schema',
-                    description: 'describes a simple hero',
-                    version: 0,
-                    primaryKey: 'name',
-                    type: 'object',
-                    properties: {
-                        name: {
-                            type: 'string',
-                            maxLength: 100
-                        },
-                        color: {
-                            type: 'string'
-                        }
+        it('#212 migration runs into infinity-loop', async () => {
+            const dbName = randomCouchString(10);
+            const schema0 = {
+                title: 'hero schema',
+                description: 'describes a simple hero',
+                version: 0,
+                primaryKey: 'name',
+                type: 'object',
+                properties: {
+                    name: {
+                        type: 'string',
+                        maxLength: 100
                     },
-                    required: ['color']
-                };
-                const schema1 = {
-                    title: 'hero schema',
-                    description: 'describes a simple hero',
-                    version: 1,
-                    primaryKey: 'name',
-                    type: 'object',
-                    properties: {
-                        name: {
-                            type: 'string',
-                            maxLength: 100
-                        },
-                        color: {
-                            type: 'string'
-                        },
-                        level: {
-                            type: 'string'
-                        }
+                    color: {
+                        type: 'string'
+                    }
+                },
+                required: ['color']
+            };
+            const schema1 = {
+                title: 'hero schema',
+                description: 'describes a simple hero',
+                version: 1,
+                primaryKey: 'name',
+                type: 'object',
+                properties: {
+                    name: {
+                        type: 'string',
+                        maxLength: 100
                     },
-                    required: ['color']
-                };
-                const db = await createRxDatabase({
-                    name: dbName,
-                    storage: config.storage.getStorage(),
-                });
-                const cols = await db.addCollections({
-                    heroes: {
-                        schema: schema0
+                    color: {
+                        type: 'string'
+                    },
+                    level: {
+                        type: 'string'
                     }
-                });
-                const col = cols.heroes;
-                await col.insert({
-                    name: 'Niven',
-                    color: 'black'
-                });
-                await db.destroy();
-
-                const db2 = await createRxDatabase({
-                    name: dbName,
-                    storage: config.storage.getStorage(),
-                });
-                const cols2 = await db2.addCollections({
-                    heroes: {
-                        schema: schema1,
-                        migrationStrategies: {
-                            1: (oldDoc: any) => {
-                                oldDoc.level = 'ss';
-                                return oldDoc;
-                            }
-                        }
-                    }
-                });
-                const col2 = cols2.heroes;
-
-                const docs = await col2.find().exec();
-                assert.strictEqual(docs.length, 1);
-                assert.strictEqual(docs[0].level, 'ss');
-                assert.strictEqual(docs[0].name, 'Niven');
-                assert.strictEqual(docs[0].color, 'black');
-                db2.destroy();
+                },
+                required: ['color']
+            };
+            const db = await createRxDatabase({
+                name: dbName,
+                storage: config.storage.getStorage(),
             });
+            const cols = await db.addCollections({
+                heroes: {
+                    schema: schema0
+                }
+            });
+            const col = cols.heroes;
+            await col.insert({
+                name: 'Niven',
+                color: 'black'
+            });
+            await db.destroy();
+
+            const db2 = await createRxDatabase({
+                name: dbName,
+                storage: config.storage.getStorage(),
+            });
+            const cols2 = await db2.addCollections({
+                heroes: {
+                    schema: schema1,
+                    migrationStrategies: {
+                        1: (oldDoc: any) => {
+                            oldDoc.level = 'ss';
+                            return oldDoc;
+                        }
+                    }
+                }
+            });
+            const col2 = cols2.heroes;
+
+            const docs = await col2.find().exec();
+            assert.strictEqual(docs.length, 1);
+            assert.strictEqual(docs[0].level, 'ss');
+            assert.strictEqual(docs[0].name, 'Niven');
+            assert.strictEqual(docs[0].color, 'black');
+            db2.destroy();
         });
         it('#3460 migrate attachments', async () => {
             if (!config.storage.hasAttachments) {

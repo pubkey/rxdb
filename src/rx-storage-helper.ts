@@ -151,6 +151,7 @@ export function throwIfIsStorageWriteError<RxDocType>(
  * and which events must be emitted and which documents cause a conflict
  * and must not be written.
  * Used as helper inside of some RxStorage implementations.
+ * @hotPath The performance of this function is critical
  */
 export function categorizeBulkWriteRows<RxDocType>(
     storageInstance: RxStorageInstance<any, any, any>,
@@ -208,7 +209,9 @@ export function categorizeBulkWriteRows<RxDocType>(
     const docsByIdIsMap = typeof docsInDb.get === 'function';
     let newestRow: BulkWriteRowProcessed<RxDocType> | undefined;
 
-    bulkWriteRows.forEach(writeRow => {
+    const rowAmount = bulkWriteRows.length;
+    for (let i = 0; i < rowAmount; i++) {
+        const writeRow = bulkWriteRows[i];
         const id = writeRow.document[primaryPath];
         const documentInDb = docsByIdIsMap ? (docsInDb as any).get(id) : (docsInDb as any)[id];
         let attachmentError: RxStorageWriteErrorAttachment<RxDocType> | undefined;
@@ -292,7 +295,7 @@ export function categorizeBulkWriteRows<RxDocType>(
                     documentInDb
                 };
                 errors[id as any] = err;
-                return;
+                break;
             }
 
             // handle attachments data
@@ -411,7 +414,7 @@ export function categorizeBulkWriteRows<RxDocType>(
                 endTime: now()
             });
         }
-    });
+    }
 
     return {
         bulkInsertDocs,
