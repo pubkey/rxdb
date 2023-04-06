@@ -68,8 +68,6 @@ export class RxStorageRemote implements RxStorage<RxStorageRemoteInternals, any>
             case 'storage':
                 cacheKeys.push('seed-' + this.seed);
         }
-        console.log('cacheKeys:');
-        console.dir(cacheKeys);
         const messageChannel = await getMessageChannel(
             this.settings,
             cacheKeys

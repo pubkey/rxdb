@@ -245,7 +245,7 @@ config.parallel('rx-storage-remote.test.ts', () => {
             const storage = getRxStorageRemoteWebsocket({
                 statics: RxStorageDefaultStatics,
                 url: 'ws://localhost:' + port,
-                mode: 'database'
+                mode: 'collection'
             });
             const databaseName = randomCouchString(10);
             const storageInstanceA = await storage.createStorageInstance({
