@@ -1259,15 +1259,27 @@ BEFORE:
 LOG LOG: 'performanceResult: 34.1'
 
 
-bulkWrite(20000) 1 - 290.4000000022352
-file-system-access.worker.js:9220 bulkWrite(20000) 2 - 352.5
-file-system-access.worker.js:9230 bulkWrite(20000) 3 - 352.6000000014901
-context.js:265 .
-file-system-access.worker.js:9236 bulkWrite(20000) 4 - 461.6000000014901
-file-system-access.worker.js:9252 bulkWrite(20000) 5 - 1091.6000000014901
-context.js:265 .
-file-system-access.worker.js:9257 bulkWrite(20000) 6 - 1428.9000000022352
-context.js:265 
+AFTER:
+'performanceResult: 28.6
+
+
+
+FIXED TEST!!
+
+BEFORE:
+performanceResult: 87.94'
+
+AFTER:
+performanceResult: 83.39
+
+
+
+
+
+
+AFTER fixing merging sorted array
+
+AFTER2:
 
 
 ### Query

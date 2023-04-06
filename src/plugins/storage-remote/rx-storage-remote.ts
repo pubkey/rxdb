@@ -28,6 +28,7 @@ import {
 import type {
     MessageFromRemote,
     MessageToRemote,
+    RemoteMessageChannel,
     RxStorageRemoteInternals,
     RxStorageRemoteSettings
 } from './storage-remote-types';
@@ -39,10 +40,18 @@ export class RxStorageRemote implements RxStorage<RxStorageRemoteInternals, any>
     public readonly name: string = 'remote';
     private seed: string = randomCouchString(10);
     private lastRequestId: number = 0;
+    public messageChannelIfOneMode?: Promise<RemoteMessageChannel>;
     constructor(
         public readonly settings: RxStorageRemoteSettings
     ) {
         this.statics = settings.statics;
+        if (settings.mode === 'one') {
+            this.messageChannelIfOneMode = getMessageChannel(
+                settings,
+                [],
+                true
+            );
+        }
     }
 
     public getRequestId() {
@@ -68,9 +77,12 @@ export class RxStorageRemote implements RxStorage<RxStorageRemoteInternals, any>
             case 'storage':
                 cacheKeys.push('seed-' + this.seed);
         }
-        const messageChannel = await getMessageChannel(
-            this.settings,
-            cacheKeys
+        const messageChannel = await (this.messageChannelIfOneMode ?
+            this.messageChannelIfOneMode :
+            getMessageChannel(
+                this.settings,
+                cacheKeys
+            )
         );
 
         const requestId = this.getRequestId();
