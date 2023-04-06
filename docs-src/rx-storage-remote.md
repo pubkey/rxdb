@@ -8,7 +8,7 @@ The remote storage plugin is used in many RxDB plugins like the [worker](./rx-st
 
 ## Usage
 
-The remote storage communicates over a message channel which has to implement the `messages$` observable and a `send()` function on both sides.
+The remote storage communicates over a message channel which has to implement the `messageChannelCreator` function which returns an object that has a `messages$` observable and a `send()` function on both sides and a `close()` function that closes the RemoteMessageChannel.
 
 
 ```ts
@@ -18,16 +18,17 @@ import { getRxStorageRemote } from 'rxdb/plugins/storage-remote';
 const storage = getRxStorageRemote({
     identifier: 'my-id',
     statics: RxStorageDefaultStatics,
-    messages$: new Subject(),
-    send(msg) {
-        // send to remote storage
-    }
+    mode: 'storage',
+    messageChannelCreator: () => Promise.resolve({
+        messages$: new Subject(),
+        send(msg) {
+            // send to remote storage
+        }
+    })
 });
 const myDb = await createRxDatabase({
     storage
 });
-
-
 
 // on the remote
 import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';

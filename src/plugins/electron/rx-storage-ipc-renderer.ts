@@ -11,6 +11,7 @@ import type {
 import {
     IPC_RENDERER_KEY_PREFIX
 } from './electron-helper';
+import { PROMISE_RESOLVE_VOID } from '../utils';
 
 export type RxStorageIpcRendererSettings = {
     /**
@@ -21,6 +22,7 @@ export type RxStorageIpcRendererSettings = {
     key: string;
     statics: RxStorageStatics;
     ipcRenderer: any;
+    mode: RxStorageRemoteSettings['mode'];
 };
 
 export type RxStorageIpcRenderer = RxStorageRemote;
@@ -32,28 +34,34 @@ export function getRxStorageIpcRenderer(
         settings.key
     ].join('|');
 
-    const messages$ = new Subject<MessageFromRemote>();
-    settings.ipcRenderer.on(channelId, (_event: any, message: any) => {
-        messages$.next(message);
-    });
-
-
-    settings.ipcRenderer.postMessage(
-        channelId,
-        false
-    );
-
-    const send: RxStorageRemoteSettings['send'] = (msg) => {
-        settings.ipcRenderer.postMessage(
-            channelId,
-            msg
-        );
-    };
     const storage = getRxStorageRemote({
         identifier: 'electron-ipc-renderer',
         statics: settings.statics,
-        messages$,
-        send
+        mode: settings.mode,
+        messageChannelCreator() {
+            const messages$ = new Subject<MessageFromRemote>();
+            const listener = (_event: any, message: any) => {
+                messages$.next(message);
+            };
+            settings.ipcRenderer.on(channelId, listener);
+            settings.ipcRenderer.postMessage(
+                channelId,
+                false
+            );
+            return Promise.resolve({
+                messages$,
+                send(msg) {
+                    settings.ipcRenderer.postMessage(
+                        channelId,
+                        msg
+                    );
+                },
+                close() {
+                    settings.ipcRenderer.removeListener(channelId, listener);
+                    return PROMISE_RESOLVE_VOID;
+                }
+            });
+        },
     });
     return storage;
 }

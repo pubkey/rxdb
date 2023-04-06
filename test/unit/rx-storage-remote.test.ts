@@ -3,11 +3,12 @@ import assert from 'assert';
 
 import config from './config';
 import {
-    RxStorageDefaultStatics
+    RxStorageDefaultStatics, createRxDatabase, fillWithDefaultSettings, randomCouchString
 } from '../../';
 import { nextPort } from '../helper/port-manager';
 import * as humansCollections from '../helper/humans-collection';
 import * as schemaObjects from '../helper/schema-objects';
+import * as schemas from '../helper/schemas';
 import {
     getRxStorageRemoteWebsocket,
     startRxStorageRemoteWebsocketServer
@@ -44,7 +45,8 @@ config.parallel('rx-storage-remote.test.ts', () => {
                 0, undefined, false, false,
                 getRxStorageRemoteWebsocket({
                     statics: RxStorageDefaultStatics,
-                    url: 'ws://localhost:' + port
+                    url: 'ws://localhost:' + port,
+                    mode: 'storage'
                 })
             );
             const cols = [colServer, colClient];
@@ -61,6 +63,232 @@ config.parallel('rx-storage-remote.test.ts', () => {
 
             await colClient.database.destroy();
             await colServer.database.destroy();
+        });
+    });
+    describe('mode setting with RemoteMessageChannel reuse', () => {
+        const getStorage = (port: number) => getRxStorageRemoteWebsocket({
+            statics: RxStorageDefaultStatics,
+            url: 'ws://localhost:' + port,
+            mode: 'one'
+        });
+        it('mode: one', async () => {
+            const port = await nextPort();
+            const colServer = await humansCollections.create(0, undefined, false, false, getRxStorageMemory());
+            const server = await startRxStorageRemoteWebsocketServer({
+                port,
+                database: colServer.database
+            });
+            assert.ok(server);
+
+            const storageInstanceA = await getStorage(port).createStorageInstance({
+                databaseInstanceToken: randomCouchString(10),
+                databaseName: randomCouchString(10),
+                collectionName: 'human',
+                devMode: true,
+                multiInstance: false,
+                options: {},
+                schema: fillWithDefaultSettings(schemas.human)
+            });
+            const storageInstanceB = await getStorage(port).createStorageInstance({
+                databaseInstanceToken: randomCouchString(10),
+                databaseName: randomCouchString(10),
+                collectionName: 'human',
+                devMode: true,
+                multiInstance: false,
+                options: {},
+                schema: fillWithDefaultSettings(schemas.human)
+            });
+
+            assert.strictEqual(
+                storageInstanceA.internals.messageChannel,
+                storageInstanceB.internals.messageChannel
+            );
+
+            await storageInstanceA.close();
+            await storageInstanceB.close();
+            await colServer.database.destroy();
+        });
+        it('mode: storage', async () => {
+            const port = await nextPort();
+            const colServer = await humansCollections.create(0, undefined, false, false, getRxStorageMemory());
+            const server = await startRxStorageRemoteWebsocketServer({
+                port,
+                database: colServer.database
+            });
+            assert.ok(server);
+
+            const storage = getRxStorageRemoteWebsocket({
+                statics: RxStorageDefaultStatics,
+                url: 'ws://localhost:' + port,
+                mode: 'storage'
+            });
+            const storageInstanceA = await storage.createStorageInstance({
+                databaseInstanceToken: randomCouchString(10),
+                databaseName: randomCouchString(10),
+                collectionName: 'human',
+                devMode: true,
+                multiInstance: false,
+                options: {},
+                schema: fillWithDefaultSettings(schemas.human)
+            });
+            const storageInstanceB = await storage.createStorageInstance({
+                databaseInstanceToken: randomCouchString(10),
+                databaseName: randomCouchString(10),
+                collectionName: 'human',
+                devMode: true,
+                multiInstance: false,
+                options: {},
+                schema: fillWithDefaultSettings(schemas.human)
+            });
+            const storageInstanceOther = await getStorage(port).createStorageInstance({
+                databaseInstanceToken: randomCouchString(10),
+                databaseName: randomCouchString(10),
+                collectionName: 'human',
+                devMode: true,
+                multiInstance: false,
+                options: {},
+                schema: fillWithDefaultSettings(schemas.human)
+            });
+
+            assert.strictEqual(
+                storageInstanceA.internals.messageChannel,
+                storageInstanceB.internals.messageChannel
+            );
+            assert.notStrictEqual(
+                storageInstanceA.internals.messageChannel,
+                storageInstanceOther.internals.messageChannel
+            );
+
+            await storageInstanceA.close();
+            await storageInstanceB.close();
+            await storageInstanceOther.close();
+            await colServer.database.destroy();
+        });
+        it('mode: database', async () => {
+            const port = await nextPort();
+            const colServer = await humansCollections.create(0, undefined, false, false, getRxStorageMemory());
+            const server = await startRxStorageRemoteWebsocketServer({
+                port,
+                database: colServer.database
+            });
+            assert.ok(server);
+
+            const storage = getRxStorageRemoteWebsocket({
+                statics: RxStorageDefaultStatics,
+                url: 'ws://localhost:' + port,
+                mode: 'database'
+            });
+            const databaseName = randomCouchString(10);
+            const storageInstanceA = await storage.createStorageInstance({
+                databaseInstanceToken: randomCouchString(10),
+                databaseName,
+                collectionName: 'human',
+                devMode: true,
+                multiInstance: false,
+                options: {},
+                schema: fillWithDefaultSettings(schemas.human)
+            });
+            const storageInstanceB = await storage.createStorageInstance({
+                databaseInstanceToken: randomCouchString(10),
+                databaseName,
+                collectionName: 'human',
+                devMode: true,
+                multiInstance: false,
+                options: {},
+                schema: fillWithDefaultSettings(schemas.human)
+            });
+            const storageInstanceOther = await storage.createStorageInstance({
+                databaseInstanceToken: randomCouchString(10),
+                databaseName: randomCouchString(10),
+                collectionName: 'human',
+                devMode: true,
+                multiInstance: false,
+                options: {},
+                schema: fillWithDefaultSettings(schemas.human)
+            });
+
+            assert.strictEqual(
+                storageInstanceA.internals.messageChannel,
+                storageInstanceB.internals.messageChannel
+            );
+            assert.notStrictEqual(
+                storageInstanceA.internals.messageChannel,
+                storageInstanceOther.internals.messageChannel
+            );
+
+            await storageInstanceA.close();
+            await storageInstanceB.close();
+            await storageInstanceOther.close();
+            await colServer.database.destroy();
+        });
+        it('mode: collection', async () => {
+            const port = await nextPort();
+
+            const database = await createRxDatabase({
+                name: randomCouchString(10),
+                storage: getRxStorageMemory(),
+            });
+            await database.addCollections({
+                one: {
+                    schema: schemas.human
+                },
+                two: {
+                    schema: schemas.human
+                }
+            });
+            const server = await startRxStorageRemoteWebsocketServer({
+                port,
+                database
+            });
+            assert.ok(server);
+
+            const storage = getRxStorageRemoteWebsocket({
+                statics: RxStorageDefaultStatics,
+                url: 'ws://localhost:' + port,
+                mode: 'database'
+            });
+            const databaseName = randomCouchString(10);
+            const storageInstanceA = await storage.createStorageInstance({
+                databaseInstanceToken: randomCouchString(10),
+                databaseName,
+                collectionName: 'one',
+                devMode: true,
+                multiInstance: false,
+                options: {},
+                schema: fillWithDefaultSettings(schemas.human)
+            });
+            const storageInstanceB = await storage.createStorageInstance({
+                databaseInstanceToken: randomCouchString(10),
+                databaseName,
+                collectionName: 'one',
+                devMode: true,
+                multiInstance: false,
+                options: {},
+                schema: fillWithDefaultSettings(schemas.human)
+            });
+            const storageInstanceOther = await storage.createStorageInstance({
+                databaseInstanceToken: randomCouchString(10),
+                databaseName,
+                collectionName: 'two',
+                devMode: true,
+                multiInstance: false,
+                options: {},
+                schema: fillWithDefaultSettings(schemas.human)
+            });
+
+            assert.strictEqual(
+                storageInstanceA.internals.messageChannel,
+                storageInstanceB.internals.messageChannel
+            );
+            assert.notStrictEqual(
+                storageInstanceA.internals.messageChannel,
+                storageInstanceOther.internals.messageChannel
+            );
+
+            await storageInstanceA.close();
+            await storageInstanceB.close();
+            await storageInstanceOther.close();
+            await database.destroy();
         });
     });
     describe('custom requests', () => {
@@ -80,7 +308,8 @@ config.parallel('rx-storage-remote.test.ts', () => {
             assert.ok(server);
             const clientStorage = getRxStorageRemoteWebsocket({
                 statics: RxStorageDefaultStatics,
-                url: 'ws://localhost:' + port
+                url: 'ws://localhost:' + port,
+                mode: 'storage'
             });
 
             const result = await clientStorage.customRequest('foobar');
@@ -112,7 +341,7 @@ config.parallel('rx-storage-remote.test.ts', () => {
                     const clientStorage = getRxStorageRemoteWebsocket({
                         statics: RxStorageDefaultStatics,
                         url: 'ws://localhost:' + port,
-                        disableCache: true
+                        mode: 'storage'
                     });
                     const result = await clientStorage.customRequest<Message, Response>({
                         identifier: 'idx-' + idx

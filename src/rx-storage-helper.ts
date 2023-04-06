@@ -295,7 +295,7 @@ export function categorizeBulkWriteRows<RxDocType>(
                     documentInDb
                 };
                 errors[id as any] = err;
-                break;
+                continue;
             }
 
             // handle attachments data

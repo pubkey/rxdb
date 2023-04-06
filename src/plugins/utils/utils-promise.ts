@@ -18,7 +18,10 @@ export function toPromise<T>(maybePromise: Promise<T> | T): Promise<T> {
     }
 }
 
-
+/**
+ * Reusing resolved promises has a better
+ * performance than creating new ones each time.
+ */
 export const PROMISE_RESOLVE_TRUE: Promise<true> = Promise.resolve(true);
 export const PROMISE_RESOLVE_FALSE: Promise<false> = Promise.resolve(false);
 export const PROMISE_RESOLVE_NULL: Promise<null> = Promise.resolve(null);
