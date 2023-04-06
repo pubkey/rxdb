@@ -250,5 +250,8 @@ export class RxStorageInstanceRemote<RxDocType> implements RxStorageInstance<RxD
 }
 
 export function getRxStorageRemote(settings: RxStorageRemoteSettings): RxStorageRemote {
-    return new RxStorageRemote(settings);
+    const withDefaults = Object.assign({
+        mode: 'storage'
+    }, settings);
+    return new RxStorageRemote(withDefaults);
 }

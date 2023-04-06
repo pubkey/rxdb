@@ -56,7 +56,7 @@ export type RxStorageRemoteSettings = {
      *
      * [default='storage']
      */
-    mode:
+    mode?:
     // create exactly one RemoteMessageChannel and resuse that everywhere.
     | 'one'
     // storage: create one RemoteMessageChannel per call to getRxStorage...()
