@@ -5,7 +5,7 @@ export declare class RxStorageRemote implements RxStorage<RxStorageRemoteInterna
     readonly settings: RxStorageRemoteSettings;
     readonly statics: RxStorageStatics;
     readonly name: string;
-    private requestIdSeed;
+    private seed;
     private lastRequestId;
     constructor(settings: RxStorageRemoteSettings);
     getRequestId(): string;

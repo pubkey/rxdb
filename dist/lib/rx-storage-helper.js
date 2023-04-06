@@ -109,6 +109,7 @@ function throwIfIsStorageWriteError(collection, documentId, writeData, error) {
  * and which events must be emitted and which documents cause a conflict
  * and must not be written.
  * Used as helper inside of some RxStorage implementations.
+ * @hotPath The performance of this function is critical
  */
 function categorizeBulkWriteRows(storageInstance, primaryPath,
 /**
@@ -144,7 +145,9 @@ bulkWriteRows, context) {
   var startTime = (0, _utils.now)();
   var docsByIdIsMap = typeof docsInDb.get === 'function';
   var newestRow;
-  bulkWriteRows.forEach(writeRow => {
+  var rowAmount = bulkWriteRows.length;
+  var _loop = function () {
+    var writeRow = bulkWriteRows[i];
     var id = writeRow.document[primaryPath];
     var documentInDb = docsByIdIsMap ? docsInDb.get(id) : docsInDb[id];
     var attachmentError;
@@ -213,7 +216,7 @@ bulkWriteRows, context) {
           documentInDb
         };
         errors[id] = err;
-        return;
+        return "continue";
       }
 
       // handle attachments data
@@ -317,7 +320,11 @@ bulkWriteRows, context) {
         endTime: (0, _utils.now)()
       });
     }
-  });
+  };
+  for (var i = 0; i < rowAmount; i++) {
+    var _ret = _loop();
+    if (_ret === "continue") continue;
+  }
   return {
     bulkInsertDocs,
     bulkUpdateDocs,

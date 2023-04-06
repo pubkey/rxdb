@@ -4,6 +4,10 @@
 export declare function nextTick(): Promise<void>;
 export declare function promiseWait(ms?: number): Promise<void>;
 export declare function toPromise<T>(maybePromise: Promise<T> | T): Promise<T>;
+/**
+ * Reusing resolved promises has a better
+ * performance than creating new ones each time.
+ */
 export declare const PROMISE_RESOLVE_TRUE: Promise<true>;
 export declare const PROMISE_RESOLVE_FALSE: Promise<false>;
 export declare const PROMISE_RESOLVE_NULL: Promise<null>;

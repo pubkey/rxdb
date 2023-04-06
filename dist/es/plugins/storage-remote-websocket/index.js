@@ -1,6 +1,6 @@
 import { Subject } from 'rxjs';
-import { getFromMapOrThrow, randomCouchString } from '../../plugins/utils';
-import { getWebSocket, startSocketServer } from '../replication-websocket';
+import { PROMISE_RESOLVE_VOID, getFromMapOrThrow } from '../../plugins/utils';
+import { createWebSocketClient, startSocketServer } from '../replication-websocket';
 import { exposeRxStorageRemote } from '../storage-remote/remote';
 import { getRxStorageRemote } from '../storage-remote/rx-storage-remote';
 import { createErrorAnswer } from '../storage-remote/storage-remote-helpers';
@@ -47,19 +47,26 @@ export function startRxStorageRemoteWebsocketServer(options) {
   };
 }
 export function getRxStorageRemoteWebsocket(options) {
-  var identifier = [options.url, 'rx-remote-storage-websocket', options.disableCache ? randomCouchString() : ''].join('');
-  var messages$ = new Subject();
-  var websocketClientPromise = getWebSocket(options.url, identifier);
+  var identifier = [options.url, 'rx-remote-storage-websocket'].join('');
   var storage = getRxStorageRemote({
     identifier,
     statics: options.statics,
-    messages$,
-    send(msg) {
-      return websocketClientPromise.then(websocketClient => websocketClient.socket.send(JSON.stringify(msg)));
+    mode: options.mode,
+    async messageChannelCreator() {
+      var messages$ = new Subject();
+      var websocketClient = await createWebSocketClient(options.url);
+      websocketClient.message$.subscribe(msg => messages$.next(msg));
+      return {
+        messages$,
+        send(msg) {
+          return websocketClient.socket.send(JSON.stringify(msg));
+        },
+        close() {
+          websocketClient.socket.close();
+          return PROMISE_RESOLVE_VOID;
+        }
+      };
     }
-  });
-  websocketClientPromise.then(websocketClient => {
-    websocketClient.message$.subscribe(msg => messages$.next(msg));
   });
   return storage;
 }

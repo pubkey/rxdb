@@ -130,7 +130,8 @@ function getIndexStringLength(schema, index) {
 }
 function getPrimaryKeyFromIndexableString(indexableString, primaryKeyLength) {
   var paddedPrimaryKey = indexableString.slice(primaryKeyLength * -1);
-  var primaryKey = paddedPrimaryKey.trimEnd();
+  // we can safely trim here because the primary key is not allowed to start or end with a space char.
+  var primaryKey = paddedPrimaryKey.trim();
   return primaryKey;
 }
 function getNumberIndexString(parsedLengths, fieldValue) {

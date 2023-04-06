@@ -6,7 +6,6 @@ Object.defineProperty(exports, "__esModule", {
 exports.RXJS_SHARE_REPLAY_DEFAULTS = void 0;
 exports.ensureInteger = ensureInteger;
 exports.ensureNotFalsy = ensureNotFalsy;
-exports.getFromMapOrThrow = getFromMapOrThrow;
 exports.runXTimes = runXTimes;
 function runXTimes(xTimes, fn) {
   new Array(xTimes).fill(0).forEach((_v, idx) => fn(idx));
@@ -22,13 +21,6 @@ function ensureInteger(obj) {
     throw new Error('ensureInteger() is falsy');
   }
   return obj;
-}
-function getFromMapOrThrow(map, key) {
-  var val = map.get(key);
-  if (typeof val === 'undefined') {
-    throw new Error('missing value from map ' + key);
-  }
-  return val;
 }
 
 /**

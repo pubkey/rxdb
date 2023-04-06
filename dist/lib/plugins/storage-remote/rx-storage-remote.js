@@ -7,10 +7,11 @@ exports.RxStorageRemote = exports.RxStorageInstanceRemote = void 0;
 exports.getRxStorageRemote = getRxStorageRemote;
 var _rxjs = require("rxjs");
 var _utils = require("../../plugins/utils");
+var _messageChannelCache = require("./message-channel-cache");
 var RxStorageRemote = /*#__PURE__*/function () {
   function RxStorageRemote(settings) {
     this.name = 'remote';
-    this.requestIdSeed = (0, _utils.randomCouchString)(10);
+    this.seed = (0, _utils.randomCouchString)(10);
     this.lastRequestId = 0;
     this.settings = settings;
     this.statics = settings.statics;
@@ -18,13 +19,25 @@ var RxStorageRemote = /*#__PURE__*/function () {
   var _proto = RxStorageRemote.prototype;
   _proto.getRequestId = function getRequestId() {
     var newId = this.lastRequestId++;
-    return this.requestIdSeed + '|' + newId;
+    return this.seed + '|' + newId;
   };
   _proto.createStorageInstance = async function createStorageInstance(params) {
     var connectionId = 'c|' + this.getRequestId();
+    var cacheKeys = ['mode-' + this.settings.mode];
+    switch (this.settings.mode) {
+      case 'collection':
+        cacheKeys.push('collection-' + params.collectionName);
+      // eslint-disable-next-line no-fallthrough
+      case 'database':
+        cacheKeys.push('database-' + params.databaseName);
+      // eslint-disable-next-line no-fallthrough
+      case 'storage':
+        cacheKeys.push('seed-' + this.seed);
+    }
+    var messageChannel = await (0, _messageChannelCache.getMessageChannel)(this.settings, cacheKeys);
     var requestId = this.getRequestId();
-    var waitForOkPromise = (0, _rxjs.firstValueFrom)(this.settings.messages$.pipe((0, _rxjs.filter)(msg => msg.answerTo === requestId)));
-    this.settings.send({
+    var waitForOkPromise = (0, _rxjs.firstValueFrom)(messageChannel.messages$.pipe((0, _rxjs.filter)(msg => msg.answerTo === requestId)));
+    messageChannel.send({
       connectionId,
       method: 'create',
       requestId,
@@ -36,14 +49,16 @@ var RxStorageRemote = /*#__PURE__*/function () {
     }
     return new RxStorageInstanceRemote(this, params.databaseName, params.collectionName, params.schema, {
       params,
-      connectionId
+      connectionId,
+      messageChannel
     }, params.options);
   };
   _proto.customRequest = async function customRequest(data) {
+    var messageChannel = await this.settings.messageChannelCreator();
     var requestId = this.getRequestId();
     var connectionId = 'custom|request|' + requestId;
-    var waitForAnswerPromise = (0, _rxjs.firstValueFrom)(this.settings.messages$.pipe((0, _rxjs.filter)(msg => msg.answerTo === requestId)));
-    this.settings.send({
+    var waitForAnswerPromise = (0, _rxjs.firstValueFrom)(messageChannel.messages$.pipe((0, _rxjs.filter)(msg => msg.answerTo === requestId)));
+    messageChannel.send({
       connectionId,
       method: 'custom',
       requestId,
@@ -51,11 +66,13 @@ var RxStorageRemote = /*#__PURE__*/function () {
     });
     var response = await waitForAnswerPromise;
     if (response.error) {
+      await messageChannel.close();
       throw new Error('could not run customRequest(): ' + JSON.stringify({
         data,
         error: response.error
       }));
     } else {
+      await messageChannel.close();
       return response.return;
     }
   };
@@ -74,7 +91,7 @@ var RxStorageInstanceRemote = /*#__PURE__*/function () {
     this.schema = schema;
     this.internals = internals;
     this.options = options;
-    this.messages$ = this.storage.settings.messages$.pipe((0, _rxjs.filter)(msg => msg.connectionId === this.internals.connectionId));
+    this.messages$ = this.internals.messageChannel.messages$.pipe((0, _rxjs.filter)(msg => msg.connectionId === this.internals.connectionId));
     this.subs.push(this.messages$.subscribe(msg => {
       if (msg.method === 'changeStream') {
         this.changes$.next(msg.return);
@@ -94,7 +111,7 @@ var RxStorageInstanceRemote = /*#__PURE__*/function () {
       method: methodName,
       params
     };
-    this.storage.settings.send(message);
+    this.internals.messageChannel.send(message);
     var response = await responsePromise;
     if (response.error) {
       throw new Error('could not requestRemote: ' + JSON.stringify({
@@ -138,10 +155,12 @@ var RxStorageInstanceRemote = /*#__PURE__*/function () {
     this.subs.forEach(sub => sub.unsubscribe());
     this.changes$.complete();
     await this.requestRemote('close', []);
+    await (0, _messageChannelCache.closeMessageChannel)(this.internals.messageChannel);
   };
   _proto2.remove = async function remove() {
     this.closed = true;
     await this.requestRemote('remove', []);
+    await (0, _messageChannelCache.closeMessageChannel)(this.internals.messageChannel);
   };
   _proto2.conflictResultionTasks = function conflictResultionTasks() {
     return this.conflicts$;
@@ -153,6 +172,9 @@ var RxStorageInstanceRemote = /*#__PURE__*/function () {
 }();
 exports.RxStorageInstanceRemote = RxStorageInstanceRemote;
 function getRxStorageRemote(settings) {
-  return new RxStorageRemote(settings);
+  var withDefaults = Object.assign({
+    mode: 'storage'
+  }, settings);
+  return new RxStorageRemote(withDefaults);
 }
 //# sourceMappingURL=rx-storage-remote.js.map
