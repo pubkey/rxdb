@@ -242,14 +242,16 @@ export function setDefaultStorage(storageKey: string) {
                 getStorage: () => {
                     return getRxStorageRemoteWebsocket({
                         statics: RxStorageDefaultStatics,
-                        url: 'ws://localhost:18007'
+                        url: 'ws://localhost:18007',
+                        mode: 'storage'
                     });
                 },
                 getPerformanceStorage() {
                     return {
                         storage: getRxStorageRemoteWebsocket({
                             statics: RxStorageDefaultStatics,
-                            url: 'ws://localhost:18007'
+                            url: 'ws://localhost:18007',
+                            mode: 'storage'
                         }),
                         description: 'remote+dexie+fake-indexeddb'
                     };

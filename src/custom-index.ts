@@ -177,7 +177,7 @@ export function getPrimaryKeyFromIndexableString(
     primaryKeyLength: number
 ): string {
     const paddedPrimaryKey = indexableString.slice(primaryKeyLength * -1);
-    // we can savely trim here because the primary key is not allowed to start or end with a space char.
+    // we can safely trim here because the primary key is not allowed to start or end with a space char.
     const primaryKey = paddedPrimaryKey.trim();
     return primaryKey;
 }

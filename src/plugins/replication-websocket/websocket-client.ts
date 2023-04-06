@@ -8,8 +8,6 @@ import ReconnectingWebSocket from 'reconnecting-websocket';
 import IsomorphicWebSocket from 'isomorphic-ws';
 import {
     errorToPlainJson,
-    getFromMapOrCreate,
-    getFromMapOrThrow,
     randomCouchString,
     toArray
 } from '../../plugins/utils';
@@ -21,17 +19,14 @@ import {
     BehaviorSubject
 } from 'rxjs';
 import {
-    RxDatabase,
     RxError,
     RxReplicationWriteToMasterRow
 } from '../../types';
 import { newRxError } from '../../rx-error';
 
-export type WebsocketWithRefCount = {
+export type WebsocketClient = {
     url: string;
     socket: ReconnectingWebSocket;
-    refCount: number;
-    openPromise: Promise<void>;
     connected$: BehaviorSubject<boolean>;
     message$: Subject<any>;
     error$: Subject<RxError>;
@@ -44,7 +39,7 @@ export type WebsocketWithRefCount = {
  * so we directly check the correctness in RxDB to ensure that we can
  * throw a helpful error.
  */
-function ensureIsWebsocket(w: typeof IsomorphicWebSocket) {
+export function ensureIsWebsocket(w: typeof IsomorphicWebSocket) {
     const is = typeof w !== 'undefined' && !!w && w.CLOSING === 2;
     if (!is) {
         console.dir(w);
@@ -52,107 +47,60 @@ function ensureIsWebsocket(w: typeof IsomorphicWebSocket) {
     }
 }
 
-/**
- * Reuse the same socket even when multiple
- * collection replicate with the same server at once.
- */
-export const WEBSOCKET_BY_CACHE_KEY: Map<string, WebsocketWithRefCount> = new Map();
-export async function getWebSocket(
-    url: string,
-    /**
-     * The value of RxDatabase.token.
-     */
-    databaseToken: string
-): Promise<WebsocketWithRefCount> {
-    /**
-     * Also use the database token as cache-key
-     * to make it easier to test and debug
-     * multi-instance setups.
-     */
-    const cacheKey = url + '|||' + databaseToken;
 
-
-    const has = getFromMapOrCreate(
-        WEBSOCKET_BY_CACHE_KEY,
-        cacheKey,
-        () => {
-            ensureIsWebsocket(IsomorphicWebSocket);
-            const wsClient = new ReconnectingWebSocket(
-                url,
-                [],
-                {
-                    WebSocket: IsomorphicWebSocket
-                }
-            );
-
-            const connected$ = new BehaviorSubject<boolean>(false);
-            const openPromise = new Promise<void>(res => {
-                wsClient.onopen = () => {
-                    connected$.next(true);
-                    res();
-                };
-            });
-            wsClient.onclose = () => {
-                connected$.next(false);
-            };
-
-            const message$ = new Subject<any>();
-            wsClient.onmessage = (messageObj) => {
-                const message = JSON.parse(messageObj.data);
-                message$.next(message);
-            };
-
-            const error$ = new Subject<any>();
-            wsClient.onerror = (err) => {
-                const emitError = newRxError('RC_STREAM', {
-                    errors: toArray(err).map((er: any) => errorToPlainJson(er)),
-                    direction: 'pull'
-                });
-                error$.next(emitError);
-            };
-
-
-            return {
-                url,
-                socket: wsClient,
-                openPromise,
-                refCount: 1,
-                connected$,
-                message$,
-                error$
-            };
-        },
-        (value) => {
-            value.refCount = value.refCount + 1;
+export async function createWebSocketClient(url: string): Promise<WebsocketClient> {
+    ensureIsWebsocket(IsomorphicWebSocket);
+    const wsClient = new ReconnectingWebSocket(
+        url,
+        [],
+        {
+            WebSocket: IsomorphicWebSocket
         }
     );
-    await has.openPromise;
-    return has;
+
+    const connected$ = new BehaviorSubject<boolean>(false);
+    await new Promise<void>(res => {
+        wsClient.onopen = () => {
+            connected$.next(true);
+            res();
+        };
+    });
+    wsClient.onclose = () => {
+        connected$.next(false);
+    };
+
+    const message$ = new Subject<any>();
+    wsClient.onmessage = (messageObj) => {
+        const message = JSON.parse(messageObj.data);
+        message$.next(message);
+    };
+
+    const error$ = new Subject<any>();
+    wsClient.onerror = (err) => {
+        const emitError = newRxError('RC_STREAM', {
+            errors: toArray(err).map((er: any) => errorToPlainJson(er)),
+            direction: 'pull'
+        });
+        error$.next(emitError);
+    };
+
+
+    return {
+        url,
+        socket: wsClient,
+        connected$,
+        message$,
+        error$
+    };
+
 }
-
-export function removeWebSocketRef(
-    url: string,
-    database: RxDatabase
-) {
-    const cacheKey = url + '|||' + database.token;
-    const obj = getFromMapOrThrow(WEBSOCKET_BY_CACHE_KEY, cacheKey);
-    obj.refCount = obj.refCount - 1;
-    if (obj.refCount === 0) {
-        WEBSOCKET_BY_CACHE_KEY.delete(cacheKey);
-        obj.connected$.complete();
-        obj.socket.close();
-    }
-}
-
-
 
 export async function replicateWithWebsocketServer<RxDocType, CheckpointType>(
     options: WebsocketClientOptions<RxDocType>
 ): Promise<RxReplicationState<RxDocType, CheckpointType>> {
-    const socketState = await getWebSocket(options.url, options.collection.database.token);
-    const wsClient = socketState.socket;
-
-    const messages$ = socketState.message$;
+    const websocketClient = await createWebSocketClient(options.url);
+    const wsClient = websocketClient.socket;
+    const messages$ = websocketClient.message$;
 
     let requestCounter = 0;
     const requestFlag = randomCouchString(10);
@@ -209,9 +157,9 @@ export async function replicateWithWebsocketServer<RxDocType, CheckpointType>(
         }
     });
 
-    socketState.error$.subscribe(err => replicationState.subjects.error.next(err));
+    websocketClient.error$.subscribe(err => replicationState.subjects.error.next(err));
 
-    socketState.connected$.subscribe(isConnected => {
+    websocketClient.connected$.subscribe(isConnected => {
         if (isConnected) {
             /**
              * When the client goes offline and online again,
@@ -235,6 +183,6 @@ export async function replicateWithWebsocketServer<RxDocType, CheckpointType>(
         }
     });
 
-    options.collection.onDestroy.push(() => removeWebSocketRef(options.url, options.collection.database));
+    options.collection.onDestroy.push(() => websocketClient.socket.close());
     return replicationState;
 }
