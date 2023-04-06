@@ -104,8 +104,26 @@ config.parallel('rx-storage-remote.test.ts', () => {
                 storageInstanceB.internals.messageChannel
             );
 
+
             await storageInstanceA.close();
             await storageInstanceB.close();
+
+            // even after closing all and reopnening a new one, it must be the same instance.
+            const storageInstanceC = await getStorage(port).createStorageInstance({
+                databaseInstanceToken: randomCouchString(10),
+                databaseName: randomCouchString(10),
+                collectionName: 'human',
+                devMode: true,
+                multiInstance: false,
+                options: {},
+                schema: fillWithDefaultSettings(schemas.human)
+            });
+            assert.strictEqual(
+                storageInstanceA.internals.messageChannel,
+                storageInstanceC.internals.messageChannel
+            );
+
+            await storageInstanceC.close();
             await colServer.database.destroy();
         });
         it('mode: storage', async () => {

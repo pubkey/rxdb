@@ -13,6 +13,7 @@ export type RemoteMessageChannelCacheItem = {
     cacheKey: string;
     messageChannel: Promise<RemoteMessageChannel>;
     refCount: number;
+    keepAlive: boolean;
 };
 
 export const MESSAGE_CHANNEL_CACHE_BY_IDENTIFIER = new Map<string, Map<string, RemoteMessageChannelCacheItem>>();
@@ -30,7 +31,8 @@ function getMessageChannelCache(
 
 export function getMessageChannel(
     settings: RxStorageRemoteSettings,
-    cacheKeys: string[]
+    cacheKeys: string[],
+    keepAlive: boolean = false
 ): Promise<RemoteMessageChannel> {
     const cacheKey = getCacheKey(settings, cacheKeys);
     const cacheItem = getFromMapOrCreate(
@@ -40,6 +42,7 @@ export function getMessageChannel(
             const newCacheItem: RemoteMessageChannelCacheItem = {
                 identifier: settings.identifier,
                 cacheKey,
+                keepAlive,
                 refCount: 1,
                 messageChannel: settings.messageChannelCreator()
                     .then((messageChannel) => {
@@ -62,7 +65,7 @@ export function closeMessageChannel(
 ): Promise<void> {
     const cacheItem = getFromMapOrThrow(CACHE_ITEM_BY_MESSAGE_CHANNEL, messageChannel);
     cacheItem.refCount = cacheItem.refCount - 1;
-    if (cacheItem.refCount === 0) {
+    if (cacheItem.refCount === 0 && !cacheItem.keepAlive) {
         getMessageChannelCache(cacheItem.identifier).delete(cacheItem.cacheKey);
         return messageChannel.close();
     } else {

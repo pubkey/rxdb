@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- FIX(remote-storage) `mode: 'one'` option must reuse the RemoteMessageChannel
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
