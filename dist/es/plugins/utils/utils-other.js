@@ -13,13 +13,6 @@ export function ensureInteger(obj) {
   }
   return obj;
 }
-export function getFromMapOrThrow(map, key) {
-  var val = map.get(key);
-  if (typeof val === 'undefined') {
-    throw new Error('missing value from map ' + key);
-  }
-  return val;
-}
 
 /**
  * Using shareReplay() without settings will not unsubscribe

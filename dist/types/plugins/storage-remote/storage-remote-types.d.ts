@@ -18,15 +18,35 @@ export type MessageToRemote = {
     any[] | // used to call RxStorageInstance methods
     any;
 };
+/**
+ * A message channel represents a single
+ * channel that is able to communicate with the remote.
+ * For example a single websocket connection or WebWorker instance.
+ * The storage must be able to open and close MessageChannels
+ * according to the modes settings.
+ */
+export type RemoteMessageChannel = {
+    send(msg: MessageToRemote): void;
+    messages$: Observable<MessageFromRemote>;
+    close(): Promise<void>;
+};
 export type RxStorageRemoteSettings = {
     identifier: string;
     statics: RxStorageStatics;
-    send(msg: MessageToRemote): void;
-    messages$: Observable<MessageFromRemote>;
+    /**
+     * There are different modes
+     * that determine how many message channels are used.
+     * These modes can have different performance patterns.
+     *
+     * [default='storage']
+     */
+    mode?: 'one' | 'storage' | 'database' | 'collection';
+    messageChannelCreator: () => Promise<RemoteMessageChannel>;
 };
 export type RxStorageRemoteInternals = {
     params: RxStorageInstanceCreationParams<any, any>;
     connectionId: string;
+    messageChannel: RemoteMessageChannel;
 };
 export type RxStorageRemoteExposeSettingsBase = {
     send(msg: MessageFromRemote): void;

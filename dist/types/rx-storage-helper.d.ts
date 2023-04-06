@@ -25,6 +25,7 @@ export declare function throwIfIsStorageWriteError<RxDocType>(collection: RxColl
  * and which events must be emitted and which documents cause a conflict
  * and must not be written.
  * Used as helper inside of some RxStorage implementations.
+ * @hotPath The performance of this function is critical
  */
 export declare function categorizeBulkWriteRows<RxDocType>(storageInstance: RxStorageInstance<any, any, any>, primaryPath: StringKeys<RxDocType>, 
 /**

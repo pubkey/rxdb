@@ -1,3 +1,10 @@
+export function getFromMapOrThrow(map, key) {
+  var val = map.get(key);
+  if (typeof val === 'undefined') {
+    throw new Error('missing value from map ' + key);
+  }
+  return val;
+}
 export function getFromMapOrCreate(map, index, creator, ifWasThere) {
   var value = map.get(index);
   if (typeof value === 'undefined') {

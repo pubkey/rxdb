@@ -2279,23 +2279,24 @@
 The remote part could be on another JavaScript process or even on a different host machine.
 The remote storage plugin is used in many RxDB plugins like the <a href="rx-storage-worker.html">worker</a> or the <a href="electron.html">electron</a> plugin.</p>
 <h2 id="usage">Usage</h2>
-<p>The remote storage communicates over a message channel which has to implement the <code>messages$</code> observable and a <code>send()</code> function on both sides.</p>
+<p>The remote storage communicates over a message channel which has to implement the <code>messageChannelCreator</code> function which returns an object that has a <code>messages$</code> observable and a <code>send()</code> function on both sides and a <code>close()</code> function that closes the RemoteMessageChannel.</p>
 <pre><code class="lang-ts"><span class="hljs-comment">// on the client</span>
 <span class="hljs-keyword">import</span> { RxStorageDefaultStatics } from <span class="hljs-string">&apos;rxdb&apos;</span>;
 <span class="hljs-keyword">import</span> { getRxStorageRemote } from <span class="hljs-string">&apos;rxdb/plugins/storage-remote&apos;</span>;
 <span class="hljs-keyword">const</span> storage = getRxStorageRemote({
     identifier: <span class="hljs-string">&apos;my-id&apos;</span>,
     statics: RxStorageDefaultStatics,
-    messages$: <span class="hljs-keyword">new</span> Subject(),
-    send(msg) {
-        <span class="hljs-comment">// send to remote storage</span>
-    }
+    mode: <span class="hljs-string">&apos;storage&apos;</span>,
+    messageChannelCreator: () =&gt; Promise.resolve({
+        messages$: <span class="hljs-keyword">new</span> Subject(),
+        send(msg) {
+            <span class="hljs-comment">// send to remote storage</span>
+        }
+    })
 });
 <span class="hljs-keyword">const</span> myDb = await createRxDatabase({
     storage
 });
-
-
 
 <span class="hljs-comment">// on the remote</span>
 <span class="hljs-keyword">import</span> { getRxStorageDexie } from <span class="hljs-string">&apos;rxdb/plugins/storage-dexie&apos;</span>;

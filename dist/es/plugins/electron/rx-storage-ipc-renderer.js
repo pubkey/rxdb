@@ -1,21 +1,31 @@
 import { Subject } from 'rxjs';
 import { getRxStorageRemote } from '../storage-remote';
 import { IPC_RENDERER_KEY_PREFIX } from './electron-helper';
+import { PROMISE_RESOLVE_VOID } from '../utils';
 export function getRxStorageIpcRenderer(settings) {
   var channelId = [IPC_RENDERER_KEY_PREFIX, settings.key].join('|');
-  var messages$ = new Subject();
-  settings.ipcRenderer.on(channelId, (_event, message) => {
-    messages$.next(message);
-  });
-  settings.ipcRenderer.postMessage(channelId, false);
-  var send = msg => {
-    settings.ipcRenderer.postMessage(channelId, msg);
-  };
   var storage = getRxStorageRemote({
     identifier: 'electron-ipc-renderer',
     statics: settings.statics,
-    messages$,
-    send
+    mode: settings.mode,
+    messageChannelCreator() {
+      var messages$ = new Subject();
+      var listener = (_event, message) => {
+        messages$.next(message);
+      };
+      settings.ipcRenderer.on(channelId, listener);
+      settings.ipcRenderer.postMessage(channelId, false);
+      return Promise.resolve({
+        messages$,
+        send(msg) {
+          settings.ipcRenderer.postMessage(channelId, msg);
+        },
+        close() {
+          settings.ipcRenderer.removeListener(channelId, listener);
+          return PROMISE_RESOLVE_VOID;
+        }
+      });
+    }
   });
   return storage;
 }

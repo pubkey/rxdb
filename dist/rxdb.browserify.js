@@ -251,7 +251,8 @@ function getIndexStringLength(schema, index) {
 }
 function getPrimaryKeyFromIndexableString(indexableString, primaryKeyLength) {
   var paddedPrimaryKey = indexableString.slice(primaryKeyLength * -1);
-  var primaryKey = paddedPrimaryKey.trimEnd();
+  // we can safely trim here because the primary key is not allowed to start or end with a space char.
+  var primaryKey = paddedPrimaryKey.trim();
   return primaryKey;
 }
 function getNumberIndexString(parsedLengths, fieldValue) {
@@ -2156,6 +2157,14 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.getFromMapOrCreate = getFromMapOrCreate;
+exports.getFromMapOrThrow = getFromMapOrThrow;
+function getFromMapOrThrow(map, key) {
+  var val = map.get(key);
+  if (typeof val === 'undefined') {
+    throw new Error('missing value from map ' + key);
+  }
+  return val;
+}
 function getFromMapOrCreate(map, index, creator, ifWasThere) {
   var value = map.get(index);
   if (typeof value === 'undefined') {
@@ -2714,7 +2723,6 @@ Object.defineProperty(exports, "__esModule", {
 exports.RXJS_SHARE_REPLAY_DEFAULTS = void 0;
 exports.ensureInteger = ensureInteger;
 exports.ensureNotFalsy = ensureNotFalsy;
-exports.getFromMapOrThrow = getFromMapOrThrow;
 exports.runXTimes = runXTimes;
 function runXTimes(xTimes, fn) {
   new Array(xTimes).fill(0).forEach((_v, idx) => fn(idx));
@@ -2730,13 +2738,6 @@ function ensureInteger(obj) {
     throw new Error('ensureInteger() is falsy');
   }
   return obj;
-}
-function getFromMapOrThrow(map, key) {
-  var val = map.get(key);
-  if (typeof val === 'undefined') {
-    throw new Error('missing value from map ' + key);
-  }
-  return val;
 }
 
 /**
@@ -2781,6 +2782,11 @@ function toPromise(maybePromise) {
     return Promise.resolve(maybePromise);
   }
 }
+
+/**
+ * Reusing resolved promises has a better
+ * performance than creating new ones each time.
+ */
 var PROMISE_RESOLVE_TRUE = Promise.resolve(true);
 exports.PROMISE_RESOLVE_TRUE = PROMISE_RESOLVE_TRUE;
 var PROMISE_RESOLVE_FALSE = Promise.resolve(false);
@@ -2788,15 +2794,26 @@ exports.PROMISE_RESOLVE_FALSE = PROMISE_RESOLVE_FALSE;
 var PROMISE_RESOLVE_NULL = Promise.resolve(null);
 exports.PROMISE_RESOLVE_NULL = PROMISE_RESOLVE_NULL;
 var PROMISE_RESOLVE_VOID = Promise.resolve();
+
+/**
+ * If multiple operations wait for an requestIdlePromise
+ * we do not want them to resolve all at the same time.
+ * So we have to queue the calls.
+ */
 exports.PROMISE_RESOLVE_VOID = PROMISE_RESOLVE_VOID;
+var idlePromiseQueue = PROMISE_RESOLVE_VOID;
 function requestIdlePromise(timeout = null) {
-  if (typeof window === 'object' && window['requestIdleCallback']) {
-    return new Promise(res => window['requestIdleCallback'](res, {
-      timeout
-    }));
-  } else {
-    return promiseWait(0);
-  }
+  return new Promise(res => {
+    idlePromiseQueue = idlePromiseQueue.then(() => {
+      if (typeof window === 'object' && window['requestIdleCallback']) {
+        window['requestIdleCallback'](res, {
+          timeout
+        });
+      } else {
+        promiseWait(0).then(res);
+      }
+    });
+  });
 }
 
 /**
@@ -2891,7 +2908,7 @@ exports.RXDB_VERSION = void 0;
 /**
  * This file is replaced in the 'npm run build:version' script.
  */
-var RXDB_VERSION = '14.6.0';
+var RXDB_VERSION = '14.6.1';
 exports.RXDB_VERSION = RXDB_VERSION;
 
 },{}],28:[function(require,module,exports){
@@ -8223,6 +8240,7 @@ function throwIfIsStorageWriteError(collection, documentId, writeData, error) {
  * and which events must be emitted and which documents cause a conflict
  * and must not be written.
  * Used as helper inside of some RxStorage implementations.
+ * @hotPath The performance of this function is critical
  */
 function categorizeBulkWriteRows(storageInstance, primaryPath,
 /**
@@ -8258,7 +8276,9 @@ bulkWriteRows, context) {
   var startTime = (0, _utils.now)();
   var docsByIdIsMap = typeof docsInDb.get === 'function';
   var newestRow;
-  bulkWriteRows.forEach(writeRow => {
+  var rowAmount = bulkWriteRows.length;
+  var _loop = function () {
+    var writeRow = bulkWriteRows[i];
     var id = writeRow.document[primaryPath];
     var documentInDb = docsByIdIsMap ? docsInDb.get(id) : docsInDb[id];
     var attachmentError;
@@ -8327,7 +8347,7 @@ bulkWriteRows, context) {
           documentInDb
         };
         errors[id] = err;
-        return;
+        return "continue";
       }
 
       // handle attachments data
@@ -8431,7 +8451,11 @@ bulkWriteRows, context) {
         endTime: (0, _utils.now)()
       });
     }
-  });
+  };
+  for (var i = 0; i < rowAmount; i++) {
+    var _ret = _loop();
+    if (_ret === "continue") continue;
+  }
   return {
     bulkInsertDocs,
     bulkUpdateDocs,

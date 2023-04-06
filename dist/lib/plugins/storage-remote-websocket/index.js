@@ -70,19 +70,26 @@ function startRxStorageRemoteWebsocketServer(options) {
   };
 }
 function getRxStorageRemoteWebsocket(options) {
-  var identifier = [options.url, 'rx-remote-storage-websocket', options.disableCache ? (0, _utils.randomCouchString)() : ''].join('');
-  var messages$ = new _rxjs.Subject();
-  var websocketClientPromise = (0, _replicationWebsocket.getWebSocket)(options.url, identifier);
+  var identifier = [options.url, 'rx-remote-storage-websocket'].join('');
   var storage = (0, _rxStorageRemote.getRxStorageRemote)({
     identifier,
     statics: options.statics,
-    messages$,
-    send(msg) {
-      return websocketClientPromise.then(websocketClient => websocketClient.socket.send(JSON.stringify(msg)));
+    mode: options.mode,
+    async messageChannelCreator() {
+      var messages$ = new _rxjs.Subject();
+      var websocketClient = await (0, _replicationWebsocket.createWebSocketClient)(options.url);
+      websocketClient.message$.subscribe(msg => messages$.next(msg));
+      return {
+        messages$,
+        send(msg) {
+          return websocketClient.socket.send(JSON.stringify(msg));
+        },
+        close() {
+          websocketClient.socket.close();
+          return _utils.PROMISE_RESOLVE_VOID;
+        }
+      };
     }
-  });
-  websocketClientPromise.then(websocketClient => {
-    websocketClient.message$.subscribe(msg => messages$.next(msg));
   });
   return storage;
 }
