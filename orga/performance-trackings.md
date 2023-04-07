@@ -1309,3 +1309,32 @@ performanceResult: 13.83
 AFTER3:
 performanceResult: 12.86
 performanceResult: 12.33
+
+
+
+
+### array-push-at-sort-position
+
+#### reuse length variable
+
+BEFORE:
+2.817362993955612ms
+2.7930039912462234ms
+2.702904000878334ms
+
+AFTER (reuse length variable):
+2.5128260105848312ms
+2.5788690000772476ms
+
+
+#### set low-value
+BEFORE:
+time for "merge sorted arrays": 872.4071319997311ms
+compareCounts: 1431962
+
+
+
+
+AFTER (using custom low index):
+time for "merge sorted arrays": 847.3687120079994ms
+compareCounts: 1261729

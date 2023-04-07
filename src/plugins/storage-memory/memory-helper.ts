@@ -66,7 +66,7 @@ export function putWriteRowToState<RxDocType>(
         const byIndex = stateByIndex[i];
         const docsWithIndex = byIndex.docsWithIndex;
         const newIndexString = byIndex.getIndexableString(row.document as any);
-        const [, insertPosition] = pushAtSortPosition(
+        const insertPosition = pushAtSortPosition(
             docsWithIndex,
             {
                 id: docId,
@@ -74,7 +74,7 @@ export function putWriteRowToState<RxDocType>(
                 indexString: newIndexString
             },
             sortByIndexStringComparator,
-            true
+            0
         );
 
         /**
