@@ -3,6 +3,7 @@
 
 <!-- CHANGELOG NEWEST -->
 - FIX(remote-storage) `mode: 'one'` option must reuse the RemoteMessageChannel
+- IMPROVE performance of index creation on some storages.
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
