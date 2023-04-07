@@ -1338,3 +1338,19 @@ compareCounts: 1431962
 AFTER (using custom low index):
 time for "merge sorted arrays": 847.3687120079994ms
 compareCounts: 1261729
+
+
+## Improve getIndexableStringMonad()()
+
+BEFORE:
+91.24348497390747
+86.09021002054214
+89.61336600780487
+87.5959959924221
+87.1041649878025
+
+
+AFTER (fix getNumberIndexString()):
+76.63579297065735
+63.062547981739044
+80.47493699193001

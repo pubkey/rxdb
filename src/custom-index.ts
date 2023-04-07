@@ -206,14 +206,12 @@ export function getNumberIndexString(
         fieldValue = parsedLengths.maximum;
     }
 
-    let str: string = '';
     const nonDecimalsValueAsString = (Math.floor(fieldValue) - parsedLengths.roundedMinimum).toString();
-    str += nonDecimalsValueAsString.padStart(parsedLengths.nonDecimals, '0');
-
-    const splitByDecimalPoint = fieldValue.toString().split('.');
-    const decimalValueAsString = splitByDecimalPoint.length > 1 ? splitByDecimalPoint[1] : '0';
+    let str = nonDecimalsValueAsString.padStart(parsedLengths.nonDecimals, '0');
 
     if (parsedLengths.decimals > 0) {
+        const splitByDecimalPoint = fieldValue.toString().split('.');
+        const decimalValueAsString = splitByDecimalPoint.length > 1 ? splitByDecimalPoint[1] : '0';
         str += decimalValueAsString.padEnd(parsedLengths.decimals, '0');
     }
     return str;
