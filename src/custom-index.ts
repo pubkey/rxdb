@@ -2,6 +2,11 @@
  * For some RxStorage implementations,
  * we need to use our custom crafted indexes
  * so we can easily iterate over them. And sort plain arrays of document data.
+ *
+ * We really often have to craft an index string for a given document.
+ * Performance of everything in this file is very important
+ * which is why the code sometimes looks strange.
+ * Run performance tests before and after you touch anything here!
  */
 
 import { getSchemaByObjectPath } from './rx-schema-helper';
@@ -18,25 +23,32 @@ import {
 import { INDEX_MAX, INDEX_MIN } from './query-planner';
 
 
+/**
+ * Prepare all relevant information
+ * outside of the returned function
+ * from getIndexableStringMonad()
+ * to save performance when the returned
+ * function is called many times.
+ */
+type IndexMetaField<RxDocType> = {
+    // getValue() function
+    v: ObjectPathMonadFunction<RxDocType>;
+    // type
+    t: | 0 // string
+    | 1 // boolean
+    | 2 // number
+    ;
+    // maxLength
+    ml: number;
+    // parsed lengths (only on number fields)
+    pl: ParsedLengths | undefined;
+};
+
 export function getIndexMeta<RxDocType>(
     schema: RxJsonSchema<RxDocumentData<RxDocType>>,
     index: string[]
-) {
-    /**
-     * Prepare all relevant information
-     * outside of the returned function
-     * to save performance when the returned
-     * function is called many times.
-     */
-    const fieldNameProperties: {
-        fieldName: string;
-        schemaPart: JsonSchema;
-        /*
-         * Only in number fields.
-         */
-        parsedLengths?: ParsedLengths;
-        getValueFn: ObjectPathMonadFunction<RxDocType>;
-    }[] = index.map(fieldName => {
+): IndexMetaField<RxDocType>[] {
+    const fieldNameProperties: IndexMetaField<RxDocType>[] = index.map(fieldName => {
         const schemaPart = getSchemaByObjectPath(
             schema,
             fieldName
@@ -52,13 +64,21 @@ export function getIndexMeta<RxDocType>(
             );
         }
 
-        return {
-            fieldName,
-            schemaPart,
-            parsedLengths,
-            hasComplexPath: fieldName.includes('.'),
-            getValueFn: objectPathMonad(fieldName)
+        let typeId: IndexMetaField<RxDocType>['t'] = 2;
+        if (type === 'string') {
+            typeId = 0;
+        }
+        if (type === 'boolean') {
+            typeId = 1;
+        }
+
+        const ret: IndexMetaField<RxDocType> = {
+            v: objectPathMonad(fieldName),
+            t: typeId,
+            ml: schemaPart.maxLength ? schemaPart.maxLength : 0,
+            pl: parsedLengths
         };
+        return ret;
     });
     return fieldNameProperties;
 }
@@ -80,30 +100,31 @@ export function getIndexableStringMonad<RxDocType>(
     index: string[]
 ): (docData: RxDocumentData<RxDocType>) => string {
     const fieldNameProperties = getIndexMeta(schema, index);
+    const fieldNamePropertiesAmount = fieldNameProperties.length;
+
 
     /**
      * @hotPath Performance of this function is very critical!
      */
     const ret = function (docData: RxDocumentData<RxDocType>): string {
         let str = '';
-        for (let i = 0; i < fieldNameProperties.length; ++i) {
+        for (let i = 0; i < fieldNamePropertiesAmount; ++i) {
             const props = fieldNameProperties[i];
-            const schemaPart = props.schemaPart;
-            const type = schemaPart.type;
-            let fieldValue = props.getValueFn(docData);
-            if (type === 'string') {
+            const typeId = props.t;
+            let fieldValue = props.v(docData);
+            if (typeId === 0) {
                 // is string
                 if (!fieldValue) {
                     fieldValue = '';
                 }
-                str += fieldValue.padEnd(schemaPart.maxLength as number, ' ');
-            } else if (type === 'boolean') {
+                str += fieldValue.padEnd(props.ml, ' ');
+            } else if (typeId === 1) {
                 // is boolean
                 const boolToStr = fieldValue ? '1' : '0';
                 str += boolToStr;
             } else {
                 // is number
-                const parsedLengths = props.parsedLengths as ParsedLengths;
+                const parsedLengths = props.pl as ParsedLengths;
                 str += getNumberIndexString(
                     parsedLengths,
                     fieldValue
@@ -114,7 +135,6 @@ export function getIndexableStringMonad<RxDocType>(
     };
     return ret;
 }
-
 
 
 declare type ParsedLengths = {
@@ -155,15 +175,14 @@ export function getIndexStringLength<RxDocType>(
     const fieldNameProperties = getIndexMeta(schema, index);
     let length = 0;
     fieldNameProperties.forEach(props => {
-        const schemaPart = props.schemaPart;
-        const type = schemaPart.type;
+        const typeId = props.t;
 
-        if (type === 'string') {
-            length += schemaPart.maxLength as number;
-        } else if (type === 'boolean') {
+        if (typeId === 0) {
+            length += props.ml;
+        } else if (typeId === 1) {
             length += 1;
         } else {
-            const parsedLengths = props.parsedLengths as ParsedLengths;
+            const parsedLengths = props.pl as ParsedLengths;
             length = length + parsedLengths.nonDecimals + parsedLengths.decimals;
         }
 

@@ -37,26 +37,27 @@ export type ObjectPathMonadFunction<T, R = any> = (obj: T) => R;
 export function objectPathMonad<T, R = any>(objectPath: string): ObjectPathMonadFunction<T, R> {
     const split = objectPath.split('.');
 
+    // reuse this variable for better performance.
+    const splitLength = split.length;
+
     /**
      * Performance shortcut,
      * if no nested path is used,
      * directly return the field of the object.
      */
-    if (split.length === 1) {
+    if (splitLength === 1) {
         return (obj: T) => (obj as any)[objectPath];
     }
 
 
     return (obj: T) => {
         let currentVal: any = obj;
-        let t = 0;
-        while (t < split.length) {
-            const subPath = split[t];
+        for (let i = 0; i < splitLength; ++i) {
+            const subPath = split[i];
             currentVal = currentVal[subPath];
             if (typeof currentVal === 'undefined') {
                 return currentVal;
             }
-            t++;
         }
         return currentVal;
     };
