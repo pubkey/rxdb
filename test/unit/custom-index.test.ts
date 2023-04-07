@@ -3,7 +3,8 @@ import {
     clone,
     randomBoolean,
     randomNumber,
-    randomString
+    randomString,
+    wait
 } from 'async-test-util';
 import {
     getIndexableStringMonad,
@@ -19,6 +20,8 @@ import {
     ensureNotFalsy
 } from '../../';
 import { EXAMPLE_REVISION_1 } from '../helper/revisions';
+import * as schemas from '../helper/schemas';
+import * as schemaObjects from '../helper/schema-objects';
 import config from './config';
 
 config.parallel('custom-index.test.ts', () => {
@@ -253,6 +256,28 @@ config.parallel('custom-index.test.ts', () => {
                 )(doc as any);
                 assert.ok(strA);
                 strA.split('').forEach(char => assert.strictEqual(char, ' '));
+            });
+        });
+        describe('Performance', () => {
+            it('Run performance test', async () => {
+                const averageSchema = fillWithDefaultSettings(schemas.averageSchema());
+                const docsAmount = 20000;
+
+                const documents = new Array(docsAmount).fill(0).map(() => schemaObjects.averageSchema());
+                const fns = ensureNotFalsy(averageSchema.indexes).map(index => getIndexableStringMonad(averageSchema, index as any));
+                await wait(100);
+                const startTime = performance.now();
+                for (const fn of fns) {
+                    for (let i = 0; i < docsAmount; ++i) {
+                        const doc = documents[i];
+                        fn(doc as any);
+                    }
+                }
+                const endTime = performance.now();
+                const time = endTime - startTime;
+                assert.ok(time);
+                console.log('time: ' + time);
+                // process.exit();
             });
         });
     });
