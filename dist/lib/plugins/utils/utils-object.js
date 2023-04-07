@@ -35,24 +35,25 @@ function deepFreeze(o) {
 function objectPathMonad(objectPath) {
   var split = objectPath.split('.');
 
+  // reuse this variable for better performance.
+  var splitLength = split.length;
+
   /**
    * Performance shortcut,
    * if no nested path is used,
    * directly return the field of the object.
    */
-  if (split.length === 1) {
+  if (splitLength === 1) {
     return obj => obj[objectPath];
   }
   return obj => {
     var currentVal = obj;
-    var t = 0;
-    while (t < split.length) {
-      var subPath = split[t];
+    for (var i = 0; i < splitLength; ++i) {
+      var subPath = split[i];
       currentVal = currentVal[subPath];
       if (typeof currentVal === 'undefined') {
         return currentVal;
       }
-      t++;
     }
     return currentVal;
   };

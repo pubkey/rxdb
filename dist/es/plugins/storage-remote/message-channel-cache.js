@@ -4,12 +4,13 @@ var CACHE_ITEM_BY_MESSAGE_CHANNEL = new WeakMap();
 function getMessageChannelCache(identifier) {
   return getFromMapOrCreate(MESSAGE_CHANNEL_CACHE_BY_IDENTIFIER, identifier, () => new Map());
 }
-export function getMessageChannel(settings, cacheKeys) {
+export function getMessageChannel(settings, cacheKeys, keepAlive = false) {
   var cacheKey = getCacheKey(settings, cacheKeys);
   var cacheItem = getFromMapOrCreate(getMessageChannelCache(settings.identifier), cacheKey, () => {
     var newCacheItem = {
       identifier: settings.identifier,
       cacheKey,
+      keepAlive,
       refCount: 1,
       messageChannel: settings.messageChannelCreator().then(messageChannel => {
         CACHE_ITEM_BY_MESSAGE_CHANNEL.set(messageChannel, newCacheItem);
@@ -25,7 +26,7 @@ export function getMessageChannel(settings, cacheKeys) {
 export function closeMessageChannel(messageChannel) {
   var cacheItem = getFromMapOrThrow(CACHE_ITEM_BY_MESSAGE_CHANNEL, messageChannel);
   cacheItem.refCount = cacheItem.refCount - 1;
-  if (cacheItem.refCount === 0) {
+  if (cacheItem.refCount === 0 && !cacheItem.keepAlive) {
     getMessageChannelCache(cacheItem.identifier).delete(cacheItem.cacheKey);
     return messageChannel.close();
   } else {

@@ -2,15 +2,29 @@
  * For some RxStorage implementations,
  * we need to use our custom crafted indexes
  * so we can easily iterate over them. And sort plain arrays of document data.
+ *
+ * We really often have to craft an index string for a given document.
+ * Performance of everything in this file is very important
+ * which is why the code sometimes looks strange.
+ * Run performance tests before and after you touch anything here!
  */
 import type { JsonSchema, RxDocumentData, RxJsonSchema } from './types';
 import { ObjectPathMonadFunction } from './plugins/utils';
-export declare function getIndexMeta<RxDocType>(schema: RxJsonSchema<RxDocumentData<RxDocType>>, index: string[]): {
+/**
+ * Prepare all relevant information
+ * outside of the returned function
+ * from getIndexableStringMonad()
+ * to save performance when the returned
+ * function is called many times.
+ */
+type IndexMetaField<RxDocType> = {
     fieldName: string;
     schemaPart: JsonSchema;
-    parsedLengths?: ParsedLengths | undefined;
-    getValueFn: ObjectPathMonadFunction<RxDocType>;
-}[];
+    parsedLengths?: ParsedLengths;
+    getValue: ObjectPathMonadFunction<RxDocType>;
+    getIndexStringPart: (docData: RxDocumentData<RxDocType>) => string;
+};
+export declare function getIndexMeta<RxDocType>(schema: RxJsonSchema<RxDocumentData<RxDocType>>, index: string[]): IndexMetaField<RxDocType>[];
 /**
  * Crafts an indexable string that can be used
  * to check if a document would be sorted below or above

@@ -8,6 +8,9 @@ export var RxStorageRemote = /*#__PURE__*/function () {
     this.lastRequestId = 0;
     this.settings = settings;
     this.statics = settings.statics;
+    if (settings.mode === 'one') {
+      this.messageChannelIfOneMode = getMessageChannel(settings, [], true);
+    }
   }
   var _proto = RxStorageRemote.prototype;
   _proto.getRequestId = function getRequestId() {
@@ -27,7 +30,7 @@ export var RxStorageRemote = /*#__PURE__*/function () {
       case 'storage':
         cacheKeys.push('seed-' + this.seed);
     }
-    var messageChannel = await getMessageChannel(this.settings, cacheKeys);
+    var messageChannel = await (this.messageChannelIfOneMode ? this.messageChannelIfOneMode : getMessageChannel(this.settings, cacheKeys));
     var requestId = this.getRequestId();
     var waitForOkPromise = firstValueFrom(messageChannel.messages$.pipe(filter(msg => msg.answerTo === requestId)));
     messageChannel.send({

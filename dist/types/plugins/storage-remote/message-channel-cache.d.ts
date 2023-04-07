@@ -4,7 +4,8 @@ export type RemoteMessageChannelCacheItem = {
     cacheKey: string;
     messageChannel: Promise<RemoteMessageChannel>;
     refCount: number;
+    keepAlive: boolean;
 };
 export declare const MESSAGE_CHANNEL_CACHE_BY_IDENTIFIER: Map<string, Map<string, RemoteMessageChannelCacheItem>>;
-export declare function getMessageChannel(settings: RxStorageRemoteSettings, cacheKeys: string[]): Promise<RemoteMessageChannel>;
+export declare function getMessageChannel(settings: RxStorageRemoteSettings, cacheKeys: string[], keepAlive?: boolean): Promise<RemoteMessageChannel>;
 export declare function closeMessageChannel(messageChannel: RemoteMessageChannel): Promise<void>;

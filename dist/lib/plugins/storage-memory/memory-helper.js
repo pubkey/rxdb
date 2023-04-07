@@ -40,11 +40,11 @@ function putWriteRowToState(docId, state, stateByIndex, row, docInState) {
     var byIndex = stateByIndex[i];
     var docsWithIndex = byIndex.docsWithIndex;
     var newIndexString = byIndex.getIndexableString(row.document);
-    var [, insertPosition] = (0, _arrayPushAtSortPosition.pushAtSortPosition)(docsWithIndex, {
+    var insertPosition = (0, _arrayPushAtSortPosition.pushAtSortPosition)(docsWithIndex, {
       id: docId,
       doc: row.document,
       indexString: newIndexString
-    }, sortByIndexStringComparator, true);
+    }, sortByIndexStringComparator, 0);
 
     /**
      * Remove previous if it was in the state

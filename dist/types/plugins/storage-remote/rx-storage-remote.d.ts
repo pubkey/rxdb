@@ -1,12 +1,13 @@
 import { Observable } from 'rxjs';
 import type { BulkWriteRow, EventBulk, RxConflictResultionTask, RxConflictResultionTaskSolution, RxDocumentData, RxDocumentDataById, RxJsonSchema, RxStorage, RxStorageBulkWriteResponse, RxStorageChangeEvent, RxStorageCountResult, RxStorageInstance, RxStorageInstanceCreationParams, RxStorageQueryResult, RxStorageStatics } from '../../types';
-import type { MessageFromRemote, RxStorageRemoteInternals, RxStorageRemoteSettings } from './storage-remote-types';
+import type { MessageFromRemote, RemoteMessageChannel, RxStorageRemoteInternals, RxStorageRemoteSettings } from './storage-remote-types';
 export declare class RxStorageRemote implements RxStorage<RxStorageRemoteInternals, any> {
     readonly settings: RxStorageRemoteSettings;
     readonly statics: RxStorageStatics;
     readonly name: string;
     private seed;
     private lastRequestId;
+    messageChannelIfOneMode?: Promise<RemoteMessageChannel>;
     constructor(settings: RxStorageRemoteSettings);
     getRequestId(): string;
     createStorageInstance<RxDocType>(params: RxStorageInstanceCreationParams<RxDocType, any>): Promise<RxStorageInstanceRemote<RxDocType>>;

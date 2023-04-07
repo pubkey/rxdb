@@ -2,18 +2,26 @@
  * For some RxStorage implementations,
  * we need to use our custom crafted indexes
  * so we can easily iterate over them. And sort plain arrays of document data.
+ *
+ * We really often have to craft an index string for a given document.
+ * Performance of everything in this file is very important
+ * which is why the code sometimes looks strange.
+ * Run performance tests before and after you touch anything here!
  */
 
 import { getSchemaByObjectPath } from './rx-schema-helper';
 import { ensureNotFalsy, objectPathMonad } from './plugins/utils';
 import { INDEX_MAX, INDEX_MIN } from './query-planner';
+
+/**
+ * Prepare all relevant information
+ * outside of the returned function
+ * from getIndexableStringMonad()
+ * to save performance when the returned
+ * function is called many times.
+ */
+
 export function getIndexMeta(schema, index) {
-  /**
-   * Prepare all relevant information
-   * outside of the returned function
-   * to save performance when the returned
-   * function is called many times.
-   */
   var fieldNameProperties = index.map(fieldName => {
     var schemaPart = getSchemaByObjectPath(schema, fieldName);
     if (!schemaPart) {
@@ -24,13 +32,37 @@ export function getIndexMeta(schema, index) {
     if (type === 'number' || type === 'integer') {
       parsedLengths = getStringLengthOfIndexNumber(schemaPart);
     }
-    return {
+    var getValue = objectPathMonad(fieldName);
+    var maxLength = schemaPart.maxLength ? schemaPart.maxLength : 0;
+    var getIndexStringPart;
+    if (type === 'string') {
+      getIndexStringPart = docData => {
+        var fieldValue = getValue(docData);
+        if (!fieldValue) {
+          fieldValue = '';
+        }
+        return fieldValue.padEnd(maxLength, ' ');
+      };
+    } else if (type === 'boolean') {
+      getIndexStringPart = docData => {
+        var fieldValue = getValue(docData);
+        return fieldValue ? '1' : '0';
+      };
+    } else {
+      // number
+      getIndexStringPart = docData => {
+        var fieldValue = getValue(docData);
+        return getNumberIndexString(parsedLengths, fieldValue);
+      };
+    }
+    var ret = {
       fieldName,
       schemaPart,
       parsedLengths,
-      hasComplexPath: fieldName.includes('.'),
-      getValueFn: objectPathMonad(fieldName)
+      getValue,
+      getIndexStringPart
     };
+    return ret;
   });
   return fieldNameProperties;
 }
@@ -48,32 +80,16 @@ export function getIndexMeta(schema, index) {
  */
 export function getIndexableStringMonad(schema, index) {
   var fieldNameProperties = getIndexMeta(schema, index);
+  var fieldNamePropertiesAmount = fieldNameProperties.length;
+  var indexPartsFunctions = fieldNameProperties.map(r => r.getIndexStringPart);
 
   /**
    * @hotPath Performance of this function is very critical!
    */
   var ret = function (docData) {
     var str = '';
-    for (var i = 0; i < fieldNameProperties.length; ++i) {
-      var props = fieldNameProperties[i];
-      var schemaPart = props.schemaPart;
-      var type = schemaPart.type;
-      var fieldValue = props.getValueFn(docData);
-      if (type === 'string') {
-        // is string
-        if (!fieldValue) {
-          fieldValue = '';
-        }
-        str += fieldValue.padEnd(schemaPart.maxLength, ' ');
-      } else if (type === 'boolean') {
-        // is boolean
-        var boolToStr = fieldValue ? '1' : '0';
-        str += boolToStr;
-      } else {
-        // is number
-        var parsedLengths = props.parsedLengths;
-        str += getNumberIndexString(parsedLengths, fieldValue);
-      }
+    for (var i = 0; i < fieldNamePropertiesAmount; ++i) {
+      str += indexPartsFunctions[i](docData);
     }
     return str;
   };
@@ -140,12 +156,11 @@ export function getNumberIndexString(parsedLengths, fieldValue) {
   if (fieldValue > parsedLengths.maximum) {
     fieldValue = parsedLengths.maximum;
   }
-  var str = '';
   var nonDecimalsValueAsString = (Math.floor(fieldValue) - parsedLengths.roundedMinimum).toString();
-  str += nonDecimalsValueAsString.padStart(parsedLengths.nonDecimals, '0');
-  var splitByDecimalPoint = fieldValue.toString().split('.');
-  var decimalValueAsString = splitByDecimalPoint.length > 1 ? splitByDecimalPoint[1] : '0';
+  var str = nonDecimalsValueAsString.padStart(parsedLengths.nonDecimals, '0');
   if (parsedLengths.decimals > 0) {
+    var splitByDecimalPoint = fieldValue.toString().split('.');
+    var decimalValueAsString = splitByDecimalPoint.length > 1 ? splitByDecimalPoint[1] : '0';
     str += decimalValueAsString.padEnd(parsedLengths.decimals, '0');
   }
   return str;

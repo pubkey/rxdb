@@ -2,13 +2,17 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- FIX(remote-storage) `mode: 'one'` option must reuse the RemoteMessageChannel
-- IMPROVE performance of index creation on some storages.
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 14.6.2 (7 April 2023)
+
+- FIX(remote-storage) `mode: 'one'` option must reuse the RemoteMessageChannel
+- IMPROVE performance of index creation on some storages.
 
 ### 14.6.1 (6 April 2023)
 
