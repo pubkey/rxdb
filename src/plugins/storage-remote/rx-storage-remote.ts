@@ -33,6 +33,7 @@ import type {
     RxStorageRemoteSettings
 } from './storage-remote-types';
 import { closeMessageChannel, getMessageChannel } from './message-channel-cache';
+import { ensureRxStorageInstanceParamsAreCorrect } from '../../rx-storage-helper';
 
 
 export class RxStorageRemote implements RxStorage<RxStorageRemoteInternals, any> {
@@ -62,6 +63,8 @@ export class RxStorageRemote implements RxStorage<RxStorageRemoteInternals, any>
     async createStorageInstance<RxDocType>(
         params: RxStorageInstanceCreationParams<RxDocType, any>
     ): Promise<RxStorageInstanceRemote<RxDocType>> {
+        ensureRxStorageInstanceParamsAreCorrect(params);
+
         const connectionId = 'c|' + this.getRequestId();
 
         const cacheKeys: string[] = [
