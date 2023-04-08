@@ -17,7 +17,7 @@ export type RemoteMessageChannelCacheItem = {
 };
 
 export const MESSAGE_CHANNEL_CACHE_BY_IDENTIFIER = new Map<string, Map<string, RemoteMessageChannelCacheItem>>();
-const CACHE_ITEM_BY_MESSAGE_CHANNEL = new WeakMap<RemoteMessageChannel, RemoteMessageChannelCacheItem>();
+export const CACHE_ITEM_BY_MESSAGE_CHANNEL = new WeakMap<RemoteMessageChannel, RemoteMessageChannelCacheItem>();
 
 
 export const OPEN_REMOTE_MESSAGE_CHANNELS = new Set<RemoteMessageChannel>();
