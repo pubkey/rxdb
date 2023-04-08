@@ -19,6 +19,9 @@ export type RemoteMessageChannelCacheItem = {
 export const MESSAGE_CHANNEL_CACHE_BY_IDENTIFIER = new Map<string, Map<string, RemoteMessageChannelCacheItem>>();
 const CACHE_ITEM_BY_MESSAGE_CHANNEL = new WeakMap<RemoteMessageChannel, RemoteMessageChannelCacheItem>();
 
+
+export const OPEN_REMOTE_MESSAGE_CHANNELS = new Set<RemoteMessageChannel>();
+
 function getMessageChannelCache(
     identifier: string
 ) {
@@ -46,6 +49,7 @@ export function getMessageChannel(
                 refCount: 1,
                 messageChannel: settings.messageChannelCreator()
                     .then((messageChannel) => {
+                        OPEN_REMOTE_MESSAGE_CHANNELS.add(messageChannel);
                         CACHE_ITEM_BY_MESSAGE_CHANNEL.set(messageChannel, newCacheItem);
                         return messageChannel;
                     }),
@@ -67,6 +71,7 @@ export function closeMessageChannel(
     cacheItem.refCount = cacheItem.refCount - 1;
     if (cacheItem.refCount === 0 && !cacheItem.keepAlive) {
         getMessageChannelCache(cacheItem.identifier).delete(cacheItem.cacheKey);
+        OPEN_REMOTE_MESSAGE_CHANNELS.delete(messageChannel);
         return messageChannel.close();
     } else {
         return PROMISE_RESOLVE_VOID;

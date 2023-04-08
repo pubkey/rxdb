@@ -9,6 +9,10 @@ import config from './config';
 import {
     GRAPHQL_WEBSOCKET_BY_URL
 } from '../../plugins/replication-graphql';
+import {
+    OPEN_REMOTE_MESSAGE_CHANNELS,
+    CACHE_ITEM_BY_MESSAGE_CHANNEL
+} from '../../plugins/storage-remote';
 
 
 describe('last.test.ts (' + config.storage.name + ')', () => {
@@ -29,6 +33,21 @@ describe('last.test.ts (' + config.storage.name + ')', () => {
             console.log('open broadcast channel tokens:');
             console.log(openChannelKeys.join(', '));
             throw new Error('not all broadcast channels have been closed (' + openChannelKeys.length + ')');
+        }
+    });
+    it('ensure all RemoteMessageChannels have been closed', async () => {
+        try {
+            await waitUntil(() => {
+                return OPEN_REMOTE_MESSAGE_CHANNELS.size === 0;
+            }, 5 * 1000);
+        } catch (err) {
+            const stillOpen = Array.from(OPEN_REMOTE_MESSAGE_CHANNELS);
+            stillOpen.forEach(messageChannel => {
+                console.log('open graphql webRemoteMessageChannelssockets:');
+                console.dir(CACHE_ITEM_BY_MESSAGE_CHANNEL.get(messageChannel));
+            });
+            console.log(stillOpen);
+            throw new Error('not all RemoteMessageChannels have been closed (' + stillOpen.length + ')');
         }
     });
     it('ensure all websockets have been closed', async () => {

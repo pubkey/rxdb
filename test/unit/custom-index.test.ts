@@ -277,7 +277,6 @@ config.parallel('custom-index.test.ts', () => {
                 const time = endTime - startTime;
                 assert.ok(time);
                 console.log('time: ' + time);
-                // process.exit();
             });
         });
     });
