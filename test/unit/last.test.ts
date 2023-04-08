@@ -2,7 +2,8 @@ import assert from 'assert';
 import { waitUntil } from 'async-test-util';
 import {
     dbCount,
-    BROADCAST_CHANNEL_BY_TOKEN
+    BROADCAST_CHANNEL_BY_TOKEN,
+    getFromMapOrThrow
 } from '../../';
 import config from './config';
 
@@ -36,15 +37,21 @@ describe('last.test.ts (' + config.storage.name + ')', () => {
         }
     });
     it('ensure all RemoteMessageChannels have been closed', async () => {
+        function getStillOpen() {
+            return Array.from(OPEN_REMOTE_MESSAGE_CHANNELS)
+                .map(messageChannel => getFromMapOrThrow(CACHE_ITEM_BY_MESSAGE_CHANNEL, messageChannel))
+                .filter(cacheItem => !cacheItem.keepAlive);
+        }
         try {
             await waitUntil(() => {
-                return OPEN_REMOTE_MESSAGE_CHANNELS.size === 0;
+                const stillOpen = getStillOpen();
+                return stillOpen.length === 0;
             }, 5 * 1000);
         } catch (err) {
-            const stillOpen = Array.from(OPEN_REMOTE_MESSAGE_CHANNELS);
-            stillOpen.forEach(messageChannel => {
+            const stillOpen = getStillOpen();
+            stillOpen.forEach(cacheItem => {
                 console.log('open graphql webRemoteMessageChannelssockets:');
-                console.dir(CACHE_ITEM_BY_MESSAGE_CHANNEL.get(messageChannel));
+                console.dir(cacheItem);
             });
             console.log(stillOpen);
             throw new Error('not all RemoteMessageChannels have been closed (' + stillOpen.length + ')');
