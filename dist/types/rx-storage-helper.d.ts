@@ -60,9 +60,10 @@ export declare function stripAttachmentsDataFromDocument<RxDocType>(doc: RxDocum
 export declare function flatCloneDocWithMeta<RxDocType>(doc: RxDocumentData<RxDocType>): RxDocumentData<RxDocType>;
 /**
  * Each event is labeled with the id
- * to make it easy to filter out duplicates.
+ * to make it easy to filter out duplicates
+ * even on flattened eventBulks
  */
-export declare function getUniqueDeterministicEventKey(storageInstance: RxStorageInstance<any, any, any>, primaryPath: string, writeRow: BulkWriteRow<any>): string;
+export declare function getUniqueDeterministicEventKey(eventBulkId: string, rowId: number, docId: string, writeRow: BulkWriteRow<any>): string;
 export type WrappedRxStorageInstance<RxDocumentType, Internals, InstanceCreationOptions> = RxStorageInstance<RxDocumentType, any, InstanceCreationOptions> & {
     originalStorageInstance: RxStorageInstance<RxDocumentType, Internals, InstanceCreationOptions>;
 };
