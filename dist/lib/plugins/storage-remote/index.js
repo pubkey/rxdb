@@ -36,6 +36,17 @@ Object.keys(_storageRemoteHelpers).forEach(function (key) {
     }
   });
 });
+var _messageChannelCache = require("./message-channel-cache");
+Object.keys(_messageChannelCache).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (key in exports && exports[key] === _messageChannelCache[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function () {
+      return _messageChannelCache[key];
+    }
+  });
+});
 var _remote = require("./remote");
 Object.keys(_remote).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
