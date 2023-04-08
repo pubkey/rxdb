@@ -19,6 +19,7 @@ import './unit/query-planner.test';
  */
 import './unit/rx-storage-implementations.test';
 import './unit/rx-storage-query-correctness.test';
+import './unit/rx-storage-helper.test';
 
 import './unit/rx-storage-lokijs.test';
 import './unit/rx-storage-dexie.test';

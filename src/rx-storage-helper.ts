@@ -181,8 +181,9 @@ export function categorizeBulkWriteRows<RxDocType>(
     const bulkUpdateDocs: BulkWriteRowProcessed<RxDocType>[] = [];
     const errors: ById<RxStorageWriteError<RxDocType>> = {};
     const changedDocumentIds: RxDocType[StringKeys<RxDocType>][] = [];
+    const eventBulkId = randomCouchString(10);
     const eventBulk: EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, any> = {
-        id: randomCouchString(10),
+        id: eventBulkId,
         events: [],
         checkpoint: null,
         context
@@ -207,13 +208,18 @@ export function categorizeBulkWriteRows<RxDocType>(
     const startTime = now();
 
     const docsByIdIsMap = typeof docsInDb.get === 'function';
+    const hasDocsInDb = docsByIdIsMap ? (docsInDb as Map<any, any>).size > 0 : Object.keys(docsInDb).length > 0;
+
     let newestRow: BulkWriteRowProcessed<RxDocType> | undefined;
 
     const rowAmount = bulkWriteRows.length;
-    for (let i = 0; i < rowAmount; i++) {
-        const writeRow = bulkWriteRows[i];
-        const id = writeRow.document[primaryPath];
-        const documentInDb = docsByIdIsMap ? (docsInDb as any).get(id) : (docsInDb as any)[id];
+    for (let rowId = 0; rowId < rowAmount; rowId++) {
+        const writeRow = bulkWriteRows[rowId];
+        const docId = writeRow.document[primaryPath] as string;
+        let documentInDb: RxDocumentData<RxDocType> | false = false;
+        if (hasDocsInDb) {
+            documentInDb = docsByIdIsMap ? (docsInDb as any).get(docId) : (docsInDb as any)[docId];
+        }
         let attachmentError: RxStorageWriteErrorAttachment<RxDocType> | undefined;
 
         if (!documentInDb) {
@@ -228,16 +234,16 @@ export function categorizeBulkWriteRows<RxDocType>(
                         !(attachmentData as RxAttachmentWriteData).data
                     ) {
                         attachmentError = {
-                            documentId: id as any,
+                            documentId: docId,
                             isError: true,
                             status: 510,
                             writeRow,
                             attachmentId
                         };
-                        errors[id as any] = attachmentError;
+                        errors[docId] = attachmentError;
                     } else {
                         attachmentsAdd.push({
-                            documentId: id as any,
+                            documentId: docId,
                             attachmentId,
                             attachmentData: attachmentData as any
                         });
@@ -259,10 +265,15 @@ export function categorizeBulkWriteRows<RxDocType>(
             }
 
             if (!insertedIsDeleted) {
-                changedDocumentIds.push(id);
+                changedDocumentIds.push(docId as any);
                 eventBulk.events.push({
-                    eventId: getUniqueDeterministicEventKey(storageInstance, primaryPath as any, writeRow),
-                    documentId: id as any,
+                    eventId: getUniqueDeterministicEventKey(
+                        eventBulkId,
+                        rowId,
+                        docId,
+                        writeRow
+                    ),
+                    documentId: docId,
                     operation: 'INSERT',
                     documentData: hasAttachments ? stripAttachmentsDataFromDocument(writeRow.document) : writeRow.document as any,
                     previousDocumentData: hasAttachments && writeRow.previous ? stripAttachmentsDataFromDocument(writeRow.previous) : writeRow.previous as any,
@@ -290,11 +301,11 @@ export function categorizeBulkWriteRows<RxDocType>(
                 const err: RxStorageWriteError<RxDocType> = {
                     isError: true,
                     status: 409,
-                    documentId: id as any,
+                    documentId: docId,
                     writeRow: writeRow,
                     documentInDb
                 };
-                errors[id as any] = err;
+                errors[docId] = err;
                 continue;
             }
 
@@ -311,7 +322,7 @@ export function categorizeBulkWriteRows<RxDocType>(
                             .keys(writeRow.previous._attachments)
                             .forEach(attachmentId => {
                                 attachmentsRemove.push({
-                                    documentId: id as any,
+                                    documentId: docId,
                                     attachmentId
                                 });
                             });
@@ -327,8 +338,8 @@ export function categorizeBulkWriteRows<RxDocType>(
                                 !(attachmentData as RxAttachmentWriteData).data
                             ) {
                                 attachmentError = {
-                                    documentId: id as any,
-                                    documentInDb,
+                                    documentId: docId,
+                                    documentInDb: documentInDb as any,
                                     isError: true,
                                     status: 510,
                                     writeRow,
@@ -344,7 +355,7 @@ export function categorizeBulkWriteRows<RxDocType>(
                                 const previousAttachmentData = writeRow.previous ? writeRow.previous._attachments[attachmentId] : undefined;
                                 if (!previousAttachmentData) {
                                     attachmentsAdd.push({
-                                        documentId: id as any,
+                                        documentId: docId,
                                         attachmentId,
                                         attachmentData: attachmentData as any
                                     });
@@ -359,7 +370,7 @@ export function categorizeBulkWriteRows<RxDocType>(
                                         previousAttachmentData.digest !== newDigest
                                     ) {
                                         attachmentsUpdate.push({
-                                            documentId: id as any,
+                                            documentId: docId,
                                             attachmentId,
                                             attachmentData: attachmentData as RxAttachmentWriteData
                                         });
@@ -371,7 +382,7 @@ export function categorizeBulkWriteRows<RxDocType>(
             }
 
             if (attachmentError) {
-                errors[id as any] = attachmentError;
+                errors[docId] = attachmentError;
             } else {
                 bulkUpdateDocs.push(updatedRow);
                 if (
@@ -403,11 +414,16 @@ export function categorizeBulkWriteRows<RxDocType>(
                 throw newRxError('SNH', { args: { writeRow } });
             }
 
-            changedDocumentIds.push(id);
+            changedDocumentIds.push(docId as any);
             eventBulk.events.push({
-                eventId: getUniqueDeterministicEventKey(storageInstance, primaryPath as any, writeRow),
-                documentId: id as any,
-                documentData: ensureNotFalsy(eventDocumentData),
+                eventId: getUniqueDeterministicEventKey(
+                    eventBulkId,
+                    rowId,
+                    docId,
+                    writeRow
+                ),
+                documentId: docId,
+                documentData: eventDocumentData as RxDocumentData<RxDocType>,
                 previousDocumentData: previousEventDocumentData,
                 operation: operation,
                 startTime,
@@ -485,22 +501,16 @@ export function flatCloneDocWithMeta<RxDocType>(
 
 /**
  * Each event is labeled with the id
- * to make it easy to filter out duplicates.
+ * to make it easy to filter out duplicates
+ * even on flattened eventBulks
  */
 export function getUniqueDeterministicEventKey(
-    storageInstance: RxStorageInstance<any, any, any>,
-    primaryPath: string,
+    eventBulkId: string,
+    rowId: number,
+    docId: string,
     writeRow: BulkWriteRow<any>
 ): string {
-    const docId = writeRow.document[primaryPath];
-    const binaryValues: boolean[] = [
-        !!writeRow.previous,
-        (writeRow.previous && writeRow.previous._deleted),
-        !!writeRow.document._deleted
-    ];
-    const binary = binaryValues.map(v => v ? '1' : '0').join('');
-    const eventKey = storageInstance.databaseName + '|' + storageInstance.collectionName + '|' + docId + '|' + '|' + binary + '|' + writeRow.document._rev;
-    return eventKey;
+    return eventBulkId + '|' + rowId + '|' + docId + '|' + writeRow.document._rev;
 }
 
 
