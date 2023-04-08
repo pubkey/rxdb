@@ -168,6 +168,16 @@ export class RxStorageInstanceRemote<RxDocType> implements RxStorageInstance<RxD
         this.subs.push(
             this.messages$.subscribe(msg => {
                 if (msg.method === 'changeStream') {
+                    /**
+                     * Because postMessage() can be very slow on complex objects,
+                     * and some RxStorage implementations do need a JSON-string internally
+                     * anyway, it is allowed to transfer a string instead of an object
+                     * which must then be JSON.parse()-ed before RxDB can use it.
+                     * @link https://surma.dev/things/is-postmessage-slow/
+                     */
+                    if (typeof msg.return === 'string') {
+                        msg.return = JSON.parse(msg.return);
+                    }
                     this.changes$.next(msg.return);
                 }
                 if (msg.method === 'conflictResultionTasks') {
