@@ -8,6 +8,7 @@ exports.getRxStorageRemote = getRxStorageRemote;
 var _rxjs = require("rxjs");
 var _utils = require("../../plugins/utils");
 var _messageChannelCache = require("./message-channel-cache");
+var _rxStorageHelper = require("../../rx-storage-helper");
 var RxStorageRemote = /*#__PURE__*/function () {
   function RxStorageRemote(settings) {
     this.name = 'remote';
@@ -25,6 +26,7 @@ var RxStorageRemote = /*#__PURE__*/function () {
     return this.seed + '|' + newId;
   };
   _proto.createStorageInstance = async function createStorageInstance(params) {
+    (0, _rxStorageHelper.ensureRxStorageInstanceParamsAreCorrect)(params);
     var connectionId = 'c|' + this.getRequestId();
     var cacheKeys = ['mode-' + this.settings.mode];
     switch (this.settings.mode) {
