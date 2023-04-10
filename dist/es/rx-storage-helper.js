@@ -110,8 +110,9 @@ bulkWriteRows, context) {
   var bulkUpdateDocs = [];
   var errors = {};
   var changedDocumentIds = [];
+  var eventBulkId = randomCouchString(10);
   var eventBulk = {
-    id: randomCouchString(10),
+    id: eventBulkId,
     events: [],
     checkpoint: null,
     context
@@ -121,12 +122,16 @@ bulkWriteRows, context) {
   var attachmentsUpdate = [];
   var startTime = now();
   var docsByIdIsMap = typeof docsInDb.get === 'function';
+  var hasDocsInDb = docsByIdIsMap ? docsInDb.size > 0 : Object.keys(docsInDb).length > 0;
   var newestRow;
   var rowAmount = bulkWriteRows.length;
   var _loop = function () {
-    var writeRow = bulkWriteRows[i];
-    var id = writeRow.document[primaryPath];
-    var documentInDb = docsByIdIsMap ? docsInDb.get(id) : docsInDb[id];
+    var writeRow = bulkWriteRows[rowId];
+    var docId = writeRow.document[primaryPath];
+    var documentInDb = false;
+    if (hasDocsInDb) {
+      documentInDb = docsByIdIsMap ? docsInDb.get(docId) : docsInDb[docId];
+    }
     var attachmentError;
     if (!documentInDb) {
       /**
@@ -138,16 +143,16 @@ bulkWriteRows, context) {
         Object.entries(writeRow.document._attachments).forEach(([attachmentId, attachmentData]) => {
           if (!attachmentData.data) {
             attachmentError = {
-              documentId: id,
+              documentId: docId,
               isError: true,
               status: 510,
               writeRow,
               attachmentId
             };
-            errors[id] = attachmentError;
+            errors[docId] = attachmentError;
           } else {
             attachmentsAdd.push({
-              documentId: id,
+              documentId: docId,
               attachmentId,
               attachmentData: attachmentData
             });
@@ -165,10 +170,10 @@ bulkWriteRows, context) {
         }
       }
       if (!insertedIsDeleted) {
-        changedDocumentIds.push(id);
+        changedDocumentIds.push(docId);
         eventBulk.events.push({
-          eventId: getUniqueDeterministicEventKey(storageInstance, primaryPath, writeRow),
-          documentId: id,
+          eventId: getUniqueDeterministicEventKey(eventBulkId, rowId, docId, writeRow),
+          documentId: docId,
           operation: 'INSERT',
           documentData: hasAttachments ? stripAttachmentsDataFromDocument(writeRow.document) : writeRow.document,
           previousDocumentData: hasAttachments && writeRow.previous ? stripAttachmentsDataFromDocument(writeRow.previous) : writeRow.previous,
@@ -188,11 +193,11 @@ bulkWriteRows, context) {
         var err = {
           isError: true,
           status: 409,
-          documentId: id,
+          documentId: docId,
           writeRow: writeRow,
           documentInDb
         };
-        errors[id] = err;
+        errors[docId] = err;
         return "continue";
       }
 
@@ -207,7 +212,7 @@ bulkWriteRows, context) {
           if (writeRow.previous) {
             Object.keys(writeRow.previous._attachments).forEach(attachmentId => {
               attachmentsRemove.push({
-                documentId: id,
+                documentId: docId,
                 attachmentId
               });
             });
@@ -218,8 +223,8 @@ bulkWriteRows, context) {
             var previousAttachmentData = writeRow.previous ? writeRow.previous._attachments[attachmentId] : undefined;
             if (!previousAttachmentData && !attachmentData.data) {
               attachmentError = {
-                documentId: id,
-                documentInDb,
+                documentId: docId,
+                documentInDb: documentInDb,
                 isError: true,
                 status: 510,
                 writeRow,
@@ -233,7 +238,7 @@ bulkWriteRows, context) {
               var previousAttachmentData = writeRow.previous ? writeRow.previous._attachments[attachmentId] : undefined;
               if (!previousAttachmentData) {
                 attachmentsAdd.push({
-                  documentId: id,
+                  documentId: docId,
                   attachmentId,
                   attachmentData: attachmentData
                 });
@@ -246,7 +251,7 @@ bulkWriteRows, context) {
                  */
                 previousAttachmentData.digest !== newDigest) {
                   attachmentsUpdate.push({
-                    documentId: id,
+                    documentId: docId,
                     attachmentId,
                     attachmentData: attachmentData
                   });
@@ -257,7 +262,7 @@ bulkWriteRows, context) {
         }
       }
       if (attachmentError) {
-        errors[id] = attachmentError;
+        errors[docId] = attachmentError;
       } else {
         bulkUpdateDocs.push(updatedRow);
         if (!newestRow || newestRow.document._meta.lwt < updatedRow.document._meta.lwt) {
@@ -286,11 +291,11 @@ bulkWriteRows, context) {
           }
         });
       }
-      changedDocumentIds.push(id);
+      changedDocumentIds.push(docId);
       eventBulk.events.push({
-        eventId: getUniqueDeterministicEventKey(storageInstance, primaryPath, writeRow),
-        documentId: id,
-        documentData: ensureNotFalsy(eventDocumentData),
+        eventId: getUniqueDeterministicEventKey(eventBulkId, rowId, docId, writeRow),
+        documentId: docId,
+        documentData: eventDocumentData,
         previousDocumentData: previousEventDocumentData,
         operation: operation,
         startTime,
@@ -298,7 +303,7 @@ bulkWriteRows, context) {
       });
     }
   };
-  for (var i = 0; i < rowAmount; i++) {
+  for (var rowId = 0; rowId < rowAmount; rowId++) {
     var _ret = _loop();
     if (_ret === "continue") continue;
   }
@@ -362,14 +367,11 @@ export function flatCloneDocWithMeta(doc) {
 
 /**
  * Each event is labeled with the id
- * to make it easy to filter out duplicates.
+ * to make it easy to filter out duplicates
+ * even on flattened eventBulks
  */
-export function getUniqueDeterministicEventKey(storageInstance, primaryPath, writeRow) {
-  var docId = writeRow.document[primaryPath];
-  var binaryValues = [!!writeRow.previous, writeRow.previous && writeRow.previous._deleted, !!writeRow.document._deleted];
-  var binary = binaryValues.map(v => v ? '1' : '0').join('');
-  var eventKey = storageInstance.databaseName + '|' + storageInstance.collectionName + '|' + docId + '|' + '|' + binary + '|' + writeRow.document._rev;
-  return eventKey;
+export function getUniqueDeterministicEventKey(eventBulkId, rowId, docId, writeRow) {
+  return eventBulkId + '|' + rowId + '|' + docId + '|' + writeRow.document._rev;
 }
 /**
  * Wraps the normal storageInstance of a RxCollection
