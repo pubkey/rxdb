@@ -35,5 +35,13 @@ export function ensurePrimaryKeyValid(
             document: docData
         });
     }
+    if (
+        primaryKey.includes('"')
+    ) {
+        throw newRxError('DOC23', {
+            primaryKey,
+            document: docData
+        });
+    }
 }
 

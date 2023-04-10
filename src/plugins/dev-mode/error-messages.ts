@@ -115,6 +115,7 @@ export const ERROR_MESSAGES = {
     DOC20: 'PrimaryKey missing',
     DOC21: 'PrimaryKey must be equal to PrimaryKey.trim(). It cannot start or end with a whitespace',
     DOC22: 'PrimaryKey must not contain a linebreak',
+    DOC23: 'PrimaryKey must not contain a double-quote ["]',
 
     // data-migrator.js
     DM1: 'migrate() Migration has already run',

@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- ADD Check to ensure that the primaryKey does not contain a double-quote.
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
