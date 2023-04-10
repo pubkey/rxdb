@@ -1252,17 +1252,21 @@ performanceResult: 12.78
 AFTERR4:
 performanceResult: 12.87
 
+AFTER5:
+15.15
+18.47
+13.31
+
+AFTER6: (Send JSON-string via postMessage)
+
+12.47
+12.37
+
+AFTER7:
+
+
+
 ### insert documents
-
-BEFORE:
-'performanceResult: 34.52'
-LOG LOG: 'performanceResult: 34.1'
-
-
-AFTER:
-'performanceResult: 28.6
-
-
 
 FIXED TEST!!
 
@@ -1274,12 +1278,11 @@ performanceResult: 83.39
 
 
 
-
-
-
-AFTER fixing merging sorted array
-
-AFTER2:
+AFTER 3:
+40.8
+44.3
+37.9
+38.7
 
 
 ### Query
@@ -1364,3 +1367,21 @@ AFTER(use inner monad)
 64.17834001779556
 72.26790100336075
 69.85145297646523
+
+
+
+## categorizeBulkWriteRows()
+
+BEFORE:
+31.00946400000248
+35
+43
+35
+
+
+AFTER1: (faster event keys)
+29.86
+31.29
+32
+31
+

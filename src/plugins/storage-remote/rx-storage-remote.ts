@@ -146,6 +146,27 @@ export class RxStorageRemote implements RxStorage<RxStorageRemoteInternals, any>
     }
 }
 
+/**
+ * Because postMessage() can be very slow on complex objects,
+ * and some RxStorage implementations do need a JSON-string internally
+ * anyway, it is allowed to transfer a string instead of an object
+ * which must then be JSON.parse()-ed before RxDB can use it.
+ * @link https://surma.dev/things/is-postmessage-slow/
+ */
+function getMessageReturn(
+    msg: MessageFromRemote
+) {
+    if (msg.method === 'getAttachmentData') {
+        return msg.return;
+    } else {
+        if (typeof msg.return === 'string') {
+            return JSON.parse(msg.return);
+        } else {
+            return msg.return;
+        }
+    }
+}
+
 export class RxStorageInstanceRemote<RxDocType> implements RxStorageInstance<RxDocType, RxStorageRemoteInternals, any, any> {
     private changes$: Subject<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, any>> = new Subject();
     private conflicts$: Subject<RxConflictResultionTask<RxDocType>> = new Subject();
@@ -168,17 +189,7 @@ export class RxStorageInstanceRemote<RxDocType> implements RxStorageInstance<RxD
         this.subs.push(
             this.messages$.subscribe(msg => {
                 if (msg.method === 'changeStream') {
-                    /**
-                     * Because postMessage() can be very slow on complex objects,
-                     * and some RxStorage implementations do need a JSON-string internally
-                     * anyway, it is allowed to transfer a string instead of an object
-                     * which must then be JSON.parse()-ed before RxDB can use it.
-                     * @link https://surma.dev/things/is-postmessage-slow/
-                     */
-                    if (typeof msg.return === 'string') {
-                        msg.return = JSON.parse(msg.return);
-                    }
-                    this.changes$.next(msg.return);
+                    this.changes$.next(getMessageReturn(msg));
                 }
                 if (msg.method === 'conflictResultionTasks') {
                     this.conflicts$.next(msg.return);
@@ -212,7 +223,7 @@ export class RxStorageInstanceRemote<RxDocType> implements RxStorageInstance<RxD
                 error: response.error
             }, null, 4));
         } else {
-            return response.return;
+            return getMessageReturn(response);
         }
     }
     bulkWrite(
