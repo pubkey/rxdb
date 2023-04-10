@@ -5,7 +5,7 @@ export type MessageFromRemote = {
     answerTo: string;
     method: keyof RxStorageInstance<any, any, any> | 'create' | 'custom';
     error?: PlainJsonError;
-    return?: any;
+    return?: any | string;
 };
 export type MessageToRemote = {
     connectionId: string;

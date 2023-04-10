@@ -7,6 +7,6 @@ exports.RXDB_VERSION = void 0;
 /**
  * This file is replaced in the 'npm run build:version' script.
  */
-var RXDB_VERSION = '14.6.4';
+var RXDB_VERSION = '14.6.5';
 exports.RXDB_VERSION = RXDB_VERSION;
 //# sourceMappingURL=utils-rxdb-version.js.map
