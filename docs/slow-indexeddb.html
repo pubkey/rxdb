@@ -1387,7 +1387,20 @@
             
         </li>
     
-        <li class="chapter " data-level="1.11.6" data-path="rx-storage-sqlite.html">
+        <li class="chapter " data-level="1.11.6" data-path="rx-storage-opfs.html">
+            
+                <a href="rx-storage-opfs.html">
+            
+                    
+                    RxStorage OPFS
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.11.7" data-path="rx-storage-sqlite.html">
             
                 <a href="rx-storage-sqlite.html">
             
@@ -1400,7 +1413,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.11.7" data-path="rx-storage-foundationdb.html">
+        <li class="chapter " data-level="1.11.8" data-path="rx-storage-foundationdb.html">
             
                 <a href="rx-storage-foundationdb.html">
             
@@ -1413,7 +1426,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.11.8" data-path="rx-storage-worker.html">
+        <li class="chapter " data-level="1.11.9" data-path="rx-storage-worker.html">
             
                 <a href="rx-storage-worker.html">
             
@@ -1426,7 +1439,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.11.9" data-path="rx-storage-shared-worker.html">
+        <li class="chapter " data-level="1.11.10" data-path="rx-storage-shared-worker.html">
             
                 <a href="rx-storage-shared-worker.html">
             
@@ -1439,7 +1452,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.11.10" data-path="rx-storage-remote.html">
+        <li class="chapter " data-level="1.11.11" data-path="rx-storage-remote.html">
             
                 <a href="rx-storage-remote.html">
             
@@ -1452,7 +1465,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.11.11" data-path="rx-storage-memory-synced.html">
+        <li class="chapter " data-level="1.11.12" data-path="rx-storage-memory-synced.html">
             
                 <a href="rx-storage-memory-synced.html">
             
@@ -1465,7 +1478,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.11.12" data-path="rx-storage-sharding.html">
+        <li class="chapter " data-level="1.11.13" data-path="rx-storage-sharding.html">
             
                 <a href="rx-storage-sharding.html">
             
@@ -1478,7 +1491,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.11.13" data-path="rx-storage-localstorage-meta-optimizer.html">
+        <li class="chapter " data-level="1.11.14" data-path="rx-storage-localstorage-meta-optimizer.html">
             
                 <a href="rx-storage-localstorage-meta-optimizer.html">
             
@@ -1491,7 +1504,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.11.14" data-path="electron.html">
+        <li class="chapter " data-level="1.11.15" data-path="electron.html">
             
                 <a href="electron.html#rxstorage-electron-ipcrenderer--ipcmain">
             
@@ -2284,6 +2297,7 @@
 <li>The <strong>FileSystem API</strong> could be used to store plain binary files, but it is <a href="https://caniuse.com/filesystem" target="_blank">only supported in chrome</a> for now.</li>
 <li><strong>IndexedDB</strong> is an indexed key-object database. It can store json data and iterate over its indexes. It is <a href="https://caniuse.com/indexeddb" target="_blank">widely supported</a> and stable.</li>
 </ul>
+<h3 id="update-april-2023-since-beginning-of-2023-all-modern-browsers-ship-the-file-system-access-api-which-allows-to-persistently-store-data-in-the-browser-with-a-way-better-performance-for-rxdb-you-can-use-the-opfs-rxstorage-to-get-about-4x-performance-improvement-compared-to-indexeddb"><strong>UPDATE April 2023:</strong> Since beginning of 2023, all modern browsers ship the <strong>File System Access API</strong> which allows to persistently store data in the browser with a way better performance. For <a href="https://rxdb.info/" target="_blank">RxDB</a> you can use the <a href="rx-storage-opfs.html">OPFS RxStorage</a> to get about 4x performance improvement compared to IndexedDB.</h3>
 <p>It becomes clear that the only way to go is IndexedDB. You start developing your app and everything goes fine.
 But as soon as your app gets bigger, more complex or just handles more data, you might notice something. <strong>IndexedDB is slow</strong>. Not slow like a database on a cheap server, <strong>even slower</strong>! Inserting a few hundred documents can take up several seconds. Time which can be critical for a fast page load. Even sending data over the internet to the backend can be faster then storing it inside of an IndexedDB database.</p>
 <blockquote>

@@ -24,5 +24,11 @@ export function ensurePrimaryKeyValid(primaryKey, docData) {
       document: docData
     });
   }
+  if (primaryKey.includes('"')) {
+    throw newRxError('DOC23', {
+      primaryKey,
+      document: docData
+    });
+  }
 }
 //# sourceMappingURL=check-document.js.map
