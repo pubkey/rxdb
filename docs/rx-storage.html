@@ -1387,7 +1387,20 @@
             
         </li>
     
-        <li class="chapter " data-level="1.11.6" data-path="rx-storage-sqlite.html">
+        <li class="chapter " data-level="1.11.6" data-path="rx-storage-opfs.html">
+            
+                <a href="rx-storage-opfs.html">
+            
+                    
+                    RxStorage OPFS
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.11.7" data-path="rx-storage-sqlite.html">
             
                 <a href="rx-storage-sqlite.html">
             
@@ -1400,7 +1413,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.11.7" data-path="rx-storage-foundationdb.html">
+        <li class="chapter " data-level="1.11.8" data-path="rx-storage-foundationdb.html">
             
                 <a href="rx-storage-foundationdb.html">
             
@@ -1413,7 +1426,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.11.8" data-path="rx-storage-worker.html">
+        <li class="chapter " data-level="1.11.9" data-path="rx-storage-worker.html">
             
                 <a href="rx-storage-worker.html">
             
@@ -1426,7 +1439,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.11.9" data-path="rx-storage-shared-worker.html">
+        <li class="chapter " data-level="1.11.10" data-path="rx-storage-shared-worker.html">
             
                 <a href="rx-storage-shared-worker.html">
             
@@ -1439,7 +1452,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.11.10" data-path="rx-storage-remote.html">
+        <li class="chapter " data-level="1.11.11" data-path="rx-storage-remote.html">
             
                 <a href="rx-storage-remote.html">
             
@@ -1452,7 +1465,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.11.11" data-path="rx-storage-memory-synced.html">
+        <li class="chapter " data-level="1.11.12" data-path="rx-storage-memory-synced.html">
             
                 <a href="rx-storage-memory-synced.html">
             
@@ -1465,7 +1478,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.11.12" data-path="rx-storage-sharding.html">
+        <li class="chapter " data-level="1.11.13" data-path="rx-storage-sharding.html">
             
                 <a href="rx-storage-sharding.html">
             
@@ -1478,7 +1491,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.11.13" data-path="rx-storage-localstorage-meta-optimizer.html">
+        <li class="chapter " data-level="1.11.14" data-path="rx-storage-localstorage-meta-optimizer.html">
             
                 <a href="rx-storage-localstorage-meta-optimizer.html">
             
@@ -1491,7 +1504,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.11.14" data-path="electron.html">
+        <li class="chapter " data-level="1.11.15" data-path="electron.html">
             
                 <a href="electron.html#rxstorage-electron-ipcrenderer--ipcmain">
             
@@ -2276,6 +2289,12 @@
                                 
                                 <h1 id="rxstorage">RxStorage</h1>
 <p>RxDB is not a self contained database. Instead the data is stored in an implementation of the <a href="https://github.com/pubkey/rxdb/blob/master/src/types/rx-storage.interface.d.ts" target="_blank">RxStorage interface</a>. This allows you to <strong>switch out</strong> the underlying data layer, depending on the JavaScript environment and performance requirements. For example you can use the SQLite storage for a capacitor app or you can use the Dexie.js RxStorage to store data in IndexedDB in a browser based application. There are also storages for other JavaScript runtimes like Node.js, React-Native, NativeScript and more.</p>
+<h3 id="quick-recommendations">Quick Recommendations</h3>
+<ul>
+<li>In the Browser: Use the <a href="rx-storage-opfs.html">OPFS RxStorage</a> if you have <a href="https://rxdb.info/premium.html" target="_blank">premium access</a>, otherwise use the <a href="rx-storage-dexie.html">Dexie.js</a> storage.</li>
+<li>In Electron and ReactNative: Use the <a href="rx-storage-sqlite.html">SQLite RxStorage</a> if you have <a href="https://rxdb.info/premium.html" target="_blank">premium access</a>, otherwise use the <a href="rx-storage-lokijs.html">LokiJS</a> storage.</li>
+<li>In Capactior: Use the <a href="rx-storage-sqlite.html">SQLite RxStorage</a> if you have <a href="https://rxdb.info/premium.html" target="_blank">premium access</a>, otherwise use the <a href="rx-storage-dexie.html">Dexie.js</a> storage.</li>
+</ul>
 <h2 id="implementations">Implementations</h2>
 <h3 id="dexiejs">Dexie.js</h3>
 <p>The Dexie.js based storage is based on the <a href="https://github.com/dexie/Dexie.js" target="_blank">Dexie.js</a> IndexedDB wrapper.
@@ -2286,7 +2305,9 @@ It has the special behavior of loading all data into memory at app start and the
 <h3 id="memory">Memory</h3>
 <p>A storage that stores the data in as plain data in the memory of the JavaScript process. Really fast and can be used in all environments. <a href="rx-storage-memory.html">Read more</a></p>
 <h3 id="indexeddb-premium">IndexedDB [<a href="https://rxdb.info/premium.html" target="_blank">premium</a>]</h3>
-<p>The IndexedDB <code>RxStorage</code> is based on plain IndexedDB. This has the best performance of all other non-in-memory storage, when RxDB is used inside of a browser. <a href="rx-storage-indexeddb.html">Read more</a></p>
+<p>The IndexedDB <code>RxStorage</code> is based on plain IndexedDB. This has a better performance than the Dexie.js storage, but it is slower compared to the OPFS storage. <a href="rx-storage-indexeddb.html">Read more</a></p>
+<h3 id="opfs-premium">OPFS [<a href="https://rxdb.info/premium.html" target="_blank">premium</a>]</h3>
+<p>The OPFS <code>RxStorage</code> is based on the File System Access API. This has the best performance of all other non-in-memory storage, when RxDB is used inside of a browser. <a href="rx-storage-opfs.html">Read more</a></p>
 <h3 id="sqlite-premium">SQLite [<a href="https://rxdb.info/premium.html" target="_blank">premium</a>]</h3>
 <p>The SQLite storage has the best performance when RxDB is used on <strong>Node.js</strong>, <strong>Electron</strong>, <strong>React Native</strong>, <strong>Cordova</strong> or <strong>Capacitor</strong>. <a href="rx-storage-sqlite.html">Read more</a></p>
 <h3 id="foundationdb">FoundationDB</h3>

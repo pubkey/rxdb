@@ -4,7 +4,7 @@
     <head>
         <meta charset="UTF-8">
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-        <title>RxStorage Memory Synced · RxDB - JavaScript Database</title>
+        <title>RxStorage OPFS · RxDB - JavaScript Database</title>
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="description" content="">
         <meta name="generator" content="GitBook 3.2.3">
@@ -63,10 +63,10 @@
     <link rel="shortcut icon" href="gitbook/images/favicon.ico" type="image/x-icon">
 
     
-    <link rel="next" href="rx-storage-sharding.html" />
+    <link rel="next" href="rx-storage-sqlite.html" />
     
     
-    <link rel="prev" href="rx-storage-remote.html" />
+    <link rel="prev" href="rx-storage-indexeddb.html" />
     
 
     </head>
@@ -1387,7 +1387,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.11.6" data-path="rx-storage-opfs.html">
+        <li class="chapter active" data-level="1.11.6" data-path="rx-storage-opfs.html">
             
                 <a href="rx-storage-opfs.html">
             
@@ -1465,7 +1465,7 @@
             
         </li>
     
-        <li class="chapter active" data-level="1.11.12" data-path="rx-storage-memory-synced.html">
+        <li class="chapter " data-level="1.11.12" data-path="rx-storage-memory-synced.html">
             
                 <a href="rx-storage-memory-synced.html">
             
@@ -2272,7 +2272,7 @@
     <!-- Title -->
     <h1>
         <i class="fa fa-circle-o-notch fa-spin"></i>
-        <a href="." >RxStorage Memory Synced</a>
+        <a href="." >RxStorage OPFS</a>
     </h1>
 </div>
 
@@ -2287,93 +2287,55 @@
     
                                 <section class="normal markdown-section">
                                 
-                                <h1 id="memory-synced-rxstorage">Memory Synced RxStorage</h1>
-<p>The memory synced <a href="rx-storage.html">RxStorage</a> is a wrapper around any other RxStorage. The wrapper creates an in-memory storage that is used for query and write operations. This memory instance is replicated with the underlying storage for persistence.
-The main reason to use this is to improve initial page load and query/write times. This is mostly useful in browser based applications.</p>
-<h2 id="pros">Pros</h2>
+                                <h1 id="opfs-rxstorage-beta">OPFS RxStorage (beta)</h1>
+<p>The OPFS <a href="rx-storage.html">RxStorage</a> for RxDB is built on top of the <a href="https://webkit.org/blog/12257/the-file-system-access-api-with-origin-private-file-system/" target="_blank">File System Access API</a> which is available in <a href="https://caniuse.com/native-filesystem-api" target="_blank">all modern browsers</a>. It provides an API to access a sandboxed private file system to persistently store and retrieve data.
+Compared to other persistend storage options in the browser (like <a href="rx-storage-indexeddb.html">IndexedDB</a>), the OPFS API has a <strong>way better performance</strong>.</p>
+<p align="center">
+  <img src="files/rx-storage-performance-browser.png" alt="RxStorage performance - browser" width="700">
+</p>
+
+<p>The OPFS API can only be accessed in a <a href="rx-storage-worker.html">WebWorker</a>. It cannot be accessed in the main JavaSCript process, and Iframe or even a <a href="rx-storage-shared-worker.html">SharedWorker</a>.</p>
+<h3 id="pros">Pros</h3>
 <ul>
-<li>Improves read/write performance because these operations run against the in-memory storage.</li>
-<li>Decreases initial page load because it load all data in a single bulk request. It even detects if the database is used for the first time and then it does not have to await the creation of the persistent storage.</li>
+<li>It is really fast, about 3-4 times faster than <a href="slow-indexeddb.html">IndexedDB</a></li>
+<li>It has a small build size.</li>
+<li>It allows to use boolean values as index.</li>
 </ul>
-<h2 id="cons">Cons</h2>
+<h3 id="cons">Cons</h3>
 <ul>
-<li>It does not support attachments.</li>
-<li>When the JavaScript process is killed ungracefully like when the browser crashes or the power of the PC is terminated, it might happen that some memory writes are not persisted to the parent storage.</li>
-<li>This can only be used if all data fits into the memory of the JavaScript process. This is normally not a problem because a browser has much memory these days and plain json document data is not that big.</li>
-<li>Because it has to await an initial replication from the parent storage into the memory, initial page load time can increase when much data is already stored. This is likely not a problem when you store less then <code>10k</code> documents.</li>
+<li>It is part of the <a href="https://rxdb.info/premium.html" target="_blank">RxDB Premium</a> plugin that must be purchased.</li>
+<li>Currently it does not support <a href="rx-attachment.html">attachments</a></li>
+<li>It must be used in a <a href="rx-storage-worker.html">WebWorker</a> which complicates the setup a bit.</li>
+<li>It is in beta mode at the moment which means it can include breaking changes without a RxDB major version increment.</li>
 </ul>
-<p><strong>NOTICE:</strong> The <code>memory-synced</code> plugin is part of <a href="https://rxdb.info/premium.html" target="_blank">RxDB premium</a>. It is not part of the default RxDB module.</p>
 <h2 id="usage">Usage</h2>
-<pre><code class="lang-ts">
-import {
-    getRxStorageIndexedDB
-} from &apos;rxdb-premium/plugins/storage-indexeddb&apos;;
-import {
-    getMemorySyncedRxStorage
-} from &apos;rxdb-premium/plugins/storage-memory-synced&apos;;
-
-/**
- * Here we use the IndexedDB RxStorage as persistence storage.
- * Any other RxStorage can also be used.
- */
-const parentStorage = getRxStorageIndexedDB();
-
-// wrap the persistent storage with the memory synced one.
-const storage = getMemorySyncedRxStorage({
-    storage: parentStorage
-});
-
-// create the RxDatabase like you would do with any other RxStorage
-const db = await createRxDatabase({
-    name: &apos;myDatabase,
-    storage,
-});
-/** ... **/
-</code></pre>
-<h2 id="options">Options</h2>
-<p>Some options can be provided to fine tune the performance.</p>
-<pre><code class="lang-ts">
-<span class="hljs-keyword">import</span> {
-    requestIdlePromise
+<p>The OPFS storage itself must run inside a WebWorker. Therefore we use the <a href="rx-storage-worker.html">Worker RxStorage</a> and let it point to the prebuild <code>opfs.worker.js</code> file that comes shipped with RxDB Premium.</p>
+<pre><code class="lang-ts"><span class="hljs-keyword">import</span> {
+    createRxDatabase
 } from <span class="hljs-string">&apos;rxdb&apos;</span>;
+<span class="hljs-keyword">import</span> { getRxStorageWorker } from <span class="hljs-string">&apos;rxdb-premium/plugins/storage-worker&apos;</span>;
+<span class="hljs-keyword">import</span> { RxStorageOPFSStatics } from <span class="hljs-string">&apos;rxdb-premium/plugins/storage-opfs&apos;</span>;
 
-<span class="hljs-keyword">const</span> storage = getMemorySyncedRxStorage({
-    storage: parentStorage,
-
-    <span class="hljs-comment">/**
-     * Defines how many document
-     * get replicated in a single batch.
-     * [default=50]
-     * 
-     * (optional)
-     */</span>
-    batchSize: <span class="hljs-number">50</span>,
-
-    <span class="hljs-comment">/**
-     * By default, the parent storage will be created without indexes for a faster page load.
-     * Indexes are not needed because the queries will anyway run on the memory storage.
-     * You can disable this behavior by setting keepIndexesOnParent to true.
-     * 
-     * (optional)
-     */</span>
-    keepIndexesOnParent: <span class="hljs-literal">true</span>,
-
-    <span class="hljs-comment">/**
-     * After a write, await until the return value of this method resolves
-     * before replicating with the master storage.
-     * 
-     * By returning requestIdlePromise() we can ensure that the CPU is idle
-     * and no other, more important operation is running. By doing so we can be sure
-     * that the replication does not slow down any rendering of the browser process.
-     * 
-     * (optional)
-     */</span>
-    waitBeforePersist: () =&gt; requestIdlePromise();
+<span class="hljs-keyword">const</span> database = await createRxDatabase({
+    name: <span class="hljs-string">&apos;mydatabase&apos;</span>,
+    storage: getRxStorageWorker(
+        {
+            statics: RxStorageOPFSStatics,
+            <span class="hljs-comment">/**
+             * This file must be statically served from a webserver.
+             * You might want to first copy it somewhere outside of
+             * your node_modules folder.
+             */</span>
+            workerInput: <span class="hljs-string">&apos;node_modules/dist/workers/opfs.worker.js&apos;</span>
+        }
+    )
 });
 </code></pre>
-<h2 id="comparison-with-the-lokijs-rxstorage">Comparison with the LokiJS RxStorage</h2>
-<p>The <a href="rx-storage-lokijs.html">LokiJS RxStorage</a> also loads the whole database state into the memory to improve operation time.
-In comparison to LokiJS, the <code>Memory Synced</code> RxStorage has many improvements and performance optimizations to reduce initial load time. Also it uses replication instead of the leader election to handle multi-tab usage. This alone decreases the initial page load by about 200 milliseconds.</p>
+<h2 id="learn-more-about-opfs">Learn more about OPFS:</h2>
+<ul>
+<li><a href="https://webkit.org/blog/12257/the-file-system-access-api-with-origin-private-file-system/" target="_blank">WebKit: The File System API with Origin Private File System</a></li>
+<li><a href="https://caniuse.com/native-filesystem-api" target="_blank">Browser Support</a></li>
+</ul>
 
                                 
                                 </section>
@@ -2401,12 +2363,12 @@ In comparison to LokiJS, the <code>Memory Synced</code> RxStorage has many impro
 
             
                 
-                <a href="rx-storage-remote.html" class="navigation navigation-prev " aria-label="Previous page: RxStorage Remote">
+                <a href="rx-storage-indexeddb.html" class="navigation navigation-prev " aria-label="Previous page: RxStorage IndexedDB">
                     <i class="fa fa-angle-left"></i>
                 </a>
                 
                 
-                <a href="rx-storage-sharding.html" class="navigation navigation-next " aria-label="Next page: RxStorage Sharding">
+                <a href="rx-storage-sqlite.html" class="navigation navigation-next " aria-label="Next page: RxStorage SQLite">
                     <i class="fa fa-angle-right"></i>
                 </a>
                 
@@ -2417,7 +2379,7 @@ In comparison to LokiJS, the <code>Memory Synced</code> RxStorage has many impro
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"RxStorage Memory Synced","level":"1.11.12","depth":2,"next":{"title":"RxStorage Sharding","level":"1.11.13","depth":2,"path":"rx-storage-sharding.md","ref":"./rx-storage-sharding.md","articles":[]},"previous":{"title":"RxStorage Remote","level":"1.11.11","depth":2,"path":"rx-storage-remote.md","ref":"./rx-storage-remote.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./analytics.js","./next-button.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/logo.svg","custom-favicon":{},"edit-link":{"label":"","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - JavaScript Database","links":{"sidebar":{"RxDB":"/","Follow @twitter ":"https://twitter.com/intent/user?screen_name=rxdbjs","Chat @discord ":"https://discord.gg/tqt9ZttJfD","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"rx-storage-memory-synced.md","mtime":"","type":"markdown"},"gitbook":{"version":"3.2.3","time":""},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"RxStorage OPFS","level":"1.11.6","depth":2,"next":{"title":"RxStorage SQLite","level":"1.11.7","depth":2,"path":"rx-storage-sqlite.md","ref":"./rx-storage-sqlite.md","articles":[]},"previous":{"title":"RxStorage IndexedDB","level":"1.11.5","depth":2,"path":"rx-storage-indexeddb.md","ref":"./rx-storage-indexeddb.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./analytics.js","./next-button.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/logo.svg","custom-favicon":{},"edit-link":{"label":"","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - JavaScript Database","links":{"sidebar":{"RxDB":"/","Follow @twitter ":"https://twitter.com/intent/user?screen_name=rxdbjs","Chat @discord ":"https://discord.gg/tqt9ZttJfD","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"rx-storage-opfs.md","mtime":"","type":"markdown"},"gitbook":{"version":"3.2.3","time":""},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>

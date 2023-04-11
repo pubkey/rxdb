@@ -82,6 +82,7 @@ export declare const ERROR_MESSAGES: {
     DOC20: string;
     DOC21: string;
     DOC22: string;
+    DOC23: string;
     DM1: string;
     DM2: string;
     DM3: string;
