@@ -3106,6 +3106,16 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
             }], testContext);
             const allIds = ['a', 'b'];
 
+            // there might be a delay until both instances know about the events.
+            await waitUntil(async () => {
+                const res = await instances.a.findDocumentsById(allIds, true);
+                return Object.keys(res).length === 2;
+            });
+            await waitUntil(async () => {
+                const res = await instances.b.findDocumentsById(allIds, true);
+                return Object.keys(res).length === 2;
+            });
+
             const resultA = await instances.a.findDocumentsById(allIds, true);
             assert.deepStrictEqual(Object.keys(resultA), allIds);
 
