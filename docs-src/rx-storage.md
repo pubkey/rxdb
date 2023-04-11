@@ -3,6 +3,13 @@
 RxDB is not a self contained database. Instead the data is stored in an implementation of the [RxStorage interface](https://github.com/pubkey/rxdb/blob/master/src/types/rx-storage.interface.d.ts). This allows you to **switch out** the underlying data layer, depending on the JavaScript environment and performance requirements. For example you can use the SQLite storage for a capacitor app or you can use the Dexie.js RxStorage to store data in IndexedDB in a browser based application. There are also storages for other JavaScript runtimes like Node.js, React-Native, NativeScript and more.
 
 
+### Quick Recommendations
+
+- In the Browser: Use the [OPFS RxStorage](./rx-storage-opfs.md) if you have [premium access](https://rxdb.info/premium.html), otherwise use the [Dexie.js](./rx-storage-dexie.md) storage.
+- In Electron and ReactNative: Use the [SQLite RxStorage](./rx-storage-sqlite.md) if you have [premium access](https://rxdb.info/premium.html), otherwise use the [LokiJS](./rx-storage-lokijs.md) storage.
+- In Capactior: Use the [SQLite RxStorage](./rx-storage-sqlite.md) if you have [premium access](https://rxdb.info/premium.html), otherwise use the [Dexie.js](./rx-storage-dexie.md) storage.
+
+
 ## Implementations
 
 ### Dexie.js
@@ -22,7 +29,12 @@ A storage that stores the data in as plain data in the memory of the JavaScript 
 
 ### IndexedDB [[premium](https://rxdb.info/premium.html)]
 
-The IndexedDB `RxStorage` is based on plain IndexedDB. This has the best performance of all other non-in-memory storage, when RxDB is used inside of a browser. [Read more](./rx-storage-indexeddb.md)
+The IndexedDB `RxStorage` is based on plain IndexedDB. This has a better performance than the Dexie.js storage, but it is slower compared to the OPFS storage. [Read more](./rx-storage-indexeddb.md)
+
+### OPFS [[premium](https://rxdb.info/premium.html)]
+
+The OPFS `RxStorage` is based on the File System Access API. This has the best performance of all other non-in-memory storage, when RxDB is used inside of a browser. [Read more](./rx-storage-opfs.md)
+
 
 ### SQLite [[premium](https://rxdb.info/premium.html)]
 

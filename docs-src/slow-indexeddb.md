@@ -1,5 +1,6 @@
 # Why IndexedDB is slow and what to use instead
 
+
 So you have a JavaScript web application that needs to store data at the client side, either to make it offline usable, just for caching purposes or for other reasons.
 
 For in-browser data storage, you have some options:
@@ -9,6 +10,9 @@ For in-browser data storage, you have some options:
 - **LocalStorage** is a synchronous API over asynchronous IO-access. Storing and reading data can fully block the JavaScript process so you cannot use LocalStorage for more then few simple key-value pairs.
 - The **FileSystem API** could be used to store plain binary files, but it is [only supported in chrome](https://caniuse.com/filesystem) for now.
 - **IndexedDB** is an indexed key-object database. It can store json data and iterate over its indexes. It is [widely supported](https://caniuse.com/indexeddb) and stable.
+
+### **UPDATE April 2023:** Since beginning of 2023, all modern browsers ship the **File System Access API** which allows to persistently store data in the browser with a way better performance. For [RxDB](https://rxdb.info/) you can use the [OPFS RxStorage](./rx-storage-opfs.md) to get about 4x performance improvement compared to IndexedDB.
+
 
 It becomes clear that the only way to go is IndexedDB. You start developing your app and everything goes fine.
 But as soon as your app gets bigger, more complex or just handles more data, you might notice something. **IndexedDB is slow**. Not slow like a database on a cheap server, **even slower**! Inserting a few hundred documents can take up several seconds. Time which can be critical for a fast page load. Even sending data over the internet to the backend can be faster then storing it inside of an IndexedDB database.

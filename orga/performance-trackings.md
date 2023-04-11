@@ -1257,12 +1257,14 @@ AFTER5:
 18.47
 13.31
 
-AFTER6: (Send JSON-string via postMessage)
+AFTER6: (Send JSON-string via postMessage to changelog$)
 
 12.47
 12.37
 
-AFTER7:
+AFTER7 (return concated JSON-string instead of complex object):
+7.13
+7
 
 
 
@@ -1284,6 +1286,9 @@ AFTER 3:
 37.9
 38.7
 
+AFTER 4:
+41.8
+39.2
 
 ### Query
 
@@ -1295,6 +1300,13 @@ AFTER:
 performanceResult: 10.91
 'performanceResult: 10.38'
 
+AFTER2:
+10.25
+10.44
+
+AFTER(return json string)
+6.08
+5.77
 
 ### init storage
 

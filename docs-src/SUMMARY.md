@@ -100,6 +100,7 @@
     * [RxStorage LokiJS](./rx-storage-lokijs.md)
     * [RxStorage Memory](./rx-storage-memory.md)
     * [RxStorage IndexedDB](./rx-storage-indexeddb.md)
+    * [RxStorage OPFS](./rx-storage-opfs.md)
     * [RxStorage SQLite](./rx-storage-sqlite.md)
     * [RxStorage FoundationDB](./rx-storage-foundationdb.md)
     * [RxStorage Worker](./rx-storage-worker.md)

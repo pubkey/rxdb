@@ -7,13 +7,12 @@ The IndexedDB `RxStorage` is based on plain IndexedDB and can be used in browser
 
 - It is really fast because it uses many [performance optimizations](./slow-indexeddb.md) for IndexedDB.
 - It has a small build size.
-- It allows to use boolean values as index.
+- It allows to use boolean values as index. ([dexie.js](./rx-storage-dexie.md) does not support that).
 
 ### Cons
 
 - It is part of the [RxDB Premium](https://rxdb.info/premium.html) plugin that must be purchased.
 - Only runs on runtimes that support [IndexedDB v2](https://caniuse.com/indexeddb2), so it does not work on Internet Explorer. 
-
 
 ## Usage
 
