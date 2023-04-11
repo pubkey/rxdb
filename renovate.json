@@ -17,7 +17,7 @@
     "examples/flutter/pubspec.yaml"
   ],
   "rebaseStalePrs": true,
-  "prConcurrentLimit": 4,
+  "prConcurrentLimit": 6,
   "prHourlyLimit": 2,
   "dependencyDashboard": false
 }
