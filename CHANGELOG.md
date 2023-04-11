@@ -9,6 +9,8 @@
 
 <!-- RELEASE BELOW -->
 
+### 14.7.2 (11 April 2023)
+
 ### 14.7.0 (11 April 2023)
 
 - ADD [OPFS RxStorage](https://rxdb.info/rx-storage-opfs.html) for browsers (premium).
