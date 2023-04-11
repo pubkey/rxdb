@@ -48,7 +48,7 @@ const database = await createRxDatabase({
              * You might want to first copy it somewhere outside of
              * your node_modules folder.
              */
-            workerInput: 'node_modules/dist/workers/opfs.worker.js'
+            workerInput: 'node_modules/rxdb-premium/dist/workers/opfs.worker.js'
         }
     )
 });

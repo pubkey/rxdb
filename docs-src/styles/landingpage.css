@@ -776,7 +776,7 @@ header .logo img {
 
 
 .block.sixth .buy-option-inner {
-    min-height: 490px;
+    min-height: 565px;
     background-color: var(--bg-color-dark);
     padding: 10px;
     border-radius: 4px;
@@ -1585,6 +1585,12 @@ samp .cm-comment {
     font-weight: bold;
 }
 
+.premium-request li {
+    padding-bottom: 20px;
+}
+.premium-request ol {
+    padding-bottom: 20px;
+}
 .premium-request iframe {
     width: 700px;
     height: 2150px;
