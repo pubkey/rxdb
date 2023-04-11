@@ -47,6 +47,8 @@ import {
 export * from './couchdb-helper';
 export * from './couchdb-types';
 
+const DEFAULT_RETRY_TIME =  1000 * 5;
+
 export class RxCouchDBReplicationState<RxDocType> extends RxReplicationState<RxDocType, CouchDBCheckpointType> {
     constructor(
         public readonly url: string,
@@ -56,7 +58,7 @@ export class RxCouchDBReplicationState<RxDocType> extends RxReplicationState<RxD
         public readonly pull?: ReplicationPullOptions<RxDocType, CouchDBCheckpointType>,
         public readonly push?: ReplicationPushOptions<RxDocType>,
         public readonly live: boolean = true,
-        public retryTime: number = 1000 * 5,
+        public retryTime: number = DEFAULT_RETRY_TIME,
         public autoStart: boolean = true
     ) {
         super(
@@ -93,6 +95,11 @@ export function replicateCouchDB<RxDocType>(
     if (!options.url.endsWith('/')) {
         options.url = options.url + '/';
     }
+
+    if (options.retryTime === undefined) {
+        options.retryTime = DEFAULT_RETRY_TIME;
+    }
+
     options.waitForLeadership = typeof options.waitForLeadership === 'undefined' ? true : options.waitForLeadership;
     const pullStream$: Subject<RxReplicationPullStreamItem<RxDocType, CouchDBCheckpointType>> = new Subject();
     let replicationPrimitivesPull: ReplicationPullOptions<RxDocType, CouchDBCheckpointType> | undefined;
@@ -271,6 +278,7 @@ export function replicateCouchDB<RxDocType>(
         const startBefore = replicationState.start.bind(replicationState);
         replicationState.start = () => {
             let since: string | number = 'now';
+            let hadErrorLastTime = false;
             const batchSize = options.pull && options.pull.batchSize ? options.pull.batchSize : 20;
 
             (async () => {
@@ -287,14 +295,21 @@ export function replicateCouchDB<RxDocType>(
 
                     let jsonResponse: CouchdbChangesResult;
                     try {
+                        if (hadErrorLastTime) {
+                            pullStream$.next('RESYNC');
+                        }
                         jsonResponse = await (await replicationState.fetch(url)).json();
+                        hadErrorLastTime = false;
                     } catch (err: any) {
-                        pullStream$.error(newRxError('RC_STREAM', {
-                            args: { url },
-                            error: errorToPlainJson(err)
-                        }));
+                        hadErrorLastTime = true;
+                        replicationState.subjects.error.next(
+                            newRxError('RC_STREAM', {
+                                args: { url },
+                                error: errorToPlainJson(err)
+                            })
+                        );
                         // await next tick here otherwise we could go in to a 100% CPU blocking cycle.
-                        await collection.promiseWait(0);
+                        await collection.promiseWait(options.retryTime);
                         continue;
                     }
                     const documents: WithDeleted<RxDocType>[] = jsonResponse.results

@@ -317,6 +317,82 @@ describe('replication-couchdb.test.ts', () => {
             c2.database.destroy();
             server.close();
         });
+
+        it('resumes replication after reconnection', async () => {
+            const server = await SpawnServer.spawn();
+            const c1 = await humansCollection.create(0);
+            const c2 = await humansCollection.create(0);
+            let shouldThrowError = true;
+
+            const fetchStub = (url, options) => {
+                if (shouldThrowError) {
+                    throw new Error('Connection error');
+                }
+
+                return fetchWithCouchDBAuth(url, options);
+            };
+
+            const replicationState1 = replicateCouchDB<RxDocType>({
+                collection: c1,
+                url: server.url,
+                fetch: fetchStub,
+                live: true,
+                retryTime:100,
+                pull: {},
+                push: {}
+            });
+
+            const replicationState2 = await syncLive(c2, server);
+            ensureReplicationHasNoErrors(replicationState2);
+
+            const awaitInSync = () => Promise.all([
+                replicationState1.awaitInSync(),
+                replicationState2.awaitInSync()
+            ]).then(() => Promise.all([
+                replicationState1.awaitInSync(),
+                replicationState2.awaitInSync()
+            ]));
+
+            const awaitDocumentsNumberInCollection = (collection: RxCollection<RxDocType>, documentsNumber: number) => waitUntil(async () => {
+                const count = await collection.count().exec();
+                return count === documentsNumber;
+            });
+
+            // when there is an error, then the initial replication shouldn't work
+            await c1.insert(schemaObjects.human('first'));
+            await c2.insert(schemaObjects.human('second'));
+            await awaitDocumentsNumberInCollection(c1, 1);
+            await awaitDocumentsNumberInCollection(c2, 1);
+
+            // when there is no error, then the initial replication be resumed
+            shouldThrowError = false;
+            await awaitInSync();
+            await awaitDocumentsNumberInCollection(c1, 2);
+            await awaitDocumentsNumberInCollection(c2, 2);
+
+            // when the error occur again (during the event observation), then the replication shouldn't work
+            shouldThrowError = true;
+            await c1.insert(schemaObjects.human('third'));
+            await c2.insert(schemaObjects.human('fourth'));
+            await awaitDocumentsNumberInCollection(c1, 3);
+            await awaitDocumentsNumberInCollection(c2, 3);
+
+            // when the error will stop throwing, then collections should be re-synced
+            shouldThrowError = false;
+            await awaitInSync();
+            await awaitDocumentsNumberInCollection(c1, 4);
+            await awaitDocumentsNumberInCollection(c2, 4);
+
+            // and the event observation should start again
+            await c1.insert(schemaObjects.human('fifth'));
+            await awaitInSync();
+            await awaitDocumentsNumberInCollection(c1, 5);
+            await awaitDocumentsNumberInCollection(c2, 5);
+
+            c1.database.destroy();
+            c2.database.destroy();
+            server.close();
+        });
     });
     describe('ISSUES', () => {
         it('#4299 CouchDB push is throwing error because of missing revision', async () => {
