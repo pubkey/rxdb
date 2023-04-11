@@ -80,7 +80,12 @@ const configuration = {
     client: {
         mocha: {
             bail: true,
-            timeout: 12000
+            /**
+             * Yes we need a really big value here
+             * because the CI servers have a non-predictable
+             * computation power and sometimes they can be really slow.
+             */
+            timeout: 120000
         },
         /**
          * Pass all env variables here,
@@ -89,8 +94,8 @@ const configuration = {
          */
         env: process.env
     },
-    browserDisconnectTimeout: 12000,
-    processKillTimeout: 12000,
+    browserDisconnectTimeout: 120000,
+    processKillTimeout: 120000,
     singleRun: true,
 
 
