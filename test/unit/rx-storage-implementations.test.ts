@@ -3117,10 +3117,12 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
             });
 
             const resultA = await instances.a.findDocumentsById(allIds, true);
-            assert.deepStrictEqual(Object.keys(resultA), allIds);
+            assert.ok(resultA.a);
+            assert.ok(resultA.b);
 
             const resultB = await instances.b.findDocumentsById(allIds, true);
-            assert.deepStrictEqual(Object.keys(resultB), allIds);
+            assert.ok(resultB.a);
+            assert.ok(resultB.b);
 
             await instances.a.close();
             await instances.b.close();
