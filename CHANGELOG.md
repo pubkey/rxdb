@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- ADD [OPFS RxStorage](https://rxdb.info/rx-storage-opfs.html) for browsers.
+- ADD [OPFS RxStorage](https://rxdb.info/rx-storage-opfs.html) for browsers (premium).
 - ADD Check to ensure that the primaryKey does not contain a double-quote.
 
 <!-- ADD new changes here! -->
