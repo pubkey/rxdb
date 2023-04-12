@@ -75,6 +75,9 @@ When you create more than one instance of the same database in a single javascri
 
 One big benefit of having a realtime database is that big performance optimizations can be done when the database knows a query is observed and the updated results are needed continuously. RxDB uses the [EventReduce Algorithm](https://github.com/pubkey/event-reduce) to optimize observer or recurring queries.
 
+For better performance, you should always set `eventReduce: true`. This will also be the default in the next major RxDB version.
+
+
 ### ignoreDuplicate
 `(optional=false)`
 If you create multiple RxDatabase-instances with the same name and same adapter, it's very likely that you have done something wrong.

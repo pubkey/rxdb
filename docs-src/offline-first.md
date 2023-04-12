@@ -1,6 +1,6 @@
 # Offline First
 
-Offline-First is a software paradigm where the software must work as well offline as it does online.
+Offline-First (aka local first) is a software paradigm where the software must work as well offline as it does online.
 To implement this, you have to store data at the client side, so that your application can still access it when the internet goes away.
 This can be either done with complex caching strategies, or by using an offline first database (like [RxDB](https://github.com/pubkey/rxdb)) that stores the data inside of IndexedDb and replicates it from and to the backend in the background. This makes the local database, not the server, the gateway for all persistent changes in application state.
 
