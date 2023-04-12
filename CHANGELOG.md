@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- FIX(docs) `eventReduce: false` is the default. [#4614](https://github.com/pubkey/rxdb/pull/4614)
+- FIX(docs) `eventReduce: false` is the default. [#4614](https://github.com/pubkey/rxdb/pull/4614) You have to manually enable eventReduce.
 
 <!-- ADD new changes here! -->
 
