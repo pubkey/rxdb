@@ -34,7 +34,7 @@
 <p align="center">
  	  <a href="https://discord.gg/tqt9ZttJfD"><img src="https://img.shields.io/discord/969553741705539624?label=discord&style=flat-square&color=5a66f6"></a>
 	  &nbsp;
-    <a href="https://twitter.com/intent/follow?screen_name=rxdbjs"><img src="https://img.shields.io/twitter/follow/rxdbjs?color=1DA1F2&label=twitter&style=flat-square"></a>
+    <a href="https://twitter.com/intent/follow?screen_name=rxdbjs"><img src="https://img.shields.io/badge/twitter-%40rxdbjs-1DA1F2?style=flat-square"></a>
     &nbsp;
     <a href="http://eepurl.com/imD7WA"><img src="https://img.shields.io/badge/newsletter-subscribe-e05b29?style=flat-square"></a>
 </p>
