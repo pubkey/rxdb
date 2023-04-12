@@ -2,6 +2,11 @@
 
 This list contains things that have to be done but will create breaking changes.
 
+
+## Set eventReduce:true as default
+
+See https://github.com/pubkey/rxdb/pull/4614
+
 ## Do not allow type mixing
 
 In the RxJsonSchema, a property of a document can have multiple types like
