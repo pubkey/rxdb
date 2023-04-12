@@ -2,6 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
+- FIX(docs) `eventReduce: false` is the default. [#4614](https://github.com/pubkey/rxdb/pull/4614)
 
 <!-- ADD new changes here! -->
 
