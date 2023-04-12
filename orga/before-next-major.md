@@ -43,7 +43,6 @@ Proposed solution:
 
 ## Refactor data-migrator
 
- - The current implementation does not use pouchdb's bulkDocs which is much faster.
  - This could have been done in much less code which would be easier to understand.
  - Migration strategies should be defined [like in WatermelonDB](https://nozbe.github.io/WatermelonDB/Advanced/Migrations.html) with a `toVersion` version field. We should also add a `fromVersion` field so people could implement performance shortcuts by directly jumping several versions. The current migration strategies use the array index as `toVersion` which is confusing.
 
