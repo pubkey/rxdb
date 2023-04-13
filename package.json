@@ -365,7 +365,13 @@
     "lint"
   ],
   "peerDependencies": {
-    "rxjs": "^7.8.0"
+    "rxjs": "^7.8.0",
+    "z-schema": "5.0.5"
+  },
+  "peerDependenciesMeta": {
+    "z-schema": {
+      "optional": true
+    }
   },
   "dependencies": {
     "@babel/runtime": "7.21.0",
@@ -402,8 +408,7 @@
     "socket.io-client": "4.6.1",
     "unload": "2.4.1",
     "util": "0.12.5",
-    "ws": "8.13.0",
-    "z-schema": "5.0.5"
+    "ws": "8.13.0"
   },
   "devDependencies": {
     "@babel/cli": "7.21.0",
@@ -509,6 +514,7 @@
     "webpack": "5.76.3",
     "webpack-bundle-analyzer": "4.8.0",
     "webpack-cli": "5.0.1",
-    "webpack-dev-server": "4.13.1"
+    "webpack-dev-server": "4.13.1",
+    "z-schema": "5.0.5"
   }
 }
