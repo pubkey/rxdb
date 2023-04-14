@@ -424,7 +424,7 @@
     "@babel/preset-typescript": "7.21.4",
     "@babel/types": "7.21.4",
     "@faker-js/faker": "7.6.0",
-    "@rollup/plugin-commonjs": "24.0.1",
+    "@rollup/plugin-commonjs": "24.1.0",
     "@rollup/plugin-node-resolve": "15.0.2",
     "@types/assert": "1.5.6",
     "@types/core-js": "2.5.5",
