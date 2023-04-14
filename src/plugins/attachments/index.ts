@@ -85,7 +85,8 @@ export class RxAttachment {
     async getData(): Promise<Blob> {
         const plainDataBase64 = await this.doc.collection.storageInstance.getAttachmentData(
             this.doc.primary,
-            this.id
+            this.id,
+            this.digest
         );
         const ret = await createBlobFromBase64(
             plainDataBase64,
@@ -208,7 +209,11 @@ export async function preMigrateDocument<RxDocType>(
             Object.keys(attachments).map(async (attachmentId) => {
                 const attachment: RxAttachmentData = attachments[attachmentId];
                 const docPrimary: string = (data.docData as any)[data.oldCollection.schema.primaryPath];
-                const rawAttachmentData = await data.oldCollection.storageInstance.getAttachmentData(docPrimary, attachmentId);
+                const rawAttachmentData = await data.oldCollection.storageInstance.getAttachmentData(
+                    docPrimary,
+                    attachmentId,
+                    attachment.digest
+                );
                 newAttachments[attachmentId] = {
                     length: attachment.length,
                     type: attachment.type,

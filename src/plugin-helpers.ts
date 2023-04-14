@@ -247,9 +247,10 @@ export function wrapRxStorageInstance<RxDocType>(
         },
         getAttachmentData: async (
             documentId: string,
-            attachmentId: string
+            attachmentId: string,
+            digest: string
         ) => {
-            let data = await instance.getAttachmentData(documentId, attachmentId);
+            let data = await instance.getAttachmentData(documentId, attachmentId, digest);
             data = await modifyAttachmentFromStorage(data);
             return data;
         },

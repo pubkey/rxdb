@@ -250,7 +250,8 @@ export interface RxStorageInstance<
      */
     getAttachmentData(
         documentId: string,
-        attachmentId: string
+        attachmentId: string,
+        digest: string
     ): Promise<string>;
 
     /**

@@ -722,10 +722,11 @@ export function getWrappedStorageInstance<
         },
         getAttachmentData(
             documentId: string,
-            attachmentId: string
+            attachmentId: string,
+            digest: string
         ) {
             return database.lockedRun(
-                () => storageInstance.getAttachmentData(documentId, attachmentId)
+                () => storageInstance.getAttachmentData(documentId, attachmentId, digest)
             );
         },
         getChangedDocumentsSince(limit: number, checkpoint?: any) {

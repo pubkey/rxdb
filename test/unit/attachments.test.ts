@@ -272,18 +272,18 @@ config.parallel('attachments.test.ts', () => {
             const c = await humansCollection.createAttachments(1);
             let doc = await c.findOne().exec(true);
             const attachmentId = 'cat.txt';
-            await doc.putAttachment({
+            const attachment = await doc.putAttachment({
                 id: attachmentId,
                 data: createBlob('meow I am a kitty with a knife', 'text/plain'),
                 type: 'text/plain'
             });
-            await c.storageInstance.getAttachmentData(doc.primary, attachmentId);
+            await c.storageInstance.getAttachmentData(doc.primary, attachmentId, attachment.digest);
 
             doc = await c.findOne().exec(true);
             await doc.remove();
             let hasThrown = false;
             try {
-                await c.storageInstance.getAttachmentData(doc.primary, attachmentId);
+                await c.storageInstance.getAttachmentData(doc.primary, attachmentId, attachment.digest);
             } catch (err) {
                 hasThrown = true;
             }
@@ -415,7 +415,7 @@ config.parallel('attachments.test.ts', () => {
 
             // the data stored in the storage must be encrypted
             const lowLevelStorage: RxStorageInstance<HumanDocumentType, any, any> = (doc.collection.storageInstance.originalStorageInstance as any).originalStorageInstance;
-            const encryptedData = await lowLevelStorage.getAttachmentData(doc.primary, 'cat.txt');
+            const encryptedData = await lowLevelStorage.getAttachmentData(doc.primary, 'cat.txt', attachment.digest);
             const dataStringBase64 = await blobToString(encryptedData);
             const dataString = b64DecodeUnicode(dataStringBase64);
             assert.notStrictEqual(dataString, insertData);
