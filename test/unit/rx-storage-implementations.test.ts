@@ -2455,7 +2455,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 assert.strictEqual(typeof (writeResult._attachments.foo as any).data, 'undefined');
                 assert.ok(writeResult._attachments.foo.digest.length > 3);
 
-                const attachmentDataAfter = await storageInstance.getAttachmentData('foobar', 'foo');
+                const attachmentDataAfter = await storageInstance.getAttachmentData('foobar', 'foo', writeResult._attachments.foo.digest);
                 assert.strictEqual(attachmentDataAfter, dataStringBase64);
 
                 storageInstance.close();
@@ -2692,8 +2692,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                         }
                     }
                 };
-                await storageInstance.bulkWrite([{ document: writeData }], testContext);
-                await storageInstance.getAttachmentData('foobar', 'foo');
+                const writeResult = await storageInstance.bulkWrite([{ document: writeData }], testContext);
+                await storageInstance.getAttachmentData('foobar', 'foo', writeResult.success.foobar._attachments.foo.digest);
 
                 const deleteData = clone(writeData);
                 deleteData._meta.lwt = now();
@@ -2711,7 +2711,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
 
                 let hasThrown = false;
                 try {
-                    await storageInstance.getAttachmentData('foobar', 'foo');
+                    await storageInstance.getAttachmentData('foobar', 'foo', writeResult.success.foobar._attachments.foo.digest);
                 } catch (err) {
                     hasThrown = true;
                 }
@@ -2750,6 +2750,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 );
 
                 // insert documents
+                const bulkWriteResult: ById<RxStorageBulkWriteResponse<TestDocType>> = {};
                 for (const storageInstance of storageInstances) {
                     await Promise.all(
                         new Array(docsAmount)
@@ -2780,13 +2781,13 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                                             };
                                         })
                                 );
-                                await storageInstance.bulkWrite([{ document: writeData }], testContext);
+                                bulkWriteResult[docId] = await storageInstance.bulkWrite([{ document: writeData }], testContext);
                             })
                     );
                 }
 
 
-                const loadMe: { docId: string; attachmentId: string; }[] = [];
+                const loadMe: { docId: string; attachmentId: string; digest: string; }[] = [];
                 new Array(docsAmount)
                     .fill(0)
                     .forEach((_v, docId) => {
@@ -2795,7 +2796,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                             .forEach((_vv, attachmentId) => {
                                 loadMe.push({
                                     docId: docId + '',
-                                    attachmentId: attachmentId + ''
+                                    attachmentId: attachmentId + '',
+                                    digest: bulkWriteResult[docId].success[docId]._attachments[attachmentId].digest
                                 });
                             });
                     });
@@ -2804,7 +2806,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     storageInstances.map(async (storageInstance) => {
                         await Promise.all(
                             loadMe.map(async (v) => {
-                                const attachmentData = await storageInstance.getAttachmentData(v.docId, v.attachmentId);
+                                const attachmentData = await storageInstance.getAttachmentData(v.docId, v.attachmentId, v.digest);
                                 assert.ok(attachmentData.length > 20);
                             })
                         );
