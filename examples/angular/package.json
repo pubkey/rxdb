@@ -75,7 +75,7 @@
     "@angular/compiler-cli": "15.2.7",
     "@angular/language-service": "15.2.7",
     "@capacitor/cli": "latest",
-    "@nguniversal/builders": "15.2.0",
+    "@nguniversal/builders": "15.2.1",
     "@types/express": "4.17.17",
     "@types/mocha": "10.0.1",
     "@types/node": "18.15.11",
