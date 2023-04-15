@@ -20,7 +20,6 @@ The OPFS API can only be accessed in a [WebWorker](./rx-storage-worker.md). It c
 ### Cons
 
 - It is part of the [RxDB Premium](https://rxdb.info/premium.html) plugin that must be purchased.
-- Currently it does not support [attachments](./rx-attachment.md)
 - It must be used in a [WebWorker](./rx-storage-worker.md) which complicates the setup a bit.
 - It is in beta mode at the moment which means it can include breaking changes without a RxDB major version increment.
 
