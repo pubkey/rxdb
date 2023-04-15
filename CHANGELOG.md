@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- FIX(data-migrator) use `count()` instead of `query()` to count documents.
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

@@ -123,12 +123,11 @@ export class DataMigrator {
                 .then(ret => {
                     this.nonMigratedOldCollections = ret;
                     this.allOldCollections = this.nonMigratedOldCollections.slice(0);
-
-                    const getAllDocuments = async (
+                    const storage = this.database.storage;
+                    async function countAllDocuments(
                         storageInstance: RxStorageInstance<any, any, any>,
                         schema: RxJsonSchema<any>
-                    ): Promise<RxDocumentData<any>[]> => {
-                        const storage = this.database.storage;
+                    ): Promise<number> {
                         const getAllQueryPrepared = storage.statics.prepareQuery(
                             storageInstance.schema,
                             normalizeMangoQuery(
@@ -136,17 +135,15 @@ export class DataMigrator {
                                 {}
                             )
                         );
-                        const queryResult = await storageInstance.query(getAllQueryPrepared);
-                        const allDocs = queryResult.documents;
-                        return allDocs;
-                    };
-
+                        const queryResult = await storageInstance.count(getAllQueryPrepared);
+                        return queryResult.count;
+                    }
                     const countAll: Promise<number[]> = Promise.all(
                         this.nonMigratedOldCollections
-                            .map(oldCol => getAllDocuments(
+                            .map(oldCol => countAllDocuments(
                                 oldCol.storageInstance,
                                 oldCol.schema.jsonSchema
-                            ).then(allDocs => allDocs.length))
+                            ))
                     );
                     return countAll;
                 })

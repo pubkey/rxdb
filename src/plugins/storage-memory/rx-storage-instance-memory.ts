@@ -410,7 +410,10 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
             this.internals.attachments,
             attachmentMapKey(documentId, attachmentId)
         );
-        if (data.digest !== digest) {
+        if (
+            !digest ||
+            data.digest !== digest
+        ) {
             throw new Error('attachment does not exist');
         }
         return Promise.resolve(data.writeData.data);
