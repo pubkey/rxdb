@@ -205,7 +205,7 @@ var RxStorageInstanceMemory = /*#__PURE__*/function () {
     }
     return _utils.PROMISE_RESOLVE_TRUE;
   };
-  _proto.getAttachmentData = function getAttachmentData(documentId, attachmentId) {
+  _proto.getAttachmentData = function getAttachmentData(documentId, attachmentId, _digest) {
     (0, _memoryHelper.ensureNotRemoved)(this);
     var data = (0, _utils.getFromMapOrThrow)(this.internals.attachments, (0, _memoryHelper.attachmentMapKey)(documentId, attachmentId));
     return Promise.resolve(data.data);

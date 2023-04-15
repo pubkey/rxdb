@@ -192,7 +192,7 @@ export var RxStorageInstanceDexie = /*#__PURE__*/function () {
      */
     return true;
   };
-  _proto.getAttachmentData = function getAttachmentData(_documentId, _attachmentId) {
+  _proto.getAttachmentData = function getAttachmentData(_documentId, _attachmentId, _digest) {
     ensureNotClosed(this);
     throw new Error('Attachments are not implemented in the dexie RxStorage. Make a pull request.');
   };

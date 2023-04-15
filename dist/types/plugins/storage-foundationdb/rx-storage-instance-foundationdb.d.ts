@@ -17,7 +17,7 @@ export declare class RxStorageInstanceFoundationDB<RxDocType> implements RxStora
     findDocumentsById(ids: string[], withDeleted: boolean): Promise<RxDocumentDataById<RxDocType>>;
     query(preparedQuery: FoundationDBPreparedQuery<RxDocType>): Promise<RxStorageQueryResult<RxDocType>>;
     count(preparedQuery: FoundationDBPreparedQuery<RxDocType>): Promise<RxStorageCountResult>;
-    getAttachmentData(documentId: string, attachmentId: string): Promise<string>;
+    getAttachmentData(documentId: string, attachmentId: string, _digest: string): Promise<string>;
     getChangedDocumentsSince(limit: number, checkpoint?: RxStorageDefaultCheckpoint): Promise<{
         documents: RxDocumentData<RxDocType>[];
         checkpoint: RxStorageDefaultCheckpoint;

@@ -9,6 +9,8 @@
 
 <!-- RELEASE BELOW -->
 
+### 14.8.1 (15 April 2023)
+
 ### 14.8.0 (15 April 2023)
 
 - FIX(docs) `eventReduce: false` is the default. [#4614](https://github.com/pubkey/rxdb/pull/4614) You have to manually enable eventReduce.

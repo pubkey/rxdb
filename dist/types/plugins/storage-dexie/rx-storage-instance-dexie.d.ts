@@ -26,7 +26,7 @@ export declare class RxStorageInstanceDexie<RxDocType> implements RxStorageInsta
     remove(): Promise<void>;
     changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, RxStorageDefaultCheckpoint>>;
     cleanup(minimumDeletedTime: number): Promise<boolean>;
-    getAttachmentData(_documentId: string, _attachmentId: string): Promise<string>;
+    getAttachmentData(_documentId: string, _attachmentId: string, _digest: string): Promise<string>;
     close(): Promise<void>;
     conflictResultionTasks(): Observable<RxConflictResultionTask<RxDocType>>;
     resolveConflictResultionTask(_taskSolution: RxConflictResultionTaskSolution<RxDocType>): Promise<void>;

@@ -151,8 +151,8 @@ export var RxStorageInstanceRemote = /*#__PURE__*/function () {
   _proto2.count = function count(preparedQuery) {
     return this.requestRemote('count', [preparedQuery]);
   };
-  _proto2.getAttachmentData = function getAttachmentData(documentId, attachmentId) {
-    return this.requestRemote('getAttachmentData', [documentId, attachmentId]);
+  _proto2.getAttachmentData = function getAttachmentData(documentId, attachmentId, digest) {
+    return this.requestRemote('getAttachmentData', [documentId, attachmentId, digest]);
   };
   _proto2.getChangedDocumentsSince = function getChangedDocumentsSince(limit, checkpoint) {
     return this.requestRemote('getChangedDocumentsSince', [limit, checkpoint]);

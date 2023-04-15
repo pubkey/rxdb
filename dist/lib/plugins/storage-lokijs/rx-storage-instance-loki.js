@@ -165,7 +165,7 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
       mode: 'fast'
     };
   };
-  _proto.getAttachmentData = function getAttachmentData(_documentId, _attachmentId) {
+  _proto.getAttachmentData = function getAttachmentData(_documentId, _attachmentId, _digest) {
     throw new Error('Attachments are not implemented in the lokijs RxStorage. Make a pull request.');
   };
   _proto.getChangedDocumentsSince = async function getChangedDocumentsSince(limit, checkpoint) {

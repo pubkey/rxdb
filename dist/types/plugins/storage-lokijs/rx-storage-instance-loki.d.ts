@@ -19,7 +19,7 @@ export declare class RxStorageInstanceLoki<RxDocType> implements RxStorageInstan
     findDocumentsById(ids: string[], deleted: boolean): Promise<RxDocumentDataById<RxDocType>>;
     query(preparedQuery: MangoQuery<RxDocType>): Promise<RxStorageQueryResult<RxDocType>>;
     count(preparedQuery: MangoQuery<RxDocType>): Promise<RxStorageCountResult>;
-    getAttachmentData(_documentId: string, _attachmentId: string): Promise<string>;
+    getAttachmentData(_documentId: string, _attachmentId: string, _digest: string): Promise<string>;
     getChangedDocumentsSince(limit: number, checkpoint?: RxStorageDefaultCheckpoint | null): Promise<{
         documents: RxDocumentData<RxDocType>[];
         checkpoint: RxStorageDefaultCheckpoint;

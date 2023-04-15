@@ -153,7 +153,7 @@ export var RxStorageInstanceFoundationDB = /*#__PURE__*/function () {
       mode: 'fast'
     };
   };
-  _proto.getAttachmentData = async function getAttachmentData(documentId, attachmentId) {
+  _proto.getAttachmentData = async function getAttachmentData(documentId, attachmentId, _digest) {
     var dbs = await this.internals.dbsPromise;
     var attachment = await dbs.attachments.get(attachmentMapKey(documentId, attachmentId));
     return attachment.data;

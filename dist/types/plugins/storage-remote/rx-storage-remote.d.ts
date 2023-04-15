@@ -31,7 +31,7 @@ export declare class RxStorageInstanceRemote<RxDocType> implements RxStorageInst
     findDocumentsById(ids: string[], deleted: boolean): Promise<RxDocumentDataById<RxDocType>>;
     query(preparedQuery: any): Promise<RxStorageQueryResult<RxDocType>>;
     count(preparedQuery: any): Promise<RxStorageCountResult>;
-    getAttachmentData(documentId: string, attachmentId: string): Promise<string>;
+    getAttachmentData(documentId: string, attachmentId: string, digest: string): Promise<string>;
     getChangedDocumentsSince(limit: number, checkpoint?: any): Promise<{
         documents: RxDocumentData<RxDocType>[];
         checkpoint: any;
