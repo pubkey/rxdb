@@ -29,7 +29,8 @@ import {
     createBlob,
     getBlobSize,
     getSortComparator,
-    getQueryMatcher
+    getQueryMatcher,
+    getFromMapOrCreate
 } from '../../';
 import Ajv from 'ajv';
 import {
@@ -2723,18 +2724,18 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 const collectionsAmount = 3;
                 const docsAmount = 3;
                 const attachmentsPerDoc = 3;
-                const databaseName = randomCouchString(10);
+                const databaseName = 'db' + randomCouchString(10);
                 const databaseInstanceToken = randomCouchString(10);
 
                 const storage = config.storage.getStorage();
                 const storageInstances = await Promise.all(
                     new Array(collectionsAmount)
                         .fill(0)
-                        .map(async () => {
+                        .map(async (_v, idx) => {
                             const storageInstance = await storage.createStorageInstance<TestDocType>({
                                 databaseInstanceToken,
                                 databaseName,
-                                collectionName: randomCouchString(12),
+                                collectionName: 'collection' + idx,
                                 schema: Object.assign(
                                     getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                                     {
@@ -2750,7 +2751,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 );
 
                 // insert documents
-                const bulkWriteResult: ById<RxStorageBulkWriteResponse<TestDocType>> = {};
+                const loadMe: Map<RxStorageInstance<TestDocType, any, any>, { docId: string; attachmentId: string; digest: string; }[]> = new Map();
                 for (const storageInstance of storageInstances) {
                     await Promise.all(
                         new Array(docsAmount)
@@ -2758,7 +2759,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                             .map(async (_v, docId) => {
                                 const writeData: RxDocumentWriteData<TestDocType> = {
                                     key: docId + '',
-                                    value: randomCouchString(5),
+                                    value: 'foobar',
                                     _rev: EXAMPLE_REVISION_1,
                                     _deleted: false,
                                     _meta: {
@@ -2781,38 +2782,34 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                                             };
                                         })
                                 );
-                                bulkWriteResult[docId] = await storageInstance.bulkWrite([{ document: writeData }], testContext);
+                                const result = await storageInstance.bulkWrite([{ document: writeData }], testContext);
+                                const loadAr = getFromMapOrCreate(
+                                    loadMe,
+                                    storageInstance,
+                                    () => []
+                                );
+                                Object.entries(result.success[docId]._attachments).forEach(([attachmentId, val]) => {
+                                    loadAr.push({
+                                        attachmentId,
+                                        digest: val.digest,
+                                        docId: docId + ''
+                                    });
+                                });
+                                await storageInstance.findDocumentsById(['foobar'], true);
                             })
                     );
                 }
-
-
-                const loadMe: { docId: string; attachmentId: string; digest: string; }[] = [];
-                new Array(docsAmount)
-                    .fill(0)
-                    .forEach((_v, docId) => {
-                        new Array(attachmentsPerDoc)
-                            .fill(0)
-                            .forEach((_vv, attachmentId) => {
-                                loadMe.push({
-                                    docId: docId + '',
-                                    attachmentId: attachmentId + '',
-                                    digest: bulkWriteResult[docId].success[docId]._attachments[attachmentId].digest
-                                });
-                            });
-                    });
-
                 await Promise.all(
-                    storageInstances.map(async (storageInstance) => {
+                    Array.from(loadMe.entries()).map(async ([storageInstance, load]) => {
                         await Promise.all(
-                            loadMe.map(async (v) => {
+                            load.map(async (v) => {
                                 const attachmentData = await storageInstance.getAttachmentData(v.docId, v.attachmentId, v.digest);
+                                console.log('attachmentData.length: ' + attachmentData.length);
                                 assert.ok(attachmentData.length > 20);
                             })
                         );
                     })
                 );
-
                 await Promise.all(
                     storageInstances.map(i => i.close())
                 );
