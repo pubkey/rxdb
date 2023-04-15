@@ -2,15 +2,18 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- FIX(docs) `eventReduce: false` is the default. [#4614](https://github.com/pubkey/rxdb/pull/4614) You have to manually enable eventReduce.
-- ADD(storage-opfs) attachments support.
-- CHANGE `RxStorageInstance.getAttachmentData()` add `digest` parameter.
 
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 14.8.0 (15 April 2023)
+
+- FIX(docs) `eventReduce: false` is the default. [#4614](https://github.com/pubkey/rxdb/pull/4614) You have to manually enable eventReduce.
+- ADD(storage-opfs) attachments support.
+- CHANGE `RxStorageInstance.getAttachmentData()` add `digest` parameter.
 
 ### 14.7.2 (11 April 2023)
 

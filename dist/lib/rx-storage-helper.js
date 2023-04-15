@@ -531,8 +531,8 @@ rxJsonSchema) {
     findDocumentsById(ids, deleted) {
       return database.lockedRun(() => storageInstance.findDocumentsById(ids, deleted));
     },
-    getAttachmentData(documentId, attachmentId) {
-      return database.lockedRun(() => storageInstance.getAttachmentData(documentId, attachmentId));
+    getAttachmentData(documentId, attachmentId, digest) {
+      return database.lockedRun(() => storageInstance.getAttachmentData(documentId, attachmentId, digest));
     },
     getChangedDocumentsSince(limit, checkpoint) {
       return database.lockedRun(() => storageInstance.getChangedDocumentsSince((0, _utils.ensureNotFalsy)(limit), checkpoint));

@@ -2299,7 +2299,7 @@
   storage: getRxStorageDexie(),       <span class="hljs-comment">// &lt;- RxStorage</span>
   password: <span class="hljs-string">&apos;myPassword&apos;</span>,             <span class="hljs-comment">// &lt;- password (optional)</span>
   multiInstance: <span class="hljs-literal">true</span>,                <span class="hljs-comment">// &lt;- multiInstance (optional, default: true)</span>
-  eventReduce: <span class="hljs-literal">true</span>                   <span class="hljs-comment">// &lt;- eventReduce (optional, default: true)</span>
+  eventReduce: <span class="hljs-literal">true</span>,                  <span class="hljs-comment">// &lt;- eventReduce (optional, default: false)</span>
   cleanupPolicy: {}                   <span class="hljs-comment">// &lt;- custom cleanup policy (optional) </span>
 });
 </code></pre>
@@ -2343,8 +2343,9 @@ If you want to use encrypted fields in the collections of a database, you have t
 When you create more than one instance of the same database in a single javascript-runtime, you should set <code>multiInstance</code> to <code>true</code>. This will enable the event sharing between the two instances. For example when the user has opened multiple browser windows, events will be shared between them so that both windows react to the same changes.
 <code>multiInstance</code> should be set to <code>false</code> when you have single-instances like a single Node.js-process, a react-native-app, a cordova-app or a single-window electron app which can decrease the startup time because no instance coordination has to be done.</p>
 <h3 id="eventreduce">eventReduce</h3>
-<p><code>(optional=true)</code></p>
+<p><code>(optional=false)</code></p>
 <p>One big benefit of having a realtime database is that big performance optimizations can be done when the database knows a query is observed and the updated results are needed continuously. RxDB uses the <a href="https://github.com/pubkey/event-reduce" target="_blank">EventReduce Algorithm</a> to optimize observer or recurring queries.</p>
+<p>For better performance, you should always set <code>eventReduce: true</code>. This will also be the default in the next major RxDB version.</p>
 <h3 id="ignoreduplicate">ignoreDuplicate</h3>
 <p><code>(optional=false)</code>
 If you create multiple RxDatabase-instances with the same name and same adapter, it&apos;s very likely that you have done something wrong.

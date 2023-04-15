@@ -1409,8 +1409,8 @@ function wrapRxStorageInstance(instance, modifyToStorage, modifyFromStorage, mod
         documents: documents
       }));
     },
-    getAttachmentData: async (documentId, attachmentId) => {
-      var data = await instance.getAttachmentData(documentId, attachmentId);
+    getAttachmentData: async (documentId, attachmentId, digest) => {
+      var data = await instance.getAttachmentData(documentId, attachmentId, digest);
       data = await modifyAttachmentFromStorage(data);
       return data;
     },
@@ -2923,7 +2923,7 @@ exports.RXDB_VERSION = void 0;
 /**
  * This file is replaced in the 'npm run build:version' script.
  */
-var RXDB_VERSION = '14.7.2';
+var RXDB_VERSION = '14.8.0';
 exports.RXDB_VERSION = RXDB_VERSION;
 
 },{}],28:[function(require,module,exports){
@@ -8677,8 +8677,8 @@ rxJsonSchema) {
     findDocumentsById(ids, deleted) {
       return database.lockedRun(() => storageInstance.findDocumentsById(ids, deleted));
     },
-    getAttachmentData(documentId, attachmentId) {
-      return database.lockedRun(() => storageInstance.getAttachmentData(documentId, attachmentId));
+    getAttachmentData(documentId, attachmentId, digest) {
+      return database.lockedRun(() => storageInstance.getAttachmentData(documentId, attachmentId, digest));
     },
     getChangedDocumentsSince(limit, checkpoint) {
       return database.lockedRun(() => storageInstance.getChangedDocumentsSince((0, _utils.ensureNotFalsy)(limit), checkpoint));

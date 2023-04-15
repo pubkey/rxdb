@@ -48,7 +48,7 @@ export var RxAttachment = /*#__PURE__*/function () {
    * returns the data for the attachment
    */;
   _proto.getData = async function getData() {
-    var plainDataBase64 = await this.doc.collection.storageInstance.getAttachmentData(this.doc.primary, this.id);
+    var plainDataBase64 = await this.doc.collection.storageInstance.getAttachmentData(this.doc.primary, this.id, this.digest);
     var ret = await createBlobFromBase64(plainDataBase64, this.type);
     return ret;
   };
@@ -125,7 +125,7 @@ export async function preMigrateDocument(data) {
     await Promise.all(Object.keys(attachments).map(async attachmentId => {
       var attachment = attachments[attachmentId];
       var docPrimary = data.docData[data.oldCollection.schema.primaryPath];
-      var rawAttachmentData = await data.oldCollection.storageInstance.getAttachmentData(docPrimary, attachmentId);
+      var rawAttachmentData = await data.oldCollection.storageInstance.getAttachmentData(docPrimary, attachmentId, attachment.digest);
       newAttachments[attachmentId] = {
         length: attachment.length,
         type: attachment.type,

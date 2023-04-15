@@ -166,8 +166,8 @@ export function wrapRxStorageInstance(instance, modifyToStorage, modifyFromStora
         documents: documents
       }));
     },
-    getAttachmentData: async (documentId, attachmentId) => {
-      var data = await instance.getAttachmentData(documentId, attachmentId);
+    getAttachmentData: async (documentId, attachmentId, digest) => {
+      var data = await instance.getAttachmentData(documentId, attachmentId, digest);
       data = await modifyAttachmentFromStorage(data);
       return data;
     },
