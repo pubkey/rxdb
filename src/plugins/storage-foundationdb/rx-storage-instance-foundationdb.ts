@@ -246,7 +246,7 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
             mode: 'fast'
         };
     }
-    async getAttachmentData(documentId: string, attachmentId: string): Promise<string> {
+    async getAttachmentData(documentId: string, attachmentId: string, _digest: string): Promise<string> {
         const dbs = await this.internals.dbsPromise;
         const attachment = await dbs.attachments.get(attachmentMapKey(documentId, attachmentId));
         return attachment.data;

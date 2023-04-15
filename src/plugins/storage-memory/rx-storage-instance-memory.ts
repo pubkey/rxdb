@@ -394,7 +394,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         return PROMISE_RESOLVE_TRUE;
     }
 
-    getAttachmentData(documentId: string, attachmentId: string): Promise<string> {
+    getAttachmentData(documentId: string, attachmentId: string, _digest: string): Promise<string> {
         ensureNotRemoved(this);
         const data = getFromMapOrThrow(
             this.internals.attachments,

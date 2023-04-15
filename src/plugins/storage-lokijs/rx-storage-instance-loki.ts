@@ -118,7 +118,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
                 // this instance is leader now, so it has to reply to queries from other instances
                 ensureNotFalsy(this.internals.leaderElector).broadcastChannel
                     .addEventListener('message', (msg) => handleRemoteRequest(copiedSelf as any, msg));
-            }).catch(() => {});
+            }).catch(() => { });
         }
     }
 
@@ -260,7 +260,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
             mode: 'fast'
         };
     }
-    getAttachmentData(_documentId: string, _attachmentId: string): Promise<string> {
+    getAttachmentData(_documentId: string, _attachmentId: string, _digest: string): Promise<string> {
         throw new Error('Attachments are not implemented in the lokijs RxStorage. Make a pull request.');
     }
 

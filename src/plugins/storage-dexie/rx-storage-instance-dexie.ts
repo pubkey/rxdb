@@ -326,7 +326,7 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
         return true;
     }
 
-    getAttachmentData(_documentId: string, _attachmentId: string): Promise<string> {
+    getAttachmentData(_documentId: string, _attachmentId: string, _digest: string): Promise<string> {
         ensureNotClosed(this);
         throw new Error('Attachments are not implemented in the dexie RxStorage. Make a pull request.');
     }
