@@ -2804,7 +2804,6 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                         await Promise.all(
                             load.map(async (v) => {
                                 const attachmentData = await storageInstance.getAttachmentData(v.docId, v.attachmentId, v.digest);
-                                console.log('attachmentData.length: ' + attachmentData.length);
                                 assert.ok(attachmentData.length > 20);
                             })
                         );
