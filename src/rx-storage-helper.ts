@@ -193,15 +193,18 @@ export function categorizeBulkWriteRows<RxDocType>(
         documentId: string;
         attachmentId: string;
         attachmentData: RxAttachmentWriteData;
+        digest: string;
     }[] = [];
     const attachmentsRemove: {
         documentId: string;
         attachmentId: string;
+        digest: string;
     }[] = [];
     const attachmentsUpdate: {
         documentId: string;
         attachmentId: string;
         attachmentData: RxAttachmentWriteData;
+        digest: string;
     }[] = [];
 
 
@@ -245,7 +248,8 @@ export function categorizeBulkWriteRows<RxDocType>(
                         attachmentsAdd.push({
                             documentId: docId,
                             attachmentId,
-                            attachmentData: attachmentData as any
+                            attachmentData: attachmentData as any,
+                            digest: defaultHashSha256((attachmentData as RxAttachmentWriteData).data)
                         });
                     }
                 });
@@ -323,7 +327,8 @@ export function categorizeBulkWriteRows<RxDocType>(
                             .forEach(attachmentId => {
                                 attachmentsRemove.push({
                                     documentId: docId,
-                                    attachmentId
+                                    attachmentId,
+                                    digest: ensureNotFalsy(writeRow.previous)._attachments[attachmentId].digest
                                 });
                             });
                     }
@@ -357,7 +362,8 @@ export function categorizeBulkWriteRows<RxDocType>(
                                     attachmentsAdd.push({
                                         documentId: docId,
                                         attachmentId,
-                                        attachmentData: attachmentData as any
+                                        attachmentData: attachmentData as any,
+                                        digest: defaultHashSha256((attachmentData as RxAttachmentWriteData).data)
                                     });
                                 } else {
                                     const newDigest = updatedRow.document._attachments[attachmentId].digest;
@@ -372,7 +378,8 @@ export function categorizeBulkWriteRows<RxDocType>(
                                         attachmentsUpdate.push({
                                             documentId: docId,
                                             attachmentId,
-                                            attachmentData: attachmentData as RxAttachmentWriteData
+                                            attachmentData: attachmentData as RxAttachmentWriteData,
+                                            digest: defaultHashSha256((attachmentData as RxAttachmentWriteData).data)
                                         });
                                     }
                                 }

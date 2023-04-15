@@ -47,7 +47,10 @@ export type MemoryStorageInternals<RxDocType> = {
      * Attachments data, indexed by a combined string
      * consisting of [documentId + '||' + attachmentId]
      */
-    attachments: Map<string, RxAttachmentWriteData>;
+    attachments: Map<string, {
+        writeData: RxAttachmentWriteData;
+        digest: string;
+    }>;
     byIndex: {
         /**
          * Because RxDB requires a deterministic sorting

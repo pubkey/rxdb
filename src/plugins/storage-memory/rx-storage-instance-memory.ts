@@ -147,14 +147,20 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
             categorized.attachmentsAdd.forEach(attachment => {
                 attachmentsMap.set(
                     attachmentMapKey(attachment.documentId, attachment.attachmentId),
-                    attachment.attachmentData
+                    {
+                        writeData: attachment.attachmentData,
+                        digest: attachment.digest
+                    }
                 );
             });
             if (this.schema.attachments) {
                 categorized.attachmentsUpdate.forEach(attachment => {
                     attachmentsMap.set(
                         attachmentMapKey(attachment.documentId, attachment.attachmentId),
-                        attachment.attachmentData
+                        {
+                            writeData: attachment.attachmentData,
+                            digest: attachment.digest
+                        }
                     );
                 });
                 categorized.attachmentsRemove.forEach(attachment => {
@@ -394,13 +400,20 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         return PROMISE_RESOLVE_TRUE;
     }
 
-    getAttachmentData(documentId: string, attachmentId: string, _digest: string): Promise<string> {
+    getAttachmentData(
+        documentId: string,
+        attachmentId: string,
+        digest: string
+    ): Promise<string> {
         ensureNotRemoved(this);
         const data = getFromMapOrThrow(
             this.internals.attachments,
             attachmentMapKey(documentId, attachmentId)
         );
-        return Promise.resolve(data.data);
+        if (data.digest !== digest) {
+            throw new Error('attachment does not exist');
+        }
+        return Promise.resolve(data.writeData.data);
     }
 
     changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, RxStorageDefaultCheckpoint>> {
