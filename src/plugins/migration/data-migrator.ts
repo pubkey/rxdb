@@ -443,10 +443,19 @@ export function isDocumentDataWithoutRevisionEqual<T>(doc1: T, doc2: T): boolean
  * transform documents data and save them to the new collection
  * @return status-action with status and migrated document
  */
-export async function _migrateDocuments(
+export async function _migrateDocuments<RxDocType>(
     oldCollection: OldRxCollection,
-    documentsData: any[]
+    documentsData: RxDocumentData<RxDocType>[]
 ): Promise<{ type: string; doc: any; }[]> {
+
+
+    /**
+     * Required in case the hooks mutate the document
+     * data which would then wrongly cause conflicts
+     * because we would send the mutated document
+     * as writeRow.previous.
+     */
+    const previousDocumentData = clone(documentsData);
 
     // run hooks that might mutate documentsData
     await Promise.all(
@@ -538,7 +547,7 @@ export async function _migrateDocuments(
          * hackly insert this document via the RxStorageInstance.originalStorageInstance
          * so that getWrappedStorageInstance() does not overwrite its own revision.
          */
-        const originalStorageInstance: RxStorageInstance<any, any, any> = (oldCollection.newestCollection.storageInstance as any).originalStorageInstance;
+        const originalStorageInstance = oldCollection.newestCollection.storageInstance.originalStorageInstance;
         await originalStorageInstance.bulkWrite(
             bulkWriteToStorageInput.map(document => ({ document })),
             'data-migrator-import'
@@ -554,12 +563,12 @@ export async function _migrateDocuments(
     );
 
     // remove the documents from the old collection storage instance
-    const bulkDeleteInputData = documentsData.map(docData => {
+    const bulkDeleteInputData = documentsData.map((docData, idx) => {
         const writeDeleted = flatClone(docData);
         writeDeleted._deleted = true;
         writeDeleted._attachments = {};
         return {
-            previous: docData,
+            previous: previousDocumentData[idx],
             document: writeDeleted
         };
     });

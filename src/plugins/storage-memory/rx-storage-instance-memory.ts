@@ -91,7 +91,6 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
     ): Promise<RxStorageBulkWriteResponse<RxDocType>> {
         ensureNotRemoved(this);
         const primaryPath = this.primaryPath;
-
         const ret: RxStorageBulkWriteResponse<RxDocType> = {
             success: {},
             error: {}

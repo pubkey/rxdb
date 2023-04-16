@@ -3,6 +3,7 @@
 
 <!-- CHANGELOG NEWEST -->
 - FIX(data-migrator) use `count()` instead of `query()` to count documents.
+- FIX(data-migrator) send correct `writeRow.previous` to old storage for deletion.
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
