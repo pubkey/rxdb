@@ -454,7 +454,7 @@
     "disc": "1.3.3",
     "eslint": "8.38.0",
     "eslint-plugin-import": "2.27.5",
-    "eslint-plugin-jsdoc": "40.0.3",
+    "eslint-plugin-jsdoc": "40.3.0",
     "exists-file": "3.0.2",
     "express": "4.18.2",
     "express-graphql": "0.12.0",
