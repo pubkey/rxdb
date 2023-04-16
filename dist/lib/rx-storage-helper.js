@@ -177,7 +177,8 @@ bulkWriteRows, context) {
             attachmentsAdd.push({
               documentId: docId,
               attachmentId,
-              attachmentData: attachmentData
+              attachmentData: attachmentData,
+              digest: (0, _utils.defaultHashSha256)(attachmentData.data)
             });
           }
         });
@@ -236,7 +237,8 @@ bulkWriteRows, context) {
             Object.keys(writeRow.previous._attachments).forEach(attachmentId => {
               attachmentsRemove.push({
                 documentId: docId,
-                attachmentId
+                attachmentId,
+                digest: (0, _utils.ensureNotFalsy)(writeRow.previous)._attachments[attachmentId].digest
               });
             });
           }
@@ -263,7 +265,8 @@ bulkWriteRows, context) {
                 attachmentsAdd.push({
                   documentId: docId,
                   attachmentId,
-                  attachmentData: attachmentData
+                  attachmentData: attachmentData,
+                  digest: (0, _utils.defaultHashSha256)(attachmentData.data)
                 });
               } else {
                 var newDigest = updatedRow.document._attachments[attachmentId].digest;
@@ -276,7 +279,8 @@ bulkWriteRows, context) {
                   attachmentsUpdate.push({
                     documentId: docId,
                     attachmentId,
-                    attachmentData: attachmentData
+                    attachmentData: attachmentData,
+                    digest: (0, _utils.defaultHashSha256)(attachmentData.data)
                   });
                 }
               }

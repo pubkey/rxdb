@@ -48,7 +48,7 @@ export declare function isDocumentDataWithoutRevisionEqual<T>(doc1: T, doc2: T):
  * transform documents data and save them to the new collection
  * @return status-action with status and migrated document
  */
-export declare function _migrateDocuments(oldCollection: OldRxCollection, documentsData: any[]): Promise<{
+export declare function _migrateDocuments<RxDocType>(oldCollection: OldRxCollection, documentsData: RxDocumentData<RxDocType>[]): Promise<{
     type: string;
     doc: any;
 }[]>;

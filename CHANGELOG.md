@@ -2,13 +2,17 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- FIX(data-migrator) use `count()` instead of `query()` to count documents.
-- FIX(data-migrator) send correct `writeRow.previous` to old storage for deletion.
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 14.8.3 (16 April 2023)
+
+- FIX(data-migrator) use `count()` instead of `query()` to count documents.
+- FIX(data-migrator) send correct `writeRow.previous` to old storage for deletion.
 
 ### 14.8.2 (15 April 2023)
 

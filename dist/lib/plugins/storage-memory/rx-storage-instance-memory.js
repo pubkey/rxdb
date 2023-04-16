@@ -62,11 +62,17 @@ var RxStorageInstanceMemory = /*#__PURE__*/function () {
     if (this.schema.attachments) {
       var attachmentsMap = this.internals.attachments;
       categorized.attachmentsAdd.forEach(attachment => {
-        attachmentsMap.set((0, _memoryHelper.attachmentMapKey)(attachment.documentId, attachment.attachmentId), attachment.attachmentData);
+        attachmentsMap.set((0, _memoryHelper.attachmentMapKey)(attachment.documentId, attachment.attachmentId), {
+          writeData: attachment.attachmentData,
+          digest: attachment.digest
+        });
       });
       if (this.schema.attachments) {
         categorized.attachmentsUpdate.forEach(attachment => {
-          attachmentsMap.set((0, _memoryHelper.attachmentMapKey)(attachment.documentId, attachment.attachmentId), attachment.attachmentData);
+          attachmentsMap.set((0, _memoryHelper.attachmentMapKey)(attachment.documentId, attachment.attachmentId), {
+            writeData: attachment.attachmentData,
+            digest: attachment.digest
+          });
         });
         categorized.attachmentsRemove.forEach(attachment => {
           attachmentsMap.delete((0, _memoryHelper.attachmentMapKey)(attachment.documentId, attachment.attachmentId));
@@ -205,10 +211,13 @@ var RxStorageInstanceMemory = /*#__PURE__*/function () {
     }
     return _utils.PROMISE_RESOLVE_TRUE;
   };
-  _proto.getAttachmentData = function getAttachmentData(documentId, attachmentId, _digest) {
+  _proto.getAttachmentData = function getAttachmentData(documentId, attachmentId, digest) {
     (0, _memoryHelper.ensureNotRemoved)(this);
     var data = (0, _utils.getFromMapOrThrow)(this.internals.attachments, (0, _memoryHelper.attachmentMapKey)(documentId, attachmentId));
-    return Promise.resolve(data.data);
+    if (!digest || data.digest !== digest) {
+      throw new Error('attachment does not exist');
+    }
+    return Promise.resolve(data.writeData.data);
   };
   _proto.changeStream = function changeStream() {
     (0, _memoryHelper.ensureNotRemoved)(this);

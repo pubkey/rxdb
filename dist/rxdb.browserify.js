@@ -2923,7 +2923,7 @@ exports.RXDB_VERSION = void 0;
 /**
  * This file is replaced in the 'npm run build:version' script.
  */
-var RXDB_VERSION = '14.8.2';
+var RXDB_VERSION = '14.8.3';
 exports.RXDB_VERSION = RXDB_VERSION;
 
 },{}],28:[function(require,module,exports){
@@ -8323,7 +8323,8 @@ bulkWriteRows, context) {
             attachmentsAdd.push({
               documentId: docId,
               attachmentId,
-              attachmentData: attachmentData
+              attachmentData: attachmentData,
+              digest: (0, _utils.defaultHashSha256)(attachmentData.data)
             });
           }
         });
@@ -8382,7 +8383,8 @@ bulkWriteRows, context) {
             Object.keys(writeRow.previous._attachments).forEach(attachmentId => {
               attachmentsRemove.push({
                 documentId: docId,
-                attachmentId
+                attachmentId,
+                digest: (0, _utils.ensureNotFalsy)(writeRow.previous)._attachments[attachmentId].digest
               });
             });
           }
@@ -8409,7 +8411,8 @@ bulkWriteRows, context) {
                 attachmentsAdd.push({
                   documentId: docId,
                   attachmentId,
-                  attachmentData: attachmentData
+                  attachmentData: attachmentData,
+                  digest: (0, _utils.defaultHashSha256)(attachmentData.data)
                 });
               } else {
                 var newDigest = updatedRow.document._attachments[attachmentId].digest;
@@ -8422,7 +8425,8 @@ bulkWriteRows, context) {
                   attachmentsUpdate.push({
                     documentId: docId,
                     attachmentId,
-                    attachmentData: attachmentData
+                    attachmentData: attachmentData,
+                    digest: (0, _utils.defaultHashSha256)(attachmentData.data)
                   });
                 }
               }

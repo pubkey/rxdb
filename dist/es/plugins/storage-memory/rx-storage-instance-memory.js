@@ -55,11 +55,17 @@ export var RxStorageInstanceMemory = /*#__PURE__*/function () {
     if (this.schema.attachments) {
       var attachmentsMap = this.internals.attachments;
       categorized.attachmentsAdd.forEach(attachment => {
-        attachmentsMap.set(attachmentMapKey(attachment.documentId, attachment.attachmentId), attachment.attachmentData);
+        attachmentsMap.set(attachmentMapKey(attachment.documentId, attachment.attachmentId), {
+          writeData: attachment.attachmentData,
+          digest: attachment.digest
+        });
       });
       if (this.schema.attachments) {
         categorized.attachmentsUpdate.forEach(attachment => {
-          attachmentsMap.set(attachmentMapKey(attachment.documentId, attachment.attachmentId), attachment.attachmentData);
+          attachmentsMap.set(attachmentMapKey(attachment.documentId, attachment.attachmentId), {
+            writeData: attachment.attachmentData,
+            digest: attachment.digest
+          });
         });
         categorized.attachmentsRemove.forEach(attachment => {
           attachmentsMap.delete(attachmentMapKey(attachment.documentId, attachment.attachmentId));
@@ -198,10 +204,13 @@ export var RxStorageInstanceMemory = /*#__PURE__*/function () {
     }
     return PROMISE_RESOLVE_TRUE;
   };
-  _proto.getAttachmentData = function getAttachmentData(documentId, attachmentId, _digest) {
+  _proto.getAttachmentData = function getAttachmentData(documentId, attachmentId, digest) {
     ensureNotRemoved(this);
     var data = getFromMapOrThrow(this.internals.attachments, attachmentMapKey(documentId, attachmentId));
-    return Promise.resolve(data.data);
+    if (!digest || data.digest !== digest) {
+      throw new Error('attachment does not exist');
+    }
+    return Promise.resolve(data.writeData.data);
   };
   _proto.changeStream = function changeStream() {
     ensureNotRemoved(this);

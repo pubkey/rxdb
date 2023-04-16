@@ -90,14 +90,13 @@ var DataMigrator = /*#__PURE__*/function () {
       return _getOldCollections(this).then(ret => {
         this.nonMigratedOldCollections = ret;
         this.allOldCollections = this.nonMigratedOldCollections.slice(0);
-        var getAllDocuments = async (storageInstance, schema) => {
-          var storage = this.database.storage;
+        var storage = this.database.storage;
+        async function countAllDocuments(storageInstance, schema) {
           var getAllQueryPrepared = storage.statics.prepareQuery(storageInstance.schema, (0, _rxQueryHelper.normalizeMangoQuery)(schema, {}));
-          var queryResult = await storageInstance.query(getAllQueryPrepared);
-          var allDocs = queryResult.documents;
-          return allDocs;
-        };
-        var countAll = Promise.all(this.nonMigratedOldCollections.map(oldCol => getAllDocuments(oldCol.storageInstance, oldCol.schema.jsonSchema).then(allDocs => allDocs.length)));
+          var queryResult = await storageInstance.count(getAllQueryPrepared);
+          return queryResult.count;
+        }
+        var countAll = Promise.all(this.nonMigratedOldCollections.map(oldCol => countAllDocuments(oldCol.storageInstance, oldCol.schema.jsonSchema)));
         return countAll;
       }).then(countAll => {
         var totalCount = countAll.reduce((cur, prev) => prev = cur + prev, 0);
@@ -323,6 +322,14 @@ function isDocumentDataWithoutRevisionEqual(doc1, doc2) {
  * @return status-action with status and migrated document
  */
 async function _migrateDocuments(oldCollection, documentsData) {
+  /**
+   * Required in case the hooks mutate the document
+   * data which would then wrongly cause conflicts
+   * because we would send the mutated document
+   * as writeRow.previous.
+   */
+  var previousDocumentData = (0, _utils.clone)(documentsData);
+
   // run hooks that might mutate documentsData
   await Promise.all(documentsData.map(docData => (0, _hooks.runAsyncPluginHooks)('preMigrateDocument', {
     docData,
@@ -408,12 +415,12 @@ async function _migrateDocuments(oldCollection, documentsData) {
   await Promise.all(actions.map(action => (0, _hooks.runAsyncPluginHooks)('postMigrateDocument', action)));
 
   // remove the documents from the old collection storage instance
-  var bulkDeleteInputData = documentsData.map(docData => {
+  var bulkDeleteInputData = documentsData.map((docData, idx) => {
     var writeDeleted = (0, _utils.flatClone)(docData);
     writeDeleted._deleted = true;
     writeDeleted._attachments = {};
     return {
-      previous: docData,
+      previous: previousDocumentData[idx],
       document: writeDeleted
     };
   });

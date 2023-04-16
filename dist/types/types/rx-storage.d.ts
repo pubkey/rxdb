@@ -320,15 +320,18 @@ export type CategorizeBulkWriteRowsOutput<RxDocType> = {
         documentId: string;
         attachmentId: string;
         attachmentData: RxAttachmentWriteData;
+        digest: string;
     }[];
     attachmentsRemove: {
         documentId: string;
         attachmentId: string;
+        digest: string;
     }[];
     attachmentsUpdate: {
         documentId: string;
         attachmentId: string;
         attachmentData: RxAttachmentWriteData;
+        digest: string;
     }[];
     /**
      * Contains the non-error document row that
