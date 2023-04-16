@@ -41,7 +41,7 @@
     "eslint": "8.36.0",
     "esm": "3.2.25",
     "file-loader": "6.2.0",
-    "html-webpack-plugin": "5.5.0",
+    "html-webpack-plugin": "5.5.1",
     "mini-css-extract-plugin": "2.7.5",
     "ncp": "2.0.0",
     "rimraf": "4.4.1",
