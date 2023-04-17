@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- REFACTOR Use custom `appendToArray()` instead of slow `Array.concat()`
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

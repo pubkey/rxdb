@@ -8,7 +8,8 @@ import {
     RX_META_LWT_MINIMUM,
     sortDocumentsByLastWriteTime,
     lastOfArray,
-    ensureNotFalsy
+    ensureNotFalsy,
+    appendToArray
 } from '../utils';
 import type {
     RxStorageInstance,
@@ -267,7 +268,8 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
                 return changedDocuments.map(d => fromDexieToStorage(d));
             })
         );
-        let changedDocs = changedDocsNormal.concat(changedDocsDeleted);
+        let changedDocs = changedDocsNormal.slice(0);
+        appendToArray(changedDocs, changedDocsDeleted);
 
         changedDocs = sortDocumentsByLastWriteTime(this.primaryPath as any, changedDocs);
         changedDocs = changedDocs.slice(0, limit);

@@ -13,6 +13,7 @@ import type {
     RxChangeEvent,
     RxDocumentData
 } from './types';
+import { appendToArray } from './plugins/utils';
 
 export function getDocumentDataOfRxChangeEvent<T>(
     rxChangeEvent: RxChangeEvent<T>
@@ -65,12 +66,11 @@ export function rxChangeEventToEventReduceChangeEvent<DocType>(
 export function flattenEvents<EventType>(
     input: EventBulk<EventType, any> | EventBulk<EventType, any>[] | EventType | EventType[]
 ): EventType[] {
-    let output: EventType[] = [];
-
+    const output: EventType[] = [];
     if (Array.isArray(input)) {
         input.forEach(inputItem => {
             const add = flattenEvents(inputItem);
-            output = output.concat(add);
+            appendToArray(output, add);
         });
     } else {
         if ((input as any).id && (input as any).events) {

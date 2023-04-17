@@ -13,6 +13,7 @@ import type {
     WithDeleted
 } from '../types';
 import {
+    appendToArray,
     batchArray,
     ensureNotFalsy,
     parseRevision,
@@ -162,7 +163,7 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
             /**
              * Merge/filter all open tasks
              */
-            let docs: RxDocumentData<RxDocType>[] = [];
+            const docs: RxDocumentData<RxDocType>[] = [];
             let checkpoint: CheckpointType = {} as any;
             while (openTasks.length > 0) {
                 const taskWithTime = ensureNotFalsy(openTasks.shift());
@@ -174,8 +175,8 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
                 if (taskWithTime.time < initialSyncStartTime) {
                     continue;
                 }
-
-                docs = docs.concat(
+                appendToArray(
+                    docs,
                     taskWithTime.task.events.map(r => {
                         return r.documentData as any;
                     })

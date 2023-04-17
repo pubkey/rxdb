@@ -1,4 +1,5 @@
 import {
+    appendToArray,
     asyncFilter,
     ensureNotFalsy,
     errorToPlainJson,
@@ -183,7 +184,7 @@ export function replicateFirestore<RxDocType>(
                             const missingAmount = batchSize - useDocs.length;
                             if (missingAmount > 0) {
                                 const additionalDocs = newerQueryResult.docs.slice(0, missingAmount).filter(x => !!x);
-                                useDocs = useDocs.concat(additionalDocs as any);
+                                appendToArray(useDocs, additionalDocs);
                             }
                         }
                     });

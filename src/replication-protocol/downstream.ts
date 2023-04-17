@@ -15,6 +15,7 @@ import type {
     DocumentsWithCheckpoint
 } from '../types';
 import {
+    appendToArray,
     createRevision,
     ensureNotFalsy,
     flatClone,
@@ -120,7 +121,7 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
                 if (
                     !state.firstSyncDone.down.getValue() &&
                     !state.events.canceled.getValue()
-                    ) {
+                ) {
                     state.firstSyncDone.down.next(true);
                 }
             });
@@ -195,14 +196,14 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
 
     function downstreamProcessChanges(tasks: Task[]) {
         state.stats.down.downstreamProcessChanges = state.stats.down.downstreamProcessChanges + 1;
-        let docsOfAllTasks: WithDeleted<RxDocType>[] = [];
+        const docsOfAllTasks: WithDeleted<RxDocType>[] = [];
         let lastCheckpoint: CheckpointType | undefined = null as any;
 
         tasks.forEach(task => {
             if (task === 'RESYNC') {
                 throw new Error('SNH');
             }
-            docsOfAllTasks = docsOfAllTasks.concat(task.documents);
+            appendToArray(docsOfAllTasks, task.documents);
             lastCheckpoint = stackCheckpoints([lastCheckpoint, task.checkpoint]);
         });
         return persistFromMaster(

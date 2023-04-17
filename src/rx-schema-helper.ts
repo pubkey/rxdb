@@ -10,6 +10,7 @@ import type {
     StringKeys
 } from './types';
 import {
+    appendToArray,
     ensureNotFalsy,
     flatClone,
     getProperty,
@@ -210,8 +211,8 @@ export function fillWithDefaultSettings<T = any>(
 
     // final fields are always required
     const finalFields = getFinalFields(schemaObj);
+    appendToArray(schemaObj.required as any, finalFields);
     schemaObj.required = schemaObj.required
-        .concat(finalFields as any)
         .filter((field: string) => !field.includes('.'))
         .filter((elem: any, pos: any, arr: any) => arr.indexOf(elem) === pos); // unique;
 

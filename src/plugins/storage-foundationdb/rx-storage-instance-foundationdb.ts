@@ -50,6 +50,7 @@ import {
     getStartIndexStringFromUpperBound
 } from '../../custom-index';
 import {
+    appendToArray,
     batchArray,
     ensureNotFalsy,
     lastOfArray,
@@ -274,7 +275,7 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
             lowerBoundString = indexMeta.getIndexableString(checkpointPartialDoc);
         }
         const result: RxDocumentData<RxDocType>[] = await dbs.root.doTransaction(async (tx: any) => {
-            let innerResult: RxDocumentData<RxDocType>[] = [];
+            const innerResult: RxDocumentData<RxDocType>[] = [];
             const indexTx = tx.at(indexMeta.db.subspace);
             const mainTx = tx.at(dbs.main.subspace);
             const range = await indexTx.getRangeAll(
@@ -289,7 +290,7 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
             const docsData: RxDocumentData<RxDocType>[] = await Promise.all(
                 docIds.map((docId: string) => mainTx.get(docId))
             );
-            innerResult = innerResult.concat(docsData);
+            appendToArray(innerResult, docsData);
             return innerResult;
         });
         const lastDoc = lastOfArray(result);

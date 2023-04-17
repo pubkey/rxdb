@@ -12,7 +12,8 @@ import {
     ensureNotFalsy,
     getFromMapOrThrow,
     PROMISE_RESOLVE_FALSE,
-    PROMISE_RESOLVE_VOID
+    PROMISE_RESOLVE_VOID,
+    appendToArray
 } from './plugins/utils';
 import {
     fillObjectDataBeforeInsert,
@@ -441,7 +442,7 @@ export class RxCollectionBase<
         });
 
         const insertResult = await this.bulkInsert(insertData);
-        let ret = insertResult.success.slice(0);
+        const ret = insertResult.success.slice(0);
         const updatedDocs = await Promise.all(
             insertResult.error.map(async (error) => {
                 if (error.status !== 409) {
@@ -458,7 +459,7 @@ export class RxCollectionBase<
                 return newDoc;
             })
         );
-        ret = ret.concat(updatedDocs);
+        appendToArray(ret, updatedDocs);
         return ret;
     }
 
