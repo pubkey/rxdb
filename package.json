@@ -392,7 +392,7 @@
     "js-base64": "3.7.5",
     "jsonschema-key-compression": "1.6.1",
     "lokijs": "1.5.12",
-    "mingo": "6.2.7",
+    "mingo": "6.3.2",
     "modifyjs": "0.3.1",
     "oblivious-set": "1.1.1",
     "ohash": "1.0.0",
