@@ -153,6 +153,7 @@ window.addEventListener('DOMContentLoaded', function () {
     elemDiv.href = 'https://discord.com/invite/tqt9ZttJfD';
     elemDiv.target = '_blank';
     elemDiv.innerHTML = 'chat';
+    elemDiv.onclick = window.trigger('join_chat', 0.20);
 
     var styleSheet = document.createElement('style');
     styleSheet.type = 'text/css';
