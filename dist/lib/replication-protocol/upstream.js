@@ -108,7 +108,7 @@ async function startReplicationUpstream(state) {
         if (taskWithTime.time < initialSyncStartTime) {
           continue;
         }
-        docs = docs.concat(taskWithTime.task.events.map(r => {
+        (0, _utils.appendToArray)(docs, taskWithTime.task.events.map(r => {
           return r.documentData;
         }));
         checkpoint = (0, _rxStorageHelper.stackCheckpoints)([checkpoint, taskWithTime.task.checkpoint]);

@@ -119,7 +119,7 @@ function replicateFirestore(options) {
               var missingAmount = batchSize - useDocs.length;
               if (missingAmount > 0) {
                 var additionalDocs = newerQueryResult.docs.slice(0, missingAmount).filter(x => !!x);
-                useDocs = useDocs.concat(additionalDocs);
+                (0, _utils.appendToArray)(useDocs, additionalDocs);
               }
             }
           });

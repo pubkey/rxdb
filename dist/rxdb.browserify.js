@@ -1784,6 +1784,7 @@ Object.keys(_utilsRxdbVersion).forEach(function (key) {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.appendToArray = appendToArray;
 exports.arrayFilterNotEmpty = arrayFilterNotEmpty;
 exports.asyncFilter = asyncFilter;
 exports.batchArray = batchArray;
@@ -1895,6 +1896,21 @@ function sumNumberArray(array) {
 }
 function maxOfNumbers(arr) {
   return Math.max(...arr);
+}
+
+/**
+ * Appends the given documents to the given array.
+ * This will mutate the first given array.
+ * Mostly used as faster alternative to Array.concat()
+ * because .concat() is so slow.
+ * @link https://www.measurethat.net/Benchmarks/Show/4223/0/array-concat-vs-spread-operator-vs-push#latest_results_block
+ */
+function appendToArray(ar, add) {
+  var amount = add.length;
+  for (var i = 0; i < amount; ++i) {
+    var element = add[i];
+    ar.push(element);
+  }
 }
 
 },{}],14:[function(require,module,exports){
@@ -3727,7 +3743,7 @@ async function startReplicationDownstream(state) {
       if (task === 'RESYNC') {
         throw new Error('SNH');
       }
-      docsOfAllTasks = docsOfAllTasks.concat(task.documents);
+      (0, _utils.appendToArray)(docsOfAllTasks, task.documents);
       lastCheckpoint = (0, _rxStorageHelper.stackCheckpoints)([lastCheckpoint, task.checkpoint]);
     });
     return persistFromMaster(docsOfAllTasks, (0, _utils.ensureNotFalsy)(lastCheckpoint));
@@ -4399,7 +4415,7 @@ async function startReplicationUpstream(state) {
         if (taskWithTime.time < initialSyncStartTime) {
           continue;
         }
-        docs = docs.concat(taskWithTime.task.events.map(r => {
+        (0, _utils.appendToArray)(docs, taskWithTime.task.events.map(r => {
           return r.documentData;
         }));
         checkpoint = (0, _rxStorageHelper.stackCheckpoints)([checkpoint, taskWithTime.task.checkpoint]);
@@ -4596,6 +4612,7 @@ exports.flattenEvents = flattenEvents;
 exports.getDocumentDataOfRxChangeEvent = getDocumentDataOfRxChangeEvent;
 exports.rxChangeEventToEventReduceChangeEvent = rxChangeEventToEventReduceChangeEvent;
 var _overwritable = require("./overwritable");
+var _utils = require("./plugins/utils");
 /**
  * RxChangeEvents a emitted when something in the database changes
  * they can be grabbed by the observables of database, collection and document
@@ -4650,7 +4667,7 @@ function flattenEvents(input) {
   if (Array.isArray(input)) {
     input.forEach(inputItem => {
       var add = flattenEvents(inputItem);
-      output = output.concat(add);
+      (0, _utils.appendToArray)(output, add);
     });
   } else {
     if (input.id && input.events) {
@@ -4671,7 +4688,7 @@ function flattenEvents(input) {
   return nonDuplicate;
 }
 
-},{"./overwritable":9}],40:[function(require,module,exports){
+},{"./overwritable":9,"./plugins/utils":12}],40:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -5045,7 +5062,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
       var newDoc = await doc.incrementalModify(() => writeData);
       return newDoc;
     }));
-    ret = ret.concat(updatedDocs);
+    (0, _utils.appendToArray)(ret, updatedDocs);
     return ret;
   }
 
@@ -7922,7 +7939,8 @@ function fillWithDefaultSettings(schemaObj) {
 
   // final fields are always required
   var finalFields = getFinalFields(schemaObj);
-  schemaObj.required = schemaObj.required.concat(finalFields).filter(field => !field.includes('.')).filter((elem, pos, arr) => arr.indexOf(elem) === pos); // unique;
+  (0, _utils.appendToArray)(schemaObj.required, finalFields);
+  schemaObj.required = schemaObj.required.filter(field => !field.includes('.')).filter((elem, pos, arr) => arr.indexOf(elem) === pos); // unique;
 
   // version is 0 by default
   schemaObj.version = schemaObj.version || 0;
@@ -22060,9 +22078,8 @@ var ProcessingMode;
     /**
      * Turn off cloning and modifies the input collection as needed.
      * This option will also return output objects with shared paths in their graph when specific operators are used.
-     *
-     * This option provides the greatest speedup for the biggest tradeoff. When using the aggregation pipeline, you can use
-     * the "$out" operator to collect immutable intermediate results.
+     * This option provides the greatest speedup for the biggest tradeoff.
+     * When using the aggregation pipeline, you can use the "$out" operator to collect immutable intermediate results.
      *
      * @default
      */
@@ -22099,9 +22116,14 @@ var ComputeOptions = /** @class */ (function () {
     };
     /** Updates the internal mutable state. */
     ComputeOptions.prototype.update = function (root, local) {
+        var _a;
         // NOTE: this is done for efficiency to avoid creating too many intermediate options objects.
         this._root = root;
-        this._local = local;
+        this._local = local
+            ? Object.assign({}, local, {
+                variables: Object.assign({}, (_a = this._local) === null || _a === void 0 ? void 0 : _a.variables, local === null || local === void 0 ? void 0 : local.variables),
+            })
+            : local;
         return this;
     };
     Object.defineProperty(ComputeOptions.prototype, "root", {
@@ -23048,7 +23070,9 @@ exports.$mod = $mod;
  */
 function $regex(a, b, options) {
     var lhs = (0, util_1.ensureArray)(a);
-    var match = function (x) { return (0, util_1.isString)(x) && !!b.exec(x); };
+    var match = function (x) {
+        return (0, util_1.isString)(x) && (0, util_1.truthy)(b.exec(x), options.useStrictMode);
+    };
     return lhs.some(match) || (0, util_1.flatten)(lhs, 1).some(match);
 }
 exports.$regex = $regex;
@@ -23110,7 +23134,7 @@ exports.$all = $all;
  * @returns {*|boolean}
  */
 function $size(a, b, options) {
-    return a.length === b;
+    return Array.isArray(a) && a.length === b;
 }
 exports.$size = $size;
 function isNonBooleanOperator(name) {
@@ -23889,7 +23913,7 @@ var __assign = (this && this.__assign) || function () {
     return __assign.apply(this, arguments);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.normalize = exports.isOperator = exports.removeValue = exports.setValue = exports.filterMissing = exports.resolveGraph = exports.resolve = exports.memoize = exports.into = exports.groupBy = exports.sortBy = exports.hashCode = exports.stringify = exports.unique = exports.isEqual = exports.flatten = exports.intersection = exports.merge = exports.objectMap = exports.has = exports.ensureArray = exports.isMissing = exports.isEmpty = exports.truthy = exports.notInArray = exports.inArray = exports.isNil = exports.isFunction = exports.isRegExp = exports.isDate = exports.isObjectLike = exports.isObject = exports.isArray = exports.isNumber = exports.isString = exports.isBoolean = exports.getType = exports.cloneDeep = exports.assert = exports.DEFAULT_COMPARATOR = exports.MIN_LONG = exports.MAX_LONG = exports.MIN_INT = exports.MAX_INT = void 0;
+exports.normalize = exports.isOperator = exports.removeValue = exports.setValue = exports.filterMissing = exports.resolveGraph = exports.resolve = exports.memoize = exports.into = exports.groupBy = exports.sortBy = exports.hashCode = exports.stringify = exports.unique = exports.isEqual = exports.flatten = exports.intersection = exports.merge = exports.objectMap = exports.has = exports.ensureArray = exports.isMissing = exports.isEmpty = exports.truthy = exports.notInArray = exports.inArray = exports.isNil = exports.isFunction = exports.isRegExp = exports.isDate = exports.isObjectLike = exports.isObject = exports.isArray = exports.isNotNaN = exports.isNumber = exports.isString = exports.isBoolean = exports.getType = exports.cloneDeep = exports.assert = exports.DEFAULT_COMPARATOR = exports.MIN_LONG = exports.MAX_LONG = exports.MIN_INT = exports.MAX_INT = void 0;
 exports.MAX_INT = 2147483647;
 exports.MIN_INT = -2147483648;
 exports.MAX_LONG = Number.MAX_SAFE_INTEGER;
@@ -23945,8 +23969,9 @@ var DEFAULT_COMPARATOR = function (a, b) {
         a = undefined;
     if (b === MISSING)
         b = undefined;
-    var u = SORT_ORDER_BY_TYPE[getType(a).toLowerCase()];
-    var v = SORT_ORDER_BY_TYPE[getType(b).toLowerCase()];
+    var _a = [a, b].map(function (n) { return getType(n).toLowerCase(); }), ta = _a[0], tb = _a[1];
+    var u = SORT_ORDER_BY_TYPE[ta];
+    var v = SORT_ORDER_BY_TYPE[tb];
     if (u !== v)
         return u - v;
     if (a < b)
@@ -23997,6 +24022,10 @@ function isNumber(v) {
     return !isNaN(v) && typeof v === "number";
 }
 exports.isNumber = isNumber;
+function isNotNaN(v) {
+    return !(isNaN(v) && typeof v === "number");
+}
+exports.isNotNaN = isNotNaN;
 exports.isArray = Array.isArray;
 function isObject(v) {
     if (!v)
@@ -24034,8 +24063,8 @@ function notInArray(arr, item) {
     return !inArray(arr, item);
 }
 exports.notInArray = notInArray;
-function truthy(arg) {
-    return !!arg;
+function truthy(arg, strict) {
+    return !!arg || (strict && arg === "");
 }
 exports.truthy = truthy;
 function isEmpty(x) {

@@ -250,7 +250,7 @@ var RxCollectionBase = /*#__PURE__*/function () {
       var newDoc = await doc.incrementalModify(() => writeData);
       return newDoc;
     }));
-    ret = ret.concat(updatedDocs);
+    (0, _utils.appendToArray)(ret, updatedDocs);
     return ret;
   }
 

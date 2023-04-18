@@ -31,3 +31,11 @@ export declare function asyncFilter<T>(array: T[], predicate: (item: T, index: n
  */
 export declare function sumNumberArray(array: number[]): number;
 export declare function maxOfNumbers(arr: number[]): number;
+/**
+ * Appends the given documents to the given array.
+ * This will mutate the first given array.
+ * Mostly used as faster alternative to Array.concat()
+ * because .concat() is so slow.
+ * @link https://www.measurethat.net/Benchmarks/Show/4223/0/array-concat-vs-spread-operator-vs-push#latest_results_block
+ */
+export declare function appendToArray<T>(ar: T[], add: T[] | readonly T[]): void;

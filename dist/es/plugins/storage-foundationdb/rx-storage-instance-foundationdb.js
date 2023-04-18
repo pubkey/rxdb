@@ -10,7 +10,7 @@ import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
 import { categorizeBulkWriteRows } from '../../rx-storage-helper';
 import { CLEANUP_INDEX, FOUNDATION_DB_WRITE_BATCH_SIZE, getFoundationDBIndexName } from './foundationdb-helpers';
 import { getIndexableStringMonad, getStartIndexStringFromLowerBound, getStartIndexStringFromUpperBound } from '../../custom-index';
-import { batchArray, ensureNotFalsy, lastOfArray, now, PROMISE_RESOLVE_VOID, toArray } from '../../plugins/utils';
+import { appendToArray, batchArray, ensureNotFalsy, lastOfArray, now, PROMISE_RESOLVE_VOID, toArray } from '../../plugins/utils';
 import { queryFoundationDB } from './foundationdb-query';
 import { INDEX_MAX } from '../../query-planner';
 import { attachmentMapKey } from '../storage-memory';
@@ -187,7 +187,7 @@ export var RxStorageInstanceFoundationDB = /*#__PURE__*/function () {
       });
       var docIds = range.map(row => row[1]);
       var docsData = await Promise.all(docIds.map(docId => mainTx.get(docId)));
-      innerResult = innerResult.concat(docsData);
+      appendToArray(innerResult, docsData);
       return innerResult;
     });
     var lastDoc = lastOfArray(result);

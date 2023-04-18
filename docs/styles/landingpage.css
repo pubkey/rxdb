@@ -324,7 +324,7 @@ header .logo img {
 .device.tablet .beating-color {
     width: 65.4%;
     height: 76.2%;
-    margin-top: 7.8%;
+    margin-top: 7.4%;
     margin-left: 17.4%;
     border-radius: 4px;
 }
@@ -345,8 +345,8 @@ header .logo img {
 
 .device.desktop .beating-color {
     width: 91.4%;
-    height: 44.2%;
-    margin-top: 10.8%;
+    height: 44.6%;
+    margin-top: 10.4%;
     margin-left: 4.4%;
     border-top-left-radius: 28px;
     border-top-right-radius: 28px;
@@ -1199,15 +1199,15 @@ samp .cm-comment {
     }
 
     13% {
-        transform: scale(1.2);
+        transform: scale(1.1);
     }
 
     16% {
-        transform: scale(1.16);
+        transform: scale(1.08);
     }
 
     22% {
-        transform: scale(1.4);
+        transform: scale(1.2);
     }
 
     26% {
@@ -1215,19 +1215,19 @@ samp .cm-comment {
     }
 
     38% {
-        transform: scale(1.18);
+        transform: scale(1.09);
     }
 
     41% {
-        transform: scale(1.1);
+        transform: scale(1.05);
     }
 
     50% {
-        transform: scale(1.14);
+        transform: scale(1.07);
     }
 
     56% {
-        transform: scale(1.1);
+        transform: scale(1.05);
     }
 
     76% {
@@ -1246,15 +1246,15 @@ samp .cm-comment {
     }
 
     13% {
-        transform: scale(1.2);
+        transform: scale(1.1);
     }
 
     16% {
-        transform: scale(1.16);
+        transform: scale(1.08);
     }
 
     22% {
-        transform: scale(1.4);
+        transform: scale(1.2);
     }
 
     26% {
@@ -1276,19 +1276,19 @@ samp .cm-comment {
     }
 
     38% {
-        transform: scale(1.18);
+        transform: scale(1.09);
     }
 
     41% {
-        transform: scale(1.1);
+        transform: scale(1.05);
     }
 
     50% {
-        transform: scale(1.14);
+        transform: scale(1.07);
     }
 
     56% {
-        transform: scale(1.1);
+        transform: scale(1.05);
     }
 
     76% {

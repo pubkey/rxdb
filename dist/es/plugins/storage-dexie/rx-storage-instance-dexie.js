@@ -1,5 +1,5 @@
 import { Subject } from 'rxjs';
-import { now, PROMISE_RESOLVE_VOID, RX_META_LWT_MINIMUM, sortDocumentsByLastWriteTime, lastOfArray, ensureNotFalsy } from '../utils';
+import { now, PROMISE_RESOLVE_VOID, RX_META_LWT_MINIMUM, sortDocumentsByLastWriteTime, lastOfArray, ensureNotFalsy, appendToArray } from '../utils';
 import { closeDexieDb, fromDexieToStorage, fromStorageToDexie, getDexieDbWithTables, getDocsInDb, RX_STORAGE_NAME_DEXIE } from './dexie-helper';
 import { dexieCount, dexieQuery } from './dexie-query';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
@@ -149,7 +149,8 @@ export var RxStorageInstanceDexie = /*#__PURE__*/function () {
       var changedDocuments = await query.toArray();
       return changedDocuments.map(d => fromDexieToStorage(d));
     }));
-    var changedDocs = changedDocsNormal.concat(changedDocsDeleted);
+    var changedDocs = changedDocsNormal.slice(0);
+    appendToArray(changedDocs, changedDocsDeleted);
     changedDocs = sortDocumentsByLastWriteTime(this.primaryPath, changedDocs);
     changedDocs = changedDocs.slice(0, limit);
     var lastDoc = lastOfArray(changedDocs);

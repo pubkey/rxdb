@@ -127,7 +127,7 @@ async function startReplicationDownstream(state) {
       if (task === 'RESYNC') {
         throw new Error('SNH');
       }
-      docsOfAllTasks = docsOfAllTasks.concat(task.documents);
+      (0, _utils.appendToArray)(docsOfAllTasks, task.documents);
       lastCheckpoint = (0, _rxStorageHelper.stackCheckpoints)([lastCheckpoint, task.checkpoint]);
     });
     return persistFromMaster(docsOfAllTasks, (0, _utils.ensureNotFalsy)(lastCheckpoint));

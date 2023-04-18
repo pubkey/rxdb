@@ -419,7 +419,7 @@ function checkSchema(jsonSchema) {
   /* check types of the indexes */
   (jsonSchema.indexes || []).reduce((indexPaths, currentIndex) => {
     if ((0, _utils.isMaybeReadonlyArray)(currentIndex)) {
-      indexPaths.concat(currentIndex);
+      (0, _utils.appendToArray)(indexPaths, currentIndex);
     } else {
       indexPaths.push(currentIndex);
     }

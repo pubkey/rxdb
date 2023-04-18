@@ -1,6 +1,6 @@
 import _createClass from "@babel/runtime/helpers/createClass";
 import { filter, map, mergeMap } from 'rxjs/operators';
-import { ucfirst, flatClone, promiseSeries, pluginMissing, ensureNotFalsy, getFromMapOrThrow, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_VOID } from './plugins/utils';
+import { ucfirst, flatClone, promiseSeries, pluginMissing, ensureNotFalsy, getFromMapOrThrow, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_VOID, appendToArray } from './plugins/utils';
 import { fillObjectDataBeforeInsert, createRxCollectionStorageInstance, removeCollectionStorages } from './rx-collection-helper';
 import { createRxQuery, _getDefaultQuery } from './rx-query';
 import { newRxError, newRxTypeError } from './rx-error';
@@ -241,7 +241,7 @@ export var RxCollectionBase = /*#__PURE__*/function () {
       var newDoc = await doc.incrementalModify(() => writeData);
       return newDoc;
     }));
-    ret = ret.concat(updatedDocs);
+    appendToArray(ret, updatedDocs);
     return ret;
   }
 

@@ -1,7 +1,7 @@
 import { firstValueFrom, filter } from 'rxjs';
 import { newRxError } from '../rx-error';
 import { stackCheckpoints } from '../rx-storage-helper';
-import { createRevision, ensureNotFalsy, flatClone, getDefaultRevision, getDefaultRxDocumentMeta, parseRevision, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_VOID } from '../plugins/utils';
+import { appendToArray, createRevision, ensureNotFalsy, flatClone, getDefaultRevision, getDefaultRxDocumentMeta, parseRevision, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_VOID } from '../plugins/utils';
 import { getLastCheckpointDoc, setCheckpoint } from './checkpoint';
 import { writeDocToDocState } from './helper';
 import { getAssumedMasterState, getMetaWriteRow } from './meta-instance';
@@ -122,7 +122,7 @@ export async function startReplicationDownstream(state) {
       if (task === 'RESYNC') {
         throw new Error('SNH');
       }
-      docsOfAllTasks = docsOfAllTasks.concat(task.documents);
+      appendToArray(docsOfAllTasks, task.documents);
       lastCheckpoint = stackCheckpoints([lastCheckpoint, task.checkpoint]);
     });
     return persistFromMaster(docsOfAllTasks, ensureNotFalsy(lastCheckpoint));

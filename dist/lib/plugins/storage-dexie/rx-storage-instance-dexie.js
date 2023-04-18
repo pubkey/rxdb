@@ -156,7 +156,8 @@ var RxStorageInstanceDexie = /*#__PURE__*/function () {
       var changedDocuments = await query.toArray();
       return changedDocuments.map(d => (0, _dexieHelper.fromDexieToStorage)(d));
     }));
-    var changedDocs = changedDocsNormal.concat(changedDocsDeleted);
+    var changedDocs = changedDocsNormal.slice(0);
+    (0, _utils.appendToArray)(changedDocs, changedDocsDeleted);
     changedDocs = (0, _utils.sortDocumentsByLastWriteTime)(this.primaryPath, changedDocs);
     changedDocs = changedDocs.slice(0, limit);
     var lastDoc = (0, _utils.lastOfArray)(changedDocs);

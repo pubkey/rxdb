@@ -173,21 +173,31 @@ window.onload = async function () {
             });
         });
 
-    // css animation of big logo on heartbeat
+    /**
+     * css animation of big logo on heartbeat
+     * Notice that we have to trigger a reflow
+     * when we want to restart the animation.
+     * @link https://css-tricks.com/restart-css-animation/
+     */
     heartbeatListeners.push(function () {
         Array.from($$beating).forEach(function (element) {
             element.style.animationDuration = heartbeatDuration + 'ms';
+            console.log('aaaa');
+            console.dir(element);
             element.classList.remove('animation');
+            void element.offsetWidth;
             element.classList.add('animation');
         });
         Array.from($$beatingFirst).forEach(function (element) {
             element.style.animationDuration = heartbeatDuration + 'ms';
             element.classList.remove('animation');
+            void element.offsetWidth;
             element.classList.add('animation');
         });
         Array.from($$beatingSecond).forEach(function (element) {
             element.style.animationDuration = heartbeatDuration + 'ms';
             element.classList.remove('animation');
+            void element.offsetWidth;
             element.classList.add('animation');
         });
     });

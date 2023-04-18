@@ -1,6 +1,6 @@
 import { firstValueFrom, filter } from 'rxjs';
 import { stackCheckpoints } from '../rx-storage-helper';
-import { batchArray, ensureNotFalsy, parseRevision, PROMISE_RESOLVE_FALSE } from '../plugins/utils';
+import { appendToArray, batchArray, ensureNotFalsy, parseRevision, PROMISE_RESOLVE_FALSE } from '../plugins/utils';
 import { getLastCheckpointDoc, setCheckpoint } from './checkpoint';
 import { resolveConflictError } from './conflicts';
 import { writeDocToDocState } from './helper';
@@ -103,7 +103,7 @@ export async function startReplicationUpstream(state) {
         if (taskWithTime.time < initialSyncStartTime) {
           continue;
         }
-        docs = docs.concat(taskWithTime.task.events.map(r => {
+        appendToArray(docs, taskWithTime.task.events.map(r => {
           return r.documentData;
         }));
         checkpoint = stackCheckpoints([checkpoint, taskWithTime.task.checkpoint]);

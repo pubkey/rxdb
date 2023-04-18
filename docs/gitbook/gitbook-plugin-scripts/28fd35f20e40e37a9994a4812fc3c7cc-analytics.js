@@ -141,3 +141,44 @@ function historyHack() {
     }
 }
 historyHack();
+
+
+
+/**
+ * Chat call-to-action button
+ */
+window.addEventListener('DOMContentLoaded', function () {
+    var elemDiv = document.createElement('a');
+    elemDiv.id = 'fixed-chat-button';
+    elemDiv.href = 'https://discord.com/invite/tqt9ZttJfD';
+    elemDiv.target = '_blank';
+    elemDiv.innerHTML = 'chat';
+    elemDiv.onclick = window.trigger('join_chat', 0.20);
+
+    var styleSheet = document.createElement('style');
+    styleSheet.type = 'text/css';
+    styleSheet.innerText = '#fixed-chat-button {' +
+        'color: white;' +
+        'position: fixed;' +
+        'right: 0;' +
+        'bottom: 0;' +
+        'background-color: var(--color-top);' +
+        'padding-left: 17px;' +
+        'padding-right: 17px;' +
+        'padding-top: 10px;' +
+        'padding-bottom: 5px;' +
+        'text-align: center;' +
+        'margin-right: 21px;' +
+        'font-weight: bold;' +
+        'border-top-left-radius: 9px;' +
+        'border-top-right-radius: 9px;' +
+        '}' +
+        '#fixed-chat-button:hover {' +
+        'box-shadow: 2px 2px 13px #ca007c, -2px -1px 14px #ff009e;' +
+        'text-decoration: underline;' +
+        '}'
+        ;
+    document.head.appendChild(styleSheet);
+    document.body.appendChild(elemDiv);
+
+}, false);

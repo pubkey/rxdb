@@ -4,7 +4,7 @@
  */
 import { newRxError } from '../../rx-error';
 import { getPrimaryFieldOfPrimaryKey, getSchemaByObjectPath } from '../../rx-schema-helper';
-import { flattenObject, getProperty, isMaybeReadonlyArray, trimDots } from '../../plugins/utils';
+import { appendToArray, flattenObject, getProperty, isMaybeReadonlyArray, trimDots } from '../../plugins/utils';
 import { rxDocumentProperties } from './entity-properties';
 
 /**
@@ -410,7 +410,7 @@ export function checkSchema(jsonSchema) {
   /* check types of the indexes */
   (jsonSchema.indexes || []).reduce((indexPaths, currentIndex) => {
     if (isMaybeReadonlyArray(currentIndex)) {
-      indexPaths.concat(currentIndex);
+      appendToArray(indexPaths, currentIndex);
     } else {
       indexPaths.push(currentIndex);
     }

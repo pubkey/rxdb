@@ -1,5 +1,5 @@
 import { newRxError } from './rx-error';
-import { ensureNotFalsy, flatClone, getProperty, isMaybeReadonlyArray, REGEX_ALL_DOTS, RX_META_LWT_MINIMUM, sortObject, trimDots } from './plugins/utils';
+import { appendToArray, ensureNotFalsy, flatClone, getProperty, isMaybeReadonlyArray, REGEX_ALL_DOTS, RX_META_LWT_MINIMUM, sortObject, trimDots } from './plugins/utils';
 /**
  * Helper function to create a valid RxJsonSchema
  * with a given version.
@@ -159,7 +159,8 @@ export function fillWithDefaultSettings(schemaObj) {
 
   // final fields are always required
   var finalFields = getFinalFields(schemaObj);
-  schemaObj.required = schemaObj.required.concat(finalFields).filter(field => !field.includes('.')).filter((elem, pos, arr) => arr.indexOf(elem) === pos); // unique;
+  appendToArray(schemaObj.required, finalFields);
+  schemaObj.required = schemaObj.required.filter(field => !field.includes('.')).filter((elem, pos, arr) => arr.indexOf(elem) === pos); // unique;
 
   // version is 0 by default
   schemaObj.version = schemaObj.version || 0;

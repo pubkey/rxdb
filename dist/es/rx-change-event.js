@@ -4,6 +4,7 @@
  */
 
 import { overwritable } from './overwritable';
+import { appendToArray } from './plugins/utils';
 export function getDocumentDataOfRxChangeEvent(rxChangeEvent) {
   if (rxChangeEvent.documentData) {
     return rxChangeEvent.documentData;
@@ -53,7 +54,7 @@ export function flattenEvents(input) {
   if (Array.isArray(input)) {
     input.forEach(inputItem => {
       var add = flattenEvents(inputItem);
-      output = output.concat(add);
+      appendToArray(output, add);
     });
   } else {
     if (input.id && input.events) {

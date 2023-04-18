@@ -194,7 +194,7 @@ var RxStorageInstanceFoundationDB = /*#__PURE__*/function () {
       });
       var docIds = range.map(row => row[1]);
       var docsData = await Promise.all(docIds.map(docId => mainTx.get(docId)));
-      innerResult = innerResult.concat(docsData);
+      (0, _utils.appendToArray)(innerResult, docsData);
       return innerResult;
     });
     var lastDoc = (0, _utils.lastOfArray)(result);

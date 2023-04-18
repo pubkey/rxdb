@@ -7,6 +7,7 @@ exports.flattenEvents = flattenEvents;
 exports.getDocumentDataOfRxChangeEvent = getDocumentDataOfRxChangeEvent;
 exports.rxChangeEventToEventReduceChangeEvent = rxChangeEventToEventReduceChangeEvent;
 var _overwritable = require("./overwritable");
+var _utils = require("./plugins/utils");
 /**
  * RxChangeEvents a emitted when something in the database changes
  * they can be grabbed by the observables of database, collection and document
@@ -61,7 +62,7 @@ function flattenEvents(input) {
   if (Array.isArray(input)) {
     input.forEach(inputItem => {
       var add = flattenEvents(inputItem);
-      output = output.concat(add);
+      (0, _utils.appendToArray)(output, add);
     });
   } else {
     if (input.id && input.events) {

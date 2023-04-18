@@ -1,5 +1,5 @@
 import _inheritsLoose from "@babel/runtime/helpers/inheritsLoose";
-import { asyncFilter, ensureNotFalsy, errorToPlainJson, flatClone, lastOfArray, toArray } from '../../plugins/utils';
+import { appendToArray, asyncFilter, ensureNotFalsy, errorToPlainJson, flatClone, lastOfArray, toArray } from '../../plugins/utils';
 import { doc, query, where, orderBy, limit, getDocs, onSnapshot, runTransaction, writeBatch, serverTimestamp, waitForPendingWrites, documentId } from 'firebase/firestore';
 import { RxDBLeaderElectionPlugin } from '../leader-election';
 import { RxReplicationState, startReplicationOnLeaderShip } from '../replication';
@@ -85,7 +85,7 @@ export function replicateFirestore(options) {
               var missingAmount = batchSize - useDocs.length;
               if (missingAmount > 0) {
                 var additionalDocs = newerQueryResult.docs.slice(0, missingAmount).filter(x => !!x);
-                useDocs = useDocs.concat(additionalDocs);
+                appendToArray(useDocs, additionalDocs);
               }
             }
           });
