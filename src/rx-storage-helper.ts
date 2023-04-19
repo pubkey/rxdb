@@ -812,6 +812,12 @@ export function ensureRxStorageInstanceParamsAreCorrect(
     if (hasEncryption(params.schema)) {
         throw newRxError('UT6', { args: { params } });
     }
+    if (
+        params.schema.attachments &&
+        params.schema.attachments.compression
+    ) {
+        throw newRxError('UT7', { args: { params } });
+    }
 }
 
 export function hasEncryption(jsonSchema: RxJsonSchema<any>): boolean {

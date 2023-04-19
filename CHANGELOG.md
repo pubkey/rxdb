@@ -2,6 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
+- ADD [attachment compression plugin](https://rxdb.info/rx-attachment.md#attachment-compression)
 - REFACTOR Use custom `appendToArray()` instead of slow `Array.concat()`
 <!-- ADD new changes here! -->
 

@@ -8,7 +8,7 @@ Compared to other persistend storage options in the browser (like [IndexedDB](./
   <img src="./files/rx-storage-performance-browser.png" alt="RxStorage performance - browser" width="700" />
 </p>
 
-The OPFS API can only be accessed in a [WebWorker](./rx-storage-worker.md). It cannot be accessed in the main JavaSCript process, and Iframe or even a [SharedWorker](./rx-storage-shared-worker.md).
+The OPFS API can only be accessed in a [WebWorker](./rx-storage-worker.md). It cannot be accessed in the main JavaScript process, an iFrame or even a [SharedWorker](./rx-storage-shared-worker.md).
 
 
 ### Pros

@@ -34,6 +34,7 @@ import './unit/rx-collection.test';
 import './unit/rx-document.test';
 import './unit/validate.test';
 import './unit/attachments.test';
+import './unit/attachments-compression.test';
 import './unit/encryption.test';
 import './unit/rx-query.test';
 import './unit/cross-instance.test';

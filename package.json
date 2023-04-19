@@ -203,6 +203,13 @@
       "es2015": "./dist/es/plugins/attachments/index.js",
       "default": "./dist/es/plugins/attachments/index.js"
     },
+    "./plugins/attachments-compression": {
+      "types": "./dist/types/plugins/attachments-compression/index.d.ts",
+      "node": "./dist/lib/plugins/attachments-compression/index.js",
+      "require": "./dist/lib/plugins/attachments-compression/index.js",
+      "es2015": "./dist/es/plugins/attachments-compression/index.js",
+      "default": "./dist/es/plugins/attachments-compression/index.js"
+    },
     "./plugins/encryption-crypto-js": {
       "types": "./dist/types/plugins/encryption-crypto-js/index.d.ts",
       "node": "./dist/lib/plugins/encryption-crypto-js/index.js",
@@ -396,6 +403,7 @@
     "modifyjs": "0.3.1",
     "oblivious-set": "1.1.1",
     "ohash": "1.0.0",
+    "pako": "2.1.0",
     "pouchdb-selector-core": "8.0.1",
     "reconnecting-websocket": "4.4.0",
     "simple-peer": "9.11.1",
@@ -432,6 +440,7 @@
     "@types/crypto-js": "4.1.1",
     "@types/mocha": "10.0.1",
     "@types/node": "18.15.11",
+    "@types/pako": "2.0.0",
     "@types/request": "2.48.8",
     "@types/request-promise-native": "1.0.18",
     "@typescript-eslint/eslint-plugin": "5.56.0",

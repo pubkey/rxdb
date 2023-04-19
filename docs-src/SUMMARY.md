@@ -33,7 +33,6 @@
     * [Example](./rx-schema.md#example)
     * [Create a collection with the schema](./rx-schema.md#create-a-collection-with-the-schema)
     * [version](./rx-schema.md#version)
-    * [keyCompression](./rx-schema.md#keycompression)
     * [indexes](./rx-schema.md#indexes)
     * [attachments](./rx-schema.md#attachments)
     * [default](./rx-schema.md#default)
@@ -119,6 +118,7 @@
     * [Replication Firestore](./replication-firestore.md)
 
 * [RxAttachment](./rx-attachment.md)
+    * [Attachment Compression](./rx-attachment.md#attachment-compression)
 
 * [Middleware-hooks](./middleware.md)
 

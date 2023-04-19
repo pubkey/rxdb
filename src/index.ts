@@ -162,5 +162,6 @@ export type {
     RxTestStorage,
     ById,
     RxQueryPlan,
-    PlainJsonError
+    PlainJsonError,
+    CompressionMode
 } from './types';
