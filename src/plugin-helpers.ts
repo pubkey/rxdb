@@ -16,7 +16,8 @@ import type {
     RxStorageInstance,
     RxStorageInstanceCreationParams,
     RxValidationError,
-    RxStorageWriteErrorConflict
+    RxStorageWriteErrorConflict,
+    MaybePromise
 } from './types';
 import {
     defaultHashSha256,
@@ -147,9 +148,9 @@ export function wrappedValidateStorageFactory(
  */
 export function wrapRxStorageInstance<RxDocType>(
     instance: RxStorageInstance<RxDocType, any, any>,
-    modifyToStorage: (docData: RxDocumentWriteData<RxDocType>) => Promise<RxDocumentData<any>> | RxDocumentData<any>,
-    modifyFromStorage: (docData: RxDocumentData<any>) => Promise<RxDocumentData<RxDocType>> | RxDocumentData<RxDocType>,
-    modifyAttachmentFromStorage: (attachmentData: string) => Promise<string> | string = (v) => v
+    modifyToStorage: (docData: RxDocumentWriteData<RxDocType>) => MaybePromise<RxDocumentData<any>>,
+    modifyFromStorage: (docData: RxDocumentData<any>) => MaybePromise<RxDocumentData<RxDocType>>,
+    modifyAttachmentFromStorage: (attachmentData: string) => MaybePromise<string> = (v) => v
 ): WrappedRxStorageInstance<RxDocType, any, any> {
     async function toStorage(docData: RxDocumentWriteData<RxDocType>): Promise<RxDocumentData<any>> {
         if (!docData) {

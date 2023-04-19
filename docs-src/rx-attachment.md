@@ -146,3 +146,49 @@ Returns a Promise which resolves the attachment's data as `string`.
 const attachment = await myDocument.getAttachment('cat.jpg');
 const data = await attachment.getStringData();
 ```
+
+
+
+
+# Attachment compression
+
+Storing many attachments can be a problem when the disc space of the device is exceeded.
+Therefore it can make sense to compress the attachments before storing them in the [RxStorage](./rx-storage.md).
+With the `attachments-compression` plugin you can compress the attachments data on write and decompress it on reads.
+This happens internally and will now change on how you use the api.
+
+```ts
+import {
+    wrappedAttachmentsCompressionStorage
+} from 'rxdb/plugins/attachments-compression';
+
+import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
+
+// create a wrapped storage with attachment-compression.
+const storageWithAttachmentsCompression = wrappedAttachmentsCompressionStorage({
+    storage: getRxStorageDexie()
+});
+
+const db = await createRxDatabase<RxStylechaseCollections>({
+    name: 'mydatabase',
+    storage: storageWithAttachmentsCompression
+});
+
+
+// set the compression mode at the schema level
+const mySchema = {
+    version: 0,
+    type: 'object',
+    properties: {
+        // .
+        // .
+        // .
+    },
+    attachments: {
+        compression: 'deflate'  // <- Specify the compression mode here. Atm only 'deflate' mode is available.
+    }
+};
+
+/* ... create your collections as usual and store attachments in them. */
+
+```
