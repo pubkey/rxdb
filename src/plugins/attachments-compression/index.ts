@@ -91,7 +91,7 @@ export function wrappedAttachmentsCompressionStorage<Internals, InstanceCreation
 
                 /**
                  * Because this wrapper resolves the attachments.compression,
-                 * we have to remove it before sending it to the underlaying RxStorage.
+                 * we have to remove it before sending it to the underlying RxStorage.
                  * which allows underlying storages to detect wrong configurations
                  * like when compression is set to false but no attachment-compression module is used.
                  */
