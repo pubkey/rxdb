@@ -63,7 +63,7 @@
     <link rel="shortcut icon" href="gitbook/images/favicon.ico" type="image/x-icon">
 
     
-    <link rel="next" href="middleware.html" />
+    <link rel="next" href="rx-attachment.html" />
     
     
     <link rel="prev" href="replication-firestore.html" />
@@ -541,19 +541,6 @@
     
         <li class="chapter " data-level="1.6.4" data-path="rx-schema.html">
             
-                <a href="rx-schema.html#keycompression">
-            
-                    
-                    keyCompression
-            
-                </a>
-            
-
-            
-        </li>
-    
-        <li class="chapter " data-level="1.6.5" data-path="rx-schema.html">
-            
                 <a href="rx-schema.html#indexes">
             
                     
@@ -565,7 +552,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.6.6" data-path="rx-schema.html">
+        <li class="chapter " data-level="1.6.5" data-path="rx-schema.html">
             
                 <a href="rx-schema.html#attachments">
             
@@ -578,7 +565,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.6.7" data-path="rx-schema.html">
+        <li class="chapter " data-level="1.6.6" data-path="rx-schema.html">
             
                 <a href="rx-schema.html#default">
             
@@ -591,7 +578,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.6.8" data-path="rx-schema.html">
+        <li class="chapter " data-level="1.6.7" data-path="rx-schema.html">
             
                 <a href="rx-schema.html#final">
             
@@ -1617,6 +1604,25 @@
             
 
             
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.13.1" data-path="rx-attachment.html">
+            
+                <a href="rx-attachment.html#attachment-compression">
+            
+                    
+                    Attachment Compression
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
         </li>
     
         <li class="chapter " data-level="1.14" data-path="middleware.html">
@@ -2380,6 +2386,44 @@ myDocument.allAttachments$.subscribe(
 <pre><code class="lang-javascript"><span class="hljs-keyword">const</span> attachment = <span class="hljs-keyword">await</span> myDocument.getAttachment(<span class="hljs-string">&apos;cat.jpg&apos;</span>);
 <span class="hljs-keyword">const</span> data = <span class="hljs-keyword">await</span> attachment.getStringData();
 </code></pre>
+<h1 id="attachment-compression">Attachment compression</h1>
+<p>Storing many attachments can be a problem when the disc space of the device is exceeded.
+Therefore it can make sense to compress the attachments before storing them in the <a href="rx-storage.html">RxStorage</a>.
+With the <code>attachments-compression</code> plugin you can compress the attachments data on write and decompress it on reads.
+This happens internally and will now change on how you use the api.</p>
+<pre><code class="lang-ts"><span class="hljs-keyword">import</span> {
+    wrappedAttachmentsCompressionStorage
+} from <span class="hljs-string">&apos;rxdb/plugins/attachments-compression&apos;</span>;
+
+<span class="hljs-keyword">import</span> { getRxStorageDexie } from <span class="hljs-string">&apos;rxdb/plugins/storage-dexie&apos;</span>;
+
+<span class="hljs-comment">// create a wrapped storage with attachment-compression.</span>
+<span class="hljs-keyword">const</span> storageWithAttachmentsCompression = wrappedAttachmentsCompressionStorage({
+    storage: getRxStorageDexie()
+});
+
+<span class="hljs-keyword">const</span> db = await createRxDatabase&lt;RxStylechaseCollections&gt;({
+    name: <span class="hljs-string">&apos;mydatabase&apos;</span>,
+    storage: storageWithAttachmentsCompression
+});
+
+
+<span class="hljs-comment">// set the compression mode at the schema level</span>
+<span class="hljs-keyword">const</span> mySchema = {
+    version: <span class="hljs-number">0</span>,
+    <span class="hljs-keyword">type</span>: <span class="hljs-string">&apos;object&apos;</span>,
+    properties: {
+        <span class="hljs-comment">// .</span>
+        <span class="hljs-comment">// .</span>
+        <span class="hljs-comment">// .</span>
+    },
+    attachments: {
+        compression: <span class="hljs-string">&apos;deflate&apos;</span>  <span class="hljs-comment">// &lt;- Specify the compression mode here. Atm only &apos;deflate&apos; mode is available.</span>
+    }
+};
+
+<span class="hljs-comment">/* ... create your collections as usual and store attachments in them. */</span>
+</code></pre>
 
                                 
                                 </section>
@@ -2412,7 +2456,7 @@ myDocument.allAttachments$.subscribe(
                 </a>
                 
                 
-                <a href="middleware.html" class="navigation navigation-next " aria-label="Next page: Middleware-hooks">
+                <a href="rx-attachment.html#attachment-compression" class="navigation navigation-next " aria-label="Next page: Attachment Compression">
                     <i class="fa fa-angle-right"></i>
                 </a>
                 
@@ -2423,7 +2467,7 @@ myDocument.allAttachments$.subscribe(
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"RxAttachment","level":"1.13","depth":1,"next":{"title":"Middleware-hooks","level":"1.14","depth":1,"path":"middleware.md","ref":"./middleware.md","articles":[]},"previous":{"title":"Replication Firestore","level":"1.12.5","depth":2,"path":"replication-firestore.md","ref":"./replication-firestore.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./analytics.js","./next-button.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/logo.svg","custom-favicon":{},"edit-link":{"label":"","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - JavaScript Database","links":{"sidebar":{"RxDB":"/","Follow @twitter ":"https://twitter.com/intent/user?screen_name=rxdbjs","Chat @discord ":"https://discord.gg/tqt9ZttJfD","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"rx-attachment.md","mtime":"","type":"markdown"},"gitbook":{"version":"3.2.3","time":""},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"RxAttachment","level":"1.13","depth":1,"next":{"title":"Attachment Compression","level":"1.13.1","depth":2,"anchor":"#attachment-compression","path":"rx-attachment.md","ref":"./rx-attachment.md#attachment-compression","articles":[]},"previous":{"title":"Replication Firestore","level":"1.12.5","depth":2,"path":"replication-firestore.md","ref":"./replication-firestore.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./analytics.js","./next-button.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/logo.svg","custom-favicon":{},"edit-link":{"label":"","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - JavaScript Database","links":{"sidebar":{"RxDB":"/","Follow @twitter ":"https://twitter.com/intent/user?screen_name=rxdbjs","Chat @discord ":"https://discord.gg/tqt9ZttJfD","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"rx-attachment.md","mtime":"","type":"markdown"},"gitbook":{"version":"3.2.3","time":""},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>

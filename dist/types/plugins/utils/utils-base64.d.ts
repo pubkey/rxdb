@@ -9,3 +9,7 @@ export declare function b64DecodeUnicode(str: string): string;
  * @link https://stackoverflow.com/a/9458996/3443137
  */
 export declare function arrayBufferToBase64(buffer: ArrayBuffer): string;
+/**
+ * @link https://stackoverflow.com/a/21797381
+ */
+export declare function base64ToArrayBuffer(base64: string): ArrayBuffer;

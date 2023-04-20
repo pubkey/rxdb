@@ -5,7 +5,7 @@ import { StringKeys } from './util';
 /**
  * @link https://github.com/types/lib-json-schema/blob/master/v4/index.d.ts
  */
-export type JsonSchemaTypes =  'array' | 'boolean' | 'integer' | 'number' | 'null' | 'object' | 'string' | (string & {});
+export type JsonSchemaTypes = 'array' | 'boolean' | 'integer' | 'number' | 'null' | 'object' | 'string' | (string & {});
 
 export type CompositePrimaryKey<RxDocType> = {
     /**
@@ -81,6 +81,13 @@ export interface TopLevelProperty extends JsonSchema {
     default?: any;
 }
 
+/**
+ * @link https://developer.mozilla.org/en-US/docs/Web/API/Compression_Streams_API
+ * Notice that atm we only support the deflate mode because firefox
+ * does not support the CompressionStream API.
+ */
+export type CompressionMode = 'deflate';
+
 export type RxJsonSchema<
     /**
      * The doctype must be given, and '=any' cannot be used,
@@ -129,6 +136,10 @@ export type RxJsonSchema<
     additionalProperties?: false;
     attachments?: {
         encrypted?: boolean;
+        /**
+         * @link https://developer.mozilla.org/en-US/docs/Web/API/Compression_Streams_API
+         */
+        compression?: CompressionMode;
     };
     /**
      * Options for the sharding plugin of rxdb-premium.

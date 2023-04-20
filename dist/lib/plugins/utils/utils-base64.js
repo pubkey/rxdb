@@ -6,6 +6,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.arrayBufferToBase64 = arrayBufferToBase64;
 exports.b64DecodeUnicode = b64DecodeUnicode;
 exports.b64EncodeUnicode = b64EncodeUnicode;
+exports.base64ToArrayBuffer = base64ToArrayBuffer;
 var _jsBase = require("js-base64");
 /**
  * NO! We cannot just use btoa() and atob()
@@ -39,5 +40,18 @@ function arrayBufferToBase64(buffer) {
     binary += String.fromCharCode(bytes[i]);
   }
   return btoa(binary);
+}
+
+/**
+ * @link https://stackoverflow.com/a/21797381
+ */
+function base64ToArrayBuffer(base64) {
+  var binary_string = atob(base64);
+  var len = binary_string.length;
+  var bytes = new Uint8Array(len);
+  for (var i = 0; i < len; i++) {
+    bytes[i] = binary_string.charCodeAt(i);
+  }
+  return bytes.buffer;
 }
 //# sourceMappingURL=utils-base64.js.map

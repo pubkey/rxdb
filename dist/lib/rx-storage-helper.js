@@ -604,6 +604,13 @@ function ensureRxStorageInstanceParamsAreCorrect(params) {
       }
     });
   }
+  if (params.schema.attachments && params.schema.attachments.compression) {
+    throw (0, _rxError.newRxError)('UT7', {
+      args: {
+        params
+      }
+    });
+  }
 }
 function hasEncryption(jsonSchema) {
   if (!!jsonSchema.encrypted && jsonSchema.encrypted.length > 0 || jsonSchema.attachments && jsonSchema.attachments.encrypted) {
