@@ -1922,6 +1922,7 @@ Object.defineProperty(exports, "__esModule", {
 exports.arrayBufferToBase64 = arrayBufferToBase64;
 exports.b64DecodeUnicode = b64DecodeUnicode;
 exports.b64EncodeUnicode = b64EncodeUnicode;
+exports.base64ToArrayBuffer = base64ToArrayBuffer;
 var _jsBase = require("js-base64");
 /**
  * NO! We cannot just use btoa() and atob()
@@ -1955,6 +1956,19 @@ function arrayBufferToBase64(buffer) {
     binary += String.fromCharCode(bytes[i]);
   }
   return btoa(binary);
+}
+
+/**
+ * @link https://stackoverflow.com/a/21797381
+ */
+function base64ToArrayBuffer(base64) {
+  var binary_string = atob(base64);
+  var len = binary_string.length;
+  var bytes = new Uint8Array(len);
+  for (var i = 0; i < len; i++) {
+    bytes[i] = binary_string.charCodeAt(i);
+  }
+  return bytes.buffer;
 }
 
 },{"js-base64":418}],15:[function(require,module,exports){
@@ -2939,7 +2953,7 @@ exports.RXDB_VERSION = void 0;
 /**
  * This file is replaced in the 'npm run build:version' script.
  */
-var RXDB_VERSION = '14.8.3';
+var RXDB_VERSION = '14.9.0';
 exports.RXDB_VERSION = RXDB_VERSION;
 
 },{}],28:[function(require,module,exports){
@@ -8763,6 +8777,13 @@ function ensureRxStorageInstanceParamsAreCorrect(params) {
   }
   if (hasEncryption(params.schema)) {
     throw (0, _rxError.newRxError)('UT6', {
+      args: {
+        params
+      }
+    });
+  }
+  if (params.schema.attachments && params.schema.attachments.compression) {
+    throw (0, _rxError.newRxError)('UT7', {
       args: {
         params
       }
@@ -24988,6 +25009,9 @@ function createHasher(options) {
       return this["_" + type](value);
     },
     _object(object) {
+      if (object && typeof object.toJSON === "function") {
+        return this._object(object.toJSON());
+      }
       const pattern = /\[object (.*)]/i;
       const objString = Object.prototype.toString.call(object);
       const _objType = pattern.exec(objString);
@@ -25005,10 +25029,8 @@ function createHasher(options) {
       if (objType !== "object" && objType !== "function" && objType !== "asyncfunction") {
         if (this["_" + objType]) {
           this["_" + objType](object);
-        } else if (options.ignoreUnknown) {
-          return write("[" + objType + "]");
-        } else {
-          throw new Error('Unknown object type "' + objType + '"');
+        } else if (!options.ignoreUnknown) {
+          this._unkown(object, objType);
         }
       } else {
         let keys = Object.keys(object);
@@ -25060,11 +25082,25 @@ function createHasher(options) {
     _symbol(sym) {
       return write("symbol:" + sym.toString());
     },
+    _unkown(value, type) {
+      write(type);
+      if (!value) {
+        return;
+      }
+      write(":");
+      if (value && typeof value.entries === "function") {
+        return this._array(
+          Array.from(value.entries()),
+          true
+          /* ordered */
+        );
+      }
+    },
     _error(err) {
       return write("error:" + err.toString());
     },
     _boolean(bool) {
-      return write("bool:" + bool.toString());
+      return write("boolean:" + bool.toString());
     },
     _string(string) {
       write("string:" + string.length + ":");
@@ -25160,7 +25196,9 @@ function createHasher(options) {
       if (options.ignoreUnknown) {
         return write("[blob]");
       }
-      throw new Error('Hashing Blob objects is currently not supported\nUse "options.replacer" or "options.ignoreUnknown"\n');
+      throw new Error(
+        'Hashing Blob objects is currently not supported\nUse "options.replacer" or "options.ignoreUnknown"\n'
+      );
     },
     _domwindow() {
       return write("domwindow");
@@ -25168,6 +25206,7 @@ function createHasher(options) {
     _bigint(number) {
       return write("bigint:" + number.toString());
     },
+    /* Node.js standard native objects */
     _process() {
       return write("process");
     },
@@ -25265,10 +25304,7 @@ const Hex = {
     const hexChars = [];
     for (let i = 0; i < wordArray.sigBytes; i++) {
       const bite = wordArray.words[i >>> 2] >>> 24 - i % 4 * 8 & 255;
-      hexChars.push(
-        (bite >>> 4).toString(16),
-        (bite & 15).toString(16)
-      );
+      hexChars.push((bite >>> 4).toString(16), (bite & 15).toString(16));
     }
     return hexChars.join("");
   }
@@ -25321,6 +25357,7 @@ class BufferedBlockAlgorithm {
     this._data.concat(data);
     this._nDataBytes += data.sigBytes;
   }
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   _doProcessBlock(_dataWords, _offset) {
   }
   _process(doFlush) {
@@ -25356,8 +25393,82 @@ class Hasher extends BufferedBlockAlgorithm {
   }
 }
 
-const H = [1779033703, -1150833019, 1013904242, -1521486534, 1359893119, -1694144372, 528734635, 1541459225];
-const K = [1116352408, 1899447441, -1245643825, -373957723, 961987163, 1508970993, -1841331548, -1424204075, -670586216, 310598401, 607225278, 1426881987, 1925078388, -2132889090, -1680079193, -1046744716, -459576895, -272742522, 264347078, 604807628, 770255983, 1249150122, 1555081692, 1996064986, -1740746414, -1473132947, -1341970488, -1084653625, -958395405, -710438585, 113926993, 338241895, 666307205, 773529912, 1294757372, 1396182291, 1695183700, 1986661051, -2117940946, -1838011259, -1564481375, -1474664885, -1035236496, -949202525, -778901479, -694614492, -200395387, 275423344, 430227734, 506948616, 659060556, 883997877, 958139571, 1322822218, 1537002063, 1747873779, 1955562222, 2024104815, -2067236844, -1933114872, -1866530822, -1538233109, -1090935817, -965641998];
+const H = [
+  1779033703,
+  -1150833019,
+  1013904242,
+  -1521486534,
+  1359893119,
+  -1694144372,
+  528734635,
+  1541459225
+];
+const K = [
+  1116352408,
+  1899447441,
+  -1245643825,
+  -373957723,
+  961987163,
+  1508970993,
+  -1841331548,
+  -1424204075,
+  -670586216,
+  310598401,
+  607225278,
+  1426881987,
+  1925078388,
+  -2132889090,
+  -1680079193,
+  -1046744716,
+  -459576895,
+  -272742522,
+  264347078,
+  604807628,
+  770255983,
+  1249150122,
+  1555081692,
+  1996064986,
+  -1740746414,
+  -1473132947,
+  -1341970488,
+  -1084653625,
+  -958395405,
+  -710438585,
+  113926993,
+  338241895,
+  666307205,
+  773529912,
+  1294757372,
+  1396182291,
+  1695183700,
+  1986661051,
+  -2117940946,
+  -1838011259,
+  -1564481375,
+  -1474664885,
+  -1035236496,
+  -949202525,
+  -778901479,
+  -694614492,
+  -200395387,
+  275423344,
+  430227734,
+  506948616,
+  659060556,
+  883997877,
+  958139571,
+  1322822218,
+  1537002063,
+  1747873779,
+  1955562222,
+  2024104815,
+  -2067236844,
+  -1933114872,
+  -1866530822,
+  -1538233109,
+  -1090935817,
+  -965641998
+];
 const W = [];
 class SHA256 extends Hasher {
   constructor() {
@@ -25417,7 +25528,9 @@ class SHA256 extends Hasher {
     const nBitsTotal = this._nDataBytes * 8;
     const nBitsLeft = this._data.sigBytes * 8;
     this._data.words[nBitsLeft >>> 5] |= 128 << 24 - nBitsLeft % 32;
-    this._data.words[(nBitsLeft + 64 >>> 9 << 4) + 14] = Math.floor(nBitsTotal / 4294967296);
+    this._data.words[(nBitsLeft + 64 >>> 9 << 4) + 14] = Math.floor(
+      nBitsTotal / 4294967296
+    );
     this._data.words[(nBitsLeft + 64 >>> 9 << 4) + 15] = nBitsTotal;
     this._data.sigBytes = this._data.words.length * 4;
     this._process();
@@ -25496,11 +25609,104 @@ function isEqual(object1, object2, hashOptions = {}) {
   return false;
 }
 
+function diff(obj1, obj2, opts = {}) {
+  const h1 = _toHashedObject(obj1, opts);
+  const h2 = _toHashedObject(obj2, opts);
+  return _diff(h1, h2, opts);
+}
+function _diff(h1, h2, opts = {}) {
+  const diffs = [];
+  const allProps = /* @__PURE__ */ new Set([
+    ...Object.keys(h1.props || {}),
+    ...Object.keys(h2.props || {})
+  ]);
+  if (h1.props && h2.props) {
+    for (const prop of allProps) {
+      const p1 = h1.props[prop];
+      const p2 = h2.props[prop];
+      if (p1 && p2) {
+        diffs.push(..._diff(h1.props?.[prop], h2.props?.[prop], opts));
+      } else if (p1 || p2) {
+        diffs.push(
+          new DiffEntry((p2 || p1).key, p1 ? "removed" : "added", p2, p1)
+        );
+      }
+    }
+  }
+  if (allProps.size === 0 && h1.hash !== h2.hash) {
+    diffs.push(new DiffEntry((h2 || h1).key, "changed", h2, h1));
+  }
+  return diffs;
+}
+function _toHashedObject(obj, opts, key = "") {
+  if (obj && typeof obj !== "object") {
+    return new DiffHashedObject(key, obj, objectHash(obj, opts));
+  }
+  const props = {};
+  const hashes = [];
+  for (const _key in obj) {
+    props[_key] = _toHashedObject(
+      obj[_key],
+      opts,
+      key ? `${key}.${_key}` : _key
+    );
+    hashes.push(props[_key].hash);
+  }
+  return new DiffHashedObject(key, obj, `{${hashes.join(":")}}`, props);
+}
+class DiffEntry {
+  // eslint-disable-next-line no-useless-constructor
+  constructor(key, type, newValue, oldValue) {
+    this.key = key;
+    this.type = type;
+    this.newValue = newValue;
+    this.oldValue = oldValue;
+  }
+  toString() {
+    return this.toJSON();
+  }
+  toJSON() {
+    switch (this.type) {
+      case "added":
+        return `[+] Added   ${this.key}`;
+      case "removed":
+        return `[-] Removed ${this.key}`;
+      case "changed":
+        return `[~] Changed ${this.key} from ${this.oldValue.toString()} to ${this.newValue.toString()}`;
+    }
+  }
+}
+class DiffHashedObject {
+  // eslint-disable-next-line no-useless-constructor
+  constructor(key, value, hash, props) {
+    this.key = key;
+    this.value = value;
+    this.hash = hash;
+    this.props = props;
+  }
+  toString() {
+    if (!this.props) {
+      return JSON.stringify(this.value);
+    } else {
+      return `{${Object.keys(this.props).join(",")}}`;
+    }
+  }
+  toJSON() {
+    const k = this.key || ".";
+    if (this.props) {
+      return `${k}({${Object.keys(this.props).join(",")}})`;
+    }
+    return `${k}(${this.value})`;
+  }
+}
+
+exports.diff = diff;
 exports.hash = hash;
 exports.isEqual = isEqual;
 exports.murmurHash = murmurHash;
 exports.objectHash = objectHash;
 exports.sha256 = sha256;
+exports.sha256base64 = sha256base64;
 
 }).call(this)}).call(this,require("buffer").Buffer)
 },{"buffer":102}],448:[function(require,module,exports){

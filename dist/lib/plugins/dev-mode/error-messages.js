@@ -18,6 +18,7 @@ var ERROR_MESSAGES = {
   UT4: 'given leveldown is no valid adapter',
   UT5: 'keyCompression is set to true in the schema but no key-compression handler is used in the storage',
   UT6: 'schema contains encrypted fields but no encryption handler is used in the storage',
+  UT7: 'attachments.compression is enabled but no attachment-compression plugin is used',
   // plugins
   PL1: 'Given plugin is not RxDB plugin.',
   // removed in 14.0.0 - PouchDB RxStorage was removed - PL2: 'You tried importing a RxDB plugin to pouchdb. Use addRxPlugin() instead.',

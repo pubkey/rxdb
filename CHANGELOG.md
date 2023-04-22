@@ -2,13 +2,17 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- ADD [attachment compression plugin](https://rxdb.info/rx-attachment.md#attachment-compression)
-- REFACTOR Use custom `appendToArray()` instead of slow `Array.concat()`
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 14.9.0 (20 April 2023)
+
+- ADD [attachment compression plugin](https://rxdb.info/rx-attachment.md#attachment-compression)
+- REFACTOR Use custom `appendToArray()` instead of slow `Array.concat()`
 
 ### 14.8.3 (16 April 2023)
 

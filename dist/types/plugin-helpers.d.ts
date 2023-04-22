@@ -1,5 +1,5 @@
 import { WrappedRxStorageInstance } from './rx-storage-helper';
-import type { RxDocumentData, RxDocumentWriteData, RxJsonSchema, RxStorage, RxStorageInstance, RxValidationError } from './types';
+import type { RxDocumentData, RxDocumentWriteData, RxJsonSchema, RxStorage, RxStorageInstance, RxValidationError, MaybePromise } from './types';
 type WrappedStorageFunction = <Internals, InstanceCreationOptions>(args: {
     storage: RxStorage<Internals, InstanceCreationOptions>;
 }) => RxStorage<Internals, InstanceCreationOptions>;
@@ -26,5 +26,5 @@ validatorKey: string): WrappedStorageFunction;
  * Used in plugins to easily modify all in- and outgoing
  * data of that storage instance.
  */
-export declare function wrapRxStorageInstance<RxDocType>(instance: RxStorageInstance<RxDocType, any, any>, modifyToStorage: (docData: RxDocumentWriteData<RxDocType>) => Promise<RxDocumentData<any>> | RxDocumentData<any>, modifyFromStorage: (docData: RxDocumentData<any>) => Promise<RxDocumentData<RxDocType>> | RxDocumentData<RxDocType>, modifyAttachmentFromStorage?: (attachmentData: string) => Promise<string> | string): WrappedRxStorageInstance<RxDocType, any, any>;
+export declare function wrapRxStorageInstance<RxDocType>(instance: RxStorageInstance<RxDocType, any, any>, modifyToStorage: (docData: RxDocumentWriteData<RxDocType>) => MaybePromise<RxDocumentData<any>>, modifyFromStorage: (docData: RxDocumentData<any>) => MaybePromise<RxDocumentData<RxDocType>>, modifyAttachmentFromStorage?: (attachmentData: string) => MaybePromise<string>): WrappedRxStorageInstance<RxDocType, any, any>;
 export {};
