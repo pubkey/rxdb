@@ -475,7 +475,7 @@
     "graphql-subscriptions": "2.0.0",
     "gzip-size-cli": "5.1.0",
     "html-webpack-plugin": "5.5.1",
-    "karma": "6.4.1",
+    "karma": "6.4.2",
     "karma-babel-preprocessor": "8.0.2",
     "karma-chrome-launcher": "3.2.0",
     "karma-coverage": "2.2.0",
