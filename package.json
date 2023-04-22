@@ -507,7 +507,7 @@
     "socket.io": "4.6.1",
     "source-map-support": "0.5.21",
     "stream": "0.0.2",
-    "terser": "5.16.9",
+    "terser": "5.17.1",
     "terser-webpack-plugin": "5.3.7",
     "ts-loader": "9.4.2",
     "ts-mocha": "10.0.0",
