@@ -453,7 +453,7 @@
     "browserify": "17.0.0",
     "child-process-promise": "2.2.1",
     "clone": "2.1.2",
-    "concurrently": "7.6.0",
+    "concurrently": "8.0.1",
     "copy-webpack-plugin": "11.0.0",
     "cors": "2.8.5",
     "cross-env": "7.0.3",
