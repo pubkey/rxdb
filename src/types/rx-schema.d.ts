@@ -19,7 +19,7 @@ export type CompositePrimaryKey<RxDocType> = {
      * the fields must be required and final
      * and have the type number, int, or string.
      */
-    fields: (StringKeys<RxDocType> | string)[];
+    fields: (StringKeys<RxDocType> | string)[] | readonly (StringKeys<RxDocType> | string)[];
     /**
      * The separator which is used to concat the
      * primary fields values.
@@ -33,19 +33,19 @@ export type CompositePrimaryKey<RxDocType> = {
 export type PrimaryKey<RxDocType> = StringKeys<RxDocType> | CompositePrimaryKey<RxDocType>;
 
 export type JsonSchema<RxDocType = any> = {
-    allOf?: JsonSchema[];
-    anyOf?: JsonSchema[];
-    oneOf?: JsonSchema[];
+    allOf?: JsonSchema[] | readonly JsonSchema[];
+    anyOf?: JsonSchema[] | readonly JsonSchema[];
+    oneOf?: JsonSchema[] | readonly JsonSchema[];
     additionalItems?: boolean | JsonSchema;
     additionalProperties?: boolean | JsonSchema;
     type?: JsonSchemaTypes | JsonSchemaTypes[] | readonly JsonSchemaTypes[];
     description?: string;
     dependencies?: {
-        [key: string]: JsonSchema | string[];
+        [key: string]: JsonSchema | string[] | readonly string[];
     };
     exclusiveMinimum?: boolean;
     exclusiveMaximum?: boolean;
-    items?: JsonSchema | JsonSchema[];
+    items?: JsonSchema | JsonSchema[] | readonly JsonSchema[];
     multipleOf?: number;
     maxProperties?: number;
     maximum?: number;
@@ -62,9 +62,9 @@ export type JsonSchema<RxDocType = any> = {
     properties?: {
         [key in StringKeys<RxDocType>]: JsonSchema;
     };
-    required?: string[];
+    required?: string[] | readonly string[];
     uniqueItems?: boolean;
-    enum?: any[];
+    enum?: any[] | readonly any[];
     not?: JsonSchema;
     definitions?: {
         [key: string]: JsonSchema;
@@ -125,7 +125,7 @@ export type RxJsonSchema<
 
 
     indexes?: (string | string[])[] | (string | readonly string[])[] | readonly (string | string[])[] | readonly (string | readonly string[])[];
-    encrypted?: string[];
+    encrypted?: string[] | readonly string[];
     keyCompression?: boolean;
     /**
      * if not set, rxdb will set 'false' as default
