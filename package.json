@@ -512,7 +512,7 @@
     "ts-loader": "9.4.2",
     "ts-mocha": "10.0.0",
     "ts-node": "10.9.1",
-    "typescript": "5.0.2",
+    "typescript": "5.0.4",
     "walk-sync": "3.0.0",
     "watch": "1.0.2",
     "webpack": "5.80.0",
