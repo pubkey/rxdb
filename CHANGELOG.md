@@ -2,12 +2,16 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- ADD [Filesystem Node RxStorage](https://rxdb.info/rx-storage-filesystem-node.html)
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 14.10.0 (25 April 2023)
+
+- ADD [Filesystem Node RxStorage](https://rxdb.info/rx-storage-filesystem-node.html)
 
 ### 14.9.0 (20 April 2023)
 

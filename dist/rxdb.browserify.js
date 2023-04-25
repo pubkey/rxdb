@@ -2953,7 +2953,7 @@ exports.RXDB_VERSION = void 0;
 /**
  * This file is replaced in the 'npm run build:version' script.
  */
-var RXDB_VERSION = '14.9.0';
+var RXDB_VERSION = '14.10.0';
 exports.RXDB_VERSION = RXDB_VERSION;
 
 },{}],28:[function(require,module,exports){
@@ -25100,7 +25100,7 @@ function createHasher(options) {
       return write("error:" + err.toString());
     },
     _boolean(bool) {
-      return write("boolean:" + bool.toString());
+      return write("bool:" + bool.toString());
     },
     _string(string) {
       write("string:" + string.length + ":");
