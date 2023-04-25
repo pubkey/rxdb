@@ -101,6 +101,7 @@
     * [RxStorage IndexedDB](./rx-storage-indexeddb.md)
     * [RxStorage OPFS](./rx-storage-opfs.md)
     * [RxStorage SQLite](./rx-storage-sqlite.md)
+    * [RxStorage Filesystem Node](./rx-storage-filesystem-node.md)
     * [RxStorage FoundationDB](./rx-storage-foundationdb.md)
     * [RxStorage Worker](./rx-storage-worker.md)
     * [RxStorage Shared Worker](./rx-storage-shared-worker.md)
@@ -133,7 +134,6 @@
 * [DataMigration](./data-migration.md)
 
 * [LeaderElection](./leader-election.md)
-
 
 * [Cleanup](./cleanup.md)
 

@@ -8,7 +8,9 @@
     "declarationMap": false,
     "stripInternal": true,
     "noEmit": false,
-    "types": []
+    "types": [
+      "node"
+    ]
   },
   "include": [
     "../src"

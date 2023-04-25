@@ -38,7 +38,12 @@ The OPFS `RxStorage` is based on the File System Access API. This has the best p
 
 ### SQLite [[premium](https://rxdb.info/premium.html)]
 
-The SQLite storage has the best performance when RxDB is used on **Node.js**, **Electron**, **React Native**, **Cordova** or **Capacitor**. [Read more](./rx-storage-sqlite.md)
+The SQLite storage has great performance when RxDB is used on **Node.js**, **Electron**, **React Native**, **Cordova** or **Capacitor**. [Read more](./rx-storage-sqlite.md)
+
+### Filesystem Node [[premium](https://rxdb.info/premium.html)]
+
+The Filesystem Node storage is best suited when you use RxDB in a Node.js process or with [electron.js](./electron.md). [Read more](./rx-storage-filesystem-node.md)
+
 
 ### FoundationDB
 

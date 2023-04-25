@@ -161,6 +161,7 @@ export type {
     WithAttachmentsData,
     RxTestStorage,
     ById,
+    MaybePromise,
     RxQueryPlan,
     PlainJsonError,
     CompressionMode

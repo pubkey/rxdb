@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- ADD [Filesystem Node RxStorage](https://rxdb.info/rx-storage-filesystem-node.html)
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
