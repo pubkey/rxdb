@@ -37,7 +37,7 @@
     "@vue/cli-plugin-typescript": "5.0.8",
     "@vue/cli-service": "5.0.8",
     "@vue/compiler-sfc": "3.2.47",
-    "@vue/eslint-config-typescript": "11.0.2",
+    "@vue/eslint-config-typescript": "11.0.3",
     "async-test-util": "2.1.0",
     "concurrently": "8.0.1",
     "copy-webpack-plugin": "11.0.0",
