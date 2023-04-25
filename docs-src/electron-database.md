@@ -132,7 +132,7 @@ await collections.humans.find({
 }).$.subscribe(result => {/* ... */});
 ```
 
-For having a better performance in the renderer tab, you can later switch to the [IndexedDB RxStorage](./rx-storage-indexeddb.md). But in production it is recommended to use the [SQLite RxStorage](./rx-storage-sqlite.md) in the main process so that database operations do not block the rendering of the UI.
+For having a better performance in the renderer tab, you can later switch to the [IndexedDB RxStorage](./rx-storage-indexeddb.md). But in production it is recommended to use the [SQLite RxStorage](./rx-storage-sqlite.md) or the [Filesystem RxStorage](./rx-storage-filesystem-node.md) in the main process so that database operations do not block the rendering of the UI.
 To learn more about using RxDB with Electron, you might want to check out [this example project](https://github.com/pubkey/rxdb/tree/master/examples/electron).
 
 
