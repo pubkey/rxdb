@@ -1,4 +1,4 @@
-# Filesystem Node RxStorage
+# Filesystem Node RxStorage (beta)
 
 The Filesystem Node [RxStorage](./rx-storage.md) for RxDB is built on top of the [Node.js Filesystem API](https://nodejs.org/api/fs.html).
 It stores data in plain json/txt files like any "normal" database does. It is a bit faster compared to the [SQLite storage](./rx-storage-sqlite.md) and its setup is less complex.
