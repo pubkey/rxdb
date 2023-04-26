@@ -131,6 +131,9 @@ describe('typings.test.js', function () {
                 });
                 await myDb.destroy();
             });
+            it('should allow \'as const\' composite primary schemas to work', () => {
+                const humanCompositePrimaryTyped: RxJsonSchema<schemas.HumanCompositePrimaryDocType> = schemas.humanCompositePrimarySchemaLiteral;
+            });
         });
         describe('negative', () => {
             it('should not allow wrong properties when passing a model', async () => {
