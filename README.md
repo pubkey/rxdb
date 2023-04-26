@@ -32,11 +32,11 @@
 </p>
 
 <p align="center">
- 	  <a href="https://discord.gg/tqt9ZttJfD"><img src="https://img.shields.io/discord/969553741705539624?label=discord&style=flat-square&color=5a66f6"></a>
+ 	  <a href="https://rxdb.info/chat.html"><img src="https://img.shields.io/discord/969553741705539624?label=discord&style=flat-square&color=5a66f6"></a>
 	  &nbsp;
     <a href="https://twitter.com/intent/follow?screen_name=rxdbjs"><img src="https://img.shields.io/badge/twitter-%40rxdbjs-1DA1F2?style=flat-square"></a>
     &nbsp;
-    <a href="http://eepurl.com/imD7WA"><img src="https://img.shields.io/badge/newsletter-subscribe-e05b29?style=flat-square"></a>
+    <a href="https://rxdb.info/newsletter.html"><img src="https://img.shields.io/badge/newsletter-subscribe-e05b29?style=flat-square"></a>
 </p>
 
 
@@ -461,4 +461,4 @@ Get started now by [reading the docs](https://rxdb.info/quickstart.html) or expl
 - [Check out how you can contribute to this project](./docs-src/contribute.md).
 - [Read this when you have found a bug](./orga/bug-checklist.md)
 - [Buy access to the premium plugins](https://rxdb.info/premium.html)
-- [Join us at discord to get help](https://discord.gg/tqt9ZttJfD)
+- [Join us at discord to get help](https://rxdb.info/chat.html)
