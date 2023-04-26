@@ -9,13 +9,16 @@
  * - 'npm run test:browser' so it runs in the browser
  */
 import assert from 'assert';
-import AsyncTestUtil from 'async-test-util';
 import config from './config';
 
 import {
     createRxDatabase,
     randomCouchString
 } from '../../';
+import { collection, doc, getDoc, getFirestore } from 'firebase/firestore';
+import { initializeApp } from 'firebase/app';
+import { getAuth, signInAnonymously } from 'firebase/auth';
+import { replicateFirestore } from '../../plugins/replication-firestore';
 
 describe('bug-report.test.js', () => {
     it('should fail because it reproduces the bug', async () => {
@@ -76,12 +79,45 @@ describe('bug-report.test.js', () => {
             eventReduce: true,
             ignoreDuplicate: true
         });
+
         // create a collection
         const collections = await db.addCollections({
             mycollection: {
                 schema: mySchema
             }
         });
+
+        const projectId = 'add me';
+
+        // Setup Firebase
+        const firebaseConfig = {
+            apiKey: 'add me',
+            authDomain: 'add me',
+            projectId: projectId,
+            storageBucket: 'add me',
+            messagingSenderId: 'add me',
+            appId: 'add me'
+          };
+
+          const firebaseApp = initializeApp(firebaseConfig);
+          const auth = getAuth();
+          await signInAnonymously(auth);
+          const firestoreDatabase = getFirestore(firebaseApp);
+
+        // Setup Replication
+        const firestoreUsersCollection = collection(firestoreDatabase, 'mycollection');
+
+        const replicationState = replicateFirestore({
+            collection: db.collections.mycollection,
+            firestore: {
+              projectId: projectId,
+              database: firestoreDatabase,
+              collection: firestoreUsersCollection,
+            },
+            pull: {},
+            push: {},
+            live: true,
+          });
 
         // insert a document
         await collections.mycollection.insert({
@@ -90,47 +126,35 @@ describe('bug-report.test.js', () => {
             lastName: 'Kelso',
             age: 56
         });
+        await replicationState.awaitInitialReplication();
 
-        /**
-         * to simulate the event-propagation over multiple browser-tabs,
-         * we create the same database again
-         */
-        const dbInOtherTab = await createRxDatabase({
-            name,
-            storage: config.storage.getStorage(),
-            eventReduce: true,
-            ignoreDuplicate: true
+        await collections.mycollection.incrementalUpsert({
+            passportId: 'foobar',
+            age: 60
         });
-        // create a collection
-        const collectionInOtherTab = await dbInOtherTab.addCollections({
-            mycollection: {
-                schema: mySchema
-            }
+        await collections.mycollection.incrementalUpsert({
+            passportId: 'foobar',
+            age: 30
         });
 
-        // find the document in the other tab
-        const myDocument = await collectionInOtherTab.mycollection
-            .findOne()
-            .where('firstName')
-            .eq('Bob')
-            .exec();
+        // get the document
+        const myDocument = await collections.mycollection.findOne({selector: { passportId: 'foobar'}}).exec();
 
         /*
-         * assert things,
-         * here your tests should fail to show that there is a bug
+         * check that the local value is correct
          */
-        assert.strictEqual(myDocument.age, 56);
+        assert.strictEqual(myDocument.age, 30);
 
-        // you can also wait for events
-        const emitted = [];
-        const sub = collectionInOtherTab.mycollection
-            .findOne().$
-            .subscribe(doc => emitted.push(doc));
-        await AsyncTestUtil.waitUntil(() => emitted.length === 1);
+        /*
+         * check that the value on firebase is correct
+         */
+        const docRef = doc(firestoreDatabase, 'mycollection', 'foobar');
+        const docSnap = await getDoc(docRef);
+
+        assert.strictEqual(docSnap.data().age, 30);
 
         // clean up afterwards
-        sub.unsubscribe();
         db.destroy();
-        dbInOtherTab.destroy();
+
     });
 });
