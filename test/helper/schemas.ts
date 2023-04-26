@@ -877,6 +877,70 @@ export const humanCompositePrimary: RxJsonSchema<HumanWithCompositePrimary> = {
     indexes: ['firstName']
 };
 
+export const humanCompositePrimarySchemaLiteral = overwritable.deepFreezeWhenDevMode({
+    title: 'human schema',
+    description: 'describes a human being',
+    version: 0,
+    keyCompression: false,
+    primaryKey: {
+        key: 'id',
+        fields: [
+            'firstName',
+            'info.age'
+        ],
+        separator: '|'
+    },
+    encrypted: [],
+    type: 'object',
+    properties: {
+        id: {
+            type: 'string',
+            maxLength: 100
+        },
+        firstName: {
+            type: 'string',
+            maxLength: 100
+        },
+        lastName: {
+            type: 'string'
+        },
+        info: {
+            type: 'object',
+            properties: {
+                age: {
+                    description: 'age in years',
+                    type: 'integer',
+                    minimum: 0,
+                    maximum: 150
+                }
+            },
+            required: ['age']
+        },
+        readonlyProps: {
+            allOf: [],
+            anyOf: [],
+            oneOf: [],
+            type: [],
+            dependencies: {
+                someDep: ['asd'],
+            },
+            items: [],
+            required: [],
+            enum: [],
+        }
+    },
+    required: [
+        'id',
+        'firstName',
+        'lastName',
+        'info'
+    ],
+    indexes: ['firstName']
+} as const);
+
+const humanCompositePrimarySchemaTyped = toTypedRxJsonSchema(humanCompositePrimarySchemaLiteral);
+export type HumanCompositePrimaryDocType = ExtractDocumentTypeFromTypedRxJsonSchema<typeof humanCompositePrimarySchemaTyped>;
+
 export const refHumanNested: RxJsonSchema<RefHumanNestedDocumentType> = overwritable.deepFreezeWhenDevMode({
     title: 'human related to other human',
     version: 0,
