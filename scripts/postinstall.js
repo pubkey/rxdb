@@ -14,7 +14,7 @@ const CI = is(env.CI);
 const COLOR = is(env.npm_config_color);
 const DISABLE_OPENCOLLECTIVE = is(env.DISABLE_OPENCOLLECTIVE);
 const SILENT = !!~['silent', 'error', 'warn'].indexOf(env.npm_config_loglevel);
-const SHOW = false;
+const SHOW = true;
 
 function is(it) {
     return !!it && it !== '0' && it !== 'false';
@@ -26,8 +26,8 @@ function log(it) {
 }
 
 if (SHOW && !ADBLOCK && !CI && !DISABLE_OPENCOLLECTIVE && !SILENT) {
-    log('\u001b[96m\u001b[1mThank you for using RxDB ( https://github.com/pubkey/rxdb ) \u001b[96m\u001b[1m \n');
+    log('\u001b[96m\u001b[1mThank you for using RxDB ( https://rxdb.info/ ) \u001b[96m\u001b[1m \n');
     log('\u001B[96mHelp me to improve RxDB by answering a few questions ( < 2 minutes): \u001B[0m');
-    log('\u001B[96m>\u001B[94m Open the survey at https://forms.gle/oxVToPJb6yGHkkMi7 \u001B[0m');
+    log('\u001B[96m>\u001B[94m Open the survey at https://rxdb.info/survey.html \u001B[0m');
     log('\u001b[96m\u001b[1mThank you \u001b[96m\u001b[1m \n');
 }

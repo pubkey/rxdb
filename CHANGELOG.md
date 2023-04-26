@@ -2,7 +2,8 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- ADD Links to [RxDB User Survey 2023](https://rxdb.info/survey.html)
+- FIX better support for as const schemas [#4686](https://github.com/pubkey/rxdb/pull/4686)
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
