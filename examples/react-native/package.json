@@ -34,7 +34,7 @@
     "react-native-get-random-values": "1.8.0",
     "react-native-quick-base64": "2.0.5",
     "rxdb": "file:rxdb-local.tgz",
-    "rxjs": "7.8.0",
+    "rxjs": "7.8.1",
     "stream": "0.0.2"
   }
 }

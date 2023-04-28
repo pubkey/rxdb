@@ -24,6 +24,6 @@
   },
   "dependencies": {
     "rxdb": "file:rxdb-local.tgz",
-    "rxjs": "7.8.0"
+    "rxjs": "7.8.1"
   }
 }
