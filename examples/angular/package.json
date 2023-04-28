@@ -64,7 +64,7 @@
     "pouchdb-server": "4.2.0",
     "roboto-npm-webfont": "1.0.1",
     "rxdb": "file:rxdb-local.tgz",
-    "rxjs": "7.8.0",
+    "rxjs": "7.8.1",
     "stream": "0.0.2",
     "tslib": "2.5.0",
     "zone.js": "0.13.0"
