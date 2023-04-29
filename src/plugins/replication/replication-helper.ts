@@ -13,7 +13,7 @@ export function swapDefaultDeletedTodeletedField<RxDocType>(
     deletedField: string,
     doc: WithDeleted<RxDocType>
 ): RxDocType {
-    if (deletedField === '_deleted') {
+    if (deletedField === '_deleted' || doc === null) {
         return doc;
     } else {
         doc = flatClone(doc);
