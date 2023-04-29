@@ -469,7 +469,7 @@
     "express-graphql": "0.12.0",
     "express-pouchdb": "4.2.0",
     "fake-indexeddb": "4.0.1",
-    "firebase-tools": "11.28.0",
+    "firebase-tools": "11.29.1",
     "get-port": "5.1.1",
     "gitbook-cli": "2.3.2",
     "graphql-subscriptions": "2.0.0",
