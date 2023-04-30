@@ -68,7 +68,7 @@ var callToActions = [
     {
         text: 'Chat at ',
         keyword: '@discord',
-        url: 'https://discord.gg/tqt9ZttJfD'
+        url: 'https://rxdb.info/chat.html'
     },
     {
         text: 'Star at ',
@@ -78,7 +78,7 @@ var callToActions = [
     {
         text: 'Subscribe',
         keyword: '@newsletter',
-        url: 'http://eepurl.com/imD7WA'
+        url: 'https://rxdb.info/newsletter.html'
     }
 ];
 function insertAfter(referenceNode, newNode) {

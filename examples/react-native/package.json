@@ -12,9 +12,9 @@
     "test:bundle": "rimraf -rf ./dist && rimraf -rf ./expo && EXPO_DEBUG=true expo export --public-url https://example.com/"
   },
   "devDependencies": {
-    "@babel/core": "7.21.4",
+    "@babel/core": "7.21.5",
     "babel-preset-expo": "9.3.2",
-    "expo-cli": "6.3.2",
+    "expo-cli": "6.3.7",
     "jest": "29.5.0",
     "jest-expo": "48.0.2",
     "react-native-gesture-handler": "2.9.0",
@@ -34,7 +34,7 @@
     "react-native-get-random-values": "1.8.0",
     "react-native-quick-base64": "2.0.5",
     "rxdb": "file:rxdb-local.tgz",
-    "rxjs": "7.8.0",
+    "rxjs": "7.8.1",
     "stream": "0.0.2"
   }
 }

@@ -19,11 +19,11 @@
     "copyfiles": "2.4.1",
     "testcafe": "2.1.0",
     "typescript": "5.0.4",
-    "vite": "4.3.1",
+    "vite": "4.3.3",
     "vite-plugin-top-level-await": "1.3.0"
   },
   "dependencies": {
     "rxdb": "file:rxdb-local.tgz",
-    "rxjs": "7.8.0"
+    "rxjs": "7.8.1"
   }
 }

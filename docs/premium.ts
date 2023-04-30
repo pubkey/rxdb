@@ -43,7 +43,7 @@ window.onload = async function () {
     }
 
     $priceCalculatorSubmit.onclick = async () => {
-        (window as any).trigger('calculate_premium_price', 1.5);
+        (window as any).trigger('calculate_premium_price', 3);
 
         const isValid = ($priceCalculatorForm as any).reportValidity();
         if (!isValid) {

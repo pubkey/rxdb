@@ -142,6 +142,22 @@ const myRxDatabase = await createRxDatabase({
 });
 ```
 
+## Database Connection
+
+If you need to access the database connection for any reason you can use `getDatabaseConnection` to do so:
+
+```ts
+import { getDatabaseConnection } from 'rxdb-premium/plugins/storage-sqlite'
+```
+
+It has the following signiture:
+
+```ts
+getDatabaseConnection(
+    sqliteBasics: SQLiteBasics<any>,
+    databaseName: string
+): Promise<SQLiteDatabaseClass>;
+```
 
 ## Known Problems
 
