@@ -411,7 +411,7 @@
     "unload": "2.4.1",
     "util": "0.12.5",
     "ws": "8.13.0",
-    "z-schema": "5.0.5"
+    "z-schema": "6.0.1"
   },
   "devDependencies": {
     "@babel/cli": "7.21.5",
