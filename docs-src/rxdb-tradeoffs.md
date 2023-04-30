@@ -12,7 +12,7 @@ Therefore RxDB was optimized for client side applications and had to take comple
 ## Why not SQL syntax
 
 When you ask people which database they would want for browsers, the most answer I hear is *something SQL based like SQLite*.
-This makes sense, SQL is a query language that most developers had learned in school/university and it is reuseable across various database solutions. 
+This makes sense, SQL is a query language that most developers had learned in school/university and it is reusable across various database solutions. 
 But for RxDB (and other client side databases), using SQL is not a good option and instead it operates on document writes and the JSON based **Mango-query** syntax for querying.
 
 ```ts
