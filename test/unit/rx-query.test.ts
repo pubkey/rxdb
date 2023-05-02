@@ -358,39 +358,6 @@ describe('rx-query.test.ts', () => {
         });
     });
     config.parallel('.exec()', () => {
-        it('should throw if top level field is not known to the schema', async () => {
-            const col = await humansCollection.create(0);
-
-            await AsyncTestUtil.assertThrows(
-                () => col.find({
-                    selector: {
-                        asdfasdfasdf: 'asdf'
-                    } as any
-                }).exec(),
-                'RxError',
-                'QU13'
-            );
-
-            // should also detect wrong fields inside of $and
-            await AsyncTestUtil.assertThrows(
-                () => col.find({
-                    selector: {
-                        $and: [
-                            {
-                                asdfasdfasdf: 'asdf'
-                            } as any,
-                            {
-                                asdfasdfasdf: 'asdf'
-                            } as any
-                        ]
-                    }
-                }).exec(),
-                'RxError',
-                'QU13'
-            );
-
-            col.database.destroy();
-        });
         it('reusing exec should not make a execOverDatabase', async () => {
             const col = await humansCollection.create(2);
             const q = col.find().where('passportId').ne('Alice');

@@ -404,7 +404,6 @@
     "oblivious-set": "1.1.1",
     "ohash": "1.1.2",
     "pako": "2.1.0",
-    "pouchdb-selector-core": "8.0.1",
     "reconnecting-websocket": "4.4.0",
     "simple-peer": "9.11.1",
     "socket.io-client": "4.6.1",

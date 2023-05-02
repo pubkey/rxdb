@@ -91,13 +91,11 @@ modes.forEach(mode => {
             it('should insert one attachment', async () => {
                 const c = await createCompressedAttachmentsCollection();
                 const doc = await c.findOne().exec(true);
-                console.log('meow START');
                 const attachment = await doc.putAttachment({
                     id: 'cat.txt',
                     data: createBlob('meow', 'text/plain'),
                     type: 'text/plain'
                 });
-                console.log('meow END');
                 assert.ok(attachment);
                 assert.strictEqual(attachment.id, 'cat.txt');
                 assert.strictEqual(attachment.type, 'text/plain');

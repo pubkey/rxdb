@@ -9,9 +9,6 @@ import type {
     DefaultPreparedQuery
 } from '../../types';
 import { newRxError, newRxTypeError } from '../../rx-error';
-import {
-    massageSelector
-} from 'pouchdb-selector-core';
 import { RxStorageDexieStatics } from '../storage-dexie';
 import { deepEqual } from '../utils';
 
@@ -77,7 +74,7 @@ export function checkMangoQuery(args: RxPluginPrePrepareQueryArgs) {
      * Ensure that all top level fields are included in the schema.
      * TODO this check can be augmented to also check sub-fields.
      */
-    const massagedSelector: MangoQuerySelector<any> = massageSelector(args.mangoQuery.selector);
+    const massagedSelector: MangoQuerySelector<any> = args.mangoQuery.selector;
     const schemaTopLevelFields = Object.keys(schema.properties);
     Object.keys(massagedSelector)
         // do not check operators
