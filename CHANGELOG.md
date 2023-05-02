@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- FIX remove `pouchdb-selector-core` dependency [#4722](https://github.com/pubkey/rxdb/issues/4722)
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
