@@ -30,7 +30,7 @@
     "testcafe-hammerhead": "31.4.0",
     "ts-loader": "9.4.2",
     "typescript": "5.0.4",
-    "webpack": "5.81.0",
+    "webpack": "5.82.0",
     "webpack-cli": "5.0.2",
     "webpack-dev-server": "4.13.3"
   }
