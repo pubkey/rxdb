@@ -99,5 +99,5 @@ Because of the document based approach, TypeScript can know the exact type of th
 - migration of data on clients is hard
 - Why jsonschema
 
-## 
+## Why not everything is for free
 
