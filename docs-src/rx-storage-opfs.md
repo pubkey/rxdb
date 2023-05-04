@@ -55,7 +55,7 @@ const database = await createRxDatabase({
 
 ## Building a custom worker
 
-When you want to run additional plugins like storage wrappers or replication **inside** of the worker, you have to build your own `worker.js` file. You can do that similar to other workers by calling `exposeWorkerRxStorage` like described in the [worker storage plugin](.rx-storage-worker.md)
+When you want to run additional plugins like storage wrappers or replication **inside** of the worker, you have to build your own `worker.js` file. You can do that similar to other workers by calling `exposeWorkerRxStorage` like described in the [worker storage plugin](./rx-storage-worker.md)
 
 ```ts
 // inside of worker.js
