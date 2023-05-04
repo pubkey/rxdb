@@ -117,6 +117,56 @@ config.parallel('rx-schema.test.js', () => {
                 it('validates deep nested indexes', () => {
                     checkSchema(schemas.humanWithDeepNestedIndexes);
                 });
+                it('validate anyOf', () => {
+                    checkSchema({
+                        title: 'anyOf schema',
+                        version: 0,
+                        description: 'uses anyOf',
+                        primaryKey: 'id',
+                        type: 'object',
+                        properties: {
+                            id: {
+                                type: 'string',
+                                maxLength: 100
+                            },
+                            foo: {
+                                anyOf: [
+                                    {
+                                        type: 'string'
+                                    },
+                                    {
+                                        type: 'number'
+                                    }
+                                ]
+                            },
+                        },
+                        required: ['id', 'foo']
+                    });
+                });
+                it('validate items array', () => {
+                    checkSchema({
+                        title: 'items array schema',
+                        version: 0,
+                        description: 'uses items array',
+                        primaryKey: 'id',
+                        type: 'object',
+                        properties: {
+                            id: {
+                                type: 'string',
+                                maxLength: 100
+                            },
+                            foo: {
+                                type: 'array',
+                                items: [
+                                    {
+                                        type: 'number'
+                                    }
+                                ]
+                            },
+                        },
+                        required: ['id', 'foo']
+                    });
+                });
             });
             describe('negative', () => {
                 it('break when index defined at object property level', () => {

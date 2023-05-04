@@ -175,7 +175,7 @@ export function validateFieldsDeep(rxJsonSchema: RxJsonSchema<any>): true {
                 !currentObj.properties &&
                 schemaObj &&
                 typeof schemaObj === 'object' &&
-                !currentPath.endsWith('oneOf')
+                !Array.isArray(currentObj)
             ) {
                 checkField(
                     attributeName,
