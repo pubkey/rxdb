@@ -53,6 +53,20 @@ const database = await createRxDatabase({
 });
 ```
 
+## Building a custom worker
+
+When you want to run additional plugins like storage wrappers or replication **inside** of the worker, you have to build your own `worker.js` file. You can do that similar to other workerse by calling `exposeWorkerRxStorage` like described in the [remote storage plugin](./rx-storage-remote.md)
+
+```ts
+// inside of worker.js
+import { getRxStorageOPFS } from 'rxdb-premium/plugins/storage-opfs';
+import { exposeWorkerRxStorage } from 'rxdb-premium/plugins/storage-worker';
+
+const storage = getRxStorageOPFS();
+exposeWorkerRxStorage({
+    storage
+});
+```
 
 
 ## Learn more about OPFS:
