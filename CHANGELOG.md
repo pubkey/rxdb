@@ -2,12 +2,16 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- FIX remove `pouchdb-selector-core` dependency [#4722](https://github.com/pubkey/rxdb/issues/4722)
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 14.11.1 (4 May 2023)
+
+- FIX remove `pouchdb-selector-core` dependency [#4722](https://github.com/pubkey/rxdb/issues/4722)
 
 ### 14.11.0 (26 April 2023)
 

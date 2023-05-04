@@ -7,7 +7,6 @@ exports.areSelectorsSatisfiedByIndex = areSelectorsSatisfiedByIndex;
 exports.checkMangoQuery = checkMangoQuery;
 exports.checkQuery = checkQuery;
 var _rxError = require("../../rx-error");
-var _pouchdbSelectorCore = require("pouchdb-selector-core");
 var _storageDexie = require("../storage-dexie");
 var _utils = require("../utils");
 /**
@@ -54,7 +53,7 @@ function checkMangoQuery(args) {
    * Ensure that all top level fields are included in the schema.
    * TODO this check can be augmented to also check sub-fields.
    */
-  var massagedSelector = (0, _pouchdbSelectorCore.massageSelector)(args.mangoQuery.selector);
+  var massagedSelector = args.mangoQuery.selector;
   var schemaTopLevelFields = Object.keys(schema.properties);
   Object.keys(massagedSelector)
   // do not check operators

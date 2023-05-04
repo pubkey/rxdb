@@ -2424,6 +2424,16 @@
     })
 });
 </code></pre>
+<h2 id="database-connection">Database Connection</h2>
+<p>If you need to access the database connection for any reason you can use <code>getDatabaseConnection</code> to do so:</p>
+<pre><code class="lang-ts"><span class="hljs-keyword">import</span> { getDatabaseConnection } from <span class="hljs-string">&apos;rxdb-premium/plugins/storage-sqlite&apos;</span>
+</code></pre>
+<p>It has the following signiture:</p>
+<pre><code class="lang-ts">getDatabaseConnection(
+    sqliteBasics: SQLiteBasics&lt;<span class="hljs-built_in">any</span>&gt;,
+    databaseName: <span class="hljs-built_in">string</span>
+): Promise&lt;SQLiteDatabaseClass&gt;;
+</code></pre>
 <h2 id="known-problems">Known Problems</h2>
 <ul>
 <li><p>Some JavaScript runtimes do not contain a <code>Buffer</code> API which is used by SQLite to store binary attachments data as <code>BLOB</code>. You can set <code>storeAttachmentsAsBase64String: true</code> if you want to store the attachments data as base64 string instead. This increases the database size but makes it work even without having a <code>Buffer</code>.</p>
