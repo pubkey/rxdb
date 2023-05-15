@@ -9,6 +9,8 @@
 
 <!-- RELEASE BELOW -->
 
+### 14.11.2 (15 May 2023)
+
 ### 14.11.1 (4 May 2023)
 
 - FIX remove `pouchdb-selector-core` dependency [#4722](https://github.com/pubkey/rxdb/issues/4722)

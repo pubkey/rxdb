@@ -2169,8 +2169,13 @@ function errorToPlainJson(err) {
     rxdb: err.rxdb,
     parameters: err.parameters,
     code: err.code,
-    // stack must be last to make it easier to read the json in a console.
-    stack: err.stack
+    /**
+     * stack must be last to make it easier to read the json in a console.
+     * Also we ensure that each linebreak is spaced so that the chrome devtools
+     * shows urls to the source code that can be clicked to inspect
+     * the correct place in the code.
+     */
+    stack: !err.stack ? undefined : err.stack.replaceAll('\n', ' \n ')
   };
   return ret;
 }
@@ -2953,7 +2958,7 @@ exports.RXDB_VERSION = void 0;
 /**
  * This file is replaced in the 'npm run build:version' script.
  */
-var RXDB_VERSION = '14.11.1';
+var RXDB_VERSION = '14.11.2';
 exports.RXDB_VERSION = RXDB_VERSION;
 
 },{}],28:[function(require,module,exports){

@@ -2342,6 +2342,17 @@ Compared to other persistend storage options in the browser (like <a href="rx-st
     )
 });
 </code></pre>
+<h2 id="building-a-custom-worker">Building a custom worker</h2>
+<p>When you want to run additional plugins like storage wrappers or replication <strong>inside</strong> of the worker, you have to build your own <code>worker.js</code> file. You can do that similar to other workers by calling <code>exposeWorkerRxStorage</code> like described in the <a href="rx-storage-worker.html">worker storage plugin</a></p>
+<pre><code class="lang-ts"><span class="hljs-comment">// inside of worker.js</span>
+<span class="hljs-keyword">import</span> { getRxStorageOPFS } from <span class="hljs-string">&apos;rxdb-premium/plugins/storage-opfs&apos;</span>;
+<span class="hljs-keyword">import</span> { exposeWorkerRxStorage } from <span class="hljs-string">&apos;rxdb-premium/plugins/storage-worker&apos;</span>;
+
+<span class="hljs-keyword">const</span> storage = getRxStorageOPFS();
+exposeWorkerRxStorage({
+    storage
+});
+</code></pre>
 <h2 id="learn-more-about-opfs">Learn more about OPFS:</h2>
 <ul>
 <li><a href="https://webkit.org/blog/12257/the-file-system-access-api-with-origin-private-file-system/" target="_blank">WebKit: The File System API with Origin Private File System</a></li>
