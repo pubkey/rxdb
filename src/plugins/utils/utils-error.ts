@@ -39,8 +39,13 @@ export function errorToPlainJson(err: Error | TypeError | RxError | RxTypeError)
         rxdb: (err as any).rxdb,
         parameters: (err as RxError).parameters,
         code: (err as RxError).code,
-        // stack must be last to make it easier to read the json in a console.
-        stack: err.stack
+        /**
+         * stack must be last to make it easier to read the json in a console.
+         * Also we ensure that each linebreak is spaced so that the chrome devtools
+         * shows urls to the source code that can be clicked to inspect
+         * the correct place in the code.
+         */
+        stack: !err.stack ? undefined : err.stack.replaceAll('\n', ' \n ')
     };
     return ret;
 }
