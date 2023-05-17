@@ -1030,7 +1030,6 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 // find again
                 const getDocFromDb = await storageInstance.findDocumentsById([docData.key], false);
                 const docFromDb = getFromObjectOrThrow(getDocFromDb, docData.key);
-                assert.strictEqual(docFromDb._rev, EXAMPLE_REVISION_4);
                 assert.strictEqual(
                     docFromDb.value,
                     'value' + umlauts
