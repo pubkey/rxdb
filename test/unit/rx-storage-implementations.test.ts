@@ -994,6 +994,49 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     storageInstances.map(i => i.close())
                 );
             });
+            // Some storages had problems storing non-utf-8 chars like "é"
+            it('write and read with umlauts', async () => {
+
+                const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
+                    databaseInstanceToken: randomCouchString(10),
+                    databaseName: randomCouchString(12),
+                    collectionName: randomCouchString(12),
+                    schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
+                    options: {},
+                    multiInstance: false,
+                    devMode: true
+                });
+                const umlauts = 'äöüßé';
+
+                // insert
+                const docData: RxDocumentData<TestDocType> = {
+                    key: 'foobar' + umlauts,
+                    value: 'value' + umlauts,
+                    _deleted: false,
+                    _meta: {
+                        lwt: now()
+                    },
+                    _rev: EXAMPLE_REVISION_1,
+                    _attachments: {}
+                };
+                const insertResponse = await storageInstance.bulkWrite(
+                    [{
+                        document: clone(docData)
+                    }],
+                    testContext
+                );
+                assert.deepStrictEqual(insertResponse.error, {});
+
+                // find again
+                const getDocFromDb = await storageInstance.findDocumentsById([docData.key], false);
+                const docFromDb = getFromObjectOrThrow(getDocFromDb, docData.key);
+                assert.strictEqual(
+                    docFromDb.value,
+                    'value' + umlauts
+                );
+
+                storageInstance.close();
+            });
         });
         describe('.prepareQuery()', () => {
             it('must not crash', () => {
