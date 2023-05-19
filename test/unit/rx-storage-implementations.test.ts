@@ -1035,6 +1035,27 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     'value' + umlauts
                 );
 
+
+                // store another doc
+                const docData2: RxDocumentData<TestDocType> = {
+                    key: 'foobar2' + umlauts,
+                    value: 'value2' + umlauts,
+                    _deleted: false,
+                    _meta: {
+                        lwt: now()
+                    },
+                    _rev: EXAMPLE_REVISION_1,
+                    _attachments: {}
+                };
+                await storageInstance.bulkWrite(
+                    [{
+                        document: clone(docData2)
+                    }],
+                    testContext
+                );
+                const getDocFromDb2 = await storageInstance.findDocumentsById([docData2.key], false);
+                getFromObjectOrThrow(getDocFromDb2, docData2.key);
+
                 storageInstance.close();
             });
         });
