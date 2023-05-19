@@ -1053,7 +1053,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     }],
                     testContext
                 );
-                await storageInstance.findDocumentsById([docData2.key], false);
+                const getDocFromDb2 = await storageInstance.findDocumentsById([docData2.key], false);
+                getFromObjectOrThrow(getDocFromDb, docData2.key);
 
                 storageInstance.close();
             });
