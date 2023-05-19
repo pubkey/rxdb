@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- FIX(OPFS RxStorage) various bugs with umlauts
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
