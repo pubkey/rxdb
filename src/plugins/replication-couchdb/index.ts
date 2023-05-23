@@ -5,7 +5,9 @@ import {
     ensureNotFalsy,
     errorToPlainJson,
     flatClone,
-    getFromMapOrThrow
+    getFromMapOrThrow,
+    now,
+    promiseWait
 } from '../../plugins/utils';
 
 import { RxDBLeaderElectionPlugin } from '../leader-election';
@@ -275,6 +277,7 @@ export function replicateCouchDB<RxDocType>(
             const batchSize = options.pull && options.pull.batchSize ? options.pull.batchSize : 20;
 
             (async () => {
+                let lastRequestStartTime = now();
                 while (!replicationState.isStopped()) {
                     const url = options.url + '_changes?' + mergeUrlQueryParams({
                         style: 'all_docs',
@@ -288,6 +291,7 @@ export function replicateCouchDB<RxDocType>(
 
                     let jsonResponse: CouchdbChangesResult;
                     try {
+                        lastRequestStartTime = now();
                         jsonResponse = await (await replicationState.fetch(url)).json();
                     } catch (err: any) {
                         replicationState.subjects.error.next(
@@ -296,11 +300,22 @@ export function replicateCouchDB<RxDocType>(
                                 error: errorToPlainJson(err)
                             })
                         );
-                        // await next tick here otherwise we could go in to a 100% CPU blocking cycle.
-                        await awaitRetry(
-                            collection,
-                            replicationState.retryTime
-                        );
+
+                        if (lastRequestStartTime < (now() - replicationState.retryTime)) {
+                            /**
+                             * Last request start was long ago,
+                             * so we directly retry.
+                             * This mostly happens on timeouts
+                             * which are normal behavior for long polling requests.
+                             */
+                            await promiseWait(0);
+                        } else {
+                            // await next tick here otherwise we could go in to a 100% CPU blocking cycle.
+                            await awaitRetry(
+                                collection,
+                                replicationState.retryTime
+                            );
+                        }
                         continue;
                     }
                     const documents: WithDeleted<RxDocType>[] = jsonResponse.results
