@@ -44,6 +44,11 @@ export function handlePulledDocuments(collection, deletedField, docs) {
     return useDoc;
   });
 }
+
+/**
+ * Like normal promiseWait()
+ * but will skip the wait time if the online-state changes.
+ */
 export function awaitRetry(collection, retryTime) {
   if (typeof window === 'undefined' || typeof window !== 'object' || typeof window.addEventListener === 'undefined' || navigator.onLine) {
     return collection.promiseWait(retryTime);

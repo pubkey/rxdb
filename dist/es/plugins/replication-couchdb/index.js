@@ -2,12 +2,13 @@ import _inheritsLoose from "@babel/runtime/helpers/inheritsLoose";
 /**
  * This plugin can be used to sync collections with a remote CouchDB endpoint.
  */
-import { ensureNotFalsy, errorToPlainJson, flatClone, getFromMapOrThrow } from '../../plugins/utils';
+import { ensureNotFalsy, errorToPlainJson, flatClone, getFromMapOrThrow, now, promiseWait } from '../../plugins/utils';
 import { RxDBLeaderElectionPlugin } from '../leader-election';
 import { RxReplicationState, startReplicationOnLeaderShip } from '../replication';
 import { addRxPlugin, newRxError } from '../../index';
 import { Subject } from 'rxjs';
 import { couchDBDocToRxDocData, COUCHDB_NEW_REPLICATION_PLUGIN_IDENTITY_PREFIX, mergeUrlQueryParams, couchSwapPrimaryToId, getDefaultFetch } from './couchdb-helper';
+import { awaitRetry } from '../replication/replication-helper';
 export * from './couchdb-helper';
 export * from './couchdb-types';
 export var RxCouchDBReplicationState = /*#__PURE__*/function (_RxReplicationState) {
@@ -200,6 +201,7 @@ export function replicateCouchDB(options) {
       var since = 'now';
       var batchSize = options.pull && options.pull.batchSize ? options.pull.batchSize : 20;
       (async () => {
+        var lastRequestStartTime = now();
         while (!replicationState.isStopped()) {
           var _url = options.url + '_changes?' + mergeUrlQueryParams({
             style: 'all_docs',
@@ -212,16 +214,27 @@ export function replicateCouchDB(options) {
           });
           var jsonResponse = void 0;
           try {
+            lastRequestStartTime = now();
             jsonResponse = await (await replicationState.fetch(_url)).json();
           } catch (err) {
-            pullStream$.error(newRxError('RC_STREAM', {
+            replicationState.subjects.error.next(newRxError('RC_STREAM', {
               args: {
                 url: _url
               },
               error: errorToPlainJson(err)
             }));
-            // await next tick here otherwise we could go in to a 100% CPU blocking cycle.
-            await collection.promiseWait(0);
+            if (lastRequestStartTime < now() - replicationState.retryTime) {
+              /**
+               * Last request start was long ago,
+               * so we directly retry.
+               * This mostly happens on timeouts
+               * which are normal behavior for long polling requests.
+               */
+              await promiseWait(0);
+            } else {
+              // await next tick here otherwise we could go in to a 100% CPU blocking cycle.
+              await awaitRetry(collection, replicationState.retryTime);
+            }
             continue;
           }
           var documents = jsonResponse.results.map(row => couchDBDocToRxDocData(collection.schema.primaryPath, ensureNotFalsy(row.doc)));

@@ -28,6 +28,7 @@ Object.keys(_couchdbHelper).forEach(function (key) {
     }
   });
 });
+var _replicationHelper = require("../replication/replication-helper");
 var _couchdbTypes = require("./couchdb-types");
 Object.keys(_couchdbTypes).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
@@ -234,6 +235,7 @@ function replicateCouchDB(options) {
       var since = 'now';
       var batchSize = options.pull && options.pull.batchSize ? options.pull.batchSize : 20;
       (async () => {
+        var lastRequestStartTime = (0, _utils.now)();
         while (!replicationState.isStopped()) {
           var _url = options.url + '_changes?' + (0, _couchdbHelper.mergeUrlQueryParams)({
             style: 'all_docs',
@@ -246,16 +248,27 @@ function replicateCouchDB(options) {
           });
           var jsonResponse = void 0;
           try {
+            lastRequestStartTime = (0, _utils.now)();
             jsonResponse = await (await replicationState.fetch(_url)).json();
           } catch (err) {
-            pullStream$.error((0, _index.newRxError)('RC_STREAM', {
+            replicationState.subjects.error.next((0, _index.newRxError)('RC_STREAM', {
               args: {
                 url: _url
               },
               error: (0, _utils.errorToPlainJson)(err)
             }));
-            // await next tick here otherwise we could go in to a 100% CPU blocking cycle.
-            await collection.promiseWait(0);
+            if (lastRequestStartTime < (0, _utils.now)() - replicationState.retryTime) {
+              /**
+               * Last request start was long ago,
+               * so we directly retry.
+               * This mostly happens on timeouts
+               * which are normal behavior for long polling requests.
+               */
+              await (0, _utils.promiseWait)(0);
+            } else {
+              // await next tick here otherwise we could go in to a 100% CPU blocking cycle.
+              await (0, _replicationHelper.awaitRetry)(collection, replicationState.retryTime);
+            }
             continue;
           }
           var documents = jsonResponse.results.map(row => (0, _couchdbHelper.couchDBDocToRxDocData)(collection.schema.primaryPath, (0, _utils.ensureNotFalsy)(row.doc)));

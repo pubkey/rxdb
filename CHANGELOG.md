@@ -2,15 +2,19 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- FIX(couchdb replication) Retries must respect `retryTime` to not cause the UI to stuck [related #4612](https://github.com/pubkey/rxdb/pull/4612)
-- FIX(OPFS RxStorage) various bugs with umlauts
-- REMOVE outdated tests [related #4741](https://github.com/pubkey/rxdb/pull/4741)
-- FIX checkSchema for anyOf and items array [#4741](https://github.com/pubkey/rxdb/pull/4741)
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 14.12.0 (23 May 2023)
+
+- FIX(couchdb replication) Retries must respect `retryTime` to not cause the UI to stuck [related #4612](https://github.com/pubkey/rxdb/pull/4612)
+- FIX(OPFS RxStorage) various bugs with umlauts
+- REMOVE outdated tests [related #4741](https://github.com/pubkey/rxdb/pull/4741)
+- FIX checkSchema for anyOf and items array [#4741](https://github.com/pubkey/rxdb/pull/4741)
 
 ### 14.11.5 (19 May 2023)
 
