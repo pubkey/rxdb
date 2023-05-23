@@ -2,8 +2,9 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
+- FIX(couchdb replication) Retries must respect `retryTime` to not cause the UI to stuck [related #4612](https://github.com/pubkey/rxdb/pull/4612)
 - FIX(OPFS RxStorage) various bugs with umlauts
-- FIX(couchdb replication) Retries must repsect `retryTime` to not cause the UI to stuck [related #4612](https://github.com/pubkey/rxdb/pull/4612)
+- REMOVE outdated tests [related #4741](https://github.com/pubkey/rxdb/pull/4741)
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
