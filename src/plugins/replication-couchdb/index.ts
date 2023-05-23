@@ -43,6 +43,7 @@ import {
     couchSwapPrimaryToId,
     getDefaultFetch
 } from './couchdb-helper';
+import { awaitRetry } from '../replication/replication-helper';
 
 export * from './couchdb-helper';
 export * from './couchdb-types';
@@ -289,12 +290,17 @@ export function replicateCouchDB<RxDocType>(
                     try {
                         jsonResponse = await (await replicationState.fetch(url)).json();
                     } catch (err: any) {
-                        pullStream$.error(newRxError('RC_STREAM', {
-                            args: { url },
-                            error: errorToPlainJson(err)
-                        }));
+                        replicationState.subjects.error.next(
+                            newRxError('RC_STREAM', {
+                                args: { url },
+                                error: errorToPlainJson(err)
+                            })
+                        );
                         // await next tick here otherwise we could go in to a 100% CPU blocking cycle.
-                        await collection.promiseWait(0);
+                        await awaitRetry(
+                            collection,
+                            replicationState.retryTime
+                        );
                         continue;
                     }
                     const documents: WithDeleted<RxDocType>[] = jsonResponse.results

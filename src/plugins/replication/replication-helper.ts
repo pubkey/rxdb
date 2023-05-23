@@ -62,6 +62,10 @@ export function handlePulledDocuments<RxDocType>(
 }
 
 
+/**
+ * Like normal promiseWait()
+ * but will skip the wait time if the online-state changes.
+ */
 export function awaitRetry(
     collection: RxCollection,
     retryTime: number
