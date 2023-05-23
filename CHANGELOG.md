@@ -3,6 +3,7 @@
 
 <!-- CHANGELOG NEWEST -->
 - FIX(OPFS RxStorage) various bugs with umlauts
+- FIX(couchdb replication) Retries must repsect `retryTime` to not cause the UI to stuck [related #4612](https://github.com/pubkey/rxdb/pull/4612)
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
