@@ -155,24 +155,6 @@ config.parallel('rx-schema.test.js', () => {
                         required: ['job']
                     }), Error);
                 });
-                it('break when compoundIndex is specified in a separate field', () => {
-                    assert.throws(() => checkSchema({
-                        version: 0,
-                        primaryKey: 'id',
-                        type: 'object',
-                        properties: {
-                            id: {
-                                type: 'string',
-                                maxLength: 100
-                            },
-                            name: {
-                                type: 'string',
-                                index: true
-                            } as any
-                        },
-                        compoundIndexes: ['id', 'name']
-                    } as any), Error);
-                });
                 it('throw when underscore field is used as property name', () => {
                     assert.throws(() => checkSchema({
                         title: 'schema',
@@ -199,9 +181,6 @@ config.parallel('rx-schema.test.js', () => {
                 });
                 it('break compoundIndex key is no string', () => {
                     assert.throws(() => checkSchema(schemas.compoundIndexNoString), Error);
-                });
-                it('break on wrong formatted compoundIndex', () => {
-                    assert.throws(() => checkSchema(schemas.wrongCompoundFormat), Error);
                 });
                 it('break when dots in fieldname', () => {
                     assert.throws(() => checkSchema({

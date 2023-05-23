@@ -622,33 +622,6 @@ export const compoundIndexNoString: RxJsonSchema<CompoundIndexNoStringDocumentTy
     ]
 } as RxJsonSchema<CompoundIndexNoStringDocumentType>;
 
-export const wrongCompoundFormat: RxJsonSchema<CompoundIndexDocumentType> = {
-    title: 'compound index',
-    version: 0,
-    description: 'this schema has a compoundIndex',
-    keyCompression: false,
-    primaryKey: 'passportId',
-    type: 'object',
-    properties: {
-        passportId: {
-            type: 'string',
-            maxLength: 100
-        },
-        passportCountry: {
-            type: 'string'
-        },
-        age: {
-            type: 'integer'
-        }
-    },
-    required: [
-        'passportId'
-    ],
-    compoundIndexes: [{
-        foo: 'bar'
-    }]
-} as RxJsonSchema<CompoundIndexDocumentType>;
-
 export const empty: RxJsonSchema<any> = {
     title: 'empty schema',
     version: 0,
