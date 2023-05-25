@@ -70,8 +70,8 @@ The GraphQL resolver for the `pullHuman` would then look like:
 ```js
 const rootValue = {
     pullHuman: args => {
-        const minId = args.checkpoint : args.checkpoint.id : '';
-        const minUpdatedAt = args.checkpoint : args.checkpoint.updatedAt : 0;
+        const minId = args.checkpoint ? args.checkpoint.id : '';
+        const minUpdatedAt = args.checkpoint ? args.checkpoint.updatedAt : 0;
 
         // sorted by updatedAt first and the id as second
         const sortedDocuments = documents.sort((a, b) => {
