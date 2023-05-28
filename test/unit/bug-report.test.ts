@@ -83,13 +83,27 @@ describe('bug-report.test.js', () => {
             }
         });
 
-        // insert a document
-        await collections.mycollection.insert({
-            passportId: 'foobar',
-            firstName: 'Bob',
-            lastName: 'Kelso',
-            age: 56
-        });
+        // insert documents
+        await collections.mycollection.bulkInsert([
+            {
+                passportId: '001',
+                firstName: 'Alice',
+                lastName: 'Kelso',
+                age: 56,
+            },
+            {
+                passportId: '002',
+                firstName: 'Bob',
+                lastName: 'Kelso',
+                age: 45,
+            },
+            {
+                passportId: '003',
+                firstName: 'Carol',
+                lastName: 'Kelso',
+                age: 34,
+            },
+        ]);
 
         /**
          * to simulate the event-propagation over multiple browser-tabs,
@@ -109,17 +123,29 @@ describe('bug-report.test.js', () => {
         });
 
         // find the document in the other tab
-        const myDocument = await collectionInOtherTab.mycollection
-            .findOne()
-            .where('firstName')
-            .eq('Bob')
+        const myDocuments = await collectionInOtherTab.mycollection
+            .find({
+                selector: {
+                    passportId: { $lt: '002' },
+                },
+            })
             .exec();
 
         /*
          * assert things,
          * here your tests should fail to show that there is a bug
          */
-        assert.strictEqual(myDocument.age, 56);
+        assert.deepStrictEqual(
+            myDocuments.map((doc) => doc.toJSON()),
+            [
+                {
+                    passportId: '001',
+                    firstName: 'Alice',
+                    lastName: 'Kelso',
+                    age: 56,
+                },
+            ]
+        );
 
         // you can also wait for events
         const emitted = [];
