@@ -39,7 +39,7 @@ export function couchSwapIdToPrimary<T>(
     docData: any
 ): any {
     if (primaryKey === '_id' || docData[primaryKey]) {
-        return docData;
+        return flatClone(docData);
     }
     docData = flatClone(docData);
     docData[primaryKey] = docData._id;
