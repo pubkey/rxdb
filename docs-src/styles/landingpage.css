@@ -1100,7 +1100,7 @@ header .logo img {
     border-width: 1px;
 
     position: absolute;
-    z-index: 10;
+    z-index: 9;
     padding-top: 10px;
     padding-bottom: 10px;
     margin-top: -30px;
