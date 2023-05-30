@@ -481,10 +481,6 @@ header .logo img {
 }
 
 @media (max-width: 900px) {
-    .block.second {
-        padding-top: 0px;
-    }
-
     .block.second .inner {
         flex-direction: column;
     }
