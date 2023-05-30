@@ -316,63 +316,87 @@ header .logo img {
 }
 
 .device.tablet {
-    width: 200px;
-    height: 200px;
+    width: 23%;
+    height: 60%;
+    right: 0;
+    bottom: 0;
     background-image: url(../files/smartphone/tablet_white.svg);
 }
 
 .device.tablet .beating-color {
-    width: 65.4%;
-    height: 76.2%;
-    margin-top: 7.4%;
-    margin-left: 17.4%;
-    border-radius: 4px;
+    width: calc(100% - 10px);
+    height: 83%;
+    margin-top: 5px;
+    margin-left: 5px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 8px;
 }
 
-
 .device.tablet .beating.logo {
-    width: 36%;
-    margin-left: 32%;
-    margin-top: 43px;
+    width: 33%;
 }
 
 .device.desktop {
-    width: 350px;
-    height: 350px;
-    margin-left: 152px;
+    width: 50%;
+    height: 100%;
+    margin-left: 25%;
     background-image: url(../files/smartphone/desktop_white.svg);
 }
 
 .device.desktop .beating-color {
-    width: 91.4%;
-    height: 44.6%;
-    margin-top: 10.4%;
-    margin-left: 4.4%;
+    width: calc(100% - 20px);
+    height: 51.6%;
+    margin-top: 10px;
+    margin-left: 10px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
     border-top-left-radius: 28px;
     border-top-right-radius: 28px;
 }
 
 .device.desktop .beating.logo {
     width: 22%;
-    margin-left: 39%;
-    margin-top: 28px;
 }
 
+
 .device.server {
-    width: 150px;
-    height: 150px;
-    margin-left: -75px;
+    width: 23%;
+    height: 45%;
+    bottom: 0;
     background-image: url(../files/smartphone/server_white.svg);
 }
 
 .device.server .beating-color {
-    width: 18.4%;
-    height: 19.2%;
-    margin-top: 7.5%;
-    margin-left: 9%;
-    margin-bottom: 6%;
     border-radius: 50%;
+
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    margin-top: -10px;
+    margin-left: -10px;
+
+    left: 17%;
 }
+
+.device.server .beating-color.one {
+    top: 17%;
+}
+
+.device.server .beating-color.two {
+    top: 50%;
+}
+
+.device.server .beating-color.three {
+    top: 82%;
+}
+
 
 
 
@@ -419,26 +443,14 @@ header .logo img {
     padding-left: 25px;
 }
 
-.block.first img {
-    width: 60%;
-    margin: 35px;
-}
-
 @media (max-width: 900px) {
     .block.first {
         padding-top: 0px;
-
     }
 
     .block.first .inner {
-        width: 89%;
         flex-direction: column-reverse;
     }
-
-    .block.first img {
-        max-height: 200px;
-    }
-
 }
 
 
@@ -448,52 +460,19 @@ header .logo img {
     display: flex;
 }
 
-.block.second .content-canvas {
-    width: 100%;
-    height: 100%;
-    transform: scale(1);
-}
 
-@media (max-width: 1400px) {
-    .block.second .content-canvas {
-        width: 90%;
-        transform: scale(0.8);
-    }
-}
+.block.second .canvas.half {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
 
-@media (max-width: 1300px) {
-    .block.second .content-canvas {
-        width: 90%;
-        transform: scale(0.7);
-    }
-}
-
-@media (max-width: 1150px) {
-    .block.second .content-canvas {
-        width: 90%;
-        transform: scale(0.6);
-    }
-}
-
-@media (max-width: 1050px) {
-    .block.second .content-canvas {
-        width: 65%;
-        transform: scale(0.5);
-    }
-}
-
-@media (max-width: 1000px) {
-    .block.second .content-canvas {
-        width: 50%;
-        margin-left: 5%;
-        transform: scale(0.5);
-    }
+    margin-top: 30px;
 }
 
 @media (max-width: 900px) {
-    .block.second .content-canvas {
-        height: 200px;
-        width: 0%;
+    .block.second {
+        padding-top: 0px;
     }
 
     .block.second .inner {
@@ -501,12 +480,13 @@ header .logo img {
     }
 }
 
-@media (max-width: 500px) {
-    .block.second .content-canvas {
-        height: 200px;
-        margin-left: 0%;
-        width: 0%;
-    }
+
+
+.content-canvas {
+    width: 100%;
+    max-width: 580px;
+    height: 300px;
+    transform: scale(1);
 }
 
 
@@ -1588,9 +1568,11 @@ samp .cm-comment {
 .premium-request li {
     padding-bottom: 20px;
 }
+
 .premium-request ol {
     padding-bottom: 20px;
 }
+
 .premium-request iframe {
     width: 700px;
     height: 2150px;
