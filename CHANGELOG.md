@@ -3,6 +3,7 @@
 
 <!-- CHANGELOG NEWEST -->
 - Fix prevent delete _rev from row.doc [#4752](https://github.com/pubkey/rxdb/pull/4752)
+- IMPROVE landingpage hero section [#4753](https://github.com/pubkey/rxdb/pull/4753)
 
 <!-- ADD new changes here! -->
 
