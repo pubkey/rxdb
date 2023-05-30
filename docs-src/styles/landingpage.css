@@ -302,10 +302,16 @@ header .logo img {
 
 .device {
     display: flex;
+    position: absolute;
     flex-direction: column;
     background-repeat: no-repeat;
-    background-size: contain;
-    position: absolute;
+ 
+    /**
+     * Do not use 'background-size: contain' because it is broken on svg files in firefox.
+     * @link https://stackoverflow.com/a/40154556
+     */
+    background-size: 100% 100%;
+
 }
 
 .device .beating-color {
@@ -348,10 +354,10 @@ header .logo img {
 }
 
 .device.desktop .beating-color {
-    width: calc(100% - 20px);
-    height: 51.6%;
-    margin-top: 10px;
-    margin-left: 10px;
+    width: calc(100% - 10px);
+    height: 54.6%;
+    margin-top: 5px;
+    margin-left: 5px;
 
     display: flex;
     align-items: center;
