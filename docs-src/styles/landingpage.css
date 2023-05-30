@@ -305,7 +305,7 @@ header .logo img {
     position: absolute;
     flex-direction: column;
     background-repeat: no-repeat;
- 
+
     /**
      * Do not use 'background-size: contain' because it is broken on svg files in firefox.
      * @link https://stackoverflow.com/a/40154556
@@ -1093,6 +1093,73 @@ header .logo img {
 
 .code {
     text-align: center;
+}
+
+.trophy {
+    display: flex;
+    color: #eac54f;
+    background-color: var(--bg-color);
+    border-radius: 6px;
+    border-style: solid;
+    border-width: 1px;
+
+    position: absolute;
+    z-index: 10;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    margin-top: -30px;
+    height: 40px;
+
+    width: 250px;
+    padding-left: 10px;
+    padding-right: 10px;
+    margin-left: -135px;
+    left: 50%;
+}
+
+.trophy:hover {
+    box-shadow: 2px 2px 13px #eac54f, -2px -1px 14px #eac54f
+}
+
+.trophy img {
+    height: 100%;
+    float: left;
+    padding-right: 10px;
+}
+
+.trophy .subtitle {
+    text-transform: uppercase;
+    font-size: 65%;
+    font-weight: bold;
+}
+
+.trophy .title {
+    font-size: 140%;
+    font-weight: bold;
+    margin-top: 5px;
+}
+
+.trophy .valuetitle {
+    text-transform: uppercase;
+    font-size: 65%;
+    font-weight: bold;
+    margin-top: 3px;
+}
+
+.trophy .value {
+    font-weight: bold;
+    margin-top: 5px;
+}
+
+.trophy .arrow-up {
+    width: 0;
+    float: right;
+    height: 0;
+    border-left: 4px solid transparent;
+    border-right: 4px solid transparent;
+    border-bottom: 9px solid #eac54f;
+    margin-top: 4px;
+    margin-left: 3px;
 }
 
 .samp-wrapper {
