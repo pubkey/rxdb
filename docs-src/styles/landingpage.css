@@ -331,7 +331,7 @@ header .logo img {
 
 .device.tablet .beating-color {
     width: calc(100% - 10px);
-    height: 83%;
+    height: 82%;
     margin-top: 5px;
     margin-left: 5px;
 
@@ -363,8 +363,12 @@ header .logo img {
     align-items: center;
     justify-content: center;
 
-    border-top-left-radius: 28px;
-    border-top-right-radius: 28px;
+
+    border-radius: 9%/19%;
+    border-bottom-right-radius: 0px;
+    border-bottom-left-radius: 0px;
+    /* border-top-left-radius: 28px;
+    border-top-right-radius: 28px; */
 }
 
 .device.desktop .beating.logo {
@@ -383,10 +387,10 @@ header .logo img {
     border-radius: 50%;
 
     position: absolute;
-    width: 20px;
-    height: 20px;
-    margin-top: -10px;
-    margin-left: -10px;
+    width: 18px;
+    height: 18px;
+    margin-top: -9px;
+    margin-left: -9px;
 
     left: 17%;
 }
@@ -400,7 +404,7 @@ header .logo img {
 }
 
 .device.server .beating-color.three {
-    top: 82%;
+    top: 84%;
 }
 
 
@@ -490,8 +494,8 @@ header .logo img {
 
 .content-canvas {
     width: 100%;
-    max-width: 580px;
-    height: 300px;
+    max-width: 540px;
+    aspect-ratio: 2 / 1;
     transform: scale(1);
 }
 
