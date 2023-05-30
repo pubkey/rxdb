@@ -2,14 +2,17 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- Fix prevent delete _rev from row.doc [#4752](https://github.com/pubkey/rxdb/pull/4752)
-- IMPROVE landingpage hero section [#4753](https://github.com/pubkey/rxdb/pull/4753)
 
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 14.12.1 (30 May 2023)
+
+- Fix prevent delete _rev from row.doc [#4752](https://github.com/pubkey/rxdb/pull/4752)
+- IMPROVE landingpage hero section [#4753](https://github.com/pubkey/rxdb/pull/4753)
 
 ### 14.12.0 (23 May 2023)
 

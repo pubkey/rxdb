@@ -2358,8 +2358,8 @@ type Subscription {
 <p>The GraphQL resolver for the <code>pullHuman</code> would then look like:</p>
 <pre><code class="lang-js"><span class="hljs-keyword">const</span> rootValue = {
     pullHuman: args =&gt; {
-        <span class="hljs-keyword">const</span> minId = args.checkpoint : args.checkpoint.id : <span class="hljs-string">&apos;&apos;</span>;
-        <span class="hljs-keyword">const</span> minUpdatedAt = args.checkpoint : args.checkpoint.updatedAt : <span class="hljs-number">0</span>;
+        <span class="hljs-keyword">const</span> minId = args.checkpoint ? args.checkpoint.id : <span class="hljs-string">&apos;&apos;</span>;
+        <span class="hljs-keyword">const</span> minUpdatedAt = args.checkpoint ? args.checkpoint.updatedAt : <span class="hljs-number">0</span>;
 
         <span class="hljs-comment">// sorted by updatedAt first and the id as second</span>
         <span class="hljs-keyword">const</span> sortedDocuments = documents.sort((a, b) =&gt; {

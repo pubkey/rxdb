@@ -26,7 +26,7 @@ function couchDBDocToRxDocData(primaryPath, couchDocData) {
 }
 function couchSwapIdToPrimary(primaryKey, docData) {
   if (primaryKey === '_id' || docData[primaryKey]) {
-    return docData;
+    return (0, _utils.flatClone)(docData);
   }
   docData = (0, _utils.flatClone)(docData);
   docData[primaryKey] = docData._id;

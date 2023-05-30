@@ -13,7 +13,7 @@ export function couchDBDocToRxDocData(primaryPath, couchDocData) {
 }
 export function couchSwapIdToPrimary(primaryKey, docData) {
   if (primaryKey === '_id' || docData[primaryKey]) {
-    return docData;
+    return flatClone(docData);
   }
   docData = flatClone(docData);
   docData[primaryKey] = docData._id;
