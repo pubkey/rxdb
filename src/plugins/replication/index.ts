@@ -59,6 +59,9 @@ import {
 import { addRxPlugin } from '../../plugin';
 import { hasEncryption } from '../../rx-storage-helper';
 import { overwritable } from '../../overwritable';
+import {
+    runAsyncPluginHooks
+} from '../../hooks';
 
 
 export const REPLICATION_STATE_BY_COLLECTION: WeakMap<RxCollection, RxReplicationState<any, any>[]> = new WeakMap();
@@ -240,6 +243,12 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                         return [];
                     }
                     let done = false;
+
+                    await runAsyncPluginHooks('preReplicationMasterWrite', {
+                        rows,
+                        collection: this.collection,
+                    });
+
                     const useRows = await Promise.all(
                         rows.map(async (row) => {
                             row.newDocumentState = await pushModifier(row.newDocumentState);
@@ -257,6 +266,13 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                     );
 
                     let result: WithDeleted<RxDocType>[] = null as any;
+
+                    // In case all the rows have been filtered and nothing has to be sent
+                    if (useRows.length === 0) {
+                        done = true;
+                        result = [];
+                    }
+
                     while (!done && !this.isStopped()) {
                         try {
                             result = await this.push.handler(useRows);
@@ -290,6 +306,12 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                     if (this.isStopped()) {
                         return [];
                     }
+
+                    await runAsyncPluginHooks('preReplicationMasterWriteDocumentsHandle', {
+                        result,
+                        collection: this.collection,
+                    });
+                    
                     const conflicts = handlePulledDocuments(this.collection, this.deletedField, ensureNotFalsy(result));
                     return conflicts;
                 }

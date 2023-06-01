@@ -19,6 +19,7 @@ import type {
     RxStorage
 } from '../types';
 import type { RxSchema } from '../rx-schema';
+import {RxDocType, RxReplicationWriteToMasterRow, WithDeleted} from "rxdb/src/types";
 
 export type RxPluginPreCreateRxQueryArgs = {
     op: RxQueryOP;
@@ -128,5 +129,13 @@ export interface RxPlugin {
         preCreateRxStorageInstance?: RxPluginHooks<RxStorageInstanceCreationParams<any, any>>;
         preMigrateDocument?: RxPluginHooks<any>;
         postMigrateDocument?: RxPluginHooks<any>;
+        preReplicationMasterWrite?: RxPluginHooks<{
+            rows: RxReplicationWriteToMasterRow<RxDocType>[],
+            collection: RxCollection<RxDocType>
+        }>
+        preReplicationMasterWriteDocumentsHandle: RxPluginHooks<{
+            result: WithDeleted<RxDocType>[],
+            collection: RxCollection<RxDocType>
+        }>
     };
 }
