@@ -131,12 +131,12 @@ export interface RxPlugin {
         preMigrateDocument?: RxPluginHooks<any>;
         postMigrateDocument?: RxPluginHooks<any>;
         preReplicationMasterWrite?: RxPluginHooks<{
-            rows: RxReplicationWriteToMasterRow<any>[],
-            collection: RxCollection
-        }>
+            rows: RxReplicationWriteToMasterRow<any>[];
+            collection: RxCollection;
+        }>;
         preReplicationMasterWriteDocumentsHandle?: RxPluginHooks<{
-            result: WithDeleted<any>[],
-            collection: RxCollection
-        }>
+            result: WithDeleted<any>[];
+            collection: RxCollection;
+        }>;
     };
 }

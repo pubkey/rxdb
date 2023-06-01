@@ -246,7 +246,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
 
                     await runAsyncPluginHooks('preReplicationMasterWrite', {
                         rows,
-                        collection: this.collection,
+                        collection: this.collection
                     });
 
                     const useRows = await Promise.all(
@@ -309,9 +309,9 @@ export class RxReplicationState<RxDocType, CheckpointType> {
 
                     await runAsyncPluginHooks('preReplicationMasterWriteDocumentsHandle', {
                         result,
-                        collection: this.collection,
+                        collection: this.collection
                     });
-                    
+
                     const conflicts = handlePulledDocuments(this.collection, this.deletedField, ensureNotFalsy(result));
                     return conflicts;
                 }
