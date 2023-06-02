@@ -330,10 +330,11 @@ header .logo img {
 }
 
 .device.tablet .beating-color {
-    width: calc(100% - 10px);
-    height: 82%;
-    margin-top: 5px;
-    margin-left: 5px;
+    width: 92%;
+    height: 81%;
+    margin-top: 4%;
+    margin-left: auto;
+    margin-right: auto;
 
     display: flex;
     align-items: center;
