@@ -265,8 +265,8 @@ Final fields cannot be observed because they will not change.
 
 Advantages:
 
-- With final fields you can ensure that no-one accidentally modifies the data
-- When you enable the `query-change-detection`, some performance-improvements are done
+- With final fields you can ensure that no-one accidentally modifies the data.
+- When you enable the `eventReduce` algorithm, some performance-improvements are done.
 
 ```javascript
 const schemaWithFinalAge = {
