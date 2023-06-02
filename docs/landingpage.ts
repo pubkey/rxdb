@@ -182,8 +182,6 @@ window.onload = async function () {
     heartbeatListeners.push(function () {
         Array.from($$beating).forEach(function (element) {
             element.style.animationDuration = heartbeatDuration + 'ms';
-            console.log('aaaa');
-            console.dir(element);
             element.classList.remove('animation');
             void element.offsetWidth;
             element.classList.add('animation');

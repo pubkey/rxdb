@@ -2,12 +2,18 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- Add new hooks in the replication write [#4754](https://github.com/pubkey/rxdb/pull/4754)
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 14.13.0 (2 June 2023)
+
+- Add new hooks in the replication write [#4754](https://github.com/pubkey/rxdb/pull/4754)
+- REFACTOR(docs) [quickstart page](https://rxdb.info/quickstart.html)
+- REFACTOR(docs) [landing page](https://rxdb.info/)
 
 ### 14.12.1 (30 May 2023)
 

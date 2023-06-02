@@ -439,7 +439,13 @@ header .logo img {
     padding-top: 50px;
 }
 
-.block.first .content {}
+.block.first .button {
+    width: 100px;
+    float: left;
+    margin-left: 25px;
+    margin-top: 30px;
+    margin-bottom: 10px;
+}
 
 
 .block.first .inner {
@@ -1167,9 +1173,11 @@ header .logo img {
     color: #00acee;
     background-color: var(--bg-color-dark);
 }
+
 .trophy.twitter:hover {
     box-shadow: 2px 2px 13px #00acee, -2px -1px 14px #00acee
 }
+
 .trophy.twitter .arrow-up {
     border-bottom: 9px solid #00acee;
 }
@@ -1177,9 +1185,11 @@ header .logo img {
 .trophy.discord {
     color: #5962ee;
 }
+
 .trophy.discord:hover {
     box-shadow: 2px 2px 13px #5962ee, -2px -1px 14px #5962ee
 }
+
 .trophy.discord .arrow-up {
     border-bottom: 9px solid #5962ee;
 }

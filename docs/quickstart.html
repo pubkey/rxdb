@@ -2299,124 +2299,132 @@
     
                                 <section class="normal markdown-section">
                                 
-                                <h1 id="quickstart">Quickstart</h1>
-<ul>
-<li>Install the RxDB library and RxJS (if not installed before)</li>
-</ul>
-<p><code>npm install rxdb rxjs --save</code></p>
-<ul>
-<li>Create a database with the Dexie.js <a href="rx-storage.html">RxStorage</a> (You can also use any other <a href="rx-storage.html">RxStorage</a> that is based on a different storage engine)</li>
-</ul>
+                                <h1 id="rxdb-quickstart">RxDB Quickstart</h1>
+<p>Welcome to the RxDB Quickstart. In a few minutes you will be shown how to create a simple realtime TODO-app with RxDB.</p>
+<h2 id="installation">Installation</h2>
+<p>RxDB is distributed via npm and can be installed with the command:</p>
+<p><code>npm install rxdb</code></p>
+<p>RxDB uses the rxjs library as peerDependency which must also be installed:</p>
+<p><code>npm install rxjs</code></p>
+<h2 id="enable-dev-mode">Enable dev-mode</h2>
+<p>When you use RxDB in development mode, you should enable the <a href="dev-mode.html">dev-mode plugin</a> which adds helpful checks and validations to RxDB and tells you if you do something wrong.</p>
+<pre><code class="lang-ts"><span class="hljs-keyword">import</span> { addRxPlugin } from <span class="hljs-string">&apos;rxdb&apos;</span>;
+<span class="hljs-keyword">import</span> { RxDBDevModePlugin } from <span class="hljs-string">&apos;rxdb/plugins/dev-mode&apos;</span>;
+addRxPlugin(RxDBDevModePlugin);
+</code></pre>
+<h2 id="create-a-rxdatabase">Create a RxDatabase</h2>
+<h3 id="choose-a-rxstorage">Choose a RxStorage</h3>
+<p>RxDB can used in different JavaScript runtimes which have different options to store persistend data. Depending on the runtime, a different <a href="rx-storage.html">RxStorage</a> must be used. For <strong>browser</strong> applications it is recommended to start with the <a href="rx-storage-dexie.html">Dexie.js RxStorage</a> which comes directly with the RxDB npm package.</p>
+<pre><code class="lang-ts"><span class="hljs-keyword">import</span> { getRxStorageDexie } from <span class="hljs-string">&apos;rxdb/plugins/storage-dexie&apos;</span>;
+</code></pre>
+<h3 id="create-the-rxdatabase">Create the RxDatabase</h3>
+<p>With the <code>storage</code> and a picked database <code>name</code>, you can now create the <a href="rx-database.html">RxDatabase</a> instance:</p>
 <pre><code class="lang-ts"><span class="hljs-keyword">import</span> { createRxDatabase } from <span class="hljs-string">&apos;rxdb&apos;</span>;
 <span class="hljs-keyword">import</span> { getRxStorageDexie } from <span class="hljs-string">&apos;rxdb/plugins/storage-dexie&apos;</span>;
 
 <span class="hljs-keyword">const</span> myDatabase = await createRxDatabase({
-  name: <span class="hljs-string">&apos;heroesdb&apos;</span>,
+  name: <span class="hljs-string">&apos;mydatabase&apos;</span>,
   storage: getRxStorageDexie()
 });
 </code></pre>
-<ul>
-<li>Create a schema for a collection</li>
-</ul>
+<h3 id="create-a-rxcollection">Create a RxCollection</h3>
+<p>On top of the RxDatabase, you can add any amount of collections. A <a href="rx-collection.html">RxCollection</a> can then be used to store and query the actual documents.</p>
+<h4 id="create-a-schema-for-a-collection">Create a schema for a collection</h4>
+<p>RxDB requires a json schema for each collection that defines how the stored documents of that collection look like.
+For the example app, we create a simple schema that stores todo-document:</p>
 <pre><code class="lang-ts"><span class="hljs-keyword">const</span> mySchema = {
-    title: <span class="hljs-string">&apos;human schema&apos;</span>,
     version: <span class="hljs-number">0</span>,
-    primaryKey: <span class="hljs-string">&apos;passportId&apos;</span>,
+    primaryKey: <span class="hljs-string">&apos;id&apos;</span>,
     <span class="hljs-keyword">type</span>: <span class="hljs-string">&apos;object&apos;</span>,
     properties: {
-        passportId: {
+        id: {
             <span class="hljs-keyword">type</span>: <span class="hljs-string">&apos;string&apos;</span>,
             maxLength: <span class="hljs-number">100</span> <span class="hljs-comment">// &lt;- the primary key must have set maxLength</span>
         },
-        firstName: {
+        name: {
             <span class="hljs-keyword">type</span>: <span class="hljs-string">&apos;string&apos;</span>
         },
-        lastName: {
-            <span class="hljs-keyword">type</span>: <span class="hljs-string">&apos;string&apos;</span>
+        done: {
+            <span class="hljs-keyword">type</span>: <span class="hljs-string">&apos;boolean&apos;</span>
         },
-        age: {
-            description: <span class="hljs-string">&apos;age in years&apos;</span>,
-            <span class="hljs-keyword">type</span>: <span class="hljs-string">&apos;integer&apos;</span>,
-
-            <span class="hljs-comment">// number fields that are used in an index, must have set minimum, maximum and multipleOf</span>
-            minimum: <span class="hljs-number">0</span>,
-            maximum: <span class="hljs-number">150</span>,
-            multipleOf: <span class="hljs-number">1</span>
+        timestamp: {
+            <span class="hljs-keyword">type</span>: <span class="hljs-string">&apos;date-time&apos;</span>
         }
     },
-    required: [<span class="hljs-string">&apos;firstName&apos;</span>, <span class="hljs-string">&apos;lastName&apos;</span>, <span class="hljs-string">&apos;passportId&apos;</span>],
-    indexes: [<span class="hljs-string">&apos;age&apos;</span>]
+    required: [<span class="hljs-string">&apos;id&apos;</span>, <span class="hljs-string">&apos;name&apos;</span>, <span class="hljs-string">&apos;done&apos;</span>, <span class="hljs-string">&apos;timestamp&apos;</span>]
 }
 </code></pre>
-<ul>
-<li>Add a collection to the database</li>
-</ul>
-<pre><code class="lang-ts"><span class="hljs-keyword">const</span> myCollections = await myDatabase.addCollections({
-  humans: {
+<h4 id="add-a-rxcollection-to-the-rxdatabase">Add a RxCollection to the RxDatabase</h4>
+<p>With that schema we can now add the <code>todos</code> collection to the database:</p>
+<pre><code class="lang-ts">await myDatabase.addCollections({
+  todos: {
     schema: mySchema
-  },
+  }
 });
 </code></pre>
-<ul>
-<li>Insert a document</li>
-</ul>
-<pre><code class="lang-ts"><span class="hljs-keyword">const</span> myDocument = await myDatabase.humans.insert({
-    passportId: <span class="hljs-string">&apos;foobar&apos;</span>,
-    firstName: <span class="hljs-string">&apos;Alice&apos;</span>,
-    lastName: <span class="hljs-string">&apos;Bobby&apos;</span>,
-    age: <span class="hljs-number">42</span>
+<h2 id="write-operations">Write Operations</h2>
+<p>Now that we have a RxCollection, we can store some documents in it.</p>
+<h3 id="insert-a-document">Insert a document</h3>
+<pre><code class="lang-ts"><span class="hljs-keyword">const</span> myDocument = await myDatabase.todos.insert({
+    id: <span class="hljs-string">&apos;todo1&apos;</span>,
+    name: <span class="hljs-string">&apos;Learn RxDB&apos;</span>,
+    done: <span class="hljs-literal">false</span>,
+    timestamp: <span class="hljs-keyword">new</span> <span class="hljs-built_in">Date</span>().toISOString()
 });
 </code></pre>
-<ul>
-<li>Subscribe to a document value</li>
-</ul>
-<pre><code class="lang-ts">myDocument.lastName$.subscribe(lastName =&gt; {
-    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">&apos;lastName is now &apos;</span> + lastName);
+<h3 id="update-a-document">Update a document</h3>
+<p>There are multiple ways to update a RxDocument. The simplest one is the <code>modify</code> method that takes a plain JavaScript function
+which mutates the document state and returns the mutated version.</p>
+<pre><code class="lang-ts">await myDocument.modify(docData =&gt; {
+    docData.done = <span class="hljs-literal">true</span>;
+    <span class="hljs-keyword">return</span> docData;
 });
 </code></pre>
-<ul>
-<li>Query some documents</li>
-</ul>
-<pre><code class="lang-ts"><span class="hljs-keyword">const</span> foundDocuments = await myDatabase.humans.find({
+<p>For the other methods to change a documents data, <a href="rx-document.html#update">see here</a></p>
+<h3 id="delete-a-document">Delete a document</h3>
+<p>Delete a RxDocument by calling <code>myDocument.remove()</code>. This will set the documents state to <code>DELETED</code> which ensures that it will be no longer found in query results. RxDB stores even deleted documents so that it is able to sync the deleted state to other instances during <a href="replication.html">replication</a>. The deleted document will be purged in a later point in time with the <a href="cleanup.html">cleanup plugin</a>.</p>
+<h2 id="query-operations">Query Operations</h2>
+<h3 id="normal-query">Normal Query</h3>
+<p>Like many NoSQL databases, RxDB uses the Mango syntax for query operations.
+To run a query, you first create an RxQuery object with <code>myCollection.find()</code> and then call <code>.exec()</code> on that object to fetch the query results.</p>
+<pre><code class="lang-ts"><span class="hljs-keyword">const</span> foundDocuments = await myDatabase.todos.find({
     selector: {
-        age: {
-            $gt: <span class="hljs-number">21</span>
+        done: {
+            $eq: <span class="hljs-literal">false</span>
         }
     }
 }).exec();
 </code></pre>
+<p>Other examples for the Mango Query syntax can be found <a href="rx-query.html#examples">here</a>.
+In addition to the <code>.find()</code> RxQuery, RxDB has additional query objects that can be used to find the desired documents:</p>
 <ul>
-<li>Subscribe to query results</li>
+<li><a href="rx-collection.html#findone">findOne()</a></li>
+<li><a href="rx-collection.html#findByIds">findByIds()</a></li>
 </ul>
-<pre><code class="lang-ts">myDatabase.humans.find({
+<h2 id="observing-data">Observing data</h2>
+<p>When you build a modern realtime application with RxDB, you do not only need data once, but instead you might want to subscribe to the data so that your UI is always up-to-date with the data stored on disc.
+RxDB allows to subscribe to data which is then updated even when it was changed in an other part of your application, an other browser tab or by the <a href="replication.html">replication</a>.</p>
+<h3 id="observing-queries">Observing queries</h3>
+<p>To observe a query, instead of calling <code>.exec()</code> you get the observable of the RxQuery object via <code>.$</code> and then subscribe to it.</p>
+<pre><code class="lang-ts"><span class="hljs-keyword">const</span> observable = myDatabase.todos.find({
     selector: {
-        age: {
-            $gt: <span class="hljs-number">21</span>
+        done: {
+            $eq: <span class="hljs-literal">false</span>
         }
     }
-}).$.subscribe(documents =&gt; {
-    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">&apos;query has found &apos;</span> + documents.length + <span class="hljs-string">&apos; documents&apos;</span>);
+}).$;
+observable.subscribe(allNonDoneTodos =&gt; {
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">&apos;Currently have &apos;</span> + allNonDoneTodos.length + <span class="hljs-string">&apos;things to do&apos;</span>);
 });
 </code></pre>
-<ul>
-<li>Update the document</li>
-</ul>
-<pre><code class="lang-ts"><span class="hljs-comment">// either via incrementalModify()</span>
-await myDocument.incrementalModify(data =&gt; {
-    data.lastName = <span class="hljs-string">&apos;Carol&apos;</span>;
-    <span class="hljs-keyword">return</span> data;
-});
-
-<span class="hljs-comment">// or via incrementalPatch()</span>
-await myDocument.incrementalPatch({
-    lastName: <span class="hljs-string">&apos;Carol&apos;</span>
+<h3 id="subscribe-to-a-document-value">Subscribe to a document value</h3>
+<p>In addition to queries, you can also subscribe to the fields of a single RxDocument. Therefore you add the <code>$</code> sign to the desired field and then subscribe to the returned observable.</p>
+<pre><code class="lang-ts">myDocument.done$.subscribe(isDone =&gt; {
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">&apos;done: &apos;</span> + isDone);
 });
 </code></pre>
-<ul>
-<li>Remove the document</li>
-</ul>
-<pre><code class="lang-ts">await myDocument.remove();
-</code></pre>
+<h2 id="follow-up">Follow Up</h2>
+<p>You are now prepared to dive deeper into RxDB. If you have any questions, you can ask the community at the <a href="chat.html">RxDB Chat</a>. Also do not forget to leave a star at the <a href="https://github.com/pubkey/rxdb" target="_blank">RxDB github repository</a>.</p>
 
                                 
                                 </section>
