@@ -3,6 +3,8 @@
 
 <!-- CHANGELOG NEWEST -->
 - Add new hooks in the replication write [#4754](https://github.com/pubkey/rxdb/pull/4754)
+- REFACTOR(docs) [quickstart page](https://rxdb.info/quickstart.html)
+- REFACTOR(docs) [landing page](https://rxdb.info/)
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
