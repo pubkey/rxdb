@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- Add new hooks in the replication write [#4754](https://github.com/pubkey/rxdb/pull/4754)
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
