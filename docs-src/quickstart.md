@@ -14,7 +14,7 @@ RxDB uses the rxjs library as peerDependency which must also be installed:
 
 ## Enable dev-mode
 
-When you use RxDB in development mode, you should enable the [dev-mode plugin](./dev-mode.md) which adds helpfull checks and validations to RxDB and tells you if you do something wrong.
+When you use RxDB in development mode, you should enable the [dev-mode plugin](./dev-mode.md) which adds helpful checks and validations to RxDB and tells you if you do something wrong.
 
 ```ts
 import { addRxPlugin } from 'rxdb';
@@ -109,7 +109,7 @@ const myDocument = await myDatabase.todos.insert({
 
 ### Update a document
 
-There are multiple ways to update a RxDocument. The simpliest one is the `modify` method that takes a plain JavaScript function
+There are multiple ways to update a RxDocument. The simplest one is the `modify` method that takes a plain JavaScript function
 which mutates the document state and returns the mutated version.
 
 ```ts
