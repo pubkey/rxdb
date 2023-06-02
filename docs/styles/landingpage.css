@@ -354,10 +354,11 @@ header .logo img {
 }
 
 .device.desktop .beating-color {
-    width: calc(100% - 10px);
-    height: 54.6%;
-    margin-top: 5px;
-    margin-left: 5px;
+    width: calc(100% - 4.9%);
+    height: 53.1%;
+    margin-top: 2.57%;
+    margin-left: auto;
+    margin-right: auto;
 
     display: flex;
     align-items: center;
