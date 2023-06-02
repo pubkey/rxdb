@@ -16,6 +16,7 @@ var _rxDatabaseInternalStore = require("../../rx-database-internal-store");
 var _plugin = require("../../plugin");
 var _rxStorageHelper = require("../../rx-storage-helper");
 var _overwritable = require("../../overwritable");
+var _hooks = require("../../hooks");
 /**
  * This plugin contains the primitives to create
  * a RxDB client-server replication.
@@ -168,6 +169,10 @@ var RxReplicationState = /*#__PURE__*/function () {
             return [];
           }
           var done = false;
+          await (0, _hooks.runAsyncPluginHooks)('preReplicationMasterWrite', {
+            rows,
+            collection: this.collection
+          });
           var useRows = await Promise.all(rows.map(async row => {
             row.newDocumentState = await pushModifier(row.newDocumentState);
             if (row.assumedMasterState) {
@@ -182,6 +187,12 @@ var RxReplicationState = /*#__PURE__*/function () {
             return row;
           }));
           var result = null;
+
+          // In case all the rows have been filtered and nothing has to be sent
+          if (useRows.length === 0) {
+            done = true;
+            result = [];
+          }
           while (!done && !this.isStopped()) {
             try {
               result = await this.push.handler(useRows);
@@ -214,6 +225,10 @@ var RxReplicationState = /*#__PURE__*/function () {
           if (this.isStopped()) {
             return [];
           }
+          await (0, _hooks.runAsyncPluginHooks)('preReplicationMasterWriteDocumentsHandle', {
+            result,
+            collection: this.collection
+          });
           var conflicts = (0, _replicationHelper.handlePulledDocuments)(this.collection, this.deletedField, (0, _utils.ensureNotFalsy)(result));
           return conflicts;
         }

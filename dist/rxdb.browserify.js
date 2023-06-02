@@ -706,7 +706,19 @@ var HOOKS = {
    * runs after a database has been removed
    * @async
    */
-  postRemoveRxDatabase: []
+  postRemoveRxDatabase: [],
+  /**
+   * runs before the replication writes the rows to master
+   * but before the rows have been modified
+   * @async
+   */
+  preReplicationMasterWrite: [],
+  /**
+   * runs after the replication has been sent to the server
+   * but before the new documents have been handled
+   * @async
+   */
+  preReplicationMasterWriteDocumentsHandle: []
 };
 exports.HOOKS = HOOKS;
 function runPluginHooks(hookKey, obj) {
@@ -2958,7 +2970,7 @@ exports.RXDB_VERSION = void 0;
 /**
  * This file is replaced in the 'npm run build:version' script.
  */
-var RXDB_VERSION = '14.12.1';
+var RXDB_VERSION = '14.13.0';
 exports.RXDB_VERSION = RXDB_VERSION;
 
 },{}],28:[function(require,module,exports){

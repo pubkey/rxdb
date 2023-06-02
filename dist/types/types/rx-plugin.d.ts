@@ -16,7 +16,9 @@ import type {
     RxDatabase,
     RxDatabaseCreator,
     RxDocument,
-    RxStorage
+    RxStorage,
+    RxReplicationWriteToMasterRow,
+    WithDeleted
 } from '../types';
 import type { RxSchema } from '../rx-schema';
 
@@ -128,5 +130,13 @@ export interface RxPlugin {
         preCreateRxStorageInstance?: RxPluginHooks<RxStorageInstanceCreationParams<any, any>>;
         preMigrateDocument?: RxPluginHooks<any>;
         postMigrateDocument?: RxPluginHooks<any>;
+        preReplicationMasterWrite?: RxPluginHooks<{
+            rows: RxReplicationWriteToMasterRow<any>[];
+            collection: RxCollection;
+        }>;
+        preReplicationMasterWriteDocumentsHandle?: RxPluginHooks<{
+            result: WithDeleted<any>[];
+            collection: RxCollection;
+        }>;
     };
 }

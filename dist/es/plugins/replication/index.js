@@ -15,6 +15,7 @@ import { addConnectedStorageToCollection } from '../../rx-database-internal-stor
 import { addRxPlugin } from '../../plugin';
 import { hasEncryption } from '../../rx-storage-helper';
 import { overwritable } from '../../overwritable';
+import { runAsyncPluginHooks } from '../../hooks';
 export var REPLICATION_STATE_BY_COLLECTION = new WeakMap();
 export var RxReplicationState = /*#__PURE__*/function () {
   function RxReplicationState(
@@ -159,6 +160,10 @@ export var RxReplicationState = /*#__PURE__*/function () {
             return [];
           }
           var done = false;
+          await runAsyncPluginHooks('preReplicationMasterWrite', {
+            rows,
+            collection: this.collection
+          });
           var useRows = await Promise.all(rows.map(async row => {
             row.newDocumentState = await pushModifier(row.newDocumentState);
             if (row.assumedMasterState) {
@@ -173,6 +178,12 @@ export var RxReplicationState = /*#__PURE__*/function () {
             return row;
           }));
           var result = null;
+
+          // In case all the rows have been filtered and nothing has to be sent
+          if (useRows.length === 0) {
+            done = true;
+            result = [];
+          }
           while (!done && !this.isStopped()) {
             try {
               result = await this.push.handler(useRows);
@@ -205,6 +216,10 @@ export var RxReplicationState = /*#__PURE__*/function () {
           if (this.isStopped()) {
             return [];
           }
+          await runAsyncPluginHooks('preReplicationMasterWriteDocumentsHandle', {
+            result,
+            collection: this.collection
+          });
           var conflicts = handlePulledDocuments(this.collection, this.deletedField, ensureNotFalsy(result));
           return conflicts;
         }
