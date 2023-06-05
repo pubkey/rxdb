@@ -30,7 +30,7 @@
     "global": "4.4.0",
     "random-token": "0.0.8",
     "react": "18.2.0",
-    "react-native": "0.70.6",
+    "react-native": "0.71.8",
     "react-native-get-random-values": "1.8.0",
     "react-native-quick-base64": "2.0.6",
     "rxdb": "file:rxdb-local.tgz",
