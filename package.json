@@ -245,12 +245,12 @@
       "es2015": "./dist/es/plugins/replication-couchdb/index.js",
       "default": "./dist/es/plugins/replication-couchdb/index.js"
     },
-    "./plugins/server-couchdb": {
-      "types": "./dist/types/plugins/server-couchdb/index.d.ts",
-      "node": "./dist/lib/plugins/server-couchdb/index.js",
-      "require": "./dist/lib/plugins/server-couchdb/index.js",
-      "es2015": "./dist/es/plugins/server-couchdb/index.js",
-      "default": "./dist/es/plugins/server-couchdb/index.js"
+    "./plugins/replication-nats": {
+      "types": "./dist/types/plugins/replication-nats/index.d.ts",
+      "node": "./dist/lib/plugins/replication-nats/index.js",
+      "require": "./dist/lib/plugins/replication-nats/index.js",
+      "es2015": "./dist/es/plugins/replication-nats/index.js",
+      "default": "./dist/es/plugins/replication-nats/index.js"
     },
     "./plugins/update": {
       "types": "./dist/types/plugins/update/index.d.ts",
