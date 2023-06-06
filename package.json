@@ -401,6 +401,7 @@
     "lokijs": "1.5.12",
     "mingo": "6.3.2",
     "modifyjs": "0.3.1",
+    "nats": "2.14.0",
     "oblivious-set": "1.1.1",
     "ohash": "1.1.2",
     "pako": "2.1.0",
