@@ -1,9 +1,7 @@
 import type {
-    MaybePromise,
     ReplicationOptions,
     ReplicationPullOptions,
-    ReplicationPushOptions,
-    WithDeleted
+    ReplicationPushOptions
 } from '../../types';
 
 
