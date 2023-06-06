@@ -147,13 +147,6 @@
       "es2015": "./dist/es/plugins/replication/index.js",
       "default": "./dist/es/plugins/replication/index.js"
     },
-    "./plugins/replication-couchdb-new": {
-      "types": "./dist/types/plugins/replication-couchdb-new/index.d.ts",
-      "node": "./dist/lib/plugins/replication-couchdb-new/index.js",
-      "require": "./dist/lib/plugins/replication-couchdb-new/index.js",
-      "es2015": "./dist/es/plugins/replication-couchdb-new/index.js",
-      "default": "./dist/es/plugins/replication-couchdb-new/index.js"
-    },
     "./plugins/replication-firestore": {
       "types": "./dist/types/plugins/replication-firestore/index.d.ts",
       "node": "./dist/lib/plugins/replication-firestore/index.js",
