@@ -27,9 +27,12 @@ import type {
     NatsCheckpointType,
     NatsSyncOptions
 } from './nats-types';
-import { connect, JSONCodec } from 'nats';
-import { getNatsServerDocumentState } from './nats-helper';
+import { connect, DeliverPolicy, JSONCodec, ReplayPolicy } from 'nats';
+import { NATS_REPLICATION_PLUGIN_IDENTITY_PREFIX, getNatsServerDocumentState } from './nats-helper';
 import { awaitRetry } from '../replication/replication-helper';
+
+export * from './nats-types';
+export * from './nats-helper';
 
 
 export class RxNatsReplicationState<RxDocType> extends RxReplicationState<RxDocType, NatsCheckpointType> {
@@ -57,9 +60,9 @@ export class RxNatsReplicationState<RxDocType> extends RxReplicationState<RxDocT
 
 
 
-export async function replicateNats<RxDocType>(
+export function replicateNats<RxDocType>(
     options: NatsSyncOptions<RxDocType>
-): Promise<RxNatsReplicationState<RxDocType>> {
+): RxNatsReplicationState<RxDocType> {
     options.live = typeof options.live === 'undefined' ? true : options.live;
     options.waitForLeadership = typeof options.waitForLeadership === 'undefined' ? true : options.waitForLeadership;
 
@@ -68,15 +71,25 @@ export async function replicateNats<RxDocType>(
     addRxPlugin(RxDBLeaderElectionPlugin);
 
     const jc = JSONCodec();
-    const nc = await connect(options.connection);
-    const jetstreamClient = nc.jetstream();
-    const jsm = await nc.jetstreamManager();
-    await jsm.streams.add({
-        name: options.streamName, subjects: [
-            options.subjectPrefix + '.*'
-        ]
-    });
-    const natsStream = await jetstreamClient.streams.get(options.streamName);
+
+
+    const connectionStatePromise = (async () => {
+        const nc = await connect(options.connection);
+        const jetstreamClient = nc.jetstream();
+        const jsm = await nc.jetstreamManager();
+        await jsm.streams.add({
+            name: options.streamName, subjects: [
+                options.subjectPrefix + '.*'
+            ]
+        });
+        const natsStream = await jetstreamClient.streams.get(options.streamName);
+        return {
+            nc,
+            jetstreamClient,
+            jsm,
+            natsStream
+        };
+    })();
     const pullStream$: Subject<RxReplicationPullStreamItem<RxDocType, NatsCheckpointType>> = new Subject();
 
     let replicationPrimitivesPull: ReplicationPullOptions<RxDocType, NatsCheckpointType> | undefined;
@@ -86,16 +99,21 @@ export async function replicateNats<RxDocType>(
                 lastPulledCheckpoint: NatsCheckpointType,
                 batchSize: number
             ) {
+                const cn = await connectionStatePromise;
                 const newCheckpoint: NatsCheckpointType = {
-                    sequence: lastPulledCheckpoint.sequence
+                    sequence: lastPulledCheckpoint ? lastPulledCheckpoint.sequence : 0
                 };
-                const consumer = await natsStream.getConsumer({
-                    opt_start_seq: lastPulledCheckpoint.sequence
+                const consumer = await cn.natsStream.getConsumer({
+                    opt_start_seq: lastPulledCheckpoint ? lastPulledCheckpoint.sequence : 0,
+                    deliver_policy: DeliverPolicy.LastPerSubject,
+                    replay_policy: ReplayPolicy.Instant
                 });
 
                 const fetchedMessages = await consumer.fetch({
                     max_messages: batchSize
                 });
+                await (fetchedMessages as any).signal;
+                await fetchedMessages.close();
 
                 const useMessages: WithDeleted<RxDocType>[] = [];
                 for await (const m of fetchedMessages) {
@@ -121,6 +139,7 @@ export async function replicateNats<RxDocType>(
             async handler(
                 rows: RxReplicationWriteToMasterRow<RxDocType>[]
             ) {
+                const cn = await connectionStatePromise;
                 const conflicts: WithDeleted<RxDocType>[] = [];
                 await Promise.all(
                     rows.map(async (writeRow) => {
@@ -130,11 +149,18 @@ export async function replicateNats<RxDocType>(
                          * first get the current state of the documents from the server
                          * so that we have the sequence number for conflict detection.
                          */
-                        const remoteDocState = await getNatsServerDocumentState(
-                            natsStream,
-                            options.subjectPrefix,
-                            docId
-                        );
+                        let remoteDocState;
+                        try {
+                            remoteDocState = await getNatsServerDocumentState(
+                                cn.natsStream,
+                                options.subjectPrefix,
+                                docId
+                            );
+                        } catch (err: Error | any) {
+                            if (!err.message.includes('no message found')) {
+                                throw err;
+                            }
+                        }
 
                         if (
                             remoteDocState &&
@@ -153,7 +179,7 @@ export async function replicateNats<RxDocType>(
                             let pushDone = false;
                             while (!pushDone) {
                                 try {
-                                    await jetstreamClient.publish(
+                                    await cn.jetstreamClient.publish(
                                         options.subjectPrefix + '.' + docId,
                                         jc.encode(writeRow.newDocumentState),
                                         {
@@ -168,7 +194,7 @@ export async function replicateNats<RxDocType>(
                                     if (err.message.includes('wrong last sequence')) {
                                         // A write happened while we are doing our write -> handle conflict
                                         const newServerState = await getNatsServerDocumentState(
-                                            natsStream,
+                                            cn.natsStream,
                                             options.subjectPrefix,
                                             docId
                                         );
@@ -202,7 +228,7 @@ export async function replicateNats<RxDocType>(
 
 
     const replicationState = new RxNatsReplicationState<RxDocType>(
-        options.replicationIdentifier,
+        NATS_REPLICATION_PLUGIN_IDENTITY_PREFIX + options.collection.database.hashFunction(options.replicationIdentifier),
         collection,
         replicationPrimitivesPull,
         replicationPrimitivesPush,
@@ -218,6 +244,7 @@ export async function replicateNats<RxDocType>(
         const startBefore = replicationState.start.bind(replicationState);
         const cancelBefore = replicationState.cancel.bind(replicationState);
         replicationState.start = async () => {
+            const cn = await connectionStatePromise;
 
             /**
              * First get the last sequence so that we can
@@ -225,7 +252,7 @@ export async function replicateNats<RxDocType>(
              */
             let lastSeq = 0;
             try {
-                const lastDocState = await natsStream.getMessage({
+                const lastDocState = await cn.natsStream.getMessage({
                     last_by_subj: options.subjectPrefix + '.*'
                 });
                 lastSeq = lastDocState.seq;
@@ -235,7 +262,7 @@ export async function replicateNats<RxDocType>(
                 }
             }
 
-            const consumer = await natsStream.getConsumer({
+            const consumer = await cn.natsStream.getConsumer({
                 opt_start_seq: lastSeq
             });
             const newMessages = await consumer.consume();
