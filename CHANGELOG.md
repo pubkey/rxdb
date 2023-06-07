@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- ADD [NATS replication](https://rxdb.info/replication-nats.html)
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

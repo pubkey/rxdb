@@ -1,8 +1,6 @@
 /**
- * this test checks the integration with couchdb
- * run 'npm run test:couchdb' to use it
- * You need a running couchdb-instance on port 5984
- * Run 'npm run couch:start' to spawn a docker-container
+ * this test checks the integration with firestore
+ * You need a running firebase backend
  */
 import assert from 'assert';
 

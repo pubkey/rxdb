@@ -117,6 +117,7 @@
     * [Replication CouchDB](./replication-couchdb.md)
     * [Replication P2P](./replication-p2p.md)
     * [Replication Firestore](./replication-firestore.md)
+    * [Replication NATS](./replication-nats.md)
 
 * [RxAttachment](./rx-attachment.md)
     * [Attachment Compression](./rx-attachment.md#attachment-compression)
