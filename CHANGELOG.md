@@ -2,12 +2,16 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- ADD [NATS replication](https://rxdb.info/replication-nats.html)
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 14.14.0 (7 June 2023)
+
+- ADD [NATS replication](https://rxdb.info/replication-nats.html)
 
 ### 14.13.0 (2 June 2023)
 

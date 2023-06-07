@@ -1601,6 +1601,19 @@
             
         </li>
     
+        <li class="chapter " data-level="1.12.6" data-path="replication-nats.html">
+            
+                <a href="replication-nats.html">
+            
+                    
+                    Replication NATS
+            
+                </a>
+            
+
+            
+        </li>
+    
 
             </ul>
             
@@ -2531,8 +2544,8 @@ Whenever you insert a document unset fields will be filled with default-values.<
 Final fields cannot be observed because they will not change.</p>
 <p>Advantages:</p>
 <ul>
-<li>With final fields you can ensure that no-one accidentally modifies the data</li>
-<li>When you enable the <code>query-change-detection</code>, some performance-improvements are done</li>
+<li>With final fields you can ensure that no-one accidentally modifies the data.</li>
+<li>When you enable the <code>eventReduce</code> algorithm, some performance-improvements are done.</li>
 </ul>
 <pre><code class="lang-javascript"><span class="hljs-keyword">const</span> schemaWithFinalAge = {
   version: <span class="hljs-number">0</span>,
