@@ -487,7 +487,7 @@
     "leveldown": "6.1.1",
     "madge": "6.0.0",
     "memdown": "6.1.1",
-    "mini-css-extract-plugin": "2.7.5",
+    "mini-css-extract-plugin": "2.7.6",
     "mocha": "10.2.0",
     "mocha.parallel": "0.15.6",
     "nconf": "0.12.0",
