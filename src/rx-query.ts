@@ -676,7 +676,7 @@ export async function queryCollection<RxDocType>(
             docIds = docIds.filter(docId => {
                 // first try to fill from docCache
                 const docData = rxQuery.collection._docCache.getLatestDocumentDataIfExists(docId);
-                if (docData) {
+                if (docData && !docData._deleted) {
                     docs.push(docData);
                     return false;
                 } else {
@@ -693,7 +693,7 @@ export async function queryCollection<RxDocType>(
 
             // first try to fill from docCache
             let docData = rxQuery.collection._docCache.getLatestDocumentDataIfExists(docId);
-            if (!docData) {
+            if (!docData || docData._deleted) {
                 // otherwise get from storage
                 const docsMap = await collection.storageInstance.findDocumentsById([docId], false);
                 docData = docsMap[docId];
