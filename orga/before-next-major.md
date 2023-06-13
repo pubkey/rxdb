@@ -55,3 +55,6 @@ This was changed in v14 for a normal RxDocument.$ which emits RxDocument instanc
 `myRxReplicationState.send$.subscribe` works only if the sending is successful. Therefore, it should be named `sent$`, not `send$`.
 
 Interestingly, `received$` has been named correctly
+
+
+## Rename "RxDB Premium" to "RxDB Enterprise"
