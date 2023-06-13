@@ -13,6 +13,7 @@ Therefore it is not recommended to directly replicate the NATS server with an un
 For the replication endpoint the NATS cluster must have enabled [JetStream](https://docs.nats.io/nats-concepts/jetstream) and store all message data as [structured JSON](https://www.google.com/search?q=nats+jetstream+json&oq=nats+jetstream+json&aqs=chrome..69i57j69i60l2.2442j0j7&sourceid=chrome&ie=UTF-8).
 
 The easiest way to start a compatible NATS server is to use the official docker image:
+
 ```docker run --rm --name rxdb-nats -p 4222:4222 nats:2.9.17 -js```
 
 
