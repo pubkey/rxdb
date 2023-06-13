@@ -10,7 +10,7 @@ const dbPromise = getDatabase();
 const FORM_VALUE_DOCUMENT_ID = 'premium-price-form-value';
 type FormValueDocData = {
     teamSize: number;
-    homeCountryCode: string;
+    homeCountry: string;
     companyAge: CompanyAge;
 };
 
@@ -28,7 +28,14 @@ window.onload = async function () {
         .sort((a, b) => a.code >= b.code ? 1 : -1)
         .forEach(country => {
             const option = document.createElement('option');
-            option.value = country.code;
+
+            /**
+             * Do not use the country.code as option.value
+             * because it would create a broken datalist on
+             * iOS safari.
+             */
+            option.value = country.name;
+
             option.innerHTML = country.name;
             $homeCountry.appendChild(option);
         });
@@ -38,7 +45,7 @@ window.onload = async function () {
     const formValueDoc = await database.getLocal<FormValueDocData>(FORM_VALUE_DOCUMENT_ID);
     if (formValueDoc) {
         setToInput('developer-count', formValueDoc._data.data.teamSize);
-        setToInput('home-country', formValueDoc._data.data.homeCountryCode);
+        setToInput('home-country', formValueDoc._data.data.homeCountry);
         setToInput('company-age', formValueDoc._data.data.companyAge);
     }
 
@@ -47,6 +54,7 @@ window.onload = async function () {
 
         const isValid = ($priceCalculatorForm as any).reportValidity();
         if (!isValid) {
+            console.log('form not valid');
             return;
         }
         const formDataPlain = new FormData($priceCalculatorForm);
@@ -55,6 +63,13 @@ window.onload = async function () {
         console.log('formData:');
         console.dir(formData);
 
+
+        const homeCountry = AVERAGE_FRONT_END_DEVELOPER_SALARY_BY_COUNTRY
+            .find(o => o.name.toLowerCase() === (formData['home-country'] as string).toLowerCase());
+        if (!homeCountry) {
+            return;
+        }
+
         /**
          * Save the input
          * so we have to not re-insert manually on page reload.
@@ -62,7 +77,7 @@ window.onload = async function () {
         await database.upsertLocal<FormValueDocData>(FORM_VALUE_DOCUMENT_ID, {
             companyAge: formData['company-age'] as any,
             teamSize: formData['developer-count'] as any,
-            homeCountryCode: formData['home-country'] as any
+            homeCountry: homeCountry.name
         });
 
         const packages: string[] = Object.keys(formData)
@@ -72,7 +87,7 @@ window.onload = async function () {
         const priceResult = calculatePrice({
             companyAge: formData['company-age'] as any,
             teamSize: formData['developer-count'] as any,
-            homeCountryCode: formData['home-country'] as any,
+            homeCountryCode: homeCountry.code,
             packages
         });
         console.log('priceResult:');
