@@ -14,19 +14,19 @@
   "devDependencies": {
     "@babel/core": "7.21.8",
     "babel-preset-expo": "9.3.2",
-    "expo-cli": "6.3.7",
+    "expo-cli": "6.3.8",
     "jest": "29.5.0",
     "jest-expo": "48.0.2",
     "react-native-gesture-handler": "2.9.0",
     "react-test-renderer": "18.2.0",
-    "rimraf": "5.0.0",
+    "rimraf": "5.0.1",
     "schedule": "0.5.0"
   },
   "main": "node_modules/expo/AppEntry.js",
   "dependencies": {
     "buffer": "6.0.3",
-    "cross-fetch": "3.1.5",
-    "expo": "48.0.16",
+    "cross-fetch": "3.1.6",
+    "expo": "48.0.19",
     "global": "4.4.0",
     "random-token": "0.0.8",
     "react": "18.2.0",
