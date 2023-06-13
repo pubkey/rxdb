@@ -2320,8 +2320,8 @@ On the client side the official <a href="https://www.npmjs.com/package/nats" tar
 Therefore it is not recommended to directly replicate the NATS server with an untrusted RxDB client application. Instead you should replicated from NATS to your Node.js server side RxDB database.</p>
 <h2 id="precondition">Precondition</h2>
 <p>For the replication endpoint the NATS cluster must have enabled <a href="https://docs.nats.io/nats-concepts/jetstream" target="_blank">JetStream</a> and store all message data as <a href="https://www.google.com/search?q=nats+jetstream+json&amp;oq=nats+jetstream+json&amp;aqs=chrome..69i57j69i60l2.2442j0j7&amp;sourceid=chrome&amp;ie=UTF-8" target="_blank">structured JSON</a>.</p>
-<p>The easiest way to start a compatible NATS server is to use the official docker image:
-<code>docker run --rm --name rxdb-nats -p 4222:4222 nats:2.9.17 -js</code></p>
+<p>The easiest way to start a compatible NATS server is to use the official docker image:</p>
+<p><code>docker run --rm --name rxdb-nats -p 4222:4222 nats:2.9.17 -js</code></p>
 <h2 id="usage">Usage</h2>
 <p>To start the replication, import the <code>replicateNats()</code> method from the RxDB plugin and call it with the collection
 that must be replicated.

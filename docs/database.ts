@@ -13,7 +13,7 @@ export async function getDatabase() {
     addRxPlugin(RxDBLocalDocumentsPlugin);
 
     const database = await createRxDatabase({
-        name: 'rxdb-landingpage',
+        name: 'rxdb-landing',
         localDocuments: true,
         storage: getRxStorageDexie()
     });

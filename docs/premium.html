@@ -336,9 +336,10 @@
                                 <input
                                     list="home-country"
                                     name="home-country"
-                                    pattern="[A-Za-z]{2}"
+                                    pattern="[A-Za-z \-]{2,}"
                                     required
                                     style="width: 100%; max-width: 240px;"
+                                    autocomplete="off"
                                 >
                                 <datalist id="home-country">
                                     <!-- filled by premium.ts -->
