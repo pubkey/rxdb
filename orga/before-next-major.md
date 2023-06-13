@@ -58,3 +58,5 @@ Interestingly, `received$` has been named correctly
 
 
 ## Rename "RxDB Premium" to "RxDB Enterprise"
+
+Most "normal" users do not need premium access so we should name it "RxDB Enterprise" to make it more clear that it is intended to bought by companies.
