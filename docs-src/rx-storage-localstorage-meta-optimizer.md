@@ -13,7 +13,7 @@ The meta optimizer gets wrapped around any other RxStorage. It will then automat
 ```ts
 import {
     getLocalstorageMetaOptimizerRxStorage
-} from 'rxdb-premium/plugins/localstorage-meta-optimizer';
+} from 'rxdb-premium/plugins/storage-localstorage-meta-optimizer';
 
 import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
 
