@@ -162,11 +162,11 @@ import {
     wrappedAttachmentsCompressionStorage
 } from 'rxdb/plugins/attachments-compression';
 
-import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
+import { getRxStorageIndexedDB } from 'rxdb-premium/plugins/storage-indexeddb';
 
 // create a wrapped storage with attachment-compression.
 const storageWithAttachmentsCompression = wrappedAttachmentsCompressionStorage({
-    storage: getRxStorageDexie()
+    storage: getRxStorageIndexedDB()
 });
 
 const db = await createRxDatabase<RxStylechaseCollections>({
