@@ -38,3 +38,5 @@ import 'zone.js/dist/zone-patch-rxjs';
 ## Screenshot
 
 ![angular2](docfiles/angular2.gif)
+
+Read more about using [RxDB as Angular Database](https://rxdb.info/articles/angular-database.html)
