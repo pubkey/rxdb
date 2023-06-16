@@ -2048,6 +2048,58 @@
             
         </li>
     
+        <li class="chapter " data-level="1.33.9" data-path="articles/angular-database.html">
+            
+                <a href="articles/angular-database.html">
+            
+                    
+                    Angular Database
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.33.10" data-path="articles/browser-database.html">
+            
+                <a href="articles/browser-database.html">
+            
+                    
+                    Browser Database
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.33.11" data-path="articles/embedded-database.html">
+            
+                <a href="articles/embedded-database.html">
+            
+                    
+                    Embedded Database
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.33.12" data-path="articles/frontend-database.html">
+            
+                <a href="articles/frontend-database.html">
+            
+                    
+                    Frontend Database
+            
+                </a>
+            
+
+            
+        </li>
+    
 
             </ul>
             
@@ -2414,11 +2466,11 @@ This happens internally and will now change on how you use the api.</p>
     wrappedAttachmentsCompressionStorage
 } from <span class="hljs-string">&apos;rxdb/plugins/attachments-compression&apos;</span>;
 
-<span class="hljs-keyword">import</span> { getRxStorageDexie } from <span class="hljs-string">&apos;rxdb/plugins/storage-dexie&apos;</span>;
+<span class="hljs-keyword">import</span> { getRxStorageIndexedDB } from <span class="hljs-string">&apos;rxdb-premium/plugins/storage-indexeddb&apos;</span>;
 
 <span class="hljs-comment">// create a wrapped storage with attachment-compression.</span>
 <span class="hljs-keyword">const</span> storageWithAttachmentsCompression = wrappedAttachmentsCompressionStorage({
-    storage: getRxStorageDexie()
+    storage: getRxStorageIndexedDB()
 });
 
 <span class="hljs-keyword">const</span> db = await createRxDatabase&lt;RxStylechaseCollections&gt;({

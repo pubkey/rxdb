@@ -4,7 +4,7 @@
     <head>
         <meta charset="UTF-8">
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-        <title>10.0.0 · RxDB - JavaScript Database</title>
+        <title>Frontend Database · RxDB - JavaScript Database</title>
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="description" content="">
         <meta name="generator" content="GitBook 3.2.3">
@@ -63,10 +63,10 @@
     <link rel="shortcut icon" href="../gitbook/images/favicon.ico" type="image/x-icon">
 
     
-    <link rel="next" href="9.0.0.html" />
+    <link rel="next" href="../questions-answers.html" />
     
     
-    <link rel="prev" href="11.0.0.html" />
+    <link rel="prev" href="embedded-database.html" />
     
 
     </head>
@@ -2048,9 +2048,9 @@
             
         </li>
     
-        <li class="chapter " data-level="1.33.9" data-path="../articles/angular-database.html">
+        <li class="chapter " data-level="1.33.9" data-path="angular-database.html">
             
-                <a href="../articles/angular-database.html">
+                <a href="angular-database.html">
             
                     
                     Angular Database
@@ -2061,9 +2061,9 @@
             
         </li>
     
-        <li class="chapter " data-level="1.33.10" data-path="../articles/browser-database.html">
+        <li class="chapter " data-level="1.33.10" data-path="browser-database.html">
             
-                <a href="../articles/browser-database.html">
+                <a href="browser-database.html">
             
                     
                     Browser Database
@@ -2074,9 +2074,9 @@
             
         </li>
     
-        <li class="chapter " data-level="1.33.11" data-path="../articles/embedded-database.html">
+        <li class="chapter " data-level="1.33.11" data-path="embedded-database.html">
             
-                <a href="../articles/embedded-database.html">
+                <a href="embedded-database.html">
             
                     
                     Embedded Database
@@ -2087,9 +2087,9 @@
             
         </li>
     
-        <li class="chapter " data-level="1.33.12" data-path="../articles/frontend-database.html">
+        <li class="chapter active" data-level="1.33.12" data-path="frontend-database.html">
             
-                <a href="../articles/frontend-database.html">
+                <a href="frontend-database.html">
             
                     
                     Frontend Database
@@ -2158,9 +2158,9 @@
             
         </li>
     
-        <li class="chapter " data-level="1.36.2" data-path="14.0.0.html">
+        <li class="chapter " data-level="1.36.2" data-path="../releases/14.0.0.html">
             
-                <a href="14.0.0.html">
+                <a href="../releases/14.0.0.html">
             
                     
                     14.0.0
@@ -2171,9 +2171,9 @@
             
         </li>
     
-        <li class="chapter " data-level="1.36.3" data-path="13.0.0.html">
+        <li class="chapter " data-level="1.36.3" data-path="../releases/13.0.0.html">
             
-                <a href="13.0.0.html">
+                <a href="../releases/13.0.0.html">
             
                     
                     13.0.0
@@ -2184,9 +2184,9 @@
             
         </li>
     
-        <li class="chapter " data-level="1.36.4" data-path="12.0.0.html">
+        <li class="chapter " data-level="1.36.4" data-path="../releases/12.0.0.html">
             
-                <a href="12.0.0.html">
+                <a href="../releases/12.0.0.html">
             
                     
                     12.0.0
@@ -2197,9 +2197,9 @@
             
         </li>
     
-        <li class="chapter " data-level="1.36.5" data-path="11.0.0.html">
+        <li class="chapter " data-level="1.36.5" data-path="../releases/11.0.0.html">
             
-                <a href="11.0.0.html">
+                <a href="../releases/11.0.0.html">
             
                     
                     11.0.0
@@ -2210,9 +2210,9 @@
             
         </li>
     
-        <li class="chapter active" data-level="1.36.6" data-path="10.0.0.html">
+        <li class="chapter " data-level="1.36.6" data-path="../releases/10.0.0.html">
             
-                <a href="10.0.0.html">
+                <a href="../releases/10.0.0.html">
             
                     
                     10.0.0
@@ -2223,9 +2223,9 @@
             
         </li>
     
-        <li class="chapter " data-level="1.36.7" data-path="9.0.0.html">
+        <li class="chapter " data-level="1.36.7" data-path="../releases/9.0.0.html">
             
-                <a href="9.0.0.html">
+                <a href="../releases/9.0.0.html">
             
                     
                     9.0.0
@@ -2236,9 +2236,9 @@
             
         </li>
     
-        <li class="chapter " data-level="1.36.8" data-path="8.0.0.html">
+        <li class="chapter " data-level="1.36.8" data-path="../releases/8.0.0.html">
             
-                <a href="8.0.0.html">
+                <a href="../releases/8.0.0.html">
             
                     
                     8.0.0
@@ -2349,7 +2349,7 @@
     <!-- Title -->
     <h1>
         <i class="fa fa-circle-o-notch fa-spin"></i>
-        <a href=".." >10.0.0</a>
+        <a href=".." >Frontend Database</a>
     </h1>
 </div>
 
@@ -2364,171 +2364,115 @@
     
                                 <section class="normal markdown-section">
                                 
-                                <h1 id="1000">10.0.0</h1>
-<p>One year after version <code>9.0.0</code> we now have RxDB version <code>10.0.0</code>.
-The main goal of version 10 was to change things that make RxDB ready for the future.</p>
-<p>Notice that I use major releases to bundle stuff that breaks the RxDB usage in your project, not to add new features.</p>
-<h2 id="the-main-thing-first">The main thing first</h2>
-<p>In the past, RxDB was build around Pouchdb. Before I started making RxDB I tried to solve the problems of my current project with other existing databases out there. I evaluated all of them and then started using Pouchdb and added many features via plugin. Then I realised it will be easier to create a separate project that wraps around Pouchdb, that was RxDB. Back then pouchdb was the most major browser database out there and it was well maintained and had a big community.
-But in the last 5 years, things have changed. A big part of the RxDB users do not use couchdb in the backend and do not need the couchdb replication.
-Therefore they do not really need the overhead with revision handling that slows down the performance of pouchdb. Also there where many other problems with using pouchdb. It is not actively developed, many bugs are not fixed and no new features get added. Also there are many unsolved problems like how to finally delete document data or how to replicate more then 6 databases at the same time, how to use replication without attachments data, and so on...</p>
-<p>So for this release, I abstracted all parts that we use from pouchdb into the <code>RxStorage</code> interface. RxDB works on top of any implementation of the <code>RxStorage</code> interface. This means it is now possible to use RxDB together with other underlying storages like SQLite, PostgreSQL, Minimongo, MongoDB, and so on, as long as someone writes the <code>RxStorage</code> class for it.</p>
-<p>This means, to create a <code>RxDatabase</code> you have to pass the storage class instead of pouchdb specific settings:</p>
-<pre><code class="lang-ts">
-<span class="hljs-comment">// import pouchdb specific stuff and add pouchdb adapters</span>
-<span class="hljs-keyword">import</span> {
-    addPouchPlugin,
-    getRxStoragePouch
-} from <span class="hljs-string">&apos;rxdb/plugins/pouchdb&apos;</span>;
+                                <h1 id="rxdb-javascript-frontend-database-efficient-data-storage-in-frontend-applications">RxDB JavaScript Frontend Database: Efficient Data Storage in Frontend Applications</h1>
+<p>In modern web development, managing data on the frontend has become increasingly important. Storing data in the frontend offers numerous advantages, such as offline accessibility, caching, faster application startup, and improved state management. Traditional SQL databases, although widely used on the server-side, are not always the best fit for frontend applications. This is where <a href="https://rxdb.info/" target="_blank">RxDB</a>, a frontend JavaScript database, emerges as a powerful solution. In this article, we will explore why storing data in the frontend is beneficial, the limitations of SQL databases in the frontend, and how <a href="https://rxdb.info/" target="_blank">RxDB</a> addresses these challenges to become an excellent choice for frontend data storage.</p>
+<center>
+    <a href="https://rxdb.info/" target="_blank">
+        <img src="../files/logo/logo_text.svg" alt="JavaScript Frontend Database" width="220">
+    </a>
+</center>
 
-<span class="hljs-comment">// IMPORTANT: Do not use addRxPlugin to add pouchdb adapter, instead use addPouchPlugin</span>
-addPouchPlugin(<span class="hljs-built_in">require</span>(<span class="hljs-string">&apos;pouchdb-adapter-memory&apos;</span>));
+<h2 id="why-you-might-want-to-store-data-in-the-frontend">Why you might want to store data in the frontend</h2>
+<h3 id="offline-accessibility">Offline accessibility</h3>
+<p>One compelling reason to store data in the frontend is to enable <a href="../offline-first.html">offline accessibility</a>. By leveraging a frontend database, applications can cache essential data locally, allowing users to continue using the application even when an internet connection is unavailable. This feature is particularly useful for mobile applications or web apps with limited or intermittent connectivity.</p>
+<h3 id="caching">Caching</h3>
+<p>Frontend databases also serve as efficient caching mechanisms. By storing frequently accessed data locally, applications can minimize network requests and reduce latency, resulting in faster and more responsive user experiences. Caching is particularly beneficial for applications that heavily rely on remote data or perform computationally intensive operations.</p>
+<h3 id="decreased-initial-application-start-time">Decreased initial application start time</h3>
+<p>Storing data in the frontend decreases the initial application start time because the data is already present locally. By eliminating the need to fetch data from a server during startup, applications can quickly render the UI and provide users with an immediate interactive experience. This is especially advantageous for applications with large datasets or complex data retrieval processes.</p>
+<h3 id="password-encryption-for-local-data">Password encryption for local data</h3>
+<p>Security is a crucial aspect of data storage. With a frontend database, developers can <a href="../encryption.html">encrypt</a> sensitive local data, such as user credentials or personal information, using encryption algorithms. This ensures that even if the device is compromised, the data remains securely stored and protected.</p>
+<h3 id="local-database-for-state-management">Local database for state management</h3>
+<p>Frontend databases provide an alternative to traditional state management libraries like Redux or NgRx. By utilizing a local database, developers can store and manage application state directly in the frontend, eliminating the need for additional libraries. This approach simplifies the codebase, reduces complexity, and provides a more straightforward data flow within the application.</p>
+<h3 id="low-latency-local-queries">Low-latency local queries</h3>
+<p>Frontend databases enable low-latency queries that run entirely on the client&apos;s device. Instead of relying on server round-trips for each query, the database executes queries locally, resulting in faster response times. This is particularly beneficial for applications that require real-time updates or frequent data retrieval.</p>
+<p align="center">
+  <img src="../files/latency-london-san-franzisco.png" alt="latency london san franzisco" width="300">
+</p>
 
-<span class="hljs-keyword">import</span> {
-    addRxPlugin,
-    createRxDatabase,
-    randomCouchString,
-} from <span class="hljs-string">&apos;rxdb/plugins/core&apos;</span>;
 
-<span class="hljs-comment">// create the database with the storage creator.</span>
-<span class="hljs-keyword">const</span> db = await createRxDatabase({
-    name: <span class="hljs-string">&apos;mydatabase&apos;</span>,
-    storage: getRxStoragePouch(<span class="hljs-string">&apos;memory&apos;</span>),
+<h3 id="building-realtime-applications-with-local-data">Building realtime applications with local data</h3>
+<p>Realtime applications often require immediate updates based on data changes. By storing data locally and utilizing a frontend database, developers can build realtime applications more easily. The database can observe data changes and automatically update the UI, providing a seamless and responsive user experience.</p>
+<h3 id="easier-integration-with-javascript-frameworks">Easier integration with JavaScript frameworks</h3>
+<p>Frontend databases, including RxDB, are designed to integrate seamlessly with popular JavaScript frameworks such as Angular, React.js, Vue.js, and Svelte. These databases offer well-defined APIs and support that align with the specific requirements of these frameworks, enabling developers to leverage the full potential of the frontend database within their preferred development environment.</p>
+<h3 id="simplified-replication-of-database-state">Simplified replication of database state</h3>
+<p>Replicating database state between the frontend and backend can be challenging, especially when dealing with complex REST routes. Frontend databases, however, provide simpler mechanisms for replicating database state. They offer intuitive replication algorithms that facilitate data synchronization between the frontend and backend, reducing the complexity and potential pitfalls associated with complex REST-based replication.</p>
+<h3 id="improved-scalability">Improved scalability</h3>
+<p>Frontend databases offer improved scalability compared to traditional SQL databases. By leveraging the computational capabilities of client devices, the burden on server resources is reduced. Queries and operations are performed locally, minimizing the need for server round-trips and enabling applications to scale more efficiently.</p>
+<h2 id="why-sql-databases-are-not-a-good-fit-for-the-frontend">Why SQL databases are not a good fit for the frontend</h2>
+<p>While SQL databases excel in server-side scenarios, they pose limitations when used on the frontend. Here are some reasons why SQL databases are not well-suited for frontend applications:</p>
+<h3 id="pushpull-based-vs-reactive">Push/Pull based vs. reactive</h3>
+<p>SQL databases typically rely on a push/pull model, where the server pushes data to the client upon request. This approach is not inherently reactive, as it requires explicit requests for data updates. In contrast, frontend applications often require reactive data flows, where changes in data trigger automatic updates in the UI. Frontend databases, like <a href="https://rxdb.info/" target="_blank">RxDB</a>, provide reactive capabilities that seamlessly integrate with the dynamic nature of frontend development.</p>
+<h3 id="initialization-time-and-performance">Initialization time and performance</h3>
+<p>SQL databases designed for server-side usage tend to have larger build sizes and initialization times, making them less efficient for browser-based applications. Frontend databases, on the other hand, directly leverage browser APIs like IndexedDB, OPFS, and WebWorker, resulting in leaner builds and faster initialization times. Often the queries are such fast, that it is not even necessary to implement a loading spinner.</p>
+<p align="center">
+  <img src="../files/loading-spinner-not-needed.gif" alt="loading spinner not needed" width="300">
+</p>
+
+<h3 id="build-size-considerations">Build size considerations</h3>
+<p>Server-side SQL databases typically come with a significant build size, which can be impractical for browser applications where code size optimization is crucial. Frontend databases, on the other hand, are specifically designed to operate within the constraints of browser environments, ensuring efficient resource utilization and smaller build sizes.</p>
+<p>For example the SQLite Webassembly file alone has a size of over 0.8 Megabyte with an additional 0.2 Megabyte in JavaScript code for connection.</p>
+<h2 id="why-rxdb-is-a-good-fit-for-the-frontend">Why RxDB is a good fit for the frontend</h2>
+<p>RxDB is a powerful frontend JavaScript database that addresses the limitations of SQL databases and provides an optimal solution for frontend data storage. Let&apos;s explore why RxDB is an excellent fit for frontend applications:</p>
+<h3 id="made-in-javascript-optimized-for-javascript-applications">Made in JavaScript, optimized for JavaScript applications</h3>
+<p>RxDB is designed and optimized for JavaScript applications. Built using JavaScript itself, RxDB offers seamless integration with JavaScript frameworks and libraries, allowing developers to leverage their existing JavaScript knowledge and skills.</p>
+<h3 id="nosql-json-documents-for-uis">NoSQL (JSON) documents for UIs</h3>
+<p>RxDB adopts a NoSQL approach, using JSON documents as its primary data structure. This aligns well with the JavaScript ecosystem, as JavaScript natively works with JSON objects. By using NoSQL documents, RxDB provides a more natural and intuitive data model for UI-centric applications.</p>
+<p align="center">
+  <img src="../files/no-sql.png" alt="NoSQL Documents" width="120">
+</p>
+
+<h3 id="better-typescript-support-compared-to-sql">Better TypeScript support compared to SQL</h3>
+<p>TypeScript has become increasingly popular for building frontend applications. RxDB provides excellent <a href="../tutorials/typescript.html">TypeScript support</a>, allowing developers to leverage static typing and benefit from enhanced code quality and tooling. This is particularly advantageous when compared to SQL databases, which often have limited TypeScript support.</p>
+<h3 id="observable-queries-for-automatic-ui-updates">Observable Queries for automatic UI updates</h3>
+<p>RxDB introduces the concept of observable queries, powered by RxJS. Observable queries automatically update the UI whenever there are changes in the underlying data. This reactive approach eliminates the need for manual UI updates and ensures that the frontend remains synchronized with the database state.</p>
+<p align="center">
+  <img src="../files/animations/realtime.gif" alt="realtime ui updates" width="700">
+</p>
+
+
+<h3 id="optimized-observed-queries-with-the-eventreduce-algorithm">Optimized observed queries with the EventReduce Algorithm</h3>
+<p>RxDB optimizes observed queries with its EventReduce Algorithm. This algorithm intelligently reduces redundant events and ensures that UI updates are performed efficiently. By minimizing unnecessary re-renders, RxDB significantly improves performance and responsiveness in frontend applications.</p>
+<pre><code class="lang-typescript"><span class="hljs-keyword">const</span> query = myCollection.find({
+    selector: {
+        age: {
+            $gt: <span class="hljs-number">21</span>
+        }
+    }
+});
+<span class="hljs-keyword">const</span> querySub = query.$.subscribe(results =&gt; {
+    <span class="hljs-built_in">console</span>.log(<span class="hljs-string">&apos;got results: &apos;</span> + results.length);
 });
 </code></pre>
-<p>To access the internal <code>pouch</code> instance of a collection, you have to go over the <code>storageInstance</code>:</p>
-<pre><code class="lang-ts"><span class="hljs-keyword">const</span> pouch = myRxCollection.storageInstance.internals.pouch;
+<h3 id="observable-document-fields">Observable document fields</h3>
+<p>RxDB supports observable document fields, enabling developers to track changes at a granular level within documents. By observing specific fields, developers can reactively update the UI when those fields change, ensuring a responsive and synchronized frontend interface.</p>
+<pre><code class="lang-typescript">myDocument.firstName$.subscribe(newName =&gt; <span class="hljs-built_in">console</span>.log(<span class="hljs-string">&apos;name is: &apos;</span> + newName));
 </code></pre>
-<h2 id="other-breaking-changes">Other breaking changes</h2>
-<h3 id="primary-key-is-required">Primary key is required</h3>
-<p>In the past, using a primary key was optional. When no primary key was defined, RxDB filled up the <code>_id</code> field with an uuid-like string which was then used as primary. When I researched on github how people use RxDB, I found out that many use a secondary index for what should be the primary key.
-Also having the primary key optional, caused much confusing when using RxDB with typescript.</p>
-<p>So now the primary key MUST be set when creating a schema for RxDB.
-Also the primary key is defined with the <code>primaryKey</code> property at the top level of the schema. This ensures that typescript will complain if no <code>primaryKey</code> is defined.</p>
-<pre><code class="lang-ts">
-<span class="hljs-comment">// when using the type `RxJsonSchema&lt;DocType&gt;` the `DocType` is now required</span>
-<span class="hljs-keyword">const</span> mySchema: RxJsonSchema&lt;MyDocumentData&gt; = {
-    version: <span class="hljs-number">0</span>,
-    primaryKey: <span class="hljs-string">&apos;passportId&apos;</span>,
-    <span class="hljs-keyword">type</span>: <span class="hljs-string">&apos;object&apos;</span>,
-    properties: {
-        passportId: {
-            <span class="hljs-keyword">type</span>: <span class="hljs-string">&apos;string&apos;</span>
-        }
-    },
-    <span class="hljs-comment">// primaryKey is always required</span>
-    required: [<span class="hljs-string">&apos;passportId&apos;</span>]
-}
-</code></pre>
-<h3 id="attachment-data-must-be-blob-or-buffer">Attachment data must be Blob or Buffer</h3>
-<p>In the past, an <code>RxAttachment</code> could be stored with <code>Blob</code>, <code>Buffer</code> and <code>string</code> data. If a <code>string</code> was passed, pouchdb internally transformed the data to a <code>Blob</code> or <code>Buffer</code>, depending on in which environment it is running.
-This behavior caused much trouble and weird edge cases because of how the data is transformed from and to <code>string</code>.
-So now you can only store <code>Blob</code> or <code>Buffer</code> as attachment data. <code>string</code> is no longer allowed. You can still transform a string to a Blob or Buffer by yourself and then store it.</p>
-<pre><code class="lang-ts"><span class="hljs-keyword">import</span> { blobBufferUtil } from <span class="hljs-string">&apos;rxdb&apos;</span>;
+<h3 id="storing-documents-compressed">Storing Documents Compressed</h3>
+<p>RxDB provides the option to store documents in a <a href="../key-compression.html">compressed format</a>, reducing storage requirements and improving overall database performance. Compressed storage offers benefits such as reduced disk space usage, faster data read/write operations, and improved network transfer speeds, making it an essential feature for efficient frontend data storage.</p>
+<h3 id="built-in-multi-tab-support">Built-in Multi-tab support</h3>
+<p>RxDB offers built-in multi-tab support, allowing data synchronization and state management across multiple browser tabs. This feature ensures consistent data access and synchronization, enabling users to work seamlessly across different tabs without conflicts or data inconsistencies.</p>
+<p align="center">
+  <img src="../files/multiwindow.gif" alt="multi tab support" width="450">
+</p>
 
-<span class="hljs-keyword">const</span> attachment = await myDocument.putAttachment(
-    {
-        id: <span class="hljs-string">&apos;cat.txt&apos;</span>,
-        data: blobBufferUtil.createBlobBuffer(<span class="hljs-string">&apos;miau&apos;</span>, <span class="hljs-string">&apos;text/plain&apos;</span>)
-        <span class="hljs-keyword">type</span>: <span class="hljs-string">&apos;text/plain&apos;</span>
-    }
-);
-</code></pre>
-<p>Also <code>putAttachment()</code> now defaults to <code>skipIfSame=true</code>. This means when you write attachment data that already is exactly the same in the database, no write will be done.</p>
-<h3 id="outgoing-data-is-now-readonly-and-deep-frozen">Outgoing data is now readonly and deep-frozen</h3>
-<p>RxDB often uses outgoing data also in the internals. For example the result of a query is not only send to the user, but also used inside of RxDB&apos;s query-change-detection. To ensure that mutation of the outgoing data is not changing internal stuff, which would cause strange bugs, outgoing data was always deep-cloned before handing it out to the user. This is a common practice on many javascript libraries.</p>
-<p>The problem is that deep-cloning big objects can be very CPU/Memory expensive. So instead of doing a deep-clone, RxDB does now assume that outgoing data is <strong>immutable</strong>. If the users wants to modify that data, it has be be deep-cloned by the user.
-To ensure immutability, RxDB runs a <a href="https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Global_Objects/Object/freeze" target="_blank">deep-freeze</a> in the dev-mode (about same expensive as deep clone). Also typescript will throw a build-time error because we use <code>ReadonlyArray</code> and <code>readonly</code> to define outgoing data immutable. In production-mode, there will be nothing besides typescript that ensures immutability to have best performance.</p>
-<pre><code class="lang-ts"><span class="hljs-keyword">const</span> data = myRxDocument.toJSON();
-data.foo = bar; <span class="hljs-comment">// This does NOT work!</span>
 
-<span class="hljs-comment">// instead clone the data before changing it</span>
-<span class="hljs-keyword">import</span> { clone } from <span class="hljs-string">&apos;rxjs&apos;</span>;
-<span class="hljs-keyword">const</span> clonedData = clone(data);
-data.foo = bar; <span class="hljs-comment">// This works!</span>
-</code></pre>
-<h3 id="the-in-memory-plugin-does-no-longer-work">The in-memory plugin does no longer work.</h3>
-<p>The in-memory plugin was used to spawn in-memory collections on top of a normal <code>RxCollection</code>. The benefit is to have the data replicated into the memory of the javascript runtime, which allows for faster queries.</p>
-<p>After doing many tests and observations, I found out that the in-memory plugin was slow. Really slow, even slower then just using the indexeddb adapter in the browser. You can reproduce my observations at the event-reduce testpage. Here you can see that random-writes+query are slower on the <a href="https://pubkey.github.io/event-reduce/?tech=pouchdb:memory" target="_blank">memory-adapter</a> then on <a href="https://pubkey.github.io/event-reduce/?tech=pouchdb:indexeddb" target="_blank">indexeddb</a>.
-The reason for this are the big abstraction layers. Pouchdb uses the adapter system. The memory adapter uses the <a href="https://github.com/Level/levelup" target="_blank">leveldown abstraction layer</a>. Each write/read goes to the <a href="https://github.com/Level/memdown" target="_blank">memdown module</a>.</p>
-<p>So the in-memory plugin is not working for now. In the future it will be reimplemented in a custom memory based <code>RxStorage</code> class.</p>
-<p>Notice: You can of course still use the pouchdb <code>memory</code> adapter as usual. It is not affected by this change.</p>
-<h2 id="what-else-is-a-breaking-change">What else is a breaking change?</h2>
+<h3 id="replication-algorithm-can-be-made-compatible-with-any-backend">Replication Algorithm can be made compatible with any backend</h3>
+<p>RxDB&apos;s <a href="../replication.html">realtime replication algorithm</a> is designed to be flexible and compatible with various backend systems. Whether you&apos;re using your own servers, <a href="../replication-firestore.html">Firebase</a>, <a href="../replication-couchdb.html">CouchDB</a>, <a href="../replication-nats.html">NATS</a>, <a href="../replication-websocket.html">WebSocket</a>, or any other backend, RxDB can be seamlessly integrated and synchronized with the backend system of your choice.</p>
+<p align="center">
+  <img src="../files/database-replication.png" alt="database replication" width="200">
+</p>
+
+<h3 id="flexible-storage-layer-for-code-reuse">Flexible storage layer for code reuse</h3>
+<p>RxDB provides a <a href="../rx-storage.html">flexible storage layer</a> that enables code reuse across different platforms. Whether you&apos;re building applications with <a href="../electron-database.html">Electron.js</a>, <a href="../react-native-database.html">React Native</a>, hybrid apps using <a href="../capacitor-database.html">Capacitor.js</a>, or traditional web browsers, RxDB allows you to reuse the same codebase and leverage the power of a frontend database across different environments.</p>
+<h3 id="handling-schema-changes-in-distributed-environments">Handling schema changes in distributed environments</h3>
+<p>In distributed environments where data is stored on multiple client devices, handling schema changes can be challenging. RxDB tackles this challenge by providing robust mechanisms for <a href="../data-migration.html">handling schema changes</a>. It ensures that schema updates propagate smoothly across devices, maintaining data integrity and enabling seamless schema evolution.</p>
+<h2 id="follow-up">Follow Up</h2>
+<p>To further explore RxDB and get started with using it in your frontend applications, consider the following resources:</p>
 <ul>
-<li>Removed the deprecated <code>atomicSet()</code>, use <code>atomicPatch()</code> instead.</li>
-<li>Removed the deprecated <code>RxDatabase.collection()</code> use <code>RxDatabase().addCollections()</code> instead.</li>
-<li>Removed plugin hook <code>preCreatePouchDb</code> because it is no longer needed.</li>
-<li>Removed the <code>watch-for-changes</code> plugin. We now overwrite pouchdbs <code>bulkDocs</code> method to generate events. This is faster and more reliable.</li>
-<li>Removed the <code>adapter-check</code> plugin. (The function <code>adapterCheck</code> is move to the pouchdb plugin).</li>
-<li>Calling <code>RxDatabase.server()</code> now returns a promise that resolves when the server is started up.</li>
-<li>Changed the defaults of <code>PouchDBExpressServerOptions</code> from the <code>server()</code> method, by default we now store logs in the <code>tmp</code> folder and the config is in memory.</li>
-<li>Renamed <code>replication</code>-plugin to <code>replication-couchdb</code> to be more consistent in naming like with <code>replication-graphql</code><ul>
-<li>For the same reason, renamed <code>RxCollection().sync()</code> to <code>RxCollection().syncCouchDB()</code></li>
+<li><a href="../quickstart.html">RxDB Quickstart</a>: A step-by-step guide to quickly set up RxDB in your project and start leveraging its features.</li>
+<li><a href="https://github.com/pubkey/rxdb" target="_blank">RxDB GitHub Repository</a>: The official repository for RxDB, where you can find the code, examples, and community support.</li>
 </ul>
-</li>
-<li>Renamed the functions of the json import/export plugin to be less confusing.<ul>
-<li><code>dump()</code> is now <code>exportJSON()</code></li>
-<li><code>importDump()</code> is now <code>importJSON()</code></li>
-</ul>
-</li>
-<li><code>RxCollection</code> uses a separate pouchdb instance for local documents, so that they can persist during migrations.</li>
-<li>A JsonSchema must have the <code>required</code> array at the top level and it must contain the primary key.</li>
-</ul>
-<h2 id="new-features">New features</h2>
-<h3 id="composite-primary-key">Composite primary key</h3>
-<p>You can now use a composite primary key for the schema where you can join different properties of the document data to create a primary key.</p>
-<pre><code class="lang-javascript"><span class="hljs-keyword">const</span> mySchema = {
-  keyCompression: <span class="hljs-literal">true</span>, <span class="hljs-comment">// set this to true, to enable the keyCompression</span>
-  version: <span class="hljs-number">0</span>,
-  title: <span class="hljs-string">&apos;human schema with composite primary&apos;</span>,
-  primaryKey: {
-      <span class="hljs-comment">// where should the composed string be stored</span>
-      key: <span class="hljs-string">&apos;id&apos;</span>,
-      <span class="hljs-comment">// fields that will be used to create the composed key</span>
-      fields: [
-          <span class="hljs-string">&apos;firstName&apos;</span>,
-          <span class="hljs-string">&apos;lastName&apos;</span>
-      ],
-      <span class="hljs-comment">// separator which is used to concat the fields values.</span>
-      separator: <span class="hljs-string">&apos;|&apos;</span>
-  }
-  type: <span class="hljs-string">&apos;object&apos;</span>,
-  properties: {
-      id: {
-          type: <span class="hljs-string">&apos;string&apos;</span>
-      },
-      firstName: {
-          type: <span class="hljs-string">&apos;string&apos;</span>
-      },
-      lastName: {
-          type: <span class="hljs-string">&apos;string&apos;</span>
-      }
-  },
-  required: [
-    <span class="hljs-string">&apos;id&apos;</span>, 
-    <span class="hljs-string">&apos;firstName&apos;</span>,
-    <span class="hljs-string">&apos;lastName&apos;</span>
-  ]
-};
-</code></pre>
-<h2 id="for-the-future">For the future</h2>
-<p>With these changes, RxDB is now ready for the future plans:</p>
-<ul>
-<li>I want to replace the <code>revision</code> handling of documents with conflict resolution strategies that can always directly resolve conflicts instead of maintaining the revision tree.</li>
-<li>Implement different implementations for <code>RxStorage</code>. I will first work on a memory based version. I am in good hope that the community will create other implementations depending on their needs.</li>
-</ul>
-<h2 id="you-can-help">You can help!</h2>
-<p>There are many things that can be done by <strong>you</strong> to improve RxDB:</p>
-<ul>
-<li>Check the <a href="https://github.com/pubkey/rxdb/blob/master/orga/BACKLOG.md" target="_blank">BACKLOG</a> for features that would be great to have.</li>
-<li>Check the <a href="https://github.com/pubkey/rxdb/blob/master/orga/before-next-major.md" target="_blank">breaking backlog</a> for breaking changes that must be implemented in the future but where I did not had the time yet.</li>
-<li>Check the <a href="https://github.com/pubkey/rxdb/search?q=TODO" target="_blank">TODOs</a> in the code. There are many small improvements that can be done for performance and build size.</li>
-<li>Review the code and add tests. I am only a single dude with a laptop. My code is not perfect and much small improvements can be done when people review the code and help me to clarify undefined behaviors.</li>
-<li>Improve the documentation. In the last user survey many users told me that the documentation is not good enough. But I reviewed the docs and could not find clear flaws. The problem is that I am way to deep into RxDB so that I am not able to understand which documentation a newcomer to the project needs. Likely I assume too much knowledge or focus writing about the wrong parts.</li>
-<li>Update the <a href="https://github.com/pubkey/rxdb/tree/master/examples" target="_blank">example projects</a> many of them are outdated and need updates.</li>
-</ul>
-<h2 id="discuss">Discuss!</h2>
-<p>Please <a href="https://github.com/pubkey/rxdb/issues/3279" target="_blank">discuss here</a>.</p>
+<p>By adopting <a href="https://rxdb.info/" target="_blank">RxDB</a> as your frontend database, you can unlock the full potential of frontend data storage and empower your applications with offline accessibility, caching, improved performance, and seamless data synchronization. RxDB&apos;s JavaScript-centric approach and powerful features make it an ideal choice for frontend developers seeking efficient and scalable data storage solutions.</p>
 
                                 
                                 </section>
@@ -2556,12 +2500,12 @@ The reason for this are the big abstraction layers. Pouchdb uses the adapter sys
 
             
                 
-                <a href="11.0.0.html" class="navigation navigation-prev " aria-label="Previous page: 11.0.0">
+                <a href="embedded-database.html" class="navigation navigation-prev " aria-label="Previous page: Embedded Database">
                     <i class="fa fa-angle-left"></i>
                 </a>
                 
                 
-                <a href="9.0.0.html" class="navigation navigation-next " aria-label="Next page: 9.0.0">
+                <a href="../questions-answers.html" class="navigation navigation-next " aria-label="Next page: Questions & Answers">
                     <i class="fa fa-angle-right"></i>
                 </a>
                 
@@ -2572,7 +2516,7 @@ The reason for this are the big abstraction layers. Pouchdb uses the adapter sys
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"10.0.0","level":"1.36.6","depth":2,"next":{"title":"9.0.0","level":"1.36.7","depth":2,"path":"releases/9.0.0.md","ref":"./releases/9.0.0.md","articles":[]},"previous":{"title":"11.0.0","level":"1.36.5","depth":2,"path":"releases/11.0.0.md","ref":"./releases/11.0.0.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./analytics.js","./next-button.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/logo.svg","custom-favicon":{},"edit-link":{"label":"","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - JavaScript Database","links":{"sidebar":{"RxDB":"/","Follow @twitter ":"https://twitter.com/intent/user?screen_name=rxdbjs","Chat @discord ":"https://rxdb.info/chat.html","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"releases/10.0.0.md","mtime":"","type":"markdown"},"gitbook":{"version":"3.2.3","time":""},"basePath":"..","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Frontend Database","level":"1.33.12","depth":2,"next":{"title":"Questions & Answers","level":"1.34","depth":1,"path":"questions-answers.md","ref":"./questions-answers.md","articles":[]},"previous":{"title":"Embedded Database","level":"1.33.11","depth":2,"path":"articles/embedded-database.md","ref":"./articles/embedded-database.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./analytics.js","./next-button.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/logo.svg","custom-favicon":{},"edit-link":{"label":"","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - JavaScript Database","links":{"sidebar":{"RxDB":"/","Follow @twitter ":"https://twitter.com/intent/user?screen_name=rxdbjs","Chat @discord ":"https://rxdb.info/chat.html","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"articles/frontend-database.md","mtime":"","type":"markdown"},"gitbook":{"version":"3.2.3","time":""},"basePath":"..","book":{"language":""}});
         });
     </script>
 </div>

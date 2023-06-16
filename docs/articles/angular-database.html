@@ -4,7 +4,7 @@
     <head>
         <meta charset="UTF-8">
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-        <title>10.0.0 · RxDB - JavaScript Database</title>
+        <title>Angular Database · RxDB - JavaScript Database</title>
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="description" content="">
         <meta name="generator" content="GitBook 3.2.3">
@@ -63,10 +63,10 @@
     <link rel="shortcut icon" href="../gitbook/images/favicon.ico" type="image/x-icon">
 
     
-    <link rel="next" href="9.0.0.html" />
+    <link rel="next" href="browser-database.html" />
     
     
-    <link rel="prev" href="11.0.0.html" />
+    <link rel="prev" href="../electron-database.html" />
     
 
     </head>
@@ -2048,9 +2048,9 @@
             
         </li>
     
-        <li class="chapter " data-level="1.33.9" data-path="../articles/angular-database.html">
+        <li class="chapter active" data-level="1.33.9" data-path="angular-database.html">
             
-                <a href="../articles/angular-database.html">
+                <a href="angular-database.html">
             
                     
                     Angular Database
@@ -2061,9 +2061,9 @@
             
         </li>
     
-        <li class="chapter " data-level="1.33.10" data-path="../articles/browser-database.html">
+        <li class="chapter " data-level="1.33.10" data-path="browser-database.html">
             
-                <a href="../articles/browser-database.html">
+                <a href="browser-database.html">
             
                     
                     Browser Database
@@ -2074,9 +2074,9 @@
             
         </li>
     
-        <li class="chapter " data-level="1.33.11" data-path="../articles/embedded-database.html">
+        <li class="chapter " data-level="1.33.11" data-path="embedded-database.html">
             
-                <a href="../articles/embedded-database.html">
+                <a href="embedded-database.html">
             
                     
                     Embedded Database
@@ -2087,9 +2087,9 @@
             
         </li>
     
-        <li class="chapter " data-level="1.33.12" data-path="../articles/frontend-database.html">
+        <li class="chapter " data-level="1.33.12" data-path="frontend-database.html">
             
-                <a href="../articles/frontend-database.html">
+                <a href="frontend-database.html">
             
                     
                     Frontend Database
@@ -2158,9 +2158,9 @@
             
         </li>
     
-        <li class="chapter " data-level="1.36.2" data-path="14.0.0.html">
+        <li class="chapter " data-level="1.36.2" data-path="../releases/14.0.0.html">
             
-                <a href="14.0.0.html">
+                <a href="../releases/14.0.0.html">
             
                     
                     14.0.0
@@ -2171,9 +2171,9 @@
             
         </li>
     
-        <li class="chapter " data-level="1.36.3" data-path="13.0.0.html">
+        <li class="chapter " data-level="1.36.3" data-path="../releases/13.0.0.html">
             
-                <a href="13.0.0.html">
+                <a href="../releases/13.0.0.html">
             
                     
                     13.0.0
@@ -2184,9 +2184,9 @@
             
         </li>
     
-        <li class="chapter " data-level="1.36.4" data-path="12.0.0.html">
+        <li class="chapter " data-level="1.36.4" data-path="../releases/12.0.0.html">
             
-                <a href="12.0.0.html">
+                <a href="../releases/12.0.0.html">
             
                     
                     12.0.0
@@ -2197,9 +2197,9 @@
             
         </li>
     
-        <li class="chapter " data-level="1.36.5" data-path="11.0.0.html">
+        <li class="chapter " data-level="1.36.5" data-path="../releases/11.0.0.html">
             
-                <a href="11.0.0.html">
+                <a href="../releases/11.0.0.html">
             
                     
                     11.0.0
@@ -2210,9 +2210,9 @@
             
         </li>
     
-        <li class="chapter active" data-level="1.36.6" data-path="10.0.0.html">
+        <li class="chapter " data-level="1.36.6" data-path="../releases/10.0.0.html">
             
-                <a href="10.0.0.html">
+                <a href="../releases/10.0.0.html">
             
                     
                     10.0.0
@@ -2223,9 +2223,9 @@
             
         </li>
     
-        <li class="chapter " data-level="1.36.7" data-path="9.0.0.html">
+        <li class="chapter " data-level="1.36.7" data-path="../releases/9.0.0.html">
             
-                <a href="9.0.0.html">
+                <a href="../releases/9.0.0.html">
             
                     
                     9.0.0
@@ -2236,9 +2236,9 @@
             
         </li>
     
-        <li class="chapter " data-level="1.36.8" data-path="8.0.0.html">
+        <li class="chapter " data-level="1.36.8" data-path="../releases/8.0.0.html">
             
-                <a href="8.0.0.html">
+                <a href="../releases/8.0.0.html">
             
                     
                     8.0.0
@@ -2349,7 +2349,7 @@
     <!-- Title -->
     <h1>
         <i class="fa fa-circle-o-notch fa-spin"></i>
-        <a href=".." >10.0.0</a>
+        <a href=".." >Angular Database</a>
     </h1>
 </div>
 
@@ -2364,171 +2364,165 @@
     
                                 <section class="normal markdown-section">
                                 
-                                <h1 id="1000">10.0.0</h1>
-<p>One year after version <code>9.0.0</code> we now have RxDB version <code>10.0.0</code>.
-The main goal of version 10 was to change things that make RxDB ready for the future.</p>
-<p>Notice that I use major releases to bundle stuff that breaks the RxDB usage in your project, not to add new features.</p>
-<h2 id="the-main-thing-first">The main thing first</h2>
-<p>In the past, RxDB was build around Pouchdb. Before I started making RxDB I tried to solve the problems of my current project with other existing databases out there. I evaluated all of them and then started using Pouchdb and added many features via plugin. Then I realised it will be easier to create a separate project that wraps around Pouchdb, that was RxDB. Back then pouchdb was the most major browser database out there and it was well maintained and had a big community.
-But in the last 5 years, things have changed. A big part of the RxDB users do not use couchdb in the backend and do not need the couchdb replication.
-Therefore they do not really need the overhead with revision handling that slows down the performance of pouchdb. Also there where many other problems with using pouchdb. It is not actively developed, many bugs are not fixed and no new features get added. Also there are many unsolved problems like how to finally delete document data or how to replicate more then 6 databases at the same time, how to use replication without attachments data, and so on...</p>
-<p>So for this release, I abstracted all parts that we use from pouchdb into the <code>RxStorage</code> interface. RxDB works on top of any implementation of the <code>RxStorage</code> interface. This means it is now possible to use RxDB together with other underlying storages like SQLite, PostgreSQL, Minimongo, MongoDB, and so on, as long as someone writes the <code>RxStorage</code> class for it.</p>
-<p>This means, to create a <code>RxDatabase</code> you have to pass the storage class instead of pouchdb specific settings:</p>
-<pre><code class="lang-ts">
-<span class="hljs-comment">// import pouchdb specific stuff and add pouchdb adapters</span>
-<span class="hljs-keyword">import</span> {
-    addPouchPlugin,
-    getRxStoragePouch
-} from <span class="hljs-string">&apos;rxdb/plugins/pouchdb&apos;</span>;
+                                <h1 id="rxdb-as-a-database-in-an-angular-application">RxDB as a Database in an Angular Application</h1>
+<p>In modern web development, Angular has emerged as a popular framework for building robust and scalable applications. As Angular applications often require persistent storage and efficient data handling, choosing the right database solution is crucial. One such solution is <a href="https://rxdb.info/" target="_blank">RxDB</a>, a reactive JavaScript database for the browser, node.js, and mobile devices. In this article, we will explore the integration of RxDB into an Angular application and examine its various features and techniques.</p>
+<center>
+    <a href="https://rxdb.info/" target="_blank">
+        <img src="../files/logo/logo_text.svg" alt="JavaScript Angular Database" width="220">
+    </a>
+</center>
 
-<span class="hljs-comment">// IMPORTANT: Do not use addRxPlugin to add pouchdb adapter, instead use addPouchPlugin</span>
-addPouchPlugin(<span class="hljs-built_in">require</span>(<span class="hljs-string">&apos;pouchdb-adapter-memory&apos;</span>));
+<h2 id="angular-web-applications">Angular Web Applications</h2>
+<p>Angular is a powerful JavaScript framework developed and maintained by Google. It enables developers to build single-page applications (SPAs) with a modular and component-based approach. Angular provides a comprehensive set of tools and features for creating dynamic and responsive web applications.</p>
+<h2 id="importance-of-databases-in-angular-applications">Importance of Databases in Angular Applications</h2>
+<p>Databases play a vital role in Angular applications by providing a structured and efficient way to store, retrieve, and manage data. Whether it&apos;s handling user authentication, caching data, or persisting application state, a robust database solution is essential for ensuring optimal performance and user experience.</p>
+<h2 id="introducing-rxdb-as-a-database-solution">Introducing RxDB as a Database Solution</h2>
+<p>RxDB stands for Reactive Database and is built on the principles of reactive programming. It combines the best features of NoSQL databases with the power of reactive programming to provide a scalable and efficient database solution. RxDB offers seamless integration with Angular applications and brings several unique features that make it an attractive choice for developers.</p>
+<h2 id="getting-started-with-rxdb">Getting Started with RxDB</h2>
+<p>To begin our journey with RxDB, let&apos;s understand its key concepts and features.</p>
+<h3 id="what-is-rxdb">What is RxDB?</h3>
+<p><a href="https://rxdb.info/" target="_blank">RxDB</a> is a client-side database that follows the principles of reactive programming. It is built on top of IndexedDB, the native browser database, and leverages the RxJS library for reactive data handling. RxDB provides a simple and intuitive API for managing data and offers features like data replication, multi-tab support, and efficient query handling.</p>
+<center>
+    <a href="https://rxdb.info/" target="_blank">
+        <img src="../files/logo/logo_text.svg" alt="JavaScript Angular Database" width="220">
+    </a>
+</center>
 
-<span class="hljs-keyword">import</span> {
-    addRxPlugin,
-    createRxDatabase,
-    randomCouchString,
-} from <span class="hljs-string">&apos;rxdb/plugins/core&apos;</span>;
+<h3 id="reactive-data-handling">Reactive Data Handling</h3>
+<p>At the core of RxDB is the concept of reactive data handling. RxDB leverages observables and reactive streams to enable real-time updates and data synchronization. With RxDB, you can easily subscribe to data changes and react to them in a reactive and efficient manner.</p>
+<p align="center">
+  <img src="../files/animations/realtime.gif" alt="realtime ui updates" width="700">
+</p>
 
-<span class="hljs-comment">// create the database with the storage creator.</span>
-<span class="hljs-keyword">const</span> db = await createRxDatabase({
-    name: <span class="hljs-string">&apos;mydatabase&apos;</span>,
-    storage: getRxStoragePouch(<span class="hljs-string">&apos;memory&apos;</span>),
-});
+<h3 id="offline-first-approach">Offline-First Approach</h3>
+<p>One of the standout features of RxDB is its offline-first approach. It allows you to build applications that can work seamlessly in offline scenarios. RxDB stores data locally and automatically synchronizes changes with the server when the network becomes available. This capability is particularly useful for applications that need to function in low-connectivity or unreliable network environments.</p>
+<h3 id="data-replication">Data Replication</h3>
+<p>RxDB provides built-in support for data replication between clients and servers. This means you can synchronize data across multiple devices or instances of your application effortlessly. RxDB handles conflict resolution and ensures that data remains consistent across all connected clients.</p>
+<h3 id="observable-queries">Observable Queries</h3>
+<p>RxDB offers a powerful querying mechanism with support for observable queries. This allows you to create dynamic queries that automatically update when the underlying data changes. By leveraging RxDB&apos;s observable queries, you can build reactive UI components that respond to data changes in real-time.</p>
+<h3 id="multi-tab-support">Multi-Tab Support</h3>
+<p>RxDB provides out-of-the-box support for multi-tab scenarios. This means that if your Angular application is running in multiple browser tabs, RxDB automatically keeps the data in sync across all tabs. It ensures that changes made in one tab are immediately reflected in others, providing a seamless user experience.</p>
+<p align="center">
+  <img src="../files/multiwindow.gif" alt="multi tab support" width="450">
+</p>
+
+<h3 id="rxdb-vs-other-angular-database-options">RxDB vs. Other Angular Database Options</h3>
+<p>While there are other database options available for Angular applications, RxDB stands out with its reactive programming model, offline-first approach, and built-in synchronization capabilities. Unlike traditional SQL databases, RxDB&apos;s NoSQL-like structure and observables-based API make it well-suited for real-time applications and complex data scenarios.</p>
+<h2 id="using-rxdb-in-an-angular-application">Using RxDB in an Angular Application</h2>
+<p>Now that we have a good understanding of RxDB and its features, let&apos;s explore how to integrate it into an Angular application.</p>
+<h3 id="installing-rxdb-in-an-angular-app">Installing RxDB in an Angular App</h3>
+<p>To use RxDB in an Angular application, we first need to install the necessary dependencies. You can install RxDB using npm or yarn by running the following command:</p>
+<pre><code class="lang-bash">npm install rxdb --save
 </code></pre>
-<p>To access the internal <code>pouch</code> instance of a collection, you have to go over the <code>storageInstance</code>:</p>
-<pre><code class="lang-ts"><span class="hljs-keyword">const</span> pouch = myRxCollection.storageInstance.internals.pouch;
+<p>Once installed, you can import RxDB into your Angular application and start using its API to create and manage databases.</p>
+<h3 id="patch-change-detection-with-zonejs">Patch Change Detection with zone.js</h3>
+<p>Angular uses change detection to detect and update UI elements when data changes. However, RxDB&apos;s data handling is based on observables, which can sometimes bypass Angular&apos;s change detection mechanism. To ensure that changes made in RxDB are detected by Angular, we need to patch the change detection mechanism using zone.js. Zone.js is a library that intercepts and tracks asynchronous operations, including observables. By patching zone.js, we can make sure that Angular is aware of changes happening in RxDB.</p>
+<pre><code class="lang-ts"><span class="hljs-comment">//&gt; app.component.ts</span>
+<span class="hljs-comment">/**
+ * IMPORTANT: RxDB creates rxjs observables outside of angulars zone
+ * So you have to import the rxjs patch to ensure changedetection works correctly.
+ * @link https://www.bennadel.com/blog/3448-binding-rxjs-observable-sources-outside-of-the-ngzone-in-angular-6-0-2.htm
+ */</span>
+<span class="hljs-keyword">import</span> <span class="hljs-string">&apos;zone.js/dist/zone-patch-rxjs&apos;</span>;
 </code></pre>
-<h2 id="other-breaking-changes">Other breaking changes</h2>
-<h3 id="primary-key-is-required">Primary key is required</h3>
-<p>In the past, using a primary key was optional. When no primary key was defined, RxDB filled up the <code>_id</code> field with an uuid-like string which was then used as primary. When I researched on github how people use RxDB, I found out that many use a secondary index for what should be the primary key.
-Also having the primary key optional, caused much confusing when using RxDB with typescript.</p>
-<p>So now the primary key MUST be set when creating a schema for RxDB.
-Also the primary key is defined with the <code>primaryKey</code> property at the top level of the schema. This ensures that typescript will complain if no <code>primaryKey</code> is defined.</p>
-<pre><code class="lang-ts">
-<span class="hljs-comment">// when using the type `RxJsonSchema&lt;DocType&gt;` the `DocType` is now required</span>
-<span class="hljs-keyword">const</span> mySchema: RxJsonSchema&lt;MyDocumentData&gt; = {
-    version: <span class="hljs-number">0</span>,
-    primaryKey: <span class="hljs-string">&apos;passportId&apos;</span>,
-    <span class="hljs-keyword">type</span>: <span class="hljs-string">&apos;object&apos;</span>,
-    properties: {
-        passportId: {
-            <span class="hljs-keyword">type</span>: <span class="hljs-string">&apos;string&apos;</span>
-        }
-    },
-    <span class="hljs-comment">// primaryKey is always required</span>
-    required: [<span class="hljs-string">&apos;passportId&apos;</span>]
-}
-</code></pre>
-<h3 id="attachment-data-must-be-blob-or-buffer">Attachment data must be Blob or Buffer</h3>
-<p>In the past, an <code>RxAttachment</code> could be stored with <code>Blob</code>, <code>Buffer</code> and <code>string</code> data. If a <code>string</code> was passed, pouchdb internally transformed the data to a <code>Blob</code> or <code>Buffer</code>, depending on in which environment it is running.
-This behavior caused much trouble and weird edge cases because of how the data is transformed from and to <code>string</code>.
-So now you can only store <code>Blob</code> or <code>Buffer</code> as attachment data. <code>string</code> is no longer allowed. You can still transform a string to a Blob or Buffer by yourself and then store it.</p>
-<pre><code class="lang-ts"><span class="hljs-keyword">import</span> { blobBufferUtil } from <span class="hljs-string">&apos;rxdb&apos;</span>;
-
-<span class="hljs-keyword">const</span> attachment = await myDocument.putAttachment(
-    {
-        id: <span class="hljs-string">&apos;cat.txt&apos;</span>,
-        data: blobBufferUtil.createBlobBuffer(<span class="hljs-string">&apos;miau&apos;</span>, <span class="hljs-string">&apos;text/plain&apos;</span>)
-        <span class="hljs-keyword">type</span>: <span class="hljs-string">&apos;text/plain&apos;</span>
+<h3 id="use-the-angular-async-pipe-to-observe-an-rxdb-query">Use the Angular async pipe to observe an RxDB Query</h3>
+<p>Angular provides the async pipe, which is a convenient way to subscribe to observables and handle the subscription lifecycle automatically. When working with RxDB, you can use the async pipe to observe an RxDB query and bind the results directly to your Angular template. This ensures that the UI stays in sync with the data changes emitted by the RxDB query.</p>
+<pre><code class="lang-ts">    <span class="hljs-keyword">constructor</span>(
+        private dbService: DatabaseService,
+        private dialog: MatDialog
+    ) {
+        <span class="hljs-keyword">this</span>.heroes$ = <span class="hljs-keyword">this</span>.dbService
+            .db.hero                <span class="hljs-comment">// collection</span>
+            .find({                 <span class="hljs-comment">// query</span>
+                selector: {},
+                sort: [{ name: <span class="hljs-string">&apos;asc&apos;</span> }]
+            })
+            .$;
     }
-);
 </code></pre>
-<p>Also <code>putAttachment()</code> now defaults to <code>skipIfSame=true</code>. This means when you write attachment data that already is exactly the same in the database, no write will be done.</p>
-<h3 id="outgoing-data-is-now-readonly-and-deep-frozen">Outgoing data is now readonly and deep-frozen</h3>
-<p>RxDB often uses outgoing data also in the internals. For example the result of a query is not only send to the user, but also used inside of RxDB&apos;s query-change-detection. To ensure that mutation of the outgoing data is not changing internal stuff, which would cause strange bugs, outgoing data was always deep-cloned before handing it out to the user. This is a common practice on many javascript libraries.</p>
-<p>The problem is that deep-cloning big objects can be very CPU/Memory expensive. So instead of doing a deep-clone, RxDB does now assume that outgoing data is <strong>immutable</strong>. If the users wants to modify that data, it has be be deep-cloned by the user.
-To ensure immutability, RxDB runs a <a href="https://developer.mozilla.org/de/docs/Web/JavaScript/Reference/Global_Objects/Object/freeze" target="_blank">deep-freeze</a> in the dev-mode (about same expensive as deep clone). Also typescript will throw a build-time error because we use <code>ReadonlyArray</code> and <code>readonly</code> to define outgoing data immutable. In production-mode, there will be nothing besides typescript that ensures immutability to have best performance.</p>
-<pre><code class="lang-ts"><span class="hljs-keyword">const</span> data = myRxDocument.toJSON();
-data.foo = bar; <span class="hljs-comment">// This does NOT work!</span>
+<pre><code class="lang-html"><span class="hljs-tag">&lt;<span class="hljs-name">ul</span> *<span class="hljs-attr">ngFor</span>=<span class="hljs-string">&quot;let hero of heroes$ | async as heroes;&quot;</span>&gt;</span>
+  <span class="hljs-tag">&lt;<span class="hljs-name">li</span>&gt;</span>{{hero.name}}<span class="hljs-tag">&lt;/<span class="hljs-name">li</span>&gt;</span>
+<span class="hljs-tag">&lt;/<span class="hljs-name">ul</span>&gt;</span>
+</code></pre>
+<h3 id="different-rxstorage-layers-for-rxdb">Different RxStorage layers for RxDB</h3>
+<p>RxDB supports multiple storage layers for persisting data. Some of the available storage options include:</p>
+<ul>
+<li><a href="../rx-storage-dexie.html">Dexie.js RxStorage</a>: Dexie.js is a minimalistic IndexedDB wrapper that provides a simple API for working with IndexedDB. RxDB leverages Dexie.js as its default storage layer.</li>
+<li><a href="../rx-storage-lokijs.html">LokiJS RxStorage</a>: LokiJS is an in-memory document-oriented database that can also persist data to IndexedDB. RxDB integrates with LokiJS to provide an alternative storage option.</li>
+<li><a href="../rx-storage-indexeddb.html">IndexedDB RxStorage</a>: RxDB directly supports IndexedDB as a storage layer. IndexedDB is a low-level browser database that offers good performance and reliability.</li>
+<li><a href="../rx-storage-opfs.html">OPFS RxStorage</a>: The OPFS <a href="../rx-storage.html">RxStorage</a> for RxDB is built on top of the <a href="https://webkit.org/blog/12257/the-file-system-access-api-with-origin-private-file-system/" target="_blank">File System Access API</a> which is available in <a href="https://caniuse.com/native-filesystem-api" target="_blank">all modern browsers</a>. It provides an API to access a sandboxed private file system to persistently store and retrieve data.
+Compared to other persistend storage options in the browser (like <a href="../rx-storage-indexeddb.html">IndexedDB</a>), the OPFS API has a <strong>way better performance</strong>.</li>
+<li><a href="../rx-storage-memory.html">Memory RxStorage</a>: In addition to persistent storage options, RxDB also provides a memory-based storage layer. This is useful for testing or scenarios where you don&apos;t need long-term data persistence.
+You can choose the storage layer that best suits your application&apos;s requirements and configure RxDB accordingly.</li>
+</ul>
+<h2 id="synchronizing-data-with-rxdb-between-clients-and-servers">Synchronizing Data with RxDB between Clients and Servers</h2>
+<p>Data replication between an Angular application and a server is a common requirement. RxDB simplifies this process and provides built-in support for data synchronization. Let&apos;s explore how to replicate data between an Angular application and a server using RxDB.</p>
+<p align="center">
+  <img src="../files/database-replication.png" alt="database replication" width="200">
+</p>
 
-<span class="hljs-comment">// instead clone the data before changing it</span>
-<span class="hljs-keyword">import</span> { clone } from <span class="hljs-string">&apos;rxjs&apos;</span>;
-<span class="hljs-keyword">const</span> clonedData = clone(data);
-data.foo = bar; <span class="hljs-comment">// This works!</span>
+<h3 id="offline-first-approach">Offline-First Approach</h3>
+<p>One of the key strengths of RxDB is its <a href="../offline-first.html">offline-first approach</a>. It allows Angular applications to function seamlessly even in offline scenarios. RxDB stores data locally and automatically synchronizes changes with the server when the network becomes available. This capability is particularly useful for applications that need to operate in low-connectivity or unreliable network environments.</p>
+<h3 id="conflict-resolution">Conflict Resolution</h3>
+<p>In a distributed system, conflicts can arise when multiple clients modify the same data simultaneously. RxDB offers conflict resolution mechanisms to handle such scenarios. You can define conflict resolution strategies based on your application&apos;s requirements. RxDB provides hooks and events to detect conflicts and resolve them in a consistent manner.</p>
+<h3 id="bidirectional-synchronization">Bidirectional Synchronization</h3>
+<p>RxDB supports bidirectional data synchronization, allowing updates from both the client and server to be replicated seamlessly. This ensures that data remains consistent across all connected clients and the server. RxDB handles conflicts and resolves them based on the defined conflict resolution strategies.</p>
+<h3 id="real-time-updates">Real-Time Updates</h3>
+<p>RxDB provides real-time updates by leveraging reactive programming principles. Changes made to the data are automatically propagated to all connected clients in real-time. Angular applications can subscribe to these updates and update the user interface accordingly. This real-time capability enables collaborative features and enhances the overall user experience.</p>
+<h2 id="advanced-rxdb-features-and-techniques">Advanced RxDB Features and Techniques</h2>
+<p>RxDB offers several advanced features and techniques that can further enhance your Angular application.</p>
+<h3 id="indexing-and-performance-optimization">Indexing and Performance Optimization</h3>
+<p>To improve query performance, RxDB allows you to define indexes on specific fields of your documents. Indexing enables faster data retrieval and query execution, especially when working with large datasets. By strategically creating indexes, you can optimize the performance of your Angular application.</p>
+<h3 id="encryption-of-local-data">Encryption of Local Data</h3>
+<p>RxDB provides built-in support for <a href="../encryption.html">encrypting</a> local data using the Web Crypto API. With encryption, you can protect sensitive data stored in the client-side database. RxDB transparently encrypts the data, ensuring that it remains secure even if the underlying storage is compromised.</p>
+<h3 id="change-streams-and-event-handling">Change Streams and Event Handling</h3>
+<p>RxDB exposes change streams, which allow you to listen for data changes at a database or collection level. By subscribing to change streams, you can react to data modifications and perform specific actions, such as updating the UI or triggering notifications. Change streams enable real-time event handling in your Angular application.</p>
+<h3 id="json-key-compression">JSON Key Compression</h3>
+<p>To reduce the storage footprint and improve performance, RxDB supports <a href="../key-compression.html">JSON key compression</a>. With key compression, RxDB replaces long keys with shorter aliases, reducing the overall storage size. This optimization is particularly useful when working with large datasets or frequently updating data.</p>
+<h2 id="best-practices-for-using-rxdb-in-angular-applications">Best Practices for Using RxDB in Angular Applications</h2>
+<p>To make the most of RxDB in your Angular application, consider the following best practices:</p>
+<h3 id="use-async-pipe-for-subscriptions-so-you-do-not-have-to-unsubscribe">Use Async Pipe for Subscriptions so you do not have to unsubscribe</h3>
+<p>Angular&apos;s <code>async</code> pipe is a powerful tool for handling observables in templates. By using the async pipe, you can avoid the need to manually subscribe and unsubscribe from RxDB observables. Angular takes care of the subscription lifecycle, ensuring that resources are released when they are no longer needed. Instead of manually subscribing to Observables, you should always prefer the <code>async</code> pipe.</p>
+<pre><code class="lang-ts"><span class="hljs-comment">// WRONG:</span>
+<span class="hljs-keyword">let</span> amount;
+<span class="hljs-keyword">this</span>.dbService
+            .db.hero
+            .find({
+                selector: {},
+                sort: [{ name: <span class="hljs-string">&apos;asc&apos;</span> }]
+            })
+            .$.subscribe(docs =&gt; {
+                amount = <span class="hljs-number">0</span>;
+                docs.forEach(d =&gt; amount = d.points);
+            });
+
+<span class="hljs-comment">// RIGHT:</span>
+<span class="hljs-keyword">this</span>.amount$ = <span class="hljs-keyword">this</span>.dbService
+            .db.hero
+            .find({
+                selector: {},
+                sort: [{ name: <span class="hljs-string">&apos;asc&apos;</span> }]
+            })
+            .$.subscribe(docs =&gt; {
+                <span class="hljs-keyword">let</span> amount = <span class="hljs-number">0</span>;
+                docs.forEach(d =&gt; amount = d.points);
+                <span class="hljs-keyword">return</span> amount;
+            });
 </code></pre>
-<h3 id="the-in-memory-plugin-does-no-longer-work">The in-memory plugin does no longer work.</h3>
-<p>The in-memory plugin was used to spawn in-memory collections on top of a normal <code>RxCollection</code>. The benefit is to have the data replicated into the memory of the javascript runtime, which allows for faster queries.</p>
-<p>After doing many tests and observations, I found out that the in-memory plugin was slow. Really slow, even slower then just using the indexeddb adapter in the browser. You can reproduce my observations at the event-reduce testpage. Here you can see that random-writes+query are slower on the <a href="https://pubkey.github.io/event-reduce/?tech=pouchdb:memory" target="_blank">memory-adapter</a> then on <a href="https://pubkey.github.io/event-reduce/?tech=pouchdb:indexeddb" target="_blank">indexeddb</a>.
-The reason for this are the big abstraction layers. Pouchdb uses the adapter system. The memory adapter uses the <a href="https://github.com/Level/levelup" target="_blank">leveldown abstraction layer</a>. Each write/read goes to the <a href="https://github.com/Level/memdown" target="_blank">memdown module</a>.</p>
-<p>So the in-memory plugin is not working for now. In the future it will be reimplemented in a custom memory based <code>RxStorage</code> class.</p>
-<p>Notice: You can of course still use the pouchdb <code>memory</code> adapter as usual. It is not affected by this change.</p>
-<h2 id="what-else-is-a-breaking-change">What else is a breaking change?</h2>
+<h3 id="use-angular-services-for-database-creation">Use Angular Services for Database creation</h3>
+<p>To ensure proper separation of concerns and maintain a clean codebase, it is recommended to create an Angular service responsible for managing the RxDB database instance. This service can handle database creation, initialization, and provide methods for interacting with the database throughout your application.</p>
+<h3 id="efficient-data-handling">Efficient Data Handling</h3>
+<p>RxDB provides various mechanisms for efficient data handling, such as batching updates, debouncing, and throttling. Leveraging these techniques can help optimize performance and reduce unnecessary UI updates. Consider the specific data handling requirements of your application and choose the appropriate strategies provided by RxDB.</p>
+<h3 id="data-synchronization-strategies">Data Synchronization Strategies</h3>
+<p>When working with data synchronization between clients and servers, it&apos;s important to consider strategies for conflict resolution and handling network failures. RxDB provides plugins and hooks that allow you to customize the replication behavior and implement specific synchronization strategies tailored to your application&apos;s needs.</p>
+<h2 id="conclusion">Conclusion</h2>
+<p>RxDB is a powerful database solution for Angular applications, offering reactive data handling, offline-first capabilities, and seamless data synchronization. By integrating RxDB into your Angular application, you can build responsive and scalable web applications that provide a rich user experience. Whether you&apos;re building real-time collaborative apps, progressive web applications, or offline-capable applications, RxDB&apos;s features and techniques make it a valuable addition to your Angular development toolkit.</p>
+<h2 id="follow-up">Follow Up</h2>
+<p>To explore more about RxDB and leverage its capabilities for browser database development, check out the following resources:</p>
 <ul>
-<li>Removed the deprecated <code>atomicSet()</code>, use <code>atomicPatch()</code> instead.</li>
-<li>Removed the deprecated <code>RxDatabase.collection()</code> use <code>RxDatabase().addCollections()</code> instead.</li>
-<li>Removed plugin hook <code>preCreatePouchDb</code> because it is no longer needed.</li>
-<li>Removed the <code>watch-for-changes</code> plugin. We now overwrite pouchdbs <code>bulkDocs</code> method to generate events. This is faster and more reliable.</li>
-<li>Removed the <code>adapter-check</code> plugin. (The function <code>adapterCheck</code> is move to the pouchdb plugin).</li>
-<li>Calling <code>RxDatabase.server()</code> now returns a promise that resolves when the server is started up.</li>
-<li>Changed the defaults of <code>PouchDBExpressServerOptions</code> from the <code>server()</code> method, by default we now store logs in the <code>tmp</code> folder and the config is in memory.</li>
-<li>Renamed <code>replication</code>-plugin to <code>replication-couchdb</code> to be more consistent in naming like with <code>replication-graphql</code><ul>
-<li>For the same reason, renamed <code>RxCollection().sync()</code> to <code>RxCollection().syncCouchDB()</code></li>
+<li><a href="https://github.com/pubkey/rxdb" target="_blank">RxDB GitHub Repository</a>: Visit the official GitHub repository of RxDB to access the source code, documentation, and community support.</li>
+<li><a href="../quickstart.html">RxDB Quickstart</a>: Get started quickly with RxDB by following the provided quickstart guide, which provides step-by-step instructions for setting up and using RxDB in your projects.</li>
 </ul>
-</li>
-<li>Renamed the functions of the json import/export plugin to be less confusing.<ul>
-<li><code>dump()</code> is now <code>exportJSON()</code></li>
-<li><code>importDump()</code> is now <code>importJSON()</code></li>
-</ul>
-</li>
-<li><code>RxCollection</code> uses a separate pouchdb instance for local documents, so that they can persist during migrations.</li>
-<li>A JsonSchema must have the <code>required</code> array at the top level and it must contain the primary key.</li>
-</ul>
-<h2 id="new-features">New features</h2>
-<h3 id="composite-primary-key">Composite primary key</h3>
-<p>You can now use a composite primary key for the schema where you can join different properties of the document data to create a primary key.</p>
-<pre><code class="lang-javascript"><span class="hljs-keyword">const</span> mySchema = {
-  keyCompression: <span class="hljs-literal">true</span>, <span class="hljs-comment">// set this to true, to enable the keyCompression</span>
-  version: <span class="hljs-number">0</span>,
-  title: <span class="hljs-string">&apos;human schema with composite primary&apos;</span>,
-  primaryKey: {
-      <span class="hljs-comment">// where should the composed string be stored</span>
-      key: <span class="hljs-string">&apos;id&apos;</span>,
-      <span class="hljs-comment">// fields that will be used to create the composed key</span>
-      fields: [
-          <span class="hljs-string">&apos;firstName&apos;</span>,
-          <span class="hljs-string">&apos;lastName&apos;</span>
-      ],
-      <span class="hljs-comment">// separator which is used to concat the fields values.</span>
-      separator: <span class="hljs-string">&apos;|&apos;</span>
-  }
-  type: <span class="hljs-string">&apos;object&apos;</span>,
-  properties: {
-      id: {
-          type: <span class="hljs-string">&apos;string&apos;</span>
-      },
-      firstName: {
-          type: <span class="hljs-string">&apos;string&apos;</span>
-      },
-      lastName: {
-          type: <span class="hljs-string">&apos;string&apos;</span>
-      }
-  },
-  required: [
-    <span class="hljs-string">&apos;id&apos;</span>, 
-    <span class="hljs-string">&apos;firstName&apos;</span>,
-    <span class="hljs-string">&apos;lastName&apos;</span>
-  ]
-};
-</code></pre>
-<h2 id="for-the-future">For the future</h2>
-<p>With these changes, RxDB is now ready for the future plans:</p>
-<ul>
-<li>I want to replace the <code>revision</code> handling of documents with conflict resolution strategies that can always directly resolve conflicts instead of maintaining the revision tree.</li>
-<li>Implement different implementations for <code>RxStorage</code>. I will first work on a memory based version. I am in good hope that the community will create other implementations depending on their needs.</li>
-</ul>
-<h2 id="you-can-help">You can help!</h2>
-<p>There are many things that can be done by <strong>you</strong> to improve RxDB:</p>
-<ul>
-<li>Check the <a href="https://github.com/pubkey/rxdb/blob/master/orga/BACKLOG.md" target="_blank">BACKLOG</a> for features that would be great to have.</li>
-<li>Check the <a href="https://github.com/pubkey/rxdb/blob/master/orga/before-next-major.md" target="_blank">breaking backlog</a> for breaking changes that must be implemented in the future but where I did not had the time yet.</li>
-<li>Check the <a href="https://github.com/pubkey/rxdb/search?q=TODO" target="_blank">TODOs</a> in the code. There are many small improvements that can be done for performance and build size.</li>
-<li>Review the code and add tests. I am only a single dude with a laptop. My code is not perfect and much small improvements can be done when people review the code and help me to clarify undefined behaviors.</li>
-<li>Improve the documentation. In the last user survey many users told me that the documentation is not good enough. But I reviewed the docs and could not find clear flaws. The problem is that I am way to deep into RxDB so that I am not able to understand which documentation a newcomer to the project needs. Likely I assume too much knowledge or focus writing about the wrong parts.</li>
-<li>Update the <a href="https://github.com/pubkey/rxdb/tree/master/examples" target="_blank">example projects</a> many of them are outdated and need updates.</li>
-</ul>
-<h2 id="discuss">Discuss!</h2>
-<p>Please <a href="https://github.com/pubkey/rxdb/issues/3279" target="_blank">discuss here</a>.</p>
 
                                 
                                 </section>
@@ -2556,12 +2550,12 @@ The reason for this are the big abstraction layers. Pouchdb uses the adapter sys
 
             
                 
-                <a href="11.0.0.html" class="navigation navigation-prev " aria-label="Previous page: 11.0.0">
+                <a href="../electron-database.html" class="navigation navigation-prev " aria-label="Previous page: Electron Database">
                     <i class="fa fa-angle-left"></i>
                 </a>
                 
                 
-                <a href="9.0.0.html" class="navigation navigation-next " aria-label="Next page: 9.0.0">
+                <a href="browser-database.html" class="navigation navigation-next " aria-label="Next page: Browser Database">
                     <i class="fa fa-angle-right"></i>
                 </a>
                 
@@ -2572,7 +2566,7 @@ The reason for this are the big abstraction layers. Pouchdb uses the adapter sys
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"10.0.0","level":"1.36.6","depth":2,"next":{"title":"9.0.0","level":"1.36.7","depth":2,"path":"releases/9.0.0.md","ref":"./releases/9.0.0.md","articles":[]},"previous":{"title":"11.0.0","level":"1.36.5","depth":2,"path":"releases/11.0.0.md","ref":"./releases/11.0.0.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./analytics.js","./next-button.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/logo.svg","custom-favicon":{},"edit-link":{"label":"","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - JavaScript Database","links":{"sidebar":{"RxDB":"/","Follow @twitter ":"https://twitter.com/intent/user?screen_name=rxdbjs","Chat @discord ":"https://rxdb.info/chat.html","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"releases/10.0.0.md","mtime":"","type":"markdown"},"gitbook":{"version":"3.2.3","time":""},"basePath":"..","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Angular Database","level":"1.33.9","depth":2,"next":{"title":"Browser Database","level":"1.33.10","depth":2,"path":"articles/browser-database.md","ref":"./articles/browser-database.md","articles":[]},"previous":{"title":"Electron Database","level":"1.33.8","depth":2,"path":"electron-database.md","ref":"./electron-database.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./analytics.js","./next-button.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/logo.svg","custom-favicon":{},"edit-link":{"label":"","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - JavaScript Database","links":{"sidebar":{"RxDB":"/","Follow @twitter ":"https://twitter.com/intent/user?screen_name=rxdbjs","Chat @discord ":"https://rxdb.info/chat.html","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"articles/angular-database.md","mtime":"","type":"markdown"},"gitbook":{"version":"3.2.3","time":""},"basePath":"..","book":{"language":""}});
         });
     </script>
 </div>
