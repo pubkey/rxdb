@@ -171,6 +171,10 @@
     * [React Native Database](./react-native-database.md)
     * [Capacitor Database](./capacitor-database.md)
     * [Electron Database](./electron-database.md)
+    * [Angular Database](./articles/angular-database.md)
+    * [Browser Database](./articles/browser-database.md)
+    * [Embedded Database](./articles/embedded-database.md)
+    * [Frontend Database](./articles/frontend-database.md)
 
 * [Questions & Answers](./questions-answers.md)
 
