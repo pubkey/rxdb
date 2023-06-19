@@ -2269,19 +2269,25 @@
             
         </li>
     
+        <li class="chapter " data-level="2.1.14" data-path="in-memory-nosql-database.html">
+            
+                <a href="in-memory-nosql-database.html">
+            
+                    
+                    In-memory NoSQL database
+            
+                </a>
+            
+
+            
+        </li>
+    
 
             </ul>
             
         </li>
     
-
-    
-        
-        <li class="divider"></li>
-        
-        
-    
-        <li class="chapter " data-level="3.1" >
+        <li class="chapter " data-level="2.2" >
             
                 <span>
             
@@ -2295,7 +2301,7 @@
             <ul class="articles">
                 
     
-        <li class="chapter " data-level="3.1.1" data-path="../rx-storage-pouchdb.html">
+        <li class="chapter " data-level="2.2.1" data-path="../rx-storage-pouchdb.html">
             
                 <a href="../rx-storage-pouchdb.html">
             
@@ -2308,7 +2314,7 @@
             
         </li>
     
-        <li class="chapter " data-level="3.1.2" data-path="../adapters.html">
+        <li class="chapter " data-level="2.2.2" data-path="../adapters.html">
             
                 <a href="../adapters.html">
             
@@ -2333,7 +2339,7 @@
         
         
     
-        <li class="chapter " data-level="4.1" >
+        <li class="chapter " data-level="3.1" >
             
                 <a target="_blank" href="https://rxdb.info/imprint.html">
             
@@ -2530,11 +2536,13 @@ You can choose the storage layer that best suits your application&apos;s require
                 selector: {},
                 sort: [{ name: <span class="hljs-string">&apos;asc&apos;</span> }]
             })
-            .$.subscribe(docs =&gt; {
-                <span class="hljs-keyword">let</span> amount = <span class="hljs-number">0</span>;
-                docs.forEach(d =&gt; amount = d.points);
-                <span class="hljs-keyword">return</span> amount;
-            });
+            .$.pipe(
+                map(docs =&gt; {
+                    <span class="hljs-keyword">let</span> amount = <span class="hljs-number">0</span>;
+                    docs.forEach(d =&gt; amount = d.points);
+                    <span class="hljs-keyword">return</span> amount;
+                })
+            );
 </code></pre>
 <h3 id="use-angular-services-for-database-creation">Use Angular Services for Database creation</h3>
 <p>To ensure proper separation of concerns and maintain a clean codebase, it is recommended to create an Angular service responsible for managing the RxDB database instance. This service can handle database creation, initialization, and provide methods for interacting with the database throughout your application.</p>
