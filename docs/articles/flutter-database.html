@@ -2399,7 +2399,7 @@
                                 
                                 <h1 id="rxdb-as-a-database-in-a-flutter-application">RxDB as a Database in a Flutter Application</h1>
 <p>In the world of mobile application development, Flutter has gained significant popularity due to its cross-platform capabilities and rich UI framework. When it comes to building feature-rich Flutter applications, the choice of a robust and efficient database is crucial. In this article, we will explore <a href="https://rxdb.info/" target="_blank">RxDB</a> as a database solution for Flutter applications. We&apos;ll delve into the core features of RxDB, its benefits over other database options, and how to integrate it into a Flutter app.</p>
-<h2 id="notice-you-can-find-the-source-code-for-an-exmaple-rxdb-flutter-application-at-the-github-repo">NOTICE: You can find the source code for an exmaple RxDB Flutter Application <a href="https://github.com/pubkey/rxdb/tree/master/examples/flutter" target="_blank">at the github repo</a></h2>
+<h2 id="notice-you-can-find-the-source-code-for-an-example-rxdb-flutter-application-at-the-github-repo">NOTICE: You can find the source code for an example RxDB Flutter Application <a href="https://github.com/pubkey/rxdb/tree/master/examples/flutter" target="_blank">at the github repo</a></h2>
 <center>
     <a href="https://rxdb.info/" target="_blank">
         <img src="../files/logo/logo_text.svg" alt="RxDB Flutter Database" width="220">
@@ -2420,7 +2420,7 @@
 <h2 id="getting-started-with-rxdb">Getting Started with RxDB</h2>
 <p>To understand how RxDB can be utilized in a Flutter application, let&apos;s explore its core features and advantages.</p>
 <h3 id="what-is-rxdb">What is RxDB?</h3>
-<p><a href="https://rxdb.info/" target="_blank">RxDB</a> is a client-side database built on top of IndexedDB, which is a low-level browser-based database API. It provides a simple and intuitive API for performing CRUD operations (Create, Read, Update, Delete) on documents. RxDB&apos;s underlying architecture allows for efficient handling of data synchronization between multiple clients and servers.</p>
+<p><a href="https://rxdb.info/" target="_blank">RxDB</a> is a client-side database built on top of IndexedDB, which is a low-level <a href="browser-database.html">browser-based database</a> API. It provides a simple and intuitive API for performing CRUD operations (Create, Read, Update, Delete) on documents. RxDB&apos;s underlying architecture allows for efficient handling of data synchronization between multiple clients and servers.</p>
 <center>
     <a href="https://rxdb.info/" target="_blank">
         <img src="../files/logo/logo_text.svg" alt="RxDB Flutter Database" width="220">
@@ -2540,8 +2540,8 @@ myQuery.$().listen((newResults) {
 <p>RxDB offers multiple storage options, known as RxStorage layers, to store data locally. These options include:</p>
 <ul>
 <li><a href="../rx-storage-lokijs.html">LokiJS RxStorage</a>: LokiJS is an in-memory database that can be used as a storage layer for RxDB. It provides fast and efficient in-memory data management capabilities.</li>
-<li><a href="../rx-storage-sqlite.html">SQLite RxStorage</a>: SQLite is a popular and widely used embedded database that offers robust storage capabilities. RxDB utilizes SQLite as a storage layer to persist data on the device.</li>
-<li><a href="../rx-storage-memory.html">Memory RxStorage</a>: As the name suggests, Memory RxStorage stores data in memory. While this option does not provide persistence, it can be useful for temporary or cache-based data storage.
+<li><a href="../rx-storage-sqlite.html">SQLite RxStorage</a>: SQLite is a popular and widely used <a href="embedded-database.html">embedded database</a> that offers robust storage capabilities. RxDB utilizes SQLite as a storage layer to persist data on the device.</li>
+<li><a href="../rx-storage-memory.html">Memory RxStorage</a>: As the name suggests, Memory RxStorage stores data <a href="in-memory-nosql-database.html">in memory</a>. While this option does not provide persistence, it can be useful for temporary or cache-based data storage.
 By choosing the appropriate RxStorage layer based on the specific requirements of the application, developers can optimize performance and storage efficiency.</li>
 </ul>
 <h2 id="synchronizing-data-with-rxdb-between-clients-and-servers">Synchronizing Data with RxDB between Clients and Servers</h2>
@@ -2562,7 +2562,7 @@ By choosing the appropriate RxStorage layer based on the specific requirements o
 <p>To minimize storage requirements and optimize performance, RxDB offers <a href="../key-compression.html">JSON key compression</a>. This feature reduces the size of keys used in the database, resulting in more efficient storage and improved query performance.</p>
 <h2 id="conclusion">Conclusion</h2>
 <p>RxDB offers a powerful and flexible database solution for Flutter applications. With its offline-first approach, real-time data synchronization, and reactive data handling capabilities, RxDB simplifies the development of feature-rich and scalable Flutter applications. By integrating RxDB into your Flutter projects, you can leverage its advanced features and techniques to build responsive and data-driven applications that provide an exceptional user experience.</p>
-<h2 id="notice-you-can-find-the-source-code-for-an-exmaple-rxdb-flutter-application-at-the-github-repo">NOTICE: You can find the source code for an exmaple RxDB Flutter Application <a href="https://github.com/pubkey/rxdb/tree/master/examples/flutter" target="_blank">at the github repo</a></h2>
+<h2 id="notice-you-can-find-the-source-code-for-an-example-rxdb-flutter-application-at-the-github-repo">NOTICE: You can find the source code for an example RxDB Flutter Application <a href="https://github.com/pubkey/rxdb/tree/master/examples/flutter" target="_blank">at the github repo</a></h2>
 
                                 
                                 </section>
