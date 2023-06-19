@@ -14,7 +14,7 @@ const CI = is(env.CI);
 const COLOR = is(env.npm_config_color);
 const DISABLE_OPENCOLLECTIVE = is(env.DISABLE_OPENCOLLECTIVE);
 const SILENT = !!~['silent', 'error', 'warn'].indexOf(env.npm_config_loglevel);
-const SHOW = true;
+const SHOW = false;
 
 function is(it) {
     return !!it && it !== '0' && it !== 'false';
