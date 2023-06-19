@@ -10,7 +10,7 @@ In modern web development, managing data on the frontend has become increasingly
 ## Why you might want to store data in the frontend
 
 ### Offline accessibility
-One compelling reason to store data in the frontend is to enable [offline accessibility](../offline-first.md). By leveraging a frontend database, applications can cache essential data locally, allowing users to continue using the application even when an internet connection is unavailable. This feature is particularly useful for mobile applications or web apps with limited or intermittent connectivity.
+One compelling reason to store data in the frontend is to enable [offline accessibility](../offline-first.md). By leveraging a frontend database, applications can cache essential data locally, allowing users to continue using the application even when an internet connection is unavailable. This feature is particularly useful for [mobile](./mobile-database.md) applications or web apps with limited or intermittent connectivity.
 
 ### Caching
 Frontend databases also serve as efficient caching mechanisms. By storing frequently accessed data locally, applications can minimize network requests and reduce latency, resulting in faster and more responsive user experiences. Caching is particularly beneficial for applications that heavily rely on remote data or perform computationally intensive operations.
@@ -71,7 +71,7 @@ RxDB is a powerful frontend JavaScript database that addresses the limitations o
 RxDB is designed and optimized for JavaScript applications. Built using JavaScript itself, RxDB offers seamless integration with JavaScript frameworks and libraries, allowing developers to leverage their existing JavaScript knowledge and skills.
 
 ### NoSQL (JSON) documents for UIs
-RxDB adopts a NoSQL approach, using JSON documents as its primary data structure. This aligns well with the JavaScript ecosystem, as JavaScript natively works with JSON objects. By using NoSQL documents, RxDB provides a more natural and intuitive data model for UI-centric applications.
+RxDB adopts a [NoSQL approach](./in-memory-nosql-database.md), using JSON documents as its primary data structure. This aligns well with the JavaScript ecosystem, as JavaScript natively works with JSON objects. By using NoSQL documents, RxDB provides a more natural and intuitive data model for UI-centric applications.
 
 <p align="center">
   <img src="../files/no-sql.png" alt="NoSQL Documents" width="120" />

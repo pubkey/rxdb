@@ -8,7 +8,7 @@ In modern UI applications, efficient data storage is a crucial aspect for seamle
 </center>
 
 ## What is an Embedded Database?
-An embedded database refers to a client-side database system that is integrated directly within an application. It is designed to operate within the client environment, such as a web browser or a mobile app. This approach eliminates the need for a separate database server and allows the database to run locally on the client device.
+An embedded database refers to a client-side database system that is integrated directly within an application. It is designed to operate within the client environment, such as a web browser or a [mobile](./mobile-database.md) app. This approach eliminates the need for a separate database server and allows the database to run locally on the client device.
 
 ## Embedded Database in UI Applications
 In the context of UI applications, an embedded database serves as a local data storage solution. It enables applications to efficiently manage data, facilitate real-time updates, and enhance performance. Let's explore some of the benefits of using an embedded database compared to a traditional server database:

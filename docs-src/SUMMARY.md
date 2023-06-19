@@ -192,6 +192,7 @@
     * [Frontend Database](./articles/frontend-database.md)
     * [Flutter Database](./articles/flutter-database.md)
     * [In-memory NoSQL database](./articles/in-memory-nosql-database.md)
+    * [Mobile database](./articles/mobile-database.md)
 
 * Deprecated
     * [RxStorage PouchDB](./rx-storage-pouchdb.md)
