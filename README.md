@@ -1,7 +1,8 @@
+<!--
 | Announcement                                                        |
 | :--: |
 | Please take part in the [RxDB user survey 2023](https://rxdb.info/survey.html). This will help me to better plan the steps for the next major release. (takes about 2 minutes)
-
+-->
 
 <br />
 
