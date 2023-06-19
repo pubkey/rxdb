@@ -191,7 +191,7 @@
     * [Embedded Database](./articles/embedded-database.md)
     * [Frontend Database](./articles/frontend-database.md)
     * [Flutter Database](./articles/flutter-database.md)
-
+    * [In-memory NoSQL database](./articles/in-memory-nosql-database.md)
 
 * Deprecated
     * [RxStorage PouchDB](./rx-storage-pouchdb.md)

@@ -177,11 +177,13 @@ this.amount$ = this.dbService
                 selector: {},
                 sort: [{ name: 'asc' }]
             })
-            .$.subscribe(docs => {
-                let amount = 0;
-                docs.forEach(d => amount = d.points);
-                return amount;
-            });
+            .$.pipe(
+                map(docs => {
+                    let amount = 0;
+                    docs.forEach(d => amount = d.points);
+                    return amount;
+                })
+            );
 ```
 
 ### Use Angular Services for Database creation
