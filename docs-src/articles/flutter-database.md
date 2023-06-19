@@ -3,7 +3,7 @@
 In the world of mobile application development, Flutter has gained significant popularity due to its cross-platform capabilities and rich UI framework. When it comes to building feature-rich Flutter applications, the choice of a robust and efficient database is crucial. In this article, we will explore [RxDB](https://rxdb.info/) as a database solution for Flutter applications. We'll delve into the core features of RxDB, its benefits over other database options, and how to integrate it into a Flutter app.
 
 
-## NOTICE: You can find the source code for an exmaple RxDB Flutter Application [at the github repo](https://github.com/pubkey/rxdb/tree/master/examples/flutter)
+## NOTICE: You can find the source code for an example RxDB Flutter Application [at the github repo](https://github.com/pubkey/rxdb/tree/master/examples/flutter)
 
 
 <center>
@@ -31,7 +31,7 @@ RxDB is a powerful NoSQL database solution that is designed to work seamlessly w
 To understand how RxDB can be utilized in a Flutter application, let's explore its core features and advantages.
 
 ### What is RxDB?
-[RxDB](https://rxdb.info/) is a client-side database built on top of IndexedDB, which is a low-level browser-based database API. It provides a simple and intuitive API for performing CRUD operations (Create, Read, Update, Delete) on documents. RxDB's underlying architecture allows for efficient handling of data synchronization between multiple clients and servers.
+[RxDB](https://rxdb.info/) is a client-side database built on top of IndexedDB, which is a low-level [browser-based database](./browser-database.md) API. It provides a simple and intuitive API for performing CRUD operations (Create, Read, Update, Delete) on documents. RxDB's underlying architecture allows for efficient handling of data synchronization between multiple clients and servers.
 
 <center>
     <a href="https://rxdb.info/">
@@ -175,8 +175,8 @@ myQuery.$().listen((newResults) {
 RxDB offers multiple storage options, known as RxStorage layers, to store data locally. These options include:
 
 - [LokiJS RxStorage](../rx-storage-lokijs.md): LokiJS is an in-memory database that can be used as a storage layer for RxDB. It provides fast and efficient in-memory data management capabilities.
-- [SQLite RxStorage](../rx-storage-sqlite.md): SQLite is a popular and widely used embedded database that offers robust storage capabilities. RxDB utilizes SQLite as a storage layer to persist data on the device.
-- [Memory RxStorage](../rx-storage-memory.md): As the name suggests, Memory RxStorage stores data in memory. While this option does not provide persistence, it can be useful for temporary or cache-based data storage.
+- [SQLite RxStorage](../rx-storage-sqlite.md): SQLite is a popular and widely used [embedded database](./embedded-database.md) that offers robust storage capabilities. RxDB utilizes SQLite as a storage layer to persist data on the device.
+- [Memory RxStorage](../rx-storage-memory.md): As the name suggests, Memory RxStorage stores data [in memory](./in-memory-nosql-database.md). While this option does not provide persistence, it can be useful for temporary or cache-based data storage.
 By choosing the appropriate RxStorage layer based on the specific requirements of the application, developers can optimize performance and storage efficiency.
 
 ## Synchronizing Data with RxDB between Clients and Servers
@@ -206,4 +206,4 @@ To minimize storage requirements and optimize performance, RxDB offers [JSON key
 ## Conclusion
 RxDB offers a powerful and flexible database solution for Flutter applications. With its offline-first approach, real-time data synchronization, and reactive data handling capabilities, RxDB simplifies the development of feature-rich and scalable Flutter applications. By integrating RxDB into your Flutter projects, you can leverage its advanced features and techniques to build responsive and data-driven applications that provide an exceptional user experience.
 
-## NOTICE: You can find the source code for an exmaple RxDB Flutter Application [at the github repo](https://github.com/pubkey/rxdb/tree/master/examples/flutter)
+## NOTICE: You can find the source code for an example RxDB Flutter Application [at the github repo](https://github.com/pubkey/rxdb/tree/master/examples/flutter)

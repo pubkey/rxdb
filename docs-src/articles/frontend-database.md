@@ -36,7 +36,7 @@ Frontend databases enable low-latency queries that run entirely on the client's 
 Realtime applications often require immediate updates based on data changes. By storing data locally and utilizing a frontend database, developers can build realtime applications more easily. The database can observe data changes and automatically update the UI, providing a seamless and responsive user experience.
 
 ### Easier integration with JavaScript frameworks
-Frontend databases, including RxDB, are designed to integrate seamlessly with popular JavaScript frameworks such as Angular, React.js, Vue.js, and Svelte. These databases offer well-defined APIs and support that align with the specific requirements of these frameworks, enabling developers to leverage the full potential of the frontend database within their preferred development environment.
+Frontend databases, including RxDB, are designed to integrate seamlessly with popular JavaScript frameworks such as [Angular](./angular-database.md), React.js, Vue.js, and Svelte. These databases offer well-defined APIs and support that align with the specific requirements of these frameworks, enabling developers to leverage the full potential of the frontend database within their preferred development environment.
 
 ### Simplified replication of database state
 Replicating database state between the frontend and backend can be challenging, especially when dealing with complex REST routes. Frontend databases, however, provide simpler mechanisms for replicating database state. They offer intuitive replication algorithms that facilitate data synchronization between the frontend and backend, reducing the complexity and potential pitfalls associated with complex REST-based replication.
@@ -52,7 +52,7 @@ While SQL databases excel in server-side scenarios, they pose limitations when u
 SQL databases typically rely on a push/pull model, where the server pushes data to the client upon request. This approach is not inherently reactive, as it requires explicit requests for data updates. In contrast, frontend applications often require reactive data flows, where changes in data trigger automatic updates in the UI. Frontend databases, like [RxDB](https://rxdb.info/), provide reactive capabilities that seamlessly integrate with the dynamic nature of frontend development.
 
 ### Initialization time and performance
-SQL databases designed for server-side usage tend to have larger build sizes and initialization times, making them less efficient for browser-based applications. Frontend databases, on the other hand, directly leverage browser APIs like IndexedDB, OPFS, and WebWorker, resulting in leaner builds and faster initialization times. Often the queries are such fast, that it is not even necessary to implement a loading spinner.
+SQL databases designed for server-side usage tend to have larger build sizes and initialization times, making them less efficient for [browser-based](./browser-database.md) applications. Frontend databases, on the other hand, directly leverage browser APIs like IndexedDB, OPFS, and WebWorker, resulting in leaner builds and faster initialization times. Often the queries are such fast, that it is not even necessary to implement a loading spinner.
 
 <p align="center">
   <img src="../files/loading-spinner-not-needed.gif" alt="loading spinner not needed" width="300" />

@@ -33,7 +33,7 @@ Browser databases offer the advantage of running queries locally, resulting in l
 Storing data in the browser reduces the initial application start time. Instead of waiting for data to be fetched from the server, the application can leverage the local database, resulting in faster initialization and improved user satisfaction right from the start.
 
 ### Easier integration with JavaScript frameworks
-Browser databases, including [RxDB](https://rxdb.info/), seamlessly integrate with popular JavaScript frameworks such as Angular, React.js, Vue.js, and Svelte. This integration allows developers to leverage the power of a database while working within the familiar environment of their preferred framework, enhancing productivity and ease of development.
+Browser databases, including [RxDB](https://rxdb.info/), seamlessly integrate with popular JavaScript frameworks such as [Angular](./angular-database.md), React.js, Vue.js, and Svelte. This integration allows developers to leverage the power of a database while working within the familiar environment of their preferred framework, enhancing productivity and ease of development.
 
 ### Store local data with encryption
 Security is a crucial aspect of data storage, especially when handling sensitive information. Browser databases, like RxDB, offer the capability to store local data with encryption, ensuring the confidentiality and protection of sensitive user data.

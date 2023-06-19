@@ -21,7 +21,7 @@ RxDB stands for Reactive Database and is built on the principles of reactive pro
 To begin our journey with RxDB, let's understand its key concepts and features.
 
 ### What is RxDB?
-[RxDB](https://rxdb.info/) is a client-side database that follows the principles of reactive programming. It is built on top of IndexedDB, the native browser database, and leverages the RxJS library for reactive data handling. RxDB provides a simple and intuitive API for managing data and offers features like data replication, multi-tab support, and efficient query handling.
+[RxDB](https://rxdb.info/) is a client-side database that follows the principles of reactive programming. It is built on top of IndexedDB, the [native browser database](./browser-database.md), and leverages the RxJS library for reactive data handling. RxDB provides a simple and intuitive API for managing data and offers features like data replication, multi-tab support, and efficient query handling.
 
 <center>
     <a href="https://rxdb.info/">
