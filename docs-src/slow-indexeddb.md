@@ -3,7 +3,7 @@
 
 So you have a JavaScript web application that needs to store data at the client side, either to make it offline usable, just for caching purposes or for other reasons.
 
-For in-browser data storage, you have some options:
+For [in-browser data storage](./articles/browser-database.md), you have some options:
 
 - **Cookies** are sent with each HTTP request, so you cannot store more then a few strings in them.
 - **WebSQL** [is deprecated](https://hacks.mozilla.org/2010/06/beyond-html5-database-apis-and-the-road-to-indexeddb/) because it never was a real standard and turning it into a standard would have been too difficult.
@@ -12,6 +12,13 @@ For in-browser data storage, you have some options:
 - **IndexedDB** is an indexed key-object database. It can store json data and iterate over its indexes. It is [widely supported](https://caniuse.com/indexeddb) and stable.
 
 ### **UPDATE April 2023:** Since beginning of 2023, all modern browsers ship the **File System Access API** which allows to persistently store data in the browser with a way better performance. For [RxDB](https://rxdb.info/) you can use the [OPFS RxStorage](./rx-storage-opfs.md) to get about 4x performance improvement compared to IndexedDB.
+
+<center>
+    <a href="https://rxdb.info/">
+        <img src="./files/logo/logo_text.svg" alt="IndexedDB Database" width="120">
+    </a>
+</center>
+
 
 
 It becomes clear that the only way to go is IndexedDB. You start developing your app and everything goes fine.

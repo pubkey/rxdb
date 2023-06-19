@@ -201,3 +201,4 @@ To explore more about RxDB and leverage its capabilities for browser database de
 
 - [RxDB GitHub Repository](https://github.com/pubkey/rxdb): Visit the official GitHub repository of RxDB to access the source code, documentation, and community support.
 - [RxDB Quickstart](../quickstart.md): Get started quickly with RxDB by following the provided quickstart guide, which provides step-by-step instructions for setting up and using RxDB in your projects.
+- [RxDB Angular Example at GitHub](https://github.com/pubkey/rxdb/tree/master/examples/angular)

@@ -162,20 +162,6 @@
     * [Use RxDB with Typescript](./tutorials/typescript.md)
     * [RxDB as Node.js Database](./nodejs-database.md)
 
-* Opinions
-    * [Offline First](./offline-first.md)
-    * [Downsides of Offline First](./downsides-of-offline-first.md)
-    * [Slow IndexedDB](./slow-indexeddb.md)
-    * [Why NoSQL](./why-nosql.md)
-    * [Alternatives](./alternatives.md)
-    * [React Native Database](./react-native-database.md)
-    * [Capacitor Database](./capacitor-database.md)
-    * [Electron Database](./electron-database.md)
-    * [Angular Database](./articles/angular-database.md)
-    * [Browser Database](./articles/browser-database.md)
-    * [Embedded Database](./articles/embedded-database.md)
-    * [Frontend Database](./articles/frontend-database.md)
-
 * [Questions & Answers](./questions-answers.md)
 
 * [Contribute](./contribute.md)
@@ -189,6 +175,23 @@
     * [10.0.0](./releases/10.0.0.md)
     * [9.0.0](./releases/9.0.0.md)
     * [8.0.0](./releases/8.0.0.md)
+
+
+* Opinions & Articles
+    * [Offline First](./offline-first.md)
+    * [Downsides of Offline First](./downsides-of-offline-first.md)
+    * [Slow IndexedDB](./slow-indexeddb.md)
+    * [Why NoSQL](./why-nosql.md)
+    * [Alternatives](./alternatives.md)
+    * [React Native Database](./react-native-database.md)
+    * [Capacitor Database](./capacitor-database.md)
+    * [Electron Database](./electron-database.md)
+    * [Angular Database](./articles/angular-database.md)
+    * [Browser Database](./articles/browser-database.md)
+    * [Embedded Database](./articles/embedded-database.md)
+    * [Frontend Database](./articles/frontend-database.md)
+    * [Flutter Database](./articles/flutter-database.md)
+
 
 * Deprecated
     * [RxStorage PouchDB](./rx-storage-pouchdb.md)
