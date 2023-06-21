@@ -2,6 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
+- Fix returning deleted items in find queries [#4773](https://github.com/pubkey/rxdb/pull/4773)
 
 <!-- ADD new changes here! -->
 

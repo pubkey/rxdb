@@ -1325,5 +1325,20 @@ describe('rx-query.test.ts', () => {
 
             col.database.destroy();
         });
+        it('#4773 should not return deleted documents when queried by a primary key', async () => {
+            const c = await humansCollection.create();
+            const docData = schemaObjects.human();
+            await c.insert(docData);
+            const doc = await c.findOne(docData.passportId).exec();
+            assert.ok(doc);
+            await c.findOne(docData.passportId).remove();
+            const doc2 = await c.findOne(docData.passportId).exec();
+            assert.strictEqual(doc2, null);
+            const doc3 = await c.findOne({ selector: { passportId: { $eq: [docData.passportId] } } }).exec();
+            assert.strictEqual(doc3, null);
+            const docs = await c.find({ selector: { passportId: docData.passportId } }).exec();
+            assert.strictEqual(docs.length, 0);
+            c.database.destroy();
+        });
     });
 });
