@@ -2,13 +2,16 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- Fix returning deleted items in find queries [#4773](https://github.com/pubkey/rxdb/pull/4773)
 
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 14.14.1 (23 June 2023)
+
+- Fix returning deleted items in find queries [#4773](https://github.com/pubkey/rxdb/pull/4773)
 
 ### 14.14.0 (7 June 2023)
 

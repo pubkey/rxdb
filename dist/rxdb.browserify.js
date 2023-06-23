@@ -2970,7 +2970,7 @@ exports.RXDB_VERSION = void 0;
 /**
  * This file is replaced in the 'npm run build:version' script.
  */
-var RXDB_VERSION = '14.14.0';
+var RXDB_VERSION = '14.14.1';
 exports.RXDB_VERSION = RXDB_VERSION;
 
 },{}],28:[function(require,module,exports){
@@ -7728,17 +7728,21 @@ async function queryCollection(rxQuery) {
         // first try to fill from docCache
         var docData = rxQuery.collection._docCache.getLatestDocumentDataIfExists(docId);
         if (docData) {
-          docs.push(docData);
+          if (!docData._deleted) {
+            docs.push(docData);
+          }
           return false;
         } else {
           return true;
         }
       });
       // otherwise get from storage
-      var docsMap = await collection.storageInstance.findDocumentsById(docIds, false);
-      Object.values(docsMap).forEach(docData => {
-        docs.push(docData);
-      });
+      if (docIds.length > 0) {
+        var docsMap = await collection.storageInstance.findDocumentsById(docIds, false);
+        Object.values(docsMap).forEach(docData => {
+          docs.push(docData);
+        });
+      }
     } else {
       var docId = rxQuery.isFindOneByIdQuery;
 
@@ -7749,7 +7753,7 @@ async function queryCollection(rxQuery) {
         var _docsMap = await collection.storageInstance.findDocumentsById([docId], false);
         docData = _docsMap[docId];
       }
-      if (docData) {
+      if (docData && !docData._deleted) {
         docs.push(docData);
       }
     }

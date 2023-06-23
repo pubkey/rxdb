@@ -523,17 +523,21 @@ export async function queryCollection(rxQuery) {
         // first try to fill from docCache
         var docData = rxQuery.collection._docCache.getLatestDocumentDataIfExists(docId);
         if (docData) {
-          docs.push(docData);
+          if (!docData._deleted) {
+            docs.push(docData);
+          }
           return false;
         } else {
           return true;
         }
       });
       // otherwise get from storage
-      var docsMap = await collection.storageInstance.findDocumentsById(docIds, false);
-      Object.values(docsMap).forEach(docData => {
-        docs.push(docData);
-      });
+      if (docIds.length > 0) {
+        var docsMap = await collection.storageInstance.findDocumentsById(docIds, false);
+        Object.values(docsMap).forEach(docData => {
+          docs.push(docData);
+        });
+      }
     } else {
       var docId = rxQuery.isFindOneByIdQuery;
 
@@ -544,7 +548,7 @@ export async function queryCollection(rxQuery) {
         var _docsMap = await collection.storageInstance.findDocumentsById([docId], false);
         docData = _docsMap[docId];
       }
-      if (docData) {
+      if (docData && !docData._deleted) {
         docs.push(docData);
       }
     }
