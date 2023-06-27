@@ -19,22 +19,6 @@ import {
 
 describe('bug-report.test.js', () => {
     it('should fail because it reproduces the bug', async () => {
-
-        /**
-         * If your test should only run in nodejs or only run in the browser,
-         * you should comment in the return operator and adapt the if statement.
-         */
-        if (
-            !config.platform.isNode() // runs only in node
-            // config.platform.isNode() // runs only in the browser
-        ) {
-            // return;
-        }
-
-        if (!config.storage.hasMultiInstance) {
-            return;
-        }
-
         // create a schema
         const mySchema = {
             version: 0,
@@ -83,54 +67,33 @@ describe('bug-report.test.js', () => {
             }
         });
 
-        // insert a document
-        await collections.mycollection.insert({
+        const docs = [{
             passportId: 'foobar',
             firstName: 'Bob',
             lastName: 'Kelso',
             age: 56
-        });
+        }, {
+            passportId: 'foobar2',
+            firstName: 'Bob2',
+            lastName: 'Kelso2',
+            age: 562
+        }];
+        await collections.mycollection.bulkInsert(docs);
 
-        /**
-         * to simulate the event-propagation over multiple browser-tabs,
-         * we create the same database again
-         */
-        const dbInOtherTab = await createRxDatabase({
-            name,
-            storage: config.storage.getStorage(),
-            eventReduce: true,
-            ignoreDuplicate: true
-        });
-        // create a collection
-        const collectionInOtherTab = await dbInOtherTab.addCollections({
-            mycollection: {
-                schema: mySchema
-            }
-        });
-
-        // find the document in the other tab
-        const myDocument = await collectionInOtherTab.mycollection
-            .findOne()
-            .where('firstName')
-            .eq('Bob')
-            .exec();
-
-        /*
-         * assert things,
-         * here your tests should fail to show that there is a bug
-         */
-        assert.strictEqual(myDocument.age, 56);
-
-        // you can also wait for events
         const emitted = [];
-        const sub = collectionInOtherTab.mycollection
-            .findOne().$
+        const sub = collections.mycollection
+            .findOne('foobar').$
             .subscribe(doc => emitted.push(doc));
+
         await AsyncTestUtil.waitUntil(() => emitted.length === 1);
+        assert.deepEqual(emitted[0]?.toJSON(), docs[0]);
+
+        await collections.mycollection.bulkRemove(docs.map((doc) => doc.passportId));
+        await AsyncTestUtil.waitUntil(() => emitted.length === 2);
+        assert.strictEqual(emitted[1], null, 'Should be gone now');
 
         // clean up afterwards
         sub.unsubscribe();
         db.destroy();
-        dbInOtherTab.destroy();
     });
 });
