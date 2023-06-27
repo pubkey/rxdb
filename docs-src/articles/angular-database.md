@@ -15,13 +15,13 @@ Angular is a powerful JavaScript framework developed and maintained by Google. I
 Databases play a vital role in Angular applications by providing a structured and efficient way to store, retrieve, and manage data. Whether it's handling user authentication, caching data, or persisting application state, a robust database solution is essential for ensuring optimal performance and user experience.
 
 ## Introducing RxDB as a Database Solution
-RxDB stands for Reactive Database and is built on the principles of reactive programming. It combines the best features of [NoSQL databases](./in-memory-nosql-database.md) with the power of reactive programming to provide a scalable and efficient database solution. RxDB offers seamless integration with Angular applications and brings several unique features that make it an attractive choice for developers.
+RxDB stands for Reactive Database and is built on the principles of [reactive programming](https://en.wikipedia.org/wiki/Reactive_programming). It combines the best features of [NoSQL databases](./in-memory-nosql-database.md) with the power of reactive programming to provide a scalable and efficient database solution. RxDB offers seamless integration with Angular applications and brings several unique features that make it an attractive choice for developers.
 
 ## Getting Started with RxDB
 To begin our journey with RxDB, let's understand its key concepts and features.
 
 ### What is RxDB?
-[RxDB](https://rxdb.info/) is a client-side database that follows the principles of reactive programming. It is built on top of IndexedDB, the [native browser database](./browser-database.md), and leverages the RxJS library for reactive data handling. RxDB provides a simple and intuitive API for managing data and offers features like data replication, multi-tab support, and efficient query handling.
+[RxDB](https://rxdb.info/) is a client-side database that follows the principles of [reactive programming](https://en.wikipedia.org/wiki/Reactive_programming). It is built on top of IndexedDB, the [native browser database](./browser-database.md), and leverages the RxJS library for reactive data handling. RxDB provides a simple and intuitive API for managing data and offers features like data replication, multi-tab support, and efficient query handling.
 
 <center>
     <a href="https://rxdb.info/">
