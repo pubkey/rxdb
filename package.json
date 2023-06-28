@@ -474,7 +474,7 @@
     "karma": "6.4.2",
     "karma-babel-preprocessor": "8.0.2",
     "karma-chrome-launcher": "3.2.0",
-    "karma-coverage": "2.2.0",
+    "karma-coverage": "2.2.1",
     "karma-detect-browsers": "2.3.3",
     "karma-firefox-launcher": "2.1.2",
     "karma-ie-launcher": "1.0.0",
