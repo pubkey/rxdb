@@ -34,20 +34,28 @@ export const PROMISE_RESOLVE_VOID: Promise<void> = Promise.resolve();
  * So we have to queue the calls.
  */
 let idlePromiseQueue = PROMISE_RESOLVE_VOID;
-export function requestIdlePromise(timeout: number | null = null) {
-    return new Promise(res => {
+export function requestIdlePromise(
+    timeout: number | undefined = undefined
+) {
+    return new Promise((res, rej) => {
         idlePromiseQueue = idlePromiseQueue.then(() => {
+            /**
+             * Do not use window.requestIdleCallback
+             * because some javascript runtimes like react-native,
+             * do not have a window object, but still have a global
+             * requestIdleCallback function.
+             * @link https://github.com/pubkey/rxdb/issues/4804
+             */
             if (
-                typeof window === 'object' &&
-                (window as any)['requestIdleCallback']
+                typeof requestIdleCallback === 'function'
             ) {
-                (window as any)['requestIdleCallback'](res, {
+                requestIdleCallback(res, {
                     timeout
                 });
             } else {
-                promiseWait(0).then(res);
+                return promiseWait(0).then(res);
             }
-        });
+        }).catch(err => rej(err));
     });
 }
 
