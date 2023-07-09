@@ -15,6 +15,8 @@ markComment: >
   This issue has been automatically marked as stale because it has not had
   recent activity. It will be closed soon.
   If you still have a problem, make a PR with a test case or to prove that you have tried to fix the problem.
+  Notice that only bugs in the rxdb premium plugins are ensured to be fixed by the maintainer. Everything else
+  is expected to be fixed by the community, likely you must fix it by yourself.
 # Comment to post when closing a stale issue. Set to `false` to disable
 closeComment: "Issues are autoclosed after some time. If you still have a problem, make a PR with a test case or to prove that you have tried to fix the problem."
 
