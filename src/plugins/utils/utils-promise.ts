@@ -37,26 +37,29 @@ let idlePromiseQueue = PROMISE_RESOLVE_VOID;
 export function requestIdlePromise(
     timeout: number | undefined = undefined
 ) {
-    return new Promise((res, rej) => {
-        idlePromiseQueue = idlePromiseQueue.then(() => {
-            /**
-             * Do not use window.requestIdleCallback
-             * because some javascript runtimes like react-native,
-             * do not have a window object, but still have a global
-             * requestIdleCallback function.
-             * @link https://github.com/pubkey/rxdb/issues/4804
-             */
-            if (
-                typeof requestIdleCallback === 'function'
-            ) {
-                requestIdleCallback(res, {
-                    timeout
-                });
-            } else {
-                return promiseWait(0).then(res);
-            }
-        }).catch(err => rej(err));
+    idlePromiseQueue = idlePromiseQueue.then(() => {
+        /**
+         * Do not use window.requestIdleCallback
+         * because some javascript runtimes like react-native,
+         * do not have a window object, but still have a global
+         * requestIdleCallback function.
+         * @link https://github.com/pubkey/rxdb/issues/4804
+        */
+        if (
+            typeof requestIdleCallback === 'function'
+        ) {
+            return new Promise<void>(res => {
+                requestIdleCallback(
+                    () => res(),
+                    {
+                        timeout
+                    });
+            });
+        } else {
+            return promiseWait(0);
+        }
     });
+    return idlePromiseQueue;
 }
 
 
