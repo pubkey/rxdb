@@ -234,9 +234,11 @@ export function replicateGraphQL<RxDocType, CheckpointType>(
 
     const cancelBefore = graphqlReplicationState.cancel.bind(graphqlReplicationState);
     graphqlReplicationState.cancel = () => {
-        pullStream$.complete();
-        if (mustUseSocket) {
-            removeGraphQLWebSocketRef(ensureNotFalsy(url.ws));
+        if (!graphqlReplicationState.isStopped()) {
+            pullStream$.complete();
+            if (mustUseSocket) {
+                removeGraphQLWebSocketRef(ensureNotFalsy(url.ws));
+            }
         }
         return cancelBefore();
     };
