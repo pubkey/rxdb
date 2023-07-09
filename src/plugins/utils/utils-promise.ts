@@ -53,7 +53,8 @@ export function requestIdlePromise(
                     () => res(),
                     {
                         timeout
-                    });
+                    }
+                );
             });
         } else {
             return promiseWait(0);
