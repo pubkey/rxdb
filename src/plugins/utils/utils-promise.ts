@@ -70,10 +70,20 @@ export function requestIdlePromise(
  * @link https://developer.mozilla.org/de/docs/Web/API/Window/requestIdleCallback
  */
 export function requestIdleCallbackIfAvailable(fun: Function): void {
+    /**
+     * Do not use window.requestIdleCallback
+     * because some javascript runtimes like react-native,
+     * do not have a window object, but still have a global
+     * requestIdleCallback function.
+     * @link https://github.com/pubkey/rxdb/issues/4804
+    */
     if (
-        typeof window === 'object' &&
-        (window as any)['requestIdleCallback']
-    ) (window as any)['requestIdleCallback'](fun);
+        typeof requestIdleCallback === 'function'
+    ) {
+        requestIdleCallback(() => {
+            fun();
+        });
+    }
 }
 
 
