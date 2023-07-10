@@ -2442,6 +2442,35 @@ describe('replication-graphql.test.ts', () => {
                 await db.destroy();
                 await server.close();
             });
+            it('#4781 GraphQL Replication Cancel With Database Destroy Bug Report', async () => {
+                const [c, server] = await Promise.all([
+                    humansCollection.createHumanWithTimestamp(0),
+                    SpawnServer.spawn(getTestData(1))
+                ]);
+                const replicationState = replicateGraphQL({
+                    collection: c,
+                    url: server.url,
+                    pull: {
+                        batchSize,
+                        queryBuilder: pullQueryBuilder,
+                        streamQueryBuilder: pullStreamQueryBuilder,
+                    },
+                    push: {
+                        batchSize,
+                        queryBuilder: pushQueryBuilder
+                    },
+                    live: true,
+                    deletedField: 'deleted'
+                });
+                ensureReplicationHasNoErrors(replicationState);
+                await replicationState.awaitInitialReplication();
+                await replicationState.cancel();
+
+                let error;
+                const result = await c.database.destroy().catch(e => error = e);
+                assert.strictEqual(error, undefined);
+                assert.strictEqual(result, true);
+            });
         });
     });
     describe('browser', () => {
