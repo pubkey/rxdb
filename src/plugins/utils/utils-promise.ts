@@ -34,21 +34,33 @@ export const PROMISE_RESOLVE_VOID: Promise<void> = Promise.resolve();
  * So we have to queue the calls.
  */
 let idlePromiseQueue = PROMISE_RESOLVE_VOID;
-export function requestIdlePromise(timeout: number | null = null) {
-    return new Promise(res => {
-        idlePromiseQueue = idlePromiseQueue.then(() => {
-            if (
-                typeof window === 'object' &&
-                (window as any)['requestIdleCallback']
-            ) {
-                (window as any)['requestIdleCallback'](res, {
-                    timeout
-                });
-            } else {
-                promiseWait(0).then(res);
-            }
-        });
+export function requestIdlePromise(
+    timeout: number | undefined = undefined
+) {
+    idlePromiseQueue = idlePromiseQueue.then(() => {
+        /**
+         * Do not use window.requestIdleCallback
+         * because some javascript runtimes like react-native,
+         * do not have a window object, but still have a global
+         * requestIdleCallback function.
+         * @link https://github.com/pubkey/rxdb/issues/4804
+        */
+        if (
+            typeof requestIdleCallback === 'function'
+        ) {
+            return new Promise<void>(res => {
+                requestIdleCallback(
+                    () => res(),
+                    {
+                        timeout
+                    }
+                );
+            });
+        } else {
+            return promiseWait(0);
+        }
     });
+    return idlePromiseQueue;
 }
 
 
@@ -58,10 +70,20 @@ export function requestIdlePromise(timeout: number | null = null) {
  * @link https://developer.mozilla.org/de/docs/Web/API/Window/requestIdleCallback
  */
 export function requestIdleCallbackIfAvailable(fun: Function): void {
+    /**
+     * Do not use window.requestIdleCallback
+     * because some javascript runtimes like react-native,
+     * do not have a window object, but still have a global
+     * requestIdleCallback function.
+     * @link https://github.com/pubkey/rxdb/issues/4804
+    */
     if (
-        typeof window === 'object' &&
-        (window as any)['requestIdleCallback']
-    ) (window as any)['requestIdleCallback'](fun);
+        typeof requestIdleCallback === 'function'
+    ) {
+        requestIdleCallback(() => {
+            fun();
+        });
+    }
 }
 
 
