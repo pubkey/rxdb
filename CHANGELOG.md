@@ -2,7 +2,8 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- FIX #4804 requestIdlePromise broken in react-native (#4813)
+- FIX #4781 GraphQL Replication Cancel With Database Destroy
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
