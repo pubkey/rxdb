@@ -31,18 +31,26 @@ export var PROMISE_RESOLVE_VOID = Promise.resolve();
  * So we have to queue the calls.
  */
 var idlePromiseQueue = PROMISE_RESOLVE_VOID;
-export function requestIdlePromise(timeout = null) {
-  return new Promise(res => {
-    idlePromiseQueue = idlePromiseQueue.then(() => {
-      if (typeof window === 'object' && window['requestIdleCallback']) {
-        window['requestIdleCallback'](res, {
+export function requestIdlePromise(timeout = undefined) {
+  idlePromiseQueue = idlePromiseQueue.then(() => {
+    /**
+     * Do not use window.requestIdleCallback
+     * because some javascript runtimes like react-native,
+     * do not have a window object, but still have a global
+     * requestIdleCallback function.
+     * @link https://github.com/pubkey/rxdb/issues/4804
+    */
+    if (typeof requestIdleCallback === 'function') {
+      return new Promise(res => {
+        requestIdleCallback(() => res(), {
           timeout
         });
-      } else {
-        promiseWait(0).then(res);
-      }
-    });
+      });
+    } else {
+      return promiseWait(0);
+    }
   });
+  return idlePromiseQueue;
 }
 
 /**
@@ -51,7 +59,18 @@ export function requestIdlePromise(timeout = null) {
  * @link https://developer.mozilla.org/de/docs/Web/API/Window/requestIdleCallback
  */
 export function requestIdleCallbackIfAvailable(fun) {
-  if (typeof window === 'object' && window['requestIdleCallback']) window['requestIdleCallback'](fun);
+  /**
+   * Do not use window.requestIdleCallback
+   * because some javascript runtimes like react-native,
+   * do not have a window object, but still have a global
+   * requestIdleCallback function.
+   * @link https://github.com/pubkey/rxdb/issues/4804
+  */
+  if (typeof requestIdleCallback === 'function') {
+    requestIdleCallback(() => {
+      fun();
+    });
+  }
 }
 
 /**

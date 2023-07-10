@@ -12,7 +12,7 @@ export declare const PROMISE_RESOLVE_TRUE: Promise<true>;
 export declare const PROMISE_RESOLVE_FALSE: Promise<false>;
 export declare const PROMISE_RESOLVE_NULL: Promise<null>;
 export declare const PROMISE_RESOLVE_VOID: Promise<void>;
-export declare function requestIdlePromise(timeout?: number | null): Promise<unknown>;
+export declare function requestIdlePromise(timeout?: number | undefined): Promise<void>;
 /**
  * run the callback if requestIdleCallback available
  * do nothing if not

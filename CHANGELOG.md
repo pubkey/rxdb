@@ -2,13 +2,17 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- FIX #4804 requestIdlePromise broken in react-native (#4813)
-- FIX #4781 GraphQL Replication Cancel With Database Destroy
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 14.14.2 (10 July 2023)
+
+- FIX #4804 requestIdlePromise broken in react-native (#4813)
+- FIX #4781 GraphQL Replication Cancel With Database Destroy
 
 ### 14.14.1 (23 June 2023)
 

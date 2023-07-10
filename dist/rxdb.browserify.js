@@ -2864,18 +2864,26 @@ var PROMISE_RESOLVE_VOID = Promise.resolve();
  */
 exports.PROMISE_RESOLVE_VOID = PROMISE_RESOLVE_VOID;
 var idlePromiseQueue = PROMISE_RESOLVE_VOID;
-function requestIdlePromise(timeout = null) {
-  return new Promise(res => {
-    idlePromiseQueue = idlePromiseQueue.then(() => {
-      if (typeof window === 'object' && window['requestIdleCallback']) {
-        window['requestIdleCallback'](res, {
+function requestIdlePromise(timeout = undefined) {
+  idlePromiseQueue = idlePromiseQueue.then(() => {
+    /**
+     * Do not use window.requestIdleCallback
+     * because some javascript runtimes like react-native,
+     * do not have a window object, but still have a global
+     * requestIdleCallback function.
+     * @link https://github.com/pubkey/rxdb/issues/4804
+    */
+    if (typeof requestIdleCallback === 'function') {
+      return new Promise(res => {
+        requestIdleCallback(() => res(), {
           timeout
         });
-      } else {
-        promiseWait(0).then(res);
-      }
-    });
+      });
+    } else {
+      return promiseWait(0);
+    }
   });
+  return idlePromiseQueue;
 }
 
 /**
@@ -2884,7 +2892,18 @@ function requestIdlePromise(timeout = null) {
  * @link https://developer.mozilla.org/de/docs/Web/API/Window/requestIdleCallback
  */
 function requestIdleCallbackIfAvailable(fun) {
-  if (typeof window === 'object' && window['requestIdleCallback']) window['requestIdleCallback'](fun);
+  /**
+   * Do not use window.requestIdleCallback
+   * because some javascript runtimes like react-native,
+   * do not have a window object, but still have a global
+   * requestIdleCallback function.
+   * @link https://github.com/pubkey/rxdb/issues/4804
+  */
+  if (typeof requestIdleCallback === 'function') {
+    requestIdleCallback(() => {
+      fun();
+    });
+  }
 }
 
 /**
@@ -2970,7 +2989,7 @@ exports.RXDB_VERSION = void 0;
 /**
  * This file is replaced in the 'npm run build:version' script.
  */
-var RXDB_VERSION = '14.14.1';
+var RXDB_VERSION = '14.14.2';
 exports.RXDB_VERSION = RXDB_VERSION;
 
 },{}],28:[function(require,module,exports){
