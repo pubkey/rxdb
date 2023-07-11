@@ -24,6 +24,7 @@ import {
     JSONCodec,
     connect
 } from 'nats';
+import { wait, waitUntil } from 'async-test-util';
 
 
 const connectionSettings = { servers: 'localhost:4222' };
@@ -116,30 +117,53 @@ describe('replication-nats.test.js', () => {
     }
 
 
+    describe('init', () => {
+        it('wait for server to be reachable', async () => {
+            await connectionStatePromise;
+            console.log('--');
+            await waitUntil(async () => {
+                const collection = await humansCollection.createHumanWithTimestamp(2, undefined, false);
+
+                const natsName = randomCouchString(10);
+
+                console.log('################ 0.1');
+
+                const replicationState = syncNats(collection, natsName);
+                ensureReplicationHasNoErrors(replicationState);
+                console.log('################ 0.2');
+                await replicationState.awaitInitialReplication();
+                console.log('################ 0.3');
+
+                const ret = await Promise.race([
+                    replicationState.awaitInitialReplication().then(() => true),
+                    wait(1000).then(() => false)
+                ]);
+                await collection.database.destroy();
+
+                console.log('ret: ' + ret);
+                return ret;
+
+            });
+        });
+    });
+
     describe('live replication', () => {
         it('push replication to client-server', async () => {
             const collection = await humansCollection.createHumanWithTimestamp(2, undefined, false);
 
             const natsName = randomCouchString(10);
 
-            console.log('################ 0.1');
-
             const replicationState = syncNats(collection, natsName);
             ensureReplicationHasNoErrors(replicationState);
-            console.log('################ 0.2');
             await replicationState.awaitInitialReplication();
-            console.log('################ 0.3');
 
             let docsOnServer = await getAllDocsOfServer(natsName);
             assert.strictEqual(docsOnServer.length, 2);
-            console.log('################ 0.4');
 
             // insert another one
             await collection.insert(schemaObjects.humanWithTimestamp());
             await replicationState.awaitInSync();
 
-
-            console.log('################ 1');
 
             docsOnServer = await getAllDocsOfServer(natsName);
             assert.strictEqual(docsOnServer.length, 3);
@@ -153,8 +177,6 @@ describe('replication-nats.test.js', () => {
             const serverDoc = ensureNotFalsy(docsOnServer.find(d => d.id === doc.primary));
             assert.strictEqual(serverDoc.age, 100);
 
-            console.log('################ 2');
-
             // delete one
             await doc.getLatest().remove();
             await replicationState.awaitInSync();
@@ -162,9 +184,6 @@ describe('replication-nats.test.js', () => {
             // must still have 3 because there are no hard deletes
             assert.strictEqual(docsOnServer.length, 3);
             assert.ok(docsOnServer.find(d => (d as any)._deleted));
-
-            console.log('################ 3');
-
 
             collection.database.destroy();
         });
