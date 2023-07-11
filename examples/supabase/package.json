@@ -25,7 +25,7 @@
     "local-web-server": "5.3.0",
     "concurrently": "8.2.0",
     "async-test-util": "2.1.0",
-    "css-loader": "6.7.3",
+    "css-loader": "6.8.1",
     "testcafe": "1.20.1",
     "testcafe-hammerhead": "31.4.9",
     "ts-loader": "9.4.4",
