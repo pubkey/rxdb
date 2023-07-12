@@ -706,12 +706,28 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
         testTitle: '$eq operator',
         data: [
             {
+                id: 'zero',
+                nonPrimaryString: 'zero',
+                integer: 0,
+                number: 0,
+                boolean: false,
+                null: 'not-null'
+            },
+            {
                 id: 'one',
                 nonPrimaryString: 'one',
                 integer: 1,
                 number: 1,
                 boolean: true,
                 null: null
+            },
+            {
+                id: 'two',
+                nonPrimaryString: 'two',
+                integer: 2,
+                number: 2,
+                boolean: false,
+                null: 'not-null'
             }
         ],
         schema: {
