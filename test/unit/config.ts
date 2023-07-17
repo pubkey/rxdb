@@ -211,7 +211,7 @@ export function setDefaultStorage(storageKey: string) {
             };
             break;
         case 'foundationdb':
-            const foundationDBAPIVersion = 620;
+            const foundationDBAPIVersion = 630;
 
             // use a dynamic import so it does not break browser bundling
             const { getRxStorageFoundationDB } = require('../../plugins/storage-foundationdb' + '');

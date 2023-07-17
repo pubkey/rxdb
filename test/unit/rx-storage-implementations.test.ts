@@ -1493,6 +1493,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 );
                 const allDocs = await storageInstance.query(preparedQuery);
 
+                assert.strictEqual(allDocs.documents.length, 3);
                 assert.strictEqual(allDocs.documents[0].value, 'c');
                 assert.strictEqual(allDocs.documents[1].value, 'b');
                 assert.strictEqual(allDocs.documents[2].value, 'a');

@@ -1261,6 +1261,76 @@ describe('rx-collection.test.ts', () => {
                     c.database.destroy();
                 });
             });
+            /**
+             * @link https://github.com/pubkey/rxdb/pull/4775
+             */
+            it('#4775 count() broken on primary key', async () => {
+                // create a schema
+                const mySchema = {
+                    version: 0,
+                    primaryKey: 'passportId',
+                    type: 'object',
+                    properties: {
+                        passportId: {
+                            type: 'string',
+                            maxLength: 30
+                        },
+                        firstName: {
+                            type: 'string'
+                        },
+                        lastName: {
+                            type: 'string'
+                        },
+                        age: {
+                            type: 'integer',
+                            minimum: 0,
+                            maximum: 150
+                        }
+                    }
+                };
+
+                const name = randomCouchString(10);
+                const db = await createRxDatabase({
+                    name,
+                    storage: config.storage.getStorage(),
+                    eventReduce: true,
+                    ignoreDuplicate: true
+                });
+                const collections = await db.addCollections({
+                    mycollection: {
+                        schema: mySchema
+                    }
+                });
+
+                // insert a document
+                await collections.mycollection.insert({
+                    passportId: 'foobar2',
+                    firstName: 'Bob',
+                    lastName: 'Kelso',
+                    age: 56
+                });
+                await collections.mycollection.insert({
+                    passportId: 'foobar3',
+                    firstName: 'Bob',
+                    lastName: 'Kelso',
+                    age: 56
+                });
+
+                const countResult = await collections.mycollection
+                    .count({
+                        selector: {
+                            passportId: {
+                                $eq: 'foobar'
+                            }
+                        }
+                    })
+                    .exec();
+
+                assert.strictEqual(countResult, 0);
+
+                // clean up afterwards
+                db.destroy();
+            });
         });
         config.parallel('.bulkUpsert()', () => {
             it('insert and update', async () => {
