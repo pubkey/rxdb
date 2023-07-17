@@ -314,7 +314,7 @@ export function getStartIndexStringFromUpperBound(
         switch (type) {
             case 'string':
                 const maxLength = ensureNotFalsy(schemaPart.maxLength);
-                if (typeof bound === 'string') {
+                if (typeof bound === 'string' && bound !== INDEX_MAX) {
                     str += (bound as string).padEnd(maxLength, ' ');
                 } else {
                     str += ''.padEnd(maxLength, inclusiveEnd ? INDEX_MAX : ' ');
