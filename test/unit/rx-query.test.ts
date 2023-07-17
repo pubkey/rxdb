@@ -904,7 +904,6 @@ describe('rx-query.test.ts', () => {
             });
 
 
-            /* eslint-disable */
             const selector = {
                 $and: [{
                     event_id: {
@@ -931,7 +930,6 @@ describe('rx-query.test.ts', () => {
                 }
                 ]
             };
-            /* eslint-enable */
 
             const resultDocs1 = await collection
                 .find({

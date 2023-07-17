@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- FIX count() is incorrect [#4755](https://github.com/pubkey/rxdb/issues/4755)
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

@@ -239,6 +239,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         );
         const indexName = getMemoryIndexName(index);
         const docsWithIndex = this.internals.byIndex[indexName].docsWithIndex;
+
         let indexOfLower = boundGE(
             docsWithIndex,
             {
@@ -258,8 +259,6 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         let done = false;
         while (!done) {
             const currentDoc = docsWithIndex[indexOfLower];
-
-
             if (
                 !currentDoc ||
                 indexOfLower > indexOfUpper

@@ -1273,7 +1273,7 @@ describe('rx-collection.test.ts', () => {
                     properties: {
                         passportId: {
                             type: 'string',
-                            maxLength: 100
+                            maxLength: 30
                         },
                         firstName: {
                             type: 'string'
@@ -1323,12 +1323,9 @@ describe('rx-collection.test.ts', () => {
                                 $eq: 'foobar'
                             }
                         }
-                    }).exec();
+                    })
+                    .exec();
 
-                /*
-                 * assert things,
-                 * here your tests should fail to show that there is a bug
-                 */
                 assert.strictEqual(countResult, 0);
 
                 // clean up afterwards
