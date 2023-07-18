@@ -35,7 +35,29 @@ async function queryFoundationDB(instance, preparedQuery) {
     var innerResult = [];
     var indexTx = tx.at(indexDB.subspace);
     var mainTx = tx.at(dbs.main.subspace);
-    var range = indexTx.getRangeBatch(lowerBoundString, upperBoundString, {
+
+    /**
+     * TODO for whatever reason the keySelectors like firstGreaterThan etc.
+     * do not work properly. So we have to hack here to find the correct
+     * document in case lowerBoundString===upperBoundString.
+     * This likely must be fixed in the foundationdb library.
+     * When it is fixed, we do not need this if-case and instead
+     * can rely on .getRangeBatch() in all cases.
+     */
+    if (lowerBoundString === upperBoundString) {
+      var docId = await indexTx.get(lowerBoundString);
+      if (docId) {
+        var docData = await mainTx.get(docId);
+        if (!queryMatcher || queryMatcher(docData)) {
+          innerResult.push(docData);
+        }
+      }
+      return innerResult;
+    }
+    var range = indexTx.getRangeBatch(lowerBoundString, upperBoundString,
+    // queryPlan.inclusiveStart ? keySelector.firstGreaterThan(lowerBoundString) : keySelector.firstGreaterOrEqual(lowerBoundString),
+    // queryPlan.inclusiveEnd ? keySelector.lastLessOrEqual(upperBoundString) : keySelector.lastLessThan(upperBoundString),
+    {
       // TODO these options seem to be broken in the foundationdb node bindings
       // limit: instance.settings.batchSize,
       // streamingMode: StreamingMode.Exact

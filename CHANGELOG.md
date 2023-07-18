@@ -2,12 +2,16 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- FIX count() is incorrect [#4755](https://github.com/pubkey/rxdb/issues/4755)
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 14.15.0 (18 July 2023)
+
+- FIX count() is incorrect [#4755](https://github.com/pubkey/rxdb/issues/4755)
 
 ### 14.14.2 (10 July 2023)
 

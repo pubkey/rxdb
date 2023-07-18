@@ -347,8 +347,8 @@ function getStartIndexStringFromUpperBound(schema, index, upperBound, inclusiveE
     switch (type) {
       case 'string':
         var maxLength = (0, _utils.ensureNotFalsy)(schemaPart.maxLength);
-        if (typeof bound === 'string') {
-          str += bound.padEnd(maxLength, inclusiveEnd ? _queryPlanner.INDEX_MAX : ' ');
+        if (typeof bound === 'string' && bound !== _queryPlanner.INDEX_MAX) {
+          str += bound.padEnd(maxLength, ' ');
         } else {
           str += ''.padEnd(maxLength, inclusiveEnd ? _queryPlanner.INDEX_MAX : ' ');
         }
@@ -2989,7 +2989,7 @@ exports.RXDB_VERSION = void 0;
 /**
  * This file is replaced in the 'npm run build:version' script.
  */
-var RXDB_VERSION = '14.14.2';
+var RXDB_VERSION = '14.15.0';
 exports.RXDB_VERSION = RXDB_VERSION;
 
 },{}],28:[function(require,module,exports){
