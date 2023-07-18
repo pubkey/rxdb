@@ -213,6 +213,9 @@ async function run() {
             console.error('replication error:');
             console.dir(err);
         });
+        replicationState.active$.subscribe(active => {
+            console.log(`${db.hero.name} replication active: ${active}`);
+        })
     }
 
 

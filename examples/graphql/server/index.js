@@ -85,6 +85,8 @@ export async function run() {
     // The root provides a resolver function for each API endpoint
     const root = {
         pullHero: (args, request) => {
+            throw new Error('server failure')
+
             log('## pullHero()');
             log(args);
             authenticateRequest(request);
@@ -138,6 +140,8 @@ export async function run() {
             return ret;
         },
         pushHero: (args, request) => {
+            throw new Error('server failure')
+
             log('## pushHero()');
             log(args);
             authenticateRequest(request);
