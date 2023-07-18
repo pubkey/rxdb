@@ -134,11 +134,15 @@ export type ReplicationOptions<RxDocType, CheckpointType> = {
     /**
      * Time in milliseconds after when a failed backend request
      * has to be retried.
-     * This time will be skipped if a offline->online switch is detected
-     * via `navigator.onLine`
      * @default 5000
      */
     retryTime?: number;
+    /**
+     * When this is set to true, the retryTime setting will be skipped if offline->online
+     * switch is detected via `navigator.onLine` and replication cycle will be started immediately.
+     * @default true
+     */
+    retryOnOnline?: boolean;
     /**
      * When multiInstance is `true`, like when you use RxDB in multiple browser tabs,
      * the replication should always run in only one of the open browser tabs.
