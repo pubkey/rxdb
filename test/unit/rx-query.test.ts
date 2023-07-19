@@ -1136,6 +1136,31 @@ describe('rx-query.test.ts', () => {
 
             c.database.destroy();
         });
+        /**
+         * @link https://github.com/pubkey/rxdb/issues/4755#issuecomment-1641928515
+         */
+        it('#4755 $regex on primaryKey not working correctly', async () => {
+            const c = await humansCollection.create(0);
+
+            await c.bulkInsert([
+                schemaObjects.human('hello1'),
+                schemaObjects.human('hello2'),
+                schemaObjects.human('hello22'),
+                schemaObjects.human('hello3')
+            ]);
+
+            const queryResult = await c.find({
+                selector: {
+                    passportId: {
+                        $regex: '^hello2'
+                    }
+                }
+            }).exec();
+            assert.strictEqual(queryResult.length, 2);
+            queryResult.forEach(doc => assert.ok(doc.passportId.startsWith('hello2')));
+
+            c.database.destroy();
+        });
         it('#2213 prepareQuery should handle all comparison operators', async () => {
             const collection = await humansCollection.createAgeIndex(0);
             await collection.insert({
