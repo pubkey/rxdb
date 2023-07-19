@@ -467,51 +467,6 @@ describe('replication.test.js', () => {
             localCollection.database.destroy();
             remoteCollection.database.destroy();
         });
-
-        it('should emit false from active$ when replication is failed', async () => {
-            const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 0 });
-            const replicationState = replicateRxCollection({
-                collection: localCollection,
-                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
-                live: true,
-                pull: {
-                    handler: async () => {
-                        await wait(0);
-                        throw new Error('must throw on pull');
-                    }
-                },
-                push: {
-                    handler: async () => {
-                        await wait(0);
-                        throw new Error('must throw on push');
-                    }
-                },
-            });
-
-            const values: boolean[] = [];
-            replicationState.active$.subscribe((active) => {
-                values.push(active);
-            });
-
-            // waiting for one second instead of awaitInitialReplication
-            // because it will never resolve when replication is failed
-            await wait(1000);
-            assert.strictEqual(
-                values.length > 0,
-                true
-            );
-            assert.strictEqual(
-                values[0],
-                false,
-            );
-            assert.strictEqual(
-                values[values.length - 1],
-                false
-            );
-
-            localCollection.database.destroy();
-            remoteCollection.database.destroy();
-        });
     });
     config.parallel('other', () => {
         describe('autoStart', () => {

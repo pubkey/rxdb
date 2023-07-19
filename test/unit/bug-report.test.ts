@@ -9,128 +9,70 @@
  * - 'npm run test:browser' so it runs in the browser
  */
 import assert from 'assert';
-import AsyncTestUtil from 'async-test-util';
-import config from './config';
+import {wait} from 'async-test-util';
+import {replicateRxCollection} from '../../plugins/replication';
+import { RxCollection, randomCouchString } from '../../';
+import * as humansCollection from '../helper/humans-collection';
+import * as schemaObjects from '../helper/schema-objects';
 
-import {
-    createRxDatabase,
-    randomCouchString
-} from '../../';
+type TestDocType = schemaObjects.HumanWithTimestampDocumentType;
 
 describe('bug-report.test.js', () => {
-    it('should fail because it reproduces the bug', async () => {
-
-        /**
-         * If your test should only run in nodejs or only run in the browser,
-         * you should comment in the return operator and adapt the if statement.
-         */
-        if (
-            !config.platform.isNode() // runs only in node
-            // config.platform.isNode() // runs only in the browser
-        ) {
-            // return;
-        }
-
-        if (!config.storage.hasMultiInstance) {
-            return;
-        }
-
-        // create a schema
-        const mySchema = {
-            version: 0,
-            primaryKey: 'passportId',
-            type: 'object',
-            properties: {
-                passportId: {
-                    type: 'string',
-                    maxLength: 100
-                },
-                firstName: {
-                    type: 'string'
-                },
-                lastName: {
-                    type: 'string'
-                },
-                age: {
-                    type: 'integer',
-                    minimum: 0,
-                    maximum: 150
-                }
-            }
+    const REPLICATION_IDENTIFIER_TEST = 'replication-ident-tests';
+    async function getTestCollections(docsAmount: { local: number; remote: number; }): Promise<{
+        localCollection: RxCollection<TestDocType, {}, {}, {}>;
+        remoteCollection: RxCollection<TestDocType, {}, {}, {}>;
+    }> {
+        const localCollection = await humansCollection.createHumanWithTimestamp(docsAmount.local, randomCouchString(10), false);
+        const remoteCollection = await humansCollection.createHumanWithTimestamp(docsAmount.remote, randomCouchString(10), false);
+        return {
+            localCollection,
+            remoteCollection
         };
+    }
 
-        /**
-         * Always generate a random database-name
-         * to ensure that different test runs do not affect each other.
-         */
-        const name = randomCouchString(10);
-
-        // create a database
-        const db = await createRxDatabase({
-            name,
-            /**
-             * By calling config.storage.getStorage(),
-             * we can ensure that all variations of RxStorage are tested in the CI.
-             */
-            storage: config.storage.getStorage(),
-            eventReduce: true,
-            ignoreDuplicate: true
-        });
-        // create a collection
-        const collections = await db.addCollections({
-            mycollection: {
-                schema: mySchema
-            }
+    it('should emit false from active$ when replication is failed', async () => {
+        const { localCollection, remoteCollection } = await getTestCollections({ local: 0, remote: 0 });
+        const replicationState = replicateRxCollection({
+            collection: localCollection,
+            replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+            live: true,
+            pull: {
+                handler: async () => {
+                    await wait(0);
+                    throw new Error('must throw on pull');
+                }
+            },
+            push: {
+                handler: async () => {
+                    await wait(0);
+                    throw new Error('must throw on push');
+                }
+            },
         });
 
-        // insert a document
-        await collections.mycollection.insert({
-            passportId: 'foobar',
-            firstName: 'Bob',
-            lastName: 'Kelso',
-            age: 56
+        const values: boolean[] = [];
+        replicationState.active$.subscribe((active) => {
+            values.push(active);
         });
 
-        /**
-         * to simulate the event-propagation over multiple browser-tabs,
-         * we create the same database again
-         */
-        const dbInOtherTab = await createRxDatabase({
-            name,
-            storage: config.storage.getStorage(),
-            eventReduce: true,
-            ignoreDuplicate: true
-        });
-        // create a collection
-        const collectionInOtherTab = await dbInOtherTab.addCollections({
-            mycollection: {
-                schema: mySchema
-            }
-        });
+        // waiting for one second instead of awaitInitialReplication
+        // because it will never resolve when replication is failed
+        await wait(1000);
+        assert.strictEqual(
+            values.length > 0,
+            true
+        );
+        assert.strictEqual(
+            values[0],
+            false,
+        );
+        assert.strictEqual(
+            values[values.length - 1],
+            false
+        );
 
-        // find the document in the other tab
-        const myDocument = await collectionInOtherTab.mycollection
-            .findOne()
-            .where('firstName')
-            .eq('Bob')
-            .exec();
-
-        /*
-         * assert things,
-         * here your tests should fail to show that there is a bug
-         */
-        assert.strictEqual(myDocument.age, 56);
-
-        // you can also wait for events
-        const emitted = [];
-        const sub = collectionInOtherTab.mycollection
-            .findOne().$
-            .subscribe(doc => emitted.push(doc));
-        await AsyncTestUtil.waitUntil(() => emitted.length === 1);
-
-        // clean up afterwards
-        sub.unsubscribe();
-        db.destroy();
-        dbInOtherTab.destroy();
+        localCollection.database.destroy();
+        remoteCollection.database.destroy();
     });
 });
