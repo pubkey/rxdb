@@ -84,53 +84,57 @@ describe('bug-report.test.js', () => {
         });
 
         // insert a document
-        await collections.mycollection.insert({
-            passportId: 'foobar',
-            firstName: 'Bob',
-            lastName: 'Kelso',
-            age: 56
-        });
+        await collections.mycollection.bulkInsert([
+            {
+                passportId: 'foobar',
+                firstName: 'Bob',
+                lastName: 'Kelso',
+                age: 56
+            },
+            {
+                passportId: 'foobar2',
+                firstName: 'Bob2',
+                lastName: 'Kelso2',
+                age: 56
+            },
+            {
+                passportId: 'foobar22',
+                firstName: 'Bob22',
+                lastName: 'Kelso22',
+                age: 56
+            },
+        ]);
 
-        /**
-         * to simulate the event-propagation over multiple browser-tabs,
-         * we create the same database again
-         */
-        const dbInOtherTab = await createRxDatabase({
-            name,
-            storage: config.storage.getStorage(),
-            eventReduce: true,
-            ignoreDuplicate: true
-        });
-        // create a collection
-        const collectionInOtherTab = await dbInOtherTab.addCollections({
-            mycollection: {
-                schema: mySchema
+        const mangoQuery = {
+            selector: {
+                passportId: {
+                    $regex: '^foobar2',
+                }
             }
-        });
+        };
 
-        // find the document in the other tab
-        const myDocument = await collectionInOtherTab.mycollection
-            .findOne()
-            .where('firstName')
-            .eq('Bob')
-            .exec();
+        const countExecResult = await db.mycollection.count(mangoQuery).exec();
 
         /*
          * assert things,
          * here your tests should fail to show that there is a bug
          */
-        assert.strictEqual(myDocument.age, 56);
+        assert.strictEqual(countExecResult, 2, 'count().exec() result');
 
         // you can also wait for events
-        const emitted = [];
-        const sub = collectionInOtherTab.mycollection
-            .findOne().$
-            .subscribe(doc => emitted.push(doc));
-        await AsyncTestUtil.waitUntil(() => emitted.length === 1);
+        let didSubscribeFire = false;
+        let countSubResult: number | undefined;
+        const sub = db.mycollection
+            .count(mangoQuery).$
+            .subscribe(result => {
+                didSubscribeFire = true;
+                countSubResult = result;
+            });
+        await AsyncTestUtil.waitUntil(() => didSubscribeFire);
+        assert.strictEqual(countSubResult, 2, 'count().$.subscribe result');
 
         // clean up afterwards
         sub.unsubscribe();
         db.destroy();
-        dbInOtherTab.destroy();
     });
 });
