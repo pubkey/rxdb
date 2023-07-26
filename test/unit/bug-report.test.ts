@@ -9,13 +9,13 @@
  * - 'npm run test:browser' so it runs in the browser
  */
 import assert from 'assert';
-import AsyncTestUtil from 'async-test-util';
 import config from './config';
 
 import {
     createRxDatabase,
     randomCouchString
 } from '../../';
+import { wrappedValidateAjvStorage } from '../../dist/lib/plugins/validate-ajv';
 
 describe('bug-report.test.js', () => {
     it('should fail because it reproduces the bug', async () => {
@@ -53,10 +53,11 @@ describe('bug-report.test.js', () => {
                 },
                 age: {
                     type: 'integer',
-                    minimum: 0,
+                    minimum: 10,
                     maximum: 150
                 }
-            }
+            },
+            required: ['passportId', 'firstName', 'lastName', 'age'],
         };
 
         /**
@@ -72,7 +73,7 @@ describe('bug-report.test.js', () => {
              * By calling config.storage.getStorage(),
              * we can ensure that all variations of RxStorage are tested in the CI.
              */
-            storage: config.storage.getStorage(),
+            storage: wrappedValidateAjvStorage({ storage: config.storage.getStorage() }),
             eventReduce: true,
             ignoreDuplicate: true
         });
@@ -84,53 +85,27 @@ describe('bug-report.test.js', () => {
         });
 
         // insert a document
-        await collections.mycollection.insert({
-            passportId: 'foobar',
-            firstName: 'Bob',
-            lastName: 'Kelso',
-            age: 56
-        });
-
-        /**
-         * to simulate the event-propagation over multiple browser-tabs,
-         * we create the same database again
-         */
-        const dbInOtherTab = await createRxDatabase({
-            name,
-            storage: config.storage.getStorage(),
-            eventReduce: true,
-            ignoreDuplicate: true
-        });
-        // create a collection
-        const collectionInOtherTab = await dbInOtherTab.addCollections({
-            mycollection: {
-                schema: mySchema
+        let error: Error | undefined;
+        try {
+            await collections.mycollection.bulkInsert([{
+                passportId: 'foobar',
+                firstName: 'Bob',
+                lastName: 'Kelso',
+                age: 9
+            }]);
+            throw new Error('test failure');
+        } catch (e: any) {
+            if (e.message !== 'test failure') {
+                error = e;
             }
-        });
+        }
 
-        // find the document in the other tab
-        const myDocument = await collectionInOtherTab.mycollection
-            .findOne()
-            .where('firstName')
-            .eq('Bob')
-            .exec();
-
-        /*
-         * assert things,
-         * here your tests should fail to show that there is a bug
-         */
-        assert.strictEqual(myDocument.age, 56);
-
-        // you can also wait for events
-        const emitted = [];
-        const sub = collectionInOtherTab.mycollection
-            .findOne().$
-            .subscribe(doc => emitted.push(doc));
-        await AsyncTestUtil.waitUntil(() => emitted.length === 1);
+        assert.strictEqual(typeof error, 'object');
+        assert.strictEqual(error?.message.includes('RxError (VD2)'), true, 'Is validation error');
+        assert.strictEqual(error?.message.includes('"schemaPath": "#/properties/age/minimum"'), true, 'Mentions age minimum');
+        throw error;
 
         // clean up afterwards
-        sub.unsubscribe();
         db.destroy();
-        dbInOtherTab.destroy();
     });
 });
