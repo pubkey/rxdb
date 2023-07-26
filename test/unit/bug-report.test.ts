@@ -67,6 +67,7 @@ describe('bug-report.test.js', () => {
 
         // create a database
         const db = await createRxDatabase({
+            allowSlowCount: true,
             name,
             /**
              * By calling config.storage.getStorage(),
