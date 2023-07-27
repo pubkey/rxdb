@@ -140,11 +140,19 @@ var RxStorageInstanceDexie = /*#__PURE__*/function () {
     return (0, _dexieQuery.dexieQuery)(this, preparedQuery);
   };
   _proto.count = async function count(preparedQuery) {
-    var result = await (0, _dexieQuery.dexieCount)(this, preparedQuery);
-    return {
-      count: result,
-      mode: 'fast'
-    };
+    if (preparedQuery.queryPlan.selectorSatisfiedByIndex) {
+      var result = await (0, _dexieQuery.dexieCount)(this, preparedQuery);
+      return {
+        count: result,
+        mode: 'fast'
+      };
+    } else {
+      var _result = await (0, _dexieQuery.dexieQuery)(this, preparedQuery);
+      return {
+        count: _result.documents.length,
+        mode: 'slow'
+      };
+    }
   };
   _proto.getChangedDocumentsSince = async function getChangedDocumentsSince(limit, checkpoint) {
     ensureNotClosed(this);

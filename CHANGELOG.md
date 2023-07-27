@@ -2,12 +2,16 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- FIX using `.count()` with `allowSlowCount: true` can return wrong results.
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 14.15.1 (27 July 2023)
+
+- FIX using `.count()` with `allowSlowCount: true` can return wrong results.
 
 ### 14.15.0 (18 July 2023)
 

@@ -133,11 +133,19 @@ export var RxStorageInstanceDexie = /*#__PURE__*/function () {
     return dexieQuery(this, preparedQuery);
   };
   _proto.count = async function count(preparedQuery) {
-    var result = await dexieCount(this, preparedQuery);
-    return {
-      count: result,
-      mode: 'fast'
-    };
+    if (preparedQuery.queryPlan.selectorSatisfiedByIndex) {
+      var result = await dexieCount(this, preparedQuery);
+      return {
+        count: result,
+        mode: 'fast'
+      };
+    } else {
+      var _result = await dexieQuery(this, preparedQuery);
+      return {
+        count: _result.documents.length,
+        mode: 'slow'
+      };
+    }
   };
   _proto.getChangedDocumentsSince = async function getChangedDocumentsSince(limit, checkpoint) {
     ensureNotClosed(this);
