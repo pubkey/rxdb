@@ -235,11 +235,19 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
     async count(
         preparedQuery: DefaultPreparedQuery<RxDocType>
     ): Promise<RxStorageCountResult> {
-        const result = await dexieCount(this, preparedQuery);
-        return {
-            count: result,
-            mode: 'fast'
-        };
+        if (preparedQuery.queryPlan.selectorSatisfiedByIndex) {
+            const result = await dexieCount(this, preparedQuery);
+            return {
+                count: result,
+                mode: 'fast'
+            };
+        } else {
+            const result = await dexieQuery(this, preparedQuery);
+            return {
+                count: result.documents.length,
+                mode: 'slow'
+            };
+        }
     }
 
     async getChangedDocumentsSince(
