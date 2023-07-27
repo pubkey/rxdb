@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- FIX using `.count()` with `allowSlowCount: true` can return wrong results.
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

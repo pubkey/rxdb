@@ -16,9 +16,6 @@ import {
     getSortComparator,
     createRxDatabase
 } from '../../';
-import {
-    areSelectorsSatisfiedByIndex
-} from '../../plugins/dev-mode';
 import { EXAMPLE_REVISION_1 } from '../helper/revisions';
 import * as schemas from '../helper/schemas';
 import {
