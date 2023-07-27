@@ -8,7 +8,7 @@
     "rxdb": "../../"
   },
   "devDependencies": {
-    "@types/node": "18.17.0",
+    "@types/node": "18.17.1",
     "@types/request-promise-native": "1.0.18",
     "async-test-util": "2.1.0",
     "request": "2.88.2",
