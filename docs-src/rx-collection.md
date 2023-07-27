@@ -100,7 +100,7 @@ const result = await myCollection.bulkInsert([{
 // }
 ```
 
-NOTICE: `bulkInsert` will not fail on update conflicts and you cannot expect that on failure the other documents are not inserted.
+NOTICE: `bulkInsert` will not fail on update conflicts and you cannot expect that on failure the other documents are not inserted. Also the call to `bulkInsert()` it will not throw if a single document errors because of validation errors. Instead it will return the error in the `.error` property of the returned object.
 
 ### bulkRemove()
 
