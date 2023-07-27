@@ -98,7 +98,8 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                 name: randomCouchString(10),
                 storage: wrappedValidateAjvStorage({
                     storage: config.storage.getStorage()
-                })
+                }),
+                allowSlowCount: true
             });
             const collections = await database.addCollections({
                 test: {
@@ -171,8 +172,7 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                 // Test output of .count()
                 if (
                     !queryData.query.limit &&
-                    !queryData.query.skip &&
-                    areSelectorsSatisfiedByIndex(schema, normalizedQuery)
+                    !queryData.query.skip
                 ) {
                     const countResult = await storageInstance.count(preparedQuery);
                     try {
