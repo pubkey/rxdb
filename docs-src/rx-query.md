@@ -91,7 +91,7 @@ querySub.unsubscribe()
 ```
 
 ## update()
-Runs and [update](./rx-document.md#update) on every RxDocument of the query-result.
+Runs an [update](./rx-document.md#update) on every RxDocument of the query-result.
 
 ```js
 
