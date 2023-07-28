@@ -176,7 +176,7 @@ To learn more about using RxDB with React Native, you might want to check out [t
 
 ### WatermelonDB
 
-WatermelonDB reactive and asynchronous database for React and React Native apps. It is based on SQLite in React Native and LokiJS when it is used in the browser. It supports schemas, observable queries, migrations and relations.
+WatermelonDB is a reactive and asynchronous database for React and React Native apps. It is based on SQLite in React Native and LokiJS when it is used in the browser. It supports schemas, observable queries, migrations and relations.
 The schema layout is handled by TypeScript decorators and looks like this:
 
 ```ts
@@ -201,7 +201,7 @@ According to the roadmap, despite being essentially feature-complete, Watermelon
 </p>
 
 Firestore is a cloud based database technology that stores data on clients devices and replicates it with the Firebase cloud service that is run by google. It has many features like observability and authentication.
-The main lacking feature is the non-complete offline first support because clients cannot start the application while being offline because then the authentication does not work. After they are authenticated, being offline is no longer a problem.
+The main feature lacking is the non-complete offline first support because clients cannot start the application while being offline because then the authentication does not work. After they are authenticated, being offline is no longer a problem.
 Also using firestore creates a vendor lock-in because it is not possible to replicate with a custom self hosted backend.
 
 To get started with Firestore in React Native, it is recommended to use the [React Native Firebase](https://github.com/invertase/react-native-firebase) open-source project.
@@ -217,5 +217,5 @@ To get started with Firestore in React Native, it is recommended to use the [Rea
 ## Follow up
 
 - Check out the [RxDB React Native example](https://github.com/pubkey/rxdb/tree/master/examples/react-native)
-- If you haven't done yet, you should start learning about RxDB with the [Quickstart Tutorial](./quickstart.md).
+- If you haven't done so yet, you should start learning about RxDB with the [Quickstart Tutorial](./quickstart.md).
 - There is a followup list of other [client side database alternatives](./alternatives.md) that might work with React Native.
