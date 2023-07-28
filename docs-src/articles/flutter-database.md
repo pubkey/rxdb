@@ -150,10 +150,10 @@ import 'package:rxdb/rxdb.dart';
 RxDatabase myDatabase = await getRxDatabase("javascript/dist/index.js", databaseName);
 
 // get a collection
-RxCollection myCollection = database.getCollection('heroes');
+RxCollection myCollection = myDatabase.getCollection('heroes');
 
 // insert a document
-RxDocument myDocument = await collection.insert({
+RxDocument myDocument = await myCollection.insert({
     "id": "zflutter-${DateTime.now()}",
     "name": nameController.text,
     "color": colorController.text
