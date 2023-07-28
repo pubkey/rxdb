@@ -166,9 +166,9 @@ RxQuery<RxHeroDocType> query = RxDatabaseState.collection.find();
 List<RxDocument<RxHeroDocType>> documents = [];
 
 // subscribe to a query
-myQuery.$().listen((newResults) {
+query.$().listen((results) {
     setState(() {
-        documents = newResults;
+        documents = results;
     });
 });
 ```
