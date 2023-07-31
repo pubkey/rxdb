@@ -340,7 +340,9 @@ export class RxQueryBase<
             });
     }
 
+    isSatisfiedByIndex(): boolean {
 
+    }
 
     /**
      * cached call to get the queryMatcher

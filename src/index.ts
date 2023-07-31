@@ -3,6 +3,8 @@
  * for when the you call "import from 'rxdb'".
  */
 
+import { MangoQuery, RxDocumentData, RxJsonSchema } from './types';
+
 export { addRxPlugin } from './plugin';
 
 export * from './rx-database';
@@ -28,6 +30,20 @@ export * from './plugin-helpers';
 export * from './plugins/utils';
 export * from './hooks';
 export * from './query-cache';
+
+export function isMangoQuerySatisfiedByIndex<RxDocType>(
+    collectionName: string, // There is probably a better type for this
+    mangoQuery: MangoQuery<RxDocType>
+): boolean {
+
+}
+
+export function isMangoQuerySatisfiedByIndex2<RxDocType>(
+    schema: RxJsonSchema<RxDocumentData<RxDocType>>,
+    mangoQuery: MangoQuery<RxDocType>
+): boolean {
+
+}
 
 /**
  * TODO use export type * from './types';

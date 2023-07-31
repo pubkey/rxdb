@@ -279,6 +279,10 @@ export class RxCollectionBase<
         return this.getDataMigrator().migratePromise(batchSize);
     }
 
+    isMangoQuerySatisfiedByIndex(mangoQuery: MangoQuery<RxDocumentType>): boolean {
+
+    }
+
     async insert(
         json: RxDocumentType | RxDocument
     ): Promise<RxDocument<RxDocumentType, OrmMethods>> {
