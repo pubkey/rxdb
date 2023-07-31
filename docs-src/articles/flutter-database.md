@@ -147,25 +147,28 @@ Afterwards you can import the rxdb library in your dart code and connect to the 
 import 'package:rxdb/rxdb.dart';
 
 // start the javascript process and connect to the database
-RxDatabase myDatabase = await getRxDatabase("javascript/dist/index.js", databaseName);
+RxDatabase database = await getRxDatabase("javascript/dist/index.js", databaseName);
 
 // get a collection
-RxCollection myCollection = database.getCollection('heroes');
+RxCollection collection = database.getCollection('heroes');
 
 // insert a document
-RxDocument myDocument = await collection.insert({
+RxDocument document = await collection.insert({
     "id": "zflutter-${DateTime.now()}",
     "name": nameController.text,
     "color": colorController.text
 });
 
 // create a query
-RxQuery<RxHeroDocType> myQuery = RxDatabaseState.collection.find();
+RxQuery<RxHeroDocType> query = RxDatabaseState.collection.find();
+
+// create list to store query results
+List<RxDocument<RxHeroDocType>> documents = [];
 
 // subscribe to a query
-myQuery.$().listen((newResults) {
+query.$().listen((results) {
     setState(() {
-        documents = newResults;
+        documents = results;
     });
 });
 ```
