@@ -326,6 +326,12 @@ const database = await createRxDatabase({
 });
 ```
 
+### `allowSlowCount`
+To allow non-fully-indexed count queries, you can also specify that by setting `allowSlowCount: true` when creating the database.
+Doing this is mostly not wanted, because it would run the counting on the storage without having the document stored in the RxDB document cache.
+This is only recommended if the RxStorage is running remotely like in a WebWorker and you not always want to send the document-data between the worker and the main thread. In this case you might only need the count-result instead to save performance.
+
+
 ## NOTICE: RxDB will always append the primary key to the sort parameters
 For several performance optimizations, like the [EventReduce algorithm](https://github.com/pubkey/event-reduce), RxDB expects all queries to return a deterministic sort order that does not depend on the insert order of the documents. To ensure a deterministic ordering, RxDB will always append the primary key as last sort parameter to all queries and to all indexes.
 This works in contrast to most other databases where a query without sorting would return the documents in the order in which they had been inserted to the database.
