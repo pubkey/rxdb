@@ -56,7 +56,15 @@ This was changed in v14 for a normal RxDocument.$ which emits RxDocument instanc
 
 Interestingly, `received$` has been named correctly
 
+## .bulkUpsert should behave equal to the other bulk methods
+
+https://github.com/pubkey/rxdb/issues/4821#issuecomment-1660339676
+
 
 ## Rename "RxDB Premium" to "RxDB Enterprise"
 
 Most "normal" users do not need premium access so we should name it "RxDB Enterprise" to make it more clear that it is intended to bought by companies.
+
+
+
+
