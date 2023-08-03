@@ -485,7 +485,7 @@
     "karma-spec-reporter": "0.0.36",
     "karma-webpack": "5.0.0",
     "leveldown": "6.1.1",
-    "madge": "6.0.0",
+    "madge": "6.1.0",
     "memdown": "6.1.1",
     "mini-css-extract-plugin": "2.7.6",
     "mocha": "10.2.0",
