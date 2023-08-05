@@ -2217,7 +2217,20 @@
             
         </li>
     
-        <li class="chapter " data-level="2.1.10" data-path="articles/browser-database.html">
+        <li class="chapter " data-level="2.1.10" data-path="articles/react-database.html">
+            
+                <a href="articles/react-database.html">
+            
+                    
+                    React Database
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="2.1.11" data-path="articles/browser-database.html">
             
                 <a href="articles/browser-database.html">
             
@@ -2230,7 +2243,7 @@
             
         </li>
     
-        <li class="chapter " data-level="2.1.11" data-path="articles/embedded-database.html">
+        <li class="chapter " data-level="2.1.12" data-path="articles/embedded-database.html">
             
                 <a href="articles/embedded-database.html">
             
@@ -2243,7 +2256,7 @@
             
         </li>
     
-        <li class="chapter " data-level="2.1.12" data-path="articles/frontend-database.html">
+        <li class="chapter " data-level="2.1.13" data-path="articles/frontend-database.html">
             
                 <a href="articles/frontend-database.html">
             
@@ -2256,7 +2269,7 @@
             
         </li>
     
-        <li class="chapter " data-level="2.1.13" data-path="articles/flutter-database.html">
+        <li class="chapter " data-level="2.1.14" data-path="articles/flutter-database.html">
             
                 <a href="articles/flutter-database.html">
             
@@ -2269,7 +2282,7 @@
             
         </li>
     
-        <li class="chapter " data-level="2.1.14" data-path="articles/in-memory-nosql-database.html">
+        <li class="chapter " data-level="2.1.15" data-path="articles/in-memory-nosql-database.html">
             
                 <a href="articles/in-memory-nosql-database.html">
             
@@ -2282,7 +2295,7 @@
             
         </li>
     
-        <li class="chapter " data-level="2.1.15" data-path="articles/mobile-database.html">
+        <li class="chapter " data-level="2.1.16" data-path="articles/mobile-database.html">
             
                 <a href="articles/mobile-database.html">
             
@@ -2295,7 +2308,7 @@
             
         </li>
     
-        <li class="chapter " data-level="2.1.16" data-path="articles/data-base.html">
+        <li class="chapter " data-level="2.1.17" data-path="articles/data-base.html">
             
                 <a href="articles/data-base.html">
             
@@ -2467,7 +2480,7 @@ Also there is no replication method. This makes SQLite a good solution when you 
 
 <p>PouchDB is a JavaScript NoSQL database that follows the API of the <a href="https://couchdb.apache.org/" target="_blank">Apache CouchDB</a> server database.
 The core feature of PouchDB is the ability to do a two-way replication with any CouchDB compliant endpoint.
-While PouchDB is pretty mature, it has some drawbacks that makes blocks it from being used in a client-side React Native application. For example it has to store all documents states over time which is required to replicate with CouchDB. Also it is not easily possible to fully purge documents and so it will fill up disc space over time. A big problem is also that PouchDB is not really maintained and major bugs like wrong query results are not fixed anymore. The performance of PouchDB is a general bottleneck which is caused by how it has to store and fetch documents while being compliant to CouchDB. The only real reason to use PouchDB in React Native, is when you want to replicate with a CouchDB or Couchbase server.</p>
+While PouchDB is pretty mature, it has some drawbacks that blocks it from being used in a client-side React Native application. For example it has to store all documents states over time which is required to replicate with CouchDB. Also it is not easily possible to fully purge documents and so it will fill up disc space over time. A big problem is also that PouchDB is not really maintained and major bugs like wrong query results are not fixed anymore. The performance of PouchDB is a general bottleneck which is caused by how it has to store and fetch documents while being compliant to CouchDB. The only real reason to use PouchDB in React Native, is when you want to replicate with a CouchDB or Couchbase server.</p>
 <p>Because PouchDB is based on an adapter system for storage, there are two options to use it with React Native:</p>
 <ul>
 <li>Either use the <a href="https://github.com/craftzdog/pouchdb-react-native" target="_blank">pouchdb-adapter-react-native-sqlite</a> adapter</li>
@@ -2556,7 +2569,7 @@ await collections.humans.find({
 <p>Using the SQLite RxStorage is pretty fast, which is shown in the <a href="rx-storage.html#performance-comparison">performance comparison</a>.
 To learn more about using RxDB with React Native, you might want to check out <a href="https://github.com/pubkey/rxdb/tree/master/examples/react-native" target="_blank">this example project</a>.</p>
 <h3 id="watermelondb">WatermelonDB</h3>
-<p>WatermelonDB reactive and asynchronous database for React and React Native apps. It is based on SQLite in React Native and LokiJS when it is used in the browser. It supports schemas, observable queries, migrations and relations.
+<p>WatermelonDB is a reactive and asynchronous database for React and React Native apps. It is based on SQLite in React Native and LokiJS when it is used in the browser. It supports schemas, observable queries, migrations and relations.
 The schema layout is handled by TypeScript decorators and looks like this:</p>
 <pre><code class="lang-ts"><span class="hljs-keyword">class</span> Post extends Model {
   @field(<span class="hljs-string">&apos;name&apos;</span>) name;
@@ -2575,7 +2588,7 @@ The schema layout is handled by TypeScript decorators and looks like this:</p>
 </p>
 
 <p>Firestore is a cloud based database technology that stores data on clients devices and replicates it with the Firebase cloud service that is run by google. It has many features like observability and authentication.
-The main lacking feature is the non-complete offline first support because clients cannot start the application while being offline because then the authentication does not work. After they are authenticated, being offline is no longer a problem.
+The main feature lacking is the non-complete offline first support because clients cannot start the application while being offline because then the authentication does not work. After they are authenticated, being offline is no longer a problem.
 Also using firestore creates a vendor lock-in because it is not possible to replicate with a custom self hosted backend.</p>
 <p>To get started with Firestore in React Native, it is recommended to use the <a href="https://github.com/invertase/react-native-firebase" target="_blank">React Native Firebase</a> open-source project.</p>
 <!-- TODO
@@ -2586,7 +2599,7 @@ Also using firestore creates a vendor lock-in because it is not possible to repl
 <h2 id="follow-up">Follow up</h2>
 <ul>
 <li>Check out the <a href="https://github.com/pubkey/rxdb/tree/master/examples/react-native" target="_blank">RxDB React Native example</a></li>
-<li>If you haven&apos;t done yet, you should start learning about RxDB with the <a href="quickstart.html">Quickstart Tutorial</a>.</li>
+<li>If you haven&apos;t done so yet, you should start learning about RxDB with the <a href="quickstart.html">Quickstart Tutorial</a>.</li>
 <li>There is a followup list of other <a href="alternatives.html">client side database alternatives</a> that might work with React Native.</li>
 </ul>
 

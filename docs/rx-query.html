@@ -2217,7 +2217,20 @@
             
         </li>
     
-        <li class="chapter " data-level="2.1.10" data-path="articles/browser-database.html">
+        <li class="chapter " data-level="2.1.10" data-path="articles/react-database.html">
+            
+                <a href="articles/react-database.html">
+            
+                    
+                    React Database
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="2.1.11" data-path="articles/browser-database.html">
             
                 <a href="articles/browser-database.html">
             
@@ -2230,7 +2243,7 @@
             
         </li>
     
-        <li class="chapter " data-level="2.1.11" data-path="articles/embedded-database.html">
+        <li class="chapter " data-level="2.1.12" data-path="articles/embedded-database.html">
             
                 <a href="articles/embedded-database.html">
             
@@ -2243,7 +2256,7 @@
             
         </li>
     
-        <li class="chapter " data-level="2.1.12" data-path="articles/frontend-database.html">
+        <li class="chapter " data-level="2.1.13" data-path="articles/frontend-database.html">
             
                 <a href="articles/frontend-database.html">
             
@@ -2256,7 +2269,7 @@
             
         </li>
     
-        <li class="chapter " data-level="2.1.13" data-path="articles/flutter-database.html">
+        <li class="chapter " data-level="2.1.14" data-path="articles/flutter-database.html">
             
                 <a href="articles/flutter-database.html">
             
@@ -2269,7 +2282,7 @@
             
         </li>
     
-        <li class="chapter " data-level="2.1.14" data-path="articles/in-memory-nosql-database.html">
+        <li class="chapter " data-level="2.1.15" data-path="articles/in-memory-nosql-database.html">
             
                 <a href="articles/in-memory-nosql-database.html">
             
@@ -2282,7 +2295,7 @@
             
         </li>
     
-        <li class="chapter " data-level="2.1.15" data-path="articles/mobile-database.html">
+        <li class="chapter " data-level="2.1.16" data-path="articles/mobile-database.html">
             
                 <a href="articles/mobile-database.html">
             
@@ -2295,7 +2308,7 @@
             
         </li>
     
-        <li class="chapter " data-level="2.1.16" data-path="articles/data-base.html">
+        <li class="chapter " data-level="2.1.17" data-path="articles/data-base.html">
             
                 <a href="articles/data-base.html">
             
@@ -2494,7 +2507,7 @@ This is extremely helpful when used together with UIs that should always show th
 querySub.unsubscribe()
 </code></pre>
 <h2 id="update">update()</h2>
-<p>Runs and <a href="rx-document.html#update">update</a> on every RxDocument of the query-result.</p>
+<p>Runs an <a href="rx-document.html#update">update</a> on every RxDocument of the query-result.</p>
 <pre><code class="lang-js">
 <span class="hljs-comment">// to use the update() method, you need to add the update plugin.</span>
 <span class="hljs-keyword">import</span> { RxDBUpdatePlugin } <span class="hljs-keyword">from</span> <span class="hljs-string">&apos;rxdb/plugins/update&apos;</span>;
@@ -2635,7 +2648,7 @@ query.$.subscribe(amount =&gt; {
   <span class="hljs-built_in">console</span>.log(<span class="hljs-string">&apos;Currently has &apos;</span> + amount + <span class="hljs-string">&apos; documents&apos;</span>);
 });
 </code></pre>
-<p><strong>IMPORTANT:</strong> count queries have a better performance than normal queries because they do not have to fetch the full document data out of the storage. Therefore it is <strong>not</strong> possible to run a <code>count()</code> query with a selector that requires to fetch and compare the document data. So if your query selector <strong>does not</strong> fully match an index of the schema, it is not allowed to run it. These queries would have no performance benefit compared to normal queries but have the tradeoff not not using the fetched document data for caching.</p>
+<p><strong>IMPORTANT:</strong> count queries have a better performance than normal queries because they do not have to fetch the full document data out of the storage. Therefore it is <strong>not</strong> possible to run a <code>count()</code> query with a selector that requires to fetch and compare the document data. So if your query selector <strong>does not</strong> fully match an index of the schema, it is not allowed to run it. These queries would have no performance benefit compared to normal queries but have the tradeoff of not using the fetched document data for caching.</p>
 <pre><code class="lang-ts"><span class="hljs-comment">/**
  * The following will throw an error because
  * the count operation cannot run on any specific index range
@@ -2699,6 +2712,10 @@ query.$.subscribe(amount =&gt; {
     <span class="hljs-comment">/* ... */</span>
 });
 </code></pre>
+<h3 id="allowslowcount"><code>allowSlowCount</code></h3>
+<p>To allow non-fully-indexed count queries, you can also specify that by setting <code>allowSlowCount: true</code> when creating the database.
+Doing this is mostly not wanted, because it would run the counting on the storage without having the document stored in the RxDB document cache.
+This is only recommended if the RxStorage is running remotely like in a WebWorker and you not always want to send the document-data between the worker and the main thread. In this case you might only need the count-result instead to save performance.</p>
 <h2 id="notice-rxdb-will-always-append-the-primary-key-to-the-sort-parameters">NOTICE: RxDB will always append the primary key to the sort parameters</h2>
 <p>For several performance optimizations, like the <a href="https://github.com/pubkey/event-reduce" target="_blank">EventReduce algorithm</a>, RxDB expects all queries to return a deterministic sort order that does not depend on the insert order of the documents. To ensure a deterministic ordering, RxDB will always append the primary key as last sort parameter to all queries and to all indexes.
 This works in contrast to most other databases where a query without sorting would return the documents in the order in which they had been inserted to the database.</p>

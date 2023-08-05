@@ -2217,7 +2217,20 @@
             
         </li>
     
-        <li class="chapter " data-level="2.1.10" data-path="articles/browser-database.html">
+        <li class="chapter " data-level="2.1.10" data-path="articles/react-database.html">
+            
+                <a href="articles/react-database.html">
+            
+                    
+                    React Database
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="2.1.11" data-path="articles/browser-database.html">
             
                 <a href="articles/browser-database.html">
             
@@ -2230,7 +2243,7 @@
             
         </li>
     
-        <li class="chapter " data-level="2.1.11" data-path="articles/embedded-database.html">
+        <li class="chapter " data-level="2.1.12" data-path="articles/embedded-database.html">
             
                 <a href="articles/embedded-database.html">
             
@@ -2243,7 +2256,7 @@
             
         </li>
     
-        <li class="chapter " data-level="2.1.12" data-path="articles/frontend-database.html">
+        <li class="chapter " data-level="2.1.13" data-path="articles/frontend-database.html">
             
                 <a href="articles/frontend-database.html">
             
@@ -2256,7 +2269,7 @@
             
         </li>
     
-        <li class="chapter " data-level="2.1.13" data-path="articles/flutter-database.html">
+        <li class="chapter " data-level="2.1.14" data-path="articles/flutter-database.html">
             
                 <a href="articles/flutter-database.html">
             
@@ -2269,7 +2282,7 @@
             
         </li>
     
-        <li class="chapter " data-level="2.1.14" data-path="articles/in-memory-nosql-database.html">
+        <li class="chapter " data-level="2.1.15" data-path="articles/in-memory-nosql-database.html">
             
                 <a href="articles/in-memory-nosql-database.html">
             
@@ -2282,7 +2295,7 @@
             
         </li>
     
-        <li class="chapter " data-level="2.1.15" data-path="articles/mobile-database.html">
+        <li class="chapter " data-level="2.1.16" data-path="articles/mobile-database.html">
             
                 <a href="articles/mobile-database.html">
             
@@ -2295,7 +2308,7 @@
             
         </li>
     
-        <li class="chapter " data-level="2.1.16" data-path="articles/data-base.html">
+        <li class="chapter " data-level="2.1.17" data-path="articles/data-base.html">
             
                 <a href="articles/data-base.html">
             
@@ -2499,7 +2512,7 @@ Returns an object with a <code>success</code>- and <code>error</code>-array.</p>
 <span class="hljs-comment">//   error: []</span>
 <span class="hljs-comment">// }</span>
 </code></pre>
-<p>NOTICE: <code>bulkInsert</code> will not fail on update conflicts and you cannot expect that on failure the other documents are not inserted.</p>
+<p>NOTICE: <code>bulkInsert</code> will not fail on update conflicts and you cannot expect that on failure the other documents are not inserted. Also the call to <code>bulkInsert()</code> it will not throw if a single document errors because of validation errors. Instead it will return the error in the <code>.error</code> property of the returned object.</p>
 <h3 id="bulkremove">bulkRemove()</h3>
 <p>When you want to remove many documents at once, use bulk remove. Returns an object with a <code>success</code>- and <code>error</code>-array.</p>
 <pre><code class="lang-js"><span class="hljs-keyword">const</span> result = <span class="hljs-keyword">await</span> myCollection.bulkRemove([
