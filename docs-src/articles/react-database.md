@@ -59,25 +59,23 @@ While considering database options for React applications, RxDB stands out due t
 ### Using RxDB in a React Application
 Installing RxDB in a React App
 The process of integrating RxDB into a React application is straightforward. Begin by installing RxDB as a dependency:
-
-bash
-Copy code
-npm install rxdb
+`npm install rxdb rxjs`
 Once installed, RxDB can be imported and initialized within your React components. The following code snippet illustrates a basic setup:
 
-javascript
-Copy code
-import RxDB from 'rxdb';
+```javascript
+import { createRxDatabase } from 'rxdb';
+import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
 
-const initDatabase = async () => {
-  const db = await RxDB.create({
-    name: 'mydatabase',
-    adapter: 'indexeddb',
-  });
-  // Database initialization completed
-};
+const db = await createRxDatabase({
+  name: 'heroesdb',                   // <- name
+  storage: getRxStorageDexie(),       // <- RxStorage
+  password: 'myPassword',             // <- password (optional)
+  multiInstance: true,                // <- multiInstance (optional, default: true)
+  eventReduce: true,                  // <- eventReduce (optional, default: false)
+  cleanupPolicy: {}                   // <- custom cleanup policy (optional) 
+});
+```
 
-initDatabase();
 ### Using RxDB React Hooks
 The [rxdb-hooks](https://github.com/cvara/rxdb-hooks) package provides a set of React hooks that simplify data management within components. These hooks leverage RxDB's reactivity to automatically update components when data changes occur. The following example demonstrates the usage of the `useRxCollection` and `useRxQuery` hooks to query and observe a collection:
 
