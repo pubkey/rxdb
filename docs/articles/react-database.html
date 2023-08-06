@@ -2484,22 +2484,21 @@
 <p>While considering database options for React applications, RxDB stands out due to its unique combination of reactive programming and database capabilities. Unlike traditional solutions such as IndexedDB or Web Storage, which provide basic data storage, RxDB offers a dedicated database solution with advanced features. Additionally, while state management libraries like Redux and MobX can be adapted for database use, RxDB provides an integrated solution specifically designed for handling data.</p>
 <h3 id="using-rxdb-in-a-react-application">Using RxDB in a React Application</h3>
 <p>Installing RxDB in a React App
-The process of integrating RxDB into a React application is straightforward. Begin by installing RxDB as a dependency:</p>
-<p>bash
-Copy code
-npm install rxdb
+The process of integrating RxDB into a React application is straightforward. Begin by installing RxDB as a dependency:
+<code>npm install rxdb rxjs</code>
 Once installed, RxDB can be imported and initialized within your React components. The following code snippet illustrates a basic setup:</p>
-<p>javascript
-Copy code
-import RxDB from &apos;rxdb&apos;;</p>
-<p>const initDatabase = async () =&gt; {
-  const db = await RxDB.create({
-    name: &apos;mydatabase&apos;,
-    adapter: &apos;indexeddb&apos;,
-  });
-  // Database initialization completed
-};</p>
-<p>initDatabase();</p>
+<pre><code class="lang-javascript"><span class="hljs-keyword">import</span> { createRxDatabase } <span class="hljs-keyword">from</span> <span class="hljs-string">&apos;rxdb&apos;</span>;
+<span class="hljs-keyword">import</span> { getRxStorageDexie } <span class="hljs-keyword">from</span> <span class="hljs-string">&apos;rxdb/plugins/storage-dexie&apos;</span>;
+
+<span class="hljs-keyword">const</span> db = <span class="hljs-keyword">await</span> createRxDatabase({
+  name: <span class="hljs-string">&apos;heroesdb&apos;</span>,                   <span class="hljs-comment">// &lt;- name</span>
+  storage: getRxStorageDexie(),       <span class="hljs-comment">// &lt;- RxStorage</span>
+  password: <span class="hljs-string">&apos;myPassword&apos;</span>,             <span class="hljs-comment">// &lt;- password (optional)</span>
+  multiInstance: <span class="hljs-literal">true</span>,                <span class="hljs-comment">// &lt;- multiInstance (optional, default: true)</span>
+  eventReduce: <span class="hljs-literal">true</span>,                  <span class="hljs-comment">// &lt;- eventReduce (optional, default: false)</span>
+  cleanupPolicy: {}                   <span class="hljs-comment">// &lt;- custom cleanup policy (optional) </span>
+});
+</code></pre>
 <h3 id="using-rxdb-react-hooks">Using RxDB React Hooks</h3>
 <p>The <a href="https://github.com/cvara/rxdb-hooks" target="_blank">rxdb-hooks</a> package provides a set of React hooks that simplify data management within components. These hooks leverage RxDB&apos;s reactivity to automatically update components when data changes occur. The following example demonstrates the usage of the <code>useRxCollection</code> and <code>useRxQuery</code> hooks to query and observe a collection:</p>
 <pre><code class="lang-ts">const collection = useRxCollection(&apos;characters&apos;);
