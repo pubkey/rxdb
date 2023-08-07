@@ -194,6 +194,7 @@
     * [Flutter Database](./articles/flutter-database.md)
     * [In-memory NoSQL database](./articles/in-memory-nosql-database.md)
     * [Mobile database](./articles/mobile-database.md)
+    * [PWA database](./articles/progressive-web-app-database.md)
     * [Data Base](./articles/data-base.md)
 
 * Deprecated
