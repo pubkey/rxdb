@@ -4,7 +4,7 @@
     <head>
         <meta charset="UTF-8">
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-        <title>React Database · RxDB - JavaScript Database</title>
+        <title>PWA database · RxDB - JavaScript Database</title>
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="description" content="">
         <meta name="generator" content="GitBook 3.2.3">
@@ -63,10 +63,10 @@
     <link rel="shortcut icon" href="../gitbook/images/favicon.ico" type="image/x-icon">
 
     
-    <link rel="next" href="browser-database.html" />
+    <link rel="next" href="data-base.html" />
     
     
-    <link rel="prev" href="angular-database.html" />
+    <link rel="prev" href="mobile-database.html" />
     
 
     </head>
@@ -2217,7 +2217,7 @@
             
         </li>
     
-        <li class="chapter active" data-level="2.1.10" data-path="react-database.html">
+        <li class="chapter " data-level="2.1.10" data-path="react-database.html">
             
                 <a href="react-database.html">
             
@@ -2308,7 +2308,7 @@
             
         </li>
     
-        <li class="chapter " data-level="2.1.17" data-path="progressive-web-app-database.html">
+        <li class="chapter active" data-level="2.1.17" data-path="progressive-web-app-database.html">
             
                 <a href="progressive-web-app-database.html">
             
@@ -2434,7 +2434,7 @@
     <!-- Title -->
     <h1>
         <i class="fa fa-circle-o-notch fa-spin"></i>
-        <a href=".." >React Database</a>
+        <a href=".." >PWA database</a>
     </h1>
 </div>
 
@@ -2449,34 +2449,25 @@
     
                                 <section class="normal markdown-section">
                                 
-                                <h1 id="rxdb-as-a-database-for-react-applications">RxDB as a Database for React Applications</h1>
-<p>In the rapidly evolving landscape of web development, React has emerged as a cornerstone technology for building dynamic and responsive user interfaces. With the increasing complexity of modern web applications, efficient data management becomes pivotal. This article delves into the integration of RxDB, a potent client-side database, with React applications to optimize data handling and elevate the overall user experience.</p>
-<p>React has revolutionized the way web applications are built by introducing a component-based architecture. This approach enables developers to create reusable UI components that efficiently update in response to changes in data. The virtual DOM mechanism, a key feature of React, facilitates optimized rendering, enhancing performance and user interactivity.</p>
-<p>While React excels at managing the user interface, the need for efficient data storage and retrieval mechanisms is equally significant. A client-side database brings several advantages to React applications:</p>
-<ul>
-<li>Improved Performance: Local data storage reduces the need for frequent server requests, resulting in faster data retrieval and enhanced application responsiveness.</li>
-<li>Offline Capabilities: A client-side database enables offline access to data, allowing users to interact with the application even when they are disconnected from the internet.</li>
-<li>Real-Time Updates: With the ability to observe changes in data, client-side databases facilitate real-time updates to the UI, ensuring users are always presented with the latest information.</li>
-<li>Reduced Server Load: By handling data operations locally, client-side databases alleviate the load on the server, contributing to a more scalable architecture.</li>
-</ul>
-<h2 id="introducing-rxdb-as-a-javascript-database">Introducing RxDB as a JavaScript Database</h2>
-<p>RxDB, a powerful JavaScript database, has garnered attention as an optimal solution for managing data in React applications. Built on top of the IndexedDB standard, RxDB combines the principles of reactive programming with database management. Its core features include reactive data handling, offline-first capabilities, and robust data replication.</p>
+                                <h1 id="rxdb-as-a-database-for-progressive-web-apps-pwa">RxDB as a Database for Progressive Web Apps (PWA)</h1>
+<p>Progressive Web Apps (PWAs) have revolutionized the digital landscape, offering users an immersive blend of web and native app experiences. At the heart of every successful PWA lies effective data management, and this is where RxDB comes into play. In this article, we&apos;ll explore the dynamic synergy between RxDB, a robust client-side database, and Progressive Web Apps, uncovering how RxDB enhances data handling, synchronization, and overall performance, propelling PWAs into a new era of excellence.</p>
+<h2 id="what-is-a-progressive-web-app">What is a Progressive Web App</h2>
+<p>Progressive Web Apps are the future of web development, seamlessly combining the best of both web and mobile app worlds. They can be easily installed on the user&apos;s home screen, function offline, and load at lightning speed. Unlike hybrid apps, PWAs offer a consistent user experience across platforms, making them a versatile choice for modern applications.</p>
+<p>PWAs bring a plethora of advantages to the table. They eliminate the hassle of app store installations and updates, reduce dependency on network connectivity, and prioritize fast loading times. By harnessing the power of service workers and intelligent caching mechanisms, PWAs ensure users can access content even in offline mode. Furthermore, PWAs are device-agnostic, seamlessly adapting to various devices, from desktops to smartphones.</p>
+<h2 id="introducing-rxdb-as-a-client-side-database-for-pwas">Introducing RxDB as a Client-Side Database for PWAs</h2>
+<p>At the heart of PWAs lies efficient data management, and RxDB steps in as a reliable ally. As a client-side NoSQL database, RxDB seamlessly integrates into web applications, offering real-time data synchronization and manipulation capabilities. This article sheds light on the transformative potential of RxDB as it collaborates harmoniously with PWAs, enabling local-first strategies and elevating user interactions to a whole new level.</p>
 <center>
     <a href="https://rxdb.info/" target="_blank">
-        <img src="../files/logo/logo_text.svg" alt="JavaScript React Database" width="221">
+        <img src="../files/logo/logo_text.svg" alt="Progressive Web App Database" width="228">
     </a>
 </center>
 
-<h2 id="what-is-rxdb">What is RxDB?</h2>
-<p>RxDB, short for Reactive Database, is an open-source JavaScript database that seamlessly integrates reactive programming with database operations. It offers a comprehensive API for performing database actions and synchronizing data across clients and servers. RxDB&apos;s underlying philosophy revolves around observables, allowing developers to reactively manage data changes and create dynamic user interfaces.</p>
-<h3 id="reactive-data-handling">Reactive Data Handling</h3>
-<p>One of RxDB&apos;s standout features is its support for reactive data handling. Traditional databases often require manual intervention for data fetching and updating, leading to complex and error-prone code. RxDB, however, automatically notifies subscribers whenever data changes occur, eliminating the need for explicit data manipulation. This reactive approach simplifies code and enhances the responsiveness of React components.</p>
-<h3 id="local-first-approach">Local-First Approach</h3>
-<p>RxDB embraces a <a href="../offline-first.html">local-first</a> methodology, enabling applications to function seamlessly even in offline scenarios. By storing data locally, RxDB ensures that users can interact with the application and make updates regardless of internet connectivity. Once the connection is reestablished, RxDB synchronizes the local changes with the remote database, maintaining data consistency across devices.</p>
-<h3 id="data-replication">Data Replication</h3>
-<p>Data replication is a cornerstone of modern applications that require synchronization between multiple clients and servers. RxDB provides robust data replication mechanisms that facilitate real-time synchronization between different instances of the database. This ensures that changes made on one client are promptly propagated to others, contributing to a cohesive and unified user experience.</p>
-<h3 id="observable-queries">Observable Queries</h3>
-<p>RxDB extends the concept of observables beyond data changes. It introduces observable queries, allowing developers to observe the results of database queries. This feature enables automatic updates to query results whenever relevant data changes occur. Observable queries simplify state management by eliminating the need to manually trigger updates in response to changing data.</p>
+<h3 id="getting-started-with-rxdb">Getting Started with RxDB</h3>
+<p>RxDB emerges as a reactive, schema-based NoSQL database crafted explicitly for client-side applications. Its real-time data synchronization and responsiveness align seamlessly with the dynamic demands of modern PWAs.</p>
+<h4 id="local-first-approach">Local-First Approach</h4>
+<p>The cornerstone of RxDB&apos;s philosophy is the local-first approach, empowering PWAs to prioritize data storage and manipulation on the client side. This paradigm ensures that PWAs remain functional even when offline, allowing users to access and interact with data seamlessly. RxDB bridges any gaps in data synchronization once network connectivity is restored.</p>
+<h4 id="observable-queries">Observable Queries</h4>
+<p>Observable queries (aka <strong>Live-Queries</strong>) serve as the engine of RxDB&apos;s dynamic capabilities. By leveraging these queries, PWAs can monitor and respond to data changes in real time. The result is an engaging user interface with instantaneous updates that captivate users and keep them engaged.</p>
 <pre><code class="lang-ts">await db.heroes.find({
   selector: {
     healthpoints: {
@@ -2487,91 +2478,54 @@
 .$ <span class="hljs-comment">// the $ returns an observable that emits each time the result set of the query changes</span>
 .subscribe(aliveHeroes =&gt; <span class="hljs-built_in">console</span>.dir(aliveHeroes));
 </code></pre>
-<h3 id="multi-tab-support">Multi-Tab Support</h3>
-<p>Web applications often operate in multiple browser tabs or windows. RxDB accommodates this scenario by offering built-in multi-tab support. It ensures that data changes made in one tab are efficiently propagated to other tabs, maintaining data consistency and providing a seamless experience for users interacting with the application across different tabs.</p>
+<h4 id="multi-tab-support">Multi-Tab Support</h4>
+<p>RxDB extends its prowess to multi-tab scenarios, guaranteeing data consistency across different tabs or windows of the same PWA. This feature promotes a seamless transition between various sections of the application, while minimizing data conflicts.</p>
 <p align="center">
   <img src="../files/multiwindow.gif" alt="multi tab support" width="450">
 </p>
 
-<h3 id="rxdb-vs-other-react-database-options">RxDB vs. Other React Database Options</h3>
-<p>While considering database options for React applications, RxDB stands out due to its unique combination of reactive programming and database capabilities. Unlike traditional solutions such as IndexedDB or Web Storage, which provide basic data storage, RxDB offers a dedicated database solution with advanced features. Additionally, while state management libraries like Redux and MobX can be adapted for database use, RxDB provides an integrated solution specifically designed for handling data.</p>
-<h3 id="using-rxdb-in-a-react-application">Using RxDB in a React Application</h3>
-<p>Installing RxDB in a React App
-The process of integrating RxDB into a React application is straightforward. Begin by installing RxDB as a dependency:
-<code>npm install rxdb rxjs</code>
-Once installed, RxDB can be imported and initialized within your React components. The following code snippet illustrates a basic setup:</p>
-<pre><code class="lang-javascript"><span class="hljs-keyword">import</span> { createRxDatabase } <span class="hljs-keyword">from</span> <span class="hljs-string">&apos;rxdb&apos;</span>;
-<span class="hljs-keyword">import</span> { getRxStorageDexie } <span class="hljs-keyword">from</span> <span class="hljs-string">&apos;rxdb/plugins/storage-dexie&apos;</span>;
 
-<span class="hljs-keyword">const</span> db = <span class="hljs-keyword">await</span> createRxDatabase({
-  name: <span class="hljs-string">&apos;heroesdb&apos;</span>,                   <span class="hljs-comment">// &lt;- name</span>
-  storage: getRxStorageDexie(),       <span class="hljs-comment">// &lt;- RxStorage</span>
-  password: <span class="hljs-string">&apos;myPassword&apos;</span>,             <span class="hljs-comment">// &lt;- password (optional)</span>
-  multiInstance: <span class="hljs-literal">true</span>,                <span class="hljs-comment">// &lt;- multiInstance (optional, default: true)</span>
-  eventReduce: <span class="hljs-literal">true</span>,                  <span class="hljs-comment">// &lt;- eventReduce (optional, default: false)</span>
-  cleanupPolicy: {}                   <span class="hljs-comment">// &lt;- custom cleanup policy (optional) </span>
-});
-</code></pre>
-<h3 id="using-rxdb-react-hooks">Using RxDB React Hooks</h3>
-<p>The <a href="https://github.com/cvara/rxdb-hooks" target="_blank">rxdb-hooks</a> package provides a set of React hooks that simplify data management within components. These hooks leverage RxDB&apos;s reactivity to automatically update components when data changes occur. The following example demonstrates the usage of the <code>useRxCollection</code> and <code>useRxQuery</code> hooks to query and observe a collection:</p>
-<pre><code class="lang-ts">const collection = useRxCollection(&apos;characters&apos;);
-const query = collection.find().where(&apos;affiliation&apos;).equals(&apos;Jedi&apos;);
-const {
-  result: characters,
-  isFetching,
-  fetchMore,
-  isExhausted,
-} = useRxQuery(query, {
-  pageSize: 5,
-  pagination: &apos;Infinite&apos;,
-});
-
-if (isFetching) {
-  return &apos;Loading...&apos;;
-}
-
-return (
-  &lt;CharacterList&gt;
-    {characters.map((character, index) =&gt; (
-      &lt;Character character={character} key={index} /&gt;
-    ))}
-    {!isExhausted &amp;&amp; &lt;button onClick={fetchMore}&gt;load more&lt;/button&gt;}
-  &lt;/CharacterList&gt;
-);
-</code></pre>
-<h3 id="different-rxstorage-layers-for-rxdb">Different RxStorage Layers for RxDB</h3>
-<p>RxDB offers multiple storage layers, each backed by a different underlying technology. Developers can choose the storage layer that best suits their application&apos;s requirements. Some available options include:</p>
+<h3 id="using-rxdb-in-a-progressive-web-app">Using RxDB in a Progressive Web App</h3>
+<p>Integrating RxDB into a Progressive Web App, driven by technologies like React, is a straightforward process. By configuring RxDB and installing the necessary packages, developers establish a solid foundation for robust data management within their PWA.</p>
+<h2 id="exploring-different-rxstorage-layers">Exploring Different RxStorage Layers</h2>
+<p>RxDB caters to diverse needs through its various RxStorage layers:</p>
 <ul>
-<li><a href="../rx-storage-dexie.html">Dexie.js RxStorage</a>: Built on top of Dexie.js, a popular IndexedDB wrapper.</li>
-<li><a href="../rx-storage-lokijs.html">LokiJS RxStorage</a>: Utilizes the LokiJS in-memory database.</li>
-<li><a href="../rx-storage-indexeddb.html">IndexedDB RxStorage</a>: The default RxDB storage layer, providing efficient data storage in modern browsers.</li>
-<li><a href="../rx-storage-opfs.html">OPFS RxStorage</a>: Uses the Operational File System (OPFS) for storage, suitable for Electron applications.</li>
-<li><a href="../rx-storage-memory.html">Memory RxStorage</a>: Stores data in memory, primarily intended for testing and development purposes.</li>
+<li>Dexie.js RxStorage: Leveraging the capabilities of the Dexie.js library for storage.</li>
+<li>LokiJS RxStorage: Utilizing the strengths of the LokiJS library for storage.</li>
+<li>IndexedDB RxStorage: Tapping into the browser&apos;s IndexedDB for efficient data storage.</li>
+<li>OPFS RxStorage: Interfacing with the Offline-First Persistence System for seamless persistence.</li>
+<li>Memory RxStorage: Storing data in memory, ideal for temporary data requirements.
+This flexibility empowers developers to optimize data storage based on the unique needs of their PWA.</li>
 </ul>
-<h3 id="synchronizing-data-with-rxdb-between-clients-and-servers">Synchronizing Data with RxDB between Clients and Servers</h3>
-<p>The offline-first approach is a fundamental principle of RxDB&apos;s design. When dealing with client-server synchronization, RxDB ensures that changes made offline are captured and propagated to the server once connectivity is reestablished. This mechanism guarantees that data remains consistent across different client instances, even when operating in an occasionally connected environment.</p>
-<p>RxDB offers a range of <a href="../replication.html">replication plugins</a> that facilitate data synchronization between clients and servers. These plugins support various synchronization strategies, such as one-way replication, two-way replication, and custom conflict resolution. Developers can select the appropriate plugin based on their application&apos;s synchronization requirements.</p>
-<p align="center">
-  <img src="../files/database-replication.png" alt="database replication" width="200">
-</p>
-
-<h3 id="advanced-rxdb-features-and-techniques">Advanced RxDB Features and Techniques</h3>
-<p>Encryption of Local Data
-Security is paramount when handling sensitive user data. RxDB supports data encryption, ensuring that locally stored information remains protected from unauthorized access. This feature is particularly valuable when dealing with sensitive data in offline scenarios.</p>
+<p>Synchronizing Data with RxDB between PWA Clients and Servers
+To facilitate seamless data synchronization between PWA clients and servers, RxDB offers a range of replication options:</p>
+<ul>
+<li><p><a href="../replication.html">RxDB Replication Algorithm</a>: RxDB introduces its own replication algorithm, enabling efficient and reliable data synchronization between clients and servers.</p>
+</li>
+<li><p><a href="../replication-couchdb.html">CouchDB Replication</a>: Leveraging its roots in CouchDB, RxDB facilitates smooth data replication between clients and CouchDB servers, ensuring data consistency and synchronization across devices.</p>
+</li>
+<li><p><a href="../replication-firestore.html">Firestore Replication</a>: RxDB synchronizes data with Google Firestore, a real-time cloud-hosted NoSQL database. This integration guarantees up-to-date data across different instances of the PWA.</p>
+</li>
+<li><p><a href="../replication-p2p.html">Peer-to-Peer (P2P)</a> Replication: RxDB supports P2P replication, facilitating direct data synchronization between clients without intermediaries. This decentralized approach is invaluable in scenarios where server infrastructure is limited.</p>
+</li>
+</ul>
+<h2 id="advanced-rxdb-features-and-techniques">Advanced RxDB Features and Techniques</h2>
+<h3 id="encryption-of-local-data">Encryption of Local Data</h3>
+<p>RxDB empowers PWAs with the ability to encrypt local data, enhancing data security and safeguarding sensitive information. This feature is indispensable for applications handling user credentials, financial transactions, and other confidential data.</p>
 <h3 id="indexing-and-performance-optimization">Indexing and Performance Optimization</h3>
-<p>Efficient indexing is critical for achieving optimal database performance. RxDB provides mechanisms to define indexes on specific fields, enhancing query speed and reducing the computational overhead of data retrieval.</p>
+<p>Performance optimization is a top priority for PWAs. RxDB addresses this concern by offering indexing options that expedite data retrieval, resulting in a snappier user interface and heightened responsiveness.</p>
 <h3 id="json-key-compression">JSON Key Compression</h3>
-<p>RxDB employs JSON key compression to reduce storage space and improve performance. This technique minimizes the memory footprint of the database, making it suitable for applications with limited resources.</p>
+<p>RxDB introduces JSON key compression, a feature that reduces storage requirements. This optimization is particularly beneficial for PWAs dealing with substantial data volumes, enhancing overall efficiency and resource utilization.</p>
 <h3 id="change-streams-and-event-handling">Change Streams and Event Handling</h3>
-<p>RxDB enables developers to subscribe to change streams, which emit events whenever data changes occur. This functionality facilitates real-time event handling and provides opportunities for implementing features such as notifications and live updates.</p>
+<p>RxDB introduces change streams, enabling PWAs to react to data changes in real time. This capability empowers dynamic updates to the user interface, promoting interactivity and engagement.</p>
 <h2 id="conclusion">Conclusion</h2>
-<p>In the realm of React application development, efficient data management is pivotal to delivering a seamless and engaging user experience. RxDB emerges as a compelling solution, seamlessly integrating reactive programming principles with sophisticated database capabilities. By adopting RxDB, React developers can harness its powerful features, including reactive data handling, offline-first support, and real-time synchronization. With RxDB as a foundational pillar, React applications can excel in responsiveness, scalability, and data integrity. As the landscape of web development continues to evolve, RxDB remains a steadfast companion for creating robust and dynamic React applications.</p>
+<p>In the ever-evolving landscape of web application development, Progressive Web Apps continue to redefine user experiences. RxDB emerges as a pivotal player, seamlessly integrating with PWAs and enhancing their capabilities. With features like the local-first approach, observable queries, replication mechanisms, and advanced encryption, RxDB empowers developers to create responsive, offline-capable, and data-driven PWAs. As the demand for sophisticated PWAs continues to surge, RxDB remains an indispensable tool for developers aiming to push the boundaries of innovation and redefine the standards of user engagement. By embracing RxDB, developers ensure their PWAs remain at the forefront of the digital revolution, offering seamless and immersive experiences to users around the world.</p>
 <h2 id="follow-up">Follow Up</h2>
 <p>To explore more about RxDB and leverage its capabilities for browser database development, check out the following resources:</p>
 <ul>
 <li><a href="https://github.com/pubkey/rxdb" target="_blank">RxDB GitHub Repository</a>: Visit the official GitHub repository of RxDB to access the source code, documentation, and community support.</li>
 <li><a href="../quickstart.html">RxDB Quickstart</a>: Get started quickly with RxDB by following the provided quickstart guide, which provides step-by-step instructions for setting up and using RxDB in your projects.</li>
-<li><a href="https://github.com/pubkey/rxdb/tree/master/examples/react" target="_blank">RxDB React Example at GitHub</a></li>
+<li><a href="https://github.com/pubkey/rxdb/tree/master/examples/angular" target="_blank">RxDB Progressive Web App in Angular Example</a></li>
 </ul>
 
                                 
@@ -2600,12 +2554,12 @@ Security is paramount when handling sensitive user data. RxDB supports data encr
 
             
                 
-                <a href="angular-database.html" class="navigation navigation-prev " aria-label="Previous page: Angular Database">
+                <a href="mobile-database.html" class="navigation navigation-prev " aria-label="Previous page: Mobile database">
                     <i class="fa fa-angle-left"></i>
                 </a>
                 
                 
-                <a href="browser-database.html" class="navigation navigation-next " aria-label="Next page: Browser Database">
+                <a href="data-base.html" class="navigation navigation-next " aria-label="Next page: Data Base">
                     <i class="fa fa-angle-right"></i>
                 </a>
                 
@@ -2616,7 +2570,7 @@ Security is paramount when handling sensitive user data. RxDB supports data encr
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"React Database","level":"2.1.10","depth":2,"next":{"title":"Browser Database","level":"2.1.11","depth":2,"path":"articles/browser-database.md","ref":"./articles/browser-database.md","articles":[]},"previous":{"title":"Angular Database","level":"2.1.9","depth":2,"path":"articles/angular-database.md","ref":"./articles/angular-database.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./analytics.js","./next-button.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/logo.svg","custom-favicon":{},"edit-link":{"label":"","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - JavaScript Database","links":{"sidebar":{"RxDB":"/","Follow @twitter ":"https://twitter.com/intent/user?screen_name=rxdbjs","Chat @discord ":"https://rxdb.info/chat.html","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"articles/react-database.md","mtime":"","type":"markdown"},"gitbook":{"version":"3.2.3","time":""},"basePath":"..","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"PWA database","level":"2.1.17","depth":2,"next":{"title":"Data Base","level":"2.1.18","depth":2,"path":"articles/data-base.md","ref":"./articles/data-base.md","articles":[]},"previous":{"title":"Mobile database","level":"2.1.16","depth":2,"path":"articles/mobile-database.md","ref":"./articles/mobile-database.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./analytics.js","./next-button.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/logo.svg","custom-favicon":{},"edit-link":{"label":"","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - JavaScript Database","links":{"sidebar":{"RxDB":"/","Follow @twitter ":"https://twitter.com/intent/user?screen_name=rxdbjs","Chat @discord ":"https://rxdb.info/chat.html","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"articles/progressive-web-app-database.md","mtime":"","type":"markdown"},"gitbook":{"version":"3.2.3","time":""},"basePath":"..","book":{"language":""}});
         });
     </script>
 </div>
