@@ -17,6 +17,11 @@ Databases play a vital role in Angular applications by providing a structured an
 ## Introducing RxDB as a Database Solution
 RxDB stands for Reactive Database and is built on the principles of reactive programming. It combines the best features of [NoSQL databases](./in-memory-nosql-database.md) with the power of reactive programming to provide a scalable and efficient database solution. RxDB offers seamless integration with Angular applications and brings several unique features that make it an attractive choice for developers.
 
+
+<center>
+<iframe width="560" height="315" src="https://www.youtube-nocookie.com/embed/qHWrooWyCYg" title="RxDB Angular Video" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+</center>
+
 ## Getting Started with RxDB
 To begin our journey with RxDB, let's understand its key concepts and features.
 
