@@ -117,7 +117,7 @@ var RxBackupState = /*#__PURE__*/function () {
         var docs = await collection.findByIds(docIds).exec();
         if (docs.size === 0) {
           hasMore = false;
-          return "continue";
+          return 1; // continue
         }
         await Promise.all(Array.from(docs.values()).map(async doc => {
           var writtenFiles = await backupSingleDocument(doc, _this.options);
@@ -140,8 +140,7 @@ var RxBackupState = /*#__PURE__*/function () {
         }));
       };
       while (hasMore && !this.isStopped) {
-        var _ret = await _loop();
-        if (_ret === "continue") continue;
+        if (await _loop()) continue;
       }
       meta.collectionStates[collectionName].checkpoint = lastCheckpoint;
       await (0, _fileUtil.setMeta)(this.options, meta);

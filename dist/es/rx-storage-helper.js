@@ -199,7 +199,7 @@ bulkWriteRows, context) {
           documentInDb
         };
         errors[docId] = err;
-        return "continue";
+        return 1; // continue
       }
 
       // handle attachments data
@@ -308,8 +308,7 @@ bulkWriteRows, context) {
     }
   };
   for (var rowId = 0; rowId < rowAmount; rowId++) {
-    var _ret = _loop();
-    if (_ret === "continue") continue;
+    if (_loop()) continue;
   }
   return {
     bulkInsertDocs,
