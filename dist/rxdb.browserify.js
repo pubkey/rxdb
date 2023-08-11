@@ -25010,30 +25010,42 @@ exports.now = now;
 (function (Buffer){(function (){
 'use strict';
 
-const defaults = {
+const defaults = Object.freeze({
   ignoreUnknown: false,
   respectType: false,
   respectFunctionNames: false,
   respectFunctionProperties: false,
   unorderedObjects: true,
   unorderedArrays: false,
-  unorderedSets: false
-};
-function objectHash(object, options = {}) {
-  options = { ...defaults, ...options };
+  unorderedSets: false,
+  excludeKeys: void 0,
+  excludeValues: void 0,
+  replacer: void 0
+});
+function objectHash(object, options) {
+  if (options) {
+    options = { ...defaults, ...options };
+  } else {
+    options = defaults;
+  }
   const hasher = createHasher(options);
   hasher.dispatch(object);
   return hasher.toString();
 }
+const defaultPrototypesKeys = Object.freeze([
+  "prototype",
+  "__proto__",
+  "constructor"
+]);
 function createHasher(options) {
-  const buff = [];
-  let context = [];
+  let buff = "";
+  let context = /* @__PURE__ */ new Map();
   const write = (str) => {
-    buff.push(str);
+    buff += str;
   };
   return {
     toString() {
-      return buff.join("");
+      return buff;
     },
     getContext() {
       return context;
@@ -25043,58 +25055,73 @@ function createHasher(options) {
         value = options.replacer(value);
       }
       const type = value === null ? "null" : typeof value;
-      return this["_" + type](value);
+      return this[type](value);
     },
-    _object(object) {
+    object(object) {
       if (object && typeof object.toJSON === "function") {
-        return this._object(object.toJSON());
+        return this.object(object.toJSON());
       }
-      const pattern = /\[object (.*)]/i;
       const objString = Object.prototype.toString.call(object);
-      const _objType = pattern.exec(objString);
-      const objType = _objType ? _objType[1].toLowerCase() : "unknown:[" + objString.toLowerCase() + "]";
-      let objectNumber = null;
-      if ((objectNumber = context.indexOf(object)) >= 0) {
-        return this.dispatch("[CIRCULAR:" + objectNumber + "]");
+      let objType = "";
+      const objectLength = objString.length;
+      if (objectLength < 10) {
+        objType = "unknown:[" + objString + "]";
       } else {
-        context.push(object);
+        objType = objString.slice(8, objectLength - 1);
+      }
+      objType = objType.toLowerCase();
+      let objectNumber = null;
+      if ((objectNumber = context.get(object)) === void 0) {
+        context.set(object, context.size);
+      } else {
+        return this.dispatch("[CIRCULAR:" + objectNumber + "]");
       }
       if (typeof Buffer !== "undefined" && Buffer.isBuffer && Buffer.isBuffer(object)) {
         write("buffer:");
         return write(object.toString("utf8"));
       }
       if (objType !== "object" && objType !== "function" && objType !== "asyncfunction") {
-        if (this["_" + objType]) {
-          this["_" + objType](object);
+        if (this[objType]) {
+          this[objType](object);
         } else if (!options.ignoreUnknown) {
-          this._unkown(object, objType);
+          this.unkown(object, objType);
         }
       } else {
         let keys = Object.keys(object);
         if (options.unorderedObjects) {
           keys = keys.sort();
         }
+        let extraKeys = [];
         if (options.respectType !== false && !isNativeFunction(object)) {
-          keys.splice(0, 0, "prototype", "__proto__", "letructor");
+          extraKeys = defaultPrototypesKeys;
         }
         if (options.excludeKeys) {
-          keys = keys.filter(function(key) {
+          keys = keys.filter((key) => {
+            return !options.excludeKeys(key);
+          });
+          extraKeys = extraKeys.filter((key) => {
             return !options.excludeKeys(key);
           });
         }
-        write("object:" + keys.length + ":");
-        for (const key of keys) {
+        write("object:" + (keys.length + extraKeys.length) + ":");
+        const dispatchForKey = (key) => {
           this.dispatch(key);
           write(":");
           if (!options.excludeValues) {
             this.dispatch(object[key]);
           }
           write(",");
+        };
+        for (const key of keys) {
+          dispatchForKey(key);
+        }
+        for (const key of extraKeys) {
+          dispatchForKey(key);
         }
       }
     },
-    _array(arr, unordered) {
-      unordered = typeof unordered !== "undefined" ? unordered : options.unorderedArrays !== false;
+    array(arr, unordered) {
+      unordered = unordered === void 0 ? options.unorderedArrays !== false : unordered;
       write("array:" + arr.length + ":");
       if (!unordered || arr.length <= 1) {
         for (const entry of arr) {
@@ -25102,48 +25129,50 @@ function createHasher(options) {
         }
         return;
       }
-      const contextAdditions = [];
+      const contextAdditions = /* @__PURE__ */ new Map();
       const entries = arr.map((entry) => {
         const hasher = createHasher(options);
         hasher.dispatch(entry);
-        contextAdditions.push(hasher.getContext());
+        for (const [key, value] of hasher.getContext()) {
+          contextAdditions.set(key, value);
+        }
         return hasher.toString();
       });
-      context = [...context, ...contextAdditions];
+      context = contextAdditions;
       entries.sort();
-      return this._array(entries, false);
+      return this.array(entries, false);
     },
-    _date(date) {
+    date(date) {
       return write("date:" + date.toJSON());
     },
-    _symbol(sym) {
+    symbol(sym) {
       return write("symbol:" + sym.toString());
     },
-    _unkown(value, type) {
+    unkown(value, type) {
       write(type);
       if (!value) {
         return;
       }
       write(":");
       if (value && typeof value.entries === "function") {
-        return this._array(
+        return this.array(
           Array.from(value.entries()),
           true
           /* ordered */
         );
       }
     },
-    _error(err) {
+    error(err) {
       return write("error:" + err.toString());
     },
-    _boolean(bool) {
-      return write("bool:" + bool.toString());
+    boolean(bool) {
+      return write("bool:" + bool);
     },
-    _string(string) {
+    string(string) {
       write("string:" + string.length + ":");
-      write(string.toString());
+      write(string);
     },
-    _function(fn) {
+    function(fn) {
       write("fn:");
       if (isNativeFunction(fn)) {
         this.dispatch("[native]");
@@ -25154,82 +25183,82 @@ function createHasher(options) {
         this.dispatch("function-name:" + String(fn.name));
       }
       if (options.respectFunctionProperties) {
-        this._object(fn);
+        this.object(fn);
       }
     },
-    _number(number) {
-      return write("number:" + number.toString());
+    number(number) {
+      return write("number:" + number);
     },
-    _xml(xml) {
+    xml(xml) {
       return write("xml:" + xml.toString());
     },
-    _null() {
+    null() {
       return write("Null");
     },
-    _undefined() {
+    undefined() {
       return write("Undefined");
     },
-    _regexp(regex) {
+    regexp(regex) {
       return write("regex:" + regex.toString());
     },
-    _uint8array(arr) {
+    uint8array(arr) {
       write("uint8array:");
       return this.dispatch(Array.prototype.slice.call(arr));
     },
-    _uint8clampedarray(arr) {
+    uint8clampedarray(arr) {
       write("uint8clampedarray:");
       return this.dispatch(Array.prototype.slice.call(arr));
     },
-    _int8array(arr) {
+    int8array(arr) {
       write("int8array:");
       return this.dispatch(Array.prototype.slice.call(arr));
     },
-    _uint16array(arr) {
+    uint16array(arr) {
       write("uint16array:");
       return this.dispatch(Array.prototype.slice.call(arr));
     },
-    _int16array(arr) {
+    int16array(arr) {
       write("int16array:");
       return this.dispatch(Array.prototype.slice.call(arr));
     },
-    _uint32array(arr) {
+    uint32array(arr) {
       write("uint32array:");
       return this.dispatch(Array.prototype.slice.call(arr));
     },
-    _int32array(arr) {
+    int32array(arr) {
       write("int32array:");
       return this.dispatch(Array.prototype.slice.call(arr));
     },
-    _float32array(arr) {
+    float32array(arr) {
       write("float32array:");
       return this.dispatch(Array.prototype.slice.call(arr));
     },
-    _float64array(arr) {
+    float64array(arr) {
       write("float64array:");
       return this.dispatch(Array.prototype.slice.call(arr));
     },
-    _arraybuffer(arr) {
+    arraybuffer(arr) {
       write("arraybuffer:");
       return this.dispatch(new Uint8Array(arr));
     },
-    _url(url) {
+    url(url) {
       return write("url:" + url.toString());
     },
-    _map(map) {
+    map(map) {
       write("map:");
       const arr = [...map];
-      return this._array(arr, options.unorderedSets !== false);
+      return this.array(arr, options.unorderedSets !== false);
     },
-    _set(set) {
+    set(set) {
       write("set:");
       const arr = [...set];
-      return this._array(arr, options.unorderedSets !== false);
+      return this.array(arr, options.unorderedSets !== false);
     },
-    _file(file) {
+    file(file) {
       write("file:");
       return this.dispatch([file.name, file.size, file.type, file.lastModfied]);
     },
-    _blob() {
+    blob() {
       if (options.ignoreUnknown) {
         return write("[blob]");
       }
@@ -25237,78 +25266,79 @@ function createHasher(options) {
         'Hashing Blob objects is currently not supported\nUse "options.replacer" or "options.ignoreUnknown"\n'
       );
     },
-    _domwindow() {
+    domwindow() {
       return write("domwindow");
     },
-    _bigint(number) {
+    bigint(number) {
       return write("bigint:" + number.toString());
     },
     /* Node.js standard native objects */
-    _process() {
+    process() {
       return write("process");
     },
-    _timer() {
+    timer() {
       return write("timer");
     },
-    _pipe() {
+    pipe() {
       return write("pipe");
     },
-    _tcp() {
+    tcp() {
       return write("tcp");
     },
-    _udp() {
+    udp() {
       return write("udp");
     },
-    _tty() {
+    tty() {
       return write("tty");
     },
-    _statwatcher() {
+    statwatcher() {
       return write("statwatcher");
     },
-    _securecontext() {
+    securecontext() {
       return write("securecontext");
     },
-    _connection() {
+    connection() {
       return write("connection");
     },
-    _zlib() {
+    zlib() {
       return write("zlib");
     },
-    _context() {
+    context() {
       return write("context");
     },
-    _nodescript() {
+    nodescript() {
       return write("nodescript");
     },
-    _httpparser() {
+    httpparser() {
       return write("httpparser");
     },
-    _dataview() {
+    dataview() {
       return write("dataview");
     },
-    _signal() {
+    signal() {
       return write("signal");
     },
-    _fsevent() {
+    fsevent() {
       return write("fsevent");
     },
-    _tlswrap() {
+    tlswrap() {
       return write("tlswrap");
     }
   };
 }
+const nativeFunc = "[native code] }";
+const nativeFuncLength = nativeFunc.length;
 function isNativeFunction(f) {
   if (typeof f !== "function") {
     return false;
   }
-  const exp = /^function\s+\w*\s*\(\s*\)\s*{\s+\[native code]\s+}$/i;
-  return exp.exec(Function.prototype.toString.call(f)) != null;
+  return Function.prototype.toString.call(f).slice(-nativeFuncLength) === nativeFunc;
 }
 
 class WordArray {
   constructor(words, sigBytes) {
     words = this.words = words || [];
-    this.sigBytes = sigBytes !== void 0 ? sigBytes : words.length * 4;
+    this.sigBytes = sigBytes === void 0 ? words.length * 4 : sigBytes;
   }
   toString(encoder) {
     return (encoder || Hex).stringify(this);
@@ -25379,9 +25409,10 @@ const Utf8 = {
 };
 class BufferedBlockAlgorithm {
   constructor() {
+    this._data = new WordArray();
+    this._nDataBytes = 0;
     this._minBufferSize = 0;
     this.blockSize = 512 / 32;
-    this.reset();
   }
   reset() {
     this._data = new WordArray();
@@ -25509,8 +25540,8 @@ const K = [
 const W = [];
 class SHA256 extends Hasher {
   constructor() {
-    super();
-    this.reset();
+    super(...arguments);
+    this._hash = new WordArray([...H]);
   }
   reset() {
     super.reset();
@@ -25611,18 +25642,21 @@ function murmurHash(key, seed = 0) {
   }
   k1 = 0;
   switch (remainder) {
-    case 3:
+    case 3: {
       k1 ^= (key[i + 2] & 255) << 16;
       break;
-    case 2:
+    }
+    case 2: {
       k1 ^= (key[i + 1] & 255) << 8;
       break;
-    case 1:
+    }
+    case 1: {
       k1 ^= key[i] & 255;
       k1 = (k1 & 65535) * c1 + (((k1 >>> 16) * c1 & 65535) << 16) & 4294967295;
       k1 = k1 << 15 | k1 >>> 17;
       k1 = (k1 & 65535) * c2 + (((k1 >>> 16) * c2 & 65535) << 16) & 4294967295;
       h1 ^= k1;
+    }
   }
   h1 ^= key.length;
   h1 ^= h1 >>> 16;
@@ -25704,12 +25738,15 @@ class DiffEntry {
   }
   toJSON() {
     switch (this.type) {
-      case "added":
-        return `[+] Added   ${this.key}`;
-      case "removed":
-        return `[-] Removed ${this.key}`;
-      case "changed":
-        return `[~] Changed ${this.key} from ${this.oldValue.toString()} to ${this.newValue.toString()}`;
+      case "added": {
+        return `Added   \`${this.key}\``;
+      }
+      case "removed": {
+        return `Removed \`${this.key}\``;
+      }
+      case "changed": {
+        return `Changed \`${this.key}\` from \`${this.oldValue?.toString() || "-"}\` to \`${this.newValue.toString()}\``;
+      }
     }
   }
 }
@@ -25722,10 +25759,10 @@ class DiffHashedObject {
     this.props = props;
   }
   toString() {
-    if (!this.props) {
-      return JSON.stringify(this.value);
-    } else {
+    if (this.props) {
       return `{${Object.keys(this.props).join(",")}}`;
+    } else {
+      return JSON.stringify(this.value);
     }
   }
   toJSON() {
