@@ -196,6 +196,7 @@
     * [Mobile database](./articles/mobile-database.md)
     * [PWA database](./articles/progressive-web-app-database.md)
     * [Data Base](./articles/data-base.md)
+    * [localStorage](./articles/localstorage.md)
 
 * Deprecated
     * [RxStorage PouchDB](./rx-storage-pouchdb.md)
