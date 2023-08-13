@@ -103,7 +103,7 @@ For those looking to harness the full power of IndexedDB with added capabilities
 Another intriguing option is the OPFS (File System API). This API provides direct access to an origin-based, sandboxed filesystem which is highly optimized for performance and offers in-place write access to its content.
 OPFS offers impressive performance benefits. However, working with the OPFS API can be complex, and it's only accessible within a **WebWorker**. To simplify its usage and extend its capabilities, consider using a wrapper library like [RxDB's OPFS RxStorage](../rx-storage-opfs.md), which builds a comprehensive database on top of the OPFS API. This abstraction allows you to harness the power of the OPFS API without the intricacies of direct usage.
 
-### `localStorage vs Cookies
+### localStorage vs Cookies
 Cookies, once a primary method of client-side data storage, have fallen out of favor in modern web development due to their limitations. While they can store data, they are about **100 times slower** when compared to the localStorage API. Additionally, cookies are included in the HTTP header, which can impact network performance. As a result, cookies are not recommended for data storage purposes in contemporary web applications.
 
 ### localStorage vs WebSQL
@@ -117,7 +117,7 @@ For React Native developers, the [AsyncStorage API](https://reactnative.dev/docs
 
 ### `node-localstorage` for Node.js
 
-While native localStorage is absent in **Node.js**, the [node-localstorage npm package](https://github.com/lmaccherone/node-localstorage) bridges the gap. This package replicates the browser's localStorage API within the Node.js environment, ensuring consistent and compatible data storage capabilities.
+Because native localStorage is absent in **Node.js**, you will get the error `ReferenceError: localStorage is not defined` in Node.js or node based runtimes like Next.js. The [node-localstorage npm package](https://github.com/lmaccherone/node-localstorage) bridges the gap. This package replicates the browser's localStorage API within the Node.js environment, ensuring consistent and compatible data storage capabilities.
 
 
 ## Conclusion: Choosing the Right Storage Solution
