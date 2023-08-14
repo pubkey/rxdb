@@ -56,7 +56,7 @@ const replicationState = replicateCouchDB(
              * before storing them in RxDB.
              * (optional)
              */
-            modifier: docData => {/* ... */} 
+            modifier: docData => {/* ... */}, 
             /**
              * Heartbeat time in milliseconds
              * for the long polling of the changestream.
@@ -70,7 +70,7 @@ const replicationState = replicateCouchDB(
              * How many local changes to process at once.
              * (optional)
              */
-            batchSize: 60;
+            batchSize: 60,
             /**
              * Custom modifier to mutate documents
              * before sending them to the CouchDB endpoint.
