@@ -45,7 +45,7 @@ The preferences API is good when only a small amount of data needs to be stored 
 
 ### Localstorage/IndexedDB/WebSQL
 
-Since Capacitor apps run in a web view, Web APIs like IndexedDB, Localstorage and WebSQL are available. But the default browser behavior is to clean up these storages regularly when they are not in use for a long time or the device is low on space. Therefore you cannot 100% rely on the persistence of the stored data and your application needs to expect that the data will be lost eventually.
+Since Capacitor apps run in a web view, Web APIs like IndexedDB, [Localstorage](./articles/localstorage.md) and WebSQL are available. But the default browser behavior is to clean up these storages regularly when they are not in use for a long time or the device is low on space. Therefore you cannot 100% rely on the persistence of the stored data and your application needs to expect that the data will be lost eventually.
 
 Storing data in these storages can be done in browsers, because there is no other option. But in Capacitor iOS and Android, you should not rely on these.
 

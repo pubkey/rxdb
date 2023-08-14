@@ -17,7 +17,7 @@ There are multiple database solutions that can be used with React Native. While 
 
 ### AsyncStorage
 
-AsyncStorage is a key->value storage solution that works similar to the browsers *localstorage* API. The big difference is that access to the AsyncStorage is not a blocking operation but instead everything is `Promise` based. This is a big benefit because long running writes and reads will not block your JavaScript process which would cause a laggy user interface.
+AsyncStorage is a key->value storage solution that works similar to the browsers [localstorage API](./articles/localstorage.md). The big difference is that access to the AsyncStorage is not a blocking operation but instead everything is `Promise` based. This is a big benefit because long running writes and reads will not block your JavaScript process which would cause a laggy user interface.
 
 ```ts
 /**
