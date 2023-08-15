@@ -46,7 +46,7 @@
 </h2>
 
 <p align="justify">
-  RxDB (short for <b>R</b>eactive <b>D</b>ata<b>b</b>ase) is an <a href="https://rxdb.info/offline-first.html">offline-first</a>, NoSQL-database for JavaScript Applications like Websites, hybrid Apps, Electron-Apps, Progressive Web Apps and Node.js.
+  RxDB (short for <b>R</b>eactive <b>D</b>ata<b>b</b>ase) is an <a href="https://rxdb.info/offline-first.html">offline-first</a>, NoSQL-database for JavaScript Applications like Websites, hybrid Apps, Electron-Apps, Progressive Web Apps and <a href="https://rxdb.info/nodejs-database.html">Node.js</a>.
   Reactive means that you can not only query the current state, but <b>subscribe</b> to all state changes like the result of a query or even a single field of a document.
   This is great for UI-based <b>realtime</b> applications in a way that makes it easy to develop and also has great performance benefits but can also be used to create fast backends in Node.js.<br />
   RxDB provides an easy to implement <a href="https://rxdb.info/replication.html">protocol</a> for realtime <b>replication</b> with your existing infrastructure or any compliant CouchDB endpoint.<br />
@@ -70,7 +70,7 @@ Use the [quickstart](https://rxdb.info/quickstart.html), read the [documentation
 </h2>
 
 RxDB provides an easy to implement, <b>battle-tested</b> <a href="https://rxdb.info/replication.html"> replication protocol</a> for realtime sync with your existing infrastructure.<br />
-There are also plugins to replicate with any <a href="/replication-couchdb.html">CouchDB</a> endpoint or over <a href="https://rxdb.info/replication-graphql.html">GraphQL</a> and REST or even <a href="https://rxdb.info/replication-p2p.html">P2P</a>.
+There are also plugins to replicate with any <a href="https://rxdb.info/replication-couchdb.html">CouchDB</a> endpoint or over <a href="https://rxdb.info/replication-graphql.html">GraphQL</a> and REST or even <a href="https://rxdb.info/replication-p2p.html">P2P</a>.
 
 
 
@@ -461,3 +461,12 @@ Get started now by [reading the docs](https://rxdb.info/quickstart.html) or expl
 - [Read this when you have found a bug](./orga/bug-checklist.md)
 - [Buy access to the premium plugins](https://rxdb.info/premium.html)
 - [Join us at discord to get help](https://rxdb.info/chat.html)
+
+
+<!-- 
+  There are many websites that just exact-copy the readme of github projects.
+  This generates free backlinks so we add some links here to pages
+  that we need to rank better.
+-->
+## More specific content
+[Angular Database](https://rxdb.info/articles/angular-database.html), [Frontend Database](https://rxdb.info/articles/frontend-database.html), [localStorage](https://rxdb.info/articles/localstorage.html), [React Database](https://rxdb.info/articles/react-database.html), [Browser Database](https://rxdb.info/articles/browser-database.html), [React Native Database](https://rxdb.info/react-native-database.html), [PWA Database](https://rxdb.info/articles/progressive-web-app-database.html), [In-memory NoSQL database](https://rxdb.info/articles/in-memory-nosql-database.html)
