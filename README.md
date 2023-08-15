@@ -468,5 +468,5 @@ Get started now by [reading the docs](https://rxdb.info/quickstart.html) or expl
   This generates free backlinks so we add some links here to pages
   that we need to rank better.
 -->
-## More specific content
+#### More content
 [Angular Database](https://rxdb.info/articles/angular-database.html), [Frontend Database](https://rxdb.info/articles/frontend-database.html), [localStorage](https://rxdb.info/articles/localstorage.html), [React Database](https://rxdb.info/articles/react-database.html), [Browser Database](https://rxdb.info/articles/browser-database.html), [React Native Database](https://rxdb.info/react-native-database.html), [PWA Database](https://rxdb.info/articles/progressive-web-app-database.html), [In-memory NoSQL database](https://rxdb.info/articles/in-memory-nosql-database.html)
