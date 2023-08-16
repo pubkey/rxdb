@@ -11,7 +11,7 @@ import {
     getFromMapOrCreate,
     nextTick,
     now,
-    requestIdlePromise
+    IdleQueue
 } from './plugins/utils';
 
 export class QueryCache {
@@ -128,7 +128,7 @@ export function triggerCacheReplacement(
      * Do not run directly to not reduce result latency of a new query
      */
     nextTick() // wait at least one tick
-        .then(() => requestIdlePromise(200)) // and then wait for the CPU to be idle
+        .then(() => IdleQueue.requestIdlePromise({timeout: 200})) // and then wait for the CPU to be idle
         .then(() => {
             if (!rxCollection.destroyed) {
                 rxCollection.cacheReplacementPolicy(rxCollection, rxCollection._queryCache);

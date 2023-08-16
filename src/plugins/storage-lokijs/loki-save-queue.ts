@@ -1,7 +1,7 @@
 import type { LokiDatabaseSettings } from '../../types';
 import {
     PROMISE_RESOLVE_VOID,
-    requestIdlePromise
+    IdleQueue
 } from '../utils';
 
 /**
@@ -53,7 +53,7 @@ export class LokiSaveQueue {
                  * This ensures that CPU blocking writes are finished
                  * before we proceed.
                  */
-                await requestIdlePromise();
+                await IdleQueue.requestIdlePromise();
 
                 // no write happened since the last save call
                 if (this.writesSinceLastRun === 0) {
@@ -63,10 +63,10 @@ export class LokiSaveQueue {
                 /**
                  * Because LokiJS is a in-memory database,
                  * we can just wait until the JavaScript process is idle
-                 * via requestIdlePromise(). Then we know that nothing important
+                 * via IdleQueue.requestIdlePromise(). Then we know that nothing important
                  * is running at the moment.
                  */
-                await requestIdlePromise().then(() => requestIdlePromise());
+                await IdleQueue.requestIdlePromise().then(() => IdleQueue.requestIdlePromise());
 
                 if (this.writesSinceLastRun === 0) {
                     return;

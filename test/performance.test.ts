@@ -2,7 +2,7 @@ import {
     createRxDatabase,
     randomCouchString,
     overwritable,
-    requestIdlePromise
+    IdleQueue
 } from '../';
 import * as assert from 'assert';
 import * as schemas from './helper/schemas';
@@ -219,7 +219,7 @@ export function averageOfTimeValues(
 
 
 async function awaitBetweenTest() {
-    await requestIdlePromise();
+    await IdleQueue.requestIdlePromise();
     await wait(100);
-    await requestIdlePromise();
+    await IdleQueue.requestIdlePromise();
 }
