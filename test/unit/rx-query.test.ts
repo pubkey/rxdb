@@ -1365,8 +1365,13 @@ describe('rx-query.test.ts', () => {
             });
             const collection = collections.mycollection;
 
-            const has = await collection.findOne('constructor').exec();
+            let has = await collection.findOne('constructor').exec();
             assert.ok(!has);
+            has = await collection.findOne('toString').exec();
+            assert.ok(!has);
+
+            const byId = await collection.findByIds(['constructor']).exec();
+            assert.ok(!byId.has('constructor'));
 
             db.destroy();
         });
