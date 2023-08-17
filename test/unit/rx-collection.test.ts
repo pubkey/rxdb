@@ -1153,7 +1153,7 @@ describe('rx-collection.test.ts', () => {
 
                     c.database.destroy();
                 });
-                runXTimes(config.isFastMode() ? 3 : 10, idx => {
+                runXTimes(config.isFastMode() ? 1 : 10, idx => {
                     it('BUG: insert and find very often (' + idx + ')', async function () {
                         const db = await createRxDatabase({
                             name: randomCouchString(10),

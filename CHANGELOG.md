@@ -4,6 +4,7 @@
 <!-- CHANGELOG NEWEST -->
 
 <!-- ADD new changes here! -->
+- FIX primaryKey with value "constructor", breaks findOne()
 
 <!-- /CHANGELOG NEWEST -->
 

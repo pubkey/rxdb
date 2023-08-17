@@ -206,7 +206,6 @@ export class RxQueryBase<
      * @param newResultData json-docs that were received from the storage
      */
     _setResultData(newResultData: RxDocumentData<RxDocType>[] | number | Map<string, RxDocumentData<RxDocType>>): void {
-
         if (typeof newResultData === 'number') {
             this._result = {
                 docsData: [],
@@ -223,6 +222,8 @@ export class RxQueryBase<
 
         const docsDataMap = new Map();
         const docsMap = new Map();
+
+
         const docs = newResultData.map(docData => this.collection._docCache.getCachedRxDocument(docData));
 
         /**
@@ -700,7 +701,9 @@ export async function queryCollection<RxDocType>(
             if (!docData) {
                 // otherwise get from storage
                 const docsMap = await collection.storageInstance.findDocumentsById([docId], false);
-                docData = docsMap[docId];
+                if (docsMap.hasOwnProperty(docId)) {
+                    docData = docsMap[docId];
+                }
             }
             if (docData && !docData._deleted) {
                 docs.push(docData);
