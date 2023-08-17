@@ -1338,5 +1338,37 @@ describe('rx-query.test.ts', () => {
             assert.strictEqual(docs.length, 0);
             c.database.destroy();
         });
+        it('primaryKey with value "constructor", breaks .findOne()', async () => {
+            const mySchema = {
+                version: 0,
+                primaryKey: 'passportId',
+                type: 'object',
+                properties: {
+                    passportId: {
+                        type: 'string',
+                        maxLength: 100
+                    }
+                }
+            };
+            const db = await createRxDatabase({
+                name: randomCouchString(10),
+                storage: config.storage.getStorage(),
+                eventReduce: true,
+                ignoreDuplicate: true
+            });
+
+            // create a collection
+            const collections = await db.addCollections({
+                mycollection: {
+                    schema: mySchema
+                }
+            });
+            const collection = collections.mycollection;
+
+            const has = await collection.findOne('constructor').exec();
+            assert.ok(!has);
+
+            db.destroy();
+        });
     });
 });
