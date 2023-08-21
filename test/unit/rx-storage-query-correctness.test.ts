@@ -381,6 +381,23 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                     'cc-looong-id'
                 ]
             },
+            {
+                /**
+                 * @link https://github.com/pubkey/rxdb/pull/4751
+                 */
+                info: '$lt on primaryKey',
+                query: {
+                    selector: {
+                        passportId: {
+                            $lt: 'bb'
+                        }
+                    },
+                    sort: [{ passportId: 'asc' }]
+                },
+                expectedResultDocIds: [
+                    'aa'
+                ]
+            },
             // TODO why does this query not use the age+firstName index?
             {
                 info: 'compare more then one field',
