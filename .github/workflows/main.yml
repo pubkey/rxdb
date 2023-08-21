@@ -224,8 +224,7 @@ jobs:
         # first start/stop the container once to ensure it
         # has downloaded the image
         run: |
-          npm run nats:start
-          npm run nats:end
+          docker pull nats:2.9.17
           npm run test:replication-nats
 
       - name: performance test
