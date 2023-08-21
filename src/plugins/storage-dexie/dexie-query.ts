@@ -47,15 +47,15 @@ export function getKeyRangeByQueryPlan(
         ret = IDBKeyRange.bound(
             startKeys[0],
             endKeys[0],
-            equalKeys ? false : queryPlan.inclusiveStart,
-            equalKeys ? false : queryPlan.inclusiveEnd
+            equalKeys ? false : !queryPlan.inclusiveStart,
+            equalKeys ? false : !queryPlan.inclusiveEnd
         );
     } else {
         ret = IDBKeyRange.bound(
             startKeys,
             endKeys,
-            queryPlan.inclusiveStart,
-            queryPlan.inclusiveEnd
+            !queryPlan.inclusiveStart,
+            !queryPlan.inclusiveEnd
         );
     }
     return ret;
