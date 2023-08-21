@@ -40,7 +40,8 @@ import {
 import {
     boundGE,
     boundGT,
-    boundLE
+    boundLE,
+    boundLT
 } from './binary-search-bounds';
 import {
     attachmentMapKey,
@@ -202,9 +203,12 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         return Promise.resolve(ret);
     }
 
-    query(preparedQuery: MemoryPreparedQuery<RxDocType>): Promise<RxStorageQueryResult<RxDocType>> {
+    query(
+        preparedQuery: MemoryPreparedQuery<RxDocType>
+    ): Promise<RxStorageQueryResult<RxDocType>> {
         const queryPlan = preparedQuery.queryPlan;
         const query = preparedQuery.query;
+
         const skip = query.skip ? query.skip : 0;
         const limit = query.limit ? query.limit : Infinity;
         const skipPlusLimit = skip + limit;
@@ -240,14 +244,14 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         const indexName = getMemoryIndexName(index);
         const docsWithIndex = this.internals.byIndex[indexName].docsWithIndex;
 
-        let indexOfLower = boundGE(
+        let indexOfLower = (queryPlan.inclusiveStart ? boundGE : boundGT)(
             docsWithIndex,
             {
                 indexString: lowerBoundString
             } as any,
             compareDocsWithIndex
         );
-        const indexOfUpper = boundLE(
+        const indexOfUpper = (queryPlan.inclusiveEnd ? boundLE : boundLT)(
             docsWithIndex,
             {
                 indexString: upperBoundString

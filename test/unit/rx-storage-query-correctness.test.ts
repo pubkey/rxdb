@@ -259,6 +259,21 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                 ]
             },
             {
+                info: '$gt on primary key',
+                query: {
+                    selector: {
+                        passportId: {
+                            $gt: 'dd'
+                        }
+                    },
+                    sort: [{ passportId: 'asc' }]
+                },
+                selectorSatisfiedByIndex: true,
+                expectedResultDocIds: [
+                    'ee'
+                ]
+            },
+            {
                 info: 'sort by something that is not in the selector',
                 query: {
                     selector: {
