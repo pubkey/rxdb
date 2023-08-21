@@ -46,6 +46,12 @@ Proposed solution:
  - This could have been done in much less code which would be easier to understand.
  - Migration strategies should be defined [like in WatermelonDB](https://nozbe.github.io/WatermelonDB/Advanced/Migrations.html) with a `toVersion` version field. We should also add a `fromVersion` field so people could implement performance shortcuts by directly jumping several versions. The current migration strategies use the array index as `toVersion` which is confusing.
 
+## Migrate assumed master state of the replicated documents
+
+[Quote from discord](https://discord.com/channels/969553741705539624/1050381589399470160/1143158499715588220): 
+
+> Why does RxDB not migrate assumed masters? That would lead to the false-positive server conflicts when assumed masters will be different from the ones on the server (because it also has the migration applied) and cause unnecessary push/pull roundtrips as a result of the conflict resolution. Or also, when schema is migrated and the server will reject push requests because assumed masters are no longer valid.
+
 ## RxLocalDocument.$ must emit a document instance, not the plain data
 
 This was changed in v14 for a normal RxDocument.$ which emits RxDocument instances. Same must be done for local documents.
