@@ -5,6 +5,7 @@
 
 <!-- ADD new changes here! -->
 - FIX primaryKey with value "constructor", breaks findOne()
+- FIX Queries with `$lt` selector on primaryKey broken [#4751](https://github.com/pubkey/rxdb/pull/4751)
 
 <!-- /CHANGELOG NEWEST -->
 

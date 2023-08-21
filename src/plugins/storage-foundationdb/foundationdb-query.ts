@@ -7,7 +7,7 @@ import type {
     RxDocumentData,
     RxStorageQueryResult
 } from '../../types';
-import { ensureNotFalsy } from '../../plugins/utils';
+import { ensureNotFalsy, lastOfArray } from '../../plugins/utils';
 import { getFoundationDBIndexName } from './foundationdb-helpers';
 import type {
     FoundationDBPreparedQuery
@@ -61,7 +61,7 @@ export async function queryFoundationDB<RxDocType>(
         upperBound,
         queryPlan.inclusiveEnd
     );
-    let result = await dbs.root.doTransaction(async (tx: any) => {
+    let result: RxDocumentData<RxDocType>[] = await dbs.root.doTransaction(async (tx: any) => {
         const innerResult: RxDocumentData<RxDocType>[] = [];
         const indexTx = tx.at(indexDB.subspace);
         const mainTx = tx.at(dbs.main.subspace);
@@ -104,7 +104,28 @@ export async function queryFoundationDB<RxDocType>(
                 done = true;
                 break;
             }
-            const docIds = next.value.map((row: string[]) => row[1]);
+            const rows: [string, string] = next.value;
+
+            if (!queryPlan.inclusiveStart) {
+                const firstRow = rows[0];
+                if (
+                    firstRow &&
+                    firstRow[0] === lowerBoundString
+                ) {
+                    rows.shift();
+                }
+            }
+            if (!queryPlan.inclusiveEnd) {
+                const lastRow = lastOfArray(rows);
+                if (
+                    lastRow &&
+                    lastRow[0] === upperBoundString
+                ) {
+                    rows.pop();
+                }
+            }
+
+            const docIds = rows.map(row => row[1]);
             const docsData: RxDocumentData<RxDocType>[] = await Promise.all(docIds.map((docId: string) => mainTx.get(docId)));
 
             docsData.forEach((docData) => {

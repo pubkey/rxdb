@@ -259,6 +259,21 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                 ]
             },
             {
+                info: '$gt on primary key',
+                query: {
+                    selector: {
+                        passportId: {
+                            $gt: 'dd'
+                        }
+                    },
+                    sort: [{ passportId: 'asc' }]
+                },
+                selectorSatisfiedByIndex: true,
+                expectedResultDocIds: [
+                    'ee'
+                ]
+            },
+            {
                 info: 'sort by something that is not in the selector',
                 query: {
                     selector: {
@@ -379,6 +394,23 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                     'aa',
                     'bb',
                     'cc-looong-id'
+                ]
+            },
+            {
+                /**
+                 * @link https://github.com/pubkey/rxdb/pull/4751
+                 */
+                info: '$lt on primaryKey',
+                query: {
+                    selector: {
+                        passportId: {
+                            $lt: 'bb'
+                        }
+                    },
+                    sort: [{ passportId: 'asc' }]
+                },
+                expectedResultDocIds: [
+                    'aa'
                 ]
             },
             // TODO why does this query not use the age+firstName index?
