@@ -546,7 +546,9 @@ export async function queryCollection(rxQuery) {
       if (!docData) {
         // otherwise get from storage
         var _docsMap = await collection.storageInstance.findDocumentsById([docId], false);
-        docData = _docsMap[docId];
+        if (_docsMap.hasOwnProperty(docId)) {
+          docData = _docsMap[docId];
+        }
       }
       if (docData && !docData._deleted) {
         docs.push(docData);

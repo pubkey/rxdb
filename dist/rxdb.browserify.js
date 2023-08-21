@@ -118,7 +118,7 @@ function createChangeEventBuffer(collection) {
   return new ChangeEventBuffer(collection);
 }
 
-},{"rxjs/operators":675}],3:[function(require,module,exports){
+},{"rxjs/operators":888}],3:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -1501,7 +1501,7 @@ function wrapRxStorageInstance(instance, modifyToStorage, modifyFromStorage, mod
   return wrappedInstance;
 }
 
-},{"./plugins/utils":12,"./rx-schema-helper":50,"rxjs":450,"rxjs/operators":675}],11:[function(require,module,exports){
+},{"./plugins/utils":12,"./rx-schema-helper":50,"rxjs":663,"rxjs/operators":888}],11:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -2211,7 +2211,7 @@ function defaultHashSha256(input) {
   return (0, _ohash.sha256)(input);
 }
 
-},{"ohash":447}],19:[function(require,module,exports){
+},{"ohash":660}],19:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -2989,7 +2989,7 @@ exports.RXDB_VERSION = void 0;
 /**
  * This file is replaced in the 'npm run build:version' script.
  */
-var RXDB_VERSION = '14.15.1';
+var RXDB_VERSION = '14.16.0';
 exports.RXDB_VERSION = RXDB_VERSION;
 
 },{}],28:[function(require,module,exports){
@@ -3970,7 +3970,7 @@ async function startReplicationDownstream(state) {
   }
 }
 
-},{"../plugins/utils":12,"../rx-error":46,"../rx-storage-helper":52,"./checkpoint":32,"./helper":35,"./meta-instance":37,"rxjs":450}],35:[function(require,module,exports){
+},{"../plugins/utils":12,"../rx-error":46,"../rx-storage-helper":52,"./checkpoint":32,"./helper":35,"./meta-instance":37,"rxjs":663}],35:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -4250,7 +4250,7 @@ function cancelRxStorageReplication(replicationState) {
   replicationState.events.canceled.complete();
 }
 
-},{"../plugins/utils":12,"../rx-schema-helper":50,"./checkpoint":32,"./conflicts":33,"./downstream":34,"./helper":35,"./meta-instance":37,"./upstream":38,"rxjs":450}],37:[function(require,module,exports){
+},{"../plugins/utils":12,"../rx-schema-helper":50,"./checkpoint":32,"./conflicts":33,"./downstream":34,"./helper":35,"./meta-instance":37,"./upstream":38,"rxjs":663}],37:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -4652,7 +4652,7 @@ async function startReplicationUpstream(state) {
   }
 }
 
-},{"../plugins/utils":12,"../rx-storage-helper":52,"./checkpoint":32,"./conflicts":33,"./helper":35,"./meta-instance":37,"rxjs":450}],39:[function(require,module,exports){
+},{"../plugins/utils":12,"../rx-storage-helper":52,"./checkpoint":32,"./conflicts":33,"./helper":35,"./meta-instance":37,"rxjs":663}],39:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -5529,7 +5529,7 @@ function isRxCollection(obj) {
   return obj instanceof RxCollectionBase;
 }
 
-},{"./change-event-buffer":2,"./doc-cache":4,"./hooks":6,"./incremental-write":7,"./overwritable":9,"./plugins/utils":12,"./query-cache":30,"./replication-protocol":36,"./rx-collection-helper":40,"./rx-document":45,"./rx-document-prototype-merge":44,"./rx-error":46,"./rx-query":49,"./rx-storage-helper":52,"@babel/runtime/helpers/createClass":58,"@babel/runtime/helpers/interopRequireDefault":61,"rxjs/operators":675}],42:[function(require,module,exports){
+},{"./change-event-buffer":2,"./doc-cache":4,"./hooks":6,"./incremental-write":7,"./overwritable":9,"./plugins/utils":12,"./query-cache":30,"./replication-protocol":36,"./rx-collection-helper":40,"./rx-document":45,"./rx-document-prototype-merge":44,"./rx-error":46,"./rx-query":49,"./rx-storage-helper":52,"@babel/runtime/helpers/createClass":58,"@babel/runtime/helpers/interopRequireDefault":61,"rxjs/operators":888}],42:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -6271,7 +6271,7 @@ async function ensureNoStartupErrors(rxDatabase) {
   }
 }
 
-},{"./hooks":6,"./overwritable":9,"./plugins/utils":12,"./rx-collection":41,"./rx-collection-helper":40,"./rx-database-internal-store":42,"./rx-error":46,"./rx-schema":51,"./rx-storage-helper":52,"@babel/runtime/helpers/createClass":58,"@babel/runtime/helpers/interopRequireDefault":61,"custom-idle-queue":407,"oblivious-set":446,"rxjs":450,"rxjs/operators":675}],44:[function(require,module,exports){
+},{"./hooks":6,"./overwritable":9,"./plugins/utils":12,"./rx-collection":41,"./rx-collection-helper":40,"./rx-database-internal-store":42,"./rx-error":46,"./rx-schema":51,"./rx-storage-helper":52,"@babel/runtime/helpers/createClass":58,"@babel/runtime/helpers/interopRequireDefault":61,"custom-idle-queue":407,"oblivious-set":659,"rxjs":663,"rxjs/operators":888}],44:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -6757,7 +6757,7 @@ function beforeDocumentUpdateWrite(collection, newData, oldData) {
   return collection._runHooks('pre', 'save', newData, oldData);
 }
 
-},{"./hooks":6,"./incremental-write":7,"./overwritable":9,"./plugins/utils":12,"./rx-change-event":39,"./rx-error":46,"./rx-schema-helper":50,"./rx-storage-helper":52,"rxjs/operators":675}],46:[function(require,module,exports){
+},{"./hooks":6,"./incremental-write":7,"./overwritable":9,"./plugins/utils":12,"./rx-change-event":39,"./rx-error":46,"./rx-schema-helper":50,"./rx-storage-helper":52,"rxjs/operators":888}],46:[function(require,module,exports){
 "use strict";
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
@@ -7103,7 +7103,7 @@ function getSortComparator(schema, query) {
       var valueA = sortPart.getValueFn(a);
       var valueB = sortPart.getValueFn(b);
       if (valueA !== valueB) {
-        var ret = sortPart.direction === 'asc' ? (0, _util.DEFAULT_COMPARATOR)(valueA, valueB) : (0, _util.DEFAULT_COMPARATOR)(valueB, valueA);
+        var ret = sortPart.direction === 'asc' ? (0, _util.compare)(valueA, valueB) : (0, _util.compare)(valueB, valueA);
         return ret;
       }
     }
@@ -7138,7 +7138,7 @@ function getQueryMatcher(_schema, query) {
   return fun;
 }
 
-},{"./plugins/utils":12,"./query-planner":31,"./rx-error":46,"./rx-query-mingo":48,"./rx-schema-helper":50,"mingo/util":445}],48:[function(require,module,exports){
+},{"./plugins/utils":12,"./query-planner":31,"./rx-error":46,"./rx-query-mingo":48,"./rx-schema-helper":50,"mingo/util":658}],48:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -7147,26 +7147,12 @@ Object.defineProperty(exports, "__esModule", {
 exports.getMingoQuery = getMingoQuery;
 var _core = require("mingo/core");
 var _query = require("mingo/query");
-var _project = require("mingo/operators/pipeline/project");
-var _sort = require("mingo/operators/pipeline/sort");
-var _and = require("mingo/operators/query/logical/and");
-var _not = require("mingo/operators/query/logical/not");
-var _or = require("mingo/operators/query/logical/or");
-var _nor = require("mingo/operators/query/logical/nor");
-var _eq = require("mingo/operators/query/comparison/eq");
-var _ne = require("mingo/operators/query/comparison/ne");
-var _gt = require("mingo/operators/query/comparison/gt");
-var _gte = require("mingo/operators/query/comparison/gte");
-var _lt = require("mingo/operators/query/comparison/lt");
-var _lte = require("mingo/operators/query/comparison/lte");
-var _regex = require("mingo/operators/query/evaluation/regex");
-var _mod = require("mingo/operators/query/evaluation/mod");
-var _elemMatch = require("mingo/operators/query/array/elemMatch");
-var _exists = require("mingo/operators/query/element/exists");
-var _nin = require("mingo/operators/query/comparison/nin");
-var _in = require("mingo/operators/query/comparison/in");
-var _size = require("mingo/operators/query/array/size");
-var _type = require("mingo/operators/query/element/type");
+var _pipeline = require("mingo/operators/pipeline");
+var _logical = require("mingo/operators/query/logical");
+var _comparison = require("mingo/operators/query/comparison");
+var _evaluation = require("mingo/operators/query/evaluation");
+var _array = require("mingo/operators/query/array");
+var _element = require("mingo/operators/query/element");
 var mingoInitDone = false;
 
 /**
@@ -7179,35 +7165,35 @@ var mingoInitDone = false;
 function getMingoQuery(selector) {
   if (!mingoInitDone) {
     (0, _core.useOperators)(_core.OperatorType.PIPELINE, {
-      $sort: _sort.$sort,
-      $project: _project.$project
+      $sort: _pipeline.$sort,
+      $project: _pipeline.$project
     });
     (0, _core.useOperators)(_core.OperatorType.QUERY, {
-      $and: _and.$and,
-      $eq: _eq.$eq,
-      $elemMatch: _elemMatch.$elemMatch,
-      $exists: _exists.$exists,
-      $gt: _gt.$gt,
-      $gte: _gte.$gte,
-      $in: _in.$in,
-      $lt: _lt.$lt,
-      $lte: _lte.$lte,
-      $ne: _ne.$ne,
-      $nin: _nin.$nin,
-      $mod: _mod.$mod,
-      $nor: _nor.$nor,
-      $not: _not.$not,
-      $or: _or.$or,
-      $regex: _regex.$regex,
-      $size: _size.$size,
-      $type: _type.$type
+      $and: _logical.$and,
+      $eq: _comparison.$eq,
+      $elemMatch: _array.$elemMatch,
+      $exists: _element.$exists,
+      $gt: _comparison.$gt,
+      $gte: _comparison.$gte,
+      $in: _comparison.$in,
+      $lt: _comparison.$lt,
+      $lte: _comparison.$lte,
+      $ne: _comparison.$ne,
+      $nin: _comparison.$nin,
+      $mod: _evaluation.$mod,
+      $nor: _logical.$nor,
+      $not: _logical.$not,
+      $or: _logical.$or,
+      $regex: _evaluation.$regex,
+      $size: _array.$size,
+      $type: _element.$type
     });
     mingoInitDone = true;
   }
   return new _query.Query(selector);
 }
 
-},{"mingo/core":420,"mingo/operators/pipeline/project":424,"mingo/operators/pipeline/sort":425,"mingo/operators/query/array/elemMatch":426,"mingo/operators/query/array/size":427,"mingo/operators/query/comparison/eq":428,"mingo/operators/query/comparison/gt":429,"mingo/operators/query/comparison/gte":430,"mingo/operators/query/comparison/in":431,"mingo/operators/query/comparison/lt":432,"mingo/operators/query/comparison/lte":433,"mingo/operators/query/comparison/ne":434,"mingo/operators/query/comparison/nin":435,"mingo/operators/query/element/exists":436,"mingo/operators/query/element/type":437,"mingo/operators/query/evaluation/mod":438,"mingo/operators/query/evaluation/regex":439,"mingo/operators/query/logical/and":440,"mingo/operators/query/logical/nor":441,"mingo/operators/query/logical/not":442,"mingo/operators/query/logical/or":443,"mingo/query":444}],49:[function(require,module,exports){
+},{"mingo/core":420,"mingo/operators/pipeline":608,"mingo/operators/query/array":629,"mingo/operators/query/comparison":635,"mingo/operators/query/element":641,"mingo/operators/query/evaluation":644,"mingo/operators/query/logical":650,"mingo/query":657}],49:[function(require,module,exports){
 "use strict";
 
 var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
@@ -7770,7 +7756,9 @@ async function queryCollection(rxQuery) {
       if (!docData) {
         // otherwise get from storage
         var _docsMap = await collection.storageInstance.findDocumentsById([docId], false);
-        docData = _docsMap[docId];
+        if (_docsMap.hasOwnProperty(docId)) {
+          docData = _docsMap[docId];
+        }
       }
       if (docData && !docData._deleted) {
         docs.push(docData);
@@ -7815,7 +7803,7 @@ function isRxQuery(obj) {
   return obj instanceof RxQueryBase;
 }
 
-},{"./event-reduce":5,"./hooks":6,"./plugins/utils":12,"./query-cache":30,"./rx-error":46,"./rx-query-helper":47,"@babel/runtime/helpers/createClass":58,"@babel/runtime/helpers/interopRequireDefault":61,"rxjs":450,"rxjs/operators":675}],50:[function(require,module,exports){
+},{"./event-reduce":5,"./hooks":6,"./plugins/utils":12,"./query-cache":30,"./rx-error":46,"./rx-query-helper":47,"@babel/runtime/helpers/createClass":58,"@babel/runtime/helpers/interopRequireDefault":61,"rxjs":663,"rxjs/operators":888}],50:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -8964,7 +8952,7 @@ providedBroadcastChannel) {
   };
 }
 
-},{"broadcast-channel":90,"rxjs":450,"rxjs/operators":675}],54:[function(require,module,exports){
+},{"broadcast-channel":90,"rxjs":663,"rxjs/operators":888}],54:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -9045,7 +9033,7 @@ require("core-js/fn/promise/finally");
 require("core-js/web");
 
 require("regenerator-runtime/runtime");
-},{"core-js/es6":103,"core-js/fn/array/flat-map":104,"core-js/fn/array/includes":105,"core-js/fn/object/entries":106,"core-js/fn/object/get-own-property-descriptors":107,"core-js/fn/object/values":108,"core-js/fn/promise/finally":109,"core-js/fn/string/pad-end":110,"core-js/fn/string/pad-start":111,"core-js/fn/string/trim-end":112,"core-js/fn/string/trim-start":113,"core-js/fn/symbol/async-iterator":114,"core-js/web":406,"regenerator-runtime/runtime":449}],57:[function(require,module,exports){
+},{"core-js/es6":103,"core-js/fn/array/flat-map":104,"core-js/fn/array/includes":105,"core-js/fn/object/entries":106,"core-js/fn/object/get-own-property-descriptors":107,"core-js/fn/object/values":108,"core-js/fn/promise/finally":109,"core-js/fn/string/pad-end":110,"core-js/fn/string/pad-start":111,"core-js/fn/string/trim-end":112,"core-js/fn/string/trim-start":113,"core-js/fn/symbol/async-iterator":114,"core-js/web":406,"regenerator-runtime/runtime":662}],57:[function(require,module,exports){
 var setPrototypeOf = require("./setPrototypeOf.js");
 var isNativeReflectConstruct = require("./isNativeReflectConstruct.js");
 function _construct(Parent, args, Class) {
@@ -11017,7 +11005,7 @@ function beLeader(leaderElector) {
   leaderElector._lstns.push(isLeaderListener);
   return sendLeaderMessage(leaderElector, 'tell');
 }
-},{"unload":677}],93:[function(require,module,exports){
+},{"unload":890}],93:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -11835,7 +11823,7 @@ var IndexedDBMethod = {
   microSeconds: microSeconds
 };
 exports.IndexedDBMethod = IndexedDBMethod;
-},{"../options.js":100,"../util.js":101,"oblivious-set":446}],97:[function(require,module,exports){
+},{"../options.js":100,"../util.js":101,"oblivious-set":659}],97:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -12008,7 +11996,7 @@ var LocalstorageMethod = {
   microSeconds: microSeconds
 };
 exports.LocalstorageMethod = LocalstorageMethod;
-},{"../options.js":100,"../util.js":101,"oblivious-set":446}],98:[function(require,module,exports){
+},{"../options.js":100,"../util.js":101,"oblivious-set":659}],98:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -22024,9 +22012,9 @@ exports.write = function (buffer, value, offset, isLE, mLen, nBytes) {
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Aggregator = void 0;
-var core_1 = require("./core");
-var lazy_1 = require("./lazy");
-var util_1 = require("./util");
+const core_1 = require("./core");
+const lazy_1 = require("./lazy");
+const util_1 = require("./util");
 /**
  * Provides functionality for the mongoDB aggregation pipeline
  *
@@ -22034,37 +22022,35 @@ var util_1 = require("./util");
  * @param options An optional Options to pass the aggregator
  * @constructor
  */
-var Aggregator = /** @class */ (function () {
-    function Aggregator(pipeline, options) {
+class Aggregator {
+    constructor(pipeline, options) {
         this.pipeline = pipeline;
-        this.options = options;
         this.options = (0, core_1.initOptions)(options);
     }
     /**
      * Returns an `Lazy` iterator for processing results of pipeline
      *
      * @param {*} collection An array or iterator object
-     * @param {Query} query the `Query` object to use as context
      * @returns {Iterator} an iterator object
      */
-    Aggregator.prototype.stream = function (collection) {
-        var iterator = (0, lazy_1.Lazy)(collection);
-        var mode = this.options.processingMode;
+    stream(collection) {
+        let iterator = (0, lazy_1.Lazy)(collection);
+        const mode = this.options.processingMode;
         if (mode == core_1.ProcessingMode.CLONE_ALL ||
             mode == core_1.ProcessingMode.CLONE_INPUT) {
             iterator.map(util_1.cloneDeep);
         }
-        var pipelineOperators = [];
+        const pipelineOperators = new Array();
         if (!(0, util_1.isEmpty)(this.pipeline)) {
             // run aggregation pipeline
-            for (var _i = 0, _a = this.pipeline; _i < _a.length; _i++) {
-                var operator = _a[_i];
-                var operatorKeys = Object.keys(operator);
-                var op = operatorKeys[0];
-                var call = (0, core_1.getOperator)(core_1.OperatorType.PIPELINE, op);
-                (0, util_1.assert)(operatorKeys.length === 1 && !!call, "invalid aggregation operator ".concat(op));
-                pipelineOperators.push(op);
-                iterator = call(iterator, operator[op], this.options);
+            for (const operator of this.pipeline) {
+                const operatorKeys = Object.keys(operator);
+                const opName = operatorKeys[0];
+                const call = (0, core_1.getOperator)(core_1.OperatorType.PIPELINE, opName, this.options);
+                (0, util_1.assert)(operatorKeys.length === 1 && !!call, `invalid pipeline operator ${opName}`);
+                pipelineOperators.push(opName);
+                // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+                iterator = call(iterator, operator[opName], this.options);
             }
         }
         // operators that may share object graphs of inputs.
@@ -22075,37 +22061,24 @@ var Aggregator = /** @class */ (function () {
             iterator.map(util_1.cloneDeep);
         }
         return iterator;
-    };
+    }
     /**
      * Return the results of the aggregation as an array.
      *
      * @param {*} collection
      * @param {*} query
      */
-    Aggregator.prototype.run = function (collection) {
+    run(collection) {
         return this.stream(collection).value();
-    };
-    return Aggregator;
-}());
+    }
+}
 exports.Aggregator = Aggregator;
 
-},{"./core":420,"./lazy":422,"./util":445}],420:[function(require,module,exports){
+},{"./core":420,"./lazy":422,"./util":658}],420:[function(require,module,exports){
 "use strict";
-var __assign = (this && this.__assign) || function () {
-    __assign = Object.assign || function(t) {
-        for (var s, i = 1, n = arguments.length; i < n; i++) {
-            s = arguments[i];
-            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-                t[p] = s[p];
-        }
-        return t;
-    };
-    return __assign.apply(this, arguments);
-};
-var _a;
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.redact = exports.computeValue = exports.getOperator = exports.useOperators = exports.OperatorType = exports.initOptions = exports.ComputeOptions = exports.ProcessingMode = void 0;
-var util_1 = require("./util");
+exports.redact = exports.computeValue = exports.getOperator = exports.useOperators = exports.Context = exports.OperatorType = exports.initOptions = exports.ComputeOptions = exports.ProcessingMode = void 0;
+const util_1 = require("./util");
 /**
  * This controls how input and output documents are processed to meet different application needs.
  * Each mode has different trade offs for; immutability, reference sharing, and performance.
@@ -22142,141 +22115,107 @@ var ProcessingMode;
     ProcessingMode["CLONE_OFF"] = "CLONE_OFF";
 })(ProcessingMode = exports.ProcessingMode || (exports.ProcessingMode = {}));
 /** Custom type to facilitate type checking for global options */
-var ComputeOptions = /** @class */ (function () {
-    function ComputeOptions(options, 
+class ComputeOptions {
+    constructor(_opts, 
     /** Reference to the root object when processing subgraphs of the object. */
     _root, _local, 
     /** The current time in milliseconds. Remains the same throughout all stages of the aggregation pipeline. */
-    timestamp) {
-        if (timestamp === void 0) { timestamp = Date.now(); }
-        this.options = options;
+    timestamp = Date.now()) {
+        this._opts = _opts;
         this._root = _root;
         this._local = _local;
         this.timestamp = timestamp;
-        this.options = options;
         this.update(_root, _local);
     }
     /**
-     * Initialize new ComputeOptions. Returns the same object modified when the 'options' argument is a ComputeOptions.
+     * Initialize new ComputeOptions.
+     *
      * @param options
      * @param root
      * @param local
-     * @returns
+     * @returns {ComputeOptions}
      */
-    ComputeOptions.init = function (options, root, local) {
+    static init(options, root, local) {
         return options instanceof ComputeOptions
-            ? options.update(
-            // value can be '0' or 'false'
-            (0, util_1.isNil)(options.root) ? root : options.root, Object.assign({}, options.local, local))
-            : new ComputeOptions(options || initOptions(), root, local);
-    };
+            ? new ComputeOptions(options._opts, (0, util_1.isNil)(options.root) ? root : options.root, Object.assign({}, options.local, local))
+            : new ComputeOptions(options, root, local);
+    }
     /** Updates the internal mutable state. */
-    ComputeOptions.prototype.update = function (root, local) {
+    update(root, local) {
         var _a;
         // NOTE: this is done for efficiency to avoid creating too many intermediate options objects.
         this._root = root;
         this._local = local
             ? Object.assign({}, local, {
-                variables: Object.assign({}, (_a = this._local) === null || _a === void 0 ? void 0 : _a.variables, local === null || local === void 0 ? void 0 : local.variables),
+                variables: Object.assign({}, (_a = this._local) === null || _a === void 0 ? void 0 : _a.variables, local === null || local === void 0 ? void 0 : local.variables)
             })
             : local;
         return this;
-    };
-    Object.defineProperty(ComputeOptions.prototype, "root", {
-        get: function () {
-            return this._root;
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(ComputeOptions.prototype, "local", {
-        get: function () {
-            return this._local;
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(ComputeOptions.prototype, "idKey", {
-        get: function () {
-            var _a;
-            return (_a = this.options) === null || _a === void 0 ? void 0 : _a.idKey;
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(ComputeOptions.prototype, "collation", {
-        get: function () {
-            var _a;
-            return (_a = this.options) === null || _a === void 0 ? void 0 : _a.collation;
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(ComputeOptions.prototype, "processingMode", {
-        get: function () {
-            var _a;
-            return ((_a = this.options) === null || _a === void 0 ? void 0 : _a.processingMode) || ProcessingMode.CLONE_OFF;
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(ComputeOptions.prototype, "useStrictMode", {
-        get: function () {
-            var _a;
-            return (_a = this.options) === null || _a === void 0 ? void 0 : _a.useStrictMode;
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(ComputeOptions.prototype, "scriptEnabled", {
-        get: function () {
-            var _a;
-            return (_a = this.options) === null || _a === void 0 ? void 0 : _a.scriptEnabled;
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(ComputeOptions.prototype, "hashFunction", {
-        get: function () {
-            var _a;
-            return (_a = this.options) === null || _a === void 0 ? void 0 : _a.hashFunction;
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(ComputeOptions.prototype, "collectionResolver", {
-        get: function () {
-            var _a;
-            return (_a = this.options) === null || _a === void 0 ? void 0 : _a.collectionResolver;
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(ComputeOptions.prototype, "jsonSchemaValidator", {
-        get: function () {
-            var _a;
-            return (_a = this.options) === null || _a === void 0 ? void 0 : _a.jsonSchemaValidator;
-        },
-        enumerable: false,
-        configurable: true
-    });
-    Object.defineProperty(ComputeOptions.prototype, "variables", {
-        get: function () {
-            var _a;
-            return (_a = this.options) === null || _a === void 0 ? void 0 : _a.variables;
-        },
-        enumerable: false,
-        configurable: true
-    });
-    return ComputeOptions;
-}());
+    }
+    getOptions() {
+        return Object.freeze(Object.assign(Object.assign({}, this._opts), { context: Context.from(this._opts.context) }));
+    }
+    get root() {
+        return this._root;
+    }
+    get local() {
+        return this._local;
+    }
+    get idKey() {
+        return this._opts.idKey;
+    }
+    get collation() {
+        var _a;
+        return (_a = this._opts) === null || _a === void 0 ? void 0 : _a.collation;
+    }
+    get processingMode() {
+        var _a;
+        return ((_a = this._opts) === null || _a === void 0 ? void 0 : _a.processingMode) || ProcessingMode.CLONE_OFF;
+    }
+    get useStrictMode() {
+        var _a;
+        return (_a = this._opts) === null || _a === void 0 ? void 0 : _a.useStrictMode;
+    }
+    get scriptEnabled() {
+        var _a;
+        return (_a = this._opts) === null || _a === void 0 ? void 0 : _a.scriptEnabled;
+    }
+    get useGlobalContext() {
+        var _a;
+        return (_a = this._opts) === null || _a === void 0 ? void 0 : _a.useGlobalContext;
+    }
+    get hashFunction() {
+        var _a;
+        return (_a = this._opts) === null || _a === void 0 ? void 0 : _a.hashFunction;
+    }
+    get collectionResolver() {
+        var _a;
+        return (_a = this._opts) === null || _a === void 0 ? void 0 : _a.collectionResolver;
+    }
+    get jsonSchemaValidator() {
+        var _a;
+        return (_a = this._opts) === null || _a === void 0 ? void 0 : _a.jsonSchemaValidator;
+    }
+    get variables() {
+        var _a;
+        return (_a = this._opts) === null || _a === void 0 ? void 0 : _a.variables;
+    }
+    get context() {
+        var _a;
+        return (_a = this._opts) === null || _a === void 0 ? void 0 : _a.context;
+    }
+}
 exports.ComputeOptions = ComputeOptions;
 /**
- * Creates an Option from another required keys are initialized
+ * Creates an Option from another where required keys are initialized.
  * @param options Options
  */
 function initOptions(options) {
-    return Object.freeze(__assign({ idKey: "_id", scriptEnabled: true, useStrictMode: true, processingMode: ProcessingMode.CLONE_OFF }, options));
+    return options instanceof ComputeOptions
+        ? options.getOptions()
+        : Object.freeze(Object.assign(Object.assign({ idKey: "_id", scriptEnabled: true, useStrictMode: true, useGlobalContext: true, processingMode: ProcessingMode.CLONE_OFF }, options), { context: (options === null || options === void 0 ? void 0 : options.context)
+                ? Context.from(options === null || options === void 0 ? void 0 : options.context)
+                : Context.init({}) }));
 }
 exports.initOptions = initOptions;
 /**
@@ -22291,15 +22230,58 @@ var OperatorType;
     OperatorType["QUERY"] = "query";
     OperatorType["WINDOW"] = "window";
 })(OperatorType = exports.OperatorType || (exports.OperatorType = {}));
+class Context {
+    constructor(ops) {
+        this.operators = (0, util_1.cloneDeep)(ops);
+    }
+    static init(ops) {
+        return new Context((0, util_1.merge)({
+            [OperatorType.ACCUMULATOR]: {},
+            [OperatorType.EXPRESSION]: {},
+            [OperatorType.PIPELINE]: {},
+            [OperatorType.PROJECTION]: {},
+            [OperatorType.QUERY]: {},
+            [OperatorType.WINDOW]: {}
+        }, ops, { skipValidation: true }));
+    }
+    static from(ctx) {
+        return new Context(ctx.operators);
+    }
+    addOperators(type, ops) {
+        for (const [name, fn] of Object.entries(ops)) {
+            if (!this.getOperator(type, name)) {
+                this.operators[type][name] = fn;
+            }
+        }
+        return this;
+    }
+    // register
+    addAccumulatorOps(ops) {
+        return this.addOperators(OperatorType.ACCUMULATOR, ops);
+    }
+    addExpressionOps(ops) {
+        return this.addOperators(OperatorType.EXPRESSION, ops);
+    }
+    addQueryOps(ops) {
+        return this.addOperators(OperatorType.QUERY, ops);
+    }
+    addPipelineOps(ops) {
+        return this.addOperators(OperatorType.PIPELINE, ops);
+    }
+    addProjectionOps(ops) {
+        return this.addOperators(OperatorType.PROJECTION, ops);
+    }
+    addWindowOps(ops) {
+        return this.addOperators(OperatorType.WINDOW, ops);
+    }
+    // getters
+    getOperator(type, name) {
+        return type in this.operators ? this.operators[type][name] || null : null;
+    }
+}
+exports.Context = Context;
 // operator definitions
-var OPERATORS = (_a = {},
-    _a[OperatorType.ACCUMULATOR] = {},
-    _a[OperatorType.EXPRESSION] = {},
-    _a[OperatorType.PIPELINE] = {},
-    _a[OperatorType.PROJECTION] = {},
-    _a[OperatorType.QUERY] = {},
-    _a[OperatorType.WINDOW] = {},
-    _a);
+const CONTEXT = Context.init({});
 /**
  * Register fully specified operators for the given operator class.
  *
@@ -22307,23 +22289,24 @@ var OPERATORS = (_a = {},
  * @param operators Map of the operators
  */
 function useOperators(type, operators) {
-    for (var _i = 0, _a = Object.entries(operators); _i < _a.length; _i++) {
-        var _b = _a[_i], name_1 = _b[0], fn = _b[1];
-        (0, util_1.assert)(fn instanceof Function && (0, util_1.isOperator)(name_1), "'".concat(name_1, "' is not a valid operator"));
-        var currentFn = getOperator(type, name_1);
-        (0, util_1.assert)(!currentFn || fn === currentFn, "".concat(name_1, " already exists for '").concat(type, "' operators. Cannot change operator function once registered."));
+    for (const [name, fn] of Object.entries(operators)) {
+        (0, util_1.assert)((0, util_1.isFunction)(fn) && (0, util_1.isOperator)(name), `'${name}' is not a valid operator`);
+        const currentFn = getOperator(type, name, null);
+        (0, util_1.assert)(!currentFn || fn === currentFn, `${name} already exists for '${type}' operators. Cannot change operator function once registered.`);
     }
     // toss the operator salad :)
-    (0, util_1.into)(OPERATORS[type], operators);
+    CONTEXT.addOperators(type, operators);
 }
 exports.useOperators = useOperators;
 /**
- * Returns the operator function or null if it is not found
+ * Returns the operator function or undefined if it is not found
  * @param type Type of operator
  * @param operator Name of the operator
  */
-function getOperator(type, operator) {
-    return OPERATORS[type][operator];
+function getOperator(type, operator, options) {
+    const { context: ctx, useGlobalContext: fallback } = options || {};
+    const fn = ctx ? ctx.getOperator(type, operator) : null;
+    return !fn && fallback ? CONTEXT.getOperator(type, operator) : fn;
 }
 exports.getOperator = getOperator;
 /* eslint-disable unused-imports/no-unused-vars-ts */
@@ -22331,19 +22314,19 @@ exports.getOperator = getOperator;
  * Implementation of system variables
  * @type {Object}
  */
-var systemVariables = {
-    $$ROOT: function (obj, expr, options) {
+const systemVariables = {
+    $$ROOT(obj, expr, options) {
         return options.root;
     },
-    $$CURRENT: function (obj, expr, options) {
+    $$CURRENT(obj, expr, options) {
         return obj;
     },
-    $$REMOVE: function (obj, expr, options) {
+    $$REMOVE(obj, expr, options) {
         return undefined;
     },
-    $$NOW: function (obj, expr, options) {
+    $$NOW(obj, expr, options) {
         return new Date(options.timestamp);
-    },
+    }
 };
 /**
  * Implementation of $redact variables
@@ -22352,25 +22335,23 @@ var systemVariables = {
  *
  * @type {Object}
  */
-var redactVariables = {
-    $$KEEP: function (obj, expr, options) {
+const redactVariables = {
+    $$KEEP(obj, expr, options) {
         return obj;
     },
-    $$PRUNE: function (obj, expr, options) {
+    $$PRUNE(obj, expr, options) {
         return undefined;
     },
-    $$DESCEND: function (obj, expr, options) {
+    $$DESCEND(obj, expr, options) {
         // traverse nested documents iff there is a $cond
         if (!(0, util_1.has)(expr, "$cond"))
             return obj;
-        var result;
-        for (var _i = 0, _a = Object.entries(obj); _i < _a.length; _i++) {
-            var _b = _a[_i], key = _b[0], current = _b[1];
+        let result;
+        for (const [key, current] of Object.entries(obj)) {
             if ((0, util_1.isObjectLike)(current)) {
                 if (current instanceof Array) {
-                    var array = [];
-                    for (var _c = 0, current_1 = current; _c < current_1.length; _c++) {
-                        var elem = current_1[_c];
+                    const array = [];
+                    for (let elem of current) {
                         if ((0, util_1.isObject)(elem)) {
                             elem = redact(elem, expr, options.update(elem));
                         }
@@ -22392,7 +22373,7 @@ var redactVariables = {
             }
         }
         return obj;
-    },
+    }
 };
 /* eslint-enable unused-imports/no-unused-vars-ts */
 /**
@@ -22407,14 +22388,15 @@ var redactVariables = {
 function computeValue(obj, expr, operator, options) {
     var _a;
     // ensure valid options exist on first invocation
-    var copts = ComputeOptions.init(options, obj);
+    const copts = ComputeOptions.init(options, obj);
+    operator = operator || "";
     if ((0, util_1.isOperator)(operator)) {
         // if the field of the object is a valid operator
-        var callExpression = getOperator(OperatorType.EXPRESSION, operator);
+        const callExpression = getOperator(OperatorType.EXPRESSION, operator, options);
         if (callExpression)
             return callExpression(obj, expr, copts);
         // we also handle $group accumulator operators
-        var callAccumulator = getOperator(OperatorType.ACCUMULATOR, operator);
+        const callAccumulator = getOperator(OperatorType.ACCUMULATOR, operator, options);
         if (callAccumulator) {
             // if object is not an array, first try to compute using the expression
             if (!(obj instanceof Array)) {
@@ -22422,14 +22404,14 @@ function computeValue(obj, expr, operator, options) {
                 expr = null;
             }
             // validate that we have an array
-            (0, util_1.assert)(obj instanceof Array, "'".concat(operator, "' target must be an array."));
+            (0, util_1.assert)(obj instanceof Array, `'${operator}' target must be an array.`);
             // for accumulators, we use the global options since the root is specific to each element within array.
             return callAccumulator(obj, expr, 
             // reset the root object for accumulators.
             copts.update(null, copts.local));
         }
         // operator was not found
-        throw new Error("operator '".concat(operator, "' is not registered"));
+        throw new Error(`operator '${operator}' is not registered`);
     }
     // if expr is a string and begins with "$$", then we have a variable.
     //  this can be one of; redact variable, system variable, user-defined variable.
@@ -22442,9 +22424,9 @@ function computeValue(obj, expr, operator, options) {
             return expr;
         }
         // default to root for resolving path.
-        var context = copts.root;
+        let context = copts.root;
         // handle selectors with explicit prefix
-        var arr = expr.split(".");
+        const arr = expr.split(".");
         if ((0, util_1.has)(systemVariables, arr[0])) {
             // set 'root' only the first time it is required to be used for all subsequent calls
             // if it already available on the options, it will be used
@@ -22457,8 +22439,8 @@ function computeValue(obj, expr, operator, options) {
             // current item is added before local variables because the binding may be changed.
             { this: obj }, (_a = copts.local) === null || _a === void 0 ? void 0 : _a.variables // local vars
             );
-            var prefix = arr[0].slice(2);
-            (0, util_1.assert)((0, util_1.has)(context, prefix), "Use of undefined variable: ".concat(prefix));
+            const prefix = arr[0].slice(2);
+            (0, util_1.assert)((0, util_1.has)(context, prefix), `Use of undefined variable: ${prefix}`);
             expr = expr.slice(2);
         }
         else {
@@ -22470,30 +22452,20 @@ function computeValue(obj, expr, operator, options) {
         return (0, util_1.resolve)(context, expr);
     }
     // check and return value if already in a resolved state
-    if (expr instanceof Array) {
-        return expr.map(function (item) {
-            return computeValue(obj, item, null, copts);
-        });
+    if ((0, util_1.isArray)(expr)) {
+        return expr.map((item) => computeValue(obj, item, null, copts));
     }
     else if ((0, util_1.isObject)(expr)) {
-        var result = {};
-        var _loop_1 = function (key, val) {
+        const result = {};
+        for (const [key, val] of Object.entries(expr)) {
             result[key] = computeValue(obj, val, key, copts);
             // must run ONLY one aggregate operator per expression
             // if so, return result of the computed value
-            if ([OperatorType.EXPRESSION, OperatorType.ACCUMULATOR].some(function (c) {
-                return (0, util_1.has)(OPERATORS[c], key);
-            })) {
+            if ([OperatorType.EXPRESSION, OperatorType.ACCUMULATOR].some(t => !!getOperator(t, key, options))) {
                 // there should be only one operator
                 (0, util_1.assert)(Object.keys(expr).length === 1, "Invalid aggregation expression '" + JSON.stringify(expr) + "'");
-                return { value: result[key] };
+                return result[key];
             }
-        };
-        for (var _i = 0, _b = Object.entries(expr); _i < _b.length; _i++) {
-            var _c = _b[_i], key = _c[0], val = _c[1];
-            var state_1 = _loop_1(key, val);
-            if (typeof state_1 === "object")
-                return state_1.value;
         }
         return result;
     }
@@ -22508,40 +22480,20 @@ exports.computeValue = computeValue;
  * @return {*} returns the result of the redacted object
  */
 function redact(obj, expr, options) {
-    var result = computeValue(obj, expr, null, options);
+    const result = computeValue(obj, expr, null, options);
     return (0, util_1.has)(redactVariables, result)
         ? redactVariables[result](obj, expr, options)
         : result;
 }
 exports.redact = redact;
 
-},{"./util":445}],421:[function(require,module,exports){
+},{"./util":658}],421:[function(require,module,exports){
 "use strict";
-var __assign = (this && this.__assign) || function () {
-    __assign = Object.assign || function(t) {
-        for (var s, i = 1, n = arguments.length; i < n; i++) {
-            s = arguments[i];
-            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-                t[p] = s[p];
-        }
-        return t;
-    };
-    return __assign.apply(this, arguments);
-};
-var __spreadArray = (this && this.__spreadArray) || function (to, from, pack) {
-    if (pack || arguments.length === 2) for (var i = 0, l = from.length, ar; i < l; i++) {
-        if (ar || !(i in from)) {
-            if (!ar) ar = Array.prototype.slice.call(from, 0, i);
-            ar[i] = from[i];
-        }
-    }
-    return to.concat(ar || Array.prototype.slice.call(from));
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Cursor = void 0;
-var aggregator_1 = require("./aggregator");
-var lazy_1 = require("./lazy");
-var util_1 = require("./util");
+const aggregator_1 = require("./aggregator");
+const lazy_1 = require("./lazy");
+const util_1 = require("./util");
 /**
  * Cursor to iterate and perform filtering on matched objects.
  * This object must not be used directly. A cursor may be obtaine from calling `find()` on an instance of `Query`.
@@ -22552,8 +22504,8 @@ var util_1 = require("./util");
  * @param options Options
  * @constructor
  */
-var Cursor = /** @class */ (function () {
-    function Cursor(source, predicate, projection, options) {
+class Cursor {
+    constructor(source, predicate, projection, options) {
         this.source = source;
         this.predicate = predicate;
         this.projection = projection;
@@ -22563,7 +22515,7 @@ var Cursor = /** @class */ (function () {
         this.buffer = [];
     }
     /** Returns the iterator from running the query */
-    Cursor.prototype.fetch = function () {
+    fetch() {
         if (this.result)
             return this.result;
         // add projection operator
@@ -22576,113 +22528,112 @@ var Cursor = /** @class */ (function () {
             this.result = new aggregator_1.Aggregator(this.operators, this.options).stream(this.result);
         }
         return this.result;
-    };
+    }
     /** Returns an iterator with the buffered data included */
-    Cursor.prototype.fetchAll = function () {
-        var buffered = (0, lazy_1.Lazy)(__spreadArray([], this.buffer, true));
+    fetchAll() {
+        const buffered = (0, lazy_1.Lazy)([...this.buffer]);
         this.buffer = [];
         return (0, lazy_1.compose)(buffered, this.fetch());
-    };
+    }
     /**
      * Return remaining objects in the cursor as an array. This method exhausts the cursor
      * @returns {Array}
      */
-    Cursor.prototype.all = function () {
+    all() {
         return this.fetchAll().value();
-    };
+    }
     /**
      * Returns the number of objects return in the cursor. This method exhausts the cursor
      * @returns {Number}
      */
-    Cursor.prototype.count = function () {
+    count() {
         return this.all().length;
-    };
+    }
     /**
      * Returns a cursor that begins returning results only after passing or skipping a number of documents.
      * @param {Number} n the number of results to skip.
      * @return {Cursor} Returns the cursor, so you can chain this call.
      */
-    Cursor.prototype.skip = function (n) {
+    skip(n) {
         this.operators.push({ $skip: n });
         return this;
-    };
+    }
     /**
      * Constrains the size of a cursor's result set.
      * @param {Number} n the number of results to limit to.
      * @return {Cursor} Returns the cursor, so you can chain this call.
      */
-    Cursor.prototype.limit = function (n) {
+    limit(n) {
         this.operators.push({ $limit: n });
         return this;
-    };
+    }
     /**
      * Returns results ordered according to a sort specification.
      * @param {Object} modifier an object of key and values specifying the sort order. 1 for ascending and -1 for descending
      * @return {Cursor} Returns the cursor, so you can chain this call.
      */
-    Cursor.prototype.sort = function (modifier) {
+    sort(modifier) {
         this.operators.push({ $sort: modifier });
         return this;
-    };
+    }
     /**
      * Specifies the collation for the cursor returned by the `mingo.Query.find`
      * @param {*} spec
      */
-    Cursor.prototype.collation = function (spec) {
-        this.options = __assign(__assign({}, this.options), { collation: spec });
+    collation(spec) {
+        this.options = Object.assign(Object.assign({}, this.options), { collation: spec });
         return this;
-    };
+    }
     /**
      * Returns the next document in a cursor.
      * @returns {Object | Boolean}
      */
-    Cursor.prototype.next = function () {
+    next() {
         // yield value obtains in hasNext()
         if (this.buffer.length > 0) {
             return this.buffer.pop();
         }
-        var o = this.fetch().next();
+        const o = this.fetch().next();
         if (o.done)
             return;
         return o.value;
-    };
+    }
     /**
      * Returns true if the cursor has documents and can be iterated.
      * @returns {boolean}
      */
-    Cursor.prototype.hasNext = function () {
+    hasNext() {
         // there is a value in the buffer
         if (this.buffer.length > 0)
             return true;
-        var o = this.fetch().next();
+        const o = this.fetch().next();
         if (o.done)
             return false;
         this.buffer.push(o.value);
         return true;
-    };
+    }
     /**
      * Applies a function to each document in a cursor and collects the return values in an array.
-     * @param callback
+     * @param fn
      * @returns {Array}
      */
-    Cursor.prototype.map = function (callback) {
-        return this.all().map(callback);
-    };
+    map(fn) {
+        return this.all().map(fn);
+    }
     /**
      * Applies a JavaScript function for every document in a cursor.
-     * @param callback
+     * @param fn
      */
-    Cursor.prototype.forEach = function (callback) {
-        this.all().forEach(callback);
-    };
-    Cursor.prototype[Symbol.iterator] = function () {
+    forEach(fn) {
+        this.all().forEach(fn);
+    }
+    [Symbol.iterator]() {
         return this.fetchAll();
-    };
-    return Cursor;
-}());
+    }
+}
 exports.Cursor = Cursor;
 
-},{"./aggregator":419,"./lazy":422,"./util":445}],422:[function(require,module,exports){
+},{"./aggregator":419,"./lazy":422,"./util":658}],422:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Iterator = exports.compose = exports.Lazy = void 0;
@@ -22694,15 +22645,11 @@ function Lazy(source) {
     return source instanceof Iterator ? source : new Iterator(source);
 }
 exports.Lazy = Lazy;
-function compose() {
-    var iterators = [];
-    for (var _i = 0; _i < arguments.length; _i++) {
-        iterators[_i] = arguments[_i];
-    }
-    var index = 0;
-    return Lazy(function () {
+function compose(...iterators) {
+    let index = 0;
+    return Lazy(() => {
         while (index < iterators.length) {
-            var o = iterators[index].next();
+            const o = iterators[index].next();
             if (!o.done)
                 return o;
             index++;
@@ -22719,12 +22666,12 @@ function isGenerator(o) {
     return (!!o && typeof o === "object" && (o === null || o === void 0 ? void 0 : o.next) instanceof Function);
 }
 function dropItem(array, i) {
-    var rest = array.slice(i + 1);
+    const rest = array.slice(i + 1);
     array.splice(i);
     Array.prototype.push.apply(array, rest);
 }
 // stop iteration error
-var DONE = new Error();
+const DONE = new Error();
 // Lazy function actions
 var Action;
 (function (Action) {
@@ -22734,20 +22681,20 @@ var Action;
     Action[Action["DROP"] = 3] = "DROP";
 })(Action || (Action = {}));
 function createCallback(nextFn, iteratees, buffer) {
-    var done = false;
-    var index = -1;
-    var bufferIndex = 0; // index for the buffer
+    let done = false;
+    let index = -1;
+    let bufferIndex = 0; // index for the buffer
     return function (storeResult) {
         // special hack to collect all values into buffer
         try {
             outer: while (!done) {
-                var o = nextFn();
+                let o = nextFn();
                 index++;
-                var i = -1;
-                var size = iteratees.length;
-                var innerDone = false;
+                let i = -1;
+                const size = iteratees.length;
+                let innerDone = false;
                 while (++i < size) {
-                    var r = iteratees[i];
+                    const r = iteratees[i];
                     switch (r.action) {
                         case Action.MAP:
                             o = r.func(o, index);
@@ -22784,13 +22731,13 @@ function createCallback(nextFn, iteratees, buffer) {
                 throw e;
         }
         done = true;
-        return { done: done };
+        return { done };
     };
 }
 /**
  * A lazy collection iterator yields a single value at time upon request
  */
-var Iterator = /** @class */ (function () {
+class Iterator {
     /**
      * @param {*} source An iterable object or function.
      *    Array - return one element per cycle
@@ -22798,36 +22745,36 @@ var Iterator = /** @class */ (function () {
      *    Function - call to return the next value
      * @param {Function} fn An optional transformation function
      */
-    function Iterator(source) {
+    constructor(source) {
         this.iteratees = [];
         this.yieldedValues = [];
         this.isDone = false;
-        var nextVal;
+        let nextVal;
         if (source instanceof Function) {
             // make iterable
             source = { next: source };
         }
         if (isGenerator(source)) {
-            var src_1 = source;
-            nextVal = function () {
-                var o = src_1.next();
+            const src = source;
+            nextVal = () => {
+                const o = src.next();
                 if (o.done)
                     throw DONE;
                 return o.value;
             };
         }
         else if (source instanceof Array) {
-            var data_1 = source;
-            var size_1 = data_1.length;
-            var index_1 = 0;
-            nextVal = function () {
-                if (index_1 < size_1)
-                    return data_1[index_1++];
+            const data = source;
+            const size = data.length;
+            let index = 0;
+            nextVal = () => {
+                if (index < size)
+                    return data[index++];
                 throw DONE;
             };
         }
         else if (!(source instanceof Function)) {
-            throw new Error("Source is of type '".concat(typeof source, "'. Must be Array, Function, or Generator"));
+            throw new Error(`Source is of type '${typeof source}'. Must be Array, Function, or Generator`);
         }
         // create next function
         this.getNext = createCallback(nextVal, this.iteratees, this.yieldedValues);
@@ -22835,47 +22782,47 @@ var Iterator = /** @class */ (function () {
     /**
      * Add an iteratee to this lazy sequence
      */
-    Iterator.prototype.push = function (action, value) {
+    push(action, value) {
         if (typeof value === "function") {
-            this.iteratees.push({ action: action, func: value });
+            this.iteratees.push({ action, func: value });
         }
         else if (typeof value === "number") {
-            this.iteratees.push({ action: action, count: value });
+            this.iteratees.push({ action, count: value });
         }
         return this;
-    };
-    Iterator.prototype.next = function () {
+    }
+    next() {
         return this.getNext();
-    };
+    }
     // Iteratees methods
     /**
      * Transform each item in the sequence to a new value
      * @param {Function} f
      */
-    Iterator.prototype.map = function (f) {
+    map(f) {
         return this.push(Action.MAP, f);
-    };
+    }
     /**
      * Select only items matching the given predicate
      * @param {Function} pred
      */
-    Iterator.prototype.filter = function (predicate) {
+    filter(predicate) {
         return this.push(Action.FILTER, predicate);
-    };
+    }
     /**
      * Take given numbe for values from sequence
      * @param {Number} n A number greater than 0
      */
-    Iterator.prototype.take = function (n) {
+    take(n) {
         return n > 0 ? this.push(Action.TAKE, n) : this;
-    };
+    }
     /**
      * Drop a number of values from the sequence
      * @param {Number} n Number of items to drop greater than 0
      */
-    Iterator.prototype.drop = function (n) {
+    drop(n) {
         return n > 0 ? this.push(Action.DROP, n) : this;
-    };
+    }
     // Transformations
     /**
      * Returns a new lazy object with results of the transformation
@@ -22883,75 +22830,72 @@ var Iterator = /** @class */ (function () {
      *
      * @param {Function} fn Tranform function of type (Array) => (Any)
      */
-    Iterator.prototype.transform = function (fn) {
-        var self = this;
-        var iter;
-        return Lazy(function () {
+    transform(fn) {
+        const self = this;
+        let iter;
+        return Lazy(() => {
             if (!iter) {
                 iter = Lazy(fn(self.value()));
             }
             return iter.next();
         });
-    };
+    }
     // Terminal methods
     /**
      * Returns the fully realized values of the iterators.
      * The return value will be an array unless `lazy.first()` was used.
-     * The realized values are cached for subsequent calls
+     * The realized values are cached for subsequent calls.
      */
-    Iterator.prototype.value = function () {
+    value() {
         if (!this.isDone) {
             this.isDone = this.getNext(true).done;
         }
         return this.yieldedValues;
-    };
+    }
     /**
      * Execute the funcion for each value. Will stop when an execution returns false.
      * @param {Function} f
      * @returns {Boolean} false iff `f` return false for AnyVal execution, otherwise true
      */
-    Iterator.prototype.each = function (f) {
+    each(f) {
         for (;;) {
-            var o = this.next();
+            const o = this.next();
             if (o.done)
                 break;
             if (f(o.value) === false)
                 return false;
         }
         return true;
-    };
+    }
     /**
      * Returns the reduction of sequence according the reducing function
      *
      * @param {*} f a reducing function
-     * @param {*} init
+     * @param {*} initialValue
      */
-    Iterator.prototype.reduce = function (f, initialValue) {
-        var o = this.next();
-        var i = 0;
+    reduce(f, initialValue) {
+        let o = this.next();
         if (initialValue === undefined && !o.done) {
             initialValue = o.value;
             o = this.next();
-            i++;
         }
         while (!o.done) {
             initialValue = f(initialValue, o.value);
             o = this.next();
         }
         return initialValue;
-    };
+    }
     /**
      * Returns the number of matched items in the sequence
      */
-    Iterator.prototype.size = function () {
-        return this.reduce(function (acc, _) { return ++acc; }, 0);
-    };
-    Iterator.prototype[Symbol.iterator] = function () {
+    size() {
+        return this.reduce(((acc, _) => ++acc), 0);
+    }
+    [Symbol.iterator]() {
         /* eslint-disable @typescript-eslint/no-unsafe-return */
         return this;
-    };
-    return Iterator;
-}());
+    }
+}
 exports.Iterator = Iterator;
 
 },{}],423:[function(require,module,exports){
@@ -22959,37 +22903,28 @@ exports.Iterator = Iterator;
 /**
  * Predicates used for Query and Expression operators.
  */
-var __assign = (this && this.__assign) || function () {
-    __assign = Object.assign || function(t) {
-        for (var s, i = 1, n = arguments.length; i < n; i++) {
-            s = arguments[i];
-            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-                t[p] = s[p];
-        }
-        return t;
-    };
-    return __assign.apply(this, arguments);
-};
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.$type = exports.$elemMatch = exports.$size = exports.$all = exports.$exists = exports.$regex = exports.$mod = exports.$gte = exports.$gt = exports.$lte = exports.$lt = exports.$nin = exports.$in = exports.$ne = exports.$eq = exports.createExpressionOperator = exports.createQueryOperator = void 0;
-var core_1 = require("../core");
-var query_1 = require("../query");
-var util_1 = require("../util");
+const core_1 = require("../core");
+const query_1 = require("../query");
+const util_1 = require("../util");
 /**
  * Returns a query operator created from the predicate
  *
  * @param predicate Predicate function
  */
 function createQueryOperator(predicate) {
-    return function (selector, value, options) {
-        var opts = { unwrapArray: true };
-        var depth = Math.max(1, selector.split(".").length - 1);
-        return function (obj) {
+    const f = (selector, value, options) => {
+        const opts = { unwrapArray: true };
+        const depth = Math.max(1, selector.split(".").length - 1);
+        return (obj) => {
             // value of field must be fully resolved.
-            var lhs = (0, util_1.resolve)(obj, selector, opts);
-            return predicate(lhs, value, __assign(__assign({}, options), { depth: depth }));
+            const lhs = (0, util_1.resolve)(obj, selector, opts);
+            return predicate(lhs, value, Object.assign(Object.assign({}, options), { depth }));
         };
     };
+    f.op = "query";
+    return f; // as QueryOperator;
 }
 exports.createQueryOperator = createQueryOperator;
 /**
@@ -22998,9 +22933,9 @@ exports.createQueryOperator = createQueryOperator;
  * @param predicate Predicate function
  */
 function createExpressionOperator(predicate) {
-    return function (obj, expr, options) {
-        var args = (0, core_1.computeValue)(obj, expr, null, options);
-        return predicate.apply(void 0, args);
+    return (obj, expr, options) => {
+        const args = (0, core_1.computeValue)(obj, expr, null, options);
+        return predicate(...args);
     };
 }
 exports.createExpressionOperator = createExpressionOperator;
@@ -23020,7 +22955,7 @@ function $eq(a, b, options) {
         return true;
     // check
     if (a instanceof Array) {
-        var eq = util_1.isEqual.bind(null, b);
+        const eq = util_1.isEqual.bind(null, b);
         return a.some(eq) || (0, util_1.flatten)(a, options === null || options === void 0 ? void 0 : options.depth).some(eq);
     }
     return false;
@@ -23047,7 +22982,7 @@ exports.$ne = $ne;
 function $in(a, b, options) {
     // queries for null should be able to find undefined fields
     if ((0, util_1.isNil)(a))
-        return b.some(function (v) { return v === null; });
+        return b.some(v => v === null);
     return (0, util_1.intersection)([(0, util_1.ensureArray)(a), b], options === null || options === void 0 ? void 0 : options.hashFunction).length > 0;
 }
 exports.$in = $in;
@@ -23070,7 +23005,7 @@ exports.$nin = $nin;
  * @returns {boolean}
  */
 function $lt(a, b, options) {
-    return compare(a, b, function (x, y) { return x < y; });
+    return compare(a, b, (x, y) => (0, util_1.compare)(x, y) < 0);
 }
 exports.$lt = $lt;
 /**
@@ -23081,7 +23016,7 @@ exports.$lt = $lt;
  * @returns {boolean}
  */
 function $lte(a, b, options) {
-    return compare(a, b, function (x, y) { return x <= y; });
+    return compare(a, b, (x, y) => (0, util_1.compare)(x, y) <= 0);
 }
 exports.$lte = $lte;
 /**
@@ -23092,7 +23027,7 @@ exports.$lte = $lte;
  * @returns {boolean}
  */
 function $gt(a, b, options) {
-    return compare(a, b, function (x, y) { return x > y; });
+    return compare(a, b, (x, y) => (0, util_1.compare)(x, y) > 0);
 }
 exports.$gt = $gt;
 /**
@@ -23103,7 +23038,7 @@ exports.$gt = $gt;
  * @returns {boolean}
  */
 function $gte(a, b, options) {
-    return compare(a, b, function (x, y) { return x >= y; });
+    return compare(a, b, (x, y) => (0, util_1.compare)(x, y) >= 0);
 }
 exports.$gte = $gte;
 /**
@@ -23114,7 +23049,7 @@ exports.$gte = $gte;
  * @returns {boolean}
  */
 function $mod(a, b, options) {
-    return (0, util_1.ensureArray)(a).some(function (x) { return b.length === 2 && x % b[0] === b[1]; });
+    return (0, util_1.ensureArray)(a).some(((x) => b.length === 2 && x % b[0] === b[1]));
 }
 exports.$mod = $mod;
 /**
@@ -23125,10 +23060,8 @@ exports.$mod = $mod;
  * @returns {boolean}
  */
 function $regex(a, b, options) {
-    var lhs = (0, util_1.ensureArray)(a);
-    var match = function (x) {
-        return (0, util_1.isString)(x) && (0, util_1.truthy)(b.exec(x), options.useStrictMode);
-    };
+    const lhs = (0, util_1.ensureArray)(a);
+    const match = (x) => (0, util_1.isString)(x) && (0, util_1.truthy)(b.exec(x), options === null || options === void 0 ? void 0 : options.useStrictMode);
     return lhs.some(match) || (0, util_1.flatten)(lhs, 1).some(match);
 }
 exports.$regex = $regex;
@@ -23158,26 +23091,20 @@ function $all(values, queries, options) {
         !queries.length) {
         return false;
     }
-    var matched = true;
-    var _loop_1 = function (query) {
+    let matched = true;
+    for (const query of queries) {
         // no need to check all the queries.
         if (!matched)
-            return "break";
+            break;
         if ((0, util_1.isObject)(query) && (0, util_1.inArray)(Object.keys(query), "$elemMatch")) {
             matched = $elemMatch(values, query["$elemMatch"], options);
         }
         else if (query instanceof RegExp) {
-            matched = values.some(function (s) { return typeof s === "string" && query.test(s); });
+            matched = values.some(s => typeof s === "string" && query.test(s));
         }
         else {
-            matched = values.some(function (v) { return (0, util_1.isEqual)(query, v); });
+            matched = values.some(v => (0, util_1.isEqual)(query, v));
         }
-    };
-    for (var _i = 0, queries_1 = queries; _i < queries_1.length; _i++) {
-        var query = queries_1[_i];
-        var state_1 = _loop_1(query);
-        if (state_1 === "break")
-            break;
     }
     return matched;
 }
@@ -23205,17 +23132,17 @@ function isNonBooleanOperator(name) {
 function $elemMatch(a, b, options) {
     // should return false for non-matching input
     if ((0, util_1.isArray)(a) && !(0, util_1.isEmpty)(a)) {
-        var format = function (x) { return x; };
-        var criteria = b;
+        let format = (x) => x;
+        let criteria = b;
         // If we find a boolean operator in the subquery, we fake a field to point to it. This is an
         // attempt to ensure that it is a valid criteria. We cannot make this substitution for operators
         // like $and/$or/$nor; as otherwise, this faking will break our query.
         if (Object.keys(b).every(isNonBooleanOperator)) {
             criteria = { temp: b };
-            format = function (x) { return ({ temp: x }); };
+            format = x => ({ temp: x });
         }
-        var query = new query_1.Query(criteria, options);
-        for (var i = 0, len = a.length; i < len; i++) {
+        const query = new query_1.Query(criteria, options);
+        for (let i = 0, len = a.length; i < len; i++) {
             if (query.test(format(a[i]))) {
                 return true;
             }
@@ -23225,21 +23152,17 @@ function $elemMatch(a, b, options) {
 }
 exports.$elemMatch = $elemMatch;
 // helper functions
-var isNull = function (a) { return a === null; };
-var isInt = function (a) {
-    return (0, util_1.isNumber)(a) &&
-        a >= util_1.MIN_INT &&
-        a <= util_1.MAX_INT &&
-        a.toString().indexOf(".") === -1;
-};
-var isLong = function (a) {
-    return (0, util_1.isNumber)(a) &&
-        a >= util_1.MIN_LONG &&
-        a <= util_1.MAX_LONG &&
-        a.toString().indexOf(".") === -1;
-};
+const isNull = (a) => a === null;
+const isInt = (a) => (0, util_1.isNumber)(a) &&
+    a >= util_1.MIN_INT &&
+    a <= util_1.MAX_INT &&
+    a.toString().indexOf(".") === -1;
+const isLong = (a) => (0, util_1.isNumber)(a) &&
+    a >= util_1.MIN_LONG &&
+    a <= util_1.MAX_LONG &&
+    a.toString().indexOf(".") === -1;
 /** Mapping of type to predicate */
-var compareFuncs = {
+const compareFuncs = {
     array: util_1.isArray,
     bool: util_1.isBoolean,
     boolean: util_1.isBoolean,
@@ -23256,7 +23179,7 @@ var compareFuncs = {
     string: util_1.isString,
     // added for completeness
     undefined: util_1.isNil,
-    function: function (_) {
+    function: (_) => {
         throw new Error("unsupported type key `function`.");
     },
     // Mongo identifiers
@@ -23271,7 +23194,7 @@ var compareFuncs = {
     11: util_1.isRegExp,
     16: isInt,
     18: isLong,
-    19: util_1.isNumber, //decimal
+    19: util_1.isNumber //decimal
 };
 /**
  * Selects documents if a field is of the specified type.
@@ -23281,7 +23204,7 @@ var compareFuncs = {
  * @returns {boolean}
  */
 function compareType(a, b, _) {
-    var f = compareFuncs[b];
+    const f = compareFuncs[b];
     return f ? f(a) : false;
 }
 /**
@@ -23293,20 +23216,5119 @@ function compareType(a, b, _) {
  */
 function $type(a, b, options) {
     return Array.isArray(b)
-        ? b.findIndex(function (t) { return compareType(a, t, options); }) >= 0
+        ? b.findIndex(t => compareType(a, t, options)) >= 0
         : compareType(a, b, options);
 }
 exports.$type = $type;
 function compare(a, b, f) {
-    return (0, util_1.ensureArray)(a).some(function (x) { return (0, util_1.getType)(x) === (0, util_1.getType)(b) && f(x, b); });
+    return (0, util_1.ensureArray)(a).some(x => (0, util_1.getType)(x) === (0, util_1.getType)(b) && f(x, b));
 }
 
-},{"../core":420,"../query":444,"../util":445}],424:[function(require,module,exports){
+},{"../core":420,"../query":657,"../util":658}],424:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.covariance = exports.stddev = void 0;
+/**
+ * Compute the standard deviation of the data set
+ * @param {Array} array of numbers
+ * @param {Boolean} if true calculates a sample standard deviation, otherwise calculates a population stddev
+ * @return {Number}
+ */
+function stddev(data, sampled = true) {
+    const sum = data.reduce((acc, n) => acc + n, 0);
+    const N = data.length || 1;
+    const avg = sum / N;
+    return Math.sqrt(data.reduce((acc, n) => acc + Math.pow(n - avg, 2), 0) /
+        (N - Number(sampled)));
+}
+exports.stddev = stddev;
+function covariance(dataset, sampled = true) {
+    if (!dataset)
+        return null;
+    if (dataset.length < 2)
+        return sampled ? null : 0;
+    let meanX = 0.0;
+    let meanY = 0.0;
+    for (const [x, y] of dataset) {
+        meanX += x;
+        meanY += y;
+    }
+    meanX /= dataset.length;
+    meanY /= dataset.length;
+    let result = 0;
+    for (const [x, y] of dataset) {
+        result += (x - meanX) * (y - meanY);
+    }
+    return result / (dataset.length - Number(sampled));
+}
+exports.covariance = covariance;
+
+},{}],425:[function(require,module,exports){
+"use strict";
+// Custom Aggregation Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#custom-aggregation-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$accumulator = void 0;
+const core_1 = require("../../core");
+const util_1 = require("../../util");
+/**
+ * Defines a custom accumulator function.
+ *
+ * @param {Array} collection The input array
+ * @param {*} expr The expression for the operator
+ * @param {Options} options Options
+ */
+const $accumulator = (collection, expr, options) => {
+    var _a;
+    (0, util_1.assert)(!!options && options.scriptEnabled, "$accumulator operator requires 'scriptEnabled' option to be true");
+    if (collection.length == 0)
+        return expr.initArgs;
+    const copts = core_1.ComputeOptions.init(options);
+    const initArgs = (0, core_1.computeValue)({}, expr.initArgs || [], null, copts.update(((_a = copts === null || copts === void 0 ? void 0 : copts.local) === null || _a === void 0 ? void 0 : _a.groupId) || {}));
+    let state = expr.init.call(null, ...initArgs);
+    for (const doc of collection) {
+        // get arguments for document
+        const args = (0, core_1.computeValue)(doc, expr.accumulateArgs, null, copts.update(doc));
+        // update the state with each documents value
+        // eslint-disable-next-line
+        state = expr.accumulate.call(null, ...[state, ...args]);
+    }
+    return (expr.finalize ? expr.finalize.call(null, state) : state);
+};
+exports.$accumulator = $accumulator;
+
+},{"../../core":420,"../../util":658}],426:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$addToSet = void 0;
+const util_1 = require("../../util");
+const push_1 = require("./push");
+/**
+ * Returns an array of all the unique values for the selected field among for each document in that group.
+ *
+ * @param {Array} collection The input array
+ * @param {Object} expr The right-hand side expression value of the operator
+ * @param {Options} options The options to use for this operation
+ * @returns {*}
+ */
+const $addToSet = (collection, expr, options) => {
+    return (0, util_1.unique)((0, push_1.$push)(collection, expr, options), options === null || options === void 0 ? void 0 : options.hashFunction);
+};
+exports.$addToSet = $addToSet;
+
+},{"../../util":658,"./push":443}],427:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$avg = void 0;
+const util_1 = require("../../util");
+const push_1 = require("./push");
+/**
+ * Returns an average of all the values in a group.
+ *
+ * @param {Array} collection The input array
+ * @param {Object} expr The right-hand side expression value of the operator
+ * @param {Options} options The options to use for this operation
+ * @returns {Number}
+ */
+const $avg = (collection, expr, options) => {
+    const data = (0, push_1.$push)(collection, expr, options).filter(util_1.isNumber);
+    const sum = data.reduce((acc, n) => acc + n, 0);
+    return sum / (data.length || 1);
+};
+exports.$avg = $avg;
+
+},{"../../util":658,"./push":443}],428:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$bottom = void 0;
+const bottomN_1 = require("./bottomN");
+/**
+ * Returns the bottom element within a group according to the specified sort order.
+ *
+ * @param {Array} collection The input array
+ * @param {Object} expr The right-hand side expression value of the operator
+ * @param {Options} options The options to use for this operation
+ * @returns {*}
+ */
+const $bottom = (collection, expr, options) => (0, bottomN_1.$bottomN)(collection, Object.assign(Object.assign({}, expr), { n: 1 }), options);
+exports.$bottom = $bottom;
+
+},{"./bottomN":429}],429:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$bottomN = void 0;
+// https://www.mongodb.com/docs/manual/reference/operator/aggregation/bottomN/#mongodb-group-grp.-bottomN
+const aggregator_1 = require("../../aggregator");
+const core_1 = require("../../core");
+const push_1 = require("./push");
+/**
+ * Returns an aggregation of the bottom n elements within a group, according to the specified sort order.
+ * If the group contains fewer than n elements, $bottomN returns all elements in the group.
+ *
+ * @param {Array} collection The input array
+ * @param {Object} expr The right-hand side expression value of the operator
+ * @param {Options} options The options to use for this operation
+ * @returns {*}
+ */
+const $bottomN = (collection, expr, options) => {
+    const copts = core_1.ComputeOptions.init(options);
+    const { n, sortBy } = (0, core_1.computeValue)(copts.local.groupId, expr, null, copts);
+    const result = new aggregator_1.Aggregator([{ $sort: sortBy }], copts).run(collection);
+    const m = result.length;
+    const p = n;
+    return (0, push_1.$push)(m <= p ? result : result.slice(m - p), expr.output, copts);
+};
+exports.$bottomN = $bottomN;
+
+},{"../../aggregator":419,"../../core":420,"./push":443}],430:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$count = void 0;
+/**
+ * Returns the number of documents in the group or window.
+ *
+ * @param {Array} collection The input array
+ * @param {Object} expr The right-hand side expression value of the operator
+ * @returns {*}
+ */
+const $count = (collection, _expr, _options) => collection.length;
+exports.$count = $count;
+
+},{}],431:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$covariancePop = void 0;
+const _internal_1 = require("./_internal");
+const push_1 = require("./push");
+/**
+ * Returns the population covariance of two numeric expressions.
+ * @param  {Array} collection
+ * @param  {Object} expr
+ * @return {Number|null}
+ */
+const $covariancePop = (collection, expr, options) => (0, _internal_1.covariance)((0, push_1.$push)(collection, expr, options), false);
+exports.$covariancePop = $covariancePop;
+
+},{"./_internal":424,"./push":443}],432:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$covarianceSamp = void 0;
+const _internal_1 = require("./_internal");
+const push_1 = require("./push");
+/**
+ * Returns the sample covariance of two numeric expressions.
+ * @param  {Array} collection
+ * @param  {Object} expr
+ * @return {Number|null}
+ */
+const $covarianceSamp = (collection, expr, options) => (0, _internal_1.covariance)((0, push_1.$push)(collection, expr, options), true);
+exports.$covarianceSamp = $covarianceSamp;
+
+},{"./_internal":424,"./push":443}],433:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$first = void 0;
+const core_1 = require("../../core");
+/**
+ * Returns the first value in a group.
+ *
+ * @param {Array} collection The input array
+ * @param {Object} expr The right-hand side expression value of the operator
+ * @returns {*}
+ */
+const $first = (collection, expr, options) => {
+    return collection.length > 0
+        ? (0, core_1.computeValue)(collection[0], expr, null, options)
+        : undefined;
+};
+exports.$first = $first;
+
+},{"../../core":420}],434:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$firstN = void 0;
+// https://www.mongodb.com/docs/manual/reference/operator/aggregation/firstN/
+const core_1 = require("../../core");
+const push_1 = require("./push");
+/**
+ * Returns an aggregation of the first n elements within a group. The elements returned are meaningful only if in a specified sort order.
+ * If the group contains fewer than n elements, $firstN returns all elements in the group.
+ *
+ * @param {Array} collection The input array
+ * @param {Object} expr The right-hand side expression value of the operator
+ * @param {Options} options The options to use for this operation
+ * @returns {*}
+ */
+const $firstN = (collection, expr, options) => {
+    var _a;
+    const copts = core_1.ComputeOptions.init(options);
+    const m = collection.length;
+    const n = (0, core_1.computeValue)((_a = copts === null || copts === void 0 ? void 0 : copts.local) === null || _a === void 0 ? void 0 : _a.groupId, expr.n, null, copts);
+    return (0, push_1.$push)(m <= n ? collection : collection.slice(0, n), expr.input, options);
+};
+exports.$firstN = $firstN;
+
+},{"../../core":420,"./push":443}],435:[function(require,module,exports){
+"use strict";
+/**
+ * Group stage Accumulator Operators. https://docs.mongodb.com/manual/reference/operator/aggregation-
+ */
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+__exportStar(require("./accumulator"), exports);
+__exportStar(require("./addToSet"), exports);
+__exportStar(require("./avg"), exports);
+__exportStar(require("./bottom"), exports);
+__exportStar(require("./bottomN"), exports);
+__exportStar(require("./count"), exports);
+__exportStar(require("./covariancePop"), exports);
+__exportStar(require("./covarianceSamp"), exports);
+__exportStar(require("./first"), exports);
+__exportStar(require("./firstN"), exports);
+__exportStar(require("./last"), exports);
+__exportStar(require("./lastN"), exports);
+__exportStar(require("./max"), exports);
+__exportStar(require("./maxN"), exports);
+__exportStar(require("./mergeObjects"), exports);
+__exportStar(require("./min"), exports);
+__exportStar(require("./minN"), exports);
+__exportStar(require("./push"), exports);
+__exportStar(require("./stdDevPop"), exports);
+__exportStar(require("./stdDevSamp"), exports);
+__exportStar(require("./sum"), exports);
+__exportStar(require("./top"), exports);
+__exportStar(require("./topN"), exports);
+
+},{"./accumulator":425,"./addToSet":426,"./avg":427,"./bottom":428,"./bottomN":429,"./count":430,"./covariancePop":431,"./covarianceSamp":432,"./first":433,"./firstN":434,"./last":436,"./lastN":437,"./max":438,"./maxN":439,"./mergeObjects":440,"./min":441,"./minN":442,"./push":443,"./stdDevPop":444,"./stdDevSamp":445,"./sum":446,"./top":447,"./topN":448}],436:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$last = void 0;
+const core_1 = require("../../core");
+/**
+ * Returns the last value in the collection.
+ *
+ * @param {Array} collection The input array
+ * @param {Object} expr The right-hand side expression value of the operator
+ * @param {Options} options The options to use for this operation
+ * @returns {*}
+ */
+const $last = (collection, expr, options) => {
+    return collection.length > 0
+        ? (0, core_1.computeValue)(collection[collection.length - 1], expr, null, options)
+        : undefined;
+};
+exports.$last = $last;
+
+},{"../../core":420}],437:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$lastN = void 0;
+// https://www.mongodb.com/docs/manual/reference/operator/aggregation/lastN/
+const core_1 = require("../../core");
+const push_1 = require("./push");
+/**
+ * Returns an aggregation of the last n elements within a group. The elements returned are meaningful only if in a specified sort order.
+ * If the group contains fewer than n elements, $lastN returns all elements in the group.
+ *
+ * @param {Array} collection The input array
+ * @param {Object} expr The right-hand side expression value of the operator
+ * @param {Options} options The options to use for this operation
+ * @returns {*}
+ */
+const $lastN = (collection, expr, options) => {
+    var _a;
+    const copts = core_1.ComputeOptions.init(options);
+    const m = collection.length;
+    const n = (0, core_1.computeValue)((_a = copts === null || copts === void 0 ? void 0 : copts.local) === null || _a === void 0 ? void 0 : _a.groupId, expr.n, null, copts);
+    return (0, push_1.$push)(m <= n ? collection : collection.slice(m - n), expr.input, options);
+};
+exports.$lastN = $lastN;
+
+},{"../../core":420,"./push":443}],438:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$max = void 0;
+const util_1 = require("../../util");
+const push_1 = require("./push");
+/**
+ * Returns the highest value in a group.
+ *
+ * @param {Array} collection The input array
+ * @param {Object} expr The right-hand side expression value of the operator
+ * @param {Options} options The options to use for this operation
+ * @returns {*}
+ */
+const $max = (collection, expr, options) => {
+    const nums = (0, push_1.$push)(collection, expr, options).filter(util_1.isNotNaN);
+    const n = nums.reduce((acc, n) => ((0, util_1.compare)(n, acc) >= 0 ? n : acc), -Infinity);
+    return n === -Infinity ? undefined : n;
+};
+exports.$max = $max;
+
+},{"../../util":658,"./push":443}],439:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$maxN = void 0;
+// https://www.mongodb.com/docs/manual/reference/operator/aggregation/maxN
+const core_1 = require("../../core");
+const util_1 = require("../../util");
+const push_1 = require("./push");
+/**
+ * Returns an aggregation of the maxmimum value n elements within a group.
+ * If the group contains fewer than n elements, $maxN returns all elements in the group.
+ *
+ * @param {Array} collection The input array
+ * @param {Object} expr The right-hand side expression value of the operator
+ * @param {Options} options The options to use for this operation
+ * @returns {*}
+ */
+const $maxN = (collection, expr, options) => {
+    var _a;
+    const copts = core_1.ComputeOptions.init(options);
+    const m = collection.length;
+    const n = (0, core_1.computeValue)((_a = copts === null || copts === void 0 ? void 0 : copts.local) === null || _a === void 0 ? void 0 : _a.groupId, expr.n, null, copts);
+    const arr = (0, push_1.$push)(collection, expr.input, options).filter(o => !(0, util_1.isNil)(o));
+    arr.sort((a, b) => -1 * (0, util_1.compare)(a, b));
+    return m <= n ? arr : arr.slice(0, n);
+};
+exports.$maxN = $maxN;
+
+},{"../../core":420,"../../util":658,"./push":443}],440:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$mergeObjects = void 0;
+const mergeObjects_1 = require("../expression/object/mergeObjects");
+/**
+ * Combines multiple documents into a single document.
+ *
+ * @param {Array} collection The input array
+ * @param {Object} _ The right-hand side expression value of the operator
+ * @param {Options} options The options to use for this operation
+ * @returns {Array|*}
+ */
+const $mergeObjects = (collection, _, options) => (0, mergeObjects_1.$mergeObjects)({ docs: collection }, "$docs", options);
+exports.$mergeObjects = $mergeObjects;
+
+},{"../expression/object/mergeObjects":537}],441:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$min = void 0;
+const util_1 = require("../../util");
+const push_1 = require("./push");
+/**
+ * Returns the lowest value in a group.
+ *
+ * @param {Array} collection The input array
+ * @param {Object} expr The right-hand side expression value of the operator
+ * @param {Options} The options to use for this operator
+ * @returns {*}
+ */
+const $min = (collection, expr, options) => {
+    const nums = (0, push_1.$push)(collection, expr, options).filter(util_1.isNotNaN);
+    const n = nums.reduce((acc, n) => ((0, util_1.compare)(n, acc) <= 0 ? n : acc), Infinity);
+    return n === Infinity ? undefined : n;
+};
+exports.$min = $min;
+
+},{"../../util":658,"./push":443}],442:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$minN = void 0;
+// https://www.mongodb.com/docs/manual/reference/operator/aggregation/minN
+const core_1 = require("../../core");
+const util_1 = require("../../util");
+const push_1 = require("./push");
+/**
+ * Returns an aggregation of the minimum value n elements within a group.
+ * If the group contains fewer than n elements, $minN returns all elements in the group.
+ *
+ * @param {Array} collection The input array
+ * @param {Object} expr The right-hand side expression value of the operator
+ * @param {Options} options The options to use for this operation
+ * @returns {*}
+ */
+const $minN = (collection, expr, options) => {
+    var _a;
+    const copts = core_1.ComputeOptions.init(options);
+    const m = collection.length;
+    const n = (0, core_1.computeValue)((_a = copts === null || copts === void 0 ? void 0 : copts.local) === null || _a === void 0 ? void 0 : _a.groupId, expr.n, null, copts);
+    const arr = (0, push_1.$push)(collection, expr.input, options).filter(o => !(0, util_1.isNil)(o));
+    arr.sort(util_1.compare);
+    return m <= n ? arr : arr.slice(0, n);
+};
+exports.$minN = $minN;
+
+},{"../../core":420,"../../util":658,"./push":443}],443:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$push = void 0;
+const core_1 = require("../../core");
+const util_1 = require("../../util");
+/**
+ * Returns an array of all values for the selected field among for each document in that group.
+ *
+ * @param {Array} collection The input array
+ * @param {Object} expr The right-hand side expression value of the operator
+ * @param {Options} options The options to use for this operation
+ * @returns {Array|*}
+ */
+const $push = (collection, expr, options) => {
+    if ((0, util_1.isNil)(expr))
+        return collection;
+    const copts = core_1.ComputeOptions.init(options);
+    return collection.map(obj => (0, core_1.computeValue)(obj, expr, null, copts.update(obj)));
+};
+exports.$push = $push;
+
+},{"../../core":420,"../../util":658}],444:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$stdDevPop = void 0;
+const util_1 = require("../../util");
+const _internal_1 = require("./_internal");
+const push_1 = require("./push");
+/**
+ * Returns the population standard deviation of the input values.
+ *
+ * @param {Array} collection The input array
+ * @param {Object} expr The right-hand side expression value of the operator
+ * @param {Options} options The options to use for this operation
+ * @return {Number}
+ */
+const $stdDevPop = (collection, expr, options) => (0, _internal_1.stddev)((0, push_1.$push)(collection, expr, options).filter(util_1.isNumber), false);
+exports.$stdDevPop = $stdDevPop;
+
+},{"../../util":658,"./_internal":424,"./push":443}],445:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$stdDevSamp = void 0;
+const util_1 = require("../../util");
+const _internal_1 = require("./_internal");
+const push_1 = require("./push");
+/**
+ * Returns the sample standard deviation of the input values.
+ * @param  {Array} collection
+ * @param  {Object} expr
+ * @return {Number|null}
+ */
+const $stdDevSamp = (collection, expr, options) => (0, _internal_1.stddev)((0, push_1.$push)(collection, expr, options).filter(util_1.isNumber), true);
+exports.$stdDevSamp = $stdDevSamp;
+
+},{"../../util":658,"./_internal":424,"./push":443}],446:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$sum = void 0;
+const util_1 = require("../../util");
+const push_1 = require("./push");
+/**
+ * Returns the sum of all the values in a group.
+ *
+ * @param {Array} collection The input array
+ * @param {Object} expr The right-hand side expression value of the operator
+ * @returns {Number}
+ */
+const $sum = (collection, expr, options) => {
+    if (!(0, util_1.isArray)(collection))
+        return 0;
+    // take a short cut if expr is number literal
+    if ((0, util_1.isNumber)(expr))
+        return collection.length * expr;
+    const nums = (0, push_1.$push)(collection, expr, options).filter(util_1.isNumber);
+    return nums.reduce((acc, n) => acc + n, 0);
+};
+exports.$sum = $sum;
+
+},{"../../util":658,"./push":443}],447:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$top = void 0;
+const topN_1 = require("./topN");
+/**
+ * Returns the top element within a group according to the specified sort order.
+ *
+ * @param {Array} collection The input array
+ * @param {Object} expr The right-hand side expression value of the operator
+ * @param {Options} options The options to use for this operation
+ * @returns {*}
+ */
+const $top = (collection, expr, options) => (0, topN_1.$topN)(collection, Object.assign(Object.assign({}, expr), { n: 1 }), options);
+exports.$top = $top;
+
+},{"./topN":448}],448:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$topN = void 0;
+// https://www.mongodb.com/docs/manual/reference/operator/aggregation/topN/#mongodb-group-grp.-topN
+const aggregator_1 = require("../../aggregator");
+const core_1 = require("../../core");
+const push_1 = require("./push");
+/**
+ * Returns an aggregation of the top n elements within a group, according to the specified sort order.
+ * If the group contains fewer than n elements, $topN returns all elements in the group.
+ *
+ * @param {Array} collection The input array
+ * @param {Object} expr The right-hand side expression value of the operator
+ * @param {Options} options The options to use for this operation
+ * @returns {*}
+ */
+const $topN = (collection, expr, options) => {
+    const copts = core_1.ComputeOptions.init(options);
+    const { n, sortBy } = (0, core_1.computeValue)(copts.local.groupId, expr, null, copts);
+    const result = new aggregator_1.Aggregator([{ $sort: sortBy }, { $limit: n }], copts).run(collection);
+    return (0, push_1.$push)(result, expr.output, copts);
+};
+exports.$topN = $topN;
+
+},{"../../aggregator":419,"../../core":420,"./push":443}],449:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.truncate = void 0;
+/**
+ * Truncates integer value to number of places. If roundOff is specified round value instead to the number of places
+ * @param {Number} num
+ * @param {Number} places
+ * @param {Boolean} roundOff
+ */
+function truncate(num, places, roundOff) {
+    const sign = Math.abs(num) === num ? 1 : -1;
+    num = Math.abs(num);
+    let result = Math.trunc(num);
+    const decimals = parseFloat((num - result).toFixed(places + 1));
+    if (places === 0) {
+        const firstDigit = Math.trunc(10 * decimals);
+        if (roundOff &&
+            (((result & 1) === 1 && firstDigit >= 5) || firstDigit > 5)) {
+            result++;
+        }
+    }
+    else if (places > 0) {
+        const offset = Math.pow(10, places);
+        let remainder = Math.trunc(decimals * offset);
+        // last digit before cut off
+        const lastDigit = Math.trunc(decimals * offset * 10) % 10;
+        // add one if last digit is greater than 5
+        if (roundOff && lastDigit > 5) {
+            remainder += 1;
+        }
+        // compute decimal remainder and add to whole number
+        // manually formatting float re
+        result = (result * offset + remainder) / offset;
+    }
+    else if (places < 0) {
+        // handle negative decimal places
+        const offset = Math.pow(10, -1 * places);
+        let excess = result % offset;
+        result = Math.max(0, result - excess);
+        // for negative values the absolute must increase so we round up the last digit if >= 5
+        if (roundOff && sign === -1) {
+            while (excess > 10) {
+                excess -= excess % 10;
+            }
+            if (result > 0 && excess >= 5) {
+                result += offset;
+            }
+        }
+    }
+    return result * sign;
+}
+exports.truncate = truncate;
+
+},{}],450:[function(require,module,exports){
+"use strict";
+// Arithmetic Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#arithmetic-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$abs = void 0;
+const core_1 = require("../../../core");
+const util_1 = require("../../../util");
+/**
+ * Returns the absolute value of a number.
+ *
+ * @param obj
+ * @param expr
+ * @return {Number|null|NaN}
+ */
+const $abs = (obj, expr, options) => {
+    const n = (0, core_1.computeValue)(obj, expr, null, options);
+    return (0, util_1.isNil)(n) ? null : Math.abs(n);
+};
+exports.$abs = $abs;
+
+},{"../../../core":420,"../../../util":658}],451:[function(require,module,exports){
+"use strict";
+// Arithmetic Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#arithmetic-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$add = void 0;
+const core_1 = require("../../../core");
+const util_1 = require("../../../util");
+/**
+ * Computes the sum of an array of numbers.
+ *
+ * @param obj
+ * @param expr
+ * @returns {Object}
+ */
+const $add = (obj, expr, options) => {
+    const args = (0, core_1.computeValue)(obj, expr, null, options);
+    let foundDate = false;
+    const result = args.reduce((acc, val) => {
+        if ((0, util_1.isDate)(val)) {
+            (0, util_1.assert)(!foundDate, "'$add' can only have one date value");
+            foundDate = true;
+            val = val.getTime();
+        }
+        // assume val is a number
+        acc += val;
+        return acc;
+    }, 0);
+    return foundDate ? new Date(result) : result;
+};
+exports.$add = $add;
+
+},{"../../../core":420,"../../../util":658}],452:[function(require,module,exports){
+"use strict";
+// Arithmetic Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#arithmetic-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$ceil = void 0;
+const core_1 = require("../../../core");
+const util_1 = require("../../../util");
+/**
+ * Returns the smallest integer greater than or equal to the specified number.
+ *
+ * @param obj
+ * @param expr
+ * @returns {number}
+ */
+const $ceil = (obj, expr, options) => {
+    const n = (0, core_1.computeValue)(obj, expr, null, options);
+    if ((0, util_1.isNil)(n))
+        return null;
+    (0, util_1.assert)((0, util_1.isNumber)(n) || isNaN(n), "$ceil expression must resolve to a number.");
+    return Math.ceil(n);
+};
+exports.$ceil = $ceil;
+
+},{"../../../core":420,"../../../util":658}],453:[function(require,module,exports){
+"use strict";
+// Arithmetic Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#arithmetic-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$divide = void 0;
+const core_1 = require("../../../core");
+/**
+ * Takes two numbers and divides the first number by the second.
+ *
+ * @param obj
+ * @param expr
+ * @returns {number}
+ */
+const $divide = (obj, expr, options) => {
+    const args = (0, core_1.computeValue)(obj, expr, null, options);
+    return args[0] / args[1];
+};
+exports.$divide = $divide;
+
+},{"../../../core":420}],454:[function(require,module,exports){
+"use strict";
+// Arithmetic Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#arithmetic-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$exp = void 0;
+const core_1 = require("../../../core");
+const util_1 = require("../../../util");
+/**
+ * Raises Euler’s number (i.e. e ) to the specified exponent and returns the result.
+ *
+ * @param obj
+ * @param expr
+ * @returns {number}
+ */
+const $exp = (obj, expr, options) => {
+    const n = (0, core_1.computeValue)(obj, expr, null, options);
+    if ((0, util_1.isNil)(n))
+        return null;
+    (0, util_1.assert)((0, util_1.isNumber)(n) || isNaN(n), "$exp expression must resolve to a number.");
+    return Math.exp(n);
+};
+exports.$exp = $exp;
+
+},{"../../../core":420,"../../../util":658}],455:[function(require,module,exports){
+"use strict";
+// Arithmetic Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#arithmetic-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$floor = void 0;
+const core_1 = require("../../../core");
+const util_1 = require("../../../util");
+/**
+ * Returns the largest integer less than or equal to the specified number.
+ *
+ * @param obj
+ * @param expr
+ * @returns {number}
+ */
+const $floor = (obj, expr, options) => {
+    const n = (0, core_1.computeValue)(obj, expr, null, options);
+    if ((0, util_1.isNil)(n))
+        return null;
+    (0, util_1.assert)((0, util_1.isNumber)(n) || isNaN(n), "$floor expression must resolve to a number.");
+    return Math.floor(n);
+};
+exports.$floor = $floor;
+
+},{"../../../core":420,"../../../util":658}],456:[function(require,module,exports){
+"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+__exportStar(require("./abs"), exports);
+__exportStar(require("./add"), exports);
+__exportStar(require("./ceil"), exports);
+__exportStar(require("./divide"), exports);
+__exportStar(require("./exp"), exports);
+__exportStar(require("./floor"), exports);
+__exportStar(require("./ln"), exports);
+__exportStar(require("./log"), exports);
+__exportStar(require("./log10"), exports);
+__exportStar(require("./mod"), exports);
+__exportStar(require("./multiply"), exports);
+__exportStar(require("./pow"), exports);
+__exportStar(require("./round"), exports);
+__exportStar(require("./sqrt"), exports);
+__exportStar(require("./subtract"), exports);
+__exportStar(require("./trunc"), exports);
+
+},{"./abs":450,"./add":451,"./ceil":452,"./divide":453,"./exp":454,"./floor":455,"./ln":457,"./log":458,"./log10":459,"./mod":460,"./multiply":461,"./pow":462,"./round":463,"./sqrt":464,"./subtract":465,"./trunc":466}],457:[function(require,module,exports){
+"use strict";
+// Arithmetic Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#arithmetic-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$ln = void 0;
+const core_1 = require("../../../core");
+const util_1 = require("../../../util");
+/**
+ * Calculates the natural logarithm ln (i.e loge) of a number and returns the result as a double.
+ *
+ * @param obj
+ * @param expr
+ * @returns {number}
+ */
+const $ln = (obj, expr, options) => {
+    const n = (0, core_1.computeValue)(obj, expr, null, options);
+    if ((0, util_1.isNil)(n))
+        return null;
+    (0, util_1.assert)((0, util_1.isNumber)(n) || isNaN(n), "$ln expression must resolve to a number.");
+    return Math.log(n);
+};
+exports.$ln = $ln;
+
+},{"../../../core":420,"../../../util":658}],458:[function(require,module,exports){
+"use strict";
+// Arithmetic Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#arithmetic-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$log = void 0;
+const core_1 = require("../../../core");
+const util_1 = require("../../../util");
+/**
+ * Calculates the log of a number in the specified base and returns the result as a double.
+ *
+ * @param obj
+ * @param expr
+ * @returns {number}
+ */
+const $log = (obj, expr, options) => {
+    const args = (0, core_1.computeValue)(obj, expr, null, options);
+    const msg = "$log expression must resolve to array(2) of numbers";
+    (0, util_1.assert)((0, util_1.isArray)(args) && args.length === 2, msg);
+    if (args.some(util_1.isNil))
+        return null;
+    (0, util_1.assert)(args.some(isNaN) || args.every(util_1.isNumber), msg);
+    return Math.log10(args[0]) / Math.log10(args[1]);
+};
+exports.$log = $log;
+
+},{"../../../core":420,"../../../util":658}],459:[function(require,module,exports){
+"use strict";
+// Arithmetic Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#arithmetic-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$log10 = void 0;
+const core_1 = require("../../../core");
+const util_1 = require("../../../util");
+/**
+ * Calculates the log base 10 of a number and returns the result as a double.
+ *
+ * @param obj
+ * @param expr
+ * @returns {number}
+ */
+const $log10 = (obj, expr, options) => {
+    const n = (0, core_1.computeValue)(obj, expr, null, options);
+    if ((0, util_1.isNil)(n))
+        return null;
+    (0, util_1.assert)((0, util_1.isNumber)(n) || isNaN(n), "$log10 expression must resolve to a number.");
+    return Math.log10(n);
+};
+exports.$log10 = $log10;
+
+},{"../../../core":420,"../../../util":658}],460:[function(require,module,exports){
+"use strict";
+// Arithmetic Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#arithmetic-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$mod = void 0;
+const core_1 = require("../../../core");
+/**
+ * Takes two numbers and calculates the modulo of the first number divided by the second.
+ *
+ * @param obj
+ * @param expr
+ * @returns {number}
+ */
+const $mod = (obj, expr, options) => {
+    const args = (0, core_1.computeValue)(obj, expr, null, options);
+    return args[0] % args[1];
+};
+exports.$mod = $mod;
+
+},{"../../../core":420}],461:[function(require,module,exports){
+"use strict";
+// Arithmetic Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#arithmetic-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$multiply = void 0;
+const core_1 = require("../../../core");
+/**
+ * Computes the product of an array of numbers.
+ *
+ * @param obj
+ * @param expr
+ * @returns {Object}
+ */
+const $multiply = (obj, expr, options) => {
+    const args = (0, core_1.computeValue)(obj, expr, null, options);
+    return args.reduce((acc, num) => acc * num, 1);
+};
+exports.$multiply = $multiply;
+
+},{"../../../core":420}],462:[function(require,module,exports){
+"use strict";
+// Arithmetic Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#arithmetic-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$pow = void 0;
+const core_1 = require("../../../core");
+const util_1 = require("../../../util");
+/**
+ * Raises a number to the specified exponent and returns the result.
+ *
+ * @param obj
+ * @param expr
+ * @returns {Object}
+ */
+const $pow = (obj, expr, options) => {
+    const args = (0, core_1.computeValue)(obj, expr, null, options);
+    (0, util_1.assert)((0, util_1.isArray)(args) && args.length === 2 && args.every(util_1.isNumber), "$pow expression must resolve to array(2) of numbers");
+    (0, util_1.assert)(!(args[0] === 0 && args[1] < 0), "$pow cannot raise 0 to a negative exponent");
+    return Math.pow(args[0], args[1]);
+};
+exports.$pow = $pow;
+
+},{"../../../core":420,"../../../util":658}],463:[function(require,module,exports){
+"use strict";
+// Arithmetic Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#arithmetic-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$round = void 0;
+const core_1 = require("../../../core");
+const util_1 = require("../../../util");
+const _internal_1 = require("./_internal");
+/**
+ * Rounds a number to to a whole integer or to a specified decimal place.
+ * @param {*} obj
+ * @param {*} expr
+ */
+const $round = (obj, expr, options) => {
+    const args = (0, core_1.computeValue)(obj, expr, null, options);
+    const num = args[0];
+    const place = args[1];
+    if ((0, util_1.isNil)(num) || isNaN(num) || Math.abs(num) === Infinity)
+        return num;
+    (0, util_1.assert)((0, util_1.isNumber)(num), "$round expression must resolve to a number.");
+    return (0, _internal_1.truncate)(num, place, true);
+};
+exports.$round = $round;
+
+},{"../../../core":420,"../../../util":658,"./_internal":449}],464:[function(require,module,exports){
+"use strict";
+// Arithmetic Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#arithmetic-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$sqrt = void 0;
+const core_1 = require("../../../core");
+const util_1 = require("../../../util");
+/**
+ * Calculates the square root of a positive number and returns the result as a double.
+ *
+ * @param obj
+ * @param expr
+ * @returns {number}
+ */
+const $sqrt = (obj, expr, options) => {
+    const n = (0, core_1.computeValue)(obj, expr, null, options);
+    if ((0, util_1.isNil)(n))
+        return null;
+    (0, util_1.assert)(((0, util_1.isNumber)(n) && n > 0) || isNaN(n), "$sqrt expression must resolve to non-negative number.");
+    return Math.sqrt(n);
+};
+exports.$sqrt = $sqrt;
+
+},{"../../../core":420,"../../../util":658}],465:[function(require,module,exports){
+"use strict";
+// Arithmetic Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#arithmetic-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$subtract = void 0;
+const core_1 = require("../../../core");
+/**
+ * Takes an array that contains two numbers or two dates and subtracts the second value from the first.
+ *
+ * @param obj
+ * @param expr
+ * @returns {number}
+ */
+const $subtract = (obj, expr, options) => {
+    const args = (0, core_1.computeValue)(obj, expr, null, options);
+    return args[0] - args[1];
+};
+exports.$subtract = $subtract;
+
+},{"../../../core":420}],466:[function(require,module,exports){
+"use strict";
+// Arithmetic Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#arithmetic-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$trunc = void 0;
+const core_1 = require("../../../core");
+const util_1 = require("../../../util");
+const _internal_1 = require("./_internal");
+/**
+ * Truncates a number to a whole integer or to a specified decimal place.
+ *
+ * @param obj
+ * @param expr
+ * @returns {number}
+ */
+const $trunc = (obj, expr, options) => {
+    const arr = (0, core_1.computeValue)(obj, expr, null, options);
+    const num = arr[0];
+    const places = arr[1];
+    if ((0, util_1.isNil)(num) || isNaN(num) || Math.abs(num) === Infinity)
+        return num;
+    (0, util_1.assert)((0, util_1.isNumber)(num), "$trunc expression must resolve to a number.");
+    (0, util_1.assert)((0, util_1.isNil)(places) || ((0, util_1.isNumber)(places) && places > -20 && places < 100), "$trunc expression has invalid place");
+    return (0, _internal_1.truncate)(num, places, false);
+};
+exports.$trunc = $trunc;
+
+},{"../../../core":420,"../../../util":658,"./_internal":449}],467:[function(require,module,exports){
+"use strict";
+// Array Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#array-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$arrayElemAt = void 0;
+const core_1 = require("../../../core");
+const util_1 = require("../../../util");
+/**
+ * Returns the element at the specified array index.
+ *
+ * @param  {Object} obj
+ * @param  {*} expr
+ * @return {*}
+ */
+const $arrayElemAt = (obj, expr, options) => {
+    const args = (0, core_1.computeValue)(obj, expr, null, options);
+    (0, util_1.assert)(args instanceof Array && args.length === 2, "$arrayElemAt expression must resolve to array(2)");
+    if (args.some(util_1.isNil))
+        return null;
+    const index = args[1];
+    const arr = args[0];
+    if (index < 0 && Math.abs(index) <= arr.length) {
+        return arr[(index + arr.length) % arr.length];
+    }
+    else if (index >= 0 && index < arr.length) {
+        return arr[index];
+    }
+    return undefined;
+};
+exports.$arrayElemAt = $arrayElemAt;
+
+},{"../../../core":420,"../../../util":658}],468:[function(require,module,exports){
+"use strict";
+// Array Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#array-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$arrayToObject = void 0;
+const core_1 = require("../../../core");
+const util_1 = require("../../../util");
+/**
+ * Converts an array of key value pairs to a document.
+ */
+const $arrayToObject = (obj, expr, options) => {
+    const arr = (0, core_1.computeValue)(obj, expr, null, options);
+    (0, util_1.assert)((0, util_1.isArray)(arr), "$arrayToObject expression must resolve to an array");
+    return arr.reduce((newObj, val) => {
+        // flatten
+        while ((0, util_1.isArray)(val) && val.length === 1)
+            val = val[0];
+        if (val instanceof Array && val.length == 2) {
+            newObj[val[0]] = val[1];
+        }
+        else {
+            const valObj = val;
+            (0, util_1.assert)((0, util_1.isObject)(valObj) && (0, util_1.has)(valObj, "k") && (0, util_1.has)(valObj, "v"), "$arrayToObject expression is invalid.");
+            newObj[valObj.k] = valObj.v;
+        }
+        return newObj;
+    }, {});
+};
+exports.$arrayToObject = $arrayToObject;
+
+},{"../../../core":420,"../../../util":658}],469:[function(require,module,exports){
+"use strict";
+// Array Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#array-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$concatArrays = void 0;
+const core_1 = require("../../../core");
+const util_1 = require("../../../util");
+/**
+ * Concatenates arrays to return the concatenated array.
+ *
+ * @param  {Object} obj
+ * @param  {*} expr
+ * @return {*}
+ */
+const $concatArrays = (obj, expr, options) => {
+    const arr = (0, core_1.computeValue)(obj, expr, null, options);
+    (0, util_1.assert)((0, util_1.isArray)(arr), "$concatArrays must resolve to an array");
+    if (arr.some(util_1.isNil))
+        return null;
+    return arr.reduce((acc, item) => (0, util_1.into)(acc, item), []);
+};
+exports.$concatArrays = $concatArrays;
+
+},{"../../../core":420,"../../../util":658}],470:[function(require,module,exports){
+"use strict";
+// Array Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#array-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$filter = void 0;
+const core_1 = require("../../../core");
+const util_1 = require("../../../util");
+/**
+ * Selects a subset of the array to return an array with only the elements that match the filter condition.
+ *
+ * @param  {Object} obj The current document
+ * @param  {*} expr The filter spec
+ * @return {*}
+ */
+const $filter = (obj, expr, options) => {
+    const input = (0, core_1.computeValue)(obj, expr.input, null, options);
+    (0, util_1.assert)((0, util_1.isArray)(input), "$filter 'input' expression must resolve to an array");
+    const copts = core_1.ComputeOptions.init(options, obj);
+    const k = expr.as || "this";
+    const local = {
+        variables: { [k]: null }
+    };
+    return input.filter((o) => {
+        local.variables[k] = o;
+        const b = (0, core_1.computeValue)(obj, expr.cond, null, copts.update(copts.root, local));
+        // allow empty strings only in strict MongoDB mode (default).
+        return (0, util_1.truthy)(b, options.useStrictMode);
+    });
+};
+exports.$filter = $filter;
+
+},{"../../../core":420,"../../../util":658}],471:[function(require,module,exports){
+"use strict";
+// Array Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#array-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$first = void 0;
+const core_1 = require("../../../core");
+const util_1 = require("../../../util");
+const accumulator_1 = require("../../accumulator");
+/**
+ * Returns the first element in an array.
+ *
+ * @param  {Object} obj
+ * @param  {*} expr
+ * @return {*}
+ */
+const $first = (obj, expr, options) => {
+    const copts = core_1.ComputeOptions.init(options);
+    if (obj instanceof Array)
+        return (0, accumulator_1.$first)(obj, expr, copts.update());
+    const arr = (0, core_1.computeValue)(obj, expr, null, options);
+    if ((0, util_1.isNil)(arr))
+        return null;
+    (0, util_1.assert)((0, util_1.isArray)(arr), "Must resolve to an array/null or missing");
+    return (0, accumulator_1.$first)(arr, "$$this", options);
+};
+exports.$first = $first;
+
+},{"../../../core":420,"../../../util":658,"../../accumulator":435}],472:[function(require,module,exports){
+"use strict";
+// https://www.mongodb.com/docs/manual/reference/operator/aggregation/firstN-array-element/#mongodb-expression-exp.-firstN
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$firstN = void 0;
+const core_1 = require("../../../core");
+const util_1 = require("../../../util");
+const firstN_1 = require("../../accumulator/firstN");
+/**
+ * Returns a specified number of elements from the beginning of an array.
+ *
+ * @param  {Object} obj
+ * @param  {*} expr
+ * @return {*}
+ */
+const $firstN = (obj, expr, options) => {
+    // first try the accumulator if input is an array.
+    if (obj instanceof Array)
+        return (0, firstN_1.$firstN)(obj, expr, options);
+    const { input, n } = (0, core_1.computeValue)(obj, expr, null, options);
+    if ((0, util_1.isNil)(input))
+        return null;
+    (0, util_1.assert)((0, util_1.isArray)(input), "Must resolve to an array/null or missing");
+    return (0, firstN_1.$firstN)(input, { n, input: "$$this" }, options);
+};
+exports.$firstN = $firstN;
+
+},{"../../../core":420,"../../../util":658,"../../accumulator/firstN":434}],473:[function(require,module,exports){
+"use strict";
+// Array Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#array-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$in = void 0;
+const core_1 = require("../../../core");
+const util_1 = require("../../../util");
+/**
+ * Returns a boolean indicating whether a specified value is in an array.
+ *
+ * @param {Object} obj
+ * @param {Array} expr
+ */
+const $in = (obj, expr, options) => {
+    const [item, arr] = (0, core_1.computeValue)(obj, expr, null, options);
+    (0, util_1.assert)((0, util_1.isArray)(arr), "$in second argument must be an array");
+    return arr.some(util_1.isEqual.bind(null, item));
+};
+exports.$in = $in;
+
+},{"../../../core":420,"../../../util":658}],474:[function(require,module,exports){
+"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+__exportStar(require("./arrayElemAt"), exports);
+__exportStar(require("./arrayToObject"), exports);
+__exportStar(require("./concatArrays"), exports);
+__exportStar(require("./filter"), exports);
+__exportStar(require("./first"), exports);
+__exportStar(require("./firstN"), exports);
+__exportStar(require("./in"), exports);
+__exportStar(require("./indexOfArray"), exports);
+__exportStar(require("./isArray"), exports);
+__exportStar(require("./last"), exports);
+__exportStar(require("./lastN"), exports);
+__exportStar(require("./map"), exports);
+__exportStar(require("./maxN"), exports);
+__exportStar(require("./minN"), exports);
+__exportStar(require("./nin"), exports);
+__exportStar(require("./range"), exports);
+__exportStar(require("./reduce"), exports);
+__exportStar(require("./reverseArray"), exports);
+__exportStar(require("./size"), exports);
+__exportStar(require("./slice"), exports);
+__exportStar(require("./sortArray"), exports);
+__exportStar(require("./zip"), exports);
+
+},{"./arrayElemAt":467,"./arrayToObject":468,"./concatArrays":469,"./filter":470,"./first":471,"./firstN":472,"./in":473,"./indexOfArray":475,"./isArray":476,"./last":477,"./lastN":478,"./map":479,"./maxN":480,"./minN":481,"./nin":482,"./range":483,"./reduce":484,"./reverseArray":485,"./size":486,"./slice":487,"./sortArray":488,"./zip":489}],475:[function(require,module,exports){
+"use strict";
+// Array Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#array-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$indexOfArray = void 0;
+const core_1 = require("../../../core");
+const util_1 = require("../../../util");
+/**
+ * Searches an array for an occurrence of a specified value and returns the array index of the first occurrence.
+ * If the substring is not found, returns -1.
+ *
+ * @param  {Object} obj
+ * @param  {*} expr
+ * @return {*}
+ */
+const $indexOfArray = (obj, expr, options) => {
+    const args = (0, core_1.computeValue)(obj, expr, null, options);
+    if ((0, util_1.isNil)(args))
+        return null;
+    let arr = args[0];
+    const searchValue = args[1];
+    if ((0, util_1.isNil)(arr))
+        return null;
+    (0, util_1.assert)((0, util_1.isArray)(arr), "$indexOfArray expression must resolve to an array.");
+    const start = args[2] || 0;
+    let end = args[3];
+    if ((0, util_1.isNil)(end))
+        end = arr.length;
+    if (start > end)
+        return -1;
+    (0, util_1.assert)(start >= 0 && end >= 0, "$indexOfArray expression is invalid");
+    if (start > 0 || end < arr.length) {
+        arr = arr.slice(start, end);
+    }
+    // Array.prototype.findIndex not supported in IE9 hence this workaround
+    let index = -1;
+    arr.some((v, i) => {
+        const b = (0, util_1.isEqual)(v, searchValue);
+        if (b)
+            index = i;
+        return b;
+    });
+    return index + start;
+};
+exports.$indexOfArray = $indexOfArray;
+
+},{"../../../core":420,"../../../util":658}],476:[function(require,module,exports){
+"use strict";
+// Array Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#array-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$isArray = void 0;
+const core_1 = require("../../../core");
+/**
+ * Determines if the operand is an array. Returns a boolean.
+ *
+ * @param  {Object}  obj
+ * @param  {*}  expr
+ * @return {Boolean}
+ */
+const $isArray = (obj, expr, options) => {
+    return (0, core_1.computeValue)(obj, expr[0], null, options) instanceof Array;
+};
+exports.$isArray = $isArray;
+
+},{"../../../core":420}],477:[function(require,module,exports){
+"use strict";
+// Array Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#array-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$last = void 0;
+const core_1 = require("../../../core");
+const util_1 = require("../../../util");
+const accumulator_1 = require("../../accumulator");
+/**
+ * Returns the last element in an array.
+ *
+ * @param  {Object} obj
+ * @param  {*} expr
+ * @return {*}
+ */
+const $last = (obj, expr, options) => {
+    const copts = core_1.ComputeOptions.init(options);
+    if (obj instanceof Array)
+        return (0, accumulator_1.$last)(obj, expr, copts.update());
+    const arr = (0, core_1.computeValue)(obj, expr, null, options);
+    if ((0, util_1.isNil)(arr))
+        return null;
+    (0, util_1.assert)((0, util_1.isArray)(arr), "Must resolve to an array/null or missing");
+    return (0, accumulator_1.$last)(arr, "$$this", options);
+};
+exports.$last = $last;
+
+},{"../../../core":420,"../../../util":658,"../../accumulator":435}],478:[function(require,module,exports){
+"use strict";
+// https://www.mongodb.com/docs/manual/reference/operator/aggregation/lastN-array-element/#mongodb-expression-exp.-lastN
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$lastN = void 0;
+const core_1 = require("../../../core");
+const util_1 = require("../../../util");
+const lastN_1 = require("../../accumulator/lastN");
+/**
+ * Returns a specified number of elements from the end of an array.
+ *
+ * @param  {Object} obj
+ * @param  {*} expr
+ * @return {*}
+ */
+const $lastN = (obj, expr, options) => {
+    // first try the accumulator if input is an array.
+    if (obj instanceof Array)
+        return (0, lastN_1.$lastN)(obj, expr, options);
+    const { input, n } = (0, core_1.computeValue)(obj, expr, null, options);
+    if ((0, util_1.isNil)(input))
+        return null;
+    (0, util_1.assert)((0, util_1.isArray)(input), "Must resolve to an array/null or missing");
+    return (0, lastN_1.$lastN)(input, { n, input: "$$this" }, options);
+};
+exports.$lastN = $lastN;
+
+},{"../../../core":420,"../../../util":658,"../../accumulator/lastN":437}],479:[function(require,module,exports){
+"use strict";
+// Array Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#array-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$map = void 0;
+const core_1 = require("../../../core");
+const util_1 = require("../../../util");
+/**
+ * Applies a sub-expression to each element of an array and returns the array of resulting values in order.
+ *
+ * @param obj
+ * @param expr
+ * @returns {Array|*}
+ */
+const $map = (obj, expr, options) => {
+    const input = (0, core_1.computeValue)(obj, expr.input, null, options);
+    (0, util_1.assert)((0, util_1.isArray)(input), `$map 'input' expression must resolve to an array`);
+    const copts = core_1.ComputeOptions.init(options);
+    const k = expr.as || "this";
+    return input.map((o) => {
+        return (0, core_1.computeValue)(obj, expr.in, null, copts.update(copts.root, {
+            variables: { [k]: o }
+        }));
+    });
+};
+exports.$map = $map;
+
+},{"../../../core":420,"../../../util":658}],480:[function(require,module,exports){
+"use strict";
+// https://www.mongodb.com/docs/manual/reference/operator/aggregation/maxN-array-element/
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$maxN = void 0;
+const core_1 = require("../../../core");
+const util_1 = require("../../../util");
+const maxN_1 = require("../../accumulator/maxN");
+/**
+ * Returns the n largest values in an array.
+ *
+ * @param  {Object} obj
+ * @param  {*} expr
+ * @return {*}
+ */
+const $maxN = (obj, expr, options) => {
+    // first try the accumulator if input is an array.
+    if (obj instanceof Array)
+        return (0, maxN_1.$maxN)(obj, expr, options);
+    const { input, n } = (0, core_1.computeValue)(obj, expr, null, options);
+    if ((0, util_1.isNil)(input))
+        return null;
+    (0, util_1.assert)((0, util_1.isArray)(input), "Must resolve to an array/null or missing");
+    return (0, maxN_1.$maxN)(input, { n, input: "$$this" }, options);
+};
+exports.$maxN = $maxN;
+
+},{"../../../core":420,"../../../util":658,"../../accumulator/maxN":439}],481:[function(require,module,exports){
+"use strict";
+// https://www.mongodb.com/docs/manual/reference/operator/aggregation/minN-array-element/
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$minN = void 0;
+const core_1 = require("../../../core");
+const util_1 = require("../../../util");
+const minN_1 = require("../../accumulator/minN");
+/**
+ * Returns the n smallest values in an array.
+ *
+ * @param  {Object} obj
+ * @param  {*} expr
+ * @return {*}
+ */
+const $minN = (obj, expr, options) => {
+    // first try the accumulator if input is an array.
+    if (obj instanceof Array)
+        return (0, minN_1.$minN)(obj, expr, options);
+    const { input, n } = (0, core_1.computeValue)(obj, expr, null, options);
+    if ((0, util_1.isNil)(input))
+        return null;
+    (0, util_1.assert)((0, util_1.isArray)(input), "Must resolve to an array/null or missing");
+    return (0, minN_1.$minN)(input, { n, input: "$$this" }, options);
+};
+exports.$minN = $minN;
+
+},{"../../../core":420,"../../../util":658,"../../accumulator/minN":442}],482:[function(require,module,exports){
+"use strict";
+// Array Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#array-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$nin = void 0;
+const _predicates_1 = require("../../_predicates");
+/**
+ * Returns a boolean indicating whether a specified value is not an array.
+ * Note: This expression operator is missing from the documentation
+ *
+ * @param {Object} obj
+ * @param {Array} expr
+ */
+exports.$nin = (0, _predicates_1.createExpressionOperator)(_predicates_1.$nin);
+
+},{"../../_predicates":423}],483:[function(require,module,exports){
+"use strict";
+// Array Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#array-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$range = void 0;
+const core_1 = require("../../../core");
+/**
+ * Returns an array whose elements are a generated sequence of numbers.
+ *
+ * @param  {Object} obj
+ * @param  {*} expr
+ * @return {*}
+ */
+const $range = (obj, expr, options) => {
+    const arr = (0, core_1.computeValue)(obj, expr, null, options);
+    const start = arr[0];
+    const end = arr[1];
+    const step = arr[2] || 1;
+    const result = new Array();
+    let counter = start;
+    while ((counter < end && step > 0) || (counter > end && step < 0)) {
+        result.push(counter);
+        counter += step;
+    }
+    return result;
+};
+exports.$range = $range;
+
+},{"../../../core":420}],484:[function(require,module,exports){
+"use strict";
+// Array Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#array-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$reduce = void 0;
+const core_1 = require("../../../core");
+const util_1 = require("../../../util");
+/**
+ * Applies an expression to each element in an array and combines them into a single value.
+ *
+ * @param {Object} obj
+ * @param {*} expr
+ */
+const $reduce = (obj, expr, options) => {
+    const copts = core_1.ComputeOptions.init(options);
+    const input = (0, core_1.computeValue)(obj, expr.input, null, copts);
+    const initialValue = (0, core_1.computeValue)(obj, expr.initialValue, null, copts);
+    const inExpr = expr["in"];
+    if ((0, util_1.isNil)(input))
+        return null;
+    (0, util_1.assert)((0, util_1.isArray)(input), "$reduce 'input' expression must resolve to an array");
+    return input.reduce((acc, n) => {
+        return (0, core_1.computeValue)(n, inExpr, null, copts.update(copts.root, {
+            variables: { value: acc }
+        }));
+    }, initialValue);
+};
+exports.$reduce = $reduce;
+
+},{"../../../core":420,"../../../util":658}],485:[function(require,module,exports){
+"use strict";
+// Array Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#array-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$reverseArray = void 0;
+const core_1 = require("../../../core");
+const util_1 = require("../../../util");
+/**
+ * Returns an array with the elements in reverse order.
+ *
+ * @param  {Object} obj
+ * @param  {*} expr
+ * @return {*}
+ */
+const $reverseArray = (obj, expr, options) => {
+    const arr = (0, core_1.computeValue)(obj, expr, null, options);
+    if ((0, util_1.isNil)(arr))
+        return null;
+    (0, util_1.assert)((0, util_1.isArray)(arr), "$reverseArray expression must resolve to an array");
+    const result = arr.slice(0);
+    result.reverse();
+    return result;
+};
+exports.$reverseArray = $reverseArray;
+
+},{"../../../core":420,"../../../util":658}],486:[function(require,module,exports){
+"use strict";
+// Array Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#array-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$size = void 0;
+const core_1 = require("../../../core");
+const util_1 = require("../../../util");
+/**
+ * Counts and returns the total the number of items in an array.
+ *
+ * @param obj
+ * @param expr
+ */
+const $size = (obj, expr, options) => {
+    const value = (0, core_1.computeValue)(obj, expr, null, options);
+    return (0, util_1.isArray)(value) ? value.length : undefined;
+};
+exports.$size = $size;
+
+},{"../../../core":420,"../../../util":658}],487:[function(require,module,exports){
+"use strict";
+// Array Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#array-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$slice = void 0;
+const core_1 = require("../../../core");
+const util_1 = require("../../../util");
+/**
+ * Returns a subset of an array.
+ *
+ * @param  {Object} obj
+ * @param  {*} expr
+ * @return {*}
+ */
+const $slice = (obj, expr, options) => {
+    const args = (0, core_1.computeValue)(obj, expr, null, options);
+    const arr = args[0];
+    let skip = args[1];
+    let limit = args[2];
+    // MongoDB $slice works a bit differently from Array.slice
+    // Uses single argument for 'limit' and array argument [skip, limit]
+    if ((0, util_1.isNil)(limit)) {
+        if (skip < 0) {
+            skip = Math.max(0, arr.length + skip);
+            limit = arr.length - skip + 1;
+        }
+        else {
+            limit = skip;
+            skip = 0;
+        }
+    }
+    else {
+        if (skip < 0) {
+            skip = Math.max(0, arr.length + skip);
+        }
+        (0, util_1.assert)(limit > 0, `Invalid argument for $slice operator. Limit must be a positive number`);
+        limit += skip;
+    }
+    return arr.slice(skip, limit);
+};
+exports.$slice = $slice;
+
+},{"../../../core":420,"../../../util":658}],488:[function(require,module,exports){
+"use strict";
+// https://www.mongodb.com/docs/manual/reference/operator/aggregation/sortArray/#mongodb-expression-exp.-sortArray
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$sortArray = void 0;
+const aggregator_1 = require("../../../aggregator");
+const core_1 = require("../../../core");
+const util_1 = require("../../../util");
+/**
+ * Sorts an array based on its elements. The sort order is user specified.
+ *
+ * @param obj The target object
+ * @param expr The expression argument
+ * @param options Options
+ * @returns
+ */
+const $sortArray = (obj, expr, options) => {
+    const { input, sortBy } = (0, core_1.computeValue)(obj, expr, null, options);
+    if ((0, util_1.isNil)(input))
+        return null;
+    (0, util_1.assert)((0, util_1.isArray)(input), "$sortArray expression must resolve to an array");
+    if ((0, util_1.isObject)(sortBy)) {
+        return new aggregator_1.Aggregator([{ $sort: sortBy }]).run(input);
+    }
+    const result = [...input];
+    result.sort(util_1.compare);
+    if (sortBy === -1)
+        result.reverse();
+    return result;
+};
+exports.$sortArray = $sortArray;
+
+},{"../../../aggregator":419,"../../../core":420,"../../../util":658}],489:[function(require,module,exports){
+"use strict";
+// Array Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#array-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$zip = void 0;
+const core_1 = require("../../../core");
+const util_1 = require("../../../util");
+/**
+ * Merge two lists together.
+ *
+ * Transposes an array of input arrays so that the first element of the output array would be an array containing,
+ * the first element of the first input array, the first element of the second input array, etc.
+ *
+ * @param  {Obj} obj
+ * @param  {*} expr
+ * @return {*}
+ */
+const $zip = (obj, expr, options) => {
+    const inputs = (0, core_1.computeValue)(obj, expr.inputs, null, options);
+    const useLongestLength = expr.useLongestLength || false;
+    (0, util_1.assert)((0, util_1.isArray)(inputs), "'inputs' expression must resolve to an array");
+    (0, util_1.assert)((0, util_1.isBoolean)(useLongestLength), "'useLongestLength' must be a boolean");
+    if ((0, util_1.isArray)(expr.defaults)) {
+        (0, util_1.assert)(useLongestLength, "'useLongestLength' must be set to true to use 'defaults'");
+    }
+    let zipCount = 0;
+    for (let i = 0, len = inputs.length; i < len; i++) {
+        const arr = inputs[i];
+        if ((0, util_1.isNil)(arr))
+            return null;
+        (0, util_1.assert)((0, util_1.isArray)(arr), "'inputs' expression values must resolve to an array or null");
+        zipCount = useLongestLength
+            ? Math.max(zipCount, arr.length)
+            : Math.min(zipCount || arr.length, arr.length);
+    }
+    const result = [];
+    const defaults = expr.defaults || [];
+    for (let i = 0; i < zipCount; i++) {
+        const temp = inputs.map((val, index) => {
+            return (0, util_1.isNil)(val[i]) ? defaults[index] || null : val[i];
+        });
+        result.push(temp);
+    }
+    return result;
+};
+exports.$zip = $zip;
+
+},{"../../../core":420,"../../../util":658}],490:[function(require,module,exports){
+"use strict";
+// Boolean Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#boolean-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$and = void 0;
+const core_1 = require("../../../core");
+const util_1 = require("../../../util");
+/**
+ * Returns true only when all its expressions evaluate to true. Accepts any number of argument expressions.
+ *
+ * @param obj
+ * @param expr
+ * @returns {boolean}
+ */
+const $and = (obj, expr, options) => {
+    const value = (0, core_1.computeValue)(obj, expr, null, options);
+    return ((0, util_1.truthy)(value, options.useStrictMode) &&
+        value.every(v => (0, util_1.truthy)(v, options.useStrictMode)));
+};
+exports.$and = $and;
+
+},{"../../../core":420,"../../../util":658}],491:[function(require,module,exports){
+"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+__exportStar(require("./and"), exports);
+__exportStar(require("./not"), exports);
+__exportStar(require("./or"), exports);
+
+},{"./and":490,"./not":492,"./or":493}],492:[function(require,module,exports){
+"use strict";
+// Boolean Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#boolean-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$not = void 0;
+const core_1 = require("../../../core");
+const util_1 = require("../../../util");
+/**
+ * Returns the boolean value that is the opposite of its argument expression. Accepts a single argument expression.
+ *
+ * @param obj RawObject from collection
+ * @param expr Right hand side expression of operator
+ * @returns {boolean}
+ */
+const $not = (obj, expr, options) => {
+    const booleanExpr = (0, util_1.ensureArray)(expr);
+    // array values are truthy so an emty array is false
+    if (booleanExpr.length == 0)
+        return false;
+    // use provided value non-array value
+    if (booleanExpr.length == 1)
+        return !(0, core_1.computeValue)(obj, booleanExpr[0], null, options);
+    // expects a single argument
+    throw "Expression $not takes exactly 1 argument";
+};
+exports.$not = $not;
+
+},{"../../../core":420,"../../../util":658}],493:[function(require,module,exports){
+"use strict";
+// Boolean Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#boolean-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$or = void 0;
+const core_1 = require("../../../core");
+const util_1 = require("../../../util");
+/**
+ * Returns true when any of its expressions evaluates to true. Accepts any number of argument expressions.
+ *
+ * @param obj
+ * @param expr
+ * @returns {boolean}
+ */
+const $or = (obj, expr, options) => {
+    const value = (0, core_1.computeValue)(obj, expr, null, options);
+    const strict = options.useStrictMode;
+    return (0, util_1.truthy)(value, strict) && value.some(v => (0, util_1.truthy)(v, strict));
+};
+exports.$or = $or;
+
+},{"../../../core":420,"../../../util":658}],494:[function(require,module,exports){
+"use strict";
+// Comparison Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#comparison-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$cmp = void 0;
+const core_1 = require("../../../core");
+/**
+ * Compares two values and returns the result of the comparison as an integer.
+ *
+ * @param obj
+ * @param expr
+ * @returns {number}
+ */
+const $cmp = (obj, expr, options) => {
+    const args = (0, core_1.computeValue)(obj, expr, null, options);
+    if (args[0] > args[1])
+        return 1;
+    if (args[0] < args[1])
+        return -1;
+    return 0;
+};
+exports.$cmp = $cmp;
+
+},{"../../../core":420}],495:[function(require,module,exports){
+"use strict";
+// Comparison Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#comparison-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$eq = void 0;
+const _predicates_1 = require("../../_predicates");
+/**
+ * Matches values that are equal to a specified value.
+ */
+exports.$eq = (0, _predicates_1.createExpressionOperator)(_predicates_1.$eq);
+
+},{"../../_predicates":423}],496:[function(require,module,exports){
+"use strict";
+// Comparison Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#comparison-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$gt = void 0;
+const _predicates_1 = require("../../_predicates");
+/**
+ * Matches values that are greater than a specified value.
+ */
+exports.$gt = (0, _predicates_1.createExpressionOperator)(_predicates_1.$gt);
+
+},{"../../_predicates":423}],497:[function(require,module,exports){
+"use strict";
+// Comparison Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#comparison-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$gte = void 0;
+const _predicates_1 = require("../../_predicates");
+/**
+ * 	Matches values that are greater than or equal to a specified value.
+ */
+exports.$gte = (0, _predicates_1.createExpressionOperator)(_predicates_1.$gte);
+
+},{"../../_predicates":423}],498:[function(require,module,exports){
+"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+__exportStar(require("./cmp"), exports);
+__exportStar(require("./eq"), exports);
+__exportStar(require("./gt"), exports);
+__exportStar(require("./gte"), exports);
+__exportStar(require("./lt"), exports);
+__exportStar(require("./lte"), exports);
+__exportStar(require("./ne"), exports);
+
+},{"./cmp":494,"./eq":495,"./gt":496,"./gte":497,"./lt":499,"./lte":500,"./ne":501}],499:[function(require,module,exports){
+"use strict";
+// Comparison Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#comparison-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$lt = void 0;
+const _predicates_1 = require("../../_predicates");
+/**
+ * Matches values that are less than the value specified in the query.
+ */
+exports.$lt = (0, _predicates_1.createExpressionOperator)(_predicates_1.$lt);
+
+},{"../../_predicates":423}],500:[function(require,module,exports){
+"use strict";
+// Comparison Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#comparison-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$lte = void 0;
+const _predicates_1 = require("../../_predicates");
+/**
+ * Matches values that are less than or equal to the value specified in the query.
+ */
+exports.$lte = (0, _predicates_1.createExpressionOperator)(_predicates_1.$lte);
+
+},{"../../_predicates":423}],501:[function(require,module,exports){
+"use strict";
+// Comparison Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#comparison-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$ne = void 0;
+const _predicates_1 = require("../../_predicates");
+/**
+ * Matches all values that are not equal to the value specified in the query.
+ */
+exports.$ne = (0, _predicates_1.createExpressionOperator)(_predicates_1.$ne);
+
+},{"../../_predicates":423}],502:[function(require,module,exports){
+"use strict";
+/**
+ * Conditional Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#conditional-expression-operators
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$cond = void 0;
+const core_1 = require("../../../core");
+const util_1 = require("../../../util");
+/**
+ * A ternary operator that evaluates one expression,
+ * and depending on the result returns the value of one following expressions.
+ *
+ * @param obj
+ * @param expr
+ */
+const $cond = (obj, expr, options) => {
+    let ifExpr;
+    let thenExpr;
+    let elseExpr;
+    const errorMsg = "$cond: invalid arguments";
+    if (expr instanceof Array) {
+        (0, util_1.assert)(expr.length === 3, errorMsg);
+        ifExpr = expr[0];
+        thenExpr = expr[1];
+        elseExpr = expr[2];
+    }
+    else {
+        (0, util_1.assert)((0, util_1.isObject)(expr), errorMsg);
+        ifExpr = expr.if;
+        thenExpr = expr.then;
+        elseExpr = expr.else;
+    }
+    const condition = (0, util_1.truthy)((0, core_1.computeValue)(obj, ifExpr, null, options), options.useStrictMode);
+    return (0, core_1.computeValue)(obj, condition ? thenExpr : elseExpr, null, options);
+};
+exports.$cond = $cond;
+
+},{"../../../core":420,"../../../util":658}],503:[function(require,module,exports){
+"use strict";
+/**
+ * Conditional Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#conditional-expression-operators
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$ifNull = void 0;
+const core_1 = require("../../../core");
+const util_1 = require("../../../util");
+/**
+ * Evaluates an expression and returns the first non-null value.
+ *
+ * @param obj
+ * @param expr
+ * @returns {*}
+ */
+const $ifNull = (obj, expr, options) => {
+    const args = (0, core_1.computeValue)(obj, expr, null, options);
+    return args.find(arg => !(0, util_1.isNil)(arg));
+};
+exports.$ifNull = $ifNull;
+
+},{"../../../core":420,"../../../util":658}],504:[function(require,module,exports){
+"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+__exportStar(require("./cond"), exports);
+__exportStar(require("./ifNull"), exports);
+__exportStar(require("./switch"), exports);
+
+},{"./cond":502,"./ifNull":503,"./switch":505}],505:[function(require,module,exports){
+"use strict";
+/**
+ * Conditional Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#conditional-expression-operators
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$switch = void 0;
+const core_1 = require("../../../core");
+const util_1 = require("../../../util");
+/**
+ * An operator that evaluates a series of case expressions. When it finds an expression which
+ * evaluates to true, it returns the resulting expression for that case. If none of the cases
+ * evaluate to true, it returns the default expression.
+ *
+ * @param obj
+ * @param expr
+ */
+const $switch = (obj, expr, options) => {
+    let thenExpr = null;
+    // Array.prototype.find not supported in IE, hence the '.some()' proxy
+    expr.branches.some((b) => {
+        const condition = (0, util_1.truthy)((0, core_1.computeValue)(obj, b.case, null, options), options.useStrictMode);
+        if (condition)
+            thenExpr = b.then;
+        return condition;
+    });
+    return (0, core_1.computeValue)(obj, thenExpr !== null ? thenExpr : expr.default, null, options);
+};
+exports.$switch = $switch;
+
+},{"../../../core":420,"../../../util":658}],506:[function(require,module,exports){
+"use strict";
+// Custom Aggregation Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#custom-aggregation-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$function = void 0;
+const core_1 = require("../../../core");
+const util_1 = require("../../../util");
+/**
+ * Defines a custom function.
+ *
+ * @param {*} obj The target object for this expression
+ * @param {*} expr The expression for the operator
+ * @param {Options} options Options
+ */
+const $function = (obj, expr, options) => {
+    (0, util_1.assert)(options.scriptEnabled, "$function operator requires 'scriptEnabled' option to be true");
+    const fn = (0, core_1.computeValue)(obj, expr, null, options);
+    return fn.body.apply(null, fn.args);
+};
+exports.$function = $function;
+
+},{"../../../core":420,"../../../util":658}],507:[function(require,module,exports){
+"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+__exportStar(require("./function"), exports);
+
+},{"./function":506}],508:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.regexStrip = exports.regexQuote = exports.padDigits = exports.computeDate = exports.adjustDate = exports.formatTimezone = exports.parseTimezone = exports.DATE_SYM_TABLE = exports.DATE_PART_INTERVAL = exports.DATE_FORMAT = exports.DURATION_IN_MILLIS = exports.MILLIS_PER_DAY = exports.MINUTES_PER_HOUR = exports.isoWeekYear = exports.isoWeek = exports.getDayOfYear = exports.isLeapYear = void 0;
+const core_1 = require("../../../core");
+const util_1 = require("../../../util");
+const COMMON_YEAR_DAYS_OFFSET = [
+    0, 31, 59, 90, 120, 151, 181, 212, 243, 273, 304, 334
+];
+const LEAP_YEAR_DAYS_OFFSET = [
+    0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335
+];
+// https://en.wikipedia.org/wiki/ISO_week_date
+const p = (y) => (y + Math.floor(y / 4) - Math.floor(y / 100) + Math.floor(y / 400)) % 7;
+const weeks = (y) => 52 + Number(p(y) == 4 || p(y - 1) == 3);
+const isLeapYear = (year) => (year & 3) == 0 && (year % 100 != 0 || year % 400 == 0);
+exports.isLeapYear = isLeapYear;
+const getDayOfYear = (d) => ((0, exports.isLeapYear)(d.getUTCFullYear())
+    ? LEAP_YEAR_DAYS_OFFSET
+    : COMMON_YEAR_DAYS_OFFSET)[d.getUTCMonth()] + d.getUTCDate();
+exports.getDayOfYear = getDayOfYear;
+function isoWeek(d) {
+    // algorithm based on https://en.wikipedia.org/wiki/ISO_week_date
+    const w = Math.floor((10 + (0, exports.getDayOfYear)(d) - (d.getUTCDay() || 7)) / 7);
+    if (w < 1)
+        return weeks(d.getUTCFullYear() - 1);
+    if (w > weeks(d.getUTCFullYear()))
+        return 1;
+    return w;
+}
+exports.isoWeek = isoWeek;
+function isoWeekYear(d) {
+    return (d.getUTCFullYear() -
+        Number(d.getUTCMonth() == 0 && d.getUTCDate() == 1 && d.getUTCDay() < 1));
+}
+exports.isoWeekYear = isoWeekYear;
+exports.MINUTES_PER_HOUR = 60;
+exports.MILLIS_PER_DAY = 1000 * 60 * 60 * 24;
+exports.DURATION_IN_MILLIS = {
+    week: exports.MILLIS_PER_DAY * 7,
+    day: exports.MILLIS_PER_DAY,
+    hour: 1000 * 60 * 60,
+    minute: 1000 * 60,
+    second: 1000,
+    millisecond: 1
+};
+// default format if unspecified
+exports.DATE_FORMAT = "%Y-%m-%dT%H:%M:%S.%LZ";
+// Inclusive interval of date parts
+exports.DATE_PART_INTERVAL = [
+    ["year", 0, 9999],
+    ["month", 1, 12],
+    ["day", 1, 31],
+    ["hour", 0, 23],
+    ["minute", 0, 59],
+    ["second", 0, 59],
+    ["millisecond", 0, 999]
+];
+// used for formatting dates in $dateToString operator
+exports.DATE_SYM_TABLE = {
+    "%Y": { name: "year", padding: 4, re: /([0-9]{4})/ },
+    "%G": { name: "year", padding: 4, re: /([0-9]{4})/ },
+    "%m": { name: "month", padding: 2, re: /(0[1-9]|1[012])/ },
+    "%d": { name: "day", padding: 2, re: /(0[1-9]|[12][0-9]|3[01])/ },
+    "%H": { name: "hour", padding: 2, re: /([01][0-9]|2[0-3])/ },
+    "%M": { name: "minute", padding: 2, re: /([0-5][0-9])/ },
+    "%S": { name: "second", padding: 2, re: /([0-5][0-9]|60)/ },
+    "%L": { name: "millisecond", padding: 3, re: /([0-9]{3})/ },
+    "%u": { name: "weekday", padding: 1, re: /([1-7])/ },
+    "%U": { name: "week", padding: 2, re: /([1-4][0-9]?|5[0-3]?)/ },
+    "%V": { name: "isoWeek", padding: 2, re: /([1-4][0-9]?|5[0-3]?)/ },
+    "%z": {
+        name: "timezone",
+        padding: 2,
+        re: /(([+-][01][0-9]|2[0-3]):?([0-5][0-9])?)/
+    },
+    "%Z": { name: "minuteOffset", padding: 3, re: /([+-][0-9]{3})/ }
+    // "%%": "%",
+};
+/**
+ * Parse and return the timezone string as a number
+ * @param tzstr Timezone string matching '+/-hh[:][mm]'
+ */
+function parseTimezone(tzstr) {
+    if ((0, util_1.isNil)(tzstr))
+        return 0;
+    const m = exports.DATE_SYM_TABLE["%z"].re.exec(tzstr);
+    if (!m)
+        throw Error(`invalid or location-based timezone '${tzstr}' not supported`);
+    const hr = parseInt(m[2]) || 0;
+    const min = parseInt(m[3]) || 0;
+    return (Math.abs(hr * exports.MINUTES_PER_HOUR) + min) * (hr < 0 ? -1 : 1);
+}
+exports.parseTimezone = parseTimezone;
+/**
+ * Formats the timezone for output
+ * @param tz A timezone object
+ */
+function formatTimezone(minuteOffset) {
+    return ((minuteOffset < 0 ? "-" : "+") +
+        padDigits(Math.abs(Math.floor(minuteOffset / exports.MINUTES_PER_HOUR)), 2) +
+        padDigits(Math.abs(minuteOffset) % exports.MINUTES_PER_HOUR, 2));
+}
+exports.formatTimezone = formatTimezone;
+/**
+ * Adjust the date by the given timezone
+ * @param d Date object
+ * @param minuteOffset number
+ */
+function adjustDate(d, minuteOffset) {
+    d.setUTCMinutes(d.getUTCMinutes() + minuteOffset);
+}
+exports.adjustDate = adjustDate;
+/**
+ * Computes a date expression
+ * @param obj The target object
+ * @param expr Any value that resolves to a valid date expression. Valid expressions include a number, Date, or Object{date: number|Date, timezone?: string}
+ */
+function computeDate(obj, expr, options) {
+    const d = (0, core_1.computeValue)(obj, expr, null, options);
+    if ((0, util_1.isDate)(d))
+        return new Date(d);
+    // timestamp is in seconds
+    if ((0, util_1.isNumber)(d))
+        return new Date(d * 1000);
+    if (d.date) {
+        const date = (0, util_1.isDate)(d.date) ? new Date(d.date) : new Date(d.date * 1000);
+        if (d.timezone) {
+            adjustDate(date, parseTimezone(d.timezone));
+        }
+        return date;
+    }
+    throw Error(`cannot convert ${expr === null || expr === void 0 ? void 0 : expr.toString()} to date`);
+}
+exports.computeDate = computeDate;
+function padDigits(n, digits) {
+    return (new Array(Math.max(digits - String(n).length + 1, 0)).join("0") +
+        n.toString());
+}
+exports.padDigits = padDigits;
+function regexQuote(s) {
+    "^.-*?$".split("").forEach((c) => {
+        s = s.replace(c, `\\${c}`);
+    });
+    return s;
+}
+exports.regexQuote = regexQuote;
+function regexStrip(s) {
+    return s.replace(/^\//, "").replace(/\/$/, "");
+}
+exports.regexStrip = regexStrip;
+
+},{"../../../core":420,"../../../util":658}],509:[function(require,module,exports){
+"use strict";
+// Date Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#date-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$dateAdd = void 0;
+const core_1 = require("../../../core");
+const _internal_1 = require("./_internal");
+/**
+ * Increments a Date object by a specified number of time units.
+ * @param obj
+ * @param expr
+ */
+const $dateAdd = (obj, expr, options) => {
+    const args = (0, core_1.computeValue)(obj, expr, null, options);
+    const d = (0, _internal_1.computeDate)(obj, expr.startDate, options);
+    switch (args.unit) {
+        case "year":
+            d.setUTCFullYear(d.getUTCFullYear() + args.amount);
+            break;
+        case "quarter":
+            addMonth(d, 3 * args.amount);
+            break;
+        case "month":
+            addMonth(d, args.amount);
+            break;
+        default:
+            d.setTime(d.getTime() + _internal_1.DURATION_IN_MILLIS[args.unit] * args.amount);
+    }
+    if (args.timezone) {
+        const tz = (0, _internal_1.parseTimezone)(args.timezone);
+        (0, _internal_1.adjustDate)(d, tz);
+    }
+    return d;
+};
+exports.$dateAdd = $dateAdd;
+function addMonth(d, amount) {
+    // months start from 0 to 11.
+    const m = d.getUTCMonth() + amount;
+    const yearOffset = Math.floor(m / 12);
+    if (m < 0) {
+        const month = (m % 12) + 12;
+        d.setUTCFullYear(d.getUTCFullYear() + yearOffset, month, d.getUTCDate());
+    }
+    else {
+        d.setUTCFullYear(d.getUTCFullYear() + yearOffset, m % 12, d.getUTCDate());
+    }
+}
+
+},{"../../../core":420,"./_internal":508}],510:[function(require,module,exports){
+"use strict";
+// Date Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#date-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$dateDiff = void 0;
+const core_1 = require("../../../core");
+const _internal_1 = require("./_internal");
+/**
+ * Returns the difference between two dates.
+ * @param obj
+ * @param expr
+ * @param options Options
+ */
+const $dateDiff = (obj, expr, options) => {
+    const args = (0, core_1.computeValue)(obj, expr, null, options);
+    const d1 = (0, _internal_1.computeDate)(obj, expr.startDate, options);
+    const d2 = (0, _internal_1.computeDate)(obj, expr.endDate, options);
+    let diff;
+    switch (args.unit) {
+        case "year":
+        case "quarter":
+        case "month":
+            diff = diffYQM(d1, d2, args.unit);
+            break;
+        default:
+            diff = (d2.getTime() - d1.getTime()) / _internal_1.DURATION_IN_MILLIS[args.unit];
+    }
+    return diff;
+};
+exports.$dateDiff = $dateDiff;
+const unitMonths = {
+    year: 12,
+    quarter: 3,
+    month: 1
+};
+function diffYQM(d1, d2, unit) {
+    let months = (d2.getUTCFullYear() - d1.getUTCFullYear()) * 12;
+    months -= d1.getUTCMonth();
+    months += d2.getUTCMonth();
+    return Math.trunc(months / unitMonths[unit]);
+}
+
+},{"../../../core":420,"./_internal":508}],511:[function(require,module,exports){
+"use strict";
+// Date Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#date-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$dateFromParts = void 0;
+const core_1 = require("../../../core");
+const _internal_1 = require("./_internal");
+const DAYS_IN_MONTH = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31];
+const getDaysInMonth = (date) => {
+    return date.month == 2 && (0, _internal_1.isLeapYear)(date.year)
+        ? 29
+        : DAYS_IN_MONTH[date.month - 1];
+};
+/**
+ * Constructs and returns a Date object given the date’s constituent properties.
+ *
+ * @param obj The document
+ * @param expr The date expression
+ * @param options Options
+ */
+const $dateFromParts = (obj, expr, options) => {
+    const args = (0, core_1.computeValue)(obj, expr, null, options);
+    const minuteOffset = (0, _internal_1.parseTimezone)(args.timezone);
+    // assign default and adjust value ranges of the different parts
+    for (let i = _internal_1.DATE_PART_INTERVAL.length - 1, remainder = 0; i >= 0; i--) {
+        const datePartInterval = _internal_1.DATE_PART_INTERVAL[i];
+        const k = datePartInterval[0];
+        const min = datePartInterval[1];
+        const max = datePartInterval[2];
+        // add remainder from previous part. units should already be correct
+        let part = (args[k] || 0) + remainder;
+        // reset remainder now that it's been used.
+        remainder = 0;
+        // 1. compute the remainder for the next part
+        // 2. adjust the current part to a valid range
+        // 3. assign back to 'args'
+        const limit = max + 1;
+        // invert timezone to adjust the hours to UTC
+        if (k == "hour")
+            part += Math.floor(minuteOffset / _internal_1.MINUTES_PER_HOUR) * -1;
+        if (k == "minute")
+            part += (minuteOffset % _internal_1.MINUTES_PER_HOUR) * -1;
+        // smaller than lower bound
+        if (part < min) {
+            const delta = min - part;
+            remainder = -1 * Math.ceil(delta / limit);
+            part = limit - (delta % limit);
+        }
+        else if (part > max) {
+            // offset with the 'min' value to adjust non-zero date parts correctly
+            part += min;
+            remainder = Math.trunc(part / limit);
+            part %= limit;
+        }
+        // reassign
+        args[k] = part;
+    }
+    // adjust end of month to correctly handle overflows
+    args.day = Math.min(args.day, getDaysInMonth(args));
+    return new Date(Date.UTC(args.year, args.month - 1, args.day, args.hour, args.minute, args.second, args.millisecond));
+};
+exports.$dateFromParts = $dateFromParts;
+
+},{"../../../core":420,"./_internal":508}],512:[function(require,module,exports){
+"use strict";
+// Date Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#date-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$dateFromString = void 0;
+const core_1 = require("../../../core");
+const util_1 = require("../../../util");
+const _internal_1 = require("./_internal");
+const buildMap = (letters, sign) => {
+    const h = {};
+    letters.split("").forEach((v, i) => (h[v] = sign * (i + 1)));
+    return h;
+};
+const TZ_LETTER_OFFSETS = Object.assign(Object.assign(Object.assign({}, buildMap("ABCDEFGHIKLM", 1)), buildMap("NOPQRSTUVWXY", -1)), { Z: 0 });
+/**
+ * Converts a date/time string to a date object.
+ * @param obj
+ * @param expr
+ */
+const $dateFromString = (obj, expr, options) => {
+    const args = (0, core_1.computeValue)(obj, expr, null, options);
+    args.format = args.format || _internal_1.DATE_FORMAT;
+    args.onNull = args.onNull || null;
+    let dateString = args.dateString;
+    if ((0, util_1.isNil)(dateString))
+        return args.onNull;
+    // collect all separators of the format string
+    const separators = args.format.split(/%[YGmdHMSLuVzZ]/);
+    separators.reverse();
+    const matches = args.format.match(/(%%|%Y|%G|%m|%d|%H|%M|%S|%L|%u|%V|%z|%Z)/g);
+    const dateParts = {};
+    // holds the valid regex of parts that matches input date string
+    let expectedPattern = "";
+    for (let i = 0, len = matches.length; i < len; i++) {
+        const formatSpecifier = matches[i];
+        const props = _internal_1.DATE_SYM_TABLE[formatSpecifier];
+        if ((0, util_1.isObject)(props)) {
+            // get pattern and alias from table
+            const m = props.re.exec(dateString);
+            // get the next separtor
+            const delimiter = separators.pop() || "";
+            if (m !== null) {
+                // store and cut out matched part
+                dateParts[props.name] = /^\d+$/.exec(m[0]) ? parseInt(m[0]) : m[0];
+                dateString =
+                    dateString.substr(0, m.index) +
+                        dateString.substr(m.index + m[0].length);
+                // construct expected pattern
+                expectedPattern +=
+                    (0, _internal_1.regexQuote)(delimiter) + (0, _internal_1.regexStrip)(props.re.toString());
+            }
+            else {
+                dateParts[props.name] = null;
+            }
+        }
+    }
+    // 1. validate all required date parts exists
+    // 2. validate original dateString against expected pattern.
+    if ((0, util_1.isNil)(dateParts.year) ||
+        (0, util_1.isNil)(dateParts.month) ||
+        (0, util_1.isNil)(dateParts.day) ||
+        !new RegExp("^" + expectedPattern + "[A-Z]?$").exec(args.dateString)) {
+        return args.onError;
+    }
+    const m = args.dateString.match(/([A-Z])$/);
+    (0, util_1.assert)(
+    // only one of in-date timeone or timezone argument but not both.
+    !(m && args.timezone), `$dateFromString: you cannot pass in a date/time string with time zone information ('${m && m[0]}') together with a timezone argument`);
+    const minuteOffset = m
+        ? TZ_LETTER_OFFSETS[m[0]] * _internal_1.MINUTES_PER_HOUR
+        : (0, _internal_1.parseTimezone)(args.timezone);
+    // create the date. month is 0-based in Date
+    const d = new Date(Date.UTC(dateParts.year, dateParts.month - 1, dateParts.day, 0, 0, 0));
+    if (!(0, util_1.isNil)(dateParts.hour))
+        d.setUTCHours(dateParts.hour);
+    if (!(0, util_1.isNil)(dateParts.minute))
+        d.setUTCMinutes(dateParts.minute);
+    if (!(0, util_1.isNil)(dateParts.second))
+        d.setUTCSeconds(dateParts.second);
+    if (!(0, util_1.isNil)(dateParts.millisecond))
+        d.setUTCMilliseconds(dateParts.millisecond);
+    // adjust to the correct represention for UTC
+    (0, _internal_1.adjustDate)(d, -minuteOffset);
+    return d;
+};
+exports.$dateFromString = $dateFromString;
+
+},{"../../../core":420,"../../../util":658,"./_internal":508}],513:[function(require,module,exports){
+"use strict";
+// Date Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#date-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$dateSubtract = void 0;
+const core_1 = require("../../../core");
+const dateAdd_1 = require("./dateAdd");
+/**
+ * Decrements a Date object by a specified number of time units.
+ * @param obj
+ * @param expr
+ */
+const $dateSubtract = (obj, expr, options) => {
+    const amount = (0, core_1.computeValue)(obj, expr === null || expr === void 0 ? void 0 : expr.amount, null, options);
+    return (0, dateAdd_1.$dateAdd)(obj, Object.assign(Object.assign({}, expr), { amount: -1 * amount }), options);
+};
+exports.$dateSubtract = $dateSubtract;
+
+},{"../../../core":420,"./dateAdd":509}],514:[function(require,module,exports){
+"use strict";
+// Date Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#date-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$dateToParts = void 0;
+const core_1 = require("../../../core");
+const _internal_1 = require("./_internal");
+/**
+ * Returns a document that contains the constituent parts of a given Date value as individual properties.
+ * The properties returned are year, month, day, hour, minute, second and millisecond.
+ *
+ * @param obj
+ * @param expr
+ * @param options
+ */
+const $dateToParts = (obj, expr, options) => {
+    const args = (0, core_1.computeValue)(obj, expr, null, options);
+    const d = new Date(args.date);
+    const tz = (0, _internal_1.parseTimezone)(args.timezone);
+    (0, _internal_1.adjustDate)(d, tz);
+    const timePart = {
+        hour: d.getUTCHours(),
+        minute: d.getUTCMinutes(),
+        second: d.getUTCSeconds(),
+        millisecond: d.getUTCMilliseconds()
+    };
+    if (args.iso8601 == true) {
+        return Object.assign(timePart, {
+            isoWeekYear: (0, _internal_1.isoWeekYear)(d),
+            isoWeek: (0, _internal_1.isoWeek)(d),
+            isoDayOfWeek: d.getUTCDay() || 7
+        });
+    }
+    return Object.assign(timePart, {
+        year: d.getUTCFullYear(),
+        month: d.getUTCMonth() + 1,
+        day: d.getUTCDate()
+    });
+};
+exports.$dateToParts = $dateToParts;
+
+},{"../../../core":420,"./_internal":508}],515:[function(require,module,exports){
+"use strict";
+// Date Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#date-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$dateToString = void 0;
+const core_1 = require("../../../core");
+const util_1 = require("../../../util");
+const _internal_1 = require("./_internal");
+const dayOfMonth_1 = require("./dayOfMonth");
+const hour_1 = require("./hour");
+const isoDayOfWeek_1 = require("./isoDayOfWeek");
+const isoWeek_1 = require("./isoWeek");
+const millisecond_1 = require("./millisecond");
+const minute_1 = require("./minute");
+const month_1 = require("./month");
+const second_1 = require("./second");
+const week_1 = require("./week");
+const year_1 = require("./year");
+// date functions for format specifiers
+const DATE_FUNCTIONS = {
+    "%Y": year_1.$year,
+    "%G": year_1.$year,
+    "%m": month_1.$month,
+    "%d": dayOfMonth_1.$dayOfMonth,
+    "%H": hour_1.$hour,
+    "%M": minute_1.$minute,
+    "%S": second_1.$second,
+    "%L": millisecond_1.$millisecond,
+    "%u": isoDayOfWeek_1.$isoDayOfWeek,
+    "%U": week_1.$week,
+    "%V": isoWeek_1.$isoWeek
+};
+/**
+ * Returns the date as a formatted string.
+ *
+ * %d	Day of Month (2 digits, zero padded)	01-31
+ * %G	Year in ISO 8601 format	0000-9999
+ * %H	Hour (2 digits, zero padded, 24-hour clock)	00-23
+ * %L	Millisecond (3 digits, zero padded)	000-999
+ * %m	Month (2 digits, zero padded)	01-12
+ * %M	Minute (2 digits, zero padded)	00-59
+ * %S	Second (2 digits, zero padded)	00-60
+ * %u	Day of week number in ISO 8601 format (1-Monday, 7-Sunday)	1-7
+ * %V	Week of Year in ISO 8601 format	1-53
+ * %Y	Year (4 digits, zero padded)	0000-9999
+ * %z	The timezone offset from UTC.	+/-[hh][mm]
+ * %Z	The minutes offset from UTC as a number. For example, if the timezone offset (+/-[hhmm]) was +0445, the minutes offset is +285.	+/-mmm
+ * %%	Percent Character as a Literal	%
+ *
+ * @param obj current object
+ * @param expr operator expression
+ */
+const $dateToString = (obj, expr, options) => {
+    const args = (0, core_1.computeValue)(obj, expr, null, options);
+    if ((0, util_1.isNil)(args.onNull))
+        args.onNull = null;
+    if ((0, util_1.isNil)(args.date))
+        return args.onNull;
+    const date = (0, _internal_1.computeDate)(obj, args.date, options);
+    let format = args.format || _internal_1.DATE_FORMAT;
+    const minuteOffset = (0, _internal_1.parseTimezone)(args.timezone);
+    const matches = format.match(/(%%|%Y|%G|%m|%d|%H|%M|%S|%L|%u|%U|%V|%z|%Z)/g);
+    // adjust the date to reflect timezone
+    (0, _internal_1.adjustDate)(date, minuteOffset);
+    for (let i = 0, len = matches.length; i < len; i++) {
+        const formatSpecifier = matches[i];
+        const props = _internal_1.DATE_SYM_TABLE[formatSpecifier];
+        const operatorFn = DATE_FUNCTIONS[formatSpecifier];
+        let value;
+        if ((0, util_1.isObject)(props)) {
+            // reuse date
+            if (props.name === "timezone") {
+                value = (0, _internal_1.formatTimezone)(minuteOffset);
+            }
+            else if (props.name === "minuteOffset") {
+                value = minuteOffset.toString();
+            }
+            else {
+                (0, util_1.assert)(!!operatorFn, `unsupported date format specifier '${formatSpecifier}'`);
+                value = (0, _internal_1.padDigits)(operatorFn(obj, date, options), props.padding);
+            }
+        }
+        // replace the match with resolved value
+        format = format.replace(formatSpecifier, value);
+    }
+    return format;
+};
+exports.$dateToString = $dateToString;
+
+},{"../../../core":420,"../../../util":658,"./_internal":508,"./dayOfMonth":516,"./hour":519,"./isoDayOfWeek":521,"./isoWeek":522,"./millisecond":524,"./minute":525,"./month":526,"./second":527,"./week":528,"./year":529}],516:[function(require,module,exports){
+"use strict";
+// Date Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#date-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$dayOfMonth = void 0;
+const _internal_1 = require("./_internal");
+/**
+ * Returns the day of the month for a date as a number between 1 and 31.
+ * @param obj
+ * @param expr
+ */
+const $dayOfMonth = (obj, expr, options) => {
+    return (0, _internal_1.computeDate)(obj, expr, options).getUTCDate();
+};
+exports.$dayOfMonth = $dayOfMonth;
+
+},{"./_internal":508}],517:[function(require,module,exports){
+"use strict";
+// Date Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#date-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$dayOfWeek = void 0;
+const _internal_1 = require("./_internal");
+/**
+ * Returns the day of the week for a date as a number between 1 (Sunday) and 7 (Saturday).
+ * @param obj
+ * @param expr
+ */
+const $dayOfWeek = (obj, expr, options) => {
+    return (0, _internal_1.computeDate)(obj, expr, options).getUTCDay() + 1;
+};
+exports.$dayOfWeek = $dayOfWeek;
+
+},{"./_internal":508}],518:[function(require,module,exports){
+"use strict";
+// Date Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#date-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$dayOfYear = void 0;
+const _internal_1 = require("./_internal");
+/**
+ * Returns the day of the year for a date as a number between 1 and 366 (leap year).
+ * @param obj
+ * @param expr
+ */
+const $dayOfYear = (obj, expr, options) => {
+    return (0, _internal_1.getDayOfYear)((0, _internal_1.computeDate)(obj, expr, options));
+};
+exports.$dayOfYear = $dayOfYear;
+
+},{"./_internal":508}],519:[function(require,module,exports){
+"use strict";
+// Date Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#date-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$hour = void 0;
+const _internal_1 = require("./_internal");
+/**
+ * Returns the hour for a date as a number between 0 and 23.
+ * @param obj
+ * @param expr
+ */
+const $hour = (obj, expr, options) => {
+    return (0, _internal_1.computeDate)(obj, expr, options).getUTCHours();
+};
+exports.$hour = $hour;
+
+},{"./_internal":508}],520:[function(require,module,exports){
+"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+__exportStar(require("./dateAdd"), exports);
+__exportStar(require("./dateDiff"), exports);
+__exportStar(require("./dateFromParts"), exports);
+__exportStar(require("./dateFromString"), exports);
+__exportStar(require("./dateSubtract"), exports);
+__exportStar(require("./dateToParts"), exports);
+__exportStar(require("./dateToString"), exports);
+__exportStar(require("./dayOfMonth"), exports);
+__exportStar(require("./dayOfWeek"), exports);
+__exportStar(require("./dayOfYear"), exports);
+__exportStar(require("./hour"), exports);
+__exportStar(require("./isoDayOfWeek"), exports);
+__exportStar(require("./isoWeek"), exports);
+__exportStar(require("./isoWeekYear"), exports);
+__exportStar(require("./millisecond"), exports);
+__exportStar(require("./minute"), exports);
+__exportStar(require("./month"), exports);
+__exportStar(require("./second"), exports);
+__exportStar(require("./week"), exports);
+__exportStar(require("./year"), exports);
+
+},{"./dateAdd":509,"./dateDiff":510,"./dateFromParts":511,"./dateFromString":512,"./dateSubtract":513,"./dateToParts":514,"./dateToString":515,"./dayOfMonth":516,"./dayOfWeek":517,"./dayOfYear":518,"./hour":519,"./isoDayOfWeek":521,"./isoWeek":522,"./isoWeekYear":523,"./millisecond":524,"./minute":525,"./month":526,"./second":527,"./week":528,"./year":529}],521:[function(require,module,exports){
+"use strict";
+// Date Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#date-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$isoDayOfWeek = void 0;
+const _internal_1 = require("./_internal");
+/**
+ * Returns the weekday number in ISO 8601 format, ranging from 1 (Monday) to 7 (Sunday).
+ * @param obj
+ * @param expr
+ */
+const $isoDayOfWeek = (obj, expr, options) => {
+    return (0, _internal_1.computeDate)(obj, expr, options).getUTCDay() || 7;
+};
+exports.$isoDayOfWeek = $isoDayOfWeek;
+
+},{"./_internal":508}],522:[function(require,module,exports){
+"use strict";
+// Date Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#date-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$isoWeek = void 0;
+const _internal_1 = require("./_internal");
+/**
+ * Returns the week number in ISO 8601 format, ranging from 1 to 53.
+ * Week numbers start at 1 with the week (Monday through Sunday) that contains the year's first Thursday.
+ * @param obj
+ * @param expr
+ */
+const $isoWeek = (obj, expr, options) => {
+    return (0, _internal_1.isoWeek)((0, _internal_1.computeDate)(obj, expr, options));
+};
+exports.$isoWeek = $isoWeek;
+
+},{"./_internal":508}],523:[function(require,module,exports){
+"use strict";
+// Date Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#date-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$isoWeekYear = void 0;
+const _internal_1 = require("./_internal");
+/**
+ * Returns the year number in ISO 8601 format. The year starts with the Monday of week 1 and ends with the Sunday of the last week.
+ * @param obj
+ * @param expr
+ */
+const $isoWeekYear = (obj, expr, options) => {
+    const d = (0, _internal_1.computeDate)(obj, expr, options);
+    return (d.getUTCFullYear() -
+        Number(d.getUTCMonth() == 0 && d.getUTCDate() == 1 && d.getUTCDay() < 1));
+};
+exports.$isoWeekYear = $isoWeekYear;
+
+},{"./_internal":508}],524:[function(require,module,exports){
+"use strict";
+// Date Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#date-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$millisecond = void 0;
+const _internal_1 = require("./_internal");
+/**
+ * Returns the milliseconds of a date as a number between 0 and 999.
+ * @param obj
+ * @param expr
+ */
+const $millisecond = (obj, expr, options) => {
+    return (0, _internal_1.computeDate)(obj, expr, options).getUTCMilliseconds();
+};
+exports.$millisecond = $millisecond;
+
+},{"./_internal":508}],525:[function(require,module,exports){
+"use strict";
+// Date Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#date-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$minute = void 0;
+const _internal_1 = require("./_internal");
+/**
+ * Returns the minute for a date as a number between 0 and 59.
+ * @param obj
+ * @param expr
+ */
+const $minute = (obj, expr, options) => {
+    return (0, _internal_1.computeDate)(obj, expr, options).getUTCMinutes();
+};
+exports.$minute = $minute;
+
+},{"./_internal":508}],526:[function(require,module,exports){
+"use strict";
+// Date Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#date-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$month = void 0;
+const _internal_1 = require("./_internal");
+/**
+ * Returns the month for a date as a number between 1 (January) and 12 (December).
+ * @param obj
+ * @param expr
+ */
+const $month = (obj, expr, options) => {
+    return (0, _internal_1.computeDate)(obj, expr, options).getUTCMonth() + 1;
+};
+exports.$month = $month;
+
+},{"./_internal":508}],527:[function(require,module,exports){
+"use strict";
+// Date Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#date-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$second = void 0;
+const _internal_1 = require("./_internal");
+/**
+ * Returns the seconds for a date as a number between 0 and 60 (leap seconds).
+ * @param obj
+ * @param expr
+ */
+const $second = (obj, expr, options) => {
+    return (0, _internal_1.computeDate)(obj, expr, options).getUTCSeconds();
+};
+exports.$second = $second;
+
+},{"./_internal":508}],528:[function(require,module,exports){
+"use strict";
+// Date Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#date-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$week = void 0;
+const _internal_1 = require("./_internal");
+/**
+ * Returns the week of the year for a date as a number between 0 and 53.
+ * Weeks begin on Sundays, and week 1 begins with the first Sunday of the year. Days preceding the first Sunday of the year are in week 0
+ * @param obj
+ * @param expr
+ */
+const $week = (obj, expr, options) => {
+    const d = (0, _internal_1.computeDate)(obj, expr, options);
+    const result = (0, _internal_1.isoWeek)(d);
+    // check for starting of year and adjust accordingly
+    if (d.getUTCDay() > 0 && d.getUTCDate() == 1 && d.getUTCMonth() == 0)
+        return 0;
+    // adjust for week start on Sunday
+    if (d.getUTCDay() == 0)
+        return result + 1;
+    // else
+    return result;
+};
+exports.$week = $week;
+
+},{"./_internal":508}],529:[function(require,module,exports){
+"use strict";
+// Date Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#date-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$year = void 0;
+const _internal_1 = require("./_internal");
+/**
+ * Returns the year for a date as a number (e.g. 2014).
+ * @param obj
+ * @param expr
+ */
+const $year = (obj, expr, options) => {
+    return (0, _internal_1.computeDate)(obj, expr, options).getUTCFullYear();
+};
+exports.$year = $year;
+
+},{"./_internal":508}],530:[function(require,module,exports){
+"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+__exportStar(require("./arithmetic"), exports);
+__exportStar(require("./array"), exports);
+__exportStar(require("./boolean"), exports);
+__exportStar(require("./comparison"), exports);
+__exportStar(require("./conditional"), exports);
+__exportStar(require("./custom"), exports);
+__exportStar(require("./date"), exports);
+__exportStar(require("./literal"), exports);
+__exportStar(require("./misc"), exports);
+__exportStar(require("./object"), exports);
+__exportStar(require("./set"), exports);
+__exportStar(require("./string"), exports);
+__exportStar(require("./trignometry"), exports);
+__exportStar(require("./type"), exports);
+__exportStar(require("./variable"), exports);
+
+},{"./arithmetic":456,"./array":474,"./boolean":491,"./comparison":498,"./conditional":504,"./custom":507,"./date":520,"./literal":531,"./misc":533,"./object":536,"./set":543,"./string":551,"./trignometry":581,"./type":588,"./variable":598}],531:[function(require,module,exports){
+"use strict";
+// Literal Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#literal-expression-operator
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$literal = void 0;
+/**
+ * Return a value without parsing.
+ * @param obj
+ * @param expr
+ * @param options
+ */
+const $literal = (_obj, expr, _options) => expr;
+exports.$literal = $literal;
+
+},{}],532:[function(require,module,exports){
+"use strict";
+// Miscellaneous Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/rand/#mongodb-expression-exp.-rand
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$getField = void 0;
+const core_1 = require("../../../core");
+const util_1 = require("../../../util");
+/**
+ * Adds, updates, or removes a specified field in a document.
+ *
+ * @param {*} obj The target object for this expression
+ * @param {*} expr The right-hand side of the operator
+ * @param {Options} options Options to use for operation
+ */
+const $getField = (obj, expr, options) => {
+    const args = (0, core_1.computeValue)(obj, expr, null, options);
+    let input = obj;
+    let field = args;
+    if ((0, util_1.isObject)(args) && args.input && args.field) {
+        input = args.input;
+        field = args.field;
+    }
+    if ((0, util_1.isNil)(input))
+        return null;
+    (0, util_1.assert)((0, util_1.isObject)(input), "$getField expression 'input' must evaluate to an object");
+    (0, util_1.assert)((0, util_1.isString)(field), "$getField expression 'field' must evaluate to a string");
+    return input[field];
+};
+exports.$getField = $getField;
+
+},{"../../../core":420,"../../../util":658}],533:[function(require,module,exports){
+"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+__exportStar(require("./getField"), exports);
+__exportStar(require("./rand"), exports);
+__exportStar(require("./sampleRate"), exports);
+
+},{"./getField":532,"./rand":534,"./sampleRate":535}],534:[function(require,module,exports){
+"use strict";
+// Miscellaneous Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/rand/#mongodb-expression-exp.-rand
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$rand = void 0;
+/**
+ * Returns a random float between 0 and 1.
+ *
+ * @param {*} _obj The target object for this expression
+ * @param {*} _expr The right-hand side of the operator
+ * @param {Options} _options Options to use for operation
+ */
+const $rand = (_obj, _expr, _options) => Math.random();
+exports.$rand = $rand;
+
+},{}],535:[function(require,module,exports){
+"use strict";
+// Miscellaneous Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#miscellaneous-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$sampleRate = void 0;
+const core_1 = require("../../../core");
+/**
+ * Randomly select documents at a given rate.
+ *
+ * @param {*} obj The target object for this expression
+ * @param {*} expr The right-hand side of the operator
+ * @param {Options} options Options to use for operation
+ */
+const $sampleRate = (obj, expr, options) => Math.random() <= (0, core_1.computeValue)(obj, expr, null, options);
+exports.$sampleRate = $sampleRate;
+
+},{"../../../core":420}],536:[function(require,module,exports){
+"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+__exportStar(require("./mergeObjects"), exports);
+__exportStar(require("./objectToArray"), exports);
+__exportStar(require("./setField"), exports);
+__exportStar(require("./unsetField"), exports);
+
+},{"./mergeObjects":537,"./objectToArray":538,"./setField":539,"./unsetField":540}],537:[function(require,module,exports){
+"use strict";
+// Object Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#object-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$mergeObjects = void 0;
+const core_1 = require("../../../core");
+const util_1 = require("../../../util");
+/**
+ * Combines multiple documents into a single document.
+ *
+ * @param {*} obj The target object for this expression
+ * @param {*} expr The right-hand side of the operator
+ * @param {Options} options Options to use for operation
+ */
+const $mergeObjects = (obj, expr, options) => {
+    const docs = (0, core_1.computeValue)(obj, expr, null, options);
+    return docs instanceof Array
+        ? docs.reduce((memo, o) => (0, util_1.into)(memo, o), {})
+        : {};
+};
+exports.$mergeObjects = $mergeObjects;
+
+},{"../../../core":420,"../../../util":658}],538:[function(require,module,exports){
+"use strict";
+// Object Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#object-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$objectToArray = void 0;
+const core_1 = require("../../../core");
+const util_1 = require("../../../util");
+/**
+ * Converts a document to an array of documents representing key-value pairs.
+ *
+ * @param {*} obj The target object for this expression
+ * @param {*} expr The right-hand side of the operator
+ * @param {Options} options Options to use for operation
+ */
+const $objectToArray = (obj, expr, options) => {
+    const val = (0, core_1.computeValue)(obj, expr, null, options);
+    (0, util_1.assert)((0, util_1.isObject)(val), "$objectToArray expression must resolve to an object");
+    const entries = Object.entries(val);
+    const result = new Array(entries.length);
+    let i = 0;
+    for (const [k, v] of entries) {
+        result[i++] = { k, v };
+    }
+    return result;
+};
+exports.$objectToArray = $objectToArray;
+
+},{"../../../core":420,"../../../util":658}],539:[function(require,module,exports){
+"use strict";
+// Object Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#object-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$setField = void 0;
+const core_1 = require("../../../core");
+const util_1 = require("../../../util");
+/**
+ * Adds, updates, or removes a specified field in a document.
+ *
+ * @param {*} obj The target object for this expression
+ * @param {*} expr The right-hand side of the operator
+ * @param {Options} options Options to use for operation
+ */
+const $setField = (obj, expr, options) => {
+    const args = (0, core_1.computeValue)(obj, expr, null, options);
+    if ((0, util_1.isNil)(args.input))
+        return null;
+    (0, util_1.assert)((0, util_1.isObject)(args.input), "$setField expression 'input' must evaluate to an object");
+    (0, util_1.assert)((0, util_1.isString)(args.field), "$setField expression 'field' must evaluate to a string");
+    if (expr.value == "$$REMOVE") {
+        delete obj[args.field];
+    }
+    else {
+        obj[args.field] = args.value;
+    }
+    return obj;
+};
+exports.$setField = $setField;
+
+},{"../../../core":420,"../../../util":658}],540:[function(require,module,exports){
+"use strict";
+// Object Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#object-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$unsetField = void 0;
+const setField_1 = require("./setField");
+/**
+ * Adds, updates, or removes a specified field in a document.
+ *
+ * @param {*} obj The target object for this expression
+ * @param {*} expr The right-hand side of the operator
+ * @param {Options} options Options to use for operation
+ */
+const $unsetField = (obj, expr, options) => {
+    return (0, setField_1.$setField)(obj, Object.assign(Object.assign({}, expr), { value: "$$REMOVE" }), options);
+};
+exports.$unsetField = $unsetField;
+
+},{"./setField":539}],541:[function(require,module,exports){
+"use strict";
+/**
+ * Set Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#set-expression-operators
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$allElementsTrue = void 0;
+const core_1 = require("../../../core");
+const util_1 = require("../../../util");
+/**
+ * Returns true if all elements of a set evaluate to true, and false otherwise.
+ * @param obj
+ * @param expr
+ */
+const $allElementsTrue = (obj, expr, options) => {
+    // mongodb nests the array expression in another
+    const args = (0, core_1.computeValue)(obj, expr, null, options)[0];
+    return args.every(v => (0, util_1.truthy)(v, options.useStrictMode));
+};
+exports.$allElementsTrue = $allElementsTrue;
+
+},{"../../../core":420,"../../../util":658}],542:[function(require,module,exports){
+"use strict";
+/**
+ * Set Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#set-expression-operators
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$anyElementTrue = void 0;
+const core_1 = require("../../../core");
+const util_1 = require("../../../util");
+/**
+ * Returns true if any elements of a set evaluate to true, and false otherwise.
+ * @param obj
+ * @param expr
+ */
+const $anyElementTrue = (obj, expr, options) => {
+    // mongodb nests the array expression in another
+    const args = (0, core_1.computeValue)(obj, expr, null, options)[0];
+    return args.some(v => (0, util_1.truthy)(v, options.useStrictMode));
+};
+exports.$anyElementTrue = $anyElementTrue;
+
+},{"../../../core":420,"../../../util":658}],543:[function(require,module,exports){
+"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+__exportStar(require("./allElementsTrue"), exports);
+__exportStar(require("./anyElementTrue"), exports);
+__exportStar(require("./setDifference"), exports);
+__exportStar(require("./setEquals"), exports);
+__exportStar(require("./setIntersection"), exports);
+__exportStar(require("./setIsSubset"), exports);
+__exportStar(require("./setUnion"), exports);
+
+},{"./allElementsTrue":541,"./anyElementTrue":542,"./setDifference":544,"./setEquals":545,"./setIntersection":546,"./setIsSubset":547,"./setUnion":548}],544:[function(require,module,exports){
+"use strict";
+/**
+ * Set Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#set-expression-operators
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$setDifference = void 0;
+const core_1 = require("../../../core");
+const util_1 = require("../../../util");
+/**
+ * Returns elements of a set that do not appear in a second set.
+ * @param obj
+ * @param expr
+ */
+const $setDifference = (obj, expr, options) => {
+    const args = (0, core_1.computeValue)(obj, expr, null, options);
+    return args[0].filter(util_1.notInArray.bind(null, args[1]));
+};
+exports.$setDifference = $setDifference;
+
+},{"../../../core":420,"../../../util":658}],545:[function(require,module,exports){
+"use strict";
+/**
+ * Set Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#set-expression-operators
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$setEquals = void 0;
+const core_1 = require("../../../core");
+const util_1 = require("../../../util");
+/**
+ * Returns true if two sets have the same elements.
+ * @param obj
+ * @param expr
+ */
+const $setEquals = (obj, expr, options) => {
+    const args = (0, core_1.computeValue)(obj, expr, null, options);
+    const xs = (0, util_1.unique)(args[0], options === null || options === void 0 ? void 0 : options.hashFunction);
+    const ys = (0, util_1.unique)(args[1], options === null || options === void 0 ? void 0 : options.hashFunction);
+    return (xs.length === ys.length &&
+        xs.length === (0, util_1.intersection)([xs, ys], options === null || options === void 0 ? void 0 : options.hashFunction).length);
+};
+exports.$setEquals = $setEquals;
+
+},{"../../../core":420,"../../../util":658}],546:[function(require,module,exports){
+"use strict";
+/**
+ * Set Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#set-expression-operators
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$setIntersection = void 0;
+const core_1 = require("../../../core");
+const util_1 = require("../../../util");
+/**
+ * Returns the common elements of the input sets.
+ * @param obj
+ * @param expr
+ */
+const $setIntersection = (obj, expr, options) => {
+    const args = (0, core_1.computeValue)(obj, expr, null, options);
+    (0, util_1.assert)((0, util_1.isArray)(args) && args.every(util_1.isArray), "$setIntersection: expresssion must resolve to array of arrays");
+    return (0, util_1.intersection)(args, options === null || options === void 0 ? void 0 : options.hashFunction);
+};
+exports.$setIntersection = $setIntersection;
+
+},{"../../../core":420,"../../../util":658}],547:[function(require,module,exports){
+"use strict";
+/**
+ * Set Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#set-expression-operators
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$setIsSubset = void 0;
+const core_1 = require("../../../core");
+const util_1 = require("../../../util");
+/**
+ * Returns true if all elements of a set appear in a second set.
+ * @param obj
+ * @param expr
+ */
+const $setIsSubset = (obj, expr, options) => {
+    const args = (0, core_1.computeValue)(obj, expr, null, options);
+    return (0, util_1.intersection)(args, options === null || options === void 0 ? void 0 : options.hashFunction).length === args[0].length;
+};
+exports.$setIsSubset = $setIsSubset;
+
+},{"../../../core":420,"../../../util":658}],548:[function(require,module,exports){
+"use strict";
+/**
+ * Set Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#set-expression-operators
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$setUnion = void 0;
+const core_1 = require("../../../core");
+const util_1 = require("../../../util");
+/**
+ * Returns a set that holds all elements of the input sets.
+ * @param obj
+ * @param expr
+ */
+const $setUnion = (obj, expr, options) => {
+    const args = (0, core_1.computeValue)(obj, expr, null, options);
+    (0, util_1.assert)((0, util_1.isArray)(args) && args.length == 2 && args.every(util_1.isArray), "$setUnion: arguments must be arrays");
+    return (0, util_1.unique)(args[0].concat(args[1]), options === null || options === void 0 ? void 0 : options.hashFunction);
+};
+exports.$setUnion = $setUnion;
+
+},{"../../../core":420,"../../../util":658}],549:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.regexSearch = exports.trimString = void 0;
+const core_1 = require("../../../core");
+const util_1 = require("../../../util");
+/* eslint-disable*/
+const WHITESPACE_CHARS = [
+    0x0000,
+    0x0020,
+    0x0009,
+    0x000a,
+    0x000b,
+    0x000c,
+    0x000d,
+    0x00a0,
+    0x1680,
+    0x2000,
+    0x2001,
+    0x2002,
+    0x2003,
+    0x2004,
+    0x2005,
+    0x2006,
+    0x2007,
+    0x2008,
+    0x2009,
+    0x200a // Hair space
+];
+/**
+ * Trims the resolved string
+ *
+ * @param obj
+ * @param expr
+ * @param options
+ */
+function trimString(obj, expr, options, trimOpts) {
+    const val = (0, core_1.computeValue)(obj, expr, null, options);
+    const s = val.input;
+    if ((0, util_1.isNil)(s))
+        return null;
+    const codepoints = (0, util_1.isNil)(val.chars)
+        ? WHITESPACE_CHARS
+        : val.chars.split("").map((c) => c.codePointAt(0));
+    let i = 0;
+    let j = s.length - 1;
+    while (trimOpts.left &&
+        i <= j &&
+        codepoints.indexOf(s[i].codePointAt(0)) !== -1)
+        i++;
+    while (trimOpts.right &&
+        i <= j &&
+        codepoints.indexOf(s[j].codePointAt(0)) !== -1)
+        j--;
+    return s.substring(i, j + 1);
+}
+exports.trimString = trimString;
+/**
+ * Performs a regex search
+ *
+ * @param obj
+ * @param expr
+ * @param opts
+ */
+function regexSearch(obj, expr, options, reOpts) {
+    const val = (0, core_1.computeValue)(obj, expr, null, options);
+    if (!(0, util_1.isString)(val.input))
+        return [];
+    const regexOptions = val.options;
+    if (regexOptions) {
+        (0, util_1.assert)(regexOptions.indexOf("x") === -1, "extended capability option 'x' not supported");
+        (0, util_1.assert)(regexOptions.indexOf("g") === -1, "global option 'g' not supported");
+    }
+    let input = val.input;
+    const re = new RegExp(val.regex, regexOptions);
+    let m;
+    const matches = new Array();
+    let offset = 0;
+    while ((m = re.exec(input))) {
+        const result = {
+            match: m[0],
+            idx: m.index + offset,
+            captures: []
+        };
+        for (let i = 1; i < m.length; i++)
+            result.captures.push(m[i] || null);
+        matches.push(result);
+        if (!reOpts.global)
+            break;
+        offset = m.index + m[0].length;
+        input = input.substring(offset);
+    }
+    return matches;
+}
+exports.regexSearch = regexSearch;
+/*eslint-enable*/
+
+},{"../../../core":420,"../../../util":658}],550:[function(require,module,exports){
+"use strict";
+/**
+ * String Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#string-expression-operators
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$concat = void 0;
+const core_1 = require("../../../core");
+const util_1 = require("../../../util");
+/**
+ * Concatenates two strings.
+ *
+ * @param obj
+ * @param expr
+ * @returns {string|*}
+ */
+const $concat = (obj, expr, options) => {
+    const args = (0, core_1.computeValue)(obj, expr, null, options);
+    // does not allow concatenation with nulls
+    if ([null, undefined].some(util_1.inArray.bind(null, args)))
+        return null;
+    return args.join("");
+};
+exports.$concat = $concat;
+
+},{"../../../core":420,"../../../util":658}],551:[function(require,module,exports){
+"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+__exportStar(require("./concat"), exports);
+__exportStar(require("./indexOfBytes"), exports);
+__exportStar(require("./ltrim"), exports);
+__exportStar(require("./regexFind"), exports);
+__exportStar(require("./regexFindAll"), exports);
+__exportStar(require("./regexMatch"), exports);
+__exportStar(require("./replaceAll"), exports);
+__exportStar(require("./replaceOne"), exports);
+__exportStar(require("./rtrim"), exports);
+__exportStar(require("./split"), exports);
+__exportStar(require("./strcasecmp"), exports);
+__exportStar(require("./strLenBytes"), exports);
+__exportStar(require("./strLenCP"), exports);
+__exportStar(require("./substr"), exports);
+__exportStar(require("./substrBytes"), exports);
+__exportStar(require("./substrCP"), exports);
+__exportStar(require("./toLower"), exports);
+__exportStar(require("./toUpper"), exports);
+__exportStar(require("./trim"), exports);
+
+},{"./concat":550,"./indexOfBytes":552,"./ltrim":553,"./regexFind":554,"./regexFindAll":555,"./regexMatch":556,"./replaceAll":557,"./replaceOne":558,"./rtrim":559,"./split":560,"./strLenBytes":561,"./strLenCP":562,"./strcasecmp":563,"./substr":564,"./substrBytes":565,"./substrCP":566,"./toLower":567,"./toUpper":568,"./trim":569}],552:[function(require,module,exports){
+"use strict";
+/**
+ * String Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#string-expression-operators
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$indexOfBytes = void 0;
+const core_1 = require("../../../core");
+const util_1 = require("../../../util");
+/**
+ * Searches a string for an occurrence of a substring and returns the UTF-8 code point index of the first occurence.
+ * If the substring is not found, returns -1.
+ *
+ * @param  {Object} obj
+ * @param  {*} expr
+ * @return {*}
+ */
+const $indexOfBytes = (obj, expr, options) => {
+    const arr = (0, core_1.computeValue)(obj, expr, null, options);
+    const errorMsg = "$indexOfBytes expression resolves to invalid an argument";
+    if ((0, util_1.isNil)(arr[0]))
+        return null;
+    (0, util_1.assert)((0, util_1.isString)(arr[0]) && (0, util_1.isString)(arr[1]), errorMsg);
+    const str = arr[0];
+    const searchStr = arr[1];
+    let start = arr[2];
+    let end = arr[3];
+    let valid = (0, util_1.isNil)(start) ||
+        ((0, util_1.isNumber)(start) && start >= 0 && Math.round(start) === start);
+    valid =
+        valid &&
+            ((0, util_1.isNil)(end) || ((0, util_1.isNumber)(end) && end >= 0 && Math.round(end) === end));
+    (0, util_1.assert)(valid, errorMsg);
+    start = start || 0;
+    end = end || str.length;
+    if (start > end)
+        return -1;
+    const index = str.substring(start, end).indexOf(searchStr);
+    return index > -1 ? index + start : index;
+};
+exports.$indexOfBytes = $indexOfBytes;
+
+},{"../../../core":420,"../../../util":658}],553:[function(require,module,exports){
+"use strict";
+/**
+ * String Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#string-expression-operators
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$ltrim = void 0;
+const _internal_1 = require("./_internal");
+/**
+ * Removes whitespace characters, including null, or the specified characters from the beginning of a string.
+ *
+ * @param obj
+ * @param expr
+ */
+const $ltrim = (obj, expr, options) => {
+    return (0, _internal_1.trimString)(obj, expr, options, { left: true, right: false });
+};
+exports.$ltrim = $ltrim;
+
+},{"./_internal":549}],554:[function(require,module,exports){
+"use strict";
+/**
+ * String Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#string-expression-operators
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$regexFind = void 0;
+const _internal_1 = require("./_internal");
+/**
+ * Applies a regular expression (regex) to a string and returns information on the first matched substring.
+ *
+ * @param obj
+ * @param expr
+ */
+const $regexFind = (obj, expr, options) => {
+    const result = (0, _internal_1.regexSearch)(obj, expr, options, { global: false });
+    return result && result.length > 0 ? result[0] : null;
+};
+exports.$regexFind = $regexFind;
+
+},{"./_internal":549}],555:[function(require,module,exports){
+"use strict";
+/**
+ * String Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#string-expression-operators
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$regexFindAll = void 0;
+const _internal_1 = require("./_internal");
+/**
+ * Applies a regular expression (regex) to a string and returns information on the all matched substrings.
+ *
+ * @param obj
+ * @param expr
+ */
+const $regexFindAll = (obj, expr, options) => {
+    return (0, _internal_1.regexSearch)(obj, expr, options, { global: true });
+};
+exports.$regexFindAll = $regexFindAll;
+
+},{"./_internal":549}],556:[function(require,module,exports){
+"use strict";
+/**
+ * String Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#string-expression-operators
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$regexMatch = void 0;
+const _internal_1 = require("./_internal");
+/**
+ * Applies a regular expression (regex) to a string and returns a boolean that indicates if a match is found or not.
+ *
+ * @param obj
+ * @param expr
+ */
+const $regexMatch = (obj, expr, options) => {
+    return (0, _internal_1.regexSearch)(obj, expr, options, { global: false }).length != 0;
+};
+exports.$regexMatch = $regexMatch;
+
+},{"./_internal":549}],557:[function(require,module,exports){
+"use strict";
+/**
+ * String Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#string-expression-operators
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$replaceAll = void 0;
+const core_1 = require("../../../core");
+const util_1 = require("../../../util");
+/**
+ * Replaces all instances of a matched string in a given input.
+ *
+ * @param  {Object} obj
+ * @param  {Array} expr
+ */
+const $replaceAll = (obj, expr, options) => {
+    const args = (0, core_1.computeValue)(obj, expr, null, options);
+    const arr = [args.input, args.find, args.replacement];
+    if (arr.some(util_1.isNil))
+        return null;
+    (0, util_1.assert)(arr.every(util_1.isString), "$replaceAll expression fields must evaluate to string");
+    return args.input.replace(new RegExp(args.find, "g"), args.replacement);
+};
+exports.$replaceAll = $replaceAll;
+
+},{"../../../core":420,"../../../util":658}],558:[function(require,module,exports){
+"use strict";
+/**
+ * String Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#string-expression-operators
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$replaceOne = void 0;
+const core_1 = require("../../../core");
+const util_1 = require("../../../util");
+/**
+ * Replaces the first instance of a matched string in a given input.
+ *
+ * @param  {Object} obj
+ * @param  {Array} expr
+ */
+const $replaceOne = (obj, expr, options) => {
+    const args = (0, core_1.computeValue)(obj, expr, null, options);
+    const arr = [args.input, args.find, args.replacement];
+    if (arr.some(util_1.isNil))
+        return null;
+    (0, util_1.assert)(arr.every(util_1.isString), "$replaceOne expression fields must evaluate to string");
+    return args.input.replace(args.find, args.replacement);
+};
+exports.$replaceOne = $replaceOne;
+
+},{"../../../core":420,"../../../util":658}],559:[function(require,module,exports){
+"use strict";
+/**
+ * String Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#string-expression-operators
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$rtrim = void 0;
+const _internal_1 = require("./_internal");
+/**
+ * Removes whitespace characters, including null, or the specified characters from the end of a string.
+ *
+ * @param obj
+ * @param expr
+ */
+const $rtrim = (obj, expr, options) => {
+    return (0, _internal_1.trimString)(obj, expr, options, { left: false, right: true });
+};
+exports.$rtrim = $rtrim;
+
+},{"./_internal":549}],560:[function(require,module,exports){
+"use strict";
+/**
+ * String Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#string-expression-operators
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$split = void 0;
+const core_1 = require("../../../core");
+const util_1 = require("../../../util");
+/**
+ * Splits a string into substrings based on a delimiter.
+ * If the delimiter is not found within the string, returns an array containing the original string.
+ *
+ * @param  {Object} obj
+ * @param  {Array} expr
+ * @return {Array} Returns an array of substrings.
+ */
+const $split = (obj, expr, options) => {
+    const args = (0, core_1.computeValue)(obj, expr, null, options);
+    if ((0, util_1.isNil)(args[0]))
+        return null;
+    (0, util_1.assert)(args.every(util_1.isString), "$split expression must result to array(2) of strings");
+    return args[0].split(args[1]);
+};
+exports.$split = $split;
+
+},{"../../../core":420,"../../../util":658}],561:[function(require,module,exports){
+"use strict";
+/**
+ * String Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#string-expression-operators
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$strLenBytes = void 0;
+const core_1 = require("../../../core");
+/**
+ * Returns the number of UTF-8 encoded bytes in the specified string.
+ *
+ * @param  {Object} obj
+ * @param  {String} expr
+ * @return {Number}
+ */
+const $strLenBytes = (obj, expr, options) => {
+    return ~-encodeURI((0, core_1.computeValue)(obj, expr, null, options)).split(/%..|./).length;
+};
+exports.$strLenBytes = $strLenBytes;
+
+},{"../../../core":420}],562:[function(require,module,exports){
+"use strict";
+/**
+ * String Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#string-expression-operators
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$strLenCP = void 0;
+const core_1 = require("../../../core");
+/**
+ * Returns the number of UTF-8 code points in the specified string.
+ *
+ * @param  {Object} obj
+ * @param  {String} expr
+ * @return {Number}
+ */
+const $strLenCP = (obj, expr, options) => {
+    return (0, core_1.computeValue)(obj, expr, null, options).length;
+};
+exports.$strLenCP = $strLenCP;
+
+},{"../../../core":420}],563:[function(require,module,exports){
+"use strict";
+/**
+ * String Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#string-expression-operators
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$strcasecmp = void 0;
+const core_1 = require("../../../core");
+const util_1 = require("../../../util");
+/**
+ * Compares two strings and returns an integer that reflects the comparison.
+ *
+ * @param obj
+ * @param expr
+ * @returns {number}
+ */
+const $strcasecmp = (obj, expr, options) => {
+    const args = (0, core_1.computeValue)(obj, expr, null, options);
+    let a = args[0];
+    let b = args[1];
+    if ((0, util_1.isEqual)(a, b) || args.every(util_1.isNil))
+        return 0;
+    (0, util_1.assert)(args.every(util_1.isString), "$strcasecmp must resolve to array(2) of strings");
+    a = a.toUpperCase();
+    b = b.toUpperCase();
+    return (a > b && 1) || (a < b && -1) || 0;
+};
+exports.$strcasecmp = $strcasecmp;
+
+},{"../../../core":420,"../../../util":658}],564:[function(require,module,exports){
+"use strict";
+/**
+ * String Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#string-expression-operators
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$substr = void 0;
+const core_1 = require("../../../core");
+const util_1 = require("../../../util");
+/**
+ * Returns a substring of a string, starting at a specified index position and including the specified number of characters.
+ * The index is zero-based.
+ *
+ * @param obj
+ * @param expr
+ * @returns {string}
+ */
+const $substr = (obj, expr, options) => {
+    const args = (0, core_1.computeValue)(obj, expr, null, options);
+    const s = args[0];
+    const index = args[1];
+    const count = args[2];
+    if ((0, util_1.isString)(s)) {
+        if (index < 0) {
+            return "";
+        }
+        else if (count < 0) {
+            return s.substr(index);
+        }
+        else {
+            return s.substr(index, count);
+        }
+    }
+    return "";
+};
+exports.$substr = $substr;
+
+},{"../../../core":420,"../../../util":658}],565:[function(require,module,exports){
+"use strict";
+/**
+ * String Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#string-expression-operators
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$substrBytes = void 0;
+const core_1 = require("../../../core");
+const util_1 = require("../../../util");
+const UTF8_MASK = [0xc0, 0xe0, 0xf0];
+// encodes a unicode code point to a utf8 byte sequence
+// https://encoding.spec.whatwg.org/#utf-8
+function toUtf8(n) {
+    if (n < 0x80)
+        return [n];
+    let count = (n < 0x0800 && 1) || (n < 0x10000 && 2) || 3;
+    const offset = UTF8_MASK[count - 1];
+    const utf8 = [(n >> (6 * count)) + offset];
+    while (count > 0)
+        utf8.push(0x80 | ((n >> (6 * --count)) & 0x3f));
+    return utf8;
+}
+function utf8Encode(s) {
+    const buf = [];
+    for (let i = 0, len = s.length; i < len; i++) {
+        buf.push(toUtf8(s.codePointAt(i)));
+    }
+    return buf;
+}
+/**
+ * Returns a substring of a string, starting at a specified index position and including the specified number of characters.
+ * The index is zero-based.
+ *
+ * @param obj
+ * @param expr
+ * @returns {string}
+ */
+const $substrBytes = (obj, expr, options) => {
+    const args = (0, core_1.computeValue)(obj, expr, null, options);
+    const s = args[0];
+    const index = args[1];
+    const count = args[2];
+    (0, util_1.assert)((0, util_1.isString)(s) &&
+        (0, util_1.isNumber)(index) &&
+        index >= 0 &&
+        (0, util_1.isNumber)(count) &&
+        count >= 0, "$substrBytes: invalid arguments");
+    const buf = utf8Encode(s);
+    const validIndex = [];
+    let acc = 0;
+    for (let i = 0; i < buf.length; i++) {
+        validIndex.push(acc);
+        acc += buf[i].length;
+    }
+    const begin = validIndex.indexOf(index);
+    const end = validIndex.indexOf(index + count);
+    (0, util_1.assert)(begin > -1 && end > -1, "$substrBytes: invalid range, start or end index is a UTF-8 continuation byte.");
+    return s.substring(begin, end);
+};
+exports.$substrBytes = $substrBytes;
+
+},{"../../../core":420,"../../../util":658}],566:[function(require,module,exports){
+"use strict";
+/**
+ * String Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#string-expression-operators
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$substrCP = void 0;
+const substr_1 = require("./substr");
+const $substrCP = (obj, expr, options) => {
+    return (0, substr_1.$substr)(obj, expr, options);
+};
+exports.$substrCP = $substrCP;
+
+},{"./substr":564}],567:[function(require,module,exports){
+"use strict";
+/**
+ * String Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#string-expression-operators
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$toLower = void 0;
+const core_1 = require("../../../core");
+const util_1 = require("../../../util");
+/**
+ * Converts a string to lowercase.
+ *
+ * @param obj
+ * @param expr
+ * @returns {string}
+ */
+const $toLower = (obj, expr, options) => {
+    const value = (0, core_1.computeValue)(obj, expr, null, options);
+    return (0, util_1.isEmpty)(value) ? "" : value.toLowerCase();
+};
+exports.$toLower = $toLower;
+
+},{"../../../core":420,"../../../util":658}],568:[function(require,module,exports){
+"use strict";
+/**
+ * String Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#string-expression-operators
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$toUpper = void 0;
+const core_1 = require("../../../core");
+const util_1 = require("../../../util");
+/**
+ * Converts a string to uppercase.
+ *
+ * @param obj
+ * @param expr
+ * @returns {string}
+ */
+const $toUpper = (obj, expr, options) => {
+    const value = (0, core_1.computeValue)(obj, expr, null, options);
+    return (0, util_1.isEmpty)(value) ? "" : value.toUpperCase();
+};
+exports.$toUpper = $toUpper;
+
+},{"../../../core":420,"../../../util":658}],569:[function(require,module,exports){
+"use strict";
+/**
+ * String Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#string-expression-operators
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$trim = void 0;
+const _internal_1 = require("./_internal");
+/**
+ * Removes whitespace characters, including null, or the specified characters from the beginning and end of a string.
+ *
+ * @param obj
+ * @param expr
+ */
+const $trim = (obj, expr, options) => {
+    return (0, _internal_1.trimString)(obj, expr, options, { left: true, right: true });
+};
+exports.$trim = $trim;
+
+},{"./_internal":549}],570:[function(require,module,exports){
+"use strict";
+// Trignometry Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#trigonometry-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.createTrignometryOperator = void 0;
+const core_1 = require("../../../core");
+const FIXED_POINTS = {
+    undefined: null,
+    null: null,
+    NaN: NaN,
+    Infinity: new Error(),
+    "-Infinity": new Error()
+};
+/**
+ * Returns an operator for a given trignometric function
+ *
+ * @param f The trignometric function
+ */
+function createTrignometryOperator(f, fixedPoints = FIXED_POINTS) {
+    const fp = Object.assign({}, FIXED_POINTS, fixedPoints);
+    const keySet = new Set(Object.keys(fp));
+    return (obj, expr, options) => {
+        const n = (0, core_1.computeValue)(obj, expr, null, options);
+        if (keySet.has(`${n}`)) {
+            const res = fp[`${n}`];
+            if (res instanceof Error) {
+                throw new Error(`cannot apply $${f.name} to -inf, value must in (-inf,inf)`);
+            }
+            return res;
+        }
+        return f(n);
+    };
+}
+exports.createTrignometryOperator = createTrignometryOperator;
+
+},{"../../../core":420}],571:[function(require,module,exports){
+"use strict";
+// Trignometry Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#trigonometry-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$acos = void 0;
+const _internal_1 = require("./_internal");
+/** Returns the inverse cosine (arc cosine) of a value in radians. */
+exports.$acos = (0, _internal_1.createTrignometryOperator)(Math.acos, {
+    Infinity: Infinity,
+    0: new Error(),
+});
+
+},{"./_internal":570}],572:[function(require,module,exports){
+"use strict";
+// Trignometry Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#trigonometry-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$acosh = void 0;
+const _internal_1 = require("./_internal");
+/** Returns the inverse hyperbolic cosine (hyperbolic arc cosine) of a value in radians. */
+exports.$acosh = (0, _internal_1.createTrignometryOperator)(Math.acosh, {
+    Infinity: Infinity,
+    0: new Error(),
+});
+
+},{"./_internal":570}],573:[function(require,module,exports){
+"use strict";
+// Trignometry Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#trigonometry-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$asin = void 0;
+const _internal_1 = require("./_internal");
+/** Returns the inverse sin (arc sine) of a value in radians. */
+exports.$asin = (0, _internal_1.createTrignometryOperator)(Math.asin);
+
+},{"./_internal":570}],574:[function(require,module,exports){
+"use strict";
+// Trignometry Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#trigonometry-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$asinh = void 0;
+const _internal_1 = require("./_internal");
+/** Returns the inverse hyperbolic sine (hyperbolic arc sine) of a value in radians. */
+exports.$asinh = (0, _internal_1.createTrignometryOperator)(Math.asinh, {
+    Infinity: Infinity,
+    "-Infinity": -Infinity,
+});
+
+},{"./_internal":570}],575:[function(require,module,exports){
+"use strict";
+// Trignometry Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#trigonometry-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$atan = void 0;
+const _internal_1 = require("./_internal");
+/** Returns the inverse tangent (arc tangent) of a value in radians. */
+exports.$atan = (0, _internal_1.createTrignometryOperator)(Math.atan);
+
+},{"./_internal":570}],576:[function(require,module,exports){
+"use strict";
+// Trignometry Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#trigonometry-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$atan2 = void 0;
+const core_1 = require("../../../core");
+const util_1 = require("../../../util");
+/**
+ * Returns the inverse tangent (arc tangent) of y / x in radians, where y and x are the first and second values passed to the expression respectively. */
+const $atan2 = (obj, expr, options) => {
+    const [y, x] = (0, core_1.computeValue)(obj, expr, null, options);
+    if (isNaN(y) || (0, util_1.isNil)(y))
+        return y;
+    if (isNaN(x) || (0, util_1.isNil)(x))
+        return x;
+    return Math.atan2(y, x);
+};
+exports.$atan2 = $atan2;
+
+},{"../../../core":420,"../../../util":658}],577:[function(require,module,exports){
+"use strict";
+// Trignometry Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#trigonometry-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$atanh = void 0;
+const _internal_1 = require("./_internal");
+/** Returns the inverse hyperbolic tangent (hyperbolic arc tangent) of a value in radians. */
+exports.$atanh = (0, _internal_1.createTrignometryOperator)(Math.atanh, {
+    1: Infinity,
+    "-1": -Infinity,
+});
+
+},{"./_internal":570}],578:[function(require,module,exports){
+"use strict";
+// Trignometry Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#trigonometry-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$cos = void 0;
+const _internal_1 = require("./_internal");
+/** Returns the cosine of a value that is measured in radians. */
+exports.$cos = (0, _internal_1.createTrignometryOperator)(Math.cos);
+
+},{"./_internal":570}],579:[function(require,module,exports){
+"use strict";
+// Trignometry Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#trigonometry-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$cosh = void 0;
+const _internal_1 = require("./_internal");
+/** Returns the hyperbolic cosine of a value that is measured in radians. */
+exports.$cosh = (0, _internal_1.createTrignometryOperator)(Math.cosh, {
+    "-Infinity": Infinity,
+    Infinity: Infinity,
+    // [Math.PI]: -1,
+});
+
+},{"./_internal":570}],580:[function(require,module,exports){
+"use strict";
+// Trignometry Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#trigonometry-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$degreesToRadians = void 0;
+const _internal_1 = require("./_internal");
+const RADIANS_FACTOR = Math.PI / 180;
+/** Converts a value from degrees to radians. */
+exports.$degreesToRadians = (0, _internal_1.createTrignometryOperator)((n) => n * RADIANS_FACTOR, {
+    Infinity: Infinity,
+    "-Infinity": Infinity,
+});
+
+},{"./_internal":570}],581:[function(require,module,exports){
+"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+__exportStar(require("./acos"), exports);
+__exportStar(require("./acosh"), exports);
+__exportStar(require("./asin"), exports);
+__exportStar(require("./asinh"), exports);
+__exportStar(require("./atan"), exports);
+__exportStar(require("./atan2"), exports);
+__exportStar(require("./atanh"), exports);
+__exportStar(require("./cos"), exports);
+__exportStar(require("./cosh"), exports);
+__exportStar(require("./degreesToRadians"), exports);
+__exportStar(require("./radiansToDegrees"), exports);
+__exportStar(require("./sin"), exports);
+__exportStar(require("./sinh"), exports);
+__exportStar(require("./tan"), exports);
+
+},{"./acos":571,"./acosh":572,"./asin":573,"./asinh":574,"./atan":575,"./atan2":576,"./atanh":577,"./cos":578,"./cosh":579,"./degreesToRadians":580,"./radiansToDegrees":582,"./sin":583,"./sinh":584,"./tan":585}],582:[function(require,module,exports){
+"use strict";
+// Trignometry Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#trigonometry-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$radiansToDegrees = void 0;
+const _internal_1 = require("./_internal");
+const DEGREES_FACTOR = 180 / Math.PI;
+/** Converts a value from radians to degrees. */
+exports.$radiansToDegrees = (0, _internal_1.createTrignometryOperator)((n) => n * DEGREES_FACTOR, {
+    Infinity: Infinity,
+    "-Infinity": -Infinity,
+});
+
+},{"./_internal":570}],583:[function(require,module,exports){
+"use strict";
+// Trignometry Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#trigonometry-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$sin = void 0;
+const _internal_1 = require("./_internal");
+/** Returns the sine of a value that is measured in radians. */
+exports.$sin = (0, _internal_1.createTrignometryOperator)(Math.sin);
+
+},{"./_internal":570}],584:[function(require,module,exports){
+"use strict";
+// Trignometry Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#trigonometry-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$sinh = void 0;
+const _internal_1 = require("./_internal");
+/** Returns the hyperbolic sine of a value that is measured in radians. */
+exports.$sinh = (0, _internal_1.createTrignometryOperator)(Math.sinh, {
+    "-Infinity": -Infinity,
+    Infinity: Infinity,
+});
+
+},{"./_internal":570}],585:[function(require,module,exports){
+"use strict";
+// Trignometry Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#trigonometry-expression-operators
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$tan = void 0;
+const _internal_1 = require("./_internal");
+/** Returns the tangent of a value that is measured in radians. */
+exports.$tan = (0, _internal_1.createTrignometryOperator)(Math.tan);
+
+},{"./_internal":570}],586:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.toInteger = exports.TypeConvertError = void 0;
+const core_1 = require("../../../core");
+const util_1 = require("../../../util");
+class TypeConvertError extends Error {
+    constructor(message) {
+        super(message);
+    }
+}
+exports.TypeConvertError = TypeConvertError;
+function toInteger(obj, expr, options, max, min, typename) {
+    const val = (0, core_1.computeValue)(obj, expr, null, options);
+    if ((0, util_1.isNil)(val))
+        return null;
+    if (val instanceof Date)
+        return val.getTime();
+    if (val === true)
+        return 1;
+    if (val === false)
+        return 0;
+    const n = Number(val);
+    if ((0, util_1.isNumber)(n) && n >= min && n <= max) {
+        // weirdly a decimal in string format cannot be converted to int.
+        // so we must check input if not string or if it is, not in decimal format
+        if (!(0, util_1.isString)(val) || n.toString().indexOf(".") === -1) {
+            return Math.trunc(n);
+        }
+    }
+    throw new TypeConvertError(`cannot convert '${val}' to ${typename}`);
+}
+exports.toInteger = toInteger;
+
+},{"../../../core":420,"../../../util":658}],587:[function(require,module,exports){
+"use strict";
+/**
+ * Type Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#type-expression-operators
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$convert = void 0;
+const core_1 = require("../../../core");
+const util_1 = require("../../../util");
+const _internal_1 = require("./_internal");
+const toBool_1 = require("./toBool");
+const toDate_1 = require("./toDate");
+const toDouble_1 = require("./toDouble");
+const toInt_1 = require("./toInt");
+const toLong_1 = require("./toLong");
+const toString_1 = require("./toString");
+/**
+ * Converts a value to a specified type.
+ *
+ * @param obj
+ * @param expr
+ */
+const $convert = (obj, expr, options) => {
+    const args = (0, core_1.computeValue)(obj, expr, null, options);
+    args.onNull = args.onNull === undefined ? null : args.onNull;
+    if ((0, util_1.isNil)(args.input))
+        return args.onNull;
+    try {
+        switch (args.to) {
+            case 2:
+            case "string":
+                return (0, toString_1.$toString)(obj, args.input, options);
+            case 8:
+            case "boolean":
+            case "bool":
+                return (0, toBool_1.$toBool)(obj, args.input, options);
+            case 9:
+            case "date":
+                return (0, toDate_1.$toDate)(obj, args.input, options);
+            case 1:
+            case 19:
+            case "double":
+            case "decimal":
+            case "number":
+                return (0, toDouble_1.$toDouble)(obj, args.input, options);
+            case 16:
+            case "int":
+                return (0, toInt_1.$toInt)(obj, args.input, options);
+            case 18:
+            case "long":
+                return (0, toLong_1.$toLong)(obj, args.input, options);
+        }
+    }
+    catch (e) {
+        /*nothing to do*/
+    }
+    if (args.onError !== undefined)
+        return args.onError;
+    throw new _internal_1.TypeConvertError(`could not convert to type ${args.to}.`);
+};
+exports.$convert = $convert;
+
+},{"../../../core":420,"../../../util":658,"./_internal":586,"./toBool":590,"./toDate":591,"./toDouble":593,"./toInt":594,"./toLong":595,"./toString":596}],588:[function(require,module,exports){
+"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+__exportStar(require("./convert"), exports);
+__exportStar(require("./isNumber"), exports);
+__exportStar(require("./toBool"), exports);
+__exportStar(require("./toDate"), exports);
+__exportStar(require("./toDecimal"), exports);
+__exportStar(require("./toDouble"), exports);
+__exportStar(require("./toInt"), exports);
+__exportStar(require("./toLong"), exports);
+__exportStar(require("./toString"), exports);
+__exportStar(require("./type"), exports);
+
+},{"./convert":587,"./isNumber":589,"./toBool":590,"./toDate":591,"./toDecimal":592,"./toDouble":593,"./toInt":594,"./toLong":595,"./toString":596,"./type":597}],589:[function(require,module,exports){
+"use strict";
+/**
+ * Type Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#type-expression-operators
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$isNumber = void 0;
+const core_1 = require("../../../core");
+const util_1 = require("../../../util");
+/**
+ * Checks if the specified expression resolves to a numeric value
+ *
+ * @param obj
+ * @param expr
+ */
+const $isNumber = (obj, expr, options) => {
+    const n = (0, core_1.computeValue)(obj, expr, null, options);
+    return (0, util_1.isNumber)(n);
+};
+exports.$isNumber = $isNumber;
+
+},{"../../../core":420,"../../../util":658}],590:[function(require,module,exports){
+"use strict";
+/**
+ * Type Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#type-expression-operators
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$toBool = void 0;
+const core_1 = require("../../../core");
+const util_1 = require("../../../util");
+/**
+ * Converts a value to a boolean.
+ *
+ * @param obj
+ * @param expr
+ */
+const $toBool = (obj, expr, options) => {
+    const val = (0, core_1.computeValue)(obj, expr, null, options);
+    if ((0, util_1.isNil)(val))
+        return null;
+    if ((0, util_1.isString)(val))
+        return true;
+    return Boolean(val);
+};
+exports.$toBool = $toBool;
+
+},{"../../../core":420,"../../../util":658}],591:[function(require,module,exports){
+"use strict";
+/**
+ * Type Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#type-expression-operators
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$toDate = void 0;
+const core_1 = require("../../../core");
+const util_1 = require("../../../util");
+const _internal_1 = require("./_internal");
+/**
+ * Converts a value to a date. If the value cannot be converted to a date, $toDate errors. If the value is null or missing, $toDate returns null.
+ *
+ * @param obj
+ * @param expr
+ */
+const $toDate = (obj, expr, options) => {
+    const val = (0, core_1.computeValue)(obj, expr, null, options);
+    if (val instanceof Date)
+        return val;
+    if ((0, util_1.isNil)(val))
+        return null;
+    const d = new Date(val);
+    const n = d.getTime();
+    if (!isNaN(n))
+        return d;
+    throw new _internal_1.TypeConvertError(`cannot convert '${val}' to date`);
+};
+exports.$toDate = $toDate;
+
+},{"../../../core":420,"../../../util":658,"./_internal":586}],592:[function(require,module,exports){
+"use strict";
+/**
+ * Type Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#type-expression-operators
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$toDecimal = void 0;
+const toDouble_1 = require("./toDouble");
+/**
+ * Converts a value to a decimal. If the value cannot be converted to a decimal, $toDecimal errors.
+ * If the value is null or missing, $toDecimal returns null.
+ * This is just an alias for `$toDouble` in this library.
+ */
+exports.$toDecimal = toDouble_1.$toDouble;
+
+},{"./toDouble":593}],593:[function(require,module,exports){
+"use strict";
+/**
+ * Type Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#type-expression-operators
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$toDouble = void 0;
+const core_1 = require("../../../core");
+const util_1 = require("../../../util");
+const _internal_1 = require("./_internal");
+/**
+ * Converts a value to a double. If the value cannot be converted to an double, $toDouble errors. If the value is null or missing, $toDouble returns null.
+ *
+ * @param obj
+ * @param expr
+ */
+const $toDouble = (obj, expr, options) => {
+    const val = (0, core_1.computeValue)(obj, expr, null, options);
+    if ((0, util_1.isNil)(val))
+        return null;
+    if (val instanceof Date)
+        return val.getTime();
+    if (val === true)
+        return 1;
+    if (val === false)
+        return 0;
+    const n = Number(val);
+    if ((0, util_1.isNumber)(n))
+        return n;
+    throw new _internal_1.TypeConvertError(`cannot convert '${val}' to double/decimal`);
+};
+exports.$toDouble = $toDouble;
+
+},{"../../../core":420,"../../../util":658,"./_internal":586}],594:[function(require,module,exports){
+"use strict";
+/**
+ * Type Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#type-expression-operators
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$toInt = void 0;
+const util_1 = require("../../../util");
+const _internal_1 = require("./_internal");
+/**
+ * Converts a value to an integer. If the value cannot be converted to an integer, $toInt errors. If the value is null or missing, $toInt returns null.
+ * @param obj
+ * @param expr
+ */
+const $toInt = (obj, expr, options) => {
+    return (0, _internal_1.toInteger)(obj, expr, options, util_1.MAX_INT, util_1.MIN_INT, "int");
+};
+exports.$toInt = $toInt;
+
+},{"../../../util":658,"./_internal":586}],595:[function(require,module,exports){
+"use strict";
+/**
+ * Type Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#type-expression-operators
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$toLong = void 0;
+const util_1 = require("../../../util");
+const _internal_1 = require("./_internal");
+/**
+ * Converts a value to a long. If the value cannot be converted to a long, $toLong errors. If the value is null or missing, $toLong returns null.
+ * @param obj
+ * @param expr
+ */
+const $toLong = (obj, expr, options) => {
+    return (0, _internal_1.toInteger)(obj, expr, options, util_1.MAX_LONG, util_1.MIN_LONG, "long");
+};
+exports.$toLong = $toLong;
+
+},{"../../../util":658,"./_internal":586}],596:[function(require,module,exports){
+"use strict";
+/**
+ * Type Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#type-expression-operators
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$toString = void 0;
+const core_1 = require("../../../core");
+const util_1 = require("../../../util");
+const dateToString_1 = require("../date/dateToString");
+const $toString = (obj, expr, options) => {
+    const val = (0, core_1.computeValue)(obj, expr, null, options);
+    if ((0, util_1.isNil)(val))
+        return null;
+    if (val instanceof Date) {
+        const dateExpr = {
+            date: expr,
+            format: "%Y-%m-%dT%H:%M:%S.%LZ"
+        };
+        return (0, dateToString_1.$dateToString)(obj, dateExpr, options);
+    }
+    else {
+        return val.toString();
+    }
+};
+exports.$toString = $toString;
+
+},{"../../../core":420,"../../../util":658,"../date/dateToString":515}],597:[function(require,module,exports){
+"use strict";
+/**
+ * Type Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#type-expression-operators
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$type = void 0;
+const core_1 = require("../../../core");
+const util_1 = require("../../../util");
+const $type = (obj, expr, options) => {
+    const val = (0, core_1.computeValue)(obj, expr, null, options);
+    const typename = (0, util_1.getType)(val);
+    const nativeType = typename.toLowerCase();
+    switch (nativeType) {
+        case "boolean":
+            return "bool";
+        case "number":
+            if (val.toString().indexOf(".") >= 0)
+                return "double";
+            return val >= util_1.MIN_INT && val <= util_1.MAX_INT ? "int" : "long";
+        case "regexp":
+            return "regex";
+        default:
+            return nativeType;
+    }
+};
+exports.$type = $type;
+
+},{"../../../core":420,"../../../util":658}],598:[function(require,module,exports){
+"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+__exportStar(require("./let"), exports);
+
+},{"./let":599}],599:[function(require,module,exports){
+"use strict";
+/**
+ * Variable Expression Operators: https://docs.mongodb.com/manual/reference/operator/aggregation/#variable-expression-operators
+ */
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$let = void 0;
+const core_1 = require("../../../core");
+/**
+ * Defines variables for use within the scope of a sub-expression and returns the result of the sub-expression.
+ *
+ * @param obj The target object for this expression
+ * @param expr The right-hand side of the operator
+ * @param options Options to use for this operattion
+ * @returns {*}
+ */
+const $let = (obj, expr, options) => {
+    // resolve vars
+    const variables = {};
+    for (const [key, val] of Object.entries(expr.vars)) {
+        variables[key] = (0, core_1.computeValue)(obj, val, null, options);
+    }
+    return (0, core_1.computeValue)(obj, expr.in, null, core_1.ComputeOptions.init(options, obj, { variables }));
+};
+exports.$let = $let;
+
+},{"../../../core":420}],600:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.isUnbounded = void 0;
+/** Checks whether the specified window is unbounded. */
+const isUnbounded = (window) => {
+    const boundary = (window === null || window === void 0 ? void 0 : window.documents) || (window === null || window === void 0 ? void 0 : window.range);
+    return (!boundary || (boundary[0] === "unbounded" && boundary[1] === "unbounded"));
+};
+exports.isUnbounded = isUnbounded;
+
+},{}],601:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$addFields = void 0;
+const core_1 = require("../../core");
+const util_1 = require("../../util");
+/**
+ * Adds new fields to documents.
+ * Outputs documents that contain all existing fields from the input documents and newly added fields.
+ *
+ * @param {Iterator} collection
+ * @param {Object} expr
+ * @param {Options} options
+ */
+const $addFields = (collection, expr, options) => {
+    const newFields = Object.keys(expr);
+    if (newFields.length === 0)
+        return collection;
+    return collection.map(((obj) => {
+        const newObj = Object.assign({}, obj);
+        for (const field of newFields) {
+            const newValue = (0, core_1.computeValue)(obj, expr[field], null, options);
+            if (newValue !== undefined) {
+                (0, util_1.setValue)(newObj, field, newValue);
+            }
+            else {
+                (0, util_1.removeValue)(newObj, field);
+            }
+        }
+        return newObj;
+    }));
+};
+exports.$addFields = $addFields;
+
+},{"../../core":420,"../../util":658}],602:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$bucket = void 0;
+const core_1 = require("../../core");
+const lazy_1 = require("../../lazy");
+const util_1 = require("../../util");
+/**
+ * Categorizes incoming documents into groups, called buckets, based on a specified expression and bucket boundaries.
+ * https://docs.mongodb.com/manual/reference/operator/aggregation/bucket/
+ *
+ * @param {*} collection
+ * @param {*} expr
+ * @param {Options} opt Pipeline options
+ */
+const $bucket = (collection, expr, options) => {
+    const boundaries = [...expr.boundaries];
+    const defaultKey = expr.default;
+    const lower = boundaries[0]; // inclusive
+    const upper = boundaries[boundaries.length - 1]; // exclusive
+    const outputExpr = expr.output || { count: { $sum: 1 } };
+    (0, util_1.assert)(expr.boundaries.length > 2, "$bucket 'boundaries' expression must have at least 3 elements");
+    const boundType = (0, util_1.getType)(lower);
+    for (let i = 0, len = boundaries.length - 1; i < len; i++) {
+        (0, util_1.assert)(boundType === (0, util_1.getType)(boundaries[i + 1]), "$bucket 'boundaries' must all be of the same type");
+        (0, util_1.assert)((0, util_1.compare)(boundaries[i], boundaries[i + 1]) < 0, "$bucket 'boundaries' must be sorted in ascending order");
+    }
+    !(0, util_1.isNil)(defaultKey) &&
+        (0, util_1.getType)(expr.default) === (0, util_1.getType)(lower) &&
+        (0, util_1.assert)((0, util_1.compare)(expr.default, upper) >= 0 || (0, util_1.compare)(expr.default, lower) < 0, "$bucket 'default' expression must be out of boundaries range");
+    const grouped = {};
+    for (const k of boundaries) {
+        grouped[k] = [];
+    }
+    // add default key if provided
+    if (!(0, util_1.isNil)(defaultKey))
+        grouped[defaultKey] = [];
+    let iterator;
+    return (0, lazy_1.Lazy)(() => {
+        if (!iterator) {
+            collection.each(((obj) => {
+                const key = (0, core_1.computeValue)(obj, expr.groupBy, null, options);
+                if ((0, util_1.isNil)(key) || (0, util_1.compare)(key, lower) < 0 || (0, util_1.compare)(key, upper) >= 0) {
+                    (0, util_1.assert)(!(0, util_1.isNil)(defaultKey), "$bucket require a default for out of range values");
+                    grouped[defaultKey].push(obj);
+                }
+                else {
+                    (0, util_1.assert)((0, util_1.compare)(key, lower) >= 0 && (0, util_1.compare)(key, upper) < 0, "$bucket 'groupBy' expression must resolve to a value in range of boundaries");
+                    const index = findInsertIndex(boundaries, key);
+                    const boundKey = boundaries[Math.max(0, index - 1)];
+                    grouped[boundKey].push(obj);
+                }
+            }));
+            // upper bound is exclusive so we remove it
+            boundaries.pop();
+            if (!(0, util_1.isNil)(defaultKey))
+                boundaries.push(defaultKey);
+            iterator = (0, lazy_1.Lazy)(boundaries).map(((key) => {
+                const acc = (0, core_1.computeValue)(grouped[key], outputExpr, null, options);
+                return (0, util_1.into)(acc, { _id: key });
+            }));
+        }
+        return iterator.next();
+    });
+};
+exports.$bucket = $bucket;
+/**
+ * Find the insert index for the given key in a sorted array.
+ *
+ * @param {*} sorted The sorted array to search
+ * @param {*} item The search key
+ */
+function findInsertIndex(sorted, item) {
+    // uses binary search
+    let lo = 0;
+    let hi = sorted.length - 1;
+    while (lo <= hi) {
+        const mid = Math.round(lo + (hi - lo) / 2);
+        if ((0, util_1.compare)(item, sorted[mid]) < 0) {
+            hi = mid - 1;
+        }
+        else if ((0, util_1.compare)(item, sorted[mid]) > 0) {
+            lo = mid + 1;
+        }
+        else {
+            return mid;
+        }
+    }
+    return lo;
+}
+
+},{"../../core":420,"../../lazy":422,"../../util":658}],603:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$bucketAuto = void 0;
+const core_1 = require("../../core");
+const util_1 = require("../../util");
+/**
+ * Categorizes incoming documents into a specific number of groups, called buckets,
+ * based on a specified expression. Bucket boundaries are automatically determined
+ * in an attempt to evenly distribute the documents into the specified number of buckets.
+ * https://docs.mongodb.com/manual/reference/operator/aggregation/bucketAuto/
+ *
+ * @param {*} collection
+ * @param {*} expr
+ * @param {*} options
+ */
+const $bucketAuto = (collection, expr, options) => {
+    const outputExpr = expr.output || { count: { $sum: 1 } };
+    const groupByExpr = expr.groupBy;
+    const bucketCount = expr.buckets;
+    (0, util_1.assert)(bucketCount > 0, `The $bucketAuto 'buckets' field must be greater than 0, but found: ${bucketCount}`);
+    const ID_KEY = "_id";
+    return collection.transform((coll) => {
+        const approxBucketSize = Math.max(1, Math.round(coll.length / bucketCount));
+        const computeValueOptimized = (0, util_1.memoize)(core_1.computeValue, options === null || options === void 0 ? void 0 : options.hashFunction);
+        const grouped = new Map();
+        const remaining = [];
+        const sorted = (0, util_1.sortBy)(coll, o => {
+            const key = computeValueOptimized(o, groupByExpr, null, options);
+            if ((0, util_1.isNil)(key)) {
+                remaining.push(o);
+            }
+            else {
+                if (!grouped.has(key))
+                    grouped.set(key, []);
+                grouped.get(key).push(o);
+            }
+            return key;
+        });
+        const result = [];
+        let index = 0; // counter for sorted collection
+        for (let i = 0, len = sorted.length; i < bucketCount && index < len; i++) {
+            const boundaries = {};
+            const bucketItems = [];
+            for (let j = 0; j < approxBucketSize && index < len; j++) {
+                let key = computeValueOptimized(sorted[index], groupByExpr, null, options);
+                if ((0, util_1.isNil)(key))
+                    key = null;
+                // populate current bucket with all values for current key
+                (0, util_1.into)(bucketItems, (0, util_1.isNil)(key) ? remaining : grouped.get(key));
+                // increase sort index by number of items added
+                index += (0, util_1.isNil)(key) ? remaining.length : grouped.get(key).length;
+                // set the min key boundary if not already present
+                if (!(0, util_1.has)(boundaries, "min"))
+                    boundaries.min = key;
+                if (result.length > 0) {
+                    const lastBucket = result[result.length - 1];
+                    lastBucket[ID_KEY].max = boundaries.min;
+                }
+            }
+            // if is last bucket add remaining items
+            if (i == bucketCount - 1) {
+                (0, util_1.into)(bucketItems, sorted.slice(index));
+            }
+            const values = (0, core_1.computeValue)(bucketItems, outputExpr, null, options);
+            result.push((0, util_1.into)(values, {
+                _id: boundaries
+            }));
+        }
+        if (result.length > 0) {
+            result[result.length - 1][ID_KEY].max =
+                computeValueOptimized(sorted[sorted.length - 1], groupByExpr, null, options);
+        }
+        return result;
+    });
+};
+exports.$bucketAuto = $bucketAuto;
+
+},{"../../core":420,"../../util":658}],604:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$count = void 0;
+const lazy_1 = require("../../lazy");
+const util_1 = require("../../util");
+/**
+ * Returns a document that contains a count of the number of documents input to the stage.
+ *
+ * @param {Array} collection
+ * @param {String} expr
+ * @param {Options} options
+ * @return {Object}
+ */
+const $count = (collection, expr, _) => {
+    (0, util_1.assert)((0, util_1.isString)(expr) &&
+        expr.trim() !== "" &&
+        expr.indexOf(".") === -1 &&
+        expr.trim()[0] !== "$", "Invalid expression value for $count");
+    return (0, lazy_1.Lazy)([
+        {
+            [expr]: collection.size()
+        }
+    ]);
+};
+exports.$count = $count;
+
+},{"../../lazy":422,"../../util":658}],605:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$facet = void 0;
+const aggregator_1 = require("../../aggregator");
+const core_1 = require("../../core");
+/**
+ * Processes multiple aggregation pipelines within a single stage on the same set of input documents.
+ * Enables the creation of multi-faceted aggregations capable of characterizing data across multiple dimensions, or facets, in a single stage.
+ */
+const $facet = (collection, expr, options) => {
+    return collection.transform(((array) => {
+        const o = {};
+        for (const [k, pipeline] of Object.entries(expr)) {
+            o[k] = new aggregator_1.Aggregator(pipeline, Object.assign(Object.assign({}, options), { processingMode: core_1.ProcessingMode.CLONE_INPUT })).run(array);
+        }
+        return [o];
+    }));
+};
+exports.$facet = $facet;
+
+},{"../../aggregator":419,"../../core":420}],606:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$fill = void 0;
+const core_1 = require("../../core");
+const util_1 = require("../../util");
+const ifNull_1 = require("../expression/conditional/ifNull");
+const linearFill_1 = require("../window/linearFill");
+const locf_1 = require("../window/locf");
+const addFields_1 = require("./addFields");
+const setWindowFields_1 = require("./setWindowFields");
+const FILL_METHODS = {
+    locf: "$locf",
+    linear: "$linearFill"
+};
+/**
+ * Populates null and missing field values within documents.
+ *
+ * @param {Iterator} collection
+ * @param {Object} expr
+ * @param {Options} options
+ */
+const $fill = (collection, expr, options) => {
+    var _a, _b;
+    (0, util_1.assert)(!expr.sortBy || (0, util_1.isObject)(expr.sortBy), "sortBy must be an object.");
+    (0, util_1.assert)(!!expr.sortBy || Object.values(expr.output).every(m => (0, util_1.has)(m, "value")), "sortBy required if any output field specifies a 'method'.");
+    (0, util_1.assert)(!(expr.partitionBy && expr.partitionByFields), "specify either partitionBy or partitionByFields.");
+    (0, util_1.assert)(!expr.partitionByFields ||
+        ((_a = expr === null || expr === void 0 ? void 0 : expr.partitionByFields) === null || _a === void 0 ? void 0 : _a.every(s => s[0] !== "$")), "fields in partitionByFields cannot begin with '$'.");
+    options = (0, core_1.initOptions)(options);
+    options.context.addExpressionOps({ $ifNull: ifNull_1.$ifNull });
+    options.context.addWindowOps({ $locf: locf_1.$locf, $linearFill: linearFill_1.$linearFill });
+    const partitionExpr = expr.partitionBy || ((_b = expr === null || expr === void 0 ? void 0 : expr.partitionByFields) === null || _b === void 0 ? void 0 : _b.map(s => `$${s}`));
+    // collect and remove all output fields using 'value' instead of 'method'.
+    // if there are any fields remaining, process collection using $setWindowFields.
+    // if the collected output fields is non-empty, use $addFields to add them to their respective partitions.
+    const valueExpr = {};
+    const methodExpr = {};
+    for (const [k, m] of Object.entries(expr.output)) {
+        if ((0, util_1.has)(m, "value")) {
+            // translate to expression for $addFields
+            valueExpr[k] = { $ifNull: [`$$CURRENT.${k}`, m["value"]] };
+        }
+        else {
+            // translate to output expression for $setWindowFields.
+            const fillOp = FILL_METHODS[m["method"]];
+            (0, util_1.assert)(!!fillOp, `invalid fill method '${m["method"]}'.`);
+            methodExpr[k] = { [fillOp]: "$" + k };
+        }
+    }
+    // perform filling with $setWindowFields
+    if (Object.keys(methodExpr).length > 0) {
+        collection = (0, setWindowFields_1.$setWindowFields)(collection, {
+            sortBy: expr.sortBy || {},
+            partitionBy: partitionExpr,
+            output: methodExpr
+        }, options);
+    }
+    // fill with values
+    if (Object.keys(valueExpr).length > 0) {
+        collection = (0, addFields_1.$addFields)(collection, valueExpr, options);
+    }
+    return collection;
+};
+exports.$fill = $fill;
+
+},{"../../core":420,"../../util":658,"../expression/conditional/ifNull":503,"../window/linearFill":655,"../window/locf":656,"./addFields":601,"./setWindowFields":620}],607:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$group = void 0;
+const core_1 = require("../../core");
+const util_1 = require("../../util");
+// lookup key for grouping
+const ID_KEY = "_id";
+/**
+ * Groups documents together for the purpose of calculating aggregate values based on a collection of documents.
+ *
+ * @param collection
+ * @param expr
+ * @param options
+ * @returns {Array}
+ */
+const $group = (collection, expr, options) => {
+    (0, util_1.assert)((0, util_1.has)(expr, ID_KEY), "a group specification must include an _id");
+    const idExpr = expr[ID_KEY];
+    const copts = core_1.ComputeOptions.init(options);
+    return collection.transform(((coll) => {
+        const partitions = (0, util_1.groupBy)(coll, obj => (0, core_1.computeValue)(obj, idExpr, null, options), options.hashFunction);
+        // remove the group key
+        expr = Object.assign({}, expr);
+        delete expr[ID_KEY];
+        let i = -1;
+        const partitionKeys = Array.from(partitions.keys());
+        const size = partitions.size;
+        return () => {
+            if (++i === size)
+                return { done: true };
+            const groupId = partitionKeys[i];
+            const obj = {};
+            // exclude undefined key value
+            if (groupId !== undefined) {
+                obj[ID_KEY] = groupId;
+            }
+            // compute remaining keys in expression
+            for (const [key, val] of Object.entries(expr)) {
+                obj[key] = (0, core_1.computeValue)(partitions.get(groupId), val, key, copts.update(null, { groupId }));
+            }
+            return { value: obj, done: false };
+        };
+    }));
+};
+exports.$group = $group;
+
+},{"../../core":420,"../../util":658}],608:[function(require,module,exports){
+"use strict";
+/**
+ * Pipeline Aggregation Stages. https://docs.mongodb.com/manual/reference/operator/aggregation-
+ */
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+__exportStar(require("./addFields"), exports);
+__exportStar(require("./bucket"), exports);
+__exportStar(require("./bucketAuto"), exports);
+__exportStar(require("./count"), exports);
+__exportStar(require("./facet"), exports);
+__exportStar(require("./fill"), exports);
+__exportStar(require("./group"), exports);
+__exportStar(require("./limit"), exports);
+__exportStar(require("./lookup"), exports);
+__exportStar(require("./match"), exports);
+__exportStar(require("./merge"), exports);
+__exportStar(require("./out"), exports);
+__exportStar(require("./project"), exports);
+__exportStar(require("./redact"), exports);
+__exportStar(require("./replaceRoot"), exports);
+__exportStar(require("./replaceWith"), exports);
+__exportStar(require("./sample"), exports);
+__exportStar(require("./set"), exports);
+__exportStar(require("./setWindowFields"), exports);
+__exportStar(require("./skip"), exports);
+__exportStar(require("./sort"), exports);
+__exportStar(require("./sortByCount"), exports);
+__exportStar(require("./unionWith"), exports);
+__exportStar(require("./unset"), exports);
+__exportStar(require("./unwind"), exports);
+
+},{"./addFields":601,"./bucket":602,"./bucketAuto":603,"./count":604,"./facet":605,"./fill":606,"./group":607,"./limit":609,"./lookup":610,"./match":611,"./merge":612,"./out":613,"./project":614,"./redact":615,"./replaceRoot":616,"./replaceWith":617,"./sample":618,"./set":619,"./setWindowFields":620,"./skip":621,"./sort":622,"./sortByCount":623,"./unionWith":624,"./unset":625,"./unwind":626}],609:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$limit = void 0;
+/**
+ * Restricts the number of documents in an aggregation pipeline.
+ *
+ * @param collection
+ * @param value
+ * @param options
+ * @returns {Object|*}
+ */
+const $limit = (collection, expr, options) => {
+    return collection.take(expr);
+};
+exports.$limit = $limit;
+
+},{}],610:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$lookup = void 0;
+const util_1 = require("../../util");
+/**
+ * Performs a left outer join to another collection in the same database to filter in documents from the “joined” collection for processing.
+ *
+ * @param collection
+ * @param expr
+ * @param opt
+ */
+const $lookup = (collection, expr, options) => {
+    const joinColl = (0, util_1.isString)(expr.from)
+        ? options === null || options === void 0 ? void 0 : options.collectionResolver(expr.from)
+        : expr.from;
+    (0, util_1.assert)(joinColl instanceof Array, `'from' field must resolve to an array`);
+    const hash = {};
+    for (const obj of joinColl) {
+        const k = (0, util_1.hashCode)((0, util_1.resolve)(obj, expr.foreignField), options === null || options === void 0 ? void 0 : options.hashFunction);
+        hash[k] = hash[k] || [];
+        hash[k].push(obj);
+    }
+    return collection.map((obj) => {
+        const k = (0, util_1.hashCode)((0, util_1.resolve)(obj, expr.localField), options === null || options === void 0 ? void 0 : options.hashFunction);
+        const newObj = (0, util_1.into)({}, obj);
+        newObj[expr.as] = hash[k] || [];
+        return newObj;
+    });
+};
+exports.$lookup = $lookup;
+
+},{"../../util":658}],611:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$match = void 0;
+const query_1 = require("../../query");
+/**
+ * Filters the document stream, and only allows matching documents to pass into the next pipeline stage.
+ * $match uses standard MongoDB queries.
+ *
+ * @param collection
+ * @param expr
+ * @param options
+ * @returns {Array|*}
+ */
+const $match = (collection, expr, options) => {
+    const q = new query_1.Query(expr, options);
+    return collection.filter((o) => q.test(o));
+};
+exports.$match = $match;
+
+},{"../../query":657}],612:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$merge = void 0;
+const aggregator_1 = require("../../aggregator");
+const core_1 = require("../../core");
+const util_1 = require("../../util");
+const expression_1 = require("../expression");
+/**
+ * Writes the resulting documents of the aggregation pipeline to a collection.
+ *
+ * The stage can incorporate (insert new documents, merge documents, replace documents,
+ * keep existing documents, fail the operation, process documents with a custom update pipeline)
+ * the results into an output collection. To use the $merge stage, it must be the last stage in the pipeline.
+ *
+ * Note: Object are deep cloned for outputing regardless of the ProcessingMode.
+ *
+ * @param collection
+ * @param expr
+ * @param options
+ * @returns {*}
+ */
+const $merge = (collection, expr, options) => {
+    const output = (0, util_1.isString)(expr.into)
+        ? options === null || options === void 0 ? void 0 : options.collectionResolver(expr.into)
+        : expr.into;
+    (0, util_1.assert)(output instanceof Array, `$merge: option 'into' must resolve to an array`);
+    const onField = expr.on || options.idKey;
+    const getHash = (o) => {
+        const val = (0, util_1.isString)(onField)
+            ? (0, util_1.resolve)(o, onField)
+            : onField.map(s => (0, util_1.resolve)(o, s));
+        return (0, util_1.hashCode)(val, options.hashFunction);
+    };
+    const hash = {};
+    // we assuming the lookup expressions are unique
+    for (let i = 0; i < output.length; i++) {
+        const obj = output[i];
+        const k = getHash(obj);
+        (0, util_1.assert)(!hash[k], "$merge: 'into' collection must have unique entries for the 'on' field.");
+        hash[k] = [obj, i];
+    }
+    const copts = core_1.ComputeOptions.init(options);
+    return collection.map((o) => {
+        const k = getHash(o);
+        if (hash[k]) {
+            const [target, i] = hash[k];
+            // compute variables
+            const variables = (0, core_1.computeValue)(target, expr.let || { new: "$$ROOT" }, null, 
+            // 'root' is the item from the iteration.
+            copts.update(o));
+            if ((0, util_1.isArray)(expr.whenMatched)) {
+                const aggregator = new aggregator_1.Aggregator(expr.whenMatched, Object.assign(Object.assign({}, options), { variables }));
+                output[i] = aggregator.run([target])[0];
+            }
+            else {
+                switch (expr.whenMatched) {
+                    case "replace":
+                        output[i] = o;
+                        break;
+                    case "fail":
+                        throw new Error("$merge: failed due to matching as specified by 'whenMatched' option.");
+                    case "keepExisting":
+                        break;
+                    case "merge":
+                    default:
+                        output[i] = (0, expression_1.$mergeObjects)(target, [target, o], 
+                        // 'root' is the item from the iteration.
+                        copts.update(o, { variables }));
+                        break;
+                }
+            }
+        }
+        else {
+            switch (expr.whenNotMatched) {
+                case "discard":
+                    break;
+                case "fail":
+                    throw new Error("$merge: failed due to matching as specified by 'whenMatched' option.");
+                case "insert":
+                default:
+                    output.push(o);
+                    break;
+            }
+        }
+        return o; // passthrough
+    });
+};
+exports.$merge = $merge;
+
+},{"../../aggregator":419,"../../core":420,"../../util":658,"../expression":530}],613:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$out = void 0;
+const util_1 = require("../../util");
+/**
+ * Takes the documents returned by the aggregation pipeline and writes them to a specified collection.
+ *
+ * Unlike the $out operator in MongoDB, this operator can appear in any position in the pipeline and is
+ * useful for collecting intermediate results of an aggregation operation.
+ *
+ * Note: Object are deep cloned for outputing regardless of the ProcessingMode.
+ *
+ * @param collection
+ * @param expr
+ * @param options
+ * @returns {*}
+ */
+const $out = (collection, expr, options) => {
+    const outputColl = (0, util_1.isString)(expr)
+        ? options === null || options === void 0 ? void 0 : options.collectionResolver(expr)
+        : expr;
+    (0, util_1.assert)(outputColl instanceof Array, `expression must resolve to an array`);
+    return collection.map((o) => {
+        outputColl.push((0, util_1.cloneDeep)(o));
+        return o; // passthrough
+    });
+};
+exports.$out = $out;
+
+},{"../../util":658}],614:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.$project = void 0;
-var core_1 = require("../../core");
-var util_1 = require("../../util");
+const core_1 = require("../../core");
+const util_1 = require("../../util");
 /**
  * Reshapes a document stream.
  * $project can rename, add, or remove fields as well as create computed values and sub-documents.
@@ -23316,17 +28338,17 @@ var util_1 = require("../../util");
  * @param opt
  * @returns {Array}
  */
-function $project(collection, expr, options) {
+const $project = (collection, expr, options) => {
     if ((0, util_1.isEmpty)(expr))
         return collection;
     // result collection
-    var expressionKeys = Object.keys(expr);
-    var idOnlyExcluded = false;
+    let expressionKeys = Object.keys(expr);
+    let idOnlyExcluded = false;
     // validate inclusion and exclusion
     validateExpression(expr, options);
-    var ID_KEY = options.idKey;
+    const ID_KEY = options.idKey;
     if ((0, util_1.inArray)(expressionKeys, ID_KEY)) {
-        var id = expr[ID_KEY];
+        const id = expr[ID_KEY];
         if (id === 0 || id === false) {
             expressionKeys = expressionKeys.filter(util_1.notInArray.bind(null, [ID_KEY]));
             idOnlyExcluded = expressionKeys.length == 0;
@@ -23336,11 +28358,9 @@ function $project(collection, expr, options) {
         // if not specified the add the ID field
         expressionKeys.push(ID_KEY);
     }
-    var copts = core_1.ComputeOptions.init(options);
-    return collection.map(function (obj) {
-        return processObject(obj, expr, copts.update(obj), expressionKeys, idOnlyExcluded);
-    });
-}
+    const copts = core_1.ComputeOptions.init(options);
+    return collection.map(((obj) => processObject(obj, expr, copts.update(obj), expressionKeys, idOnlyExcluded)));
+};
 exports.$project = $project;
 /**
  * Process the expression value for $project operators
@@ -23351,18 +28371,18 @@ exports.$project = $project;
  * @param {Boolean} idOnlyExcluded Boolean value indicating whether only the ID key is excluded
  */
 function processObject(obj, expr, options, expressionKeys, idOnlyExcluded) {
-    var newObj = {};
-    var foundSlice = false;
-    var foundExclusion = false;
-    var dropKeys = [];
+    let newObj = {};
+    let foundSlice = false;
+    let foundExclusion = false;
+    const dropKeys = [];
     if (idOnlyExcluded) {
         dropKeys.push(options.idKey);
     }
-    var _loop_1 = function (key) {
+    for (const key of expressionKeys) {
         // final computed value of the key
-        var value = undefined;
+        let value = undefined;
         // expression to associate with key
-        var subExpr = expr[key];
+        const subExpr = expr[key];
         if (key !== options.idKey && (0, util_1.inArray)([0, false], subExpr)) {
             foundExclusion = true;
         }
@@ -23377,53 +28397,51 @@ function processObject(obj, expr, options, expressionKeys, idOnlyExcluded) {
             // For direct projections, we use the resolved object value
         }
         else if (subExpr instanceof Array) {
-            value = subExpr.map(function (v) {
-                var r = (0, core_1.computeValue)(obj, v, null, options);
+            value = subExpr.map(v => {
+                const r = (0, core_1.computeValue)(obj, v, null, options);
                 if ((0, util_1.isNil)(r))
                     return null;
                 return r;
             });
         }
         else if ((0, util_1.isObject)(subExpr)) {
-            var subExprObj_1 = subExpr;
-            var subExprKeys_1 = Object.keys(subExpr);
-            var operator = subExprKeys_1.length == 1 ? subExprKeys_1[0] : null;
+            const subExprObj = subExpr;
+            const subExprKeys = Object.keys(subExpr);
+            const operator = subExprKeys.length == 1 ? subExprKeys[0] : "";
             // first try a projection operator
-            var call = (0, core_1.getOperator)(core_1.OperatorType.PROJECTION, operator);
+            const call = (0, core_1.getOperator)(core_1.OperatorType.PROJECTION, operator, options);
             if (call) {
                 // apply the projection operator on the operator expression for the key
                 if (operator === "$slice") {
                     // $slice is handled differently for aggregation and projection operations
-                    if ((0, util_1.ensureArray)(subExprObj_1[operator]).every(util_1.isNumber)) {
+                    if ((0, util_1.ensureArray)(subExprObj[operator]).every(util_1.isNumber)) {
                         // $slice for projection operation
-                        value = call(obj, subExprObj_1[operator], key);
+                        value = call(obj, subExprObj[operator], key, options);
                         foundSlice = true;
                     }
                     else {
                         // $slice for aggregation operation
-                        value = (0, core_1.computeValue)(obj, subExprObj_1, key, options);
+                        value = (0, core_1.computeValue)(obj, subExprObj, key, options);
                     }
                 }
                 else {
-                    value = call(obj, subExprObj_1[operator], key, options);
+                    value = call(obj, subExprObj[operator], key, options);
                 }
             }
             else if ((0, util_1.isOperator)(operator)) {
                 // compute if operator key
-                value = (0, core_1.computeValue)(obj, subExprObj_1[operator], operator, options);
+                value = (0, core_1.computeValue)(obj, subExprObj[operator], operator, options);
             }
             else if ((0, util_1.has)(obj, key)) {
                 // compute the value for the sub expression for the key
-                validateExpression(subExprObj_1, options);
-                var target = obj[key];
+                validateExpression(subExprObj, options);
+                let target = obj[key];
                 if (target instanceof Array) {
-                    value = target.map(function (o) {
-                        return processObject(o, subExprObj_1, options, subExprKeys_1, false);
-                    });
+                    value = target.map((o) => processObject(o, subExprObj, options, subExprKeys, false));
                 }
                 else {
                     target = (0, util_1.isObject)(target) ? target : obj;
-                    value = processObject(target, subExprObj_1, options, subExprKeys_1, false);
+                    value = processObject(target, subExprObj, options, subExprKeys, false);
                 }
             }
             else {
@@ -23433,16 +28451,16 @@ function processObject(obj, expr, options, expressionKeys, idOnlyExcluded) {
         }
         else {
             dropKeys.push(key);
-            return "continue";
+            continue;
         }
         // get value with object graph
-        var objPathGraph = (0, util_1.resolveGraph)(obj, key, {
-            preserveMissing: true,
+        const objPathGraph = (0, util_1.resolveGraph)(obj, key, {
+            preserveMissing: true
         });
         // add the value at the path
         if (objPathGraph !== undefined) {
             (0, util_1.merge)(newObj, objPathGraph, {
-                flatten: true,
+                flatten: true
             });
         }
         // if computed add/or remove accordingly
@@ -23454,10 +28472,6 @@ function processObject(obj, expr, options, expressionKeys, idOnlyExcluded) {
                 (0, util_1.setValue)(newObj, key, value);
             }
         }
-    };
-    for (var _i = 0, expressionKeys_1 = expressionKeys; _i < expressionKeys_1.length; _i++) {
-        var key = expressionKeys_1[_i];
-        _loop_1(key);
     }
     // filter out all missing values preserved to support correct merging
     (0, util_1.filterMissing)(newObj);
@@ -23469,8 +28483,7 @@ function processObject(obj, expr, options, expressionKeys, idOnlyExcluded) {
     if (foundSlice || foundExclusion || idOnlyExcluded) {
         newObj = (0, util_1.into)({}, obj, newObj);
         if (dropKeys.length > 0) {
-            for (var _a = 0, dropKeys_1 = dropKeys; _a < dropKeys_1.length; _a++) {
-                var k = dropKeys_1[_a];
+            for (const k of dropKeys) {
                 (0, util_1.removeValue)(newObj, k, { descendArray: true });
             }
         }
@@ -23483,10 +28496,9 @@ function processObject(obj, expr, options, expressionKeys, idOnlyExcluded) {
  * @param {Object} expr The expression given for the projection
  */
 function validateExpression(expr, options) {
-    var check = [false, false];
-    for (var _i = 0, _a = Object.entries(expr); _i < _a.length; _i++) {
-        var _b = _a[_i], k = _b[0], v = _b[1];
-        if (k === options.idKey)
+    const check = [false, false];
+    for (const [k, v] of Object.entries(expr)) {
+        if (k === (options === null || options === void 0 ? void 0 : options.idKey))
             return;
         if (v === 0 || v === false) {
             check[0] = true;
@@ -23498,11 +28510,329 @@ function validateExpression(expr, options) {
     }
 }
 
-},{"../../core":420,"../../util":445}],425:[function(require,module,exports){
+},{"../../core":420,"../../util":658}],615:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$redact = void 0;
+const core_1 = require("../../core");
+/**
+ * Restricts the contents of the documents based on information stored in the documents themselves.
+ *
+ * https://docs.mongodb.com/manual/reference/operator/aggregation/redact/
+ */
+const $redact = (collection, expr, options) => {
+    const copts = core_1.ComputeOptions.init(options);
+    return collection.map(((obj) => (0, core_1.redact)(obj, expr, copts.update(obj))));
+};
+exports.$redact = $redact;
+
+},{"../../core":420}],616:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$replaceRoot = void 0;
+const core_1 = require("../../core");
+const util_1 = require("../../util");
+/**
+ * Replaces a document with the specified embedded document or new one.
+ * The replacement document can be any valid expression that resolves to a document.
+ *
+ * https://docs.mongodb.com/manual/reference/operator/aggregation/replaceRoot/
+ *
+ * @param  {Iterator} collection
+ * @param  {Object} expr
+ * @param  {Object} options
+ * @return {*}
+ */
+const $replaceRoot = (collection, expr, options) => {
+    return collection.map(obj => {
+        obj = (0, core_1.computeValue)(obj, expr.newRoot, null, options);
+        (0, util_1.assert)((0, util_1.isObject)(obj), "$replaceRoot expression must return an object");
+        return obj;
+    });
+};
+exports.$replaceRoot = $replaceRoot;
+
+},{"../../core":420,"../../util":658}],617:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$replaceWith = void 0;
+const replaceRoot_1 = require("./replaceRoot");
+/**
+ * Alias for $replaceRoot
+ */
+exports.$replaceWith = replaceRoot_1.$replaceRoot;
+
+},{"./replaceRoot":616}],618:[function(require,module,exports){
+"use strict";
+// $sample operator -  https://docs.mongodb.com/manual/reference/operator/aggregation/sample/
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$sample = void 0;
+/**
+ * Randomly selects the specified number of documents from its input. The given iterator must have finite values
+ *
+ * @param  {Iterator} collection
+ * @param  {Object} expr
+ * @param  {Options} _options
+ * @return {*}
+ */
+const $sample = (collection, expr, _options) => {
+    return collection.transform(((xs) => {
+        const len = xs.length;
+        let i = -1;
+        return () => {
+            if (++i === expr.size)
+                return { done: true };
+            const n = Math.floor(Math.random() * len);
+            return { value: xs[n], done: false };
+        };
+    }));
+};
+exports.$sample = $sample;
+
+},{}],619:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$set = void 0;
+const addFields_1 = require("./addFields");
+/**
+ * Alias for $addFields.
+ */
+exports.$set = addFields_1.$addFields;
+
+},{"./addFields":601}],620:[function(require,module,exports){
+"use strict";
+// $setWindowFields -  https://docs.mongodb.com/manual/reference/operator/aggregation/setWindowFields/
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$setWindowFields = void 0;
+const core_1 = require("../../core");
+const lazy_1 = require("../../lazy");
+const util_1 = require("../../util");
+const expression_1 = require("../expression");
+const dateAdd_1 = require("../expression/date/dateAdd");
+const _internal_1 = require("./_internal");
+const addFields_1 = require("./addFields");
+const group_1 = require("./group");
+const sort_1 = require("./sort");
+// Operators that require 'sortBy' option.
+const SORT_REQUIRED_OPS = new Set([
+    "$denseRank",
+    "$documentNumber",
+    "$first",
+    "$last",
+    "$linearFill",
+    "$rank",
+    "$shift"
+]);
+// Operators that require unbounded 'window' option.
+const WINDOW_UNBOUNDED_OPS = new Set([
+    "$denseRank",
+    "$expMovingAvg",
+    "$linearFill",
+    "$locf",
+    "$rank",
+    "$shift"
+]);
+/**
+ * Randomly selects the specified number of documents from its input. The given iterator must have finite values
+ *
+ * @param  {Iterator} collection
+ * @param  {Object} expr
+ * @param  {Options} options
+ * @return {*}
+ */
+const $setWindowFields = (collection, expr, options) => {
+    options = (0, core_1.initOptions)(options);
+    options.context.addExpressionOps({ $function: expression_1.$function });
+    // validate inputs early since this can be an expensive operation.
+    for (const outputExpr of Object.values(expr.output)) {
+        const keys = Object.keys(outputExpr);
+        const op = keys.find(util_1.isOperator);
+        (0, util_1.assert)(!!(0, core_1.getOperator)(core_1.OperatorType.WINDOW, op, options) ||
+            !!(0, core_1.getOperator)(core_1.OperatorType.ACCUMULATOR, op, options), `'${op}' is not a valid window operator`);
+        (0, util_1.assert)(keys.length > 0 &&
+            keys.length <= 2 &&
+            (keys.length == 1 || keys.includes("window")), "'output' option should have a single window operator.");
+        if (outputExpr === null || outputExpr === void 0 ? void 0 : outputExpr.window) {
+            const { documents, range } = outputExpr.window;
+            (0, util_1.assert)((!!documents && !range) ||
+                (!documents && !!range) ||
+                (!documents && !range), "'window' option supports only one of 'documents' or 'range'.");
+        }
+    }
+    // we sort first if required
+    if (expr.sortBy) {
+        collection = (0, sort_1.$sort)(collection, expr.sortBy, options);
+    }
+    // then partition collection
+    collection = (0, group_1.$group)(collection, {
+        _id: expr.partitionBy,
+        items: { $push: "$$CURRENT" }
+    }, options);
+    // transform values
+    return collection.transform(((partitions) => {
+        // let iteratorIndex = 0;
+        const iterators = [];
+        const outputConfig = [];
+        for (const [field, outputExpr] of Object.entries(expr.output)) {
+            const op = Object.keys(outputExpr).find(util_1.isOperator);
+            const config = {
+                operatorName: op,
+                func: {
+                    left: (0, core_1.getOperator)(core_1.OperatorType.ACCUMULATOR, op, options),
+                    right: (0, core_1.getOperator)(core_1.OperatorType.WINDOW, op, options)
+                },
+                args: outputExpr[op],
+                field: field,
+                window: outputExpr.window
+            };
+            // sortBy option required for specific operators or bounded window.
+            (0, util_1.assert)(!!expr.sortBy || !(SORT_REQUIRED_OPS.has(op) || !config.window), `${SORT_REQUIRED_OPS.has(op) ? `'${op}'` : "bounded window operation"} requires a sortBy.`);
+            // window must be unbounded for specific operators.
+            (0, util_1.assert)(!config.window || !WINDOW_UNBOUNDED_OPS.has(op), `${op} does not accept a 'window' field.`);
+            outputConfig.push(config);
+        }
+        // each parition maintains its own closure to process the documents in the window.
+        partitions.forEach(((group) => {
+            // get the items to process
+            const items = group.items;
+            // create an iterator per group.
+            // we need the index of each document so we track it using a special field.
+            let iterator = (0, lazy_1.Lazy)(items);
+            // results map
+            const windowResultMap = {};
+            for (const config of outputConfig) {
+                const { func, args, field, window } = config;
+                const makeResultFunc = (getItemsFn) => {
+                    // closure for object index within the partition
+                    let index = -1;
+                    return (obj) => {
+                        ++index;
+                        // process accumulator function
+                        if (func.left) {
+                            return func.left(getItemsFn(obj, index), args, options);
+                        }
+                        else if (func.right) {
+                            // OR process 'window' function
+                            return func.right(obj, getItemsFn(obj, index), {
+                                parentExpr: expr,
+                                inputExpr: args,
+                                documentNumber: index + 1,
+                                field
+                            }, 
+                            // must use raw options only since it operates over a collection.
+                            options);
+                        }
+                    };
+                };
+                if (window) {
+                    const { documents, range, unit } = window;
+                    // TODO: fix the meaning of numeric values in range.
+                    //  See definition: https://www.mongodb.com/docs/manual/reference/operator/aggregation/setWindowFields/#std-label-setWindowFields-range
+                    //  - A number to add to the value of the sortBy field for the current document.
+                    //  - A document is in the window if the sortBy field value is inclusively within the lower and upper boundaries.
+                    // TODO: Need to reconcile the two above statments from the doc to implement 'range' option correctly.
+                    const boundary = documents || range;
+                    if (!(0, _internal_1.isUnbounded)(window)) {
+                        const [begin, end] = boundary;
+                        const toBeginIndex = (currentIndex) => {
+                            if (begin == "current")
+                                return currentIndex;
+                            if (begin == "unbounded")
+                                return 0;
+                            return Math.max(begin + currentIndex, 0);
+                        };
+                        const toEndIndex = (currentIndex) => {
+                            if (end == "current")
+                                return currentIndex + 1;
+                            if (end == "unbounded")
+                                return items.length;
+                            return end + currentIndex + 1;
+                        };
+                        const getItems = (current, index) => {
+                            // handle string boundaries or documents
+                            if (!!documents || boundary.every(util_1.isString)) {
+                                return items.slice(toBeginIndex(index), toEndIndex(index));
+                            }
+                            // handle range with numeric boundary values
+                            const sortKey = Object.keys(expr.sortBy)[0];
+                            let lower;
+                            let upper;
+                            if (unit) {
+                                // we are dealing with datetimes
+                                const getTime = (amount) => {
+                                    return (0, dateAdd_1.$dateAdd)(current, {
+                                        startDate: new Date(current[sortKey]),
+                                        unit,
+                                        amount
+                                    }, options).getTime();
+                                };
+                                lower = (0, util_1.isNumber)(begin) ? getTime(begin) : -Infinity;
+                                upper = (0, util_1.isNumber)(end) ? getTime(end) : Infinity;
+                            }
+                            else {
+                                const currentValue = current[sortKey];
+                                lower = (0, util_1.isNumber)(begin) ? currentValue + begin : -Infinity;
+                                upper = (0, util_1.isNumber)(end) ? currentValue + end : Infinity;
+                            }
+                            let array = items;
+                            if (begin == "current")
+                                array = items.slice(index);
+                            if (end == "current")
+                                array = items.slice(0, index + 1);
+                            // look within the boundary and filter down
+                            return array.filter((o) => {
+                                const value = o[sortKey];
+                                const n = +value;
+                                return n >= lower && n <= upper;
+                            });
+                        };
+                        windowResultMap[field] = makeResultFunc(getItems);
+                    }
+                }
+                // default action is to utilize the entire set of items
+                if (!windowResultMap[field]) {
+                    windowResultMap[field] = makeResultFunc(_ => items);
+                }
+                // invoke add fields to get the desired behaviour using a custom function.
+                iterator = (0, addFields_1.$addFields)(iterator, {
+                    [field]: {
+                        $function: {
+                            body: (obj) => windowResultMap[field](obj),
+                            args: ["$$CURRENT"]
+                        }
+                    }
+                }, options);
+            }
+            // add to iterator list
+            iterators.push(iterator);
+        }));
+        return (0, lazy_1.compose)(...iterators);
+    }));
+};
+exports.$setWindowFields = $setWindowFields;
+
+},{"../../core":420,"../../lazy":422,"../../util":658,"../expression":530,"../expression/date/dateAdd":509,"./_internal":600,"./addFields":601,"./group":607,"./sort":622}],621:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$skip = void 0;
+/**
+ * Skips over a specified number of documents from the pipeline and returns the rest.
+ *
+ * @param collection An iterator
+ * @param expr
+ * @param  {Options} options
+ * @returns {*}
+ */
+const $skip = (collection, expr, options) => {
+    return collection.drop(expr);
+};
+exports.$skip = $skip;
+
+},{}],622:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.$sort = void 0;
-var util_1 = require("../../util");
+const util_1 = require("../../util");
 /**
  * Takes all input documents and returns them in a stream of sorted documents.
  *
@@ -23511,44 +28841,34 @@ var util_1 = require("../../util");
  * @param  {Object} options
  * @returns {*}
  */
-function $sort(collection, sortKeys, options) {
+const $sort = (collection, sortKeys, options) => {
     if ((0, util_1.isEmpty)(sortKeys) || !(0, util_1.isObject)(sortKeys))
         return collection;
-    var cmp = util_1.DEFAULT_COMPARATOR;
+    let cmp = util_1.compare;
     // check for collation spec on the options
-    var collationSpec = options.collation;
+    const collationSpec = options.collation;
     // use collation comparator if provided
     if ((0, util_1.isObject)(collationSpec) && (0, util_1.isString)(collationSpec.locale)) {
         cmp = collationComparator(collationSpec);
     }
-    return collection.transform(function (coll) {
-        var modifiers = Object.keys(sortKeys);
-        var _loop_1 = function (key) {
-            var grouped = (0, util_1.groupBy)(coll, function (obj) { return (0, util_1.resolve)(obj, key); }, options === null || options === void 0 ? void 0 : options.hashFunction);
-            var sortedIndex = {};
-            var indexKeys = (0, util_1.sortBy)(grouped.keys, function (k, i) {
-                sortedIndex[k] = i;
-                return k;
-            }, cmp);
+    return collection.transform((coll) => {
+        const modifiers = Object.keys(sortKeys);
+        for (const key of modifiers.reverse()) {
+            const groups = (0, util_1.groupBy)(coll, (obj) => (0, util_1.resolve)(obj, key), options.hashFunction);
+            const sortedKeys = Array.from(groups.keys()).sort(cmp);
             if (sortKeys[key] === -1)
-                indexKeys.reverse();
+                sortedKeys.reverse();
+            // reuse collection so the data is available for the next iteration of the sort modifiers.
             coll = [];
-            for (var _b = 0, indexKeys_1 = indexKeys; _b < indexKeys_1.length; _b++) {
-                var k = indexKeys_1[_b];
-                (0, util_1.into)(coll, grouped.groups[sortedIndex[k]]);
-            }
-        };
-        for (var _i = 0, _a = modifiers.reverse(); _i < _a.length; _i++) {
-            var key = _a[_i];
-            _loop_1(key);
+            sortedKeys.reduce((acc, key) => (0, util_1.into)(acc, groups.get(key)), coll);
         }
         return coll;
     });
-}
+};
 exports.$sort = $sort;
 // MongoDB collation strength to JS localeCompare sensitivity mapping.
 // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/localeCompare
-var COLLATION_STRENGTH = {
+const COLLATION_STRENGTH = {
     // Only strings that differ in base letters compare as unequal. Examples: a ≠ b, a = á, a = A.
     1: "base",
     //  Only strings that differ in base letters or accents and other diacritic marks compare as unequal.
@@ -23556,7 +28876,7 @@ var COLLATION_STRENGTH = {
     2: "accent",
     // Strings that differ in base letters, accents and other diacritic marks, or case compare as unequal.
     // Other differences may also be taken into consideration. Examples: a ≠ b, a ≠ á, a ≠ A
-    3: "variant",
+    3: "variant"
     // case - Only strings that differ in base letters or case compare as unequal. Examples: a ≠ b, a = á, a ≠ A.
 };
 /**
@@ -23575,11 +28895,11 @@ var COLLATION_STRENGTH = {
  * }
  */
 function collationComparator(spec) {
-    var localeOpt = {
+    const localeOpt = {
         sensitivity: COLLATION_STRENGTH[spec.strength || 3],
         caseFirst: spec.caseFirst === "off" ? "false" : spec.caseFirst || "false",
         numeric: spec.numericOrdering || false,
-        ignorePunctuation: spec.alternate === "shifted",
+        ignorePunctuation: spec.alternate === "shifted"
     };
     // when caseLevel is true for strength  1:base and 2:accent, bump sensitivity to the nearest that supports case comparison
     if ((spec.caseLevel || false) === true) {
@@ -23588,13 +28908,13 @@ function collationComparator(spec) {
         if (localeOpt.sensitivity === "accent")
             localeOpt.sensitivity = "variant";
     }
-    var collator = new Intl.Collator(spec.locale, localeOpt);
-    return function (a, b) {
+    const collator = new Intl.Collator(spec.locale, localeOpt);
+    return (a, b) => {
         // non strings
         if (!(0, util_1.isString)(a) || !(0, util_1.isString)(b))
-            return (0, util_1.DEFAULT_COMPARATOR)(a, b);
+            return (0, util_1.compare)(a, b);
         // only for strings
-        var i = collator.compare(a, b);
+        const i = collator.compare(a, b);
         if (i < 0)
             return -1;
         if (i > 0)
@@ -23603,326 +28923,790 @@ function collationComparator(spec) {
     };
 }
 
-},{"../../util":445}],426:[function(require,module,exports){
+},{"../../util":658}],623:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$sortByCount = void 0;
+const group_1 = require("./group");
+const sort_1 = require("./sort");
+/**
+ * Groups incoming documents based on the value of a specified expression,
+ * then computes the count of documents in each distinct group.
+ *
+ * https://docs.mongodb.com/manual/reference/operator/aggregation/sortByCount/
+ *
+ * @param  {Array} collection
+ * @param  {Object} expr
+ * @param  {Object} options
+ * @return {*}
+ */
+const $sortByCount = (collection, expr, options) => {
+    const newExpr = { count: { $sum: 1 } };
+    newExpr["_id"] = expr;
+    return (0, sort_1.$sort)((0, group_1.$group)(collection, newExpr, options), { count: -1 }, options);
+};
+exports.$sortByCount = $sortByCount;
+
+},{"./group":607,"./sort":622}],624:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$unionWith = void 0;
+const aggregator_1 = require("../../aggregator");
+const lazy_1 = require("../../lazy");
+const util_1 = require("../../util");
+/**
+ * Performs a union of two collections.
+ *
+ * @param collection
+ * @param expr
+ * @param opt
+ */
+const $unionWith = (collection, expr, options) => {
+    const array = (0, util_1.isString)(expr.coll)
+        ? options.collectionResolver(expr.coll)
+        : expr.coll;
+    const iterators = [collection];
+    iterators.push(expr.pipeline
+        ? new aggregator_1.Aggregator(expr.pipeline, options).stream(array)
+        : (0, lazy_1.Lazy)(array));
+    return (0, lazy_1.compose)(...iterators);
+};
+exports.$unionWith = $unionWith;
+
+},{"../../aggregator":419,"../../lazy":422,"../../util":658}],625:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$unset = void 0;
+const util_1 = require("../../util");
+const project_1 = require("./project");
+/**
+ * Removes/excludes fields from documents.
+ *
+ * @param collection
+ * @param expr
+ * @param options
+ * @returns {Iterator}
+ */
+const $unset = (collection, expr, options) => {
+    expr = (0, util_1.ensureArray)(expr);
+    const doc = {};
+    for (const k of expr)
+        doc[k] = 0;
+    return (0, project_1.$project)(collection, doc, options);
+};
+exports.$unset = $unset;
+
+},{"../../util":658,"./project":614}],626:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$unwind = void 0;
+const lazy_1 = require("../../lazy");
+const util_1 = require("../../util");
+/**
+ * Takes an array of documents and returns them as a stream of documents.
+ *
+ * @param collection
+ * @param expr
+ * @param options
+ * @returns {Array}
+ */
+const $unwind = (collection, expr, _options) => {
+    if ((0, util_1.isString)(expr))
+        expr = { path: expr };
+    const path = expr.path;
+    const field = path.substring(1);
+    const includeArrayIndex = (expr === null || expr === void 0 ? void 0 : expr.includeArrayIndex) || false;
+    const preserveNullAndEmptyArrays = expr.preserveNullAndEmptyArrays || false;
+    const format = (o, i) => {
+        if (includeArrayIndex !== false)
+            o[includeArrayIndex] = i;
+        return o;
+    };
+    let value;
+    return (0, lazy_1.Lazy)(() => {
+        for (;;) {
+            // take from lazy sequence if available
+            if (value instanceof lazy_1.Iterator) {
+                const tmp = value.next();
+                if (!tmp.done)
+                    return tmp;
+            }
+            // fetch next object
+            const wrapper = collection.next();
+            if (wrapper.done)
+                return wrapper;
+            // unwrap value
+            const obj = wrapper.value;
+            // get the value of the field to unwind
+            value = (0, util_1.resolve)(obj, field);
+            // throw error if value is not an array???
+            if (value instanceof Array) {
+                if (value.length === 0 && preserveNullAndEmptyArrays === true) {
+                    value = null; // reset unwind value
+                    (0, util_1.removeValue)(obj, field);
+                    return { value: format(obj, null), done: false };
+                }
+                else {
+                    // construct a lazy sequence for elements per value
+                    value = (0, lazy_1.Lazy)(value).map(((item, i) => {
+                        const newObj = (0, util_1.resolveGraph)(obj, field, {
+                            preserveKeys: true
+                        });
+                        (0, util_1.setValue)(newObj, field, item);
+                        return format(newObj, i);
+                    }));
+                }
+            }
+            else if (!(0, util_1.isEmpty)(value) || preserveNullAndEmptyArrays === true) {
+                return { value: format(obj, null), done: false };
+            }
+        }
+    });
+};
+exports.$unwind = $unwind;
+
+},{"../../lazy":422,"../../util":658}],627:[function(require,module,exports){
+"use strict";
+// Query Array Operators: https://docs.mongodb.com/manual/reference/operator/query-array/
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$all = void 0;
+const _predicates_1 = require("../../_predicates");
+/**
+ * Matches arrays that contain all elements specified in the query.
+ */
+exports.$all = (0, _predicates_1.createQueryOperator)(_predicates_1.$all);
+
+},{"../../_predicates":423}],628:[function(require,module,exports){
 "use strict";
 // Query Array Operators: https://docs.mongodb.com/manual/reference/operator/query-array/
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.$elemMatch = void 0;
-var _predicates_1 = require("../../_predicates");
+const _predicates_1 = require("../../_predicates");
 /**
  * Selects documents if element in the array field matches all the specified $elemMatch conditions.
  */
 exports.$elemMatch = (0, _predicates_1.createQueryOperator)(_predicates_1.$elemMatch);
 
-},{"../../_predicates":423}],427:[function(require,module,exports){
+},{"../../_predicates":423}],629:[function(require,module,exports){
+"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+__exportStar(require("./all"), exports);
+__exportStar(require("./elemMatch"), exports);
+__exportStar(require("./size"), exports);
+
+},{"./all":627,"./elemMatch":628,"./size":630}],630:[function(require,module,exports){
 "use strict";
 // Query Array Operators: https://docs.mongodb.com/manual/reference/operator/query-array/
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.$size = void 0;
-var _predicates_1 = require("../../_predicates");
+const _predicates_1 = require("../../_predicates");
 /**
  * Selects documents if the array field is a specified size.
  */
 exports.$size = (0, _predicates_1.createQueryOperator)(_predicates_1.$size);
 
-},{"../../_predicates":423}],428:[function(require,module,exports){
+},{"../../_predicates":423}],631:[function(require,module,exports){
 "use strict";
 // Query Comparison Operators: https://docs.mongodb.com/manual/reference/operator/query-comparison/
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.$eq = void 0;
-var _predicates_1 = require("../../_predicates");
+const _predicates_1 = require("../../_predicates");
 /**
  * Matches values that are equal to a specified value.
  */
 exports.$eq = (0, _predicates_1.createQueryOperator)(_predicates_1.$eq);
 
-},{"../../_predicates":423}],429:[function(require,module,exports){
+},{"../../_predicates":423}],632:[function(require,module,exports){
 "use strict";
 // Query Comparison Operators: https://docs.mongodb.com/manual/reference/operator/query-comparison/
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.$gt = void 0;
-var _predicates_1 = require("../../_predicates");
+const _predicates_1 = require("../../_predicates");
 /**
  * Matches values that are greater than a specified value.
  */
 exports.$gt = (0, _predicates_1.createQueryOperator)(_predicates_1.$gt);
 
-},{"../../_predicates":423}],430:[function(require,module,exports){
+},{"../../_predicates":423}],633:[function(require,module,exports){
 "use strict";
 // Query Comparison Operators: https://docs.mongodb.com/manual/reference/operator/query-comparison/
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.$gte = void 0;
-var _predicates_1 = require("../../_predicates");
+const _predicates_1 = require("../../_predicates");
 /**
  * 	Matches values that are greater than or equal to a specified value.
  */
 exports.$gte = (0, _predicates_1.createQueryOperator)(_predicates_1.$gte);
 
-},{"../../_predicates":423}],431:[function(require,module,exports){
+},{"../../_predicates":423}],634:[function(require,module,exports){
 "use strict";
 // Query Comparison Operators: https://docs.mongodb.com/manual/reference/operator/query-comparison/
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.$in = void 0;
-var _predicates_1 = require("../../_predicates");
+const _predicates_1 = require("../../_predicates");
 /**
  * Matches any of the values that exist in an array specified in the query.
  */
 exports.$in = (0, _predicates_1.createQueryOperator)(_predicates_1.$in);
 
-},{"../../_predicates":423}],432:[function(require,module,exports){
+},{"../../_predicates":423}],635:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$nin = exports.$ne = exports.$lte = exports.$lt = exports.$in = exports.$gte = exports.$gt = exports.$eq = void 0;
+var eq_1 = require("./eq");
+Object.defineProperty(exports, "$eq", { enumerable: true, get: function () { return eq_1.$eq; } });
+var gt_1 = require("./gt");
+Object.defineProperty(exports, "$gt", { enumerable: true, get: function () { return gt_1.$gt; } });
+var gte_1 = require("./gte");
+Object.defineProperty(exports, "$gte", { enumerable: true, get: function () { return gte_1.$gte; } });
+var in_1 = require("./in");
+Object.defineProperty(exports, "$in", { enumerable: true, get: function () { return in_1.$in; } });
+var lt_1 = require("./lt");
+Object.defineProperty(exports, "$lt", { enumerable: true, get: function () { return lt_1.$lt; } });
+var lte_1 = require("./lte");
+Object.defineProperty(exports, "$lte", { enumerable: true, get: function () { return lte_1.$lte; } });
+var ne_1 = require("./ne");
+Object.defineProperty(exports, "$ne", { enumerable: true, get: function () { return ne_1.$ne; } });
+var nin_1 = require("./nin");
+Object.defineProperty(exports, "$nin", { enumerable: true, get: function () { return nin_1.$nin; } });
+
+},{"./eq":631,"./gt":632,"./gte":633,"./in":634,"./lt":636,"./lte":637,"./ne":638,"./nin":639}],636:[function(require,module,exports){
 "use strict";
 // Query Comparison Operators: https://docs.mongodb.com/manual/reference/operator/query-comparison/
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.$lt = void 0;
-var _predicates_1 = require("../../_predicates");
+const _predicates_1 = require("../../_predicates");
 /**
  * Matches values that are less than the value specified in the query.
  */
 exports.$lt = (0, _predicates_1.createQueryOperator)(_predicates_1.$lt);
 
-},{"../../_predicates":423}],433:[function(require,module,exports){
+},{"../../_predicates":423}],637:[function(require,module,exports){
 "use strict";
 // Query Comparison Operators: https://docs.mongodb.com/manual/reference/operator/query-comparison/
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.$lte = void 0;
-var _predicates_1 = require("../../_predicates");
+const _predicates_1 = require("../../_predicates");
 /**
  * Matches values that are less than or equal to the value specified in the query.
  */
 exports.$lte = (0, _predicates_1.createQueryOperator)(_predicates_1.$lte);
 
-},{"../../_predicates":423}],434:[function(require,module,exports){
+},{"../../_predicates":423}],638:[function(require,module,exports){
 "use strict";
 // Query Comparison Operators: https://docs.mongodb.com/manual/reference/operator/query-comparison/
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.$ne = void 0;
-var _predicates_1 = require("../../_predicates");
+const _predicates_1 = require("../../_predicates");
 /**
  * Matches all values that are not equal to the value specified in the query.
  */
 exports.$ne = (0, _predicates_1.createQueryOperator)(_predicates_1.$ne);
 
-},{"../../_predicates":423}],435:[function(require,module,exports){
+},{"../../_predicates":423}],639:[function(require,module,exports){
 "use strict";
 // Query Comparison Operators: https://docs.mongodb.com/manual/reference/operator/query-comparison/
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.$nin = void 0;
-var _predicates_1 = require("../../_predicates");
+const _predicates_1 = require("../../_predicates");
 /**
  * Matches values that do not exist in an array specified to the query.
  */
 exports.$nin = (0, _predicates_1.createQueryOperator)(_predicates_1.$nin);
 
-},{"../../_predicates":423}],436:[function(require,module,exports){
+},{"../../_predicates":423}],640:[function(require,module,exports){
 "use strict";
 // Query Element Operators: https://docs.mongodb.com/manual/reference/operator/query-element/
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.$exists = void 0;
-var _predicates_1 = require("../../_predicates");
+const _predicates_1 = require("../../_predicates");
 /**
  * Matches documents that have the specified field.
  */
 exports.$exists = (0, _predicates_1.createQueryOperator)(_predicates_1.$exists);
 
-},{"../../_predicates":423}],437:[function(require,module,exports){
+},{"../../_predicates":423}],641:[function(require,module,exports){
+"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+__exportStar(require("./exists"), exports);
+__exportStar(require("./type"), exports);
+
+},{"./exists":640,"./type":642}],642:[function(require,module,exports){
 "use strict";
 // Query Element Operators: https://docs.mongodb.com/manual/reference/operator/query-element/
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.$type = void 0;
-var _predicates_1 = require("../../_predicates");
+const _predicates_1 = require("../../_predicates");
 /**
  * Selects documents if a field is of the specified type.
  */
 exports.$type = (0, _predicates_1.createQueryOperator)(_predicates_1.$type);
 
-},{"../../_predicates":423}],438:[function(require,module,exports){
+},{"../../_predicates":423}],643:[function(require,module,exports){
+"use strict";
+// Query Evaluation Operators: https://docs.mongodb.com/manual/reference/operator/query-evaluation/
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$expr = void 0;
+const core_1 = require("../../../core");
+/**
+ * Allows the use of aggregation expressions within the query language.
+ *
+ * @param selector
+ * @param rhs
+ * @returns {Function}
+ */
+function $expr(_, rhs, options) {
+    return obj => (0, core_1.computeValue)(obj, rhs, null, options);
+}
+exports.$expr = $expr;
+
+},{"../../../core":420}],644:[function(require,module,exports){
+"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+__exportStar(require("./expr"), exports);
+__exportStar(require("./jsonSchema"), exports);
+__exportStar(require("./mod"), exports);
+__exportStar(require("./regex"), exports);
+__exportStar(require("./where"), exports);
+
+},{"./expr":643,"./jsonSchema":645,"./mod":646,"./regex":647,"./where":648}],645:[function(require,module,exports){
+"use strict";
+// Query Evaluation Operators: https://docs.mongodb.com/manual/reference/operator/query-evaluation/
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$jsonSchema = void 0;
+/**
+ * Validate documents against the given JSON Schema.
+ *
+ * @param selector
+ * @param schema
+ * @returns {Function}
+ */
+function $jsonSchema(_, schema, options) {
+    if (!(options === null || options === void 0 ? void 0 : options.jsonSchemaValidator)) {
+        throw new Error("Missing option 'jsonSchemaValidator'. Configure to use '$jsonSchema' operator.");
+    }
+    const validate = options === null || options === void 0 ? void 0 : options.jsonSchemaValidator(schema);
+    return (obj) => validate(obj);
+}
+exports.$jsonSchema = $jsonSchema;
+
+},{}],646:[function(require,module,exports){
 "use strict";
 // Query Evaluation Operators: https://docs.mongodb.com/manual/reference/operator/query-evaluation/
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.$mod = void 0;
-var _predicates_1 = require("../../_predicates");
+const _predicates_1 = require("../../_predicates");
 /**
  * Performs a modulo operation on the value of a field and selects documents with a specified result.
  */
 exports.$mod = (0, _predicates_1.createQueryOperator)(_predicates_1.$mod);
 
-},{"../../_predicates":423}],439:[function(require,module,exports){
+},{"../../_predicates":423}],647:[function(require,module,exports){
 "use strict";
 // Query Evaluation Operators: https://docs.mongodb.com/manual/reference/operator/query-evaluation/
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.$regex = void 0;
-var _predicates_1 = require("../../_predicates");
+const _predicates_1 = require("../../_predicates");
 /**
  * Selects documents where values match a specified regular expression.
  */
 exports.$regex = (0, _predicates_1.createQueryOperator)(_predicates_1.$regex);
 
-},{"../../_predicates":423}],440:[function(require,module,exports){
+},{"../../_predicates":423}],648:[function(require,module,exports){
+"use strict";
+// Query Evaluation Operators: https://docs.mongodb.com/manual/reference/operator/query-evaluation/
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$where = void 0;
+const util_1 = require("../../../util");
+/* eslint-disable */
+/**
+ * Matches documents that satisfy a JavaScript expression.
+ *
+ * @param selector
+ * @param rhs
+ * @returns {Function}
+ */
+function $where(_, rhs, options) {
+    (0, util_1.assert)(options.scriptEnabled, "$where operator requires 'scriptEnabled' option to be true");
+    const f = rhs;
+    (0, util_1.assert)((0, util_1.isFunction)(f), "$where only accepts a Function object");
+    return (obj) => (0, util_1.truthy)(f.call(obj), options === null || options === void 0 ? void 0 : options.useStrictMode);
+}
+exports.$where = $where;
+
+},{"../../../util":658}],649:[function(require,module,exports){
 "use strict";
 // Query Logical Operators: https://docs.mongodb.com/manual/reference/operator/query-logical/
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.$and = void 0;
-var query_1 = require("../../../query");
-var util_1 = require("../../../util");
+const query_1 = require("../../../query");
+const util_1 = require("../../../util");
 /**
  * Joins query clauses with a logical AND returns all documents that match the conditions of both clauses.
  *
  * @param selector
- * @param value
+ * @param rhs
  * @returns {Function}
  */
-function $and(selector, value, options) {
-    (0, util_1.assert)((0, util_1.isArray)(value), "Invalid expression: $and expects value to be an Array");
-    var queries = new Array();
-    value.forEach(function (expr) { return queries.push(new query_1.Query(expr, options)); });
-    return function (obj) {
-        for (var i = 0; i < queries.length; i++) {
-            if (!queries[i].test(obj)) {
-                return false;
-            }
-        }
-        return true;
-    };
-}
+const $and = (_, rhs, options) => {
+    (0, util_1.assert)((0, util_1.isArray)(rhs), "Invalid expression: $and expects value to be an Array.");
+    const queries = rhs.map(expr => new query_1.Query(expr, options));
+    return (obj) => queries.every(q => q.test(obj));
+};
 exports.$and = $and;
 
-},{"../../../query":444,"../../../util":445}],441:[function(require,module,exports){
+},{"../../../query":657,"../../../util":658}],650:[function(require,module,exports){
+"use strict";
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __exportStar = (this && this.__exportStar) || function(m, exports) {
+    for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
+};
+Object.defineProperty(exports, "__esModule", { value: true });
+__exportStar(require("./and"), exports);
+__exportStar(require("./nor"), exports);
+__exportStar(require("./not"), exports);
+__exportStar(require("./or"), exports);
+
+},{"./and":649,"./nor":651,"./not":652,"./or":653}],651:[function(require,module,exports){
 "use strict";
 // Query Logical Operators: https://docs.mongodb.com/manual/reference/operator/query-logical/
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.$nor = void 0;
-var util_1 = require("../../../util");
-var or_1 = require("./or");
+const util_1 = require("../../../util");
+const or_1 = require("./or");
 /**
  * Joins query clauses with a logical NOR returns all documents that fail to match both clauses.
  *
  * @param selector
- * @param value
+ * @param rhs
  * @returns {Function}
  */
-function $nor(selector, value, options) {
-    (0, util_1.assert)((0, util_1.isArray)(value), "Invalid expression. $nor expects value to be an Array");
-    var f = (0, or_1.$or)("$or", value, options);
-    return function (obj) { return !f(obj); };
-}
+const $nor = (_, rhs, options) => {
+    (0, util_1.assert)((0, util_1.isArray)(rhs), "Invalid expression. $nor expects value to be an array.");
+    const f = (0, or_1.$or)("$or", rhs, options);
+    return (obj) => !f(obj);
+};
 exports.$nor = $nor;
 
-},{"../../../util":445,"./or":443}],442:[function(require,module,exports){
+},{"../../../util":658,"./or":653}],652:[function(require,module,exports){
 "use strict";
 // Query Logical Operators: https://docs.mongodb.com/manual/reference/operator/query-logical/
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.$not = void 0;
-var query_1 = require("../../../query");
-var util_1 = require("../../../util");
+const query_1 = require("../../../query");
+const util_1 = require("../../../util");
 /**
  * Inverts the effect of a query expression and returns documents that do not match the query expression.
  *
  * @param selector
- * @param value
+ * @param rhs
  * @returns {Function}
  */
-function $not(selector, value, options) {
-    var criteria = {};
-    criteria[selector] = (0, util_1.normalize)(value);
-    var query = new query_1.Query(criteria, options);
-    return function (obj) { return !query.test(obj); };
-}
+const $not = (selector, rhs, options) => {
+    const criteria = {};
+    criteria[selector] = (0, util_1.normalize)(rhs);
+    const query = new query_1.Query(criteria, options);
+    return (obj) => !query.test(obj);
+};
 exports.$not = $not;
 
-},{"../../../query":444,"../../../util":445}],443:[function(require,module,exports){
+},{"../../../query":657,"../../../util":658}],653:[function(require,module,exports){
 "use strict";
 // Query Logical Operators: https://docs.mongodb.com/manual/reference/operator/query-logical/
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.$or = void 0;
-var query_1 = require("../../../query");
-var util_1 = require("../../../util");
+const query_1 = require("../../../query");
+const util_1 = require("../../../util");
 /**
  * Joins query clauses with a logical OR returns all documents that match the conditions of either clause.
  *
  * @param selector
- * @param value
+ * @param rhs
  * @returns {Function}
  */
-function $or(selector, value, options) {
-    (0, util_1.assert)((0, util_1.isArray)(value), "Invalid expression. $or expects value to be an Array");
-    var queries = value.map(function (expr) { return new query_1.Query(expr, options); });
-    return function (obj) {
-        for (var i = 0; i < queries.length; i++) {
-            if (queries[i].test(obj)) {
-                return true;
-            }
-        }
-        return false;
-    };
-}
+const $or = (_, rhs, options) => {
+    (0, util_1.assert)((0, util_1.isArray)(rhs), "Invalid expression. $or expects value to be an Array");
+    const queries = rhs.map(expr => new query_1.Query(expr, options));
+    return (obj) => queries.some(q => q.test(obj));
+};
 exports.$or = $or;
 
-},{"../../../query":444,"../../../util":445}],444:[function(require,module,exports){
+},{"../../../query":657,"../../../util":658}],654:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.rank = exports.withMemo = exports.MILLIS_PER_UNIT = void 0;
+const util_1 = require("../../util");
+const accumulator_1 = require("../accumulator");
+const _internal_1 = require("../expression/date/_internal");
+const _internal_2 = require("../pipeline/_internal");
+// millis map to diffirent time units
+exports.MILLIS_PER_UNIT = {
+    week: _internal_1.MILLIS_PER_DAY * 7,
+    day: _internal_1.MILLIS_PER_DAY,
+    hour: _internal_1.MILLIS_PER_DAY / 24,
+    minute: 60000,
+    second: 1000,
+    millisecond: 1
+};
+// internal cache to store precomputed series once to avoid O(N^2) calls to over the collection
+const memo = new WeakMap();
+/**
+ * Caches all computed values in a window sequence for reuse.
+ * This is only useful for operations with unbounded documents.
+ */
+function withMemo(collection, expr, cacheFn, fn) {
+    // no caching done for bounded inputs
+    if (!(0, _internal_2.isUnbounded)(expr.parentExpr.output[expr.field].window)) {
+        return fn(cacheFn());
+    }
+    // first time using collection
+    if (!memo.has(collection)) {
+        memo.set(collection, { [expr.field]: cacheFn() });
+    }
+    const data = memo.get(collection);
+    // subsequent computations over the same collection.
+    if (data[expr.field] === undefined) {
+        data[expr.field] = cacheFn();
+    }
+    let failed = false;
+    try {
+        return fn(data[expr.field]);
+    }
+    catch (e) {
+        failed = true;
+    }
+    finally {
+        // cleanup on failure or last element in collection.
+        if (failed || expr.documentNumber === collection.length) {
+            delete data[expr.field];
+            if (Object.keys(data).length === 0)
+                memo.delete(collection);
+        }
+    }
+}
+exports.withMemo = withMemo;
+/** Returns the position of a document in the $setWindowFields stage partition. */
+function rank(_, collection, expr, options, dense) {
+    return withMemo(collection, expr, () => {
+        const sortKey = "$" + Object.keys(expr.parentExpr.sortBy)[0];
+        const values = (0, accumulator_1.$push)(collection, sortKey, options);
+        const groups = (0, util_1.groupBy)(values, ((_, n) => values[n]), options.hashFunction);
+        return { values, groups };
+    }, input => {
+        const { values, groups: partitions } = input;
+        // same number of paritions as length means all sort keys are unique
+        if (partitions.size == collection.length) {
+            return expr.documentNumber;
+        }
+        const current = values[expr.documentNumber - 1];
+        let i = 0;
+        let offset = 0;
+        // partition keys are already dense so just return the value on match
+        for (const key of partitions.keys()) {
+            if ((0, util_1.isEqual)(current, key)) {
+                return dense ? i + 1 : offset + 1;
+            }
+            i++;
+            offset += partitions.get(key).length;
+        }
+        // should be unreachable
+        throw new Error("rank: invalid return value. please submit a bug report.");
+    });
+}
+exports.rank = rank;
+
+},{"../../util":658,"../accumulator":435,"../expression/date/_internal":508,"../pipeline/_internal":600}],655:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$linearFill = void 0;
+const util_1 = require("../../util");
+const accumulator_1 = require("../accumulator");
+const _internal_1 = require("./_internal");
+/**
+ * Given two points (x1, y1) and (x2, y2) and a value 'x' that lies between those two points,
+ * solve for 'y' with: y = y1 + (x - x1) * ((y2 - y1)/(x2 - x1)).
+ * @see https://en.wikipedia.org/wiki/Linear_interpolation
+ */
+const interpolate = (x1, y1, x2, y2, x) => y1 + (x - x1) * ((y2 - y1) / (x2 - x1));
+/**
+ * Fills null and missing fields in a window using linear interpolation based on surrounding field values.
+ */
+function $linearFill(_, collection, expr, options) {
+    return (0, _internal_1.withMemo)(collection, expr, (() => {
+        const sortKey = "$" + Object.keys(expr.parentExpr.sortBy)[0];
+        const points = (0, accumulator_1.$push)(collection, [sortKey, expr.inputExpr], options).filter((([x, _]) => (0, util_1.isNumber)(+x)));
+        if (points.length !== collection.length)
+            return null;
+        let lindex = -1;
+        let rindex = 0;
+        while (rindex < points.length) {
+            // use sliding window over missing values and fill as we go.
+            // determine nearest left value index
+            while (lindex + 1 < points.length && (0, util_1.isNumber)(points[lindex + 1][1])) {
+                lindex++;
+                rindex = lindex;
+            }
+            // determine nearest right value index.
+            while (rindex + 1 < points.length && !(0, util_1.isNumber)(points[rindex + 1][1])) {
+                rindex++;
+            }
+            // we reached the end of our array. nothing more to do.
+            if (rindex + 1 >= points.length)
+                break;
+            // otherwise, we found a number so move rindex pointer to it.
+            rindex++;
+            // now fill everything between lindex and rindex by their proportions to the difference.
+            while (lindex + 1 < rindex) {
+                points[lindex + 1][1] = interpolate(points[lindex][0], points[lindex][1], points[rindex][0], points[rindex][1], points[lindex + 1][0]);
+                lindex++;
+            }
+            // move lindex to right
+            lindex = rindex;
+        }
+        return points.map(([_, y]) => y);
+    }), (values) => values[expr.documentNumber - 1]);
+}
+exports.$linearFill = $linearFill;
+
+},{"../../util":658,"../accumulator":435,"./_internal":654}],656:[function(require,module,exports){
+"use strict";
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.$locf = void 0;
+const util_1 = require("../../util");
+const push_1 = require("../accumulator/push");
+const _internal_1 = require("./_internal");
+/**
+ * Last observation carried forward. Sets values for null and missing fields in a window to the last non-null value for the field.
+ */
+function $locf(_, collection, expr, options) {
+    return (0, _internal_1.withMemo)(collection, expr, () => {
+        const values = (0, push_1.$push)(collection, expr.inputExpr, options);
+        for (let i = 1; i < values.length; i++) {
+            if ((0, util_1.isNil)(values[i]))
+                values[i] = values[i - 1];
+        }
+        return values;
+    }, (series) => series[expr.documentNumber - 1]);
+}
+exports.$locf = $locf;
+
+},{"../../util":658,"../accumulator/push":443,"./_internal":654}],657:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Query = void 0;
-var core_1 = require("./core");
-var cursor_1 = require("./cursor");
-var util_1 = require("./util");
+const core_1 = require("./core");
+const cursor_1 = require("./cursor");
+const util_1 = require("./util");
 /**
  * An object used to filter input documents
  *
- * @param {Object} criteria The criteria for constructing predicates
+ * @param {Object} condition The condition for constructing predicates
  * @param {Options} options Options for use by operators
  * @constructor
  */
-var Query = /** @class */ (function () {
-    function Query(criteria, options) {
-        this.criteria = criteria;
-        this.options = options;
+class Query {
+    constructor(condition, options) {
+        this.condition = condition;
         this.options = (0, core_1.initOptions)(options);
         this.compiled = [];
         this.compile();
     }
-    Query.prototype.compile = function () {
-        (0, util_1.assert)((0, util_1.isObject)(this.criteria), "query criteria must be an object");
-        var whereOperator;
-        for (var _i = 0, _a = Object.entries(this.criteria); _i < _a.length; _i++) {
-            var _b = _a[_i], field = _b[0], expr = _b[1];
+    compile() {
+        (0, util_1.assert)((0, util_1.isObject)(this.condition), "query criteria must be an object");
+        const whereOperator = {};
+        for (const [field, expr] of Object.entries(this.condition)) {
             if ("$where" === field) {
-                whereOperator = { field: field, expr: expr };
+                Object.assign(whereOperator, { field: field, expr: expr });
             }
             else if ((0, util_1.inArray)(["$and", "$or", "$nor", "$expr", "$jsonSchema"], field)) {
                 this.processOperator(field, field, expr);
             }
             else {
                 // normalize expression
-                (0, util_1.assert)(!(0, util_1.isOperator)(field), "unknown top level operator: ".concat(field));
-                for (var _c = 0, _d = Object.entries((0, util_1.normalize)(expr)); _c < _d.length; _c++) {
-                    var _e = _d[_c], operator = _e[0], val = _e[1];
+                (0, util_1.assert)(!(0, util_1.isOperator)(field), `unknown top level operator: ${field}`);
+                for (const [operator, val] of Object.entries((0, util_1.normalize)(expr))) {
                     this.processOperator(field, operator, val);
                 }
             }
-            if ((0, util_1.isObject)(whereOperator)) {
+            if (whereOperator.field) {
                 this.processOperator(whereOperator.field, whereOperator.field, whereOperator.expr);
             }
         }
-    };
-    Query.prototype.processOperator = function (field, operator, value) {
-        var call = (0, core_1.getOperator)(core_1.OperatorType.QUERY, operator);
-        (0, util_1.assert)(!!call, "unknown operator ".concat(operator));
-        var fn = call(field, value, this.options);
+    }
+    processOperator(field, operator, value) {
+        const call = (0, core_1.getOperator)(core_1.OperatorType.QUERY, operator, this.options);
+        if (!call) {
+            throw new Error(`unknown operator ${operator}`);
+        }
+        const fn = call(field, value, this.options);
         this.compiled.push(fn);
-    };
+    }
     /**
      * Checks if the object passes the query criteria. Returns true if so, false otherwise.
      *
      * @param obj The object to test
      * @returns {boolean} True or false
      */
-    Query.prototype.test = function (obj) {
-        for (var i = 0, len = this.compiled.length; i < len; i++) {
+    test(obj) {
+        for (let i = 0, len = this.compiled.length; i < len; i++) {
             if (!this.compiled[i](obj)) {
                 return false;
             }
         }
         return true;
-    };
+    }
     /**
      * Returns a cursor to select matching documents from the input source.
      *
@@ -23930,78 +29714,67 @@ var Query = /** @class */ (function () {
      * @param projection An optional projection criteria
      * @returns {Cursor} A Cursor for iterating over the results
      */
-    Query.prototype.find = function (collection, projection) {
-        var _this = this;
-        return new cursor_1.Cursor(collection, function (x) { return _this.test(x); }, projection || {}, this.options);
-    };
+    find(collection, projection) {
+        return new cursor_1.Cursor(collection, ((x) => this.test(x)), projection || {}, this.options);
+    }
     /**
      * Remove matched documents from the collection returning the remainder
      *
      * @param collection An array of documents
      * @returns {Array} A new array with matching elements removed
      */
-    Query.prototype.remove = function (collection) {
-        var _this = this;
-        return collection.reduce(function (acc, obj) {
-            if (!_this.test(obj))
+    remove(collection) {
+        return collection.reduce((acc, obj) => {
+            if (!this.test(obj))
                 acc.push(obj);
             return acc;
         }, []);
-    };
-    return Query;
-}());
+    }
+}
 exports.Query = Query;
 
-},{"./core":420,"./cursor":421,"./util":445}],445:[function(require,module,exports){
+},{"./core":420,"./cursor":421,"./util":658}],658:[function(require,module,exports){
 "use strict";
 /**
  * Utility constants and functions
  */
-var __assign = (this && this.__assign) || function () {
-    __assign = Object.assign || function(t) {
-        for (var s, i = 1, n = arguments.length; i < n; i++) {
-            s = arguments[i];
-            for (var p in s) if (Object.prototype.hasOwnProperty.call(s, p))
-                t[p] = s[p];
-        }
-        return t;
-    };
-    return __assign.apply(this, arguments);
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.normalize = exports.isOperator = exports.removeValue = exports.setValue = exports.filterMissing = exports.resolveGraph = exports.resolve = exports.memoize = exports.into = exports.groupBy = exports.sortBy = exports.hashCode = exports.stringify = exports.unique = exports.isEqual = exports.flatten = exports.intersection = exports.merge = exports.objectMap = exports.has = exports.ensureArray = exports.isMissing = exports.isEmpty = exports.truthy = exports.notInArray = exports.inArray = exports.isNil = exports.isFunction = exports.isRegExp = exports.isDate = exports.isObjectLike = exports.isObject = exports.isArray = exports.isNotNaN = exports.isNumber = exports.isString = exports.isBoolean = exports.getType = exports.cloneDeep = exports.assert = exports.DEFAULT_COMPARATOR = exports.MIN_LONG = exports.MAX_LONG = exports.MIN_INT = exports.MAX_INT = void 0;
+exports.normalize = exports.isOperator = exports.removeValue = exports.setValue = exports.walk = exports.filterMissing = exports.resolveGraph = exports.resolve = exports.memoize = exports.into = exports.groupBy = exports.sortBy = exports.hashCode = exports.stringify = exports.unique = exports.isEqual = exports.flatten = exports.intersection = exports.merge = exports.has = exports.ensureArray = exports.isMissing = exports.isEmpty = exports.truthy = exports.notInArray = exports.inArray = exports.isNil = exports.isFunction = exports.isRegExp = exports.isDate = exports.isObjectLike = exports.isObject = exports.isArray = exports.isNotNaN = exports.isNumber = exports.isString = exports.isBoolean = exports.getType = exports.cloneDeep = exports.assert = exports.compare = exports.MIN_LONG = exports.MAX_LONG = exports.MIN_INT = exports.MAX_INT = void 0;
 exports.MAX_INT = 2147483647;
 exports.MIN_INT = -2147483648;
 exports.MAX_LONG = Number.MAX_SAFE_INTEGER;
 exports.MIN_LONG = Number.MIN_SAFE_INTEGER;
 // special value to identify missing items. treated differently from undefined
-var MISSING = Symbol("missing");
+const MISSING = Symbol("missing");
+const OBJECT_PROTOTYPE = Object.getPrototypeOf({});
+const OBJECT_TAG = "[object Object]";
+const OBJECT_TYPE_RE = /^\[object ([a-zA-Z0-9]+)\]$/;
 /**
  * Uses the simple hash method as described in Effective Java.
  * @see https://stackoverflow.com/a/113600/1370481
  * @param value The value to hash
  * @returns {number}
  */
-var DEFAULT_HASH_FUNCTION = function (value) {
-    var s = stringify(value);
-    var hash = 0;
-    var i = s.length;
+const DEFAULT_HASH_FUNCTION = (value) => {
+    const s = stringify(value);
+    let hash = 0;
+    let i = s.length;
     while (i)
         hash = ((hash << 5) - hash) ^ s.charCodeAt(--i);
     return hash >>> 0;
 };
 // no array, object, or function types
-var JS_SIMPLE_TYPES = new Set([
+const JS_SIMPLE_TYPES = new Set([
     "null",
     "undefined",
     "boolean",
     "number",
     "string",
     "date",
-    "regexp",
+    "regexp"
 ]);
 /** MongoDB sort comparison order. https://www.mongodb.com/docs/manual/reference/bson-type-comparison-order */
-var SORT_ORDER_BY_TYPE = {
+const SORT_ORDER_BY_TYPE = {
     null: 0,
     undefined: 0,
     number: 1,
@@ -24011,7 +29784,7 @@ var SORT_ORDER_BY_TYPE = {
     boolean: 5,
     date: 6,
     regexp: 7,
-    function: 8,
+    function: 8
 };
 /**
  * Compare function which adheres to MongoDB comparison order.
@@ -24020,172 +29793,154 @@ var SORT_ORDER_BY_TYPE = {
  * @param b The second value
  * @returns {Number}
  */
-var DEFAULT_COMPARATOR = function (a, b) {
+const compare = (a, b) => {
     if (a === MISSING)
         a = undefined;
     if (b === MISSING)
         b = undefined;
-    var _a = [a, b].map(function (n) { return getType(n).toLowerCase(); }), ta = _a[0], tb = _a[1];
-    var u = SORT_ORDER_BY_TYPE[ta];
-    var v = SORT_ORDER_BY_TYPE[tb];
+    const [u, v] = [a, b].map(n => SORT_ORDER_BY_TYPE[(0, exports.getType)(n).toLowerCase()]);
     if (u !== v)
         return u - v;
+    // number | string | date
+    if (u === 1 || u === 2 || u === 6) {
+        if (a < b)
+            return -1;
+        if (a > b)
+            return 1;
+        return 0;
+    }
+    // check for equivalence equality
+    if (isEqual(a, b))
+        return 0;
     if (a < b)
         return -1;
     if (a > b)
         return 1;
+    // if we get here we are comparing a type that does not make sense.
     return 0;
 };
-exports.DEFAULT_COMPARATOR = DEFAULT_COMPARATOR;
-var OBJECT_PROTOTYPE = Object.getPrototypeOf({});
-var OBJECT_TAG = "[object Object]";
-var OBJECT_TYPE_RE = /^\[object ([a-zA-Z0-9]+)\]$/;
+exports.compare = compare;
 function assert(condition, message) {
     if (!condition)
         throw new Error(message);
 }
 exports.assert = assert;
 /**
- * Deep clone an object
+ * Deep clone an object. Value types and immutable objects are returned as is.
  */
-function cloneDeep(obj) {
-    if (obj instanceof Array)
-        return obj.map(cloneDeep);
-    if (obj instanceof Date)
-        return new Date(obj);
-    if (isObject(obj))
-        return objectMap(obj, cloneDeep);
-    return obj;
-}
+const cloneDeep = (obj) => {
+    const m = new Map();
+    const add = (v) => {
+        if (m.has(v))
+            throw new Error("cycle detected during clone operation.");
+        m.set(v, true);
+    };
+    const clone = (val) => {
+        if (val instanceof Date)
+            return new Date(val);
+        if ((0, exports.isArray)(val)) {
+            add(val);
+            const res = new Array(val.length);
+            const len = val.length;
+            for (let i = 0; i < len; i++)
+                res[i] = clone(val[i]);
+            return res;
+        }
+        if ((0, exports.isObject)(val)) {
+            add(val);
+            const res = {};
+            for (const k in val)
+                res[k] = clone(val[k]);
+            return res;
+        }
+        return val;
+    };
+    return clone(obj);
+};
 exports.cloneDeep = cloneDeep;
 /**
  * Returns the name of type as specified in the tag returned by a call to Object.prototype.toString
  * @param v A value
  */
-function getType(v) {
-    return OBJECT_TYPE_RE.exec(Object.prototype.toString.call(v))[1];
-}
+const getType = (v) => OBJECT_TYPE_RE.exec(Object.prototype.toString.call(v))[1];
 exports.getType = getType;
-function isBoolean(v) {
-    return typeof v === "boolean";
-}
+const isBoolean = (v) => typeof v === "boolean";
 exports.isBoolean = isBoolean;
-function isString(v) {
-    return typeof v === "string";
-}
+const isString = (v) => typeof v === "string";
 exports.isString = isString;
-function isNumber(v) {
-    return !isNaN(v) && typeof v === "number";
-}
+const isNumber = (v) => !isNaN(v) && typeof v === "number";
 exports.isNumber = isNumber;
-function isNotNaN(v) {
-    return !(isNaN(v) && typeof v === "number");
-}
+const isNotNaN = (v) => !(isNaN(v) && typeof v === "number");
 exports.isNotNaN = isNotNaN;
 exports.isArray = Array.isArray;
-function isObject(v) {
+const isObject = (v) => {
     if (!v)
         return false;
-    var proto = Object.getPrototypeOf(v);
+    const proto = Object.getPrototypeOf(v);
     return ((proto === OBJECT_PROTOTYPE || proto === null) &&
         OBJECT_TAG === Object.prototype.toString.call(v));
-}
+};
 exports.isObject = isObject;
-function isObjectLike(v) {
-    return v === Object(v);
-} // objects, arrays, functions, date, custom object
+//  objects, arrays, functions, date, custom object
+const isObjectLike = (v) => v === Object(v);
 exports.isObjectLike = isObjectLike;
-function isDate(v) {
-    return v instanceof Date;
-}
+const isDate = (v) => v instanceof Date;
 exports.isDate = isDate;
-function isRegExp(v) {
-    return v instanceof RegExp;
-}
+const isRegExp = (v) => v instanceof RegExp;
 exports.isRegExp = isRegExp;
-function isFunction(v) {
-    return typeof v === "function";
-}
+const isFunction = (v) => typeof v === "function";
 exports.isFunction = isFunction;
-function isNil(v) {
-    return v === null || v === undefined;
-}
+const isNil = (v) => v === null || v === undefined;
 exports.isNil = isNil;
-function inArray(arr, item) {
-    return arr.includes(item);
-}
+const inArray = (arr, item) => arr.includes(item);
 exports.inArray = inArray;
-function notInArray(arr, item) {
-    return !inArray(arr, item);
-}
+const notInArray = (arr, item) => !(0, exports.inArray)(arr, item);
 exports.notInArray = notInArray;
-function truthy(arg, strict) {
-    return !!arg || (strict && arg === "");
-}
+const truthy = (arg, strict = true) => !!arg || (strict && arg === "");
 exports.truthy = truthy;
-function isEmpty(x) {
-    return (isNil(x) ||
-        (isString(x) && !x) ||
-        (x instanceof Array && x.length === 0) ||
-        (isObject(x) && Object.keys(x).length === 0));
-}
+const isEmpty = (x) => (0, exports.isNil)(x) ||
+    ((0, exports.isString)(x) && !x) ||
+    (x instanceof Array && x.length === 0) ||
+    ((0, exports.isObject)(x) && Object.keys(x).length === 0);
 exports.isEmpty = isEmpty;
-function isMissing(m) {
-    return m === MISSING;
-}
+const isMissing = (v) => v === MISSING;
 exports.isMissing = isMissing;
-// ensure a value is an array or wrapped within one
-function ensureArray(x) {
-    return x instanceof Array ? x : [x];
-}
+/** ensure a value is an array or wrapped within one. */
+const ensureArray = (x) => x instanceof Array ? x : [x];
 exports.ensureArray = ensureArray;
-function has(obj, prop) {
-    return !!obj && Object.prototype.hasOwnProperty.call(obj, prop);
-}
+const has = (obj, prop) => !!obj && Object.prototype.hasOwnProperty.call(obj, prop);
 exports.has = has;
-/**
- * Transform values in an object
- *
- * @param  {Object}   obj   An object whose values to transform
- * @param  {Function} fn The transform function
- * @return {Array|Object} Result object after applying the transform
- */
-function objectMap(obj, fn) {
-    var o = {};
-    var objKeys = Object.keys(obj);
-    for (var i = 0; i < objKeys.length; i++) {
-        var k = objKeys[i];
-        o[k] = fn(obj[k], k);
-    }
-    return o;
-}
-exports.objectMap = objectMap;
+const mergeable = (left, right) => ((0, exports.isObject)(left) && (0, exports.isObject)(right)) || ((0, exports.isArray)(left) && (0, exports.isArray)(right));
 /**
  * Deep merge objects or arrays.
- * When the inputs have unmergeable types, the source value (right hand side) is returned.
- * If inputs are arrays of same length and all elements are mergable, elements in the same position are merged together.
- * If AnyVal of the elements are unmergeable, elements in the source are appended to the target.
+ * When the inputs have unmergeable types, the  right hand value is returned.
+ * If inputs are arrays and options.flatten is set, elements in the same position are merged together. Remaining elements are appended to the target object.
+ * If options.flatten is false, the right hand value is just appended to the left-hand value.
  * @param target {Object|Array} the target to merge into
  * @param obj {Object|Array} the source object
  */
 function merge(target, obj, options) {
-    // take care of missing inputs
-    if (isMissing(target))
-        return obj;
-    if (isMissing(obj))
-        return target;
-    var inputs = [target, obj];
-    if (!(inputs.every(isObject) || inputs.every(exports.isArray))) {
-        throw Error("mismatched types. must both be array or object");
-    }
     // default options
     options = options || { flatten: false };
+    // take care of missing inputs
+    if ((0, exports.isMissing)(target) || (0, exports.isNil)(target))
+        return obj;
+    if ((0, exports.isMissing)(obj) || (0, exports.isNil)(obj))
+        return target;
+    // fail only on initial input.
+    if (!mergeable(target, obj)) {
+        if (options.skipValidation)
+            return obj || target;
+        throw Error("mismatched types. must both be array or object");
+    }
+    // skip validation after initial input.
+    options.skipValidation = true;
     if ((0, exports.isArray)(target)) {
-        var result = target;
-        var input = obj;
+        const result = target;
+        const input = obj;
         if (options.flatten) {
-            var i = 0;
-            var j = 0;
+            let i = 0;
+            let j = 0;
             while (i < result.length && j < input.length) {
                 result[i] = merge(result[i++], input[j++], options);
             }
@@ -24198,159 +29953,121 @@ function merge(target, obj, options) {
         }
     }
     else {
-        Object.keys(obj).forEach(function (k) {
-            if (has(obj, k)) {
-                if (has(target, k)) {
-                    target[k] = merge(target[k], obj[k], options);
-                }
-                else {
-                    target[k] = obj[k];
-                }
-            }
-        });
+        for (const k in obj) {
+            target[k] = merge(target[k], obj[k], options);
+        }
     }
     return target;
 }
 exports.merge = merge;
-function addIndex(root, key, index) {
-    if (root.key < key) {
-        if (root.right) {
-            addIndex(root.right, key, index);
+function buildHashIndex(arr, hashFunction = DEFAULT_HASH_FUNCTION) {
+    const map = new Map();
+    arr.forEach((o, i) => {
+        const h = hashCode(o, hashFunction);
+        if (map.has(h)) {
+            if (!map.get(h).some(j => isEqual(arr[j], o))) {
+                map.get(h).push(i);
+            }
         }
         else {
-            root.right = { key: key, indexes: [index] };
+            map.set(h, [i]);
         }
-    }
-    else if (root.key > key) {
-        if (root.left) {
-            addIndex(root.left, key, index);
-        }
-        else {
-            root.left = { key: key, indexes: [index] };
-        }
-    }
-    else {
-        root.indexes.push(index);
-    }
-}
-function getIndexes(root, key) {
-    if (root.key == key) {
-        return root.indexes;
-    }
-    else if (root.key < key) {
-        return root.right ? getIndexes(root.right, key) : undefined;
-    }
-    else if (root.key > key) {
-        return root.left ? getIndexes(root.left, key) : undefined;
-    }
-    return undefined;
+    });
+    return map;
 }
 /**
  * Returns the intersection of multiple arrays.
  *
- * @param  {Array} a The first array
- * @param  {Array} b The second array
+ * @param  {Array} input An array of arrays from which to find intersection.
  * @param  {Function} hashFunction Custom function to hash values, default the hashCode method
- * @return {Array}    Result array
+ * @return {Array} Array of intersecting values.
  */
-function intersection(input, hashFunction) {
-    if (hashFunction === void 0) { hashFunction = DEFAULT_HASH_FUNCTION; }
+function intersection(input, hashFunction = DEFAULT_HASH_FUNCTION) {
     // if any array is empty, there is no intersection
-    if (input.some(function (arr) { return arr.length == 0; }))
+    if (input.some(arr => arr.length == 0))
         return [];
-    // sort input arrays by size
-    var sortedIndex = input.map(function (a, i) { return [i, a.length]; });
-    sortedIndex.sort(function (a, b) { return a[1] - b[1]; });
-    // matched items index of first array for all other arrays.
-    var result = [];
-    var smallestArray = input[sortedIndex[0][0]];
-    var root = {
-        key: hashCode(smallestArray[0], hashFunction),
-        indexes: [0],
-    };
-    for (var i = 1; i < smallestArray.length; i++) {
-        var val = smallestArray[i];
-        var h = hashCode(val, hashFunction);
-        addIndex(root, h, i);
-    }
-    var maxResultSize = sortedIndex[0][1];
-    var orderedIndexes = [];
-    var _loop_1 = function (i) {
-        var arrayIndex = sortedIndex[i][0];
-        var data = input[arrayIndex];
-        // number of matched items
-        var size = 0;
-        var _loop_2 = function (j) {
-            var h = hashCode(data[j], hashFunction);
-            var indexes = getIndexes(root, h);
-            // not included.
-            if (!indexes)
-                return "continue";
-            // check items equality to mitigate hash collisions and select the matching index.
-            var idx = indexes
-                .map(function (n) { return smallestArray[n]; })
-                .findIndex(function (v) { return isEqual(v, data[j]); });
-            // not included
-            if (idx == -1)
-                return "continue";
-            // item matched. ensure map exist for marking index
-            if (result.length < i)
-                result.push({});
-            // map to index of the actual value and set position
-            result[result.length - 1][indexes[idx]] = true;
-            // if we have seen max result items we can stop.
-            size = Object.keys(result[result.length - 1]).length;
-            // ensure stabilty
-            if (arrayIndex == 0) {
-                if (orderedIndexes.indexOf(indexes[idx]) == -1) {
-                    orderedIndexes.push(indexes[idx]);
-                }
+    if (input.length === 1)
+        return Array.from(input);
+    // sort input arrays by to get smallest array
+    // const sorted = sortBy(input, (a: RawArray) => a.length) as RawArray[];
+    const sortedIndex = sortBy(input.map((a, i) => [i, a.length]), (a) => a[1]);
+    // get the smallest
+    const smallest = input[sortedIndex[0][0]];
+    // get hash index of smallest array
+    const map = buildHashIndex(smallest, hashFunction);
+    // hashIndex for remaining arrays.
+    const rmap = new Map();
+    // final intersection results and index of first occurrence.
+    const results = new Array();
+    map.forEach((v, k) => {
+        const lhs = v.map(j => smallest[j]);
+        const res = lhs.map(_ => 0);
+        // used to track first occurence of value in order of the original input array.
+        const stable = lhs.map(_ => [sortedIndex[0][0], 0]);
+        let found = false;
+        for (let i = 1; i < input.length; i++) {
+            const [currIndex, _] = sortedIndex[i];
+            const arr = input[currIndex];
+            if (!rmap.has(i))
+                rmap.set(i, buildHashIndex(arr));
+            // we found a match. let's confirm.
+            if (rmap.get(i).has(k)) {
+                const rhs = rmap
+                    .get(i)
+                    .get(k)
+                    .map(j => arr[j]);
+                // confirm the intersection with an equivalence check.
+                found = lhs
+                    .map((s, n) => rhs.some((t, m) => {
+                    // we expect only one to match here since these are just collisions.
+                    const p = res[n];
+                    if (isEqual(s, t)) {
+                        res[n]++;
+                        // track position of value ordering for stability.
+                        if (currIndex < stable[n][0]) {
+                            stable[n] = [currIndex, rmap.get(i).get(k)[m]];
+                        }
+                    }
+                    return p < res[n];
+                }))
+                    .some(Boolean);
             }
-        };
-        for (var j = 0; j < data.length; j++) {
-            _loop_2(j);
+            // found nothing, so exclude value. this was just a hash collision.
+            if (!found)
+                return;
         }
-        // no intersection if nothing found
-        if (size == 0)
-            return { value: [] };
-        // new max result size
-        maxResultSize = Math.min(maxResultSize, size);
-    };
-    for (var i = 1; i < sortedIndex.length; i++) {
-        var state_1 = _loop_1(i);
-        if (typeof state_1 === "object")
-            return state_1.value;
-    }
-    var freq = {};
-    // count occurrences
-    result.forEach(function (m) {
-        Object.keys(m).forEach(function (k) {
-            var n = parseFloat(k);
-            freq[n] = freq[n] || 0;
-            freq[n]++;
-        });
+        // extract value into result if we found an intersection.
+        // we find an intersection if the frequency counter matches the count of the remaining arrays.
+        if (found) {
+            into(results, res
+                .map((n, i) => {
+                return n === input.length - 1 ? [lhs[i], stable[i]] : MISSING;
+            })
+                .filter(n => n !== MISSING));
+        }
     });
-    var keys = orderedIndexes;
-    if (keys.length == 0) {
-        // note: cannot use parseInt due to second argument for radix.
-        keys.push.apply(keys, Object.keys(freq).map(parseFloat));
-        keys.sort();
-    }
-    return keys
-        .filter(function (n) { return freq[n] == input.length - 1; })
-        .map(function (n) { return smallestArray[n]; });
+    return results
+        .sort((a, b) => {
+        const [_i, [u, m]] = a;
+        const [_j, [v, n]] = b;
+        const r = (0, exports.compare)(u, v);
+        if (r !== 0)
+            return r;
+        return (0, exports.compare)(m, n);
+    })
+        .map(v => v[0]);
 }
 exports.intersection = intersection;
 /**
  * Flatten the array
  *
- * @param  {Array} xs The array to flatten
+ * @param {Array} xs The array to flatten
  * @param {Number} depth The number of nested lists to iterate
  */
-function flatten(xs, depth) {
-    var arr = [];
+function flatten(xs, depth = 0) {
+    const arr = new Array();
     function flatten2(ys, n) {
-        for (var i = 0, len = ys.length; i < len; i++) {
+        for (let i = 0, len = ys.length; i < len; i++) {
             if ((0, exports.isArray)(ys[i]) && (n > 0 || n < 0)) {
                 flatten2(ys[i], Math.max(-1, n - 1));
             }
@@ -24371,8 +30088,8 @@ exports.flatten = flatten;
  * @return {Boolean}   Result of comparison
  */
 function isEqual(a, b) {
-    var lhs = [a];
-    var rhs = [b];
+    const lhs = [a];
+    const rhs = [b];
     while (lhs.length > 0) {
         a = lhs.pop();
         b = rhs.pop();
@@ -24380,14 +30097,14 @@ function isEqual(a, b) {
         if (a === b)
             continue;
         // unequal types and functions cannot be equal.
-        var nativeType = getType(a).toLowerCase();
-        if (nativeType !== getType(b).toLowerCase() || nativeType === "function") {
+        const nativeType = (0, exports.getType)(a).toLowerCase();
+        if (nativeType !== (0, exports.getType)(b).toLowerCase() || nativeType === "function") {
             return false;
         }
         // leverage toString for Date and RegExp types
         if (nativeType === "array") {
-            var xs = a;
-            var ys = b;
+            const xs = a;
+            const ys = b;
             if (xs.length !== ys.length)
                 return false;
             if (xs.length === ys.length && xs.length === 0)
@@ -24397,16 +30114,16 @@ function isEqual(a, b) {
         }
         else if (nativeType === "object") {
             // deep compare objects
-            var aKeys = Object.keys(a);
-            var bKeys = Object.keys(b);
+            const aKeys = Object.keys(a);
+            const bKeys = Object.keys(b);
             // check length of keys early
             if (aKeys.length !== bKeys.length)
                 return false;
             // compare keys
-            for (var i = 0, len = aKeys.length; i < len; i++) {
-                var k = aKeys[i];
+            for (let i = 0, len = aKeys.length; i < len; i++) {
+                const k = aKeys[i];
                 // not found
-                if (!has(b, k))
+                if (!(0, exports.has)(b, k))
                     return false;
                 // key found
                 lhs.push(a[k]);
@@ -24424,57 +30141,15 @@ function isEqual(a, b) {
 exports.isEqual = isEqual;
 /**
  * Return a new unique version of the collection
- * @param  {Array} xs The input collection
+ * @param  {Array} input The input collection
  * @return {Array}
  */
-function unique(xs, hashFunction) {
-    if (hashFunction === void 0) { hashFunction = DEFAULT_HASH_FUNCTION; }
-    if (xs.length == 0)
-        return [];
-    var root = {
-        key: hashCode(xs[0], hashFunction),
-        indexes: [0],
-    };
-    // hash items on to tree to track collisions
-    for (var i = 1; i < xs.length; i++) {
-        addIndex(root, hashCode(xs[i], hashFunction), i);
-    }
-    var result = [];
-    // walk tree and remove duplicates
-    var stack = [root];
-    while (stack.length > 0) {
-        var node = stack.pop();
-        if (node.indexes.length == 1) {
-            result.push(node.indexes[0]);
-        }
-        else {
-            // handle collisions by matching all items
-            var arr = node.indexes;
-            // we start by search from the back so we maintain the smaller index when there is a duplicate.
-            while (arr.length > 0) {
-                for (var j = 1; j < arr.length; j++) {
-                    // if last item matches any remove the last item.
-                    if (isEqual(xs[arr[arr.length - 1]], xs[arr[arr.length - 1 - j]])) {
-                        // remove last item
-                        arr.pop();
-                        // reset position
-                        j = 0;
-                    }
-                }
-                // add the unique item
-                result.push(arr.pop());
-            }
-        }
-        // add children
-        if (node.left)
-            stack.push(node.left);
-        if (node.right)
-            stack.push(node.right);
-    }
-    // sort indexes for stability
-    result.sort();
-    // return the unique items
-    return result.map(function (i) { return xs[i]; });
+function unique(input, hashFunction = DEFAULT_HASH_FUNCTION) {
+    const result = input.map(_ => MISSING);
+    buildHashIndex(input, hashFunction).forEach((v, _) => {
+        v.forEach(i => (result[i] = input[i]));
+    });
+    return result.filter(v => v !== MISSING);
 }
 exports.unique = unique;
 /**
@@ -24484,7 +30159,7 @@ exports.unique = unique;
  * @returns {*}
  */
 function stringify(value) {
-    var type = getType(value).toLowerCase();
+    const type = (0, exports.getType)(value).toLowerCase();
     switch (type) {
         case "boolean":
         case "number":
@@ -24503,11 +30178,13 @@ function stringify(value) {
             break;
     }
     // default case
-    var prefix = type === "object" ? "" : "".concat(getType(value));
-    var objKeys = Object.keys(value);
+    const prefix = type === "object" ? "" : `${(0, exports.getType)(value)}`;
+    const objKeys = Object.keys(value);
     objKeys.sort();
-    return ("".concat(prefix, "{") +
-        objKeys.map(function (k) { return "".concat(stringify(k), ":").concat(stringify(value[k])); }).join(",") +
+    return (`${prefix}{` +
+        objKeys
+            .map(k => `${stringify(k)}:${stringify(value[k])}`)
+            .join(",") +
         "}");
 }
 exports.stringify = stringify;
@@ -24520,8 +30197,8 @@ exports.stringify = stringify;
  * @returns {number|null}
  */
 function hashCode(value, hashFunction) {
-    if (hashFunction === void 0) { hashFunction = DEFAULT_HASH_FUNCTION; }
-    if (isNil(value))
+    hashFunction = hashFunction || DEFAULT_HASH_FUNCTION;
+    if ((0, exports.isNil)(value))
         return null;
     return hashFunction(value).toString();
 }
@@ -24536,16 +30213,15 @@ exports.hashCode = hashCode;
  * @param {Function} comparator The comparator function to use for comparing keys. Defaults to standard comparison via `compare(...)`
  * @return {Array} Returns a new sorted array by the given key and comparator function
  */
-function sortBy(collection, keyFn, comparator) {
-    if (comparator === void 0) { comparator = exports.DEFAULT_COMPARATOR; }
-    var sorted = [];
-    var result = [];
-    if (isEmpty(collection))
+function sortBy(collection, keyFn, comparator = exports.compare) {
+    if ((0, exports.isEmpty)(collection))
         return collection;
-    for (var i = 0; i < collection.length; i++) {
-        var obj = collection[i];
-        var key = keyFn(obj, i);
-        if (isNil(key)) {
+    const sorted = new Array();
+    const result = new Array();
+    for (let i = 0; i < collection.length; i++) {
+        const obj = collection[i];
+        const key = keyFn(obj, i);
+        if ((0, exports.isNil)(key)) {
             result.push(obj);
         }
         else {
@@ -24553,9 +30229,8 @@ function sortBy(collection, keyFn, comparator) {
         }
     }
     // use native array sorting but enforce stableness
-    sorted.sort(function (a, b) { return comparator(a[0], b[0]); });
-    result.push.apply(result, sorted.map(function (o) { return o[1]; }));
-    return result;
+    sorted.sort((a, b) => comparator(a[0], b[0]));
+    return into(result, sorted.map((o) => o[1]));
 }
 exports.sortBy = sortBy;
 /**
@@ -24563,61 +30238,79 @@ exports.sortBy = sortBy;
  *
  * @param collection
  * @param keyFn {Function} to compute the group key of an item in the collection
- * @returns {{keys: Array, groups: Array}}
+ * @returns {GroupByOutput}
  */
-function groupBy(collection, keyFn, hashFunction) {
-    if (hashFunction === void 0) { hashFunction = DEFAULT_HASH_FUNCTION; }
-    var result = {
-        keys: new Array(),
-        groups: new Array(),
-    };
-    var lookup = {};
-    for (var i = 0; i < collection.length; i++) {
-        var obj = collection[i];
-        var key = keyFn(obj, i);
-        var hash = hashCode(key, hashFunction);
-        var index = -1;
-        if (lookup[hash] === undefined) {
-            index = result.keys.length;
-            lookup[hash] = index;
-            result.keys.push(key);
-            result.groups.push([]);
+function groupBy(collection, keyFn, hashFunction = DEFAULT_HASH_FUNCTION) {
+    if (collection.length < 1)
+        return new Map();
+    // map of hash to collided values
+    const lookup = new Map();
+    // map of raw key values to objects.
+    const result = new Map();
+    for (let i = 0; i < collection.length; i++) {
+        const obj = collection[i];
+        const key = keyFn(obj, i);
+        const hash = hashCode(key, hashFunction);
+        if (hash === null) {
+            if (result.has(null)) {
+                result.get(null).push(obj);
+            }
+            else {
+                result.set(null, [obj]);
+            }
         }
-        index = lookup[hash];
-        result.groups[index].push(obj);
+        else {
+            // find if we can match a hash for which the value is equivalent.
+            // this is used to deal with collisions.
+            const existingKey = lookup.has(hash)
+                ? lookup.get(hash).find(k => isEqual(k, key))
+                : null;
+            // collision detected or first time seeing key
+            if ((0, exports.isNil)(existingKey)) {
+                // collision detected or first entry so we create a new group.
+                result.set(key, [obj]);
+                // upload the lookup with the collided key
+                if (lookup.has(hash)) {
+                    lookup.get(hash).push(key);
+                }
+                else {
+                    lookup.set(hash, [key]);
+                }
+            }
+            else {
+                // key exists
+                result.get(existingKey).push(obj);
+            }
+        }
     }
     return result;
 }
 exports.groupBy = groupBy;
 // max elements to push.
 // See argument limit https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Function/apply
-var MAX_ARRAY_PUSH = 50000;
+const MAX_ARRAY_PUSH = 50000;
 /**
  * Merge elements into the dest
  *
  * @param {*} target The target object
  * @param {*} rest The array of elements to merge into dest
  */
-function into(target) {
-    var rest = [];
-    for (var _i = 1; _i < arguments.length; _i++) {
-        rest[_i - 1] = arguments[_i];
-    }
+function into(target, ...rest) {
     if (target instanceof Array) {
-        return rest.reduce(function (acc, arr) {
+        return rest.reduce(((acc, arr) => {
             // push arrary in batches to handle large inputs
-            var i = Math.ceil(arr.length / MAX_ARRAY_PUSH);
-            var begin = 0;
+            let i = Math.ceil(arr.length / MAX_ARRAY_PUSH);
+            let begin = 0;
             while (i-- > 0) {
                 Array.prototype.push.apply(acc, arr.slice(begin, begin + MAX_ARRAY_PUSH));
                 begin += MAX_ARRAY_PUSH;
             }
             return acc;
-        }, target);
+        }), target);
     }
     else {
         // merge objects. same behaviour as Object.assign
-        return rest.filter(isObjectLike).reduce(function (acc, item) {
+        return rest.filter(exports.isObjectLike).reduce((acc, item) => {
             Object.assign(acc, item);
             return acc;
         }, target);
@@ -24632,18 +30325,12 @@ exports.into = into;
  *
  * @param {*} fn The function object to memoize
  */
-function memoize(fn, hashFunction) {
-    var _this = this;
-    if (hashFunction === void 0) { hashFunction = DEFAULT_HASH_FUNCTION; }
-    return (function (memo) {
-        return function () {
-            var args = [];
-            for (var _i = 0; _i < arguments.length; _i++) {
-                args[_i] = arguments[_i];
-            }
-            var key = hashCode(args, hashFunction);
-            if (!has(memo, key)) {
-                memo[key] = fn.apply(_this, args);
+function memoize(fn, hashFunction = DEFAULT_HASH_FUNCTION) {
+    return ((memo) => {
+        return (...args) => {
+            const key = hashCode(args, hashFunction) || "";
+            if (!(0, exports.has)(memo, key)) {
+                memo[key] = fn.apply(this, args);
             }
             return memo[key];
         };
@@ -24661,7 +30348,7 @@ exports.memoize = memoize;
  * @private
  */
 function getValue(obj, key) {
-    return isObjectLike(obj) ? obj[key] : undefined;
+    return (0, exports.isObjectLike)(obj) ? obj[key] : undefined;
 }
 /**
  * Unwrap a single element array to specified depth
@@ -24682,44 +30369,39 @@ function unwrap(arr, depth) {
  * @returns {*}
  */
 function resolve(obj, selector, options) {
-    var depth = 0;
+    let depth = 0;
     function resolve2(o, path) {
-        var value = o;
-        var _loop_3 = function (i) {
-            var field = path[i];
-            var isText = /^\d+$/.exec(field) === null;
+        let value = o;
+        for (let i = 0; i < path.length; i++) {
+            const field = path[i];
+            const isText = /^\d+$/.exec(field) === null;
             // using instanceof to aid typescript compiler
             if (isText && value instanceof Array) {
                 // On the first iteration, we check if we received a stop flag.
                 // If so, we stop to prevent iterating over a nested array value
                 // on consecutive object keys in the selector.
                 if (i === 0 && depth > 0)
-                    return "break";
+                    break;
                 depth += 1;
                 // only look at the rest of the path
-                var subpath_1 = path.slice(i);
-                value = value.reduce(function (acc, item) {
-                    var v = resolve2(item, subpath_1);
+                const subpath = path.slice(i);
+                value = value.reduce((acc, item) => {
+                    const v = resolve2(item, subpath);
                     if (v !== undefined)
                         acc.push(v);
                     return acc;
                 }, []);
-                return "break";
+                break;
             }
             else {
                 value = getValue(value, field);
             }
             if (value === undefined)
-                return "break";
-        };
-        for (var i = 0; i < path.length; i++) {
-            var state_2 = _loop_3(i);
-            if (state_2 === "break")
                 break;
         }
         return value;
     }
-    var result = JS_SIMPLE_TYPES.has(getType(obj).toLowerCase())
+    const result = JS_SIMPLE_TYPES.has((0, exports.getType)(obj).toLowerCase())
         ? obj
         : resolve2(obj, selector.split("."));
     return result instanceof Array && (options === null || options === void 0 ? void 0 : options.unwrapArray)
@@ -24735,14 +30417,14 @@ exports.resolve = resolve;
  * @param selector {String} dot separated path to field
  */
 function resolveGraph(obj, selector, options) {
-    var names = selector.split(".");
-    var key = names[0];
+    const names = selector.split(".");
+    const key = names[0];
     // get the next part of the selector
-    var next = names.slice(1).join(".");
-    var isIndex = /^\d+$/.exec(key) !== null;
-    var hasNext = names.length > 1;
-    var result;
-    var value;
+    const next = names.slice(1).join(".");
+    const isIndex = /^\d+$/.exec(key) !== null;
+    const hasNext = names.length > 1;
+    let result;
+    let value;
     if (obj instanceof Array) {
         if (isIndex) {
             result = getValue(obj, Number(key));
@@ -24753,8 +30435,7 @@ function resolveGraph(obj, selector, options) {
         }
         else {
             result = [];
-            for (var _i = 0, obj_1 = obj; _i < obj_1.length; _i++) {
-                var item = obj_1[_i];
+            for (const item of obj) {
                 value = resolveGraph(item, selector, options);
                 if (options === null || options === void 0 ? void 0 : options.preserveMissing) {
                     if (value === undefined) {
@@ -24775,7 +30456,7 @@ function resolveGraph(obj, selector, options) {
         }
         if (value === undefined)
             return undefined;
-        result = (options === null || options === void 0 ? void 0 : options.preserveKeys) ? __assign({}, obj) : {};
+        result = (options === null || options === void 0 ? void 0 : options.preserveKeys) ? Object.assign({}, obj) : {};
         result[key] = value;
     }
     return result;
@@ -24788,7 +30469,7 @@ exports.resolveGraph = resolveGraph;
  */
 function filterMissing(obj) {
     if (obj instanceof Array) {
-        for (var i = obj.length - 1; i >= 0; i--) {
+        for (let i = obj.length - 1; i >= 0; i--) {
             if (obj[i] === MISSING) {
                 obj.splice(i, 1);
             }
@@ -24797,41 +30478,46 @@ function filterMissing(obj) {
             }
         }
     }
-    else if (isObject(obj)) {
-        for (var k in obj) {
-            if (has(obj, k)) {
+    else if ((0, exports.isObject)(obj)) {
+        for (const k in obj) {
+            if ((0, exports.has)(obj, k)) {
                 filterMissing(obj[k]);
             }
         }
     }
 }
 exports.filterMissing = filterMissing;
+const NUMBER_RE = /^\d+$/;
 /**
  * Walk the object graph and execute the given transform function
  *
- * @param  {Object|Array} obj   The object to traverse
- * @param  {String} selector    The selector
- * @param  {Function} fn Function to execute for value at the end the traversal
+ * @param  {Object|Array} obj   The object to traverse.
+ * @param  {String} selector    The selector to navigate.
+ * @param  {Callback} fn Callback to execute for value at the end the traversal.
+ * @param  {WalkOptions} Options to use for the function.
  * @return {*}
  */
 function walk(obj, selector, fn, options) {
-    if (isNil(obj))
-        return;
-    var names = selector.split(".");
-    var key = names[0];
-    var next = names.slice(1).join(".");
+    const names = selector.split(".");
+    const key = names[0];
+    const next = names.slice(1).join(".");
     if (names.length === 1) {
-        fn(obj, key);
+        if ((0, exports.isObject)(obj) || ((0, exports.isArray)(obj) && NUMBER_RE.test(key))) {
+            fn(obj, key);
+        }
     }
     else {
         // force the rest of the graph while traversing
-        if ((options === null || options === void 0 ? void 0 : options.buildGraph) && isNil(obj[key])) {
+        if ((options === null || options === void 0 ? void 0 : options.buildGraph) && (0, exports.isNil)(obj[key])) {
             obj[key] = {};
         }
         // get the next item
-        var item = obj[key];
+        const item = obj[key];
+        // nothing more to do
+        if (!item)
+            return;
         // we peek to see if next key is an array index.
-        var isNextArrayIndex = !!(names.length > 1 && names[1].match(/^\d+$/));
+        const isNextArrayIndex = !!(names.length > 1 && NUMBER_RE.test(names[1]));
         // if we have an array value but the next key is not an index and the 'descendArray' option is set,
         // we walk each item in the array separately. This allows for handling traversing keys for objects
         // nested within an array.
@@ -24840,13 +30526,14 @@ function walk(obj, selector, fn, options) {
         //  - individual objecs can be traversed with "array.k"
         //  - a specific object can be traversed with "array.1"
         if (item instanceof Array && (options === null || options === void 0 ? void 0 : options.descendArray) && !isNextArrayIndex) {
-            item.forEach(function (e) { return walk(e, next, fn, options); });
+            item.forEach(((e) => walk(e, next, fn, options)));
         }
         else {
             walk(item, next, fn, options);
         }
     }
 }
+exports.walk = walk;
 /**
  * Set the value of the given object field
  *
@@ -24855,9 +30542,9 @@ function walk(obj, selector, fn, options) {
  * @param value {*} the value to set
  */
 function setValue(obj, selector, value) {
-    walk(obj, selector, function (item, key) {
+    walk(obj, selector, ((item, key) => {
         item[key] = value;
-    }, { buildGraph: true });
+    }), { buildGraph: true });
 }
 exports.setValue = setValue;
 /**
@@ -24869,27 +30556,26 @@ exports.setValue = setValue;
  * @param selector {String} dot separated path to element to remove
  */
 function removeValue(obj, selector, options) {
-    walk(obj, selector, function (item, key) {
+    walk(obj, selector, ((item, key) => {
         if (item instanceof Array) {
             if (/^\d+$/.test(key)) {
                 item.splice(parseInt(key), 1);
             }
             else if (options && options.descendArray) {
-                for (var _i = 0, item_1 = item; _i < item_1.length; _i++) {
-                    var elem = item_1[_i];
-                    if (isObject(elem)) {
+                for (const elem of item) {
+                    if ((0, exports.isObject)(elem)) {
                         delete elem[key];
                     }
                 }
             }
         }
-        else if (isObject(item)) {
+        else if ((0, exports.isObject)(item)) {
             delete item[key];
         }
-    }, options);
+    }), options);
 }
 exports.removeValue = removeValue;
-var OPERATOR_NAME_PATTERN = /^\$[a-zA-Z0-9_]+$/;
+const OPERATOR_NAME_PATTERN = /^\$[a-zA-Z0-9_]+$/;
 /**
  * Check whether the given name passes for an operator. We assume AnyVal field name starting with '$' is an operator.
  * This is cheap and safe to do since keys beginning with '$' should be reserved for internal use.
@@ -24906,27 +30592,29 @@ exports.isOperator = isOperator;
  */
 function normalize(expr) {
     // normalized primitives
-    if (JS_SIMPLE_TYPES.has(getType(expr).toLowerCase())) {
-        return isRegExp(expr) ? { $regex: expr } : { $eq: expr };
+    if (JS_SIMPLE_TYPES.has((0, exports.getType)(expr).toLowerCase())) {
+        return (0, exports.isRegExp)(expr) ? { $regex: expr } : { $eq: expr };
     }
     // normalize object expression. using ObjectLike handles custom types
-    if (isObjectLike(expr)) {
+    if ((0, exports.isObjectLike)(expr)) {
+        const exprObj = expr;
         // no valid query operator found, so we do simple comparison
-        if (!Object.keys(expr).some(isOperator)) {
+        if (!Object.keys(exprObj).some(isOperator)) {
             return { $eq: expr };
         }
         // ensure valid regex
-        if (has(expr, "$regex")) {
-            return {
-                $regex: new RegExp(expr["$regex"], expr["$options"]),
-            };
+        if ((0, exports.has)(expr, "$regex")) {
+            const newExpr = Object.assign({}, expr);
+            newExpr["$regex"] = new RegExp(expr["$regex"], expr["$options"]);
+            delete newExpr["$options"];
+            return newExpr;
         }
     }
     return expr;
 }
 exports.normalize = normalize;
 
-},{}],446:[function(require,module,exports){
+},{}],659:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.now = exports.removeTooOldValues = exports.ObliviousSet = void 0;
@@ -25004,7 +30692,7 @@ function now() {
 }
 exports.now = now;
 
-},{}],447:[function(require,module,exports){
+},{}],660:[function(require,module,exports){
 (function (Buffer){(function (){
 'use strict';
 
@@ -25781,7 +31469,7 @@ exports.sha256 = sha256;
 exports.sha256base64 = sha256base64;
 
 }).call(this)}).call(this,require("buffer").Buffer)
-},{"buffer":102}],448:[function(require,module,exports){
+},{"buffer":102}],661:[function(require,module,exports){
 // shim for using process in browser
 var process = module.exports = {};
 
@@ -25967,7 +31655,7 @@ process.chdir = function (dir) {
 };
 process.umask = function() { return 0; };
 
-},{}],449:[function(require,module,exports){
+},{}],662:[function(require,module,exports){
 /**
  * Copyright (c) 2014-present, Facebook, Inc.
  *
@@ -26730,7 +32418,7 @@ try {
   }
 }
 
-},{}],450:[function(require,module,exports){
+},{}],663:[function(require,module,exports){
 "use strict";
 var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
     if (k2 === undefined) k2 = k;
@@ -27089,7 +32777,7 @@ Object.defineProperty(exports, "zipAll", { enumerable: true, get: function () { 
 var zipWith_1 = require("./internal/operators/zipWith");
 Object.defineProperty(exports, "zipWith", { enumerable: true, get: function () { return zipWith_1.zipWith; } });
 
-},{"./internal/AsyncSubject":451,"./internal/BehaviorSubject":452,"./internal/Notification":453,"./internal/Observable":455,"./internal/ReplaySubject":456,"./internal/Scheduler":457,"./internal/Subject":458,"./internal/Subscriber":459,"./internal/Subscription":460,"./internal/config":461,"./internal/firstValueFrom":462,"./internal/lastValueFrom":463,"./internal/observable/ConnectableObservable":464,"./internal/observable/bindCallback":465,"./internal/observable/bindNodeCallback":467,"./internal/observable/combineLatest":468,"./internal/observable/concat":469,"./internal/observable/connectable":470,"./internal/observable/defer":471,"./internal/observable/dom/animationFrames":472,"./internal/observable/empty":473,"./internal/observable/forkJoin":474,"./internal/observable/from":475,"./internal/observable/fromEvent":476,"./internal/observable/fromEventPattern":477,"./internal/observable/generate":479,"./internal/observable/iif":480,"./internal/observable/interval":482,"./internal/observable/merge":483,"./internal/observable/never":484,"./internal/observable/of":485,"./internal/observable/onErrorResumeNext":486,"./internal/observable/pairs":487,"./internal/observable/partition":488,"./internal/observable/race":489,"./internal/observable/range":490,"./internal/observable/throwError":491,"./internal/observable/timer":492,"./internal/observable/using":493,"./internal/observable/zip":494,"./internal/operators/audit":496,"./internal/operators/auditTime":497,"./internal/operators/buffer":498,"./internal/operators/bufferCount":499,"./internal/operators/bufferTime":500,"./internal/operators/bufferToggle":501,"./internal/operators/bufferWhen":502,"./internal/operators/catchError":503,"./internal/operators/combineAll":504,"./internal/operators/combineLatestAll":506,"./internal/operators/combineLatestWith":507,"./internal/operators/concatAll":509,"./internal/operators/concatMap":510,"./internal/operators/concatMapTo":511,"./internal/operators/concatWith":512,"./internal/operators/connect":513,"./internal/operators/count":514,"./internal/operators/debounce":515,"./internal/operators/debounceTime":516,"./internal/operators/defaultIfEmpty":517,"./internal/operators/delay":518,"./internal/operators/delayWhen":519,"./internal/operators/dematerialize":520,"./internal/operators/distinct":521,"./internal/operators/distinctUntilChanged":522,"./internal/operators/distinctUntilKeyChanged":523,"./internal/operators/elementAt":524,"./internal/operators/endWith":525,"./internal/operators/every":526,"./internal/operators/exhaust":527,"./internal/operators/exhaustAll":528,"./internal/operators/exhaustMap":529,"./internal/operators/expand":530,"./internal/operators/filter":531,"./internal/operators/finalize":532,"./internal/operators/find":533,"./internal/operators/findIndex":534,"./internal/operators/first":535,"./internal/operators/flatMap":536,"./internal/operators/groupBy":537,"./internal/operators/ignoreElements":538,"./internal/operators/isEmpty":539,"./internal/operators/last":541,"./internal/operators/map":542,"./internal/operators/mapTo":543,"./internal/operators/materialize":544,"./internal/operators/max":545,"./internal/operators/mergeAll":547,"./internal/operators/mergeMap":549,"./internal/operators/mergeMapTo":550,"./internal/operators/mergeScan":551,"./internal/operators/mergeWith":552,"./internal/operators/min":553,"./internal/operators/multicast":554,"./internal/operators/observeOn":555,"./internal/operators/onErrorResumeNextWith":556,"./internal/operators/pairwise":557,"./internal/operators/pluck":559,"./internal/operators/publish":560,"./internal/operators/publishBehavior":561,"./internal/operators/publishLast":562,"./internal/operators/publishReplay":563,"./internal/operators/raceWith":565,"./internal/operators/reduce":566,"./internal/operators/refCount":567,"./internal/operators/repeat":568,"./internal/operators/repeatWhen":569,"./internal/operators/retry":570,"./internal/operators/retryWhen":571,"./internal/operators/sample":572,"./internal/operators/sampleTime":573,"./internal/operators/scan":574,"./internal/operators/sequenceEqual":576,"./internal/operators/share":577,"./internal/operators/shareReplay":578,"./internal/operators/single":579,"./internal/operators/skip":580,"./internal/operators/skipLast":581,"./internal/operators/skipUntil":582,"./internal/operators/skipWhile":583,"./internal/operators/startWith":584,"./internal/operators/subscribeOn":585,"./internal/operators/switchAll":586,"./internal/operators/switchMap":587,"./internal/operators/switchMapTo":588,"./internal/operators/switchScan":589,"./internal/operators/take":590,"./internal/operators/takeLast":591,"./internal/operators/takeUntil":592,"./internal/operators/takeWhile":593,"./internal/operators/tap":594,"./internal/operators/throttle":595,"./internal/operators/throttleTime":596,"./internal/operators/throwIfEmpty":597,"./internal/operators/timeInterval":598,"./internal/operators/timeout":599,"./internal/operators/timeoutWith":600,"./internal/operators/timestamp":601,"./internal/operators/toArray":602,"./internal/operators/window":603,"./internal/operators/windowCount":604,"./internal/operators/windowTime":605,"./internal/operators/windowToggle":606,"./internal/operators/windowWhen":607,"./internal/operators/withLatestFrom":608,"./internal/operators/zipAll":610,"./internal/operators/zipWith":611,"./internal/scheduled/scheduled":618,"./internal/scheduler/VirtualTimeScheduler":628,"./internal/scheduler/animationFrame":629,"./internal/scheduler/asap":631,"./internal/scheduler/async":632,"./internal/scheduler/queue":637,"./internal/symbol/observable":640,"./internal/types":641,"./internal/util/ArgumentOutOfRangeError":642,"./internal/util/EmptyError":643,"./internal/util/NotFoundError":645,"./internal/util/ObjectUnsubscribedError":646,"./internal/util/SequenceError":647,"./internal/util/UnsubscriptionError":648,"./internal/util/identity":657,"./internal/util/isObservable":664,"./internal/util/noop":670,"./internal/util/pipe":672}],451:[function(require,module,exports){
+},{"./internal/AsyncSubject":664,"./internal/BehaviorSubject":665,"./internal/Notification":666,"./internal/Observable":668,"./internal/ReplaySubject":669,"./internal/Scheduler":670,"./internal/Subject":671,"./internal/Subscriber":672,"./internal/Subscription":673,"./internal/config":674,"./internal/firstValueFrom":675,"./internal/lastValueFrom":676,"./internal/observable/ConnectableObservable":677,"./internal/observable/bindCallback":678,"./internal/observable/bindNodeCallback":680,"./internal/observable/combineLatest":681,"./internal/observable/concat":682,"./internal/observable/connectable":683,"./internal/observable/defer":684,"./internal/observable/dom/animationFrames":685,"./internal/observable/empty":686,"./internal/observable/forkJoin":687,"./internal/observable/from":688,"./internal/observable/fromEvent":689,"./internal/observable/fromEventPattern":690,"./internal/observable/generate":692,"./internal/observable/iif":693,"./internal/observable/interval":695,"./internal/observable/merge":696,"./internal/observable/never":697,"./internal/observable/of":698,"./internal/observable/onErrorResumeNext":699,"./internal/observable/pairs":700,"./internal/observable/partition":701,"./internal/observable/race":702,"./internal/observable/range":703,"./internal/observable/throwError":704,"./internal/observable/timer":705,"./internal/observable/using":706,"./internal/observable/zip":707,"./internal/operators/audit":709,"./internal/operators/auditTime":710,"./internal/operators/buffer":711,"./internal/operators/bufferCount":712,"./internal/operators/bufferTime":713,"./internal/operators/bufferToggle":714,"./internal/operators/bufferWhen":715,"./internal/operators/catchError":716,"./internal/operators/combineAll":717,"./internal/operators/combineLatestAll":719,"./internal/operators/combineLatestWith":720,"./internal/operators/concatAll":722,"./internal/operators/concatMap":723,"./internal/operators/concatMapTo":724,"./internal/operators/concatWith":725,"./internal/operators/connect":726,"./internal/operators/count":727,"./internal/operators/debounce":728,"./internal/operators/debounceTime":729,"./internal/operators/defaultIfEmpty":730,"./internal/operators/delay":731,"./internal/operators/delayWhen":732,"./internal/operators/dematerialize":733,"./internal/operators/distinct":734,"./internal/operators/distinctUntilChanged":735,"./internal/operators/distinctUntilKeyChanged":736,"./internal/operators/elementAt":737,"./internal/operators/endWith":738,"./internal/operators/every":739,"./internal/operators/exhaust":740,"./internal/operators/exhaustAll":741,"./internal/operators/exhaustMap":742,"./internal/operators/expand":743,"./internal/operators/filter":744,"./internal/operators/finalize":745,"./internal/operators/find":746,"./internal/operators/findIndex":747,"./internal/operators/first":748,"./internal/operators/flatMap":749,"./internal/operators/groupBy":750,"./internal/operators/ignoreElements":751,"./internal/operators/isEmpty":752,"./internal/operators/last":754,"./internal/operators/map":755,"./internal/operators/mapTo":756,"./internal/operators/materialize":757,"./internal/operators/max":758,"./internal/operators/mergeAll":760,"./internal/operators/mergeMap":762,"./internal/operators/mergeMapTo":763,"./internal/operators/mergeScan":764,"./internal/operators/mergeWith":765,"./internal/operators/min":766,"./internal/operators/multicast":767,"./internal/operators/observeOn":768,"./internal/operators/onErrorResumeNextWith":769,"./internal/operators/pairwise":770,"./internal/operators/pluck":772,"./internal/operators/publish":773,"./internal/operators/publishBehavior":774,"./internal/operators/publishLast":775,"./internal/operators/publishReplay":776,"./internal/operators/raceWith":778,"./internal/operators/reduce":779,"./internal/operators/refCount":780,"./internal/operators/repeat":781,"./internal/operators/repeatWhen":782,"./internal/operators/retry":783,"./internal/operators/retryWhen":784,"./internal/operators/sample":785,"./internal/operators/sampleTime":786,"./internal/operators/scan":787,"./internal/operators/sequenceEqual":789,"./internal/operators/share":790,"./internal/operators/shareReplay":791,"./internal/operators/single":792,"./internal/operators/skip":793,"./internal/operators/skipLast":794,"./internal/operators/skipUntil":795,"./internal/operators/skipWhile":796,"./internal/operators/startWith":797,"./internal/operators/subscribeOn":798,"./internal/operators/switchAll":799,"./internal/operators/switchMap":800,"./internal/operators/switchMapTo":801,"./internal/operators/switchScan":802,"./internal/operators/take":803,"./internal/operators/takeLast":804,"./internal/operators/takeUntil":805,"./internal/operators/takeWhile":806,"./internal/operators/tap":807,"./internal/operators/throttle":808,"./internal/operators/throttleTime":809,"./internal/operators/throwIfEmpty":810,"./internal/operators/timeInterval":811,"./internal/operators/timeout":812,"./internal/operators/timeoutWith":813,"./internal/operators/timestamp":814,"./internal/operators/toArray":815,"./internal/operators/window":816,"./internal/operators/windowCount":817,"./internal/operators/windowTime":818,"./internal/operators/windowToggle":819,"./internal/operators/windowWhen":820,"./internal/operators/withLatestFrom":821,"./internal/operators/zipAll":823,"./internal/operators/zipWith":824,"./internal/scheduled/scheduled":831,"./internal/scheduler/VirtualTimeScheduler":841,"./internal/scheduler/animationFrame":842,"./internal/scheduler/asap":844,"./internal/scheduler/async":845,"./internal/scheduler/queue":850,"./internal/symbol/observable":853,"./internal/types":854,"./internal/util/ArgumentOutOfRangeError":855,"./internal/util/EmptyError":856,"./internal/util/NotFoundError":858,"./internal/util/ObjectUnsubscribedError":859,"./internal/util/SequenceError":860,"./internal/util/UnsubscriptionError":861,"./internal/util/identity":870,"./internal/util/isObservable":877,"./internal/util/noop":883,"./internal/util/pipe":885}],664:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -27146,7 +32834,7 @@ var AsyncSubject = (function (_super) {
 }(Subject_1.Subject));
 exports.AsyncSubject = AsyncSubject;
 
-},{"./Subject":458}],452:[function(require,module,exports){
+},{"./Subject":671}],665:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -27200,7 +32888,7 @@ var BehaviorSubject = (function (_super) {
 }(Subject_1.Subject));
 exports.BehaviorSubject = BehaviorSubject;
 
-},{"./Subject":458}],453:[function(require,module,exports){
+},{"./Subject":671}],666:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.observeNotification = exports.Notification = exports.NotificationKind = void 0;
@@ -27277,7 +32965,7 @@ function observeNotification(notification, observer) {
 }
 exports.observeNotification = observeNotification;
 
-},{"./observable/empty":473,"./observable/of":485,"./observable/throwError":491,"./util/isFunction":661}],454:[function(require,module,exports){
+},{"./observable/empty":686,"./observable/of":698,"./observable/throwError":704,"./util/isFunction":874}],667:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createNotification = exports.nextNotification = exports.errorNotification = exports.COMPLETE_NOTIFICATION = void 0;
@@ -27299,7 +32987,7 @@ function createNotification(kind, value, error) {
 }
 exports.createNotification = createNotification;
 
-},{}],455:[function(require,module,exports){
+},{}],668:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Observable = void 0;
@@ -27405,7 +33093,7 @@ function isSubscriber(value) {
     return (value && value instanceof Subscriber_1.Subscriber) || (isObserver(value) && Subscription_1.isSubscription(value));
 }
 
-},{"./Subscriber":459,"./Subscription":460,"./config":461,"./symbol/observable":640,"./util/errorContext":655,"./util/isFunction":661,"./util/pipe":672}],456:[function(require,module,exports){
+},{"./Subscriber":672,"./Subscription":673,"./config":674,"./symbol/observable":853,"./util/errorContext":868,"./util/isFunction":874,"./util/pipe":885}],669:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -27481,7 +33169,7 @@ var ReplaySubject = (function (_super) {
 }(Subject_1.Subject));
 exports.ReplaySubject = ReplaySubject;
 
-},{"./Subject":458,"./scheduler/dateTimestampProvider":633}],457:[function(require,module,exports){
+},{"./Subject":671,"./scheduler/dateTimestampProvider":846}],670:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.Scheduler = void 0;
@@ -27501,7 +33189,7 @@ var Scheduler = (function () {
 }());
 exports.Scheduler = Scheduler;
 
-},{"./scheduler/dateTimestampProvider":633}],458:[function(require,module,exports){
+},{"./scheduler/dateTimestampProvider":846}],671:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -27692,7 +33380,7 @@ var AnonymousSubject = (function (_super) {
 }(Subject));
 exports.AnonymousSubject = AnonymousSubject;
 
-},{"./Observable":455,"./Subscription":460,"./util/ObjectUnsubscribedError":646,"./util/arrRemove":652,"./util/errorContext":655}],459:[function(require,module,exports){
+},{"./Observable":668,"./Subscription":673,"./util/ObjectUnsubscribedError":859,"./util/arrRemove":865,"./util/errorContext":868}],672:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -27894,7 +33582,7 @@ exports.EMPTY_OBSERVER = {
     complete: noop_1.noop,
 };
 
-},{"./NotificationFactories":454,"./Subscription":460,"./config":461,"./scheduler/timeoutProvider":638,"./util/errorContext":655,"./util/isFunction":661,"./util/noop":670,"./util/reportUnhandledError":673}],460:[function(require,module,exports){
+},{"./NotificationFactories":667,"./Subscription":673,"./config":674,"./scheduler/timeoutProvider":851,"./util/errorContext":868,"./util/isFunction":874,"./util/noop":883,"./util/reportUnhandledError":886}],673:[function(require,module,exports){
 "use strict";
 var __values = (this && this.__values) || function(o) {
     var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
@@ -28073,7 +33761,7 @@ function execFinalizer(finalizer) {
     }
 }
 
-},{"./util/UnsubscriptionError":648,"./util/arrRemove":652,"./util/isFunction":661}],461:[function(require,module,exports){
+},{"./util/UnsubscriptionError":861,"./util/arrRemove":865,"./util/isFunction":874}],674:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.config = void 0;
@@ -28085,7 +33773,7 @@ exports.config = {
     useDeprecatedNextContext: false,
 };
 
-},{}],462:[function(require,module,exports){
+},{}],675:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.firstValueFrom = void 0;
@@ -28114,7 +33802,7 @@ function firstValueFrom(source, config) {
 }
 exports.firstValueFrom = firstValueFrom;
 
-},{"./Subscriber":459,"./util/EmptyError":643}],463:[function(require,module,exports){
+},{"./Subscriber":672,"./util/EmptyError":856}],676:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.lastValueFrom = void 0;
@@ -28146,7 +33834,7 @@ function lastValueFrom(source, config) {
 }
 exports.lastValueFrom = lastValueFrom;
 
-},{"./util/EmptyError":643}],464:[function(require,module,exports){
+},{"./util/EmptyError":856}],677:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -28227,7 +33915,7 @@ var ConnectableObservable = (function (_super) {
 }(Observable_1.Observable));
 exports.ConnectableObservable = ConnectableObservable;
 
-},{"../Observable":455,"../Subscription":460,"../operators/OperatorSubscriber":495,"../operators/refCount":567,"../util/lift":668}],465:[function(require,module,exports){
+},{"../Observable":668,"../Subscription":673,"../operators/OperatorSubscriber":708,"../operators/refCount":780,"../util/lift":881}],678:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.bindCallback = void 0;
@@ -28237,7 +33925,7 @@ function bindCallback(callbackFunc, resultSelector, scheduler) {
 }
 exports.bindCallback = bindCallback;
 
-},{"./bindCallbackInternals":466}],466:[function(require,module,exports){
+},{"./bindCallbackInternals":679}],679:[function(require,module,exports){
 "use strict";
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -28341,7 +34029,7 @@ function bindCallbackInternals(isNodeStyle, callbackFunc, resultSelector, schedu
 }
 exports.bindCallbackInternals = bindCallbackInternals;
 
-},{"../AsyncSubject":451,"../Observable":455,"../operators/observeOn":555,"../operators/subscribeOn":585,"../util/isScheduler":667,"../util/mapOneOrManyArgs":669}],467:[function(require,module,exports){
+},{"../AsyncSubject":664,"../Observable":668,"../operators/observeOn":768,"../operators/subscribeOn":798,"../util/isScheduler":880,"../util/mapOneOrManyArgs":882}],680:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.bindNodeCallback = void 0;
@@ -28351,7 +34039,7 @@ function bindNodeCallback(callbackFunc, resultSelector, scheduler) {
 }
 exports.bindNodeCallback = bindNodeCallback;
 
-},{"./bindCallbackInternals":466}],468:[function(require,module,exports){
+},{"./bindCallbackInternals":679}],681:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.combineLatestInit = exports.combineLatest = void 0;
@@ -28427,7 +34115,7 @@ function maybeSchedule(scheduler, execute, subscription) {
     }
 }
 
-},{"../Observable":455,"../operators/OperatorSubscriber":495,"../util/args":649,"../util/argsArgArrayOrObject":650,"../util/createObject":654,"../util/executeSchedule":656,"../util/identity":657,"../util/mapOneOrManyArgs":669,"./from":475}],469:[function(require,module,exports){
+},{"../Observable":668,"../operators/OperatorSubscriber":708,"../util/args":862,"../util/argsArgArrayOrObject":863,"../util/createObject":867,"../util/executeSchedule":869,"../util/identity":870,"../util/mapOneOrManyArgs":882,"./from":688}],682:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.concat = void 0;
@@ -28443,7 +34131,7 @@ function concat() {
 }
 exports.concat = concat;
 
-},{"../operators/concatAll":509,"../util/args":649,"./from":475}],470:[function(require,module,exports){
+},{"../operators/concatAll":722,"../util/args":862,"./from":688}],683:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.connectable = void 0;
@@ -28475,7 +34163,7 @@ function connectable(source, config) {
 }
 exports.connectable = connectable;
 
-},{"../Observable":455,"../Subject":458,"./defer":471}],471:[function(require,module,exports){
+},{"../Observable":668,"../Subject":671,"./defer":684}],684:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.defer = void 0;
@@ -28488,7 +34176,7 @@ function defer(observableFactory) {
 }
 exports.defer = defer;
 
-},{"../Observable":455,"./innerFrom":481}],472:[function(require,module,exports){
+},{"../Observable":668,"./innerFrom":694}],685:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.animationFrames = void 0;
@@ -28527,7 +34215,7 @@ function animationFramesFactory(timestampProvider) {
 }
 var DEFAULT_ANIMATION_FRAMES = animationFramesFactory();
 
-},{"../../Observable":455,"../../scheduler/animationFrameProvider":630,"../../scheduler/performanceTimestampProvider":636}],473:[function(require,module,exports){
+},{"../../Observable":668,"../../scheduler/animationFrameProvider":843,"../../scheduler/performanceTimestampProvider":849}],686:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.empty = exports.EMPTY = void 0;
@@ -28541,7 +34229,7 @@ function emptyScheduled(scheduler) {
     return new Observable_1.Observable(function (subscriber) { return scheduler.schedule(function () { return subscriber.complete(); }); });
 }
 
-},{"../Observable":455}],474:[function(require,module,exports){
+},{"../Observable":668}],687:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.forkJoin = void 0;
@@ -28593,7 +34281,7 @@ function forkJoin() {
 }
 exports.forkJoin = forkJoin;
 
-},{"../Observable":455,"../operators/OperatorSubscriber":495,"../util/args":649,"../util/argsArgArrayOrObject":650,"../util/createObject":654,"../util/mapOneOrManyArgs":669,"./innerFrom":481}],475:[function(require,module,exports){
+},{"../Observable":668,"../operators/OperatorSubscriber":708,"../util/args":862,"../util/argsArgArrayOrObject":863,"../util/createObject":867,"../util/mapOneOrManyArgs":882,"./innerFrom":694}],688:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.from = void 0;
@@ -28604,7 +34292,7 @@ function from(input, scheduler) {
 }
 exports.from = from;
 
-},{"../scheduled/scheduled":618,"./innerFrom":481}],476:[function(require,module,exports){
+},{"../scheduled/scheduled":831,"./innerFrom":694}],689:[function(require,module,exports){
 "use strict";
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -28683,7 +34371,7 @@ function isEventTarget(target) {
     return isFunction_1.isFunction(target.addEventListener) && isFunction_1.isFunction(target.removeEventListener);
 }
 
-},{"../Observable":455,"../observable/innerFrom":481,"../operators/mergeMap":549,"../util/isArrayLike":658,"../util/isFunction":661,"../util/mapOneOrManyArgs":669}],477:[function(require,module,exports){
+},{"../Observable":668,"../observable/innerFrom":694,"../operators/mergeMap":762,"../util/isArrayLike":871,"../util/isFunction":874,"../util/mapOneOrManyArgs":882}],690:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.fromEventPattern = void 0;
@@ -28708,7 +34396,7 @@ function fromEventPattern(addHandler, removeHandler, resultSelector) {
 }
 exports.fromEventPattern = fromEventPattern;
 
-},{"../Observable":455,"../util/isFunction":661,"../util/mapOneOrManyArgs":669}],478:[function(require,module,exports){
+},{"../Observable":668,"../util/isFunction":874,"../util/mapOneOrManyArgs":882}],691:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.fromSubscribable = void 0;
@@ -28718,7 +34406,7 @@ function fromSubscribable(subscribable) {
 }
 exports.fromSubscribable = fromSubscribable;
 
-},{"../Observable":455}],479:[function(require,module,exports){
+},{"../Observable":668}],692:[function(require,module,exports){
 "use strict";
 var __generator = (this && this.__generator) || function (thisArg, body) {
     var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
@@ -28798,7 +34486,7 @@ function generate(initialStateOrOptions, condition, iterate, resultSelectorOrSch
 }
 exports.generate = generate;
 
-},{"../scheduled/scheduleIterable":614,"../util/identity":657,"../util/isScheduler":667,"./defer":471}],480:[function(require,module,exports){
+},{"../scheduled/scheduleIterable":827,"../util/identity":870,"../util/isScheduler":880,"./defer":684}],693:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.iif = void 0;
@@ -28808,7 +34496,7 @@ function iif(condition, trueResult, falseResult) {
 }
 exports.iif = iif;
 
-},{"./defer":471}],481:[function(require,module,exports){
+},{"./defer":684}],694:[function(require,module,exports){
 (function (process){(function (){
 "use strict";
 var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, generator) {
@@ -29017,7 +34705,7 @@ function process(asyncIterable, subscriber) {
 }
 
 }).call(this)}).call(this,require('_process'))
-},{"../Observable":455,"../symbol/observable":640,"../util/isArrayLike":658,"../util/isAsyncIterable":659,"../util/isFunction":661,"../util/isInteropObservable":662,"../util/isIterable":663,"../util/isPromise":665,"../util/isReadableStreamLike":666,"../util/reportUnhandledError":673,"../util/throwUnobservableError":674,"_process":448}],482:[function(require,module,exports){
+},{"../Observable":668,"../symbol/observable":853,"../util/isArrayLike":871,"../util/isAsyncIterable":872,"../util/isFunction":874,"../util/isInteropObservable":875,"../util/isIterable":876,"../util/isPromise":878,"../util/isReadableStreamLike":879,"../util/reportUnhandledError":886,"../util/throwUnobservableError":887,"_process":661}],695:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.interval = void 0;
@@ -29033,7 +34721,7 @@ function interval(period, scheduler) {
 }
 exports.interval = interval;
 
-},{"../scheduler/async":632,"./timer":492}],483:[function(require,module,exports){
+},{"../scheduler/async":845,"./timer":705}],696:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.merge = void 0;
@@ -29061,7 +34749,7 @@ function merge() {
 }
 exports.merge = merge;
 
-},{"../operators/mergeAll":547,"../util/args":649,"./empty":473,"./from":475,"./innerFrom":481}],484:[function(require,module,exports){
+},{"../operators/mergeAll":760,"../util/args":862,"./empty":686,"./from":688,"./innerFrom":694}],697:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.never = exports.NEVER = void 0;
@@ -29073,7 +34761,7 @@ function never() {
 }
 exports.never = never;
 
-},{"../Observable":455,"../util/noop":670}],485:[function(require,module,exports){
+},{"../Observable":668,"../util/noop":883}],698:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.of = void 0;
@@ -29089,7 +34777,7 @@ function of() {
 }
 exports.of = of;
 
-},{"../util/args":649,"./from":475}],486:[function(require,module,exports){
+},{"../util/args":862,"./from":688}],699:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.onErrorResumeNext = void 0;
@@ -29129,7 +34817,7 @@ function onErrorResumeNext() {
 }
 exports.onErrorResumeNext = onErrorResumeNext;
 
-},{"../Observable":455,"../operators/OperatorSubscriber":495,"../util/argsOrArgArray":651,"../util/noop":670,"./innerFrom":481}],487:[function(require,module,exports){
+},{"../Observable":668,"../operators/OperatorSubscriber":708,"../util/argsOrArgArray":864,"../util/noop":883,"./innerFrom":694}],700:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.pairs = void 0;
@@ -29139,7 +34827,7 @@ function pairs(obj, scheduler) {
 }
 exports.pairs = pairs;
 
-},{"./from":475}],488:[function(require,module,exports){
+},{"./from":688}],701:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.partition = void 0;
@@ -29151,7 +34839,7 @@ function partition(source, predicate, thisArg) {
 }
 exports.partition = partition;
 
-},{"../operators/filter":531,"../util/not":671,"./innerFrom":481}],489:[function(require,module,exports){
+},{"../operators/filter":744,"../util/not":884,"./innerFrom":694}],702:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.raceInit = exports.race = void 0;
@@ -29189,7 +34877,7 @@ function raceInit(sources) {
 }
 exports.raceInit = raceInit;
 
-},{"../Observable":455,"../operators/OperatorSubscriber":495,"../util/argsOrArgArray":651,"./innerFrom":481}],490:[function(require,module,exports){
+},{"../Observable":668,"../operators/OperatorSubscriber":708,"../util/argsOrArgArray":864,"./innerFrom":694}],703:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.range = void 0;
@@ -29229,7 +34917,7 @@ function range(start, count, scheduler) {
 }
 exports.range = range;
 
-},{"../Observable":455,"./empty":473}],491:[function(require,module,exports){
+},{"../Observable":668,"./empty":686}],704:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.throwError = void 0;
@@ -29242,7 +34930,7 @@ function throwError(errorOrErrorFactory, scheduler) {
 }
 exports.throwError = throwError;
 
-},{"../Observable":455,"../util/isFunction":661}],492:[function(require,module,exports){
+},{"../Observable":668,"../util/isFunction":874}],705:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.timer = void 0;
@@ -29283,7 +34971,7 @@ function timer(dueTime, intervalOrScheduler, scheduler) {
 }
 exports.timer = timer;
 
-},{"../Observable":455,"../scheduler/async":632,"../util/isDate":660,"../util/isScheduler":667}],493:[function(require,module,exports){
+},{"../Observable":668,"../scheduler/async":845,"../util/isDate":873,"../util/isScheduler":880}],706:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.using = void 0;
@@ -29305,7 +34993,7 @@ function using(resourceFactory, observableFactory) {
 }
 exports.using = using;
 
-},{"../Observable":455,"./empty":473,"./innerFrom":481}],494:[function(require,module,exports){
+},{"../Observable":668,"./empty":686,"./innerFrom":694}],707:[function(require,module,exports){
 "use strict";
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -29376,7 +35064,7 @@ function zip() {
 }
 exports.zip = zip;
 
-},{"../Observable":455,"../operators/OperatorSubscriber":495,"../util/args":649,"../util/argsOrArgArray":651,"./empty":473,"./innerFrom":481}],495:[function(require,module,exports){
+},{"../Observable":668,"../operators/OperatorSubscriber":708,"../util/args":862,"../util/argsOrArgArray":864,"./empty":686,"./innerFrom":694}],708:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -29456,7 +35144,7 @@ var OperatorSubscriber = (function (_super) {
 }(Subscriber_1.Subscriber));
 exports.OperatorSubscriber = OperatorSubscriber;
 
-},{"../Subscriber":459}],496:[function(require,module,exports){
+},{"../Subscriber":672}],709:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.audit = void 0;
@@ -29498,7 +35186,7 @@ function audit(durationSelector) {
 }
 exports.audit = audit;
 
-},{"../observable/innerFrom":481,"../util/lift":668,"./OperatorSubscriber":495}],497:[function(require,module,exports){
+},{"../observable/innerFrom":694,"../util/lift":881,"./OperatorSubscriber":708}],710:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.auditTime = void 0;
@@ -29511,7 +35199,7 @@ function auditTime(duration, scheduler) {
 }
 exports.auditTime = auditTime;
 
-},{"../observable/timer":492,"../scheduler/async":632,"./audit":496}],498:[function(require,module,exports){
+},{"../observable/timer":705,"../scheduler/async":845,"./audit":709}],711:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.buffer = void 0;
@@ -29538,7 +35226,7 @@ function buffer(closingNotifier) {
 }
 exports.buffer = buffer;
 
-},{"../observable/innerFrom":481,"../util/lift":668,"../util/noop":670,"./OperatorSubscriber":495}],499:[function(require,module,exports){
+},{"../observable/innerFrom":694,"../util/lift":881,"../util/noop":883,"./OperatorSubscriber":708}],712:[function(require,module,exports){
 "use strict";
 var __values = (this && this.__values) || function(o) {
     var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
@@ -29624,7 +35312,7 @@ function bufferCount(bufferSize, startBufferEvery) {
 }
 exports.bufferCount = bufferCount;
 
-},{"../util/arrRemove":652,"../util/lift":668,"./OperatorSubscriber":495}],500:[function(require,module,exports){
+},{"../util/arrRemove":865,"../util/lift":881,"./OperatorSubscriber":708}],713:[function(require,module,exports){
 "use strict";
 var __values = (this && this.__values) || function(o) {
     var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
@@ -29716,7 +35404,7 @@ function bufferTime(bufferTimeSpan) {
 }
 exports.bufferTime = bufferTime;
 
-},{"../Subscription":460,"../scheduler/async":632,"../util/args":649,"../util/arrRemove":652,"../util/executeSchedule":656,"../util/lift":668,"./OperatorSubscriber":495}],501:[function(require,module,exports){
+},{"../Subscription":673,"../scheduler/async":845,"../util/args":862,"../util/arrRemove":865,"../util/executeSchedule":869,"../util/lift":881,"./OperatorSubscriber":708}],714:[function(require,module,exports){
 "use strict";
 var __values = (this && this.__values) || function(o) {
     var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
@@ -29776,7 +35464,7 @@ function bufferToggle(openings, closingSelector) {
 }
 exports.bufferToggle = bufferToggle;
 
-},{"../Subscription":460,"../observable/innerFrom":481,"../util/arrRemove":652,"../util/lift":668,"../util/noop":670,"./OperatorSubscriber":495}],502:[function(require,module,exports){
+},{"../Subscription":673,"../observable/innerFrom":694,"../util/arrRemove":865,"../util/lift":881,"../util/noop":883,"./OperatorSubscriber":708}],715:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.bufferWhen = void 0;
@@ -29804,7 +35492,7 @@ function bufferWhen(closingSelector) {
 }
 exports.bufferWhen = bufferWhen;
 
-},{"../observable/innerFrom":481,"../util/lift":668,"../util/noop":670,"./OperatorSubscriber":495}],503:[function(require,module,exports){
+},{"../observable/innerFrom":694,"../util/lift":881,"../util/noop":883,"./OperatorSubscriber":708}],716:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.catchError = void 0;
@@ -29836,14 +35524,14 @@ function catchError(selector) {
 }
 exports.catchError = catchError;
 
-},{"../observable/innerFrom":481,"../util/lift":668,"./OperatorSubscriber":495}],504:[function(require,module,exports){
+},{"../observable/innerFrom":694,"../util/lift":881,"./OperatorSubscriber":708}],717:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.combineAll = void 0;
 var combineLatestAll_1 = require("./combineLatestAll");
 exports.combineAll = combineLatestAll_1.combineLatestAll;
 
-},{"./combineLatestAll":506}],505:[function(require,module,exports){
+},{"./combineLatestAll":719}],718:[function(require,module,exports){
 "use strict";
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -29888,7 +35576,7 @@ function combineLatest() {
 }
 exports.combineLatest = combineLatest;
 
-},{"../observable/combineLatest":468,"../util/args":649,"../util/argsOrArgArray":651,"../util/lift":668,"../util/mapOneOrManyArgs":669,"../util/pipe":672}],506:[function(require,module,exports){
+},{"../observable/combineLatest":681,"../util/args":862,"../util/argsOrArgArray":864,"../util/lift":881,"../util/mapOneOrManyArgs":882,"../util/pipe":885}],719:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.combineLatestAll = void 0;
@@ -29899,7 +35587,7 @@ function combineLatestAll(project) {
 }
 exports.combineLatestAll = combineLatestAll;
 
-},{"../observable/combineLatest":468,"./joinAllInternals":540}],507:[function(require,module,exports){
+},{"../observable/combineLatest":681,"./joinAllInternals":753}],720:[function(require,module,exports){
 "use strict";
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -29934,7 +35622,7 @@ function combineLatestWith() {
 }
 exports.combineLatestWith = combineLatestWith;
 
-},{"./combineLatest":505}],508:[function(require,module,exports){
+},{"./combineLatest":718}],721:[function(require,module,exports){
 "use strict";
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -29975,7 +35663,7 @@ function concat() {
 }
 exports.concat = concat;
 
-},{"../observable/from":475,"../util/args":649,"../util/lift":668,"./concatAll":509}],509:[function(require,module,exports){
+},{"../observable/from":688,"../util/args":862,"../util/lift":881,"./concatAll":722}],722:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.concatAll = void 0;
@@ -29985,7 +35673,7 @@ function concatAll() {
 }
 exports.concatAll = concatAll;
 
-},{"./mergeAll":547}],510:[function(require,module,exports){
+},{"./mergeAll":760}],723:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.concatMap = void 0;
@@ -29996,7 +35684,7 @@ function concatMap(project, resultSelector) {
 }
 exports.concatMap = concatMap;
 
-},{"../util/isFunction":661,"./mergeMap":549}],511:[function(require,module,exports){
+},{"../util/isFunction":874,"./mergeMap":762}],724:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.concatMapTo = void 0;
@@ -30007,7 +35695,7 @@ function concatMapTo(innerObservable, resultSelector) {
 }
 exports.concatMapTo = concatMapTo;
 
-},{"../util/isFunction":661,"./concatMap":510}],512:[function(require,module,exports){
+},{"../util/isFunction":874,"./concatMap":723}],725:[function(require,module,exports){
 "use strict";
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -30042,7 +35730,7 @@ function concatWith() {
 }
 exports.concatWith = concatWith;
 
-},{"./concat":508}],513:[function(require,module,exports){
+},{"./concat":721}],726:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.connect = void 0;
@@ -30064,7 +35752,7 @@ function connect(selector, config) {
 }
 exports.connect = connect;
 
-},{"../Subject":458,"../observable/fromSubscribable":478,"../observable/innerFrom":481,"../util/lift":668}],514:[function(require,module,exports){
+},{"../Subject":671,"../observable/fromSubscribable":691,"../observable/innerFrom":694,"../util/lift":881}],727:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.count = void 0;
@@ -30074,7 +35762,7 @@ function count(predicate) {
 }
 exports.count = count;
 
-},{"./reduce":566}],515:[function(require,module,exports){
+},{"./reduce":779}],728:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.debounce = void 0;
@@ -30113,7 +35801,7 @@ function debounce(durationSelector) {
 }
 exports.debounce = debounce;
 
-},{"../observable/innerFrom":481,"../util/lift":668,"../util/noop":670,"./OperatorSubscriber":495}],516:[function(require,module,exports){
+},{"../observable/innerFrom":694,"../util/lift":881,"../util/noop":883,"./OperatorSubscriber":708}],729:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.debounceTime = void 0;
@@ -30162,7 +35850,7 @@ function debounceTime(dueTime, scheduler) {
 }
 exports.debounceTime = debounceTime;
 
-},{"../scheduler/async":632,"../util/lift":668,"./OperatorSubscriber":495}],517:[function(require,module,exports){
+},{"../scheduler/async":845,"../util/lift":881,"./OperatorSubscriber":708}],730:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.defaultIfEmpty = void 0;
@@ -30184,7 +35872,7 @@ function defaultIfEmpty(defaultValue) {
 }
 exports.defaultIfEmpty = defaultIfEmpty;
 
-},{"../util/lift":668,"./OperatorSubscriber":495}],518:[function(require,module,exports){
+},{"../util/lift":881,"./OperatorSubscriber":708}],731:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.delay = void 0;
@@ -30198,7 +35886,7 @@ function delay(due, scheduler) {
 }
 exports.delay = delay;
 
-},{"../observable/timer":492,"../scheduler/async":632,"./delayWhen":519}],519:[function(require,module,exports){
+},{"../observable/timer":705,"../scheduler/async":845,"./delayWhen":732}],732:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.delayWhen = void 0;
@@ -30218,7 +35906,7 @@ function delayWhen(delayDurationSelector, subscriptionDelay) {
 }
 exports.delayWhen = delayWhen;
 
-},{"../observable/concat":469,"../observable/innerFrom":481,"./ignoreElements":538,"./mapTo":543,"./mergeMap":549,"./take":590}],520:[function(require,module,exports){
+},{"../observable/concat":682,"../observable/innerFrom":694,"./ignoreElements":751,"./mapTo":756,"./mergeMap":762,"./take":803}],733:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.dematerialize = void 0;
@@ -30232,7 +35920,7 @@ function dematerialize() {
 }
 exports.dematerialize = dematerialize;
 
-},{"../Notification":453,"../util/lift":668,"./OperatorSubscriber":495}],521:[function(require,module,exports){
+},{"../Notification":666,"../util/lift":881,"./OperatorSubscriber":708}],734:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.distinct = void 0;
@@ -30255,7 +35943,7 @@ function distinct(keySelector, flushes) {
 }
 exports.distinct = distinct;
 
-},{"../observable/innerFrom":481,"../util/lift":668,"../util/noop":670,"./OperatorSubscriber":495}],522:[function(require,module,exports){
+},{"../observable/innerFrom":694,"../util/lift":881,"../util/noop":883,"./OperatorSubscriber":708}],735:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.distinctUntilChanged = void 0;
@@ -30283,7 +35971,7 @@ function defaultCompare(a, b) {
     return a === b;
 }
 
-},{"../util/identity":657,"../util/lift":668,"./OperatorSubscriber":495}],523:[function(require,module,exports){
+},{"../util/identity":870,"../util/lift":881,"./OperatorSubscriber":708}],736:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.distinctUntilKeyChanged = void 0;
@@ -30293,7 +35981,7 @@ function distinctUntilKeyChanged(key, compare) {
 }
 exports.distinctUntilKeyChanged = distinctUntilKeyChanged;
 
-},{"./distinctUntilChanged":522}],524:[function(require,module,exports){
+},{"./distinctUntilChanged":735}],737:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.elementAt = void 0;
@@ -30313,7 +36001,7 @@ function elementAt(index, defaultValue) {
 }
 exports.elementAt = elementAt;
 
-},{"../util/ArgumentOutOfRangeError":642,"./defaultIfEmpty":517,"./filter":531,"./take":590,"./throwIfEmpty":597}],525:[function(require,module,exports){
+},{"../util/ArgumentOutOfRangeError":855,"./defaultIfEmpty":730,"./filter":744,"./take":803,"./throwIfEmpty":810}],738:[function(require,module,exports){
 "use strict";
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -30349,7 +36037,7 @@ function endWith() {
 }
 exports.endWith = endWith;
 
-},{"../observable/concat":469,"../observable/of":485}],526:[function(require,module,exports){
+},{"../observable/concat":682,"../observable/of":698}],739:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.every = void 0;
@@ -30371,14 +36059,14 @@ function every(predicate, thisArg) {
 }
 exports.every = every;
 
-},{"../util/lift":668,"./OperatorSubscriber":495}],527:[function(require,module,exports){
+},{"../util/lift":881,"./OperatorSubscriber":708}],740:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.exhaust = void 0;
 var exhaustAll_1 = require("./exhaustAll");
 exports.exhaust = exhaustAll_1.exhaustAll;
 
-},{"./exhaustAll":528}],528:[function(require,module,exports){
+},{"./exhaustAll":741}],741:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.exhaustAll = void 0;
@@ -30389,7 +36077,7 @@ function exhaustAll() {
 }
 exports.exhaustAll = exhaustAll;
 
-},{"../util/identity":657,"./exhaustMap":529}],529:[function(require,module,exports){
+},{"../util/identity":870,"./exhaustMap":742}],742:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.exhaustMap = void 0;
@@ -30423,7 +36111,7 @@ function exhaustMap(project, resultSelector) {
 }
 exports.exhaustMap = exhaustMap;
 
-},{"../observable/innerFrom":481,"../util/lift":668,"./OperatorSubscriber":495,"./map":542}],530:[function(require,module,exports){
+},{"../observable/innerFrom":694,"../util/lift":881,"./OperatorSubscriber":708,"./map":755}],743:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.expand = void 0;
@@ -30438,7 +36126,7 @@ function expand(project, concurrent, scheduler) {
 }
 exports.expand = expand;
 
-},{"../util/lift":668,"./mergeInternals":548}],531:[function(require,module,exports){
+},{"../util/lift":881,"./mergeInternals":761}],744:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.filter = void 0;
@@ -30452,7 +36140,7 @@ function filter(predicate, thisArg) {
 }
 exports.filter = filter;
 
-},{"../util/lift":668,"./OperatorSubscriber":495}],532:[function(require,module,exports){
+},{"../util/lift":881,"./OperatorSubscriber":708}],745:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.finalize = void 0;
@@ -30469,7 +36157,7 @@ function finalize(callback) {
 }
 exports.finalize = finalize;
 
-},{"../util/lift":668}],533:[function(require,module,exports){
+},{"../util/lift":881}],746:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createFind = exports.find = void 0;
@@ -30497,7 +36185,7 @@ function createFind(predicate, thisArg, emit) {
 }
 exports.createFind = createFind;
 
-},{"../util/lift":668,"./OperatorSubscriber":495}],534:[function(require,module,exports){
+},{"../util/lift":881,"./OperatorSubscriber":708}],747:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.findIndex = void 0;
@@ -30508,7 +36196,7 @@ function findIndex(predicate, thisArg) {
 }
 exports.findIndex = findIndex;
 
-},{"../util/lift":668,"./find":533}],535:[function(require,module,exports){
+},{"../util/lift":881,"./find":746}],748:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.first = void 0;
@@ -30526,14 +36214,14 @@ function first(predicate, defaultValue) {
 }
 exports.first = first;
 
-},{"../util/EmptyError":643,"../util/identity":657,"./defaultIfEmpty":517,"./filter":531,"./take":590,"./throwIfEmpty":597}],536:[function(require,module,exports){
+},{"../util/EmptyError":856,"../util/identity":870,"./defaultIfEmpty":730,"./filter":744,"./take":803,"./throwIfEmpty":810}],749:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.flatMap = void 0;
 var mergeMap_1 = require("./mergeMap");
 exports.flatMap = mergeMap_1.mergeMap;
 
-},{"./mergeMap":549}],537:[function(require,module,exports){
+},{"./mergeMap":762}],750:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.groupBy = void 0;
@@ -30601,7 +36289,7 @@ function groupBy(keySelector, elementOrOptions, duration, connector) {
 }
 exports.groupBy = groupBy;
 
-},{"../Observable":455,"../Subject":458,"../observable/innerFrom":481,"../util/lift":668,"./OperatorSubscriber":495}],538:[function(require,module,exports){
+},{"../Observable":668,"../Subject":671,"../observable/innerFrom":694,"../util/lift":881,"./OperatorSubscriber":708}],751:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ignoreElements = void 0;
@@ -30615,7 +36303,7 @@ function ignoreElements() {
 }
 exports.ignoreElements = ignoreElements;
 
-},{"../util/lift":668,"../util/noop":670,"./OperatorSubscriber":495}],539:[function(require,module,exports){
+},{"../util/lift":881,"../util/noop":883,"./OperatorSubscriber":708}],752:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.isEmpty = void 0;
@@ -30634,7 +36322,7 @@ function isEmpty() {
 }
 exports.isEmpty = isEmpty;
 
-},{"../util/lift":668,"./OperatorSubscriber":495}],540:[function(require,module,exports){
+},{"../util/lift":881,"./OperatorSubscriber":708}],753:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.joinAllInternals = void 0;
@@ -30648,7 +36336,7 @@ function joinAllInternals(joinFn, project) {
 }
 exports.joinAllInternals = joinAllInternals;
 
-},{"../util/identity":657,"../util/mapOneOrManyArgs":669,"../util/pipe":672,"./mergeMap":549,"./toArray":602}],541:[function(require,module,exports){
+},{"../util/identity":870,"../util/mapOneOrManyArgs":882,"../util/pipe":885,"./mergeMap":762,"./toArray":815}],754:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.last = void 0;
@@ -30666,7 +36354,7 @@ function last(predicate, defaultValue) {
 }
 exports.last = last;
 
-},{"../util/EmptyError":643,"../util/identity":657,"./defaultIfEmpty":517,"./filter":531,"./takeLast":591,"./throwIfEmpty":597}],542:[function(require,module,exports){
+},{"../util/EmptyError":856,"../util/identity":870,"./defaultIfEmpty":730,"./filter":744,"./takeLast":804,"./throwIfEmpty":810}],755:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.map = void 0;
@@ -30682,7 +36370,7 @@ function map(project, thisArg) {
 }
 exports.map = map;
 
-},{"../util/lift":668,"./OperatorSubscriber":495}],543:[function(require,module,exports){
+},{"../util/lift":881,"./OperatorSubscriber":708}],756:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.mapTo = void 0;
@@ -30692,7 +36380,7 @@ function mapTo(value) {
 }
 exports.mapTo = mapTo;
 
-},{"./map":542}],544:[function(require,module,exports){
+},{"./map":755}],757:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.materialize = void 0;
@@ -30714,7 +36402,7 @@ function materialize() {
 }
 exports.materialize = materialize;
 
-},{"../Notification":453,"../util/lift":668,"./OperatorSubscriber":495}],545:[function(require,module,exports){
+},{"../Notification":666,"../util/lift":881,"./OperatorSubscriber":708}],758:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.max = void 0;
@@ -30725,7 +36413,7 @@ function max(comparer) {
 }
 exports.max = max;
 
-},{"../util/isFunction":661,"./reduce":566}],546:[function(require,module,exports){
+},{"../util/isFunction":874,"./reduce":779}],759:[function(require,module,exports){
 "use strict";
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -30769,7 +36457,7 @@ function merge() {
 }
 exports.merge = merge;
 
-},{"../observable/from":475,"../util/args":649,"../util/argsOrArgArray":651,"../util/lift":668,"./mergeAll":547}],547:[function(require,module,exports){
+},{"../observable/from":688,"../util/args":862,"../util/argsOrArgArray":864,"../util/lift":881,"./mergeAll":760}],760:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.mergeAll = void 0;
@@ -30781,7 +36469,7 @@ function mergeAll(concurrent) {
 }
 exports.mergeAll = mergeAll;
 
-},{"../util/identity":657,"./mergeMap":549}],548:[function(require,module,exports){
+},{"../util/identity":870,"./mergeMap":762}],761:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.mergeInternals = void 0;
@@ -30847,7 +36535,7 @@ function mergeInternals(source, subscriber, project, concurrent, onBeforeNext, e
 }
 exports.mergeInternals = mergeInternals;
 
-},{"../observable/innerFrom":481,"../util/executeSchedule":656,"./OperatorSubscriber":495}],549:[function(require,module,exports){
+},{"../observable/innerFrom":694,"../util/executeSchedule":869,"./OperatorSubscriber":708}],762:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.mergeMap = void 0;
@@ -30868,7 +36556,7 @@ function mergeMap(project, resultSelector, concurrent) {
 }
 exports.mergeMap = mergeMap;
 
-},{"../observable/innerFrom":481,"../util/isFunction":661,"../util/lift":668,"./map":542,"./mergeInternals":548}],550:[function(require,module,exports){
+},{"../observable/innerFrom":694,"../util/isFunction":874,"../util/lift":881,"./map":755,"./mergeInternals":761}],763:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.mergeMapTo = void 0;
@@ -30886,7 +36574,7 @@ function mergeMapTo(innerObservable, resultSelector, concurrent) {
 }
 exports.mergeMapTo = mergeMapTo;
 
-},{"../util/isFunction":661,"./mergeMap":549}],551:[function(require,module,exports){
+},{"../util/isFunction":874,"./mergeMap":762}],764:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.mergeScan = void 0;
@@ -30903,7 +36591,7 @@ function mergeScan(accumulator, seed, concurrent) {
 }
 exports.mergeScan = mergeScan;
 
-},{"../util/lift":668,"./mergeInternals":548}],552:[function(require,module,exports){
+},{"../util/lift":881,"./mergeInternals":761}],765:[function(require,module,exports){
 "use strict";
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -30938,7 +36626,7 @@ function mergeWith() {
 }
 exports.mergeWith = mergeWith;
 
-},{"./merge":546}],553:[function(require,module,exports){
+},{"./merge":759}],766:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.min = void 0;
@@ -30949,7 +36637,7 @@ function min(comparer) {
 }
 exports.min = min;
 
-},{"../util/isFunction":661,"./reduce":566}],554:[function(require,module,exports){
+},{"../util/isFunction":874,"./reduce":779}],767:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.multicast = void 0;
@@ -30967,7 +36655,7 @@ function multicast(subjectOrSubjectFactory, selector) {
 }
 exports.multicast = multicast;
 
-},{"../observable/ConnectableObservable":464,"../util/isFunction":661,"./connect":513}],555:[function(require,module,exports){
+},{"../observable/ConnectableObservable":677,"../util/isFunction":874,"./connect":726}],768:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.observeOn = void 0;
@@ -30982,7 +36670,7 @@ function observeOn(scheduler, delay) {
 }
 exports.observeOn = observeOn;
 
-},{"../util/executeSchedule":656,"../util/lift":668,"./OperatorSubscriber":495}],556:[function(require,module,exports){
+},{"../util/executeSchedule":869,"../util/lift":881,"./OperatorSubscriber":708}],769:[function(require,module,exports){
 "use strict";
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -31020,7 +36708,7 @@ function onErrorResumeNextWith() {
 exports.onErrorResumeNextWith = onErrorResumeNextWith;
 exports.onErrorResumeNext = onErrorResumeNextWith;
 
-},{"../observable/onErrorResumeNext":486,"../util/argsOrArgArray":651}],557:[function(require,module,exports){
+},{"../observable/onErrorResumeNext":699,"../util/argsOrArgArray":864}],770:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.pairwise = void 0;
@@ -31040,7 +36728,7 @@ function pairwise() {
 }
 exports.pairwise = pairwise;
 
-},{"../util/lift":668,"./OperatorSubscriber":495}],558:[function(require,module,exports){
+},{"../util/lift":881,"./OperatorSubscriber":708}],771:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.partition = void 0;
@@ -31053,7 +36741,7 @@ function partition(predicate, thisArg) {
 }
 exports.partition = partition;
 
-},{"../util/not":671,"./filter":531}],559:[function(require,module,exports){
+},{"../util/not":884,"./filter":744}],772:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.pluck = void 0;
@@ -31083,7 +36771,7 @@ function pluck() {
 }
 exports.pluck = pluck;
 
-},{"./map":542}],560:[function(require,module,exports){
+},{"./map":755}],773:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.publish = void 0;
@@ -31095,7 +36783,7 @@ function publish(selector) {
 }
 exports.publish = publish;
 
-},{"../Subject":458,"./connect":513,"./multicast":554}],561:[function(require,module,exports){
+},{"../Subject":671,"./connect":726,"./multicast":767}],774:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.publishBehavior = void 0;
@@ -31109,7 +36797,7 @@ function publishBehavior(initialValue) {
 }
 exports.publishBehavior = publishBehavior;
 
-},{"../BehaviorSubject":452,"../observable/ConnectableObservable":464}],562:[function(require,module,exports){
+},{"../BehaviorSubject":665,"../observable/ConnectableObservable":677}],775:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.publishLast = void 0;
@@ -31123,7 +36811,7 @@ function publishLast() {
 }
 exports.publishLast = publishLast;
 
-},{"../AsyncSubject":451,"../observable/ConnectableObservable":464}],563:[function(require,module,exports){
+},{"../AsyncSubject":664,"../observable/ConnectableObservable":677}],776:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.publishReplay = void 0;
@@ -31139,7 +36827,7 @@ function publishReplay(bufferSize, windowTime, selectorOrScheduler, timestampPro
 }
 exports.publishReplay = publishReplay;
 
-},{"../ReplaySubject":456,"../util/isFunction":661,"./multicast":554}],564:[function(require,module,exports){
+},{"../ReplaySubject":669,"../util/isFunction":874,"./multicast":767}],777:[function(require,module,exports){
 "use strict";
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -31175,7 +36863,7 @@ function race() {
 }
 exports.race = race;
 
-},{"../util/argsOrArgArray":651,"./raceWith":565}],565:[function(require,module,exports){
+},{"../util/argsOrArgArray":864,"./raceWith":778}],778:[function(require,module,exports){
 "use strict";
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -31216,7 +36904,7 @@ function raceWith() {
 }
 exports.raceWith = raceWith;
 
-},{"../observable/race":489,"../util/identity":657,"../util/lift":668}],566:[function(require,module,exports){
+},{"../observable/race":702,"../util/identity":870,"../util/lift":881}],779:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.reduce = void 0;
@@ -31227,7 +36915,7 @@ function reduce(accumulator, seed) {
 }
 exports.reduce = reduce;
 
-},{"../util/lift":668,"./scanInternals":575}],567:[function(require,module,exports){
+},{"../util/lift":881,"./scanInternals":788}],780:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.refCount = void 0;
@@ -31258,7 +36946,7 @@ function refCount() {
 }
 exports.refCount = refCount;
 
-},{"../util/lift":668,"./OperatorSubscriber":495}],568:[function(require,module,exports){
+},{"../util/lift":881,"./OperatorSubscriber":708}],781:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.repeat = void 0;
@@ -31323,7 +37011,7 @@ function repeat(countOrConfig) {
 }
 exports.repeat = repeat;
 
-},{"../observable/empty":473,"../observable/innerFrom":481,"../observable/timer":492,"../util/lift":668,"./OperatorSubscriber":495}],569:[function(require,module,exports){
+},{"../observable/empty":686,"../observable/innerFrom":694,"../observable/timer":705,"../util/lift":881,"./OperatorSubscriber":708}],782:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.repeatWhen = void 0;
@@ -31374,7 +37062,7 @@ function repeatWhen(notifier) {
 }
 exports.repeatWhen = repeatWhen;
 
-},{"../Subject":458,"../observable/innerFrom":481,"../util/lift":668,"./OperatorSubscriber":495}],570:[function(require,module,exports){
+},{"../Subject":671,"../observable/innerFrom":694,"../util/lift":881,"./OperatorSubscriber":708}],783:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.retry = void 0;
@@ -31448,7 +37136,7 @@ function retry(configOrCount) {
 }
 exports.retry = retry;
 
-},{"../observable/innerFrom":481,"../observable/timer":492,"../util/identity":657,"../util/lift":668,"./OperatorSubscriber":495}],571:[function(require,module,exports){
+},{"../observable/innerFrom":694,"../observable/timer":705,"../util/identity":870,"../util/lift":881,"./OperatorSubscriber":708}],784:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.retryWhen = void 0;
@@ -31485,7 +37173,7 @@ function retryWhen(notifier) {
 }
 exports.retryWhen = retryWhen;
 
-},{"../Subject":458,"../observable/innerFrom":481,"../util/lift":668,"./OperatorSubscriber":495}],572:[function(require,module,exports){
+},{"../Subject":671,"../observable/innerFrom":694,"../util/lift":881,"./OperatorSubscriber":708}],785:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.sample = void 0;
@@ -31513,7 +37201,7 @@ function sample(notifier) {
 }
 exports.sample = sample;
 
-},{"../observable/innerFrom":481,"../util/lift":668,"../util/noop":670,"./OperatorSubscriber":495}],573:[function(require,module,exports){
+},{"../observable/innerFrom":694,"../util/lift":881,"../util/noop":883,"./OperatorSubscriber":708}],786:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.sampleTime = void 0;
@@ -31526,7 +37214,7 @@ function sampleTime(period, scheduler) {
 }
 exports.sampleTime = sampleTime;
 
-},{"../observable/interval":482,"../scheduler/async":632,"./sample":572}],574:[function(require,module,exports){
+},{"../observable/interval":695,"../scheduler/async":845,"./sample":785}],787:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.scan = void 0;
@@ -31537,7 +37225,7 @@ function scan(accumulator, seed) {
 }
 exports.scan = scan;
 
-},{"../util/lift":668,"./scanInternals":575}],575:[function(require,module,exports){
+},{"../util/lift":881,"./scanInternals":788}],788:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.scanInternals = void 0;
@@ -31564,7 +37252,7 @@ function scanInternals(accumulator, seed, hasSeed, emitOnNext, emitBeforeComplet
 }
 exports.scanInternals = scanInternals;
 
-},{"./OperatorSubscriber":495}],576:[function(require,module,exports){
+},{"./OperatorSubscriber":708}],789:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.sequenceEqual = void 0;
@@ -31609,7 +37297,7 @@ function createState() {
     };
 }
 
-},{"../observable/innerFrom":481,"../util/lift":668,"./OperatorSubscriber":495}],577:[function(require,module,exports){
+},{"../observable/innerFrom":694,"../util/lift":881,"./OperatorSubscriber":708}],790:[function(require,module,exports){
 "use strict";
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -31719,7 +37407,7 @@ function handleReset(reset, on) {
     return innerFrom_1.innerFrom(on.apply(void 0, __spreadArray([], __read(args)))).subscribe(onSubscriber);
 }
 
-},{"../Subject":458,"../Subscriber":459,"../observable/innerFrom":481,"../util/lift":668}],578:[function(require,module,exports){
+},{"../Subject":671,"../Subscriber":672,"../observable/innerFrom":694,"../util/lift":881}],791:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.shareReplay = void 0;
@@ -31744,7 +37432,7 @@ function shareReplay(configOrBufferSize, windowTime, scheduler) {
 }
 exports.shareReplay = shareReplay;
 
-},{"../ReplaySubject":456,"./share":577}],579:[function(require,module,exports){
+},{"../ReplaySubject":669,"./share":790}],792:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.single = void 0;
@@ -31779,7 +37467,7 @@ function single(predicate) {
 }
 exports.single = single;
 
-},{"../util/EmptyError":643,"../util/NotFoundError":645,"../util/SequenceError":647,"../util/lift":668,"./OperatorSubscriber":495}],580:[function(require,module,exports){
+},{"../util/EmptyError":856,"../util/NotFoundError":858,"../util/SequenceError":860,"../util/lift":881,"./OperatorSubscriber":708}],793:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.skip = void 0;
@@ -31789,7 +37477,7 @@ function skip(count) {
 }
 exports.skip = skip;
 
-},{"./filter":531}],581:[function(require,module,exports){
+},{"./filter":744}],794:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.skipLast = void 0;
@@ -31822,7 +37510,7 @@ function skipLast(skipCount) {
 }
 exports.skipLast = skipLast;
 
-},{"../util/identity":657,"../util/lift":668,"./OperatorSubscriber":495}],582:[function(require,module,exports){
+},{"../util/identity":870,"../util/lift":881,"./OperatorSubscriber":708}],795:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.skipUntil = void 0;
@@ -31843,7 +37531,7 @@ function skipUntil(notifier) {
 }
 exports.skipUntil = skipUntil;
 
-},{"../observable/innerFrom":481,"../util/lift":668,"../util/noop":670,"./OperatorSubscriber":495}],583:[function(require,module,exports){
+},{"../observable/innerFrom":694,"../util/lift":881,"../util/noop":883,"./OperatorSubscriber":708}],796:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.skipWhile = void 0;
@@ -31858,7 +37546,7 @@ function skipWhile(predicate) {
 }
 exports.skipWhile = skipWhile;
 
-},{"../util/lift":668,"./OperatorSubscriber":495}],584:[function(require,module,exports){
+},{"../util/lift":881,"./OperatorSubscriber":708}],797:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.startWith = void 0;
@@ -31877,7 +37565,7 @@ function startWith() {
 }
 exports.startWith = startWith;
 
-},{"../observable/concat":469,"../util/args":649,"../util/lift":668}],585:[function(require,module,exports){
+},{"../observable/concat":682,"../util/args":862,"../util/lift":881}],798:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.subscribeOn = void 0;
@@ -31890,7 +37578,7 @@ function subscribeOn(scheduler, delay) {
 }
 exports.subscribeOn = subscribeOn;
 
-},{"../util/lift":668}],586:[function(require,module,exports){
+},{"../util/lift":881}],799:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.switchAll = void 0;
@@ -31901,7 +37589,7 @@ function switchAll() {
 }
 exports.switchAll = switchAll;
 
-},{"../util/identity":657,"./switchMap":587}],587:[function(require,module,exports){
+},{"../util/identity":870,"./switchMap":800}],800:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.switchMap = void 0;
@@ -31930,7 +37618,7 @@ function switchMap(project, resultSelector) {
 }
 exports.switchMap = switchMap;
 
-},{"../observable/innerFrom":481,"../util/lift":668,"./OperatorSubscriber":495}],588:[function(require,module,exports){
+},{"../observable/innerFrom":694,"../util/lift":881,"./OperatorSubscriber":708}],801:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.switchMapTo = void 0;
@@ -31941,7 +37629,7 @@ function switchMapTo(innerObservable, resultSelector) {
 }
 exports.switchMapTo = switchMapTo;
 
-},{"../util/isFunction":661,"./switchMap":587}],589:[function(require,module,exports){
+},{"../util/isFunction":874,"./switchMap":800}],802:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.switchScan = void 0;
@@ -31958,7 +37646,7 @@ function switchScan(accumulator, seed) {
 }
 exports.switchScan = switchScan;
 
-},{"../util/lift":668,"./switchMap":587}],590:[function(require,module,exports){
+},{"../util/lift":881,"./switchMap":800}],803:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.take = void 0;
@@ -31983,7 +37671,7 @@ function take(count) {
 }
 exports.take = take;
 
-},{"../observable/empty":473,"../util/lift":668,"./OperatorSubscriber":495}],591:[function(require,module,exports){
+},{"../observable/empty":686,"../util/lift":881,"./OperatorSubscriber":708}],804:[function(require,module,exports){
 "use strict";
 var __values = (this && this.__values) || function(o) {
     var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
@@ -32032,7 +37720,7 @@ function takeLast(count) {
 }
 exports.takeLast = takeLast;
 
-},{"../observable/empty":473,"../util/lift":668,"./OperatorSubscriber":495}],592:[function(require,module,exports){
+},{"../observable/empty":686,"../util/lift":881,"./OperatorSubscriber":708}],805:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.takeUntil = void 0;
@@ -32048,7 +37736,7 @@ function takeUntil(notifier) {
 }
 exports.takeUntil = takeUntil;
 
-},{"../observable/innerFrom":481,"../util/lift":668,"../util/noop":670,"./OperatorSubscriber":495}],593:[function(require,module,exports){
+},{"../observable/innerFrom":694,"../util/lift":881,"../util/noop":883,"./OperatorSubscriber":708}],806:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.takeWhile = void 0;
@@ -32067,7 +37755,7 @@ function takeWhile(predicate, inclusive) {
 }
 exports.takeWhile = takeWhile;
 
-},{"../util/lift":668,"./OperatorSubscriber":495}],594:[function(require,module,exports){
+},{"../util/lift":881,"./OperatorSubscriber":708}],807:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.tap = void 0;
@@ -32112,7 +37800,7 @@ function tap(observerOrNext, error, complete) {
 }
 exports.tap = tap;
 
-},{"../util/identity":657,"../util/isFunction":661,"../util/lift":668,"./OperatorSubscriber":495}],595:[function(require,module,exports){
+},{"../util/identity":870,"../util/isFunction":874,"../util/lift":881,"./OperatorSubscriber":708}],808:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.throttle = void 0;
@@ -32162,7 +37850,7 @@ function throttle(durationSelector, config) {
 }
 exports.throttle = throttle;
 
-},{"../observable/innerFrom":481,"../util/lift":668,"./OperatorSubscriber":495}],596:[function(require,module,exports){
+},{"../observable/innerFrom":694,"../util/lift":881,"./OperatorSubscriber":708}],809:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.throttleTime = void 0;
@@ -32176,7 +37864,7 @@ function throttleTime(duration, scheduler, config) {
 }
 exports.throttleTime = throttleTime;
 
-},{"../observable/timer":492,"../scheduler/async":632,"./throttle":595}],597:[function(require,module,exports){
+},{"../observable/timer":705,"../scheduler/async":845,"./throttle":808}],810:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.throwIfEmpty = void 0;
@@ -32198,7 +37886,7 @@ function defaultErrorFactory() {
     return new EmptyError_1.EmptyError();
 }
 
-},{"../util/EmptyError":643,"../util/lift":668,"./OperatorSubscriber":495}],598:[function(require,module,exports){
+},{"../util/EmptyError":856,"../util/lift":881,"./OperatorSubscriber":708}],811:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TimeInterval = exports.timeInterval = void 0;
@@ -32227,7 +37915,7 @@ var TimeInterval = (function () {
 }());
 exports.TimeInterval = TimeInterval;
 
-},{"../scheduler/async":632,"../util/lift":668,"./OperatorSubscriber":495}],599:[function(require,module,exports){
+},{"../scheduler/async":845,"../util/lift":881,"./OperatorSubscriber":708}],812:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.timeout = exports.TimeoutError = void 0;
@@ -32291,7 +37979,7 @@ function timeoutErrorFactory(info) {
     throw new exports.TimeoutError(info);
 }
 
-},{"../observable/innerFrom":481,"../scheduler/async":632,"../util/createErrorClass":653,"../util/executeSchedule":656,"../util/isDate":660,"../util/lift":668,"./OperatorSubscriber":495}],600:[function(require,module,exports){
+},{"../observable/innerFrom":694,"../scheduler/async":845,"../util/createErrorClass":866,"../util/executeSchedule":869,"../util/isDate":873,"../util/lift":881,"./OperatorSubscriber":708}],813:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.timeoutWith = void 0;
@@ -32327,7 +38015,7 @@ function timeoutWith(due, withObservable, scheduler) {
 }
 exports.timeoutWith = timeoutWith;
 
-},{"../scheduler/async":632,"../util/isDate":660,"./timeout":599}],601:[function(require,module,exports){
+},{"../scheduler/async":845,"../util/isDate":873,"./timeout":812}],814:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.timestamp = void 0;
@@ -32339,7 +38027,7 @@ function timestamp(timestampProvider) {
 }
 exports.timestamp = timestamp;
 
-},{"../scheduler/dateTimestampProvider":633,"./map":542}],602:[function(require,module,exports){
+},{"../scheduler/dateTimestampProvider":846,"./map":755}],815:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.toArray = void 0;
@@ -32353,7 +38041,7 @@ function toArray() {
 }
 exports.toArray = toArray;
 
-},{"../util/lift":668,"./reduce":566}],603:[function(require,module,exports){
+},{"../util/lift":881,"./reduce":779}],816:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.window = void 0;
@@ -32386,7 +38074,7 @@ function window(windowBoundaries) {
 }
 exports.window = window;
 
-},{"../Subject":458,"../observable/innerFrom":481,"../util/lift":668,"../util/noop":670,"./OperatorSubscriber":495}],604:[function(require,module,exports){
+},{"../Subject":671,"../observable/innerFrom":694,"../util/lift":881,"../util/noop":883,"./OperatorSubscriber":708}],817:[function(require,module,exports){
 "use strict";
 var __values = (this && this.__values) || function(o) {
     var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
@@ -32454,7 +38142,7 @@ function windowCount(windowSize, startWindowEvery) {
 }
 exports.windowCount = windowCount;
 
-},{"../Subject":458,"../util/lift":668,"./OperatorSubscriber":495}],605:[function(require,module,exports){
+},{"../Subject":671,"../util/lift":881,"./OperatorSubscriber":708}],818:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.windowTime = void 0;
@@ -32529,7 +38217,7 @@ function windowTime(windowTimeSpan) {
 }
 exports.windowTime = windowTime;
 
-},{"../Subject":458,"../Subscription":460,"../scheduler/async":632,"../util/args":649,"../util/arrRemove":652,"../util/executeSchedule":656,"../util/lift":668,"./OperatorSubscriber":495}],606:[function(require,module,exports){
+},{"../Subject":671,"../Subscription":673,"../scheduler/async":845,"../util/args":862,"../util/arrRemove":865,"../util/executeSchedule":869,"../util/lift":881,"./OperatorSubscriber":708}],819:[function(require,module,exports){
 "use strict";
 var __values = (this && this.__values) || function(o) {
     var s = typeof Symbol === "function" && Symbol.iterator, m = s && o[s], i = 0;
@@ -32610,7 +38298,7 @@ function windowToggle(openings, closingSelector) {
 }
 exports.windowToggle = windowToggle;
 
-},{"../Subject":458,"../Subscription":460,"../observable/innerFrom":481,"../util/arrRemove":652,"../util/lift":668,"../util/noop":670,"./OperatorSubscriber":495}],607:[function(require,module,exports){
+},{"../Subject":671,"../Subscription":673,"../observable/innerFrom":694,"../util/arrRemove":865,"../util/lift":881,"../util/noop":883,"./OperatorSubscriber":708}],820:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.windowWhen = void 0;
@@ -32653,7 +38341,7 @@ function windowWhen(closingSelector) {
 }
 exports.windowWhen = windowWhen;
 
-},{"../Subject":458,"../observable/innerFrom":481,"../util/lift":668,"./OperatorSubscriber":495}],608:[function(require,module,exports){
+},{"../Subject":671,"../observable/innerFrom":694,"../util/lift":881,"./OperatorSubscriber":708}],821:[function(require,module,exports){
 "use strict";
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -32717,7 +38405,7 @@ function withLatestFrom() {
 }
 exports.withLatestFrom = withLatestFrom;
 
-},{"../observable/innerFrom":481,"../util/args":649,"../util/identity":657,"../util/lift":668,"../util/noop":670,"./OperatorSubscriber":495}],609:[function(require,module,exports){
+},{"../observable/innerFrom":694,"../util/args":862,"../util/identity":870,"../util/lift":881,"../util/noop":883,"./OperatorSubscriber":708}],822:[function(require,module,exports){
 "use strict";
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -32755,7 +38443,7 @@ function zip() {
 }
 exports.zip = zip;
 
-},{"../observable/zip":494,"../util/lift":668}],610:[function(require,module,exports){
+},{"../observable/zip":707,"../util/lift":881}],823:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.zipAll = void 0;
@@ -32766,7 +38454,7 @@ function zipAll(project) {
 }
 exports.zipAll = zipAll;
 
-},{"../observable/zip":494,"./joinAllInternals":540}],611:[function(require,module,exports){
+},{"../observable/zip":707,"./joinAllInternals":753}],824:[function(require,module,exports){
 "use strict";
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -32801,7 +38489,7 @@ function zipWith() {
 }
 exports.zipWith = zipWith;
 
-},{"./zip":609}],612:[function(require,module,exports){
+},{"./zip":822}],825:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.scheduleArray = void 0;
@@ -32824,7 +38512,7 @@ function scheduleArray(input, scheduler) {
 }
 exports.scheduleArray = scheduleArray;
 
-},{"../Observable":455}],613:[function(require,module,exports){
+},{"../Observable":668}],826:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.scheduleAsyncIterable = void 0;
@@ -32852,7 +38540,7 @@ function scheduleAsyncIterable(input, scheduler) {
 }
 exports.scheduleAsyncIterable = scheduleAsyncIterable;
 
-},{"../Observable":455,"../util/executeSchedule":656}],614:[function(require,module,exports){
+},{"../Observable":668,"../util/executeSchedule":869}],827:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.scheduleIterable = void 0;
@@ -32889,7 +38577,7 @@ function scheduleIterable(input, scheduler) {
 }
 exports.scheduleIterable = scheduleIterable;
 
-},{"../Observable":455,"../symbol/iterator":639,"../util/executeSchedule":656,"../util/isFunction":661}],615:[function(require,module,exports){
+},{"../Observable":668,"../symbol/iterator":852,"../util/executeSchedule":869,"../util/isFunction":874}],828:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.scheduleObservable = void 0;
@@ -32901,7 +38589,7 @@ function scheduleObservable(input, scheduler) {
 }
 exports.scheduleObservable = scheduleObservable;
 
-},{"../observable/innerFrom":481,"../operators/observeOn":555,"../operators/subscribeOn":585}],616:[function(require,module,exports){
+},{"../observable/innerFrom":694,"../operators/observeOn":768,"../operators/subscribeOn":798}],829:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.schedulePromise = void 0;
@@ -32913,7 +38601,7 @@ function schedulePromise(input, scheduler) {
 }
 exports.schedulePromise = schedulePromise;
 
-},{"../observable/innerFrom":481,"../operators/observeOn":555,"../operators/subscribeOn":585}],617:[function(require,module,exports){
+},{"../observable/innerFrom":694,"../operators/observeOn":768,"../operators/subscribeOn":798}],830:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.scheduleReadableStreamLike = void 0;
@@ -32924,7 +38612,7 @@ function scheduleReadableStreamLike(input, scheduler) {
 }
 exports.scheduleReadableStreamLike = scheduleReadableStreamLike;
 
-},{"../util/isReadableStreamLike":666,"./scheduleAsyncIterable":613}],618:[function(require,module,exports){
+},{"../util/isReadableStreamLike":879,"./scheduleAsyncIterable":826}],831:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.scheduled = void 0;
@@ -32966,7 +38654,7 @@ function scheduled(input, scheduler) {
 }
 exports.scheduled = scheduled;
 
-},{"../util/isArrayLike":658,"../util/isAsyncIterable":659,"../util/isInteropObservable":662,"../util/isIterable":663,"../util/isPromise":665,"../util/isReadableStreamLike":666,"../util/throwUnobservableError":674,"./scheduleArray":612,"./scheduleAsyncIterable":613,"./scheduleIterable":614,"./scheduleObservable":615,"./schedulePromise":616,"./scheduleReadableStreamLike":617}],619:[function(require,module,exports){
+},{"../util/isArrayLike":871,"../util/isAsyncIterable":872,"../util/isInteropObservable":875,"../util/isIterable":876,"../util/isPromise":878,"../util/isReadableStreamLike":879,"../util/throwUnobservableError":887,"./scheduleArray":825,"./scheduleAsyncIterable":826,"./scheduleIterable":827,"./scheduleObservable":828,"./schedulePromise":829,"./scheduleReadableStreamLike":830}],832:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -32999,7 +38687,7 @@ var Action = (function (_super) {
 }(Subscription_1.Subscription));
 exports.Action = Action;
 
-},{"../Subscription":460}],620:[function(require,module,exports){
+},{"../Subscription":673}],833:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -33053,7 +38741,7 @@ var AnimationFrameAction = (function (_super) {
 }(AsyncAction_1.AsyncAction));
 exports.AnimationFrameAction = AnimationFrameAction;
 
-},{"./AsyncAction":624,"./animationFrameProvider":630}],621:[function(require,module,exports){
+},{"./AsyncAction":837,"./animationFrameProvider":843}],834:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -33102,7 +38790,7 @@ var AnimationFrameScheduler = (function (_super) {
 }(AsyncScheduler_1.AsyncScheduler));
 exports.AnimationFrameScheduler = AnimationFrameScheduler;
 
-},{"./AsyncScheduler":625}],622:[function(require,module,exports){
+},{"./AsyncScheduler":838}],835:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -33158,7 +38846,7 @@ var AsapAction = (function (_super) {
 }(AsyncAction_1.AsyncAction));
 exports.AsapAction = AsapAction;
 
-},{"./AsyncAction":624,"./immediateProvider":634}],623:[function(require,module,exports){
+},{"./AsyncAction":837,"./immediateProvider":847}],836:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -33207,7 +38895,7 @@ var AsapScheduler = (function (_super) {
 }(AsyncScheduler_1.AsyncScheduler));
 exports.AsapScheduler = AsapScheduler;
 
-},{"./AsyncScheduler":625}],624:[function(require,module,exports){
+},{"./AsyncScheduler":838}],837:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -33315,7 +39003,7 @@ var AsyncAction = (function (_super) {
 }(Action_1.Action));
 exports.AsyncAction = AsyncAction;
 
-},{"../util/arrRemove":652,"./Action":619,"./intervalProvider":635}],625:[function(require,module,exports){
+},{"../util/arrRemove":865,"./Action":832,"./intervalProvider":848}],838:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -33369,7 +39057,7 @@ var AsyncScheduler = (function (_super) {
 }(Scheduler_1.Scheduler));
 exports.AsyncScheduler = AsyncScheduler;
 
-},{"../Scheduler":457}],626:[function(require,module,exports){
+},{"../Scheduler":670}],839:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -33422,7 +39110,7 @@ var QueueAction = (function (_super) {
 }(AsyncAction_1.AsyncAction));
 exports.QueueAction = QueueAction;
 
-},{"./AsyncAction":624}],627:[function(require,module,exports){
+},{"./AsyncAction":837}],840:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -33451,7 +39139,7 @@ var QueueScheduler = (function (_super) {
 }(AsyncScheduler_1.AsyncScheduler));
 exports.QueueScheduler = QueueScheduler;
 
-},{"./AsyncScheduler":625}],628:[function(require,module,exports){
+},{"./AsyncScheduler":838}],841:[function(require,module,exports){
 "use strict";
 var __extends = (this && this.__extends) || (function () {
     var extendStatics = function (d, b) {
@@ -33573,7 +39261,7 @@ var VirtualAction = (function (_super) {
 }(AsyncAction_1.AsyncAction));
 exports.VirtualAction = VirtualAction;
 
-},{"../Subscription":460,"./AsyncAction":624,"./AsyncScheduler":625}],629:[function(require,module,exports){
+},{"../Subscription":673,"./AsyncAction":837,"./AsyncScheduler":838}],842:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.animationFrame = exports.animationFrameScheduler = void 0;
@@ -33582,7 +39270,7 @@ var AnimationFrameScheduler_1 = require("./AnimationFrameScheduler");
 exports.animationFrameScheduler = new AnimationFrameScheduler_1.AnimationFrameScheduler(AnimationFrameAction_1.AnimationFrameAction);
 exports.animationFrame = exports.animationFrameScheduler;
 
-},{"./AnimationFrameAction":620,"./AnimationFrameScheduler":621}],630:[function(require,module,exports){
+},{"./AnimationFrameAction":833,"./AnimationFrameScheduler":834}],843:[function(require,module,exports){
 "use strict";
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -33642,7 +39330,7 @@ exports.animationFrameProvider = {
     delegate: undefined,
 };
 
-},{"../Subscription":460}],631:[function(require,module,exports){
+},{"../Subscription":673}],844:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.asap = exports.asapScheduler = void 0;
@@ -33651,7 +39339,7 @@ var AsapScheduler_1 = require("./AsapScheduler");
 exports.asapScheduler = new AsapScheduler_1.AsapScheduler(AsapAction_1.AsapAction);
 exports.asap = exports.asapScheduler;
 
-},{"./AsapAction":622,"./AsapScheduler":623}],632:[function(require,module,exports){
+},{"./AsapAction":835,"./AsapScheduler":836}],845:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.async = exports.asyncScheduler = void 0;
@@ -33660,7 +39348,7 @@ var AsyncScheduler_1 = require("./AsyncScheduler");
 exports.asyncScheduler = new AsyncScheduler_1.AsyncScheduler(AsyncAction_1.AsyncAction);
 exports.async = exports.asyncScheduler;
 
-},{"./AsyncAction":624,"./AsyncScheduler":625}],633:[function(require,module,exports){
+},{"./AsyncAction":837,"./AsyncScheduler":838}],846:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.dateTimestampProvider = void 0;
@@ -33671,7 +39359,7 @@ exports.dateTimestampProvider = {
     delegate: undefined,
 };
 
-},{}],634:[function(require,module,exports){
+},{}],847:[function(require,module,exports){
 "use strict";
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -33714,7 +39402,7 @@ exports.immediateProvider = {
     delegate: undefined,
 };
 
-},{"../util/Immediate":644}],635:[function(require,module,exports){
+},{"../util/Immediate":857}],848:[function(require,module,exports){
 "use strict";
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -33758,7 +39446,7 @@ exports.intervalProvider = {
     delegate: undefined,
 };
 
-},{}],636:[function(require,module,exports){
+},{}],849:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.performanceTimestampProvider = void 0;
@@ -33769,7 +39457,7 @@ exports.performanceTimestampProvider = {
     delegate: undefined,
 };
 
-},{}],637:[function(require,module,exports){
+},{}],850:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.queue = exports.queueScheduler = void 0;
@@ -33778,7 +39466,7 @@ var QueueScheduler_1 = require("./QueueScheduler");
 exports.queueScheduler = new QueueScheduler_1.QueueScheduler(QueueAction_1.QueueAction);
 exports.queue = exports.queueScheduler;
 
-},{"./QueueAction":626,"./QueueScheduler":627}],638:[function(require,module,exports){
+},{"./QueueAction":839,"./QueueScheduler":840}],851:[function(require,module,exports){
 "use strict";
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -33822,7 +39510,7 @@ exports.timeoutProvider = {
     delegate: undefined,
 };
 
-},{}],639:[function(require,module,exports){
+},{}],852:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.iterator = exports.getSymbolIterator = void 0;
@@ -33835,17 +39523,17 @@ function getSymbolIterator() {
 exports.getSymbolIterator = getSymbolIterator;
 exports.iterator = getSymbolIterator();
 
-},{}],640:[function(require,module,exports){
+},{}],853:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.observable = void 0;
 exports.observable = (function () { return (typeof Symbol === 'function' && Symbol.observable) || '@@observable'; })();
 
-},{}],641:[function(require,module,exports){
+},{}],854:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 
-},{}],642:[function(require,module,exports){
+},{}],855:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ArgumentOutOfRangeError = void 0;
@@ -33858,7 +39546,7 @@ exports.ArgumentOutOfRangeError = createErrorClass_1.createErrorClass(function (
     };
 });
 
-},{"./createErrorClass":653}],643:[function(require,module,exports){
+},{"./createErrorClass":866}],856:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.EmptyError = void 0;
@@ -33869,7 +39557,7 @@ exports.EmptyError = createErrorClass_1.createErrorClass(function (_super) { ret
     this.message = 'no elements in sequence';
 }; });
 
-},{"./createErrorClass":653}],644:[function(require,module,exports){
+},{"./createErrorClass":866}],857:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TestTools = exports.Immediate = void 0;
@@ -33903,7 +39591,7 @@ exports.TestTools = {
     }
 };
 
-},{}],645:[function(require,module,exports){
+},{}],858:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.NotFoundError = void 0;
@@ -33916,7 +39604,7 @@ exports.NotFoundError = createErrorClass_1.createErrorClass(function (_super) {
     };
 });
 
-},{"./createErrorClass":653}],646:[function(require,module,exports){
+},{"./createErrorClass":866}],859:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.ObjectUnsubscribedError = void 0;
@@ -33929,7 +39617,7 @@ exports.ObjectUnsubscribedError = createErrorClass_1.createErrorClass(function (
     };
 });
 
-},{"./createErrorClass":653}],647:[function(require,module,exports){
+},{"./createErrorClass":866}],860:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.SequenceError = void 0;
@@ -33942,7 +39630,7 @@ exports.SequenceError = createErrorClass_1.createErrorClass(function (_super) {
     };
 });
 
-},{"./createErrorClass":653}],648:[function(require,module,exports){
+},{"./createErrorClass":866}],861:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.UnsubscriptionError = void 0;
@@ -33958,7 +39646,7 @@ exports.UnsubscriptionError = createErrorClass_1.createErrorClass(function (_sup
     };
 });
 
-},{"./createErrorClass":653}],649:[function(require,module,exports){
+},{"./createErrorClass":866}],862:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.popNumber = exports.popScheduler = exports.popResultSelector = void 0;
@@ -33980,7 +39668,7 @@ function popNumber(args, defaultValue) {
 }
 exports.popNumber = popNumber;
 
-},{"./isFunction":661,"./isScheduler":667}],650:[function(require,module,exports){
+},{"./isFunction":874,"./isScheduler":880}],863:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.argsArgArrayOrObject = void 0;
@@ -34007,7 +39695,7 @@ function isPOJO(obj) {
     return obj && typeof obj === 'object' && getPrototypeOf(obj) === objectProto;
 }
 
-},{}],651:[function(require,module,exports){
+},{}],864:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.argsOrArgArray = void 0;
@@ -34017,7 +39705,7 @@ function argsOrArgArray(args) {
 }
 exports.argsOrArgArray = argsOrArgArray;
 
-},{}],652:[function(require,module,exports){
+},{}],865:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.arrRemove = void 0;
@@ -34029,7 +39717,7 @@ function arrRemove(arr, item) {
 }
 exports.arrRemove = arrRemove;
 
-},{}],653:[function(require,module,exports){
+},{}],866:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createErrorClass = void 0;
@@ -34045,7 +39733,7 @@ function createErrorClass(createImpl) {
 }
 exports.createErrorClass = createErrorClass;
 
-},{}],654:[function(require,module,exports){
+},{}],867:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createObject = void 0;
@@ -34054,7 +39742,7 @@ function createObject(keys, values) {
 }
 exports.createObject = createObject;
 
-},{}],655:[function(require,module,exports){
+},{}],868:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.captureError = exports.errorContext = void 0;
@@ -34088,7 +39776,7 @@ function captureError(err) {
 }
 exports.captureError = captureError;
 
-},{"../config":461}],656:[function(require,module,exports){
+},{"../config":674}],869:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.executeSchedule = void 0;
@@ -34111,7 +39799,7 @@ function executeSchedule(parentSubscription, scheduler, work, delay, repeat) {
 }
 exports.executeSchedule = executeSchedule;
 
-},{}],657:[function(require,module,exports){
+},{}],870:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.identity = void 0;
@@ -34120,13 +39808,13 @@ function identity(x) {
 }
 exports.identity = identity;
 
-},{}],658:[function(require,module,exports){
+},{}],871:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.isArrayLike = void 0;
 exports.isArrayLike = (function (x) { return x && typeof x.length === 'number' && typeof x !== 'function'; });
 
-},{}],659:[function(require,module,exports){
+},{}],872:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.isAsyncIterable = void 0;
@@ -34136,7 +39824,7 @@ function isAsyncIterable(obj) {
 }
 exports.isAsyncIterable = isAsyncIterable;
 
-},{"./isFunction":661}],660:[function(require,module,exports){
+},{"./isFunction":874}],873:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.isValidDate = void 0;
@@ -34145,7 +39833,7 @@ function isValidDate(value) {
 }
 exports.isValidDate = isValidDate;
 
-},{}],661:[function(require,module,exports){
+},{}],874:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.isFunction = void 0;
@@ -34154,7 +39842,7 @@ function isFunction(value) {
 }
 exports.isFunction = isFunction;
 
-},{}],662:[function(require,module,exports){
+},{}],875:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.isInteropObservable = void 0;
@@ -34165,7 +39853,7 @@ function isInteropObservable(input) {
 }
 exports.isInteropObservable = isInteropObservable;
 
-},{"../symbol/observable":640,"./isFunction":661}],663:[function(require,module,exports){
+},{"../symbol/observable":853,"./isFunction":874}],876:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.isIterable = void 0;
@@ -34176,7 +39864,7 @@ function isIterable(input) {
 }
 exports.isIterable = isIterable;
 
-},{"../symbol/iterator":639,"./isFunction":661}],664:[function(require,module,exports){
+},{"../symbol/iterator":852,"./isFunction":874}],877:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.isObservable = void 0;
@@ -34187,7 +39875,7 @@ function isObservable(obj) {
 }
 exports.isObservable = isObservable;
 
-},{"../Observable":455,"./isFunction":661}],665:[function(require,module,exports){
+},{"../Observable":668,"./isFunction":874}],878:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.isPromise = void 0;
@@ -34197,7 +39885,7 @@ function isPromise(value) {
 }
 exports.isPromise = isPromise;
 
-},{"./isFunction":661}],666:[function(require,module,exports){
+},{"./isFunction":874}],879:[function(require,module,exports){
 "use strict";
 var __generator = (this && this.__generator) || function (thisArg, body) {
     var _ = { label: 0, sent: function() { if (t[0] & 1) throw t[1]; return t[1]; }, trys: [], ops: [] }, f, y, t, g;
@@ -34280,7 +39968,7 @@ function isReadableStreamLike(obj) {
 }
 exports.isReadableStreamLike = isReadableStreamLike;
 
-},{"./isFunction":661}],667:[function(require,module,exports){
+},{"./isFunction":874}],880:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.isScheduler = void 0;
@@ -34290,7 +39978,7 @@ function isScheduler(value) {
 }
 exports.isScheduler = isScheduler;
 
-},{"./isFunction":661}],668:[function(require,module,exports){
+},{"./isFunction":874}],881:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.operate = exports.hasLift = void 0;
@@ -34316,7 +40004,7 @@ function operate(init) {
 }
 exports.operate = operate;
 
-},{"./isFunction":661}],669:[function(require,module,exports){
+},{"./isFunction":874}],882:[function(require,module,exports){
 "use strict";
 var __read = (this && this.__read) || function (o, n) {
     var m = typeof Symbol === "function" && o[Symbol.iterator];
@@ -34351,14 +40039,14 @@ function mapOneOrManyArgs(fn) {
 }
 exports.mapOneOrManyArgs = mapOneOrManyArgs;
 
-},{"../operators/map":542}],670:[function(require,module,exports){
+},{"../operators/map":755}],883:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.noop = void 0;
 function noop() { }
 exports.noop = noop;
 
-},{}],671:[function(require,module,exports){
+},{}],884:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.not = void 0;
@@ -34367,7 +40055,7 @@ function not(pred, thisArg) {
 }
 exports.not = not;
 
-},{}],672:[function(require,module,exports){
+},{}],885:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.pipeFromArray = exports.pipe = void 0;
@@ -34393,7 +40081,7 @@ function pipeFromArray(fns) {
 }
 exports.pipeFromArray = pipeFromArray;
 
-},{"./identity":657}],673:[function(require,module,exports){
+},{"./identity":870}],886:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.reportUnhandledError = void 0;
@@ -34412,7 +40100,7 @@ function reportUnhandledError(err) {
 }
 exports.reportUnhandledError = reportUnhandledError;
 
-},{"../config":461,"../scheduler/timeoutProvider":638}],674:[function(require,module,exports){
+},{"../config":674,"../scheduler/timeoutProvider":851}],887:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.createInvalidObservableTypeError = void 0;
@@ -34421,7 +40109,7 @@ function createInvalidObservableTypeError(input) {
 }
 exports.createInvalidObservableTypeError = createInvalidObservableTypeError;
 
-},{}],675:[function(require,module,exports){
+},{}],888:[function(require,module,exports){
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.mergeAll = exports.merge = exports.max = exports.materialize = exports.mapTo = exports.map = exports.last = exports.isEmpty = exports.ignoreElements = exports.groupBy = exports.first = exports.findIndex = exports.find = exports.finalize = exports.filter = exports.expand = exports.exhaustMap = exports.exhaustAll = exports.exhaust = exports.every = exports.endWith = exports.elementAt = exports.distinctUntilKeyChanged = exports.distinctUntilChanged = exports.distinct = exports.dematerialize = exports.delayWhen = exports.delay = exports.defaultIfEmpty = exports.debounceTime = exports.debounce = exports.count = exports.connect = exports.concatWith = exports.concatMapTo = exports.concatMap = exports.concatAll = exports.concat = exports.combineLatestWith = exports.combineLatest = exports.combineLatestAll = exports.combineAll = exports.catchError = exports.bufferWhen = exports.bufferToggle = exports.bufferTime = exports.bufferCount = exports.buffer = exports.auditTime = exports.audit = void 0;
@@ -34654,7 +40342,7 @@ Object.defineProperty(exports, "zipAll", { enumerable: true, get: function () { 
 var zipWith_1 = require("../internal/operators/zipWith");
 Object.defineProperty(exports, "zipWith", { enumerable: true, get: function () { return zipWith_1.zipWith; } });
 
-},{"../internal/operators/audit":496,"../internal/operators/auditTime":497,"../internal/operators/buffer":498,"../internal/operators/bufferCount":499,"../internal/operators/bufferTime":500,"../internal/operators/bufferToggle":501,"../internal/operators/bufferWhen":502,"../internal/operators/catchError":503,"../internal/operators/combineAll":504,"../internal/operators/combineLatest":505,"../internal/operators/combineLatestAll":506,"../internal/operators/combineLatestWith":507,"../internal/operators/concat":508,"../internal/operators/concatAll":509,"../internal/operators/concatMap":510,"../internal/operators/concatMapTo":511,"../internal/operators/concatWith":512,"../internal/operators/connect":513,"../internal/operators/count":514,"../internal/operators/debounce":515,"../internal/operators/debounceTime":516,"../internal/operators/defaultIfEmpty":517,"../internal/operators/delay":518,"../internal/operators/delayWhen":519,"../internal/operators/dematerialize":520,"../internal/operators/distinct":521,"../internal/operators/distinctUntilChanged":522,"../internal/operators/distinctUntilKeyChanged":523,"../internal/operators/elementAt":524,"../internal/operators/endWith":525,"../internal/operators/every":526,"../internal/operators/exhaust":527,"../internal/operators/exhaustAll":528,"../internal/operators/exhaustMap":529,"../internal/operators/expand":530,"../internal/operators/filter":531,"../internal/operators/finalize":532,"../internal/operators/find":533,"../internal/operators/findIndex":534,"../internal/operators/first":535,"../internal/operators/flatMap":536,"../internal/operators/groupBy":537,"../internal/operators/ignoreElements":538,"../internal/operators/isEmpty":539,"../internal/operators/last":541,"../internal/operators/map":542,"../internal/operators/mapTo":543,"../internal/operators/materialize":544,"../internal/operators/max":545,"../internal/operators/merge":546,"../internal/operators/mergeAll":547,"../internal/operators/mergeMap":549,"../internal/operators/mergeMapTo":550,"../internal/operators/mergeScan":551,"../internal/operators/mergeWith":552,"../internal/operators/min":553,"../internal/operators/multicast":554,"../internal/operators/observeOn":555,"../internal/operators/onErrorResumeNextWith":556,"../internal/operators/pairwise":557,"../internal/operators/partition":558,"../internal/operators/pluck":559,"../internal/operators/publish":560,"../internal/operators/publishBehavior":561,"../internal/operators/publishLast":562,"../internal/operators/publishReplay":563,"../internal/operators/race":564,"../internal/operators/raceWith":565,"../internal/operators/reduce":566,"../internal/operators/refCount":567,"../internal/operators/repeat":568,"../internal/operators/repeatWhen":569,"../internal/operators/retry":570,"../internal/operators/retryWhen":571,"../internal/operators/sample":572,"../internal/operators/sampleTime":573,"../internal/operators/scan":574,"../internal/operators/sequenceEqual":576,"../internal/operators/share":577,"../internal/operators/shareReplay":578,"../internal/operators/single":579,"../internal/operators/skip":580,"../internal/operators/skipLast":581,"../internal/operators/skipUntil":582,"../internal/operators/skipWhile":583,"../internal/operators/startWith":584,"../internal/operators/subscribeOn":585,"../internal/operators/switchAll":586,"../internal/operators/switchMap":587,"../internal/operators/switchMapTo":588,"../internal/operators/switchScan":589,"../internal/operators/take":590,"../internal/operators/takeLast":591,"../internal/operators/takeUntil":592,"../internal/operators/takeWhile":593,"../internal/operators/tap":594,"../internal/operators/throttle":595,"../internal/operators/throttleTime":596,"../internal/operators/throwIfEmpty":597,"../internal/operators/timeInterval":598,"../internal/operators/timeout":599,"../internal/operators/timeoutWith":600,"../internal/operators/timestamp":601,"../internal/operators/toArray":602,"../internal/operators/window":603,"../internal/operators/windowCount":604,"../internal/operators/windowTime":605,"../internal/operators/windowToggle":606,"../internal/operators/windowWhen":607,"../internal/operators/withLatestFrom":608,"../internal/operators/zip":609,"../internal/operators/zipAll":610,"../internal/operators/zipWith":611}],676:[function(require,module,exports){
+},{"../internal/operators/audit":709,"../internal/operators/auditTime":710,"../internal/operators/buffer":711,"../internal/operators/bufferCount":712,"../internal/operators/bufferTime":713,"../internal/operators/bufferToggle":714,"../internal/operators/bufferWhen":715,"../internal/operators/catchError":716,"../internal/operators/combineAll":717,"../internal/operators/combineLatest":718,"../internal/operators/combineLatestAll":719,"../internal/operators/combineLatestWith":720,"../internal/operators/concat":721,"../internal/operators/concatAll":722,"../internal/operators/concatMap":723,"../internal/operators/concatMapTo":724,"../internal/operators/concatWith":725,"../internal/operators/connect":726,"../internal/operators/count":727,"../internal/operators/debounce":728,"../internal/operators/debounceTime":729,"../internal/operators/defaultIfEmpty":730,"../internal/operators/delay":731,"../internal/operators/delayWhen":732,"../internal/operators/dematerialize":733,"../internal/operators/distinct":734,"../internal/operators/distinctUntilChanged":735,"../internal/operators/distinctUntilKeyChanged":736,"../internal/operators/elementAt":737,"../internal/operators/endWith":738,"../internal/operators/every":739,"../internal/operators/exhaust":740,"../internal/operators/exhaustAll":741,"../internal/operators/exhaustMap":742,"../internal/operators/expand":743,"../internal/operators/filter":744,"../internal/operators/finalize":745,"../internal/operators/find":746,"../internal/operators/findIndex":747,"../internal/operators/first":748,"../internal/operators/flatMap":749,"../internal/operators/groupBy":750,"../internal/operators/ignoreElements":751,"../internal/operators/isEmpty":752,"../internal/operators/last":754,"../internal/operators/map":755,"../internal/operators/mapTo":756,"../internal/operators/materialize":757,"../internal/operators/max":758,"../internal/operators/merge":759,"../internal/operators/mergeAll":760,"../internal/operators/mergeMap":762,"../internal/operators/mergeMapTo":763,"../internal/operators/mergeScan":764,"../internal/operators/mergeWith":765,"../internal/operators/min":766,"../internal/operators/multicast":767,"../internal/operators/observeOn":768,"../internal/operators/onErrorResumeNextWith":769,"../internal/operators/pairwise":770,"../internal/operators/partition":771,"../internal/operators/pluck":772,"../internal/operators/publish":773,"../internal/operators/publishBehavior":774,"../internal/operators/publishLast":775,"../internal/operators/publishReplay":776,"../internal/operators/race":777,"../internal/operators/raceWith":778,"../internal/operators/reduce":779,"../internal/operators/refCount":780,"../internal/operators/repeat":781,"../internal/operators/repeatWhen":782,"../internal/operators/retry":783,"../internal/operators/retryWhen":784,"../internal/operators/sample":785,"../internal/operators/sampleTime":786,"../internal/operators/scan":787,"../internal/operators/sequenceEqual":789,"../internal/operators/share":790,"../internal/operators/shareReplay":791,"../internal/operators/single":792,"../internal/operators/skip":793,"../internal/operators/skipLast":794,"../internal/operators/skipUntil":795,"../internal/operators/skipWhile":796,"../internal/operators/startWith":797,"../internal/operators/subscribeOn":798,"../internal/operators/switchAll":799,"../internal/operators/switchMap":800,"../internal/operators/switchMapTo":801,"../internal/operators/switchScan":802,"../internal/operators/take":803,"../internal/operators/takeLast":804,"../internal/operators/takeUntil":805,"../internal/operators/takeWhile":806,"../internal/operators/tap":807,"../internal/operators/throttle":808,"../internal/operators/throttleTime":809,"../internal/operators/throwIfEmpty":810,"../internal/operators/timeInterval":811,"../internal/operators/timeout":812,"../internal/operators/timeoutWith":813,"../internal/operators/timestamp":814,"../internal/operators/toArray":815,"../internal/operators/window":816,"../internal/operators/windowCount":817,"../internal/operators/windowTime":818,"../internal/operators/windowToggle":819,"../internal/operators/windowWhen":820,"../internal/operators/withLatestFrom":821,"../internal/operators/zip":822,"../internal/operators/zipAll":823,"../internal/operators/zipWith":824}],889:[function(require,module,exports){
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -34706,7 +40394,7 @@ function addBrowser(fn) {
    * @link https://stackoverflow.com/a/26193516/3443137
    */
 }
-},{}],677:[function(require,module,exports){
+},{}],890:[function(require,module,exports){
 (function (process){(function (){
 "use strict";
 
@@ -34767,7 +40455,7 @@ function getSize() {
   return LISTENERS.size;
 }
 }).call(this)}).call(this,require('_process'))
-},{"./browser.js":676,"./node.js":678,"_process":448}],678:[function(require,module,exports){
+},{"./browser.js":889,"./node.js":891,"_process":661}],891:[function(require,module,exports){
 (function (process){(function (){
 "use strict";
 
@@ -34806,4 +40494,4 @@ function addNode(fn) {
   });
 }
 }).call(this)}).call(this,require('_process'))
-},{"_process":448}]},{},[1]);
+},{"_process":661}]},{},[1]);

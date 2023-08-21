@@ -1,7 +1,7 @@
 import { LOGICAL_OPERATORS } from './query-planner';
 import { getPrimaryFieldOfPrimaryKey } from './rx-schema-helper';
 import { clone, firstPropertyNameOfObject, toArray, isMaybeReadonlyArray, parseRegex, flatClone, objectPathMonad } from './plugins/utils';
-import { DEFAULT_COMPARATOR as mingoSortComparator } from 'mingo/util';
+import { compare as mingoSortComparator } from 'mingo/util';
 import { newRxError } from './rx-error';
 import { getMingoQuery } from './rx-query-mingo';
 

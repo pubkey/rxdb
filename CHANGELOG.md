@@ -4,13 +4,16 @@
 <!-- CHANGELOG NEWEST -->
 
 <!-- ADD new changes here! -->
-- FIX primaryKey with value "constructor", breaks findOne()
-- FIX Queries with `$lt` selector on primaryKey broken [#4751](https://github.com/pubkey/rxdb/pull/4751)
-- UPDATE [mingo](https://github.com/kofrasa/mingo) to `6.4.4`
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 14.16.0 (21 August 2023)
+
+- FIX primaryKey with value "constructor", breaks findOne()
+- FIX Queries with `$lt` selector on primaryKey broken [#4751](https://github.com/pubkey/rxdb/pull/4751)
+- UPDATE [mingo](https://github.com/kofrasa/mingo) to `6.4.4`
 
 ### 14.15.1 (27 July 2023)
 

@@ -69,7 +69,20 @@ async function queryFoundationDB(instance, preparedQuery) {
         done = true;
         break;
       }
-      var docIds = next.value.map(row => row[1]);
+      var rows = next.value;
+      if (!queryPlan.inclusiveStart) {
+        var firstRow = rows[0];
+        if (firstRow && firstRow[0] === lowerBoundString) {
+          rows.shift();
+        }
+      }
+      if (!queryPlan.inclusiveEnd) {
+        var lastRow = (0, _utils.lastOfArray)(rows);
+        if (lastRow && lastRow[0] === upperBoundString) {
+          rows.pop();
+        }
+      }
+      var docIds = rows.map(row => row[1]);
       var docsData = await Promise.all(docIds.map(docId => mainTx.get(docId)));
       docsData.forEach(docData => {
         if (!done) {

@@ -2474,7 +2474,7 @@ Instead a different storage solution must be chosen that does not come directly 
 <h2 id="database-solutions-for-react-native">Database Solutions for React-Native</h2>
 <p>There are multiple database solutions that can be used with React Native. While I would recommend to use <a href=".">RxDB</a> for most use cases, it is still helpful to learn about other alternatives.</p>
 <h3 id="asyncstorage">AsyncStorage</h3>
-<p>AsyncStorage is a key-&gt;value storage solution that works similar to the browsers <em>localstorage</em> API. The big difference is that access to the AsyncStorage is not a blocking operation but instead everything is <code>Promise</code> based. This is a big benefit because long running writes and reads will not block your JavaScript process which would cause a laggy user interface.</p>
+<p>AsyncStorage is a key-&gt;value storage solution that works similar to the browsers <a href="articles/localstorage.html">localstorage API</a>. The big difference is that access to the AsyncStorage is not a blocking operation but instead everything is <code>Promise</code> based. This is a big benefit because long running writes and reads will not block your JavaScript process which would cause a laggy user interface.</p>
 <pre><code class="lang-ts"><span class="hljs-comment">/**
  * Because it is Promise-based,
  * you have to &apos;await&apos; the call to getItem()

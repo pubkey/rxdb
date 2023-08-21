@@ -2495,7 +2495,7 @@ Because of how it works, it has proven to be hard to integrate it with other mod
 <p>Meteor uses MongoDB in the backend and can replicate with a Minimongo database in the frontend.
 While testing, it has proven to be impossible to make a meteor app <strong>offline first</strong> capable. There are <a href="https://github.com/frozeman/meteor-persistent-minimongo2" target="_blank">some projects</a> that might do this, but all are unmaintained.</p>
 <h3 id="minimongo">Minimongo</h3>
-<p>Forked in Jan 2014 from meteorJSs&apos; minimongo package, Minimongo is a client-side, in-memory, JavaScript version of MongoDB with backend replication over HTTP. Similar to MongoDB, it stores data in documents inside of collections and also has the same query syntax. Minimongo has different storage adapters for IndexedDB, WebSQL, LocalStorage and SQLite.
+<p>Forked in Jan 2014 from meteorJSs&apos; minimongo package, Minimongo is a client-side, in-memory, JavaScript version of MongoDB with backend replication over HTTP. Similar to MongoDB, it stores data in documents inside of collections and also has the same query syntax. Minimongo has different storage adapters for IndexedDB, WebSQL, <a href="articles/localstorage.html">LocalStorage</a> and SQLite.
 Compared to RxDB, Minimongo has no concept of revisions or conflict handling, which might lead to undefined behavior when used with replication or in multiple browser tabs. Minimongo has no observable queries or changestream.</p>
 <h3 id="watermelondb">WatermelonDB</h3>
 <p align="center">

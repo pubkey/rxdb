@@ -2495,7 +2495,7 @@ await Preferences.remove({ key: <span class="hljs-string">&apos;foo&apos;</span>
 </code></pre>
 <p>The preferences API is good when only a small amount of data needs to be stored and when no query capabilities besides the key access are required. Complex queries or other features like indexes or replication are not supported which makes the preferences API not suitable for anything more then storing simple data like user settings.</p>
 <h3 id="localstorageindexeddbwebsql">Localstorage/IndexedDB/WebSQL</h3>
-<p>Since Capacitor apps run in a web view, Web APIs like IndexedDB, Localstorage and WebSQL are available. But the default browser behavior is to clean up these storages regularly when they are not in use for a long time or the device is low on space. Therefore you cannot 100% rely on the persistence of the stored data and your application needs to expect that the data will be lost eventually.</p>
+<p>Since Capacitor apps run in a web view, Web APIs like IndexedDB, <a href="articles/localstorage.html">Localstorage</a> and WebSQL are available. But the default browser behavior is to clean up these storages regularly when they are not in use for a long time or the device is low on space. Therefore you cannot 100% rely on the persistence of the stored data and your application needs to expect that the data will be lost eventually.</p>
 <p>Storing data in these storages can be done in browsers, because there is no other option. But in Capacitor iOS and Android, you should not rely on these.</p>
 <h3 id="sqlite">SQLite</h3>
 <p>SQLite is a SQL based relational database written in C that was crafted to be embed inside of applications. Operations are written in the SQL query language and SQLite generally follows the PostgreSQL syntax.</p>

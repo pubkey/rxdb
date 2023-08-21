@@ -121,10 +121,10 @@ var RxStorageInstanceMemory = /*#__PURE__*/function () {
     var upperBoundString = (0, _customIndex.getStartIndexStringFromUpperBound)(this.schema, index, upperBound, queryPlan.inclusiveEnd);
     var indexName = (0, _memoryIndexes.getMemoryIndexName)(index);
     var docsWithIndex = this.internals.byIndex[indexName].docsWithIndex;
-    var indexOfLower = (0, _binarySearchBounds.boundGE)(docsWithIndex, {
+    var indexOfLower = (queryPlan.inclusiveStart ? _binarySearchBounds.boundGE : _binarySearchBounds.boundGT)(docsWithIndex, {
       indexString: lowerBoundString
     }, _memoryHelper.compareDocsWithIndex);
-    var indexOfUpper = (0, _binarySearchBounds.boundLE)(docsWithIndex, {
+    var indexOfUpper = (queryPlan.inclusiveEnd ? _binarySearchBounds.boundLE : _binarySearchBounds.boundLT)(docsWithIndex, {
       indexString: upperBoundString
     }, _memoryHelper.compareDocsWithIndex);
     var rows = [];

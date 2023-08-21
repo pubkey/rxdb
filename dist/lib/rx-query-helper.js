@@ -202,7 +202,7 @@ function getSortComparator(schema, query) {
       var valueA = sortPart.getValueFn(a);
       var valueB = sortPart.getValueFn(b);
       if (valueA !== valueB) {
-        var ret = sortPart.direction === 'asc' ? (0, _util.DEFAULT_COMPARATOR)(valueA, valueB) : (0, _util.DEFAULT_COMPARATOR)(valueB, valueA);
+        var ret = sortPart.direction === 'asc' ? (0, _util.compare)(valueA, valueB) : (0, _util.compare)(valueB, valueA);
         return ret;
       }
     }

@@ -3,7 +3,7 @@ import { getStartIndexStringFromLowerBound, getStartIndexStringFromUpperBound } 
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
 import { categorizeBulkWriteRows } from '../../rx-storage-helper';
 import { ensureNotFalsy, getFromMapOrThrow, lastOfArray, now, PROMISE_RESOLVE_TRUE, PROMISE_RESOLVE_VOID, RX_META_LWT_MINIMUM } from '../../plugins/utils';
-import { boundGE, boundGT, boundLE } from './binary-search-bounds';
+import { boundGE, boundGT, boundLE, boundLT } from './binary-search-bounds';
 import { attachmentMapKey, compareDocsWithIndex, ensureNotRemoved, getMemoryCollectionKey, putWriteRowToState, removeDocFromState } from './memory-helper';
 import { addIndexesToInternalsState, getMemoryIndexName } from './memory-indexes';
 import { getQueryMatcher, getSortComparator } from '../../rx-query-helper';
@@ -114,10 +114,10 @@ export var RxStorageInstanceMemory = /*#__PURE__*/function () {
     var upperBoundString = getStartIndexStringFromUpperBound(this.schema, index, upperBound, queryPlan.inclusiveEnd);
     var indexName = getMemoryIndexName(index);
     var docsWithIndex = this.internals.byIndex[indexName].docsWithIndex;
-    var indexOfLower = boundGE(docsWithIndex, {
+    var indexOfLower = (queryPlan.inclusiveStart ? boundGE : boundGT)(docsWithIndex, {
       indexString: lowerBoundString
     }, compareDocsWithIndex);
-    var indexOfUpper = boundLE(docsWithIndex, {
+    var indexOfUpper = (queryPlan.inclusiveEnd ? boundLE : boundLT)(docsWithIndex, {
       indexString: upperBoundString
     }, compareDocsWithIndex);
     var rows = [];

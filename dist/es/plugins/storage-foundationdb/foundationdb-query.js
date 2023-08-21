@@ -1,5 +1,5 @@
 import { getStartIndexStringFromLowerBound, getStartIndexStringFromUpperBound } from '../../custom-index';
-import { ensureNotFalsy } from '../../plugins/utils';
+import { ensureNotFalsy, lastOfArray } from '../../plugins/utils';
 import { getFoundationDBIndexName } from './foundationdb-helpers';
 import { getQueryMatcher, getSortComparator } from '../../rx-query-helper';
 export async function queryFoundationDB(instance, preparedQuery) {
@@ -63,7 +63,20 @@ export async function queryFoundationDB(instance, preparedQuery) {
         done = true;
         break;
       }
-      var docIds = next.value.map(row => row[1]);
+      var rows = next.value;
+      if (!queryPlan.inclusiveStart) {
+        var firstRow = rows[0];
+        if (firstRow && firstRow[0] === lowerBoundString) {
+          rows.shift();
+        }
+      }
+      if (!queryPlan.inclusiveEnd) {
+        var lastRow = lastOfArray(rows);
+        if (lastRow && lastRow[0] === upperBoundString) {
+          rows.pop();
+        }
+      }
+      var docIds = rows.map(row => row[1]);
       var docsData = await Promise.all(docIds.map(docId => mainTx.get(docId)));
       docsData.forEach(docData => {
         if (!done) {

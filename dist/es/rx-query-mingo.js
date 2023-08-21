@@ -1,25 +1,11 @@
 import { useOperators, OperatorType } from 'mingo/core';
 import { Query } from 'mingo/query';
-import { $project } from 'mingo/operators/pipeline/project';
-import { $sort } from 'mingo/operators/pipeline/sort';
-import { $and } from 'mingo/operators/query/logical/and';
-import { $not } from 'mingo/operators/query/logical/not';
-import { $or } from 'mingo/operators/query/logical/or';
-import { $nor } from 'mingo/operators/query/logical/nor';
-import { $eq } from 'mingo/operators/query/comparison/eq';
-import { $ne } from 'mingo/operators/query/comparison/ne';
-import { $gt } from 'mingo/operators/query/comparison/gt';
-import { $gte } from 'mingo/operators/query/comparison/gte';
-import { $lt } from 'mingo/operators/query/comparison/lt';
-import { $lte } from 'mingo/operators/query/comparison/lte';
-import { $regex } from 'mingo/operators/query/evaluation/regex';
-import { $mod } from 'mingo/operators/query/evaluation/mod';
-import { $elemMatch } from 'mingo/operators/query/array/elemMatch';
-import { $exists } from 'mingo/operators/query/element/exists';
-import { $nin } from 'mingo/operators/query/comparison/nin';
-import { $in } from 'mingo/operators/query/comparison/in';
-import { $size } from 'mingo/operators/query/array/size';
-import { $type } from 'mingo/operators/query/element/type';
+import { $project, $sort } from 'mingo/operators/pipeline';
+import { $and, $not, $or, $nor } from 'mingo/operators/query/logical';
+import { $eq, $ne, $gt, $gte, $lt, $lte, $nin, $in } from 'mingo/operators/query/comparison';
+import { $regex, $mod } from 'mingo/operators/query/evaluation';
+import { $elemMatch, $size } from 'mingo/operators/query/array';
+import { $exists, $type } from 'mingo/operators/query/element';
 var mingoInitDone = false;
 
 /**

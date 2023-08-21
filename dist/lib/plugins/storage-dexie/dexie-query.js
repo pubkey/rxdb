@@ -34,9 +34,9 @@ function getKeyRangeByQueryPlan(queryPlan, IDBKeyRange) {
    */
   if (queryPlan.index.length === 1) {
     var equalKeys = startKeys[0] === endKeys[0];
-    ret = IDBKeyRange.bound(startKeys[0], endKeys[0], equalKeys ? false : queryPlan.inclusiveStart, equalKeys ? false : queryPlan.inclusiveEnd);
+    ret = IDBKeyRange.bound(startKeys[0], endKeys[0], equalKeys ? false : !queryPlan.inclusiveStart, equalKeys ? false : !queryPlan.inclusiveEnd);
   } else {
-    ret = IDBKeyRange.bound(startKeys, endKeys, queryPlan.inclusiveStart, queryPlan.inclusiveEnd);
+    ret = IDBKeyRange.bound(startKeys, endKeys, !queryPlan.inclusiveStart, !queryPlan.inclusiveEnd);
   }
   return ret;
 }

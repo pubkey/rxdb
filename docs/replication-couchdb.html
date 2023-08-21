@@ -2512,7 +2512,7 @@
              * before storing them in RxDB.
              * (optional)
              */</span>
-            modifier: docData =&gt; {<span class="hljs-comment">/* ... */</span>} 
+            modifier: docData =&gt; {<span class="hljs-comment">/* ... */</span>}, 
             <span class="hljs-comment">/**
              * Heartbeat time in milliseconds
              * for the long polling of the changestream.
@@ -2526,7 +2526,7 @@
              * How many local changes to process at once.
              * (optional)
              */</span>
-            batchSize: <span class="hljs-number">60</span>;
+            batchSize: <span class="hljs-number">60</span>,
             <span class="hljs-comment">/**
              * Custom modifier to mutate documents
              * before sending them to the CouchDB endpoint.
