@@ -395,7 +395,7 @@
     "js-base64": "3.7.5",
     "jsonschema-key-compression": "1.6.1",
     "lokijs": "1.5.12",
-    "mingo": "6.3.2",
+    "mingo": "6.4.4",
     "modifyjs": "0.3.1",
     "nats": "2.16.0",
     "oblivious-set": "1.1.1",

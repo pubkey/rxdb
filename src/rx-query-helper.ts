@@ -20,7 +20,7 @@ import {
     ObjectPathMonadFunction
 } from './plugins/utils';
 import {
-    DEFAULT_COMPARATOR as mingoSortComparator
+    compare as mingoSortComparator
 } from 'mingo/util';
 import { newRxError } from './rx-error';
 import { getMingoQuery } from './rx-query-mingo';
