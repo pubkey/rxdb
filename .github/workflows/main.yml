@@ -219,7 +219,14 @@ jobs:
 
       - run: npm run test:replication-couchdb
       - run: npm run test:replication-firestore
-      - run: npm run test:replication-nats
+
+      - name: nats replication
+        # first start/stop the container once to ensure it
+        # has downloaded the image
+        run: |
+          npm run nats:start
+          npm run nats:end
+          npm run test:replication-nats
 
       - name: performance test
         uses: GabrielBB/xvfb-action@v1
