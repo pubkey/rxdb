@@ -49,7 +49,7 @@
   RxDB (short for <b>R</b>eactive <b>D</b>ata<b>b</b>ase) is an <a href="https://rxdb.info/offline-first.html">offline-first</a>, NoSQL-database for JavaScript Applications like Websites, hybrid Apps, Electron-Apps, Progressive Web Apps and <a href="https://rxdb.info/nodejs-database.html">Node.js</a>.
   Reactive means that you can not only query the current state, but <b>subscribe</b> to all state changes like the result of a query or even a single field of a document.
   This is great for UI-based <b>realtime</b> applications in a way that makes it easy to develop and also has great performance benefits but can also be used to create fast backends in Node.js.<br />
-  RxDB provides an easy to implement <a href="https://rxdb.info/replication.html">protocol</a> for realtime <b>replication</b> with your existing infrastructure or any compliant CouchDB endpoint.<br />
+  RxDB provides an easy to implement <a href="https://rxdb.info/replication.html">protocol</a> for realtime <b>replication</b> with your existing infrastructure or one of the plugins for <a href="https://rxdb.info/replication-graphql.html">GraphQL</a>, <a href="https://rxdb.info/replication-couchdb.html">CouchDB</a>, <a href="https://rxdb.info/replication-websocket.html">Websocket</a>, <a href="https://rxdb.info/replication-p2p.html">P2P</a>, <a href="https://rxdb.info/replication-firestore.html">Firestore</a>, <a href="https://rxdb.info/replication-nats.html">NATS</a>.<br />
   RxDB is based on a storage interface that enables you to swap out the underlying storage engine. This increases <b>code reuse</b> because you can use the same database code for different JavaScript environments by just switching out the storage settings.
 </p>
 
@@ -70,8 +70,7 @@ Use the [quickstart](https://rxdb.info/quickstart.html), read the [documentation
 </h2>
 
 RxDB provides an easy to implement, <b>battle-tested</b> <a href="https://rxdb.info/replication.html"> replication protocol</a> for realtime sync with your existing infrastructure.<br />
-There are also plugins to replicate with any <a href="https://rxdb.info/replication-couchdb.html">CouchDB</a> endpoint or over <a href="https://rxdb.info/replication-graphql.html">GraphQL</a> and REST or even <a href="https://rxdb.info/replication-p2p.html">P2P</a>.
-
+There are also plugins to easily replicate with <a href="https://rxdb.info/replication-graphql.html">GraphQL</a>, <a href="https://rxdb.info/replication-couchdb.html">CouchDB</a>, <a href="https://rxdb.info/replication-websocket.html">Websocket</a>, <a href="https://rxdb.info/replication-p2p.html">P2P</a>, <a href="https://rxdb.info/replication-firestore.html">Firestore</a> or <a href="https://rxdb.info/replication-nats.html">NATS</a>.
 
 
 <h2>
