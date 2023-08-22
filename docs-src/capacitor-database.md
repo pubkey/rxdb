@@ -57,7 +57,7 @@ To use SQLite in Capacitor, there are three options:
 
 - The [@capacitor-community/sqlite](https://github.com/capacitor-community/sqlite) package
 - The [cordova-sqlite-storage](https://github.com/storesafe/cordova-sqlite-storage) package
-- The non-free [Ionic Secure Storage](https://ionic.io/products/secure-storage) which comes at **999$** per month.
+- The non-free [Ionic](./articles/ionic-database.md) [Secure Storage](https://ionic.io/products/secure-storage) which comes at **999$** per month.
 
 
 It is recommended to use the `@capacitor-community/sqlite` because it has the best maintenance and is open source. Install it first `npm install --save @capacitor-community/sqlite` and then set the storage location for iOS apps:
