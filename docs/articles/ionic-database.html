@@ -4,7 +4,7 @@
     <head>
         <meta charset="UTF-8">
         <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
-        <title>Embedded Database · RxDB - JavaScript Database</title>
+        <title>Ionic Database · RxDB - JavaScript Database</title>
         <meta http-equiv="X-UA-Compatible" content="IE=edge" />
         <meta name="description" content="">
         <meta name="generator" content="GitBook 3.2.3">
@@ -63,10 +63,8 @@
     <link rel="shortcut icon" href="../gitbook/images/favicon.ico" type="image/x-icon">
 
     
-    <link rel="next" href="frontend-database.html" />
     
-    
-    <link rel="prev" href="browser-database.html" />
+    <link rel="prev" href="localstorage.html" />
     
 
     </head>
@@ -2243,7 +2241,7 @@
             
         </li>
     
-        <li class="chapter active" data-level="2.1.12" data-path="embedded-database.html">
+        <li class="chapter " data-level="2.1.12" data-path="embedded-database.html">
             
                 <a href="embedded-database.html">
             
@@ -2347,7 +2345,7 @@
             
         </li>
     
-        <li class="chapter " data-level="2.1.20" data-path="ionic-database.html">
+        <li class="chapter active" data-level="2.1.20" data-path="ionic-database.html">
             
                 <a href="ionic-database.html">
             
@@ -2460,7 +2458,7 @@
     <!-- Title -->
     <h1>
         <i class="fa fa-circle-o-notch fa-spin"></i>
-        <a href=".." >Embedded Database</a>
+        <a href=".." >Ionic Database</a>
     </h1>
 </div>
 
@@ -2475,60 +2473,111 @@
     
                                 <section class="normal markdown-section">
                                 
-                                <h1 id="using-rxdb-as-an-embedded-database">Using RxDB as an Embedded Database</h1>
-<p>In modern UI applications, efficient data storage is a crucial aspect for seamless user experiences. One powerful solution for achieving this is by utilizing an embedded database. In this article, we will explore the concept of an embedded database and delve into the benefits of using <a href="https://rxdb.info/" target="_blank">RxDB</a> as an embedded database in UI applications. We will also discuss why RxDB stands out as a robust choice for real-time applications with embedded database functionality.</p>
+                                <h1 id="ionic-storage---rxdb-as-database-for-hybrid-apps">Ionic Storage - RxDB as database for hybrid apps</h1>
+<p>In the fast-paced world of mobile app development, <strong>hybrid applications</strong> have emerged as a versatile solution, offering the best of both worlds - the web and native app experiences. One key challenge these apps face is efficiently storing and querying data on the <strong>client&apos;s device</strong>. Enter <a href="https://rxdb.info/" target="_blank">RxDB</a>, a powerful client-side database tailored for ionic hybrid applications. In this article, we&apos;ll explore how RxDB addresses the requirements of storing and querying data in ionic apps, and why it stands out as a preferred choice.</p>
 <center>
     <a href="https://rxdb.info/" target="_blank">
-        <img src="../files/logo/logo_text.svg" alt="JavaScript Embedded Database" width="220">
+        <img src="../files/icons/ionic.svg" alt="Ionic Database Storage" width="120">
     </a>
 </center>
 
-<h2 id="what-is-an-embedded-database">What is an Embedded Database?</h2>
-<p>An embedded database refers to a client-side database system that is integrated directly within an application. It is designed to operate within the client environment, such as a web browser or a <a href="mobile-database.html">mobile</a> app. This approach eliminates the need for a separate database server and allows the database to run locally on the client device.</p>
-<h2 id="embedded-database-in-ui-applications">Embedded Database in UI Applications</h2>
-<p>In the context of UI applications, an embedded database serves as a local data storage solution. It enables applications to efficiently manage data, facilitate real-time updates, and enhance performance. Let&apos;s explore some of the benefits of using an embedded database compared to a traditional server database:</p>
-<ul>
-<li>Replicating database state becomes easier: Implementing real-time data synchronization and replication is simpler with an embedded database compared to complex REST routes. The embedded nature allows for efficient replication of the database state across multiple instances of the application.</li>
-<li>Use the database for caching: An embedded database can be utilized for caching frequently accessed data. This caching mechanism enhances performance and reduces the need for repeated network requests, resulting in faster data retrieval.</li>
-<li>Building real-time applications is easier with local data: By leveraging local data storage, real-time applications can easily update the user interface in response to data changes. This approach simplifies the development of real-time features and enhances the responsiveness of the application.</li>
-<li>Store local data with <a href="../encryption.html">encryption</a>: Embedded databases, like RxDB, offer the ability to store local data with encryption. This ensures that sensitive information remains protected even when stored locally on the client device.</li>
-<li>Data is offline accessible: With an embedded database, data remains accessible even when the application is offline. Users can continue to interact with the application and access their data seamlessly, irrespective of their internet connectivity.</li>
-<li>Faster initial application start time: Since the data is already stored locally, there is no need for initial data fetching from a remote server. This significantly reduces the application&apos;s startup time and allows users to engage with the application more quickly.</li>
-<li>Improved scalability with local queries: Embedded databases, such as RxDB, perform queries locally on the client device instead of relying on server round-trips. This reduces latency and enhances scalability, particularly when dealing with large datasets or high query volumes.</li>
-<li>Seamless integration with JavaScript frameworks: Embedded databases, including RxDB, integrate seamlessly with popular JavaScript frameworks like Angular, React.js, Vue.js, and Svelte. This compatibility allows developers to leverage the capabilities of these frameworks while benefiting from embedded database functionality.</li>
-<li>Running queries locally has low latency: With an embedded database, queries are executed locally on the client device, resulting in minimal latency. This improves the overall performance and responsiveness of the application.</li>
-<li>Data is portable and always accessible by the user: Embedded databases enable data portability, allowing users to seamlessly transition between devices while maintaining their data and application state. This ensures that data is always accessible and available to the user.</li>
-<li>Using a local database for state management: Instead of relying on additional state management libraries like Redux or NgRx, an embedded database can be used for local state management. This simplifies state management and ensures data consistency within the application.</li>
-</ul>
-<h2 id="why-rxdb-as-an-embedded-database-for-real-time-applications">Why RxDB as an Embedded Database for Real-time Applications</h2>
-<p>RxDB is a JavaScript-based embedded database that offers numerous advantages for building real-time applications. Let&apos;s explore why RxDB is a compelling choice:</p>
-<ul>
-<li><a href="../rx-query.html">Observable Queries</a> (RxJS): RxDB leverages the power of Observables through RxJS, enabling developers to create queries that automatically update the user interface on data changes. This reactive approach simplifies UI updates and ensures real-time synchronization of data.</li>
-<li>NoSQL (JSON) Documents for UIs: RxDB utilizes NoSQL (JSON) documents as its data model, aligning seamlessly with the requirements of modern UI development. JavaScript&apos;s native support for JSON objects makes NoSQL documents a natural fit for UI-driven applications.</li>
-<li>Better TypeScript Support Compared to SQL: RxDB&apos;s NoSQL approach provides excellent TypeScript support. The flexibility of working with JSON objects enables robust typing and enhanced development experiences, ensuring type safety and reducing runtime errors.</li>
-<li><a href="../rx-document.html">Observable Document Fields</a>: RxDB allows developers to observe individual fields within documents. This granularity enables efficient tracking of specific data changes and facilitates targeted UI updates, enhancing performance and responsiveness.</li>
-<li>Made in JavaScript, Optimized for JavaScript Applications: Being built entirely in JavaScript, RxDB is optimized for JavaScript applications. It leverages JavaScript&apos;s capabilities and integrates seamlessly with JavaScript frameworks and libraries, making it a natural choice for JavaScript developers.</li>
-<li>Optimized Observed Queries with the <a href="https://github.com/pubkey/event-reduce" target="_blank">EventReduce Algorithm</a>: RxDB incorporates the EventReduce algorithm to optimize observed queries. This algorithm reduces the number of emitted events during query execution, resulting in enhanced query performance and reduced overhead.</li>
-<li>Built-in Multi-tab Support: RxDB provides built-in multi-tab support, allowing multiple instances of an application to share and synchronize data seamlessly. This feature enables collaborative and real-time scenarios across multiple browser tabs or windows.</li>
-<li>Handling of Schema Changes across Multiple Client Devices: With RxDB, handling schema changes across multiple client devices becomes straightforward. RxDB&apos;s schema <a href="../data-migration.html">migration capabilities</a> ensure that applications can seamlessly adapt to evolving data structures, providing a consistent experience across different devices.</li>
-<li>Storing Documents Compressed: RxDB offers the ability to store documents in a compressed format. This reduces the storage footprint and improves performance, especially when dealing with large datasets.</li>
-<li>Flexible Storage Layer and Cross-platform Compatibility: RxDB provides a flexible storage layer that can be reused across various platforms, including <a href="../electron-database.html">Electron.js</a>, <a href="../react-native-database.html">React Native</a>, hybrid apps (via Capacitor.js), and browsers. This cross-platform compatibility simplifies development and enables code reuse across different environments.</li>
-<li>Replication Algorithm for Backend Compatibility: RxDB&apos;s replication algorithm is open-source and can be made compatible with various backend solutions, such as self-hosted servers, Firebase, <a href="../replication-couchdb.html">CouchDB</a>, NATS, WebSockets, and more. This flexibility allows developers to choose their preferred backend infrastructure while benefiting from RxDB&apos;s embedded database capabilities.</li>
-</ul>
+<h2 id="what-are-ionic-hybrid-apps">What are Ionic Hybrid Apps?</h2>
+<p>Ionic (aka Ionic 2 ) hybrid apps combine the strengths of web technologies (HTML, CSS, JavaScript) with native app development to deliver cross-platform applications. They are built using web technologies and then wrapped in a native container to be deployed on various platforms like iOS, Android, and the web. These apps provide a consistent user experience across devices while benefiting from the efficiency and familiarity of web development.</p>
+<h2 id="storing-and-querying-data-in-an-ionic-app">Storing and Querying Data in an Ionic App</h2>
+<p>Storing and querying data is a fundamental aspect of any application, including hybrid apps. These apps often need to operate offline, store user-generated content, and provide responsive user interfaces. Therefore, having a reliable and efficient way to manage data on the client&apos;s device is crucial.</p>
+<h2 id="introducing-rxdb-as-a-client-side-database-for-ionic-apps">Introducing RxDB as a Client-Side Database for Ionic Apps</h2>
+<p>RxDB steps in as a powerful solution to address the data management needs of ionic hybrid apps. It&apos;s a NoSQL client-side database that offers exceptional performance and features tailored to the unique requirements of client-side applications. Let&apos;s delve into the key features of RxDB that make it a great fit for these apps.</p>
+<h3 id="getting-started-with-rxdb">Getting Started with RxDB</h3>
 <center>
     <a href="https://rxdb.info/" target="_blank">
-        <img src="../files/logo/logo_text.svg" alt="JavaScript Embedded Database" width="220">
+        <img src="../files/logo/logo_text.svg" alt="JavaScript Ionic Database Storage" width="220">
     </a>
 </center>
 
+<h3 id="what-is-rxdb">What is RxDB?</h3>
+<p>At its core, <a href="https://rxdb.info/" target="_blank">RxDB</a> is a <strong>NoSQL</strong> database that operates with a <a href="../offline-first.html">local-first</a> approach. This means that your app&apos;s data is stored and processed primarily on the client&apos;s device, reducing the dependency on constant network connectivity. By doing so, RxDB ensures your app remains responsive and functional, even when offline.</p>
+<h3 id="local-first-approach">Local-First Approach</h3>
+<p>The <a href="../offline-first.html">local-first</a> approach adopted by RxDB is a game-changer for hybrid applications. Storing data locally allows your app to function seamlessly without an internet connection, providing users with uninterrupted access to their data. When connectivity is restored, RxDB handles the synchronization of data, ensuring that any changes made offline are appropriately propagated.</p>
+<h3 id="observable-queries">Observable Queries</h3>
+<p>One of RxDB&apos;s standout features is its implementation of observable queries. This concept allows your app&apos;s user interface to be dynamically updated in real time as data changes within the database. RxDB&apos;s observables create a bridge between your database and user interface, keeping them in sync effortlessly.</p>
+<p align="center">
+  <img src="../files/animations/realtime.gif" alt="realtime ui updates" width="700">
+</p>
 
+<h3 id="nosql-query-engine">NoSQL Query Engine</h3>
+<p>RxDB&apos;s NoSQL query engine empowers you to perform powerful queries on your app&apos;s data, without the constraints imposed by traditional relational databases. This flexibility is particularly valuable when dealing with unstructured or semi-structured data. With the NoSQL query engine, you can retrieve, filter, and manipulate data according to your app&apos;s unique requirements.</p>
+<pre><code class="lang-ts"><span class="hljs-keyword">const</span> foundDocuments = await myDatabase.todos.find({
+    selector: {
+        done: {
+            $eq: <span class="hljs-literal">false</span>
+        }
+    }
+}).exec();
+</code></pre>
+<h3 id="great-observe-performance-with-eventreduce">Great Observe Performance with EventReduce</h3>
+<p>RxDB introduces a concept called <a href="https://github.com/pubkey/event-reduce" target="_blank">EventReduce</a>, which optimizes the observation process. Instead of overwhelming your app&apos;s UI with every data change, EventReduce filters and batches these changes to provide a smooth and efficient experience. This leads to enhanced app performance, lower resource usage, and ultimately, happier users.</p>
+<h2 id="why-nosql-is-a-better-fit-for-client-side-applications-compared-to-relational-databases-like-sqlite">Why NoSQL is a Better Fit for Client-Side Applications Compared to relational databases like SQLite</h2>
+<p>When it comes to choosing the right database solution for your client-side applications, NoSQL RxDB presents compelling advantages over traditional options like SQLite. Let&apos;s delve into the key reasons why NoSQL RxDB is a superior fit for your ionic hybrid app development.</p>
+<h3 id="easier-document-based-replication">Easier Document-Based Replication</h3>
+<p>NoSQL databases, like RxDB, inherently embrace a document-based approach to data storage. This design choice simplifies data <a href="../replication.html">replication</a> between clients and servers. With documents representing discrete units of data, you can easily synchronize individual pieces of information without the complexity that can arise when dealing with rows and tables in a relational database like SQLite. This document-centric replication model streamlines the synchronization process and ensures that your app&apos;s data remains consistent across devices.</p>
+<h3 id="offline-capable">Offline Capable</h3>
+<p>One of the defining features of client-side applications is the ability to function even when offline. NoSQL RxDB excels in this area by supporting a local-first approach. Data is cached on the client&apos;s device, enabling the app to remain fully functional even without an internet connection. As connectivity is restored, RxDB handles data synchronization with the server seamlessly. This offline capability ensures a smooth user experience, critical for ionic hybrid apps catering to users in various network conditions.</p>
+<h3 id="nosql-has-better-typescript-support">NoSQL Has Better TypeScript Support</h3>
+<p>TypeScript, a popular superset of JavaScript, is renowned for its static typing and enhanced developer experience. NoSQL databases like RxDB are inherently flexible, making them well-suited for TypeScript integration. With well-defined data structures and clear typings, NoSQL RxDB offers <a href="../tutorials/typescript.html">improved type safety</a> and easier development when compared to traditional SQL databases like SQLite. This results in reduced debugging time and increased code reliability.</p>
+<h3 id="easier-schema-migration-with-nosql-documents">Easier <a href="../data-migration.html">Schema Migration</a> with NoSQL Documents</h3>
+<p>Schema changes are a common occurrence in application development, and dealing with them can be challenging. NoSQL databases, including RxDB, are more forgiving in this aspect. Since documents in NoSQL databases don&apos;t enforce a rigid structure like tables in relational databases, schema changes are often simpler to manage. This flexibility makes it easier to evolve your app&apos;s data structure over time without the need for complex migration scripts, a notable advantage when compared to SQLite.</p>
+<h2 id="great-performance">Great Performance</h2>
+<p>RxDB&apos;s <a href="../rx-storage-performance.html">excellent performance</a> stems from its advanced indexing capabilities, which streamline data retrieval and ensure swift query execution. Additionally, the <a href="../key-compression.html">JSON key compression</a> employed by RxDB minimizes storage overhead, enabling efficient data transfer and quicker loading times. The incorporation of real-time updates through change streams and the <strong>EventReduce mechanism</strong> further enhances RxDB&apos;s performance, delivering a responsive user experience even as data changes are propagated seamlessly.</p>
+<h2 id="using-rxdb-in-an-ionic-hybrid-app">Using RxDB in an Ionic Hybrid App</h2>
+<p>RxDB&apos;s integration into your ionic hybrid app opens up a world of possibilities for efficient data management. Let&apos;s explore how to set up RxDB, use it with popular JavaScript frameworks, and take advantage of its diverse storage options.</p>
+<h3 id="setup-rxdb">Setup RxDB</h3>
+<p>Getting started with RxDB is a straightforward process. By including the RxDB library in your project, you can quickly start harnessing its capabilities. Begin by installing the <a href="https://www.npmjs.com/package/rxdb" target="_blank">RxDB package</a> from the npm registry. Then, configure your database instance to suit your app&apos;s needs. This setup process paves the way for seamless data management in your ionic hybrid app.
+For a full instruction, follow the <a href="https://rxdb.info/quickstart.html" target="_blank">RxDB Quickstart</a>.</p>
+<h3 id="using-rxdb-in-frameworks-react-angular-vuejs">Using RxDB in Frameworks (React, Angular, Vue.js)</h3>
+<p>RxDB seamlessly integrates with various JavaScript frameworks, ensuring compatibility with your preferred development environment. Whether you&apos;re building your ionic hybrid app with <a href="react-database.html">React</a>, <a href="angular-database.html">Angular</a>, or <a href="https://github.com/pubkey/rxdb/tree/master/examples/vue" target="_blank">Vue.js</a>, RxDB offers bindings and tools that enable you to leverage its features effortlessly. This compatibility allows you to stay within the comfort zone of your chosen framework while benefiting from RxDB&apos;s powerful data management capabilities.</p>
+<h3 id="different-rxstorage-layers-for-rxdb">Different RxStorage Layers for RxDB</h3>
+<p>RxDB doesn&apos;t limit you to a single storage solution. Instead, it provides a range of RxStorage layers to accommodate diverse use cases. These storage layers offer flexibility and customization, enabling you to tailor your data management strategy to match your app&apos;s requirements. Let&apos;s explore some of the available RxStorage options:</p>
+<ul>
+<li><a href="../rx-storage-dexie.html">Dexie.js RxStorage</a>: Dexie.js is a popular JavaScript library for indexedDB, and RxDB offers a compatible RxStorage layer. This option leverages indexedDB&apos;s capabilities to provide efficient data storage and retrieval.</li>
+<li><a href="../rx-storage-lokijs.html">LokiJS RxStorage</a>: LokiJS RxStorage integrates the LokiJS database with RxDB, giving you access to another powerful NoSQL database solution. LokiJS is known for its in-memory storage capabilities and ease of use.</li>
+<li><a href="../rx-storage-indexeddb.html">IndexedDB RxStorage</a>: Leveraging the native browser storage, IndexedDB RxStorage offers reliable data persistence. This storage option is suitable for a wide range of scenarios and is supported by most modern browsers.</li>
+<li><a href="../rx-storage-opfs.html">OPFS RxStorage</a>: Operating within the browser&apos;s file system, OPFS RxStorage is a unique choice that can handle larger data volumes efficiently. It&apos;s particularly useful for applications that require substantial data storage.</li>
+<li><a href="../rx-storage-memory.html">Memory RxStorage</a>: Memory RxStorage is perfect for temporary or cache-like data storage. It keeps data in memory, which can result in rapid data access but doesn&apos;t provide long-term persistence.</li>
+<li><a href="../rx-storage-sqlite.html">SQLite RxStorage</a>: SQLite is the goto database for mobile applications. It is build in on android and iOS devices. The SQLite RxDB storage layer is build upon SQLite and offers the best performance on hybrid apps, like ionic.</li>
+</ul>
+<h2 id="replication-of-data-with-rxdb-between-clients-and-servers">Replication of Data with RxDB between Clients and Servers</h2>
+<p>Efficient data replication between clients and servers is the backbone of modern application development, ensuring that data remains consistent and up-to-date across various devices and platforms. RxDB provides a suite of replication methods that facilitate seamless communication between clients and servers, ensuring that your data is always in sync.</p>
+<h3 id="rxdb-replication-algorithm">RxDB Replication Algorithm</h3>
+<p>At the heart of RxDB&apos;s replication capabilities lies a sophisticated <a href="../replication.html">algorithm</a> designed to manage data synchronization between clients and servers. This algorithm intelligently handles data changes, conflict resolution, and network connectivity fluctuations, resulting in reliable and efficient data replication. With the RxDB replication algorithm, your application can maintain data consistency across devices without unnecessary complexities.</p>
+<ul>
+<li><p><a href="../replication-couchdb.html">CouchDB Replication</a>:
+RxDB&apos;s integration with CouchDB replication presents a powerful way to synchronize data between clients and servers. CouchDB, a well-established NoSQL database, excels at distributed and decentralized data scenarios. By utilizing RxDB&apos;s CouchDB replication, you can establish bidirectional synchronization between your RxDB-powered client and a CouchDB server. This synchronization ensures that data updates made on either end are seamlessly propagated to the other, facilitating collaboration and data sharing.</p>
+</li>
+<li><p><a href="../replication-firestore.html">Firestore Replication</a>:
+Firestore, Google&apos;s cloud-hosted NoSQL database, offers another avenue for data replication in RxDB. With Firestore replication, you can establish a connection between your RxDB-powered app and Firestore&apos;s cloud infrastructure. This integration provides real-time updates to data across multiple instances of your application, ensuring that users always have access to the latest information. RxDB&apos;s support for Firestore replication empowers you to build dynamic and responsive applications that thrive in today&apos;s fast-paced digital landscape.</p>
+</li>
+<li><p><a href="../replication-p2p.html">P2P Replication</a>:
+Peer-to-peer (P2P) replication introduces a cutting-edge approach to data synchronization in RxDB. P2P replication allows devices to communicate directly with each other, bypassing the need for a central server. This method proves invaluable in scenarios where network connectivity is limited or unreliable. With P2P replication, devices can exchange data directly, enabling collaboration and information sharing even in challenging network conditions.</p>
+</li>
+</ul>
+<h2 id="rxdb-as-an-alternative-for-ionic-secure-storage">RxDB as an Alternative for Ionic Secure Storage</h2>
+<p>When it comes to securing sensitive data in your Ionic applications, RxDB emerges as a powerful alternative to traditional secure storage solutions. Let&apos;s delve into why RxDB is an exceptional choice for safeguarding your data while providing additional benefits.</p>
+<h3 id="rxdb-on-device-encryption-plugin">RxDB On-Device Encryption Plugin</h3>
+<p>RxDB offers an <a href="https://rxdb.info/encryption.html" target="_blank">on-device encryption plugin</a>, adding an extra layer of security to your app&apos;s data. This means that data stored within the RxDB database can be encrypted, ensuring that even if the device falls into the wrong hands, the sensitive information remains inaccessible without the proper decryption key. This level of data protection is crucial for applications that deal with personal or confidential information. Encryption runs either with <code>AES</code> on <code>crypto-js</code> or with the <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API" target="_blank">Web Crypto API</a> which is faster and more secure.</p>
+<h3 id="works-offline">Works Offline</h3>
+<p>Security should never compromise functionality. RxDB excels in this area by allowing your application to operate seamlessly even when offline. The locally stored encrypted data remains accessible and functional, enabling users to interact with the app&apos;s features even without an active internet connection. This offline capability ensures that user data is secure, while the app continues to deliver a responsive and uninterrupted experience.</p>
+<h3 id="easy-to-setup-replication-with-your-backend">Easy-to-Setup Replication with Your Backend</h3>
+<p>Ensuring data consistency between your client-side application and backend is a key concern for developers. RxDB simplifies this process with its straightforward replication setup. You can effortlessly configure data synchronization between your local RxDB instance and your backend server. This replication capability ensures that encrypted data remains up-to-date and aligned with the central database, enhancing data integrity and security.</p>
+<h3 id="compression-of-client-side-stored-data">Compression of Client-Side Stored Data</h3>
+<p>In addition to security and offline capabilities, RxDB also offers <a href="https://rxdb.info/key-compression.html" target="_blank">data compression</a>. This means that the data stored on the client&apos;s device is efficiently compressed, reducing storage requirements and improving overall app performance. This compression ensures that your app remains responsive and efficient, even as data volumes grow.</p>
+<h3 id="cost-effective-solution">Cost-Effective Solution</h3>
+<p>In addition to its security features, RxDB offers cost-effective benefits. RxDB is <a href="https://rxdb.info/premium.html" target="_blank">priced more affordably</a> compared to some other secure storage solutions, making it an attractive option for developers seeking robust security without breaking the bank. For many users, the free version of RxDB provides ample features to meet their application&apos;s security and data management needs.</p>
 <h2 id="follow-up">Follow Up</h2>
-<p>To further explore <a href="https://rxdb.info/" target="_blank">RxDB</a> and leverage its capabilities as an embedded database, the following resources can be helpful:</p>
 <ul>
-<li><a href="https://github.com/pubkey/rxdb" target="_blank">RxDB GitHub Repository</a>: Visit the official GitHub repository of RxDB to access the source code, documentation, and community support.</li>
-<li><a href="../quickstart.html">RxDB Quickstart</a>: Get started quickly with RxDB by following the provided quickstart guide, which offers step-by-step instructions for setting up and using RxDB in your projects.</li>
+<li>Try out the <a href="https://github.com/pubkey/rxdb/tree/master/examples/ionic2" target="_blank">RxDB ionic example project</a></li>
+<li>Try out the <a href="https://rxdb.info/quickstart.html" target="_blank">RxDB Quickstart</a></li>
+<li>Join the <a href="https://rxdb.info/chat.html" target="_blank">RxDB Chat</a></li>
 </ul>
-<p>By utilizing <a href="https://rxdb.info/" target="_blank">RxDB</a> as an embedded database in UI applications, developers can harness the power of efficient data management, real-time updates, and enhanced user experiences. RxDB&apos;s features and benefits make it a compelling choice for building modern, responsive, and scalable applications.</p>
 
                                 
                                 </section>
@@ -2556,14 +2605,10 @@
 
             
                 
-                <a href="browser-database.html" class="navigation navigation-prev " aria-label="Previous page: Browser Database">
+                <a href="localstorage.html" class="navigation navigation-prev navigation-unique" aria-label="Previous page: localStorage">
                     <i class="fa fa-angle-left"></i>
                 </a>
                 
-                
-                <a href="frontend-database.html" class="navigation navigation-next " aria-label="Next page: Frontend Database">
-                    <i class="fa fa-angle-right"></i>
-                </a>
                 
             
         
@@ -2572,7 +2617,7 @@
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Embedded Database","level":"2.1.12","depth":2,"next":{"title":"Frontend Database","level":"2.1.13","depth":2,"path":"articles/frontend-database.md","ref":"./articles/frontend-database.md","articles":[]},"previous":{"title":"Browser Database","level":"2.1.11","depth":2,"path":"articles/browser-database.md","ref":"./articles/browser-database.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./analytics.js","./next-button.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/logo.svg","custom-favicon":{},"edit-link":{"label":"","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - JavaScript Database","links":{"sidebar":{"RxDB":"/","Follow @twitter ":"https://twitter.com/intent/user?screen_name=rxdbjs","Chat @discord ":"https://rxdb.info/chat.html","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"articles/embedded-database.md","mtime":"","type":"markdown"},"gitbook":{"version":"3.2.3","time":""},"basePath":"..","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Ionic Database","level":"2.1.20","depth":2,"next":{"title":"Deprecated","level":"2.2","depth":1,"ref":"","articles":[{"title":"RxStorage PouchDB","level":"2.2.1","depth":2,"path":"rx-storage-pouchdb.md","ref":"./rx-storage-pouchdb.md","articles":[]},{"title":"RxStorage PouchDB Adapters","level":"2.2.2","depth":2,"path":"adapters.md","ref":"./adapters.md","articles":[]}]},"previous":{"title":"localStorage","level":"2.1.19","depth":2,"path":"articles/localstorage.md","ref":"./articles/localstorage.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./analytics.js","./next-button.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/logo.svg","custom-favicon":{},"edit-link":{"label":"","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - JavaScript Database","links":{"sidebar":{"RxDB":"/","Follow @twitter ":"https://twitter.com/intent/user?screen_name=rxdbjs","Chat @discord ":"https://rxdb.info/chat.html","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"articles/ionic-database.md","mtime":"","type":"markdown"},"gitbook":{"version":"3.2.3","time":""},"basePath":"..","book":{"language":""}});
         });
     </script>
 </div>
