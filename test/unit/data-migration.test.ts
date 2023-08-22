@@ -1,6 +1,6 @@
 import assert from 'assert';
 import config from './config';
-import AsyncTestUtil, { waitUntil } from 'async-test-util';
+import AsyncTestUtil, {wait, waitUntil} from 'async-test-util';
 
 import * as schemas from '../helper/schemas';
 import * as humansCollection from '../helper/humans-collection';
@@ -33,6 +33,8 @@ import { EXAMPLE_REVISION_1 } from '../helper/revisions';
 import { RxDBMigrationPlugin } from '../../plugins/migration';
 import { RxDBAttachmentsPlugin } from '../../plugins/attachments';
 import { SimpleHumanAgeDocumentType } from '../helper/schema-objects';
+import { replicateRxCollection } from '../../plugins/replication';
+import { RxReplicationWriteToMasterRow, WithDeleted } from '../../';
 
 
 config.parallel('data-migration.test.ts', () => {
@@ -404,6 +406,41 @@ config.parallel('data-migration.test.ts', () => {
                     // check if in new collection
                     const docs = await col.find().exec();
                     assert.strictEqual(docs.length, 10);
+                    await Promise.all(
+                        oldCollections.map(c => c.storageInstance.close().catch(() => { }))
+                    );
+                    await col.database.destroy();
+                });
+                it('should migrate assumed master documents', async () => {
+                    const col = await humansCollection.createMigrationCollection(10, {
+                        3: (doc: any) => {
+                            doc.age = parseInt(doc.age, 10);
+                            return doc;
+                        }
+                    }, undefined, undefined, undefined, true);
+                    const oldCollections = await _getOldCollections(col.getDataMigrator());
+                    const oldCol = lastOfArray(oldCollections);
+
+                    await migratePromise(oldCol as any);
+
+                    const pushed: RxReplicationWriteToMasterRow<HumanDocumentType>[] = [];
+                    const replicationState = replicateRxCollection({
+                        replicationIdentifier: col.name,
+                        collection: col,
+                        autoStart: true,
+                        push: {
+                            handler: (items: RxReplicationWriteToMasterRow<HumanDocumentType>[]) => {
+                                pushed.push(...items);
+                                return Promise.resolve([] as WithDeleted<HumanDocumentType>[]);
+                            }
+                        }
+                    });
+                    await replicationState.awaitInitialReplication();
+
+                    pushed.forEach(({ assumedMasterState, newDocumentState }) => {
+                        assert.deepStrictEqual(assumedMasterState, newDocumentState);
+                    });
+
                     await Promise.all(
                         oldCollections.map(c => c.storageInstance.close().catch(() => { }))
                     );
