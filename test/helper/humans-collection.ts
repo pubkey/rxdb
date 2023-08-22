@@ -15,6 +15,7 @@ import {
 } from '../../';
 
 import { HumanDocumentType } from './schemas';
+import { replicateRxCollection } from '../../plugins/replication';
 
 export async function create(
     size: number = 20,
@@ -371,7 +372,8 @@ export async function createMigrationCollection(
     addMigrationStrategies: MigrationStrategies = {},
     name = randomCouchString(10),
     autoMigrate = false,
-    attachment?: RxAttachmentCreator
+    attachment?: RxAttachmentCreator,
+    replicate?: boolean
 ): Promise<RxCollection<schemaObjects.SimpleHumanV3DocumentType>> {
 
     const migrationStrategies: any = {
@@ -398,6 +400,16 @@ export async function createMigrationCollection(
             autoMigrate: false
         }
     });
+
+    if (replicate) {
+        const collection = cols[colName];
+        const replicationState = replicateRxCollection({
+            replicationIdentifier: colName,
+            collection,
+            autoStart: true,
+        });
+        await replicationState.awaitInitialReplication();
+    }
 
     await Promise.all(
         new Array(amount)
