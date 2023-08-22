@@ -66,6 +66,9 @@ Interestingly, `received$` has been named correctly
 
 https://github.com/pubkey/rxdb/issues/4821#issuecomment-1660339676
 
+## Use `crypto.subtle.digest` for hashing
+
+It is [faster](https://measurethat.net/Benchmarks/Show/6371/0/sha256-js) and more secure and we have a smaller build size.
 
 ## Rename "RxDB Premium" to "RxDB Enterprise"
 
