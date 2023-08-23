@@ -51,7 +51,8 @@ import {
     awaitRetry,
     DEFAULT_MODIFIER,
     swapDefaultDeletedTodeletedField,
-    handlePulledDocuments
+    handlePulledDocuments,
+    RX_REPLICATION_COLLECTION_FLAG
 } from './replication-helper';
 import {
     addConnectedStorageToCollection
@@ -137,7 +138,8 @@ export class RxReplicationState<RxDocType, CheckpointType> {
         const pushModifier = this.push && this.push.modifier ? this.push.modifier : DEFAULT_MODIFIER;
 
         const database = this.collection.database;
-        const metaInstanceCollectionName = this.collection.name + '-rx-replication-' + this.replicationIdentifierHash;
+        const metaInstanceCollectionName =
+            [this.collection.name, RX_REPLICATION_COLLECTION_FLAG, this.replicationIdentifierHash].join('-');
         const metaInstanceSchema = getRxReplicationMetaInstanceSchema(
             this.collection.schema.jsonSchema,
             hasEncryption(this.collection.schema.jsonSchema)

@@ -8,6 +8,7 @@ import { getComposedPrimaryKeyOfDocumentData } from '../../rx-schema-helper';
 // does nothing
 export const DEFAULT_MODIFIER = (d: any) => Promise.resolve(d);
 
+export const RX_REPLICATION_COLLECTION_FLAG = 'rx-replication';
 
 export function swapDefaultDeletedTodeletedField<RxDocType>(
     deletedField: string,

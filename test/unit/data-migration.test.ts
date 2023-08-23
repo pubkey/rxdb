@@ -1,6 +1,6 @@
 import assert from 'assert';
 import config from './config';
-import AsyncTestUtil, {wait, waitUntil} from 'async-test-util';
+import AsyncTestUtil, { waitUntil } from 'async-test-util';
 
 import * as schemas from '../helper/schemas';
 import * as humansCollection from '../helper/humans-collection';
@@ -438,7 +438,7 @@ config.parallel('data-migration.test.ts', () => {
                     await replicationState.awaitInitialReplication();
 
                     pushed.forEach(({ assumedMasterState, newDocumentState }) => {
-                        assert.deepEqual(assumedMasterState?.age, newDocumentState.age);
+                        assert.equal(assumedMasterState?.age, newDocumentState.age);
                     });
 
                     await Promise.all(
