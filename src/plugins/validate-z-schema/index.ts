@@ -26,11 +26,13 @@ export function getValidator(
             const formattedZSchemaErrors = (errors as any).map(({
                 title,
                 description,
-                message
+                message,
+                path
             }: any) => ({
                 title,
                 description,
-                message
+                message,
+                path
             }));
             return formattedZSchemaErrors;
         } else {
