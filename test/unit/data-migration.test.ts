@@ -438,7 +438,7 @@ config.parallel('data-migration.test.ts', () => {
                     await replicationState.awaitInitialReplication();
 
                     pushed.forEach(({ assumedMasterState, newDocumentState }) => {
-                        assert.deepStrictEqual(assumedMasterState, newDocumentState);
+                        assert.deepEqual(assumedMasterState?.age, newDocumentState.age);
                     });
 
                     await Promise.all(

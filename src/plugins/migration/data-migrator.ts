@@ -66,7 +66,8 @@ import {
 import { normalizeMangoQuery } from '../../rx-query-helper';
 import { overwritable } from '../../overwritable';
 import { MIGRATION_DEFAULT_BATCH_SIZE } from './migration-helpers';
-import {getComposedPrimaryKeyOfDocumentData} from "../../rx-schema-helper";
+import { getComposedPrimaryKeyOfDocumentData } from '../../rx-schema-helper';
+import { docStateToWriteDoc } from '../../replication-protocol';
 
 export class DataMigrator {
 
@@ -460,9 +461,10 @@ export async function _migrateDocuments<RxDocType>(
     const previousDocumentData = clone(documentsData);
 
 
+    const database = oldCollection.database;
     const allCollectionMetaDocs = await getAllCollectionDocuments(
-        oldCollection.database.storage.statics,
-        oldCollection.database.internalStore
+        database.storage.statics,
+        database.internalStore
     );
     const oldCollectionMetaDoc = allCollectionMetaDocs.find(
         doc => doc.data.name === oldCollection.newestCollection.name &&
@@ -475,29 +477,30 @@ export async function _migrateDocuments<RxDocType>(
     const replicationStorage = replicationStorageSpec && await oldCollection.database.storage.createStorageInstance({
         collectionName: replicationStorageSpec.collectionName,
         schema: replicationStorageSpec.schema,
-        databaseName: oldCollection.database.name,
-        databaseInstanceToken: oldCollection.database.token,
+        databaseName: database.name,
+        databaseInstanceToken: database.token,
         multiInstance: false,
         devMode: false,
         options: {}
     });
     if (replicationStorage) {
         const assumedMasters = (await replicationStorage.query(
-            oldCollection.database.storage.statics.prepareQuery(replicationStorage.schema, {
+            database.storage.statics.prepareQuery(replicationStorage.schema, {
                 selector: {},
                 sort: [{ id: 'asc' }],
                 skip: 0
             })
         )).documents;
         const migratedAssumedMasters = await Promise.all(
-            assumedMasters.map(async (doc) => {
-                return {
-                    ...doc,
-                    data: await migrateDocumentData(oldCollection, doc.data)
-                };
+            assumedMasters.map(async (previous) => {
+                const document = docStateToWriteDoc(database.token, {
+                    ...previous,
+                    data: await migrateDocumentData(oldCollection, previous.data)
+                }, previous);
+                return { document, previous };
             })
         );
-        await replicationStorage.bulkWrite(migratedAssumedMasters.map(document => ({ document })), 'data-migrator-import');
+        await replicationStorage.bulkWrite(migratedAssumedMasters, 'data-migrator-import');
     }
 
     // run hooks that might mutate documentsData
