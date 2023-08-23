@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- Expose path in validate-z-schema error logs [#4900](https://github.com/pubkey/rxdb/pull/4900)
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
