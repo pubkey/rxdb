@@ -44,7 +44,8 @@ import type {
     RxDocumentData,
     RxStorageInstanceCreationParams,
     InternalStoreCollectionDocType,
-    RxStorageInstance
+    RxStorageInstance,
+    RxDocument
 } from '../../types';
 import {
     RxSchema,
@@ -66,8 +67,8 @@ import {
 import { normalizeMangoQuery } from '../../rx-query-helper';
 import { overwritable } from '../../overwritable';
 import { MIGRATION_DEFAULT_BATCH_SIZE } from './migration-helpers';
-import { getComposedPrimaryKeyOfDocumentData } from '../../rx-schema-helper';
 import { docStateToWriteDoc } from '../../replication-protocol';
+import { RX_REPLICATION_COLLECTION_FLAG } from '../replication/replication-helper';
 
 export class DataMigrator {
 
@@ -460,49 +461,6 @@ export async function _migrateDocuments<RxDocType>(
      */
     const previousDocumentData = clone(documentsData);
 
-
-    const database = oldCollection.database;
-    const allCollectionMetaDocs = await getAllCollectionDocuments(
-        database.storage.statics,
-        database.internalStore
-    );
-    const oldCollectionMetaDoc = allCollectionMetaDocs.find(
-        doc => doc.data.name === oldCollection.newestCollection.name &&
-        doc.data.version === oldCollection.version
-    );
-    const replicationStorageSpec = oldCollectionMetaDoc?.data.connectedStorages.find(s => (
-        // TODO: find a better way to identify replication storage
-        s.collectionName.includes('replication')
-    ));
-    const replicationStorage = replicationStorageSpec && await oldCollection.database.storage.createStorageInstance({
-        collectionName: replicationStorageSpec.collectionName,
-        schema: replicationStorageSpec.schema,
-        databaseName: database.name,
-        databaseInstanceToken: database.token,
-        multiInstance: false,
-        devMode: false,
-        options: {}
-    });
-    if (replicationStorage) {
-        const assumedMasters = (await replicationStorage.query(
-            database.storage.statics.prepareQuery(replicationStorage.schema, {
-                selector: {},
-                sort: [{ id: 'asc' }],
-                skip: 0
-            })
-        )).documents;
-        const migratedAssumedMasters = await Promise.all(
-            assumedMasters.map(async (previous) => {
-                const document = docStateToWriteDoc(database.token, {
-                    ...previous,
-                    data: await migrateDocumentData(oldCollection, previous.data)
-                }, previous);
-                return { document, previous };
-            })
-        );
-        await replicationStorage.bulkWrite(migratedAssumedMasters, 'data-migrator-import');
-    }
-
     // run hooks that might mutate documentsData
     await Promise.all(
         documentsData.map(docData => runAsyncPluginHooks(
@@ -629,6 +587,95 @@ export async function _migrateDocuments<RxDocType>(
     return actions;
 }
 
+/**
+ * creates action object of assumed master document migration
+ */
+export function createAssumedMasterAction(
+    oldCollection: OldRxCollection,
+    oldDocument: RxDocument,
+    migratedDocument: RxDocument,
+    saveData: WithAttachmentsData<any>
+) {
+    return {
+        type: 'success',
+        res: saveData,
+        migrated: migratedDocument,
+        doc: oldDocument,
+        oldCollection,
+        newestCollection: oldCollection.newestCollection
+    };
+}
+
+/**
+ * migrates assumed master documents & writes them to the storage
+ */
+export async function migrateAssumedMasters(
+    oldCollection: OldRxCollection
+) {
+    const actions: any[] = [];
+    const storage = await createAssumedMastersStorage(
+        oldCollection.database,
+        oldCollection.newestCollection.name,
+        oldCollection.version
+    );
+
+    if (!storage) {
+        return [];
+    }
+
+    const assumedMasters = (await storage.query(
+        oldCollection.database.storage.statics.prepareQuery(storage.schema, {
+            selector: {},
+            sort: [{ id: 'asc' }],
+            skip: 0
+        })
+    )).documents;
+    const migratedAssumedMasters = await Promise.all(
+        assumedMasters.map(async (previous) => {
+            const migrated = {
+                ...previous,
+                data: await migrateDocumentData(oldCollection, previous.data)
+            };
+            const writeDoc = docStateToWriteDoc(oldCollection.database.token, migrated, previous);
+            const action = createAssumedMasterAction(
+                oldCollection,
+                previous,
+                migrated,
+                writeDoc
+            );
+            actions.push(action);
+            return { document: writeDoc, previous };
+        })
+    );
+    await storage.bulkWrite(migratedAssumedMasters, 'data-migrator-import');
+    return actions;
+}
+
+/**
+ * creates a storage instance with assumed masters for the given collection
+ */
+export async function createAssumedMastersStorage(database: RxDatabase, collectionName: string, version: number) {
+    const allCollectionMetaDocs = await getAllCollectionDocuments(
+        database.storage.statics,
+        database.internalStore
+    );
+    const oldCollectionMetaDoc = allCollectionMetaDocs.find(
+        doc => doc.data.name === collectionName &&
+            doc.data.version === version
+    );
+    const replicationStorageSpec = oldCollectionMetaDoc?.data.connectedStorages.find(s => (
+        s.collectionName.includes(RX_REPLICATION_COLLECTION_FLAG)
+    ));
+    return replicationStorageSpec && await database.storage.createStorageInstance({
+        collectionName: replicationStorageSpec.collectionName,
+        schema: replicationStorageSpec.schema,
+        databaseName: database.name,
+        databaseInstanceToken: database.token,
+        multiInstance: false,
+        devMode: false,
+        options: {}
+    });
+}
 
 /**
  * deletes this.storageInstance and removes it from the database.collectionsCollection
@@ -695,7 +742,10 @@ export function migrateOldCollection(
                     }
                 });
         };
-        handleOneBatch();
+        migrateAssumedMasters(oldCollection).then((actions) => {
+            actions.forEach(action => observer.next(action));
+            return handleOneBatch();
+        });
     })();
 
     return observer.asObservable();
