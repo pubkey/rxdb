@@ -80,7 +80,7 @@
     "@types/mocha": "10.0.1",
     "@types/node": "18.17.9",
     "async-test-util": "2.1.0",
-    "concurrently": "8.2.0",
+    "concurrently": "8.2.1",
     "copyfiles": "2.4.1",
     "local-web-server": "5.3.0",
     "testcafe": "2.1.0",
