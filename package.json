@@ -429,7 +429,7 @@
     "@babel/types": "7.22.10",
     "@faker-js/faker": "7.6.0",
     "@rollup/plugin-commonjs": "24.1.0",
-    "@rollup/plugin-node-resolve": "15.2.0",
+    "@rollup/plugin-node-resolve": "15.2.1",
     "@types/assert": "1.5.6",
     "@types/core-js": "2.5.5",
     "@types/cors": "2.8.13",
