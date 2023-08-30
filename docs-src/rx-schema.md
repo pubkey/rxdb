@@ -201,7 +201,7 @@ const schemaWithIndexes = {
           // number fields that are used in an index, must have set minimum, maximum and multipleOf
           minimum: 0,
           maximum: 100000,
-          multipleOf: '0.01'
+          multipleOf: 0.01
       }
       creditCards: {
           type: 'array',
