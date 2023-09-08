@@ -66,6 +66,12 @@ Interestingly, `received$` has been named correctly
 
 https://github.com/pubkey/rxdb/issues/4821#issuecomment-1660339676
 
+## Add dev-mode check for disallowed $ref fields
+
+RxDB cannot resolve $ref fields in the schema because it would have a negative performance impact.
+We should add a dev-mode check to throw a helpfull error message if $refs are used in the schema
+https://github.com/pubkey/rxdb/issues/4926#issuecomment-1712223984
+
 ## Use `crypto.subtle.digest` for hashing
 
 It is [faster](https://measurethat.net/Benchmarks/Show/6371/0/sha256-js) and more secure and we have a smaller build size.
