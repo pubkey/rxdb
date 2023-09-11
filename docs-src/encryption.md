@@ -35,10 +35,10 @@ You could however use the [memory synced](./rx-storage-memory-synced.md) RxStora
 RxDB does not define how you should store or retrieve the encryption password. It only requires you to provide the password on database creation which grants you flexibility in how you manage encryption passwords.
 You could ask the user on app-start to insert the password, or you can retrieve the password from your backend on app start (or revoke access by no longer providing the password).
 
-## Asymetric encryption
+## Asymmetric encryption
 
-The encryption plugin itself uses **symetric encryption** with a password to guarantee best performance when reading and storing data.
-It is not able to do **asymetric encryption** by itself. If you need asymetric encryption with a private/publicKey, it is recommeneded to encrypted the password itself with the asymentric keys and store the encrypted pasword beside the other data. On app-start you can decrypt the password with the private key and use the decrypted passwort in the RxDB encryption plugin
+The encryption plugin itself uses **symmetric encryption** with a password to guarantee best performance when reading and storing data.
+It is not able to do **Asymmetric encryption** by itself. If you need Asymmetric encryption with a private/publicKey, it is recommended to encrypted the password itself with the asymentric keys and store the encrypted password beside the other data. On app-start you can decrypt the password with the private key and use the decrypted passwort in the RxDB encryption plugin
 
 
 ## Using the RxDB Encryption Plugins
