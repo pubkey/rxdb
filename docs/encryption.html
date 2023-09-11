@@ -2475,16 +2475,44 @@
     
                                 <section class="normal markdown-section">
                                 
-                                <h1 id="encryption">Encryption</h1>
-<p>With the encryption plugins you can define properties of your documents to be stored encrypted. This ensure that when your users device is stolen, the encrypted data cannot be read out of the hard drive.
-The encryption and decryption happens internally, so when you work with a <code>RxDocument</code>, you can access any property like normal, <strong>but</strong> encrypted fields cannot be used as operators in a query.</p>
+                                <h1 id="encrypted-local-storage-with-rxdb">Encrypted Local Storage with RxDB</h1>
+<!-- keywords:
+encrypted browser storage
+secure web storage
+encrypt local storage
+indexeddb encryption
+sqlite browser encrypted databases
+react native encrypted storage
+-->
+<p>The RxDB encryption plugin empowers developers to fortify their applications&apos; data security. It seamlessly integrates with <a href="https://rxdb.info/" target="_blank">RxDB</a>, allowing for the secure storage and retrieval of documents by <strong>encrypting them with a password</strong>. With encryption and decryption processes handled internally, it ensures that sensitive data remains confidential, making it a valuable tool for building robust, privacy-conscious applications. The encryption works on all RxDB supported devices types like the <strong>browser</strong>, <strong>ReactNative</strong> or <strong>Node.js</strong>.</p>
+<p align="center">
+  <img src="files/icons/with-gradient/storage-layer.svg" alt="Encryption Storage Layer" height="60">
+</p>
+
+<p>Encrypting client-side stored data in RxDB offers numerous advantages:</p>
+<ul>
+<li><strong>Enhanced Security</strong>: In the unfortunate event of a user&apos;s device being stolen, the encrypted data remains safeguarded on the hard drive, inaccessible without the correct password.</li>
+<li><strong>Access Control</strong>: You can retain control over stored data by revoking access at any time simply by withholding the password.</li>
+<li><strong>Tamper proof</strong> Other applications on the device cannot read out the stored data when the password is only kept in the process-specific memory</li>
+</ul>
+<h2 id="querying-encrypted-data">Querying encrypted data</h2>
+<p>RxDB handles the encryption and decryption of data internally. This means that when you work with a RxDocument, you can access the properties of the document just like you would with normal, unencrypted data. RxDB automatically decrypts the data for you when you retrieve it, making it transparent to your application code.
+This means the encryption works with all <a href="rx-storage.html">RxStorage</a> like <strong>SQLite</strong>, <strong>IndexedDB</strong>, <strong>OPFS</strong> and so on.</p>
+<p>However, there&apos;s a limitation when it comes to querying encrypted fields. <strong>Encrypted fields cannot be used as operators in queries</strong>. This means you cannot perform queries like &quot;find all documents where the encrypted field equals a certain value.&quot; RxDB does not expose the encrypted data in a way that allows direct querying based on the encrypted content. To filter or search for documents based on the contents of encrypted fields, you would need to first decrypt the data and then perform the query, which might not be efficient or practical in some cases.
+You could however use the <a href="rx-storage-memory-synced.html">memory synced</a> RxStorage to replicate the encrypted documents into a non-encrypted in-memory storage and then query them like normal.</p>
+<h2 id="password-handling">Password handling</h2>
+<p>RxDB does not define how you should store or retrieve the encryption password. It only requires you to provide the password on database creation which grants you flexibility in how you manage encryption passwords.
+You could ask the user on app-start to insert the password, or you can retrieve the password from your backend on app start (or revoke access by no longer providing the password).</p>
+<h2 id="asymmetric-encryption">Asymmetric encryption</h2>
+<p>The encryption plugin itself uses <strong>symmetric encryption</strong> with a password to guarantee best performance when reading and storing data.
+It is not able to do <strong>Asymmetric encryption</strong> by itself. If you need Asymmetric encryption with a private/publicKey, it is recommended to encrypted the password itself with the asymentric keys and store the encrypted password beside the other data. On app-start you can decrypt the password with the private key and use the decrypted passwort in the RxDB encryption plugin</p>
+<h2 id="using-the-rxdb-encryption-plugins">Using the RxDB Encryption Plugins</h2>
 <p>RxDB currently has two plugins for encryption:</p>
 <ul>
 <li>The free <code>encryption-crypto-js</code> plugin that is based on the <code>AES</code> algorithm of the <a href="https://www.npmjs.com/package/crypto-js" target="_blank">crypto-js</a> library</li>
-<li>The <a href="premium.html">premium</a> <code>encryption-web-crypto</code> plugin that is based on the native <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API" target="_blank">Web Crypto API</a> which makes it faster and more secure to use. Document inserts are about 10x faster compared to <code>crypto-js</code>.</li>
+<li>The <a href="premium.html">premium</a> <code>encryption-web-crypto</code> plugin that is based on the native <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API" target="_blank">Web Crypto API</a> which makes it faster and more secure to use. Document inserts are about 10x faster compared to <code>crypto-js</code> and it has a smaller build size because it uses the browsers API instead of bundling an npm module.</li>
 </ul>
-<h2 id="usage">Usage</h2>
-<p>An encryption plugin is a wrapper around any other <a href="rx-storage.html">RxStorage</a>. </p>
+<p>An RxDB encryption plugin is a wrapper around any other <a href="rx-storage.html">RxStorage</a>. </p>
 <ul>
 <li>You first have to wrap your RxStorage with the encryption</li>
 <li>Then use that as <code>RxStorage</code> when calling <code>createRxDatabase()</code></li>
@@ -2495,11 +2523,12 @@ The encryption and decryption happens internally, so when you work with a <code>
 <span class="hljs-keyword">import</span> { getRxStorageDexie } from <span class="hljs-string">&apos;rxdb/plugins/storage-dexie&apos;</span>;
 
 
+<span class="hljs-comment">// wrap the normal storage with the encryption plugin</span>
 <span class="hljs-keyword">const</span> encryptedDexieStorage = wrappedKeyEncryptionCryptoJsStorage({
     storage: getRxStorageDexie()
 });
 
-
+<span class="hljs-comment">// create an encrypted database</span>
 <span class="hljs-keyword">const</span> db = await createRxDatabase&lt;RxStylechaseCollections&gt;({
     name: <span class="hljs-string">&apos;mydatabase&apos;</span>,
     storage: encryptedDexieStorage,
@@ -2525,16 +2554,20 @@ The encryption and decryption happens internally, so when you work with a <code>
 };
 
 await db.addCollections({
-    stuff: {
+    myDocuments: {
         schema
     }
 })
+<span class="hljs-comment">/* ... */</span>
 </code></pre>
 <p>Or with the <code>web-crypto</code> <a href="premium.html">premium</a> plugin:</p>
-<pre><code class="lang-ts"><span class="hljs-keyword">import</span> { wrappedKeyEncryptionWebCryptoStorage, createPassword } from <span class="hljs-string">&apos;rxdb-premium/plugins/encryption-web-crypto&apos;</span>;
+<pre><code class="lang-ts"><span class="hljs-keyword">import</span> {
+    wrappedKeyEncryptionWebCryptoStorage,
+    createPassword
+} from <span class="hljs-string">&apos;rxdb-premium/plugins/encryption-web-crypto&apos;</span>;
 <span class="hljs-keyword">import</span> { getRxStorageIndexedDB } from <span class="hljs-string">&apos;rxdb-premium/plugins/storage-indexeddb&apos;</span>;
 
-
+<span class="hljs-comment">// wrap the normal storage with the encryption plugin</span>
 <span class="hljs-keyword">const</span> encryptedIndexedDbStorage = wrappedKeyEncryptionWebCryptoStorage({
     storage: getRxStorageIndexedDB()
 });
@@ -2545,14 +2578,17 @@ await db.addCollections({
     password: <span class="hljs-string">&apos;myRandomPasswordWithMin8Length&apos;</span>
 };
 
-<span class="hljs-keyword">const</span> db = await createRxDatabase&lt;RxStylechaseCollections&gt;({
+<span class="hljs-comment">// create an encrypted database</span>
+<span class="hljs-keyword">const</span> db = await createRxDatabase({
     name: <span class="hljs-string">&apos;mydatabase&apos;</span>,
     storage: encryptedIndexedDbStorage,
     password: myPasswordObject
 });
+
+<span class="hljs-comment">/* ... */</span>
 </code></pre>
 <h2 id="changing-the-password">Changing the password</h2>
-<p>The password is set database specific and it is not possible to change the password of a database. Opening an existing database with a different password will throw an error. To change the password you can either :</p>
+<p>The password is set database specific and it is not possible to change the password of a database. Opening an existing database with a different password will throw an error. To change the password you can either:</p>
 <ul>
 <li>Use the <a href="storage-migration.html">storage migration plugin</a> to migrate the database state into a new database.</li>
 <li>Store a randomly created meta-password in a different RxDatabase as a value of a <a href="rx-local-document.html">local document</a>. Encrypt the meta password with the actual user password and read it out before creating the actual database.</li>
