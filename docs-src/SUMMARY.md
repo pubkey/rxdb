@@ -128,7 +128,7 @@
 
 * [Population](./population.md)
 
-* [Encryption](./encryption.md)
+* [Encrypted Storage](./encryption.md)
 
 * [Key Compression](./key-compression.md)
 
