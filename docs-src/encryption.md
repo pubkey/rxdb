@@ -13,6 +13,10 @@ react native encrypted storage
 
 The RxDB encryption plugin empowers developers to fortify their applications' data security. It seamlessly integrates with [RxDB](https://rxdb.info/), allowing for the secure storage and retrieval of documents by **encrypting them with a password**. With encryption and decryption processes handled internally, it ensures that sensitive data remains confidential, making it a valuable tool for building robust, privacy-conscious applications. The encryption works on all RxDB supported devices types like the **browser**, **ReactNative** or **Node.js**.
 
+<p align="center">
+  <img src="./files/icons/with-gradient/storage-layer.svg" alt="Encryption Storage Layer" height="60" />
+</p>
+
 Encrypting client-side stored data in RxDB offers numerous advantages:
 - **Enhanced Security**: In the unfortunate event of a user's device being stolen, the encrypted data remains safeguarded on the hard drive, inaccessible without the correct password.
 - **Access Control**: You can retain control over stored data by revoking access at any time simply by withholding the password.
