@@ -21,7 +21,16 @@ import {
 
 import { wrappedValidateZSchemaStorage } from '../../plugins/validate-z-schema';
 import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv';
+
+
+/**
+ * The is-my-json-valid seems to be dead.
+ * If this ever changes, reopen this PR for fix:
+ * @link https://github.com/pubkey/rxdb/pull/3935
+ */
 // import { wrappedValidateIsMyJsonValidStorage } from '../../plugins/validate-is-my-json-valid';
+
+
 import { EXAMPLE_REVISION_1 } from '../helper/revisions';
 
 const validationImplementations: {
