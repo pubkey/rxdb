@@ -72,8 +72,7 @@ To use CRDTs with RxDB, you need the following:
 // import the relevant parts from the CRDT plugin
 import {
     getCRDTSchemaPart,
-    RxDDcrdtPlugin,
-    getCRDTConflictHandler
+    RxDBcrdtPlugin
 } from 'rxdb/plugins/crdt';
 
 // add the CRDT plugin to RxDB
