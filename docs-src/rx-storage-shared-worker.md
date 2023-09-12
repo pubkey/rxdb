@@ -56,7 +56,15 @@ const database = await createRxDatabase({
              * 
              * @link https://developer.mozilla.org/en-US/docs/Web/API/SharedWorker?retiredLocale=de
              */
-            workerInput: 'path/to/shared-worker.js'
+            workerInput: 'path/to/shared-worker.js',
+            /**
+             * (Optional) options
+             * for the worker.
+             */
+            workerOptions: {
+                type: 'module',
+                credentials: 'omit'
+            }
         }
     )
 });
