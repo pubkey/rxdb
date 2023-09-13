@@ -22,6 +22,7 @@ import type {
     StringKeys
 } from '../../types';
 import {
+    ensureNotFalsy,
     lastOfArray,
     now,
     PROMISE_RESOLVE_VOID,
@@ -43,6 +44,7 @@ import {
     ClientSession
 } from 'mongodb';
 import { categorizeBulkWriteRows } from '../../rx-storage-helper';
+import { swapPrimaryToMongo } from './mongodb-helper';
 
 export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
     RxDocType,
@@ -71,6 +73,10 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
         this.mongoCollection = this.mongoDatabase.collection(collectionName);
 
         this.primaryPath = getPrimaryFieldOfPrimaryKey(this.schema.primaryKey);
+
+        if (this.schema.attachments) {
+            throw new Error('attachments not supported in mongodb storage, make a PR');
+        }
     }
 
     async bulkWrite(
@@ -102,19 +108,60 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
                 documentWrites,
                 context
             );
+            ret.error = categorized.errors;
 
+            await Promise.all([
+                // inserts
+                this.mongoCollection.insertMany(
+                    categorized.bulkInsertDocs.map(writeRow => {
+                        const docId = writeRow.document[primaryPath];
+                        ret.success[docId as any] = writeRow.document;
+                        return swapPrimaryToMongo(primaryPath, writeRow.document);
+                    }),
+                    {
+                        session
+                    }
+                ),
+                // updates
+                this.mongoCollection.bulkWrite(
+                    categorized.bulkUpdateDocs.map(writeRow => {
+                        const docId = writeRow.document[primaryPath];
+                        ret.success[docId as any] = writeRow.document;
+                        const mongoDoc = swapPrimaryToMongo(primaryPath, writeRow.document);
+                        return {
+                            updateOne: {
+                                filter: { _id: mongoDoc._id },
+                                update: {
+                                    $set: mongoDoc
+                                }
+                            }
+                        };
+                    }),
+                    {
+                        session
+                    }
+                )
+            ]);
 
-
-
-
+            if (categorized.eventBulk.events.length > 0) {
+                const lastState = ensureNotFalsy(categorized.newestRow).document;
+                categorized.eventBulk.checkpoint = {
+                    id: lastState[primaryPath],
+                    lwt: lastState._meta.lwt
+                };
+                this.internals.changes$.next(categorized.eventBulk);
+            }
 
         } catch (error) {
+            console.error('mongodb bulk write error -> abort transaction:');
+            console.dir(error);
             await session.abortTransaction();
+            throw error;
         } finally {
             await session.endSession();
         }
 
-        return {} as any;
+        return ret;
     }
 
     async findDocumentsById(

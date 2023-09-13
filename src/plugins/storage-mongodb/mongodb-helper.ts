@@ -52,11 +52,11 @@ export function swapToMongoSort<RxDocType>(
 }
 
 export function swapPrimaryToMongo<RxDocType>(
-    primaryKey: keyof RxDocType,
+    primaryKey: keyof RxDocType | string,
     document: RxDocumentData<RxDocType>
 ): WithId<RxDocumentData<RxDocType>> {
     const docData = flatClone(document) as any;
-    const id: string = document[primaryKey] as string;
+    const id: string = (document as any)[primaryKey];
     delete docData[primaryKey];
     docData._id = new ObjectId(id);
     return docData;
