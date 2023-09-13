@@ -40,6 +40,25 @@ export function primarySwapMongoDBQuerySelector<RxDocType>(
     }
 }
 
+export function swapMongoToRxDoc<RxDocType>(
+    mongoObjectIdCache: WeakMap<RxDocumentData<RxDocType>, ObjectId>,
+    docData: WithId<RxDocumentData<RxDocType>>
+): RxDocumentData<RxDocType> {
+    const objectId = docData._id;
+    const useDoc = flatClone(docData) as RxDocumentData<RxDocType>;
+    delete (useDoc as any)._id;
+    mongoObjectIdCache.set(useDoc, objectId);
+    return useDoc as any;
+}
+export function swapRxDocToMongo<RxDocType>(
+    objectId: ObjectId,
+    docData: RxDocumentData<RxDocType>
+): WithId<RxDocumentData<RxDocType>> {
+    const useDoc = flatClone(docData);
+    (useDoc as any)._id = objectId;
+    return useDoc as any;
+}
+
 export function swapToMongoSort<RxDocType>(
     primaryKey: keyof RxDocType,
     sort: MangoQuerySortPart<RxDocType>[]
@@ -53,26 +72,4 @@ export function swapToMongoSort<RxDocType>(
         };
     });
     return ret as any;
-}
-
-export function swapPrimaryToMongo<RxDocType>(
-    primaryKey: keyof RxDocType | string,
-    document: RxDocumentData<RxDocType>
-): WithId<RxDocumentData<RxDocType>> {
-    const docData = flatClone(document) as any;
-    const id: string = (document as any)[primaryKey];
-    delete docData[primaryKey];
-    docData._id = new ObjectId(id);
-    return docData;
-}
-
-export function swapMongoToPrimary<RxDocType>(
-    primaryKey: keyof RxDocType,
-    document: WithId<RxDocumentData<RxDocType>>
-): WithId<RxDocumentData<RxDocType>> {
-    const id: string = document._id.toString();
-    const docData = flatClone(document) as any;
-    delete docData._id;
-    docData[primaryKey] = id;
-    return docData;
 }

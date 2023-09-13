@@ -295,7 +295,7 @@ jobs:
 
       - name: install npm dependencies
         run: npm install
-      - run: docker pull mongo:7.0.1
+      - run: docker pull kamalyb/mongo-rs:latest
       - run: npm run build
 
       # Run them twice to ensure no test has persistence

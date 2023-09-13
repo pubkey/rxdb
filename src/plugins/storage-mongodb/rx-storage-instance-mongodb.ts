@@ -22,6 +22,7 @@ import type {
     StringKeys
 } from '../../types';
 import {
+    getFromMapOrThrow,
     lastOfArray,
     now,
     RX_META_LWT_MINIMUM
@@ -42,7 +43,7 @@ import {
     ClientSession
 } from 'mongodb';
 import { categorizeBulkWriteRows } from '../../rx-storage-helper';
-import { swapPrimaryToMongo } from './mongodb-helper';
+import { swapMongoToRxDoc, swapRxDocToMongo } from './mongodb-helper';
 
 export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
     RxDocType,
@@ -55,7 +56,15 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
     public closed = false;
     public readonly mongoClient: MongoClient;
     public readonly mongoDatabase: MongoDatabase;
-    public readonly mongoCollection: MongoCollection;
+    public readonly mongoCollection: MongoCollection<RxDocumentData<RxDocType> | any>;
+
+
+    /**
+     * We use this to be able to still fetch
+     * the objectId after transforming the document from mongo-style (with _id)
+     * to RxDB
+     */
+    public readonly mongoObjectIdCache = new WeakMap<RxDocumentData<RxDocType>, ObjectId>();
 
     constructor(
         public readonly storage: RxStorageMongoDB,
@@ -69,11 +78,14 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
         if (this.schema.attachments) {
             throw new Error('attachments not supported in mongodb storage, make a PR if you need that');
         }
+        this.primaryPath = getPrimaryFieldOfPrimaryKey(this.schema.primaryKey);
+        if (this.primaryPath === '_id') {
+            throw new Error('When using the MongoDB RxStorage, you cannot use the primaryKey _id, use a different fieldname');
+        }
 
         this.mongoClient = new MongoClient(storage.databaseSettings.connection);
         this.mongoDatabase = this.mongoClient.db(databaseName);
         this.mongoCollection = this.mongoDatabase.collection(collectionName);
-        this.primaryPath = getPrimaryFieldOfPrimaryKey(this.schema.primaryKey);
 
         // this.mongoCollection.watch().on('change', change => {
         //     change.
@@ -118,7 +130,8 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
                     categorized.bulkInsertDocs.map(writeRow => {
                         const docId = writeRow.document[primaryPath];
                         ret.success[docId as any] = writeRow.document;
-                        return swapPrimaryToMongo(primaryPath, writeRow.document);
+                        const objectId = new ObjectId();
+                        return swapRxDocToMongo(objectId, writeRow.document) as any;
                     }),
                     {
                         session
@@ -129,15 +142,15 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
                     categorized.bulkUpdateDocs.map(writeRow => {
                         const docId = writeRow.document[primaryPath];
                         ret.success[docId as any] = writeRow.document;
-                        const mongoDoc = swapPrimaryToMongo(primaryPath, writeRow.document);
+                        const objectId = getFromMapOrThrow(this.mongoObjectIdCache, writeRow.previous);
                         return {
                             updateOne: {
-                                filter: { _id: mongoDoc._id },
+                                filter: { _id: objectId },
                                 update: {
-                                    $set: mongoDoc
+                                    $set: writeRow.document
                                 }
                             }
-                        };
+                        } as any;
                     }),
                     {
                         session
@@ -161,9 +174,10 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
         withDeleted: boolean,
         session?: ClientSession
     ): Promise<RxDocumentDataById<RxDocType>> {
+        const primaryPath = this.primaryPath;
         const plainQuery: MongoQuerySelector<any> = {
-            _id: {
-                $in: docIds.map(id => new ObjectId(id))
+            [primaryPath]: {
+                $in: docIds
             }
         };
         if (!withDeleted) {
@@ -177,7 +191,10 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
             }
         ).toArray();
         queryResult.forEach(row => {
-            result[row._id.toHexString()] = row as any;
+            result[(row as any)[primaryPath]] = swapMongoToRxDoc(
+                this.mongoObjectIdCache,
+                row as any
+            );
         });
         return result;
     }

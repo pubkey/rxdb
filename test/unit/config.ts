@@ -245,14 +245,14 @@ export function setDefaultStorage(storageKey: string) {
                 name: storageKey,
                 getStorage: () => {
                     return getRxStorageMongoDB({
-                        connection: 'mongodb://localhost:27017'
+                        connection: 'mongodb://localhost:27018'
                     });
                 },
                 getPerformanceStorage() {
                     return {
                         description: 'mongodb-native',
                         storage: getRxStorageMongoDB({
-                            connection: 'mongodb://localhost:27017'
+                            connection: 'mongodb://localhost:27018'
                         })
                     };
                 },
