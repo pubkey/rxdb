@@ -22,10 +22,8 @@ import type {
     StringKeys
 } from '../../types';
 import {
-    ensureNotFalsy,
     lastOfArray,
     now,
-    PROMISE_RESOLVE_VOID,
     RX_META_LWT_MINIMUM
 } from '../../plugins/utils';
 import {
@@ -48,7 +46,7 @@ import { swapPrimaryToMongo } from './mongodb-helper';
 
 export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
     RxDocType,
-    MongoDBStorageInternals<RxDocType>,
+    MongoDBStorageInternals,
     RxStorageMongoDBInstanceCreationOptions,
     RxStorageDefaultCheckpoint
 > {
@@ -64,19 +62,23 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
         public readonly databaseName: string,
         public readonly collectionName: string,
         public readonly schema: Readonly<RxJsonSchema<RxDocumentData<RxDocType>>>,
-        public readonly internals: MongoDBStorageInternals<RxDocType>,
+        public readonly internals: MongoDBStorageInternals,
         public readonly options: Readonly<RxStorageMongoDBInstanceCreationOptions>,
         public readonly settings: RxStorageMongoDBSettings
     ) {
+        if (this.schema.attachments) {
+            throw new Error('attachments not supported in mongodb storage, make a PR if you need that');
+        }
+
         this.mongoClient = new MongoClient(storage.databaseSettings.connection);
         this.mongoDatabase = this.mongoClient.db(databaseName);
         this.mongoCollection = this.mongoDatabase.collection(collectionName);
-
         this.primaryPath = getPrimaryFieldOfPrimaryKey(this.schema.primaryKey);
 
-        if (this.schema.attachments) {
-            throw new Error('attachments not supported in mongodb storage, make a PR');
-        }
+        // this.mongoCollection.watch().on('change', change => {
+        //     change.
+        // });
+
     }
 
     async bulkWrite(
@@ -142,16 +144,6 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
                     }
                 )
             ]);
-
-            if (categorized.eventBulk.events.length > 0) {
-                const lastState = ensureNotFalsy(categorized.newestRow).document;
-                categorized.eventBulk.checkpoint = {
-                    id: lastState[primaryPath],
-                    lwt: lastState._meta.lwt
-                };
-                this.internals.changes$.next(categorized.eventBulk);
-            }
-
         } catch (error) {
             console.error('mongodb bulk write error -> abort transaction:');
             console.dir(error);
@@ -276,11 +268,9 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
     }
 
     conflictResultionTasks(): Observable<RxConflictResultionTask<RxDocType>> {
-        return this.internals.conflictResultionTasks$.asObservable();
+        return new Subject();
     }
-    resolveConflictResultionTask(_taskSolution: RxConflictResultionTaskSolution<RxDocType>): Promise<void> {
-        return PROMISE_RESOLVE_VOID;
-    }
+    async resolveConflictResultionTask(_taskSolution: RxConflictResultionTaskSolution<RxDocType>): Promise<void> { }
 }
 
 export function createMongoDBStorageInstance<RxDocType>(
@@ -288,30 +278,14 @@ export function createMongoDBStorageInstance<RxDocType>(
     params: RxStorageInstanceCreationParams<RxDocType, RxStorageMongoDBInstanceCreationOptions>,
     settings: RxStorageMongoDBSettings
 ): Promise<RxStorageInstanceMongoDB<RxDocType>> {
-
-    let internals = storage.collectionStates.get(collectionKey);
-    if (!internals) {
-        internals = {
-            removed: false,
-            refCount: 1,
-            documents: new Map(),
-            attachments: params.schema.attachments ? new Map() : undefined as any,
-            byIndex: {},
-            conflictResultionTasks$: new Subject(),
-            changes$: new Subject()
-        };
-        addIndexesToInternalsState(internals, params.schema);
-        storage.collectionStates.set(collectionKey, internals);
-    } else {
-        internals.refCount = internals.refCount + 1;
-    }
-
     const instance = new RxStorageInstanceMongoDB(
         storage,
         params.databaseName,
         params.collectionName,
         params.schema,
-        internals,
+        {
+            changes$: new Subject()
+        },
         params.options,
         settings
     );

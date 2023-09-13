@@ -1,7 +1,5 @@
 import type {
     FilledMangoQuery,
-    LokiSettings,
-    LokiStorageInternals,
     RxDocumentData,
     RxJsonSchema,
     RxStorage,
@@ -12,7 +10,7 @@ import type {
 import { ensureRxStorageInstanceParamsAreCorrect } from '../../rx-storage-helper';
 import { DEFAULT_CHECKPOINT_SCHEMA, getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
 import { RX_STORAGE_NAME_MONGODB, primarySwapMongoDBQuerySelector, swapToMongoSort } from './mongodb-helper';
-import type { MongoDBDatabaseSettings, MongoDBPreparedQuery } from './mongodb-types';
+import type { MongoDBDatabaseSettings, MongoDBPreparedQuery, MongoDBSettings, MongoDBStorageInternals } from './mongodb-types';
 import { RxStorageInstanceMongoDB, createMongoDBStorageInstance } from './rx-storage-instance-mongodb';
 
 export const RxStorageMongoDBStatics: RxStorageStatics = {
@@ -37,7 +35,7 @@ export const RxStorageMongoDBStatics: RxStorageStatics = {
     checkpointSchema: DEFAULT_CHECKPOINT_SCHEMA
 };
 
-export class RxStorageMongoDB implements RxStorage<LokiStorageInternals, LokiSettings> {
+export class RxStorageMongoDB implements RxStorage<MongoDBStorageInternals, MongoDBSettings> {
     public name = RX_STORAGE_NAME_MONGODB;
     public statics = RxStorageMongoDBStatics;
 
@@ -46,7 +44,7 @@ export class RxStorageMongoDB implements RxStorage<LokiStorageInternals, LokiSet
     ) { }
 
     public createStorageInstance<RxDocType>(
-        params: RxStorageInstanceCreationParams<RxDocType, LokiSettings>
+        params: RxStorageInstanceCreationParams<RxDocType, MongoDBSettings>
     ): Promise<RxStorageInstanceMongoDB<RxDocType>> {
         ensureRxStorageInstanceParamsAreCorrect(params);
         return createMongoDBStorageInstance(this, params, this.databaseSettings);

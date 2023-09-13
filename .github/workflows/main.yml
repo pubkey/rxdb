@@ -272,6 +272,39 @@ jobs:
       - run: npm run test:fast:foundationdb
       - run: npm run test:performance:foundationdb
 
+  storage-mongodb:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set node version
+        uses: actions/setup-node@v3
+        with:
+          node-version-file: ".nvmrc"
+
+      - name: Reuse npm cache folder
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: |
+            ~/.npm
+            ./node_modules
+          key: ${{ runner.os }}-npm-storage-mongodb-x8-${{ hashFiles('**/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-storage-mongodb-x8-
+
+      - name: install npm dependencies
+        run: npm install
+      - run: docker pull mongo:7.0.1
+      - run: npm run build
+
+      # Run them twice to ensure no test has persistence
+      - run: npm run test:node:mongodb
+      - run: npm run test:node:mongodb
+
+      - run: npm run test:fast:mongodb
+      - run: npm run test:performance:mongodb
+
   example-angular:
     runs-on: ubuntu-22.04
     steps:

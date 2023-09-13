@@ -1,4 +1,8 @@
-import { MangoQuerySelector, MangoQuerySortPart, RxDocumentData } from '../../types';
+import {
+    MangoQuerySelector,
+    MangoQuerySortPart,
+    RxDocumentData
+} from '../../types';
 import {
     WithId,
     ObjectId,
