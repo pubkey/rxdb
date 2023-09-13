@@ -126,7 +126,7 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
 
             await Promise.all([
                 // inserts
-                this.mongoCollection.insertMany(
+                categorized.bulkInsertDocs.length === 0 ? undefined : this.mongoCollection.insertMany(
                     categorized.bulkInsertDocs.map(writeRow => {
                         const docId = writeRow.document[primaryPath];
                         ret.success[docId as any] = writeRow.document;
@@ -138,7 +138,7 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
                     }
                 ),
                 // updates
-                this.mongoCollection.bulkWrite(
+                categorized.bulkUpdateDocs.length === 0 ? undefined : this.mongoCollection.bulkWrite(
                     categorized.bulkUpdateDocs.map(writeRow => {
                         const docId = writeRow.document[primaryPath];
                         ret.success[docId as any] = writeRow.document;
@@ -165,6 +165,9 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
         } finally {
             await session.endSession();
         }
+
+        console.log('ret:');
+        console.dir(ret);
 
         return ret;
     }
@@ -196,6 +199,11 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
                 row as any
             );
         });
+
+        console.log(':: findDocumentsById():');
+        console.dir(docIds);
+        console.dir(result);
+
         return result;
     }
 
