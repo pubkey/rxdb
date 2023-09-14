@@ -284,7 +284,12 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
         preparedQuery: MongoDBPreparedQuery<RxDocType>
     ): Promise<RxStorageCountResult> {
         const mongoCollection = await this.mongoCollectionPromise;
+
+        console.log('::COUNT:');
+        console.dir(preparedQuery);
+
         const count = await mongoCollection.countDocuments(preparedQuery.mongoSelector);
+        console.log('count: ' + count);
         return {
             count,
             mode: 'fast'
@@ -299,13 +304,33 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
         checkpoint: RxStorageDefaultCheckpoint;
     }> {
         const mongoCollection = await this.mongoCollectionPromise;
+
+        console.log('getChangedDocumentsSince():');
+        console.dir(checkpoint);
+
         const sinceLwt = checkpoint ? checkpoint.lwt : RX_META_LWT_MINIMUM;
-        const query = mongoCollection.find({
-            '_meta.lwt': {
-                $gte: sinceLwt
-            }
-        }).limit(limit);
+        const plainQuery = {
+            $or: [
+                {
+                    '_meta.lwt': {
+                        $gt: sinceLwt
+                    }
+                },
+                {
+                    '_meta.lwt': {
+                        $eq: sinceLwt
+                    },
+                    [this.inMongoPrimaryPath]: {
+                        $gt: checkpoint ? checkpoint.id : ''
+                    }
+                }
+            ]
+        };
+        console.dir(plainQuery);
+        const query = mongoCollection.find(plainQuery).limit(limit);
         const documents = await query.toArray();
+        console.log('documents:');
+        console.dir(documents);
         const lastDoc = lastOfArray(documents);
         return {
             documents: documents as any,

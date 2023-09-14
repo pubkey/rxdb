@@ -21,6 +21,8 @@ export function primarySwapMongoDBQuerySelector<RxDocType>(
     primaryKey: keyof RxDocType,
     selector: MangoQuerySelector<RxDocType>
 ): MongoQuerySelector<RxDocType> {
+    selector = flatClone(selector);
+    (selector as any)._deleted = false;
     if (primaryKey === '_id') {
         return selector as any;
     }
