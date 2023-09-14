@@ -295,13 +295,13 @@ jobs:
 
       - name: install npm dependencies
         run: npm install
-      - run: npm run mongodb:start:detached
+      - name: start mongodb docker container
+        run: | 
+          docker pull kamalyb/mongo-rs:latest
+          npm run mongodb:start:detached
       - run: npm run build
 
-      # Run them twice to ensure no test has persistence
       - run: npm run test:node:mongodb
-      - run: npm run test:node:mongodb
-
       - run: npm run test:fast:mongodb
       - run: npm run test:performance:mongodb
       - run: npm run mongodb:stop
