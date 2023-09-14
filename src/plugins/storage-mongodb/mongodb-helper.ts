@@ -74,18 +74,16 @@ export function swapRxDocToMongo<RxDocType>(
 }
 
 export function swapToMongoSort<RxDocType>(
-    primaryKey: keyof RxDocType,
     sort: MangoQuerySortPart<RxDocType>[]
 ): MongoSort {
-    const ret = sort.map(sortPart => {
+    const ret: MongoSort = {};
+    sort.forEach(sortPart => {
         const [key, direction] = Object.entries(sortPart)[0];
-        const mongoKey = key === primaryKey ? '_id' : key;
+        const mongoKey = key === '_id' ? MONGO_ID_SUBSTITUTE_FIELDNAME : key;
         const mongoDirection = direction === 'asc' ? 1 : -1;
-        return {
-            [mongoKey]: mongoDirection
-        };
+        ret[mongoKey] = mongoDirection;
     });
-    return ret as any;
+    return ret;
 }
 
 export function getMongoDBIndexName(index: string[]): string {

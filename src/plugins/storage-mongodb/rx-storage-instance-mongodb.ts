@@ -138,8 +138,6 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
             docIds,
             true
         );
-        console.log('doc states before cat:');
-        console.dir(documentStates);
         const categorized = categorizeBulkWriteRows<RxDocType>(
             this,
             primaryPath as any,
@@ -148,8 +146,6 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
             context
         );
         ret.error = categorized.errors;
-
-
 
         await Promise.all([
             /**
@@ -184,9 +180,6 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
                     } else {
                         ret.success[docId as any] = writeRow.document;
                     }
-
-                    console.log('insert write result:');
-                    console.dir(writeResult);
                 })
             ),
             /**
@@ -206,9 +199,6 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
                             upsert: false
                         }
                     );
-
-                    console.log('update write result:');
-                    console.dir(writeResult);
                     if (!writeResult.value) {
                         const currentDocState = await this.findDocumentsById([docId], true);
                         const currentDoc = getFromObjectOrThrow(currentDocState, docId);
@@ -269,6 +259,10 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
         preparedQuery: MongoDBPreparedQuery<RxDocType>
     ): Promise<RxStorageQueryResult<RxDocType>> {
         const mongoCollection = await this.mongoCollectionPromise;
+
+        console.log('QUERY():');
+        console.dir(preparedQuery);
+
         let query = mongoCollection.find(preparedQuery.mongoSelector);
         if (preparedQuery.query.skip) {
             query = query.skip(preparedQuery.query.skip);
@@ -277,6 +271,7 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
             query = query.limit(preparedQuery.query.limit);
         }
         if (preparedQuery.query.sort) {
+            console.log('add sort!');
             query = query.sort(preparedQuery.mongoSort);
         }
         const resultDocs = await query.toArray();

@@ -25,10 +25,7 @@ export const RxStorageMongoDBStatics: RxStorageStatics = {
                 primaryKey,
                 mutateableQuery.selector
             ),
-            mongoSort: swapToMongoSort(
-                primaryKey,
-                mutateableQuery.sort
-            )
+            mongoSort: swapToMongoSort(mutateableQuery.sort)
         };
         return preparedQuery;
     },
