@@ -115,7 +115,7 @@ const mySchema = {
       ],
       // separator which is used to concat the fields values.
       separator: '|'
-  }
+  },
   type: 'object',
   properties: {
       id: {
@@ -191,7 +191,7 @@ const schemaWithIndexes = {
       },
       active: {
           type: 'boolean'
-      }
+      },
       familyName: {
           type: 'string'
       },
@@ -202,7 +202,7 @@ const schemaWithIndexes = {
           minimum: 0,
           maximum: 100000,
           multipleOf: 0.01
-      }
+      },
       creditCards: {
           type: 'array',
           items: {
