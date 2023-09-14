@@ -180,7 +180,7 @@ export function categorizeBulkWriteRows<RxDocType>(
     const bulkInsertDocs: BulkWriteRowProcessed<RxDocType>[] = [];
     const bulkUpdateDocs: BulkWriteRowProcessed<RxDocType>[] = [];
     const errors: ById<RxStorageWriteError<RxDocType>> = {};
-    const changedDocumentIds: RxDocType[StringKeys<RxDocType>][] = [];
+    const changeByDocId = new Map<string, RxStorageChangeEvent<RxDocumentData<RxDocType>>>();
     const eventBulkId = randomCouchString(10);
     const eventBulk: EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, any> = {
         id: eventBulkId,
@@ -269,8 +269,7 @@ export function categorizeBulkWriteRows<RxDocType>(
             }
 
             if (!insertedIsDeleted) {
-                changedDocumentIds.push(docId as any);
-                eventBulk.events.push({
+                const event = {
                     eventId: getUniqueDeterministicEventKey(
                         eventBulkId,
                         rowId,
@@ -278,12 +277,14 @@ export function categorizeBulkWriteRows<RxDocType>(
                         writeRow
                     ),
                     documentId: docId,
-                    operation: 'INSERT',
+                    operation: 'INSERT' as const,
                     documentData: hasAttachments ? stripAttachmentsDataFromDocument(writeRow.document) : writeRow.document as any,
                     previousDocumentData: hasAttachments && writeRow.previous ? stripAttachmentsDataFromDocument(writeRow.previous) : writeRow.previous as any,
                     startTime,
                     endTime: now()
-                });
+                };
+                changeByDocId.set(docId, event);
+                eventBulk.events.push(event);
             }
         } else {
             // update existing document
@@ -421,8 +422,7 @@ export function categorizeBulkWriteRows<RxDocType>(
                 throw newRxError('SNH', { args: { writeRow } });
             }
 
-            changedDocumentIds.push(docId as any);
-            eventBulk.events.push({
+            const event = {
                 eventId: getUniqueDeterministicEventKey(
                     eventBulkId,
                     rowId,
@@ -435,7 +435,9 @@ export function categorizeBulkWriteRows<RxDocType>(
                 operation: operation,
                 startTime,
                 endTime: now()
-            });
+            };
+            changeByDocId.set(docId, event);
+            eventBulk.events.push(event);
         }
     }
 
@@ -444,7 +446,7 @@ export function categorizeBulkWriteRows<RxDocType>(
         bulkUpdateDocs,
         newestRow,
         errors,
-        changedDocumentIds,
+        changeByDocId,
         eventBulk,
         attachmentsAdd,
         attachmentsRemove,

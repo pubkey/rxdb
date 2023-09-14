@@ -24,6 +24,7 @@ import type {
 } from '../../types';
 import {
     ensureNotFalsy,
+    getFromMapOrThrow,
     getFromObjectOrThrow,
     isMaybeReadonlyArray,
     lastOfArray,
@@ -63,10 +64,11 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
     public readonly primaryPath: StringKeys<RxDocumentData<RxDocType>>;
     public readonly inMongoPrimaryPath: string;
     public closed = false;
+    private readonly changes$: Subject<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, RxStorageDefaultCheckpoint>> = new Subject();
     public readonly mongoClient: MongoClient;
     public readonly mongoDatabase: MongoDatabase;
     public readonly mongoCollectionPromise: Promise<MongoCollection<RxDocumentData<RxDocType> | any>>;
-
+    // public mongoChangeStream?: MongoChangeStream<any, ChangeStreamDocument<any>>;
 
     /**
      * We use this to be able to still fetch
@@ -90,7 +92,7 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
         this.primaryPath = getPrimaryFieldOfPrimaryKey(this.schema.primaryKey);
         this.inMongoPrimaryPath = this.primaryPath === '_id' ? MONGO_ID_SUBSTITUTE_FIELDNAME : this.primaryPath;
         this.mongoClient = new MongoClient(storage.databaseSettings.connection);
-        this.mongoDatabase = this.mongoClient.db(databaseName);
+        this.mongoDatabase = this.mongoClient.db(databaseName + '-v' + this.schema.version);
 
         const indexes = (this.schema.indexes ? this.schema.indexes.slice() : []).map(index => {
             const arIndex = isMaybeReadonlyArray(index) ? index.slice(0) : [index];
@@ -107,12 +109,51 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
                         return { name: getMongoDBIndexName(index), key: mongoIndex };
                     })
                 );
+
+                /**
+                 * TODO in a setup where multiple servers run node.js
+                 * processes that use the mongodb storage, we should propagate
+                 * events by listening to the mongodb changestream.
+                 * This maybe should be a premium feature.
+                 */
+                // this.mongoChangeStream = mongoCollection.watch(
+                //     undefined, {
+                //     batchSize: 100
+                // }
+                // ).on('change', change => {
+                //     console.log('got change:');
+                //     console.dir(change);
+
+
+                //     const eventBulkId = randomCouchString(10);
+                //     const newDocData: RxDocumentData<RxDocType> = (change as any).fullDocument;
+                //     const documentId = newDocData[this.primaryPath] as any;
+
+                //     const eventBulk: EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, RxStorageDefaultCheckpoint> = {
+                //         checkpoint: {
+                //             id: newDocData[this.primaryPath] as any,
+                //             lwt: newDocData._meta.lwt
+                //         },
+                //         context: 'mongodb-write',
+                //         id: eventBulkId,
+                //         events: [{
+                //             documentData: newDocData,
+                //             documentId,
+                //             eventId: randomCouchString(10),
+                //             operation: 'INSERT',
+                //             previousDocumentData: undefined,
+                //             startTime: now(),
+                //             endTime: now()
+                //         }]
+                //     };
+
+                //     this.changes$.next(eventBulk);
+                // });
+
+
                 return mongoCollection;
             });
 
-        // this.mongoCollection.watch().on('change', change => {
-        //     change.
-        // });
 
     }
 
@@ -147,6 +188,13 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
         );
         ret.error = categorized.errors;
 
+        /**
+         * Reset the event bulk because
+         * conflicts can still appear after the categorization
+         */
+        const eventBulk = categorized.eventBulk;
+        eventBulk.events = [];
+
         await Promise.all([
             /**
              * Inserts
@@ -178,6 +226,10 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
                         };
                         ret.error[docId] = conflictError;
                     } else {
+                        const event = categorized.changeByDocId.get(docId);
+                        if (event) {
+                            eventBulk.events.push(event);
+                        }
                         ret.success[docId as any] = writeRow.document;
                     }
                 })
@@ -212,12 +264,24 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
                         };
                         ret.error[docId] = conflictError;
                     } else {
+                        const event = getFromMapOrThrow(categorized.changeByDocId, docId);
+                        eventBulk.events.push(event);
                         ret.success[docId as any] = writeRow.document;
                     }
 
                 })
             )
         ]);
+
+        if (categorized.eventBulk.events.length > 0) {
+            const lastState = ensureNotFalsy(categorized.newestRow).document;
+            categorized.eventBulk.checkpoint = {
+                id: lastState[primaryPath],
+                lwt: lastState._meta.lwt
+            };
+            this.changes$.next(categorized.eventBulk);
+        }
+
         return ret;
     }
 
@@ -371,17 +435,25 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
     }
 
     changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, RxStorageDefaultCheckpoint>> {
-        return {} as any;
+        return this.changes$;
     }
 
     async remove(): Promise<void> {
         const mongoCollection = await this.mongoCollectionPromise;
         await mongoCollection.drop();
+        await this.close();
     }
 
     async close(): Promise<void> {
+        console.log('close()');
+        if (this.closed) {
+            return Promise.reject(new Error('already closed'));
+        }
+        this.closed = true;
         await this.mongoCollectionPromise;
+        // await ensureNotFalsy(this.mongoChangeStream).close();
         await this.mongoClient.close();
+        console.log('close() DONE');
     }
 
     conflictResultionTasks(): Observable<RxConflictResultionTask<RxDocType>> {

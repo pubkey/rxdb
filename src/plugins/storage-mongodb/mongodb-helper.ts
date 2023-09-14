@@ -23,7 +23,10 @@ export function primarySwapMongoDBQuerySelector<RxDocType>(
 ): MongoQuerySelector<RxDocType> {
     selector = flatClone(selector);
     (selector as any)._deleted = false;
-    if (primaryKey === '_id') {
+
+
+
+    if (primaryKey !== '_id') {
         return selector as any;
     }
     if (Array.isArray(selector)) {
