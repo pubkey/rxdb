@@ -121,8 +121,6 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
                 //     batchSize: 100
                 // }
                 // ).on('change', change => {
-                //     console.log('got change:');
-                //     console.dir(change);
 
 
                 //     const eventBulkId = randomCouchString(10);
@@ -290,7 +288,6 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
         withDeleted: boolean,
         session?: ClientSession
     ): Promise<RxDocumentDataById<RxDocType>> {
-        console.log('findDocumentsById(' + docIds.join(', ') + ') START');
         const mongoCollection = await this.mongoCollectionPromise;
         const primaryPath = this.primaryPath;
 
@@ -314,8 +311,6 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
                 row as any
             );
         });
-        console.log('findDocumentsById(' + docIds.join(', ') + ') DONE');
-        console.dir(result);
         return result;
     }
 
@@ -323,9 +318,6 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
         preparedQuery: MongoDBPreparedQuery<RxDocType>
     ): Promise<RxStorageQueryResult<RxDocType>> {
         const mongoCollection = await this.mongoCollectionPromise;
-
-        console.log('QUERY():');
-        console.dir(preparedQuery);
 
         let query = mongoCollection.find(preparedQuery.mongoSelector);
         if (preparedQuery.query.skip) {
@@ -335,7 +327,6 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
             query = query.limit(preparedQuery.query.limit);
         }
         if (preparedQuery.query.sort) {
-            console.log('add sort!');
             query = query.sort(preparedQuery.mongoSort);
         }
         const resultDocs = await query.toArray();
@@ -348,12 +339,7 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
         preparedQuery: MongoDBPreparedQuery<RxDocType>
     ): Promise<RxStorageCountResult> {
         const mongoCollection = await this.mongoCollectionPromise;
-
-        console.log('::COUNT:');
-        console.dir(preparedQuery);
-
         const count = await mongoCollection.countDocuments(preparedQuery.mongoSelector);
-        console.log('count: ' + count);
         return {
             count,
             mode: 'fast'
@@ -368,10 +354,6 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
         checkpoint: RxStorageDefaultCheckpoint;
     }> {
         const mongoCollection = await this.mongoCollectionPromise;
-
-        console.log('getChangedDocumentsSince():');
-        console.dir(checkpoint);
-
         const sinceLwt = checkpoint ? checkpoint.lwt : RX_META_LWT_MINIMUM;
         const plainQuery = {
             $or: [
@@ -390,7 +372,6 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
                 }
             ]
         };
-        console.dir(plainQuery);
         const query = mongoCollection.find(plainQuery)
             .sort({
                 '_meta.lwt': 1,
@@ -398,11 +379,9 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
             })
             .limit(limit);
         const documents = await query.toArray();
-        console.log('documents:');
-        console.dir(documents);
         const lastDoc = lastOfArray(documents);
         return {
-            documents: documents as any,
+            documents: documents.map(d => swapMongoToRxDoc(d)),
             checkpoint: lastDoc ? {
                 id: lastDoc[this.primaryPath],
                 lwt: lastDoc._meta.lwt
@@ -445,7 +424,6 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
     }
 
     async close(): Promise<void> {
-        console.log('close()');
         if (this.closed) {
             return Promise.reject(new Error('already closed'));
         }
@@ -453,7 +431,6 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
         await this.mongoCollectionPromise;
         // await ensureNotFalsy(this.mongoChangeStream).close();
         await this.mongoClient.close();
-        console.log('close() DONE');
     }
 
     conflictResultionTasks(): Observable<RxConflictResultionTask<RxDocType>> {
@@ -472,9 +449,7 @@ export function createMongoDBStorageInstance<RxDocType>(
         params.databaseName,
         params.collectionName,
         params.schema,
-        {
-            changes$: new Subject()
-        },
+        {},
         params.options,
         settings
     );

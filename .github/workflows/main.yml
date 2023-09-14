@@ -295,7 +295,7 @@ jobs:
 
       - name: install npm dependencies
         run: npm install
-      - run: docker pull kamalyb/mongo-rs:latest
+      - run: npm run mongodb:start:detached
       - run: npm run build
 
       # Run them twice to ensure no test has persistence
@@ -304,6 +304,7 @@ jobs:
 
       - run: npm run test:fast:mongodb
       - run: npm run test:performance:mongodb
+      - run: npm run mongodb:stop
 
   example-angular:
     runs-on: ubuntu-22.04

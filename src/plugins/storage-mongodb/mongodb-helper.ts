@@ -69,8 +69,8 @@ export function swapMongoToRxDoc<RxDocType>(
 export function swapRxDocToMongo<RxDocType>(
     docData: RxDocumentData<RxDocType>
 ): any {
+    docData = flatClone(docData);
     if ((docData as any)._id) {
-        docData = flatClone(docData);
         const value = (docData as any)._id;
         delete (docData as any)._id;
         (docData as any)[MONGO_ID_SUBSTITUTE_FIELDNAME] = value;
