@@ -19,10 +19,12 @@ import type {
     RxStorageInstance,
     RxStorageInstanceCreationParams,
     RxStorageQueryResult,
+    RxStorageWriteErrorConflict,
     StringKeys
 } from '../../types';
 import {
     ensureNotFalsy,
+    getFromObjectOrThrow,
     isMaybeReadonlyArray,
     lastOfArray,
     now,
@@ -45,8 +47,11 @@ import {
 } from 'mongodb';
 import { categorizeBulkWriteRows } from '../../rx-storage-helper';
 import {
+    MONGO_ID_SUBSTITUTE_FIELDNAME,
     getMongoDBIndexName,
-    swapMongoToRxDoc} from './mongodb-helper';
+    swapMongoToRxDoc,
+    swapRxDocToMongo
+} from './mongodb-helper';
 
 export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
     RxDocType,
@@ -56,6 +61,7 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
 > {
 
     public readonly primaryPath: StringKeys<RxDocumentData<RxDocType>>;
+    public readonly inMongoPrimaryPath: string;
     public closed = false;
     public readonly mongoClient: MongoClient;
     public readonly mongoDatabase: MongoDatabase;
@@ -82,10 +88,7 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
             throw new Error('attachments not supported in mongodb storage, make a PR if you need that');
         }
         this.primaryPath = getPrimaryFieldOfPrimaryKey(this.schema.primaryKey);
-        if (this.primaryPath === '_id') {
-            throw new Error('When using the MongoDB RxStorage, you cannot use the primaryKey _id, use a different fieldname');
-        }
-
+        this.inMongoPrimaryPath = this.primaryPath === '_id' ? MONGO_ID_SUBSTITUTE_FIELDNAME : this.primaryPath;
         this.mongoClient = new MongoClient(storage.databaseSettings.connection);
         this.mongoDatabase = this.mongoClient.db(databaseName);
 
@@ -93,7 +96,7 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
             const arIndex = isMaybeReadonlyArray(index) ? index.slice(0) : [index];
             return arIndex;
         });
-        indexes.push([this.primaryPath]);
+        indexes.push([this.inMongoPrimaryPath]);
 
         this.mongoCollectionPromise = this.mongoDatabase.createCollection(collectionName)
             .then(async (mongoCollection) => {
@@ -135,6 +138,8 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
             docIds,
             true
         );
+        console.log('doc states before cat:');
+        console.dir(documentStates);
         const categorized = categorizeBulkWriteRows<RxDocType>(
             this,
             primaryPath as any,
@@ -153,19 +158,32 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
              */
             Promise.all(
                 categorized.bulkInsertDocs.map(async (writeRow) => {
-                    const docId = writeRow.document[primaryPath];
-                    const writeResult = await mongoCollection.updateOne(
+                    const docId: string = writeRow.document[primaryPath] as any;
+                    const writeResult = await mongoCollection.findOneAndUpdate(
                         {
-                            [primaryPath]: docId
+                            [this.inMongoPrimaryPath]: docId
                         },
                         {
-                            $setOnInsert: writeRow.document
+                            $setOnInsert: swapRxDocToMongo(writeRow.document)
                         },
                         {
-                            upsert: true
+                            upsert: true,
+                            includeResultMetadata: true
                         }
                     );
-                    ret.success[docId as any] = writeRow.document;
+                    if (writeResult.value) {
+                        // had insert conflict
+                        const conflictError: RxStorageWriteErrorConflict<RxDocType> = {
+                            status: 409,
+                            documentId: docId,
+                            writeRow,
+                            documentInDb: swapMongoToRxDoc(writeResult.value),
+                            isError: true
+                        };
+                        ret.error[docId] = conflictError;
+                    } else {
+                        ret.success[docId as any] = writeRow.document;
+                    }
 
                     console.log('insert write result:');
                     console.dir(writeResult);
@@ -176,96 +194,40 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
              */
             Promise.all(
                 categorized.bulkUpdateDocs.map(async (writeRow) => {
-                    const docId = writeRow.document[primaryPath];
+                    const docId = writeRow.document[primaryPath] as string;
                     const writeResult = await mongoCollection.findOneAndReplace(
                         {
-                            [primaryPath]: docId,
+                            [this.inMongoPrimaryPath]: docId,
                             _rev: ensureNotFalsy(writeRow.previous)._rev
                         },
-                        writeRow.document
+                        swapRxDocToMongo(writeRow.document),
+                        {
+                            includeResultMetadata: true,
+                            upsert: false
+                        }
                     );
 
                     console.log('update write result:');
                     console.dir(writeResult);
-                    ret.success[docId as any] = writeRow.document;
+                    if (!writeResult.value) {
+                        const currentDocState = await this.findDocumentsById([docId], true);
+                        const currentDoc = getFromObjectOrThrow(currentDocState, docId);
+                        // had insert conflict
+                        const conflictError: RxStorageWriteErrorConflict<RxDocType> = {
+                            status: 409,
+                            documentId: docId,
+                            writeRow,
+                            documentInDb: currentDoc,
+                            isError: true
+                        };
+                        ret.error[docId] = conflictError;
+                    } else {
+                        ret.success[docId as any] = writeRow.document;
+                    }
+
                 })
             )
         ]);
-
-
-
-
-
-        // console.log('MONGO TX START');
-        // const session = this.mongoClient.startSession({
-        // });
-        // try {
-
-        //     await session.withTransaction(async () => {
-        //         console.log('MONGO TX INNER START');
-
-        //         await mongoCollection.insertOne({
-        //             [primaryPath]: '_________',
-        //             _deleted: true
-        //         });
-        //         console.log('MONGO TX INNER PING WRITE DONE');
-
-
-
-        //         console.log('MONGO TX WRITES START');
-        //         await Promise.all([
-        //             // inserts
-        //             categorized.bulkInsertDocs.length > 0 ? mongoCollection.insertMany(
-        //                 categorized.bulkInsertDocs.map(writeRow => {
-        //                     const docId = writeRow.document[primaryPath];
-        //                     ret.success[docId as any] = writeRow.document;
-        //                     const objectId = new ObjectId();
-        //                     return swapRxDocToMongo(objectId, writeRow.document) as any;
-        //                 }),
-        //                 {
-        //                     session
-        //                 }
-        //             ) : undefined,
-        //             // updates
-        //             categorized.bulkUpdateDocs.length > 0 ? mongoCollection.bulkWrite(
-        //                 categorized.bulkUpdateDocs.map(writeRow => {
-        //                     const docId = writeRow.document[primaryPath];
-        //                     ret.success[docId as any] = writeRow.document;
-        //                     const objectId = getFromMapOrThrow(this.mongoObjectIdCache, writeRow.previous);
-        //                     return {
-        //                         updateOne: {
-        //                             filter: { _id: objectId },
-        //                             update: {
-        //                                 $set: writeRow.document
-        //                             }
-        //                         }
-        //                     } as any;
-        //                 }),
-        //                 {
-        //                     session
-        //                 }
-        //             ) : undefined
-        //         ]);
-        //     }, {
-        //         readPreference: 'primary',
-        //         readConcern: { level: 'majority' },
-        //         writeConcern: { w: 'majority' }
-        //     });
-        //     console.log('MONGO TX COMMIT DONE');
-        // } catch (error) {
-        //     console.error('mongodb bulk write error -> abort transaction:');
-        //     console.dir(error);
-        //     console.log('MONGO TX ABORT');
-        //     await session.abortTransaction();
-        //     throw error;
-        // } finally {
-        //     console.log('MONGO TX END');
-        //     await session.endSession();
-        // }
-
-        // console.log('ret:');
-        // console.dir(ret);
-
         return ret;
     }
 
@@ -274,9 +236,7 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
         withDeleted: boolean,
         session?: ClientSession
     ): Promise<RxDocumentDataById<RxDocType>> {
-
         console.log('findDocumentsById(' + docIds.join(', ') + ') START');
-
         const mongoCollection = await this.mongoCollectionPromise;
         const primaryPath = this.primaryPath;
 
@@ -297,7 +257,6 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
         ).toArray();
         queryResult.forEach(row => {
             result[(row as any)[primaryPath]] = swapMongoToRxDoc(
-                this.mongoObjectIdCache,
                 row as any
             );
         });
@@ -320,8 +279,10 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
         if (preparedQuery.query.sort) {
             query = query.sort(preparedQuery.mongoSort);
         }
-        const result = await query.toArray();
-        return result as any;
+        const resultDocs = await query.toArray();
+        return {
+            documents: resultDocs.map(d => swapMongoToRxDoc(d))
+        };
     }
 
     async count(

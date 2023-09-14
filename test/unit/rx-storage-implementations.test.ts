@@ -459,6 +459,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     [{
                         previous: updateData,
                         document: Object.assign({}, first, {
+                            value: 'barfoo_deleted',
                             _deleted: true,
                             _rev: EXAMPLE_REVISION_3,
                             _meta: {

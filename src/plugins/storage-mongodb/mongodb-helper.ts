@@ -4,13 +4,18 @@ import {
     RxDocumentData
 } from '../../types';
 import {
-    WithId,
-    ObjectId,
     Sort as MongoSort
 } from 'mongodb';
 import { flatClone } from '../utils';
 import { MongoQuerySelector } from './mongodb-types';
 export const RX_STORAGE_NAME_MONGODB = 'mongodb';
+
+/**
+ * MongoDB uses the _id field by itself (max 12 bytes)
+ * so we have to substitute the _id field if
+ * it is used in the RxDocType.
+ */
+export const MONGO_ID_SUBSTITUTE_FIELDNAME = '__id';
 
 export function primarySwapMongoDBQuerySelector<RxDocType>(
     primaryKey: keyof RxDocType,
@@ -40,23 +45,32 @@ export function primarySwapMongoDBQuerySelector<RxDocType>(
     }
 }
 
+
+
 export function swapMongoToRxDoc<RxDocType>(
-    mongoObjectIdCache: WeakMap<RxDocumentData<RxDocType>, ObjectId>,
-    docData: WithId<RxDocumentData<RxDocType>>
+    docData: any
 ): RxDocumentData<RxDocType> {
-    const objectId = docData._id;
-    const useDoc = flatClone(docData) as RxDocumentData<RxDocType>;
-    delete (useDoc as any)._id;
-    mongoObjectIdCache.set(useDoc, objectId);
-    return useDoc as any;
+    docData = flatClone(docData);
+    if ((docData as any)[MONGO_ID_SUBSTITUTE_FIELDNAME]) {
+        const value = (docData as any)[MONGO_ID_SUBSTITUTE_FIELDNAME];
+        delete (docData as any)[MONGO_ID_SUBSTITUTE_FIELDNAME];
+        (docData as any)._id = value;
+    } else {
+        delete (docData as any)._id;
+    }
+    return docData;
 }
+
 export function swapRxDocToMongo<RxDocType>(
-    objectId: ObjectId,
     docData: RxDocumentData<RxDocType>
-): WithId<RxDocumentData<RxDocType>> {
-    const useDoc = flatClone(docData);
-    (useDoc as any)._id = objectId;
-    return useDoc as any;
+): any {
+    if ((docData as any)._id) {
+        docData = flatClone(docData);
+        const value = (docData as any)._id;
+        delete (docData as any)._id;
+        (docData as any)[MONGO_ID_SUBSTITUTE_FIELDNAME] = value;
+    }
+    return docData;
 }
 
 export function swapToMongoSort<RxDocType>(
