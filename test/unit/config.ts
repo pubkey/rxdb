@@ -245,7 +245,7 @@ export function setDefaultStorage(storageKey: string) {
                 name: storageKey,
                 getStorage: () => {
                     return getRxStorageMongoDB({
-                        connection: 'mongodb://localhost:27018'
+                        connection: 'mongodb://localhost:27017,localhost:27018,localhost:27019'
                     });
                 },
                 getPerformanceStorage() {

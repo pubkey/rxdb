@@ -73,3 +73,7 @@ export function swapToMongoSort<RxDocType>(
     });
     return ret as any;
 }
+
+export function getMongoDBIndexName(index: string[]): string {
+    return index.join('|');
+}
