@@ -459,7 +459,7 @@
     "@rollup/plugin-commonjs": "24.1.0",
     "@rollup/plugin-node-resolve": "15.2.1",
     "@types/assert": "1.5.6",
-    "@types/core-js": "2.5.5",
+    "@types/core-js": "2.5.6",
     "@types/cors": "2.8.13",
     "@types/crypto-js": "4.1.1",
     "@types/mocha": "10.0.1",
