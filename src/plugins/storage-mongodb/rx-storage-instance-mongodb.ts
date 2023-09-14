@@ -327,7 +327,12 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
             ]
         };
         console.dir(plainQuery);
-        const query = mongoCollection.find(plainQuery).limit(limit);
+        const query = mongoCollection.find(plainQuery)
+            .sort({
+                '_meta.lwt': 1,
+                [this.inMongoPrimaryPath]: 1
+            })
+            .limit(limit);
         const documents = await query.toArray();
         console.log('documents:');
         console.dir(documents);
