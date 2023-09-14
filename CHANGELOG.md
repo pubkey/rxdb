@@ -4,6 +4,7 @@
 <!-- CHANGELOG NEWEST -->
 - Expose path in validate-z-schema error logs [#4900](https://github.com/pubkey/rxdb/pull/4900)
 - ADD options for the worker storages [#4925](https://github.com/pubkey/rxdb/issues/4925)
+- ADD the [MongoDB RxStorage](https://rxdb.info/rx-storage-mongodb.html)
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
