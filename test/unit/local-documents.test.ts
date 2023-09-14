@@ -663,7 +663,7 @@ config.parallel('local-documents.test.ts', () => {
             if (!config.platform.isNode()) {
                 return;
             }
-            const dbName: string = config.rootPath + 'test_tmp/' + randomCouchString(10);
+            const dbName: string = randomCouchString(10);
 
             const localDocId = 'foobar';
             const localDocData = {
@@ -716,7 +716,7 @@ config.parallel('local-documents.test.ts', () => {
             if (!config.platform.isNode()) {
                 return;
             }
-            const dbName: string = config.rootPath + 'test_tmp/' + randomCouchString(10);
+            const dbName: string = randomCouchString(10);
             const db = await createRxDatabase({
                 name: dbName,
                 storage: config.storage.getStorage(),

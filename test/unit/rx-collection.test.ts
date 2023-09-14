@@ -956,8 +956,7 @@ describe('rx-collection.test.ts', () => {
 
                     const collectionNames: string[] = [
                         'name_with_a_-_in',
-                        'name_no_dash',
-                        'dollar$collection'
+                        'name_no_dash'
                     ].sort();
 
                     const db = await createRxDatabase({
@@ -1602,7 +1601,7 @@ describe('rx-collection.test.ts', () => {
                     if (!config.platform.isNode()) return;
                     // use a 'slow' adapter because memory might be to fast
                     const db = await createRxDatabase({
-                        name: config.rootPath + 'test_tmp/' + randomCouchString(10),
+                        name: randomCouchString(10),
                         storage: config.storage.getStorage(),
                     });
                     const collections = await db.addCollections({

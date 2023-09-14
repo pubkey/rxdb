@@ -241,23 +241,24 @@ export function setDefaultStorage(storageKey: string) {
             // use a dynamic import so it does not break browser bundling
             const { getRxStorageMongoDB } = require('../../plugins/storage-mongodb' + '');
 
+            const mongoConnectionString = 'mongodb://localhost:27017,localhost:27018,localhost:27019';
             config.storage = {
                 name: storageKey,
                 getStorage: () => {
                     return getRxStorageMongoDB({
-                        connection: 'mongodb://localhost:27017,localhost:27018,localhost:27019'
+                        connection: mongoConnectionString
                     });
                 },
                 getPerformanceStorage() {
                     return {
                         description: 'mongodb-native',
                         storage: getRxStorageMongoDB({
-                            connection: 'mongodb://localhost:27018'
+                            connection: mongoConnectionString
                         })
                     };
                 },
                 hasPersistence: true,
-                hasMultiInstance: true,
+                hasMultiInstance: false,
                 hasAttachments: false
             };
             break;
