@@ -461,7 +461,7 @@
     "@types/assert": "1.5.6",
     "@types/core-js": "2.5.6",
     "@types/cors": "2.8.14",
-    "@types/crypto-js": "4.1.1",
+    "@types/crypto-js": "4.1.2",
     "@types/mocha": "10.0.1",
     "@types/node": "18.17.11",
     "@types/pako": "2.0.0",
