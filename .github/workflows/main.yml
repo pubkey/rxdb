@@ -279,6 +279,11 @@ jobs:
         image: mongo:7.0.1
         ports:
           - 27017:27017
+        options: >-
+          --health-cmd mongo
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5      
     steps:
       - uses: actions/checkout@v3
       - name: Set node version
