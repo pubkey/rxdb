@@ -47,7 +47,7 @@ The Filesystem Node storage is best suited when you use RxDB in a Node.js proces
 
 ### MongoDB
 
-To use RxDB on the server side, the MongoDB RxStorage provides a way of having a secure, fault-tolerant and performant storage based on the MongoDB database [Read more](./rx-storage-mongodb.md)
+To use RxDB on the server side, the MongoDB RxStorage provides a way of having a secure, scaleable and performant storage based on the popular MongoDB NoSQL database [Read more](./rx-storage-mongodb.md)
 
 ### FoundationDB
 

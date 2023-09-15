@@ -11,7 +11,7 @@ const {
 async function run() {
     console.log('MongoDB Tester: start');
     const dbName = 'mydb' + new Date().getTime();
-    const mongoClient = new MongoClient('mongodb://localhost:27017,localhost:27018,localhost:27019');
+    const mongoClient = new MongoClient('mongodb://localhost:27017');
     console.log('MongoDB Tester: created client');
     const mongoDatabase = mongoClient.db(dbName);
     const mongoCollection = await mongoDatabase.createCollection('mycollection');

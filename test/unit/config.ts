@@ -241,7 +241,7 @@ export function setDefaultStorage(storageKey: string) {
             // use a dynamic import so it does not break browser bundling
             const { getRxStorageMongoDB } = require('../../plugins/storage-mongodb' + '');
 
-            const mongoConnectionString = 'mongodb://localhost:27017,localhost:27018,localhost:27019';
+            const mongoConnectionString = 'mongodb://localhost:27017';
             config.storage = {
                 name: storageKey,
                 getStorage: () => {

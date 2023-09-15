@@ -274,6 +274,11 @@ jobs:
 
   storage-mongodb:
     runs-on: ubuntu-20.04
+    services:
+      mongo:
+        image: mongo:7.0.1
+        ports:
+          - 27017:27017
     steps:
       - uses: actions/checkout@v3
       - name: Set node version
@@ -295,14 +300,9 @@ jobs:
 
       - name: install npm dependencies
         run: npm install
-      - name: start mongodb docker container
-        run: | 
-          docker pull kamalyb/mongo-rs:latest
-          npm run mongodb:start:detached
       - run: npm run build
 
       - run: node ./config/mongodb-connection-tester.js
-
       - run: npm run test:node:mongodb
       - run: npm run test:fast:mongodb
       - run: npm run test:performance:mongodb
