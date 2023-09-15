@@ -1,6 +1,9 @@
 import {
+    BehaviorSubject,
     Observable,
-    Subject
+    Subject,
+    filter,
+    firstValueFrom
 } from 'rxjs';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
 import type {
@@ -69,6 +72,15 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
     public readonly mongoDatabase: MongoDatabase;
     public readonly mongoCollectionPromise: Promise<MongoCollection<RxDocumentData<RxDocType> | any>>;
     // public mongoChangeStream?: MongoChangeStream<any, ChangeStreamDocument<any>>;
+
+
+    /**
+     * Closing the connection must not happen when
+     * an operation is running, otherwise we get an error.
+     * So we store all running operations here so that
+     * they can be awaited.
+     */
+    public readonly runningOperations = new BehaviorSubject(0);
 
     /**
      * We use this to be able to still fetch
@@ -165,6 +177,7 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
         documentWrites: BulkWriteRow<RxDocType>[],
         context: string
     ): Promise<RxStorageBulkWriteResponse<RxDocType>> {
+        this.runningOperations.next(this.runningOperations.getValue() + 1);
         const mongoCollection = await this.mongoCollectionPromise;
         if (this.closed) {
             return Promise.reject(new Error('already closed'));
@@ -283,6 +296,7 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
             this.changes$.next(categorized.eventBulk);
         }
 
+        this.runningOperations.next(this.runningOperations.getValue() - 1);
         return ret;
     }
 
@@ -291,6 +305,7 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
         withDeleted: boolean,
         session?: ClientSession
     ): Promise<RxDocumentDataById<RxDocType>> {
+        this.runningOperations.next(this.runningOperations.getValue() + 1);
         const mongoCollection = await this.mongoCollectionPromise;
         const primaryPath = this.primaryPath;
 
@@ -314,12 +329,14 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
                 row as any
             );
         });
+        this.runningOperations.next(this.runningOperations.getValue() - 1);
         return result;
     }
 
     async query(
         preparedQuery: MongoDBPreparedQuery<RxDocType>
     ): Promise<RxStorageQueryResult<RxDocType>> {
+        this.runningOperations.next(this.runningOperations.getValue() + 1);
         const mongoCollection = await this.mongoCollectionPromise;
 
         let query = mongoCollection.find(preparedQuery.mongoSelector);
@@ -333,6 +350,7 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
             query = query.sort(preparedQuery.mongoSort);
         }
         const resultDocs = await query.toArray();
+        this.runningOperations.next(this.runningOperations.getValue() - 1);
         return {
             documents: resultDocs.map(d => swapMongoToRxDoc(d))
         };
@@ -341,8 +359,10 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
     async count(
         preparedQuery: MongoDBPreparedQuery<RxDocType>
     ): Promise<RxStorageCountResult> {
+        this.runningOperations.next(this.runningOperations.getValue() + 1);
         const mongoCollection = await this.mongoCollectionPromise;
         const count = await mongoCollection.countDocuments(preparedQuery.mongoSelector);
+        this.runningOperations.next(this.runningOperations.getValue() - 1);
         return {
             count,
             mode: 'fast'
@@ -356,6 +376,7 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
         documents: RxDocumentData<RxDocType>[];
         checkpoint: RxStorageDefaultCheckpoint;
     }> {
+        this.runningOperations.next(this.runningOperations.getValue() + 1);
         const mongoCollection = await this.mongoCollectionPromise;
         const sinceLwt = checkpoint ? checkpoint.lwt : RX_META_LWT_MINIMUM;
         const plainQuery = {
@@ -383,6 +404,7 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
             .limit(limit);
         const documents = await query.toArray();
         const lastDoc = lastOfArray(documents);
+        this.runningOperations.next(this.runningOperations.getValue() - 1);
         return {
             documents: documents.map(d => swapMongoToRxDoc(d)),
             checkpoint: lastDoc ? {
@@ -396,6 +418,7 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
     }
 
     async cleanup(minimumDeletedTime: number): Promise<boolean> {
+        this.runningOperations.next(this.runningOperations.getValue() + 1);
         const mongoCollection = await this.mongoCollectionPromise;
         const maxDeletionTime = now() - minimumDeletedTime;
         await mongoCollection.deleteMany({
@@ -404,6 +427,7 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
                 $lt: maxDeletionTime
             }
         });
+        this.runningOperations.next(this.runningOperations.getValue() - 1);
         return true;
     }
 
@@ -421,8 +445,10 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
     }
 
     async remove(): Promise<void> {
+        this.runningOperations.next(this.runningOperations.getValue() + 1);
         const mongoCollection = await this.mongoCollectionPromise;
         await mongoCollection.drop();
+        this.runningOperations.next(this.runningOperations.getValue() - 1);
         await this.close();
     }
 
@@ -432,6 +458,7 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
         }
         this.closed = true;
         await this.mongoCollectionPromise;
+        await firstValueFrom(this.runningOperations.pipe(filter(c => c === 0)));
         // await ensureNotFalsy(this.mongoChangeStream).close();
         await this.mongoClient.close();
     }
