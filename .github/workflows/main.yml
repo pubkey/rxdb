@@ -274,16 +274,7 @@ jobs:
 
   storage-mongodb:
     runs-on: ubuntu-20.04
-    services:
-      mongo:
-        image: mongo:7.0.1
-        ports:
-          - 27017:27017
-        options: >-
-          --health-cmd mongo
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5      
+   
     steps:
       - uses: actions/checkout@v3
       - name: Set node version
@@ -302,6 +293,11 @@ jobs:
           key: ${{ runner.os }}-npm-storage-mongodb-x8-${{ hashFiles('**/package.json') }}
           restore-keys: |
             ${{ runner.os }}-npm-storage-mongodb-x8-
+
+      - name: Start MongoDB
+        uses: supercharge/mongodb-github-action@1.10.0
+        with:
+          mongodb-version: 7.0.1
 
       - name: install npm dependencies
         run: npm install
