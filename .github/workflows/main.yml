@@ -301,6 +301,8 @@ jobs:
           npm run mongodb:start:detached
       - run: npm run build
 
+      - run: node ./config/mongodb-connection-tester.js
+
       - run: npm run test:node:mongodb
       - run: npm run test:fast:mongodb
       - run: npm run test:performance:mongodb
