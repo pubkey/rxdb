@@ -81,6 +81,7 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
      * they can be awaited.
      */
     public readonly runningOperations = new BehaviorSubject(0);
+    public readonly runningWrites = new BehaviorSubject(0);
 
     /**
      * We use this to be able to still fetch
@@ -178,6 +179,8 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
         context: string
     ): Promise<RxStorageBulkWriteResponse<RxDocType>> {
         this.runningOperations.next(this.runningOperations.getValue() + 1);
+        await firstValueFrom(this.runningWrites.pipe(filter(c => c === 0)));
+        this.runningWrites.next(this.runningWrites.getValue() + 1);
         const mongoCollection = await this.mongoCollectionPromise;
         if (this.closed) {
             return Promise.reject(new Error('already closed'));
@@ -296,6 +299,7 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
             this.changes$.next(categorized.eventBulk);
         }
 
+        this.runningWrites.next(this.runningWrites.getValue() - 1);
         this.runningOperations.next(this.runningOperations.getValue() - 1);
         return ret;
     }
