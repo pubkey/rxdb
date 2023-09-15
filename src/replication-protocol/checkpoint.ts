@@ -87,7 +87,7 @@ export async function setCheckpoint<RxDocType, CheckpointType>(
             state.input.metaInstance.schema,
             newDoc
         );
-        while (true) {
+        while (!state.events.canceled.getValue()) {
             /**
              * Instead of just storing the new checkpoint,
              * we have to stack up the checkpoint with the previous one.
