@@ -442,7 +442,7 @@ describe('rx-document.test.js', () => {
                     return;
                 }
                 const db = await createRxDatabase({
-                    name: config.rootPath + 'test_tmp/' + randomCouchString(10),
+                    name: randomCouchString(10),
                     storage: config.storage.getStorage(),
                 });
                 const cols = await db.addCollections({
@@ -479,7 +479,7 @@ describe('rx-document.test.js', () => {
                     return;
                 }
                 // use a 'slow' adapter because memory might be to fast
-                const dbName = config.rootPath + 'test_tmp/' + randomCouchString(10);
+                const dbName = randomCouchString(10);
                 const db = await createRxDatabase({
                     name: dbName,
                     storage: config.storage.getStorage(),

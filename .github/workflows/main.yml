@@ -272,6 +272,42 @@ jobs:
       - run: npm run test:fast:foundationdb
       - run: npm run test:performance:foundationdb
 
+  storage-mongodb:
+    runs-on: ubuntu-20.04
+   
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set node version
+        uses: actions/setup-node@v3
+        with:
+          node-version-file: ".nvmrc"
+
+      - name: Reuse npm cache folder
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: |
+            ~/.npm
+            ./node_modules
+          key: ${{ runner.os }}-npm-storage-mongodb-x8-${{ hashFiles('**/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-storage-mongodb-x8-
+
+      - name: Start MongoDB
+        uses: supercharge/mongodb-github-action@1.10.0
+        with:
+          mongodb-version: 7.0.1
+
+      - name: install npm dependencies
+        run: npm install
+      - run: npm run build
+
+      - run: node ./config/mongodb-connection-tester.js
+      - run: npm run test:node:mongodb
+      - run: npm run test:fast:mongodb
+      - run: npm run test:performance:mongodb
+
   example-angular:
     runs-on: ubuntu-22.04
     steps:
@@ -487,7 +523,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           # TODO using latest node version does not work with expo-cli https://github.com/expo/expo-cli/issues/4478
-          node-version: 16.16.0
+          node-version: 16.20.1
 
       - name: prepare RxDB core
         run: |

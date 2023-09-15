@@ -443,7 +443,7 @@ describe('rx-query.test.ts', () => {
             }
             // use a 'slow' adapter because memory might be to fast
             const db = await createRxDatabase({
-                name: config.rootPath + 'test_tmp/' + randomCouchString(10),
+                name: randomCouchString(10),
                 storage: config.storage.getStorage(),
             });
             const cols = await db.addCollections({

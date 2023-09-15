@@ -360,7 +360,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
 
                 storageInstance.close();
             });
-            it('when inserting the same document at the same time, the first call must succeed while the seconds has a conflict', async () => {
+            it('when inserting the same document at the same time, the first call must succeed while the second has a conflict', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
                     databaseInstanceToken: randomCouchString(10),
                     databaseName: randomCouchString(12),
@@ -370,7 +370,6 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     multiInstance: false,
                     devMode: true
                 });
-
                 const writeData: RxDocumentWriteData<TestDocType> = {
                     key: 'foobar',
                     value: 'barfoo',
@@ -381,8 +380,6 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                         lwt: now()
                     }
                 };
-
-
                 const [first, second] = await Promise.all([
                     storageInstance.bulkWrite(
                         [{
@@ -462,6 +459,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     [{
                         previous: updateData,
                         document: Object.assign({}, first, {
+                            value: 'barfoo_deleted',
                             _deleted: true,
                             _rev: EXAMPLE_REVISION_3,
                             _meta: {

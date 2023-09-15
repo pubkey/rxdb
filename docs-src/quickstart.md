@@ -26,7 +26,7 @@ addRxPlugin(RxDBDevModePlugin);
 
 ### Choose a RxStorage
 
-RxDB can used in different JavaScript runtimes which have different options to store persistend data. Depending on the runtime, a different [RxStorage](./rx-storage.md) must be used. For **browser** applications it is recommended to start with the [Dexie.js RxStorage](./rx-storage-dexie.md) which comes directly with the RxDB npm package.
+RxDB can be used in different JavaScript runtimes which have different methods to store persistend data. Depending on the runtime, a different [RxStorage](./rx-storage.md) must be used. For **browser** applications it is recommended to start with the [Dexie.js RxStorage](./rx-storage-dexie.md) which comes directly with the RxDB npm package.
 
 ```ts
 import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
