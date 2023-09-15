@@ -166,6 +166,9 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
         context: string
     ): Promise<RxStorageBulkWriteResponse<RxDocType>> {
         const mongoCollection = await this.mongoCollectionPromise;
+        if (this.closed) {
+            return Promise.reject(new Error('already closed'));
+        }
         const primaryPath = this.primaryPath;
         const ret: RxStorageBulkWriteResponse<RxDocType> = {
             success: {},
