@@ -24,9 +24,7 @@
         "typeRoots": [
             "./src/types/modules"
         ],
-        "types": [
-            "node"
-        ]
+        "types": []
     },
     "formatCodeOptions": {
         "indentSize": 2,
