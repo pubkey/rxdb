@@ -19,5 +19,7 @@ async function run() {
     await mongoCollection.insertOne({ foo: 'bar' });
 
     console.log('MongoDB Tester: DONE');
+
+    await mongoClient.close();
 }
 run();
