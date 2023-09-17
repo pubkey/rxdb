@@ -32,7 +32,6 @@ import {
     isMaybeReadonlyArray,
     lastOfArray,
     now,
-    promiseWait,
     requestIdlePromise,
     RX_META_LWT_MINIMUM
 } from '../../plugins/utils';
