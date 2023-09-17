@@ -545,7 +545,7 @@
     "socket.io": "4.7.2",
     "source-map-support": "0.5.21",
     "stream": "0.0.2",
-    "terser": "5.19.2",
+    "terser": "5.19.4",
     "terser-webpack-plugin": "5.3.9",
     "ts-loader": "9.4.4",
     "ts-mocha": "10.0.0",
