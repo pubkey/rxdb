@@ -326,6 +326,7 @@
     "test:fast:loop:lokijs": "npm run test:fast:lokijs && npm run test:fast:loop:lokijs",
     "test:fast:loop:memory": "npm run test:fast:memory && npm run test:fast:loop:memory",
     "test:fast:loop:dexie": "npm run test:fast:dexie && npm run test:fast:loop:dexie",
+    "test:fast:loop:mongodb": "npm run test:fast:mongodb && npm run test:fast:loop:mongodb",
     "test:node": "npm run test:node:lokijs && npm run test:node:dexie",
     "test:node:memory": "npm run transpile && cross-env DEFAULT_STORAGE=memory mocha --expose-gc --config ./config/.mocharc.js ./test_tmp/unit.test.js",
     "test:node:memory-validation": "npm run transpile && cross-env DEFAULT_STORAGE=memory-validation mocha --expose-gc --config ./config/.mocharc.js ./test_tmp/unit.test.js",

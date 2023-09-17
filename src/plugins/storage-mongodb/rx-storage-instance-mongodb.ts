@@ -33,6 +33,7 @@ import {
     lastOfArray,
     now,
     promiseWait,
+    requestIdlePromise,
     RX_META_LWT_MINIMUM
 } from '../../plugins/utils';
 import {
@@ -458,7 +459,8 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
     }
 
     async close(): Promise<void> {
-        await promiseWait(0); // TODO without this next-tick we have random fails in the tests
+        // TODO without this next-tick we have random fails in the tests
+        await requestIdlePromise(200);
 
         if (this.closed) {
             return Promise.reject(new Error('already closed'));
