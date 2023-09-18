@@ -48,7 +48,7 @@ export async function setCheckpoint(state, direction, checkpoint) {
       _rev: getDefaultRevision()
     };
     newDoc.id = getComposedPrimaryKeyOfDocumentData(state.input.metaInstance.schema, newDoc);
-    while (true) {
+    while (!state.events.canceled.getValue()) {
       /**
        * Instead of just storing the new checkpoint,
        * we have to stack up the checkpoint with the previous one.

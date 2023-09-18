@@ -1413,7 +1413,20 @@
             
         </li>
     
-        <li class="chapter " data-level="1.11.9" data-path="rx-storage-foundationdb.html">
+        <li class="chapter " data-level="1.11.9" data-path="rx-storage-mongodb.html">
+            
+                <a href="rx-storage-mongodb.html">
+            
+                    
+                    RxStorage MongoDB
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.11.10" data-path="rx-storage-foundationdb.html">
             
                 <a href="rx-storage-foundationdb.html">
             
@@ -1426,7 +1439,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.11.10" data-path="rx-storage-worker.html">
+        <li class="chapter " data-level="1.11.11" data-path="rx-storage-worker.html">
             
                 <a href="rx-storage-worker.html">
             
@@ -1439,7 +1452,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.11.11" data-path="rx-storage-shared-worker.html">
+        <li class="chapter " data-level="1.11.12" data-path="rx-storage-shared-worker.html">
             
                 <a href="rx-storage-shared-worker.html">
             
@@ -1452,7 +1465,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.11.12" data-path="rx-storage-remote.html">
+        <li class="chapter " data-level="1.11.13" data-path="rx-storage-remote.html">
             
                 <a href="rx-storage-remote.html">
             
@@ -1465,7 +1478,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.11.13" data-path="rx-storage-memory-synced.html">
+        <li class="chapter " data-level="1.11.14" data-path="rx-storage-memory-synced.html">
             
                 <a href="rx-storage-memory-synced.html">
             
@@ -1478,7 +1491,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.11.14" data-path="rx-storage-sharding.html">
+        <li class="chapter " data-level="1.11.15" data-path="rx-storage-sharding.html">
             
                 <a href="rx-storage-sharding.html">
             
@@ -1491,7 +1504,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.11.15" data-path="rx-storage-localstorage-meta-optimizer.html">
+        <li class="chapter " data-level="1.11.16" data-path="rx-storage-localstorage-meta-optimizer.html">
             
                 <a href="rx-storage-localstorage-meta-optimizer.html">
             
@@ -1504,7 +1517,7 @@
             
         </li>
     
-        <li class="chapter " data-level="1.11.16" data-path="electron.html">
+        <li class="chapter " data-level="1.11.17" data-path="electron.html">
             
                 <a href="electron.html#rxstorage-electron-ipcrenderer--ipcmain">
             
@@ -1695,7 +1708,7 @@
                 <a href="encryption.html">
             
                     
-                    Encryption
+                    Encrypted Storage
             
                 </a>
             
@@ -2575,7 +2588,7 @@ The value of the primary key of the document must be a <code>string</code>, uniq
       ],
       <span class="hljs-comment">// separator which is used to concat the fields values.</span>
       separator: <span class="hljs-string">&apos;|&apos;</span>
-  }
+  },
   type: <span class="hljs-string">&apos;object&apos;</span>,
   properties: {
       id: {
@@ -2639,7 +2652,7 @@ is able to know the maximum string representation length of a field, which is ne
       },
       active: {
           type: <span class="hljs-string">&apos;boolean&apos;</span>
-      }
+      },
       familyName: {
           type: <span class="hljs-string">&apos;string&apos;</span>
       },
@@ -2649,8 +2662,8 @@ is able to know the maximum string representation length of a field, which is ne
           <span class="hljs-comment">// number fields that are used in an index, must have set minimum, maximum and multipleOf</span>
           minimum: <span class="hljs-number">0</span>,
           maximum: <span class="hljs-number">100000</span>,
-          multipleOf: <span class="hljs-string">&apos;0.01&apos;</span>
-      }
+          multipleOf: <span class="hljs-number">0.01</span>
+      },
       creditCards: {
           type: <span class="hljs-string">&apos;array&apos;</span>,
           items: {

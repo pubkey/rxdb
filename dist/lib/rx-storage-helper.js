@@ -132,7 +132,7 @@ bulkWriteRows, context) {
   var bulkInsertDocs = [];
   var bulkUpdateDocs = [];
   var errors = {};
-  var changedDocumentIds = [];
+  var changeByDocId = new Map();
   var eventBulkId = (0, _utils.randomCouchString)(10);
   var eventBulk = {
     id: eventBulkId,
@@ -194,8 +194,7 @@ bulkWriteRows, context) {
         }
       }
       if (!insertedIsDeleted) {
-        changedDocumentIds.push(docId);
-        eventBulk.events.push({
+        var event = {
           eventId: getUniqueDeterministicEventKey(eventBulkId, rowId, docId, writeRow),
           documentId: docId,
           operation: 'INSERT',
@@ -203,7 +202,9 @@ bulkWriteRows, context) {
           previousDocumentData: hasAttachments && writeRow.previous ? stripAttachmentsDataFromDocument(writeRow.previous) : writeRow.previous,
           startTime,
           endTime: (0, _utils.now)()
-        });
+        };
+        changeByDocId.set(docId, event);
+        eventBulk.events.push(event);
       }
     } else {
       // update existing document
@@ -318,8 +319,7 @@ bulkWriteRows, context) {
           }
         });
       }
-      changedDocumentIds.push(docId);
-      eventBulk.events.push({
+      var _event = {
         eventId: getUniqueDeterministicEventKey(eventBulkId, rowId, docId, writeRow),
         documentId: docId,
         documentData: eventDocumentData,
@@ -327,7 +327,9 @@ bulkWriteRows, context) {
         operation: operation,
         startTime,
         endTime: (0, _utils.now)()
-      });
+      };
+      changeByDocId.set(docId, _event);
+      eventBulk.events.push(_event);
     }
   };
   for (var rowId = 0; rowId < rowAmount; rowId++) {
@@ -338,7 +340,7 @@ bulkWriteRows, context) {
     bulkUpdateDocs,
     newestRow,
     errors,
-    changedDocumentIds,
+    changeByDocId,
     eventBulk,
     attachmentsAdd,
     attachmentsRemove,

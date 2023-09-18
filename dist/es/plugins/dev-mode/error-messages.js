@@ -60,6 +60,7 @@ export var ERROR_MESSAGES = {
   // removed in 14.0.0 - PouchDB RxStorage is removed DB10: 'createRxDatabase(): To use leveldown-adapters, you have to add the leveldb-plugin. Use addPouchPlugin(require(\'pouchdb-adapter-leveldb\'));',
   DB11: 'createRxDatabase(): Invalid db-name, folder-paths must not have an ending slash',
   DB12: 'RxDatabase.addCollections(): could not write to internal store',
+  DB13: 'createRxDatabase(): Invalid db-name or collection name, name contains the dollar sign',
   // rx-collection
   COL1: 'RxDocument.insert() You cannot insert an existing document',
   COL2: 'RxCollection.insert() fieldName ._id can only be used as primaryKey',
