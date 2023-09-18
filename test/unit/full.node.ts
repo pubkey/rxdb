@@ -33,7 +33,7 @@ const {
 } = require('../../plugins/replication');
 import type {
     RxJsonSchema,
-} from '../../';
+} from '../../dist/es/index.js';
 
 const schema: RxJsonSchema<{ passportId: string; firstName: string; lastName: string; }> = {
     title: 'human schema',

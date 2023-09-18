@@ -11,7 +11,7 @@ import {
 } from '../../plugins/replication-websocket';
 import {
     RxCollection
-} from '../../';
+} from '../../dist/es/index.js';
 import { nextPort } from '../helper/port-manager';
 import { humanWithTimestamp } from '../helper/schemas';
 

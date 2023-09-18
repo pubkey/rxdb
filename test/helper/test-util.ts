@@ -1,6 +1,6 @@
 import type { Func } from 'mocha';
 import assert from 'assert';
-import { RxCollection } from '../../';
+import { RxCollection } from '../../dist/es/index.js';
 import { RxReplicationState } from '../../plugins/replication';
 
 export function testMultipleTimes(times: number, title: string, test: Func) {

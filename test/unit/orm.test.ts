@@ -7,7 +7,7 @@ import {
     randomCouchString,
     RxCollection,
     RxJsonSchema
-} from '../../';
+} from '../../dist/es/index.js';
 
 
 import * as schemas from '../helper/schemas';

@@ -33,7 +33,7 @@ import {
     getFromMapOrThrow,
     RxCollectionCreator,
     parseRevision
-} from '../../';
+} from '../../dist/es/index.js';
 
 import { RxDBUpdatePlugin } from '../../plugins/update';
 addRxPlugin(RxDBUpdatePlugin);

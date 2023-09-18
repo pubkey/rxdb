@@ -380,8 +380,8 @@
     "lint:debug:files": "DEBUG=eslint:cli-engine eslint --ext .js,.ts,.json .",
     "lint:debug:time": "TIMING=1 eslint --ext .js,.ts,.json .",
     "check-types": "tsc",
-    "transpile": "npm run build:version && node scripts/transpile.js",
-    "build:version": "node ./scripts/update-version-variable.js",
+    "transpile": "npm run build:version && node scripts/transpile.cjs",
+    "build:version": "node ./scripts/update-version-variable.mjs",
     "build:es": "npm run build:version && rimraf -rf dist/es && cross-env NODE_ENV=es6 babel src --out-dir dist/es --source-maps --extensions \".ts,.js\"",
     "build:types": "npm run build:version && rimraf -rf ./dist/types && tsc --project ./config/tsconfig.types.json && cp -r ./src/types ./dist/types/types",
     "build": "npm run clear && npm run build:version && concurrently \"npm run transpile\" \"npm run build:es\" \"npm run build:types\" \"npm run build:plugins\" && browserify dist/lib/browserify.index.js > dist/rxdb.browserify.js && terser --compress --mangle --output dist/rxdb.browserify.min.js -- dist/rxdb.browserify.js",
@@ -403,7 +403,12 @@
     "disc": "npm run transpile && npm run build:es && cross-env NODE_ENV=disc webpack --config ./config/webpack.config.js",
     "preversion": "npm run lint && npm run test",
     "dev": "watch 'npm run test:node:memory' src/ test/",
-    "dev:example": "watch 'npm run transpile:src && echo \"done\"' src/ test/"
+    "dev:example": "watch 'npm run transpile:src && echo \"done\"' src/ test/",
+    "bun": "npm run transpile && cross-env DEFAULT_STORAGE=memory NODE_ENV=fast bun run ./node_modules/mocha/bin/mocha test_tmp/unit.test.js",
+    "bun:perf": "npm run transpile && cross-env DEFAULT_STORAGE=memory bun run ./node_modules/mocha/bin/mocha ./test_tmp/performance.test.js",
+    "bun:perf2": "npm run transpile && cross-env DEFAULT_STORAGE=memory node ./node_modules/mocha/bin/mocha ./test_tmp/performance.test.js",
+    "bun2": "npm run transpile && cross-env DEFAULT_STORAGE=memory node node_modules/mocha/bin/mocha test_tmp/unit.test.js",
+    "bun3": "bun run ./node_modules/mocha/bin/mocha ./test.mjs"
   },
   "pre-commit": [
     "lint"
@@ -452,7 +457,6 @@
     "z-schema": "6.0.1"
   },
   "devDependencies": {
-    "@types/node": "18.17.11",
     "@babel/cli": "7.22.15",
     "@babel/core": "7.22.19",
     "@babel/plugin-external-helpers": "7.22.5",
@@ -478,6 +482,7 @@
     "@types/cors": "2.8.14",
     "@types/crypto-js": "4.1.2",
     "@types/mocha": "10.0.1",
+    "@types/node": "18.17.11",
     "@types/pako": "2.0.0",
     "@types/request": "2.48.8",
     "@types/request-promise-native": "1.0.18",
@@ -489,6 +494,7 @@
     "babel-plugin-transform-class-properties": "6.24.1",
     "brfs": "2.0.2",
     "browserify": "17.0.0",
+    "bun-types": "1.0.2",
     "child-process-promise": "2.2.1",
     "clone": "2.1.2",
     "concurrently": "8.2.1",

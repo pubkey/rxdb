@@ -18,7 +18,7 @@ import {
     ensureNotFalsy,
     getComposedPrimaryKeyOfDocumentData,
     getFromMapOrThrow
-} from '../../';
+} from '../../dist/es/index.js';
 
 import {
     encryptString,

@@ -7,7 +7,7 @@ import {
     createRxDatabase,
     randomCouchString,
     RxCollection
-} from '../../';
+} from '../../dist/es/index.js';
 
 import {
     getRxStorageMemory,

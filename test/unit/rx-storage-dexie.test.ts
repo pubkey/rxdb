@@ -10,7 +10,7 @@ import {
     randomCouchString,
     now,
     createRevision
-} from '../../';
+} from '../../dist/es/index.js';
 
 import {
     getDexieStoreSchema,

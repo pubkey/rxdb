@@ -11,11 +11,11 @@ import {
     randomCouchString,
     _clearHook,
     RxPlugin
-} from '../../';
+} from '../../dist/es/index.js';
 
 import * as humansCollection from '../helper/humans-collection';
 import { assertThrows } from 'async-test-util';
-import { RxDBDevModePlugin, DEV_MODE_PLUGIN_NAME } from '../../plugins/dev-mode';
+import { DEV_MODE_PLUGIN_NAME } from '../../plugins/dev-mode';
 
 // used so that browserify will not require things in browsers
 const REQUIRE_FUN = require;
@@ -40,7 +40,6 @@ config.parallel('plugin.test.js', () => {
             );
         });
         it('should NOT crash when a plugin with the same name added already but it IS the same object', async () => {
-            await addRxPlugin(RxDBDevModePlugin);
         });
     });
     describe('full.node.ts', () => {

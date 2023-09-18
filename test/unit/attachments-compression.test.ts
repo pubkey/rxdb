@@ -14,7 +14,7 @@ import {
     CompressionMode,
     b64EncodeUnicode,
     b64DecodeUnicode
-} from '../../';
+} from '../../dist/es/index.js';
 import { HumanDocumentType } from '../helper/schemas';
 
 import {

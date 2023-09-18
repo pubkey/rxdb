@@ -29,7 +29,7 @@ import {
     setCheckpoint,
     deepEqual,
     RxJsonSchema
-} from '../../';
+} from '../../dist/es/index.js';
 
 
 import {

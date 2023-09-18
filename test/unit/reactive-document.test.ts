@@ -14,7 +14,7 @@ import {
     randomCouchString,
     promiseWait,
     ensureNotFalsy
-} from '../../';
+} from '../../dist/es/index.js';
 
 import {
     first,

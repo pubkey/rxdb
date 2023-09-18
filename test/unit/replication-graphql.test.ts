@@ -28,8 +28,11 @@ import {
     ensureNotFalsy,
     RxReplicationWriteToMasterRow,
     ReplicationPullHandlerResult,
-    RxCollection
-} from '../../';
+    RxCollection,
+    addRxPlugin
+} from '../../dist/es/index.js';
+import { RxDBLeaderElectionPlugin } from '../../plugins/leader-election';
+addRxPlugin(RxDBLeaderElectionPlugin);
 
 import {
     replicateGraphQL,

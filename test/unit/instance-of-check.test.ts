@@ -8,7 +8,7 @@ import {
     isRxQuery,
     isRxDocument,
     isRxSchema
-} from '../../';
+} from '../../dist/es/index.js';
 
 config.parallel('instance-of-check.test.js', () => {
     it('positive', async () => {

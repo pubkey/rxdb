@@ -1,13 +1,13 @@
 /// <reference path="../../node_modules/@types/mocha/index.d.ts" />
-const {
-    detect
-} = require('detect-browser');
+/// <reference lib="dom" />
+/// <reference lib="dom.iterable" />
+const { detect } = require('detect-browser');
 import {
     enforceOptions as broadcastChannelEnforceOptions
 } from 'broadcast-channel';
 import * as path from 'path';
 import parallel from 'mocha.parallel';
-import { randomCouchString, RxStorage, RxStorageDefaultStatics, RxTestStorage } from '../../';
+import { randomCouchString, RxStorage, RxStorageDefaultStatics, RxTestStorage } from '../../dist/es/index.js';
 import { getRxStorageLoki } from '../../plugins/storage-lokijs';
 import {
     getRxStorageDexie
@@ -23,7 +23,11 @@ import {
 } from '../../plugins/encryption-crypto-js';
 
 
-export const ENV_VARIABLES = detect().name === 'node' ? process.env : (window as any).__karma__.config.env;
+console.log('AA:_');
+console.dir(detect);
+console.dir(detect());
+
+export const ENV_VARIABLES = typeof Bun !== 'undefined' || detect().name === 'node' ? process.env : (window as any).__karma__.config.env;
 
 function isFastMode(): boolean {
     try {
@@ -118,7 +122,7 @@ export function setDefaultStorage(storageKey: string) {
                 },
                 hasPersistence: true,
                 hasMultiInstance: false,
-                hasAttachments: true
+                hasAttachments: false
             };
             break;
         /**

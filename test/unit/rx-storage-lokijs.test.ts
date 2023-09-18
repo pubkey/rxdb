@@ -8,7 +8,7 @@ import {
     getPseudoSchemaForVersion,
     now,
     randomCouchString
-} from '../../';
+} from '../../dist/es/index.js';
 
 import {
     getRxStorageLoki,

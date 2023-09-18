@@ -11,9 +11,11 @@ import {
     createRxDatabase,
     RxCollection,
     randomCouchString,
-    createBlob
-} from '../../';
-
+    createBlob,
+    addRxPlugin
+} from '../../dist/es/index.js';
+import { RxDBDevModePlugin } from '../../dist/es/plugins/dev-mode';
+addRxPlugin(RxDBDevModePlugin);
 import AsyncTestUtil from 'async-test-util';
 import config, { getEncryptedStorage, getPassword } from './config';
 import { HumanDocumentType } from './../helper/schemas';
@@ -318,7 +320,7 @@ config.parallel('import-export.test.js', () => {
             await AsyncTestUtil.assertThrows(
                 () => db2.importJSON(json),
                 'RxError',
-                'create the collections'
+                '(JD1)'
             );
 
             // should work when the collection exists

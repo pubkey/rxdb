@@ -11,8 +11,10 @@ import {
     createRxSchema,
     RxJsonSchema,
     defaultHashSha256,
-} from '../../';
-
+    addRxPlugin
+} from '../../dist/es/index.js';
+import { RxDBQueryBuilderPlugin } from '../../dist/es/plugins/query-builder';
+addRxPlugin(RxDBQueryBuilderPlugin);
 
 config.parallel('population.test.js', () => {
     describe('createRxSchema', () => {

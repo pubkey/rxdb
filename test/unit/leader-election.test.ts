@@ -9,7 +9,7 @@ import {
     createRxDatabase,
     randomCouchString,
     addRxPlugin,
-} from '../../';
+} from '../../dist/es/index.js';
 
 import {
     RxDBLeaderElectionPlugin

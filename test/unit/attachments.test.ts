@@ -21,7 +21,7 @@ import {
     createBlobFromBase64,
     createBlob,
     blobToString
-} from '../../';
+} from '../../dist/es/index.js';
 import { HumanDocumentType } from '../helper/schemas';
 import { RxDocumentWriteData } from '../../src/types';
 

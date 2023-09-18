@@ -15,7 +15,7 @@ import {
     RxCollection,
     defaultHashSha256,
     ensureNotFalsy
-} from '../../';
+} from '../../dist/es/index.js';
 
 import {
     replicateP2P,

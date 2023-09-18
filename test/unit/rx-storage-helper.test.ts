@@ -8,7 +8,7 @@ import {
     categorizeBulkWriteRows,
     getPrimaryFieldOfPrimaryKey,
     BulkWriteRow
-} from '../../';
+} from '../../dist/es/index.js';
 import * as schemas from '../helper/schemas';
 import {
     EXAMPLE_REVISION_1

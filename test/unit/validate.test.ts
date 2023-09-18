@@ -17,7 +17,7 @@ import {
     RxDocumentData,
     RxStorageInstance,
     BulkWriteRow
-} from '../../';
+} from '../../dist/es/index.js';
 
 import { wrappedValidateZSchemaStorage } from '../../plugins/validate-z-schema';
 import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv';

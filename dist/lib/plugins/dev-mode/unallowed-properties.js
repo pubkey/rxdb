@@ -24,6 +24,11 @@ function ensureCollectionNameValid(args) {
 }
 function ensureDatabaseNameIsValid(args) {
   validateDatabaseName(args.name);
+  if (args.name.includes('$')) {
+    throw (0, _rxError.newRxError)('DB13', {
+      name: args.name
+    });
+  }
 
   /**
    * The server-plugin has problems when a path with and ending slash is given

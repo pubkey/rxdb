@@ -15,7 +15,7 @@ import config from './config';
 import {
     createRxDatabase,
     randomCouchString
-} from '../../';
+} from '../../dist/es/index.js';
 
 describe('bug-report.test.js', () => {
     it('should fail because it reproduces the bug', async () => {

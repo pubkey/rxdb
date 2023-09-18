@@ -22,7 +22,7 @@ import {
     fillWithDefaultSettings,
     fillObjectWithDefaults,
     defaultHashSha256
-} from '../../';
+} from '../../dist/es/index.js';
 
 config.parallel('rx-schema.test.js', () => {
     describe('static', () => {

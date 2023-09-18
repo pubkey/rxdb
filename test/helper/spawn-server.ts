@@ -4,7 +4,7 @@
  */
 
 import { randomString } from 'async-test-util';
-import { PROMISE_RESOLVE_VOID } from '../../';
+import { PROMISE_RESOLVE_VOID } from '../../dist/es/index.js';
 import { getFetchWithCouchDBAuthorization } from '../../plugins/replication-couchdb';
 import { ENV_VARIABLES } from '../unit/config';
 import { nextPort } from './port-manager';

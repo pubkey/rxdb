@@ -17,7 +17,7 @@ import {
     RxDatabase,
     RxDocument,
     ensureNotFalsy,
-} from '../../';
+} from '../../dist/es/index.js';
 
 import * as schemas from './../helper/schemas';
 import * as schemaObjects from './../helper/schema-objects';

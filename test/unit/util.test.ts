@@ -30,7 +30,7 @@ import config from './config';
 import {
     validateDatabaseName,
     deepFreezeWhenDevMode
-} from '../../plugins/dev-mode';
+} from '../../dist/es/plugins/dev-mode';
 import { EXAMPLE_REVISION_1 } from '../helper/revisions';
 
 import { BIG_BASE64 } from '../helper/big-base64';

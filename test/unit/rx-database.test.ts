@@ -9,7 +9,7 @@ import {
     RxDatabase,
     isRxDatabaseFirstTimeInstantiated,
     defaultHashSha256
-} from '../../';
+} from '../../dist/es/index.js';
 
 import AsyncTestUtil from 'async-test-util';
 import * as schemas from '../helper/schemas';

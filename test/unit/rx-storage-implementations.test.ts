@@ -31,13 +31,12 @@ import {
     getSortComparator,
     getQueryMatcher,
     getFromMapOrCreate
-} from '../../';
+} from '../../dist/es/index.js';
 import Ajv from 'ajv';
 import {
     getCompressionStateByRxJsonSchema
 } from '../../plugins/key-compression';
 import * as schemas from '../helper/schemas';
-import { RxDBQueryBuilderPlugin } from '../../plugins/query-builder';
 import {
     clone,
     randomString,
@@ -64,7 +63,6 @@ import {
 } from '../helper/revisions';
 import { compressObject } from 'jsonschema-key-compression';
 
-addRxPlugin(RxDBQueryBuilderPlugin);
 
 declare type TestDocType = { key: string; value: string; };
 declare type OptionalValueTestDoc = { key: string; value?: string; };

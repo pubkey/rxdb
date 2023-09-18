@@ -42,6 +42,7 @@ export declare const ERROR_MESSAGES: {
     DB8: string;
     DB11: string;
     DB12: string;
+    DB13: string;
     COL1: string;
     COL2: string;
     COL3: string;

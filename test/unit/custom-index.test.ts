@@ -18,7 +18,7 @@ import {
     getIndexStringLength,
     getPrimaryKeyFromIndexableString,
     ensureNotFalsy
-} from '../../';
+} from '../../dist/es/index.js';
 import { EXAMPLE_REVISION_1 } from '../helper/revisions';
 import * as schemas from '../helper/schemas';
 import * as schemaObjects from '../helper/schema-objects';

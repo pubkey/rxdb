@@ -12,7 +12,7 @@ import {
     MigrationStrategies,
     RxAttachmentCreator,
     RxStorage
-} from '../../';
+} from '../../dist/es/index.js';
 
 import { HumanDocumentType } from './schemas';
 

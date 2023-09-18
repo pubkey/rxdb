@@ -4,7 +4,7 @@ import { RxDocumentMeta } from './rx-document';
 import { RxStorageWriteError } from './rx-error';
 import { MangoQuery } from './rx-query';
 import { RxJsonSchema } from './rx-schema';
-import { ById, Override, StringKeys } from './util';
+import { ById, Override } from './util';
 
 /**
  * The document data how it comes out of the storage instance.
@@ -307,13 +307,7 @@ export type RxStorageDefaultCheckpoint = {
 export type CategorizeBulkWriteRowsOutput<RxDocType> = {
     bulkInsertDocs: BulkWriteRowProcessed<RxDocType>[];
     bulkUpdateDocs: BulkWriteRowProcessed<RxDocType>[];
-    /**
-     * Ids of all documents that are changed
-     * and so their change must be written into the
-     * sequences table so that they can be fetched via
-     * RxStorageInstance().getChangedDocumentsSince().
-     */
-    changedDocumentIds: RxDocType[StringKeys<RxDocType>][];
+    changeByDocId: Map<string, RxStorageChangeEvent<RxDocumentData<RxDocType>>>;
     errors: ById<RxStorageWriteError<RxDocType>>;
     eventBulk: EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, any>;
     attachmentsAdd: {

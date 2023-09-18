@@ -14,7 +14,7 @@ import {
     isRxDocument,
     promiseWait,
     randomCouchString
-} from '../../';
+} from '../../dist/es/index.js';
 
 import {
     filter,

@@ -12,7 +12,7 @@ import {
     ensureNotFalsy,
     RxLocalDocument,
     RxCollection
-} from '../../';
+} from '../../dist/es/index.js';
 
 
 import { RxDBLocalDocumentsPlugin } from '../../plugins/local-documents';

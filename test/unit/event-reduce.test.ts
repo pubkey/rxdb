@@ -9,7 +9,7 @@ import {
     RxCollection,
     RxDocument,
     MangoQuery
-} from '../../';
+} from '../../dist/es/index.js';
 
 import {
     wrappedKeyCompressionStorage

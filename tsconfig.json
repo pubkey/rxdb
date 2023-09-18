@@ -21,10 +21,16 @@
          * @link https://spblog.net/post/2018/10/26/TypeScript-Tips-How-to-reduce-the-size-of-a-bundle
          */
         "importHelpers": true,
-        "typeRoots": [
-            "./src/types/modules"
+        "lib": [
+            "dom"
         ],
-        "types": []
+        "typeRoots": [
+            "./src/types/modules",
+            "node_modules"
+        ],
+        "types": [
+            "bun-types"
+        ]
     },
     "formatCodeOptions": {
         "indentSize": 2,
