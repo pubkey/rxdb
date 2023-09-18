@@ -13,7 +13,7 @@
   "devDependencies": {
     "@rollup/plugin-commonjs": "24.1.0",
     "@rollup/plugin-node-resolve": "15.2.1",
-    "async-test-util": "2.1.0",
+    "async-test-util": "2.1.1",
     "concurrently": "8.2.1",
     "rollup": "3.28.1",
     "rollup-plugin-css-only": "4.3.0",
