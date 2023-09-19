@@ -11,6 +11,7 @@
         }
 
         #logo,
+        #mini,
         #logo-dark {
             height: 200px;
             margin-top: 100px;
@@ -27,6 +28,7 @@
         #text,
         #subtext,
         #text-dark,
+        #mini-dark,
         #subtext-dark {
             height: 200px;
             margin-top: 100px;
@@ -50,13 +52,14 @@
         <div id="text-dark"></div>
         <div id="subtext-dark"></div>
         <div id="logo-dark"></div>
+        <div id="mini-dark"></div>
     </div>
 
     <!-- Show on white background -->
     <div id="text"></div>
     <div id="subtext"></div>
     <div id="logo"></div>
-
+    <div id="mini"></div>
 </body>
 <script>
     renderLogo('#logo', 'no-text');
@@ -65,6 +68,8 @@
     renderLogo('#logo-dark', 'no-text');
     renderLogo('#text-dark', 'normal');
     renderLogo('#subtext-dark', 'subtext');
+    renderLogo('#mini-dark', 'mini');
+    renderLogo('#mini', 'mini');
 </script>
 
 

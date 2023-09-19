@@ -45,7 +45,10 @@ const modes = [
 
 window.renderLogo = async function (selector, mode) {
     let strokeWidth = 26;
-    if (mode === 'subtext') {
+    if (
+        mode === 'subtext' ||
+        mode === 'mini'
+    ) {
         strokeWidth = 42;
     }
 
@@ -59,7 +62,7 @@ window.renderLogo = async function (selector, mode) {
     let viewBox = '-' + (strokeWidth / 2) + ' ' + (strokeWidth + 1) + ' ' + 220 + ' ' + viewBoxWidth;
     if (mode === 'normal') {
         viewBox = '-' + (strokeWidth / 2) + ' ' + (strokeWidth + 1) + ' ' + 421 + ' ' + viewBoxWidth;
-    } else if (mode === 'subtext') {
+    } else if (mode === 'subtext' || mode === 'mini') {
         viewBox = '-' + ((strokeWidth / 2) + 4) + ' ' + (strokeWidth - 7) + ' ' + 421 + ' ' + Math.ceil(viewBoxWidth * 1.05);
     }
 
@@ -163,13 +166,23 @@ window.renderLogo = async function (selector, mode) {
             });
         });
     }
+    if (mode === 'mini') {
+        const paths = await getMiniTextPaths();
+        paths.forEach(path => {
+            groups.forEach(g => {
+                g.append('svg:path')
+                    .attr('d', path)
+                    .attr('transform', 'scale(1,1.1755)')
+                    .attr('shape-rendering', 'geometricPrecision')
+                    .style('fill', color.middle);
+            });
+        });
+    }
     if (mode === 'subtext') {
         const pathBlocks = await getSubtextPathBlocks();
         pathBlocks.forEach((paths, idx) => {
             paths.forEach((path) => {
                 groups.forEach((g) => {
-                    console.log('color ' + idx);
-                    console.log(colorsByIndex[idx]);
                     g.append('svg:path')
                         .attr('d', path)
                         // .attr('transform', 'scale(1,1.1755)')
@@ -218,14 +231,32 @@ async function getTextPaths() {
     return data;
 }
 
+async function getMiniTextPaths() {
+    console.log('.getTextSVGPaths():');
+    const font = await loadFont();
+
+    console.log('font: ');
+    console.dir(font);
+
+    const paths = font.getPaths('RxDB', 205, (blockSize * 16) + 1.7, 160, {});
+    console.log('paths:');
+    console.dir(paths);
+
+    const data = paths.map(path => path.toPathData(5));
+    console.log('svg-data:');
+    console.dir(data);
+    return data;
+}
+
 async function getSubtextPathBlocks() {
     console.log('.getSubtextPaths():');
     const font = await loadFont();
 
     const fontSize = 93.2;
-    const paths1 = font.getPaths('RxDB', 200, (blockSize * 10) + 18, fontSize, {});
-    const paths2 = font.getPaths('JavaScript', 200, (blockSize * 16) + 8, fontSize, {});
-    const paths3 = font.getPaths('Database', 200, (blockSize * 21) + 12, fontSize, {});
+    const xPosition = 205;
+    const paths1 = font.getPaths('RxDB', xPosition, (blockSize * 10) + 18, fontSize, {});
+    const paths2 = font.getPaths('JavaScript', xPosition, (blockSize * 16) + 8, fontSize, {});
+    const paths3 = font.getPaths('Database', xPosition, (blockSize * 21) + 12, fontSize, {});
 
     return [
         paths1.map(path => path.toPathData(5)),
