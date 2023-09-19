@@ -58,22 +58,20 @@ describe('bug-report.test.js', () => {
                 },
                 tags: {
                     type: 'object',
-                    additionalProperties: {
-                        $ref: '#/definitions/tag',
+                    patternProperties: {
+                        '.*': {
+                            type: 'object',
+                            properties: {
+                                created: {
+                                    type: 'integer',
+                                },
+                                name: {
+                                    type: 'string',
+                                },
+                            },
+                            required: ['created', 'name'],
+                        }
                     },
-                },
-            },
-            definitions: {
-                tag: {
-                    properties: {
-                        created: {
-                            type: 'integer',
-                        },
-                        name: {
-                            type: 'string',
-                        },
-                    },
-                    required: ['created', 'name'],
                 },
             },
         };
