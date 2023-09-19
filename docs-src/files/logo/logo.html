@@ -13,7 +13,6 @@
         #logo,
         #mini,
         #logo-dark {
-            height: 200px;
             margin-top: 100px;
             overflow: hidden;
             padding: 10px;
@@ -21,8 +20,16 @@
 
         svg {
             border-style: solid;
-            border-color: white;
-            border-width: 2px;
+            border-color: lightgray;
+            border-width: 1px;
+
+            /**
+             * Use this to make the viewbox visible
+             */
+            max-width: 200px;
+            margin-left: auto;
+            margin-right: auto;
+            display: block;
         }
 
         #text,
@@ -32,6 +39,7 @@
         #subtext-dark {
             height: 200px;
             margin-top: 100px;
+            margin-bottom: 100px;
             overflow: hidden;
             padding: 10px;
         }

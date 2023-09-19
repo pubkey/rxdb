@@ -62,14 +62,17 @@ window.renderLogo = async function (selector, mode) {
     let viewBox = '-' + (strokeWidth / 2) + ' ' + (strokeWidth + 1) + ' ' + 220 + ' ' + viewBoxWidth;
     if (mode === 'normal') {
         viewBox = '-' + (strokeWidth / 2) + ' ' + (strokeWidth + 1) + ' ' + 421 + ' ' + viewBoxWidth;
-    } else if (mode === 'subtext' || mode === 'mini') {
-        viewBox = '-' + ((strokeWidth / 2) + 4) + ' ' + (strokeWidth - 7) + ' ' + 421 + ' ' + Math.ceil(viewBoxWidth * 1.05);
+        // viewBox = '-21 35 697 334';
+    } else if (mode === 'subtext') {
+        viewBox = '-21 35 697 334';
+    } else if (mode === 'mini') {
+        viewBox = '-21 35 640 334';
+    } else if (mode === 'no-text') {
+        viewBox = '-13 27 216 318';
     }
 
 
     const svg = d3.select(selector).append('svg')
-        .attr('width', '100%')
-        .attr('height', '100%')
         .attr(':xmlns:dc', 'http://purl.org/dc/elements/1.1/')
         .attr(':xmlns:cc', 'http://creativecommons.org/ns#')
         .attr(':xmlns:rdf', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#')
