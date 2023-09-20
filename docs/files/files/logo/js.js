@@ -3,11 +3,15 @@ const opentype = require('opentype.js');
 const blockSize = 14;
 const squareHeight = 60;
 const squareWidth = 190;
-const strokeWidth = 26;
 const color = {
     top: '#e6008d',
     middle: '#8d2089',
     bottom: '#5f2688'
+};
+const colorsByIndex = {
+    0: color.top,
+    1: color.middle,
+    2: color.bottom
 };
 
 const blocks = [
@@ -32,18 +36,43 @@ const blocks = [
 
 
 
+const modes = [
+    'normal',
+    'no-text',
+    'mini',
+    'subtext'
+];
 
-window.renderLogo = function (selector, showText = true) {
+window.renderLogo = async function (selector, mode) {
+    let strokeWidth = 26;
+    if (
+        mode === 'subtext' ||
+        mode === 'mini'
+    ) {
+        strokeWidth = 42;
+    }
+
+    console.log('renderLogo(' + mode + ')');
+
+    if (!modes.includes(mode)) {
+        throw new Error('mode (' + mode + ') not known');
+    }
 
     const viewBoxWidth = 318;
     let viewBox = '-' + (strokeWidth / 2) + ' ' + (strokeWidth + 1) + ' ' + 220 + ' ' + viewBoxWidth;
-    if (showText) {
+    if (mode === 'normal') {
         viewBox = '-' + (strokeWidth / 2) + ' ' + (strokeWidth + 1) + ' ' + 421 + ' ' + viewBoxWidth;
+        // viewBox = '-21 35 697 334';
+    } else if (mode === 'subtext') {
+        viewBox = '-21 35 697 334';
+    } else if (mode === 'mini') {
+        viewBox = '-21 35 640 334';
+    } else if (mode === 'no-text') {
+        viewBox = '-13 27 216 318';
     }
 
+
     const svg = d3.select(selector).append('svg')
-        .attr('width', '100%')
-        .attr('height', '100%')
         .attr(':xmlns:dc', 'http://purl.org/dc/elements/1.1/')
         .attr(':xmlns:cc', 'http://creativecommons.org/ns#')
         .attr(':xmlns:rdf', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#')
@@ -128,15 +157,40 @@ window.renderLogo = function (selector, showText = true) {
 
 
     // TEXT
-    if (showText) {
-        getTextPaths(function (paths) {
-            paths.forEach(path => {
-                groups.forEach(g => {
+    if (mode === 'normal') {
+        const paths = await getTextPaths();
+        paths.forEach(path => {
+            groups.forEach(g => {
+                g.append('svg:path')
+                    .attr('d', path)
+                    .attr('transform', 'scale(1,1.1755)')
+                    .attr('shape-rendering', 'geometricPrecision')
+                    .style('fill', color.middle);
+            });
+        });
+    }
+    if (mode === 'mini') {
+        const paths = await getMiniTextPaths();
+        paths.forEach(path => {
+            groups.forEach(g => {
+                g.append('svg:path')
+                    .attr('d', path)
+                    .attr('transform', 'scale(1,1.1755)')
+                    .attr('shape-rendering', 'geometricPrecision')
+                    .style('fill', color.middle);
+            });
+        });
+    }
+    if (mode === 'subtext') {
+        const pathBlocks = await getSubtextPathBlocks();
+        pathBlocks.forEach((paths, idx) => {
+            paths.forEach((path) => {
+                groups.forEach((g) => {
                     g.append('svg:path')
                         .attr('d', path)
-                        .attr('transform', 'scale(1,1.1755)')
+                        // .attr('transform', 'scale(1,1.1755)')
                         .attr('shape-rendering', 'geometricPrecision')
-                        .style('fill', color.middle);
+                        .style('fill', colorsByIndex[idx]);
                 });
             });
         });
@@ -144,25 +198,72 @@ window.renderLogo = function (selector, showText = true) {
 
 };
 
+
+
+function loadFont() {
+    return new Promise((res, rej) => {
+        opentype.load('https://cdn.rawgit.com/google/fonts/278aaad9/ofl/kanit/Kanit-Bold.ttf', function (err, font) {
+            if (err) {
+                rej(err);
+            } else {
+                res(font);
+            }
+        });
+    });
+}
+
+
+
 /**
  * get array with path for each letter
- * @param {Function(string[])} cb
  */
-function getTextPaths(cb) {
+async function getTextPaths() {
     console.log('.getTextSVGPaths():');
-    opentype.load('https://cdn.rawgit.com/google/fonts/278aaad9/ofl/kanit/Kanit-Bold.ttf', function (err, font) {
-        if (err) alert('Could not load font: ' + err);
+    const font = await loadFont();
 
-        console.log('font: ');
-        console.dir(font);
+    console.log('font: ');
+    console.dir(font);
 
-        const paths = font.getPaths('RxDB', 200, (blockSize * 13) + 1.7, 79.1, {});
-        console.log('paths:');
-        console.dir(paths);
+    const paths = font.getPaths('RxDB', 200, (blockSize * 13) + 1.7, 79.1, {});
+    console.log('paths:');
+    console.dir(paths);
 
-        const data = paths.map(path => path.toPathData(5));
-        console.log('svg-data:');
-        console.dir(data);
-        cb(data);
-    });
+    const data = paths.map(path => path.toPathData(5));
+    console.log('svg-data:');
+    console.dir(data);
+    return data;
+}
+
+async function getMiniTextPaths() {
+    console.log('.getTextSVGPaths():');
+    const font = await loadFont();
+
+    console.log('font: ');
+    console.dir(font);
+
+    const paths = font.getPaths('RxDB', 205, (blockSize * 16) + 1.7, 160, {});
+    console.log('paths:');
+    console.dir(paths);
+
+    const data = paths.map(path => path.toPathData(5));
+    console.log('svg-data:');
+    console.dir(data);
+    return data;
+}
+
+async function getSubtextPathBlocks() {
+    console.log('.getSubtextPaths():');
+    const font = await loadFont();
+
+    const fontSize = 93.2;
+    const xPosition = 205;
+    const paths1 = font.getPaths('RxDB', xPosition, (blockSize * 10) + 18, fontSize, {});
+    const paths2 = font.getPaths('JavaScript', xPosition, (blockSize * 16) + 8, fontSize, {});
+    const paths3 = font.getPaths('Database', xPosition, (blockSize * 21) + 12, fontSize, {});
+
+    return [
+        paths1.map(path => path.toPathData(5)),
+        paths2.map(path => path.toPathData(5)),
+        paths3.map(path => path.toPathData(5))
+    ];
 }

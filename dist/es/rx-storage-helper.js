@@ -117,6 +117,7 @@ bulkWriteRows, context) {
     checkpoint: null,
     context
   };
+  var eventBulkEvents = eventBulk.events;
   var attachmentsAdd = [];
   var attachmentsRemove = [];
   var attachmentsUpdate = [];
@@ -181,7 +182,7 @@ bulkWriteRows, context) {
           endTime: now()
         };
         changeByDocId.set(docId, event);
-        eventBulk.events.push(event);
+        eventBulkEvents.push(event);
       }
     } else {
       // update existing document
@@ -306,7 +307,7 @@ bulkWriteRows, context) {
         endTime: now()
       };
       changeByDocId.set(docId, _event);
-      eventBulk.events.push(_event);
+      eventBulkEvents.push(_event);
     }
   };
   for (var rowId = 0; rowId < rowAmount; rowId++) {

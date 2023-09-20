@@ -65,7 +65,8 @@ async function blobToBase64String(blob) {
   if (blobType === '[object Uint8Array]') {
     blob = new Blob([blob]);
   }
-  var arrayBuffer = await fetch(URL.createObjectURL(blob)).then(res => res.arrayBuffer());
+  var fetchUrl = URL.createObjectURL(blob);
+  var arrayBuffer = await fetch(fetchUrl).then(res => res.arrayBuffer());
   return (0, _utilsBase.arrayBufferToBase64)(arrayBuffer);
 }
 function getBlobSize(blob) {

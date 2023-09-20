@@ -22,13 +22,13 @@ export var RxStorageInstanceMemory = /*#__PURE__*/function () {
   var _proto = RxStorageInstanceMemory.prototype;
   _proto.bulkWrite = function bulkWrite(documentWrites, context) {
     ensureNotRemoved(this);
+    var internals = this.internals;
+    var documentsById = this.internals.documents;
     var primaryPath = this.primaryPath;
-    var ret = {
-      success: {},
-      error: {}
-    };
-    var categorized = categorizeBulkWriteRows(this, primaryPath, this.internals.documents, documentWrites, context);
-    ret.error = categorized.errors;
+    var success = {};
+    var error = {};
+    var categorized = categorizeBulkWriteRows(this, primaryPath, documentsById, documentWrites, context);
+    error = categorized.errors;
 
     /**
      * Do inserts/updates
@@ -38,22 +38,22 @@ export var RxStorageInstanceMemory = /*#__PURE__*/function () {
     for (var i = 0; i < bulkInsertDocs.length; ++i) {
       var writeRow = bulkInsertDocs[i];
       var docId = writeRow.document[primaryPath];
-      putWriteRowToState(docId, this.internals, stateByIndex, writeRow, undefined);
-      ret.success[docId] = writeRow.document;
+      putWriteRowToState(docId, internals, stateByIndex, writeRow, undefined);
+      success[docId] = writeRow.document;
     }
     var bulkUpdateDocs = categorized.bulkUpdateDocs;
     for (var _i = 0; _i < bulkUpdateDocs.length; ++_i) {
       var _writeRow = bulkUpdateDocs[_i];
       var _docId = _writeRow.document[primaryPath];
-      putWriteRowToState(_docId, this.internals, stateByIndex, _writeRow, this.internals.documents.get(_docId));
-      ret.success[_docId] = _writeRow.document;
+      putWriteRowToState(_docId, internals, stateByIndex, _writeRow, documentsById.get(_docId));
+      success[_docId] = _writeRow.document;
     }
 
     /**
      * Handle attachments
      */
     if (this.schema.attachments) {
-      var attachmentsMap = this.internals.attachments;
+      var attachmentsMap = internals.attachments;
       categorized.attachmentsAdd.forEach(attachment => {
         attachmentsMap.set(attachmentMapKey(attachment.documentId, attachment.attachmentId), {
           writeData: attachment.attachmentData,
@@ -78,15 +78,19 @@ export var RxStorageInstanceMemory = /*#__PURE__*/function () {
         id: lastState[primaryPath],
         lwt: lastState._meta.lwt
       };
-      this.internals.changes$.next(categorized.eventBulk);
+      internals.changes$.next(categorized.eventBulk);
     }
-    return Promise.resolve(ret);
+    return Promise.resolve({
+      success,
+      error
+    });
   };
   _proto.findDocumentsById = function findDocumentsById(docIds, withDeleted) {
+    var documentsById = this.internals.documents;
     var ret = {};
     for (var i = 0; i < docIds.length; ++i) {
       var docId = docIds[i];
-      var docInDb = this.internals.documents.get(docId);
+      var docInDb = documentsById.get(docId);
       if (docInDb && (!docInDb._deleted || withDeleted)) {
         ret[docId] = docInDb;
       }
@@ -123,12 +127,13 @@ export var RxStorageInstanceMemory = /*#__PURE__*/function () {
     var rows = [];
     var done = false;
     while (!done) {
-      var currentDoc = docsWithIndex[indexOfLower];
-      if (!currentDoc || indexOfLower > indexOfUpper) {
+      var currentRow = docsWithIndex[indexOfLower];
+      if (!currentRow || indexOfLower > indexOfUpper) {
         break;
       }
-      if (!queryMatcher || queryMatcher(currentDoc.doc)) {
-        rows.push(currentDoc.doc);
+      var currentDoc = currentRow.doc;
+      if (!queryMatcher || queryMatcher(currentDoc)) {
+        rows.push(currentDoc);
       }
       if (rows.length >= skipPlusLimit && !mustManuallyResort || indexOfLower >= docsWithIndex.length) {
         done = true;
