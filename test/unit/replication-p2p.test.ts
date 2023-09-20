@@ -15,7 +15,7 @@ import {
     RxCollection,
     defaultHashSha256,
     ensureNotFalsy
-} from '../../';
+} from '../../plugins/core';
 
 import {
     replicateP2P,

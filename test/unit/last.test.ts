@@ -4,7 +4,7 @@ import {
     dbCount,
     BROADCAST_CHANNEL_BY_TOKEN,
     getFromMapOrThrow
-} from '../../';
+} from '../../plugins/core';
 import config from './config';
 
 import {

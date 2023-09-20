@@ -11,7 +11,7 @@ import {
     createRxSchema,
     RxJsonSchema,
     defaultHashSha256,
-} from '../../';
+} from '../../plugins/core';
 
 
 config.parallel('population.test.js', () => {

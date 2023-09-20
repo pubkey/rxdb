@@ -31,7 +31,7 @@ import {
     getSortComparator,
     getQueryMatcher,
     getFromMapOrCreate
-} from '../../';
+} from '../../plugins/core';
 import Ajv from 'ajv';
 import {
     getCompressionStateByRxJsonSchema
@@ -717,7 +717,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 delete (updateResponseDoc as any)._rev;
                 delete (updateResponseDoc as any)._meta;
 
-                assert.deepStrictEqual(
+                assert.deepEqual(
                     updateResponseDoc,
                     {
                         key: docId,

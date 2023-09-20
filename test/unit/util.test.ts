@@ -23,8 +23,9 @@ import {
     blobToBase64String,
     createBlobFromBase64,
     ParsedRegex,
-    parseRegex
-} from '../../';
+    parseRegex,
+    overwritable
+} from '../../plugins/core';
 import config from './config';
 
 import {
@@ -190,6 +191,14 @@ describe('util.test.js', () => {
         });
     });
     describe('blob util', () => {
+        /**
+         * Some runtimes like bun, do not support these blob transformings
+         * and therefore also do not support attachments.
+         * @link https://github.com/oven-sh/bun/issues/5645
+         */
+        if (!config.storage.hasAttachments) {
+            return;
+        }
         it('should be able to run all functions', async () => {
             const text = 'foobar';
             const blob = createBlob(text, 'plain/text');
@@ -271,6 +280,16 @@ describe('util.test.js', () => {
         });
     });
     describe('.deepFreezeWhenDevMode()', () => {
+        if (process.versions.bun) {
+            // TODO for somehow bun has no strict mode here
+            return;
+        }
+        it('should have enabled dev-mode', () => {
+            assert.strictEqual(
+                overwritable.isDevMode(),
+                true
+            );
+        });
         it('should not allow to mutate the object', () => {
             const obj = {
                 foo: 'bar'

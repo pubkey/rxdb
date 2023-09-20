@@ -6,7 +6,7 @@ import {
     ExtractDocumentTypeFromTypedRxJsonSchema,
     overwritable,
     flatClone
-} from '../../';
+} from '../../plugins/core';
 import {
     SimpleHumanV3DocumentType,
     HumanWithSubOtherDocumentType,

@@ -14,7 +14,7 @@ import {
     addRxPlugin,
     randomCouchString,
     RxCollection
-} from '../../';
+} from '../../plugins/core';
 
 import {
     mergeUrlQueryParams,

@@ -11,7 +11,7 @@ import { faker } from '@faker-js/faker';
 faker.seed(123);
 
 // add dev-mode plugin
-import { addRxPlugin } from '../../';
+import { addRxPlugin } from '../../plugins/core';
 import { RxDBDevModePlugin } from '../../plugins/dev-mode';
 addRxPlugin(RxDBDevModePlugin);
 
@@ -81,5 +81,21 @@ if (config.platform.name === 'firefox') {
 describe('init.test.js', () => {
     it('clear BroadcastChannel tmp folder', async () => {
         await clearNodeFolder();
+    });
+    it('must run in strict mode', () => {
+        return; // TODO enable this and make it work
+        /**
+         * Ensure we run in strict-mode, otherwise some tests
+         * will not run correctly
+         * @link https://stackoverflow.com/a/10480227/3443137
+         */
+        const isStrict = (function () {
+            // @ts-ignore
+            return !(this as any);
+        })();
+        if (!isStrict) {
+            throw new Error('Strict Mode not enabled');
+        }
+
     });
 });

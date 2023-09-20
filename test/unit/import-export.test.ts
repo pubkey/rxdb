@@ -12,7 +12,7 @@ import {
     RxCollection,
     randomCouchString,
     createBlob
-} from '../../';
+} from '../../plugins/core';
 
 import AsyncTestUtil from 'async-test-util';
 import config, { getEncryptedStorage, getPassword } from './config';

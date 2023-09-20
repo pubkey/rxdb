@@ -11,7 +11,7 @@ import {
     randomCouchString,
     _clearHook,
     RxPlugin
-} from '../../';
+} from '../../plugins/core';
 
 import * as humansCollection from '../helper/humans-collection';
 import { assertThrows } from 'async-test-util';

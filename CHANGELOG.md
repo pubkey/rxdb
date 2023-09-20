@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- Ensure the test suite run in the [bun runtime](https://bun.sh/)
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

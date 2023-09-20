@@ -3,7 +3,7 @@ import {
     randomCouchString,
     overwritable,
     requestIdlePromise
-} from '../';
+} from '../plugins/core';
 import * as assert from 'assert';
 import * as schemas from './helper/schemas';
 import * as schemaObjects from './helper/schema-objects';
@@ -190,7 +190,7 @@ describe('performance.test.ts', () => {
             docsAmount
         };
         Object.entries(totalTimes).forEach(([key, times]) => {
-            timeToLog[key] = averageOfTimeValues(times, 90);
+            timeToLog[key] = roundToTwo(averageOfTimeValues(times, 90));
         });
 
         console.log('Performance test for ' + perfStorage.description);
@@ -217,6 +217,9 @@ export function averageOfTimeValues(
     return total / useNumbers.length;
 }
 
+function roundToTwo(num: number) {
+    return +(Math.round(num + 'e+2' as any) + 'e-2');
+}
 
 async function awaitBetweenTest() {
     await requestIdlePromise();

@@ -68,7 +68,8 @@ export async function blobToBase64String(blob: Blob | string): Promise<string> {
         blob = new Blob([blob]);
     }
 
-    const arrayBuffer = await fetch(URL.createObjectURL(blob)).then(res => res.arrayBuffer());
+    const fetchUrl = URL.createObjectURL(blob);
+    const arrayBuffer = await fetch(fetchUrl).then(res => res.arrayBuffer());
     return arrayBufferToBase64(arrayBuffer);
 }
 

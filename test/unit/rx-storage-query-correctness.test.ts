@@ -15,7 +15,7 @@ import {
     getQueryMatcher,
     getSortComparator,
     createRxDatabase
-} from '../../';
+} from '../../plugins/core';
 import { EXAMPLE_REVISION_1 } from '../helper/revisions';
 import * as schemas from '../helper/schemas';
 import {

@@ -10,7 +10,7 @@ import {
     randomCouchString,
     now,
     createRevision
-} from '../../';
+} from '../../plugins/core';
 
 import {
     getDexieStoreSchema,

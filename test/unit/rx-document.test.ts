@@ -18,7 +18,7 @@ import {
     RxCollection,
     createBlob,
     defaultHashSha256
-} from '../../';
+} from '../../plugins/core';
 
 
 import { RxDBAttachmentsPlugin } from '../../plugins/attachments';

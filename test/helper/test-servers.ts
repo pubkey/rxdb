@@ -8,7 +8,7 @@ const SignalingServer = require('./signaling-server');
 const { startRemoteStorageServer } = require('./remote-storage-server');
 const {
     blobToBase64String
-} = require('../../');
+} = require('../../plugins/core');
 export const TEST_STATIC_FILE_SERVER_PORT = 18001;
 export function startTestServers() {
     const staticFilesPath = path.join(

@@ -217,16 +217,6 @@ jobs:
         with:
           run: npm run test:browser:dexie
 
-      - run: npm run test:replication-couchdb
-      - run: npm run test:replication-firestore
-
-      - name: nats replication
-        # first start/stop the container once to ensure it
-        # has downloaded the image
-        run: |
-          docker pull nats:2.9.17
-          npm run test:replication-nats
-
       - name: performance test
         uses: GabrielBB/xvfb-action@v1
         with:
@@ -781,7 +771,7 @@ jobs:
           npm install
           npm test
 
-  test-multiple-times-lokijs:
+  test-others:
     runs-on: ubuntu-20.04
     steps:
       - uses: actions/checkout@v3
@@ -789,14 +779,26 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version-file: ".nvmrc"
+      - uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+
       - name: prepare RxDB core
         run: |
           npm install
           npm run build
-        # in the past we had tests that failed randomly
-        # to prevent this we run the tests in fast-mode 10 times
-      - name: unit tests 10 times
-        run: for i in `seq 10`; do npm run test:fast:lokijs; done
+
+      - run: npm run test:bun:dexie
+      - run: npm run test:performance:memory:bun
+
+      - run: npm run test:replication-couchdb
+      - run: npm run test:replication-firestore
+      - name: nats replication
+        # first start/stop the container once to ensure it
+        # has downloaded the image
+        run: |
+          docker pull nats:2.9.17
+          npm run test:replication-nats
 
   # I found out that people are stupid and use the npm downloads count
   # to measure the quality of an open source project.

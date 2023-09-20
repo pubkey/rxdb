@@ -14,7 +14,7 @@ import {
     promiseWait,
     randomCouchString,
     RxChangeEvent
-} from '../../';
+} from '../../plugins/core';
 
 
 config.parallel('hooks.test.js', () => {
