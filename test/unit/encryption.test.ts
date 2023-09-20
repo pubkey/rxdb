@@ -18,7 +18,7 @@ import {
     ensureNotFalsy,
     getComposedPrimaryKeyOfDocumentData,
     getFromMapOrThrow
-} from '../../';
+} from '../../plugins/core';
 
 import {
     encryptString,

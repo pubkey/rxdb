@@ -14,7 +14,7 @@ import {
     INDEX_MAX,
     lastOfArray,
     INDEX_MIN
-} from '../../';
+} from '../../plugins/core';
 
 
 import type {

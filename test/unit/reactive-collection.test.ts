@@ -9,7 +9,7 @@ import {
     createRxDatabase,
     randomCouchString,
     RxChangeEvent
-} from '../../';
+} from '../../plugins/core';
 
 
 import AsyncTestUtil from 'async-test-util';

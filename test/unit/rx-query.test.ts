@@ -14,7 +14,7 @@ import {
     promiseWait,
     randomCouchString,
     ensureNotFalsy,
-} from '../../';
+} from '../../plugins/core';
 
 import { firstValueFrom } from 'rxjs';
 

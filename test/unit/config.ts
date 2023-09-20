@@ -7,8 +7,11 @@ import {
 } from 'broadcast-channel';
 import * as path from 'path';
 import parallel from 'mocha.parallel';
-import { randomCouchString, RxStorage, RxStorageDefaultStatics, RxTestStorage } from '../../';
 import { getRxStorageLoki } from '../../plugins/storage-lokijs';
+import {
+    randomCouchString,
+    RxStorage, RxStorageDefaultStatics, RxTestStorage
+} from '../../plugins/core';
 import {
     getRxStorageDexie
 } from '../../plugins/storage-dexie';
@@ -23,7 +26,7 @@ import {
 } from '../../plugins/encryption-crypto-js';
 
 
-export const ENV_VARIABLES = detect().name === 'node' ? process.env : (window as any).__karma__.config.env;
+export const ENV_VARIABLES = process.versions.bun || detect().name === 'node' ? process.env : (window as any).__karma__.config.env;
 
 function isFastMode(): boolean {
     try {

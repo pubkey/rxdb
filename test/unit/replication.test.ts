@@ -32,7 +32,7 @@ import {
     RxReplicationPullStreamItem,
     lastOfArray,
     RxJsonSchema
-} from '../../';
+} from '../../plugins/core';
 
 import {
     replicateRxCollection

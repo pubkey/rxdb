@@ -17,7 +17,7 @@ import {
     addRxPlugin,
     RxCollection,
     createBlob
-} from '../../';
+} from '../../plugins/core';
 
 import {
     _getOldCollections,

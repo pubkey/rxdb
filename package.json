@@ -70,6 +70,13 @@
       "es2015": "./dist/es/index.js",
       "default": "./dist/es/index.js"
     },
+    "./plugins/core": {
+      "types": "./dist/types/core/index.d.ts",
+      "node": "./dist/lib/core/index.js",
+      "require": "./dist/lib/core/index.js",
+      "es2015": "./dist/es/core/index.js",
+      "default": "./dist/es/core/index.js"
+    },
     "./plugins/utils": {
       "types": "./dist/types/plugins/utils/index.d.ts",
       "node": "./dist/lib/plugins/utils/index.js",
@@ -332,6 +339,7 @@
     "test:node:memory-validation": "npm run transpile && cross-env DEFAULT_STORAGE=memory-validation mocha --expose-gc --config ./config/.mocharc.js ./test_tmp/unit.test.js",
     "test:node:lokijs": "npm run transpile && cross-env DEFAULT_STORAGE=lokijs mocha --expose-gc --config ./config/.mocharc.js ./test_tmp/unit.test.js",
     "test:node:dexie": "npm run transpile && cross-env DEFAULT_STORAGE=dexie mocha --expose-gc --config ./config/.mocharc.js ./test_tmp/unit.test.js",
+    "test:bun:dexie": "npm run transpile && cross-env DEFAULT_STORAGE=dexie NODE_ENV=fast bun run ./node_modules/mocha/bin/mocha test_tmp/unit.test.js --bail",
     "test:node:foundationdb": "npm run transpile && cross-env DEFAULT_STORAGE=foundationdb mocha --expose-gc --config ./config/.mocharc.js ./test_tmp/unit.test.js",
     "test:node:mongodb": "npm run transpile && cross-env DEFAULT_STORAGE=mongodb mocha --expose-gc --config ./config/.mocharc.js ./test_tmp/unit.test.js",
     "test:node:remote": "npm run transpile && cross-env DEFAULT_STORAGE=remote mocha --expose-gc --config ./config/.mocharc.js ./test_tmp/unit.test.js",
@@ -361,6 +369,7 @@
     "test:performance:dexie": "npm run transpile && cross-env DEFAULT_STORAGE=dexie CI=true karma start ./config/karma.performance.conf.js --single-run",
     "test:performance:memory:browser": "npm run transpile && cross-env DEFAULT_STORAGE=memory CI=true karma start ./config/karma.performance.conf.js --single-run",
     "test:performance:memory:node": "npm run transpile && cross-env DEFAULT_STORAGE=memory mocha --config ./config/.mocharc.js ./test_tmp/performance.test.js --unhandled-rejections=strict --expose-gc",
+    "test:performance:memory:bun": "npm run transpile && cross-env DEFAULT_STORAGE=memory bun run ./node_modules/mocha/bin/mocha test_tmp/performance.test.js --bail",
     "test:performance:foundationdb": "npm run transpile && cross-env DEFAULT_STORAGE=foundationdb mocha --config ./config/.mocharc.js ./test_tmp/performance.test.js --unhandled-rejections=strict --expose-gc",
     "test:performance:mongodb": "npm run transpile && cross-env DEFAULT_STORAGE=mongodb mocha --config ./config/.mocharc.js ./test_tmp/performance.test.js --unhandled-rejections=strict --expose-gc",
     "test:performance:custom:browser": "npm run transpile && cross-env DEFAULT_STORAGE=custom CI=true karma start ./config/karma.performance.conf.js --single-run",

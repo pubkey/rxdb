@@ -14,7 +14,7 @@ import {
     randomCouchString,
     promiseWait,
     ensureNotFalsy
-} from '../../';
+} from '../../plugins/core';
 
 import {
     first,

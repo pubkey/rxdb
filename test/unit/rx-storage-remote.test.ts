@@ -4,7 +4,7 @@ import assert from 'assert';
 import config from './config';
 import {
     RxStorageDefaultStatics, createRxDatabase, fillWithDefaultSettings, randomCouchString
-} from '../../';
+} from '../../plugins/core';
 import { nextPort } from '../helper/port-manager';
 import * as humansCollections from '../helper/humans-collection';
 import * as schemaObjects from '../helper/schema-objects';

@@ -8,7 +8,7 @@ import config from './config';
 import * as schemaObjects from '../helper/schema-objects';
 import {
     addRxPlugin, createBlob
-} from '../../';
+} from '../../plugins/core';
 import { createAttachments } from '../helper/humans-collection';
 import {
     backupSingleDocument,

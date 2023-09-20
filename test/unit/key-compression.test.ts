@@ -12,7 +12,7 @@ import {
     RxJsonSchema,
     RxCollection,
     RxStorageInstance,
-} from '../../';
+} from '../../plugins/core';
 import * as schemaObjects from '../helper/schema-objects';
 import {
     wrappedKeyCompressionStorage

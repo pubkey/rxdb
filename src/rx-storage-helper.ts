@@ -188,6 +188,7 @@ export function categorizeBulkWriteRows<RxDocType>(
         checkpoint: null,
         context
     };
+    const eventBulkEvents = eventBulk.events;
 
     const attachmentsAdd: {
         documentId: string;
@@ -284,7 +285,7 @@ export function categorizeBulkWriteRows<RxDocType>(
                     endTime: now()
                 };
                 changeByDocId.set(docId, event);
-                eventBulk.events.push(event);
+                eventBulkEvents.push(event);
             }
         } else {
             // update existing document
@@ -437,7 +438,7 @@ export function categorizeBulkWriteRows<RxDocType>(
                 endTime: now()
             };
             changeByDocId.set(docId, event);
-            eventBulk.events.push(event);
+            eventBulkEvents.push(event);
         }
     }
 

@@ -20,7 +20,7 @@ const {
     isRxDocument,
     randomCouchString,
     addRxPlugin
-} = require('../../');
+} = require('../../plugins/core');
 const {
     RxDBLeaderElectionPlugin
 } = require('../../plugins/leader-election');
@@ -33,7 +33,7 @@ const {
 } = require('../../plugins/replication');
 import type {
     RxJsonSchema,
-} from '../../';
+} from '../../plugins/core';
 
 const schema: RxJsonSchema<{ passportId: string; firstName: string; lastName: string; }> = {
     title: 'human schema',

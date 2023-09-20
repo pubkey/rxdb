@@ -9,7 +9,7 @@ import {
     randomCouchString,
     addRxPlugin,
     RxCollection
-} from '../../';
+} from '../../plugins/core';
 
 import { HumanDocumentType } from '../helper/schemas';
 import { replicateRxCollection } from '../../plugins/replication';

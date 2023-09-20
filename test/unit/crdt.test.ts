@@ -18,7 +18,7 @@ import {
     rxStorageInstanceToReplicationHandler,
     RxReplicationWriteToMasterRow,
     defaultConflictHandler
-} from '../../';
+} from '../../plugins/core';
 
 
 

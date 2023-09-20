@@ -12,6 +12,7 @@ import {
 } from '../../rx-storage-helper';
 import type {
     BulkWriteRow,
+    ById,
     EventBulk,
     QueryMatcher,
     RxConflictResultionTask,
@@ -26,6 +27,7 @@ import type {
     RxStorageInstance,
     RxStorageInstanceCreationParams,
     RxStorageQueryResult,
+    RxStorageWriteError,
     StringKeys
 } from '../../types';
 import {
@@ -91,20 +93,21 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         context: string
     ): Promise<RxStorageBulkWriteResponse<RxDocType>> {
         ensureNotRemoved(this);
+        const internals = this.internals;
+        const documentsById = this.internals.documents;
         const primaryPath = this.primaryPath;
-        const ret: RxStorageBulkWriteResponse<RxDocType> = {
-            success: {},
-            error: {}
-        };
+
+        const success: RxDocumentDataById<RxDocType> = {};
+        let error: ById<RxStorageWriteError<RxDocType>> = {};
 
         const categorized = categorizeBulkWriteRows<RxDocType>(
             this,
             primaryPath as any,
-            this.internals.documents,
+            documentsById,
             documentWrites,
             context
         );
-        ret.error = categorized.errors;
+        error = categorized.errors;
 
         /**
          * Do inserts/updates
@@ -117,12 +120,12 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
             const docId = writeRow.document[primaryPath];
             putWriteRowToState(
                 docId as any,
-                this.internals,
+                internals,
                 stateByIndex,
                 writeRow,
                 undefined
             );
-            ret.success[docId as any] = writeRow.document;
+            success[docId as any] = writeRow.document;
         }
 
         const bulkUpdateDocs = categorized.bulkUpdateDocs;
@@ -131,19 +134,19 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
             const docId = writeRow.document[primaryPath];
             putWriteRowToState(
                 docId as any,
-                this.internals,
+                internals,
                 stateByIndex,
                 writeRow,
-                this.internals.documents.get(docId as any)
+                documentsById.get(docId as any)
             );
-            ret.success[docId as any] = writeRow.document;
+            success[docId as any] = writeRow.document;
         }
 
         /**
          * Handle attachments
          */
         if (this.schema.attachments) {
-            const attachmentsMap = this.internals.attachments;
+            const attachmentsMap = internals.attachments;
             categorized.attachmentsAdd.forEach(attachment => {
                 attachmentsMap.set(
                     attachmentMapKey(attachment.documentId, attachment.attachmentId),
@@ -177,19 +180,20 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
                 id: lastState[primaryPath],
                 lwt: lastState._meta.lwt
             };
-            this.internals.changes$.next(categorized.eventBulk);
+            internals.changes$.next(categorized.eventBulk);
         }
-        return Promise.resolve(ret);
+        return Promise.resolve({ success, error });
     }
 
     findDocumentsById(
         docIds: string[],
         withDeleted: boolean
     ): Promise<RxDocumentDataById<RxDocType>> {
+        const documentsById = this.internals.documents;
         const ret: RxDocumentDataById<RxDocType> = {};
         for (let i = 0; i < docIds.length; ++i) {
             const docId = docIds[i];
-            const docInDb = this.internals.documents.get(docId);
+            const docInDb = documentsById.get(docId);
             if (
                 docInDb &&
                 (
@@ -262,16 +266,17 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         let rows: RxDocumentData<RxDocType>[] = [];
         let done = false;
         while (!done) {
-            const currentDoc = docsWithIndex[indexOfLower];
+            const currentRow = docsWithIndex[indexOfLower];
             if (
-                !currentDoc ||
+                !currentRow ||
                 indexOfLower > indexOfUpper
             ) {
                 break;
             }
+            const currentDoc = currentRow.doc;
 
-            if (!queryMatcher || queryMatcher(currentDoc.doc)) {
-                rows.push(currentDoc.doc);
+            if (!queryMatcher || queryMatcher(currentDoc)) {
+                rows.push(currentDoc);
             }
 
             if (
