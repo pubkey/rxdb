@@ -13,7 +13,7 @@ export const TEST_STATIC_FILE_SERVER_PORT = 18001;
 export function startTestServers() {
     const staticFilesPath = path.join(
         __dirname,
-        '../../plugins/core',
+        '../../',
         'docs-src',
         'files'
     );
