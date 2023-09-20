@@ -1,6 +1,6 @@
 import type { Func } from 'mocha';
 import assert from 'assert';
-import { RxCollection } from '../../plugins/core';
+import { RxCollection, requestIdlePromise } from '../../plugins/core';
 import { RxReplicationState } from '../../plugins/replication';
 
 export function testMultipleTimes(times: number, title: string, test: Func) {
@@ -13,6 +13,7 @@ export async function ensureCollectionsHaveEqualState<RxDocType>(
     c1: RxCollection<RxDocType>,
     c2: RxCollection<RxDocType>
 ) {
+    await requestIdlePromise();
     const getJson = async (collection: RxCollection<RxDocType>) => {
         const docs = await collection.find().exec();
         return docs.map(d => d.toJSON());
