@@ -82,8 +82,8 @@ const querySub = query.$.subscribe(results => {
 });
 ```
 
-### NoSQL (JSON) documents are a better fit for UIs
-RxDB utilizes NoSQL (JSON) documents, which align naturally with UI development in JavaScript. JavaScript's native handling of JSON objects makes working with NoSQL documents more intuitive, simplifying UI-related operations.
+### NoSQL [JSON](./json-database.md) documents are a better fit for UIs
+RxDB utilizes NoSQL [JSON documents](./json-database.md), which align naturally with UI development in JavaScript. JavaScript's native handling of JSON objects makes working with NoSQL documents more intuitive, simplifying UI-related operations.
 
 ### NoSQL has better TypeScript support compared to SQL
 TypeScript is widely used in modern JavaScript development. [NoSQL databases](./in-memory-nosql-database.md), including RxDB, offer excellent TypeScript support, making it easier to build type-safe applications and leverage the benefits of static typing.

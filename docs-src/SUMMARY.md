@@ -199,6 +199,7 @@
     * [Data Base](./articles/data-base.md)
     * [localStorage](./articles/localstorage.md)
     * [Ionic Database](./articles/ionic-database.md)
+    * [JSON Database](./articles/json-database.md)
 
 * Deprecated
     * [RxStorage PouchDB](./rx-storage-pouchdb.md)

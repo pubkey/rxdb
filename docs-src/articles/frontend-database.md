@@ -71,7 +71,7 @@ RxDB is a powerful frontend JavaScript database that addresses the limitations o
 RxDB is designed and optimized for JavaScript applications. Built using JavaScript itself, RxDB offers seamless integration with JavaScript frameworks and libraries, allowing developers to leverage their existing JavaScript knowledge and skills.
 
 ### NoSQL (JSON) documents for UIs
-RxDB adopts a [NoSQL approach](./in-memory-nosql-database.md), using JSON documents as its primary data structure. This aligns well with the JavaScript ecosystem, as JavaScript natively works with JSON objects. By using NoSQL documents, RxDB provides a more natural and intuitive data model for UI-centric applications.
+RxDB adopts a [NoSQL approach](./in-memory-nosql-database.md), using [JSON documents as its primary data structure](./json-database.md). This aligns well with the JavaScript ecosystem, as JavaScript natively works with JSON objects. By using NoSQL documents, RxDB provides a more natural and intuitive data model for UI-centric applications.
 
 <p align="center">
   <img src="../files/no-sql.png" alt="NoSQL Documents" width="120" />
