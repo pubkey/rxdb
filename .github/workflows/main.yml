@@ -381,8 +381,7 @@ jobs:
       - name: measure build size
         run: npm run build:size
 
-      - name: test rollup build
-        run: npm run build:rollup
+      - run: npm run build:rollup
 
       - run: npm run docs:landingpage:build
 
