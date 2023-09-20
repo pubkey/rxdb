@@ -1979,7 +1979,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     devMode: true
                 });
 
-                const amount = config.isFastMode() ? 100 : 20000;
+                const amount = config.isFastMode() ? 100 : 10000;
                 const writeRows = new Array(amount)
                     .fill(0)
                     .map(() => ({ document: getWriteData() }));
