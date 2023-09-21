@@ -114,3 +114,8 @@ export async function startSignalingServer(port: number): Promise<string> {
 }
 ```
 
+
+## Storing replicated data encrypted on client device
+
+Storing replicated data encrypted on client devices using the RxDB Encryption Plugin is a pivotal step towards bolstering **data security** and **user privacy**.
+The P2P replication plugin seamlessly integrates with the [RxDB encryption plugins](./encryption.md), providing a robust solution for encrypting sensitive information before it's stored locally. By doing so, it ensures that even if unauthorized access to the device occurs, the data remains protected and unintelligible without the encryption key (or password). This approach is particularly vital in scenarios where user-generated content or confidential data is replicated across devices, as it empowers users with control over their own data while adhering to stringent security standards. [Read mor about the encryption plugins here](./encryption.md).
