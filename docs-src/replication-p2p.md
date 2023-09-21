@@ -21,7 +21,7 @@ P2P replication is a paradigm shift in data synchronization. Instead of relying 
 
 
 
-## Usaging the RxDB P2P Replication Plugin
+## Using the RxDB P2P Replication Plugin
 
 Before you use this plugin, make sure that you understand how [WebRTC works](https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API).
 
