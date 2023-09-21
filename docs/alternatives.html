@@ -2628,6 +2628,9 @@ The last commit to NeDB was in <strong>2016</strong>.</p>
 Compared to RxDB, Dexie.js does not support complex (MongoDB-like) queries and requires a lot of fiddling when a document range of a specific index must be fetched.
 Dexie.js is used by Whatsapp Web, Microsoft To Do and Github Desktop.</p>
 <p>RxDB supports using <a href="rx-storage-dexie.html">Dexie.js as RxStorage</a> which enhances IndexedDB with RxDB features like MongoDB-like queries etc.</p>
+<h3 id="lowdb">LowDB</h3>
+<p>LowDB is a small, local JSON database powered by the Lodash library. It is designed to be simple, easy to use, and straightforward. LowDB allows you to perform native JavaScript queries and persist data in a flat JSON file. Written in TypeScript, it&apos;s particularly well-suited for small projects, prototyping, or when you need a lightweight, file-based database.</p>
+<p>As an alternative to LowDB, <a href=".">RxDB</a> offers real-time reactivity, allowing developers to subscribe to database changes, a feature not natively available in LowDB. Additionally, RxDB provides robust <a href="rx-query.html">query capabilities</a>, including the ability to subscribe to query results for automatic UI updates. These features make RxDB a strong alternative to LowDB for more complex and dynamic applications.</p>
 <h3 id="mongodb-realm">MongoDB Realm</h3>
 <p>Originally Realm was a mobile database for Android and iOS. Later they added support for other languages and runtimes, also for JavaScript. 
 It was meant as replacement for SQLite but is more like an object store than a full SQL database.
