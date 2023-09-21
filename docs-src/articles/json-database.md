@@ -36,7 +36,35 @@ Compression storage for JSON documents is made effortless with RxDB's [key-compr
 Storing JSON documents inside of an application, can cause a problem when the format of the data changes. Instead of having a single server where the data must be migrated, many client devices are out there that have to run a migration.
 When your application's schema evolves, RxDB provides [migration strategies](../data-migration.md) to facilitate the transition, ensuring data consistency throughout schema updates.
 
-**JSONSchema Validation Plugins**: RxDB supports multiple JSONSchema validation [plugins](../schema-validation.md), guaranteeing that only valid data is stored in the database.
+**JSONSchema Validation Plugins**: RxDB supports multiple [JSONSchema validation plugins](../schema-validation.md), guaranteeing that only valid data is stored in the database. RxDB uses the JsonSchema standardization that you might know from other technologies like OpenAPI (aka Swagger).
+
+```javascript
+// RxDB Schema example
+const mySchema = {
+    version: 0,
+    primaryKey: 'id', // <- define the primary key for your documents
+    type: 'object',
+    properties: {
+        id: {
+            type: 'string',
+            maxLength: 100 // <- the primary key must have set maxLength
+        },
+        name: {
+            type: 'string',
+            maxLength: 100
+        },
+        done: {
+            type: 'boolean'
+        },
+        timestamp: {
+            type: 'date-time'
+        }
+    },
+    required: ['id', 'name', 'done', 'timestamp']
+}
+```
+
+
 
 ## Store JSON with RxDB in Browser Applications
 RxDB offers versatile storage solutions for browser-based applications:
@@ -60,6 +88,13 @@ Certainly! Let's delve deeper into the performance aspects of RxDB when it comes
 
 3. **Reduced Latency:** RxDB's streamlined data access mechanisms significantly reduce latency when working with JSON data. Whether you're reading from the database, making updates, or synchronizing data between clients and servers, RxDB's optimized operations help minimize the delays often associated with data access. Observed queris are optimized with the [EventReduce algorithm](https://github.com/pubkey/event-reduce) to provide nearly-instand UI updates on data changes.
 
+4. **RxStorage Layer**: Because RxDB allows you to swap out the storage layer. A storage with the most optimal performance can be chosen for each runtime while not touching other database code. Depending on the access patterns, you can pick exactly the storage that is best:
+
+<p align="center">
+  <img src="../files/rx-storage-performance-browser.png" alt="RxStorage performance - browser" width="700" />
+</p>
+
+
 ## RxDB in Node.js
 Node.js developers can also benefit from RxDB's capabilities. By integrating RxDB into your Node.js applications, you can harness the power of a NoSQL JSON database to efficiently manage your data on the server-side. RxDB's flexibility, performance, and essential features are equally valuable in server-side development. [Read more about RxDB+Node.js](../nodejs-database.md).
 
@@ -71,9 +106,6 @@ For mobile app developers working with React Native, RxDB offers a convenient so
 ## Using SQLite as a JSON Database
 In some cases, you might want to use SQLite as a backend storage solution for your JSON data. RxDB can be configured [to work with SQLite](../rx-storage-sqlite.md), providing the benefits of both a relational database system and JSON document storage. This hybrid approach can be advantageous when dealing with complex data relationships while retaining the flexibility of JSON data representation.
 
-
-## Follow up
-In conclusion, RxDB is a powerful tool for JavaScript developers who need to work with JSON data. Its flexibility, performance, and support for essential features make it a valuable asset for a wide range of applications, whether you're building web applications in Node.js, mobile apps in React Native, or hybrid solutions using SQLite. With RxDB, you have the means to efficiently manage and leverage JSON data, taking your applications to the next level of data-driven functionality.
 
 ## Follow Up
 To further explore RxDB and get started with using it in your frontend applications, consider the following resources:
