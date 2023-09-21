@@ -7,7 +7,7 @@ Traditionally, the synchronization process relies on **centralized servers** to 
 With the **RxDB P2P replication plugin** you can replicate the database state between your clients devices fully peer2peer over WebRTC.
 There is no need for a centralized server to store any of the users data like in a **master-slave** replication.
 Only a WebRTC signaling server is required to initially exchange the connection data between clients so that they can establish a WebRTC connection.
-The replication itself then runs with the [RxDB replication protocol](./replication.md). Because RxDB is a NoSQL database and because of the simlicity of its replication protocol, setting up a robust P2P replication is way easier compared to SQL server- or client databases.
+The replication itself then runs with the [RxDB replication protocol](./replication.md). Because RxDB is a NoSQL database and because of the simplicity of its replication protocol, setting up a robust P2P replication is way easier compared to SQL server- or client databases.
 
 
 
@@ -124,4 +124,4 @@ A **custom conflict handler** can be set up, which is a plain JavaScript functio
 ## Storing replicated data encrypted on client device
 
 Storing replicated data encrypted on client devices using the RxDB Encryption Plugin is a pivotal step towards bolstering **data security** and **user privacy**.
-The P2P replication plugin seamlessly integrates with the [RxDB encryption plugins](./encryption.md), providing a robust solution for encrypting sensitive information before it's stored locally. By doing so, it ensures that even if unauthorized access to the device occurs, the data remains protected and unintelligible without the encryption key (or password). This approach is particularly vital in scenarios where user-generated content or confidential data is replicated across devices, as it empowers users with control over their own data while adhering to stringent security standards. [Read mor about the encryption plugins here](./encryption.md).
+The P2P replication plugin seamlessly integrates with the [RxDB encryption plugins](./encryption.md), providing a robust solution for encrypting sensitive information before it's stored locally. By doing so, it ensures that even if unauthorized access to the device occurs, the data remains protected and unintelligible without the encryption key (or password). This approach is particularly vital in scenarios where user-generated content or confidential data is replicated across devices, as it empowers users with control over their own data while adhering to stringent security standards. [Read more about the encryption plugins here](./encryption.md).
