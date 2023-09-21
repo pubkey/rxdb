@@ -83,7 +83,7 @@
     "concurrently": "8.2.1",
     "copyfiles": "2.4.1",
     "local-web-server": "5.3.0",
-    "testcafe": "2.1.0",
+    "testcafe": "2.6.2",
     "ts-mocha": "10.0.0",
     "ts-node": "10.9.1",
     "tslint": "6.1.3",
