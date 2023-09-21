@@ -114,6 +114,12 @@ export async function startSignalingServer(port: number): Promise<string> {
 }
 ```
 
+## Conflict detection in P2P replication
+
+RxDB's conflict handling works by detecting and resolving conflicts that may arise when multiple clients in a decentralized database system attempt to modify the same data concurrently.
+A **custom conflict handler** can be set up, which is a plain JavaScript function. The conflict handler is run on each replicated document write and resolves the conflict if required. [Find out more about RxDB conflict handling here](https://rxdb.info/transactions-conflicts-revisions.html)
+
+
 
 ## Storing replicated data encrypted on client device
 
