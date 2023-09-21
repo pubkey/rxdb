@@ -1,4 +1,4 @@
-# Peer-to-Peer (P2P) Database Replication with the RxDB JavaScript Database (beta)
+# Peer-to-Peer (P2P) Replication with the RxDB JavaScript Database (beta)
 
 
 In the world of web and mobile development, data synchronization between clients and servers has always been a critical aspect of building real-time JavaScript applications.
