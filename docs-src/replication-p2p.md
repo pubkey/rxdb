@@ -1,19 +1,34 @@
-# Peer-to-Peer Replication (beta)
-
-This plugin allows you to replicate data between your clients devices fully P2P, **without a backend server**.
-It uses [WebRTC](https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API) to create a connection between the devices and then establishes a replication with the normal [RxDB replication protocol](./replication.md).
+# Peer-to-Peer (P2P) Database Replication with the RxDB JavaScript Database (beta)
 
 
+In the world of web and mobile development, data synchronization between clients and servers has always been a critical aspect of building real-time JavaScript applications.
+Traditionally, the synchronization process relies on **centralized servers** to manage and distribute data. However, Peer-to-Peer (P2P) replication with [WebRTC](https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API) is changing the game by allowing data to flow **directly between clients**, eliminating the need for a central server.
 
-## Usage
+With the **RxDB P2P replication plugin** you can replicate the database state between your clients devices fully peer2peer over WebRTC.
+There is no need for a centralized server to store any of the users data like in a **master-slave** replication.
+Only a WebRTC signaling server is required to initially exchange the connection data between clients so that they can establish a WebRTC connection.
+The replication itself then runs with the [RxDB replication protocol](./replication.md). Because RxDB is a NoSQL database and because of the simlicity of its replication protocol, setting up a robust P2P replication is way easier compared to SQL server- or client databases.
+
+
+
+## Understanding P2P Replication
+
+P2P replication is a paradigm shift in data synchronization. Instead of relying on a central server to manage data transfers between clients, it leverages the power of direct peer-to-peer connections. This approach offers several advantages:
+
+- **Reduced Latency:** With no intermediary server, data can move directly between clients, significantly reducing latency and improving real-time interactions.
+- **Improved Scalability:** P2P networks can easily scale as more clients join, without putting additional load on a central server.
+- **Enhanced Privacy:** Data remains within the client devices, reducing privacy concerns associated with centralized data storage.
+
+
+
+## Usaging the RxDB P2P Replication Plugin
 
 Before you use this plugin, make sure that you understand how [WebRTC works](https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API).
 
 First you have to add the plugin, then you can call `RxCollection.syncP2P()` to start the replication.
 As options you have to provide a `topic` and a connection handler function that implements the `P2PConnectionHandlerCreator` interface. As default you should start with the `getConnectionHandlerSimplePeer` method which uses the [simple-peer](https://github.com/feross/simple-peer) library.
 
-In difference to the other replication plugins, the P2P replication returns a `replicationPool` instead of a single replication state. The `replicationPool` contains all replication states of the connected peers in the network.
-
+In difference to the other replication plugins, the P2P replication returns a `replicationPool` instead of a single `RxReplicationState`. The `replicationPool` contains all replication states of the connected peers in the network.
 
 ```ts
 import {
@@ -53,12 +68,17 @@ replicationPool.cancel();
 
 ## Live replications
 
-P2P replication is always live because there can not be a one-time sync when it is always possible to have new Peers that join  the pool. Therefore you cannot set the `live` option like in the other replication plugins.
+P2P replication is **always live** because there can not be a one-time sync when it is always possible to have new Peers that join  the pool. Therefore you cannot set the `live: false` option like in the other replication plugins.
 
 
 ## Signaling Server
 
-The simple-peer connection handler needs a [signaling server](https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Signaling_and_video_calling). Creating a signaling server is pretty easy and can be done in a few lines of code, like in the following example:
+
+For P2P replication to work with the RxDB P2P Replication Plugin, a [signaling server](https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Signaling_and_video_calling) is required. The signaling server helps peers discover each other and establish connections.
+
+Creating a basic signaling server is straightforward. The provided example uses 'socket.io' for WebSocket communication. However, in production, you'd want to create a more robust signaling server with authentication and additional logic to suit your application's needs.
+
+Here is a quick example implementation of a signaling server that can be used with the connection handler from `getConnectionHandlerSimplePeer()`:
 
 ```ts
 export async function startSignalingServer(port: number): Promise<string> {
@@ -94,4 +114,3 @@ export async function startSignalingServer(port: number): Promise<string> {
 }
 ```
 
-In production you might not want to use that and instead create your custom signaling server with authentication and a different logic.
