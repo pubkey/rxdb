@@ -2511,6 +2511,8 @@
 <span class="hljs-keyword">const</span> db = <span class="hljs-keyword">await</span> createRxDatabase({
   name: <span class="hljs-string">&apos;heroesdb&apos;</span>,                   <span class="hljs-comment">// &lt;- name</span>
   storage: getRxStorageDexie(),       <span class="hljs-comment">// &lt;- RxStorage</span>
+
+  <span class="hljs-comment">/* Optional parameters: */</span>
   password: <span class="hljs-string">&apos;myPassword&apos;</span>,             <span class="hljs-comment">// &lt;- password (optional)</span>
   multiInstance: <span class="hljs-literal">true</span>,                <span class="hljs-comment">// &lt;- multiInstance (optional, default: true)</span>
   eventReduce: <span class="hljs-literal">true</span>,                  <span class="hljs-comment">// &lt;- eventReduce (optional, default: false)</span>

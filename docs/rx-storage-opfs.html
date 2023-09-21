@@ -2501,28 +2501,68 @@
     
                                 <section class="normal markdown-section">
                                 
-                                <h1 id="opfs-rxstorage-beta">OPFS RxStorage (beta)</h1>
-<p>The OPFS <a href="rx-storage.html">RxStorage</a> for RxDB is built on top of the <a href="https://webkit.org/blog/12257/the-file-system-access-api-with-origin-private-file-system/" target="_blank">File System Access API</a> which is available in <a href="https://caniuse.com/native-filesystem-api" target="_blank">all modern browsers</a>. It provides an API to access a sandboxed private file system to persistently store and retrieve data.
-Compared to other persistend storage options in the browser (like <a href="rx-storage-indexeddb.html">IndexedDB</a>), the OPFS API has a <strong>way better performance</strong>.</p>
+                                <h1 id="origin-private-file-system-opfs-database-with-the-rxdb-opfs-rxstorage">Origin Private File System (OPFS) Database with the RxDB OPFS-RxStorage</h1>
+<p>With the <a href="https://rxdb.info/" target="_blank">RxDB</a> OPFS storage you can build a fully featured database on top of the Origin Private File System (OPFS) browser API. Compared to other storage solutions, it has a way better performance.</p>
+<h2 id="what-is-opfs">What is OPFS</h2>
+<p>The <strong>Origin Private File System (OPFS)</strong> is a native browser storage API that allows web applications to manage files in a private, sandboxed, <strong>origin-specific virtual filesystem</strong>. Unlike <a href="rx-storage-indexeddb.html">IndexedDB</a> and <a href="articles/localstorage.html">LocalStorage</a>, which are optimized as object/key-value storage, OPFS provides more granular control for file operations, enabling byte-by-byte access, file streaming, and even low-level manipulations. 
+OPFS is ideal for applications requiring <strong>high-performance</strong> file operations (<strong>3x-4x faster compared to IndexedDB</strong>) inside of a client-side application, offering advantages like improved speed, more efficient use of resources, and enhanced security and privacy features.</p>
+<h3 id="opfs-limitations">OPFS limitations</h3>
+<p>From the beginning of 2023, the Origin Private File System API is supported by <a href="https://caniuse.com/native-filesystem-api" target="_blank">all modern browsers</a> like Safari, Chrome, Edge and Firefox. Only Internet Explorer is not supported and likely will never get support.</p>
+<p>It is important to know that the OPFS API is <strong>only available inside of a <a href="rx-storage-worker.html">WebWorker</a></strong>.
+It cannot be used in the main thread, an iFrame or even a <a href="rx-storage-shared-worker.html">SharedWorker</a>.
+If you call the OPFS <code>getFileHandle()</code> function in the main thread, it will throw the error <code>Uncaught DOMException: A requested file or directory could not be found at the time an operation was processed.</code>.</p>
+<p>While there is no concrete <strong>data size limit</strong> defined by the API, browsers will refuse to store more data at some point.
+If no more data can be written, a <code>QuotaExceededError</code> is thrown which should be handled by the application, like showing an error message to the user.</p>
+<h2 id="how-the-opfs-api-works">How the OPFS API works</h2>
+<p>The OPFS API is pretty straigtforward to use. First you get the root filesystem. Then you can create files and directory on that. Notice that whenever you writ to, or read from a file, an <code>ArrayBuffer</code> must be used that contains the data. It is not possible to write plain strings or objects into the file. Therefore the <code>TextEncoder</code> and <code>TextDecoder</code> API must be used.</p>
+<p>Also notice that the methods of <code>FileSystemSyncAccessHandle</code> have been asynchronous in the past, but are synchronous since Chromium 108. To make it less confusing, we just use <code>await</code> in front of them, so it will work in both cases.</p>
+<pre><code class="lang-ts"><span class="hljs-comment">// Access the root directory of the origin&apos;s private file system</span>
+<span class="hljs-keyword">const</span> root = await navigator.storage.getDirectory();
+
+<span class="hljs-comment">// create a subdirectory</span>
+<span class="hljs-keyword">const</span> diaryDirectory = await root.getDirectoryHandle(<span class="hljs-string">&apos;subfolder&apos;</span>, { create : <span class="hljs-literal">true</span> });
+
+<span class="hljs-comment">// Create a new file named &apos;example.txt&apos;</span>
+<span class="hljs-keyword">const</span> fileHandle = await diaryDirectory.getFileHandle(<span class="hljs-string">&apos;example.txt&apos;</span>, { create: <span class="hljs-literal">true</span> });
+
+<span class="hljs-comment">// Create a FileSystemSyncAccessHandle on the file.</span>
+<span class="hljs-keyword">const</span> accessHandle = await draftFile.createSyncAccessHandle();
+
+<span class="hljs-comment">// Get the size of the file.</span>
+<span class="hljs-keyword">const</span> fileSize = accessHandle.getSize();
+
+<span class="hljs-comment">// read file and transform data to string</span>
+<span class="hljs-keyword">const</span> fileSize = await accessHandle.getSize();
+<span class="hljs-keyword">const</span> readBuffer = <span class="hljs-keyword">new</span> <span class="hljs-built_in">Uint8Array</span>(fileSize);
+await accessHandle.read(readBuffer, { at: <span class="hljs-number">0</span> });
+<span class="hljs-keyword">const</span> contentAsString = <span class="hljs-keyword">new</span> TextDecoder().decode(readBuffer);
+
+<span class="hljs-comment">// Write a sentence to the end of the file.</span>
+<span class="hljs-keyword">const</span> writeBuffer = <span class="hljs-keyword">new</span> TextEncoder().encode(<span class="hljs-string">&apos;Hello from RxDB&apos;</span>);
+<span class="hljs-keyword">const</span> writeSize = await accessHandle.write(writeBuffer, { <span class="hljs-string">&quot;at&quot;</span> : readSize });
+
+<span class="hljs-comment">// Truncate file to 10 bytes.</span>
+await accessHandle.truncate(<span class="hljs-number">10</span>);
+
+<span class="hljs-comment">// Persist changes to disk.</span>
+await accessHandle.flush();
+
+<span class="hljs-comment">// Always close FileSystemSyncAccessHandle if done, so others can open the file again.</span>
+await accessHandle.close();
+</code></pre>
+<p>Are more detailed description of the OPFS API can be found on mdn <a href="https://developer.mozilla.org/en-US/docs/Web/API/File_System_API/Origin_private_file_system" target="_blank">here</a>.</p>
+<h2 id="opfs-performance">OPFS performance</h2>
+<p>Because the Origin Private File System API provides low-level access to binary files, it is much faster compared to <a href="slow-indexeddb.html">IndexedDB</a> or <a href="articles/localstorage.html">localStorage</a>. According to the <a href="https://pubkey.github.io/client-side-databases/database-comparison/index.html" target="_blank">storage performance test</a>, OPFS is up to 2x times faster on plain inserts when a new file is created on each write. Reads are even faster.</p>
+<p>A good comparison about real world scenarios, are the <a href="rx-storage-performance.html">performance results</a> of the various RxDB storages. Here it shows that reads are up to 4x faster compared to IndexedDB, even with complex queries:</p>
 <p align="center">
   <img src="files/rx-storage-performance-browser.png" alt="RxStorage performance - browser" width="700">
 </p>
 
-<p>The OPFS API can only be accessed in a <a href="rx-storage-worker.html">WebWorker</a>. It cannot be accessed in the main JavaScript process, an iFrame or even a <a href="rx-storage-shared-worker.html">SharedWorker</a>.</p>
-<h3 id="pros">Pros</h3>
-<ul>
-<li>It is really fast, about 3-4 times faster than <a href="slow-indexeddb.html">IndexedDB</a></li>
-<li>It has a small build size.</li>
-<li>It allows to use boolean values as index.</li>
-</ul>
-<h3 id="cons">Cons</h3>
-<ul>
-<li>It is part of the <a href="https://rxdb.info/premium.html" target="_blank">RxDB Premium</a> plugin that must be purchased.</li>
-<li>It must be used in a <a href="rx-storage-worker.html">WebWorker</a> which complicates the setup a bit.</li>
-<li>It is in beta mode at the moment which means it can include breaking changes without a RxDB major version increment.</li>
-</ul>
-<h2 id="usage">Usage</h2>
-<p>The OPFS storage itself must run inside a WebWorker. Therefore we use the <a href="rx-storage-worker.html">Worker RxStorage</a> and let it point to the prebuild <code>opfs.worker.js</code> file that comes shipped with RxDB Premium.</p>
+
+<h2 id="using-opfs-as-rxstorage-in-rxdb">Using OPFS as RxStorage in RxDB</h2>
+<p>The OPFS <a href="rx-storage.html">RxStorage</a> itself must run inside a WebWorker. Therefore we use the <a href="rx-storage-worker.html">Worker RxStorage</a> and let it point to the prebuild <code>opfs.worker.js</code> file that comes shipped with RxDB Premium.</p>
+<p>Notice that the OPFS RxStorage is part of the <a href="https://rxdb.info/premium.html" target="_blank">RxDB Premium</a> plugin that must be purchased.
+Also is in beta mode at the moment which means it can include breaking changes without a RxDB major version increment.</p>
 <pre><code class="lang-ts"><span class="hljs-keyword">import</span> {
     createRxDatabase
 } from <span class="hljs-string">&apos;rxdb&apos;</span>;
@@ -2544,8 +2584,8 @@ Compared to other persistend storage options in the browser (like <a href="rx-st
     )
 });
 </code></pre>
-<h2 id="building-a-custom-worker">Building a custom worker</h2>
-<p>When you want to run additional plugins like storage wrappers or replication <strong>inside</strong> of the worker, you have to build your own <code>worker.js</code> file. You can do that similar to other workers by calling <code>exposeWorkerRxStorage</code> like described in the <a href="rx-storage-worker.html">worker storage plugin</a></p>
+<h2 id="building-a-custom-workerjs">Building a custom <code>worker.js</code></h2>
+<p>When you want to run additional plugins like storage wrappers or replication <strong>inside</strong> of the worker, you have to build your own <code>worker.js</code> file. You can do that similar to other workers by calling <code>exposeWorkerRxStorage</code> like described in the <a href="rx-storage-worker.html">worker storage plugin</a>.</p>
 <pre><code class="lang-ts"><span class="hljs-comment">// inside of worker.js</span>
 <span class="hljs-keyword">import</span> { getRxStorageOPFS } from <span class="hljs-string">&apos;rxdb-premium/plugins/storage-opfs&apos;</span>;
 <span class="hljs-keyword">import</span> { exposeWorkerRxStorage } from <span class="hljs-string">&apos;rxdb-premium/plugins/storage-worker&apos;</span>;
@@ -2555,10 +2595,26 @@ exposeWorkerRxStorage({
     storage
 });
 </code></pre>
+<h2 id="opfs-in-electron-react-native-or-capacitorjs">OPFS in Electron, React-Native or Capacitor.js</h2>
+<p>Origin Private File System is a browser API that is only accessible in browsers. Other JavaScript like React-Native or Node.js, do not support it.</p>
+<p><strong>Electron</strong> has two JavaScript contexts: the browser (chromium) context and the Node.js context. While you could use the OPFS API in the browser context, it is not recommended. Instead you should use the Filesystem API of Node.js and then only transfer the relevant data with the <a href="https://www.electronjs.org/de/docs/latest/api/ipc-renderer" target="_blank">ipcRenderer</a>. With RxDB that is pretty easy to configure:</p>
+<ul>
+<li>In the <code>main.js</code>, expose the <a href="rx-storage-filesystem-node.html">Node Filesystem</a> storage with the <code>exposeIpcMainRxStorage()</code> that comes with the <a href="electron.html">electron plugin</a></li>
+<li>In the browser context, access the main storage with the <code>getRxStorageIpcRenderer()</code> method.</li>
+</ul>
+<p><strong>React Native</strong> (and Expo) does not have an OPFS API. You could use the ReactNative Filesystem to directly write data. But to get a fully featured database like RxDB it is easier to use the <a href="rx-storage-sqlite.html">SQLite RxStorage</a> which starts an SQLite database inside of the ReactNative app and uses that to do the database operations.</p>
+<p><strong>Capacitor.js</strong> is able to access the OPFS API.</p>
+<h2 id="difference-between-file-system-access-api-and-origin-private-file-system-opfs">Difference between <code>File System Access API</code> and <code>Origin Private File System (OPFS)</code></h2>
+<p>Often developers are confused with the differences between the <code>File System Access API</code> and the <code>Origin Private File System (OPFS)</code>.</p>
+<ul>
+<li>The <code>File System API</code> provides access to the files on the device file system, like the ones shown in the file explorer of the operating system. To use the ile System API, the user has to actively select the files from a filepicker.</li>
+<li><code>Origin Private File System (OPFS)</code> is a sub-part of the <code>File System API</code> and it only describes the things you can do with the filesystem root from <code>navigator.storage.getDirectory()</code>. OPFS writes to a <strong>sandboxed</strong> filesystem, not visible to the user. Therefore the user does not have to actively select or allow the data access. </li>
+</ul>
 <h2 id="learn-more-about-opfs">Learn more about OPFS:</h2>
 <ul>
 <li><a href="https://webkit.org/blog/12257/the-file-system-access-api-with-origin-private-file-system/" target="_blank">WebKit: The File System API with Origin Private File System</a></li>
 <li><a href="https://caniuse.com/native-filesystem-api" target="_blank">Browser Support</a></li>
+<li><a href="https://pubkey.github.io/client-side-databases/database-comparison/index.html" target="_blank">Performance Test Tool</a></li>
 </ul>
 
                                 
