@@ -193,6 +193,12 @@ Dexie.js is used by Whatsapp Web, Microsoft To Do and Github Desktop.
 
 RxDB supports using [Dexie.js as RxStorage](./rx-storage-dexie.md) which enhances IndexedDB with RxDB features like MongoDB-like queries etc.
 
+### LowDB
+
+LowDB is a small, local JSON database powered by the Lodash library. It is designed to be simple, easy to use, and straightforward. LowDB allows you to perform native JavaScript queries and persist data in a flat JSON file. Written in TypeScript, it's particularly well-suited for small projects, prototyping, or when you need a lightweight, file-based database.
+
+As an alternative to LowDB, [RxDB](./) offers real-time reactivity, allowing developers to subscribe to database changes, a feature not natively available in LowDB. Additionally, RxDB provides robust [query capabilities](./rx-query.md), including the ability to subscribe to query results for automatic UI updates. These features make RxDB a strong alternative to LowDB for more complex and dynamic applications.
+
 ### MongoDB Realm
 
 Originally Realm was a mobile database for Android and iOS. Later they added support for other languages and runtimes, also for JavaScript. 
