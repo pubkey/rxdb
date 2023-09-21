@@ -76,9 +76,12 @@ https://github.com/pubkey/rxdb/issues/4926#issuecomment-1712223984
 
 It is [faster](https://measurethat.net/Benchmarks/Show/6371/0/sha256-js) and more secure and we have a smaller build size.
 
+## Rename replication-p2p to replication-webrtc
+
 ## Rename "RxDB Premium" to "RxDB Enterprise"
 
 Most "normal" users do not need premium access so we should name it "RxDB Enterprise" to make it more clear that it is intended to bought by companies.
+
 
 
 
