@@ -13,6 +13,8 @@ import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
 const db = await createRxDatabase({
   name: 'heroesdb',                   // <- name
   storage: getRxStorageDexie(),       // <- RxStorage
+
+  /* Optional parameters: */
   password: 'myPassword',             // <- password (optional)
   multiInstance: true,                // <- multiInstance (optional, default: true)
   eventReduce: true,                  // <- eventReduce (optional, default: false)
