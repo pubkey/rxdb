@@ -2533,7 +2533,31 @@
 <h2 id="schema-validation-and-data-migration-on-schema-changes">Schema Validation and Data Migration on Schema Changes</h2>
 <p>Storing JSON documents inside of an application, can cause a problem when the format of the data changes. Instead of having a single server where the data must be migrated, many client devices are out there that have to run a migration.
 When your application&apos;s schema evolves, RxDB provides <a href="../data-migration.html">migration strategies</a> to facilitate the transition, ensuring data consistency throughout schema updates.</p>
-<p><strong>JSONSchema Validation Plugins</strong>: RxDB supports multiple JSONSchema validation <a href="../schema-validation.html">plugins</a>, guaranteeing that only valid data is stored in the database.</p>
+<p><strong>JSONSchema Validation Plugins</strong>: RxDB supports multiple <a href="../schema-validation.html">JSONSchema validation plugins</a>, guaranteeing that only valid data is stored in the database. RxDB uses the JsonSchema standardization that you might know from other technologies like OpenAPI (aka Swagger).</p>
+<pre><code class="lang-javascript"><span class="hljs-comment">// RxDB Schema example</span>
+<span class="hljs-keyword">const</span> mySchema = {
+    version: <span class="hljs-number">0</span>,
+    primaryKey: <span class="hljs-string">&apos;id&apos;</span>, <span class="hljs-comment">// &lt;- define the primary key for your documents</span>
+    type: <span class="hljs-string">&apos;object&apos;</span>,
+    properties: {
+        id: {
+            type: <span class="hljs-string">&apos;string&apos;</span>,
+            maxLength: <span class="hljs-number">100</span> <span class="hljs-comment">// &lt;- the primary key must have set maxLength</span>
+        },
+        name: {
+            type: <span class="hljs-string">&apos;string&apos;</span>,
+            maxLength: <span class="hljs-number">100</span>
+        },
+        done: {
+            type: <span class="hljs-string">&apos;boolean&apos;</span>
+        },
+        timestamp: {
+            type: <span class="hljs-string">&apos;date-time&apos;</span>
+        }
+    },
+    required: [<span class="hljs-string">&apos;id&apos;</span>, <span class="hljs-string">&apos;name&apos;</span>, <span class="hljs-string">&apos;done&apos;</span>, <span class="hljs-string">&apos;timestamp&apos;</span>]
+}
+</code></pre>
 <h2 id="store-json-with-rxdb-in-browser-applications">Store JSON with RxDB in Browser Applications</h2>
 <p>RxDB offers versatile storage solutions for browser-based applications:</p>
 <ul>
@@ -2556,15 +2580,20 @@ When your application&apos;s schema evolves, RxDB provides <a href="../data-migr
 </li>
 <li><p><strong>Reduced Latency:</strong> RxDB&apos;s streamlined data access mechanisms significantly reduce latency when working with JSON data. Whether you&apos;re reading from the database, making updates, or synchronizing data between clients and servers, RxDB&apos;s optimized operations help minimize the delays often associated with data access. Observed queris are optimized with the <a href="https://github.com/pubkey/event-reduce" target="_blank">EventReduce algorithm</a> to provide nearly-instand UI updates on data changes.</p>
 </li>
+<li><p><strong>RxStorage Layer</strong>: Because RxDB allows you to swap out the storage layer. A storage with the most optimal performance can be chosen for each runtime while not touching other database code. Depending on the access patterns, you can pick exactly the storage that is best:</p>
+</li>
 </ol>
+<p align="center">
+  <img src="../files/rx-storage-performance-browser.png" alt="RxStorage performance - browser" width="700">
+</p>
+
+
 <h2 id="rxdb-in-nodejs">RxDB in Node.js</h2>
 <p>Node.js developers can also benefit from RxDB&apos;s capabilities. By integrating RxDB into your Node.js applications, you can harness the power of a NoSQL JSON database to efficiently manage your data on the server-side. RxDB&apos;s flexibility, performance, and essential features are equally valuable in server-side development. <a href="../nodejs-database.html">Read more about RxDB+Node.js</a>.</p>
 <h2 id="rxdb-to-store-json-documents-in-react-native">RxDB to store JSON documents in React Native</h2>
 <p>For mobile app developers working with React Native, RxDB offers a convenient solution for handling JSON data. Whether you&apos;re building Android or iOS applications, RxDB&apos;s compatibility with JavaScript and its ability to work with JSON documents make it a natural choice for data management within your React Native apps. <a href="../react-native-database.html">Read more about RxDB+React-Native</a>.</p>
 <h2 id="using-sqlite-as-a-json-database">Using SQLite as a JSON Database</h2>
 <p>In some cases, you might want to use SQLite as a backend storage solution for your JSON data. RxDB can be configured <a href="../rx-storage-sqlite.html">to work with SQLite</a>, providing the benefits of both a relational database system and JSON document storage. This hybrid approach can be advantageous when dealing with complex data relationships while retaining the flexibility of JSON data representation.</p>
-<h2 id="follow-up">Follow up</h2>
-<p>In conclusion, RxDB is a powerful tool for JavaScript developers who need to work with JSON data. Its flexibility, performance, and support for essential features make it a valuable asset for a wide range of applications, whether you&apos;re building web applications in Node.js, mobile apps in React Native, or hybrid solutions using SQLite. With RxDB, you have the means to efficiently manage and leverage JSON data, taking your applications to the next level of data-driven functionality.</p>
 <h2 id="follow-up">Follow Up</h2>
 <p>To further explore RxDB and get started with using it in your frontend applications, consider the following resources:</p>
 <ul>

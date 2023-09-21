@@ -2501,14 +2501,25 @@
     
                                 <section class="normal markdown-section">
                                 
-                                <h1 id="peer-to-peer-replication-beta">Peer-to-Peer Replication (beta)</h1>
-<p>This plugin allows you to replicate data between your clients devices fully P2P, <strong>without a backend server</strong>.
-It uses <a href="https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API" target="_blank">WebRTC</a> to create a connection between the devices and then establishes a replication with the normal <a href="replication.html">RxDB replication protocol</a>.</p>
-<h2 id="usage">Usage</h2>
+                                <h1 id="peer-to-peer-p2p-replication-with-the-rxdb-javascript-database-beta">Peer-to-Peer (P2P) Replication with the RxDB JavaScript Database (beta)</h1>
+<p>In the world of web and mobile development, data synchronization between clients and servers has always been a critical aspect of building real-time JavaScript applications.
+Traditionally, the synchronization process relies on <strong>centralized servers</strong> to manage and distribute data. However, Peer-to-Peer (P2P) replication with <a href="https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API" target="_blank">WebRTC</a> is changing the game by allowing data to flow <strong>directly between clients</strong>, eliminating the need for a central server.</p>
+<p>With the <strong>RxDB P2P replication plugin</strong> you can replicate the database state between your clients devices fully peer2peer over WebRTC.
+There is no need for a centralized server to store any of the users data like in a <strong>master-slave</strong> replication.
+Only a WebRTC signaling server is required to initially exchange the connection data between clients so that they can establish a WebRTC connection.
+The replication itself then runs with the <a href="replication.html">RxDB replication protocol</a>. Because RxDB is a NoSQL database and because of the simlicity of its replication protocol, setting up a robust P2P replication is way easier compared to SQL server- or client databases.</p>
+<h2 id="understanding-p2p-replication">Understanding P2P Replication</h2>
+<p>P2P replication is a paradigm shift in data synchronization. Instead of relying on a central server to manage data transfers between clients, it leverages the power of direct peer-to-peer connections. This approach offers several advantages:</p>
+<ul>
+<li><strong>Reduced Latency:</strong> With no intermediary server, data can move directly between clients, significantly reducing latency and improving real-time interactions.</li>
+<li><strong>Improved Scalability:</strong> P2P networks can easily scale as more clients join, without putting additional load on a central server.</li>
+<li><strong>Enhanced Privacy:</strong> Data remains within the client devices, reducing privacy concerns associated with centralized data storage.</li>
+</ul>
+<h2 id="usaging-the-rxdb-p2p-replication-plugin">Usaging the RxDB P2P Replication Plugin</h2>
 <p>Before you use this plugin, make sure that you understand how <a href="https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API" target="_blank">WebRTC works</a>.</p>
 <p>First you have to add the plugin, then you can call <code>RxCollection.syncP2P()</code> to start the replication.
 As options you have to provide a <code>topic</code> and a connection handler function that implements the <code>P2PConnectionHandlerCreator</code> interface. As default you should start with the <code>getConnectionHandlerSimplePeer</code> method which uses the <a href="https://github.com/feross/simple-peer" target="_blank">simple-peer</a> library.</p>
-<p>In difference to the other replication plugins, the P2P replication returns a <code>replicationPool</code> instead of a single replication state. The <code>replicationPool</code> contains all replication states of the connected peers in the network.</p>
+<p>In difference to the other replication plugins, the P2P replication returns a <code>replicationPool</code> instead of a single <code>RxReplicationState</code>. The <code>replicationPool</code> contains all replication states of the connected peers in the network.</p>
 <pre><code class="lang-ts"><span class="hljs-keyword">import</span> {
     replicateP2P,
     getConnectionHandlerSimplePeer
@@ -2542,9 +2553,11 @@ replicationPool.error$.subscribe(err =&gt; { <span class="hljs-comment">/* ... *
 replicationPool.cancel();
 </code></pre>
 <h2 id="live-replications">Live replications</h2>
-<p>P2P replication is always live because there can not be a one-time sync when it is always possible to have new Peers that join  the pool. Therefore you cannot set the <code>live</code> option like in the other replication plugins.</p>
+<p>P2P replication is <strong>always live</strong> because there can not be a one-time sync when it is always possible to have new Peers that join  the pool. Therefore you cannot set the <code>live: false</code> option like in the other replication plugins.</p>
 <h2 id="signaling-server">Signaling Server</h2>
-<p>The simple-peer connection handler needs a <a href="https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Signaling_and_video_calling" target="_blank">signaling server</a>. Creating a signaling server is pretty easy and can be done in a few lines of code, like in the following example:</p>
+<p>For P2P replication to work with the RxDB P2P Replication Plugin, a <a href="https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Signaling_and_video_calling" target="_blank">signaling server</a> is required. The signaling server helps peers discover each other and establish connections.</p>
+<p>Creating a basic signaling server is straightforward. The provided example uses &apos;socket.io&apos; for WebSocket communication. However, in production, you&apos;d want to create a more robust signaling server with authentication and additional logic to suit your application&apos;s needs.</p>
+<p>Here is a quick example implementation of a signaling server that can be used with the connection handler from <code>getConnectionHandlerSimplePeer()</code>:</p>
 <pre><code class="lang-ts"><span class="hljs-keyword">export</span> async <span class="hljs-function"><span class="hljs-keyword">function</span> <span class="hljs-title">startSignalingServer</span>(<span class="hljs-params">port: <span class="hljs-built_in">number</span></span>): <span class="hljs-title">Promise</span>&lt;<span class="hljs-title">string</span>&gt; </span>{
     <span class="hljs-keyword">const</span> server = <span class="hljs-built_in">require</span>(<span class="hljs-string">&apos;http&apos;</span>).createServer();
     <span class="hljs-keyword">const</span> io = <span class="hljs-built_in">require</span>(<span class="hljs-string">&apos;socket.io&apos;</span>)(server);
@@ -2577,7 +2590,12 @@ replicationPool.cancel();
     });
 }
 </code></pre>
-<p>In production you might not want to use that and instead create your custom signaling server with authentication and a different logic.</p>
+<h2 id="conflict-detection-in-p2p-replication">Conflict detection in P2P replication</h2>
+<p>RxDB&apos;s conflict handling works by detecting and resolving conflicts that may arise when multiple clients in a decentralized database system attempt to modify the same data concurrently.
+A <strong>custom conflict handler</strong> can be set up, which is a plain JavaScript function. The conflict handler is run on each replicated document write and resolves the conflict if required. <a href="https://rxdb.info/transactions-conflicts-revisions.html" target="_blank">Find out more about RxDB conflict handling here</a></p>
+<h2 id="storing-replicated-data-encrypted-on-client-device">Storing replicated data encrypted on client device</h2>
+<p>Storing replicated data encrypted on client devices using the RxDB Encryption Plugin is a pivotal step towards bolstering <strong>data security</strong> and <strong>user privacy</strong>.
+The P2P replication plugin seamlessly integrates with the <a href="encryption.html">RxDB encryption plugins</a>, providing a robust solution for encrypting sensitive information before it&apos;s stored locally. By doing so, it ensures that even if unauthorized access to the device occurs, the data remains protected and unintelligible without the encryption key (or password). This approach is particularly vital in scenarios where user-generated content or confidential data is replicated across devices, as it empowers users with control over their own data while adhering to stringent security standards. <a href="encryption.html">Read mor about the encryption plugins here</a>.</p>
 
                                 
                                 </section>

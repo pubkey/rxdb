@@ -2564,7 +2564,7 @@
  * So you have to import the rxjs patch to ensure changedetection works correctly.
  * @link https://www.bennadel.com/blog/3448-binding-rxjs-observable-sources-outside-of-the-ngzone-in-angular-6-0-2.htm
  */</span>
-<span class="hljs-keyword">import</span> <span class="hljs-string">&apos;zone.js/dist/zone-patch-rxjs&apos;</span>;
+<span class="hljs-keyword">import</span> <span class="hljs-string">&apos;zone.js/plugins/zone-patch-rxjs&apos;</span>;
 </code></pre>
 <h3 id="use-the-angular-async-pipe-to-observe-an-rxdb-query">Use the Angular async pipe to observe an RxDB Query</h3>
 <p>Angular provides the async pipe, which is a convenient way to subscribe to observables and handle the subscription lifecycle automatically. When working with RxDB, you can use the async pipe to observe an RxDB query and bind the results directly to your Angular template. This ensures that the UI stays in sync with the data changes emitted by the RxDB query.</p>
