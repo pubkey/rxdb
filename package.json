@@ -563,7 +563,7 @@
     "walk-sync": "3.0.0",
     "watch": "1.0.2",
     "webpack": "5.88.2",
-    "webpack-bundle-analyzer": "4.8.0",
+    "webpack-bundle-analyzer": "4.9.1",
     "webpack-cli": "5.0.2",
     "webpack-dev-server": "4.13.3"
   }
