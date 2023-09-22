@@ -56,8 +56,14 @@ Web applications often operate in multiple browser tabs or windows. RxDB accommo
 ### RxDB vs. Other React Database Options
 While considering database options for React applications, RxDB stands out due to its unique combination of reactive programming and database capabilities. Unlike traditional solutions such as IndexedDB or Web Storage, which provide basic data storage, RxDB offers a dedicated database solution with advanced features. Additionally, while state management libraries like Redux and MobX can be adapted for database use, RxDB provides an integrated solution specifically designed for handling data.
 
+
+### IndexedDB in React and the Advantage of RxDB
+
+Using IndexedDB directly in React can be challenging due to its low-level, callback-based API which doesn't align neatly with modern React's Promise and async/await patterns. This intricacy often leads to bulky and complex implementations for developers. Also, when used wrong, IndexedDB can have a worse [performance profile](../slow-indexeddb.md) then it could have. In contrast, RxDB, with the [IndexedDB RxStorage](../rx-storage-indexeddb.md) and the [Dexie.js RxStorage](../rx-storage-dexie.md), abstracts these complexities, integrating reactive programming and providing a more streamlined experience for data management in React applications. Thus, RxDB offers a more intuitive approach, eliminating much of the manual overhead required with IndexedDB.
+
+
 ### Using RxDB in a React Application
-Installing RxDB in a React App
+
 The process of integrating RxDB into a React application is straightforward. Begin by installing RxDB as a dependency:
 `npm install rxdb rxjs`
 Once installed, RxDB can be imported and initialized within your React components. The following code snippet illustrates a basic setup:
