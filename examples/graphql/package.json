@@ -33,7 +33,7 @@
     "pouchdb-adapter-idb": "8.0.1",
     "rxdb": "file:rxdb-local.tgz",
     "rxjs": "7.8.1",
-    "ws": "8.13.0"
+    "ws": "8.14.2"
   },
   "devDependencies": {
     "async-test-util": "2.1.1",
