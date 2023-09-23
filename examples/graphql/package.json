@@ -33,12 +33,12 @@
     "pouchdb-adapter-idb": "8.0.1",
     "rxdb": "file:rxdb-local.tgz",
     "rxjs": "7.8.1",
-    "ws": "8.13.0"
+    "ws": "8.14.2"
   },
   "devDependencies": {
     "async-test-util": "2.1.1",
     "css-loader": "6.8.1",
-    "eslint": "8.49.0",
+    "eslint": "8.50.0",
     "esm": "3.2.25",
     "file-loader": "6.2.0",
     "html-webpack-plugin": "5.5.3",
@@ -50,7 +50,7 @@
     "testcafe": "1.20.1",
     "testcafe-hammerhead": "31.6.2",
     "webpack": "5.88.2",
-    "webpack-cli": "5.0.2",
-    "webpack-dev-server": "4.13.3"
+    "webpack-cli": "5.1.4",
+    "webpack-dev-server": "4.15.1"
   }
 }
