@@ -16,7 +16,9 @@ In this article we will explore what a realtime database is, and more important,
 
 When "normal" developers hear the word "realtime", they think of **Real-time computing (RTC)**. Real-time computing is a type of computer processing that **guarantees specific response times** for tasks or events, crucial in applications like industrial control, automotive systems, and aerospace. It relies on specialized operating systems (RTOS) to ensure predictability and low latency. Hard real-time systems must never miss deadlines, while soft real-time systems can tolerate occasional delays. Real-time responses are often understood to be in the order of milliseconds, and sometimes microseconds.
 
-For example, real-time computing in car airbags involves sensors detecting a collision's force, rapid processing of this data, and immediate decision-making to inflate the airbags within milliseconds to protect occupants during a crash. This quick response is critical for passenger safety. Therefore the chip that controls the airbag has to **guarantee a specific response time**, it has to respond in "realtime".
+Consider the role of real-time computing in car airbags: sensors detect collision force, swiftly process the data, and immediately decide to deploy the airbags within milliseconds. Such rapid action is imperative for safeguarding passengers. Hence, the controlling chip must **guarantee a certain response time** — it must operate in "realtime".
+
+
 
 But when people talk about **realtime databases**, especially in the web-development world, they almost never mean realtime, as in **realtime computing**, they mean something else.
 In fact, with any programming language that run on end users devices, it is not even possible to built a "real" realtime database. A programm, like a JavaScript ([browser](./browser-database.md) or [Node.js](../nodejs-database.md)) process, can be halted by the operating systems task manager at any time and therefore it will never be able to guarantee specific response times. To build a realtime computing database, you would need a realtime capable operating system.
@@ -49,7 +51,7 @@ In the context of realtime client-side applications, "realtime" refers to the im
   <img src="../files/multiwindow.gif" alt="realtime applications" width="400" />
 </p>
 
-In contrast to push-pull based databases, like a MySQL or MongoDB server, a realtime database contains **features which make it easy to build realtime applications**. For example with RxDB you can not only fetch query results once, but instead you can subscribe to a query and direclty update the HTML dom tree whenever the query has a new result set:
+In contrast to push-pull based databases (e.g., MySQL or MongoDB servers), a realtime database contains **features which make it easy to build realtime applications**. For example with RxDB you can not only fetch query results once, but instead you can subscribe to a query and direclty update the HTML dom tree whenever the query has a new result set:
 
 ```ts
 await db.heroes.find({
@@ -59,27 +61,26 @@ await db.heroes.find({
     }
   }
 })
-.$ // the $ returns an observable that emits each time the result set of the query changes
+.$ // The $ returns an observable that emits whenever the query's result set changes.
 .subscribe(aliveHeroes => {
-    // update the html list each time the query results change
+    // Refresh the HTML list each time there are new query results.
     const newContent = aliveHeroes.map(doc => '<li>' + doc.name + '</li>');
     document.getElementById('#myList').innerHTML = newContent;
 });
 
-// you can even subscribe to fields of any RxDB document
+// You can even subscribe to any RxDB document's fields.
 myDocument.firstName$.subscribe(newName => console.log('name is: ' + newName));
 ```
 
-A good realtime applications is designed to handle and provide feedback or results in a timeframe that is imperceptible to the human senses, typically within milliseconds to microseconds. Ideally a change to the data must be processed in less than **16 milliseconds** (1 second / 60 frames = 16.66ms) so that the human user can not perceive a time delay from input to re-render. RxDB uses the [EventReduce algorithm](https://github.com/pubkey/event-reduce) to process changes in CPU, in even shorted timespans than 16ms. But it will never be able to "guarantee" any response time limits, like a "realtime computing database" could do.
-
+A competent realtime application is engineered to offer feedback or results swiftly, ideally within milliseconds to microseconds. Ideally, a data modification should be processed in under **16 milliseconds** (since 1 second divided by 60 frames equals 16.66ms) to ensure users don't perceive any lag from input to visualization. RxDB utilizes the [EventReduce algorithm](https://github.com/pubkey/event-reduce) to manage changes more swiftly than 16ms. However, it can never assure fixed response times as a "realtime computing database" would.
 
 
 
 ## Follow Up
 
-- Try out the [RxDB Quickstart](https://rxdb.info/quickstart.html)
-- Read more about the [RxDB realtime replication protocol](../replication.md)
-- Join the [RxDB Chat](https://rxdb.info/chat.html)
+- Dive into the [RxDB Quickstart](https://rxdb.info/quickstart.html)
+- Discover more about the [RxDB realtime replication protocol](../replication.md)
+- Join the conversation at [RxDB Chat](https://rxdb.info/chat.html)
 
 
 
