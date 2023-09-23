@@ -565,6 +565,6 @@
     "webpack": "5.88.2",
     "webpack-bundle-analyzer": "4.9.1",
     "webpack-cli": "5.1.4",
-    "webpack-dev-server": "4.13.3"
+    "webpack-dev-server": "4.15.1"
   }
 }
