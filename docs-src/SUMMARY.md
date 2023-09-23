@@ -200,6 +200,7 @@
     * [localStorage](./articles/localstorage.md)
     * [Ionic Database](./articles/ionic-database.md)
     * [JSON Database](./articles/json-database.md)
+    * [Realtime Database](./articles/realtime-database.md)
 
 * Deprecated
     * [RxStorage PouchDB](./rx-storage-pouchdb.md)

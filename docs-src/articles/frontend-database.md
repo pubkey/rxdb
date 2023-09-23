@@ -33,7 +33,7 @@ Frontend databases enable low-latency queries that run entirely on the client's 
 
 
 ### Building realtime applications with local data
-Realtime applications often require immediate updates based on data changes. By storing data locally and utilizing a frontend database, developers can build realtime applications more easily. The database can observe data changes and automatically update the UI, providing a seamless and responsive user experience.
+Realtime applications often require immediate updates based on data changes. By storing data locally and utilizing a frontend database, developers can build [realtime applications](./realtime-database.md) more easily. The database can observe data changes and automatically update the UI, providing a seamless and responsive user experience.
 
 ### Easier integration with JavaScript frameworks
 Frontend databases, including RxDB, are designed to integrate seamlessly with popular JavaScript frameworks such as [Angular](./angular-database.md), React.js, Vue.js, and Svelte. These databases offer well-defined APIs and support that align with the specific requirements of these frameworks, enabling developers to leverage the full potential of the frontend database within their preferred development environment.

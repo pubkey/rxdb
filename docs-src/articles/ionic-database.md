@@ -25,7 +25,7 @@ RxDB steps in as a powerful solution to address the data management needs of ion
 
 <center>
     <a href="https://rxdb.info/">
-        <img src="../files/logo/logo_text.svg" alt="JavaScript Ionic Database Storage" width="220">
+        <img src="../files/logo/rxdb_javascript_database.svg" alt="JavaScript Ionic Database Storage" width="220">
     </a>
 </center>
 
