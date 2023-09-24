@@ -76,7 +76,7 @@
     "@angular/language-service": "16.2.6",
     "@capacitor/cli": "latest",
     "@nguniversal/builders": "16.2.0",
-    "@types/express": "4.17.17",
+    "@types/express": "4.17.18",
     "@types/mocha": "10.0.1",
     "@types/node": "18.17.18",
     "async-test-util": "2.1.1",
