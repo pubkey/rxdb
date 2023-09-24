@@ -338,7 +338,7 @@ export class RxDatabaseBase<
 
         await ensureNoStartupErrors(this);
 
-        Object.entries(putDocsResult.error).forEach(([_id, error]) => {
+        putDocsResult.error.forEach(error => {
             if (error.status !== 409) {
                 throw newRxError('DB12', {
                     database: this.name,

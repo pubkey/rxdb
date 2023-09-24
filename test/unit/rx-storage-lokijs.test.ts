@@ -254,7 +254,7 @@ describe('rx-storage-lokijs.test.js', () => {
                     _attachments: {}
                 }
             }], 'loki-test');
-            assert.deepStrictEqual(writeResponse.error, {});
+            assert.deepStrictEqual(writeResponse.error, []);
 
             /**
              * It should have written the file to the filesystem
