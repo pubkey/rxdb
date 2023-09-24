@@ -196,12 +196,7 @@ export interface RxStorageInstance<
          * comes from operation Y.
          */
         context: string
-    ): Promise<
-        /**
-             * returns the response, split into success and error lists.
-             */
-        RxStorageBulkWriteResponse<RxDocType>
-    >;
+    ): Promise<RxStorageBulkWriteResponse<RxDocType>>;
 
     /**
      * Get Multiple documents by their primary value.
@@ -217,6 +212,8 @@ export interface RxStorageInstance<
          * If set to true, deleted documents will also be returned.
          */
         withDeleted: boolean
+
+        // TODO return array instead of indexed object
     ): Promise<RxDocumentDataById<RxDocType>>;
 
     /**

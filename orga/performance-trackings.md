@@ -1397,3 +1397,75 @@ AFTER1: (faster event keys)
 32
 31
 
+
+
+
+## bulkWrite() return arrays instead of indexed-objects
+24 september 2023
+> npm run test:performance:memory:node
+
+BEFORE:
+{
+    "description": "memory",
+    "platform": "node",
+    "collectionsAmount": 4,
+    "docsAmount": 1200,
+    "time-to-first-insert": 1.42,
+    "insert-documents-200": 3.22,
+    "find-by-ids": 0.3,
+    "find-by-query": 2.05,
+    "find-by-query-parallel-4": 2.26,
+    "count": 0.33
+}
+{
+    "description": "memory",
+    "platform": "node",
+    "collectionsAmount": 4,
+    "docsAmount": 1200,
+    "time-to-first-insert": 1.44,
+    "insert-documents-200": 3.14,
+    "find-by-ids": 0.27,
+    "find-by-query": 2,
+    "find-by-query-parallel-4": 2.23,
+    "count": 0.29
+}
+{
+    "description": "memory",
+    "platform": "node",
+    "collectionsAmount": 4,
+    "docsAmount": 1200,
+    "time-to-first-insert": 1.41,
+    "insert-documents-200": 3.17,
+    "find-by-ids": 0.31,
+    "find-by-query": 2.08,
+    "find-by-query-parallel-4": 2.32,
+    "count": 0.34
+}
+
+
+
+AFTER:
+{
+    "description": "memory",
+    "platform": "node",
+    "collectionsAmount": 4,
+    "docsAmount": 1200,
+    "time-to-first-insert": 1.36,
+    "insert-documents-200": 2.77,
+    "find-by-ids": 0.86,
+    "find-by-query": 1.91,
+    "find-by-query-parallel-4": 2.12,
+    "count": 0.28
+}
+{
+    "description": "memory",
+    "platform": "node",
+    "collectionsAmount": 4,
+    "docsAmount": 1200,
+    "time-to-first-insert": 1.4,
+    "insert-documents-200": 2.8,
+    "find-by-ids": 0.85,
+    "find-by-query": 2.01,
+    "find-by-query-parallel-4": 2.23,
+    "count": 0.29
+}

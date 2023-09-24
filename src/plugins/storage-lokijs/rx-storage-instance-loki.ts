@@ -139,8 +139,8 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         }
 
         const ret: RxStorageBulkWriteResponse<RxDocType> = {
-            success: {},
-            error: {}
+            success: [],
+            error: []
         };
 
         const docsInDb: Map<RxDocumentData<RxDocType>[StringKeys<RxDocType>], RxDocumentData<RxDocType>> = new Map();
@@ -167,9 +167,8 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         ret.error = categorized.errors;
 
         categorized.bulkInsertDocs.forEach(writeRow => {
-            const docId = writeRow.document[this.primaryPath];
             localState.collection.insert(flatClone(writeRow.document));
-            ret.success[docId as any] = writeRow.document;
+            ret.success.push(writeRow.document);
         });
         categorized.bulkUpdateDocs.forEach(writeRow => {
             const docId = writeRow.document[this.primaryPath];
@@ -182,7 +181,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
                 }
             );
             localState.collection.update(writeDoc);
-            ret.success[docId as any] = writeRow.document;
+            ret.success.push(writeRow.document);
         });
         localState.databaseState.saveQueue.addWrite();
 

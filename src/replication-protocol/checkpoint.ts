@@ -12,7 +12,6 @@ import {
     ensureNotFalsy,
     getDefaultRevision,
     getDefaultRxDocumentMeta,
-    getFromObjectOrThrow,
     now
 } from '../plugins/utils';
 
@@ -111,17 +110,12 @@ export async function setCheckpoint<RxDocType, CheckpointType>(
                 document: newDoc
             }], 'replication-set-checkpoint');
 
-            if (result.success[newDoc.id]) {
-                state.lastCheckpointDoc[direction] = getFromObjectOrThrow(
-                    result.success,
-                    newDoc.id
-                );
+            const sucessDoc = result.success[0];
+            if (sucessDoc) {
+                state.lastCheckpointDoc[direction] = sucessDoc;
                 return;
             } else {
-                const error = getFromObjectOrThrow(
-                    result.error,
-                    newDoc.id
-                );
+                const error = result.error[0];
                 if (error.status !== 409) {
                     throw error;
                 } else {

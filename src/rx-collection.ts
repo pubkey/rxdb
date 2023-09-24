@@ -360,6 +360,7 @@ export class RxCollectionBase<
         success: RxDocument<RxDocumentType, OrmMethods>[];
         error: RxStorageWriteError<RxDocumentType>[];
     }> {
+        const primaryPath = this.schema.primaryPath;
         /**
          * Optimization shortcut,
          * do nothing when called with an empty array
@@ -399,7 +400,7 @@ export class RxCollectionBase<
             'rx-collection-bulk-remove'
         );
 
-        const successIds: string[] = Object.keys(results.success);
+        const successIds: string[] = results.success.map(d => d[primaryPath] as string);
 
         // run hooks
         await Promise.all(

@@ -238,17 +238,15 @@ export function rxStorageInstanceToReplicationHandler<RxDocType, MasterCheckpoin
                     writeRows,
                     'replication-master-write'
                 );
-                Object
-                    .values(result.error)
-                    .forEach(err => {
-                        if (err.status !== 409) {
-                            throw new Error('non conflict error');
-                        } else {
-                            conflicts.push(
-                                writeDocToDocState(ensureNotFalsy(err.documentInDb))
-                            );
-                        }
-                    });
+                result.error.forEach(err => {
+                    if (err.status !== 409) {
+                        throw new Error('non conflict error');
+                    } else {
+                        conflicts.push(
+                            writeDocToDocState(ensureNotFalsy(err.documentInDb))
+                        );
+                    }
+                });
             }
             return conflicts;
         }

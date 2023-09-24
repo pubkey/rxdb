@@ -32,7 +32,6 @@ import {
     getDefaultRevision,
     getDefaultRxDocumentMeta,
     getFromMapOrThrow,
-    getFromObjectOrThrow,
     getProperty,
     RXJS_SHARE_REPLAY_DEFAULTS
 } from '../../plugins/utils';
@@ -156,9 +155,9 @@ const RxLocalDocumentPrototype: any = {
             document: newData
         }], 'local-document-save-data')
             .then((res) => {
-                const docResult = res.success[newData.id];
+                const docResult = res.success[0];
                 if (!docResult) {
-                    throw getFromObjectOrThrow(res.error, newData.id);
+                    throw res.error[0];
                 }
                 newData = flatClone(newData);
                 newData._rev = docResult._rev;

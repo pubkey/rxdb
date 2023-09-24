@@ -263,7 +263,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 const writeResult = await masterInstance.bulkWrite([{
                     document: getDocData()
                 }], testContext);
-                assert.deepStrictEqual(writeResult.error, {});
+                assert.deepStrictEqual(writeResult.error, []);
 
                 const replicationState = replicateRxStorageInstance({
                     identifier: randomCouchString(10),
@@ -428,8 +428,8 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
             const writeResult = await forkInstance.bulkWrite([{
                 document: docData
             }], testContext);
-            assert.deepStrictEqual(writeResult.error, {});
-            let previous = getFromObjectOrThrow(writeResult.success, passportId);
+            assert.deepStrictEqual(writeResult.error, []);
+            let previous = writeResult.success[0];
 
             // wait until it is replicated to the master
             await waitUntil(async () => {
@@ -449,8 +449,8 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 previous,
                 document: updateData
             }], testContext);
-            assert.deepStrictEqual(updateResult.error, {});
-            previous = getFromObjectOrThrow(updateResult.success, passportId);
+            assert.deepStrictEqual(updateResult.error, []);
+            previous = updateResult.success[0];
 
             // wait until the change is replicated to the master
             await waitUntil(async () => {
@@ -468,7 +468,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 previous,
                 document: deleteData
             }], testContext);
-            assert.deepStrictEqual(deleteResult.error, {});
+            assert.deepStrictEqual(deleteResult.error, []);
 
             // wait until the change is replicated to the master
             await waitUntil(async () => {
@@ -853,7 +853,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                             previous: docData,
                             document: newDocData
                         }], testContext);
-                        assert.deepStrictEqual(updateResult.error, {});
+                        assert.deepStrictEqual(updateResult.error, []);
                     })
             );
 
@@ -927,7 +927,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
             const insertResult = await forkInstance.bulkWrite([{
                 document: docData
             }], testContext);
-            assert.deepStrictEqual(insertResult.error, {});
+            assert.deepStrictEqual(insertResult.error, []);
 
 
             let updateId = 10;
@@ -1031,7 +1031,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                         const insertResult = await instance.bulkWrite([{
                             document: docData
                         }], testContext);
-                        assert.deepStrictEqual(insertResult.error, {});
+                        assert.deepStrictEqual(insertResult.error, []);
                     })
             );
             await awaitRxStorageReplicationIdle(replicationState);

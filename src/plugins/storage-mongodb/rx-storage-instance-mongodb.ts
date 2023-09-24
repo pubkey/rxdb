@@ -188,8 +188,8 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
         }
         const primaryPath = this.primaryPath;
         const ret: RxStorageBulkWriteResponse<RxDocType> = {
-            success: {},
-            error: {}
+            success: [],
+            error: []
         };
 
         const docIds = documentWrites.map(d => (d.document as any)[primaryPath]);
@@ -242,7 +242,7 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
                             documentInDb: swapMongoToRxDoc(writeResult.value),
                             isError: true
                         };
-                        ret.error[docId] = conflictError;
+                        ret.error.push(conflictError);
                     } else {
                         const event = categorized.changeByDocId.get(docId);
                         if (event) {
@@ -280,7 +280,7 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
                             documentInDb: currentDoc,
                             isError: true
                         };
-                        ret.error[docId] = conflictError;
+                        ret.error.push(conflictError);
                     } else {
                         const event = getFromMapOrThrow(categorized.changeByDocId, docId);
                         eventBulk.events.push(event);

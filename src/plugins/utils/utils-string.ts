@@ -1,13 +1,13 @@
+const COUCH_NAME_CHARS = 'abcdefghijklmnopqrstuvwxyz';
 /**
  * get a random string which can be used with couchdb
  * @link http://stackoverflow.com/a/1349426/3443137
  */
 export function randomCouchString(length: number = 10): string {
     let text = '';
-    const possible = 'abcdefghijklmnopqrstuvwxyz';
 
     for (let i = 0; i < length; i++) {
-        text += possible.charAt(Math.floor(Math.random() * possible.length));
+        text += COUCH_NAME_CHARS.charAt(Math.floor(Math.random() * COUCH_NAME_CHARS.length));
     }
 
     return text;

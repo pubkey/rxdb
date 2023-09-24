@@ -12,7 +12,6 @@ import {
 } from '../../rx-storage-helper';
 import type {
     BulkWriteRow,
-    ById,
     EventBulk,
     QueryMatcher,
     RxConflictResultionTask,
@@ -27,7 +26,6 @@ import type {
     RxStorageInstance,
     RxStorageInstanceCreationParams,
     RxStorageQueryResult,
-    RxStorageWriteError,
     StringKeys
 } from '../../types';
 import {
@@ -97,9 +95,6 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         const documentsById = this.internals.documents;
         const primaryPath = this.primaryPath;
 
-        const success: RxDocumentDataById<RxDocType> = {};
-        let error: ById<RxStorageWriteError<RxDocType>> = {};
-
         const categorized = categorizeBulkWriteRows<RxDocType>(
             this,
             primaryPath as any,
@@ -107,7 +102,8 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
             documentWrites,
             context
         );
-        error = categorized.errors;
+        const error = categorized.errors;
+        const success: RxDocumentData<RxDocType>[] = [];
 
         /**
          * Do inserts/updates
@@ -125,7 +121,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
                 writeRow,
                 undefined
             );
-            success[docId as any] = writeRow.document;
+            success.push(writeRow.document);
         }
 
         const bulkUpdateDocs = categorized.bulkUpdateDocs;
@@ -139,7 +135,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
                 writeRow,
                 documentsById.get(docId as any)
             );
-            success[docId as any] = writeRow.document;
+            success.push(writeRow.document);
         }
 
         /**
@@ -182,6 +178,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
             };
             internals.changes$.next(categorized.eventBulk);
         }
+
         return Promise.resolve({ success, error });
     }
 
