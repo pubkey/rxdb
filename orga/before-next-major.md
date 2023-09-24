@@ -7,7 +7,7 @@ This list contains things that have to be done but will create breaking changes.
 
 See https://github.com/pubkey/rxdb/pull/4614
 
-## Update node.js to 20.7.0
+## Update node.js to 20.7.0 [DONE]
 
 ## Do not allow type mixing
 
@@ -22,7 +22,6 @@ In the RxJsonSchema, a property of a document can have multiple types like
 This is bad and should not be used. Instead each field must have exactly one type.
 Having mixed types causes many confusion, for example when the type is `['string', 'number']`,
 you could run a query selector like `$gt: 10` where it now is not clear if the string `foobar` is matching or not.
-
 
 ## Add enum-compression to the key-compression plugin
 - Also rename the key-compression plugin to be just called 'compression'
