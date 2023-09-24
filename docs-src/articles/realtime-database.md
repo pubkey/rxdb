@@ -21,12 +21,12 @@ Consider the role of real-time computing in car airbags: sensors detect collisio
 
 
 But when people talk about **realtime databases**, especially in the web-development world, they almost never mean realtime, as in **realtime computing**, they mean something else.
-In fact, with any programming language that run on end users devices, it is not even possible to built a "real" realtime database. A programm, like a JavaScript ([browser](./browser-database.md) or [Node.js](../nodejs-database.md)) process, can be halted by the operating systems task manager at any time and therefore it will never be able to guarantee specific response times. To build a realtime computing database, you would need a realtime capable operating system.
+In fact, with any programming language that run on end users devices, it is not even possible to built a "real" realtime database. A program, like a JavaScript ([browser](./browser-database.md) or [Node.js](../nodejs-database.md)) process, can be halted by the operating systems task manager at any time and therefore it will never be able to guarantee specific response times. To build a realtime computing database, you would need a realtime capable operating system.
 
 ## Realtime as in **realtime replication**
 
 When talking about realtime databases, most people refer to realtime, as in realtime replication.
-Often they mean a very specific product which is the **Firebase Realtime Database**.
+Often they mean a very specific product which is the **Firebase Realtime Database** (not the [Firestore](../replication-firestore.md)).
 
 
 <p align="center">
@@ -51,7 +51,7 @@ In the context of realtime client-side applications, "realtime" refers to the im
   <img src="../files/multiwindow.gif" alt="realtime applications" width="400" />
 </p>
 
-In contrast to push-pull based databases (e.g., MySQL or MongoDB servers), a realtime database contains **features which make it easy to build realtime applications**. For example with RxDB you can not only fetch query results once, but instead you can subscribe to a query and direclty update the HTML dom tree whenever the query has a new result set:
+In contrast to push-pull based databases (e.g., MySQL or MongoDB servers), a realtime database contains **features which make it easy to build realtime applications**. For example with RxDB you can not only fetch query results once, but instead you can subscribe to a query and directly update the HTML dom tree whenever the query has a new result set:
 
 ```ts
 await db.heroes.find({
