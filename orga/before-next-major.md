@@ -3,9 +3,11 @@
 This list contains things that have to be done but will create breaking changes.
 
 
-## Set eventReduce:true as default
+## Set eventReduce:true as default [DONE]
 
 See https://github.com/pubkey/rxdb/pull/4614
+
+## Update node.js to 20.7.0
 
 ## Do not allow type mixing
 
@@ -84,5 +86,10 @@ Most "normal" users do not need premium access so we should name it "RxDB Enterp
 
 
 
+## RxStorage: Add RxStorage.info() which also calls parents
 
+HAving an .info() method helps in debugging stuff and sending reports on problems etc.
 
+## Skip repsonding full document data on bulkWrites (only in all happy case)
+
+RxStorage.bulkwrite(): If all writes suceeed, return "SUCESS" or sth to not have to transfer all json document data again. This is mostly important in the remot storage and webworker storage where we do not want to JSON-stringify and parse all data again.

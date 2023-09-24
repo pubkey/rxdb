@@ -153,6 +153,18 @@ config.parallel('rx-database.test.js', () => {
                 assert.ok(hash.endsWith('xxx'));
                 db.destroy();
             });
+            /**
+             * @link https://github.com/pubkey/rxdb/pull/4614
+             */
+            it('should have eventReduce: true as a default', async()=> {
+                const db = await createRxDatabase({
+                    name: randomCouchString(10),
+                    storage: config.storage.getStorage()
+                });
+                assert.strictEqual(db.eventReduce, true);
+                db.destroy();
+
+            });
         });
         describe('negative', () => {
             it('should crash with invalid token', async () => {

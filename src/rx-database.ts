@@ -556,7 +556,7 @@ export function createRxDatabase<
         name,
         password,
         multiInstance = true,
-        eventReduce = false,
+        eventReduce = true,
         ignoreDuplicate = false,
         options = {},
         cleanupPolicy,
