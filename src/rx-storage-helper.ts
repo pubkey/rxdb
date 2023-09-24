@@ -216,10 +216,18 @@ export function categorizeBulkWriteRows<RxDocType>(
 
     let newestRow: BulkWriteRowProcessed<RxDocType> | undefined;
 
+    /**
+     * @performance is really important in this loop!
+     */
     const rowAmount = bulkWriteRows.length;
     for (let rowId = 0; rowId < rowAmount; rowId++) {
         const writeRow = bulkWriteRows[rowId];
-        const docId = writeRow.document[primaryPath] as string;
+
+        // use these variables to have less property accesses
+        const document = writeRow.document;
+        const previous = writeRow.previous;
+        const docId = document[primaryPath] as string;
+
         let documentInDb: RxDocumentData<RxDocType> | false = false;
         if (hasDocsInDb) {
             documentInDb = docsByIdIsMap ? (docsInDb as any).get(docId) : (docsInDb as any)[docId];
@@ -231,9 +239,9 @@ export function categorizeBulkWriteRows<RxDocType>(
              * It is possible to insert already deleted documents,
              * this can happen on replication.
              */
-            const insertedIsDeleted = writeRow.document._deleted ? true : false;
+            const insertedIsDeleted = document._deleted ? true : false;
             if (hasAttachments) {
-                Object.entries(writeRow.document._attachments).forEach(([attachmentId, attachmentData]) => {
+                Object.entries(document._attachments).forEach(([attachmentId, attachmentData]) => {
                     if (
                         !(attachmentData as RxAttachmentWriteData).data
                     ) {
@@ -263,7 +271,7 @@ export function categorizeBulkWriteRows<RxDocType>(
                 }
                 if (
                     !newestRow ||
-                    newestRow.document._meta.lwt < writeRow.document._meta.lwt
+                    newestRow.document._meta.lwt < document._meta.lwt
                 ) {
                     newestRow = writeRow as any;
                 }
@@ -279,8 +287,8 @@ export function categorizeBulkWriteRows<RxDocType>(
                     ),
                     documentId: docId,
                     operation: 'INSERT' as const,
-                    documentData: hasAttachments ? stripAttachmentsDataFromDocument(writeRow.document) : writeRow.document as any,
-                    previousDocumentData: hasAttachments && writeRow.previous ? stripAttachmentsDataFromDocument(writeRow.previous) : writeRow.previous as any,
+                    documentData: hasAttachments ? stripAttachmentsDataFromDocument(document) : document as any,
+                    previousDocumentData: hasAttachments && previous ? stripAttachmentsDataFromDocument(previous) : previous as any,
                     startTime,
                     endTime: now()
                 };
@@ -296,11 +304,11 @@ export function categorizeBulkWriteRows<RxDocType>(
              */
             if (
                 (
-                    !writeRow.previous
+                    !previous
                 ) ||
                 (
-                    !!writeRow.previous &&
-                    revInDb !== writeRow.previous._rev
+                    !!previous &&
+                    revInDb !== previous._rev
                 )
             ) {
                 // is conflict error
@@ -319,27 +327,27 @@ export function categorizeBulkWriteRows<RxDocType>(
 
             const updatedRow: BulkWriteRowProcessed<RxDocType> = hasAttachments ? stripAttachmentsDataFromRow(writeRow) : writeRow as any;
             if (hasAttachments) {
-                if (writeRow.document._deleted) {
+                if (document._deleted) {
                     /**
                      * Deleted documents must have cleared all their attachments.
                      */
-                    if (writeRow.previous) {
+                    if (previous) {
                         Object
-                            .keys(writeRow.previous._attachments)
+                            .keys(previous._attachments)
                             .forEach(attachmentId => {
                                 attachmentsRemove.push({
                                     documentId: docId,
                                     attachmentId,
-                                    digest: ensureNotFalsy(writeRow.previous)._attachments[attachmentId].digest
+                                    digest: ensureNotFalsy(previous)._attachments[attachmentId].digest
                                 });
                             });
                     }
                 } else {
                     // first check for errors
                     Object
-                        .entries(writeRow.document._attachments)
+                        .entries(document._attachments)
                         .find(([attachmentId, attachmentData]) => {
-                            const previousAttachmentData = writeRow.previous ? writeRow.previous._attachments[attachmentId] : undefined;
+                            const previousAttachmentData = previous ? previous._attachments[attachmentId] : undefined;
                             if (
                                 !previousAttachmentData &&
                                 !(attachmentData as RxAttachmentWriteData).data
@@ -357,9 +365,9 @@ export function categorizeBulkWriteRows<RxDocType>(
                         });
                     if (!attachmentError) {
                         Object
-                            .entries(writeRow.document._attachments)
+                            .entries(document._attachments)
                             .forEach(([attachmentId, attachmentData]) => {
-                                const previousAttachmentData = writeRow.previous ? writeRow.previous._attachments[attachmentId] : undefined;
+                                const previousAttachmentData = previous ? previous._attachments[attachmentId] : undefined;
                                 if (!previousAttachmentData) {
                                     attachmentsAdd.push({
                                         documentId: docId,
@@ -402,23 +410,21 @@ export function categorizeBulkWriteRows<RxDocType>(
                 }
             }
 
-            const writeDoc = writeRow.document;
-
             let eventDocumentData: RxDocumentData<RxDocType> | undefined = null as any;
             let previousEventDocumentData: RxDocumentData<RxDocType> | undefined = null as any;
             let operation: 'INSERT' | 'UPDATE' | 'DELETE' = null as any;
 
-            if (writeRow.previous && writeRow.previous._deleted && !writeDoc._deleted) {
+            if (previous && previous._deleted && !document._deleted) {
                 operation = 'INSERT';
-                eventDocumentData = hasAttachments ? stripAttachmentsDataFromDocument(writeDoc) : writeDoc as any;
-            } else if (writeRow.previous && !writeRow.previous._deleted && !writeDoc._deleted) {
+                eventDocumentData = hasAttachments ? stripAttachmentsDataFromDocument(document) : document as any;
+            } else if (previous && !previous._deleted && !document._deleted) {
                 operation = 'UPDATE';
-                eventDocumentData = hasAttachments ? stripAttachmentsDataFromDocument(writeDoc) : writeDoc as any;
-                previousEventDocumentData = writeRow.previous;
-            } else if (writeDoc._deleted) {
+                eventDocumentData = hasAttachments ? stripAttachmentsDataFromDocument(document) : document as any;
+                previousEventDocumentData = previous;
+            } else if (document._deleted) {
                 operation = 'DELETE';
-                eventDocumentData = ensureNotFalsy(writeRow.document) as any;
-                previousEventDocumentData = writeRow.previous;
+                eventDocumentData = ensureNotFalsy(document) as any;
+                previousEventDocumentData = previous;
             } else {
                 throw newRxError('SNH', { args: { writeRow } });
             }
@@ -428,7 +434,7 @@ export function categorizeBulkWriteRows<RxDocType>(
                     eventBulkId,
                     rowId,
                     docId,
-                    writeRow
+                    document
                 ),
                 documentId: docId,
                 documentData: eventDocumentData as RxDocumentData<RxDocType>,
@@ -518,9 +524,9 @@ export function getUniqueDeterministicEventKey(
     eventBulkId: string,
     rowId: number,
     docId: string,
-    writeRow: BulkWriteRow<any>
+    writeRowDocument: RxDocumentWriteData<any>
 ): string {
-    return eventBulkId + '|' + rowId + '|' + docId + '|' + writeRow.document._rev;
+    return eventBulkId + '|' + rowId + '|' + docId + '|' + writeRowDocument._rev;
 }
 
 

@@ -113,7 +113,8 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         const bulkInsertDocs = categorized.bulkInsertDocs;
         for (let i = 0; i < bulkInsertDocs.length; ++i) {
             const writeRow = bulkInsertDocs[i];
-            const docId = writeRow.document[primaryPath];
+            const doc = writeRow.document;
+            const docId = doc[primaryPath];
             putWriteRowToState(
                 docId as any,
                 internals,
@@ -121,13 +122,14 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
                 writeRow,
                 undefined
             );
-            success.push(writeRow.document);
+            success.push(doc);
         }
 
         const bulkUpdateDocs = categorized.bulkUpdateDocs;
         for (let i = 0; i < bulkUpdateDocs.length; ++i) {
             const writeRow = bulkUpdateDocs[i];
-            const docId = writeRow.document[primaryPath];
+            const doc = writeRow.document;
+            const docId = doc[primaryPath];
             putWriteRowToState(
                 docId as any,
                 internals,
@@ -135,7 +137,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
                 writeRow,
                 documentsById.get(docId as any)
             );
-            success.push(writeRow.document);
+            success.push(doc);
         }
 
         /**
