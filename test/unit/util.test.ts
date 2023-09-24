@@ -6,7 +6,6 @@ import AsyncTestUtil, { wait } from 'async-test-util';
 import {
     randomCouchString,
     defaultHashSha256,
-    sortObject,
     now,
     sortDocumentsByLastWriteTime,
     RxDocumentData,
