@@ -482,7 +482,7 @@
     "z-schema": "6.0.1"
   },
   "devDependencies": {
-    "@types/node": "18.17.18",
+    "@types/node": "18.17.19",
     "@babel/cli": "7.22.15",
     "@babel/core": "7.22.20",
     "@babel/plugin-external-helpers": "7.22.5",
