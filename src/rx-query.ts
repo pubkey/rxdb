@@ -14,7 +14,6 @@ import {
 } from 'rxjs/operators';
 import {
     sortObject,
-    stringifyFilter,
     pluginMissing,
     overwriteGetterForCaching,
     now,
@@ -373,7 +372,7 @@ export class RxQueryBase<
             query: this.mangoQuery,
             other: this.other
         }, true);
-        const value = JSON.stringify(stringObj, stringifyFilter);
+        const value = JSON.stringify(stringObj);
         this.toString = () => value;
         return value;
     }

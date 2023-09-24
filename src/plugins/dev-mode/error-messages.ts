@@ -44,6 +44,8 @@ export const ERROR_MESSAGES = {
     QU14: 'Running a count() query in slow mode is now allowed. Either run a count() query with a selector that fully matches an index ' +
         'or set allowSlowCount=true when calling the createRxDatabase',
     QU15: 'For count queries it is not allowed to use skip or limit',
+    QU16: '$regex queries must be defined by a string, not an RegExp instance. ' +
+        'This is because RegExp objects cannot be JSON stringified and also they are mutable which would be dangerous',
 
     // mquery.js
     MQ1: 'path must be a string or object',

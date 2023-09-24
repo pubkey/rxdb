@@ -14,7 +14,6 @@ import {
     firstPropertyNameOfObject,
     toArray,
     isMaybeReadonlyArray,
-    parseRegex,
     flatClone,
     objectPathMonad,
     ObjectPathMonadFunction
@@ -36,10 +35,6 @@ export function normalizeMangoQuery<RxDocType>(
     const primaryKey: string = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
     mangoQuery = flatClone(mangoQuery);
 
-    // regex normalization must run before deep clone because deep clone cannot clone RegExp
-    if (mangoQuery.selector) {
-        mangoQuery.selector = normalizeQueryRegex(mangoQuery.selector);
-    }
     const normalizedMangoQuery: FilledMangoQuery<RxDocType> = clone(mangoQuery) as any;
     if (typeof normalizedMangoQuery.skip !== 'number') {
         normalizedMangoQuery.skip = 0;
@@ -167,38 +162,6 @@ export function normalizeMangoQuery<RxDocType>(
 
     return normalizedMangoQuery;
 }
-
-/**
- * @recursive
- * @mutates the input so that we do not have to deep clone
- */
-export function normalizeQueryRegex(
-    selector: any
-): any {
-    if (typeof selector !== 'object' || selector === null) {
-        return selector;
-    }
-
-    const keys = Object.keys(selector);
-    const ret: any = {};
-    keys.forEach(key => {
-        const value: any = selector[key];
-        if (
-            key === '$regex' &&
-            value instanceof RegExp
-        ) {
-            const parsed = parseRegex(value);
-            ret.$regex = parsed.pattern;
-            ret.$options = parsed.flags;
-        } else if (Array.isArray(value)) {
-            ret[key] = value.map(item => normalizeQueryRegex(item));
-        } else {
-            ret[key] = normalizeQueryRegex(value);
-        }
-    });
-    return ret;
-}
-
 
 /**
  * Returns the sort-comparator,

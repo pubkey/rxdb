@@ -31,7 +31,9 @@ you could run a query selector like `$gt: 10` where it now is not clear if the s
 ## Require string based `$regex`
 
 Atm people can pass `RegExp` instances to the queries. These cannot be transferred via json for example having a remote storage
-can make problems. We should enforce people using strings as operators instead.
+can make problems.
+Also Regular expressions are mutable objects! Which is dangerous.
+We should enforce people using strings as operators instead. Similar to how you cannot use a `Date` object inside of a json document.
 
 
 ## Fix migration+replication

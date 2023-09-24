@@ -46,6 +46,8 @@ export type PropertyType<Type, Property extends string> = string extends Propert
     : unknown;
 
 
+export type MangoQueryRegexOptions = 'i' | 'g' | 'm' | 'gi' | 'ig' | 'igm' | string;
+
 /*
  * The MongoDB query library is huge and we do not need all the operators.
  * If you add an operator here, make sure that you properly add a test in
@@ -62,8 +64,8 @@ export interface MangoQueryOperators<PathValueType> {
     $ne?: PathValueType;
     $in?: PathValueType[];
     $nin?: PathValueType[];
-    $regex?: string | RegExp;
-    $options?: string;
+    $regex?: string;
+    $options?: MangoQueryRegexOptions;
     $exists?: boolean;
     $type?: 'null' | 'boolean' | 'number' | 'string' | 'array' | 'object';
     $mod?: number;
@@ -142,7 +144,10 @@ export declare class RxQuery<RxDocumentType = any, RxQueryResult = RxDocumentTyp
     in(queryObj: any[]): RxQuery<RxDocumentType, RxQueryResult>;
     nin(queryObj: any[]): RxQuery<RxDocumentType, RxQueryResult>;
     all(queryObj: any): RxQuery<RxDocumentType, RxQueryResult>;
-    regex(queryObj: RegExp): RxQuery<RxDocumentType, RxQueryResult>;
+    regex(queryObj: string | {
+        $regex: string;
+        $options: MangoQueryRegexOptions;
+    }): RxQuery<RxDocumentType, RxQueryResult>;
     exists(queryObj: any): RxQuery<RxDocumentType, RxQueryResult>;
     elemMatch(queryObj: any): RxQuery<RxDocumentType, RxQueryResult>;
     mod(p1: any, p2: any, p3: any): RxQuery<RxDocumentType, RxQueryResult>;
