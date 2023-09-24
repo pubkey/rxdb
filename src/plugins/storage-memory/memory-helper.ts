@@ -61,16 +61,18 @@ export function putWriteRowToState<RxDocType>(
     row: BulkWriteRow<RxDocType>,
     docInState?: RxDocumentData<RxDocType>
 ) {
-    state.documents.set(docId, row.document as any);
+    const document = row.document;
+    state.documents.set(docId, document as any);
     for (let i = 0; i < stateByIndex.length; ++i) {
         const byIndex = stateByIndex[i];
         const docsWithIndex = byIndex.docsWithIndex;
-        const newIndexString = byIndex.getIndexableString(row.document as any);
+        const getIndexableString = byIndex.getIndexableString;
+        const newIndexString = getIndexableString(document as any);
         const insertPosition = pushAtSortPosition(
             docsWithIndex,
             {
                 id: docId,
-                doc: row.document,
+                doc: document,
                 indexString: newIndexString
             },
             sortByIndexStringComparator,
@@ -81,7 +83,7 @@ export function putWriteRowToState<RxDocType>(
          * Remove previous if it was in the state
          */
         if (docInState) {
-            const previousIndexString = byIndex.getIndexableString(docInState);
+            const previousIndexString = getIndexableString(docInState);
             if (previousIndexString === newIndexString) {
                 /**
                  * Performance shortcut.
@@ -150,9 +152,11 @@ export function compareDocsWithIndex<RxDocType>(
     a: DocWithIndexString<RxDocType>,
     b: DocWithIndexString<RxDocType>
 ): 1 | 0 | -1 {
-    if (a.indexString < b.indexString) {
+    const indexStringA = a.indexString;
+    const indexStringB = b.indexString;
+    if (indexStringA < indexStringB) {
         return -1;
-    } else if (a.indexString === b.indexString) {
+    } else if (indexStringA === indexStringB) {
         return 0;
     } else {
         return 1;
