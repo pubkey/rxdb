@@ -23,7 +23,7 @@
     "register-service-worker": "1.7.2",
     "rxdb": "file:rxdb-local.tgz",
     "rxjs": "7.8.1",
-    "vue": "3.2.47",
+    "vue": "3.3.4",
     "vue-router": "4.2.5"
   },
   "devDependencies": {
@@ -36,7 +36,7 @@
     "@vue/cli-plugin-pwa": "5.0.8",
     "@vue/cli-plugin-typescript": "5.0.8",
     "@vue/cli-service": "5.0.8",
-    "@vue/compiler-sfc": "3.2.47",
+    "@vue/compiler-sfc": "3.3.4",
     "@vue/eslint-config-typescript": "11.0.3",
     "async-test-util": "2.1.1",
     "concurrently": "8.2.1",
