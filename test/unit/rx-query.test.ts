@@ -111,7 +111,7 @@ describe('rx-query.test.ts', () => {
         it('ISSUE #190: should contain the regex', async () => {
             const col = await humansCollection.create(0);
             const queryWithoutRegex = col.find();
-            const queryWithRegex = queryWithoutRegex.where('color').regex(new RegExp(/foobar/g));
+            const queryWithRegex = queryWithoutRegex.where('color').regex('foobar');
             const queryString = queryWithRegex.toString();
 
             assert.ok(queryString.includes('foobar'));
@@ -1094,10 +1094,12 @@ describe('rx-query.test.ts', () => {
             assert.strictEqual(allDocs.length, 2);
 
             // test 1 with RegExp object
-            const regexp = new RegExp('^Doe$', 'i');
             const result1 = await collection.find({
                 selector: {
-                    lastName: { $regex: regexp }
+                    lastName: {
+                        $regex: '^Doe$',
+                        $options: 'i'
+                    }
                 }
             }).exec();
 

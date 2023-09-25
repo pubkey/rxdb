@@ -64,6 +64,8 @@ export function checkQuery(args: RxPluginPreCreateRxQueryArgs) {
             }
         );
     }
+
+    ensureObjectDoesNotContainRegExp(args.queryObj);
 }
 
 
@@ -149,6 +151,9 @@ export function checkMangoQuery(args: RxPluginPrePrepareQueryArgs) {
                 }
             });
     }
+
+    // Do not allow RexExp instances
+    ensureObjectDoesNotContainRegExp(args.mangoQuery);
 }
 
 
@@ -161,4 +166,28 @@ export function areSelectorsSatisfiedByIndex<RxDocType>(
         query
     );
     return preparedQuery.queryPlan.selectorSatisfiedByIndex;
+}
+
+/**
+ * Ensures that the selector does not contain any RegExp instance.
+ * @recursive
+ */
+export function ensureObjectDoesNotContainRegExp(selector: any) {
+    if (typeof selector !== 'object' || selector === null) {
+        return;
+    }
+    const keys = Object.keys(selector);
+    keys.forEach(key => {
+        const value: any = selector[key];
+        if (value instanceof RegExp) {
+            throw newRxError('QU16', {
+                field: key,
+                query: selector,
+            });
+        } else if (Array.isArray(value)) {
+            value.forEach(item => ensureObjectDoesNotContainRegExp(item));
+        } else {
+            ensureObjectDoesNotContainRegExp(value);
+        }
+    });
 }

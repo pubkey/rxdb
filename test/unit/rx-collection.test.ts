@@ -844,7 +844,7 @@ describe('rx-collection.test.ts', () => {
                         const query = c.find({
                             selector: {
                                 firstName: {
-                                    $regex: /Match/
+                                    $regex: 'Match'
                                 }
                             }
                         });
@@ -860,7 +860,10 @@ describe('rx-collection.test.ts', () => {
                         matchHuman.firstName = 'FooMatchBar';
                         await c.insert(matchHuman);
                         const docs = await c.find()
-                            .where('firstName').regex(/match/i)
+                            .where('firstName').regex({
+                                $regex: 'match',
+                                $options: 'i'
+                            })
                             .exec();
 
                         assert.strictEqual(docs.length, 1);
@@ -874,7 +877,7 @@ describe('rx-collection.test.ts', () => {
                         matchHuman.firstName = 'FooMatchBar';
                         await c.insert(matchHuman);
                         const docs = await c.find()
-                            .where('firstName').regex(/Match/)
+                            .where('firstName').regex('Match')
                             .exec();
 
                         assert.strictEqual(docs.length, 1);
@@ -884,6 +887,37 @@ describe('rx-collection.test.ts', () => {
                     });
                 });
                 describe('negative', () => {
+                    /**
+                     * Disallowed since RxDB version 15.
+                     * RegExp objects are mutable and cannot be JSON.stringify-ed.
+                     * So in a query you have to always use string based regexes.
+                     */
+                    it('should not allow to use RegExp objects', async () => {
+                        const c = await humansCollection.create(10);
+
+                        // normal selector
+                        await assertThrows(
+                            () => c.find({
+                                selector: {
+                                    firstName: {
+                                        $regex: /Match/ as any
+                                    }
+                                }
+                            }),
+                            'RxError',
+                            'QU16'
+                        );
+
+                        // query builder
+                        await assertThrows(
+                            () => c.find()
+                                .where('firstName').regex(/Match/ as any),
+                            'RxError',
+                            'QU16'
+                        );
+
+                        c.database.destroy();
+                    });
                 });
             });
             config.parallel('.remove()', () => {

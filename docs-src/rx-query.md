@@ -175,8 +175,14 @@ myCollection.find({
 })
 .exec().then(documents => console.dir(documents));
 
-// find by using sql equivalent '%like%' syntax
-// This example will fe: match 'foo' but also 'fifoo' or 'foofa' or 'fifoofa'
+/*
+ * find by using sql equivalent '%like%' syntax
+ * This example will fe: match 'foo' but also 'fifoo' or 'foofa' or 'fifoofa'
+ * Notice that in RxDB queries, a regex is represented as a $regex string with the $options parameter for flags.
+ * Using a RegExp instance is not allowed because they are not JSON.stringify()-able and also
+ * RegExp instances are mutable which could cause undefined behavior when the RegExp is mutated
+ * after the query was parsed.
+ */
 myCollection.find({
   selector: {
     name: { $regex: '.*foo.*' }
@@ -193,9 +199,8 @@ myCollection.find({
 
 // do a case insensitive search
 // This example will match 'foo' or 'FOO' or 'FoO' etc...
-var regexp = new RegExp('^foo$', 'i');
 myCollection.find({
-  selector: { name: { $regex: regexp } }
+  selector: { name: { $regex: '^foo$', $options: 'i' } }
 })
 .exec().then(documents => console.dir(documents));
 
