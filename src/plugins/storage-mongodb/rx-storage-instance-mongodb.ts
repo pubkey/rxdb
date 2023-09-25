@@ -191,6 +191,7 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
                 error: []
             };
 
+
             const docIds = documentWrites.map(d => (d.document as any)[primaryPath]);
             const documentStates = await this.findDocumentsById(
                 docIds,
