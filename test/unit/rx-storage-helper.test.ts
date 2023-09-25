@@ -50,7 +50,7 @@ config.parallel('rx-storage-helper.test.ts', () => {
 
             const startTime = performance.now();
 
-            categorizeBulkWriteRows(
+            await categorizeBulkWriteRows(
                 instance,
                 primaryPath,
                 new Map(),

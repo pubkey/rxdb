@@ -60,9 +60,9 @@ describe('replication-p2p.test.ts', () => {
             new Array(10).fill(0).forEach(() => {
                 const id1 = randomString(7);
                 const id2 = randomString(7);
-                it('should have exactly one master ' + id1 + ' - ' + id2, () => {
-                    const isMasterA = isMasterInP2PReplication(defaultHashSha256, id1, id2);
-                    const isMasterB = isMasterInP2PReplication(defaultHashSha256, id2, id1);
+                it('should have exactly one master ' + id1 + ' - ' + id2, async () => {
+                    const isMasterA = await isMasterInP2PReplication(defaultHashSha256, id1, id2);
+                    const isMasterB = await isMasterInP2PReplication(defaultHashSha256, id2, id1);
                     assert.ok(isMasterA !== isMasterB);
                 });
             });

@@ -5,7 +5,8 @@ import type {
     P2PConnectionHandler,
     P2PMessage,
     P2PPeer,
-    P2PResponse} from './p2p-types';
+    P2PResponse
+} from './p2p-types';
 import { filter, firstValueFrom, map } from 'rxjs';
 
 
@@ -17,15 +18,15 @@ import { filter, firstValueFrom, map } from 'rxjs';
  * a storageToken like 'aaaaaa' is not always the master
  * for all peers.
  */
-export function isMasterInP2PReplication(
+export async function isMasterInP2PReplication(
     hashFunction: HashFunction,
     ownStorageToken: string,
     otherStorageToken: string
-): boolean {
+): Promise<boolean> {
     const isMaster =
-        hashFunction([ownStorageToken, otherStorageToken].join('|'))
+        await hashFunction([ownStorageToken, otherStorageToken].join('|'))
         >
-        hashFunction([otherStorageToken, ownStorageToken].join('|'));
+        await hashFunction([otherStorageToken, ownStorageToken].join('|'));
     return isMaster;
 }
 

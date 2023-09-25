@@ -1,9 +1,6 @@
 import {
-    BehaviorSubject,
     Observable,
-    Subject,
-    filter,
-    firstValueFrom
+    Subject
 } from 'rxjs';
 import {
     getStartIndexStringFromLowerBound,
