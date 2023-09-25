@@ -29,6 +29,7 @@ import {
     isMaybeReadonlyArray,
     lastOfArray,
     now,
+    PROMISE_RESOLVE_VOID,
     requestIdlePromise,
     RX_META_LWT_MINIMUM
 } from '../../plugins/utils';
@@ -79,7 +80,7 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
      * they can be awaited.
      */
     public readonly runningOperations = new BehaviorSubject(0);
-    public readonly runningWrites = new BehaviorSubject(0);
+    public writeQueue: Promise<any> = PROMISE_RESOLVE_VOID;
 
     /**
      * We use this to be able to still fetch
@@ -172,142 +173,142 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
      * so we have to do a update-if-previous-is-correct like operations.
      * (Similar to what RxDB does with the revision system)
      */
-    async bulkWrite(
+    bulkWrite(
         documentWrites: BulkWriteRow<RxDocType>[],
         context: string
     ): Promise<RxStorageBulkWriteResponse<RxDocType>> {
 
-        // TODO this does not work. Use a promise-queue like everywhere else.
-        this.runningOperations.next(this.runningOperations.getValue() + 1);
-        await firstValueFrom(this.runningWrites.pipe(filter(c => c === 0)));
-        this.runningWrites.next(this.runningWrites.getValue() + 1);
+        this.writeQueue = this.writeQueue.then(async () => {
+            this.runningOperations.next(this.runningOperations.getValue() + 1);
 
-        const mongoCollection = await this.mongoCollectionPromise;
-        if (this.closed) {
-            return Promise.reject(new Error('already closed'));
-        }
-        const primaryPath = this.primaryPath;
-        const ret: RxStorageBulkWriteResponse<RxDocType> = {
-            success: [],
-            error: []
-        };
-
-        const docIds = documentWrites.map(d => (d.document as any)[primaryPath]);
-        const documentStates = await this.findDocumentsById(
-            docIds,
-            true
-        );
-        const documentStatesMap = new Map();
-        documentStates.forEach(doc => {
-            const docId = doc[primaryPath];
-            documentStatesMap.set(docId, doc);
-        });
-        const categorized = categorizeBulkWriteRows<RxDocType>(
-            this,
-            primaryPath as any,
-            documentStatesMap,
-            documentWrites,
-            context
-        );
-        ret.error = categorized.errors;
-
-        /**
-         * Reset the event bulk because
-         * conflicts can still appear after the categorization
-         */
-        const eventBulk = categorized.eventBulk;
-        eventBulk.events = [];
-
-        await Promise.all([
-            /**
-             * Inserts
-             * @link https://sparkbyexamples.com/mongodb/mongodb-insert-if-not-exists/
-             */
-            Promise.all(
-                categorized.bulkInsertDocs.map(async (writeRow) => {
-                    const docId: string = writeRow.document[primaryPath] as any;
-                    const writeResult = await mongoCollection.findOneAndUpdate(
-                        {
-                            [this.inMongoPrimaryPath]: docId
-                        },
-                        {
-                            $setOnInsert: swapRxDocToMongo(writeRow.document)
-                        },
-                        {
-                            upsert: true,
-                            includeResultMetadata: true
-                        }
-                    );
-                    if (writeResult.value) {
-                        // had insert conflict
-                        const conflictError: RxStorageWriteErrorConflict<RxDocType> = {
-                            status: 409,
-                            documentId: docId,
-                            writeRow,
-                            documentInDb: swapMongoToRxDoc(writeResult.value),
-                            isError: true
-                        };
-                        ret.error.push(conflictError);
-                    } else {
-                        const event = categorized.changeByDocId.get(docId);
-                        if (event) {
-                            eventBulk.events.push(event);
-                        }
-                        ret.success[docId as any] = writeRow.document;
-                    }
-                })
-            ),
-            /**
-             * Updates
-             */
-            Promise.all(
-                categorized.bulkUpdateDocs.map(async (writeRow) => {
-                    const docId = writeRow.document[primaryPath] as string;
-                    const writeResult = await mongoCollection.findOneAndReplace(
-                        {
-                            [this.inMongoPrimaryPath]: docId,
-                            _rev: ensureNotFalsy(writeRow.previous)._rev
-                        },
-                        swapRxDocToMongo(writeRow.document),
-                        {
-                            includeResultMetadata: true,
-                            upsert: false
-                        }
-                    );
-                    if (!writeResult.value) {
-                        const currentDocState = await this.findDocumentsById([docId], true);
-                        const currentDoc = currentDocState[0];
-                        // had insert conflict
-                        const conflictError: RxStorageWriteErrorConflict<RxDocType> = {
-                            status: 409,
-                            documentId: docId,
-                            writeRow,
-                            documentInDb: currentDoc,
-                            isError: true
-                        };
-                        ret.error.push(conflictError);
-                    } else {
-                        const event = getFromMapOrThrow(categorized.changeByDocId, docId);
-                        eventBulk.events.push(event);
-                        ret.success[docId as any] = writeRow.document;
-                    }
-
-                })
-            )
-        ]);
-
-        if (categorized.eventBulk.events.length > 0) {
-            const lastState = ensureNotFalsy(categorized.newestRow).document;
-            categorized.eventBulk.checkpoint = {
-                id: lastState[primaryPath],
-                lwt: lastState._meta.lwt
+            const mongoCollection = await this.mongoCollectionPromise;
+            if (this.closed) {
+                return Promise.reject(new Error('already closed'));
+            }
+            const primaryPath = this.primaryPath;
+            const ret: RxStorageBulkWriteResponse<RxDocType> = {
+                success: [],
+                error: []
             };
-            this.changes$.next(categorized.eventBulk);
-        }
 
-        this.runningWrites.next(this.runningWrites.getValue() - 1);
-        this.runningOperations.next(this.runningOperations.getValue() - 1);
-        return ret;
+            const docIds = documentWrites.map(d => (d.document as any)[primaryPath]);
+            const documentStates = await this.findDocumentsById(
+                docIds,
+                true
+            );
+            const documentStatesMap = new Map();
+            documentStates.forEach(doc => {
+                const docId = doc[primaryPath];
+                documentStatesMap.set(docId, doc);
+            });
+            const categorized = categorizeBulkWriteRows<RxDocType>(
+                this,
+                primaryPath as any,
+                documentStatesMap,
+                documentWrites,
+                context
+            );
+            ret.error = categorized.errors;
+
+            /**
+             * Reset the event bulk because
+             * conflicts can still appear after the categorization
+             */
+            const eventBulk = categorized.eventBulk;
+            eventBulk.events = [];
+
+            await Promise.all([
+                /**
+                 * Inserts
+                 * @link https://sparkbyexamples.com/mongodb/mongodb-insert-if-not-exists/
+                 */
+                Promise.all(
+                    categorized.bulkInsertDocs.map(async (writeRow) => {
+                        const docId: string = writeRow.document[primaryPath] as any;
+                        const writeResult = await mongoCollection.findOneAndUpdate(
+                            {
+                                [this.inMongoPrimaryPath]: docId
+                            },
+                            {
+                                $setOnInsert: swapRxDocToMongo(writeRow.document)
+                            },
+                            {
+                                upsert: true,
+                                includeResultMetadata: true
+                            }
+                        );
+                        if (writeResult.value) {
+                            // had insert conflict
+                            const conflictError: RxStorageWriteErrorConflict<RxDocType> = {
+                                status: 409,
+                                documentId: docId,
+                                writeRow,
+                                documentInDb: swapMongoToRxDoc(writeResult.value),
+                                isError: true
+                            };
+                            ret.error.push(conflictError);
+                        } else {
+                            const event = categorized.changeByDocId.get(docId);
+                            if (event) {
+                                eventBulk.events.push(event);
+                            }
+                            ret.success.push(writeRow.document);
+                        }
+                    })
+                ),
+                /**
+                 * Updates
+                 */
+                Promise.all(
+                    categorized.bulkUpdateDocs.map(async (writeRow) => {
+                        const docId = writeRow.document[primaryPath] as string;
+                        const writeResult = await mongoCollection.findOneAndReplace(
+                            {
+                                [this.inMongoPrimaryPath]: docId,
+                                _rev: ensureNotFalsy(writeRow.previous)._rev
+                            },
+                            swapRxDocToMongo(writeRow.document),
+                            {
+                                includeResultMetadata: true,
+                                upsert: false
+                            }
+                        );
+                        if (!writeResult.value) {
+                            const currentDocState = await this.findDocumentsById([docId], true);
+                            const currentDoc = currentDocState[0];
+                            // had insert conflict
+                            const conflictError: RxStorageWriteErrorConflict<RxDocType> = {
+                                status: 409,
+                                documentId: docId,
+                                writeRow,
+                                documentInDb: currentDoc,
+                                isError: true
+                            };
+                            ret.error.push(conflictError);
+                        } else {
+                            const event = getFromMapOrThrow(categorized.changeByDocId, docId);
+                            eventBulk.events.push(event);
+                            ret.success.push(writeRow.document);
+                        }
+
+                    })
+                )
+            ]);
+
+            if (categorized.eventBulk.events.length > 0) {
+                const lastState = ensureNotFalsy(categorized.newestRow).document;
+                categorized.eventBulk.checkpoint = {
+                    id: lastState[primaryPath],
+                    lwt: lastState._meta.lwt
+                };
+                this.changes$.next(categorized.eventBulk);
+            }
+
+            this.runningOperations.next(this.runningOperations.getValue() - 1);
+            return ret;
+        });
+        return this.writeQueue;
+
     }
 
     async findDocumentsById(
