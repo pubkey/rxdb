@@ -90,55 +90,51 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         documentWrites: BulkWriteRow<RxDocType>[],
         context: string
     ): Promise<RxStorageBulkWriteResponse<RxDocType>> {
+        this.ensurePersistence();
+        ensureNotRemoved(this);
+        const internals = this.internals;
+        const documentsById = this.internals.documents;
+        const primaryPath = this.primaryPath;
 
-        this.internals.writeQueue = this.internals.writeQueue.then(async () => {
-            this.ensurePersistence();
-            ensureNotRemoved(this);
-            const internals = this.internals;
-            const documentsById = this.internals.documents;
-            const primaryPath = this.primaryPath;
+        const categorized = categorizeBulkWriteRows<RxDocType>(
+            this,
+            primaryPath as any,
+            documentsById,
+            documentWrites,
+            context
+        );
+        const error = categorized.errors;
+        const success: RxDocumentData<RxDocType>[] = new Array(categorized.bulkInsertDocs.length);
+        const bulkInsertDocs = categorized.bulkInsertDocs;
+        for (let i = 0; i < bulkInsertDocs.length; ++i) {
+            const writeRow = bulkInsertDocs[i];
+            const doc = writeRow.document;
+            success[i] = doc;
+        }
+        const bulkUpdateDocs = categorized.bulkUpdateDocs;
+        for (let i = 0; i < bulkUpdateDocs.length; ++i) {
+            const writeRow = bulkUpdateDocs[i];
+            const doc = writeRow.document;
+            success.push(doc);
+        }
+        if (categorized.eventBulk.events.length > 0) {
+            const lastState = ensureNotFalsy(categorized.newestRow).document;
+            categorized.eventBulk.checkpoint = {
+                id: lastState[primaryPath],
+                lwt: lastState._meta.lwt
+            };
+            internals.changes$.next(categorized.eventBulk);
+        }
 
-            const categorized = await categorizeBulkWriteRows<RxDocType>(
-                this,
-                primaryPath as any,
-                documentsById,
-                documentWrites,
-                context
-            );
-            const error = categorized.errors;
-            const success: RxDocumentData<RxDocType>[] = new Array(categorized.bulkInsertDocs.length);
-            const bulkInsertDocs = categorized.bulkInsertDocs;
-            for (let i = 0; i < bulkInsertDocs.length; ++i) {
-                const writeRow = bulkInsertDocs[i];
-                const doc = writeRow.document;
-                success[i] = doc;
-            }
-            const bulkUpdateDocs = categorized.bulkUpdateDocs;
-            for (let i = 0; i < bulkUpdateDocs.length; ++i) {
-                const writeRow = bulkUpdateDocs[i];
-                const doc = writeRow.document;
-                success.push(doc);
-            }
-            if (categorized.eventBulk.events.length > 0) {
-                const lastState = ensureNotFalsy(categorized.newestRow).document;
-                categorized.eventBulk.checkpoint = {
-                    id: lastState[primaryPath],
-                    lwt: lastState._meta.lwt
-                };
-                internals.changes$.next(categorized.eventBulk);
-            }
+        this.internals.ensurePersistenceTask = categorized;
+        if (!this.internals.ensurePersistenceIdlePromise) {
+            this.internals.ensurePersistenceIdlePromise = requestIdlePromise(1000).then(() => {
+                this.internals.ensurePersistenceIdlePromise = undefined;
+                this.ensurePersistence();
+            });
+        }
 
-            this.internals.ensurePersistenceTask = categorized;
-            if (!this.internals.ensurePersistenceIdlePromise) {
-                this.internals.ensurePersistenceIdlePromise = requestIdlePromise(1000).then(() => {
-                    this.internals.ensurePersistenceIdlePromise = undefined;
-                    this.ensurePersistence();
-                });
-            }
-
-            return Promise.resolve({ success, error });
-        });
-        return this.internals.writeQueue;
+        return Promise.resolve({ success, error });
     }
 
     /**
@@ -536,7 +532,6 @@ export function createMemoryStorageInstance<RxDocType>(
             documents: new Map(),
             attachments: params.schema.attachments ? new Map() : undefined as any,
             byIndex: {},
-            writeQueue: PROMISE_RESOLVE_VOID,
             conflictResultionTasks$: new Subject(),
             changes$: new Subject()
         };
