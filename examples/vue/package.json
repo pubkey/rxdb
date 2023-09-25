@@ -29,7 +29,7 @@
   "devDependencies": {
     "@types/node": "18.17.19",
     "@types/pouchdb-adapter-http": "6.1.4",
-    "@types/pouchdb-adapter-idb": "6.1.4",
+    "@types/pouchdb-adapter-idb": "6.1.5",
     "@typescript-eslint/eslint-plugin": "5.62.0",
     "@typescript-eslint/parser": "5.62.0",
     "@vue/cli-plugin-eslint": "5.0.8",
