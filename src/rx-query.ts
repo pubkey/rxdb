@@ -21,7 +21,8 @@ import {
     PROMISE_RESOLVE_FALSE,
     RXJS_SHARE_REPLAY_DEFAULTS,
     ensureNotFalsy,
-    areRxDocumentArraysEqual
+    areRxDocumentArraysEqual,
+    appendToArray
 } from './plugins/utils';
 import {
     newRxError
@@ -223,7 +224,6 @@ export class RxQueryBase<
         const docsDataMap = new Map();
         const docsMap = new Map();
 
-
         const docs = newResultData.map(docData => this.collection._docCache.getCachedRxDocument(docData));
 
         /**
@@ -288,7 +288,7 @@ export class RxQueryBase<
             // everything which was not in docCache must be fetched from the storage
             if (mustBeQueried.length > 0) {
                 const docs = await this.collection.storageInstance.findDocumentsById(mustBeQueried, false);
-                Object.values(docs).forEach(docData => {
+                docs.forEach(docData => {
                     const doc = this.collection._docCache.getCachedRxDocument(docData);
                     ret.set(doc.primary, doc);
                 });
@@ -688,10 +688,8 @@ export async function queryCollection<RxDocType>(
             });
             // otherwise get from storage
             if (docIds.length > 0) {
-                const docsMap = await collection.storageInstance.findDocumentsById(docIds, false);
-                Object.values(docsMap).forEach(docData => {
-                    docs.push(docData);
-                });
+                const docsFromStorage = await collection.storageInstance.findDocumentsById(docIds, false);
+                appendToArray(docs, docsFromStorage);
             }
         } else {
             const docId = rxQuery.isFindOneByIdQuery;
@@ -700,9 +698,9 @@ export async function queryCollection<RxDocType>(
             let docData = rxQuery.collection._docCache.getLatestDocumentDataIfExists(docId);
             if (!docData) {
                 // otherwise get from storage
-                const docsMap = await collection.storageInstance.findDocumentsById([docId], false);
-                if (docsMap.hasOwnProperty(docId)) {
-                    docData = docsMap[docId];
+                const fromStorageList = await collection.storageInstance.findDocumentsById([docId], false);
+                if (fromStorageList[0]) {
+                    docData = fromStorageList[0];
                 }
             }
             if (docData && !docData._deleted) {

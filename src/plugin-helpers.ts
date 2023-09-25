@@ -6,7 +6,6 @@ import type {
     EventBulk,
     RxChangeEvent,
     RxDocumentData,
-    RxDocumentDataById,
     RxDocumentWriteData,
     RxJsonSchema,
     RxStorage,
@@ -123,10 +122,12 @@ export function wrappedValidateStorageFactory(
                                 continueWrites.push(row);
                             }
                         });
-                        const writePromise: Promise<RxStorageBulkWriteResponse<RxDocType>> = continueWrites.length > 0 ? oldBulkWrite(continueWrites, context) : Promise.resolve({ error: {}, success: {} });
+                        const writePromise: Promise<RxStorageBulkWriteResponse<RxDocType>> = continueWrites.length > 0 ?
+                            oldBulkWrite(continueWrites, context) :
+                            Promise.resolve({ error: [], success: [] });
                         return writePromise.then(writeResult => {
                             errors.forEach(validationError => {
-                                writeResult.error[validationError.documentId] = validationError;
+                                writeResult.error.push(validationError);
                             });
                             return writeResult;
                         });
@@ -210,18 +211,18 @@ export function wrapRxStorageInstance<RxDocType>(
 
             const writeResult = await instance.bulkWrite(useRows, context);
             const ret: RxStorageBulkWriteResponse<RxDocType> = {
-                success: {},
-                error: {}
+                success: [],
+                error: []
             };
             const promises: Promise<any>[] = [];
-            Object.entries(writeResult.success).forEach(([k, v]) => {
+            writeResult.success.forEach(v => {
                 promises.push(
-                    fromStorage(v).then(v2 => ret.success[k] = v2)
+                    fromStorage(v).then(v2 => ret.success.push(v2))
                 );
             });
-            Object.entries(writeResult.error).forEach(([k, error]) => {
+            writeResult.error.forEach(error => {
                 promises.push(
-                    errorFromStorage(error).then(err => ret.error[k] = err)
+                    errorFromStorage(error).then(err => ret.error.push(err))
                 );
             });
             await Promise.all(promises);
@@ -258,11 +259,11 @@ export function wrapRxStorageInstance<RxDocType>(
         findDocumentsById: (ids, deleted) => {
             return instance.findDocumentsById(ids, deleted)
                 .then(async (findResult) => {
-                    const ret: RxDocumentDataById<RxDocType> = {};
+                    const ret: RxDocumentData<RxDocType>[] = [];
                     await Promise.all(
-                        Object.entries(findResult)
-                            .map(async ([key, doc]) => {
-                                ret[key] = await fromStorage(doc);
+                        findResult
+                            .map(async (doc) => {
+                                ret.push(await fromStorage(doc));
                             })
                     );
                     return ret;

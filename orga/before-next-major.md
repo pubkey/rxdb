@@ -92,3 +92,9 @@ HAving an .info() method helps in debugging stuff and sending reports on problem
 ## Skip repsonding full document data on bulkWrites (only in all happy case)
 
 RxStorage.bulkwrite(): If all writes suceeed, return "SUCESS" or sth to not have to transfer all json document data again. This is mostly important in the remot storage and webworker storage where we do not want to JSON-stringify and parse all data again.
+
+
+## Change response type of RxStorageInstance.bulkWrite() from indexeddb objects to arrays
+
+`RxStorageBulkWriteResponse` should only contains arrays. This makes writes much less performance users because we do not have to
+index the results.

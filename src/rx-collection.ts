@@ -321,9 +321,7 @@ export class RxCollectionBase<
                         });
                 })
             ) : useDocs;
-        const docsMap: Map<string, RxDocumentType> = new Map();
         const insertRows: BulkWriteRow<RxDocumentType>[] = docs.map(doc => {
-            docsMap.set((doc as any)[primaryPath] as any, doc);
             const row: BulkWriteRow<RxDocumentType> = { document: doc };
             return row;
         });
@@ -333,10 +331,14 @@ export class RxCollectionBase<
         );
 
         // create documents
-        const rxDocuments = Object.values(results.success)
+        const rxDocuments = results.success
             .map((writtenDocData) => this._docCache.getCachedRxDocument(writtenDocData));
 
         if (this.hasHooks('post', 'insert')) {
+            const docsMap: Map<string, RxDocumentType> = new Map();
+            docs.forEach(doc => {
+                docsMap.set((doc as any)[primaryPath] as any, doc);
+            });
             await Promise.all(
                 rxDocuments.map(doc => {
                     return this._runHooks(
@@ -350,7 +352,7 @@ export class RxCollectionBase<
 
         return {
             success: rxDocuments,
-            error: Object.values(results.error)
+            error: results.error
         };
     }
 
@@ -360,6 +362,7 @@ export class RxCollectionBase<
         success: RxDocument<RxDocumentType, OrmMethods>[];
         error: RxStorageWriteError<RxDocumentType>[];
     }> {
+        const primaryPath = this.schema.primaryPath;
         /**
          * Optimization shortcut,
          * do nothing when called with an empty array
@@ -399,7 +402,7 @@ export class RxCollectionBase<
             'rx-collection-bulk-remove'
         );
 
-        const successIds: string[] = Object.keys(results.success);
+        const successIds: string[] = results.success.map(d => d[primaryPath] as string);
 
         // run hooks
         await Promise.all(
@@ -417,7 +420,7 @@ export class RxCollectionBase<
 
         return {
             success: rxDocuments,
-            error: Object.values(results.error)
+            error: results.error
         };
     }
 

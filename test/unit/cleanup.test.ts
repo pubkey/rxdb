@@ -48,8 +48,8 @@ config.parallel('cleanup.test.js', () => {
                 ],
                 true
             );
-            assert.ok(deletedDocInStorage[notDeleted.primary]);
-            const deletedDocStillInStorage = !!deletedDocInStorage[doc.primary];
+            assert.ok(deletedDocInStorage.find(d => d[collection.schema.primaryPath] === notDeleted.primary));
+            const deletedDocStillInStorage = !!deletedDocInStorage.find(d => d[collection.schema.primaryPath] === doc.primary);
             return !deletedDocStillInStorage;
         });
 
@@ -100,7 +100,7 @@ config.parallel('cleanup.test.js', () => {
             [doc.primary],
             true
         );
-        assert.ok(deletedDocInStorage[doc.primary]);
+        assert.ok(deletedDocInStorage[0]);
 
         db.destroy();
     });

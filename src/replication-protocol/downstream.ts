@@ -233,13 +233,14 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
         docs: WithDeleted<RxDocType>[],
         checkpoint: CheckpointType
     ): Promise<void> {
+        const primaryPath = state.primaryPath;
         state.stats.down.persistFromMaster = state.stats.down.persistFromMaster + 1;
 
         /**
          * Add the new docs to the non-persistent list
          */
         docs.forEach(docData => {
-            const docId: string = (docData as any)[state.primaryPath];
+            const docId: string = (docData as any)[primaryPath];
             nonPersistedFromMaster.docs[docId] = docData;
         });
         nonPersistedFromMaster.checkpoint = checkpoint;
@@ -273,18 +274,21 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
                     docIds
                 )
             ]).then(([
-                currentForkState,
+                currentForkStateList,
                 assumedMasterState
             ]) => {
+                const currentForkState = new Map<string, RxDocumentData<RxDocType>>();
+                currentForkStateList.forEach(doc => currentForkState.set((doc as any)[primaryPath], doc));
                 return Promise.all(
                     docIds.map(async (docId) => {
-                        const forkStateFullDoc: RxDocumentData<RxDocType> | undefined = currentForkState[docId];
+                        const forkStateFullDoc: RxDocumentData<RxDocType> | undefined = currentForkState.get(docId);
                         const forkStateDocData: WithDeleted<RxDocType> | undefined = forkStateFullDoc ? writeDocToDocState(forkStateFullDoc) : undefined;
                         const masterState = downDocsById[docId];
                         const assumedMaster = assumedMasterState[docId];
 
                         if (
                             assumedMaster &&
+                            forkStateFullDoc &&
                             assumedMaster.metaDocument.isResolvedConflict === forkStateFullDoc._rev
                         ) {
                             /**
@@ -308,6 +312,7 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
                             (
                                 assumedMaster &&
                                 (assumedMaster.docData as any)._rev &&
+                                forkStateFullDoc &&
                                 forkStateFullDoc._meta[state.input.identifier] &&
                                 parseRevision(forkStateFullDoc._rev).height === forkStateFullDoc._meta[state.input.identifier]
                             )
@@ -422,11 +427,12 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
                         writeRowsToFork,
                         state.downstreamBulkWriteFlag
                     ).then((forkWriteResult) => {
-                        Object.keys(forkWriteResult.success).forEach((docId) => {
+                        forkWriteResult.success.forEach(doc => {
+                            const docId = (doc as any)[primaryPath];
                             state.events.processed.down.next(writeRowsToForkById[docId]);
                             useMetaWriteRows.push(writeRowsToMeta[docId]);
                         });
-                        Object.values(forkWriteResult.error).forEach(error => {
+                        forkWriteResult.error.forEach(error => {
                             /**
                              * We do not have to care about downstream conflict errors here
                              * because on conflict, it will be solved locally and result in another write.
@@ -447,11 +453,10 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
                         useMetaWriteRows,
                         'replication-down-write-meta'
                     ).then(metaWriteResult => {
-                        Object
-                            .entries(metaWriteResult.error)
-                            .forEach(([docId, writeError]) => {
+                        metaWriteResult.error
+                            .forEach(writeError => {
                                 state.events.error.next(newRxError('RC_PULL', {
-                                    id: docId,
+                                    id: writeError.documentId,
                                     writeError
                                 }));
                             });

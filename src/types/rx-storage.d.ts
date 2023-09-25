@@ -4,7 +4,7 @@ import { RxDocumentMeta } from './rx-document';
 import { RxStorageWriteError } from './rx-error';
 import { MangoQuery } from './rx-query';
 import { RxJsonSchema } from './rx-schema';
-import { ById, Override } from './util';
+import { Override } from './util';
 
 /**
  * The document data how it comes out of the storage instance.
@@ -152,20 +152,22 @@ export type RxAttachmentWriteData = RxAttachmentDataBase & {
 };
 
 
-
-
+/**
+ * The returned data from RxStorageInstance.bulkWrite()
+ * For better performance, we do NOT use an indexed object,
+ * but only plain arrays. Because most of the time
+ * RxDB anyway only need the array data and we can save performance
+ * by not indexing the results.
+ */
 export type RxStorageBulkWriteResponse<RxDocType> = {
     /**
-     * A map that is indexed by the documentId
      * contains all succeeded writes.
      */
-    success: RxDocumentDataById<RxDocType>;
-
+    success: RxDocumentData<RxDocType>[];
     /**
-     * A map that is indexed by the documentId
      * contains all errored writes.
      */
-    error: ById<RxStorageWriteError<RxDocType>>;
+    error: RxStorageWriteError<RxDocType>[];
 };
 
 export type PreparedQuery<DocType> = MangoQuery<DocType> | any;
@@ -305,10 +307,13 @@ export type RxStorageDefaultCheckpoint = {
 
 
 export type CategorizeBulkWriteRowsOutput<RxDocType> = {
+
+    // TODO only needs the document, not the row.
     bulkInsertDocs: BulkWriteRowProcessed<RxDocType>[];
     bulkUpdateDocs: BulkWriteRowProcessed<RxDocType>[];
+
     changeByDocId: Map<string, RxStorageChangeEvent<RxDocumentData<RxDocType>>>;
-    errors: ById<RxStorageWriteError<RxDocType>>;
+    errors: RxStorageWriteError<RxDocType>[];
     eventBulk: EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, any>;
     attachmentsAdd: {
         documentId: string;

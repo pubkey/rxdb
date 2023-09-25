@@ -15,7 +15,6 @@ import {
     flatClone,
     PROMISE_RESOLVE_NULL,
     RXJS_SHARE_REPLAY_DEFAULTS,
-    getFromObjectOrThrow,
     getProperty
 } from './plugins/utils';
 import {
@@ -345,12 +344,12 @@ export const basePrototype = {
             document: newData
         }], 'rx-document-save-data');
 
-        const isError = writeResult.error[this.primary];
+        const isError = writeResult.error[0];
         throwIfIsStorageWriteError(this.collection, this.primary, newData, isError);
 
         await this.collection._runHooks('post', 'save', newData, this);
         return this.collection._docCache.getCachedRxDocument(
-            getFromObjectOrThrow(writeResult.success, this.primary)
+            writeResult.success[0]
         );
     },
 
@@ -377,9 +376,9 @@ export const basePrototype = {
                     previous: this._data,
                     document: deletedData
                 }], 'rx-document-remove');
-                const isError = writeResult.error[this.primary];
+                const isError = writeResult.error[0];
                 throwIfIsStorageWriteError(collection, this.primary, deletedData, isError);
-                return getFromObjectOrThrow(writeResult.success, this.primary);
+                return writeResult.success[0];
             })
             .then((removed) => {
                 removedDocData = removed;

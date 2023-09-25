@@ -21,6 +21,7 @@ import type {
     ById,
     DocumentsWithCheckpoint,
     RxConflictHandler,
+    RxDocumentData,
     RxReplicationHandler,
     RxReplicationWriteToMasterRow,
     RxStorageInstance,
@@ -197,16 +198,19 @@ export function rxStorageInstanceToReplicationHandler<RxDocType, MasterCheckpoin
             });
             const ids = Object.keys(rowById);
 
-            const masterDocsState = await instance.findDocumentsById(
+            const masterDocsStateList = await instance.findDocumentsById(
                 ids,
                 true
             );
+            const masterDocsState = new Map<string, RxDocumentData<RxDocType>>();
+            masterDocsStateList.forEach(doc => masterDocsState.set((doc as any)[primaryPath], doc));
+
             const conflicts: WithDeleted<RxDocType>[] = [];
             const writeRows: BulkWriteRow<RxDocType>[] = [];
             await Promise.all(
                 Object.entries(rowById)
                     .map(async ([id, row]) => {
-                        const masterState = masterDocsState[id];
+                        const masterState = masterDocsState.get(id);
                         if (!masterState) {
                             writeRows.push({
                                 document: docStateToWriteDoc(databaseInstanceToken, row.newDocumentState)
@@ -238,17 +242,15 @@ export function rxStorageInstanceToReplicationHandler<RxDocType, MasterCheckpoin
                     writeRows,
                     'replication-master-write'
                 );
-                Object
-                    .values(result.error)
-                    .forEach(err => {
-                        if (err.status !== 409) {
-                            throw new Error('non conflict error');
-                        } else {
-                            conflicts.push(
-                                writeDocToDocState(ensureNotFalsy(err.documentInDb))
-                            );
-                        }
-                    });
+                result.error.forEach(err => {
+                    if (err.status !== 409) {
+                        throw new Error('non conflict error');
+                    } else {
+                        conflicts.push(
+                            writeDocToDocState(ensureNotFalsy(err.documentInDb))
+                        );
+                    }
+                });
             }
             return conflicts;
         }

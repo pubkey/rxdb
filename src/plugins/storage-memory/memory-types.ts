@@ -1,5 +1,6 @@
 import { Subject } from 'rxjs';
 import type {
+    CategorizeBulkWriteRowsOutput,
     DefaultPreparedQuery,
     EventBulk,
     RxAttachmentWriteData,
@@ -63,6 +64,12 @@ export type MemoryStorageInternals<RxDocType> = {
          */
         [indexName: string]: MemoryStorageInternalsByIndex<RxDocType>;
     };
+
+    /**
+     * We need these to do lazy writes.
+     */
+    ensurePersistenceTask?: CategorizeBulkWriteRowsOutput<RxDocType>;
+    ensurePersistenceIdlePromise?: Promise<void>;
 
     /**
      * To easier test the conflict resolution,

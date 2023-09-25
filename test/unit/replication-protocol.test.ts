@@ -16,7 +16,6 @@ import {
     RxStorageInstance,
     RxStorageInstanceReplicationState,
     RxConflictHandlerInput,
-    getFromObjectOrThrow,
     awaitRxStorageReplicationIdle,
     promiseWait,
     getRxReplicationMetaInstanceSchema,
@@ -263,7 +262,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 const writeResult = await masterInstance.bulkWrite([{
                     document: getDocData()
                 }], testContext);
-                assert.deepStrictEqual(writeResult.error, {});
+                assert.deepStrictEqual(writeResult.error, []);
 
                 const replicationState = replicateRxStorageInstance({
                     identifier: randomCouchString(10),
@@ -295,8 +294,8 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                         [checkpointDocId],
                         false
                     );
-                    if (response[checkpointDocId]) {
-                        checkpointDocBefore = response[checkpointDocId];
+                    if (response[0]) {
+                        checkpointDocBefore = response[0];
                         break;
                     }
                     await wait(200);
@@ -312,7 +311,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                     [checkpointDocId],
                     false
                 );
-                const checkpointDocAfter = getFromObjectOrThrow(checkpointDocAfterResult, checkpointDocId);
+                const checkpointDocAfter = checkpointDocAfterResult[0];
 
                 assert.strictEqual(
                     checkpointDocAfter._rev,
@@ -428,13 +427,13 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
             const writeResult = await forkInstance.bulkWrite([{
                 document: docData
             }], testContext);
-            assert.deepStrictEqual(writeResult.error, {});
-            let previous = getFromObjectOrThrow(writeResult.success, passportId);
+            assert.deepStrictEqual(writeResult.error, []);
+            let previous = writeResult.success[0];
 
             // wait until it is replicated to the master
             await waitUntil(async () => {
                 const docsAfterUpdate = await masterInstance.findDocumentsById([passportId], false);
-                return docsAfterUpdate[passportId];
+                return docsAfterUpdate[0];
             });
 
             // UPDATE
@@ -449,13 +448,13 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 previous,
                 document: updateData
             }], testContext);
-            assert.deepStrictEqual(updateResult.error, {});
-            previous = getFromObjectOrThrow(updateResult.success, passportId);
+            assert.deepStrictEqual(updateResult.error, []);
+            previous = updateResult.success[0];
 
             // wait until the change is replicated to the master
             await waitUntil(async () => {
                 const docsAfterUpdate = await masterInstance.findDocumentsById([passportId], false);
-                return docsAfterUpdate[passportId].firstName === 'xxx';
+                return docsAfterUpdate[0].firstName === 'xxx';
             });
             await ensureEqualState(masterInstance, forkInstance);
 
@@ -468,12 +467,12 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 previous,
                 document: deleteData
             }], testContext);
-            assert.deepStrictEqual(deleteResult.error, {});
+            assert.deepStrictEqual(deleteResult.error, []);
 
             // wait until the change is replicated to the master
             await waitUntil(async () => {
                 const docsAfterUpdate = await masterInstance.findDocumentsById([passportId], false);
-                return !docsAfterUpdate[passportId];
+                return !docsAfterUpdate[0];
             });
             await ensureEqualState(masterInstance, forkInstance);
 
@@ -521,7 +520,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
             await waitUntil(async () => {
                 try {
                     const foundAgain = await forkInstanceB.findDocumentsById([writeData.passportId], false);
-                    const foundDoc = getFromObjectOrThrow(foundAgain, writeData.passportId);
+                    const foundDoc = foundAgain[0];
                     assert.strictEqual(foundDoc.passportId, writeData.passportId);
                     return true;
                 } catch (err) {
@@ -585,7 +584,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 await waitUntil(async () => {
                     try {
                         const foundAgain = await instance.findDocumentsById([writeData.passportId], false);
-                        const foundDoc = getFromObjectOrThrow(foundAgain, writeData.passportId);
+                        const foundDoc = foundAgain[0];
                         assert.strictEqual(foundDoc.passportId, writeData.passportId);
                         return true;
                     } catch (err) {
@@ -614,7 +613,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 await waitUntil(async () => {
                     try {
                         const foundAgain = await instance.findDocumentsById([writeDataMaster.passportId], false);
-                        const foundDoc = getFromObjectOrThrow(foundAgain, writeDataMaster.passportId);
+                        const foundDoc = foundAgain[0];
                         assert.strictEqual(foundDoc.passportId, writeDataMaster.passportId);
                         return true;
                     } catch (err) {
@@ -685,7 +684,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
             await waitUntil(async () => {
                 try {
                     const foundAgain = await forkInstanceB.findDocumentsById([writeData.passportId], false);
-                    const foundDoc = getFromObjectOrThrow(foundAgain, writeData.passportId);
+                    const foundDoc = foundAgain[0];
                     assert.strictEqual(foundDoc.passportId, writeData.passportId);
                     return true;
                 } catch (err) {
@@ -853,7 +852,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                             previous: docData,
                             document: newDocData
                         }], testContext);
-                        assert.deepStrictEqual(updateResult.error, {});
+                        assert.deepStrictEqual(updateResult.error, []);
                     })
             );
 
@@ -927,7 +926,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
             const insertResult = await forkInstance.bulkWrite([{
                 document: docData
             }], testContext);
-            assert.deepStrictEqual(insertResult.error, {});
+            assert.deepStrictEqual(insertResult.error, []);
 
 
             let updateId = 10;
@@ -938,7 +937,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                         await wait(0);
                     }
                     const current = await forkInstance.findDocumentsById([docId], true);
-                    const currentDocState = getFromObjectOrThrow(current, docId);
+                    const currentDocState = current[0];
                     const newDocState = clone(currentDocState);
                     newDocState._meta.lwt = now();
                     newDocState.lastName = randomCouchString(12);
@@ -1031,7 +1030,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                         const insertResult = await instance.bulkWrite([{
                             document: docData
                         }], testContext);
-                        assert.deepStrictEqual(insertResult.error, {});
+                        assert.deepStrictEqual(insertResult.error, []);
                     })
             );
             await awaitRxStorageReplicationIdle(replicationState);
@@ -1049,7 +1048,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                         await wait(0);
                     }
                     const current = await instance.findDocumentsById([docId], true);
-                    const currentDocState = getFromObjectOrThrow(current, docId);
+                    const currentDocState = current[0];
                     const newDocState: typeof currentDocState = clone(currentDocState);
                     newDocState._meta.lwt = now();
                     newDocState.lastName = randomCouchString(12);

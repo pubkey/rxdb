@@ -8,12 +8,10 @@ import {
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
 import type {
     BulkWriteRow,
-    ById,
     EventBulk,
     RxConflictResultionTask,
     RxConflictResultionTaskSolution,
     RxDocumentData,
-    RxDocumentDataById,
     RxJsonSchema,
     RxStorageBulkWriteResponse,
     RxStorageChangeEvent,
@@ -28,7 +26,6 @@ import type {
 import {
     ensureNotFalsy,
     getFromMapOrThrow,
-    getFromObjectOrThrow,
     isMaybeReadonlyArray,
     lastOfArray,
     now,
@@ -188,8 +185,8 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
         }
         const primaryPath = this.primaryPath;
         const ret: RxStorageBulkWriteResponse<RxDocType> = {
-            success: {},
-            error: {}
+            success: [],
+            error: []
         };
 
         const docIds = documentWrites.map(d => (d.document as any)[primaryPath]);
@@ -197,10 +194,14 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
             docIds,
             true
         );
+        const documentStatesMap = new Map();
+        Object.entries(documentStates).forEach(([docId, doc]) => {
+            documentStatesMap.set(docId, doc);
+        });
         const categorized = categorizeBulkWriteRows<RxDocType>(
             this,
             primaryPath as any,
-            documentStates,
+            documentStatesMap,
             documentWrites,
             context
         );
@@ -242,7 +243,7 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
                             documentInDb: swapMongoToRxDoc(writeResult.value),
                             isError: true
                         };
-                        ret.error[docId] = conflictError;
+                        ret.error.push(conflictError);
                     } else {
                         const event = categorized.changeByDocId.get(docId);
                         if (event) {
@@ -271,7 +272,7 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
                     );
                     if (!writeResult.value) {
                         const currentDocState = await this.findDocumentsById([docId], true);
-                        const currentDoc = getFromObjectOrThrow(currentDocState, docId);
+                        const currentDoc = currentDocState[0];
                         // had insert conflict
                         const conflictError: RxStorageWriteErrorConflict<RxDocType> = {
                             status: 409,
@@ -280,7 +281,7 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
                             documentInDb: currentDoc,
                             isError: true
                         };
-                        ret.error[docId] = conflictError;
+                        ret.error.push(conflictError);
                     } else {
                         const event = getFromMapOrThrow(categorized.changeByDocId, docId);
                         eventBulk.events.push(event);
@@ -309,7 +310,7 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
         docIds: string[],
         withDeleted: boolean,
         session?: ClientSession
-    ): Promise<RxDocumentDataById<RxDocType>> {
+    ): Promise<RxDocumentData<RxDocType>[]> {
         this.runningOperations.next(this.runningOperations.getValue() + 1);
         const mongoCollection = await this.mongoCollectionPromise;
         const primaryPath = this.primaryPath;
@@ -322,7 +323,7 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
         if (!withDeleted) {
             plainQuery._deleted = false;
         }
-        const result: ById<RxDocumentData<RxDocType>> = {};
+        const result: RxDocumentData<RxDocType>[] = [];
         const queryResult = await mongoCollection.find(
             plainQuery,
             {
@@ -330,8 +331,10 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
             }
         ).toArray();
         queryResult.forEach(row => {
-            result[(row as any)[primaryPath]] = swapMongoToRxDoc(
-                row as any
+            result.push(
+                swapMongoToRxDoc(
+                    row as any
+                )
             );
         });
         this.runningOperations.next(this.runningOperations.getValue() - 1);

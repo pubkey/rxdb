@@ -3,7 +3,6 @@ import type {
     EventBulk,
     PreparedQuery,
     RxDocumentData,
-    RxDocumentDataById,
     RxStorageBulkWriteResponse,
     RxStorageChangeEvent,
     RxStorageCountResult,
@@ -196,12 +195,7 @@ export interface RxStorageInstance<
          * comes from operation Y.
          */
         context: string
-    ): Promise<
-        /**
-             * returns the response, split into success and error lists.
-             */
-        RxStorageBulkWriteResponse<RxDocType>
-    >;
+    ): Promise<RxStorageBulkWriteResponse<RxDocType>>;
 
     /**
      * Get Multiple documents by their primary value.
@@ -217,7 +211,16 @@ export interface RxStorageInstance<
          * If set to true, deleted documents will also be returned.
          */
         withDeleted: boolean
-    ): Promise<RxDocumentDataById<RxDocType>>;
+
+    ): Promise<
+        /**
+         * For better performance, we return an array
+         * instead of an indexed object because most consumers
+         * of this anyway have to fill a Map() instance or
+         * even do only need the list at all.
+         */
+        RxDocumentData<RxDocType>[]
+    >;
 
     /**
      * Runs a NoSQL 'mango' query over the storage

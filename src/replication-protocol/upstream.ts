@@ -409,9 +409,9 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
                      * that will then resolved the conflict again.
                      */
                     const useMetaWrites: BulkWriteRow<RxStorageReplicationMeta>[] = [];
-                    Object
-                        .keys(forkWriteResult.success)
-                        .forEach((docId) => {
+                    forkWriteResult.success
+                        .forEach(docData => {
+                            const docId = (docData as any)[state.primaryPath];
                             useMetaWrites.push(
                                 conflictWriteMeta[docId]
                             );

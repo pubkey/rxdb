@@ -185,8 +185,8 @@ export async function ensureStorageTokenDocumentExists<Collections extends Colle
         [{ document: docData }],
         'internal-add-storage-token'
     );
-    if (writeResult.success[STORAGE_TOKEN_DOCUMENT_ID]) {
-        return writeResult.success[STORAGE_TOKEN_DOCUMENT_ID];
+    if (writeResult.success[0]) {
+        return writeResult.success[0];
     }
 
     /**
@@ -194,7 +194,7 @@ export async function ensureStorageTokenDocumentExists<Collections extends Colle
      * it means another instance already inserted the storage token.
      * So we get that token from the database and return that one.
      */
-    const error = ensureNotFalsy(writeResult.error[STORAGE_TOKEN_DOCUMENT_ID]);
+    const error = ensureNotFalsy(writeResult.error[0]);
     if (
         error.isError &&
         (error as RxStorageWriteError<InternalStoreStorageTokenDocType>).status === 409

@@ -390,7 +390,7 @@ config.parallel('hooks.test.js', () => {
 
                     // check in storage
                     const docInStorage = await c.storageInstance.findDocumentsById([firstDoc.primary], true);
-                    assert.strictEqual(docInStorage[firstDoc.primary].lastName, 'by-hook');
+                    assert.strictEqual(docInStorage[0].lastName, 'by-hook');
 
                     // check the emitted event
                     const ev = emitted[0];

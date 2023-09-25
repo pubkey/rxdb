@@ -29,7 +29,6 @@ import type {
     LokiLocalDatabaseState,
     EventBulk,
     StringKeys,
-    RxDocumentDataById,
     DeepReadonly,
     RxConflictResultionTask,
     RxConflictResultionTaskSolution,
@@ -139,8 +138,8 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         }
 
         const ret: RxStorageBulkWriteResponse<RxDocType> = {
-            success: {},
-            error: {}
+            success: [],
+            error: []
         };
 
         const docsInDb: Map<RxDocumentData<RxDocType>[StringKeys<RxDocType>], RxDocumentData<RxDocType>> = new Map();
@@ -167,9 +166,8 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         ret.error = categorized.errors;
 
         categorized.bulkInsertDocs.forEach(writeRow => {
-            const docId = writeRow.document[this.primaryPath];
             localState.collection.insert(flatClone(writeRow.document));
-            ret.success[docId as any] = writeRow.document;
+            ret.success.push(writeRow.document);
         });
         categorized.bulkUpdateDocs.forEach(writeRow => {
             const docId = writeRow.document[this.primaryPath];
@@ -182,7 +180,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
                 }
             );
             localState.collection.update(writeDoc);
-            ret.success[docId as any] = writeRow.document;
+            ret.success.push(writeRow.document);
         });
         localState.databaseState.saveQueue.addWrite();
 
@@ -197,20 +195,20 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
 
         return ret;
     }
-    async findDocumentsById(ids: string[], deleted: boolean): Promise<RxDocumentDataById<RxDocType>> {
+    async findDocumentsById(ids: string[], deleted: boolean): Promise<RxDocumentData<RxDocType>[]> {
         const localState = await mustUseLocalState(this);
         if (!localState) {
             return requestRemoteInstance(this, 'findDocumentsById', [ids, deleted]);
         }
 
-        const ret: RxDocumentDataById<RxDocType> = {};
+        const ret: RxDocumentData<RxDocType>[] = [];
         ids.forEach(id => {
             const documentInDb = localState.collection.by(this.primaryPath, id);
             if (
                 documentInDb &&
                 (!documentInDb._deleted || deleted)
             ) {
-                ret[id] = stripLokiKey(documentInDb);
+                ret.push(stripLokiKey(documentInDb));
             }
         });
         return ret;

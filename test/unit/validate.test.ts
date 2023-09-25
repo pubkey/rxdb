@@ -65,7 +65,7 @@ validationImplementations.forEach(
             writeRows: BulkWriteRow<RxDocType>[],
         ) {
             const result = await instance.bulkWrite(writeRows, testContext);
-            assert.deepStrictEqual(result.error, {});
+            assert.deepStrictEqual(result.error, []);
         }
         async function assertBulkWriteValidationError<RxDocType>(
             instance: RxStorageInstance<RxDocType, any, any>,
@@ -73,8 +73,8 @@ validationImplementations.forEach(
             errorMustContain?: string
         ) {
             const result = await instance.bulkWrite(writeRows, testContext);
-            assert.deepStrictEqual(result.success, {});
-            const errors = Object.values(result.error);
+            assert.deepStrictEqual(result.success, []);
+            const errors = result.error;
             errors.forEach(err => {
                 assert.strictEqual(err.status, 422);
                 if (errorMustContain) {
@@ -392,7 +392,7 @@ validationImplementations.forEach(
                     const result = await instance.bulkWrite([{
                         document: toRxDocumentData(obj)
                     }], testContext);
-                    const err = result.error['foobar'];
+                    const err = result.error[0];
                     const message = (err as any).validationErrors[0].message;
                     assert.ok(message.includes('dditional'));
                     await instance.close();
@@ -408,7 +408,7 @@ validationImplementations.forEach(
                     const result = await instance.bulkWrite([{
                         document: toRxDocumentData(obj) as any
                     }], testContext);
-                    const err = result.error['foobar'];
+                    const err = result.error[0];
                     const deepParam = (err as any).validationErrors[0];
                     assert.ok(
                         JSON.stringify(deepParam).includes('age')

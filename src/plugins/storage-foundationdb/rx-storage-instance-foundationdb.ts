@@ -8,7 +8,6 @@ import type {
     RxConflictResultionTask,
     RxConflictResultionTaskSolution,
     RxDocumentData,
-    RxDocumentDataById,
     RxJsonSchema,
     RxStorageBulkWriteResponse,
     RxStorageChangeEvent,
@@ -91,8 +90,8 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
     ): Promise<RxStorageBulkWriteResponse<RxDocType>> {
         const dbs = await this.internals.dbsPromise;
         const ret: RxStorageBulkWriteResponse<RxDocType> = {
-            success: {},
-            error: {}
+            success: [],
+            error: []
         };
 
         /**
@@ -128,15 +127,12 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
                         writeBatch,
                         context
                     );
-
-                    Object.keys(categorized.errors).forEach(errorKey => {
-                        ret.error[errorKey] = ensureNotFalsy(categorized).errors[errorKey];
-                    });
+                    appendToArray(ret.error, categorized.errors);
 
                     // INSERTS
                     categorized.bulkInsertDocs.forEach(writeRow => {
                         const docId: string = writeRow.document[this.primaryPath] as any;
-                        ret.success[docId] = writeRow.document as any;
+                        ret.success.push(writeRow.document);
 
                         // insert document data
                         mainTx.set(docId, writeRow.document);
@@ -165,7 +161,7 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
                                 indexTx.set(newIndexString, docId);
                             }
                         });
-                        ret.success[docId] = writeRow.document as any;
+                        ret.success.push(writeRow.document as any);
                     });
 
                     // attachments
@@ -209,10 +205,10 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
         return ret;
     }
 
-    async findDocumentsById(ids: string[], withDeleted: boolean): Promise<RxDocumentDataById<RxDocType>> {
+    async findDocumentsById(ids: string[], withDeleted: boolean): Promise<RxDocumentData<RxDocType>[]> {
         const dbs = await this.internals.dbsPromise;
         return dbs.main.doTransaction(async (tx: any) => {
-            const ret: RxDocumentDataById<RxDocType> = {};
+            const ret: RxDocumentData<RxDocType>[] = [];
             await Promise.all(
                 ids.map(async (docId) => {
                     const docInDb = await tx.get(docId);
@@ -223,7 +219,7 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
                             withDeleted
                         )
                     ) {
-                        ret[docId] = docInDb;
+                        ret.push(docInDb);
                     }
                 })
             );
