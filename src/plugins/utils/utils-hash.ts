@@ -21,7 +21,7 @@ export async function nativeSha256(input: string) {
 }
 
 
-const canUseCryptoSubtle = typeof crypto !== 'undefined' &&
+export const canUseCryptoSubtle = typeof crypto !== 'undefined' &&
     typeof crypto.subtle !== 'undefined' &&
     typeof crypto.subtle.digest === 'function';
 

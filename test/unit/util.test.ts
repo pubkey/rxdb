@@ -31,7 +31,8 @@ import {
 } from '../../plugins/dev-mode';
 import {
     nativeSha256,
-    jsSha256
+    jsSha256,
+    canUseCryptoSubtle
 } from '../../plugins/utils';
 import { EXAMPLE_REVISION_1 } from '../helper/revisions';
 
@@ -55,6 +56,9 @@ describe('util.test.js', () => {
             const hash = await defaultHashSha256(str);
             assert.strictEqual(typeof hash, 'string');
             assert.ok(hash.length > 0);
+        });
+        it('must have enabled canUseCryptoSubtle', ()=> {
+            assert.ok(canUseCryptoSubtle);
         });
         it('both versions must return the exact same value', async () => {
             const values: string[] = [
