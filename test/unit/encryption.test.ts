@@ -151,6 +151,9 @@ config.parallel('encryption.test.ts', () => {
             db2.destroy();
         });
         it('prevent 2 instances with different passwords on same adapter', async () => {
+            if (!config.storage.hasPersistence) {
+                return;
+            }
             const name = randomCouchString(10);
             const db = await createRxDatabase({
                 name,

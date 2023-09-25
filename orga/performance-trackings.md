@@ -1469,3 +1469,18 @@ AFTER:
     "find-by-query-parallel-4": 2.23,
     "count": 0.29
 }
+
+AFTER2: (lazy writes)
+
+{
+    "description": "memory",
+    "platform": "node",
+    "collectionsAmount": 4,
+    "docsAmount": 1200,
+    "time-to-first-insert": 1.53,
+    "insert-documents-200": 0.97,
+    "find-by-ids": 0.95,
+    "find-by-query": 2.05,
+    "find-by-query-parallel-4": 2.39,
+    "count": 0.35
+}

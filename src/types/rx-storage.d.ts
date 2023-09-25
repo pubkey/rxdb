@@ -307,8 +307,11 @@ export type RxStorageDefaultCheckpoint = {
 
 
 export type CategorizeBulkWriteRowsOutput<RxDocType> = {
+
+    // TODO only needs the document, not the row.
     bulkInsertDocs: BulkWriteRowProcessed<RxDocType>[];
     bulkUpdateDocs: BulkWriteRowProcessed<RxDocType>[];
+
     changeByDocId: Map<string, RxStorageChangeEvent<RxDocumentData<RxDocType>>>;
     errors: RxStorageWriteError<RxDocType>[];
     eventBulk: EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, any>;

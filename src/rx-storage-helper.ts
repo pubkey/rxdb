@@ -260,6 +260,8 @@ export function categorizeBulkWriteRows<RxDocType>(
                 } else {
                     bulkInsertDocs.push(writeRow as any);
                 }
+
+                // TODO can we assume the the last row always has the hightes _meta.lwt?
                 if (
                     !newestRow ||
                     newestRow.document._meta.lwt < document._meta.lwt
