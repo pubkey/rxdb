@@ -11,7 +11,7 @@
     "test": "npm run build && concurrently \"npm run start\" \"npm run test:e2e\" --kill-others --success first"
   },
   "devDependencies": {
-    "@rollup/plugin-commonjs": "24.1.0",
+    "@rollup/plugin-commonjs": "25.0.4",
     "@rollup/plugin-node-resolve": "15.2.1",
     "async-test-util": "2.1.1",
     "concurrently": "8.2.1",
