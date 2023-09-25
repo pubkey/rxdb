@@ -1559,7 +1559,7 @@ describe('rx-collection.test.ts', () => {
                     ]);
 
                     const viaStorage = await c.storageInstance.findDocumentsById([docId], true);
-                    const viaStorageDoc = viaStorage[docId];
+                    const viaStorageDoc = viaStorage[0];
                     assert.ok(parseRevision(viaStorageDoc._rev).height >= 3);
 
                     const docData2 = clone(docData);

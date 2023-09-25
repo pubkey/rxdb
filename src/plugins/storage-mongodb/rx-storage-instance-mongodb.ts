@@ -8,12 +8,10 @@ import {
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
 import type {
     BulkWriteRow,
-    ById,
     EventBulk,
     RxConflictResultionTask,
     RxConflictResultionTaskSolution,
     RxDocumentData,
-    RxDocumentDataById,
     RxJsonSchema,
     RxStorageBulkWriteResponse,
     RxStorageChangeEvent,
@@ -28,7 +26,6 @@ import type {
 import {
     ensureNotFalsy,
     getFromMapOrThrow,
-    getFromObjectOrThrow,
     isMaybeReadonlyArray,
     lastOfArray,
     now,
@@ -275,7 +272,7 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
                     );
                     if (!writeResult.value) {
                         const currentDocState = await this.findDocumentsById([docId], true);
-                        const currentDoc = getFromObjectOrThrow(currentDocState, docId);
+                        const currentDoc = currentDocState[0];
                         // had insert conflict
                         const conflictError: RxStorageWriteErrorConflict<RxDocType> = {
                             status: 409,
@@ -313,7 +310,7 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
         docIds: string[],
         withDeleted: boolean,
         session?: ClientSession
-    ): Promise<RxDocumentDataById<RxDocType>> {
+    ): Promise<RxDocumentData<RxDocType>[]> {
         this.runningOperations.next(this.runningOperations.getValue() + 1);
         const mongoCollection = await this.mongoCollectionPromise;
         const primaryPath = this.primaryPath;
@@ -326,7 +323,7 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
         if (!withDeleted) {
             plainQuery._deleted = false;
         }
-        const result: ById<RxDocumentData<RxDocType>> = {};
+        const result: RxDocumentData<RxDocType>[] = [];
         const queryResult = await mongoCollection.find(
             plainQuery,
             {
@@ -334,8 +331,10 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
             }
         ).toArray();
         queryResult.forEach(row => {
-            result[(row as any)[primaryPath]] = swapMongoToRxDoc(
-                row as any
+            result.push(
+                swapMongoToRxDoc(
+                    row as any
+                )
             );
         });
         this.runningOperations.next(this.runningOperations.getValue() - 1);

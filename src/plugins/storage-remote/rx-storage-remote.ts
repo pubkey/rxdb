@@ -11,7 +11,6 @@ import type {
     RxConflictResultionTask,
     RxConflictResultionTaskSolution,
     RxDocumentData,
-    RxDocumentDataById,
     RxJsonSchema,
     RxStorage,
     RxStorageBulkWriteResponse,
@@ -232,7 +231,7 @@ export class RxStorageInstanceRemote<RxDocType> implements RxStorageInstance<RxD
     ): Promise<RxStorageBulkWriteResponse<RxDocType>> {
         return this.requestRemote('bulkWrite', [documentWrites, context]);
     }
-    findDocumentsById(ids: string[], deleted: boolean): Promise<RxDocumentDataById<RxDocType>> {
+    findDocumentsById(ids: string[], deleted: boolean): Promise<RxDocumentData<RxDocType>[]> {
         return this.requestRemote('findDocumentsById', [ids, deleted]);
     }
     query(preparedQuery: any): Promise<RxStorageQueryResult<RxDocType>> {

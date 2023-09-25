@@ -33,7 +33,7 @@ export async function getLastCheckpointDoc<RxDocType, CheckpointType>(
         false
     );
 
-    const checkpointDoc = checkpointResult[checkpointDocId];
+    const checkpointDoc = checkpointResult[0];
     state.lastCheckpointDoc[direction] = checkpointDoc;
     if (checkpointDoc) {
         return checkpointDoc.data;

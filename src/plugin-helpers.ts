@@ -6,7 +6,6 @@ import type {
     EventBulk,
     RxChangeEvent,
     RxDocumentData,
-    RxDocumentDataById,
     RxDocumentWriteData,
     RxJsonSchema,
     RxStorage,
@@ -260,11 +259,11 @@ export function wrapRxStorageInstance<RxDocType>(
         findDocumentsById: (ids, deleted) => {
             return instance.findDocumentsById(ids, deleted)
                 .then(async (findResult) => {
-                    const ret: RxDocumentDataById<RxDocType> = {};
+                    const ret: RxDocumentData<RxDocType>[] = [];
                     await Promise.all(
-                        Object.entries(findResult)
-                            .map(async ([key, doc]) => {
-                                ret[key] = await fromStorage(doc);
+                        findResult
+                            .map(async (doc) => {
+                                ret.push(await fromStorage(doc));
                             })
                     );
                     return ret;

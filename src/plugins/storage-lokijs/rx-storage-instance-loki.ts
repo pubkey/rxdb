@@ -29,7 +29,6 @@ import type {
     LokiLocalDatabaseState,
     EventBulk,
     StringKeys,
-    RxDocumentDataById,
     DeepReadonly,
     RxConflictResultionTask,
     RxConflictResultionTaskSolution,
@@ -196,20 +195,20 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
 
         return ret;
     }
-    async findDocumentsById(ids: string[], deleted: boolean): Promise<RxDocumentDataById<RxDocType>> {
+    async findDocumentsById(ids: string[], deleted: boolean): Promise<RxDocumentData<RxDocType>[]> {
         const localState = await mustUseLocalState(this);
         if (!localState) {
             return requestRemoteInstance(this, 'findDocumentsById', [ids, deleted]);
         }
 
-        const ret: RxDocumentDataById<RxDocType> = {};
+        const ret: RxDocumentData<RxDocType>[] = [];
         ids.forEach(id => {
             const documentInDb = localState.collection.by(this.primaryPath, id);
             if (
                 documentInDb &&
                 (!documentInDb._deleted || deleted)
             ) {
-                ret[id] = stripLokiKey(documentInDb);
+                ret.push(stripLokiKey(documentInDb));
             }
         });
         return ret;

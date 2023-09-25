@@ -17,7 +17,6 @@ import type {
     RxConflictResultionTask,
     RxConflictResultionTaskSolution,
     RxDocumentData,
-    RxDocumentDataById,
     RxJsonSchema,
     RxStorageBulkWriteResponse,
     RxStorageChangeEvent,
@@ -228,10 +227,13 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
     findDocumentsById(
         docIds: string[],
         withDeleted: boolean
-    ): Promise<RxDocumentDataById<RxDocType>> {
+    ): Promise<RxDocumentData<RxDocType>[]> {
         this.ensurePersistence();
         const documentsById = this.internals.documents;
-        const ret: RxDocumentDataById<RxDocType> = {};
+        const ret: RxDocumentData<RxDocType>[] = [];
+        if (documentsById.size === 0) {
+            return Promise.resolve(ret);
+        }
         for (let i = 0; i < docIds.length; ++i) {
             const docId = docIds[i];
             const docInDb = documentsById.get(docId);
@@ -242,7 +244,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
                     withDeleted
                 )
             ) {
-                ret[docId] = docInDb;
+                ret.push(docInDb);
             }
         }
         return Promise.resolve(ret);

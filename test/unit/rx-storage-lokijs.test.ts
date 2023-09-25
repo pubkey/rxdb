@@ -456,7 +456,7 @@ describe('rx-storage-lokijs.test.js', () => {
             });
 
             const docFromStorage = await storageInstance2.findDocumentsById([key], true);
-            const doc = ensureNotFalsy(docFromStorage[key]);
+            const doc = ensureNotFalsy(docFromStorage[0]);
 
             assert.ok(doc._meta);
             assert.strictEqual(doc._meta.lwt, lwtValue);

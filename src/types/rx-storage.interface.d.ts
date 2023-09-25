@@ -3,7 +3,6 @@ import type {
     EventBulk,
     PreparedQuery,
     RxDocumentData,
-    RxDocumentDataById,
     RxStorageBulkWriteResponse,
     RxStorageChangeEvent,
     RxStorageCountResult,
@@ -213,8 +212,15 @@ export interface RxStorageInstance<
          */
         withDeleted: boolean
 
-        // TODO return array instead of indexed object
-    ): Promise<RxDocumentDataById<RxDocType>>;
+    ): Promise<
+        /**
+         * For better performance, we return an array
+         * instead of an indexed object because most consumers
+         * of this anyway have to fill a Map() instance or
+         * even do only need the list at all.
+         */
+        RxDocumentData<RxDocType>[]
+    >;
 
     /**
      * Runs a NoSQL 'mango' query over the storage

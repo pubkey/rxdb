@@ -49,7 +49,7 @@ export async function getSingleDocument<RxDocType>(
     documentId: string
 ): Promise<RxDocumentData<RxDocType> | null> {
     const results = await storageInstance.findDocumentsById([documentId], false);
-    const doc = results[documentId];
+    const doc = results[0];
     if (doc) {
         return doc;
     } else {

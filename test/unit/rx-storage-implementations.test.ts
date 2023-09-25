@@ -12,7 +12,6 @@ import {
     flatClone,
     RxJsonSchema,
     ensureNotFalsy,
-    getFromObjectOrThrow,
     shuffleArray,
     now,
     getSingleDocument,
@@ -472,7 +471,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 assert.deepStrictEqual(deleteResponse.error, []);
 
                 const foundDoc = await storageInstance.findDocumentsById(['foobar'], false);
-                assert.deepStrictEqual(foundDoc, {});
+                assert.deepStrictEqual(foundDoc, []);
 
                 storageInstance.close();
             });
@@ -584,8 +583,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 assert.strictEqual(third.value, 'aaa');
 
                 const foundDoc = await storageInstance.findDocumentsById([docId], false);
-                assert.ok(foundDoc[docId]);
-                assert.deepStrictEqual(foundDoc[docId].value, 'aaa');
+                assert.ok(foundDoc[0]);
+                assert.deepStrictEqual(foundDoc[0].value, 'aaa');
 
                 storageInstance.close();
             });
@@ -652,7 +651,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
 
                 // check modified
                 const docs = await storageInstance.findDocumentsById([docId], true);
-                const doc = docs[docId];
+                const doc = docs[0];
                 assert.ok(doc);
                 assert.strictEqual(doc.value, 'barfoo2');
 
@@ -765,7 +764,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
 
                 const getDocFromDb = await storageInstance.findDocumentsById([docData.id], false);
                 assert.deepStrictEqual(
-                    getDocFromDb[docData.id],
+                    getDocFromDb[0],
                     compressedDocData
                 );
 
@@ -840,7 +839,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
 
 
                 const viaStorage = await storageInstance.findDocumentsById([key], true);
-                const viaStorageDoc = ensureNotFalsy(viaStorage[key]);
+                const viaStorageDoc = ensureNotFalsy(viaStorage[0]);
                 assert.strictEqual(parseRevision(viaStorageDoc._rev).height, 3);
 
                 storageInstance.close();
@@ -943,7 +942,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
 
                 // find again
                 const getDocFromDb = await storageInstance.findDocumentsById([docData.key], false);
-                const docFromDb = getFromObjectOrThrow(getDocFromDb, docData.key);
+                const docFromDb = getDocFromDb[0];
                 assert.strictEqual(docFromDb._rev, EXAMPLE_REVISION_4);
 
                 storageInstance.close();
@@ -1027,7 +1026,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
 
                 // find again
                 const getDocFromDb = await storageInstance.findDocumentsById([docData.key], false);
-                const docFromDb = getFromObjectOrThrow(getDocFromDb, docData.key);
+                const docFromDb = getDocFromDb[0];
                 assert.strictEqual(
                     docFromDb.value,
                     'value' + umlauts
@@ -1052,7 +1051,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     testContext
                 );
                 const getDocFromDb2 = await storageInstance.findDocumentsById([docData2.key], false);
-                getFromObjectOrThrow(getDocFromDb2, docData2.key);
+                assert.ok(getDocFromDb2[0]);
 
                 storageInstance.close();
             });
@@ -1832,7 +1831,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 );
 
                 const found = await storageInstance.findDocumentsById(['foobar'], false);
-                const foundDoc = getFromObjectOrThrow(found, 'foobar');
+                const foundDoc = found[0];
                 assert.deepStrictEqual(foundDoc, docData);
 
                 storageInstance.close();
@@ -1883,7 +1882,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 );
 
                 const found = await storageInstance.findDocumentsById(['foobar'], true);
-                const foundDeleted = getFromObjectOrThrow(found, 'foobar');
+                const foundDeleted = found[0];
 
                 // even on deleted documents, we must get the other properties.
                 assert.strictEqual(foundDeleted.value, 'barfoo2');
@@ -2617,7 +2616,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
 
                 // check in findDocumentsById() result
                 const byId = await storageInstance.findDocumentsById([writeData.key], false);
-                const byIdDoc = getFromObjectOrThrow(byId, writeData.key);
+                const byIdDoc = byId[0];
                 assert.strictEqual(byIdDoc._attachments.foo.type, 'text/plain');
                 assert.strictEqual(byIdDoc._attachments.foo.length, dataLength);
                 assert.ok(!(byIdDoc._attachments.foo as any).data);
@@ -2962,7 +2961,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     [id],
                     true
                 );
-                const doc = mustBeThereButDeleted[id];
+                const doc = mustBeThereButDeleted[0];
                 assert.ok(doc._deleted);
 
                 // clean up the deleted document
@@ -2972,7 +2971,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     [id],
                     true
                 );
-                assert.deepStrictEqual(mustNotBeThere, {});
+                assert.deepStrictEqual(mustNotBeThere, []);
 
                 /**
                  * Other docs must still be there
@@ -2981,7 +2980,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     [nonDeletedId],
                     true
                 );
-                assert.ok(nonDeletedDoc[nonDeletedId]);
+                assert.ok(nonDeletedDoc[0]);
 
                 await storageInstance.close();
             });
@@ -3185,12 +3184,12 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
             });
 
             const resultA = await instances.a.findDocumentsById(allIds, true);
-            assert.ok(resultA.a);
-            assert.ok(resultA.b);
+            assert.ok(resultA[0]);
+            assert.ok(resultA[1]);
 
             const resultB = await instances.b.findDocumentsById(allIds, true);
-            assert.ok(resultB.a);
-            assert.ok(resultB.b);
+            assert.ok(resultB[0]);
+            assert.ok(resultB[1]);
 
             await instances.a.close();
             await instances.b.close();
@@ -3211,7 +3210,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
             await waitUntil(async () => {
                 try {
                     const foundAgain = await instances.b.findDocumentsById([writeData.key], false);
-                    const foundDoc = getFromObjectOrThrow(foundAgain, writeData.key);
+                    const foundDoc = foundAgain[0];
                     assert.strictEqual(foundDoc.key, writeData.key);
                     return true;
                 } catch (err) {

@@ -16,7 +16,6 @@ import {
     RxStorageInstance,
     RxStorageInstanceReplicationState,
     RxConflictHandlerInput,
-    getFromObjectOrThrow,
     awaitRxStorageReplicationIdle,
     promiseWait,
     getRxReplicationMetaInstanceSchema,
@@ -295,8 +294,8 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                         [checkpointDocId],
                         false
                     );
-                    if (response[checkpointDocId]) {
-                        checkpointDocBefore = response[checkpointDocId];
+                    if (response[0]) {
+                        checkpointDocBefore = response[0];
                         break;
                     }
                     await wait(200);
@@ -312,7 +311,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                     [checkpointDocId],
                     false
                 );
-                const checkpointDocAfter = getFromObjectOrThrow(checkpointDocAfterResult, checkpointDocId);
+                const checkpointDocAfter = checkpointDocAfterResult[0];
 
                 assert.strictEqual(
                     checkpointDocAfter._rev,
@@ -434,7 +433,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
             // wait until it is replicated to the master
             await waitUntil(async () => {
                 const docsAfterUpdate = await masterInstance.findDocumentsById([passportId], false);
-                return docsAfterUpdate[passportId];
+                return docsAfterUpdate[0];
             });
 
             // UPDATE
@@ -455,7 +454,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
             // wait until the change is replicated to the master
             await waitUntil(async () => {
                 const docsAfterUpdate = await masterInstance.findDocumentsById([passportId], false);
-                return docsAfterUpdate[passportId].firstName === 'xxx';
+                return docsAfterUpdate[0].firstName === 'xxx';
             });
             await ensureEqualState(masterInstance, forkInstance);
 
@@ -473,7 +472,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
             // wait until the change is replicated to the master
             await waitUntil(async () => {
                 const docsAfterUpdate = await masterInstance.findDocumentsById([passportId], false);
-                return !docsAfterUpdate[passportId];
+                return !docsAfterUpdate[0];
             });
             await ensureEqualState(masterInstance, forkInstance);
 
@@ -521,7 +520,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
             await waitUntil(async () => {
                 try {
                     const foundAgain = await forkInstanceB.findDocumentsById([writeData.passportId], false);
-                    const foundDoc = getFromObjectOrThrow(foundAgain, writeData.passportId);
+                    const foundDoc = foundAgain[0];
                     assert.strictEqual(foundDoc.passportId, writeData.passportId);
                     return true;
                 } catch (err) {
@@ -585,7 +584,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 await waitUntil(async () => {
                     try {
                         const foundAgain = await instance.findDocumentsById([writeData.passportId], false);
-                        const foundDoc = getFromObjectOrThrow(foundAgain, writeData.passportId);
+                        const foundDoc = foundAgain[0];
                         assert.strictEqual(foundDoc.passportId, writeData.passportId);
                         return true;
                     } catch (err) {
@@ -614,7 +613,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 await waitUntil(async () => {
                     try {
                         const foundAgain = await instance.findDocumentsById([writeDataMaster.passportId], false);
-                        const foundDoc = getFromObjectOrThrow(foundAgain, writeDataMaster.passportId);
+                        const foundDoc = foundAgain[0];
                         assert.strictEqual(foundDoc.passportId, writeDataMaster.passportId);
                         return true;
                     } catch (err) {
@@ -685,7 +684,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
             await waitUntil(async () => {
                 try {
                     const foundAgain = await forkInstanceB.findDocumentsById([writeData.passportId], false);
-                    const foundDoc = getFromObjectOrThrow(foundAgain, writeData.passportId);
+                    const foundDoc = foundAgain[0];
                     assert.strictEqual(foundDoc.passportId, writeData.passportId);
                     return true;
                 } catch (err) {
@@ -938,7 +937,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                         await wait(0);
                     }
                     const current = await forkInstance.findDocumentsById([docId], true);
-                    const currentDocState = getFromObjectOrThrow(current, docId);
+                    const currentDocState = current[0];
                     const newDocState = clone(currentDocState);
                     newDocState._meta.lwt = now();
                     newDocState.lastName = randomCouchString(12);
@@ -1049,7 +1048,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                         await wait(0);
                     }
                     const current = await instance.findDocumentsById([docId], true);
-                    const currentDocState = getFromObjectOrThrow(current, docId);
+                    const currentDocState = current[0];
                     const newDocState: typeof currentDocState = clone(currentDocState);
                     newDocState._meta.lwt = now();
                     newDocState.lastName = randomCouchString(12);

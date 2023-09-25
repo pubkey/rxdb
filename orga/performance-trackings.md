@@ -1484,3 +1484,29 @@ AFTER2: (lazy writes)
     "find-by-query-parallel-4": 2.39,
     "count": 0.35
 }
+{
+    "description": "memory",
+    "platform": "node",
+    "collectionsAmount": 4,
+    "docsAmount": 1200,
+    "time-to-first-insert": 1.49,
+    "insert-documents-200": 1.11,
+    "find-by-ids": 0.13,
+    "find-by-query": 2.09,
+    "find-by-query-parallel-4": 2.51,
+    "count": 0.42
+}
+
+
+{
+    "description": "memory",
+    "platform": "node",
+    "collectionsAmount": 4,
+    "docsAmount": 1200,
+    "time-to-first-insert": 2.04,
+    "insert-documents-200": 1.85,
+    "find-by-ids": 0.24,
+    "find-by-query": 4.44,
+    "find-by-query-parallel-4": 4.29,
+    "count": 0.44
+}

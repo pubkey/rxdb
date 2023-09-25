@@ -22,7 +22,6 @@ import type {
     RxStorageInstanceCreationParams,
     EventBulk,
     StringKeys,
-    RxDocumentDataById,
     RxConflictResultionTask,
     RxConflictResultionTaskSolution,
     RxStorageDefaultCheckpoint,
@@ -195,10 +194,10 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
     async findDocumentsById(
         ids: string[],
         deleted: boolean
-    ): Promise<RxDocumentDataById<RxDocType>> {
+    ): Promise<RxDocumentData<RxDocType>[]> {
         ensureNotClosed(this);
         const state = await this.internals;
-        const ret: RxDocumentDataById<RxDocType> = {};
+        const ret: RxDocumentData<RxDocType>[] = [];
 
         await state.dexieDb.transaction(
             'r',
@@ -217,7 +216,7 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
                         documentInDb &&
                         (!documentInDb._deleted || deleted)
                     ) {
-                        ret[id] = fromDexieToStorage(documentInDb);
+                        ret.push(fromDexieToStorage(documentInDb));
                     }
                 });
             });

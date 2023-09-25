@@ -8,7 +8,6 @@ import type {
     RxConflictResultionTask,
     RxConflictResultionTaskSolution,
     RxDocumentData,
-    RxDocumentDataById,
     RxJsonSchema,
     RxStorageBulkWriteResponse,
     RxStorageChangeEvent,
@@ -206,10 +205,10 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
         return ret;
     }
 
-    async findDocumentsById(ids: string[], withDeleted: boolean): Promise<RxDocumentDataById<RxDocType>> {
+    async findDocumentsById(ids: string[], withDeleted: boolean): Promise<RxDocumentData<RxDocType>[]> {
         const dbs = await this.internals.dbsPromise;
         return dbs.main.doTransaction(async (tx: any) => {
-            const ret: RxDocumentDataById<RxDocType> = {};
+            const ret: RxDocumentData<RxDocType>[] = [];
             await Promise.all(
                 ids.map(async (docId) => {
                     const docInDb = await tx.get(docId);
@@ -220,7 +219,7 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
                             withDeleted
                         )
                     ) {
-                        ret[docId] = docInDb;
+                        ret.push(docInDb);
                     }
                 })
             );

@@ -274,18 +274,21 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
                     docIds
                 )
             ]).then(([
-                currentForkState,
+                currentForkStateList,
                 assumedMasterState
             ]) => {
+                const currentForkState = new Map<string, RxDocumentData<RxDocType>>();
+                currentForkStateList.forEach(doc => currentForkState.set((doc as any)[primaryPath], doc));
                 return Promise.all(
                     docIds.map(async (docId) => {
-                        const forkStateFullDoc: RxDocumentData<RxDocType> | undefined = currentForkState[docId];
+                        const forkStateFullDoc: RxDocumentData<RxDocType> | undefined = currentForkState.get(docId);
                         const forkStateDocData: WithDeleted<RxDocType> | undefined = forkStateFullDoc ? writeDocToDocState(forkStateFullDoc) : undefined;
                         const masterState = downDocsById[docId];
                         const assumedMaster = assumedMasterState[docId];
 
                         if (
                             assumedMaster &&
+                            forkStateFullDoc &&
                             assumedMaster.metaDocument.isResolvedConflict === forkStateFullDoc._rev
                         ) {
                             /**
@@ -309,6 +312,7 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
                             (
                                 assumedMaster &&
                                 (assumedMaster.docData as any)._rev &&
+                                forkStateFullDoc &&
                                 forkStateFullDoc._meta[state.input.identifier] &&
                                 parseRevision(forkStateFullDoc._rev).height === forkStateFullDoc._meta[state.input.identifier]
                             )
