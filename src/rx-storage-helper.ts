@@ -11,7 +11,6 @@ import {
 import type {
     BulkWriteRow,
     BulkWriteRowProcessed,
-    ById,
     CategorizeBulkWriteRowsOutput,
     EventBulk,
     RxAttachmentData,
@@ -160,15 +159,9 @@ export function categorizeBulkWriteRows<RxDocType>(
      * Current state of the documents
      * inside of the storage. Used to determine
      * which writes cause conflicts.
-     * This can be a Map for better performance
-     * but it can also be an object because some storages
-     * need to work with something that is JSON-stringify-able
-     * and we do not want to transform a big object into a Map
-     * each time we use it.
+     * This must be a Map for better performance.
      */
-    docsInDb:
-        Map<RxDocumentData<RxDocType>[StringKeys<RxDocType>] | string, RxDocumentData<RxDocType>> |
-        ById<RxDocumentData<RxDocType>>,
+    docsInDb: Map<RxDocumentData<RxDocType>[StringKeys<RxDocType>] | string, RxDocumentData<RxDocType>>,
     /**
      * The write rows that are passed to
      * RxStorageInstance().bulkWrite().
@@ -211,9 +204,7 @@ export function categorizeBulkWriteRows<RxDocType>(
 
     const startTime = now();
 
-    const docsByIdIsMap = typeof docsInDb.get === 'function';
-    const hasDocsInDb = docsByIdIsMap ? (docsInDb as Map<any, any>).size > 0 : Object.keys(docsInDb).length > 0;
-
+    const hasDocsInDb = docsInDb.size > 0;
     let newestRow: BulkWriteRowProcessed<RxDocType> | undefined;
 
     /**
@@ -228,9 +219,9 @@ export function categorizeBulkWriteRows<RxDocType>(
         const previous = writeRow.previous;
         const docId = document[primaryPath] as string;
 
-        let documentInDb: RxDocumentData<RxDocType> | false = false;
+        let documentInDb: RxDocumentData<RxDocType> | undefined = undefined as any;
         if (hasDocsInDb) {
-            documentInDb = docsByIdIsMap ? (docsInDb as any).get(docId) : (docsInDb as any)[docId];
+            documentInDb = docsInDb.get(docId);
         }
         let attachmentError: RxStorageWriteErrorAttachment<RxDocType> | undefined;
 
@@ -289,6 +280,8 @@ export function categorizeBulkWriteRows<RxDocType>(
                     operation: 'INSERT' as const,
                     documentData: hasAttachments ? stripAttachmentsDataFromDocument(document) : document as any,
                     previousDocumentData: hasAttachments && previous ? stripAttachmentsDataFromDocument(previous) : previous as any,
+                    // TODO do we even need the startTime and endTime?
+                    // maybe it should be defined per event-bulk, not per each single event
                     startTime,
                     endTime: now()
                 };

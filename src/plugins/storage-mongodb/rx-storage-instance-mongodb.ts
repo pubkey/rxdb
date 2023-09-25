@@ -197,10 +197,14 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
             docIds,
             true
         );
+        const documentStatesMap = new Map();
+        Object.entries(documentStates).forEach(([docId, doc]) => {
+            documentStatesMap.set(docId, doc);
+        });
         const categorized = categorizeBulkWriteRows<RxDocType>(
             this,
             primaryPath as any,
-            documentStates,
+            documentStatesMap,
             documentWrites,
             context
         );
