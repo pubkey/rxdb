@@ -77,6 +77,10 @@ https://github.com/pubkey/rxdb/issues/4926#issuecomment-1712223984
 
 ## Use `crypto.subtle.digest` for hashing
 
+Steps:
+- make hashing async [DONE]
+- Add toggle for crypto.subtle.digest
+
 It is [faster](https://measurethat.net/Benchmarks/Show/6371/0/sha256-js) and more secure and we have a smaller build size.
 
 ## Rename replication-p2p to replication-webrtc

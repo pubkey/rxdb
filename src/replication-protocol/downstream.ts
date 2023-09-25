@@ -60,7 +60,7 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
         }
     }
 
-    const identifierHash = state.input.hashFunction(state.input.identifier);
+    const identifierHash = await state.input.hashFunction(state.input.identifier);
     const replicationHandler = state.input.replicationHandler;
 
     // used to detect which tasks etc can in it at which order.

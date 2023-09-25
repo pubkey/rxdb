@@ -156,7 +156,7 @@ export async function ensureStorageTokenDocumentExists<Collections extends Colle
     const storageToken = randomCouchString(10);
 
     const passwordHash = rxDatabase.password ?
-        rxDatabase.hashFunction(JSON.stringify(rxDatabase.password)) :
+        await rxDatabase.hashFunction(JSON.stringify(rxDatabase.password)) :
         undefined;
 
     const docData: RxDocumentData<InternalStoreStorageTokenDocType> = {

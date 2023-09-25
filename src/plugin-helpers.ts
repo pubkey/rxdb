@@ -66,10 +66,10 @@ export function wrappedValidateStorageFactory(
         () => new Map()
     );
 
-    function initValidator(
+    async function initValidator(
         schema: RxJsonSchema<any>
-    ): ValidatorFunction {
-        const hash = defaultHashSha256(JSON.stringify(schema));
+    ): Promise<ValidatorFunction> {
+        const hash = await defaultHashSha256(JSON.stringify(schema));
         return getFromMapOrCreate(
             VALIDATOR_CACHE,
             hash,
@@ -95,15 +95,15 @@ export function wrappedValidateStorageFactory(
                      * from the schema.
                      */
                     let validatorCached: ValidatorFunction;
-                    requestIdleCallbackIfAvailable(() => validatorCached = initValidator(params.schema));
+                    requestIdleCallbackIfAvailable(async() => validatorCached = await initValidator(params.schema));
 
                     const oldBulkWrite = instance.bulkWrite.bind(instance);
-                    instance.bulkWrite = (
+                    instance.bulkWrite = async(
                         documentWrites: BulkWriteRow<RxDocType>[],
                         context: string
                     ) => {
                         if (!validatorCached) {
-                            validatorCached = initValidator(params.schema);
+                            validatorCached = await initValidator(params.schema);
                         }
                         const errors: RxStorageWriteError<RxDocType>[] = [];
                         const continueWrites: typeof documentWrites = [];

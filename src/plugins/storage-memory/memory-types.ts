@@ -65,6 +65,8 @@ export type MemoryStorageInternals<RxDocType> = {
         [indexName: string]: MemoryStorageInternalsByIndex<RxDocType>;
     };
 
+    writeQueue: Promise<any>;
+
     /**
      * We need these to do lazy writes.
      */

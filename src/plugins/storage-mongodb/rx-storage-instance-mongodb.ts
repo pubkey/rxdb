@@ -176,9 +176,12 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
         documentWrites: BulkWriteRow<RxDocType>[],
         context: string
     ): Promise<RxStorageBulkWriteResponse<RxDocType>> {
+
+        // TODO this does not work. Use a promise-queue like everywhere else.
         this.runningOperations.next(this.runningOperations.getValue() + 1);
         await firstValueFrom(this.runningWrites.pipe(filter(c => c === 0)));
         this.runningWrites.next(this.runningWrites.getValue() + 1);
+
         const mongoCollection = await this.mongoCollectionPromise;
         if (this.closed) {
             return Promise.reject(new Error('already closed'));
@@ -198,7 +201,7 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
         Object.entries(documentStates).forEach(([docId, doc]) => {
             documentStatesMap.set(docId, doc);
         });
-        const categorized = categorizeBulkWriteRows<RxDocType>(
+        const categorized = await categorizeBulkWriteRows<RxDocType>(
             this,
             primaryPath as any,
             documentStatesMap,

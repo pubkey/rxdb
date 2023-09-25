@@ -156,7 +156,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
             }
         });
 
-        const categorized = categorizeBulkWriteRows<RxDocType>(
+        const categorized = await categorizeBulkWriteRows<RxDocType>(
             this,
             this.primaryPath as any,
             docsInDb,

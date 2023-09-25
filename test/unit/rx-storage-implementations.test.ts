@@ -400,6 +400,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
 
                 assert.deepStrictEqual(first.error, []);
                 assert.strictEqual(first.success[0].value, 'first');
+                console.dir(first);
+                console.dir(second);
                 assert.strictEqual(second.error[0].status, 409);
 
                 storageInstance.close();
@@ -2769,7 +2771,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
 
                 await storageInstance.bulkWrite(
                     [{
-                        previous: stripAttachmentsDataFromDocument(writeData),
+                        previous: await stripAttachmentsDataFromDocument(writeData),
                         document: deleteData
                     }],
                     testContext

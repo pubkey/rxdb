@@ -107,7 +107,10 @@ export type RxTestStorage = {
 };
 
 
-export type HashFunction = (input: string) => string;
+/**
+ * Must be async to support async hashing like from the WebCrypto API.
+ */
+export type HashFunction = (input: string) => Promise<string>;
 
 
 export declare type QueryMatcher<DocType> = (doc: DocType) => boolean;

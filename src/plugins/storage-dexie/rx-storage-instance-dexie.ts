@@ -122,7 +122,7 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
                     return doc;
                 });
 
-                categorized = categorizeBulkWriteRows<RxDocType>(
+                categorized = await categorizeBulkWriteRows<RxDocType>(
                     this,
                     this.primaryPath as any,
                     docsInDbMap,

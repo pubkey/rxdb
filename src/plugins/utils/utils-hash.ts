@@ -6,6 +6,6 @@ import { sha256 } from 'ohash';
  * IMPORTANT: Changing the default hashing method
  * requires a BREAKING change!
  */
-export function defaultHashSha256(input: string): string {
-    return sha256(input);
+export function defaultHashSha256(input: string): Promise<string> {
+    return Promise.resolve(sha256(input));
 }

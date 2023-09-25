@@ -1510,3 +1510,15 @@ AFTER2: (lazy writes)
     "find-by-query-parallel-4": 4.29,
     "count": 0.44
 }
+{
+    "description": "memory",
+    "platform": "node",
+    "collectionsAmount": 4,
+    "docsAmount": 1200,
+    "time-to-first-insert": 2.71,
+    "insert-documents-200": 1.53,
+    "find-by-ids": 0.14,
+    "find-by-query": 2.73,
+    "find-by-query-parallel-4": 2.74,
+    "count": 0.72
+}

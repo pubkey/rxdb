@@ -650,17 +650,17 @@ config.parallel('rx-schema.test.js', () => {
         });
         describe('.hash', () => {
             describe('positive', () => {
-                it('should hash', () => {
+                it('should hash', async () => {
                     const schema = createRxSchema(schemas.human, defaultHashSha256);
-                    const hash = schema.hash;
+                    const hash = await schema.hash;
                     assert.strictEqual(typeof hash, 'string');
                     assert.ok(hash.length >= 5);
                 });
-                it('should normalize one schema with two different orders and generate for each the same hash', () => {
+                it('should normalize one schema with two different orders and generate for each the same hash', async () => {
                     const schema1 = createRxSchema(schemas.humanNormalizeSchema1, defaultHashSha256);
                     const schema2 = createRxSchema(schemas.humanNormalizeSchema2, defaultHashSha256);
-                    const hash1 = schema1.hash;
-                    const hash2 = schema2.hash;
+                    const hash1 = await schema1.hash;
+                    const hash2 = await schema2.hash;
                     assert.strictEqual(hash1, hash2);
                 });
                 /**
@@ -670,15 +670,15 @@ config.parallel('rx-schema.test.js', () => {
                  * so by not re-ordering we can ensure deterministic hashing.
                  * @link https://github.com/pubkey/rxdb/pull/4005
                  */
-                it('#4005 should respect the sort order', () => {
+                it('#4005 should respect the sort order', async () => {
                     const schema1 = createRxSchema(Object.assign({}, schemas.humanDefault, {
                         indexes: ['firstName', 'lastName']
                     }), defaultHashSha256);
                     const schema2 = createRxSchema(Object.assign({}, schemas.humanDefault, {
                         indexes: ['lastName', 'firstName']
                     }), defaultHashSha256);
-                    const hash1 = schema1.hash;
-                    const hash2 = schema2.hash;
+                    const hash1 = await schema1.hash;
+                    const hash2 = await schema2.hash;
                     assert.ok(hash1 !== hash2);
                 });
             });

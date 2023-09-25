@@ -120,7 +120,7 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
                     );
 
 
-                    categorized = categorizeBulkWriteRows<RxDocType>(
+                    categorized = await categorizeBulkWriteRows<RxDocType>(
                         this,
                         this.primaryPath as any,
                         docsInDB,

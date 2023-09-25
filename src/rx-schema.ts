@@ -71,7 +71,7 @@ export class RxSchema<RxDocType = any> {
      * TODO this should be a pure function that
      * caches the hash in a WeakMap.
      */
-    public get hash(): string {
+    public get hash(): Promise<string> {
         return overwriteGetterForCaching(
             this,
             'hash',
