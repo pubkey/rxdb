@@ -2,7 +2,7 @@
  * this tests the behaviour of util.js
  */
 import assert from 'assert';
-import AsyncTestUtil, { wait } from 'async-test-util';
+import AsyncTestUtil, { randomString, wait } from 'async-test-util';
 import {
     randomCouchString,
     defaultHashSha256,
@@ -29,6 +29,10 @@ import {
     validateDatabaseName,
     deepFreezeWhenDevMode
 } from '../../plugins/dev-mode';
+import {
+    nativeSha256,
+    jsSha256
+} from '../../plugins/utils';
 import { EXAMPLE_REVISION_1 } from '../helper/revisions';
 
 import { BIG_BASE64 } from '../helper/big-base64';
@@ -51,6 +55,21 @@ describe('util.test.js', () => {
             const hash = await defaultHashSha256(str);
             assert.strictEqual(typeof hash, 'string');
             assert.ok(hash.length > 0);
+        });
+        it('both versions must return the exact same value', async () => {
+            const values: string[] = [
+                'foobar',
+                randomString(100),
+                'asdf#äge#äö34g?!§"=$%'
+            ];
+
+            for (const value of values) {
+                const hashNative = await nativeSha256(value);
+                const hashJavaScript = await jsSha256(value);
+                if (hashJavaScript !== hashNative) {
+                    throw new Error('hashes not equal for value: ' + value);
+                }
+            }
         });
     });
     describe('.sortObject()', () => {
