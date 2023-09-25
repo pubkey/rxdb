@@ -19,7 +19,6 @@ import type {
     MaybePromise
 } from './types';
 import {
-    defaultHashSha256,
     flatClone,
     getFromMapOrCreate,
     requestIdleCallbackIfAvailable
@@ -40,8 +39,11 @@ type WrappedStorageFunction = <Internals, InstanceCreationOptions>(
 type ValidatorFunction = (docData: RxDocumentData<any>) => RxValidationError[];
 
 /**
- * cache the validators by the schema-hash
+ * cache the validators by the schema string
  * so we can reuse them when multiple collections have the same schema
+ *
+ * Notice: to make it easier and not dependend on a hash function,
+ * we use the plain json string.
  */
 const VALIDATOR_CACHE_BY_VALIDATOR_KEY: Map<string, Map<string, ValidatorFunction>> = new Map();
 
@@ -66,13 +68,12 @@ export function wrappedValidateStorageFactory(
         () => new Map()
     );
 
-    async function initValidator(
+    function initValidator(
         schema: RxJsonSchema<any>
-    ): Promise<ValidatorFunction> {
-        const hash = await defaultHashSha256(JSON.stringify(schema));
+    ): ValidatorFunction {
         return getFromMapOrCreate(
             VALIDATOR_CACHE,
-            hash,
+            JSON.stringify(schema),
             () => getValidator(schema)
         );
     }
@@ -95,10 +96,10 @@ export function wrappedValidateStorageFactory(
                      * from the schema.
                      */
                     let validatorCached: ValidatorFunction;
-                    requestIdleCallbackIfAvailable(async() => validatorCached = await initValidator(params.schema));
+                    requestIdleCallbackIfAvailable(() => validatorCached = initValidator(params.schema));
 
                     const oldBulkWrite = instance.bulkWrite.bind(instance);
-                    instance.bulkWrite = async(
+                    instance.bulkWrite = async (
                         documentWrites: BulkWriteRow<RxDocType>[],
                         context: string
                     ) => {

@@ -2,6 +2,12 @@ import { sha256 } from 'ohash';
 import type { HashFunction } from '../../types';
 
 
+/**
+ * TODO in the future we should no longer provide a
+ * fallback to crypto.subtle.digest.
+ * Instead users without crypto.subtle.digest support, should have to provide their own
+ * hash function.
+ */
 export function jsSha256(input: string) {
     return Promise.resolve(sha256(input));
 }
