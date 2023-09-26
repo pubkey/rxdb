@@ -351,6 +351,7 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
         preparedQuery: MongoDBPreparedQuery<RxDocType>
     ): Promise<RxStorageQueryResult<RxDocType>> {
         this.runningOperations.next(this.runningOperations.getValue() + 1);
+        await this.writeQueue;
         const mongoCollection = await this.mongoCollectionPromise;
 
         let query = mongoCollection.find(preparedQuery.mongoSelector);
@@ -374,6 +375,7 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
         preparedQuery: MongoDBPreparedQuery<RxDocType>
     ): Promise<RxStorageCountResult> {
         this.runningOperations.next(this.runningOperations.getValue() + 1);
+        await this.writeQueue;
         const mongoCollection = await this.mongoCollectionPromise;
         const count = await mongoCollection.countDocuments(preparedQuery.mongoSelector);
         this.runningOperations.next(this.runningOperations.getValue() - 1);

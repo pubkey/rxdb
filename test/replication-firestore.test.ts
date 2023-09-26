@@ -79,7 +79,7 @@ describe('replication-firestore.test.js', () => {
     }
     async function syncOnce(collection: RxCollection, firestoreState: FirestoreOptions<any>, options?: Pick<SyncOptionsFirestore<any>, 'pull' | 'push'>) {
         const replicationState = replicateFirestore({
-            replicationIdentifier: randomCouchString(10),
+            replicationIdentifier: firestoreState.projectId,
             collection,
             firestore: firestoreState,
             live: false,
