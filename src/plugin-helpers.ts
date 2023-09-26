@@ -42,7 +42,7 @@ type ValidatorFunction = (docData: RxDocumentData<any>) => RxValidationError[];
  * cache the validators by the schema string
  * so we can reuse them when multiple collections have the same schema
  *
- * Notice: to make it easier and not dependend on a hash function,
+ * Notice: to make it easier and not dependent on a hash function,
  * we use the plain json string.
  */
 const VALIDATOR_CACHE_BY_VALIDATOR_KEY: Map<string, Map<string, ValidatorFunction>> = new Map();
@@ -99,12 +99,12 @@ export function wrappedValidateStorageFactory(
                     requestIdleCallbackIfAvailable(() => validatorCached = initValidator(params.schema));
 
                     const oldBulkWrite = instance.bulkWrite.bind(instance);
-                    instance.bulkWrite = async (
+                    instance.bulkWrite = (
                         documentWrites: BulkWriteRow<RxDocType>[],
                         context: string
                     ) => {
                         if (!validatorCached) {
-                            validatorCached = await initValidator(params.schema);
+                            validatorCached = initValidator(params.schema);
                         }
                         const errors: RxStorageWriteError<RxDocType>[] = [];
                         const continueWrites: typeof documentWrites = [];
