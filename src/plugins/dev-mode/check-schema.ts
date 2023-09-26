@@ -90,6 +90,13 @@ export function validateFieldsDeep(rxJsonSchema: RxJsonSchema<any>): true {
             });
         }
 
+        // $ref is not allowed
+        if (schemaObj.hasOwnProperty('$ref')) {
+            throw newRxError('SC40', {
+                fieldName
+            });
+        }
+
 
         // if ref given, must be type=='string', type=='array' with string-items or type==['string','null']
         if (schemaObj.hasOwnProperty('ref')) {

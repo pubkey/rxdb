@@ -9,25 +9,8 @@ See https://github.com/pubkey/rxdb/pull/4614
 
 ## Update node.js to 20.7.0 [DONE]
 
-## Do not allow type mixing
 
-In the RxJsonSchema, a property of a document can have multiple types like
-
-```ts
-{
-    type?: JsonSchemaTypes | JsonSchemaTypes[];
-}
-```
-
-This is bad and should not be used. Instead each field must have exactly one type.
-Having mixed types causes many confusion, for example when the type is `['string', 'number']`,
-you could run a query selector like `$gt: 10` where it now is not clear if the string `foobar` is matching or not.
-
-## Add enum-compression to the key-compression plugin
-- Also rename the key-compression plugin to be just called 'compression'
-
-
-## Require string based `$regex`
+## Require string based `$regex` [DONE]
 
 Atm people can pass `RegExp` instances to the queries. These cannot be transferred via json for example having a remote storage
 can make problems.
@@ -69,13 +52,13 @@ Interestingly, `received$` has been named correctly
 
 https://github.com/pubkey/rxdb/issues/4821#issuecomment-1660339676
 
-## Add dev-mode check for disallowed $ref fields
+## Add dev-mode check for disallowed $ref fields [DONE]
 
 RxDB cannot resolve $ref fields in the schema because it would have a negative performance impact.
 We should add a dev-mode check to throw a helpfull error message if $refs are used in the schema
 https://github.com/pubkey/rxdb/issues/4926#issuecomment-1712223984
 
-## Use `crypto.subtle.digest` for hashing
+## Use `crypto.subtle.digest` for hashing [DONE]
 
 Steps:
 - make hashing async [DONE]
@@ -95,12 +78,32 @@ Most "normal" users do not need premium access so we should name it "RxDB Enterp
 
 HAving an .info() method helps in debugging stuff and sending reports on problems etc.
 
-## Skip repsonding full document data on bulkWrites (only in all happy case)
+## Skip responding full document data on bulkWrites (only in all happy case)
 
 RxStorage.bulkwrite(): If all writes suceeed, return "SUCESS" or sth to not have to transfer all json document data again. This is mostly important in the remot storage and webworker storage where we do not want to JSON-stringify and parse all data again.
 
 
-## Change response type of RxStorageInstance.bulkWrite() from indexeddb objects to arrays
+## Change response type of RxStorageInstance.bulkWrite() from indexeddb objects to arrays [DONE]
 
 `RxStorageBulkWriteResponse` should only contains arrays. This makes writes much less performance users because we do not have to
 index the results.
+
+
+
+
+## Do not allow type mixing
+
+In the RxJsonSchema, a property of a document can have multiple types like
+
+```ts
+{
+    type?: JsonSchemaTypes | JsonSchemaTypes[];
+}
+```
+
+This is bad and should not be used. Instead each field must have exactly one type.
+Having mixed types causes many confusion, for example when the type is `['string', 'number']`,
+you could run a query selector like `$gt: 10` where it now is not clear if the string `foobar` is matching or not.
+
+## Add enum-compression to the key-compression plugin
+- Also rename the key-compression plugin to be just called 'compression'
