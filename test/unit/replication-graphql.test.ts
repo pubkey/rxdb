@@ -1670,7 +1670,7 @@ describe('replication-graphql.test.ts', () => {
                 });
 
                 const emitted: any[] = [];
-                const sub = replicationState.send$.subscribe((doc: any) => emitted.push(doc));
+                const sub = replicationState.sent$.subscribe((doc: any) => emitted.push(doc));
                 await replicationState.awaitInitialReplication();
 
                 assert.strictEqual(emitted.length, batchSize);
