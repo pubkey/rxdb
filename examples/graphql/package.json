@@ -44,7 +44,7 @@
     "html-webpack-plugin": "5.5.3",
     "mini-css-extract-plugin": "2.7.6",
     "ncp": "2.0.0",
-    "rimraf": "5.0.1",
+    "rimraf": "5.0.4",
     "source-map-loader": "4.0.1",
     "style-loader": "3.3.3",
     "testcafe": "1.20.1",
