@@ -18,16 +18,16 @@ import {
 } from '../../plugins/core';
 
 import {
-    replicateP2P,
-    RxP2PReplicationPool,
+    replicateWebRTC,
+    RxWebRTCReplicationPool,
     // getConnectionHandlerP2PCF,
-    isMasterInP2PReplication,
+    isMasterInWebRTCReplication,
     getConnectionHandlerSimplePeer
-} from '../../plugins/replication-p2p';
+} from '../../plugins/replication-webrtc';
 
 import { randomString, wait, waitUntil } from 'async-test-util';
 
-describe('replication-p2p.test.ts', () => {
+describe('replication-webrtc.test.ts', () => {
     if (config.platform.isNode()) {
         /**
          * We cannot run these tests in Node.js
@@ -56,20 +56,20 @@ describe('replication-p2p.test.ts', () => {
     let wrtc: any;
     const signalingServerUrl: string = 'ws://localhost:18006';
     describe('utils', () => {
-        describe('.isMasterInP2PReplication()', () => {
+        describe('.isMasterInWebRTCReplication()', () => {
             new Array(10).fill(0).forEach(() => {
                 const id1 = randomString(7);
                 const id2 = randomString(7);
                 it('should have exactly one master ' + id1 + ' - ' + id2, async () => {
-                    const isMasterA = await isMasterInP2PReplication(defaultHashSha256, id1, id2);
-                    const isMasterB = await isMasterInP2PReplication(defaultHashSha256, id2, id1);
+                    const isMasterA = await isMasterInWebRTCReplication(defaultHashSha256, id1, id2);
+                    const isMasterB = await isMasterInWebRTCReplication(defaultHashSha256, id2, id1);
                     assert.ok(isMasterA !== isMasterB);
                 });
             });
         });
     });
 
-    function ensureReplicationHasNoErrors(replicationPool: RxP2PReplicationPool<any>) {
+    function ensureReplicationHasNoErrors(replicationPool: RxWebRTCReplicationPool<any>) {
         /**
          * We do not have to unsubscribe because the observable will cancel anyway.
          */
@@ -111,10 +111,10 @@ describe('replication-p2p.test.ts', () => {
         topic: string,
         secret: string,
         collections: RxCollection<RxDocType>[]
-    ): Promise<RxP2PReplicationPool<RxDocType>[]> {
+    ): Promise<RxWebRTCReplicationPool<RxDocType>[]> {
         const ret = await Promise.all(
             collections.map(async (collection) => {
-                const replicationPool = await replicateP2P<RxDocType>({
+                const replicationPool = await replicateWebRTC<RxDocType>({
                     collection,
                     topic,
                     secret,

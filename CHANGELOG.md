@@ -371,7 +371,7 @@ Bugfixes:
 
 ### 13.11.0 (19 November 2022)
 
-- ADD [replication-p2p](./docs-src/replication-p2p.md) which can be used to replicate data peer-to-peer without a backend server.
+- ADD [replication-webrtc](./docs-src/replication-webrtc.md) which can be used to replicate data peer-to-peer without a backend server.
 
 ### 13.10.1 (10 November 2022)
 

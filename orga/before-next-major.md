@@ -83,7 +83,7 @@ Steps:
 
 It is [faster](https://measurethat.net/Benchmarks/Show/6371/0/sha256-js) and more secure and we have a smaller build size.
 
-## Rename replication-p2p to replication-webrtc
+## Rename replication-p2p to replication-webrtc [DONE]
 
 ## Rename "RxDB Premium" to "RxDB Enterprise"
 

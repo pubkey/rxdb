@@ -224,12 +224,12 @@
       "es2015": "./dist/es/plugins/replication-graphql/index.js",
       "default": "./dist/es/plugins/replication-graphql/index.js"
     },
-    "./plugins/replication-p2p": {
-      "types": "./dist/types/plugins/replication-p2p/index.d.ts",
-      "node": "./dist/lib/plugins/replication-p2p/index.js",
-      "require": "./dist/lib/plugins/replication-p2p/index.js",
-      "es2015": "./dist/es/plugins/replication-p2p/index.js",
-      "default": "./dist/es/plugins/replication-p2p/index.js"
+    "./plugins/replication-webrtc": {
+      "types": "./dist/types/plugins/replication-webrtc/index.d.ts",
+      "node": "./dist/lib/plugins/replication-webrtc/index.js",
+      "require": "./dist/lib/plugins/replication-webrtc/index.js",
+      "es2015": "./dist/es/plugins/replication-webrtc/index.js",
+      "default": "./dist/es/plugins/replication-webrtc/index.js"
     },
     "./plugins/replication-websocket": {
       "types": "./dist/types/plugins/replication-websocket/index.d.ts",
@@ -383,7 +383,7 @@
     "test:core": "npm run transpile && mocha ./test_tmp/unit/core.node.js",
     "test:full": "npm run transpile && mocha ./test_tmp/unit/full.node.js",
     "test:typings": "tsc --noEmit --lib \"ES2021,DOM\" ./test/typings.test.ts",
-    "test:deps": "npm run build && dependency-check ./package.json ./dist/lib/index.js ./dist/lib/plugins/validate-is-my-json-valid/index.js ./dist/lib/plugins/attachments-compression/index.js ./dist/lib/plugins/validate-ajv/index.js ./dist/lib/plugins/update/index.js ./dist/lib/plugins/key-compression/index.js ./dist/lib/plugins/dev-mode/index.js ./dist/lib/plugins/encryption-crypto-js/index.js ./dist/lib/plugins/replication-graphql/index.js ./dist/lib/plugins/replication-p2p/index.js ./dist/lib/plugins/replication-websocket/index.js ./dist/lib/plugins/replication-firestore/index.js ./dist/lib/plugins/replication-nats/index.js ./dist/lib/plugins/validate-z-schema/index.js ./dist/lib/plugins/storage-lokijs/index.js ./dist/lib/plugins/storage-dexie/index.js ./dist/lib/plugins/storage-memory/index.js ./dist/lib/plugins/storage-mongodb/index.js --no-dev --ignore-module util --ignore-module url --ignore-module ws --ignore-module graphql --ignore-module as-typed --ignore-module \"@types/*\"",
+    "test:deps": "npm run build && dependency-check ./package.json ./dist/lib/index.js ./dist/lib/plugins/validate-is-my-json-valid/index.js ./dist/lib/plugins/attachments-compression/index.js ./dist/lib/plugins/validate-ajv/index.js ./dist/lib/plugins/update/index.js ./dist/lib/plugins/key-compression/index.js ./dist/lib/plugins/dev-mode/index.js ./dist/lib/plugins/encryption-crypto-js/index.js ./dist/lib/plugins/replication-graphql/index.js ./dist/lib/plugins/replication-webrtc/index.js ./dist/lib/plugins/replication-websocket/index.js ./dist/lib/plugins/replication-firestore/index.js ./dist/lib/plugins/replication-nats/index.js ./dist/lib/plugins/validate-z-schema/index.js ./dist/lib/plugins/storage-lokijs/index.js ./dist/lib/plugins/storage-dexie/index.js ./dist/lib/plugins/storage-memory/index.js ./dist/lib/plugins/storage-mongodb/index.js --no-dev --ignore-module util --ignore-module url --ignore-module ws --ignore-module graphql --ignore-module as-typed --ignore-module \"@types/*\"",
     "test:circular": "npm run build && madge --circular ./dist/es/index.js && madge --circular ./dist/es/plugins/storage-dexie/index.js",
     "test:performance:lokijs:browser": "npm run transpile && cross-env DEFAULT_STORAGE=lokijs CI=true karma start ./config/karma.performance.conf.js --single-run",
     "test:performance:lokijs:node": "npm run transpile && cross-env DEFAULT_STORAGE=lokijs mocha --config ./config/.mocharc.js ./test_tmp/performance.test.js --unhandled-rejections=strict --expose-gc",

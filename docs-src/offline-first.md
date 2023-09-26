@@ -93,6 +93,6 @@ You do not have to care whether this data came from the UI, another tab, the bac
  TODO topics
  - you might not need a backend
    - nothing to sync
-   - sync can be done p2p webrtc https://hypercore-protocol.org/
+   - sync can be done webrtc https://hypercore-protocol.org/
 -->
 

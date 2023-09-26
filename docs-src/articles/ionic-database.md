@@ -115,8 +115,8 @@ RxDB's integration with CouchDB replication presents a powerful way to synchroni
 - [Firestore Replication](../replication-firestore.md):
 Firestore, Google's cloud-hosted NoSQL database, offers another avenue for data replication in RxDB. With Firestore replication, you can establish a connection between your RxDB-powered app and Firestore's cloud infrastructure. This integration provides real-time updates to data across multiple instances of your application, ensuring that users always have access to the latest information. RxDB's support for Firestore replication empowers you to build dynamic and responsive applications that thrive in today's fast-paced digital landscape.
 
-- [P2P Replication](../replication-p2p.md):
-Peer-to-peer (P2P) replication introduces a cutting-edge approach to data synchronization in RxDB. P2P replication allows devices to communicate directly with each other, bypassing the need for a central server. This method proves invaluable in scenarios where network connectivity is limited or unreliable. With P2P replication, devices can exchange data directly, enabling collaboration and information sharing even in challenging network conditions.
+- [WebRTC Replication](../replication-webrtc.md):
+Peer-to-peer (P2P) replication via WebRTC introduces a cutting-edge approach to data synchronization in RxDB. P2P replication allows devices to communicate directly with each other, bypassing the need for a central server. This method proves invaluable in scenarios where network connectivity is limited or unreliable. With WebRTC replication, devices can exchange data directly, enabling collaboration and information sharing even in challenging network conditions.
 
 
 

@@ -578,7 +578,7 @@ header .logo img {
     text-align: center;
 }
 
-.block.replication .replicate-p2p {
+.block.replication .replicate-webrtc {
     position: absolute;
     margin-top: -70px;
     top: 83%;

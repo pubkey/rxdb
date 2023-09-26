@@ -1,13 +1,13 @@
 import { Subject } from 'rxjs';
 import { getFromMapOrThrow, PROMISE_RESOLVE_VOID, randomCouchString } from '../../plugins/utils';
 import type {
-    P2PConnectionHandler,
-    P2PConnectionHandlerCreator,
-    P2PMessage,
-    P2PPeer,
+    WebRTCConnectionHandler,
+    WebRTCConnectionHandlerCreator,
+    WebRTCMessage,
+    WebRTCPeer,
     PeerWithMessage,
     PeerWithResponse
-} from './p2p-types';
+} from './webrtc-types';
 
 import {
     Instance as SimplePeer,
@@ -22,11 +22,11 @@ import { newRxError } from '../../rx-error';
 export function getConnectionHandlerSimplePeer(
     serverUrl: string,
     wrtc?: any
-): P2PConnectionHandlerCreator {
+): WebRTCConnectionHandlerCreator {
     const { io } = require('socket.io-client');
 
 
-    const creator: P2PConnectionHandlerCreator = (options) => {
+    const creator: WebRTCConnectionHandlerCreator = (options) => {
         const socket = io(serverUrl);
 
         const peerId = randomCouchString(10);
@@ -35,8 +35,8 @@ export function getConnectionHandlerSimplePeer(
             peerId
         });
 
-        const connect$ = new Subject<P2PPeer>();
-        const disconnect$ = new Subject<P2PPeer>();
+        const connect$ = new Subject<WebRTCPeer>();
+        const disconnect$ = new Subject<WebRTCPeer>();
         const message$ = new Subject<PeerWithMessage>();
         const response$ = new Subject<PeerWithResponse>();
         const error$ = new Subject<RxError | RxTypeError>();
@@ -87,7 +87,7 @@ export function getConnectionHandlerSimplePeer(
                 });
 
                 newPeer.on('error', (error) => {
-                    error$.next(newRxError('RC_P2P_PEER', {
+                    error$.next(newRxError('RC_WEBRTC_PEER', {
                         error
                     }));
                 });
@@ -105,13 +105,13 @@ export function getConnectionHandlerSimplePeer(
             peer.signal(data.signal);
         });
 
-        const handler: P2PConnectionHandler = {
+        const handler: WebRTCConnectionHandler = {
             error$,
             connect$,
             disconnect$,
             message$,
             response$,
-            async send(peer: P2PPeer, message: P2PMessage) {
+            async send(peer: WebRTCPeer, message: WebRTCMessage) {
                 await (peer as any).send(JSON.stringify(message));
             },
             destroy() {

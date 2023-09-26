@@ -1,10 +1,10 @@
-# Peer-to-Peer (P2P) Replication with the RxDB JavaScript Database (beta)
+# Peer-to-Peer (P2P) WebRTC Replication with the RxDB JavaScript Database (beta)
 
 
 In the world of web and mobile development, data synchronization between clients and servers has always been a critical aspect of building real-time JavaScript applications.
 Traditionally, the synchronization process relies on **centralized servers** to manage and distribute data. However, Peer-to-Peer (P2P) replication with [WebRTC](https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API) is changing the game by allowing data to flow **directly between clients**, eliminating the need for a central server.
 
-With the **RxDB P2P replication plugin** you can replicate the database state between your clients devices fully peer2peer over WebRTC.
+With the **RxDB WebRTC replication plugin** you can replicate the database state between your clients devices fully peer2peer over WebRTC.
 There is no need for a centralized server to store any of the users data like in a **master-slave** replication.
 Only a WebRTC signaling server is required to initially exchange the connection data between clients so that they can establish a WebRTC connection.
 The replication itself then runs with the [RxDB replication protocol](./replication.md). Because RxDB is a NoSQL database and because of the simplicity of its replication protocol, setting up a robust P2P replication is way easier compared to SQL server- or client databases.
@@ -21,23 +21,23 @@ P2P replication is a paradigm shift in data synchronization. Instead of relying 
 
 
 
-## Using the RxDB P2P Replication Plugin
+## Using the RxDB WebRTC Replication Plugin
 
 Before you use this plugin, make sure that you understand how [WebRTC works](https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API).
 
-First you have to add the plugin, then you can call `RxCollection.syncP2P()` to start the replication.
+First you have to add the plugin, then you can call `RxCollection.syncWebRTC()` to start the replication.
 As options you have to provide a `topic` and a connection handler function that implements the `P2PConnectionHandlerCreator` interface. As default you should start with the `getConnectionHandlerSimplePeer` method which uses the [simple-peer](https://github.com/feross/simple-peer) library.
 
-In difference to the other replication plugins, the P2P replication returns a `replicationPool` instead of a single `RxReplicationState`. The `replicationPool` contains all replication states of the connected peers in the network.
+In difference to the other replication plugins, the WebRTC replication returns a `replicationPool` instead of a single `RxReplicationState`. The `replicationPool` contains all replication states of the connected peers in the P2P network.
 
 ```ts
 import {
-    replicateP2P,
+    replicateWebRTC,
     getConnectionHandlerSimplePeer
-} from 'rxdb/plugins/replication-p2p';
+} from 'rxdb/plugins/replication-webrtc';
 
 
-const replicationPool = await replicateP2P(
+const replicationPool = await replicateWebRTC(
     {
         collection: myRxCollection,
         // The topic is like a 'room-name'. All clients with the same topic
@@ -68,13 +68,13 @@ replicationPool.cancel();
 
 ## Live replications
 
-P2P replication is **always live** because there can not be a one-time sync when it is always possible to have new Peers that join  the pool. Therefore you cannot set the `live: false` option like in the other replication plugins.
+The WebRTC replication is **always live** because there can not be a one-time sync when it is always possible to have new Peers that join the connection pool. Therefore you cannot set the `live: false` option like in the other replication plugins.
 
 
 ## Signaling Server
 
 
-For P2P replication to work with the RxDB P2P Replication Plugin, a [signaling server](https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Signaling_and_video_calling) is required. The signaling server helps peers discover each other and establish connections.
+For P2P replication to work with the RxDB WebRTC Replication Plugin, a [signaling server](https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Signaling_and_video_calling) is required. The signaling server helps peers discover each other and establish connections.
 
 Creating a basic signaling server is straightforward. The provided example uses 'socket.io' for WebSocket communication. However, in production, you'd want to create a more robust signaling server with authentication and additional logic to suit your application's needs.
 
@@ -114,7 +114,7 @@ export async function startSignalingServer(port: number): Promise<string> {
 }
 ```
 
-## Conflict detection in P2P replication
+## Conflict detection in WebRTC replication
 
 RxDB's conflict handling works by detecting and resolving conflicts that may arise when multiple clients in a decentralized database system attempt to modify the same data concurrently.
 A **custom conflict handler** can be set up, which is a plain JavaScript function. The conflict handler is run on each replicated document write and resolves the conflict if required. [Find out more about RxDB conflict handling here](https://rxdb.info/transactions-conflicts-revisions.html)
@@ -124,4 +124,4 @@ A **custom conflict handler** can be set up, which is a plain JavaScript functio
 ## Storing replicated data encrypted on client device
 
 Storing replicated data encrypted on client devices using the RxDB Encryption Plugin is a pivotal step towards bolstering **data security** and **user privacy**.
-The P2P replication plugin seamlessly integrates with the [RxDB encryption plugins](./encryption.md), providing a robust solution for encrypting sensitive information before it's stored locally. By doing so, it ensures that even if unauthorized access to the device occurs, the data remains protected and unintelligible without the encryption key (or password). This approach is particularly vital in scenarios where user-generated content or confidential data is replicated across devices, as it empowers users with control over their own data while adhering to stringent security standards. [Read more about the encryption plugins here](./encryption.md).
+The WebRTC replication plugin seamlessly integrates with the [RxDB encryption plugins](./encryption.md), providing a robust solution for encrypting sensitive information before it's stored locally. By doing so, it ensures that even if unauthorized access to the device occurs, the data remains protected and unintelligible without the encryption key (or password). This approach is particularly vital in scenarios where user-generated content or confidential data is replicated across devices, as it empowers users with control over their own data while adhering to stringent security standards. [Read more about the encryption plugins here](./encryption.md).

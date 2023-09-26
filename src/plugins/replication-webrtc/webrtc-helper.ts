@@ -2,11 +2,11 @@ import type {
     HashFunction
 } from '../../types';
 import type {
-    P2PConnectionHandler,
-    P2PMessage,
-    P2PPeer,
-    P2PResponse
-} from './p2p-types';
+    WebRTCConnectionHandler,
+    WebRTCMessage,
+    WebRTCPeer,
+    WebRTCResponse
+} from './webrtc-types';
 import { filter, firstValueFrom, map } from 'rxjs';
 
 
@@ -18,7 +18,7 @@ import { filter, firstValueFrom, map } from 'rxjs';
  * a storageToken like 'aaaaaa' is not always the master
  * for all peers.
  */
-export async function isMasterInP2PReplication(
+export async function isMasterInWebRTCReplication(
     hashFunction: HashFunction,
     ownStorageToken: string,
     otherStorageToken: string
@@ -31,10 +31,10 @@ export async function isMasterInP2PReplication(
 }
 
 export function sendMessageAndAwaitAnswer(
-    handler: P2PConnectionHandler,
-    peer: P2PPeer,
-    message: P2PMessage
-): Promise<P2PResponse> {
+    handler: WebRTCConnectionHandler,
+    peer: WebRTCPeer,
+    message: WebRTCMessage
+): Promise<WebRTCResponse> {
     const requestId = message.id;
     const answerPromise = firstValueFrom(
         handler.response$.pipe(

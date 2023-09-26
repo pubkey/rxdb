@@ -116,7 +116,7 @@
     * [Replication GraphQL](./replication-graphql.md)
     * [Replication Websocket](./replication-websocket.md)
     * [Replication CouchDB](./replication-couchdb.md)
-    * [Replication P2P](./replication-p2p.md)
+    * [Replication WebRTC](./replication-webrtc.md)
     * [Replication Firestore](./replication-firestore.md)
     * [Replication NATS](./replication-nats.md)
 
