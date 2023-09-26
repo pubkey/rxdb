@@ -101,6 +101,27 @@ config.parallel('local-documents.test.ts', () => {
             });
         });
     });
+    describe('.$', () => {
+        it('should return the full RxLocaDocument, not just the data', async () => {
+            const c = await humansCollection.create(0);
+            const doc = await c.insertLocal('foobar', {
+                foo: 'bar'
+            });
+            const emitted: RxLocalDocument<any, any>[] = [];
+            doc.$.subscribe(fullDoc => {
+                emitted.push(fullDoc);
+            });
+            await waitUntil(() => emitted.length === 1);
+            await doc.incrementalPatch({ foo: 'bar2' });
+            await waitUntil(() => emitted.length === 2);
+
+            emitted.forEach(fullDoc => {
+                // ensure it is a full RxLocalDocument instance
+                assert.ok(fullDoc.primary);
+            });
+            c.database.destroy();
+        });
+    });
     describe('incremental mutation functions', () => {
         type LocalDocType = {
             foo: string;
@@ -254,25 +275,24 @@ config.parallel('local-documents.test.ts', () => {
              */
             it('should invoke subscription once', async () => {
                 const c = await humansCollection.create(0);
-                const emitted: any[] = [];
-                const doc = await c.upsertLocal('foobar', {
+                const emitted: RxLocalDocument<any, { foo: string; }>[] = [];
+                const doc = await c.upsertLocal<{ foo: string; }>('foobar', {
                     foo: 'barOne',
                 });
                 await wait(50);
                 const docSub = doc.$.subscribe(x => {
-                    emitted.push(x);
+                    emitted.push(x as any);
                 });
                 await waitUntil(() => emitted.length === 1);
-
                 await c.upsertLocal('foobar', {
                     foo: 'barTwo',
                 });
 
                 assert.strictEqual(emitted.length, 2);
                 // first 'barOne' is emitted because.$ is a BehaviorSubject
-                assert.strictEqual(emitted[0].data.foo, 'barOne');
+                assert.strictEqual(emitted[0].get('foo'), 'barOne');
                 // second after the change, barTwo is emitted
-                assert.strictEqual(emitted[1].data.foo, 'barTwo');
+                assert.strictEqual(emitted[1].get('foo'), 'barTwo');
 
                 docSub.unsubscribe();
                 c.database.destroy();
@@ -571,7 +591,9 @@ config.parallel('local-documents.test.ts', () => {
 
             const emitted: any[] = [];
             const localDoc = await myCollection.getLocal('foobar');
-            ensureNotFalsy(localDoc).get$('foo').subscribe((val: any) => emitted.push(val));
+            ensureNotFalsy(localDoc).get$('foo').subscribe((val: any) => {
+                emitted.push(val);
+            });
 
             await AsyncTestUtil.waitUntil(() => emitted.length === 1);
             assert.strictEqual(emitted[0], 'bar');

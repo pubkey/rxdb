@@ -71,16 +71,18 @@ const RxLocalDocumentPrototype: any = {
     get primary() {
         return this.id;
     },
-    get $(): Observable<RxDocumentData<RxLocalDocumentData>> {
+    get $(): Observable<RxLocalDocument<any, any>> {
         const _this: RxLocalDocumentClass = this as any;
+        const state = getFromMapOrThrow(LOCAL_DOC_STATE_BY_PARENT_RESOLVED, this.parent);
         return _this.parent.$.pipe(
             filter(changeEvent => changeEvent.isLocal),
             filter(changeEvent => changeEvent.documentId === this.primary),
             map(changeEvent => getDocumentDataOfRxChangeEvent(changeEvent)),
-            startWith(this._data),
+            startWith(state.docCache.getLatestDocumentData(this.primary)),
             distinctUntilChanged((prev, curr) => prev._rev === curr._rev),
+            map(docData => state.docCache.getCachedRxDocument(docData)),
             shareReplay(RXJS_SHARE_REPLAY_DEFAULTS)
-        );
+        ) as Observable<any>;
     },
     getLatest(this: RxLocalDocument<any>): RxLocalDocument<any> {
         const state = getFromMapOrThrow(LOCAL_DOC_STATE_BY_PARENT_RESOLVED, this.parent);
@@ -118,6 +120,7 @@ const RxLocalDocumentPrototype: any = {
         }
         return this.$
             .pipe(
+                map(localDocument => localDocument._data),
                 map(data => getProperty(data, objPath)),
                 distinctUntilChanged()
             );

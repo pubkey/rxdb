@@ -1,3 +1,4 @@
+import { Observable } from 'rxjs';
 import { DocumentCache } from '../../doc-cache';
 import { IncrementalWriteQueue } from '../../incremental-write';
 import { RxCollection } from '../rx-collection';
@@ -42,5 +43,7 @@ RxDocumentBase<RxLocalDocumentData<Data>, {}>,
          */
     incrementalModify(mutationFunction: LocalDocumentModifyFunction<Data>): Promise<RxLocalDocument<Parent, Data>>;
     incrementalPatch(patch: Partial<Data>): Promise<RxLocalDocument<Parent, Data>>;
+
+    $: Observable<RxLocalDocument<Parent, Data>>;
 }
 >;

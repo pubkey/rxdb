@@ -55,7 +55,7 @@ Proposed solution:
 
 > Why does RxDB not migrate assumed masters? That would lead to the false-positive server conflicts when assumed masters will be different from the ones on the server (because it also has the migration applied) and cause unnecessary push/pull roundtrips as a result of the conflict resolution. Or also, when schema is migrated and the server will reject push requests because assumed masters are no longer valid.
 
-## RxLocalDocument.$ must emit a document instance, not the plain data
+## RxLocalDocument.$ must emit a document instance, not the plain data [DONE]
 
 This was changed in v14 for a normal RxDocument.$ which emits RxDocument instances. Same must be done for local documents.
  
