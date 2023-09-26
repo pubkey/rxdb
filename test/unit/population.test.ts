@@ -212,7 +212,7 @@ config.parallel('population.test.js', () => {
                     .fill(0)
                     .map(() => {
                         return {
-                            name: faker.name.firstName() + randomCouchString(5),
+                            name: faker.person.firstName() + randomCouchString(5),
                             friends: []
                         };
                     });

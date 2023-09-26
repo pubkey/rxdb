@@ -500,7 +500,7 @@
     "@babel/preset-env": "7.22.20",
     "@babel/preset-typescript": "7.22.15",
     "@babel/types": "7.22.19",
-    "@faker-js/faker": "7.6.0",
+    "@faker-js/faker": "8.1.0",
     "@rollup/plugin-commonjs": "24.1.0",
     "@rollup/plugin-node-resolve": "15.2.1",
     "@types/assert": "1.5.7",

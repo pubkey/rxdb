@@ -20,12 +20,12 @@ export interface SimpleHumanDocumentType {
 export function human(
     passportId: string = randomString(12),
     age: number = randomNumber(10, 50),
-    firstName: string = faker.name.firstName()
+    firstName: string = faker.person.firstName()
 ): HumanDocumentType {
     return {
         passportId: passportId,
         firstName,
-        lastName: faker.name.lastName(),
+        lastName: faker.person.lastName(),
         age
     };
 }
@@ -33,8 +33,8 @@ export function human(
 export function simpleHuman(): SimpleHumanDocumentType {
     return {
         passportId: randomString(12),
-        firstName: faker.name.firstName(),
-        lastName: faker.name.lastName()
+        firstName: faker.person.firstName(),
+        lastName: faker.person.lastName()
     };
 }
 
@@ -86,8 +86,8 @@ export interface NoIndexHumanDocumentType {
 }
 export function NoIndexHuman(): NoIndexHumanDocumentType {
     return {
-        firstName: faker.name.firstName(),
-        lastName: faker.name.lastName()
+        firstName: faker.person.firstName(),
+        lastName: faker.person.lastName()
     };
 }
 
@@ -102,7 +102,7 @@ export interface NestedHumanDocumentType {
 export function nestedHuman(partial: Partial<NestedHumanDocumentType> = {}): NestedHumanDocumentType {
     const defaultObj = {
         passportId: randomString(12),
-        firstName: faker.name.firstName(),
+        firstName: faker.person.firstName(),
         mainSkill: {
             name: randomString(6),
             level: 5
@@ -148,8 +148,8 @@ export function bigHumanDocumentType(): BigHumanDocumentType {
     return {
         passportId: randomString(12),
         dnaHash: randomString(12),
-        firstName: faker.name.firstName(),
-        lastName: faker.name.lastName(),
+        firstName: faker.person.firstName(),
+        lastName: faker.person.lastName(),
         age: randomNumber(10, 50)
     };
 }
@@ -196,7 +196,7 @@ export interface EncryptedHumanDocumentType {
 export function encryptedHuman(secret = randomString(12)): EncryptedHumanDocumentType {
     return {
         passportId: randomString(12),
-        firstName: faker.name.firstName(),
+        firstName: faker.person.firstName(),
         secret
     };
 }
@@ -212,7 +212,7 @@ export interface EncryptedObjectHumanDocumentType {
 export function encryptedObjectHuman(): EncryptedObjectHumanDocumentType {
     return {
         passportId: randomString(12),
-        firstName: faker.name.firstName(),
+        firstName: faker.person.firstName(),
         secret: {
             name: randomString(12),
             subname: randomString(12)
@@ -241,7 +241,7 @@ export interface EncryptedDeepHumanDocumentType {
 export function encryptedDeepHumanDocumentType(): EncryptedDeepHumanDocumentType {
     return {
         passportId: randomString(12),
-        firstName: faker.name.firstName(),
+        firstName: faker.person.firstName(),
         firstLevelPassword: randomString(12),
         secretData: {
             pw: randomString(12)
@@ -292,7 +292,7 @@ export interface NostringIndexDocumentType {
 export function nostringIndex(): NostringIndexDocumentType {
     return {
         passportId: {},
-        firstName: faker.name.firstName()
+        firstName: faker.person.firstName()
     };
 }
 
@@ -332,7 +332,7 @@ export interface HumanWithTimestampDocumentType {
 export function humanWithTimestamp(givenData: Partial<HumanWithTimestampDocumentType> = {}): HumanWithTimestampDocumentType {
     let ret = {
         id: randomString(12),
-        name: faker.name.firstName(),
+        name: faker.person.firstName(),
         age: randomNumber(1, 100),
         // use some time in the past week
         updatedAt: new Date().getTime()
@@ -384,8 +384,8 @@ export interface PointDocumentType {
 export function point(): PointDocumentType {
     return {
         id: randomString(12),
-        x: faker.datatype.number(),
-        y: faker.datatype.number()
+        x: faker.number.int(),
+        y: faker.number.int()
     };
 }
 
@@ -399,7 +399,7 @@ export function humanWithIdAndAgeIndexDocumentType(
 ): HumanWithIdAndAgeIndexDocumentType {
     return {
         id: randomString(12),
-        name: faker.name.firstName(),
+        name: faker.person.firstName(),
         age
     };
 }
@@ -415,8 +415,8 @@ export type HumanWithCompositePrimary = {
 };
 export function humanWithCompositePrimary(partial: Partial<HumanWithCompositePrimary> = {}): HumanWithCompositePrimary {
     const defaultObj = {
-        firstName: faker.name.firstName(),
-        lastName: faker.name.lastName(),
+        firstName: faker.person.firstName(),
+        lastName: faker.person.lastName(),
         info: {
             age: randomNumber(10, 50)
         }
