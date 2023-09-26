@@ -73,12 +73,21 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
         time: number;
     };
     const openTasks: TaskWithTime[] = [];
-
+    let persistenceQueue: Promise<boolean> = PROMISE_RESOLVE_FALSE;
+    const nonPersistedFromMaster: {
+        checkpoint?: CheckpointType;
+        docs: ById<RxDocumentData<RxDocType>>;
+    } = {
+        docs: {}
+    };
 
     const sub = state.input.forkInstance.changeStream()
-        .pipe(
-            filter(eventBulk => eventBulk.context !== state.downstreamBulkWriteFlag)
-        ).subscribe(eventBulk => {
+        .subscribe(async (eventBulk) => {
+            // ignore writes that came from the downstream
+            if (eventBulk.context === await state.downstreamBulkWriteFlag) {
+                return;
+            }
+
             state.stats.up.forkChangeStreamEmit = state.stats.up.forkChangeStreamEmit + 1;
             openTasks.push({
                 task: eventBulk,
@@ -198,14 +207,6 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
         });
     }
 
-    let persistenceQueue: Promise<boolean> = PROMISE_RESOLVE_FALSE;
-    const nonPersistedFromMaster: {
-        checkpoint?: CheckpointType;
-        docs: ById<RxDocumentData<RxDocType>>;
-    } = {
-        docs: {}
-    };
-
     /**
      * Returns true if had conflicts,
      * false if not.
@@ -224,7 +225,6 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
             nonPersistedFromMaster.docs[docId] = docData;
         });
         nonPersistedFromMaster.checkpoint = checkpoint;
-
 
         persistenceQueue = persistenceQueue.then(async () => {
             if (state.events.canceled.getValue()) {
@@ -293,7 +293,7 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
                         assumedMasterState: assumedMasterDoc ? assumedMasterDoc.docData : undefined,
                         newDocumentState: docData
                     };
-                    writeRowsToMeta[docId] = getMetaWriteRow(
+                    writeRowsToMeta[docId] = await getMetaWriteRow(
                         state,
                         docData,
                         assumedMasterDoc ? assumedMasterDoc.metaDocument : undefined
@@ -372,7 +372,7 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
                                 state,
                                 input,
                                 forkStateById[docId]
-                            ).then(resolved => {
+                            ).then(async (resolved) => {
                                 if (resolved) {
                                     state.events.resolvedConflicts.next({
                                         input,
@@ -383,7 +383,7 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
                                         document: resolved.resolvedDoc
                                     });
                                     const assumedMasterDoc = assumedMasterState[docId];
-                                    conflictWriteMeta[docId] = getMetaWriteRow(
+                                    conflictWriteMeta[docId] = await getMetaWriteRow(
                                         state,
                                         ensureNotFalsy(realMasterState),
                                         assumedMasterDoc ? assumedMasterDoc.metaDocument : undefined,
@@ -446,4 +446,3 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
         return persistenceQueue;
     }
 }
-

@@ -102,7 +102,7 @@ export async function setCheckpoint<RxDocType, CheckpointType>(
             }
             newDoc._meta.lwt = now();
             newDoc._rev = createRevision(
-                state.input.identifier,
+                await state.checkpointKey,
                 previousCheckpointDoc
             );
             const result = await state.input.metaInstance.bulkWrite([{
@@ -121,7 +121,7 @@ export async function setCheckpoint<RxDocType, CheckpointType>(
                 } else {
                     previousCheckpointDoc = ensureNotFalsy(error.documentInDb);
                     newDoc._rev = createRevision(
-                        state.input.identifier,
+                        await state.checkpointKey,
                         previousCheckpointDoc
                     );
                 }
@@ -130,13 +130,13 @@ export async function setCheckpoint<RxDocType, CheckpointType>(
     }
 }
 
-export function getCheckpointKey<RxDocType>(
+export async function getCheckpointKey<RxDocType>(
     input: RxStorageInstanceReplicationInput<RxDocType>
-): string {
-    const hash = input.hashFunction([
+): Promise<string> {
+    const hash = await input.hashFunction([
         input.identifier,
         input.forkInstance.databaseName,
         input.forkInstance.collectionName
     ].join('||'));
-    return 'rx-storage-replication-' + hash;
+    return 'rx_storage_replication_' + hash;
 }

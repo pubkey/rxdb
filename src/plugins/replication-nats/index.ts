@@ -37,7 +37,7 @@ export * from './nats-helper';
 
 export class RxNatsReplicationState<RxDocType> extends RxReplicationState<RxDocType, NatsCheckpointType> {
     constructor(
-        public readonly replicationIdentifierHash: string,
+        public readonly replicationIdentifier: string,
         public readonly collection: RxCollection<RxDocType>,
         public readonly pull?: ReplicationPullOptions<RxDocType, NatsCheckpointType>,
         public readonly push?: ReplicationPushOptions<RxDocType>,
@@ -46,7 +46,7 @@ export class RxNatsReplicationState<RxDocType> extends RxReplicationState<RxDocT
         public autoStart: boolean = true
     ) {
         super(
-            replicationIdentifierHash,
+            replicationIdentifier,
             collection,
             '_deleted',
             pull,
@@ -228,7 +228,7 @@ export function replicateNats<RxDocType>(
 
 
     const replicationState = new RxNatsReplicationState<RxDocType>(
-        NATS_REPLICATION_PLUGIN_IDENTITY_PREFIX + options.collection.database.hashFunction(options.replicationIdentifier),
+        NATS_REPLICATION_PLUGIN_IDENTITY_PREFIX + options.replicationIdentifier,
         collection,
         replicationPrimitivesPull,
         replicationPrimitivesPush,

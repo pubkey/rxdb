@@ -54,7 +54,7 @@ export class RxCouchDBReplicationState<RxDocType> extends RxReplicationState<RxD
     constructor(
         public readonly url: string,
         public fetch: FetchMethodType,
-        public readonly replicationIdentifierHash: string,
+        public readonly replicationIdentifier: string,
         public readonly collection: RxCollection<RxDocType>,
         public readonly pull?: ReplicationPullOptions<RxDocType, CouchDBCheckpointType>,
         public readonly push?: ReplicationPushOptions<RxDocType>,
@@ -63,7 +63,7 @@ export class RxCouchDBReplicationState<RxDocType> extends RxReplicationState<RxD
         public autoStart: boolean = true
     ) {
         super(
-            replicationIdentifierHash,
+            replicationIdentifier,
             collection,
             '_deleted',
             pull,
@@ -258,7 +258,7 @@ export function replicateCouchDB<RxDocType>(
     const replicationState = new RxCouchDBReplicationState<RxDocType>(
         options.url,
         options.fetch ? options.fetch : getDefaultFetch(),
-        COUCHDB_NEW_REPLICATION_PLUGIN_IDENTITY_PREFIX + options.collection.database.hashFunction(options.url),
+        COUCHDB_NEW_REPLICATION_PLUGIN_IDENTITY_PREFIX + options.replicationIdentifier,
         collection,
         replicationPrimitivesPull,
         replicationPrimitivesPush,

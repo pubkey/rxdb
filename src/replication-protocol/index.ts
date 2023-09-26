@@ -52,12 +52,12 @@ export * from './helper';
 export function replicateRxStorageInstance<RxDocType>(
     input: RxStorageInstanceReplicationInput<RxDocType>
 ): RxStorageInstanceReplicationState<RxDocType> {
-    const checkpointKey = getCheckpointKey(input);
+    const checkpointKeyPromise = getCheckpointKey(input);
     const state: RxStorageInstanceReplicationState<RxDocType> = {
         primaryPath: getPrimaryFieldOfPrimaryKey(input.forkInstance.schema.primaryKey),
         input,
-        checkpointKey,
-        downstreamBulkWriteFlag: 'replication-downstream-' + checkpointKey,
+        checkpointKey: checkpointKeyPromise,
+        downstreamBulkWriteFlag: checkpointKeyPromise.then(checkpointKey => 'replication-downstream-' + checkpointKey),
         events: {
             canceled: new BehaviorSubject<boolean>(false),
             active: {

@@ -89,7 +89,7 @@ export async function resolveConflictError<RxDocType>(
         );
         resolvedDoc._meta.lwt = now();
         resolvedDoc._rev = createRevision(
-            state.input.identifier,
+            await state.checkpointKey,
             forkState
         );
         return {

@@ -67,7 +67,7 @@ export type GraphQLServerUrl = {
 
 export type SyncOptionsGraphQL<RxDocType, CheckpointType> = Omit<
 ReplicationOptions<RxDocType, CheckpointType>,
-'pull' | 'push' | 'replicationIdentifier'
+'pull' | 'push'
 > & {
     url: GraphQLServerUrl;
     headers?: { [k: string]: string; }; // send with all requests to the endpoint

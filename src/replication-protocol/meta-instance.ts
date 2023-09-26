@@ -122,12 +122,12 @@ export function getAssumedMasterState<RxDocType>(
 }
 
 
-export function getMetaWriteRow<RxDocType>(
+export async function getMetaWriteRow<RxDocType>(
     state: RxStorageInstanceReplicationState<RxDocType>,
     newMasterDocState: WithDeleted<RxDocType>,
     previous?: RxDocumentData<RxStorageReplicationMeta>,
     isResolvedConflict?: string
-): BulkWriteRow<RxStorageReplicationMeta> {
+): Promise<BulkWriteRow<RxStorageReplicationMeta>> {
     const docId: string = (newMasterDocState as any)[state.primaryPath];
     const newMeta: RxDocumentData<RxStorageReplicationMeta> = previous ? flatCloneDocWithMeta(
         previous
@@ -151,7 +151,7 @@ export function getMetaWriteRow<RxDocType>(
         newMeta
     );
     newMeta._rev = createRevision(
-        state.input.identifier,
+        await state.checkpointKey,
         previous
     );
     return {

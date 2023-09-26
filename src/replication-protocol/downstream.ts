@@ -364,7 +364,7 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
                                 isAssumedMasterEqualToForkState === false
                             ) {
                                 useMetaWriteRows.push(
-                                    getMetaWriteRow(
+                                    await getMetaWriteRow(
                                         state,
                                         forkStateDocData,
                                         assumedMaster ? assumedMaster.metaDocument : undefined
@@ -414,18 +414,18 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
                         );
                         writeRowsToFork.push(forkWriteRow);
                         writeRowsToForkById[docId] = forkWriteRow;
-                        writeRowsToMeta[docId] = getMetaWriteRow(
+                        writeRowsToMeta[docId] = await getMetaWriteRow(
                             state,
                             masterState,
                             assumedMaster ? assumedMaster.metaDocument : undefined
                         );
                     })
                 );
-            }).then(() => {
+            }).then(async () => {
                 if (writeRowsToFork.length > 0) {
                     return state.input.forkInstance.bulkWrite(
                         writeRowsToFork,
-                        state.downstreamBulkWriteFlag
+                        await state.downstreamBulkWriteFlag
                     ).then((forkWriteResult) => {
                         forkWriteResult.success.forEach(doc => {
                             const docId = (doc as any)[primaryPath];
