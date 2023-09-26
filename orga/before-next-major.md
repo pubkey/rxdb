@@ -59,7 +59,7 @@ Proposed solution:
 
 This was changed in v14 for a normal RxDocument.$ which emits RxDocument instances. Same must be done for local documents.
  
-## Rename send$ to sent$
+## Rename send$ to sent$ [DONE]
 
 `myRxReplicationState.send$.subscribe` works only if the sending is successful. Therefore, it should be named `sent$`, not `send$`.
 
