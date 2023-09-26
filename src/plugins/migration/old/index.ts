@@ -11,18 +11,18 @@ import type {
     RxCollection,
     RxDatabase,
     AllMigrationStates
-} from '../../types';
+} from '../../../types';
+import { getFromMapOrCreate, PROMISE_RESOLVE_FALSE, RXJS_SHARE_REPLAY_DEFAULTS } from '../../../plugins/utils';
 import {
-    getFromMapOrCreate,
-    PROMISE_RESOLVE_FALSE,
-    RXJS_SHARE_REPLAY_DEFAULTS
-} from '../../../plugins/utils';
+    mustMigrate,
+    DataMigrator
+} from './data-migrator';
 import {
-    RxMigrationState
-} from './rx-migration-state';
-import { getMigrationStateByDatabase, onDatabaseDestroy } from './migration-helpers';
+    getMigrationStateByDatabase,
+    onDatabaseDestroy
+} from './migration-state';
 
-export const DATA_MIGRATOR_BY_COLLECTION: WeakMap<RxCollection, RxMigrationState> = new WeakMap();
+export const DATA_MIGRATOR_BY_COLLECTION: WeakMap<RxCollection, DataMigrator> = new WeakMap();
 
 export const RxDBMigrationPlugin: RxPlugin = {
     name: 'migration',
@@ -36,16 +36,17 @@ export const RxDBMigrationPlugin: RxPlugin = {
         RxDatabase: (proto: any) => {
             proto.migrationStates = function (this: RxDatabase): Observable<AllMigrationStates> {
                 return getMigrationStateByDatabase(this).pipe(
+                    switchMap(list => combineLatest(list)),
                     shareReplay(RXJS_SHARE_REPLAY_DEFAULTS)
                 );
             };
         },
         RxCollection: (proto: any) => {
-            proto.getMigrationState = function (this: RxCollection): RxMigrationState {
+            proto.getDataMigrator = function (this: RxCollection): DataMigrator {
                 return getFromMapOrCreate(
                     DATA_MIGRATOR_BY_COLLECTION,
                     this,
-                    () => new RxMigrationState(
+                    () => new DataMigrator(
                         this.asRxCollection,
                         this.migrationStrategies
                     )
@@ -62,6 +63,14 @@ export const RxDBMigrationPlugin: RxPlugin = {
 };
 
 
-export * from './data-migrator';
-export * from './migration-helper';
-export * from './migration-state';
+// used in tests
+export {
+    _getOldCollections,
+    getBatchOfOldCollection,
+    migrateDocumentData,
+    _migrateDocuments,
+    deleteOldCollection,
+    migrateOldCollection,
+    migratePromise,
+    DataMigrator
+} from './data-migrator';

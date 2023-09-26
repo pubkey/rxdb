@@ -32,6 +32,8 @@ Proposed solution:
  - This could have been done in much less code which would be easier to understand.
  - Migration strategies should be defined [like in WatermelonDB](https://nozbe.github.io/WatermelonDB/Advanced/Migrations.html) with a `toVersion` version field. We should also add a `fromVersion` field so people could implement performance shortcuts by directly jumping several versions. The current migration strategies use the array index as `toVersion` which is confusing.
 
+## Ensure data migration only runs on the leading browser tab.
+
 ## Migrate assumed master state of the replicated documents
 
 [Quote from discord](https://discord.com/channels/969553741705539624/1050381589399470160/1143158499715588220): 
@@ -68,15 +70,7 @@ It is [faster](https://measurethat.net/Benchmarks/Show/6371/0/sha256-js) and mor
 
 ## Rename replication-p2p to replication-webrtc [DONE]
 
-## Rename "RxDB Premium" to "RxDB Enterprise"
 
-Most "normal" users do not need premium access so we should name it "RxDB Enterprise" to make it more clear that it is intended to bought by companies.
-
-
-
-## RxStorage: Add RxStorage.info() which also calls parents
-
-HAving an .info() method helps in debugging stuff and sending reports on problems etc.
 
 ## Skip responding full document data on bulkWrites (only in all happy case)
 
@@ -88,6 +82,9 @@ RxStorage.bulkwrite(): If all writes suceeed, return "SUCESS" or sth to not have
 `RxStorageBulkWriteResponse` should only contains arrays. This makes writes much less performance users because we do not have to
 index the results.
 
+
+---------------------------------
+# Maybe later (not sure if should be done)
 
 
 
@@ -107,3 +104,12 @@ you could run a query selector like `$gt: 10` where it now is not clear if the s
 
 ## Add enum-compression to the key-compression plugin
 - Also rename the key-compression plugin to be just called 'compression'
+
+## RxStorage: Add RxStorage.info() which also calls parents
+
+Having an .info() method helps in debugging stuff and sending reports on problems etc.
+
+
+## Rename "RxDB Premium" to "RxDB Enterprise"
+
+Most "normal" users do not need premium access so we should name it "RxDB Enterprise" to make it more clear that it is intended to bought by companies.

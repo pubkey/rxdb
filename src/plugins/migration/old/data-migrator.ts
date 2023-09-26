@@ -22,17 +22,17 @@ import {
     getDefaultRxDocumentMeta,
     now,
     deepEqual
-} from '../../plugins/utils';
+} from '../../../plugins/utils';
 import {
     createRxSchema
-} from '../../rx-schema';
+} from '../../../rx-schema';
 import {
     newRxError
-} from '../../rx-error';
+} from '../../../rx-error';
 import {
     runAsyncPluginHooks,
     runPluginHooks
-} from '../../hooks';
+} from '../../../hooks';
 import type {
     RxCollection,
     RxDatabase,
@@ -45,11 +45,11 @@ import type {
     RxStorageInstanceCreationParams,
     InternalStoreCollectionDocType,
     RxStorageInstance
-} from '../../types';
+} from '../../../types';
 import {
     RxSchema,
     getPreviousVersions
-} from '../../rx-schema';
+} from '../../../rx-schema';
 import {
     getMigrationStateByDatabase,
     MigrationStateWithCollection
@@ -57,13 +57,13 @@ import {
 import { map } from 'rxjs/operators';
 import {
     getWrappedStorageInstance
-} from '../../rx-storage-helper';
+} from '../../../rx-storage-helper';
 import {
     getPrimaryKeyOfInternalDocument,
     INTERNAL_CONTEXT_COLLECTION
-} from '../../rx-database-internal-store';
-import { normalizeMangoQuery } from '../../rx-query-helper';
-import { overwritable } from '../../overwritable';
+} from '../../../rx-database-internal-store';
+import { normalizeMangoQuery } from '../../../rx-query-helper';
+import { overwritable } from '../../../overwritable';
 import { MIGRATION_DEFAULT_BATCH_SIZE } from './migration-helpers';
 
 export class DataMigrator {
