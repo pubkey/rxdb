@@ -53,7 +53,7 @@
     "@capacitor/angular": "2.0.3",
     "@capacitor/core": "5.4.1",
     "@capacitor/ios": "5.4.1",
-    "@capacitor/preferences": "4.0.2",
+    "@capacitor/preferences": "5.0.6",
     "@nguniversal/express-engine": "16.2.0",
     "assert": "2.1.0",
     "express": "4.18.2",
