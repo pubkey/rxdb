@@ -130,18 +130,22 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
 
     /**
      * If a write on the master happens, we have to trigger the downstream.
+     * Only do this if not canceled yet, otherwise firstValueFrom errors
+     * when running on a completed observable.
      */
-    const sub = replicationHandler
-        .masterChangeStream$
-        .subscribe((task: Task) => {
-            state.stats.down.masterChangeStreamEmit = state.stats.down.masterChangeStreamEmit + 1;
-            addNewTask(task);
-        });
-    firstValueFrom(
-        state.events.canceled.pipe(
-            filter(canceled => !!canceled)
-        )
-    ).then(() => sub.unsubscribe());
+    if (!state.events.canceled.getValue()) {
+        const sub = replicationHandler
+            .masterChangeStream$
+            .subscribe((task: Task) => {
+                state.stats.down.masterChangeStreamEmit = state.stats.down.masterChangeStreamEmit + 1;
+                addNewTask(task);
+            });
+        firstValueFrom(
+            state.events.canceled.pipe(
+                filter(canceled => !!canceled)
+            )
+        ).then(() => sub.unsubscribe());
+    }
 
 
     /**
