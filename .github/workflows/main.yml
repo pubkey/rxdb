@@ -19,7 +19,7 @@ jobs:
   core:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set node version
         uses: actions/setup-node@v3
         with:
@@ -50,7 +50,7 @@ jobs:
   storage-lokijs:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set node version
         uses: actions/setup-node@v3
         with:
@@ -94,7 +94,7 @@ jobs:
   storage-memory:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set node version
         uses: actions/setup-node@v3
         with:
@@ -148,7 +148,7 @@ jobs:
   storage-remote:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set node version
         uses: actions/setup-node@v3
         with:
@@ -182,7 +182,7 @@ jobs:
   storage-dexie:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set node version
         uses: actions/setup-node@v3
         with:
@@ -225,7 +225,7 @@ jobs:
   storage-foundationdb:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set node version
         uses: actions/setup-node@v3
         with:
@@ -266,7 +266,7 @@ jobs:
     runs-on: ubuntu-20.04
    
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set node version
         uses: actions/setup-node@v3
         with:
@@ -301,7 +301,7 @@ jobs:
   example-angular:
     runs-on: ubuntu-22.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       #- name: install dependencies
       #  run: sudo apt-get update && sudo apt-get install -y chromium-browser
       - name: Set node version
@@ -355,7 +355,7 @@ jobs:
   test-builds:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set node version
         uses: actions/setup-node@v3
         with:
@@ -388,7 +388,7 @@ jobs:
   test-code-style:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set node version
         uses: actions/setup-node@v3
         with:
@@ -423,27 +423,27 @@ jobs:
         run: npm run check-types
 
       - name: spelling readme
-        uses: codespell-project/actions-codespell@v1.0
+        uses: codespell-project/actions-codespell@v2.0
         with:
           ignore_words_file: config/codespellignore.txt
           path: README.md
       - name: spelling src
-        uses: codespell-project/actions-codespell@v1.0
+        uses: codespell-project/actions-codespell@v2.0
         with:
           ignore_words_file: config/codespellignore.txt
           path: src
       - name: spelling docs-src
-        uses: codespell-project/actions-codespell@v1.0
+        uses: codespell-project/actions-codespell@v2.0
         with:
           ignore_words_file: config/codespellignore.txt
           path: docs-src
       - name: spelling docs-src/releases
-        uses: codespell-project/actions-codespell@v1.0
+        uses: codespell-project/actions-codespell@v2.0
         with:
           ignore_words_file: config/codespellignore.txt
           path: docs-src/releases
       - name: spelling test
-        uses: codespell-project/actions-codespell@v1.0
+        uses: codespell-project/actions-codespell@v2.0
         with:
           ignore_words_file: config/codespellignore.txt
           path: test
@@ -451,7 +451,7 @@ jobs:
   example-electron:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set node version
         uses: actions/setup-node@v3
         with:
@@ -479,7 +479,7 @@ jobs:
   example-react:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set node version
         uses: actions/setup-node@v3
         with:
@@ -507,7 +507,7 @@ jobs:
   example-react-native-expo:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set node version
         uses: actions/setup-node@v3
         with:
@@ -532,7 +532,7 @@ jobs:
   example-supabase:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set node version
         uses: actions/setup-node@v3
         with:
@@ -589,7 +589,7 @@ jobs:
   example-vue:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: install dependencies
         run: sudo apt-get update && sudo apt-get install -y chromium-browser
       - name: Set node version
@@ -618,7 +618,7 @@ jobs:
   example-svelte:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: install dependencies
         run: sudo apt-get update && sudo apt-get install -y chromium-browser
       - name: Set node version
@@ -646,7 +646,7 @@ jobs:
   vite-vanilla-ts:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: install dependencies
         run: sudo apt-get update && sudo apt-get install -y chromium-browser
       - name: Set node version
@@ -673,7 +673,7 @@ jobs:
   example-graphql:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: install dependencies
         run: sudo apt-get update && sudo apt-get install -y chromium-browser
       - name: Set node version
@@ -707,7 +707,7 @@ jobs:
   example-flutter:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set node version
         uses: actions/setup-node@v3
         with:
@@ -755,7 +755,7 @@ jobs:
   test-tutorials:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set node version
         uses: actions/setup-node@v3
         with:
@@ -773,7 +773,7 @@ jobs:
   test-others:
     runs-on: ubuntu-20.04
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Set node version
         uses: actions/setup-node@v3
         with:

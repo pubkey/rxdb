@@ -2,12 +2,16 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-- Ensure the test suite run in the [bun runtime](https://bun.sh/)
+
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 14.17.1 (24 September 2023)
+
+- Ensure the test suite runs in the [bun runtime](https://bun.sh/)
 
 ### 14.17.0 (18 September 2023)
 
