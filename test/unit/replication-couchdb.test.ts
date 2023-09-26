@@ -65,6 +65,7 @@ describe('replication-couchdb.test.ts', () => {
 
     async function syncOnce(collection: RxCollection, server: any) {
         const replicationState = replicateCouchDB({
+            replicationIdentifier: randomCouchString(10),
             collection,
             url: server.url,
             fetch: fetchWithCouchDBAuth,
@@ -247,6 +248,7 @@ describe('replication-couchdb.test.ts', () => {
             server: any
         ): Promise<RxCouchDBReplicationState<RxDocType>> {
             const replicationState = replicateCouchDB<RxDocType>({
+                replicationIdentifier: randomCouchString(10),
                 collection,
                 url: server.url,
                 fetch: fetchWithCouchDBAuth,
@@ -334,6 +336,7 @@ describe('replication-couchdb.test.ts', () => {
             });
 
             const replicationState = replicateCouchDB({
+                replicationIdentifier: randomCouchString(10),
                 url: server.url,
                 collection,
                 fetch: fetchWithCouchDBAuth,
@@ -379,6 +382,7 @@ describe('replication-couchdb.test.ts', () => {
             const server = await SpawnServer.spawn();
             const collection = await humansCollection.create(0);
             const replicationState = replicateCouchDB({
+                replicationIdentifier: randomCouchString(10),
                 url: server.url,
                 collection,
                 fetch: fetchWithCouchDBAuth,
