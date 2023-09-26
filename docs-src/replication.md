@@ -398,7 +398,7 @@ To observe the replication, the `RxReplicationState` has some `Observable` prope
 myRxReplicationState.received$.subscribe(doc => console.dir(doc));
 
 // emits each document that was send to the remote
-myRxReplicationState.send$.subscribe(doc => console.dir(doc));
+myRxReplicationState.sent$.subscribe(doc => console.dir(doc));
 
 // emits all errors that happen when running the push- & pull-handlers.
 myRxReplicationState.error$.subscribe(error => console.dir(error));

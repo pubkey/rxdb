@@ -70,14 +70,14 @@ export class RxReplicationState<RxDocType, CheckpointType> {
     public readonly subs: Subscription[] = [];
     public readonly subjects = {
         received: new Subject<RxDocumentData<RxDocType>>(), // all documents that are received from the endpoint
-        send: new Subject<WithDeleted<RxDocType>>(), // all documents that are send to the endpoint
+        sent: new Subject<WithDeleted<RxDocType>>(), // all documents that are send to the endpoint
         error: new Subject<RxError | RxTypeError>(), // all errors that are received from the endpoint, emits new Error() objects
         canceled: new BehaviorSubject<boolean>(false), // true when the replication was canceled
         active: new BehaviorSubject<boolean>(false) // true when something is running, false when not
     };
 
     readonly received$: Observable<RxDocumentData<RxDocType>> = this.subjects.received.asObservable();
-    readonly send$: Observable<WithDeleted<RxDocType>> = this.subjects.send.asObservable();
+    readonly sent$: Observable<WithDeleted<RxDocType>> = this.subjects.sent.asObservable();
     readonly error$: Observable<RxError | RxTypeError> = this.subjects.error.asObservable();
     readonly canceled$: Observable<any> = this.subjects.canceled.asObservable();
     readonly active$: Observable<boolean> = this.subjects.active.asObservable();
@@ -325,7 +325,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                 .subscribe(row => this.subjects.received.next(row.document as any)),
             this.internalReplicationState.events.processed.up
                 .subscribe(writeToMasterRow => {
-                    this.subjects.send.next(writeToMasterRow.newDocumentState);
+                    this.subjects.sent.next(writeToMasterRow.newDocumentState);
                 }),
             combineLatest([
                 this.internalReplicationState.events.active.down,
@@ -437,7 +437,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
         this.subjects.canceled.complete();
         this.subjects.error.complete();
         this.subjects.received.complete();
-        this.subjects.send.complete();
+        this.subjects.sent.complete();
 
         return Promise.all(promises);
     }

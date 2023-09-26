@@ -1,5 +1,8 @@
 import assert from 'assert';
 import clone from 'clone';
+import {
+    assertThrows
+} from 'async-test-util';
 import AsyncTestUtil from 'async-test-util';
 
 import config from './config';
@@ -499,6 +502,30 @@ config.parallel('rx-schema.test.js', () => {
                         },
                         required: ['firstName']
                     }), Error);
+                });
+                /**
+                 * @link https://github.com/pubkey/rxdb/issues/4926#issuecomment-1712223984
+                 */
+                it('throw when $ref field is used', async () => {
+                    await assertThrows(
+                        () => checkSchema({
+                            version: 0,
+                            primaryKey: 'userId',
+                            type: 'object',
+                            properties: {
+                                userId: {
+                                    type: 'string',
+                                    maxLength: 100
+                                },
+                                sub: {
+                                    $ref: '#/definitions/person'
+                                } as any
+                            },
+                            required: ['firstName']
+                        }),
+                        'RxError',
+                        'SC40'
+                    );
                 });
             });
         });
