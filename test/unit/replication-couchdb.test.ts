@@ -63,9 +63,13 @@ describe('replication-couchdb.test.ts', () => {
         });
     }
 
-    async function syncOnce(collection: RxCollection, server: any) {
+    async function syncOnce(collection: RxCollection, server: {
+        dbName: string;
+        url: string;
+        close: () => Promise<void>;
+    }) {
         const replicationState = replicateCouchDB({
-            replicationIdentifier: randomCouchString(10),
+            replicationIdentifier: 'sync-once' + server.url,
             collection,
             url: server.url,
             fetch: fetchWithCouchDBAuth,
