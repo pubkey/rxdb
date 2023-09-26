@@ -37,6 +37,7 @@ import {
 } from '../../plugins/key-compression';
 import * as schemas from '../helper/schemas';
 import { RxDBQueryBuilderPlugin } from '../../plugins/query-builder';
+import { defaultHashSha256 } from '../../plugins/utils';
 import {
     clone,
     randomString,
@@ -2504,7 +2505,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                         foo: {
                             length: dataLength,
                             data: dataStringBase64,
-                            type: 'text/plain'
+                            type: 'text/plain',
+                            digest: await defaultHashSha256(dataStringBase64)
                         }
                     }
                 };
@@ -2564,7 +2566,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                         foo: {
                             length: dataLength,
                             data: dataStringBase64,
-                            type: 'text/plain'
+                            type: 'text/plain',
+                            digest: await defaultHashSha256(dataStringBase64)
                         }
                     }
                 };
@@ -2669,7 +2672,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                         foo: {
                             length: getBlobSize(dataBlob),
                             data: dataStringBase64,
-                            type: 'text/plain'
+                            type: 'text/plain',
+                            digest: await defaultHashSha256(dataStringBase64)
                         }
                     }
                 };
@@ -2698,7 +2702,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 writeData._attachments.bar = {
                     data: dataString2,
                     length: getBlobSize(data2),
-                    type: 'text/plain'
+                    type: 'text/plain',
+                    digest: await defaultHashSha256(dataString2)
                 };
                 writeData._rev = EXAMPLE_REVISION_2;
 
@@ -2751,7 +2756,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                         foo: {
                             length: getBlobSize(data),
                             data: dataString,
-                            type: 'text/plain'
+                            type: 'text/plain',
+                            digest: await defaultHashSha256(dataString)
                         }
                     }
                 };
@@ -2769,7 +2775,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
 
                 await storageInstance.bulkWrite(
                     [{
-                        previous: stripAttachmentsDataFromDocument(writeData),
+                        previous: await stripAttachmentsDataFromDocument(writeData),
                         document: deleteData
                     }],
                     testContext
@@ -2846,7 +2852,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                                             writeData._attachments[attachmentsId] = {
                                                 length: getBlobSize(data),
                                                 data: dataString,
-                                                type: 'text/plain'
+                                                type: 'text/plain',
+                                                digest: await defaultHashSha256(dataString)
                                             };
                                         })
                                 );

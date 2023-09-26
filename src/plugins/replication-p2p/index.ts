@@ -105,7 +105,7 @@ export async function replicateP2P<RxDocType>(
                 }
             );
             const peerToken: string = tokenResponse.result;
-            const isMaster = isMasterInP2PReplication(collection.database.hashFunction, storageToken, peerToken);
+            const isMaster = await isMasterInP2PReplication(collection.database.hashFunction, storageToken, peerToken);
 
             let replicationState: RxP2PReplicationState<RxDocType> | undefined;
             if (isMaster) {

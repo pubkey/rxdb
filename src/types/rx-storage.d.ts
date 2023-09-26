@@ -102,7 +102,7 @@ export type BulkWriteRowProcessed<RxDocType> = BulkWriteRow<RxDocType> & {
 };
 
 
-export type RxAttachmentDataBase = {
+export type RxAttachmentData = {
     /**
      * Size of the attachments data
      */
@@ -111,21 +111,9 @@ export type RxAttachmentDataBase = {
      * Content type like 'plain/text'
      */
     type: string;
-};
-
-
-/**
- * Meta data of the attachment
- * how it is send to, or comes out of the RxStorage implementation.
- */
-export type RxAttachmentData = RxAttachmentDataBase & {
     /**
      * The hash of the attachments content.
-     * It is NOT calculated by RxDB, instead it is calculated
-     * by the RxStorage.
-     * There is no way to pre-calculate the hash from the outside because
-     * the RxStorage might hash a compressed binary or do a different base64 transformation
-     * before hashing.
+     * It is calculated by RxDB, and send to the storage.
      * The only guarantee is that the digest will change when the attachments data changes.
      * @link https://github.com/pouchdb/pouchdb/issues/3156#issuecomment-66831010
      * @link https://github.com/pubkey/rxdb/pull/4107
@@ -137,7 +125,7 @@ export type RxAttachmentData = RxAttachmentDataBase & {
  * Data which is needed for new attachments
  * that are send from RxDB to the RxStorage implementation.
  */
-export type RxAttachmentWriteData = RxAttachmentDataBase & {
+export type RxAttachmentWriteData = RxAttachmentData & {
     /**
      * The data of the attachment. As string in base64 format.
      * In the past we used Blob internally but it created many

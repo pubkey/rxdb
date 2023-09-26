@@ -124,6 +124,7 @@ export async function putAttachment<RxDocType>(
 
     const dataSize = getBlobSize(attachmentData.data);
     const dataString = await blobToBase64String(attachmentData.data);
+    const digest = await this.collection.database.hashFunction(dataString);
 
     const id = attachmentData.id;
     const type = attachmentData.type;
@@ -133,11 +134,11 @@ export async function putAttachment<RxDocType>(
         this._data,
         (docWriteData: RxDocumentWriteData<RxDocType>) => {
             docWriteData._attachments = flatClone(docWriteData._attachments);
-
             docWriteData._attachments[id] = {
                 length: dataSize,
                 type,
-                data
+                data,
+                digest
             };
             return docWriteData;
         }).then(writeResult => {
@@ -214,10 +215,12 @@ export async function preMigrateDocument<RxDocType>(
                     attachmentId,
                     attachment.digest
                 );
+                const digest = await data.oldCollection.database.hashFunction(rawAttachmentData);
                 newAttachments[attachmentId] = {
                     length: attachment.length,
                     type: attachment.type,
-                    data: rawAttachmentData
+                    data: rawAttachmentData,
+                    digest
                 };
             })
         );

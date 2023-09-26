@@ -146,10 +146,10 @@ config.parallel('rx-database.test.js', () => {
                     name: randomCouchString(10),
                     storage: config.storage.getStorage(),
                     hashFunction(i: string) {
-                        return defaultHashSha256(i) + 'xxx';
+                        return Promise.resolve(defaultHashSha256(i) + 'xxx');
                     }
                 });
-                const hash = db.hashFunction('foobar');
+                const hash = await db.hashFunction('foobar');
                 assert.ok(hash.endsWith('xxx'));
                 db.destroy();
             });

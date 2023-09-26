@@ -277,6 +277,7 @@ describe('replication-graphql.test.ts', () => {
                     SpawnServer.spawn(getTestData(batchSize))
                 ]);
                 const replicationState = replicateGraphQL({
+                    replicationIdentifier: randomCouchString(10),
                     collection: c,
                     url: server.url,
                     pull: {
@@ -306,6 +307,7 @@ describe('replication-graphql.test.ts', () => {
                 ]);
 
                 replicateGraphQL({
+                    replicationIdentifier: randomCouchString(10),
                     collection: c,
                     url: server.url,
                     pull: {
@@ -375,6 +377,7 @@ describe('replication-graphql.test.ts', () => {
                 };
 
                 const replicationState = replicateGraphQL({
+                    replicationIdentifier: randomCouchString(10),
                     collection: c,
                     url: server.url,
                     pull: {
@@ -406,6 +409,7 @@ describe('replication-graphql.test.ts', () => {
                 ]);
 
                 const replicationState = replicateGraphQL({
+                    replicationIdentifier: randomCouchString(10),
                     collection: c,
                     url: server.url,
                     pull: {
@@ -432,6 +436,7 @@ describe('replication-graphql.test.ts', () => {
                     SpawnServer.spawn([doc])
                 ]);
                 const replicationState = replicateGraphQL({
+                    replicationIdentifier: randomCouchString(10),
                     collection: c,
                     url: server.url,
                     pull: {
@@ -499,6 +504,7 @@ describe('replication-graphql.test.ts', () => {
                 };
 
                 const replicationState = replicateGraphQL({
+                    replicationIdentifier: randomCouchString(10),
                     collection: c,
                     url: server.url,
                     pull: {
@@ -525,6 +531,7 @@ describe('replication-graphql.test.ts', () => {
                 ]);
                 let responseHaveBeenCalledTimes = 0;
                 const replicationState = replicateGraphQL({
+                    replicationIdentifier: randomCouchString(10),
                     collection: c,
                     url: server.url,
                     pull: {
@@ -563,6 +570,7 @@ describe('replication-graphql.test.ts', () => {
                 ]);
 
                 const replicationState = replicateGraphQL({
+                    replicationIdentifier: randomCouchString(10),
                     collection: c,
                     url: {
                         http: ERROR_URL
@@ -595,6 +603,7 @@ describe('replication-graphql.test.ts', () => {
                     SpawnServer.spawn(testData)
                 ]);
                 const replicationState = replicateGraphQL({
+                    replicationIdentifier: randomCouchString(10),
                     collection: c,
                     url: {
                         http: ERROR_URL
@@ -631,6 +640,7 @@ describe('replication-graphql.test.ts', () => {
                     SpawnServer.spawn(getTestData(1))
                 ]);
                 const replicationState = replicateGraphQL({
+                    replicationIdentifier: randomCouchString(10),
                     collection: c,
                     url: server.url,
                     pull: {
@@ -674,6 +684,7 @@ describe('replication-graphql.test.ts', () => {
                     SpawnServer.spawn(testData)
                 ]);
                 const replicationState = replicateGraphQL({
+                    replicationIdentifier: randomCouchString(10),
                     collection: c,
                     url: server.url,
                     pull: {
@@ -717,6 +728,7 @@ describe('replication-graphql.test.ts', () => {
 
                 const server = await SpawnServer.spawn<HumanWithTimestampDocumentType>();
                 const replicationState = replicateGraphQL({
+                    replicationIdentifier: randomCouchString(10),
                     collection: c,
                     url: server.url,
                     pull: {
@@ -752,6 +764,7 @@ describe('replication-graphql.test.ts', () => {
                 ]);
 
                 const replicationState = replicateGraphQL({
+                    replicationIdentifier: randomCouchString(10),
                     collection: c,
                     url: {
                         http: ERROR_URL
@@ -795,6 +808,7 @@ describe('replication-graphql.test.ts', () => {
                 ]);
 
                 const replicationState = replicateGraphQL({
+                    replicationIdentifier: randomCouchString(10),
                     collection: c,
                     url: server.url,
                     push: {
@@ -823,6 +837,7 @@ describe('replication-graphql.test.ts', () => {
                     SpawnServer.spawn()
                 ]);
                 const replicationState = replicateGraphQL({
+                    replicationIdentifier: randomCouchString(10),
                     collection: c,
                     url: server.url,
                     push: {
@@ -850,6 +865,7 @@ describe('replication-graphql.test.ts', () => {
                 await doc.remove();
 
                 const replicationState = replicateGraphQL({
+                    replicationIdentifier: randomCouchString(10),
                     collection: c,
                     url: server.url,
                     push: {
@@ -877,6 +893,7 @@ describe('replication-graphql.test.ts', () => {
                 ]);
 
                 const replicationState = replicateGraphQL({
+                    replicationIdentifier: randomCouchString(10),
                     collection: c,
                     url: server.url,
                     push: {
@@ -931,6 +948,7 @@ describe('replication-graphql.test.ts', () => {
                 const collection = collections.humans;
 
                 const replicationState = replicateGraphQL({
+                    replicationIdentifier: randomCouchString(10),
                     collection,
                     url: server.url,
                     push: {
@@ -963,6 +981,7 @@ describe('replication-graphql.test.ts', () => {
 
                 let queryBuilderCount = 0;
                 const replicationState = replicateGraphQL({
+                    replicationIdentifier: randomCouchString(10),
                     collection: c,
                     url: { http: ERROR_URL },
                     push: {
@@ -1009,6 +1028,7 @@ describe('replication-graphql.test.ts', () => {
 
                 // start a replication that always errors because it has no Authorization header
                 let replicationState = replicateGraphQL({
+                    replicationIdentifier: randomCouchString(10),
                     collection: c,
                     url: server.url,
                     push: {
@@ -1025,6 +1045,7 @@ describe('replication-graphql.test.ts', () => {
 
 
                 replicationState = replicateGraphQL({
+                    replicationIdentifier: randomCouchString(10),
                     collection: c,
                     url: server.url,
                     headers: { Authorization: 'Bearer 1234' },
@@ -1054,6 +1075,7 @@ describe('replication-graphql.test.ts', () => {
 
                 let responseHaveBeenCalledTimes = 0;
                 const replicationState = replicateGraphQL({
+                    replicationIdentifier: randomCouchString(10),
                     collection: c,
                     url: server.url,
                     push: {
@@ -1096,6 +1118,7 @@ describe('replication-graphql.test.ts', () => {
                 ]);
 
                 const replicationState = replicateGraphQL({
+                    replicationIdentifier: randomCouchString(10),
                     collection: c,
                     url: server.url,
                     push: {
@@ -1137,6 +1160,7 @@ describe('replication-graphql.test.ts', () => {
                 };
 
                 const replicationState = replicateGraphQL({
+                    replicationIdentifier: randomCouchString(10),
                     collection: c,
                     url: server.url,
                     push: {
@@ -1170,6 +1194,7 @@ describe('replication-graphql.test.ts', () => {
                 ]);
 
                 const replicationState = replicateGraphQL({
+                    replicationIdentifier: randomCouchString(10),
                     collection: c,
                     url: server.url,
                     push: {
@@ -1232,6 +1257,7 @@ describe('replication-graphql.test.ts', () => {
                 ]);
 
                 const replicationState = replicateGraphQL({
+                    replicationIdentifier: randomCouchString(10),
                     collection: c,
                     url: server.url,
                     push: {
@@ -1320,6 +1346,7 @@ describe('replication-graphql.test.ts', () => {
                 const collection2 = collections2.humansmulti;
 
                 replicateGraphQL({
+                    replicationIdentifier: randomCouchString(10),
                     collection: collection1,
                     url: server.url,
                     pull: {
@@ -1334,6 +1361,7 @@ describe('replication-graphql.test.ts', () => {
                     deletedField: 'deleted'
                 });
                 replicateGraphQL({
+                    replicationIdentifier: randomCouchString(10),
                     collection: collection2,
                     url: server.url,
                     pull: {
@@ -1379,6 +1407,7 @@ describe('replication-graphql.test.ts', () => {
                 let pullCount = 0;
                 let pushCount = 0;
                 const replicationState = replicateGraphQL({
+                    replicationIdentifier: randomCouchString(10),
                     collection: c,
                     url: server.url,
                     push: {
@@ -1441,6 +1470,7 @@ describe('replication-graphql.test.ts', () => {
                     SpawnServer.spawn()
                 ]);
                 const replicationState = replicateGraphQL({
+                    replicationIdentifier: randomCouchString(10),
                     collection: c,
                     url: server.url,
                     push: {
@@ -1493,6 +1523,7 @@ describe('replication-graphql.test.ts', () => {
                 ]);
                 server.requireHeader('token', 'Bearer token');
                 const replicationState = replicateGraphQL({
+                    replicationIdentifier: randomCouchString(10),
                     collection: c,
                     url: server.url,
                     pull: {
@@ -1530,6 +1561,7 @@ describe('replication-graphql.test.ts', () => {
                 ]);
 
                 const replicationState = replicateGraphQL({
+                    replicationIdentifier: randomCouchString(10),
                     collection: c,
                     url: server.url,
                     pull: {
@@ -1591,6 +1623,7 @@ describe('replication-graphql.test.ts', () => {
                 ]);
 
                 const replicationState = replicateGraphQL({
+                    replicationIdentifier: randomCouchString(10),
                     collection: c,
                     url: server.url,
                     pull: {
@@ -1625,6 +1658,7 @@ describe('replication-graphql.test.ts', () => {
                 ]);
 
                 const replicationState = replicateGraphQL({
+                    replicationIdentifier: randomCouchString(10),
                     collection: c,
                     url: server.url,
                     push: {
@@ -1654,6 +1688,7 @@ describe('replication-graphql.test.ts', () => {
             it('should emit an error when the server is not reachable', async () => {
                 const c = await humansCollection.createHumanWithTimestamp(0);
                 const replicationState = replicateGraphQL({
+                    replicationIdentifier: randomCouchString(10),
                     collection: c,
                     url: {
                         http: ERROR_URL
@@ -1676,6 +1711,7 @@ describe('replication-graphql.test.ts', () => {
             it('should contain include replication action data in push request failure', async () => {
                 const c = await humansCollection.createHumanWithTimestamp(0);
                 const replicationState = replicateGraphQL({
+                    replicationIdentifier: randomCouchString(10),
                     collection: c,
                     url: {
                         http: ERROR_URL
@@ -1945,6 +1981,7 @@ describe('replication-graphql.test.ts', () => {
                 const server = await SpawnServer.spawn(testData);
 
                 const replicationState: RxGraphQLReplicationState<HumanWithTimestampDocumentType, any> = replicateGraphQL({
+                    replicationIdentifier: randomCouchString(10),
                     collection,
                     url: server.url,
                     pull: {
@@ -1985,6 +2022,7 @@ describe('replication-graphql.test.ts', () => {
                 const server = await SpawnServer.spawn(testData);
 
                 const replicationState = replicateGraphQL({
+                    replicationIdentifier: randomCouchString(10),
                     collection,
                     url: server.url,
                     pull: {
@@ -2024,6 +2062,7 @@ describe('replication-graphql.test.ts', () => {
                 const server = await SpawnServer.spawn<HumanWithTimestampDocumentType>([]);
 
                 const replicationState = replicateGraphQL({
+                    replicationIdentifier: randomCouchString(10),
                     collection,
                     url: server.url,
                     push: {
@@ -2057,6 +2096,7 @@ describe('replication-graphql.test.ts', () => {
                 ]);
 
                 const replicationState = replicateGraphQL({
+                    replicationIdentifier: randomCouchString(10),
                     collection: c,
                     url: server.url,
                     pull: {
@@ -2089,6 +2129,7 @@ describe('replication-graphql.test.ts', () => {
 
                 server.requireHeader('Authorization', 'password');
                 const replicationState = replicateGraphQL({
+                    replicationIdentifier: randomCouchString(10),
                     collection: c,
                     url: server.url,
                     pull: {
@@ -2117,6 +2158,7 @@ describe('replication-graphql.test.ts', () => {
 
                 server.requireHeader('Authorization', 'password');
                 const replicationState = replicateGraphQL({
+                    replicationIdentifier: randomCouchString(10),
                     collection: c,
                     url: server.url,
                     pull: {
@@ -2161,6 +2203,7 @@ describe('replication-graphql.test.ts', () => {
 
                 server.requireHeader('Authorization', 'password');
                 const replicationState = replicateGraphQL({
+                    replicationIdentifier: randomCouchString(10),
                     collection: c,
                     url: server.url,
                     pull: {
@@ -2211,6 +2254,7 @@ describe('replication-graphql.test.ts', () => {
                 );
                 const server = await SpawnServer.spawn(getTestData(0));
                 const replicationState = replicateGraphQL({
+                    replicationIdentifier: randomCouchString(10),
                     collection,
                     url: server.url,
                     push: {
@@ -2258,6 +2302,7 @@ describe('replication-graphql.test.ts', () => {
                 const server = await SpawnServer.spawn(testData);
 
                 const replicationState = replicateGraphQL({
+                    replicationIdentifier: randomCouchString(10),
                     collection,
                     url: server.url,
                     push: {
@@ -2315,6 +2360,7 @@ describe('replication-graphql.test.ts', () => {
 
                 // start live replication
                 const replicationState = replicateGraphQL({
+                    replicationIdentifier: randomCouchString(10),
                     collection,
                     url: server.url,
                     push: {
@@ -2390,6 +2436,7 @@ describe('replication-graphql.test.ts', () => {
 
                 // start live replication
                 const replicationState = replicateGraphQL({
+                    replicationIdentifier: randomCouchString(10),
                     collection,
                     url: server.url,
                     push: {
@@ -2452,6 +2499,7 @@ describe('replication-graphql.test.ts', () => {
                     SpawnServer.spawn(getTestData(1))
                 ]);
                 const replicationState = replicateGraphQL({
+                    replicationIdentifier: randomCouchString(10),
                     collection: c,
                     url: server.url,
                     pull: {
@@ -2511,6 +2559,7 @@ describe('replication-graphql.test.ts', () => {
                 );
 
                 const replicationState = replicateGraphQL<schemaObjects.HumanWithTimestampDocumentType, any>({
+                    replicationIdentifier: randomCouchString(10),
                     collection,
                     url: {
                         http: browserServerUrl
@@ -2547,6 +2596,7 @@ describe('replication-graphql.test.ts', () => {
                 });
                 const collection2 = collections2.humans;
                 const replicationState2 = replicateGraphQL<any, any>({
+                    replicationIdentifier: randomCouchString(10),
                     collection: collection2,
                     url: {
                         http: browserServerUrl

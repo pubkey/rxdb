@@ -2,7 +2,7 @@
  * this tests the behaviour of util.js
  */
 import assert from 'assert';
-import AsyncTestUtil, { wait } from 'async-test-util';
+import AsyncTestUtil, { randomString, wait } from 'async-test-util';
 import {
     randomCouchString,
     defaultHashSha256,
@@ -29,28 +29,51 @@ import {
     validateDatabaseName,
     deepFreezeWhenDevMode
 } from '../../plugins/dev-mode';
+import {
+    nativeSha256,
+    jsSha256,
+    canUseCryptoSubtle
+} from '../../plugins/utils';
 import { EXAMPLE_REVISION_1 } from '../helper/revisions';
 
 import { BIG_BASE64 } from '../helper/big-base64';
 
 describe('util.test.js', () => {
     describe('.defaultHashSha256()', () => {
-        it('should work with a string', () => {
-            const hash = defaultHashSha256('foobar');
+        it('should work with a string', async () => {
+            const hash = await defaultHashSha256('foobar');
             assert.strictEqual(typeof hash, 'string');
             assert.ok(hash.length > 0);
         });
-        it('should get the same hash twice', () => {
+        it('should get the same hash twice', async () => {
             const str = randomCouchString(10);
-            const hash = defaultHashSha256(str);
-            const hash2 = defaultHashSha256(str);
+            const hash = await defaultHashSha256(str);
+            const hash2 = await defaultHashSha256(str);
             assert.strictEqual(hash, hash2);
         });
-        it('should work with a very large string', () => {
+        it('should work with a very large string', async () => {
             const str = randomCouchString(5000);
-            const hash = defaultHashSha256(str);
+            const hash = await defaultHashSha256(str);
             assert.strictEqual(typeof hash, 'string');
             assert.ok(hash.length > 0);
+        });
+        it('must have enabled canUseCryptoSubtle', ()=> {
+            assert.ok(canUseCryptoSubtle);
+        });
+        it('both versions must return the exact same value', async () => {
+            const values: string[] = [
+                'foobar',
+                randomString(100),
+                'asdf#äge#äö34g?!§"=$%'
+            ];
+
+            for (const value of values) {
+                const hashNative = await nativeSha256(value);
+                const hashJavaScript = await jsSha256(value);
+                if (hashJavaScript !== hashNative) {
+                    throw new Error('hashes not equal for value: ' + value);
+                }
+            }
         });
     });
     describe('.sortObject()', () => {

@@ -19,7 +19,6 @@ import type {
     MaybePromise
 } from './types';
 import {
-    defaultHashSha256,
     flatClone,
     getFromMapOrCreate,
     requestIdleCallbackIfAvailable
@@ -40,8 +39,11 @@ type WrappedStorageFunction = <Internals, InstanceCreationOptions>(
 type ValidatorFunction = (docData: RxDocumentData<any>) => RxValidationError[];
 
 /**
- * cache the validators by the schema-hash
+ * cache the validators by the schema string
  * so we can reuse them when multiple collections have the same schema
+ *
+ * Notice: to make it easier and not dependent on a hash function,
+ * we use the plain json string.
  */
 const VALIDATOR_CACHE_BY_VALIDATOR_KEY: Map<string, Map<string, ValidatorFunction>> = new Map();
 
@@ -69,10 +71,9 @@ export function wrappedValidateStorageFactory(
     function initValidator(
         schema: RxJsonSchema<any>
     ): ValidatorFunction {
-        const hash = defaultHashSha256(JSON.stringify(schema));
         return getFromMapOrCreate(
             VALIDATOR_CACHE,
-            hash,
+            JSON.stringify(schema),
             () => getValidator(schema)
         );
     }

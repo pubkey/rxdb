@@ -60,7 +60,7 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
         }
     }
 
-    const identifierHash = state.input.hashFunction(state.input.identifier);
+    const identifierHash = await state.input.hashFunction(state.input.identifier);
     const replicationHandler = state.input.replicationHandler;
 
     // used to detect which tasks etc can in it at which order.
@@ -364,7 +364,7 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
                                 isAssumedMasterEqualToForkState === false
                             ) {
                                 useMetaWriteRows.push(
-                                    getMetaWriteRow(
+                                    await getMetaWriteRow(
                                         state,
                                         forkStateDocData,
                                         assumedMaster ? assumedMaster.metaDocument : undefined
@@ -414,18 +414,18 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
                         );
                         writeRowsToFork.push(forkWriteRow);
                         writeRowsToForkById[docId] = forkWriteRow;
-                        writeRowsToMeta[docId] = getMetaWriteRow(
+                        writeRowsToMeta[docId] = await getMetaWriteRow(
                             state,
                             masterState,
                             assumedMaster ? assumedMaster.metaDocument : undefined
                         );
                     })
                 );
-            }).then(() => {
+            }).then(async () => {
                 if (writeRowsToFork.length > 0) {
                     return state.input.forkInstance.bulkWrite(
                         writeRowsToFork,
-                        state.downstreamBulkWriteFlag
+                        await state.downstreamBulkWriteFlag
                     ).then((forkWriteResult) => {
                         forkWriteResult.success.forEach(doc => {
                             const docId = (doc as any)[primaryPath];

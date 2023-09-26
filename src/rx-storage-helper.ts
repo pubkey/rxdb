@@ -32,7 +32,6 @@ import type {
 import {
     appendToArray,
     createRevision,
-    defaultHashSha256,
     ensureNotFalsy,
     flatClone,
     getDefaultRevision,
@@ -232,27 +231,29 @@ export function categorizeBulkWriteRows<RxDocType>(
              */
             const insertedIsDeleted = document._deleted ? true : false;
             if (hasAttachments) {
-                Object.entries(document._attachments).forEach(([attachmentId, attachmentData]) => {
-                    if (
-                        !(attachmentData as RxAttachmentWriteData).data
-                    ) {
-                        attachmentError = {
-                            documentId: docId,
-                            isError: true,
-                            status: 510,
-                            writeRow,
-                            attachmentId
-                        };
-                        errors.push(attachmentError);
-                    } else {
-                        attachmentsAdd.push({
-                            documentId: docId,
-                            attachmentId,
-                            attachmentData: attachmentData as any,
-                            digest: defaultHashSha256((attachmentData as RxAttachmentWriteData).data)
-                        });
-                    }
-                });
+                Object
+                    .entries(document._attachments)
+                    .forEach(([attachmentId, attachmentData]) => {
+                        if (
+                            !(attachmentData as RxAttachmentWriteData).data
+                        ) {
+                            attachmentError = {
+                                documentId: docId,
+                                isError: true,
+                                status: 510,
+                                writeRow,
+                                attachmentId
+                            };
+                            errors.push(attachmentError);
+                        } else {
+                            attachmentsAdd.push({
+                                documentId: docId,
+                                attachmentId,
+                                attachmentData: attachmentData as any,
+                                digest: attachmentData.digest
+                            });
+                        }
+                    });
             }
             if (!attachmentError) {
                 if (hasAttachments) {
@@ -368,7 +369,7 @@ export function categorizeBulkWriteRows<RxDocType>(
                                         documentId: docId,
                                         attachmentId,
                                         attachmentData: attachmentData as any,
-                                        digest: defaultHashSha256((attachmentData as RxAttachmentWriteData).data)
+                                        digest: attachmentData.digest
                                     });
                                 } else {
                                     const newDigest = updatedRow.document._attachments[attachmentId].digest;
@@ -384,7 +385,7 @@ export function categorizeBulkWriteRows<RxDocType>(
                                             documentId: docId,
                                             attachmentId,
                                             attachmentData: attachmentData as RxAttachmentWriteData,
-                                            digest: defaultHashSha256((attachmentData as RxAttachmentWriteData).data)
+                                            digest: attachmentData.digest
                                         });
                                     }
                                 }
@@ -478,8 +479,8 @@ export function attachmentWriteDataToNormalData(writeData: RxAttachmentData | Rx
         return writeData as any;
     }
     const ret: RxAttachmentData = {
-        digest: defaultHashSha256(data),
         length: getAttachmentSize(data),
+        digest: writeData.digest,
         type: writeData.type
     };
     return ret;

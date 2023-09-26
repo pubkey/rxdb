@@ -226,10 +226,18 @@ export type RxStorageInstanceReplicationState<RxDocType> = {
      * Used in checkpoints and ._meta fields
      * to ensure we do not mix up meta data of
      * different replications.
+     * We have to use the promise because the key is hashed which runs async.
      */
-    checkpointKey: string;
+    checkpointKey: Promise<string>;
 
-    downstreamBulkWriteFlag: string;
+    /**
+     * Storage.bulkWrites() that are initialized from the
+     * downstream, get this flag as context-param
+     * so that the emitted event bulk can be identified
+     * to be sourced from the downstream and it will not try
+     * to upstream these documents again.
+     */
+    downstreamBulkWriteFlag: Promise<string>;
 
     /**
      * Tracks if the streams have been in sync

@@ -340,6 +340,8 @@ describe('replication.test.js', () => {
             });
             replicationState.error$.subscribe(err => {
                 console.log('got error :');
+                console.log(err);
+                console.log(err.toString());
                 console.dir(err);
             });
 

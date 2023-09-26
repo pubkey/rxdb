@@ -85,10 +85,10 @@ export class RxReplicationState<RxDocType, CheckpointType> {
     private startPromise: Promise<void>;
     constructor(
         /**
-         * hash of the identifier, used to flag revisions
+         * The identifier, used to flag revisions
          * and to identify which documents state came from the remote.
          */
-        public readonly replicationIdentifierHash: string,
+        public readonly replicationIdentifier: string,
         public readonly collection: RxCollection<RxDocType>,
         public readonly deletedField: string,
         public readonly pull?: ReplicationPullOptions<RxDocType, CheckpointType>,
@@ -137,7 +137,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
         const pushModifier = this.push && this.push.modifier ? this.push.modifier : DEFAULT_MODIFIER;
 
         const database = this.collection.database;
-        const metaInstanceCollectionName = this.collection.name + '-rx-replication-' + this.replicationIdentifierHash;
+        const metaInstanceCollectionName = await database.hashFunction(this.collection.name + '-rx-replication-' + this.replicationIdentifier);
         const metaInstanceSchema = getRxReplicationMetaInstanceSchema(
             this.collection.schema.jsonSchema,
             hasEncryption(this.collection.schema.jsonSchema)
@@ -171,7 +171,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
             forkInstance: this.collection.storageInstance,
             metaInstance: this.metaInstance,
             hashFunction: database.hashFunction,
-            identifier: 'rxdbreplication' + this.replicationIdentifierHash,
+            identifier: 'rxdbreplication' + this.replicationIdentifier,
             conflictHandler: this.collection.conflictHandler,
             replicationHandler: {
                 masterChangeStream$: this.remoteEvents$.asObservable().pipe(
@@ -458,15 +458,8 @@ export function replicateRxCollection<RxDocType, CheckpointType>(
     }: ReplicationOptions<RxDocType, CheckpointType>
 ): RxReplicationState<RxDocType, CheckpointType> {
     addRxPlugin(RxDBLeaderElectionPlugin);
-    const replicationIdentifierHash = collection.database.hashFunction(
-        [
-            collection.database.name,
-            collection.name,
-            replicationIdentifier
-        ].join('|')
-    );
     const replicationState = new RxReplicationState<RxDocType, CheckpointType>(
-        replicationIdentifierHash,
+        replicationIdentifier,
         collection,
         deletedField,
         pull,

@@ -68,12 +68,12 @@ const importDumpRxDatabase = function (
     );
 };
 
-const dumpRxCollection = function (
+const dumpRxCollection = async function (
     this: RxCollection
 ) {
     const json: any = {
         name: this.name,
-        schemaHash: this.schema.hash,
+        schemaHash: await this.schema.hash,
         docs: []
     };
 
@@ -94,12 +94,12 @@ const dumpRxCollection = function (
         });
 };
 
-function importDumpRxCollection<RxDocType>(
+async function importDumpRxCollection<RxDocType>(
     this: RxCollection<RxDocType>,
     exportedJSON: any
 ): Promise<any> {
     // check schemaHash
-    if (exportedJSON.schemaHash !== this.schema.hash) {
+    if (exportedJSON.schemaHash !== await this.schema.hash) {
         throw newRxError('JD2', {
             schemaHash: exportedJSON.schemaHash,
             own: this.schema.hash

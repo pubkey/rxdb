@@ -46,7 +46,7 @@ export class RxGraphQLReplicationState<RxDocType, CheckpointType> extends RxRepl
     constructor(
         public readonly url: GraphQLServerUrl,
         public readonly clientState: RxGraphQLReplicationClientState,
-        public readonly replicationIdentifierHash: string,
+        public readonly replicationIdentifier: string,
         public readonly collection: RxCollection<RxDocType>,
         public readonly deletedField: string,
         public readonly pull?: ReplicationPullOptions<RxDocType, CheckpointType>,
@@ -56,7 +56,7 @@ export class RxGraphQLReplicationState<RxDocType, CheckpointType> extends RxRepl
         public autoStart?: boolean
     ) {
         super(
-            replicationIdentifierHash,
+            replicationIdentifier,
             collection,
             deletedField,
             pull,
@@ -99,6 +99,7 @@ export function replicateGraphQL<RxDocType, CheckpointType>(
         live = true,
         retryTime = 1000 * 5, // in ms
         autoStart = true,
+        replicationIdentifier
     }: SyncOptionsGraphQL<RxDocType, CheckpointType>
 ): RxGraphQLReplicationState<RxDocType, CheckpointType> {
     addRxPlugin(RxDBLeaderElectionPlugin);
@@ -180,7 +181,7 @@ export function replicateGraphQL<RxDocType, CheckpointType>(
     const graphqlReplicationState = new RxGraphQLReplicationState(
         url,
         mutateableClientState,
-        GRAPHQL_REPLICATION_PLUGIN_IDENTITY_PREFIX + collection.database.hashFunction(url.http ? url.http : url.ws as any),
+        GRAPHQL_REPLICATION_PLUGIN_IDENTITY_PREFIX + replicationIdentifier,
         collection,
         deletedField,
         replicationPrimitivesPull,
