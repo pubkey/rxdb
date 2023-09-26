@@ -512,7 +512,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           # TODO using latest node version does not work with expo-cli https://github.com/expo/expo-cli/issues/4478
-          node-version: 16.20.1
+          node-version: 18.18.0
 
       - name: prepare RxDB core
         run: |
