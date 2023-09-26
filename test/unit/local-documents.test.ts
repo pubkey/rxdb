@@ -20,8 +20,10 @@ addRxPlugin(RxDBLocalDocumentsPlugin);
 import config from './config';
 import {
     filter,
-    first
+    first,
+    map
 } from 'rxjs/operators';
+import { firstValueFrom } from 'rxjs';
 
 declare type TestDocType = {
     foo: string;
@@ -119,6 +121,10 @@ config.parallel('local-documents.test.ts', () => {
                 // ensure it is a full RxLocalDocument instance
                 assert.ok(fullDoc.primary);
             });
+
+            // 2nd must have updated data
+            assert.strictEqual(emitted[1].get('foo'), 'bar2');
+
             c.database.destroy();
         });
     });
@@ -384,14 +390,21 @@ config.parallel('local-documents.test.ts', () => {
                 return !!doc2;
             });
 
-            doc1.remove();
-
-            await ensureNotFalsy(doc2).deleted$
-                .pipe(
-                    filter(d => d === true),
-                    first()
-                )
-                .toPromise();
+            const hasEmitted = firstValueFrom(
+                ensureNotFalsy(doc2).deleted$
+                    .pipe(
+                        map(x => {
+                            console.log('deletd emit:');
+                            console.dir(doc2?._data);
+                            console.dir(x);
+                            return x;
+                        }),
+                        filter(d => d === true),
+                        first()
+                    )
+            );
+            await doc1.remove();
+            await hasEmitted;
 
             db.destroy();
             db2.destroy();

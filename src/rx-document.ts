@@ -67,7 +67,7 @@ export const basePrototype = {
             return undefined;
         }
         return _this.$.pipe(
-            map((d: any) => d._deleted)
+            map((d: any) => d._data._deleted)
         );
     },
     get deleted() {

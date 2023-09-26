@@ -75,8 +75,8 @@ const RxLocalDocumentPrototype: any = {
         const _this: RxLocalDocumentClass = this as any;
         const state = getFromMapOrThrow(LOCAL_DOC_STATE_BY_PARENT_RESOLVED, this.parent);
         return _this.parent.$.pipe(
-            filter(changeEvent => changeEvent.isLocal),
             filter(changeEvent => changeEvent.documentId === this.primary),
+            filter(changeEvent => changeEvent.isLocal),
             map(changeEvent => getDocumentDataOfRxChangeEvent(changeEvent)),
             startWith(state.docCache.getLatestDocumentData(this.primary)),
             distinctUntilChanged((prev, curr) => prev._rev === curr._rev),
