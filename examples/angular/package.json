@@ -77,7 +77,7 @@
     "@capacitor/cli": "latest",
     "@nguniversal/builders": "16.2.0",
     "@types/express": "4.17.18",
-    "@types/mocha": "10.0.1",
+    "@types/mocha": "10.0.2",
     "@types/node": "18.18.0",
     "async-test-util": "2.1.1",
     "concurrently": "8.2.1",
