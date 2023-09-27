@@ -186,6 +186,7 @@ export function rxStorageInstanceToReplicationHandler<RxDocType, MasterCheckpoin
                                     undefined
                                 );
                             }
+
                             return docData;
                         })
                     )
@@ -228,10 +229,6 @@ export function rxStorageInstanceToReplicationHandler<RxDocType, MasterCheckpoin
         async masterWrite(
             rows
         ) {
-
-            console.log('MASTER masterWrite()');
-            console.dir(rows);
-
             const rowById: ById<RxReplicationWriteToMasterRow<RxDocType>> = {};
             rows.forEach(row => {
                 const docId: string = (row.newDocumentState as any)[primaryPath];

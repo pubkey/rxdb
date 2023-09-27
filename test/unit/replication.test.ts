@@ -31,10 +31,14 @@ import {
     createRxDatabase,
     RxReplicationPullStreamItem,
     lastOfArray,
-    RxJsonSchema
+    RxJsonSchema,
+    createBlob,
+    RxAttachmentCreator,
+    DeepReadonly
 } from '../../plugins/core';
 
 import {
+    RxReplicationState,
     replicateRxCollection
 } from '../../plugins/replication';
 
@@ -43,7 +47,7 @@ import type {
     ReplicationPushHandler,
     RxReplicationWriteToMasterRow
 } from '../../src/types';
-import { firstValueFrom, Subject } from 'rxjs';
+import { firstValueFrom, Observable, Subject } from 'rxjs';
 
 
 type CheckpointType = any;
@@ -53,15 +57,15 @@ type TestDocType = schemaObjects.HumanWithTimestampDocumentType;
  * Creates a pull handler that always returns
  * all documents.
  */
-export function getPullHandler(
-    remoteCollection: RxCollection<TestDocType, {}, {}, {}>
-): ReplicationPullHandler<TestDocType, CheckpointType> {
+export function getPullHandler<RxDocType>(
+    remoteCollection: RxCollection<RxDocType, {}, {}, {}>
+): ReplicationPullHandler<RxDocType, CheckpointType> {
     const helper = rxStorageInstanceToReplicationHandler(
         remoteCollection.storageInstance,
         remoteCollection.database.conflictHandler as any,
         remoteCollection.database.token
     );
-    const handler: ReplicationPullHandler<TestDocType, CheckpointType> = async (
+    const handler: ReplicationPullHandler<RxDocType, CheckpointType> = async (
         latestPullCheckpoint: CheckpointType | null,
         batchSize: number
     ) => {
@@ -70,22 +74,33 @@ export function getPullHandler(
     };
     return handler;
 }
-export function getPushHandler(
-    remoteCollection: RxCollection<TestDocType, {}, {}, {}>
-): ReplicationPushHandler<TestDocType> {
+export function getPullStream<RxDocType>(
+    remoteCollection: RxCollection<RxDocType, {}, {}, {}>
+): Observable<RxReplicationPullStreamItem<RxDocType, any>> {
     const helper = rxStorageInstanceToReplicationHandler(
         remoteCollection.storageInstance,
         remoteCollection.conflictHandler,
         remoteCollection.database.token
     );
-    const handler: ReplicationPushHandler<TestDocType> = async (
-        rows: RxReplicationWriteToMasterRow<TestDocType>[]
+    return helper.masterChangeStream$;
+}
+export function getPushHandler<RxDocType>(
+    remoteCollection: RxCollection<RxDocType, {}, {}, {}>
+): ReplicationPushHandler<RxDocType> {
+    const helper = rxStorageInstanceToReplicationHandler(
+        remoteCollection.storageInstance,
+        remoteCollection.conflictHandler,
+        remoteCollection.database.token
+    );
+    const handler: ReplicationPushHandler<RxDocType> = async (
+        rows: RxReplicationWriteToMasterRow<RxDocType>[]
     ) => {
         const result = await helper.masterWrite(rows);
         return result;
     };
     return handler;
 }
+
 
 describe('replication.test.js', () => {
     const REPLICATION_IDENTIFIER_TEST = 'replication-ident-tests';
@@ -99,6 +114,49 @@ describe('replication.test.js', () => {
             localCollection,
             remoteCollection
         };
+    }
+    function ensureReplicationHasNoErrors(replicationState: RxReplicationState<any, any>) {
+        /**
+         * We do not have to unsubscribe because the observable will cancel anyway.
+         */
+        replicationState.error$.subscribe(err => {
+            console.error('ensureReplicationHasNoErrors() has error:');
+            console.dir(err.toString());
+            throw err;
+        });
+    }
+    async function ensureEqualState<RxDocType>(
+        collectionA: RxCollection<RxDocType>,
+        collectionB: RxCollection<RxDocType>
+    ) {
+        const [
+            docsA,
+            docsB
+        ] = await Promise.all([
+            collectionA.find().exec().then(docs => docs.map(d => d.toJSON(true))),
+            collectionB.find().exec().then(docs => docs.map(d => d.toJSON(true)))
+        ]);
+
+        docsA.forEach((docA, idx) => {
+            const docB = docsB[idx];
+            const cleanDocToCompare = (doc: DeepReadonly<RxDocType>) => {
+                return Object.assign({}, doc, {
+                    _meta: undefined,
+                    _rev: undefined
+                });
+            };
+            try {
+                assert.deepStrictEqual(
+                    cleanDocToCompare(docA),
+                    cleanDocToCompare(docB)
+                );
+            } catch (err) {
+                console.log('## ERROR: State not equal');
+                console.log(JSON.stringify(docA, null, 4));
+                console.log(JSON.stringify(docB, null, 4));
+                throw new Error('STATE not equal');
+            }
+        });
     }
 
     const storageWithValidation = wrappedValidateAjvStorage({
@@ -139,11 +197,7 @@ describe('replication.test.js', () => {
                     }
                 }
             });
-            replicationState.error$.subscribe(err => {
-                console.log('got error :');
-                console.log(JSON.stringify(err, null, 4));
-                throw err;
-            });
+            ensureReplicationHasNoErrors(replicationState);
 
             await replicationState.awaitInitialReplication();
 
@@ -338,12 +392,7 @@ describe('replication.test.js', () => {
                     handler: getPushHandler(remoteCollection)
                 }
             });
-            replicationState.error$.subscribe(err => {
-                console.log('got error :');
-                console.log(err);
-                console.log(err.toString());
-                console.dir(err);
-            });
+            ensureReplicationHasNoErrors(replicationState);
 
             await replicationState.awaitInitialReplication();
             const docsRemoteQuery = await remoteCollection.findOne();
@@ -398,16 +447,12 @@ describe('replication.test.js', () => {
                         if (docs.length === 0 || docs.length > batchSize) {
                             throw new Error('push.batchSize(' + batchSize + ') not respected ' + docs.length);
                         }
-                        return getPushHandler(remoteCollection)(docs);
+                        return getPushHandler(remoteCollection)(docs as any);
                     },
                     batchSize
                 }
             });
-            replicationState.error$.subscribe(err => {
-                console.log('got error :');
-                console.dir(err);
-                throw err;
-            });
+            ensureReplicationHasNoErrors(replicationState);
 
             /**
              * Insert many documents at once to
@@ -441,11 +486,7 @@ describe('replication.test.js', () => {
                     handler: getPushHandler(remoteCollection)
                 }
             });
-            replicationState.error$.subscribe(err => {
-                console.log('got error :');
-                console.dir(err);
-                throw err;
-            });
+            ensureReplicationHasNoErrors(replicationState);
 
             const values: boolean[] = [];
             replicationState.active$.subscribe((active) => {
@@ -695,6 +736,82 @@ describe('replication.test.js', () => {
 
             localCollection.database.destroy();
             remoteCollection.database.destroy();
+        });
+    });
+    config.parallel('attachment replication', () => {
+        /**
+ * Here we use a RxDatabase insteaf of the plain RxStorageInstance.
+ * This makes handling attachment easier
+ */
+        it('attachments replication: up and down with streaming', async () => {
+            const localCollection = await humansCollection.createAttachments(3);
+            const remoteCollection = await humansCollection.createAttachments(3);
+
+            const localDocs = await localCollection.find().exec();
+            const remoteDocs = await remoteCollection.find().exec();
+
+            const replicationState = replicateRxCollection({
+                collection: localCollection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: true,
+                pull: {
+                    handler: getPullHandler(remoteCollection),
+                    stream$: getPullStream(remoteCollection)
+                },
+                push: {
+                    handler: getPushHandler(remoteCollection),
+                }
+            });
+            ensureReplicationHasNoErrors(replicationState);
+            await replicationState.awaitInitialReplication();
+
+            function getRandomAttachment(
+                id = randomCouchString(10),
+                size = 20
+            ): RxAttachmentCreator {
+                const attachmentData = randomCouchString(size);
+                const dataBlob = createBlob(attachmentData, 'text/plain');
+                return {
+                    id,
+                    data: dataBlob,
+                    type: 'text/plain'
+                };
+            }
+
+            await replicationState.awaitInitialReplication();
+            await ensureEqualState(localCollection, remoteCollection);
+
+            // add attachments
+            await remoteDocs[0].getLatest().putAttachment(getRandomAttachment('master1'));
+            await localDocs[0].getLatest().putAttachment(getRandomAttachment('fork1'));
+
+            await Promise.all([
+                localDocs[1].getLatest().putAttachment(getRandomAttachment()),
+                localDocs[2].getLatest().putAttachment(getRandomAttachment()),
+                remoteDocs[1].getLatest().putAttachment(getRandomAttachment()),
+                remoteDocs[2].getLatest().putAttachment(getRandomAttachment())
+            ]);
+
+            await replicationState.awaitInSync();
+            await ensureEqualState(localCollection, remoteCollection);
+
+            // add more attachments to docs that already have attachments
+            await localDocs[0].getLatest().putAttachment(getRandomAttachment('fork2'));
+            await remoteDocs[0].getLatest().putAttachment(getRandomAttachment('master1'));
+
+            await replicationState.awaitInSync();
+            await ensureEqualState(localCollection, remoteCollection);
+
+            // overwrite attachments
+            await localDocs[0].getLatest().putAttachment(getRandomAttachment('fork1', 5));
+            await remoteDocs[0].getLatest().putAttachment(getRandomAttachment('master1', 5));
+
+            await replicationState.awaitInSync();
+            await ensureEqualState(localCollection, remoteCollection);
+
+
+            await localCollection.database.destroy();
+            await remoteCollection.database.destroy();
         });
     });
     config.parallel('issues', () => {

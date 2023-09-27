@@ -4,6 +4,7 @@ import type {
     RxStorageInstance,
     WithDeletedAndAttachments
 } from '../../types';
+import { ensureNotFalsy } from '../utils';
 
 export function ensureSchemaSupportsAttachments(doc: any) {
     const schemaJson = doc.collection.schema.jsonSchema;
@@ -58,18 +59,15 @@ export async function fillWriteDataForAttachmentsChange<RxDocType>(
             .entries(newDocument._attachments)
             .map(async ([key, value]) => {
                 if (
-                    !originalAttachmentsIds.has(key) &&
+                    (
+                        !originalAttachmentsIds.has(key) ||
+                        (
+                            originalDocument &&
+                            ensureNotFalsy(originalDocument._attachments)[key].digest !== value.digest
+                        )
+                    ) &&
                     !(value as RxAttachmentWriteData).data
                 ) {
-
-                    console.log('attahcment missing: ' + key);
-
-                    console.dir({
-                        docId,
-                        key,
-                        digest: value.digest
-                    });
-
                     const attachmentDataString = await storageInstance.getAttachmentData(
                         docId,
                         key,

@@ -487,6 +487,11 @@ export function attachmentWriteDataToNormalData(writeData: RxAttachmentData | Rx
 }
 
 export function stripAttachmentsDataFromDocument<RxDocType>(doc: RxDocumentWriteData<RxDocType>): RxDocumentData<RxDocType> {
+
+    if (!doc._attachments || Object.keys(doc._attachments).length === 0) {
+        return doc;
+    }
+
     const useDoc: RxDocumentData<RxDocType> = flatClone(doc) as any;
     useDoc._attachments = {};
     Object

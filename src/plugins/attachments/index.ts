@@ -116,6 +116,7 @@ export async function putAttachment<RxDocType>(
     return this.collection.incrementalWriteQueue.addWrite(
         this._data,
         (docWriteData: RxDocumentWriteData<RxDocType>) => {
+            docWriteData = flatClone(docWriteData);
             docWriteData._attachments = flatClone(docWriteData._attachments);
             docWriteData._attachments[id] = {
                 length: dataSize,

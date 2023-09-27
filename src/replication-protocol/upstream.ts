@@ -337,8 +337,6 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
                             })
                         );
                     }
-                    console.log('upstream write batches:');
-                    console.dir(writeBatch);
 
                     const masterWriteResult = await replicationHandler.masterWrite(writeBatch);
                     masterWriteResult.forEach(conflictDoc => {

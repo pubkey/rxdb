@@ -12,11 +12,15 @@ import {
     flatClone,
     deepEqual
 } from '../plugins/utils';
+import { stripAttachmentsDataFromDocument } from '../rx-storage-helper';
 
 export const defaultConflictHandler: RxConflictHandler<any> = function (
     i: RxConflictHandlerInput<any>,
     _context: string
 ): Promise<RxConflictHandlerOutput<any>> {
+    const newDocumentState = stripAttachmentsDataFromDocument(i.newDocumentState);
+    const realMasterState = stripAttachmentsDataFromDocument(i.realMasterState);
+
     /**
      * If the documents are deep equal,
      * we have no conflict.
@@ -25,8 +29,8 @@ export const defaultConflictHandler: RxConflictHandler<any> = function (
      * for better performance, because deepEqual is expensive.
      */
     if (deepEqual(
-        i.newDocumentState,
-        i.realMasterState
+        newDocumentState,
+        realMasterState
     )) {
         return Promise.resolve({
             isEqual: true

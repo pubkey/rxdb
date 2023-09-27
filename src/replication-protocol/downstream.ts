@@ -23,7 +23,6 @@ import {
     getDefaultRevision,
     getDefaultRxDocumentMeta,
     parseRevision,
-    PROMISE_RESOLVE_FALSE,
     PROMISE_RESOLVE_VOID
 } from '../plugins/utils';
 import {
@@ -173,9 +172,6 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
                 state.input.pullBatchSize
             );
 
-            console.log('DOWNSTREAM masterChangesSince result:');
-            console.dir(downResult);
-
             if (downResult.documents.length === 0) {
                 break;
             }
@@ -259,6 +255,7 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
          * with all open documents from nonPersistedFromMaster.
          */
         persistenceQueue = persistenceQueue.then(() => {
+
             const downDocsById: ById<WithDeletedAndAttachments<RxDocType>> = nonPersistedFromMaster.docs;
             nonPersistedFromMaster.docs = {};
             const useCheckpoint = nonPersistedFromMaster.checkpoint;
@@ -311,13 +308,12 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
                             return PROMISE_RESOLVE_VOID;
                         }
 
-                        const isAssumedMasterEqualToForkStatePromise = !assumedMaster || !forkStateDocData ?
-                            PROMISE_RESOLVE_FALSE :
-                            state.input.conflictHandler({
+                        let isAssumedMasterEqualToForkState = !assumedMaster || !forkStateDocData ?
+                            false :
+                            await state.input.conflictHandler({
                                 realMasterState: assumedMaster.docData,
                                 newDocumentState: forkStateDocData
                             }, 'downstream-check-if-equal-0').then(r => r.isEqual);
-                        let isAssumedMasterEqualToForkState = await isAssumedMasterEqualToForkStatePromise;
 
                         if (
                             !isAssumedMasterEqualToForkState &&
@@ -350,15 +346,16 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
                             return PROMISE_RESOLVE_VOID;
                         }
 
-
-                        const areStatesExactlyEqualPromise = !forkStateDocData ?
-                            PROMISE_RESOLVE_FALSE :
-                            state.input.conflictHandler({
-                                realMasterState: masterState,
-                                newDocumentState: forkStateDocData
-                            }, 'downstream-check-if-equal-1').then(r => r.isEqual);
-                        const areStatesExactlyEqual = await areStatesExactlyEqualPromise;
-
+                        const areStatesExactlyEqual = !forkStateDocData
+                            ? false
+                            : await state.input.conflictHandler(
+                                {
+                                    realMasterState: masterState,
+                                    newDocumentState: forkStateDocData
+                                },
+                                'downstream-check-if-equal-1'
+                            )
+                                .then(r => r.isEqual);
                         if (
                             forkStateDocData &&
                             areStatesExactlyEqual

@@ -40,7 +40,6 @@ import {
     RX_LOCAL_DOCUMENT_SCHEMA
 } from '../../plugins/local-documents';
 import * as schemas from '../helper/schemas';
-import * as humansCollection from '../helper/humans-collection';
 import {
     clone,
     wait,
@@ -66,7 +65,8 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
             });
         }
 
-        console.log(JSON.stringify(input, null, 4));
+        // console.log('THROWING_CONFLICT_HANDLER will throw with input:');
+        // console.log(JSON.stringify(input, null, 4));
         throw new Error('THROWING_CONFLICT_HANDLER: This handler should never be called. (context: ' + context + ')');
     };
     const HIGHER_AGE_CONFLICT_HANDLER: RxConflictHandler<HumanDocumentType> = (
@@ -1064,65 +1064,6 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
             await ensureEqualState(masterInstance, forkInstance);
 
             cleanUp(replicationState, masterInstance);
-        });
-
-        /**
-         * Here we use a RxDatabase insteaf of the plain RxStorageInstance.
-         * This makes handling attachment easier
-         */
-        it('attachments replication: up and down with streaming', async () => {
-            const forkCollection = await humansCollection.createAttachments(5);
-            const masterCollection = await humansCollection.createAttachments(5);
-
-            const forkInstance = forkCollection.storageInstance.originalStorageInstance;
-            const masterInstance = masterCollection.storageInstance.originalStorageInstance;
-            const metaInstance = await createMetaInstance(forkInstance.schema);
-
-            const replicationState = replicateRxStorageInstance({
-                identifier: randomCouchString(10),
-                replicationHandler: rxStorageInstanceToReplicationHandler(
-                    masterInstance,
-                    THROWING_CONFLICT_HANDLER,
-                    randomCouchString(10)
-                ),
-                forkInstance,
-                metaInstance,
-                pullBatchSize: 100,
-                pushBatchSize: 100,
-                conflictHandler: THROWING_CONFLICT_HANDLER,
-                hashFunction: defaultHashSha256
-            });
-
-            // const forkDocs = await forkCollection.find().exec();
-            // const masterDocs = await masterCollection.find().exec();
-            // function getRandomAttachment(): RxAttachmentCreator {
-            //     const attachmentData = randomCouchString(20);
-            //     const dataBlob = createBlob(attachmentData, 'text/plain');
-            //     return {
-            //         id: randomString(10),
-            //         data: dataBlob,
-            //         type: 'text/plain'
-            //     };
-            // }
-
-            // await forkDocs[4].getLatest().putAttachment(getRandomAttachment());
-            // await masterDocs[4].getLatest().putAttachment(getRandomAttachment());
-
-            // await Promise.all([
-            //     forkDocs[2].getLatest().putAttachment(getRandomAttachment()),
-            //     forkDocs[3].getLatest().putAttachment(getRandomAttachment()),
-            //     masterDocs[2].getLatest().putAttachment(getRandomAttachment()),
-            //     masterDocs[3].getLatest().putAttachment(getRandomAttachment())
-            // ]);
-
-            await awaitRxStorageReplicationFirstInSync(replicationState);
-            await ensureEqualState(masterInstance, forkInstance);
-
-
-            cancelRxStorageReplication(replicationState);
-            forkCollection.database.destroy();
-            masterCollection.database.destroy();
-            metaInstance.close();
         });
     });
     describe('stability', () => {
