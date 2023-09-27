@@ -26,8 +26,8 @@ export function assignMethodsToAttachment(attachment: any) {
 
 /**
  * Fill up the missing attachment.data of the newDocument
- * so that the new document can be send to somehwere else
- * which could then recieve all required attachments data
+ * so that the new document can be send to somewhere else
+ * which could then receive all required attachments data
  * that it did not have before.
  */
 export async function fillWriteDataForAttachmentsChange<RxDocType>(
