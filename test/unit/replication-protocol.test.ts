@@ -1023,6 +1023,9 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
         });
     });
     describe('attachment replication', () => {
+        if (!config.storage.hasAttachments) {
+            return;
+        }
         it('push-only: should replicate the attachments to master', async () => {
             const masterInstance = await createRxStorageInstance(0, undefined, undefined, true);
             const forkInstance = await createRxStorageInstance(1, undefined, undefined, true);
