@@ -739,10 +739,13 @@ describe('replication.test.js', () => {
         });
     });
     config.parallel('attachment replication', () => {
+        if (!config.storage.hasAttachments) {
+            return;
+        }
         /**
- * Here we use a RxDatabase insteaf of the plain RxStorageInstance.
- * This makes handling attachment easier
- */
+         * Here we use a RxDatabase insteaf of the plain RxStorageInstance.
+         * This makes handling attachment easier
+         */
         it('attachments replication: up and down with streaming', async () => {
             const localCollection = await humansCollection.createAttachments(3);
             const remoteCollection = await humansCollection.createAttachments(3);
