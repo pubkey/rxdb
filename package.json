@@ -509,7 +509,7 @@
     "@types/crypto-js": "4.1.2",
     "@types/mocha": "10.0.2",
     "@types/pako": "2.0.1",
-    "@types/request": "2.48.8",
+    "@types/request": "2.48.9",
     "@types/request-promise-native": "1.0.19",
     "@typescript-eslint/eslint-plugin": "5.62.0",
     "@typescript-eslint/parser": "5.62.0",
