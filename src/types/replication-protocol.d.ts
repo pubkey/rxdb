@@ -168,6 +168,7 @@ export type RxStorageInstanceReplicationInput<RxDocType> = {
 export type RxStorageInstanceReplicationState<RxDocType> = {
     // store the primaryPath here for better reuse and performance.
     primaryPath: string;
+    hasAttachments: boolean;
     input: RxStorageInstanceReplicationInput<RxDocType>;
 
     events: {

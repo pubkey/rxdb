@@ -1,14 +1,19 @@
 import type {
+    BulkWriteRow,
     RxDocumentData,
     RxDocumentWriteData,
+    RxStorageInstanceReplicationState,
+    RxStorageReplicationMeta,
     WithDeletedAndAttachments
 } from '../types';
 import {
+    clone,
     createRevision,
     flatClone,
     getDefaultRevision,
     now
 } from '../plugins/utils';
+import { stripAttachmentsDataFromDocument } from '../rx-storage-helper';
 
 export function docStateToWriteDoc<RxDocType>(
     databaseInstanceToken: string,
@@ -46,4 +51,22 @@ export function writeDocToDocState<RxDocType>(
     delete (ret as any)._meta;
     delete (ret as any)._rev;
     return ret;
+}
+
+
+export function stripAttachmentsDataFromMetaWriteRows(
+    state: RxStorageInstanceReplicationState<any>,
+    rows: BulkWriteRow<RxStorageReplicationMeta>[]
+): BulkWriteRow<RxStorageReplicationMeta>[] {
+    if (!state.hasAttachments) {
+        return rows;
+    }
+    return rows.map(row => {
+        const document = clone(row.document);
+        document.data = stripAttachmentsDataFromDocument(document.data);
+        return {
+            document,
+            previous: row.previous
+        };
+    });
 }

@@ -57,6 +57,7 @@ export function replicateRxStorageInstance<RxDocType>(
     const checkpointKeyPromise = getCheckpointKey(input);
     const state: RxStorageInstanceReplicationState<RxDocType> = {
         primaryPath: getPrimaryFieldOfPrimaryKey(input.forkInstance.schema.primaryKey),
+        hasAttachments: !!input.forkInstance.schema.attachments,
         input,
         checkpointKey: checkpointKeyPromise,
         downstreamBulkWriteFlag: checkpointKeyPromise.then(checkpointKey => 'replication-downstream-' + checkpointKey),

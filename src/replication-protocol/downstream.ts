@@ -29,7 +29,7 @@ import {
     getLastCheckpointDoc,
     setCheckpoint
 } from './checkpoint';
-import { writeDocToDocState } from './helper';
+import { stripAttachmentsDataFromMetaWriteRows, writeDocToDocState } from './helper';
 import {
     getAssumedMasterState,
     getMetaWriteRow
@@ -46,7 +46,6 @@ import {
 export async function startReplicationDownstream<RxDocType, CheckpointType = any>(
     state: RxStorageInstanceReplicationState<RxDocType>
 ) {
-    const hasAttachments = !!state.input.forkInstance.schema.attachments;
     if (
         state.input.initialCheckpoint &&
         state.input.initialCheckpoint.downstream
@@ -289,7 +288,7 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
                     docIds.map(async (docId) => {
                         const forkStateFullDoc: RxDocumentData<RxDocType> | undefined = currentForkState.get(docId);
                         const forkStateDocData: WithDeletedAndAttachments<RxDocType> | undefined = forkStateFullDoc
-                            ? writeDocToDocState(forkStateFullDoc, hasAttachments)
+                            ? writeDocToDocState(forkStateFullDoc, state.hasAttachments)
                             : undefined
                             ;
                         const masterState = downDocsById[docId];
@@ -392,12 +391,12 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
                             masterState,
                             forkStateFullDoc ? {
                                 _meta: flatClone(forkStateFullDoc._meta),
-                                _attachments: hasAttachments && masterState._attachments ? masterState._attachments : {},
+                                _attachments: state.hasAttachments && masterState._attachments ? masterState._attachments : {},
                                 _rev: getDefaultRevision()
                             } : {
                                 _meta: getDefaultRxDocumentMeta(),
                                 _rev: getDefaultRevision(),
-                                _attachments: hasAttachments && masterState._attachments ? masterState._attachments : {}
+                                _attachments: state.hasAttachments && masterState._attachments ? masterState._attachments : {}
                             });
                         /**
                          * If the remote works with revisions,
@@ -459,7 +458,7 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
             }).then(() => {
                 if (useMetaWriteRows.length > 0) {
                     return state.input.metaInstance.bulkWrite(
-                        useMetaWriteRows,
+                        stripAttachmentsDataFromMetaWriteRows(state, useMetaWriteRows),
                         'replication-down-write-meta'
                     ).then(metaWriteResult => {
                         metaWriteResult.error

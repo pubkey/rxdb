@@ -25,7 +25,7 @@ import {
     setCheckpoint
 } from './checkpoint';
 import { resolveConflictError } from './conflicts';
-import { writeDocToDocState } from './helper';
+import { stripAttachmentsDataFromMetaWriteRows, writeDocToDocState } from './helper';
 import {
     getAssumedMasterState,
     getMetaWriteRow
@@ -43,9 +43,6 @@ import { fillWriteDataForAttachmentsChange } from '../plugins/attachments';
 export async function startReplicationUpstream<RxDocType, CheckpointType>(
     state: RxStorageInstanceReplicationState<RxDocType>
 ) {
-
-    const hasAttachments = !!state.input.forkInstance.schema.attachments;
-
     if (
         state.input.initialCheckpoint &&
         state.input.initialCheckpoint.upstream
@@ -257,7 +254,7 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
                 docIds.map(async (docId) => {
                     const fullDocData: RxDocumentData<RxDocType> = upDocsById[docId];
                     forkStateById[docId] = fullDocData;
-                    const docData: WithDeleted<RxDocType> = writeDocToDocState(fullDocData, hasAttachments);
+                    const docData: WithDeleted<RxDocType> = writeDocToDocState(fullDocData, state.hasAttachments);
                     const assumedMasterDoc = assumedMasterState[docId];
 
                     /**
@@ -325,7 +322,7 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
                 writeBatches.map(async (writeBatch) => {
 
                     // enhance docs with attachments
-                    if (hasAttachments) {
+                    if (state.hasAttachments) {
                         await Promise.all(
                             writeBatch.map(async (row) => {
                                 row.newDocumentState = await fillWriteDataForAttachmentsChange(
@@ -358,7 +355,7 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
 
             if (useWriteRowsToMeta.length > 0) {
                 await state.input.metaInstance.bulkWrite(
-                    useWriteRowsToMeta,
+                    stripAttachmentsDataFromMetaWriteRows(state, useWriteRowsToMeta),
                     'replication-up-write-meta'
                 );
                 // TODO what happens when we have conflicts here?
@@ -435,7 +432,7 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
                         });
                     if (useMetaWrites.length > 0) {
                         await state.input.metaInstance.bulkWrite(
-                            useMetaWrites,
+                            stripAttachmentsDataFromMetaWriteRows(state, useMetaWrites),
                             'replication-up-write-conflict-meta'
                         );
                     }

@@ -800,7 +800,7 @@ describe('replication.test.js', () => {
 
             // add more attachments to docs that already have attachments
             await localDocs[0].getLatest().putAttachment(getRandomAttachment('fork2'));
-            await remoteDocs[0].getLatest().putAttachment(getRandomAttachment('master1'));
+            await remoteDocs[0].getLatest().putAttachment(getRandomAttachment('master2'));
 
             await replicationState.awaitInSync();
             await ensureEqualState(localCollection, remoteCollection);
@@ -812,6 +812,30 @@ describe('replication.test.js', () => {
             await replicationState.awaitInSync();
             await ensureEqualState(localCollection, remoteCollection);
 
+
+            /**
+             * The meta instance should not contain attachments data
+             */
+            const metaStorage = ensureNotFalsy(replicationState.metaInstance);
+            const preparedQuery = config.storage.getStorage().statics.prepareQuery(
+                metaStorage.schema,
+                normalizeMangoQuery(
+                    metaStorage.schema,
+                    {}
+                )
+            );
+            const result = await metaStorage.query(preparedQuery);
+            const metaDocs = result.documents;
+            metaDocs.forEach(doc => {
+                if (doc.isCheckpoint !== '1' && doc.data._attachments) {
+                    Object.values(doc.data._attachments).forEach((attachment) => {
+                        console.dir(attachment);
+                        if ((attachment as RxAttachmentCreator).data) {
+                            throw new Error('meta doc contains attachment data');
+                        }
+                    });
+                }
+            });
 
             await localCollection.database.destroy();
             await remoteCollection.database.destroy();
