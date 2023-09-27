@@ -27,7 +27,12 @@ import {
     getComposedPrimaryKeyOfDocumentData,
     setCheckpoint,
     deepEqual,
-    RxJsonSchema
+    RxJsonSchema,
+    RxDocumentWriteData,
+    createBlob,
+    blobToBase64String,
+    RxAttachmentWriteData,
+    RxAttachmentCreator
 } from '../../plugins/core';
 
 
@@ -36,12 +41,13 @@ import {
     RX_LOCAL_DOCUMENT_SCHEMA
 } from '../../plugins/local-documents';
 import * as schemas from '../helper/schemas';
-
+import * as humansCollection from '../helper/humans-collection';
 import {
     clone,
     wait,
     waitUntil,
-    randomBoolean
+    randomBoolean,
+    randomString
 } from 'async-test-util';
 import { HumanDocumentType } from '../helper/schemas';
 import {
@@ -69,7 +75,6 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
         input: RxConflictHandlerInput<HumanDocumentType>,
         context: string
     ) => {
-
         if (deepEqual(input.newDocumentState, input.realMasterState)) {
             return Promise.resolve({
                 isEqual: true
@@ -113,46 +118,75 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
             throw new Error('equal age ' + ageA + ' ctxt: ' + context);
         }
     };
-    function getDocData(partial: Partial<HumanDocumentType> = {}): RxDocumentData<HumanDocumentType> {
+    function getDocData(partial: Partial<RxDocumentData<HumanDocumentType>> = {}): RxDocumentData<HumanDocumentType> {
         const docData = Object.assign(
             schemaObjects.human(),
             partial
         );
-        const withMeta = Object.assign(
+        const withMeta: RxDocumentData<HumanDocumentType> = Object.assign(
             {
                 _deleted: false,
-                _attachments: {},
                 _meta: {
                     lwt: now()
                 },
-                _rev: ''
+                _rev: '',
+                _attachments: partial._attachments ? partial._attachments : {}
             },
             docData
         );
         withMeta._rev = createRevision(randomCouchString(10));
         return withMeta;
     }
+    async function getAttachmentWriteData(): Promise<RxAttachmentWriteData> {
+        const attachmentData = randomCouchString(20);
+        const dataBlob = createBlob(attachmentData, 'text/plain');
+        const dataString = await blobToBase64String(dataBlob);
+        return {
+            data: dataString,
+            length: attachmentData.length,
+            type: 'text/plain',
+            digest: await defaultHashSha256(dataString)
+        };
+    }
     async function createRxStorageInstance(
         documentAmount: number = 0,
         databaseName: string = randomCouchString(12),
-        collectionName: string = randomCouchString(12)
+        collectionName: string = randomCouchString(12),
+        attachments = false
     ): Promise<RxStorageInstance<HumanDocumentType, any, any>> {
+
+
+        const schema: RxJsonSchema<HumanDocumentType> = clone(schemas.human);
+        if (attachments) {
+            schema.attachments = {};
+        }
 
         const storageInstance = await config.storage.getStorage().createStorageInstance<HumanDocumentType>({
             databaseInstanceToken: randomCouchString(10),
             databaseName,
             collectionName,
-            schema: fillWithDefaultSettings(schemas.human),
+            schema: fillWithDefaultSettings(schema),
             options: {},
             multiInstance: true,
             devMode: true
         });
 
         if (documentAmount > 0) {
-            await storageInstance.bulkWrite(
+            const writeRows = await Promise.all(
                 new Array(documentAmount)
                     .fill(0)
-                    .map(() => ({ document: getDocData() })),
+                    .map(async () => {
+                        const document: RxDocumentWriteData<HumanDocumentType> = getDocData();
+                        if (attachments) {
+                            document._attachments = {
+                                [randomCouchString(5) + '.txt']: await getAttachmentWriteData()
+                            };
+                        }
+                        return { document };
+                    })
+            );
+            await storageInstance.bulkWrite(
+                writeRows,
                 testContext
             );
         }
@@ -986,6 +1020,105 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
 
 
             cleanUp(replicationState, masterInstance);
+        });
+    });
+    describe('attachment replication', () => {
+        it('push-only: should replicate the attachments to master', async () => {
+            const masterInstance = await createRxStorageInstance(0, undefined, undefined, true);
+            const forkInstance = await createRxStorageInstance(1, undefined, undefined, true);
+            const metaInstance = await createMetaInstance(forkInstance.schema);
+
+
+            const replicationState = replicateRxStorageInstance({
+                identifier: randomCouchString(10),
+                replicationHandler: rxStorageInstanceToReplicationHandler(masterInstance, THROWING_CONFLICT_HANDLER, randomCouchString(10)),
+                forkInstance,
+                metaInstance,
+                pullBatchSize: 100,
+                pushBatchSize: 100,
+                conflictHandler: THROWING_CONFLICT_HANDLER,
+                hashFunction: defaultHashSha256
+            });
+            await awaitRxStorageReplicationFirstInSync(replicationState);
+            await ensureEqualState(masterInstance, forkInstance);
+
+            cleanUp(replicationState, masterInstance);
+        });
+        it('pull-only: should replicate the attachments to fork', async () => {
+            const masterInstance = await createRxStorageInstance(1, undefined, undefined, true);
+            const forkInstance = await createRxStorageInstance(0, undefined, undefined, true);
+            const metaInstance = await createMetaInstance(forkInstance.schema);
+
+            const replicationState = replicateRxStorageInstance({
+                identifier: randomCouchString(10),
+                replicationHandler: rxStorageInstanceToReplicationHandler(masterInstance, THROWING_CONFLICT_HANDLER, randomCouchString(10)),
+                forkInstance,
+                metaInstance,
+                pullBatchSize: 100,
+                pushBatchSize: 100,
+                conflictHandler: THROWING_CONFLICT_HANDLER,
+                hashFunction: defaultHashSha256
+            });
+            await awaitRxStorageReplicationFirstInSync(replicationState);
+            await ensureEqualState(masterInstance, forkInstance);
+
+            cleanUp(replicationState, masterInstance);
+        });
+
+        /**
+         * Here we use a RxDatabase insteaf of the plain RxStorageInstance.
+         * This makes handling attachment easier
+         */
+        it('attachments replication: up and down with streaming', async () => {
+            const forkCollection = await humansCollection.createAttachments(5);
+            const masterCollection = await humansCollection.createAttachments(5);
+
+            const forkInstance = forkCollection.storageInstance.originalStorageInstance;
+            const masterInstance = masterCollection.storageInstance.originalStorageInstance;
+            const metaInstance = await createMetaInstance(forkInstance.schema);
+
+            const replicationState = replicateRxStorageInstance({
+                identifier: randomCouchString(10),
+                replicationHandler: rxStorageInstanceToReplicationHandler(
+                    masterInstance,
+                    THROWING_CONFLICT_HANDLER,
+                    randomCouchString(10)
+                ),
+                forkInstance,
+                metaInstance,
+                pullBatchSize: 100,
+                pushBatchSize: 100,
+                conflictHandler: THROWING_CONFLICT_HANDLER,
+                hashFunction: defaultHashSha256
+            });
+
+            // const forkDocs = await forkCollection.find().exec();
+            // const masterDocs = await masterCollection.find().exec();
+            // function getRandomAttachment(): RxAttachmentCreator {
+            //     const attachmentData = randomCouchString(20);
+            //     const dataBlob = createBlob(attachmentData, 'text/plain');
+            //     return {
+            //         id: randomString(10),
+            //         data: dataBlob,
+            //         type: 'text/plain'
+            //     };
+            // }
+
+            // await forkDocs[4].getLatest().putAttachment(getRandomAttachment());
+            // await masterDocs[4].getLatest().putAttachment(getRandomAttachment());
+
+            // await Promise.all([
+            //     forkDocs[2].getLatest().putAttachment(getRandomAttachment()),
+            //     forkDocs[3].getLatest().putAttachment(getRandomAttachment()),
+            //     masterDocs[2].getLatest().putAttachment(getRandomAttachment()),
+            //     masterDocs[3].getLatest().putAttachment(getRandomAttachment())
+            // ]);
+
+            await awaitRxStorageReplicationFirstInSync(replicationState);
+            await ensureEqualState(masterInstance, forkInstance);
+
+            forkCollection.database.destroy();
+            masterCollection.database.destroy();
         });
     });
     describe('stability', () => {

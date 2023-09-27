@@ -10,9 +10,6 @@ import {
     getBlobSize,
     PROMISE_RESOLVE_VOID
 } from '../../plugins/utils';
-import {
-    newRxError
-} from '../../rx-error';
 import type {
     RxDocument,
     RxPlugin,
@@ -23,25 +20,9 @@ import type {
     RxAttachmentCreator,
     RxAttachmentWriteData
 } from '../../types';
+import { assignMethodsToAttachment, ensureSchemaSupportsAttachments } from './attachments-utils';
 
-function ensureSchemaSupportsAttachments(doc: any) {
-    const schemaJson = doc.collection.schema.jsonSchema;
-    if (!schemaJson.attachments) {
-        throw newRxError('AT1', {
-            link: 'https://pubkey.github.io/rxdb/rx-attachment.html'
-        });
-    }
-}
 
-const _assignMethodsToAttachment = function (attachment: any) {
-    Object
-        .entries(attachment.doc.collection.attachments)
-        .forEach(([funName, fun]) => {
-            Object.defineProperty(attachment, funName, {
-                get: () => (fun as any).bind(attachment)
-            });
-        });
-};
 
 /**
  * an RxAttachment is basically just the attachment-stub
@@ -66,7 +47,7 @@ export class RxAttachment {
         this.length = length;
         this.digest = digest;
 
-        _assignMethodsToAttachment(this);
+        assignMethodsToAttachment(this);
     }
 
     remove(): Promise<void> {
@@ -115,6 +96,8 @@ export function fromStorageInstanceResult<RxDocType>(
         digest: attachmentData.digest
     });
 }
+
+
 
 export async function putAttachment<RxDocType>(
     this: RxDocument<RxDocType>,
@@ -281,3 +264,6 @@ export const RxDBAttachmentsPlugin: RxPlugin = {
         }
     }
 };
+
+
+export * from './attachments-utils';

@@ -12,7 +12,8 @@ import type {
     RxDocumentData,
     ById,
     WithDeleted,
-    DocumentsWithCheckpoint
+    DocumentsWithCheckpoint,
+    WithDeletedAndAttachments
 } from '../types';
 import {
     appendToArray,
@@ -46,6 +47,7 @@ import {
 export async function startReplicationDownstream<RxDocType, CheckpointType = any>(
     state: RxStorageInstanceReplicationState<RxDocType>
 ) {
+    const hasAttachments = !!state.input.forkInstance.schema.attachments;
     if (
         state.input.initialCheckpoint &&
         state.input.initialCheckpoint.downstream
@@ -171,6 +173,9 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
                 state.input.pullBatchSize
             );
 
+            console.log('DOWNSTREAM masterChangesSince result:');
+            console.dir(downResult);
+
             if (downResult.documents.length === 0) {
                 break;
             }
@@ -254,7 +259,7 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
          * with all open documents from nonPersistedFromMaster.
          */
         persistenceQueue = persistenceQueue.then(() => {
-            const downDocsById: ById<WithDeleted<RxDocType>> = nonPersistedFromMaster.docs;
+            const downDocsById: ById<WithDeletedAndAttachments<RxDocType>> = nonPersistedFromMaster.docs;
             nonPersistedFromMaster.docs = {};
             const useCheckpoint = nonPersistedFromMaster.checkpoint;
             const docIds = Object.keys(downDocsById);
@@ -286,7 +291,10 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
                 return Promise.all(
                     docIds.map(async (docId) => {
                         const forkStateFullDoc: RxDocumentData<RxDocType> | undefined = currentForkState.get(docId);
-                        const forkStateDocData: WithDeleted<RxDocType> | undefined = forkStateFullDoc ? writeDocToDocState(forkStateFullDoc) : undefined;
+                        const forkStateDocData: WithDeletedAndAttachments<RxDocType> | undefined = forkStateFullDoc
+                            ? writeDocToDocState(forkStateFullDoc, hasAttachments)
+                            : undefined
+                            ;
                         const masterState = downDocsById[docId];
                         const assumedMaster = assumedMasterState[docId];
 
@@ -387,12 +395,12 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
                             masterState,
                             forkStateFullDoc ? {
                                 _meta: flatClone(forkStateFullDoc._meta),
-                                _attachments: {},
+                                _attachments: hasAttachments && masterState._attachments ? masterState._attachments : {},
                                 _rev: getDefaultRevision()
                             } : {
                                 _meta: getDefaultRxDocumentMeta(),
                                 _rev: getDefaultRevision(),
-                                _attachments: {}
+                                _attachments: hasAttachments && masterState._attachments ? masterState._attachments : {}
                             });
                         /**
                          * If the remote works with revisions,

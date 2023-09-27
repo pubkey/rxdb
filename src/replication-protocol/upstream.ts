@@ -15,6 +15,7 @@ import type {
 import {
     appendToArray,
     batchArray,
+    clone,
     ensureNotFalsy,
     parseRevision,
     PROMISE_RESOLVE_FALSE
@@ -29,6 +30,7 @@ import {
     getAssumedMasterState,
     getMetaWriteRow
 } from './meta-instance';
+import { fillWriteDataForAttachmentsChange } from '../plugins/attachments';
 
 /**
  * Writes all document changes from the fork to the master.
@@ -41,6 +43,8 @@ import {
 export async function startReplicationUpstream<RxDocType, CheckpointType>(
     state: RxStorageInstanceReplicationState<RxDocType>
 ) {
+
+    const hasAttachments = !!state.input.forkInstance.schema.attachments;
 
     if (
         state.input.initialCheckpoint &&
@@ -253,7 +257,7 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
                 docIds.map(async (docId) => {
                     const fullDocData: RxDocumentData<RxDocType> = upDocsById[docId];
                     forkStateById[docId] = fullDocData;
-                    const docData: WithDeleted<RxDocType> = writeDocToDocState(fullDocData);
+                    const docData: WithDeleted<RxDocType> = writeDocToDocState(fullDocData, hasAttachments);
                     const assumedMasterDoc = assumedMasterState[docId];
 
                     /**
@@ -319,6 +323,23 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
             const writeBatches = batchArray(writeRowsArray, state.input.pushBatchSize);
             await Promise.all(
                 writeBatches.map(async (writeBatch) => {
+
+                    // enhance docs with attachments
+                    if (hasAttachments) {
+                        await Promise.all(
+                            writeBatch.map(async (row) => {
+                                row.newDocumentState = await fillWriteDataForAttachmentsChange(
+                                    state.primaryPath,
+                                    state.input.forkInstance,
+                                    clone(row.newDocumentState),
+                                    row.assumedMasterState
+                                );
+                            })
+                        );
+                    }
+                    console.log('upstream write batches:');
+                    console.dir(writeBatch);
+
                     const masterWriteResult = await replicationHandler.masterWrite(writeBatch);
                     masterWriteResult.forEach(conflictDoc => {
                         const id = (conflictDoc as any)[state.primaryPath];
@@ -328,9 +349,7 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
                 })
             );
 
-
             const useWriteRowsToMeta: BulkWriteRow<RxStorageReplicationMeta>[] = [];
-
 
             writeRowsToMasterIds.forEach(docId => {
                 if (!conflictIds.has(docId)) {
