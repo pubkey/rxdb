@@ -127,7 +127,8 @@ describe('replication.test.js', () => {
     }
     async function ensureEqualState<RxDocType>(
         collectionA: RxCollection<RxDocType>,
-        collectionB: RxCollection<RxDocType>
+        collectionB: RxCollection<RxDocType>,
+        context?: string
     ) {
         const [
             docsA,
@@ -151,7 +152,7 @@ describe('replication.test.js', () => {
                     cleanDocToCompare(docB)
                 );
             } catch (err) {
-                console.log('## ERROR: State not equal');
+                console.log('## ERROR: State not equal (context: "' + context + '")');
                 console.log(JSON.stringify(docA, null, 4));
                 console.log(JSON.stringify(docB, null, 4));
                 throw new Error('STATE not equal');
@@ -782,7 +783,7 @@ describe('replication.test.js', () => {
             }
 
             await replicationState.awaitInitialReplication();
-            await ensureEqualState(localCollection, remoteCollection);
+            await ensureEqualState(localCollection, remoteCollection, 'first sync');
 
             // add attachments
             await remoteDocs[0].getLatest().putAttachment(getRandomAttachment('master1'));
@@ -796,21 +797,21 @@ describe('replication.test.js', () => {
             ]);
 
             await replicationState.awaitInSync();
-            await ensureEqualState(localCollection, remoteCollection);
+            await ensureEqualState(localCollection, remoteCollection, 'after adding');
 
             // add more attachments to docs that already have attachments
             await localDocs[0].getLatest().putAttachment(getRandomAttachment('fork2'));
             await remoteDocs[0].getLatest().putAttachment(getRandomAttachment('master2'));
 
             await replicationState.awaitInSync();
-            await ensureEqualState(localCollection, remoteCollection);
+            await ensureEqualState(localCollection, remoteCollection, 'after add more');
 
             // overwrite attachments
             await localDocs[0].getLatest().putAttachment(getRandomAttachment('fork1', 5));
             await remoteDocs[0].getLatest().putAttachment(getRandomAttachment('master1', 5));
 
             await replicationState.awaitInSync();
-            await ensureEqualState(localCollection, remoteCollection);
+            await ensureEqualState(localCollection, remoteCollection, 'after overwrite');
 
 
             /**
