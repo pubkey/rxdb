@@ -31,8 +31,7 @@ import {
     RxDocumentWriteData,
     createBlob,
     blobToBase64String,
-    RxAttachmentWriteData,
-    RxAttachmentCreator
+    RxAttachmentWriteData
 } from '../../plugins/core';
 
 
@@ -46,8 +45,7 @@ import {
     clone,
     wait,
     waitUntil,
-    randomBoolean,
-    randomString
+    randomBoolean
 } from 'async-test-util';
 import { HumanDocumentType } from '../helper/schemas';
 import {
@@ -1120,8 +1118,11 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
             await awaitRxStorageReplicationFirstInSync(replicationState);
             await ensureEqualState(masterInstance, forkInstance);
 
+
+            cancelRxStorageReplication(replicationState);
             forkCollection.database.destroy();
             masterCollection.database.destroy();
+            metaInstance.close();
         });
     });
     describe('stability', () => {
