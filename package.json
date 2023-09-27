@@ -507,7 +507,7 @@
     "@types/core-js": "2.5.6",
     "@types/cors": "2.8.14",
     "@types/crypto-js": "4.1.2",
-    "@types/mocha": "10.0.1",
+    "@types/mocha": "10.0.2",
     "@types/pako": "2.0.1",
     "@types/request": "2.48.8",
     "@types/request-promise-native": "1.0.19",
