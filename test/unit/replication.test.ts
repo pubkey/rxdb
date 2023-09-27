@@ -803,6 +803,7 @@ describe('replication.test.js', () => {
             await localDocs[0].getLatest().putAttachment(getRandomAttachment('fork2'));
             await remoteDocs[0].getLatest().putAttachment(getRandomAttachment('master2'));
 
+            await wait(100);
             await replicationState.awaitInSync();
             await ensureEqualState(localCollection, remoteCollection, 'after add more');
 
@@ -810,6 +811,7 @@ describe('replication.test.js', () => {
             await localDocs[0].getLatest().putAttachment(getRandomAttachment('fork1', 5));
             await remoteDocs[0].getLatest().putAttachment(getRandomAttachment('master1', 5));
 
+            await wait(100);
             await replicationState.awaitInSync();
             await ensureEqualState(localCollection, remoteCollection, 'after overwrite');
 
@@ -830,7 +832,6 @@ describe('replication.test.js', () => {
             metaDocs.forEach(doc => {
                 if (doc.isCheckpoint !== '1' && doc.data._attachments) {
                     Object.values(doc.data._attachments).forEach((attachment) => {
-                        console.dir(attachment);
                         if ((attachment as RxAttachmentCreator).data) {
                             throw new Error('meta doc contains attachment data');
                         }

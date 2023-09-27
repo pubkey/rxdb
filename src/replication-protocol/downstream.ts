@@ -353,8 +353,7 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
                                     newDocumentState: forkStateDocData
                                 },
                                 'downstream-check-if-equal-1'
-                            )
-                                .then(r => r.isEqual);
+                            ).then(r => r.isEqual);
                         if (
                             forkStateDocData &&
                             areStatesExactlyEqual
