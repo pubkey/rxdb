@@ -17,7 +17,7 @@ on:
 # because github will start them likely earlier
 jobs:
   core:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
       - name: Set node version
@@ -48,7 +48,7 @@ jobs:
 
   # run the node tests for the LokiJS RxStorage
   storage-lokijs:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
       - name: Set node version
@@ -92,7 +92,7 @@ jobs:
       - run: npm run test:performance:lokijs:node
 
   storage-memory:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
       - name: Set node version
@@ -146,7 +146,7 @@ jobs:
           npm run test
 
   storage-remote:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
       - name: Set node version
@@ -180,7 +180,7 @@ jobs:
           run: npm run test:browser:remote
 
   storage-dexie:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
       - name: Set node version
@@ -223,7 +223,7 @@ jobs:
           run: npm run test:performance:dexie
 
   storage-foundationdb:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
       - name: Set node version
@@ -263,7 +263,7 @@ jobs:
       - run: npm run test:performance:foundationdb
 
   storage-mongodb:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
    
     steps:
       - uses: actions/checkout@v4
@@ -353,7 +353,7 @@ jobs:
         run: npm run build:capacitor
 
   test-builds:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
       - name: Set node version
@@ -386,7 +386,7 @@ jobs:
       - run: npm run docs:landingpage:build
 
   test-code-style:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
       - name: Set node version
@@ -449,7 +449,7 @@ jobs:
           path: test
 
   example-electron:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
       - name: Set node version
@@ -477,7 +477,7 @@ jobs:
           run: npm run test
 
   example-react:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
       - name: Set node version
@@ -505,7 +505,7 @@ jobs:
           run: npm run test:build
 
   example-react-native-expo:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
       - name: Set node version
@@ -530,7 +530,7 @@ jobs:
           yarn test:bundle
 
   example-supabase:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
       - name: Set node version
@@ -587,7 +587,7 @@ jobs:
           run: npm run test:dexie
 
   example-vue:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
       - name: install dependencies
@@ -616,7 +616,7 @@ jobs:
           run: npm run test
 
   example-svelte:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
       - name: install dependencies
@@ -644,7 +644,7 @@ jobs:
           run: npm run test
 
   vite-vanilla-ts:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
       - name: install dependencies
@@ -671,7 +671,7 @@ jobs:
           run: npm run test
 
   example-graphql:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
       - name: install dependencies
@@ -705,7 +705,7 @@ jobs:
           run: npm run test:dexie
 
   example-flutter:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
       - name: Set node version
@@ -753,7 +753,7 @@ jobs:
             flutter test integration_test/basics_test.dart -d linux
 
   test-tutorials:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
       - name: Set node version
@@ -771,7 +771,7 @@ jobs:
           npm test
 
   test-others:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
       - name: Set node version
