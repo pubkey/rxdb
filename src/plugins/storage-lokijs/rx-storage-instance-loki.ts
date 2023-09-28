@@ -101,6 +101,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
                 close: this.close.bind(this),
                 query: this.query.bind(this),
                 count: this.count.bind(this),
+                info: this.info.bind(this),
                 findDocumentsById: this.findDocumentsById.bind(this),
                 collectionName: this.collectionName,
                 databaseName: this.databaseName,
