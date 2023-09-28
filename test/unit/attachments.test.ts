@@ -1,5 +1,8 @@
 import assert from 'assert';
-import config, { getEncryptedStorage, getPassword } from './config';
+import config, {
+    getEncryptedStorage,
+    getPassword
+} from './config';
 import AsyncTestUtil from 'async-test-util';
 
 import * as humansCollection from '../helper/humans-collection';

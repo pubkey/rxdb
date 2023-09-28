@@ -54,11 +54,13 @@ const myCollection = await myDatabase.addCollections({
 Adds an attachment to a `RxDocument`. Returns a Promise with the new attachment.
 
 ```javascript
+import { createBlob } from 'rxdb';
+
 const attachment = await myDocument.putAttachment(
     {
-        id,     // (string) name of the attachment like 'cat.jpg'
-        data,   // (string|Blob) data of the attachment
-        type    // (string) type of the attachment-data like 'image/jpeg'
+        id: 'cat.txt',     // (string) name of the attachment
+        data: createBlob('meowmeow', 'text/plain'),   // (string|Blob) data of the attachment
+        type: 'text/plain'    // (string) type of the attachment-data like 'image/jpeg'
     }
 );
 ```

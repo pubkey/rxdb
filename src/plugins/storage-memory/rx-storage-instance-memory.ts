@@ -29,7 +29,6 @@ import type {
 } from '../../types';
 import {
     ensureNotFalsy,
-    getFromMapOrThrow,
     lastOfArray,
     now,
     PROMISE_RESOLVE_TRUE,
@@ -117,6 +116,19 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
             const doc = writeRow.document;
             success.push(doc);
         }
+
+        this.internals.ensurePersistenceTask = categorized;
+        if (!this.internals.ensurePersistenceIdlePromise) {
+            this.internals.ensurePersistenceIdlePromise = requestIdlePromise(1000).then(() => {
+                this.internals.ensurePersistenceIdlePromise = undefined;
+                this.ensurePersistence();
+            });
+        }
+
+        /**
+         * Important: The events must be emitted AFTER the persistence
+         * task has been added.
+         */
         if (categorized.eventBulk.events.length > 0) {
             const lastState = ensureNotFalsy(categorized.newestRow).document;
             categorized.eventBulk.checkpoint = {
@@ -126,13 +138,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
             internals.changes$.next(categorized.eventBulk);
         }
 
-        this.internals.ensurePersistenceTask = categorized;
-        if (!this.internals.ensurePersistenceIdlePromise) {
-            this.internals.ensurePersistenceIdlePromise = requestIdlePromise(1000).then(() => {
-                this.internals.ensurePersistenceIdlePromise = undefined;
-                this.ensurePersistence();
-            });
-        }
+
 
         return Promise.resolve({ success, error });
     }
@@ -461,15 +467,15 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
     ): Promise<string> {
         this.ensurePersistence();
         ensureNotRemoved(this);
-        const data = getFromMapOrThrow(
-            this.internals.attachments,
-            attachmentMapKey(documentId, attachmentId)
-        );
+        const key = attachmentMapKey(documentId, attachmentId);
+        const data = this.internals.attachments.get(key);
+
         if (
             !digest ||
+            !data ||
             data.digest !== digest
         ) {
-            throw new Error('attachment does not exist');
+            throw new Error('attachment does not exist: ' + key);
         }
         return Promise.resolve(data.writeData.data);
     }
