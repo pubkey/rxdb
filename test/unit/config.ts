@@ -10,7 +10,9 @@ import parallel from 'mocha.parallel';
 import { getRxStorageLoki } from '../../plugins/storage-lokijs';
 import {
     randomCouchString,
-    RxStorage, RxStorageDefaultStatics, RxTestStorage
+    RxStorage,
+    RxStorageDefaultStatics,
+    RxTestStorage
 } from '../../plugins/core';
 import {
     getRxStorageDexie

@@ -1,6 +1,6 @@
 import type { LeaderElector } from 'broadcast-channel';
 import type {
-    Collection
+    Collection as LokiCollection
 } from 'lokijs';
 import { AddReturn } from 'unload';
 import { LokiSaveQueue } from '../../plugins/storage-lokijs/loki-save-queue';
@@ -47,7 +47,7 @@ export type LokiDatabaseState = {
 
     // all known collections of the database
     collections: {
-        [collectionName: string]: Collection;
+        [collectionName: string]: LokiCollection;
     };
 
     /**

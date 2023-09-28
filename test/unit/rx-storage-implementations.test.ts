@@ -1802,6 +1802,59 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 storageInstance.close();
             });
         });
+        describe('.info()', () => {
+            it('should have the correct total count', async () => {
+                const schema = getTestDataSchema();
+                const storageInstance = await config.storage
+                    .getStorage()
+                    .createStorageInstance<TestDocType>({
+                        databaseInstanceToken: randomCouchString(10),
+                        databaseName: randomCouchString(12),
+                        collectionName: randomCouchString(12),
+                        schema,
+                        options: {},
+                        multiInstance: false,
+                        devMode: true
+                    });
+                async function ensureCountIs(nr: number) {
+                    const result = await storageInstance.info();
+                    assert.strictEqual(result.totalCount, nr);
+                }
+
+                await ensureCountIs(0);
+                await storageInstance.bulkWrite([{ document: getWriteData() }], testContext);
+                await ensureCountIs(1);
+
+                const writeData = getWriteData();
+                const insertResult = await storageInstance.bulkWrite([{ document: writeData }], testContext);
+                await ensureCountIs(2);
+
+                // DELETE
+                const previous = insertResult.success[0];
+                await storageInstance.bulkWrite(
+                    [{
+                        previous,
+                        document: Object.assign({}, writeData, {
+                            _rev: EXAMPLE_REVISION_2,
+                            _deleted: true,
+                            _meta: {
+                                lwt: now()
+                            }
+                        })
+                    }],
+                    testContext
+                );
+
+                /**
+                 * Must still count 2 because totalCount includes _deleted documents
+                 * as long as they did not have been purged by the .cleanup()
+                 */
+                await ensureCountIs(2);
+
+                storageInstance.close();
+            });
+
+        });
         describe('.findDocumentsById()', () => {
             it('should find the documents', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({

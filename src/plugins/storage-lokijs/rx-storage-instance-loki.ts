@@ -33,7 +33,8 @@ import type {
     RxConflictResultionTask,
     RxConflictResultionTaskSolution,
     RxStorageDefaultCheckpoint,
-    RxStorageCountResult
+    RxStorageCountResult,
+    RxStorageInfoResult
 } from '../../types';
 import {
     closeLokiCollections,
@@ -100,6 +101,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
                 close: this.close.bind(this),
                 query: this.query.bind(this),
                 count: this.count.bind(this),
+                info: this.info.bind(this),
                 findDocumentsById: this.findDocumentsById.bind(this),
                 collectionName: this.collectionName,
                 databaseName: this.databaseName,
@@ -260,6 +262,17 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
     }
     getAttachmentData(_documentId: string, _attachmentId: string, _digest: string): Promise<string> {
         throw new Error('Attachments are not implemented in the lokijs RxStorage. Make a pull request.');
+    }
+
+
+    async info(): Promise<RxStorageInfoResult> {
+        const localState = await mustUseLocalState(this);
+        if (!localState) {
+            return requestRemoteInstance(this, 'info', []);
+        }
+        return {
+            totalCount: localState.collection.count()
+        };
     }
 
 

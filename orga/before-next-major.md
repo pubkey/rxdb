@@ -75,6 +75,12 @@ It is [faster](https://measurethat.net/Benchmarks/Show/6371/0/sha256-js) and mor
 ## Rename replication-p2p to replication-webrtc [DONE]
 
 
+## RxStorage: Add RxStorage.info() [DONE]
+
+Having an .info() method helps in debugging stuff and sending reports on problems etc.
+Also used to count total documents etc for the state of the migration/replication.
+Can be augmented in the future.
+
 
 ## Skip responding full document data on bulkWrites (only in all happy case)
 

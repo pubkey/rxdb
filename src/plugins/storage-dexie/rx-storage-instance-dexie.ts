@@ -27,7 +27,8 @@ import type {
     RxStorageDefaultCheckpoint,
     CategorizeBulkWriteRowsOutput,
     RxStorageCountResult,
-    DefaultPreparedQuery
+    DefaultPreparedQuery,
+    RxStorageInfoResult
 } from '../../types';
 import {
     DexieSettings,
@@ -246,6 +247,27 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
                 mode: 'slow'
             };
         }
+    }
+
+    async info(): Promise<RxStorageInfoResult> {
+        const state = await this.internals;
+        const ret: RxStorageInfoResult = {
+            totalCount: -1
+        };
+        await state.dexieDb.transaction(
+            'r',
+            state.dexieTable,
+            state.dexieDeletedTable,
+            async (_dexieTx) => {
+                const [nonDeleted, deleted] = await Promise.all([
+                    state.dexieTable.count(),
+                    state.dexieDeletedTable.count()
+                ]);
+                ret.totalCount = nonDeleted + deleted;
+            }
+        );
+
+        return ret;
     }
 
     async getChangedDocumentsSince(

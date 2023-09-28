@@ -725,6 +725,11 @@ export function getWrappedStorageInstance<
                 () => storageInstance.count(preparedQuery)
             );
         },
+        info() {
+            return database.lockedRun(
+                () => storageInstance.info()
+            );
+        },
         findDocumentsById(ids, deleted) {
             return database.lockedRun(
                 () => storageInstance.findDocumentsById(ids, deleted)
