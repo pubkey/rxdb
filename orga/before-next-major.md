@@ -78,9 +78,12 @@ Most "normal" users do not need premium access so we should name it "RxDB Enterp
 
 
 
-## RxStorage: Add RxStorage.info() which also calls parents
+## RxStorage: Add RxStorage.info() [DONE]
 
-HAving an .info() method helps in debugging stuff and sending reports on problems etc.
+Having an .info() method helps in debugging stuff and sending reports on problems etc.
+Also used to count total documents etc for the state of the migration/replication.
+Can be augmented in the future.
+
 
 ## Skip responding full document data on bulkWrites (only in all happy case)
 

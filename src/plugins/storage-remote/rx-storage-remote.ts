@@ -16,6 +16,7 @@ import type {
     RxStorageBulkWriteResponse,
     RxStorageChangeEvent,
     RxStorageCountResult,
+    RxStorageInfoResult,
     RxStorageInstance,
     RxStorageInstanceCreationParams,
     RxStorageQueryResult,
@@ -239,6 +240,9 @@ export class RxStorageInstanceRemote<RxDocType> implements RxStorageInstance<RxD
     }
     count(preparedQuery: any): Promise<RxStorageCountResult> {
         return this.requestRemote('count', [preparedQuery]);
+    }
+    info(): Promise<RxStorageInfoResult> {
+        return this.requestRemote('info', []);
     }
     getAttachmentData(documentId: string, attachmentId: string, digest: string): Promise<string> {
         return this.requestRemote('getAttachmentData', [documentId, attachmentId, digest]);

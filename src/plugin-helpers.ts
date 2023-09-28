@@ -193,6 +193,7 @@ export function wrapRxStorageInstance<RxDocType>(
         schema: instance.schema,
         collectionName: instance.collectionName,
         count: instance.count.bind(instance),
+        info: instance.info.bind(instance),
         remove: instance.remove.bind(instance),
         originalStorageInstance: instance,
         bulkWrite: async (
