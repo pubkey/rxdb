@@ -1,5 +1,9 @@
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
-import { RxConflictHandler, RxConflictHandlerInput, RxConflictHandlerOutput } from './conflict-handling';
+import {
+    RxConflictHandler,
+    RxConflictHandlerInput,
+    RxConflictHandlerOutput
+} from './conflict-handling';
 import { RxError, RxTypeError } from './rx-error';
 import {
     BulkWriteRow,
