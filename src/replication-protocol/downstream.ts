@@ -12,7 +12,8 @@ import type {
     RxDocumentData,
     ById,
     WithDeleted,
-    DocumentsWithCheckpoint
+    DocumentsWithCheckpoint,
+    WithDeletedAndAttachments
 } from '../types';
 import {
     appendToArray,
@@ -22,14 +23,13 @@ import {
     getDefaultRevision,
     getDefaultRxDocumentMeta,
     parseRevision,
-    PROMISE_RESOLVE_FALSE,
     PROMISE_RESOLVE_VOID
 } from '../plugins/utils';
 import {
     getLastCheckpointDoc,
     setCheckpoint
 } from './checkpoint';
-import { writeDocToDocState } from './helper';
+import { stripAttachmentsDataFromMetaWriteRows, writeDocToDocState } from './helper';
 import {
     getAssumedMasterState,
     getMetaWriteRow
@@ -254,7 +254,8 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
          * with all open documents from nonPersistedFromMaster.
          */
         persistenceQueue = persistenceQueue.then(() => {
-            const downDocsById: ById<WithDeleted<RxDocType>> = nonPersistedFromMaster.docs;
+
+            const downDocsById: ById<WithDeletedAndAttachments<RxDocType>> = nonPersistedFromMaster.docs;
             nonPersistedFromMaster.docs = {};
             const useCheckpoint = nonPersistedFromMaster.checkpoint;
             const docIds = Object.keys(downDocsById);
@@ -286,7 +287,10 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
                 return Promise.all(
                     docIds.map(async (docId) => {
                         const forkStateFullDoc: RxDocumentData<RxDocType> | undefined = currentForkState.get(docId);
-                        const forkStateDocData: WithDeleted<RxDocType> | undefined = forkStateFullDoc ? writeDocToDocState(forkStateFullDoc) : undefined;
+                        const forkStateDocData: WithDeletedAndAttachments<RxDocType> | undefined = forkStateFullDoc
+                            ? writeDocToDocState(forkStateFullDoc, state.hasAttachments)
+                            : undefined
+                            ;
                         const masterState = downDocsById[docId];
                         const assumedMaster = assumedMasterState[docId];
 
@@ -303,13 +307,12 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
                             return PROMISE_RESOLVE_VOID;
                         }
 
-                        const isAssumedMasterEqualToForkStatePromise = !assumedMaster || !forkStateDocData ?
-                            PROMISE_RESOLVE_FALSE :
-                            state.input.conflictHandler({
+                        let isAssumedMasterEqualToForkState = !assumedMaster || !forkStateDocData ?
+                            false :
+                            await state.input.conflictHandler({
                                 realMasterState: assumedMaster.docData,
                                 newDocumentState: forkStateDocData
                             }, 'downstream-check-if-equal-0').then(r => r.isEqual);
-                        let isAssumedMasterEqualToForkState = await isAssumedMasterEqualToForkStatePromise;
 
                         if (
                             !isAssumedMasterEqualToForkState &&
@@ -342,15 +345,15 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
                             return PROMISE_RESOLVE_VOID;
                         }
 
-
-                        const areStatesExactlyEqualPromise = !forkStateDocData ?
-                            PROMISE_RESOLVE_FALSE :
-                            state.input.conflictHandler({
-                                realMasterState: masterState,
-                                newDocumentState: forkStateDocData
-                            }, 'downstream-check-if-equal-1').then(r => r.isEqual);
-                        const areStatesExactlyEqual = await areStatesExactlyEqualPromise;
-
+                        const areStatesExactlyEqual = !forkStateDocData
+                            ? false
+                            : await state.input.conflictHandler(
+                                {
+                                    realMasterState: masterState,
+                                    newDocumentState: forkStateDocData
+                                },
+                                'downstream-check-if-equal-1'
+                            ).then(r => r.isEqual);
                         if (
                             forkStateDocData &&
                             areStatesExactlyEqual
@@ -387,12 +390,12 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
                             masterState,
                             forkStateFullDoc ? {
                                 _meta: flatClone(forkStateFullDoc._meta),
-                                _attachments: {},
+                                _attachments: state.hasAttachments && masterState._attachments ? masterState._attachments : {},
                                 _rev: getDefaultRevision()
                             } : {
                                 _meta: getDefaultRxDocumentMeta(),
                                 _rev: getDefaultRevision(),
-                                _attachments: {}
+                                _attachments: state.hasAttachments && masterState._attachments ? masterState._attachments : {}
                             });
                         /**
                          * If the remote works with revisions,
@@ -454,7 +457,7 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
             }).then(() => {
                 if (useMetaWriteRows.length > 0) {
                     return state.input.metaInstance.bulkWrite(
-                        useMetaWriteRows,
+                        stripAttachmentsDataFromMetaWriteRows(state, useMetaWriteRows),
                         'replication-down-write-meta'
                     ).then(metaWriteResult => {
                         metaWriteResult.error

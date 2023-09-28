@@ -18,6 +18,10 @@ Also Regular expressions are mutable objects! Which is dangerous.
 We should enforce people using strings as operators instead. Similar to how you cannot use a `Date` object inside of a json document.
 
 
+## Replicate attachments [DONE]
+
+The replication-protocol does now support attachment replication. This clear the path to add the attachment replication to the single RxDB replication plugins.
+
 ## Fix migration+replication
 When the schema is changed a migration runs, the replication plugins will replicate the migrated data. This is mostly not wanted by the user. We should add an option to let the user define what should happen after the migration.
 

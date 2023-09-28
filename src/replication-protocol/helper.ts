@@ -1,24 +1,31 @@
 import type {
+    BulkWriteRow,
     RxDocumentData,
-    WithDeleted
+    RxDocumentWriteData,
+    RxStorageInstanceReplicationState,
+    RxStorageReplicationMeta,
+    WithDeletedAndAttachments
 } from '../types';
 import {
+    clone,
     createRevision,
     flatClone,
     getDefaultRevision,
     now
 } from '../plugins/utils';
+import { stripAttachmentsDataFromDocument } from '../rx-storage-helper';
 
 export function docStateToWriteDoc<RxDocType>(
     databaseInstanceToken: string,
-    docState: WithDeleted<RxDocType>,
+    hasAttachments: boolean,
+    docState: WithDeletedAndAttachments<RxDocType>,
     previous?: RxDocumentData<RxDocType>
-): RxDocumentData<RxDocType> {
-    const docData: RxDocumentData<RxDocType> = Object.assign(
+): RxDocumentWriteData<RxDocType> {
+    const docData: RxDocumentWriteData<RxDocType> = Object.assign(
         {},
         docState,
         {
-            _attachments: {},
+            _attachments: hasAttachments && docState._attachments ? docState._attachments : {},
             _meta: {
                 lwt: now()
             },
@@ -33,11 +40,33 @@ export function docStateToWriteDoc<RxDocType>(
 }
 
 export function writeDocToDocState<RxDocType>(
-    writeDoc: RxDocumentData<RxDocType>
-): WithDeleted<RxDocType> {
+    writeDoc: RxDocumentData<RxDocType>,
+    keepAttachments: boolean
+): WithDeletedAndAttachments<RxDocType> {
     const ret = flatClone(writeDoc);
-    delete (ret as any)._attachments;
+
+    if (!keepAttachments) {
+        delete (ret as any)._attachments;
+    }
     delete (ret as any)._meta;
     delete (ret as any)._rev;
     return ret;
+}
+
+
+export function stripAttachmentsDataFromMetaWriteRows(
+    state: RxStorageInstanceReplicationState<any>,
+    rows: BulkWriteRow<RxStorageReplicationMeta>[]
+): BulkWriteRow<RxStorageReplicationMeta>[] {
+    if (!state.hasAttachments) {
+        return rows;
+    }
+    return rows.map(row => {
+        const document = clone(row.document);
+        document.data = stripAttachmentsDataFromDocument(document.data);
+        return {
+            document,
+            previous: row.previous
+        };
+    });
 }

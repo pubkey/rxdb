@@ -297,7 +297,7 @@ config.parallel('encryption.test.ts', () => {
                 replicationIdentifier: randomCouchString(10),
                 live: true,
                 pull: {
-                    handler: getPullHandler(remoteCollection as any)
+                    handler: getPullHandler<schemaObjects.EncryptedHumanDocumentType>(remoteCollection as any)
                 },
                 push: {
                     handler: getPushHandler(remoteCollection as any)

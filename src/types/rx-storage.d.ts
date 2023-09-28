@@ -68,6 +68,17 @@ export type RxDocumentWriteData<T> = T & Override<RxDocumentData<{}>, {
 export type WithDeleted<DocType> = DocType & {
     _deleted: boolean;
 };
+export type WithDeletedAndAttachments<DocType> = DocType & {
+    _deleted: boolean;
+
+    /**
+     * Here the _attachments might exist
+     * or might not, depending one the use case.
+     */
+    _attachments?: {
+        [attachmentId: string]: RxAttachmentData | RxAttachmentWriteData;
+    };
+};
 
 /**
  * Send to the bulkWrite() method of a storage instance.

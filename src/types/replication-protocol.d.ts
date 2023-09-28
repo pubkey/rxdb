@@ -1,7 +1,12 @@
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
 import { RxConflictHandler, RxConflictHandlerInput, RxConflictHandlerOutput } from './conflict-handling';
 import { RxError, RxTypeError } from './rx-error';
-import { BulkWriteRow, RxDocumentData, WithDeleted } from './rx-storage';
+import {
+    BulkWriteRow,
+    RxDocumentData,
+    WithDeleted,
+    WithDeletedAndAttachments
+} from './rx-storage';
 import type {
     RxStorageInstance
 } from './rx-storage.interface';
@@ -46,13 +51,13 @@ export type RxStorageReplicationMeta = {
 };
 
 export type RxReplicationWriteToMasterRow<RxDocType> = {
-    assumedMasterState?: WithDeleted<RxDocType>;
-    newDocumentState: WithDeleted<RxDocType>;
+    assumedMasterState?: WithDeletedAndAttachments<RxDocType>;
+    newDocumentState: WithDeletedAndAttachments<RxDocType>;
 };
 
 
 export type DocumentsWithCheckpoint<RxDocType, CheckpointType> = {
-    documents: WithDeleted<RxDocType>[];
+    documents: WithDeletedAndAttachments<RxDocType>[];
     checkpoint: CheckpointType;
 };
 
@@ -163,6 +168,7 @@ export type RxStorageInstanceReplicationInput<RxDocType> = {
 export type RxStorageInstanceReplicationState<RxDocType> = {
     // store the primaryPath here for better reuse and performance.
     primaryPath: string;
+    hasAttachments: boolean;
     input: RxStorageInstanceReplicationInput<RxDocType>;
 
     events: {

@@ -394,9 +394,6 @@ config.parallel('local-documents.test.ts', () => {
                 ensureNotFalsy(doc2).deleted$
                     .pipe(
                         map(x => {
-                            console.log('deletd emit:');
-                            console.dir(doc2?._data);
-                            console.dir(x);
                             return x;
                         }),
                         filter(d => d === true),
