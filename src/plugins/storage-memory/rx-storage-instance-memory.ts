@@ -22,6 +22,7 @@ import type {
     RxStorageChangeEvent,
     RxStorageCountResult,
     RxStorageDefaultCheckpoint,
+    RxStorageInfoResult,
     RxStorageInstance,
     RxStorageInstanceCreationParams,
     RxStorageQueryResult,
@@ -360,6 +361,13 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
             count: result.documents.length,
             mode: 'fast'
         };
+    }
+
+    info(): Promise<RxStorageInfoResult> {
+        this.ensurePersistence();
+        return Promise.resolve({
+            totalCount: this.internals.documents.size
+        });
     }
 
     getChangedDocumentsSince(

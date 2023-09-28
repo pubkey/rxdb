@@ -6,6 +6,7 @@ import type {
     RxStorageBulkWriteResponse,
     RxStorageChangeEvent,
     RxStorageCountResult,
+    RxStorageInfoResult,
     RxStorageInstanceCreationParams,
     RxStorageQueryResult
 } from './rx-storage';
@@ -247,6 +248,16 @@ export interface RxStorageInstance<
     count(
         preparedQuery: PreparedQuery<RxDocType>
     ): Promise<RxStorageCountResult>;
+
+
+
+    /**
+     * Returns some info about the storage.
+     * Used in various places. This method is expected to
+     * not really care about performance, so do not
+     * use it in hot paths.
+     */
+    info(): Promise<RxStorageInfoResult>;
 
     /**
      * Returns the plain data of a single attachment.
