@@ -14,7 +14,7 @@ import config from './config';
 import {
     createRxDatabase,
     randomCouchString
-} from '../../';
+} from '../../plugins/core';
 import { RxJsonSchema } from '../../src';
 
 describe('bug-report.test.js', () => {
