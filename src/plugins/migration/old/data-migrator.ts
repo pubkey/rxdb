@@ -36,9 +36,7 @@ import {
 import type {
     RxCollection,
     RxDatabase,
-    MigrationState,
     NumberFunctionMap,
-    OldRxCollection,
     WithAttachmentsData,
     RxJsonSchema,
     RxDocumentData,
@@ -66,6 +64,7 @@ import { normalizeMangoQuery } from '../../../rx-query-helper';
 import { overwritable } from '../../../overwritable';
 import { MIGRATION_DEFAULT_BATCH_SIZE } from './migration-helpers';
 
+type OldRxCollection = any;
 export class DataMigrator {
 
     constructor(
@@ -86,7 +85,7 @@ export class DataMigrator {
     private _migratePromise?: Promise<any>;
     private nonMigratedOldCollections: OldRxCollection[] = [];
     private allOldCollections: OldRxCollection[] = [];
-    migrate(batchSize: number = MIGRATION_DEFAULT_BATCH_SIZE): Observable<MigrationState> {
+    migrate(batchSize: number = MIGRATION_DEFAULT_BATCH_SIZE): Observable<any> {
         if (this._migrated) {
             throw newRxError('DM1');
         }
@@ -367,8 +366,8 @@ export function getBatchOfOldCollection(
 
     return storageInstance
         .query(preparedQuery)
-        .then(result => result.documents
-            .map(doc => {
+        .then((result: any) => result.documents
+            .map((doc: any) => {
                 doc = flatClone(doc);
                 return doc;
             })

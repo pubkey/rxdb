@@ -1,56 +1,86 @@
-import { Observable, Subject, map } from 'rxjs';
+import {
+    filter,
+    firstValueFrom,
+    map
+} from 'rxjs';
 import { newRxError } from '../../rx-error';
 import type {
-    RxMigrationStatus,
     NumberFunctionMap,
     RxCollection,
     RxDatabase
 } from '../../types';
 import {
     MIGRATION_DEFAULT_BATCH_SIZE,
-    MigrationStateWithCollection,
-    addMigrationStateToDatabase
+    MIGRATION_STATUS_DOC_PREFIX,
+    addMigrationStateToDatabase,
+    getOldCollectionMeta,
+    mustMigrate
 } from './migration-helpers';
-import { PROMISE_RESOLVE_FALSE } from '../utils';
+import { ensureNotFalsy } from '../utils';
+import type {
+    RxMigrationStatus,
+    RxMigrationStatusDocumentData
+} from './migration-types';
 
 
 
 export class RxMigrationState {
 
     public database: RxDatabase;
-    private migrationPromise?: Promise<any>;
-    public status: RxMigrationStatus = {
-        started: false
-        done: false, // true if finished
-        
-        total: 0, // will be the doc-count
-        handled: 0, // amount of handled docs
-        success: 0, // handled docs which succeeded
-        deleted: 0, // handled docs which got deleted
-        percent: 0 // percentage
-    };
-    /**
-     * Use Subject instead of BehaviorSubject
-     * so that it does not initially emit `total: 0`
-     */
-    statusSubject = new Subject<MigrationStateWithCollection>();
 
+
+    private started: boolean = false;
+    public readonly mustMigrate: Promise<boolean>;
+
+
+    public status: RxMigrationStatus = {
+        status: 'NOT-STARTED',
+        count: {
+            handled: 0,
+            percent: 0,
+            purged: 0,
+            success: 0,
+            total: -1
+        }
+    };
     constructor(
         public readonly collection: RxCollection,
-        public readonly migrationStrategies: NumberFunctionMap
+        public readonly migrationStrategies: NumberFunctionMap,
+        public readonly statusDocId = [
+            MIGRATION_STATUS_DOC_PREFIX,
+            collection.name,
+            'v',
+            collection.schema.version
+        ].join('-'),
     ) {
         this.database = collection.database;
+        this.mustMigrate = mustMigrate(this);
     }
 
     get $() {
-        return this.statusSubject.asObservable();
+        return this.database
+            .getLocal$<RxMigrationStatusDocumentData>(this.statusDocId)
+            .pipe(
+                filter(d => !!d),
+                map(d => ensureNotFalsy(d)._data.data)
+            );
     }
 
-    startMigration(batchSize: number = MIGRATION_DEFAULT_BATCH_SIZE): RxMigrationState {
-        if (this.migrationPromise) {
+    async startMigration(_batchSize: number = MIGRATION_DEFAULT_BATCH_SIZE): Promise<RxMigrationState> {
+        const must = await this.mustMigrate;
+        if (!must) {
+            return this;
+        }
+        if (this.started) {
             throw newRxError('DM1');
         }
-        this.migrationStarted = true;
+        this.started = true;
+
+
+
+        const oldCollectionMeta = await getOldCollectionMeta(this);
+        console.dir(oldCollectionMeta);
+
 
 
 
@@ -59,31 +89,20 @@ export class RxMigrationState {
          */
         addMigrationStateToDatabase(this);
 
-
-        return stateSubject.pipe(
-            map(withCollection => withCollection.state)
-        );
+        return null as any; // TODO
     }
 
-    migratePromise(batchSize: number): Promise<any> {
-        if (!this.migrationPromise) {
-            this.migrationPromise = mustMigrate(this)
-                .then(must => {
-                    if (!must) {
-                        return PROMISE_RESOLVE_FALSE;
-                    } else {
-                        return new Promise((res, rej) => {
-                            const state$ = this.migrate(batchSize);
-                            (state$ as any).subscribe(null, rej, res);
-                            this.allOldCollections.forEach(c => c.storageInstance.close().catch(() => { }));
-                        })
-                            .catch(err => {
-                                this.allOldCollections.forEach(c => c.storageInstance.close().catch(() => { }));
-                                throw err;
-                            });
-                    }
-                });
+    async migratePromise(batchSize?: number): Promise<any> {
+        this.startMigration(batchSize);
+        const must = await this.mustMigrate;
+        if (!must) {
+            return;
         }
-        return this.migrationPromise;
+        return firstValueFrom(
+            this.$.pipe(
+                filter(d => d.status === 'DONE')
+            )
+        );
+
     }
 }

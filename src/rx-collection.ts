@@ -29,7 +29,7 @@ import {
     newRxTypeError
 } from './rx-error';
 import type {
-    DataMigrator
+    RxMigrationState
 } from './plugins/migration';
 import {
     DocumentCache
@@ -55,7 +55,6 @@ import {
 
 import type {
     KeyFunctionMap,
-    MigrationState,
     RxCollection,
     RxDatabase,
     RxQuery,
@@ -269,14 +268,14 @@ export class RxCollectionBase<
     migrationNeeded(): Promise<boolean> {
         throw pluginMissing('migration');
     }
-    getDataMigrator(): DataMigrator {
+    getMigrationState(): RxMigrationState {
         throw pluginMissing('migration');
     }
-    migrate(batchSize: number = 10): Observable<MigrationState> {
-        return this.getDataMigrator().migrate(batchSize);
+    startMigration(batchSize: number = 10): Promise<RxMigrationState> {
+        return this.getMigrationState().startMigration(batchSize);
     }
     migratePromise(batchSize: number = 10): Promise<any> {
-        return this.getDataMigrator().migratePromise(batchSize);
+        return this.getMigrationState().migratePromise(batchSize);
     }
 
     async insert(

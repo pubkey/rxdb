@@ -239,13 +239,6 @@ export async function addConnectedStorageToCollection(
             collectionDocId
         );
         const saveData: RxDocumentData<InternalStoreCollectionDocType> = clone(ensureNotFalsy(collectionDoc));
-        /**
-         * Add array if not exist for backwards compatibility
-         * TODO remove this in 2023
-         */
-        if (!saveData.data.connectedStorages) {
-            saveData.data.connectedStorages = [];
-        }
 
         // do nothing if already in array
         const alreadyThere = saveData.data.connectedStorages

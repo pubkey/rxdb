@@ -273,9 +273,7 @@ export class RxDatabaseBase<
         const bulkPutDocs: BulkWriteRow<InternalStoreCollectionDocType>[] = [];
         const useArgsByCollectionName: any = {};
 
-
         await Promise.all(
-
             Object.entries(collectionCreators).map(async ([name, args]) => {
                 const collectionName: keyof CreatedCollections = name as any;
                 const rxJsonSchema = (args as RxCollectionCreator<any>).schema;

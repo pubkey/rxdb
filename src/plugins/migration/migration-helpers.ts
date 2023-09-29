@@ -1,39 +1,69 @@
-import { BehaviorSubject, Observable } from 'rxjs';
-import { INTERNAL_CONTEXT_COLLECTION, getPrimaryKeyOfInternalDocument } from '../../rx-database-internal-store';
+import { BehaviorSubject } from 'rxjs';
+import {
+    INTERNAL_CONTEXT_COLLECTION,
+    getPrimaryKeyOfInternalDocument
+} from '../../rx-database-internal-store';
 import { getPreviousVersions } from '../../rx-schema';
 import type {
     InternalStoreCollectionDocType,
-    MigrationState,
     RxCollection,
     RxDatabase,
     RxDocumentData
 } from '../../types';
-import { getFromMapOrCreate } from '../utils';
-import { DataMigrator, RxMigrationState } from './data-migrator';
+import {
+    PROMISE_RESOLVE_FALSE,
+    getFromMapOrCreate
+} from '../utils';
+import { RxMigrationState } from './rx-migration-state';
 
-export function getOldCollectionDocs(
-    dataMigrator: DataMigrator
+export const MIGRATION_STATUS_DOC_PREFIX = 'rx-migration-status';
+
+export function getOldCollectionMeta(
+    migrationState: RxMigrationState
 ): Promise<RxDocumentData<InternalStoreCollectionDocType>[]> {
 
-    const collectionDocKeys = getPreviousVersions(dataMigrator.currentSchema.jsonSchema)
-        .map(version => dataMigrator.name + '-' + version);
+    const collectionDocKeys = getPreviousVersions(migrationState.collection.schema.jsonSchema)
+        .map(version => migrationState.collection.name + '-' + version);
 
-    return dataMigrator.database.internalStore.findDocumentsById(
+    return migrationState.database.internalStore.findDocumentsById(
         collectionDocKeys.map(key => getPrimaryKeyOfInternalDocument(
             key,
             INTERNAL_CONTEXT_COLLECTION
         )),
         false
-    ).then(docsObj => Object.values(docsObj));
+    );
 }
 
+
+export function getRxStorageInstancesFromOldCollectionMeta(
+    migrationState: RxMigrationState,
+    oldCollectionMeta: RxDocumentData<InternalStoreCollectionDocType>
+) {
+
+}
+
+/**
+ * returns true if a migration is needed
+ */
+export async function mustMigrate(
+    migrationState: RxMigrationState
+): Promise<boolean> {
+    if (migrationState.collection.schema.version === 0) {
+        return PROMISE_RESOLVE_FALSE;
+    }
+    const oldColDocs = await getOldCollectionMeta(migrationState);
+    if (oldColDocs.length === 0) {
+        return false;
+    } else {
+        return true;
+    }
+}
 export const MIGRATION_DEFAULT_BATCH_SIZE = 200;
 
 
 export type MigrationStateWithCollection = {
     collection: RxCollection;
-    state: MigrationState;
-    migrator: DataMigrator;
+    migrationState: RxMigrationState;
 };
 
 export const DATA_MIGRATION_STATE_SUBJECT_BY_DATABASE = new WeakMap<RxDatabase, BehaviorSubject<RxMigrationState[]>>();

@@ -1,10 +1,8 @@
 import {
-    combineLatest,
     Observable
 } from 'rxjs';
 import {
-    shareReplay,
-    switchMap
+    shareReplay
 } from 'rxjs/operators';
 import type {
     RxPlugin,
@@ -16,17 +14,26 @@ import {
     getFromMapOrCreate,
     PROMISE_RESOLVE_FALSE,
     RXJS_SHARE_REPLAY_DEFAULTS
-} from '../../../plugins/utils';
+} from '../../plugins/utils';
 import {
     RxMigrationState
 } from './rx-migration-state';
-import { getMigrationStateByDatabase, onDatabaseDestroy } from './migration-helpers';
+import {
+    getMigrationStateByDatabase,
+    mustMigrate,
+    onDatabaseDestroy
+} from './migration-helpers';
+import { addRxPlugin } from '../../plugin';
+import { RxDBLocalDocumentsPlugin } from '../local-documents';
 
 export const DATA_MIGRATOR_BY_COLLECTION: WeakMap<RxCollection, RxMigrationState> = new WeakMap();
 
 export const RxDBMigrationPlugin: RxPlugin = {
     name: 'migration',
     rxdb: true,
+    init() {
+        addRxPlugin(RxDBLocalDocumentsPlugin);
+    },
     hooks: {
         preDestroyRxDatabase: {
             after: onDatabaseDestroy
@@ -37,7 +44,7 @@ export const RxDBMigrationPlugin: RxPlugin = {
             proto.migrationStates = function (this: RxDatabase): Observable<AllMigrationStates> {
                 return getMigrationStateByDatabase(this).pipe(
                     shareReplay(RXJS_SHARE_REPLAY_DEFAULTS)
-                );
+                ) as any; // TODO remove any and fix type
             };
         },
         RxCollection: (proto: any) => {
@@ -55,13 +62,13 @@ export const RxDBMigrationPlugin: RxPlugin = {
                 if (this.schema.version === 0) {
                     return PROMISE_RESOLVE_FALSE;
                 }
-                return mustMigrate(this.getDataMigrator());
+                return mustMigrate(this.getMigrationState());
             };
         }
     }
 };
 
 
-export * from './data-migrator';
-export * from './migration-helper';
-export * from './migration-state';
+export * from './rx-migration-state';
+export * from './migration-helpers';
+export * from './migration-types';

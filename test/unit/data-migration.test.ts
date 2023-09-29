@@ -20,12 +20,7 @@ import {
 } from '../../plugins/core';
 
 import {
-    _getOldCollections,
-    getBatchOfOldCollection,
-    migrateDocumentData,
-    _migrateDocuments,
-    migrateOldCollection,
-    migratePromise
+    getOldCollectionMeta
 } from '../../plugins/migration';
 import { HumanDocumentType } from '../helper/schemas';
 import { EXAMPLE_REVISION_1 } from '../helper/revisions';
@@ -199,7 +194,7 @@ config.parallel('data-migration.test.ts', () => {
         });
     });
     describe('DataMigrator.js', () => {
-        describe('_getOldCollections()', () => {
+        describe('getOldCollectionMeta()', () => {
             it('should NOT get an older version', async () => {
                 const colName = 'human';
                 const db = await createRxDatabase({
@@ -218,7 +213,7 @@ config.parallel('data-migration.test.ts', () => {
                     }
                 });
                 const col = cols[colName];
-                const old = await _getOldCollections(col.getDataMigrator());
+                const old = await getOldCollectionMeta(col.getMigrationState());
                 assert.deepStrictEqual(old, []);
                 db.destroy();
             });
@@ -254,14 +249,13 @@ config.parallel('data-migration.test.ts', () => {
                     }
                 });
                 const col2 = cols2[colName];
-                const oldCollections = await _getOldCollections(col2.getDataMigrator());
+                const oldCollections = await getOldCollectionMeta(col2.getMigrationState());
                 assert.ok(Array.isArray(oldCollections));
                 assert.strictEqual(oldCollections.length, 1);
 
                 // ensure it is an OldCollection
-                assert.ok(oldCollections[0].newestCollection);
+                assert.ok(oldCollections[0].data.schema);
 
-                oldCollections.forEach(c => c.storageInstance.close().catch(() => { }));
                 db.destroy();
                 db2.destroy();
             });

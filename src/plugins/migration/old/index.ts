@@ -12,7 +12,11 @@ import type {
     RxDatabase,
     AllMigrationStates
 } from '../../../types';
-import { getFromMapOrCreate, PROMISE_RESOLVE_FALSE, RXJS_SHARE_REPLAY_DEFAULTS } from '../../../plugins/utils';
+import {
+    getFromMapOrCreate,
+    PROMISE_RESOLVE_FALSE,
+    RXJS_SHARE_REPLAY_DEFAULTS
+} from '../../../plugins/utils';
 import {
     mustMigrate,
     DataMigrator
@@ -56,7 +60,7 @@ export const RxDBMigrationPlugin: RxPlugin = {
                 if (this.schema.version === 0) {
                     return PROMISE_RESOLVE_FALSE;
                 }
-                return mustMigrate(this.getDataMigrator());
+                return mustMigrate(this.getMigrationState() as any);
             };
         }
     }

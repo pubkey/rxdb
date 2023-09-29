@@ -1,5 +1,4 @@
 import {
-    MigrationState,
     RxCollection,
     RxDumpCollection,
     RxDumpCollectionAsAny
@@ -12,6 +11,7 @@ import { RxStorage } from './rx-storage.interface';
 import { RxLocalDocument } from './plugins/local-documents';
 import { RxCleanupPolicy } from './plugins/cleanup';
 import { HashFunction } from './util';
+import { RxMigrationState } from '../plugins/migration';
 
 export interface RxDatabaseCreator<Internals = any, InstanceCreationOptions = any> {
     storage: RxStorage<Internals, InstanceCreationOptions>;
@@ -59,7 +59,7 @@ export type RxDatabase<
 
 export type AllMigrationStates = {
     collection: RxCollection;
-    state: MigrationState;
+    state: RxMigrationState;
 }[];
 
 export interface RxLocalDocumentMutation<StorageType> {

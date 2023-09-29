@@ -10,6 +10,7 @@ import './unit/util.test';
 import './unit/custom-index.test';
 import './unit/query-planner.test';
 
+import './unit/data-migration.test'; // TODO move down
 
 /**
  * Move these tests around so that
@@ -48,7 +49,6 @@ import './unit/query-builder.test';
 import './unit/idle-queue.test';
 import './unit/conflict-handling.test';
 import './unit/reactive-collection.test';
-import './unit/data-migration.test';
 import './unit/reactive-document.test';
 import './unit/cleanup.test';
 import './unit/hooks.test';
