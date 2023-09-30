@@ -8,6 +8,7 @@
 import {
     BehaviorSubject,
     combineLatest,
+    filter,
     mergeMap,
     Observable,
     Subject,
@@ -175,6 +176,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
             conflictHandler: this.collection.conflictHandler,
             replicationHandler: {
                 masterChangeStream$: this.remoteEvents$.asObservable().pipe(
+                    filter(_v => !!this.pull),
                     mergeMap(async (ev) => {
                         if (ev === 'RESYNC') {
                             return ev;

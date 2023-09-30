@@ -374,16 +374,15 @@ export async function createMigrationCollection(
     attachment?: RxAttachmentCreator
 ): Promise<RxCollection<schemaObjects.SimpleHumanV3DocumentType>> {
 
-    const migrationStrategies: any = {
-        1: (doc: any) => doc,
-        2: (doc: any) => doc,
-        3: (doc: any) => doc
-    };
+    const migrationStrategies: any = Object.assign(
+        {
+            1: (doc: any) => doc,
+            2: (doc: any) => doc,
+            3: (doc: any) => doc
+        },
+        addMigrationStrategies
+    );
 
-    Object.entries(addMigrationStrategies)
-        .forEach(([prop, fun]) => {
-            migrationStrategies[prop] = fun;
-        });
 
     const colName = 'human';
     const db = await createRxDatabase<{ human: RxCollection<schemaObjects.SimpleHumanAgeDocumentType>; }>({

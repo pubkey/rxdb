@@ -39,6 +39,7 @@ import {
     now,
     randomCouchString
 } from './plugins/utils';
+import { Observable, filter, map, startWith, switchMap } from 'rxjs';
 
 export const INTERNAL_STORAGE_NAME = '_rxdb_internal';
 export const RX_DATABASE_LOCAL_DOCS_STORAGE_NAME = 'rxdatabase_storage_local';
@@ -76,6 +77,28 @@ export async function writeSingle<RxDocType>(
         const ret = writeResult.success[0];
         return ret;
     }
+}
+
+/**
+ * Observe the plain document data of a single document.
+ * Do not forget to unsubscribe.
+ */
+export function observeSingle<RxDocType>(
+    storageInstance: RxStorageInstance<RxDocType, any, any>,
+    documentId: string
+): Observable<RxDocumentData<RxDocType>> {
+    const firstFindPromise = getSingleDocument(storageInstance, documentId);
+    const ret = storageInstance
+        .changeStream()
+        .pipe(
+            map(evBulk => evBulk.events.find(ev => ev.documentId === documentId)),
+            filter(ev => !!ev),
+            map(ev => Promise.resolve(ensureNotFalsy(ev).documentData)),
+            startWith(firstFindPromise),
+            switchMap(v => v),
+            filter(v => !!v)
+        ) as any;
+    return ret;
 }
 
 

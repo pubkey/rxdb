@@ -227,6 +227,19 @@ export async function addConnectedStorageToCollection(
     storageCollectionName: string,
     schema: RxJsonSchema<any>
 ) {
+
+    if (collection.schema.version !== schema.version) {
+        throw newRxError('SNH', {
+            schema,
+            version: collection.schema.version,
+            name: collection.name,
+            collection,
+            args: {
+                storageCollectionName
+            }
+        });
+    }
+
     const collectionNameWithVersion = _collectionNamePrimary(collection.name, collection.schema.jsonSchema);
     const collectionDocId = getPrimaryKeyOfInternalDocument(
         collectionNameWithVersion,

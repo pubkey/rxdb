@@ -1,3 +1,6 @@
+import type {
+    InternalStoreDocType
+} from '../../types';
 
 export type RxMigrationStatus = {
     status: 'NOT-STARTED' | 'RUNNING' | 'DONE';
@@ -37,10 +40,10 @@ export type RxMigrationStatus = {
 
 /**
  * To be shared between browser tabs,
- * the migration status is written into a local document
- * We have a single document, that contains the migration state
- * for ALL collections.
+ * the migration status is written into a document in the internal storage of the database.
  */
-export type RxMigrationStatusDocumentData = {
-    status: 'NOT-STARTED' | 'RUNNING' | 'DONE';
-};
+export type RxMigrationStatusDocument = InternalStoreDocType<{
+    type: 'migration-status';
+    collectionName: string;
+    status: RxMigrationStatus;
+}>;

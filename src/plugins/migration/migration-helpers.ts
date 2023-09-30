@@ -12,7 +12,11 @@ import type {
 } from '../../types';
 import {
     PROMISE_RESOLVE_FALSE,
-    getFromMapOrCreate
+    PROMISE_RESOLVE_NULL,
+    clone,
+    flatClone,
+    getFromMapOrCreate,
+    toPromise
 } from '../utils';
 import { RxMigrationState } from './rx-migration-state';
 
@@ -35,11 +39,60 @@ export function getOldCollectionMeta(
 }
 
 
-export function getRxStorageInstancesFromOldCollectionMeta(
-    migrationState: RxMigrationState,
-    oldCollectionMeta: RxDocumentData<InternalStoreCollectionDocType>
-) {
+/**
+ * runs the doc-data through all following migrationStrategies
+ * so it will match the newest schema.
+ * @throws Error if final doc does not match final schema or migrationStrategy crashes
+ * @return final object or null if migrationStrategy deleted it
+ */
+export function migrateDocumentData(
+    collection: RxCollection,
+    docSchemaVersion: number,
+    docData: any
+): Promise<any | null> {
+    /**
+     * We cannot deep-clone Blob or Buffer
+     * so we just flat clone it here
+     * and attach it to the deep cloned document data.
+     */
+    const attachmentsBefore = flatClone(docData._attachments);
+    const mutateableDocData = clone(docData);
+    mutateableDocData._attachments = attachmentsBefore;
 
+    let nextVersion = docSchemaVersion + 1;
+
+    // run the document through migrationStrategies
+    let currentPromise = Promise.resolve(mutateableDocData);
+    while (nextVersion <= collection.schema.version) {
+        const version = nextVersion;
+        currentPromise = currentPromise.then(docOrNull => runStrategyIfNotNull(
+            collection,
+            version,
+            docOrNull
+        ));
+        nextVersion++;
+    }
+
+    return currentPromise.then(doc => {
+        if (doc === null) {
+            return PROMISE_RESOLVE_NULL;
+        }
+        return doc;
+    });
+}
+
+export function runStrategyIfNotNull(
+    collection: RxCollection,
+    version: number,
+    docOrNull: any | null
+): Promise<any | null> {
+    if (docOrNull === null) {
+        return PROMISE_RESOLVE_NULL;
+    } else {
+        const ret = collection.migrationStrategies[version](docOrNull, collection);
+        const retPromise = toPromise(ret);
+        return retPromise;
+    }
 }
 
 /**

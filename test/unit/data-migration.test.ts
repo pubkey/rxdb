@@ -31,7 +31,6 @@ import { SimpleHumanAgeDocumentType } from '../helper/schema-objects';
 
 
 config.parallel('data-migration.test.ts', () => {
-
     if (!config.storage.hasPersistence) {
         return;
     }

@@ -80,7 +80,8 @@ import type {
     RxConflictHandler,
     MaybePromise,
     CRDTEntry,
-    MangoQuerySelectorAndIndex
+    MangoQuerySelectorAndIndex,
+    MigrationStrategies
 } from './types';
 
 import {
@@ -128,7 +129,7 @@ export class RxCollectionBase<
         public schema: RxSchema<RxDocumentType>,
         public internalStorageInstance: RxStorageInstance<RxDocumentType, any, InstanceCreationOptions>,
         public instanceCreationOptions: InstanceCreationOptions = {} as any,
-        public migrationStrategies: KeyFunctionMap = {},
+        public migrationStrategies: MigrationStrategies = {},
         public methods: KeyFunctionMap = {},
         public attachments: KeyFunctionMap = {},
         public options: any = {},
