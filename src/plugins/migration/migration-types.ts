@@ -16,19 +16,8 @@ export type RxMigrationStatus = {
          */
         total: number;
         /**
-         * Amount handled docs which where
-         * successfully migrated
-         * (the migration strategy did NOT return null)
-         */
-        success: number;
-        /**
-         * Amount of handled docs which got purged.
-         * (the migration strategy returned null)
-         */
-        purged: number;
-        /**
          * Amount of documents that have been migrated already
-         * = count.sucess + count.purged
+         * = sucess + purged
          */
         handled: number;
         /**

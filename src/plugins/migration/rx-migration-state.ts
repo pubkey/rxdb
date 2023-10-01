@@ -23,6 +23,7 @@ import {
     mustMigrate
 } from './migration-helpers';
 import {
+    PROMISE_RESOLVE_TRUE,
     clone,
     ensureNotFalsy,
     getDefaultRevision,
@@ -30,7 +31,6 @@ import {
 } from '../utils';
 import type {
     MigrationStatusUpdate,
-    RxMigrationStatus,
     RxMigrationStatusDocument
 } from './migration-types';
 import {
@@ -160,10 +160,10 @@ export class RxMigrationState {
         const totalCount = await this.countAllDoucments(
             [oldStorageInstance].concat(connectedInstances.map(r => r.oldStorage))
         );
-        await this.updateStatus(totalCount);
-
-
-
+        await this.updateStatus(s => {
+            s.count.total = totalCount;
+            return s;
+        });
 
         /**
          * First migrate the connected storages,
@@ -205,69 +205,82 @@ export class RxMigrationState {
             },
             'rx-migration-remove-collection-meta'
         );
+
+        await this.updateStatus(s => {
+            s.status = 'DONE';
+            return s;
+        });
     }
 
-    public async updateStatus(
-        handlerOrTotalCount: number | MigrationStatusUpdate
+    public updateStatusHandlers: MigrationStatusUpdate[] = [];
+    public updateStatusQueue: Promise<any> = PROMISE_RESOLVE_TRUE;
+    public updateStatus(
+        handler: MigrationStatusUpdate
     ) {
+        this.updateStatusHandlers.push(handler);
+        this.updateStatusQueue = this.updateStatusQueue.then(async () => {
 
-        const previous = await getSingleDocument<RxMigrationStatusDocument>(
-            this.database.internalStore,
-            this.statusDocId
-        );
-        let newDoc = clone(previous);
 
-        if (!previous) {
-            if (typeof handlerOrTotalCount !== 'number') {
-                throw newRxError('SNH', {});
-            }
-            const newStatus: RxMigrationStatus = {
-                status: 'RUNNING',
-                count: {
-                    total: handlerOrTotalCount,
-                    handled: 0,
-                    percent: 0,
-                    purged: 0,
-                    success: 0
+            // re-run until no conflict
+            while (true) {
+                const previous = await getSingleDocument<RxMigrationStatusDocument>(
+                    this.database.internalStore,
+                    this.statusDocId
+                );
+                let newDoc = clone(previous);
+                if (!previous) {
+                    newDoc = {
+                        id: this.statusDocId,
+                        key: this.statusDocKey,
+                        context: MIGRATION_STATUS_INTERNAL_DOCUMENT_CONTEXT,
+                        data: {
+                            collectionName: this.collection.name,
+                            type: 'migration-status',
+                            status: {
+                                status: 'RUNNING',
+                                count: {
+                                    total: 0,
+                                    handled: 0,
+                                    percent: 0
+                                }
+                            }
+                        },
+                        _deleted: false,
+                        _meta: getDefaultRxDocumentMeta(),
+                        _rev: getDefaultRevision(),
+                        _attachments: {}
+                    };
                 }
-            };
-            newDoc = {
-                id: this.statusDocId,
-                key: this.statusDocKey,
-                context: MIGRATION_STATUS_INTERNAL_DOCUMENT_CONTEXT,
-                data: {
-                    collectionName: this.collection.name,
-                    type: 'migration-status',
-                    status: newStatus
-                },
-                _deleted: false,
-                _meta: getDefaultRxDocumentMeta(),
-                _rev: getDefaultRevision(),
-                _attachments: {}
-            }
-        } else {
-            if (typeof handlerOrTotalCount !== 'function') {
-                throw newRxError('SNH', {});
-            }
-            const newStatus = handlerOrTotalCount(previous.data.status);
-            ensureNotFalsy(newDoc).data.status = newStatus;
-        }
 
-        try {
-            await writeSingle<RxMigrationStatusDocument>(
-                this.database.internalStore,
-                {
-                    previous,
-                    document: ensureNotFalsy(newDoc)
-                },
-                'rx-migration-status'
-            );
-        } catch (err) {
-            // ignore conflicts
-            if (!isBulkWriteConflictError(err)) {
-                throw err;
+                let status = ensureNotFalsy(newDoc).data.status;
+                for (const oneHandler of this.updateStatusHandlers) {
+                    status = oneHandler(status);
+                }
+                status.count.percent = Math.round((status.count.handled / status.count.total) * 100);
+
+                try {
+                    await writeSingle<RxMigrationStatusDocument>(
+                        this.database.internalStore,
+                        {
+                            previous,
+                            document: ensureNotFalsy(newDoc)
+                        },
+                        MIGRATION_STATUS_INTERNAL_DOCUMENT_CONTEXT
+                    );
+
+                    // write successfull
+                    this.updateStatusHandlers = [];
+                    break;
+                } catch (err) {
+                    // ignore conflicts
+                    if (!isBulkWriteConflictError(err)) {
+                        throw err;
+                    }
+                }
             }
-        }
+
+        });
+        return this.updateStatusQueue;
     }
 
 
@@ -353,8 +366,11 @@ export class RxMigrationState {
         });
 
         // update replication status on each change
-        replicationState.events.processed.up.subscribe(row => {
-            row.assumedMasterState
+        replicationState.events.processed.up.subscribe(() => {
+            this.updateStatus(status => {
+                status.count.handled = status.count.handled + 1;
+                return status;
+            });
         });
 
         await awaitRxStorageReplicationFirstInSync(replicationState);
