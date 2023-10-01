@@ -47,13 +47,13 @@ export const RX_DATABASE_LOCAL_DOCS_STORAGE_NAME = 'rxdatabase_storage_local';
 export async function getSingleDocument<RxDocType>(
     storageInstance: RxStorageInstance<RxDocType, any, any>,
     documentId: string
-): Promise<RxDocumentData<RxDocType> | null> {
+): Promise<RxDocumentData<RxDocType> | undefined> {
     const results = await storageInstance.findDocumentsById([documentId], false);
     const doc = results[0];
     if (doc) {
         return doc;
     } else {
-        return null;
+        return undefined;
     }
 }
 

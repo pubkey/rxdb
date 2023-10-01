@@ -3,7 +3,7 @@ import type {
 } from '../../types';
 
 export type RxMigrationStatus = {
-    status: 'NOT-STARTED' | 'RUNNING' | 'DONE';
+    status: 'RUNNING' | 'DONE';
     /**
      * Counters so that you can display
      * the migration state to your user in the UI
@@ -16,10 +16,6 @@ export type RxMigrationStatus = {
          */
         total: number;
         /**
-         * Amount of documents that have been migrated already
-         */
-        handled: number;
-        /**
          * Amount handled docs which where
          * successfully migrated
          * (the migration strategy did NOT return null)
@@ -30,6 +26,11 @@ export type RxMigrationStatus = {
          * (the migration strategy returned null)
          */
         purged: number;
+        /**
+         * Amount of documents that have been migrated already
+         * = count.sucess + count.purged
+         */
+        handled: number;
         /**
          * Total percentage [0-100]
          */
@@ -47,3 +48,6 @@ export type RxMigrationStatusDocument = InternalStoreDocType<{
     collectionName: string;
     status: RxMigrationStatus;
 }>;
+
+
+export type MigrationStatusUpdate = (before: RxMigrationStatus) => RxMigrationStatus;

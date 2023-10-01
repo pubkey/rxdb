@@ -16,6 +16,8 @@ import type {
 import { getDefaultRevision, createRevision, now } from '../plugins/utils';
 
 
+export const META_INSTANCE_SCHEMA_TITLE = 'RxReplicationProtocolMetaData';
+
 export function getRxReplicationMetaInstanceSchema(
     replicatedDocumentsSchema: RxJsonSchema<RxDocumentData<any>>,
     encrypted: boolean
@@ -23,6 +25,7 @@ export function getRxReplicationMetaInstanceSchema(
     const parentPrimaryKeyLength = getLengthOfPrimaryKey(replicatedDocumentsSchema);
 
     const baseSchema: RxJsonSchema<RxStorageReplicationMeta> = {
+        title: META_INSTANCE_SCHEMA_TITLE,
         primaryKey: {
             key: 'id',
             fields: [
@@ -32,7 +35,7 @@ export function getRxReplicationMetaInstanceSchema(
             separator: '|'
         },
         type: 'object',
-        version: 0,
+        version: replicatedDocumentsSchema.version,
         additionalProperties: false,
         properties: {
             id: {

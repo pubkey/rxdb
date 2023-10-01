@@ -20,22 +20,26 @@ import {
 } from '../utils';
 import { RxMigrationState } from './rx-migration-state';
 
-export const MIGRATION_STATUS_DOC_PREFIX = 'rx-migration-status';
+export const MIGRATION_STATUS_INTERNAL_DOCUMENT_CONTEXT = 'rx-migration-status';
 
-export function getOldCollectionMeta(
+export async function getOldCollectionMeta(
     migrationState: RxMigrationState
-): Promise<RxDocumentData<InternalStoreCollectionDocType>[]> {
+): Promise<RxDocumentData<InternalStoreCollectionDocType>> {
 
     const collectionDocKeys = getPreviousVersions(migrationState.collection.schema.jsonSchema)
         .map(version => migrationState.collection.name + '-' + version);
 
-    return migrationState.database.internalStore.findDocumentsById(
+    const found = await migrationState.database.internalStore.findDocumentsById(
         collectionDocKeys.map(key => getPrimaryKeyOfInternalDocument(
             key,
             INTERNAL_CONTEXT_COLLECTION
         )),
         false
     );
+    if (found.length > 1) {
+        throw new Error('more the one old collection meta found');
+    }
+    return found[0];
 }
 
 
@@ -104,12 +108,8 @@ export async function mustMigrate(
     if (migrationState.collection.schema.version === 0) {
         return PROMISE_RESOLVE_FALSE;
     }
-    const oldColDocs = await getOldCollectionMeta(migrationState);
-    if (oldColDocs.length === 0) {
-        return false;
-    } else {
-        return true;
-    }
+    const oldColDoc = await getOldCollectionMeta(migrationState);
+    return !!oldColDoc;
 }
 export const MIGRATION_DEFAULT_BATCH_SIZE = 200;
 
