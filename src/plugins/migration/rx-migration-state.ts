@@ -146,6 +146,7 @@ export class RxMigrationState {
             ].join('|'));
             const leaderElector = createLeaderElection(broadcastChannel);
             await leaderElector.awaitLeadership();
+            await broadcastChannel.close();
         }
 
         /**
