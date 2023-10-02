@@ -9,8 +9,7 @@ import {
 import type {
     RxPlugin,
     RxCollection,
-    RxDatabase,
-    AllMigrationStates
+    RxDatabase
 } from '../../../types';
 import {
     getFromMapOrCreate,
@@ -25,6 +24,7 @@ import {
     getMigrationStateByDatabase,
     onDatabaseDestroy
 } from './migration-state';
+import { RxMigrationState } from '../rx-migration-state';
 
 export const DATA_MIGRATOR_BY_COLLECTION: WeakMap<RxCollection, DataMigrator> = new WeakMap();
 
@@ -38,7 +38,7 @@ export const RxDBMigrationPlugin: RxPlugin = {
     },
     prototypes: {
         RxDatabase: (proto: any) => {
-            proto.migrationStates = function (this: RxDatabase): Observable<AllMigrationStates> {
+            proto.migrationStates = function (this: RxDatabase): Observable<RxMigrationState[]> {
                 return getMigrationStateByDatabase(this).pipe(
                     switchMap(list => combineLatest(list)),
                     shareReplay(RXJS_SHARE_REPLAY_DEFAULTS)

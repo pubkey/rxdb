@@ -11,7 +11,6 @@ import { RxStorage } from './rx-storage.interface';
 import { RxLocalDocument } from './plugins/local-documents';
 import { RxCleanupPolicy } from './plugins/cleanup';
 import { HashFunction } from './util';
-import { RxMigrationState } from '../plugins/migration';
 
 export interface RxDatabaseCreator<Internals = any, InstanceCreationOptions = any> {
     storage: RxStorage<Internals, InstanceCreationOptions>;
@@ -57,10 +56,6 @@ export type RxDatabase<
 > &
     Collections & RxDatabaseGenerated<Collections>;
 
-export type AllMigrationStates = {
-    collection: RxCollection;
-    state: RxMigrationState;
-}[];
 
 export interface RxLocalDocumentMutation<StorageType> {
     insertLocal<LocalDocType = any>(id: string, data: LocalDocType): Promise<

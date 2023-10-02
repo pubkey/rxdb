@@ -272,7 +272,7 @@ export class RxCollectionBase<
     getMigrationState(): RxMigrationState {
         throw pluginMissing('migration');
     }
-    startMigration(batchSize: number = 10): Promise<RxMigrationState> {
+    startMigration(batchSize: number = 10): Promise<void> {
         return this.getMigrationState().startMigration(batchSize);
     }
     migratePromise(batchSize: number = 10): Promise<any> {

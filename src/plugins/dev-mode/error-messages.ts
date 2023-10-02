@@ -125,6 +125,7 @@ export const ERROR_MESSAGES = {
     DM1: 'migrate() Migration has already run',
     DM2: 'migration of document failed final document does not match final schema',
     DM3: 'migration already running',
+    DM4: 'Migration errored',
 
     // plugins/attachments.js
     AT1: 'to use attachments, please define this in your schema',

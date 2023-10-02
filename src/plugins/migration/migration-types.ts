@@ -3,7 +3,8 @@ import type {
 } from '../../types';
 
 export type RxMigrationStatus = {
-    status: 'RUNNING' | 'DONE';
+    collectionName: string;
+    status: 'RUNNING' | 'DONE' | 'ERROR';
     /**
      * Counters so that you can display
      * the migration state to your user in the UI
@@ -32,11 +33,7 @@ export type RxMigrationStatus = {
  * To be shared between browser tabs,
  * the migration status is written into a document in the internal storage of the database.
  */
-export type RxMigrationStatusDocument = InternalStoreDocType<{
-    type: 'migration-status';
-    collectionName: string;
-    status: RxMigrationStatus;
-}>;
+export type RxMigrationStatusDocument = InternalStoreDocType<RxMigrationStatus>;
 
 
 export type MigrationStatusUpdate = (before: RxMigrationStatus) => RxMigrationStatus;

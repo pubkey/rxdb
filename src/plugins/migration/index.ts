@@ -7,8 +7,7 @@ import {
 import type {
     RxPlugin,
     RxCollection,
-    RxDatabase,
-    AllMigrationStates
+    RxDatabase
 } from '../../types';
 import {
     getFromMapOrCreate,
@@ -41,10 +40,10 @@ export const RxDBMigrationPlugin: RxPlugin = {
     },
     prototypes: {
         RxDatabase: (proto: any) => {
-            proto.migrationStates = function (this: RxDatabase): Observable<AllMigrationStates> {
+            proto.migrationStates = function (this: RxDatabase): Observable<RxMigrationState[]> {
                 return getMigrationStateByDatabase(this).pipe(
                     shareReplay(RXJS_SHARE_REPLAY_DEFAULTS)
-                ) as any; // TODO remove any and fix type
+                );
             };
         },
         RxCollection: (proto: any) => {

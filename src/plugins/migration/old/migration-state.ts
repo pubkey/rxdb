@@ -1,25 +1,20 @@
 import {
-    BehaviorSubject,
-    Observable
+    BehaviorSubject
 } from 'rxjs';
 import type {
-    RxCollection,
     RxDatabase
 } from '../../../types';
 import { getFromMapOrCreate } from '../../../plugins/utils';
+import { RxMigrationState } from '../rx-migration-state';
 
-export type MigrationStateWithCollection = {
-    collection: RxCollection;
-    state: any;
-};
 
-export const DATA_MIGRATION_STATE_SUBJECT_BY_DATABASE = new WeakMap<RxDatabase, BehaviorSubject<Observable<MigrationStateWithCollection>[]>>();
+export const DATA_MIGRATION_STATE_SUBJECT_BY_DATABASE = new WeakMap<RxDatabase, BehaviorSubject<RxMigrationState[]>>();
 
-export function getMigrationStateByDatabase(database: RxDatabase): BehaviorSubject<Observable<MigrationStateWithCollection>[]> {
+export function getMigrationStateByDatabase(database: RxDatabase): BehaviorSubject<RxMigrationState[]> {
     return getFromMapOrCreate(
         DATA_MIGRATION_STATE_SUBJECT_BY_DATABASE,
         database,
-        () => new BehaviorSubject<Observable<MigrationStateWithCollection>[]>([])
+        () => new BehaviorSubject<RxMigrationState[]>([])
     );
 }
 

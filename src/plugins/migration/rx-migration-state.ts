@@ -1,8 +1,10 @@
 import {
+    Observable,
     Subject,
     filter,
     firstValueFrom,
-    map
+    map,
+    shareReplay
 } from 'rxjs';
 import {
     isBulkWriteConflictError,
@@ -12,25 +14,31 @@ import type {
     NumberFunctionMap,
     RxCollection,
     RxDatabase,
+    RxError,
     RxReplicationWriteToMasterRow,
-    RxStorageInstance
+    RxStorageInstance,
+    RxTypeError
 } from '../../types';
 import {
     MIGRATION_DEFAULT_BATCH_SIZE,
     MIGRATION_STATUS_INTERNAL_DOCUMENT_CONTEXT,
+    addMigrationStateToDatabase,
     getOldCollectionMeta,
     migrateDocumentData,
     mustMigrate
 } from './migration-helpers';
 import {
     PROMISE_RESOLVE_TRUE,
+    RXJS_SHARE_REPLAY_DEFAULTS,
     clone,
+    deepEqual,
     ensureNotFalsy,
     getDefaultRevision,
     getDefaultRxDocumentMeta
 } from '../utils';
 import type {
     MigrationStatusUpdate,
+    RxMigrationStatus,
     RxMigrationStatusDocument
 } from './migration-types';
 import {
@@ -66,9 +74,10 @@ export class RxMigrationState {
 
 
     private started: boolean = false;
-    public readonly oldCollectionMeta = getOldCollectionMeta(this);
-    public readonly mustMigrate = mustMigrate(this);
+    public readonly oldCollectionMeta: ReturnType<typeof getOldCollectionMeta>;
+    public readonly mustMigrate: ReturnType<typeof mustMigrate>;
     public readonly statusDocId: string;
+    public readonly $: Observable<RxMigrationStatus>;
 
     constructor(
         public readonly collection: RxCollection,
@@ -79,22 +88,29 @@ export class RxMigrationState {
             collection.schema.version
         ].join('-'),
     ) {
+        this.database = collection.database;
+        this.oldCollectionMeta = getOldCollectionMeta(this);
+        this.mustMigrate = mustMigrate(this);
         this.statusDocId = getPrimaryKeyOfInternalDocument(
             this.statusDocKey,
             MIGRATION_STATUS_INTERNAL_DOCUMENT_CONTEXT
         );
-        this.database = collection.database;
-    }
+        addMigrationStateToDatabase(this);
 
-    get $() {
-        return observeSingle<RxMigrationStatusDocument>(
+        this.$ = observeSingle<RxMigrationStatusDocument>(
             this.database.internalStore,
             this.statusDocId
         ).pipe(
             filter(d => !!d),
-            map(d => ensureNotFalsy(d).data.status)
+            map(d => ensureNotFalsy(d).data),
+            shareReplay(RXJS_SHARE_REPLAY_DEFAULTS)
         );
     }
+
+    getStatus() {
+        return firstValueFrom(this.$);
+    }
+
 
     /**
      * Starts the migration.
@@ -138,7 +154,6 @@ export class RxMigrationState {
          * This also ensure that restarting the replication works without problems.
          */
         const oldCollectionMeta = await this.oldCollectionMeta;
-        console.dir(oldCollectionMeta);
         const oldStorageInstance = await this.database.storage.createStorageInstance({
             databaseName: this.database.name,
             collectionName: this.collection.name,
@@ -165,30 +180,40 @@ export class RxMigrationState {
             return s;
         });
 
-        /**
-         * First migrate the connected storages,
-         * afterwards migrate the normal collection.
-         */
-        await Promise.all(
-            connectedInstances.map(async (connectedInstance) => {
-                await this.migrateStorage(
-                    connectedInstance.oldStorage,
-                    connectedInstance.newStorage,
-                    batchSize
-                );
-                await addConnectedStorageToCollection(
-                    this.collection,
-                    connectedInstance.newStorage.collectionName,
-                    connectedInstance.newStorage.schema
-                );
-            })
-        );
 
-        await this.migrateStorage(
-            oldStorageInstance,
-            this.collection.storageInstance,
-            batchSize
-        );
+        try {
+            /**
+             * First migrate the connected storages,
+             * afterwards migrate the normal collection.
+             */
+            await Promise.all(
+                connectedInstances.map(async (connectedInstance) => {
+                    await addConnectedStorageToCollection(
+                        this.collection,
+                        connectedInstance.newStorage.collectionName,
+                        connectedInstance.newStorage.schema
+                    );
+                    await this.migrateStorage(
+                        connectedInstance.oldStorage,
+                        connectedInstance.newStorage,
+                        batchSize
+                    );
+                })
+            );
+
+            await this.migrateStorage(
+                oldStorageInstance,
+                this.collection.storageInstance,
+                batchSize
+            );
+        } catch (err) {
+            await this.updateStatus(s => {
+                s.status = 'ERROR';
+                return s;
+            });
+            return;
+        }
+
 
         // remove old collection meta doc
         await writeSingle(
@@ -219,8 +244,9 @@ export class RxMigrationState {
     ) {
         this.updateStatusHandlers.push(handler);
         this.updateStatusQueue = this.updateStatusQueue.then(async () => {
-
-
+            if (this.updateStatusHandlers.length === 0) {
+                return;
+            }
             // re-run until no conflict
             while (true) {
                 const previous = await getSingleDocument<RxMigrationStatusDocument>(
@@ -235,14 +261,11 @@ export class RxMigrationState {
                         context: MIGRATION_STATUS_INTERNAL_DOCUMENT_CONTEXT,
                         data: {
                             collectionName: this.collection.name,
-                            type: 'migration-status',
-                            status: {
-                                status: 'RUNNING',
-                                count: {
-                                    total: 0,
-                                    handled: 0,
-                                    percent: 0
-                                }
+                            status: 'RUNNING',
+                            count: {
+                                total: 0,
+                                handled: 0,
+                                percent: 0
                             }
                         },
                         _deleted: false,
@@ -252,11 +275,20 @@ export class RxMigrationState {
                     };
                 }
 
-                let status = ensureNotFalsy(newDoc).data.status;
+                let status = ensureNotFalsy(newDoc).data;
                 for (const oneHandler of this.updateStatusHandlers) {
                     status = oneHandler(status);
                 }
                 status.count.percent = Math.round((status.count.handled / status.count.total) * 100);
+
+                if (
+                    newDoc && previous &&
+                    deepEqual(newDoc.data, previous.data)
+                ) {
+                    this.updateStatusHandlers = [];
+                    break;
+                }
+
 
                 try {
                     await writeSingle<RxMigrationStatusDocument>(
@@ -365,6 +397,10 @@ export class RxMigrationState {
             hashFunction: this.database.hashFunction
         });
 
+
+        let hasError: RxError | RxTypeError | false = false;
+        replicationState.events.error.subscribe(err => hasError = err);
+
         // update replication status on each change
         replicationState.events.processed.up.subscribe(() => {
             this.updateStatus(status => {
@@ -375,6 +411,10 @@ export class RxMigrationState {
 
         await awaitRxStorageReplicationFirstInSync(replicationState);
         await cancelRxStorageReplication(replicationState);
+
+        if (hasError) {
+            throw hasError;
+        }
 
         // cleanup old storages
         await Promise.all([
@@ -452,17 +492,41 @@ export class RxMigrationState {
 
 
 
-    async migratePromise(batchSize?: number): Promise<any> {
+    async migratePromise(batchSize?: number): Promise<RxMigrationStatus> {
         this.startMigration(batchSize);
         const must = await this.mustMigrate;
         if (!must) {
-            return;
+            return {
+                status: 'DONE',
+                collectionName: this.collection.name,
+                count: {
+                    handled: 0,
+                    percent: 0,
+                    total: 0
+                }
+            };
         }
-        return firstValueFrom(
-            this.$.pipe(
-                filter(d => d.status === 'DONE')
+
+        const result = await Promise.race([
+            firstValueFrom(
+                this.$.pipe(
+                    filter(d => d.status === 'DONE')
+                )
+            ),
+            firstValueFrom(
+                this.$.pipe(
+                    filter(d => d.status === 'ERROR')
+                )
             )
-        );
+        ]);
+
+        if (result.status === 'ERROR') {
+            throw newRxError('DM4', {
+                collection: this.collection.name
+            });
+        } else {
+            return result;
+        }
 
     }
 }
