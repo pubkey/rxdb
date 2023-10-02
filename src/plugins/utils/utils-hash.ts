@@ -12,9 +12,8 @@ export function jsSha256(input: string) {
     return Promise.resolve(sha256(input));
 }
 
-const TEXT_ENCODER = new TextEncoder();
 export async function nativeSha256(input: string) {
-    const data = TEXT_ENCODER.encode(input);
+    const data = new TextEncoder().encode(input);
     const hashBuffer = await crypto.subtle.digest('SHA-256', data);
     /**
      * @link https://jameshfisher.com/2017/10/30/web-cryptography-api-hello-world/

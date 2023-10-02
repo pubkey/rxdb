@@ -18,7 +18,7 @@ export type RxMigrationStatus = {
         total: number;
         /**
          * Amount of documents that have been migrated already
-         * = sucess + purged
+         * = success + purged
          */
         handled: number;
         /**

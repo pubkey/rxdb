@@ -486,7 +486,7 @@ export function defineGetterSetter(
             // setter - value
             /**
              * TODO setters are not allowed on RxDocuments.
-             * They were only usefull for temporary documents
+             * They were only useful for temporary documents
              * which have been removed in a previous RxDB version.
              * So we can remove the set-functionality here.
              */

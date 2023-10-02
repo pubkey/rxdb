@@ -301,7 +301,7 @@ export class RxMigrationState {
                         MIGRATION_STATUS_INTERNAL_DOCUMENT_CONTEXT
                     );
 
-                    // write successfull
+                    // write successful
                     this.updateStatusHandlers = [];
                     break;
                 } catch (err) {
