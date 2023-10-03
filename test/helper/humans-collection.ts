@@ -407,8 +407,6 @@ export async function createMigrationCollection(
                 }
             }))
     );
-
-    cols[colName].destroy();
     await db.destroy();
 
     const db2 = await createRxDatabase<{ human: RxCollection<schemaObjects.SimpleHumanV3DocumentType>; }>({

@@ -199,6 +199,7 @@ export class RxMigrationState {
                         connectedInstance.newStorage,
                         batchSize
                     );
+                    await connectedInstance.newStorage.close();
                 })
             );
 
@@ -208,6 +209,7 @@ export class RxMigrationState {
                 batchSize
             );
         } catch (err) {
+            await oldStorageInstance.close();
             await this.updateStatus(s => {
                 s.status = 'ERROR';
                 return s;
@@ -414,6 +416,7 @@ export class RxMigrationState {
         await cancelRxStorageReplication(replicationState);
 
         if (hasError) {
+            await replicationMetaStorageInstance.close();
             throw hasError;
         }
 

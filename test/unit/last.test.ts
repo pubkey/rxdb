@@ -14,11 +14,30 @@ import {
     OPEN_REMOTE_MESSAGE_CHANNELS,
     CACHE_ITEM_BY_MESSAGE_CHANNEL
 } from '../../plugins/storage-remote';
+import { OPEN_MEMORY_INSTANCES } from '../../plugins/storage-memory';
 
 
 describe('last.test.ts (' + config.storage.name + ')', () => {
     it('ensure every db is cleaned up', () => {
         assert.strictEqual(dbCount(), 0);
+    });
+    it('ensure all Memory RxStorage instances are closed', async () => {
+        try {
+            await waitUntil(() => {
+                return OPEN_MEMORY_INSTANCES.size === 0;
+            }, 5 * 1000);
+        } catch (err) {
+            console.log('open memory instances:');
+            const openInstances = Array.from(OPEN_MEMORY_INSTANCES.values());
+            openInstances.forEach(instance => {
+                console.dir({
+                    databaseName: instance.databaseName,
+                    collectionName: instance.collectionName,
+                    version: instance.schema.version
+                });
+            });
+            throw new Error('not all memory instances have been closed (' + OPEN_MEMORY_INSTANCES.size + ' still open)');
+        }
     });
     it('ensure all BroadcastChannels are closed', async () => {
         if (config.storage.name === 'lokijs') {

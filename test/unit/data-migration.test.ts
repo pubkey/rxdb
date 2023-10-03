@@ -31,6 +31,7 @@ import { EXAMPLE_REVISION_1 } from '../helper/revisions';
 import { RxDBMigrationPlugin } from '../../plugins/migration';
 import { RxDBAttachmentsPlugin } from '../../plugins/attachments';
 import { SimpleHumanAgeDocumentType } from '../helper/schema-objects';
+import { OPEN_MEMORY_INSTANCES } from '../../plugins/storage-memory';
 
 
 config.parallel('data-migration.test.ts', () => {
@@ -341,7 +342,6 @@ config.parallel('data-migration.test.ts', () => {
                         return null;
                     }
                 });
-
 
                 await col.migratePromise();
                 const docs = await col.find().exec();
