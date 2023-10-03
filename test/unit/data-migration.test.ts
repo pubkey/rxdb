@@ -527,6 +527,7 @@ config.parallel('data-migration.test.ts', () => {
                 });
                 const doc = await db.human.insert(schemaObjects.simpleHumanAge({ passportId: 'local-1' }));
                 const lwtBefore = doc.toJSON(true)._meta.lwt;
+                await db.destroy();
 
                 const db2 = await createRxDatabase({
                     name,
@@ -552,7 +553,6 @@ config.parallel('data-migration.test.ts', () => {
 
                 assert.strictEqual(lwtBefore, lwtAfter);
 
-                db.destroy();
                 db2.destroy();
             });
             it('should increase revision height when the strategy changed the documents data', async () => {
