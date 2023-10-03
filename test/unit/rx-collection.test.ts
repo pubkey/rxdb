@@ -1876,7 +1876,7 @@ describe('rx-collection.test.ts', () => {
             });
         });
     });
-    config.parallel('.findByIds$()', () => {
+    config.parallel('.findByIds.$()', () => {
         it('should not crash and emit a map', async () => {
             const c = await humansCollection.create(5);
             const docs = await c.find().exec();
@@ -2078,7 +2078,7 @@ describe('rx-collection.test.ts', () => {
 
             db2.destroy();
         });
-        it('#3661 .findByIds$() fires too often', async () => {
+        it('#3661 .findByIds.$() fires too often', async () => {
             const collection = await humansCollection.create(0);
 
             //  Record subscription
@@ -2153,7 +2153,7 @@ describe('rx-collection.test.ts', () => {
 
             /**
              * Each emitted result must have a different result set
-             * because findByIds$ must only emit when data has actually changed.
+             * because findByIds.$ must only emit when data has actually changed.
              * We cannot just count the updates.length here because some RxStorage implementations
              * might return multiple RxChangeEventBulks for a single bulkWrite() operation
              * or do additional writes. So we have to check for the revisions+docId strings.
