@@ -18,9 +18,6 @@ import { OPEN_MEMORY_INSTANCES } from '../../plugins/storage-memory';
 
 
 describe('last.test.ts (' + config.storage.name + ')', () => {
-    it('ensure every db is cleaned up', () => {
-        assert.strictEqual(dbCount(), 0);
-    });
     it('ensure all Memory RxStorage instances are closed', async () => {
         try {
             await waitUntil(() => {
@@ -38,6 +35,9 @@ describe('last.test.ts (' + config.storage.name + ')', () => {
             });
             throw new Error('not all memory instances have been closed (' + OPEN_MEMORY_INSTANCES.size + ' still open)');
         }
+    });
+    it('ensure every db is cleaned up', () => {
+        assert.strictEqual(dbCount(), 0);
     });
     it('ensure all BroadcastChannels are closed', async () => {
         if (config.storage.name === 'lokijs') {

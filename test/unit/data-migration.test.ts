@@ -727,7 +727,7 @@ config.parallel('data-migration.test.ts', () => {
     describe('migration and replication', () => {
         it('should have migrated the replication state', async () => {
             const remoteDb = await createRxDatabase({
-                name: randomCouchString(10),
+                name: 'remote' + randomCouchString(10),
                 storage: config.storage.getStorage(),
             });
             await remoteDb.addCollections({
@@ -820,6 +820,7 @@ config.parallel('data-migration.test.ts', () => {
             }
 
             await db2.destroy();
+            await remoteDb.destroy();
         });
     });
     describe('issues', () => {
