@@ -56,7 +56,6 @@
         * [find()](./rx-collection.md#find)
         * [findOne()](./rx-collection.md#findone)
         * [findByIds()](./rx-collection.md#findbyids)
-        * [findByIds$()](./rx-collection.md#findbyids$)
         * [exportJSON()](./rx-collection.md#dump)
         * [importJSON()](./rx-collection.md#importdump)
         * [remove()](./rx-collection.md#remove)
