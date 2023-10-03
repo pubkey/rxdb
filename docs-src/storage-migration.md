@@ -15,6 +15,7 @@ The storage migration **drops deleted documents** and filters them out during th
 Lets say you want to migrate from LokiJs to the [Dexie.js](./rx-storage-dexie.md) RxStorage.
 
 ```ts
+import { migrateStorage } from 'rxdb-premium/plugins/migrate-storage';
 import {
     getRxStorageLoki
 } from 'rxdb/plugins/storage-loki';
@@ -61,6 +62,7 @@ The you can run the migration by providing the old storage:
 
 ```ts
 /* ... */
+import { migrateStorage } from 'rxdb-premium/plugins/migrate-storage';
 import {
     getRxStorageLoki
 } from 'rxdb-old/plugins/storage-loki'; // <- import from the old RxDB version
