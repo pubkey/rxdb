@@ -120,6 +120,9 @@ export type RxStorageInstanceReplicationInput<RxDocType> = {
     replicationHandler: RxReplicationHandler<RxDocType, any>;
     conflictHandler: RxConflictHandler<RxDocType>;
 
+    // can be set to also replicate the _meta field of the document.
+    keepMeta?: boolean;
+
     /**
      * The fork is the one that contains the forked chain of document writes.
      * All conflicts are solved on the fork and only resolved correct document data

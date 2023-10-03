@@ -58,11 +58,15 @@ export interface SimpleHumanAgeDocumentType {
     passportId: string;
     age: string;
 }
-export function simpleHumanAge(): SimpleHumanAgeDocumentType {
-    return {
+export function simpleHumanAge(partial: Partial<SimpleHumanAgeDocumentType>): SimpleHumanAgeDocumentType {
+    const defaultObj = {
         passportId: randomString(12),
         age: randomNumber(10, 50) + ''
     };
+    return Object.assign(
+        defaultObj,
+        partial
+    );
 }
 
 export interface HumanWithSubOtherDocumentType {

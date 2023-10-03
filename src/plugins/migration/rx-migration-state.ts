@@ -205,7 +205,13 @@ export class RxMigrationState {
 
             await this.migrateStorage(
                 oldStorageInstance,
-                this.collection.storageInstance,
+                /**
+                 * Use the originalStorageInstance here
+                 * so that the _meta.lwt time keeps the same
+                 * and our replication checkpoints still point to the
+                 * correct checkpoint.
+                 */
+                this.collection.storageInstance.originalStorageInstance,
                 batchSize
             );
         } catch (err) {
@@ -343,10 +349,12 @@ export class RxMigrationState {
              * If this happens we drop the 'old' document state.
              */
             defaultConflictHandler,
-            this.database.token
+            this.database.token,
+            true
         );
 
         const replicationState = replicateRxStorageInstance({
+            keepMeta: true,
             identifier: [
                 'rx-migration-state',
                 this.collection.name,
@@ -367,6 +375,12 @@ export class RxMigrationState {
                                 let newDocData = row.newDocumentState;
                                 if (newStorage.schema.title === META_INSTANCE_SCHEMA_TITLE) {
                                     newDocData = row.newDocumentState.data;
+                                    if (row.newDocumentState.isCheckpoint === '1') {
+                                        return {
+                                            assumedMasterState: undefined,
+                                            newDocumentState: row.newDocumentState
+                                        };
+                                    }
                                 }
                                 const migratedDocData: RxReplicationWriteToMasterRow<any> = await migrateDocumentData(
                                     this.collection,
@@ -463,7 +477,7 @@ export class RxMigrationState {
                             clone(connectedStorage.schema),
                             hasEncryption(connectedStorage.schema)
                         );
-                        newSchema.version = newSchema.version + 1;
+                        newSchema.version = this.collection.schema.version;
                         const [oldStorage, newStorage] = await Promise.all([
                             this.database.storage.createStorageInstance({
                                 databaseInstanceToken: this.database.token,

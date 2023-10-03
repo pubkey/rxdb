@@ -56,7 +56,7 @@ export function getRxReplicationMetaInstanceSchema(
             itemId: {
                 type: 'string',
                 /**
-                 * ensure that all values of RxStorageReplicationDirection fit into it
+                 * ensure that all values of RxStorageReplicationDirection ('DOWN' has 4 chars) fit into it
                  * because checkpoints use the itemId field for that.
                  */
                 maxLength: parentPrimaryKeyLength > 4 ? parentPrimaryKeyLength : 4

@@ -61,6 +61,8 @@ export function migrateDocumentData(
      */
     const attachmentsBefore = flatClone(docData._attachments);
     const mutateableDocData = clone(docData);
+    const meta = mutateableDocData._meta;
+    delete mutateableDocData._meta;
     mutateableDocData._attachments = attachmentsBefore;
 
     let nextVersion = docSchemaVersion + 1;
@@ -81,6 +83,7 @@ export function migrateDocumentData(
         if (doc === null) {
             return PROMISE_RESOLVE_NULL;
         }
+        doc._meta = meta;
         return doc;
     });
 }

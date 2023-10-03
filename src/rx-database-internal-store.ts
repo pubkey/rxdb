@@ -200,8 +200,6 @@ export async function ensureStorageTokenDocumentExists<Collections extends Colle
         (error as RxStorageWriteError<InternalStoreStorageTokenDocType>).status === 409
     ) {
         const conflictError = (error as RxStorageWriteErrorConflict<InternalStoreStorageTokenDocType>);
-
-
         if (
             passwordHash &&
             passwordHash !== conflictError.documentInDb.data.passwordHash

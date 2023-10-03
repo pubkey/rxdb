@@ -3,6 +3,7 @@ import config from './config';
 import AsyncTestUtil, { waitUntil } from 'async-test-util';
 
 import * as schemas from '../helper/schemas';
+import * as schemaObjects from '../helper/schema-objects';
 import * as humansCollection from '../helper/humans-collection';
 
 import {
@@ -17,7 +18,9 @@ import {
     addRxPlugin,
     RxCollection,
     createBlob,
-    ensureNotFalsy
+    ensureNotFalsy,
+    MigrationStrategies,
+    MigrationStrategy
 } from '../../plugins/core';
 
 import {
@@ -31,7 +34,7 @@ import { EXAMPLE_REVISION_1 } from '../helper/revisions';
 import { RxDBMigrationPlugin } from '../../plugins/migration';
 import { RxDBAttachmentsPlugin } from '../../plugins/attachments';
 import { SimpleHumanAgeDocumentType } from '../helper/schema-objects';
-import { OPEN_MEMORY_INSTANCES } from '../../plugins/storage-memory';
+import { replicateRxCollection } from '../../plugins/replication';
 
 
 config.parallel('data-migration.test.ts', () => {
@@ -506,6 +509,52 @@ config.parallel('data-migration.test.ts', () => {
                 assert.strictEqual(typeof (docs.pop() as any).age, 'number');
                 col.database.destroy();
             });
+            /**
+             * We need this to ensure old push-checkpoints are still valid
+             */
+            it('should keep the _meta.lwt value of the documents', async () => {
+                const name = randomCouchString(10);
+                const db = await createRxDatabase({
+                    name,
+                    storage: config.storage.getStorage(),
+                    ignoreDuplicate: true
+                });
+                await db.addCollections({
+                    human: {
+                        schema: schemas.simpleHuman,
+                        autoMigrate: false
+                    }
+                });
+                const doc = await db.human.insert(schemaObjects.simpleHumanAge({ passportId: 'local-1' }));
+                const lwtBefore = doc.toJSON(true)._meta.lwt;
+
+                const db2 = await createRxDatabase({
+                    name,
+                    storage: config.storage.getStorage(),
+                    ignoreDuplicate: true
+                });
+
+                const cols2 = await db2.addCollections({
+                    human: {
+                        schema: schemas.simpleHumanV3,
+                        autoMigrate: true,
+                        migrationStrategies: {
+                            1: d => d,
+                            2: d => d,
+                            3: d => d
+                        }
+                    }
+                });
+                const col2 = cols2.human;
+
+                const docAfter = await col2.findOne().exec();
+                const lwtAfter = docAfter.toJSON(true)._meta.lwt;
+
+                assert.strictEqual(lwtBefore, lwtAfter);
+
+                db.destroy();
+                db2.destroy();
+            });
             it('should increase revision height when the strategy changed the documents data', async () => {
                 return; // TODO do we need this?
                 const dbName = randomCouchString(10);
@@ -673,6 +722,104 @@ config.parallel('data-migration.test.ts', () => {
             });
 
             db.destroy();
+        });
+    });
+    describe('migration and replication', () => {
+        it('should have migrated the replication state', async () => {
+            const remoteDb = await createRxDatabase({
+                name: randomCouchString(10),
+                storage: config.storage.getStorage(),
+            });
+            await remoteDb.addCollections({
+                humans: {
+                    schema: schemas.simpleHuman
+                }
+            });
+            const name = randomCouchString(10);
+            const db = await createRxDatabase({
+                name,
+                storage: config.storage.getStorage(),
+            });
+            await db.addCollections({
+                humans: {
+                    schema: schemas.simpleHuman
+                }
+            });
+            await Promise.all([
+                db.humans.insert(schemaObjects.simpleHumanAge({ passportId: 'local-1' })),
+                db.humans.insert(schemaObjects.simpleHumanAge({ passportId: 'local-2' })),
+                db.humans.insert(schemaObjects.simpleHumanAge({ passportId: 'local-3' })),
+                remoteDb.humans.insert(schemaObjects.simpleHumanAge({ passportId: 'remote-1' })),
+                remoteDb.humans.insert(schemaObjects.simpleHumanAge({ passportId: 'remote-2' })),
+                remoteDb.humans.insert(schemaObjects.simpleHumanAge({ passportId: 'remote-3' }))
+            ]);
+
+            const replicationState = replicateRxCollection({
+                collection: db.humans,
+                replicationIdentifier: 'migrate-replication-state',
+                live: false,
+                autoStart: true,
+                waitForLeadership: false
+            });
+            await replicationState.awaitInitialReplication();
+            await replicationState.cancel();
+            await db.destroy();
+
+            const db2 = await createRxDatabase({
+                name,
+                storage: config.storage.getStorage(),
+            });
+
+
+            const ensureNoUnknownStrategy: MigrationStrategy = (d) => {
+                if (d._meta) {
+                    throw new Error('Must not have _meta field');
+                }
+                if (d.lwt) {
+                    throw new Error('Must not get checkpoint doc');
+                }
+                return d;
+            };
+            const migrationStrategies: MigrationStrategies = {
+                1: ensureNoUnknownStrategy,
+                2: ensureNoUnknownStrategy,
+                3: ensureNoUnknownStrategy
+            };
+            await db2.addCollections({
+                humans: {
+                    schema: schemas.simpleHumanV3,
+                    migrationStrategies
+                }
+            });
+
+
+            const replicationState2 = replicateRxCollection({
+                collection: db2.humans,
+                replicationIdentifier: 'migrate-replication-state',
+                live: false,
+                autoStart: true,
+                waitForLeadership: false
+            });
+
+            /**
+             * It should not have transfered any documents
+             */
+            let hasTransfered = false;
+            replicationState2.sent$.subscribe(() => {
+                hasTransfered = true;
+            });
+            replicationState2.received$.subscribe(() => {
+                hasTransfered = true;
+            });
+
+            await replicationState2.awaitInitialReplication();
+            await replicationState2.cancel();
+
+            if (hasTransfered) {
+                throw new Error('should not have transfered data');
+            }
+
+            await db2.destroy();
         });
     });
     describe('issues', () => {

@@ -83,7 +83,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
     readonly canceled$: Observable<any> = this.subjects.canceled.asObservable();
     readonly active$: Observable<boolean> = this.subjects.active.asObservable();
 
-    private startPromise: Promise<void>;
+    public startPromise: Promise<void>;
     constructor(
         /**
          * The identifier, used to flag revisions
