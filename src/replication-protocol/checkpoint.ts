@@ -119,11 +119,6 @@ export async function setCheckpoint<RxDocType, CheckpointType>(
                 if (error.status !== 409) {
                     throw error;
                 } else {
-
-                    if(!error.documentInDb){
-                        console.log('missing doc');
-                        console.dir(error);
-                    }
                     previousCheckpointDoc = ensureNotFalsy(error.documentInDb);
                     newDoc._rev = createRevision(
                         await state.checkpointKey,

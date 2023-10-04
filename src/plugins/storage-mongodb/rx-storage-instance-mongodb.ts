@@ -272,10 +272,11 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
                             swapRxDocToMongo(writeRow.document),
                             {
                                 includeResultMetadata: true,
-                                upsert: false
+                                upsert: false,
+                                returnDocument: 'before'
                             }
                         );
-                        if (!writeResult.value) {
+                        if (!writeResult.ok) {
 
                             console.log('writeResult:');
                             console.dir(writeResult);

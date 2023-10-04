@@ -1,6 +1,6 @@
 # SQLite RxStorage
 
-This [RxStorage](./rx-storage.md) is based on [SQLite](https://www.sqlite.org/index.html) and is made to work with **Node.js**, **Electron**, **React Native**, **Cordova** and **Capacitor**.
+This [RxStorage](./rx-storage.md) is based on [SQLite](https://www.sqlite.org/index.html) and is made to work with **Node.js**, **Electron**, **React Native** and **Capacitor**.
 
 
 ### Pros
