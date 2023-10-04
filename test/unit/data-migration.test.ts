@@ -802,21 +802,21 @@ config.parallel('data-migration.test.ts', () => {
             });
 
             /**
-             * It should not have transfered any documents
+             * It should not have transferred any documents
              */
-            let hasTransfered = false;
+            let hasTransferred = false;
             replicationState2.sent$.subscribe(() => {
-                hasTransfered = true;
+                hasTransferred = true;
             });
             replicationState2.received$.subscribe(() => {
-                hasTransfered = true;
+                hasTransferred = true;
             });
 
             await replicationState2.awaitInitialReplication();
             await replicationState2.cancel();
 
-            if (hasTransfered) {
-                throw new Error('should not have transfered data');
+            if (hasTransferred) {
+                throw new Error('should not have transferred data');
             }
 
             await db2.destroy();
