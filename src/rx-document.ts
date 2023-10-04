@@ -484,6 +484,12 @@ export function defineGetterSetter(
                 configurable: false
             });
             // setter - value
+            /**
+             * TODO setters are not allowed on RxDocuments.
+             * They were only useful for temporary documents
+             * which have been removed in a previous RxDB version.
+             * So we can remove the set-functionality here.
+             */
             valueObj.__defineSetter__(key, function (
                 this: RxDocument,
                 val: any

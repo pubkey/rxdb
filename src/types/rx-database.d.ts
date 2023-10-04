@@ -1,5 +1,4 @@
 import {
-    MigrationState,
     RxCollection,
     RxDumpCollection,
     RxDumpCollectionAsAny
@@ -57,10 +56,6 @@ export type RxDatabase<
 > &
     Collections & RxDatabaseGenerated<Collections>;
 
-export type AllMigrationStates = {
-    collection: RxCollection;
-    state: MigrationState;
-}[];
 
 export interface RxLocalDocumentMutation<StorageType> {
     insertLocal<LocalDocType = any>(id: string, data: LocalDocType): Promise<

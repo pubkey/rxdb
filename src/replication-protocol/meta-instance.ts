@@ -16,6 +16,8 @@ import type {
 import { getDefaultRevision, createRevision, now } from '../plugins/utils';
 
 
+export const META_INSTANCE_SCHEMA_TITLE = 'RxReplicationProtocolMetaData';
+
 export function getRxReplicationMetaInstanceSchema(
     replicatedDocumentsSchema: RxJsonSchema<RxDocumentData<any>>,
     encrypted: boolean
@@ -23,6 +25,7 @@ export function getRxReplicationMetaInstanceSchema(
     const parentPrimaryKeyLength = getLengthOfPrimaryKey(replicatedDocumentsSchema);
 
     const baseSchema: RxJsonSchema<RxStorageReplicationMeta> = {
+        title: META_INSTANCE_SCHEMA_TITLE,
         primaryKey: {
             key: 'id',
             fields: [
@@ -32,7 +35,7 @@ export function getRxReplicationMetaInstanceSchema(
             separator: '|'
         },
         type: 'object',
-        version: 0,
+        version: replicatedDocumentsSchema.version,
         additionalProperties: false,
         properties: {
             id: {
@@ -52,7 +55,11 @@ export function getRxReplicationMetaInstanceSchema(
             },
             itemId: {
                 type: 'string',
-                maxLength: parentPrimaryKeyLength
+                /**
+                 * ensure that all values of RxStorageReplicationDirection ('DOWN' has 4 chars) fit into it
+                 * because checkpoints use the itemId field for that.
+                 */
+                maxLength: parentPrimaryKeyLength > 4 ? parentPrimaryKeyLength : 4
             },
             data: {
                 type: 'object',

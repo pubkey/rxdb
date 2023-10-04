@@ -64,6 +64,13 @@ import type {
 } from './memory-types';
 import { getQueryMatcher, getSortComparator } from '../../rx-query-helper';
 
+
+/**
+ * Used in tests to ensure everything
+ * is closed correctly
+ */
+export const OPEN_MEMORY_INSTANCES = new Set<RxStorageInstanceMemory<any>>();
+
 export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
     RxDocType,
     MemoryStorageInternals<RxDocType>,
@@ -83,6 +90,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         public readonly options: Readonly<RxStorageMemoryInstanceCreationOptions>,
         public readonly settings: RxStorageMemorySettings
     ) {
+        OPEN_MEMORY_INSTANCES.add(this);
         this.primaryPath = getPrimaryFieldOfPrimaryKey(this.schema.primaryKey);
     }
 
@@ -509,6 +517,8 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
     }
 
     close(): Promise<void> {
+        OPEN_MEMORY_INSTANCES.delete(this);
+
         this.ensurePersistence();
         if (this.closed) {
             return Promise.reject(new Error('already closed'));

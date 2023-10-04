@@ -10,7 +10,6 @@ import type {
     RxCollection,
     RxDumpDatabase,
     RxDumpDatabaseAny,
-    AllMigrationStates,
     BackupOptions,
     RxStorage,
     RxStorageInstance,
@@ -80,6 +79,7 @@ import {
 } from './rx-database-internal-store';
 import { removeCollectionStorages } from './rx-collection-helper';
 import { overwritable } from './overwritable';
+import type { RxMigrationState } from './plugins/migration';
 
 /**
  * stores the used database names
@@ -273,9 +273,7 @@ export class RxDatabaseBase<
         const bulkPutDocs: BulkWriteRow<InternalStoreCollectionDocType>[] = [];
         const useArgsByCollectionName: any = {};
 
-
         await Promise.all(
-
             Object.entries(collectionCreators).map(async ([name, args]) => {
                 const collectionName: keyof CreatedCollections = name as any;
                 const rxJsonSchema = (args as RxCollectionCreator<any>).schema;
@@ -436,7 +434,7 @@ export class RxDatabaseBase<
         throw pluginMissing('leader-election');
     }
 
-    public migrationStates(): Observable<AllMigrationStates> {
+    public migrationStates(): Observable<RxMigrationState[]> {
         throw pluginMissing('migration');
     }
 

@@ -31,7 +31,7 @@ export function deepFreeze<T>(o: T): T {
  * RxDB normally uses the 'dot-prop' npm module.
  * But when performance is really relevant, this is not fast enough.
  * Instead we use a monad that can prepare some stuff up front
- * and we can re-use the generated function.
+ * and we can reuse the generated function.
  */
 export type ObjectPathMonadFunction<T, R = any> = (obj: T) => R;
 export function objectPathMonad<T, R = any>(objectPath: string): ObjectPathMonadFunction<T, R> {

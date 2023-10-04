@@ -162,7 +162,13 @@ export async function awaitRxStorageReplicationIdle(
 export function rxStorageInstanceToReplicationHandler<RxDocType, MasterCheckpointType>(
     instance: RxStorageInstance<RxDocType, any, any, MasterCheckpointType>,
     conflictHandler: RxConflictHandler<RxDocType>,
-    databaseInstanceToken: string
+    databaseInstanceToken: string,
+    /**
+     * If set to true,
+     * the _meta.lwt from the pushed documents is kept.
+     * (Used in the migration to ensure checkpoints are still valid)
+     */
+    keepMeta: boolean = false
 ): RxReplicationHandler<RxDocType, MasterCheckpointType> {
     const hasAttachments = !!instance.schema.attachments;
     const primaryPath = getPrimaryFieldOfPrimaryKey(instance.schema.primaryKey);
@@ -173,7 +179,7 @@ export function rxStorageInstanceToReplicationHandler<RxDocType, MasterCheckpoin
                     checkpoint: eventBulk.checkpoint,
                     documents: await Promise.all(
                         eventBulk.events.map(async (event) => {
-                            let docData = writeDocToDocState(event.documentData, hasAttachments);
+                            let docData = writeDocToDocState(event.documentData, hasAttachments, keepMeta);
                             if (hasAttachments) {
                                 docData = await fillWriteDataForAttachmentsChange(
                                     primaryPath,
@@ -207,7 +213,7 @@ export function rxStorageInstanceToReplicationHandler<RxDocType, MasterCheckpoin
                     checkpoint: result.documents.length > 0 ? result.checkpoint : checkpoint,
                     documents: await Promise.all(
                         result.documents.map(async (plainDocumentData) => {
-                            let docData = writeDocToDocState(plainDocumentData, hasAttachments);
+                            let docData = writeDocToDocState(plainDocumentData, hasAttachments, keepMeta);
                             if (hasAttachments) {
                                 docData = await fillWriteDataForAttachmentsChange(
                                     primaryPath,
@@ -243,7 +249,6 @@ export function rxStorageInstanceToReplicationHandler<RxDocType, MasterCheckpoin
             );
             const masterDocsState = new Map<string, RxDocumentData<RxDocType>>();
             masterDocsStateList.forEach(doc => masterDocsState.set((doc as any)[primaryPath], doc));
-
             const conflicts: WithDeleted<RxDocType>[] = [];
             const writeRows: BulkWriteRow<RxDocType>[] = [];
             await Promise.all(
@@ -252,30 +257,28 @@ export function rxStorageInstanceToReplicationHandler<RxDocType, MasterCheckpoin
                         const masterState = masterDocsState.get(id);
                         if (!masterState) {
                             writeRows.push({
-                                document: docStateToWriteDoc(databaseInstanceToken, hasAttachments, row.newDocumentState)
+                                document: docStateToWriteDoc(databaseInstanceToken, hasAttachments, keepMeta, row.newDocumentState)
                             });
                         } else if (
                             masterState &&
                             !row.assumedMasterState
                         ) {
-                            conflicts.push(writeDocToDocState(masterState, hasAttachments));
+                            conflicts.push(writeDocToDocState(masterState, hasAttachments, keepMeta));
                         } else if (
                             (await conflictHandler({
-                                realMasterState: writeDocToDocState(masterState, hasAttachments),
+                                realMasterState: writeDocToDocState(masterState, hasAttachments, keepMeta),
                                 newDocumentState: ensureNotFalsy(row.assumedMasterState)
                             }, 'rxStorageInstanceToReplicationHandler-masterWrite')).isEqual === true
                         ) {
                             writeRows.push({
                                 previous: masterState,
-                                document: docStateToWriteDoc(databaseInstanceToken, hasAttachments, row.newDocumentState, masterState)
+                                document: docStateToWriteDoc(databaseInstanceToken, hasAttachments, keepMeta, row.newDocumentState, masterState)
                             });
                         } else {
-                            conflicts.push(writeDocToDocState(masterState, hasAttachments));
+                            conflicts.push(writeDocToDocState(masterState, hasAttachments, keepMeta));
                         }
                     })
             );
-
-
             if (writeRows.length > 0) {
                 const result = await instance.bulkWrite(
                     writeRows,
@@ -286,7 +289,7 @@ export function rxStorageInstanceToReplicationHandler<RxDocType, MasterCheckpoin
                         throw new Error('non conflict error');
                     } else {
                         conflicts.push(
-                            writeDocToDocState(ensureNotFalsy(err.documentInDb), hasAttachments)
+                            writeDocToDocState(ensureNotFalsy(err.documentInDb), hasAttachments, keepMeta)
                         );
                     }
                 });

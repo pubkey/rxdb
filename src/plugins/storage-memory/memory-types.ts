@@ -32,7 +32,7 @@ export type MemoryStorageInternalsByIndex<RxDocType> = {
  */
 export type MemoryStorageInternals<RxDocType> = {
     /**
-     * We re-use the memory state when multiple instances
+     * We reuse the memory state when multiple instances
      * are created with the same params.
      * If refCount becomes 0, we can delete the state.
      */

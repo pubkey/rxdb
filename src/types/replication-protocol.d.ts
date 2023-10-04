@@ -1,5 +1,9 @@
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
-import { RxConflictHandler, RxConflictHandlerInput, RxConflictHandlerOutput } from './conflict-handling';
+import {
+    RxConflictHandler,
+    RxConflictHandlerInput,
+    RxConflictHandlerOutput
+} from './conflict-handling';
 import { RxError, RxTypeError } from './rx-error';
 import {
     BulkWriteRow,
@@ -115,6 +119,9 @@ export type RxStorageInstanceReplicationInput<RxDocType> = {
     pushBatchSize: number;
     replicationHandler: RxReplicationHandler<RxDocType, any>;
     conflictHandler: RxConflictHandler<RxDocType>;
+
+    // can be set to also replicate the _meta field of the document.
+    keepMeta?: boolean;
 
     /**
      * The fork is the one that contains the forked chain of document writes.

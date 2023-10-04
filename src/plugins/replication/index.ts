@@ -8,6 +8,7 @@
 import {
     BehaviorSubject,
     combineLatest,
+    filter,
     mergeMap,
     Observable,
     Subject,
@@ -82,7 +83,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
     readonly canceled$: Observable<any> = this.subjects.canceled.asObservable();
     readonly active$: Observable<boolean> = this.subjects.active.asObservable();
 
-    private startPromise: Promise<void>;
+    public startPromise: Promise<void>;
     constructor(
         /**
          * The identifier, used to flag revisions
@@ -175,6 +176,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
             conflictHandler: this.collection.conflictHandler,
             replicationHandler: {
                 masterChangeStream$: this.remoteEvents$.asObservable().pipe(
+                    filter(_v => !!this.pull),
                     mergeMap(async (ev) => {
                         if (ev === 'RESYNC') {
                             return ev;

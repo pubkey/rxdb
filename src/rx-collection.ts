@@ -29,7 +29,7 @@ import {
     newRxTypeError
 } from './rx-error';
 import type {
-    DataMigrator
+    RxMigrationState
 } from './plugins/migration';
 import {
     DocumentCache
@@ -55,7 +55,6 @@ import {
 
 import type {
     KeyFunctionMap,
-    MigrationState,
     RxCollection,
     RxDatabase,
     RxQuery,
@@ -81,7 +80,8 @@ import type {
     RxConflictHandler,
     MaybePromise,
     CRDTEntry,
-    MangoQuerySelectorAndIndex
+    MangoQuerySelectorAndIndex,
+    MigrationStrategies
 } from './types';
 
 import {
@@ -129,7 +129,7 @@ export class RxCollectionBase<
         public schema: RxSchema<RxDocumentType>,
         public internalStorageInstance: RxStorageInstance<RxDocumentType, any, InstanceCreationOptions>,
         public instanceCreationOptions: InstanceCreationOptions = {} as any,
-        public migrationStrategies: KeyFunctionMap = {},
+        public migrationStrategies: MigrationStrategies = {},
         public methods: KeyFunctionMap = {},
         public attachments: KeyFunctionMap = {},
         public options: any = {},
@@ -269,14 +269,14 @@ export class RxCollectionBase<
     migrationNeeded(): Promise<boolean> {
         throw pluginMissing('migration');
     }
-    getDataMigrator(): DataMigrator {
+    getMigrationState(): RxMigrationState {
         throw pluginMissing('migration');
     }
-    migrate(batchSize: number = 10): Observable<MigrationState> {
-        return this.getDataMigrator().migrate(batchSize);
+    startMigration(batchSize: number = 10): Promise<void> {
+        return this.getMigrationState().startMigration(batchSize);
     }
     migratePromise(batchSize: number = 10): Promise<any> {
-        return this.getDataMigrator().migratePromise(batchSize);
+        return this.getMigrationState().migratePromise(batchSize);
     }
 
     async insert(

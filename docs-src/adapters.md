@@ -7,10 +7,16 @@ Depending on which environment you work in, you can choose between different ada
 
 This page is an overview over the different adapters with recommendations on what to use where.
 
-**Please always ensure that your pouchdb adapter-version is the same as `pouchdb-core` in the [rxdb package.json](https://github.com/pubkey/rxdb/blob/master/package.json). Otherwise, you might have strange problems**
+---------------------- 
 
 ## IMPORTANT:
-The PouchDB RxStorage [is deprecated](https://rxdb.info/questions-answers.html#why-is-the-pouchdb-rxstorage-deprecated) and should no longer be used in new projects.
+The PouchDB RxStorage [is removed from RxDB](https://rxdb.info/questions-answers.html#why-is-the-pouchdb-rxstorage-deprecated) and can no longer be used in new projects. You should switch to a different [RxStorage](./rx-storage.md).
+
+---------------------- 
+
+
+Please always ensure that your pouchdb adapter-version is the same as `pouchdb-core` in the [rxdb package.json](https://github.com/pubkey/rxdb/blob/master/package.json). Otherwise, you might have strange problems.
+
 
 # Any environment
 

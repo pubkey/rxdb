@@ -18,6 +18,7 @@ import { stripAttachmentsDataFromDocument } from '../rx-storage-helper';
 export function docStateToWriteDoc<RxDocType>(
     databaseInstanceToken: string,
     hasAttachments: boolean,
+    keepMeta: boolean,
     docState: WithDeletedAndAttachments<RxDocType>,
     previous?: RxDocumentData<RxDocType>
 ): RxDocumentWriteData<RxDocType> {
@@ -26,7 +27,7 @@ export function docStateToWriteDoc<RxDocType>(
         docState,
         {
             _attachments: hasAttachments && docState._attachments ? docState._attachments : {},
-            _meta: {
+            _meta: keepMeta ? (docState as any)._meta : {
                 lwt: now()
             },
             _rev: getDefaultRevision()
@@ -41,14 +42,17 @@ export function docStateToWriteDoc<RxDocType>(
 
 export function writeDocToDocState<RxDocType>(
     writeDoc: RxDocumentData<RxDocType>,
-    keepAttachments: boolean
+    keepAttachments: boolean,
+    keepMeta: boolean
 ): WithDeletedAndAttachments<RxDocType> {
     const ret = flatClone(writeDoc);
 
     if (!keepAttachments) {
         delete (ret as any)._attachments;
     }
-    delete (ret as any)._meta;
+    if (!keepMeta) {
+        delete (ret as any)._meta;
+    }
     delete (ret as any)._rev;
     return ret;
 }

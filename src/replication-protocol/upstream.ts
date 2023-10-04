@@ -25,7 +25,10 @@ import {
     setCheckpoint
 } from './checkpoint';
 import { resolveConflictError } from './conflicts';
-import { stripAttachmentsDataFromMetaWriteRows, writeDocToDocState } from './helper';
+import {
+    stripAttachmentsDataFromMetaWriteRows,
+    writeDocToDocState
+} from './helper';
 import {
     getAssumedMasterState,
     getMetaWriteRow
@@ -254,7 +257,7 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
                 docIds.map(async (docId) => {
                     const fullDocData: RxDocumentData<RxDocType> = upDocsById[docId];
                     forkStateById[docId] = fullDocData;
-                    const docData: WithDeleted<RxDocType> = writeDocToDocState(fullDocData, state.hasAttachments);
+                    const docData: WithDeleted<RxDocType> = writeDocToDocState(fullDocData, state.hasAttachments, !!state.input.keepMeta);
                     const assumedMasterDoc = assumedMasterState[docId];
 
                     /**

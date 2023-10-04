@@ -13,7 +13,6 @@ import {
 import type {
     RxDocument,
     RxPlugin,
-    OldRxCollection,
     RxDocumentWriteData,
     RxAttachmentData,
     RxDocumentData,
@@ -184,7 +183,7 @@ export function allAttachments(
 export async function preMigrateDocument<RxDocType>(
     data: {
         docData: RxDocumentData<RxDocType>;
-        oldCollection: OldRxCollection;
+        oldCollection: any; // TODO
     }
 ): Promise<void> {
     const attachments = data.docData._attachments;

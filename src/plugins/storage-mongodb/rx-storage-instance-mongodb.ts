@@ -245,7 +245,7 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
                                 status: 409,
                                 documentId: docId,
                                 writeRow,
-                                documentInDb: swapMongoToRxDoc(writeResult.value),
+                                documentInDb: swapMongoToRxDoc(ensureNotFalsy(writeResult.value)),
                                 isError: true
                             };
                             ret.error.push(conflictError);
@@ -272,10 +272,11 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
                             swapRxDocToMongo(writeRow.document),
                             {
                                 includeResultMetadata: true,
-                                upsert: false
+                                upsert: false,
+                                returnDocument: 'before'
                             }
                         );
-                        if (!writeResult.value) {
+                        if (!writeResult.ok) {
                             const currentDocState = await this.findDocumentsById([docId], true);
                             const currentDoc = currentDocState[0];
                             // had insert conflict
@@ -283,7 +284,7 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
                                 status: 409,
                                 documentId: docId,
                                 writeRow,
-                                documentInDb: currentDoc,
+                                documentInDb: ensureNotFalsy(currentDoc),
                                 isError: true
                             };
                             ret.error.push(conflictError);

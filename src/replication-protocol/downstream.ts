@@ -288,7 +288,7 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
                     docIds.map(async (docId) => {
                         const forkStateFullDoc: RxDocumentData<RxDocType> | undefined = currentForkState.get(docId);
                         const forkStateDocData: WithDeletedAndAttachments<RxDocType> | undefined = forkStateFullDoc
-                            ? writeDocToDocState(forkStateFullDoc, state.hasAttachments)
+                            ? writeDocToDocState(forkStateFullDoc, state.hasAttachments, false)
                             : undefined
                             ;
                         const masterState = downDocsById[docId];
