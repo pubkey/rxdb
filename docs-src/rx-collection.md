@@ -129,6 +129,7 @@ const doc = await myCollection.upsert({
 
 ### bulkUpsert()
 Same as `upsert()` but runs over multiple documents. Improves performance compared to running many `upsert()` calls.
+Returns an `error` and a `success` array.
 
 ```js
 const docs = await myCollection.bulkUpsert([
@@ -141,7 +142,12 @@ const docs = await myCollection.bulkUpsert([
     lastname: 'foo2'
   }
 ]);
-// > [RxDocument, RxDocument]
+/**
+ * {
+ *   success: [RxDocument, RxDocument]
+ *   error: [],
+ * }
+ */
 ```
 
 ### incrementalUpsert()

@@ -54,7 +54,7 @@ This was changed in v14 for a normal RxDocument.$ which emits RxDocument instanc
 
 Interestingly, `received$` has been named correctly
 
-## .bulkUpsert should behave equal to the other bulk methods
+## .bulkUpsert should behave equal to the other bulk methods [DONE]
 
 https://github.com/pubkey/rxdb/issues/4821#issuecomment-1660339676
 

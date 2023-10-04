@@ -12,8 +12,7 @@ import {
     ensureNotFalsy,
     getFromMapOrThrow,
     PROMISE_RESOLVE_FALSE,
-    PROMISE_RESOLVE_VOID,
-    appendToArray
+    PROMISE_RESOLVE_VOID
 } from './plugins/utils';
 import {
     fillObjectDataBeforeInsert,
@@ -427,7 +426,10 @@ export class RxCollectionBase<
     /**
      * same as bulkInsert but overwrites existing document with same primary
      */
-    async bulkUpsert(docsData: Partial<RxDocumentType>[]): Promise<RxDocument<RxDocumentType, OrmMethods>[]> {
+    async bulkUpsert(docsData: Partial<RxDocumentType>[]): Promise<{
+        success: RxDocument<RxDocumentType, OrmMethods>[];
+        error: RxStorageWriteError<RxDocumentType>[];
+    }> {
         const insertData: RxDocumentType[] = [];
         const useJsonByDocId: Map<string, RxDocumentType> = new Map();
         docsData.forEach(docData => {
@@ -445,32 +447,42 @@ export class RxCollectionBase<
         });
 
         const insertResult = await this.bulkInsert(insertData);
-        const ret = insertResult.success.slice(0);
-        const updatedDocs = await Promise.all(
-            insertResult.error.map(async (error) => {
-                if (error.status !== 409) {
-                    throw newRxError('VD2', {
-                        collection: this.name,
-                        writeError: error
-                    });
+        const success = insertResult.success.slice(0);
+        const error: RxStorageWriteError<RxDocumentType>[] = [];
+
+        // update the ones that existed already
+        await Promise.all(
+            insertResult.error.map(async (err) => {
+                if (err.status !== 409) {
+                    error.push(err);
+                } else {
+                    const id = err.documentId;
+                    const writeData = getFromMapOrThrow(useJsonByDocId, id);
+                    const docDataInDb = ensureNotFalsy(err.documentInDb);
+                    const doc = this._docCache.getCachedRxDocument(docDataInDb);
+                    const newDoc = await doc.incrementalModify(() => writeData);
+                    success.push(newDoc);
                 }
-                const id = error.documentId;
-                const writeData = getFromMapOrThrow(useJsonByDocId, id);
-                const docDataInDb = ensureNotFalsy(error.documentInDb);
-                const doc = this._docCache.getCachedRxDocument(docDataInDb);
-                const newDoc = await doc.incrementalModify(() => writeData);
-                return newDoc;
             })
         );
-        appendToArray(ret, updatedDocs);
-        return ret;
+        return {
+            error,
+            success
+        };
     }
 
     /**
      * same as insert but overwrites existing document with same primary
      */
-    upsert(json: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType, OrmMethods>> {
-        return this.bulkUpsert([json]).then(result => result[0]);
+    async upsert(json: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType, OrmMethods>> {
+        const bulkResult = await this.bulkUpsert([json]);
+        throwIfIsStorageWriteError<RxDocumentType>(
+            this.asRxCollection,
+            (json as any)[this.schema.primaryPath],
+            json as any,
+            bulkResult.error[0]
+        );
+        return bulkResult.success[0];
     }
 
     /**
