@@ -139,7 +139,7 @@ export function storageChangeEventToRxChangeEvent<DocType>(
 }
 
 export function throwIfIsStorageWriteError<RxDocType>(
-    collection: RxCollection<RxDocType>,
+    collection: RxCollection<RxDocType, any, any>,
     documentId: string,
     writeData: RxDocumentWriteData<RxDocType> | RxDocType,
     error: RxStorageWriteError<RxDocType> | undefined

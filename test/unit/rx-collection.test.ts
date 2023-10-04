@@ -1383,7 +1383,8 @@ describe('rx-collection.test.ts', () => {
                     data.age = 100;
                     return data;
                 });
-                await c.bulkUpsert(docsData);
+                const result = await c.bulkUpsert(docsData);
+                assert.deepStrictEqual(result.error, []);
                 allDocs = await c.find().exec();
                 assert.strictEqual(allDocs.length, amount);
                 allDocs.forEach(d => assert.strictEqual(d.age, 100));
