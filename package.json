@@ -363,6 +363,7 @@
     "test:bun:dexie": "npm run transpile && cross-env DEFAULT_STORAGE=dexie NODE_ENV=fast bun run ./node_modules/mocha/bin/mocha test_tmp/unit.test.js --bail",
     "test:node:foundationdb": "npm run transpile && cross-env DEFAULT_STORAGE=foundationdb mocha --expose-gc --config ./config/.mocharc.js ./test_tmp/unit.test.js",
     "test:node:mongodb": "npm run transpile && cross-env DEFAULT_STORAGE=mongodb mocha --expose-gc --config ./config/.mocharc.js ./test_tmp/unit.test.js",
+    "test:node:mongodb:loop": "npm run test:node:mongodb && npm run test:node:mongodb:loop",
     "test:node:remote": "npm run transpile && cross-env DEFAULT_STORAGE=remote mocha --expose-gc --config ./config/.mocharc.js ./test_tmp/unit.test.js",
     "test:node:lokijs:loop": "npm run test:node:lokijs && npm run test:node:lokijs:loop",
     "test:node:memory:loop": "npm run test:node:memory && npm run test:node:memory:loop",
