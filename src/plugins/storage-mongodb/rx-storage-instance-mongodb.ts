@@ -277,6 +277,8 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
                         );
                         if (!writeResult.value) {
 
+                            console.log('writeResult:');
+                            console.dir(writeResult);
                             console.log('fiund current by id: ' + docId);
                             const currentDocState = await this.findDocumentsById([docId], true);
                             const currentDoc = currentDocState[0];
