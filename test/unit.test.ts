@@ -10,7 +10,6 @@ import './unit/util.test';
 import './unit/custom-index.test';
 import './unit/query-planner.test';
 
-import './unit/data-migration.test'; // TODO move down
 
 /**
  * Move these tests around so that
@@ -59,6 +58,7 @@ import './unit/replication-graphql.test';
 import './unit/replication-couchdb.test';
 import './unit/replication-websocket.test';
 import './unit/replication-webrtc.test';
+import './unit/data-migration.test';
 import './unit/crdt.test';
 import './unit/population.test';
 import './unit/leader-election.test';

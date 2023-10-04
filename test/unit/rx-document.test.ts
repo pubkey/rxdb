@@ -60,9 +60,6 @@ describe('rx-document.test.js', () => {
                     assert.strictEqual(testObj[k], testObjData[k]); // getter attribute
                     assert.strictEqual(testObj[k + '$'], 'Observable:' + k); // getter observable
                     assert.strictEqual(testObj[k + '_'], 'Promise:' + k); // getter populate
-                    // test setter
-                    testObj[k] = 'foo';
-                    assert.strictEqual(testObjData[k], 'foo');
                 });
             });
         });

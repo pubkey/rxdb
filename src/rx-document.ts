@@ -441,8 +441,12 @@ export function defineGetterSetter(
         objPath
     );
 
-    if (typeof pathProperties === 'undefined') return;
-    if (pathProperties.properties) pathProperties = pathProperties.properties;
+    if (typeof pathProperties === 'undefined') {
+        return;
+    }
+    if (pathProperties.properties) {
+        pathProperties = pathProperties.properties;
+    }
 
     Object.keys(pathProperties)
         .forEach(key => {
@@ -482,20 +486,6 @@ export function defineGetterSetter(
                 },
                 enumerable: false,
                 configurable: false
-            });
-            // setter - value
-            /**
-             * TODO setters are not allowed on RxDocuments.
-             * They were only useful for temporary documents
-             * which have been removed in a previous RxDB version.
-             * So we can remove the set-functionality here.
-             */
-            valueObj.__defineSetter__(key, function (
-                this: RxDocument,
-                val: any
-            ) {
-                const _this: any = thisObj ? thisObj : this;
-                return _this.set(fullPath, val);
             });
         });
 }
