@@ -212,7 +212,7 @@ export const basePrototype = {
                      */
                     flatClone(valueObj),
                     {
-                        get(target, property) {
+                        get(target, property: any) {
                             if (typeof property !== 'string') {
                                 return target[property];
                             }

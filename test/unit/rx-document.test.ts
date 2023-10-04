@@ -17,7 +17,8 @@ import {
     addRxPlugin,
     RxCollection,
     createBlob,
-    defaultHashSha256
+    defaultHashSha256,
+    RxJsonSchema
 } from '../../plugins/core';
 
 
@@ -1111,6 +1112,75 @@ describe('rx-document.test.js', () => {
                     name: 'test1'
                 }
             }).remove();
+
+            // clean up afterwards
+            db.destroy();
+        });
+        it('#4949 RxDocument.get() on additonalProperty', async () => {
+            const mySchema: RxJsonSchema<any> = {
+                version: 0,
+                primaryKey: 'passportId',
+                type: 'object',
+                properties: {
+                    passportId: {
+                        type: 'string',
+                        maxLength: 100
+                    },
+                    firstName: {
+                        type: 'string'
+                    },
+                    lastName: {
+                        type: 'string'
+                    },
+                    age: {
+                        type: 'integer',
+                        minimum: 0,
+                        maximum: 150
+                    },
+                    tags: {
+                        type: 'object',
+                        additionalProperties: true,
+                    },
+                },
+            };
+            const db = await createRxDatabase({
+                name: randomCouchString(10),
+                storage: config.storage.getStorage()
+            });
+            const collections = await db.addCollections({
+                mycollection: {
+                    schema: mySchema
+                }
+            });
+            const tags = {
+                hello: {
+                    created: 1,
+                    name: 'hello',
+                },
+                world: {
+                    created: 2,
+                    name: 'world',
+                }
+            };
+            const myDocument = await collections.mycollection.insert({
+                passportId: 'foobar',
+                firstName: 'Bob',
+                lastName: 'Kelso',
+                age: 56,
+                tags
+            });
+
+            assert.deepStrictEqual(myDocument.toJSON().tags.hello, tags.hello, 'myDocument.toJSON().tags.hello');
+            assert.deepStrictEqual(myDocument.toJSON().tags.world, tags.world, 'myDocument.toJSON().tags.world');
+            assert.deepStrictEqual(Object.keys(myDocument.toJSON().tags), Object.keys(tags), 'Object.keys(myDocument.toJSON().tags)');
+            assert.deepStrictEqual(myDocument.get('tags').hello, tags.hello, 'myDocument.get(\'tags\').hello');
+
+            assert.deepStrictEqual(myDocument.get('tags').world, tags.world, 'myDocument.get(\'tags\').world');
+            assert.deepStrictEqual(Object.keys(myDocument.get('tags')), Object.keys(tags), 'Object.keys(myDocument.get(\'tags\'))');
+
+            assert.deepStrictEqual(myDocument.tags.hello, tags.hello, 'myDocument.tags.hello');
+            assert.deepStrictEqual(myDocument.tags.world, tags.world, 'myDocument.tags.world');
+            assert.deepStrictEqual(Object.keys(myDocument.tags), Object.keys(tags), 'Object.keys(myDocument.tags)');
 
             // clean up afterwards
             db.destroy();

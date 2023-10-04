@@ -1535,3 +1535,4 @@ BEFORE:
 AFTER:
 "property-access": 4.71
 "property-access": 5.14
+"property-access": 5.07
