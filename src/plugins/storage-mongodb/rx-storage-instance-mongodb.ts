@@ -245,7 +245,7 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
                                 status: 409,
                                 documentId: docId,
                                 writeRow,
-                                documentInDb: swapMongoToRxDoc(writeResult.value),
+                                documentInDb: swapMongoToRxDoc(ensureNotFalsy(writeResult.value)),
                                 isError: true
                             };
                             ret.error.push(conflictError);
@@ -283,7 +283,7 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
                                 status: 409,
                                 documentId: docId,
                                 writeRow,
-                                documentInDb: currentDoc,
+                                documentInDb: ensureNotFalsy(currentDoc),
                                 isError: true
                             };
                             ret.error.push(conflictError);
