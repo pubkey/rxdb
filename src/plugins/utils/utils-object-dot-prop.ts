@@ -182,6 +182,9 @@ function assertNotStringIndex(object: any, key: string | number) {
     }
 }
 
+/**
+ * TODO we need some performance tests and improvements here.
+ */
 export function getProperty(object: any, path: string | string[], value?: any) {
     if (Array.isArray(path)) {
         path = path.join('.');
