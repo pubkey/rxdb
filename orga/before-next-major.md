@@ -31,14 +31,14 @@ Proposed solution:
 - During migration, listen to the events of the new storage instance and store the last event in the internals collection
 - After the migration has run, the replication plugins start from that latest event and only replicate document writes that have occurred after the migration.
 
-## Refactor data-migrator
+## Refactor data-migrator [DONE]
 
  - This could have been done in much less code which would be easier to understand.
  - Migration strategies should be defined [like in WatermelonDB](https://nozbe.github.io/WatermelonDB/Advanced/Migrations.html) with a `toVersion` version field. We should also add a `fromVersion` field so people could implement performance shortcuts by directly jumping several versions. The current migration strategies use the array index as `toVersion` which is confusing.
 
-## Ensure data migration only runs on the leading browser tab.
+## Ensure data migration only runs on the leading browser tab. [DONE]
 
-## Migrate assumed master state of the replicated documents
+## Migrate assumed master state of the replicated documents [DONE]
 
 [Quote from discord](https://discord.com/channels/969553741705539624/1050381589399470160/1143158499715588220): 
 
@@ -95,7 +95,6 @@ index the results.
 
 ---------------------------------
 # Maybe later (not sure if should be done)
-
 
 
 ## Do not allow type mixing

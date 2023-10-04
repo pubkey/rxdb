@@ -1,6 +1,8 @@
-# DataMigration
+# Migrate Database Data on schema changes
 
-Imagine you have your awesome messenger-app distributed to many users. After a while, you decide that in your new version, you want to change the schema of the messages-collection. Instead of saving the message-date like `2017-02-12T23:03:05+00:00` you want to have the unix-timestamp like `1486940585` to make it easier to compare dates. To accomplish this, you change the schema and increase the version-number and you also change your code where you save the incoming messages. But one problem remains: what happens with the messages which are already saved on the user's device in the old schema?
+The RxDB Data Migration Plugin helps developers easily update stored data in their apps when they make changes to the data structure by changing the schema of a [RxCollection](./rx-collection.md). This is useful when developers release a new version of the app with a different schema.
+
+Imagine you have your awesome messenger-app distributed to many users. After a while, you decide that in your new version, you want to change the schema of the messages-collection. Instead of saving the message-date like `2017-02-12T23:03:05+00:00` you want to have the unix-timestamp like `1486940585` to make it easier to compare dates. To accomplish this, you change the schema and **increase the version-number** and you also change your code where you save the incoming messages. But one problem remains: what happens with the messages which are already stored in the database on the user's device in the old schema?
 
 With RxDB you can provide migrationStrategies for your collections that automatically (or on call) transform your existing data from older to newer schemas. This assures that the client's data always matches your newest code-version.
 
@@ -58,7 +60,7 @@ myDatabase.addCollections({
         return fetch('http://myserver.com/api/countryByCoordinates/'+coordinates+'/')
           .then(response => {
             const response = response.json();
-            oldDoc.senderCountry=response;
+            oldDoc.senderCountry = response;
             return oldDoc;
           });
       }
@@ -94,7 +96,8 @@ myDatabase.addCollections({
 
 ## autoMigrate
 
-By default, the migration automatically happens when the collection is created. If you have lots of data or the migrationStrategies take a long time, it might be better to start the migration 'by hand' and show the migration-state to the user as a loading-bar.
+By default, the migration automatically happens when the collection is created. Calling `RxDatabase.addRxCollections()` returns only when the migration has finished.
+If you have lots of data or the migrationStrategies take a long time, it might be better to start the migration 'by hand' and show the migration-state to the user as a loading-bar.
 
 ```javascript
 const messageCol = await myDatabase.addCollections({
@@ -116,12 +119,13 @@ const messageCol = await myDatabase.addCollections({
 const needed = await messageCol.migrationNeeded();
 if(needed == false) return;
 
-// starting the migration
+// start the migration
+messageCol.startMigration(10); // 10 is the batch-size, how many docs will run at parallel
 
-const migrationState$ = messageCol.migrate(10); // 10 is the batch-size, how many docs will run at parallel
+const migrationState = messageCol.getMigrationState();
 
 // 'start' the observable
-migrationState$.subscribe(
+migrationState.$.subscribe(
   state => console.dir(state),
   error => console.error(error),
   done => console.log('done')
@@ -129,12 +133,12 @@ migrationState$.subscribe(
 
 // the emitted states look like this:
 {
-    done: false, // true if finished
-    total: 50,   // amount of documents which must be migrated
-    handled: 0,  // amount of handled docs
-    success: 0,  // handled docs which succeeded
-    deleted: 0,  // handled docs which got deleted
-    percent: 0   // percentage
+    status: 'RUNNING' // oneOf 'RUNNING' | 'DONE' | 'ERROR'
+    count: {
+      total: 50,   // amount of documents which must be migrated
+      handled: 0,  // amount of handled docs
+      percent: 0   // percentage [0-100]
+    }
 }
 
 ```
@@ -149,16 +153,16 @@ If you don't want to show the state to the user, you can also use `.migratePromi
 
 ## migrationStates()
 
-`RxDatabase.migrationStates()` returns an `Observable` that emits all events to the ongoing migrations of all `RxCollection`s. Use it to log the current state of the overall migration process or to show a loading state to your user.
+`RxDatabase.migrationStates()` returns an `Observable` that emits all migration states of any collection of the database.
+Use this when you add collections dynamically and want to show a loading-state of the migrations to the user.
 
 ```js
 const allStatesObservable = myDatabase.migrationStates();
 allStatesObservable.subscribe(allStates => {
-  allStates.forEach(collectionState => {
+  allStates.forEach(migrationState => {
     console.log(
       'migration state of ' +
-      collectionState.collection.name + ': ' +
-      collectionState.state.done
+      migrationState.collection.name
     );
   });
 });
@@ -192,5 +196,14 @@ const migrationStrategies = {
 }
 ```
 
-## Hint
-If your migration takes a long time, combine it with the leaderElection to make sure you don't waste your users' resources by running it in 2 open tabs.
+## Migration on multi-tab in browsers
+
+If you use RxDB in a multiInstance environment, like a browser, it will ensure that exactly one tab is running a migration of a collection.
+Also the `migrationState.$` events are emitted between browser tabs.
+
+
+## Migration and Replication
+
+If you use any of the [RxReplication](./replication.md) plugins, the migration will also run on the internal replication-state storage. It will migrate all `assumedMasterState` documents
+so that after the migration is done, you do not have to re-run the replication from scratch.
+RxDB assumes that you run the exact same migration on the servers and the clients. Notice that the replication `pull-checkpoint` will not be migrated. Your backend must be compatible with pull-checkpoints of older versions.

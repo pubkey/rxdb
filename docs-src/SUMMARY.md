@@ -133,7 +133,7 @@
 
 * [Key Compression](./key-compression.md)
 
-* [DataMigration](./data-migration.md)
+* [Data Migration](./data-migration.md)
 
 * [LeaderElection](./leader-election.md)
 
