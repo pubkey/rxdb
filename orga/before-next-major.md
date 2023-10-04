@@ -22,7 +22,7 @@ We should enforce people using strings as operators instead. Similar to how you 
 
 The replication-protocol does now support attachment replication. This clear the path to add the attachment replication to the single RxDB replication plugins.
 
-## Fix migration+replication
+## Fix migration+replication [DONE]
 When the schema is changed a migration runs, the replication plugins will replicate the migrated data. This is mostly not wanted by the user. We should add an option to let the user define what should happen after the migration.
 
 Proposed solution:
@@ -84,7 +84,7 @@ Can be augmented in the future.
 
 ## Skip responding full document data on bulkWrites (only in all happy case)
 
-RxStorage.bulkwrite(): If all writes suceeed, return "SUCESS" or sth to not have to transfer all json document data again. This is mostly important in the remot storage and webworker storage where we do not want to JSON-stringify and parse all data again.
+RxStorage.bulkwrite(): If all writes suceeed, return "SUCESS" or sth to not have to transfer all json document data again. This is mostly important in the remote storage and webworker storage where we do not want to JSON-stringify and parse all data again.
 
 
 ## Change response type of RxStorageInstance.bulkWrite() from indexeddb objects to arrays [DONE]
