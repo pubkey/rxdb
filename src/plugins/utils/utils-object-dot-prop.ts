@@ -190,6 +190,18 @@ export function getProperty(object: any, path: string | string[], value?: any) {
         path = path.join('.');
     }
 
+    /**
+     * Performance shortcut.
+     * In most cases we just have a simple property name
+     * so we can directly return it.
+     */
+    if (
+        !path.includes('.') &&
+        !path.includes('[')
+    ) {
+        return object[path];
+    }
+
     if (!isObject(object as any) || typeof path !== 'string') {
         return value === undefined ? object : value;
     }
