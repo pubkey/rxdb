@@ -16,7 +16,6 @@ import {
     PROMISE_RESOLVE_NULL,
     RXJS_SHARE_REPLAY_DEFAULTS,
     getProperty,
-    lastCharOfString,
     getFromMapOrCreate
 } from './plugins/utils';
 import {
@@ -216,7 +215,7 @@ export const basePrototype = {
                             if (typeof property !== 'string') {
                                 return target[property];
                             }
-                            const lastChar = lastCharOfString(property);
+                            const lastChar = property.charAt(property.length - 1);
                             if (lastChar === '$') {
                                 const key = property.slice(0, -1);
                                 return _this.get$(trimDots(objPath + '.' + key));
