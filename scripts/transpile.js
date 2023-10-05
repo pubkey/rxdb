@@ -46,6 +46,9 @@ nconf.argv()
         file: confLocation
     });
 
+
+const createdFolders = new Set();
+
 async function transpileFile(
     srcLocations,
     outDir,
@@ -56,14 +59,12 @@ async function transpileFile(
     }
     // ensure folder exists
     const folder = path.join(outDir);
-    if (!fs.existsSync(folder)) {
-        try {
-            shell.mkdir('-p', folder);
-        } catch (err) {
-            // this randomly throwed 'folder already exists', so we must that error
-            console.log('create folder error ' + folder);
-            console.dir(err);
-        }
+    if (
+        !createdFolders.has(folder) &&
+        !fs.existsSync(folder)
+    ) {
+        createdFolders.add(folder);
+        shell.mkdir('-p', folder);
     }
 
     // const outFilePath =
