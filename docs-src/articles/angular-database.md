@@ -4,7 +4,7 @@ In modern web development, Angular has emerged as a popular framework for buildi
 
 <center>
     <a href="https://rxdb.info/">
-        <img src="../files/logo/logo_text.svg" alt="JavaScript Angular Database" width="220">
+        <img src="../files/logo/rxdb_javascript_database.svg" alt="JavaScript Angular Database" width="220">
     </a>
 </center>
 
@@ -30,7 +30,7 @@ To begin our journey with RxDB, let's understand its key concepts and features.
 
 <center>
     <a href="https://rxdb.info/">
-        <img src="../files/logo/logo_text.svg" alt="JavaScript Angular Database" width="220">
+        <img src="../files/logo/rxdb_javascript_database.svg" alt="JavaScript Angular Database" width="220">
     </a>
 </center>
 

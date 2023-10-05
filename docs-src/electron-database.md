@@ -77,7 +77,7 @@ The downside of SQLite is that it is lacking many features that are handful when
 ### RxDB
 
 <p align="center">
-  <img src="./files/logo/logo_text.svg" alt="RxDB" width="70" />
+  <img src="./files/logo/rxdb_javascript_database.svg" alt="RxDB" width="170" />
 </p>
 
 

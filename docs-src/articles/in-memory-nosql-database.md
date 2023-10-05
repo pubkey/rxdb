@@ -5,7 +5,7 @@ Real-time applications have become increasingly popular in today's digital lands
 
 <center>
     <a href="https://rxdb.info/">
-        <img src="../files/logo/logo_text.svg" alt="RxDB Flutter Database" width="220">
+        <img src="../files/logo/rxdb_javascript_database.svg" alt="RxDB Flutter Database" width="220">
     </a>
 </center>
 

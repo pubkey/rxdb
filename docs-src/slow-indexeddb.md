@@ -17,7 +17,7 @@ For [in-browser data storage](./articles/browser-database.md), you have some opt
 
 <center>
     <a href="https://rxdb.info/">
-        <img src="./files/logo/rxdb_javascript_database.svg" alt="IndexedDB Database" width="220">
+        <img src="./files/logo/rxdb_javascript_database.svg" alt="IndexedDB Database" width="250">
     </a>
 </center>
 

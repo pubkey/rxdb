@@ -11,7 +11,7 @@ At the heart of PWAs lies efficient data management, and RxDB steps in as a reli
 
 <center>
     <a href="https://rxdb.info/">
-        <img src="../files/logo/logo_text.svg" alt="Progressive Web App Database" width="228">
+        <img src="../files/logo/rxdb_javascript_database.svg" alt="Progressive Web App Database" width="228">
     </a>
 </center>
 

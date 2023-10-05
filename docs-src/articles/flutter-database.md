@@ -8,7 +8,7 @@ In the world of mobile application development, Flutter has gained significant p
 
 <center>
     <a href="https://rxdb.info/">
-        <img src="../files/logo/logo_text.svg" alt="RxDB Flutter Database" width="220">
+        <img src="../files/logo/rxdb_javascript_database.svg" alt="RxDB Flutter Database" width="220">
     </a>
 </center>
 
@@ -35,7 +35,7 @@ To understand how RxDB can be utilized in a Flutter application, let's explore i
 
 <center>
     <a href="https://rxdb.info/">
-        <img src="../files/logo/logo_text.svg" alt="RxDB Flutter Database" width="220">
+        <img src="../files/logo/rxdb_javascript_database.svg" alt="RxDB Flutter Database" width="220">
     </a>
 </center>
 

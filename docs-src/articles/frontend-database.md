@@ -3,7 +3,7 @@ In modern web development, managing data on the frontend has become increasingly
 
 <center>
     <a href="https://rxdb.info/">
-        <img src="../files/logo/logo_text.svg" alt="JavaScript Frontend Database" width="220">
+        <img src="../files/logo/rxdb_javascript_database.svg" alt="JavaScript Frontend Database" width="220">
     </a>
 </center>
 

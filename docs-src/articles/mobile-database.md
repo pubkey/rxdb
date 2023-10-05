@@ -13,7 +13,7 @@ There are various types of mobile databases available, each with its own strengt
 
 <center>
     <a href="https://rxdb.info/">
-        <img src="../files/logo/logo_text.svg" alt="Mobile Database" width="220">
+        <img src="../files/logo/rxdb_javascript_database.svg" alt="Mobile Database" width="220">
     </a>
 </center>
 

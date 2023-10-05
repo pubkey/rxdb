@@ -4,7 +4,7 @@ In the world of web applications, efficient data management plays a crucial role
 
 <center>
     <a href="https://rxdb.info/">
-        <img src="../files/logo/logo_text.svg" alt="Data Base" width="240">
+        <img src="../files/logo/rxdb_javascript_database.svg" alt="Data Base" width="240">
     </a>
 </center>
 
@@ -75,6 +75,6 @@ RxDB provides an exceptional data base solution for web and mobile applications,
 
 <center>
     <a href="https://rxdb.info/">
-        <img src="../files/logo/logo_text.svg" alt="Data Base" width="240">
+        <img src="../files/logo/rxdb_javascript_database.svg" alt="Data Base" width="240">
     </a>
 </center>

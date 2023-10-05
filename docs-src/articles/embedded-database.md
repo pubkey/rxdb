@@ -3,7 +3,7 @@ In modern UI applications, efficient data storage is a crucial aspect for seamle
 
 <center>
     <a href="https://rxdb.info/">
-        <img src="../files/logo/logo_text.svg" alt="JavaScript Embedded Database" width="220">
+        <img src="../files/logo/rxdb_javascript_database.svg" alt="JavaScript Embedded Database" width="220">
     </a>
 </center>
 
@@ -42,7 +42,7 @@ RxDB is a JavaScript-based embedded database that offers numerous advantages for
 
 <center>
     <a href="https://rxdb.info/">
-        <img src="../files/logo/logo_text.svg" alt="JavaScript Embedded Database" width="220">
+        <img src="../files/logo/rxdb_javascript_database.svg" alt="JavaScript Embedded Database" width="220">
     </a>
 </center>
 

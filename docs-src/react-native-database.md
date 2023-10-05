@@ -110,7 +110,7 @@ const db = new PouchDB('mydb.db', {
 ### RxDB
 
 <p align="center">
-  <img src="./files/logo/logo_text.svg" alt="RxDB" width="70" />
+  <img src="./files/logo/rxdb_javascript_database.svg" alt="RxDB" width="170" />
 </p>
 
 [RxDB](https://rxdb.info/) is an offline-first, NoSQL-database for JavaScript applications. It is reactive which means that you can not only query the current state, but subscribe to all state changes like the result of a query or even a single field of a document. This is great for UI-based realtime applications in a way that makes it easy to develop realtime applications like what you need in React Native.
