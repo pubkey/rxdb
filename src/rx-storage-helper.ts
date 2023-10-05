@@ -600,6 +600,20 @@ export function getWrappedStorageInstance<
                 data as any
             );
 
+
+            /**
+             * Ensure it can be structured cloned
+             */
+            try {
+                structuredClone(writeRow);
+            } catch (err) {
+                throw newRxError('DOC24', {
+                    collection: storageInstance.collectionName,
+                    document: writeRow.document
+                });
+            }
+
+
             /**
              * Ensure that the new revision is higher
              * then the previous one
