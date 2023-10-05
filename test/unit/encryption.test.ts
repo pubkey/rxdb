@@ -338,6 +338,7 @@ config.parallel('encryption.test.ts', () => {
                 storage,
                 password
             });
+            await db1.storageToken;
             await db1.destroy();
 
             // 2. reopen with wrong password
@@ -347,6 +348,7 @@ config.parallel('encryption.test.ts', () => {
                 storage,
                 password: await getPassword()
             });
+            await db2.storageToken;
 
             await AsyncTestUtil.assertThrows(
                 () => ensureNoStartupErrors(db2),

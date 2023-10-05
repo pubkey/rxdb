@@ -11,9 +11,9 @@ import config from './unit/config';
 import { wait } from 'async-test-util';
 
 /**
- * Running these performance tests in the unit test suite
- * was the easiest way to make it run on all storages and platforms.
- * Maybe we should move this into a different npm script instead.
+ * Runs some performance tests.
+ * Mostly used to compare the performance of the different RxStorage implementations.
+ * Run via 'npm run test:performance:memory:node' and change 'memory' for other storage names.
  */
 describe('performance.test.ts', () => {
     it('should not have enabled dev-mode which would affect the performance', () => {
@@ -178,6 +178,21 @@ describe('performance.test.ts', () => {
             updateTime('count');
             assert.ok(countQueryResult >= (docsAmount / 2));
             assert.ok(countQueryResult < (docsAmount * 0.8));
+            await awaitBetweenTest();
+
+            // test property access time
+            updateTime();
+            let sum = 0;
+            for (let i = 0; i < queryResult.length; i++) {
+                const doc = queryResult[i];
+
+                // access the same property exactly 2 times
+                sum += doc.deep.deeper.deepNr;
+                sum += doc.deep.deeper.deepNr;
+            }
+            updateTime('property-access');
+            assert.ok(sum > 10);
+
 
             await db.remove();
         }

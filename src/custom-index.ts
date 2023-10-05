@@ -56,7 +56,6 @@ export function getIndexMeta<RxDocType>(
             fieldName
         );
         if (!schemaPart) {
-            console.dir(schema);
             throw new Error('not in schema: ' + fieldName);
         }
         const type = schemaPart.type;

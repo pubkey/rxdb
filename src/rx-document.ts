@@ -15,7 +15,8 @@ import {
     flatClone,
     PROMISE_RESOLVE_NULL,
     RXJS_SHARE_REPLAY_DEFAULTS,
-    getProperty
+    getProperty,
+    getFromMapOrCreate
 } from './plugins/utils';
 import {
     newRxError
@@ -125,6 +126,7 @@ export const basePrototype = {
                 this.collection.schema.jsonSchema,
                 path
             );
+
             if (!schemaObj) {
                 throw newRxError('DOC4', {
                     path
@@ -183,40 +185,52 @@ export const basePrototype = {
     },
     /**
      * get data by objectPath
+     * @hotPath Performance here is really important,
+     * run some tests before changing anything.
      */
     get(this: RxDocument, objPath: string): any | null {
-        if (!this._data) {
-            return undefined;
-        }
-
-        const fromCache = this._propertyCache.get(objPath);
-        if (fromCache) {
-            return fromCache;
-        }
-
-        let valueObj = getProperty(this._data, objPath);
-
-        // direct return if array or non-object
-        if (
-            typeof valueObj !== 'object' ||
-            Array.isArray(valueObj)
-        ) {
-            return overwritable.deepFreezeWhenDevMode(valueObj);
-        }
-
-        /**
-         * TODO find a way to deep-freeze together with defineGetterSetter
-         * so we do not have to do a deep clone here.
-         */
-        valueObj = clone(valueObj);
-        defineGetterSetter(
-            this.collection.schema,
-            valueObj,
+        return getFromMapOrCreate(
+            this._propertyCache,
             objPath,
-            this as any
+            () => {
+                const valueObj = getProperty(this._data, objPath);
+
+                // direct return if array or non-object
+                if (
+                    typeof valueObj !== 'object' ||
+                    Array.isArray(valueObj)
+                ) {
+                    return overwritable.deepFreezeWhenDevMode(valueObj);
+                }
+                const _this = this;
+                const proxy = new Proxy(
+                    /**
+                     * In dev-mode, the _data is deep-frozen
+                     * so we have to flat clone here so that
+                     * the proxy can work.
+                     */
+                    flatClone(valueObj),
+                    {
+                        get(target, property: any) {
+                            if (typeof property !== 'string') {
+                                return target[property];
+                            }
+                            const lastChar = property.charAt(property.length - 1);
+                            if (lastChar === '$') {
+                                const key = property.slice(0, -1);
+                                return _this.get$(trimDots(objPath + '.' + key));
+                            } else if (lastChar === '_') {
+                                const key = property.slice(0, -1);
+                                return _this.populate(trimDots(objPath + '.' + key));
+                            } else {
+                                return _this.get(trimDots(objPath + '.' + property));
+                            }
+                        }
+                    });
+                return proxy;
+            }
         );
-        this._propertyCache.set(objPath, valueObj);
-        return valueObj;
+
     },
 
     toJSON(this: RxDocument, withMetaFields = false) {
@@ -425,71 +439,6 @@ export function createRxDocumentConstructor(proto = basePrototype) {
     return constructor;
 }
 
-export function defineGetterSetter(
-    schema: any,
-    valueObj: any,
-    objPath = '',
-    thisObj = false
-) {
-    if (valueObj === null) {
-        return;
-    }
-
-
-    let pathProperties = getSchemaByObjectPath(
-        schema.jsonSchema,
-        objPath
-    );
-
-    if (typeof pathProperties === 'undefined') {
-        return;
-    }
-    if (pathProperties.properties) {
-        pathProperties = pathProperties.properties;
-    }
-
-    Object.keys(pathProperties)
-        .forEach(key => {
-            const fullPath = trimDots(objPath + '.' + key);
-
-            // getter - value
-            valueObj.__defineGetter__(
-                key,
-                function (this: RxDocument) {
-                    const _this: RxDocument = thisObj ? thisObj : (this as any);
-                    if (!_this.get || typeof _this.get !== 'function') {
-                        /**
-                         * When an object gets added to the state of a vuejs-component,
-                         * it happens that this getter is called with another scope.
-                         * To prevent errors, we have to return undefined in this case
-                         */
-                        return undefined;
-                    }
-                    const ret = _this.get(fullPath);
-                    return ret;
-                }
-            );
-            // getter - observable$
-            Object.defineProperty(valueObj, key + '$', {
-                get: function () {
-                    const _this = thisObj ? thisObj : this;
-                    return _this.get$(fullPath);
-                },
-                enumerable: false,
-                configurable: false
-            });
-            // getter - populate_
-            Object.defineProperty(valueObj, key + '_', {
-                get: function () {
-                    const _this = thisObj ? thisObj : this;
-                    return _this.populate(fullPath);
-                },
-                enumerable: false,
-                configurable: false
-            });
-        });
-}
-
 export function createWithConstructor<RxDocType>(
     constructor: any,
     collection: RxCollection<RxDocType>,
@@ -528,3 +477,4 @@ export function beforeDocumentUpdateWrite<RxDocType>(
     }
     return collection._runHooks('pre', 'save', newData, oldData);
 }
+

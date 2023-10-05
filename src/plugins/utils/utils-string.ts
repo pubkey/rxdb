@@ -47,6 +47,13 @@ export function trimDots(str: string): string {
 }
 
 /**
+ * @link https://stackoverflow.com/a/44950500/3443137
+ */
+export function lastCharOfString(str: string): string {
+    return str.charAt(str.length - 1);
+}
+
+/**
  * returns true if the given name is likely a folder path
  */
 export function isFolderPath(name: string) {

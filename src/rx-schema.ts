@@ -9,15 +9,13 @@ import {
 import {
     runPluginHooks
 } from './hooks';
-import {
-    defineGetterSetter
-} from './rx-document';
 
 import type {
     DeepMutable,
     DeepReadonly,
     HashFunction,
     MaybeReadonly,
+    RxDocument,
     RxDocumentData,
     RxJsonSchema,
     StringKeys
@@ -27,6 +25,7 @@ import {
     getComposedPrimaryKeyOfDocumentData,
     getFinalFields,
     getPrimaryFieldOfPrimaryKey,
+    getSchemaByObjectPath,
     normalizeRxJsonSchema
 } from './rx-schema-helper';
 import { overwritable } from './overwritable';
@@ -103,8 +102,55 @@ export class RxSchema<RxDocType = any> {
      * see RxCollection.getDocumentPrototype()
      */
     public getDocumentPrototype(): any {
-        const proto = {};
-        defineGetterSetter(this, proto, '');
+        const proto: any = {};
+
+        /**
+         * On the top level, we know all keys
+         * and therefore do not have to create a new Proxy object
+         * for each document. Instead we define the getter in the prototype once.
+         */
+        const pathProperties = getSchemaByObjectPath(
+            this.jsonSchema,
+            ''
+        );
+        Object.keys(pathProperties)
+            .forEach(key => {
+                const fullPath = key;
+
+                // getter - value
+                proto.__defineGetter__(
+                    key,
+                    function (this: RxDocument) {
+                        if (!this.get || typeof this.get !== 'function') {
+                            /**
+                             * When an object gets added to the state of a vuejs-component,
+                             * it happens that this getter is called with another scope.
+                             * To prevent errors, we have to return undefined in this case
+                             */
+                            return undefined;
+                        }
+                        const ret = this.get(fullPath);
+                        return ret;
+                    }
+                );
+                // getter - observable$
+                Object.defineProperty(proto, key + '$', {
+                    get: function () {
+                        return this.get$(fullPath);
+                    },
+                    enumerable: false,
+                    configurable: false
+                });
+                // getter - populate_
+                Object.defineProperty(proto, key + '_', {
+                    get: function () {
+                        return this.populate(fullPath);
+                    },
+                    enumerable: false,
+                    configurable: false
+                });
+            });
+
         overwriteGetterForCaching(
             this,
             'getDocumentPrototype',

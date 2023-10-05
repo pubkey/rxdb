@@ -1522,3 +1522,18 @@ AFTER2: (lazy writes)
     "find-by-query-parallel-4": 2.74,
     "count": 0.72
 }
+
+
+## Improve property access time (04 October 2023)
+
+> npm run test:performance:memory:node
+
+BEFORE:
+"property-access": 6.97
+"property-access": 7.21
+
+AFTER:
+"property-access": 4.71
+"property-access": 5.14
+"property-access": 5.07
+"property-access": 4.56
