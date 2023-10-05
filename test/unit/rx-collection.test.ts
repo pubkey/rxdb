@@ -285,6 +285,30 @@ describe('rx-collection.test.ts', () => {
                     ].map(id => ensurePrimaryKeyInsertThrows(id)));
                     c.database.destroy();
                 });
+                /**
+                 * @link https://github.com/pubkey/rxdb/issues/5046
+                 */
+                it('should throw a helpful error on non-plain-json data', async () => {
+                    const c = await humansCollection.create(1);
+
+                    // inserts
+                    const doc = schemaObjects.human();
+                    (doc as any).lastName = () => { };
+                    await assertThrows(
+                        () => c.insert(doc),
+                        'RxError',
+                        'DOC24'
+                    );
+
+                    // updates
+                    const doc2 = await c.findOne().exec(true);
+                    await assertThrows(
+                        () => doc2.patch({ lastName: (() => { }) as any }),
+                        'RxError',
+                        'DOC24'
+                    );
+                    c.database.destroy();
+                });
             });
         });
         config.parallel('.bulkInsert()', () => {
