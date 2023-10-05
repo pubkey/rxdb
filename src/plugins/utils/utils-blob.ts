@@ -25,15 +25,6 @@ export async function createBlobFromBase64(
     const base64Response = await fetch(`data:${type};base64,${base64String}`);
     const blob = await base64Response.blob();
     return blob;
-
-}
-
-export function isBlob(data: any): boolean {
-    if (data instanceof Blob || (typeof Buffer !== 'undefined' && Buffer.isBuffer(data))) {
-        return true;
-    } else {
-        return false;
-    }
 }
 
 export function blobToString(blob: Blob | string): Promise<string> {

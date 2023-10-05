@@ -15,7 +15,6 @@ import {
     b64EncodeUnicode,
     batchArray,
     clone as rxdbClone,
-    isBlob,
     createBlob,
     blobToString,
     getBlobSize,
@@ -213,7 +212,6 @@ describe('util.test.js', () => {
         it('should be able to run all functions', async () => {
             const text = 'foobar';
             const blob = createBlob(text, 'plain/text');
-            assert.ok(isBlob(blob));
             const asString = await blobToString(blob);
             assert.strictEqual(text, asString);
         });
