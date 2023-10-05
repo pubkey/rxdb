@@ -25,6 +25,7 @@ export type WebsocketServerState = {
 };
 
 export type WebsocketClientOptions<RxDocType> = {
+    replicationIdentifier: string;
     collection: RxCollection<RxDocType>;
     url: string;
     batchSize?: number;

@@ -28,7 +28,7 @@ import type {
     NatsSyncOptions
 } from './nats-types';
 import { connect, DeliverPolicy, JSONCodec, ReplayPolicy } from 'nats';
-import { NATS_REPLICATION_PLUGIN_IDENTITY_PREFIX, getNatsServerDocumentState } from './nats-helper';
+import { getNatsServerDocumentState } from './nats-helper';
 import { awaitRetry } from '../replication/replication-helper';
 
 export * from './nats-types';
@@ -228,7 +228,7 @@ export function replicateNats<RxDocType>(
 
 
     const replicationState = new RxNatsReplicationState<RxDocType>(
-        NATS_REPLICATION_PLUGIN_IDENTITY_PREFIX + options.replicationIdentifier,
+        options.replicationIdentifier,
         collection,
         replicationPrimitivesPull,
         replicationPrimitivesPush,

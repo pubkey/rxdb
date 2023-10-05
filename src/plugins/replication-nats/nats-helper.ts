@@ -3,8 +3,6 @@ import type {
     Stream
 } from 'nats';
 
-export const NATS_REPLICATION_PLUGIN_IDENTITY_PREFIX = 'nats';
-
 export async function getNatsServerDocumentState(
     natsStream: Stream,
     subjectPrefix: string,

@@ -139,7 +139,7 @@ describe('replication-firestore.test.js', () => {
                 orderBy('serverTimestamp', 'asc'),
                 limit(10)
             );
-            const queryResult = await getDocs<TestDocType>(newerQuery as any);
+            const queryResult = await getDocs<TestDocType, any>(newerQuery as any);
             assert.strictEqual(queryResult.docs.length, 1);
             assert.strictEqual(
                 ensureNotFalsy(queryResult.docs[0]).data().id,

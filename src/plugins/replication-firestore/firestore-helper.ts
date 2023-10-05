@@ -8,8 +8,6 @@ import type {
 import { flatClone, now } from '../../plugins/utils';
 import type { GetQuery } from './firestore-types';
 
-export const FIRESTORE_REPLICATION_PLUGIN_IDENTITY_PREFIX = 'firestore';
-
 
 export function getFirestoreSortFieldValue(docData: any, primaryKey: string): string {
     const timeString = now() + '';

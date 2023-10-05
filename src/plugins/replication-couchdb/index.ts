@@ -40,7 +40,6 @@ import type {
 } from './couchdb-types';
 import {
     couchDBDocToRxDocData,
-    COUCHDB_NEW_REPLICATION_PLUGIN_IDENTITY_PREFIX,
     mergeUrlQueryParams,
     couchSwapPrimaryToId,
     getDefaultFetch
@@ -258,7 +257,7 @@ export function replicateCouchDB<RxDocType>(
     const replicationState = new RxCouchDBReplicationState<RxDocType>(
         options.url,
         options.fetch ? options.fetch : getDefaultFetch(),
-        COUCHDB_NEW_REPLICATION_PLUGIN_IDENTITY_PREFIX + options.replicationIdentifier,
+        options.replicationIdentifier,
         collection,
         replicationPrimitivesPull,
         replicationPrimitivesPush,

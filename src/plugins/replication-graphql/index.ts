@@ -8,8 +8,7 @@ import {
 } from '../../plugins/utils';
 
 import {
-    graphQLRequest,
-    GRAPHQL_REPLICATION_PLUGIN_IDENTITY_PREFIX
+    graphQLRequest
 } from './helper';
 
 import { RxDBLeaderElectionPlugin } from '../leader-election';
@@ -181,7 +180,7 @@ export function replicateGraphQL<RxDocType, CheckpointType>(
     const graphqlReplicationState = new RxGraphQLReplicationState(
         url,
         mutateableClientState,
-        GRAPHQL_REPLICATION_PLUGIN_IDENTITY_PREFIX + replicationIdentifier,
+        replicationIdentifier,
         collection,
         deletedField,
         replicationPrimitivesPull,

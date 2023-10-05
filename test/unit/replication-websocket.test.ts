@@ -10,7 +10,7 @@ import {
     replicateWithWebsocketServer
 } from '../../plugins/replication-websocket';
 import {
-    RxCollection
+    RxCollection, randomCouchString
 } from '../../plugins/core';
 import { nextPort } from '../helper/port-manager';
 import { humanWithTimestamp } from '../helper/schemas';
@@ -60,6 +60,7 @@ config.parallel('replication-websocket.test.ts', () => {
         });
 
         const replicationState = await replicateWithWebsocketServer({
+            replicationIdentifier: randomCouchString(10),
             collection: localCollection,
             url: portAndUrl.url
         });
@@ -97,6 +98,7 @@ config.parallel('replication-websocket.test.ts', () => {
         });
 
         const replicationState = await replicateWithWebsocketServer({
+            replicationIdentifier: randomCouchString(10),
             collection: localCollection,
             url: portAndUrl.url
         });
@@ -158,6 +160,7 @@ config.parallel('replication-websocket.test.ts', () => {
         });
 
         const replicationState = await replicateWithWebsocketServer({
+            replicationIdentifier: randomCouchString(10),
             collection: localCollection,
             url: portAndUrl.url
         });
@@ -252,6 +255,7 @@ config.parallel('replication-websocket.test.ts', () => {
         });
 
         const replicationState1 = await replicateWithWebsocketServer({
+            replicationIdentifier: randomCouchString(10),
             collection: localDatabase.humans,
             url: portAndUrl.url
         });
@@ -260,6 +264,7 @@ config.parallel('replication-websocket.test.ts', () => {
             console.log(JSON.stringify(err, null, 4));
         });
         const replicationState2 = await replicateWithWebsocketServer({
+            replicationIdentifier: randomCouchString(10),
             collection: localDatabase.humans2,
             url: portAndUrl.url
         });
@@ -360,11 +365,13 @@ config.parallel('replication-websocket.test.ts', () => {
         });
 
         const replicationState1 = await replicateWithWebsocketServer({
+            replicationIdentifier: randomCouchString(10),
             collection: clientOneCollection,
             url: portAndUrl.url
         });
 
         const replicationState2 = await replicateWithWebsocketServer({
+            replicationIdentifier: randomCouchString(10),
             collection: clientTwoCollection,
             url: portAndUrl.url
         });

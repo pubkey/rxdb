@@ -52,7 +52,6 @@ import type {
 import { Subject } from 'rxjs';
 import {
     firestoreRowToDocData,
-    FIRESTORE_REPLICATION_PLUGIN_IDENTITY_PREFIX,
     getContentByIds,
     isoStringToServerTimestamp,
     serverTimestampToIsoString,
@@ -323,7 +322,7 @@ export function replicateFirestore<RxDocType>(
 
     const replicationState = new RxFirestoreReplicationState<RxDocType>(
         options.firestore,
-        FIRESTORE_REPLICATION_PLUGIN_IDENTITY_PREFIX + options.replicationIdentifier,
+        options.replicationIdentifier,
         collection,
         replicationPrimitivesPull,
         replicationPrimitivesPush,
