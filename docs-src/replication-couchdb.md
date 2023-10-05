@@ -28,6 +28,7 @@ import { replicateCouchDB } from 'rxdb/plugins/replication-couchdb';
 
 const replicationState = replicateCouchDB(
     {
+        replicationIdentifier: 'my-couchdb-replication',
         collection: myRxCollection,
         // url to the CouchDB endpoint (required)
         url: 'http://example.com/db/humans',
@@ -115,6 +116,7 @@ const myCustomFetch = (url, options) => {
 
 const replicationState = replicateCouchDB(
     {
+        replicationIdentifier: 'my-couchdb-replication',
         collection: myRxCollection,
         url: 'http://example.com/db/humans',
         /**
@@ -144,6 +146,7 @@ import {
 
 const replicationState = replicateCouchDB(
     {
+        replicationIdentifier: 'my-couchdb-replication',
         collection: myRxCollection,
         url: 'http://example.com/db/humans',
         /**
@@ -183,6 +186,7 @@ React Native does not have a global `fetch` method. You have to import fetch met
 import crossFetch from 'cross-fetch';
 const replicationState = replicateCouchDB(
     {
+        replicationIdentifier: 'my-couchdb-replication',
         collection: myRxCollection,
         url: 'http://example.com/db/humans',
         fetch: crossFetch,
