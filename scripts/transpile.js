@@ -57,7 +57,13 @@ async function transpileFile(
     // ensure folder exists
     const folder = path.join(outDir);
     if (!fs.existsSync(folder)) {
-        shell.mkdir('-p', folder);
+        try {
+            shell.mkdir('-p', folder);
+        } catch (err) {
+            // this randomly throwed 'folder already exists', so we must that error
+            console.log('create folder error ' + folder);
+            console.dir(err);
+        }
     }
 
     // const outFilePath =
