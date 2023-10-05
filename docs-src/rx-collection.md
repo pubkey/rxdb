@@ -227,10 +227,6 @@ console.dir(docsMap); // Map(2)
 
 NOTICE: The `Map` returned by `findByIds` is not guaranteed to return elements in the same order as the list of ids passed to it.
 
-### findByIds$()
-
-Same as `findByIds()` but returns an `Observable` that emits the `Map` each time a value of it has changed because of a database write.
-
 
 ### exportJSON()
 Use this function to create a json export from every document in the collection.

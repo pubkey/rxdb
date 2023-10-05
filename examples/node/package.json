@@ -18,6 +18,6 @@
     "random-name": "0.1.2"
   },
   "devDependencies": {
-    "rimraf": "5.0.4"
+    "rimraf": "5.0.5"
   }
 }
