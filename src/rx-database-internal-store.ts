@@ -189,6 +189,7 @@ export async function ensureStorageTokenDocumentExists<Collections extends Colle
         return writeResult.success[0];
     }
 
+
     /**
      * If we get a 409 error,
      * it means another instance already inserted the storage token.
@@ -203,7 +204,7 @@ export async function ensureStorageTokenDocumentExists<Collections extends Colle
         if (
             passwordHash &&
             passwordHash !== conflictError.documentInDb.data.passwordHash
-        ) {
+            ) {
             throw newRxError('DB1', {
                 passwordHash,
                 existingPasswordHash: conflictError.documentInDb.data.passwordHash

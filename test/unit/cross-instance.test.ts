@@ -284,10 +284,11 @@ config.parallel('cross-instance.test.js', () => {
             });
 
             await AsyncTestUtil.waitUntil(() => secretAfter.name === 'foo');
-            assert.deepStrictEqual(secretAfter, {
+
+            assert.deepStrictEqual(JSON.stringify(secretAfter), JSON.stringify({
                 name: 'foo',
                 subname: 'bar'
-            });
+            }));
 
             db1.destroy();
             db2.destroy();

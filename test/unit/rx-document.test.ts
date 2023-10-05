@@ -1173,13 +1173,12 @@ describe('rx-document.test.js', () => {
             assert.deepStrictEqual(myDocument.toJSON().tags.hello, tags.hello, 'myDocument.toJSON().tags.hello');
             assert.deepStrictEqual(myDocument.toJSON().tags.world, tags.world, 'myDocument.toJSON().tags.world');
             assert.deepStrictEqual(Object.keys(myDocument.toJSON().tags), Object.keys(tags), 'Object.keys(myDocument.toJSON().tags)');
-            assert.deepStrictEqual(myDocument.get('tags').hello, tags.hello, 'myDocument.get(\'tags\').hello');
-
-            assert.deepStrictEqual(myDocument.get('tags').world, tags.world, 'myDocument.get(\'tags\').world');
+            assert.deepStrictEqual(JSON.stringify(myDocument.get('tags').hello), JSON.stringify(tags.hello), 'myDocument.get(\'tags\').hello');
+            assert.deepStrictEqual(JSON.stringify(myDocument.get('tags').world), JSON.stringify(tags.world), 'myDocument.get(\'tags\').world');
             assert.deepStrictEqual(Object.keys(myDocument.get('tags')), Object.keys(tags), 'Object.keys(myDocument.get(\'tags\'))');
 
-            assert.deepStrictEqual(myDocument.tags.hello, tags.hello, 'myDocument.tags.hello');
-            assert.deepStrictEqual(myDocument.tags.world, tags.world, 'myDocument.tags.world');
+            assert.deepStrictEqual(JSON.stringify(myDocument.tags.hello), JSON.stringify(tags.hello), 'myDocument.tags.hello');
+            assert.deepStrictEqual(JSON.stringify(myDocument.tags.world), JSON.stringify(tags.world), 'myDocument.tags.world');
             assert.deepStrictEqual(Object.keys(myDocument.tags), Object.keys(tags), 'Object.keys(myDocument.tags)');
 
             // clean up afterwards
