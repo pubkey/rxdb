@@ -1,0 +1,6 @@
+{
+    "imports": {
+      "lodash": "https://esm.sh/lodash@4.17.21",
+      "../../plugins/storage-lokijs": "../../dist/es/plugins/storage-lokijs/index.js"
+    }
+  }

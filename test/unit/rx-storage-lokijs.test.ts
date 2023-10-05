@@ -20,8 +20,8 @@ import * as schemaObjects from '../helper/schema-objects';
 import * as schemas from '../helper/schemas';
 
 import { waitUntil } from 'async-test-util';
-import * as path from 'path';
-import * as fs from 'fs';
+import * as path from 'node:path';
+import * as fs from 'node:fs';
 import { LeaderElector } from 'broadcast-channel';
 import { HumanDocumentType } from '../helper/schemas';
 import { EXAMPLE_REVISION_1 } from '../helper/revisions';

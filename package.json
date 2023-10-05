@@ -361,6 +361,7 @@
     "test:node:lokijs": "npm run transpile && cross-env DEFAULT_STORAGE=lokijs mocha --expose-gc --config ./config/.mocharc.js ./test_tmp/unit.test.js",
     "test:node:dexie": "npm run transpile && cross-env DEFAULT_STORAGE=dexie mocha --expose-gc --config ./config/.mocharc.js ./test_tmp/unit.test.js",
     "test:bun:dexie": "npm run transpile && cross-env DEFAULT_STORAGE=dexie NODE_ENV=fast bun run ./node_modules/mocha/bin/mocha test_tmp/unit.test.js --bail",
+    "test:deno:dexie": "npm run transpile && deno run --import-map=deno.json test/unit.test.ts",
     "test:node:foundationdb": "npm run transpile && cross-env DEFAULT_STORAGE=foundationdb mocha --expose-gc --config ./config/.mocharc.js ./test_tmp/unit.test.js",
     "test:node:mongodb": "npm run transpile && cross-env DEFAULT_STORAGE=mongodb mocha --expose-gc --config ./config/.mocharc.js ./test_tmp/unit.test.js",
     "test:node:mongodb:loop": "npm run test:node:mongodb && npm run test:node:mongodb:loop",
@@ -435,7 +436,8 @@
     "disc": "npm run transpile && npm run build:es && cross-env NODE_ENV=disc webpack --config ./config/webpack.config.js",
     "preversion": "npm run lint && npm run test",
     "dev": "watch 'npm run test:node:memory' src/ test/",
-    "dev:example": "watch 'npm run transpile:src && echo \"done\"' src/ test/"
+    "dev:example": "watch 'npm run transpile:src && echo \"done\"' src/ test/",
+    "deno:version": "deno --version"
   },
   "pre-commit": [
     "lint"
@@ -484,7 +486,6 @@
     "z-schema": "6.0.1"
   },
   "devDependencies": {
-    "@types/node": "18.18.0",
     "@babel/cli": "7.23.0",
     "@babel/core": "7.23.0",
     "@babel/plugin-external-helpers": "7.22.5",
@@ -510,6 +511,7 @@
     "@types/cors": "2.8.14",
     "@types/crypto-js": "4.1.2",
     "@types/mocha": "10.0.1",
+    "@types/node": "18.18.0",
     "@types/pako": "2.0.1",
     "@types/request": "2.48.8",
     "@types/request-promise-native": "1.0.18",
