@@ -1,7 +1,7 @@
 /// <reference path="../../node_modules/@types/mocha/index.d.ts" />
-const {
+import {
     detect
-} = require('detect-browser');
+} from 'detect-browser';
 import {
     enforceOptions as broadcastChannelEnforceOptions
 } from 'broadcast-channel';
@@ -9,6 +9,7 @@ import * as path from 'path';
 import parallel from 'mocha.parallel';
 import { getRxStorageLoki } from '../../plugins/storage-lokijs';
 import {
+    ensureNotFalsy,
     randomCouchString,
     RxStorage,
     RxStorageDefaultStatics,
@@ -28,7 +29,7 @@ import {
 } from '../../plugins/encryption-crypto-js';
 
 
-export const ENV_VARIABLES = process.versions.bun || detect().name === 'node' ? process.env : (window as any).__karma__.config.env;
+export const ENV_VARIABLES = process.versions.bun || ensureNotFalsy(detect()).name === 'node' ? process.env : (window as any).__karma__.config.env;
 
 function isFastMode(): boolean {
     try {

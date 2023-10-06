@@ -1,7 +1,8 @@
 console.log('######## init.test.js ########');
-require('source-map-support').install();
+import sourceMapSupport from 'source-map-support';
+sourceMapSupport.install();
 import '@babel/polyfill';
-import config from './config';
+import config from './config.ts';
 import {
     clearNodeFolder
 } from 'broadcast-channel';
@@ -11,8 +12,8 @@ import { faker } from '@faker-js/faker';
 faker.seed(123);
 
 // add dev-mode plugin
-import { addRxPlugin } from '../../plugins/core';
-import { RxDBDevModePlugin } from '../../plugins/dev-mode';
+import { addRxPlugin } from '../../plugins/core/index.ts';
+import { RxDBDevModePlugin } from '../../plugins/dev-mode/index.ts';
 addRxPlugin(RxDBDevModePlugin);
 
 config.platform.isNode = function () {

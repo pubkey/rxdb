@@ -1,5 +1,5 @@
-import './unit/init.test';
-import './unit/util.test';
+import './unit/init.test.ts';
+import './unit/util.test.ts';
 
 
 /**
@@ -7,8 +7,8 @@ import './unit/util.test';
  * do not fully test RxDB but
  * just single methods
  */
-import './unit/custom-index.test';
-import './unit/query-planner.test';
+import './unit/custom-index.test.ts';
+import './unit/query-planner.test.ts';
 
 
 /**
@@ -17,52 +17,52 @@ import './unit/query-planner.test';
  * your relevant tests run first.
  * Do not commit this file if you modified the order.
  */
-import './unit/rx-storage-implementations.test';
-import './unit/rx-storage-query-correctness.test';
-import './unit/rx-storage-helper.test';
+import './unit/rx-storage-implementations.test.ts';
+import './unit/rx-storage-query-correctness.test.ts';
+import './unit/rx-storage-helper.test.ts';
 
-import './unit/rx-storage-lokijs.test';
-import './unit/rx-storage-dexie.test';
-import './unit/rx-storage-remote.test';
+import './unit/rx-storage-lokijs.test.ts';
+import './unit/rx-storage-dexie.test.ts';
+import './unit/rx-storage-remote.test.ts';
 
 
-import './unit/instance-of-check.test';
-import './unit/rx-schema.test';
-import './unit/bug-report.test';
-import './unit/rx-database.test';
-import './unit/rx-collection.test';
-import './unit/rx-document.test';
-import './unit/validate.test';
-import './unit/attachments.test';
-import './unit/attachments-compression.test';
-import './unit/encryption.test';
-import './unit/rx-query.test';
-import './unit/cross-instance.test';
-import './unit/local-documents.test';
-import './unit/change-event-buffer.test';
-import './unit/reactive-query.test';
-import './unit/key-compression.test';
-import './unit/event-reduce.test';
-import './unit/cache-replacement-policy.test';
-import './unit/query-builder.test';
-import './unit/idle-queue.test';
-import './unit/conflict-handling.test';
-import './unit/reactive-collection.test';
-import './unit/reactive-document.test';
-import './unit/cleanup.test';
-import './unit/hooks.test';
-import './unit/orm.test';
-import './unit/replication.test';
-import './unit/replication-protocol.test';
-import './unit/replication-graphql.test';
-import './unit/replication-couchdb.test';
-import './unit/replication-websocket.test';
-import './unit/replication-webrtc.test';
-import './unit/data-migration.test';
-import './unit/crdt.test';
-import './unit/population.test';
-import './unit/leader-election.test';
-import './unit/backup.test';
-import './unit/import-export.test';
-import './unit/plugin.test';
-import './unit/last.test';
+import './unit/instance-of-check.test.ts';
+import './unit/rx-schema.test.ts';
+import './unit/bug-report.test.ts';
+import './unit/rx-database.test.ts';
+import './unit/rx-collection.test.ts';
+import './unit/rx-document.test.ts';
+import './unit/validate.test.ts';
+import './unit/attachments.test.ts';
+import './unit/attachments-compression.test.ts';
+import './unit/encryption.test.ts';
+import './unit/rx-query.test.ts';
+import './unit/cross-instance.test.ts';
+import './unit/local-documents.test.ts';
+import './unit/change-event-buffer.test.ts';
+import './unit/reactive-query.test.ts';
+import './unit/key-compression.test.ts';
+import './unit/event-reduce.test.ts';
+import './unit/cache-replacement-policy.test.ts';
+import './unit/query-builder.test.ts';
+import './unit/idle-queue.test.ts';
+import './unit/conflict-handling.test.ts';
+import './unit/reactive-collection.test.ts';
+import './unit/reactive-document.test.ts';
+import './unit/cleanup.test.ts';
+import './unit/hooks.test.ts';
+import './unit/orm.test.ts';
+import './unit/replication.test.ts';
+import './unit/replication-protocol.test.ts';
+import './unit/replication-graphql.test.ts';
+import './unit/replication-couchdb.test.ts';
+import './unit/replication-websocket.test.ts';
+import './unit/replication-webrtc.test.ts';
+import './unit/data-migration.test.ts';
+import './unit/crdt.test.ts';
+import './unit/population.test.ts';
+import './unit/leader-election.test.ts';
+import './unit/backup.test.ts';
+import './unit/import-export.test.ts';
+import './unit/plugin.test.ts';
+import './unit/last.test.ts';

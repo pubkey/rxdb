@@ -3,8 +3,8 @@ import {
     clone
 } from 'async-test-util';
 
-import config from './config';
-import * as schemas from '../helper/schemas';
+import config from './config.ts';
+import * as schemas from '../helper/schemas.ts';
 
 import {
     fillWithDefaultSettings,
@@ -14,13 +14,13 @@ import {
     INDEX_MAX,
     lastOfArray,
     INDEX_MIN
-} from '../../plugins/core';
+} from '../../plugins/core/index.ts';
 
 
 import type {
     RxDocumentData
 } from '../../src/types';
-import { HumanDocumentType } from '../helper/schemas';
+import { HumanDocumentType } from '../helper/schemas.ts';
 
 
 config.parallel('query-planner.test.js', () => {

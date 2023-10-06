@@ -1,7 +1,7 @@
 import assert from 'assert';
 
-import config from './config';
-import * as schemaObjects from '../helper/schema-objects';
+import config from './config.ts';
+import * as schemaObjects from '../helper/schema-objects.ts';
 import {
     addRxPlugin,
     randomCouchString,
@@ -29,23 +29,7 @@ import {
     getBlobSize,
     getSortComparator,
     getQueryMatcher,
-    getFromMapOrCreate
-} from '../../plugins/core';
-import Ajv from 'ajv';
-import {
-    getCompressionStateByRxJsonSchema
-} from '../../plugins/key-compression';
-import * as schemas from '../helper/schemas';
-import { RxDBQueryBuilderPlugin } from '../../plugins/query-builder';
-import { defaultHashSha256 } from '../../plugins/utils';
-import {
-    clone,
-    randomString,
-    wait,
-    assertThrows,
-    waitUntil
-} from 'async-test-util';
-import {
+    getFromMapOrCreate,
     EventBulk,
     FilledMangoQuery,
     PreparedQuery,
@@ -54,14 +38,28 @@ import {
     RxStorageBulkWriteResponse,
     RxStorageChangeEvent,
     RxStorageInstance
-} from '../../src/types';
-import { filter, map } from 'rxjs/operators';
+} from '../../plugins/core/index.ts';
+import Ajv from 'ajv';
+import {
+    getCompressionStateByRxJsonSchema
+} from '../../plugins/key-compression/index.ts';
+import * as schemas from '../helper/schemas.ts';
+import { RxDBQueryBuilderPlugin } from '../../plugins/query-builder/index.ts';
+import { defaultHashSha256 } from '../../plugins/utils/index.ts';
+import {
+    clone,
+    randomString,
+    wait,
+    assertThrows,
+    waitUntil
+} from 'async-test-util';
+import { filter, map } from 'rxjs';
 import {
     EXAMPLE_REVISION_1,
     EXAMPLE_REVISION_2,
     EXAMPLE_REVISION_3,
     EXAMPLE_REVISION_4
-} from '../helper/revisions';
+} from '../helper/revisions.ts';
 import { compressObject } from 'jsonschema-key-compression';
 
 addRxPlugin(RxDBQueryBuilderPlugin);

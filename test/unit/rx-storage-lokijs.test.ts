@@ -1,6 +1,6 @@
 import assert from 'assert';
 
-import config from './config';
+import config from './config.ts';
 import {
     addRxPlugin,
     ensureNotFalsy,
@@ -8,25 +8,25 @@ import {
     getPseudoSchemaForVersion,
     now,
     randomCouchString
-} from '../../plugins/core';
+} from '../../plugins/core/index.ts';
 
 import {
     getRxStorageLoki,
     RxStorageInstanceLoki
-} from '../../plugins/storage-lokijs';
+} from '../../plugins/storage-lokijs/index.ts';
 
-import * as humansCollections from '../helper/humans-collection';
-import * as schemaObjects from '../helper/schema-objects';
-import * as schemas from '../helper/schemas';
+import * as humansCollections from '../helper/humans-collection.ts';
+import * as schemaObjects from '../helper/schema-objects.ts';
+import * as schemas from '../helper/schemas.ts';
 
 import { waitUntil } from 'async-test-util';
 import * as path from 'path';
 import * as fs from 'fs';
 import { LeaderElector } from 'broadcast-channel';
-import { HumanDocumentType } from '../helper/schemas';
-import { EXAMPLE_REVISION_1 } from '../helper/revisions';
-import { RxDBLeaderElectionPlugin } from '../../plugins/leader-election';
-import { RxDBLocalDocumentsPlugin } from '../../plugins/local-documents';
+import { HumanDocumentType } from '../helper/schemas.ts';
+import { EXAMPLE_REVISION_1 } from '../helper/revisions.ts';
+import { RxDBLeaderElectionPlugin } from '../../plugins/leader-election/index.ts';
+import { RxDBLocalDocumentsPlugin } from '../../plugins/local-documents/index.ts';
 
 /**
  * RxStorageLokiJS specific tests

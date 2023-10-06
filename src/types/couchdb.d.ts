@@ -1,9 +1,9 @@
-import {
+import type {
     MangoQuery,
     MangoQuerySelector,
     MangoQuerySortPart
-} from './rx-query';
-import { BulkWriteRow } from './rx-storage';
+} from './rx-query.d.ts';
+import type { BulkWriteRow } from './rx-storage.d.ts';
 
 /**
  * This file contains types that are CouchDB specific

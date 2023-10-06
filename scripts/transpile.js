@@ -1,19 +1,23 @@
 process.env['NODE_ENV'] = 'es5';
 
 console.log('# transpiling.. (this takes some time on first run)');
-require('events').EventEmitter.defaultMaxListeners = 0;
+import events from 'events';
+events.EventEmitter.defaultMaxListeners = 0;
 
 /**
  * runs the babel-transpile
  * remembers mtime of files and only transpiles the changed ones
  */
-const nconf = require('nconf');
-const path = require('path');
-const fs = require('fs');
-const os = require('os');
-const walkSync = require('walk-sync');
-const shell = require('shelljs');
-const existsFile = require('exists-file');
+import nconf from 'nconf';
+import path from 'path';
+import fs from 'fs';
+import os from 'os';
+import walkSync from 'walk-sync';
+import shell from 'shelljs';
+import existsFile from 'exists-file';
+import { fileURLToPath } from 'url';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 const basePath = path.join(__dirname, '..');
 
 const confLocation = path.join(basePath, '.transpile_state.json');
@@ -35,7 +39,7 @@ const TRANSPILE_FOLDERS = [
     {
         source: 'test',
         goals: {
-            es5: 'test_tmp'
+            es6: 'test_tmp'
         }
     }
 ];

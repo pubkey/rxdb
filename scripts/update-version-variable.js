@@ -1,5 +1,8 @@
-const path = require('path');
-const fs = require('fs');
+import path from 'path';
+import fs from 'fs';
+import { fileURLToPath } from 'url';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const rootPath = path.join(
     __dirname,
@@ -9,8 +12,10 @@ const rootPath = path.join(
 async function run() {
 
     // update version in package.json
-    const packageJson = require(
-        path.join(rootPath, 'package.json')
+    const packageJson = JSON.parse(
+        await fs.promises.readFile(
+            path.join(rootPath, 'package.json')
+        )
     );
     const newVersion = packageJson.version;
     if (

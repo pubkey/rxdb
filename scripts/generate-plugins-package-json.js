@@ -4,20 +4,29 @@
  * @link https://github.com/pubkey/rxdb/pull/4196#issuecomment-1364369523
  */
 
-const path = require('path');
-const fs = require('fs');
-const rimraf = require('rimraf');
-const assert = require('assert');
+import path from 'path';
+import fs from 'fs';
+import {
+    sync as rimrafSync
+} from 'rimraf';
+import assert from 'assert';
+import { fileURLToPath } from 'url';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 async function run() {
     const rootPackageJsonPath = path.join(__dirname, '../', 'package.json');
-    const packageJson = require(rootPackageJsonPath);
+    const packageJson = JSON.parse(
+        await fs.promises.readFile(
+            rootPackageJsonPath
+        )
+    );
     const pluginsFolderPath = path.join(__dirname, '../plugins');
 
     const pluginsSrcFolderPath = path.join(__dirname, '../src/plugins');
 
     // recreate plugins folder
-    await rimraf.sync(pluginsFolderPath, {});
+    await rimrafSync(pluginsFolderPath, {});
     await fs.promises.mkdir(pluginsFolderPath);
 
     // write package.json files
@@ -75,7 +84,27 @@ async function run() {
                 JSON.stringify(pluginPackageContent, null, 4),
                 'utf-8'
             );
+
+            // write index file
+            fs.writeFileSync(
+                path.join(pluginFolderPath, 'index.js'),
+                'export * from \'../../dist/es/' + pluginFolderName + 'index.js\';',
+                'utf-8'
+            );
+            fs.writeFileSync(
+                path.join(pluginFolderPath, 'index.ts'),
+                'export * from \'../../dist/types/' + pluginFolderName + 'index.ts\';',
+                'utf-8'
+            );
+            fs.writeFileSync(
+                path.join(pluginFolderPath, 'index.d.ts'),
+                'export type * from \'../../dist/types/' + pluginFolderName + 'index.d.ts\';',
+                'utf-8'
+            );
+
+
         });
+
 
 
     // ensure we did not forget any plugin

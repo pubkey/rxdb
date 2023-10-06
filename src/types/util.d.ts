@@ -1,4 +1,4 @@
-import { RxStorage } from './rx-storage.interface';
+import type { RxStorage } from './rx-storage.interface.d.ts';
 
 export type MaybePromise<T> = Promise<T> | T;
 

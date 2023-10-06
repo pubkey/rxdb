@@ -26,6 +26,10 @@
   },
   "rules": {
     "@typescript-eslint/consistent-type-definitions": "off",
+    "import/extensions": [
+      "error",
+      "always"
+    ],
     "@typescript-eslint/dot-notation": "off",
     "@typescript-eslint/explicit-member-accessibility": [
       "off",
@@ -163,7 +167,6 @@
     "no-prototype-builtins": "off",
     "@typescript-eslint/ban-types": "off",
     "@typescript-eslint/ban-ts-comment": "off",
-
     "@typescript-eslint/no-unused-vars": [
       "error",
       {
@@ -190,8 +193,6 @@
     "prefer-spread": "off",
     "@typescript-eslint/prefer-as-const": "off",
     "@typescript-eslint/prefer-regexp-exec": "off",
-
-
     // These rules must stay turned off
     // because the take too long to run.
     // Use 'npm run lint:debug:time' to check

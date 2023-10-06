@@ -1,7 +1,7 @@
-import {
+import type {
     RxQueryBase
-} from '../rx-query';
-import { StringKeys } from './util';
+} from '../rx-query.d.ts';
+import type { StringKeys } from './util.d.ts';
 
 /**
  * Typed Mango Query Selector

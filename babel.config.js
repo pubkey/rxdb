@@ -22,6 +22,7 @@ let presets = [
     [
         '@babel/typescript',
         {
+            rewriteImportExtensions: true,
             loose: true,
             modules: false
         }
@@ -35,6 +36,7 @@ if (process.env['NODE_ENV'] === 'es5') {
         [
             '@babel/typescript',
             {
+                rewriteImportExtensions: true,
                 loose: true,
                 targets: {
                     edge: '107',
@@ -48,7 +50,7 @@ if (process.env['NODE_ENV'] === 'es5') {
     plugins.unshift('@babel/plugin-transform-modules-commonjs');
 }
 
-module.exports = {
+export default {
     presets,
     plugins
 };

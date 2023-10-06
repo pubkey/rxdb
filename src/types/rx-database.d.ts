@@ -1,16 +1,16 @@
-import {
+import type {
     RxCollection,
     RxDumpCollection,
     RxDumpCollectionAsAny
-} from './rx-collection';
-import {
+} from './rx-collection.d.ts';
+import type {
     RxDatabaseBase
-} from '../rx-database';
+} from '../rx-database.d.ts';
 import { Observable } from 'rxjs';
-import { RxStorage } from './rx-storage.interface';
-import { RxLocalDocument } from './plugins/local-documents';
-import { RxCleanupPolicy } from './plugins/cleanup';
-import { HashFunction } from './util';
+import type { RxStorage } from './rx-storage.interface.d.ts';
+import type { RxLocalDocument } from './plugins/local-documents.d.ts';
+import type { RxCleanupPolicy } from './plugins/cleanup.d.ts';
+import type { HashFunction } from './util.d.ts';
 
 export interface RxDatabaseCreator<Internals = any, InstanceCreationOptions = any> {
     storage: RxStorage<Internals, InstanceCreationOptions>;

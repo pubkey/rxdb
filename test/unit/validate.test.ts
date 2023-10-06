@@ -4,9 +4,9 @@ import {
     clone
 } from 'async-test-util';
 
-import config from './config';
-import * as schemas from '../helper/schemas';
-import * as schemaObjects from '../helper/schema-objects';
+import config from './config.ts';
+import * as schemas from '../helper/schemas.ts';
+import * as schemaObjects from '../helper/schema-objects.ts';
 import {
     createRxDatabase,
     randomCouchString,
@@ -17,10 +17,10 @@ import {
     RxDocumentData,
     RxStorageInstance,
     BulkWriteRow
-} from '../../plugins/core';
+} from '../../plugins/core/index.ts';
 
-import { wrappedValidateZSchemaStorage } from '../../plugins/validate-z-schema';
-import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv';
+import { wrappedValidateZSchemaStorage } from '../../plugins/validate-z-schema.ts';
+import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv.ts';
 
 
 /**

@@ -1,20 +1,20 @@
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
-import {
+import type {
     RxConflictHandler,
     RxConflictHandlerInput,
     RxConflictHandlerOutput
-} from './conflict-handling';
-import { RxError, RxTypeError } from './rx-error';
-import {
+} from './conflict-handling.d.ts';
+import type { RxError, RxTypeError } from './rx-error.d.ts';
+import type {
     BulkWriteRow,
     RxDocumentData,
     WithDeleted,
     WithDeletedAndAttachments
-} from './rx-storage';
+} from './rx-storage.d.ts';
 import type {
     RxStorageInstance
-} from './rx-storage.interface';
-import { HashFunction } from './util';
+} from './rx-storage.interface.d.ts';
+import type { HashFunction } from './util.d.ts';
 
 export type RxStorageReplicationMeta = {
 

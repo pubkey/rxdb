@@ -9,7 +9,7 @@ import type {
     RxStorageInfoResult,
     RxStorageInstanceCreationParams,
     RxStorageQueryResult
-} from './rx-storage';
+} from './rx-storage.ts';
 import type {
     DeepReadonly,
     JsonSchema,
@@ -21,7 +21,7 @@ import type {
     RxConflictResultionTaskSolution,
     RxJsonSchema,
     RxQueryPlan
-} from './';
+} from './index.d.ts';
 import type {
     Observable
 } from 'rxjs';
