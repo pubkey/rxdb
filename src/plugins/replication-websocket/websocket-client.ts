@@ -1,10 +1,15 @@
-import { replicateRxCollection, RxReplicationState } from '../replication/index.ts';
+import {
+    replicateRxCollection,
+    RxReplicationState
+} from '../replication/index.ts';
 import {
     WebsocketClientOptions,
     WebsocketMessageType
 } from './websocket-types.ts';
 
-import ReconnectingWebSocket from 'reconnecting-websocket';
+import ReconnectingWebSocketModule from 'reconnecting-websocket';
+const ReconnectingWebSocket = ReconnectingWebSocketModule.default;
+
 import IsomorphicWebSocket from 'isomorphic-ws';
 import {
     errorToPlainJson,
@@ -26,7 +31,7 @@ import { newRxError } from '../../rx-error.ts';
 
 export type WebsocketClient = {
     url: string;
-    socket: ReconnectingWebSocket;
+    socket: any;
     connected$: BehaviorSubject<boolean>;
     message$: Subject<any>;
     error$: Subject<RxError>;

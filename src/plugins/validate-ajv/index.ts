@@ -2,8 +2,10 @@
  * this plugin validates documents before they can be inserted into the RxCollection.
  * It's using ajv as jsonschema-validator
  * @link https://github.com/epoberezkin/ajv
+ * @link https://github.com/ajv-validator/ajv/issues/2132#issuecomment-1537224620
  */
-import Ajv from 'ajv';
+import ajvModule from 'ajv';
+const Ajv = ajvModule.default;
 import type {
     RxDocumentData,
     RxJsonSchema

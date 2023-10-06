@@ -3,8 +3,10 @@
  * It's using crypto-js/aes for password-encryption
  * @link https://github.com/brix/crypto-js
  */
-import AES from 'crypto-js/aes';
-import * as cryptoEnc from 'crypto-js/enc-utf8';
+import {
+    AES,
+    enc as cryptoEnc
+} from 'crypto-js';
 import { wrapRxStorageInstance } from '../../plugin-helpers.ts';
 import { newRxError, newRxTypeError } from '../../rx-error.ts';
 import { hasEncryption } from '../../rx-storage-helper.ts';
@@ -50,7 +52,7 @@ export function decryptString(cipherText: string, password: any): string {
     }
 
     const decrypted = AES.decrypt(cipherText, password);
-    const ret = decrypted.toString(cryptoEnc);
+    const ret = decrypted.toString(cryptoEnc.Utf8);
     return ret;
 }
 
