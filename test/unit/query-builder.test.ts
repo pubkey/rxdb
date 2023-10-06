@@ -1,14 +1,14 @@
 import assert from 'assert';
 
-import config from './config';
+import config from './config.ts';
 import type {
     MangoQuery
-} from '../../plugins/core';
+} from '../../plugins/core/index.ts';
 
 import {
     NoSqlQueryBuilder,
     createQueryBuilder
-} from '../../plugins/query-builder';
+} from '../../plugins/query-builder/index.ts';
 
 
 /**

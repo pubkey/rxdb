@@ -1,18 +1,18 @@
 import assert from 'assert';
 import AsyncTestUtil from 'async-test-util';
 
-import config from './config';
+import config from './config.ts';
 import {
     createRxDatabase,
     randomCouchString,
     RxCollection,
     RxJsonSchema
-} from '../../plugins/core';
+} from '../../plugins/core/index.ts';
 
 
-import * as schemas from '../helper/schemas';
-import * as schemaObjects from '../helper/schema-objects';
-import { HumanDocumentType } from '../helper/schemas';
+import * as schemas from '../helper/schemas.ts';
+import * as schemaObjects from '../helper/schema-objects.ts';
+import { HumanDocumentType } from '../helper/schemas.ts';
 
 config.parallel('orm.test.js', () => {
     describe('statics', () => {

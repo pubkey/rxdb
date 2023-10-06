@@ -7,26 +7,26 @@ import {
 } from 'broadcast-channel';
 import * as path from 'path';
 import parallel from 'mocha.parallel';
-import { getRxStorageLoki } from '../../plugins/storage-lokijs';
+import { getRxStorageLoki } from '../../plugins/storage-lokijs/index.ts';
 import {
     ensureNotFalsy,
     randomCouchString,
     RxStorage,
     RxStorageDefaultStatics,
     RxTestStorage
-} from '../../plugins/core';
+} from '../../plugins/core/index.ts';
 import {
     getRxStorageDexie
-} from '../../plugins/storage-dexie';
-import { getRxStorageRemoteWebsocket } from '../../plugins/storage-remote-websocket';
-import { getRxStorageMemory } from '../../plugins/storage-memory';
-import { CUSTOM_STORAGE } from './custom-storage';
-import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv';
+} from '../../plugins/storage-dexie/index.ts';
+import { getRxStorageRemoteWebsocket } from '../../plugins/storage-remote-websocket/index.ts';
+import { getRxStorageMemory } from '../../plugins/storage-memory/index.ts';
+import { CUSTOM_STORAGE } from './custom-storage.ts';
+import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.ts';
 import { isPromise } from 'async-test-util';
 
 import {
     wrappedKeyEncryptionCryptoJsStorage
-} from '../../plugins/encryption-crypto-js';
+} from '../../plugins/encryption-crypto-js/index.ts';
 
 
 export const ENV_VARIABLES = process.versions.bun || ensureNotFalsy(detect()).name === 'node' ? process.env : (window as any).__karma__.config.env;
@@ -85,7 +85,7 @@ const config: {
     isNotOneOfTheseStorages: (names: string[]) => boolean;
 } = {
     platform: Object.assign({}, detect(), {
-        isNode: () => detect().name === 'node'
+        isNode: () => ensureNotFalsy(detect()).name === 'node'
     }),
     parallel: useParallel,
     rootPath: '',

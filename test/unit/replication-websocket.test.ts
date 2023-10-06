@@ -2,18 +2,18 @@ import assert from 'assert';
 import {
     wait, waitUntil
 } from 'async-test-util';
-import config from './config';
-import * as schemaObjects from '../helper/schema-objects';
-import * as humansCollection from '../helper/humans-collection';
+import config from './config.ts';
+import * as schemaObjects from '../helper/schema-objects.ts';
+import * as humansCollection from '../helper/humans-collection.ts';
 import {
     startWebsocketServer,
     replicateWithWebsocketServer
-} from '../../plugins/replication-websocket';
+} from '../../plugins/replication-websocket/index.ts';
 import {
     RxCollection, randomCouchString
-} from '../../plugins/core';
-import { nextPort } from '../helper/port-manager';
-import { humanWithTimestamp } from '../helper/schemas';
+} from '../../plugins/core/index.ts';
+import { nextPort } from '../helper/port-manager.ts';
+import { humanWithTimestamp } from '../helper/schemas.ts';
 
 config.parallel('replication-websocket.test.ts', () => {
     if (!config.platform.isNode()) {

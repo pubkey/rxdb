@@ -5,20 +5,20 @@ import {
     RxCollection,
     ensureNotFalsy,
     WithDeleted
-} from '../';
+} from '../plugins/core/index.ts';
 
-import * as humansCollection from './helper/humans-collection';
-import * as schemaObjects from './helper/schema-objects';
+import * as humansCollection from './helper/humans-collection.ts';
+import * as schemaObjects from './helper/schema-objects.ts';
 
 import {
     replicateNats,
     NatsSyncOptions,
     RxNatsReplicationState
-} from '../plugins/replication-nats';
+} from '../plugins/replication-nats/index.ts';
 import {
     ensureCollectionsHaveEqualState,
     ensureReplicationHasNoErrors
-} from './helper/test-util';
+} from './helper/test-util.ts';
 import {
     DeliverPolicy,
     JSONCodec,

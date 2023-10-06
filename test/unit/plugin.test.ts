@@ -5,17 +5,17 @@
 
 import assert from 'assert';
 
-import config from './config';
+import config from './config.ts';
 import {
     addRxPlugin,
     randomCouchString,
     _clearHook,
     RxPlugin
-} from '../../plugins/core';
+} from '../../plugins/core/index.ts';
 
-import * as humansCollection from '../helper/humans-collection';
+import * as humansCollection from '../helper/humans-collection.ts';
 import { assertThrows } from 'async-test-util';
-import { RxDBDevModePlugin, DEV_MODE_PLUGIN_NAME } from '../../plugins/dev-mode';
+import { RxDBDevModePlugin, DEV_MODE_PLUGIN_NAME } from '../../plugins/dev-mode/index.ts';
 
 // used so that browserify will not require things in browsers
 const REQUIRE_FUN = require;

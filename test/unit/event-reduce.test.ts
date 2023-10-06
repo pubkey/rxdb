@@ -1,24 +1,21 @@
 import assert from 'assert';
 import { clone } from 'async-test-util';
 
-import * as schemas from '../helper/schemas';
-import * as schemaObjects from '../helper/schema-objects';
+import * as schemas from '../helper/schemas.ts';
+import * as schemaObjects from '../helper/schema-objects.ts';
 import {
     createRxDatabase,
     randomCouchString,
     RxCollection,
     RxDocument,
     MangoQuery
-} from '../../plugins/core';
+} from '../../plugins/core/index.ts';
 
 import {
     wrappedKeyCompressionStorage
-} from '../../plugins/key-compression';
+} from '../../plugins/key-compression/index.ts';
 
-
-
-import config from './config';
-
+import config from './config.ts';
 
 describe('event-reduce.test.js', () => {
     async function createCollection(

@@ -3,20 +3,20 @@ import * as fs from 'fs';
 
 import assert from 'assert';
 import { waitUntil } from 'async-test-util';
-import config from './config';
+import config from './config.ts';
 
-import * as schemaObjects from '../helper/schema-objects';
+import * as schemaObjects from '../helper/schema-objects.ts';
 import {
     addRxPlugin, createBlob
-} from '../../plugins/core';
-import { createAttachments } from '../helper/humans-collection';
+} from '../../plugins/core/index.ts';
+import { createAttachments } from '../helper/humans-collection.ts';
 import {
     backupSingleDocument,
     clearFolder,
     RxBackupState,
     getMeta
-} from '../../plugins/backup';
-import { BackupMetaFileContent, RxBackupWriteEvent } from '../../src/types';
+} from '../../plugins/backup/index.ts';
+import { BackupMetaFileContent, RxBackupWriteEvent } from '../../plugins/core/index.ts';
 
 describe('backup.test.ts', () => {
 

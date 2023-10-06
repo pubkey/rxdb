@@ -4,10 +4,10 @@
  */
 
 import { randomString } from 'async-test-util';
-import { PROMISE_RESOLVE_VOID } from '../../plugins/core';
-import { getFetchWithCouchDBAuthorization } from '../../plugins/replication-couchdb';
-import { ENV_VARIABLES } from '../unit/config';
-import { nextPort } from './port-manager';
+import { PROMISE_RESOLVE_VOID } from '../../plugins/core/index.ts';
+import { getFetchWithCouchDBAuthorization } from '../../plugins/replication-couchdb/index.ts';
+import { ENV_VARIABLES } from '../unit/config.ts';
+import { nextPort } from './port-manager.ts';
 
 const express = require('express');
 const app = express();

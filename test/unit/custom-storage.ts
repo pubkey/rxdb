@@ -6,5 +6,5 @@
  * - replace this file (custom-storage.ts) with a file that exports your values of RxTestStorage
  * - Run 'npm run transpile && cross-env DEFAULT_STORAGE=dexie NODE_ENV=fast mocha --config ./config/.mocharc.js ./test_tmp/unit.test.js'
  */
-import type { RxTestStorage } from '../../plugins/core';
+import type { RxTestStorage } from '../../plugins/core/index.ts';
 export const CUSTOM_STORAGE: RxTestStorage = { name: 'broken'} as any;

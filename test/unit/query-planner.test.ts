@@ -19,7 +19,7 @@ import {
 
 import type {
     RxDocumentData
-} from '../../src/types';
+} from '../../plugins/core/index.ts';
 import { HumanDocumentType } from '../helper/schemas.ts';
 
 

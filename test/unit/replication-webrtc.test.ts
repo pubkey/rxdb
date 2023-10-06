@@ -5,17 +5,17 @@
  */
 
 import assert from 'assert';
-import config from './config';
+import config from './config.ts';
 
-import * as schemaObjects from '../helper/schema-objects';
-import * as humansCollection from '../helper/humans-collection';
+import * as schemaObjects from '../helper/schema-objects.ts';
+import * as humansCollection from '../helper/humans-collection.ts';
 
 import {
     randomCouchString,
     RxCollection,
     defaultHashSha256,
     ensureNotFalsy
-} from '../../plugins/core';
+} from '../../plugins/core/index.ts';
 
 import {
     replicateWebRTC,
@@ -23,7 +23,7 @@ import {
     // getConnectionHandlerP2PCF,
     isMasterInWebRTCReplication,
     getConnectionHandlerSimplePeer
-} from '../../plugins/replication-webrtc';
+} from '../../plugins/replication-webrtc/index.ts';
 
 import { randomString, wait, waitUntil } from 'async-test-util';
 

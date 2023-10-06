@@ -6,7 +6,7 @@ import {
     ExtractDocumentTypeFromTypedRxJsonSchema,
     overwritable,
     flatClone
-} from '../../plugins/core';
+} from '../../plugins/core/index.ts';
 import {
     SimpleHumanV3DocumentType,
     HumanWithSubOtherDocumentType,
@@ -28,7 +28,7 @@ import {
     NostringIndexDocumentType,
     NoIndexHumanDocumentType,
     HumanWithCompositePrimary
-} from './schema-objects';
+} from './schema-objects.ts';
 
 
 export const humanSchemaLiteral = overwritable.deepFreezeWhenDevMode({

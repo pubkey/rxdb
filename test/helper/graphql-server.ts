@@ -23,16 +23,16 @@ import { graphqlHTTP } from 'express-graphql';
 import {
     GRAPHQL_PATH,
     GRAPHQL_SUBSCRIPTION_PATH
-} from './graphql-config';
+} from './graphql-config.ts';
 import { ensureNotFalsy, lastOfArray } from 'event-reduce-js';
-import { RxReplicationWriteToMasterRow } from '../../src';
-import { HumanWithTimestampDocumentType } from './schema-objects';
-import { GraphQLServerUrl, RxGraphQLReplicationClientState } from '../../src/types';
-import { nextPort } from './port-manager';
+import { RxReplicationWriteToMasterRow } from '../../plugins/core/index.ts';
+import { HumanWithTimestampDocumentType } from './schema-objects.ts';
+import { GraphQLServerUrl, RxGraphQLReplicationClientState } from '../../plugins/core/index.ts';
+import { nextPort } from './port-manager.ts';
 
 import {
     graphQLRequest
-} from '../../plugins/replication-graphql';
+} from '../../plugins/replication-graphql/index.ts';
 
 function sortByUpdatedAtAndPrimary(
     a: any,

@@ -1,9 +1,9 @@
 import assert from 'assert';
-import config from './config';
+import config from './config.ts';
 import AsyncTestUtil, { wait, waitUntil } from 'async-test-util';
 
-import * as humansCollection from '../helper/humans-collection';
-import * as schemaObjects from '../helper/schema-objects';
+import * as humansCollection from '../helper/humans-collection.ts';
+import * as schemaObjects from '../helper/schema-objects.ts';
 import {
     defaultCacheReplacementPolicyMonad,
     countRxQuerySubscribers,
@@ -11,7 +11,7 @@ import {
     QueryCache,
     triggerCacheReplacement,
     RxQuery,
-} from '../../plugins/core';
+} from '../../plugins/core/index.ts';
 import { BehaviorSubject, Subscription } from 'rxjs';
 import { mergeMap, shareReplay, switchMap } from 'rxjs/operators';
 

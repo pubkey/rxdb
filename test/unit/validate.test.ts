@@ -19,8 +19,8 @@ import {
     BulkWriteRow
 } from '../../plugins/core/index.ts';
 
-import { wrappedValidateZSchemaStorage } from '../../plugins/validate-z-schema.ts';
-import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv.ts';
+import { wrappedValidateZSchemaStorage } from '../../plugins/validate-z-schema/index.ts';
+import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.ts';
 
 
 /**
@@ -31,7 +31,7 @@ import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv.ts';
 // import { wrappedValidateIsMyJsonValidStorage } from '../../plugins/validate-is-my-json-valid';
 
 
-import { EXAMPLE_REVISION_1 } from '../helper/revisions';
+import { EXAMPLE_REVISION_1 } from '../helper/revisions.ts';
 
 const validationImplementations: {
     key: string;

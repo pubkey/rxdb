@@ -11,14 +11,14 @@ import {
     waitUntil
 } from 'async-test-util';
 
-import config from './config';
-import * as schemaObjects from '../helper/schema-objects';
-import * as schemas from '../helper/schemas';
-import * as humansCollection from '../helper/humans-collection';
+import config from './config.ts';
+import * as schemaObjects from '../helper/schema-objects.ts';
+import * as schemas from '../helper/schemas.ts';
+import * as humansCollection from '../helper/humans-collection.ts';
 
 import {
     wrappedValidateAjvStorage
-} from '../../plugins/validate-ajv';
+} from '../../plugins/validate-ajv/index.ts';
 
 import {
     RxCollection,
@@ -35,18 +35,18 @@ import {
     createBlob,
     RxAttachmentCreator,
     DeepReadonly
-} from '../../plugins/core';
+} from '../../plugins/core/index.ts';
 
 import {
     RxReplicationState,
     replicateRxCollection
-} from '../../plugins/replication';
+} from '../../plugins/replication/index.ts';
 
 import type {
     ReplicationPullHandler,
     ReplicationPushHandler,
     RxReplicationWriteToMasterRow
-} from '../../src/types';
+} from '../../plugins/core/index.ts';
 import { firstValueFrom, Observable, Subject } from 'rxjs';
 
 

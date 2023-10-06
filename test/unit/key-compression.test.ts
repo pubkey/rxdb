@@ -2,7 +2,7 @@
  * this test is for the keycompression-capabilities of rxdb
  */
 import assert from 'assert';
-import config from './config';
+import config from './config.ts';
 
 
 import {
@@ -12,12 +12,12 @@ import {
     RxJsonSchema,
     RxCollection,
     RxStorageInstance,
-} from '../../plugins/core';
-import * as schemaObjects from '../helper/schema-objects';
+} from '../../plugins/core/index.ts';
+import * as schemaObjects from '../helper/schema-objects.ts';
 import {
     wrappedKeyCompressionStorage
-} from '../../plugins/key-compression';
-import { HumanDocumentType, human, enableKeyCompression } from '../helper/schemas';
+} from '../../plugins/key-compression/index.ts';
+import { HumanDocumentType, human, enableKeyCompression } from '../helper/schemas.ts';
 
 
 config.parallel('key-compression.test.js', () => {

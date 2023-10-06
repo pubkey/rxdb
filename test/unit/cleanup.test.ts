@@ -1,20 +1,20 @@
 import assert from 'assert';
 import { wait, waitUntil } from 'async-test-util';
 
-import config from './config';
-import * as schemas from '../helper/schemas';
-import * as schemaObjects from '../helper/schema-objects';
+import config from './config.ts';
+import * as schemas from '../helper/schemas.ts';
+import * as schemaObjects from '../helper/schema-objects.ts';
 import {
     createRxDatabase,
     randomCouchString,
     addRxPlugin,
     RxCollection
-} from '../../plugins/core';
+} from '../../plugins/core/index.ts';
 
-import { HumanDocumentType } from '../helper/schemas';
-import { replicateRxCollection } from '../../plugins/replication';
+import { HumanDocumentType } from '../helper/schemas.ts';
+import { replicateRxCollection } from '../../plugins/replication/index.ts';
 
-import { RxDBCleanupPlugin } from '../../plugins/cleanup';
+import { RxDBCleanupPlugin } from '../../plugins/cleanup/index.ts';
 addRxPlugin(RxDBCleanupPlugin);
 
 config.parallel('cleanup.test.js', () => {

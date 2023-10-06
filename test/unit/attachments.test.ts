@@ -2,12 +2,12 @@ import assert from 'assert';
 import config, {
     getEncryptedStorage,
     getPassword
-} from './config';
+} from './config.ts';
 import AsyncTestUtil from 'async-test-util';
 
-import * as humansCollection from '../helper/humans-collection';
-import * as schemas from '../helper/schemas';
-import * as schemaObjects from '../helper/schema-objects';
+import * as humansCollection from '../helper/humans-collection.ts';
+import * as schemas from '../helper/schemas.ts';
+import * as schemaObjects from '../helper/schema-objects.ts';
 import {
     clone,
     createRxDatabase,
@@ -23,10 +23,10 @@ import {
     blobToBase64String,
     createBlobFromBase64,
     createBlob,
-    blobToString
-} from '../../plugins/core';
-import { HumanDocumentType } from '../helper/schemas';
-import { RxDocumentWriteData } from '../../src/types';
+    blobToString,
+    RxDocumentWriteData
+} from '../../plugins/core/index.ts';
+import { HumanDocumentType } from '../helper/schemas.ts';
 
 const STATIC_FILE_SERVER_URL = 'http://localhost:18001/';
 

@@ -14,12 +14,12 @@ import {
     firstValueFrom
 } from 'rxjs';
 
-import config, { getEncryptedStorage, getPassword } from './config';
-import * as schemaObjects from '../helper/schema-objects';
+import config, { getEncryptedStorage, getPassword } from './config.ts';
+import * as schemaObjects from '../helper/schema-objects.ts';
 import {
     HumanWithTimestampDocumentType
-} from '../helper/schema-objects';
-import * as humansCollection from '../helper/humans-collection';
+} from '../helper/schema-objects.ts';
+import * as humansCollection from '../helper/humans-collection.ts';
 
 import {
     createRxDatabase,
@@ -29,7 +29,7 @@ import {
     RxReplicationWriteToMasterRow,
     ReplicationPullHandlerResult,
     RxCollection
-} from '../../plugins/core';
+} from '../../plugins/core/index.ts';
 
 import {
     replicateGraphQL,
@@ -39,30 +39,30 @@ import {
     RxGraphQLReplicationState,
     pullStreamBuilderFromRxSchema,
     graphQLRequest
-} from '../../plugins/replication-graphql';
+} from '../../plugins/replication-graphql/index.ts';
 import {
     wrappedKeyCompressionStorage
-} from '../../plugins/key-compression';
-import * as schemas from '../helper/schemas';
+} from '../../plugins/key-compression/index.ts';
+import * as schemas from '../helper/schemas.ts';
 import {
     GRAPHQL_PATH,
     getDocsOnServer
-} from '../helper/graphql-config';
+} from '../helper/graphql-config.ts';
 
 import {
     wrappedValidateAjvStorage
-} from '../../plugins/validate-ajv';
+} from '../../plugins/validate-ajv/index.ts';
 
 import {
     GraphQLServerModule
-} from '../helper/graphql-server';
+} from '../helper/graphql-server.ts';
 
 import {
     buildSchema,
     parse as parseQuery
 } from 'graphql';
-import { ReplicationPushHandlerResult, RxDocumentData } from '../../src/types';
-import { enableKeyCompression } from '../helper/schemas';
+import { ReplicationPushHandlerResult, RxDocumentData } from '../../plugins/core/index.ts';
+import { enableKeyCompression } from '../helper/schemas.ts';
 
 declare type WithDeleted<T> = T & { deleted: boolean; };
 

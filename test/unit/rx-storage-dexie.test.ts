@@ -1,6 +1,6 @@
 import assert from 'assert';
 
-import config from './config';
+import config from './config.ts';
 import {
     clone,
     ensureNotFalsy,
@@ -10,19 +10,19 @@ import {
     randomCouchString,
     now,
     createRevision
-} from '../../plugins/core';
+} from '../../plugins/core/index.ts';
 
 import {
     getDexieStoreSchema,
     fromDexieToStorage,
     fromStorageToDexie
-} from '../../plugins/storage-dexie';
+} from '../../plugins/storage-dexie/index.ts';
 
-import * as schemaObjects from '../helper/schema-objects';
+import * as schemaObjects from '../helper/schema-objects.ts';
 import {
     HumanDocumentType,
     humanSchemaLiteral
-} from '../helper/schemas';
+} from '../helper/schemas.ts';
 import { assertThrows } from 'async-test-util';
 
 /**

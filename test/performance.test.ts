@@ -3,11 +3,11 @@ import {
     randomCouchString,
     overwritable,
     requestIdlePromise
-} from '../plugins/core';
+} from '../plugins/core/index.ts';
 import * as assert from 'assert';
-import * as schemas from './helper/schemas';
-import * as schemaObjects from './helper/schema-objects';
-import config from './unit/config';
+import * as schemas from './helper/schemas.ts';
+import * as schemaObjects from './helper/schema-objects.ts';
+import config from './unit/config.ts';
 import { wait } from 'async-test-util';
 
 /**

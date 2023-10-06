@@ -5,24 +5,24 @@
 import assert from 'assert';
 import AsyncTestUtil from 'async-test-util';
 
-import config from './config';
-import * as humansCollection from '../helper/humans-collection';
-import * as schemas from '../helper/schemas';
-import * as schemaObjects from '../helper/schema-objects';
+import config from './config.ts';
+import * as humansCollection from '../helper/humans-collection.ts';
+import * as schemas from '../helper/schemas.ts';
+import * as schemaObjects from '../helper/schema-objects.ts';
 import {
     createRxDatabase,
     randomCouchString,
     promiseWait,
     ensureNotFalsy
-} from '../../plugins/core';
+} from '../../plugins/core/index.ts';
 
 import {
     first,
 } from 'rxjs/operators';
 import type {
     RxChangeEvent
-} from '../../src/types';
-import { HumanDocumentType } from '../helper/schemas';
+} from '../../plugins/core/index.ts';
+import { HumanDocumentType } from '../helper/schemas.ts';
 import { firstValueFrom } from 'rxjs';
 
 config.parallel('reactive-document.test.js', () => {

@@ -1,9 +1,9 @@
 import assert from 'assert';
 import AsyncTestUtil, { clone } from 'async-test-util';
 
-import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv';
-import * as schemas from '../helper/schemas';
-import * as schemaObjects from '../helper/schema-objects';
+import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.ts';
+import * as schemas from '../helper/schemas.ts';
+import * as schemaObjects from '../helper/schema-objects.ts';
 import {
     createRxDatabase,
     randomCouchString,
@@ -18,7 +18,7 @@ import {
     rxStorageInstanceToReplicationHandler,
     RxReplicationWriteToMasterRow,
     defaultConflictHandler
-} from '../../plugins/core';
+} from '../../plugins/core/index.ts';
 
 
 
@@ -26,11 +26,11 @@ import {
     getCRDTSchemaPart,
     RxDBcrdtPlugin,
     getCRDTConflictHandler
-} from '../../plugins/crdt';
+} from '../../plugins/crdt/index.ts';
 addRxPlugin(RxDBcrdtPlugin);
-import config from './config';
-import { replicateRxCollection, RxReplicationState } from '../../plugins/replication';
-import { ReplicationPullHandler, ReplicationPushHandler } from '../../src/types';
+import config from './config.ts';
+import { replicateRxCollection, RxReplicationState } from '../../plugins/replication/index.ts';
+import { ReplicationPullHandler, ReplicationPushHandler } from '../../plugins/core/index.ts';
 
 config.parallel('crdt.test.js', () => {
     type WithCRDTs<RxDocType> = RxDocType & {

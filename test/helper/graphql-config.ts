@@ -1,4 +1,4 @@
-import { RxGraphQLReplicationState } from '../../plugins/replication-graphql';
+import { RxGraphQLReplicationState } from '../../plugins/replication-graphql/index.ts';
 
 export const GRAPHQL_PATH = '/graphql';
 export const GRAPHQL_SUBSCRIPTION_PATH = '/subscriptions';

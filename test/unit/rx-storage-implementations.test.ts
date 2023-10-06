@@ -39,7 +39,8 @@ import {
     RxStorageChangeEvent,
     RxStorageInstance
 } from '../../plugins/core/index.ts';
-import Ajv from 'ajv';
+import ajvModule from 'ajv';
+const Ajv = ajvModule.default;
 import {
     getCompressionStateByRxJsonSchema
 } from '../../plugins/key-compression/index.ts';

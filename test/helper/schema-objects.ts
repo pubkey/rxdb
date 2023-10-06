@@ -8,7 +8,7 @@ import {
     randomNumber,
     randomString
 } from 'async-test-util';
-import { HumanDocumentType } from './schemas';
+import { HumanDocumentType } from './schemas.ts';
 
 
 export interface SimpleHumanDocumentType {
