@@ -257,7 +257,7 @@ export function backup(
     return backupState;
 }
 
-export * from './file-util';
+export * from './file-util.ts';
 export const RxDBBackupPlugin: RxPlugin = {
     name: 'backup',
     rxdb: true,

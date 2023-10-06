@@ -30,7 +30,7 @@ import type {
     RxTypeError,
     WithDeleted
 } from '../../types/index.d.ts';
-import { RxDBLeaderElectionPlugin } from '../leader-election.ts';
+import { RxDBLeaderElectionPlugin } from '../leader-election/index.ts';
 import {
     ensureNotFalsy,
     errorToPlainJson,
