@@ -1,5 +1,5 @@
 import { firstValueFrom, filter } from 'rxjs';
-import { stackCheckpoints } from '../rx-storage-helper';
+import { stackCheckpoints } from '../rx-storage-helper.ts';
 import type {
     BulkWriteRow,
     BulkWriteRowById,
@@ -11,7 +11,7 @@ import type {
     RxStorageInstanceReplicationState,
     RxStorageReplicationMeta,
     WithDeleted
-} from '../types';
+} from '../types/index.d.ts';
 import {
     appendToArray,
     batchArray,
@@ -19,21 +19,21 @@ import {
     ensureNotFalsy,
     parseRevision,
     PROMISE_RESOLVE_FALSE
-} from '../plugins/utils';
+} from '../plugins/utils/index.ts';
 import {
     getLastCheckpointDoc,
     setCheckpoint
-} from './checkpoint';
-import { resolveConflictError } from './conflicts';
+} from './checkpoint.ts';
+import { resolveConflictError } from './conflicts.ts';
 import {
     stripAttachmentsDataFromMetaWriteRows,
     writeDocToDocState
-} from './helper';
+} from './helper.ts';
 import {
     getAssumedMasterState,
     getMetaWriteRow
-} from './meta-instance';
-import { fillWriteDataForAttachmentsChange } from '../plugins/attachments';
+} from './meta-instance.ts';
+import { fillWriteDataForAttachmentsChange } from '../plugins/attachments/index.ts';
 
 /**
  * Writes all document changes from the fork to the master.

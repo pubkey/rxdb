@@ -2,16 +2,16 @@ import type {
     RxChangeEvent,
     RxDocument,
     RxDocumentData
-} from './types';
+} from './types/index.d.ts';
 import {
     getFromMapOrCreate,
     getFromMapOrThrow,
     getHeightOfRevision
-} from './plugins/utils';
+} from './plugins/utils/index.ts';
 import {
     overwritable
-} from './overwritable';
-import { getDocumentDataOfRxChangeEvent } from './rx-change-event';
+} from './overwritable.ts';
+import { getDocumentDataOfRxChangeEvent } from './rx-change-event.ts';
 import { Observable } from 'rxjs';
 
 declare type CacheItem<RxDocType, OrmMethods> = {

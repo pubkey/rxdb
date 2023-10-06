@@ -1,7 +1,7 @@
 import type {
     RxPlugin
-} from '../../types';
-import { startCleanupForRxCollection } from './cleanup';
+} from '../../types/index.d.ts';
+import { startCleanupForRxCollection } from './cleanup.ts';
 
 export const RxDBCleanupPlugin: RxPlugin = {
     name: 'cleanup',
@@ -16,4 +16,4 @@ export const RxDBCleanupPlugin: RxPlugin = {
     }
 };
 
-export * from './cleanup';
+export * from './cleanup.ts';

@@ -1,4 +1,4 @@
-import { createLokiLocalState, RxStorageInstanceLoki } from './rx-storage-instance-loki';
+import { createLokiLocalState, RxStorageInstanceLoki } from './rx-storage-instance-loki.ts';
 import lokijs, { Collection } from 'lokijs';
 import type {
     DeterministicSortComparator,
@@ -11,7 +11,7 @@ import type {
     MangoQuerySortPart,
     RxDocumentData,
     RxJsonSchema
-} from '../../types';
+} from '../../types/index.d.ts';
 import {
     add as unloadAdd,
     AddReturn
@@ -23,16 +23,16 @@ import {
     getProperty,
     promiseWait,
     randomCouchString
-} from '../utils';
-import { LokiSaveQueue } from './loki-save-queue';
-import { newRxError } from '../../rx-error';
+} from '../utils/index.ts';
+import { LokiSaveQueue } from './loki-save-queue.ts';
+import { newRxError } from '../../rx-error.ts';
 import {
     LeaderElector,
     OnMessageHandler
 } from 'broadcast-channel';
-import { getBroadcastChannelReference } from '../../rx-storage-multiinstance';
-import { getLeaderElectorByBroadcastChannel } from '../leader-election';
-import { overwritable } from '../../overwritable';
+import { getBroadcastChannelReference } from '../../rx-storage-multiinstance.ts';
+import { getLeaderElectorByBroadcastChannel } from '../leader-election/index.ts';
+import { overwritable } from '../../overwritable.ts';
 
 export const CHANGES_COLLECTION_SUFFIX = '-rxdb-changes';
 export const LOKI_BROADCAST_CHANNEL_MESSAGE_TYPE = 'rxdb-lokijs-remote-request';

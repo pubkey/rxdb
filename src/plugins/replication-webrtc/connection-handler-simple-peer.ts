@@ -1,5 +1,5 @@
 import { Subject } from 'rxjs';
-import { getFromMapOrThrow, PROMISE_RESOLVE_VOID, randomCouchString } from '../../plugins/utils';
+import { getFromMapOrThrow, PROMISE_RESOLVE_VOID, randomCouchString } from '../../plugins/utils/index.ts';
 import type {
     WebRTCConnectionHandler,
     WebRTCConnectionHandlerCreator,
@@ -7,14 +7,14 @@ import type {
     WebRTCPeer,
     PeerWithMessage,
     PeerWithResponse
-} from './webrtc-types';
+} from './webrtc-types.ts';
 
 import {
     Instance as SimplePeer,
     default as Peer
 } from 'simple-peer';
-import { RxError, RxTypeError } from '../../types';
-import { newRxError } from '../../rx-error';
+import type { RxError, RxTypeError } from '../../types/index.d.ts';
+import { newRxError } from '../../rx-error.ts';
 
 /**
  * Returns a connection handler that uses simple-peer and the signaling server.

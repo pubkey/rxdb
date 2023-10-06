@@ -2,7 +2,7 @@ import {
     filter,
     map,
     mergeMap
-} from 'rxjs/operators';
+} from 'rxjs';
 
 import {
     ucfirst,
@@ -13,39 +13,39 @@ import {
     getFromMapOrThrow,
     PROMISE_RESOLVE_FALSE,
     PROMISE_RESOLVE_VOID
-} from './plugins/utils';
+} from './plugins/utils/index.ts';
 import {
     fillObjectDataBeforeInsert,
     createRxCollectionStorageInstance,
     removeCollectionStorages
-} from './rx-collection-helper';
+} from './rx-collection-helper.ts';
 import {
     createRxQuery,
     _getDefaultQuery
-} from './rx-query';
+} from './rx-query.ts';
 import {
     newRxError,
     newRxTypeError
-} from './rx-error';
+} from './rx-error.ts';
 import type {
     RxMigrationState
-} from './plugins/migration';
+} from './plugins/migration/index.ts';
 import {
     DocumentCache
-} from './doc-cache';
+} from './doc-cache.ts';
 import {
     QueryCache,
     createQueryCache,
     defaultCacheReplacementPolicy
-} from './query-cache';
+} from './query-cache.ts';
 import {
     ChangeEventBuffer,
     createChangeEventBuffer
-} from './change-event-buffer';
+} from './change-event-buffer.ts';
 import {
     runAsyncPluginHooks,
     runPluginHooks
-} from './hooks';
+} from './hooks.ts';
 
 import {
     Subscription,
@@ -81,25 +81,25 @@ import type {
     CRDTEntry,
     MangoQuerySelectorAndIndex,
     MigrationStrategies
-} from './types';
+} from './types/index.d.ts';
 
 import {
     RxSchema
-} from './rx-schema';
+} from './rx-schema.ts';
 
 import {
     createNewRxDocument
-} from './rx-document-prototype-merge';
+} from './rx-document-prototype-merge.ts';
 import {
     getWrappedStorageInstance,
     storageChangeEventToRxChangeEvent,
     throwIfIsStorageWriteError,
     WrappedRxStorageInstance
-} from './rx-storage-helper';
-import { defaultConflictHandler } from './replication-protocol';
-import { IncrementalWriteQueue } from './incremental-write';
-import { beforeDocumentUpdateWrite } from './rx-document';
-import { overwritable } from './overwritable';
+} from './rx-storage-helper.ts';
+import { defaultConflictHandler } from './replication-protocol/index.ts';
+import { IncrementalWriteQueue } from './incremental-write.ts';
+import { beforeDocumentUpdateWrite } from './rx-document.ts';
+import { overwritable } from './overwritable.ts';
 
 const HOOKS_WHEN = ['pre', 'post'] as const;
 type HookWhenType = typeof HOOKS_WHEN[number];

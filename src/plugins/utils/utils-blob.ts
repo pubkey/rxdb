@@ -1,4 +1,4 @@
-import { arrayBufferToBase64 } from './utils-base64';
+import { arrayBufferToBase64 } from './utils-base64.ts';
 
 /**
  * Since RxDB 13.0.0 we only use Blob instead of falling back to Buffer,

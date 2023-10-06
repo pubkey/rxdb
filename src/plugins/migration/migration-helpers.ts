@@ -2,14 +2,14 @@ import { BehaviorSubject } from 'rxjs';
 import {
     INTERNAL_CONTEXT_COLLECTION,
     getPrimaryKeyOfInternalDocument
-} from '../../rx-database-internal-store';
-import { getPreviousVersions } from '../../rx-schema';
+} from '../../rx-database-internal-store.ts';
+import { getPreviousVersions } from '../../rx-schema.ts';
 import type {
     InternalStoreCollectionDocType,
     RxCollection,
     RxDatabase,
     RxDocumentData
-} from '../../types';
+} from '../../types/index.d.ts';
 import {
     PROMISE_RESOLVE_FALSE,
     PROMISE_RESOLVE_NULL,
@@ -17,8 +17,8 @@ import {
     flatClone,
     getFromMapOrCreate,
     toPromise
-} from '../utils';
-import { RxMigrationState } from './rx-migration-state';
+} from '../utils/index.ts';
+import { RxMigrationState } from './rx-migration-state.ts';
 
 export const MIGRATION_STATUS_INTERNAL_DOCUMENT_CONTEXT = 'rx-migration-status';
 

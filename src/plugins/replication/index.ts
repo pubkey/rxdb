@@ -29,8 +29,8 @@ import type {
     RxStorageReplicationMeta,
     RxTypeError,
     WithDeleted
-} from '../../types';
-import { RxDBLeaderElectionPlugin } from '../leader-election';
+} from '../../types/index.d.ts';
+import { RxDBLeaderElectionPlugin } from '../leader-election.ts';
 import {
     ensureNotFalsy,
     errorToPlainJson,
@@ -39,30 +39,30 @@ import {
     PROMISE_RESOLVE_FALSE,
     PROMISE_RESOLVE_TRUE,
     toArray
-} from '../../plugins/utils';
+} from '../../plugins/utils/index.ts';
 import {
     awaitRxStorageReplicationFirstInSync,
     awaitRxStorageReplicationInSync,
     cancelRxStorageReplication,
     getRxReplicationMetaInstanceSchema,
     replicateRxStorageInstance
-} from '../../replication-protocol';
-import { newRxError } from '../../rx-error';
+} from '../../replication-protocol/index.ts';
+import { newRxError } from '../../rx-error.ts';
 import {
     awaitRetry,
     DEFAULT_MODIFIER,
     swapDefaultDeletedTodeletedField,
     handlePulledDocuments
-} from './replication-helper';
+} from './replication-helper.ts';
 import {
     addConnectedStorageToCollection
-} from '../../rx-database-internal-store';
-import { addRxPlugin } from '../../plugin';
-import { hasEncryption } from '../../rx-storage-helper';
-import { overwritable } from '../../overwritable';
+} from '../../rx-database-internal-store.ts';
+import { addRxPlugin } from '../../plugin.ts';
+import { hasEncryption } from '../../rx-storage-helper.ts';
+import { overwritable } from '../../overwritable.ts';
 import {
     runAsyncPluginHooks
-} from '../../hooks';
+} from '../../hooks.ts';
 
 
 export const REPLICATION_STATE_BY_COLLECTION: WeakMap<RxCollection, RxReplicationState<any, any>[]> = new WeakMap();

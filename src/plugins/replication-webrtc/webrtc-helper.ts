@@ -1,12 +1,12 @@
 import type {
     HashFunction
-} from '../../types';
+} from '../../types/index.d.ts';
 import type {
     WebRTCConnectionHandler,
     WebRTCMessage,
     WebRTCPeer,
     WebRTCResponse
-} from './webrtc-types';
+} from './webrtc-types.ts';
 import { filter, firstValueFrom, map } from 'rxjs';
 
 

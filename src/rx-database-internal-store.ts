@@ -1,12 +1,12 @@
 import {
     isBulkWriteConflictError,
     newRxError
-} from './rx-error';
+} from './rx-error.ts';
 import {
     fillWithDefaultSettings,
     getComposedPrimaryKeyOfDocumentData
-} from './rx-schema-helper';
-import { getSingleDocument, writeSingle } from './rx-storage-helper';
+} from './rx-schema-helper.ts';
+import { getSingleDocument, writeSingle } from './rx-storage-helper.ts';
 import type {
     CollectionsOfDatabase,
     InternalStoreCollectionDocType,
@@ -20,14 +20,14 @@ import type {
     RxStorageInstance,
     RxStorageStatics,
     RxStorageWriteErrorConflict
-} from './types';
+} from './types/index.d.ts';
 import {
     clone,
     ensureNotFalsy,
     getDefaultRevision,
     getDefaultRxDocumentMeta,
     randomCouchString
-} from './plugins/utils';
+} from './plugins/utils/index.ts';
 
 export const INTERNAL_CONTEXT_COLLECTION = 'collection';
 export const INTERNAL_CONTEXT_STORAGE_TOKEN = 'storage-token';
@@ -204,7 +204,7 @@ export async function ensureStorageTokenDocumentExists<Collections extends Colle
         if (
             passwordHash &&
             passwordHash !== conflictError.documentInDb.data.passwordHash
-            ) {
+        ) {
             throw newRxError('DB1', {
                 passwordHash,
                 existingPasswordHash: conflictError.documentInDb.data.passwordHash

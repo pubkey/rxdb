@@ -5,17 +5,17 @@
 import {
     isObject,
     merge
-} from './mquery-utils';
+} from './mquery-utils.ts';
 import {
     newRxTypeError,
     newRxError
-} from '../../../rx-error';
+} from '../../../rx-error.ts';
 import type {
     MangoQuery,
     MangoQuerySelector,
     MangoQuerySortPart,
     MangoQuerySortDirection
-} from '../../../types';
+} from '../../../types/index.d.ts';
 
 
 declare type MQueryOptions = {

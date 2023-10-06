@@ -26,7 +26,7 @@ import type {
     RxError,
     HashFunction,
     MaybePromise
-} from './types';
+} from './types/index.d.ts';
 
 import {
     pluginMissing,
@@ -37,18 +37,18 @@ import {
     getDefaultRevision,
     getDefaultRxDocumentMeta,
     defaultHashSha256
-} from './plugins/utils';
+} from './plugins/utils/index.ts';
 import {
     newRxError
-} from './rx-error';
+} from './rx-error.ts';
 import {
     createRxSchema,
     RxSchema
-} from './rx-schema';
+} from './rx-schema.ts';
 import {
     runPluginHooks,
     runAsyncPluginHooks
-} from './hooks';
+} from './hooks.ts';
 import {
     Subject,
     Subscription,
@@ -59,15 +59,15 @@ import {
 } from 'rxjs/operators';
 import {
     createRxCollection
-} from './rx-collection';
+} from './rx-collection.ts';
 import {
     flatCloneDocWithMeta,
     getSingleDocument,
     getWrappedStorageInstance,
     INTERNAL_STORAGE_NAME,
     WrappedRxStorageInstance
-} from './rx-storage-helper';
-import type { RxBackupState } from './plugins/backup';
+} from './rx-storage-helper.ts';
+import type { RxBackupState } from './plugins/backup/index.ts';
 import { ObliviousSet } from 'oblivious-set';
 import {
     ensureStorageTokenDocumentExists,
@@ -76,10 +76,10 @@ import {
     INTERNAL_CONTEXT_COLLECTION,
     INTERNAL_STORE_SCHEMA,
     _collectionNamePrimary
-} from './rx-database-internal-store';
-import { removeCollectionStorages } from './rx-collection-helper';
-import { overwritable } from './overwritable';
-import type { RxMigrationState } from './plugins/migration';
+} from './rx-database-internal-store.ts';
+import { removeCollectionStorages } from './rx-collection-helper.ts';
+import { overwritable } from './overwritable.ts';
+import type { RxMigrationState } from './plugins/migration/index.ts';
 
 /**
  * stores the used database names

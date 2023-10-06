@@ -21,7 +21,7 @@ import type {
     RxStorageChangeEvent,
     RxStorageInstance,
     RxStorageInstanceCreationParams
-} from './types';
+} from './types/index.d.ts';
 
 import {
     BroadcastChannel

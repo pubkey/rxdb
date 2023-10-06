@@ -1,9 +1,9 @@
 import type {
     RxCollection,
     WithDeleted
-} from '../../types';
-import { flatClone } from '../../plugins/utils';
-import { getComposedPrimaryKeyOfDocumentData } from '../../rx-schema-helper';
+} from '../../types/index.d.ts';
+import { flatClone } from '../../plugins/utils/index.ts';
+import { getComposedPrimaryKeyOfDocumentData } from '../../rx-schema-helper.ts';
 
 // does nothing
 export const DEFAULT_MODIFIER = (d: any) => Promise.resolve(d);

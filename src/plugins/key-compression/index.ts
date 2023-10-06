@@ -16,10 +16,10 @@ import {
 } from 'jsonschema-key-compression';
 import {
     overwritable
-} from '../../overwritable';
-import { wrapRxStorageInstance } from '../../plugin-helpers';
-import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
-import { flatCloneDocWithMeta } from '../../rx-storage-helper';
+} from '../../overwritable.ts';
+import { wrapRxStorageInstance } from '../../plugin-helpers.ts';
+import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper.ts';
+import { flatCloneDocWithMeta } from '../../rx-storage-helper.ts';
 
 import type {
     RxJsonSchema,
@@ -31,12 +31,12 @@ import type {
     FilledMangoQuery,
     PreparedQuery,
     RxDocumentWriteData
-} from '../../types';
+} from '../../types/index.d.ts';
 import {
     flatClone,
     getFromMapOrCreate,
     isMaybeReadonlyArray
-} from '../../plugins/utils';
+} from '../../plugins/utils/index.ts';
 
 declare type CompressionState = {
     table: CompressionTable;

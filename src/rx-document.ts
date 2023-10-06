@@ -17,13 +17,13 @@ import {
     RXJS_SHARE_REPLAY_DEFAULTS,
     getProperty,
     getFromMapOrCreate
-} from './plugins/utils';
+} from './plugins/utils/index.ts';
 import {
     newRxError
-} from './rx-error';
+} from './rx-error.ts';
 import {
     runPluginHooks
-} from './hooks';
+} from './hooks.ts';
 
 import type {
     RxDocument,
@@ -33,12 +33,12 @@ import type {
     UpdateQuery,
     CRDTEntry,
     ModifyFunction
-} from './types';
-import { getDocumentDataOfRxChangeEvent } from './rx-change-event';
-import { overwritable } from './overwritable';
-import { getSchemaByObjectPath } from './rx-schema-helper';
-import { throwIfIsStorageWriteError } from './rx-storage-helper';
-import { modifierFromPublicToInternal } from './incremental-write';
+} from './types/index.d.ts';
+import { getDocumentDataOfRxChangeEvent } from './rx-change-event.ts';
+import { overwritable } from './overwritable.ts';
+import { getSchemaByObjectPath } from './rx-schema-helper.ts';
+import { throwIfIsStorageWriteError } from './rx-storage-helper.ts';
+import { modifierFromPublicToInternal } from './incremental-write.ts';
 
 export const basePrototype = {
     get primaryPath() {

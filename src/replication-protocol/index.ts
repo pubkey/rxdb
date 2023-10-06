@@ -15,7 +15,7 @@ import {
 } from 'rxjs';
 import {
     getPrimaryFieldOfPrimaryKey
-} from '../rx-schema-helper';
+} from '../rx-schema-helper.ts';
 import type {
     BulkWriteRow,
     ById,
@@ -28,27 +28,27 @@ import type {
     RxStorageInstanceReplicationInput,
     RxStorageInstanceReplicationState,
     WithDeleted
-} from '../types';
+} from '../types/index.d.ts';
 import {
     clone,
     ensureNotFalsy,
     PROMISE_RESOLVE_VOID
-} from '../plugins/utils';
+} from '../plugins/utils/index.ts';
 import {
     getCheckpointKey
-} from './checkpoint';
-import { startReplicationDownstream } from './downstream';
-import { docStateToWriteDoc, writeDocToDocState } from './helper';
-import { startReplicationUpstream } from './upstream';
-import { fillWriteDataForAttachmentsChange } from '../plugins/attachments';
+} from './checkpoint.ts';
+import { startReplicationDownstream } from './downstream.ts';
+import { docStateToWriteDoc, writeDocToDocState } from './helper.ts';
+import { startReplicationUpstream } from './upstream.ts';
+import { fillWriteDataForAttachmentsChange } from '../plugins/attachments/index.ts';
 
 
-export * from './checkpoint';
-export * from './downstream';
-export * from './upstream';
-export * from './meta-instance';
-export * from './conflicts';
-export * from './helper';
+export * from './checkpoint.ts';
+export * from './downstream.ts';
+export * from './upstream.ts';
+export * from './meta-instance.ts';
+export * from './conflicts.ts';
+export * from './helper.ts';
 
 
 export function replicateRxStorageInstance<RxDocType>(

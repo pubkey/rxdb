@@ -8,9 +8,9 @@ import {
     getFromMapOrThrow,
     now,
     promiseWait
-} from '../../plugins/utils';
+} from '../../plugins/utils/index.ts';
 
-import { RxDBLeaderElectionPlugin } from '../leader-election';
+import { RxDBLeaderElectionPlugin } from '../leader-election/index.ts';
 import type {
     RxCollection,
     ReplicationPullOptions,
@@ -21,33 +21,33 @@ import type {
     CouchBulkDocResultRow,
     CouchAllDocsResponse,
     RxConflictHandler
-} from '../../types';
+} from '../../types/index.d.ts';
 import {
     RxReplicationState,
     startReplicationOnLeaderShip
-} from '../replication';
+} from '../replication/index.ts';
 import {
     addRxPlugin,
     newRxError,
     WithDeleted
-} from '../../index';
+} from '../../index.ts';
 
 import { Subject } from 'rxjs';
 import type {
     CouchDBCheckpointType,
     FetchMethodType,
     SyncOptionsCouchDB
-} from './couchdb-types';
+} from './couchdb-types.ts';
 import {
     couchDBDocToRxDocData,
     mergeUrlQueryParams,
     couchSwapPrimaryToId,
     getDefaultFetch
-} from './couchdb-helper';
-import { awaitRetry } from '../replication/replication-helper';
+} from './couchdb-helper.ts';
+import { awaitRetry } from '../replication/replication-helper.ts';
 
-export * from './couchdb-helper';
-export * from './couchdb-types';
+export * from './couchdb-helper.ts';
+export * from './couchdb-types.ts';
 
 export class RxCouchDBReplicationState<RxDocType> extends RxReplicationState<RxDocType, CouchDBCheckpointType> {
     constructor(

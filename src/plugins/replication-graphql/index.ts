@@ -5,13 +5,13 @@
 import {
     ensureNotFalsy,
     getProperty
-} from '../../plugins/utils';
+} from '../../plugins/utils/index.ts';
 
 import {
     graphQLRequest
-} from './helper';
+} from './helper.ts';
 
-import { RxDBLeaderElectionPlugin } from '../leader-election';
+import { RxDBLeaderElectionPlugin } from '../leader-election/index.ts';
 import type {
     RxCollection,
     ReplicationPullOptions,
@@ -21,21 +21,21 @@ import type {
     RxReplicationPullStreamItem,
     RxGraphQLReplicationQueryBuilderResponseObject,
     RxGraphQLReplicationClientState
-} from '../../types';
+} from '../../types/index.d.ts';
 import {
     RxReplicationState,
     startReplicationOnLeaderShip
-} from '../replication';
+} from '../replication/index.ts';
 import {
     addRxPlugin,
     SyncOptionsGraphQL,
     WithDeleted
-} from '../../index';
+} from '../../index.ts';
 
 import {
     removeGraphQLWebSocketRef,
     getGraphQLWebSocket
-} from './graphql-websocket';
+} from './graphql-websocket.ts';
 import { Subject } from 'rxjs';
 
 
@@ -247,7 +247,7 @@ export function replicateGraphQL<RxDocType, CheckpointType>(
     return graphqlReplicationState;
 }
 
-export * from './helper';
-export * from './graphql-schema-from-rx-schema';
-export * from './query-builder-from-rx-schema';
-export * from './graphql-websocket';
+export * from './helper.ts';
+export * from './graphql-schema-from-rx-schema.ts';
+export * from './query-builder-from-rx-schema.ts';
+export * from './graphql-websocket.ts';

@@ -1,6 +1,6 @@
 import type {
     InternalStoreDocType
-} from '../../types';
+} from '../../types/index.d.ts';
 
 export type RxMigrationStatus = {
     collectionName: string;

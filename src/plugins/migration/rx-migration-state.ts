@@ -9,7 +9,7 @@ import {
 import {
     isBulkWriteConflictError,
     newRxError
-} from '../../rx-error';
+} from '../../rx-error.ts';
 import type {
     NumberFunctionMap,
     RxCollection,
@@ -18,7 +18,7 @@ import type {
     RxReplicationWriteToMasterRow,
     RxStorageInstance,
     RxTypeError
-} from '../../types';
+} from '../../types/index.d.ts';
 import {
     MIGRATION_DEFAULT_BATCH_SIZE,
     MIGRATION_STATUS_INTERNAL_DOCUMENT_CONTEXT,
@@ -26,7 +26,7 @@ import {
     getOldCollectionMeta,
     migrateDocumentData,
     mustMigrate
-} from './migration-helpers';
+} from './migration-helpers.ts';
 import {
     PROMISE_RESOLVE_TRUE,
     RXJS_SHARE_REPLAY_DEFAULTS,
@@ -35,18 +35,18 @@ import {
     ensureNotFalsy,
     getDefaultRevision,
     getDefaultRxDocumentMeta
-} from '../utils';
+} from '../utils/index.ts';
 import type {
     MigrationStatusUpdate,
     RxMigrationStatus,
     RxMigrationStatusDocument
-} from './migration-types';
+} from './migration-types.ts';
 import {
     getSingleDocument,
     hasEncryption,
     observeSingle,
     writeSingle
-} from '../../rx-storage-helper';
+} from '../../rx-storage-helper.ts';
 import {
     BroadcastChannel,
     createLeaderElection
@@ -59,12 +59,12 @@ import {
     getRxReplicationMetaInstanceSchema,
     replicateRxStorageInstance,
     rxStorageInstanceToReplicationHandler
-} from '../../replication-protocol';
-import { overwritable } from '../../overwritable';
+} from '../../replication-protocol/index.ts';
+import { overwritable } from '../../overwritable.ts';
 import {
     addConnectedStorageToCollection,
     getPrimaryKeyOfInternalDocument
-} from '../../rx-database-internal-store';
+} from '../../rx-database-internal-store.ts';
 
 
 

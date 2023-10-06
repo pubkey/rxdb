@@ -4,16 +4,16 @@
  */
 import type {
     RxStorage
-} from '../../types';
+} from '../../types/index.d.ts';
 import { Subject } from 'rxjs';
 import {
     IPC_RENDERER_KEY_PREFIX
-} from './electron-helper';
+} from './electron-helper.ts';
 import {
     exposeRxStorageRemote,
     RxStorageRemoteExposeSettings,
     MessageToRemote
-} from '../storage-remote';
+} from '../storage-remote/index.ts';
 export function exposeIpcMainRxStorage<T, D>(
     args: {
         key: string;

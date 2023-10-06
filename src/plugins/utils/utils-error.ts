@@ -2,8 +2,8 @@ import type {
     PlainJsonError,
     RxError,
     RxTypeError
-} from '../../types';
-import { ucfirst } from './utils-string';
+} from '../../types/index.d.ts';
+import { ucfirst } from './utils-string.ts';
 
 
 

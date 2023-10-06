@@ -1,4 +1,4 @@
-import { newRxError } from './rx-error';
+import { newRxError } from './rx-error.ts';
 import type {
     CompositePrimaryKey,
     DeepReadonly,
@@ -8,7 +8,7 @@ import type {
     RxJsonSchema,
     RxStorageDefaultCheckpoint,
     StringKeys
-} from './types';
+} from './types/index.d.ts';
 import {
     appendToArray,
     ensureNotFalsy,
@@ -19,8 +19,8 @@ import {
     RX_META_LWT_MINIMUM,
     sortObject,
     trimDots
-} from './plugins/utils';
-import type { RxSchema } from './rx-schema';
+} from './plugins/utils/index.ts';
+import type { RxSchema } from './rx-schema.ts';
 
 /**
  * Helper function to create a valid RxJsonSchema

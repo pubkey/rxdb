@@ -4,21 +4,21 @@
  */
 import {
     newRxError
-} from '../../rx-error';
-import { getPrimaryFieldOfPrimaryKey, getSchemaByObjectPath } from '../../rx-schema-helper';
+} from '../../rx-error.ts';
+import { getPrimaryFieldOfPrimaryKey, getSchemaByObjectPath } from '../../rx-schema-helper.ts';
 import type {
     CompositePrimaryKey,
     JsonSchema,
     JsonSchemaTypes,
     RxJsonSchema,
     TopLevelProperty
-} from '../../types';
+} from '../../types/index.d.ts';
 import {
     appendToArray,
     flattenObject, getProperty, isMaybeReadonlyArray,
     trimDots
-} from '../../plugins/utils';
-import { rxDocumentProperties } from './entity-properties';
+} from '../../plugins/utils/index.ts';
+import { rxDocumentProperties } from './entity-properties.ts';
 
 /**
  * checks if the fieldname is allowed

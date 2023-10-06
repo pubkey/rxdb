@@ -1,6 +1,6 @@
 import type {
     RxReplicationHandler
-} from '../../types';
+} from '../../types/index.d.ts';
 
 import type {
     WebSocket,
@@ -11,11 +11,11 @@ import type {
     WebsocketMessageType,
     WebsocketServerOptions,
     WebsocketServerState
-} from './websocket-types';
-import { rxStorageInstanceToReplicationHandler } from '../../replication-protocol';
+} from './websocket-types.ts';
+import { rxStorageInstanceToReplicationHandler } from '../../replication-protocol/index.ts';
 import {
     PROMISE_RESOLVE_VOID, getFromMapOrCreate
-} from '../../plugins/utils';
+} from '../../plugins/utils/index.ts';
 import { Subject } from 'rxjs';
 
 

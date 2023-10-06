@@ -2,8 +2,8 @@ import {
     fillWithDefaultSettings,
     getComposedPrimaryKeyOfDocumentData,
     getLengthOfPrimaryKey
-} from '../rx-schema-helper';
-import { flatCloneDocWithMeta } from '../rx-storage-helper';
+} from '../rx-schema-helper.ts';
+import { flatCloneDocWithMeta } from '../rx-storage-helper.ts';
 import type {
     BulkWriteRow,
     ById,
@@ -12,8 +12,8 @@ import type {
     RxStorageInstanceReplicationState,
     RxStorageReplicationMeta,
     WithDeleted
-} from '../types';
-import { getDefaultRevision, createRevision, now } from '../plugins/utils';
+} from '../types/index.d.ts';
+import { getDefaultRevision, createRevision, now } from '../plugins/utils/index.ts';
 
 
 export const META_INSTANCE_SCHEMA_TITLE = 'RxReplicationProtocolMetaData';

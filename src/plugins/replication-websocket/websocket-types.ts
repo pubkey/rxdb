@@ -12,7 +12,7 @@ import type {
     RxDatabase,
     RxReplicationHandler,
     StringKeys
-} from '../../types';
+} from '../../types/index.d.ts';
 
 export type WebsocketServerOptions = {
     database: RxDatabase<any, any, any>;

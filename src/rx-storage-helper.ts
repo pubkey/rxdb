@@ -28,7 +28,7 @@ import type {
     StringKeys,
     RxStorageWriteErrorConflict,
     RxStorageWriteErrorAttachment
-} from './types';
+} from './types/index.d.ts';
 import {
     appendToArray,
     createRevision,

@@ -6,14 +6,14 @@
 import type {
     ChangeEvent as EventReduceChangeEvent,
 } from 'event-reduce-js';
-import { overwritable } from './overwritable';
+import { overwritable } from './overwritable.ts';
 
 import type {
     EventBulk,
     RxChangeEvent,
     RxDocumentData
-} from './types';
-import { appendToArray } from './plugins/utils';
+} from './types/index.d.ts';
+import { appendToArray } from './plugins/utils/index.ts';
 
 export function getDocumentDataOfRxChangeEvent<T>(
     rxChangeEvent: RxChangeEvent<T>

@@ -4,14 +4,14 @@ import {
     RxStorageRemote,
     RxStorageRemoteSettings,
     MessageFromRemote
-} from '../storage-remote';
+} from '../storage-remote/index.ts';
 import type {
     RxStorageStatics
-} from '../../types';
+} from '../../types/index.d.ts';
 import {
     IPC_RENDERER_KEY_PREFIX
-} from './electron-helper';
-import { PROMISE_RESOLVE_VOID } from '../utils';
+} from './electron-helper.ts';
+import { PROMISE_RESOLVE_VOID } from '../utils/index.ts';
 
 export type RxStorageIpcRendererSettings = {
     /**

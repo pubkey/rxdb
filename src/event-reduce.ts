@@ -14,15 +14,15 @@ import type {
     RxChangeEvent,
     StringKeys,
     RxDocumentData
-} from './types';
-import { rxChangeEventToEventReduceChangeEvent } from './rx-change-event';
+} from './types/index.d.ts';
+import { rxChangeEventToEventReduceChangeEvent } from './rx-change-event.ts';
 import {
     arrayFilterNotEmpty,
     clone,
     ensureNotFalsy,
     getFromMapOrCreate
-} from './plugins/utils';
-import { getQueryMatcher, getSortComparator, normalizeMangoQuery } from './rx-query-helper';
+} from './plugins/utils/index.ts';
+import { getQueryMatcher, getSortComparator, normalizeMangoQuery } from './rx-query-helper.ts';
 
 export type EventReduceResultNeg = {
     runFullQueryAgain: true;

@@ -7,8 +7,8 @@ import Ajv from 'ajv';
 import type {
     RxDocumentData,
     RxJsonSchema
-} from '../../types';
-import { wrappedValidateStorageFactory } from '../../plugin-helpers';
+} from '../../types/index.d.ts';
+import { wrappedValidateStorageFactory } from '../../plugin-helpers.ts';
 
 
 const ajv = new Ajv({

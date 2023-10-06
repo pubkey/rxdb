@@ -5,15 +5,15 @@ import type {
     RxStorageInstanceReplicationState,
     RxStorageReplicationMeta,
     WithDeletedAndAttachments
-} from '../types';
+} from '../types/index.d.ts';
 import {
     clone,
     createRevision,
     flatClone,
     getDefaultRevision,
     now
-} from '../plugins/utils';
-import { stripAttachmentsDataFromDocument } from '../rx-storage-helper';
+} from '../plugins/utils/index.ts';
+import { stripAttachmentsDataFromDocument } from '../rx-storage-helper.ts';
 
 export function docStateToWriteDoc<RxDocType>(
     databaseInstanceToken: string,

@@ -9,7 +9,7 @@ import type {
     RxStorage,
     RxStorageChangeEvent,
     RxStorageDefaultCheckpoint
-} from '../../types';
+} from '../../types/index.d.ts';
 
 export type RxStorageMemorySettings = {};
 export type RxStorageMemoryInstanceCreationOptions = {};

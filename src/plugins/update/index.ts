@@ -9,7 +9,7 @@ import type {
     RxQuery,
     RxPlugin,
     UpdateQuery
-} from '../../types';
+} from '../../types/index.d.ts';
 
 export function incrementalUpdate<RxDocType>(
     this: RxDocument<RxDocType>,

@@ -5,13 +5,13 @@ import type {
     RxStorage,
     RxStorageInstanceCreationParams,
     RxStorageStatics
-} from '../../types';
+} from '../../types/index.d.ts';
 
-import { ensureRxStorageInstanceParamsAreCorrect } from '../../rx-storage-helper';
-import { DEFAULT_CHECKPOINT_SCHEMA, getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
-import { RX_STORAGE_NAME_MONGODB, primarySwapMongoDBQuerySelector, swapToMongoSort } from './mongodb-helper';
-import type { MongoDBDatabaseSettings, MongoDBPreparedQuery, MongoDBSettings, MongoDBStorageInternals } from './mongodb-types';
-import { RxStorageInstanceMongoDB, createMongoDBStorageInstance } from './rx-storage-instance-mongodb';
+import { ensureRxStorageInstanceParamsAreCorrect } from '../../rx-storage-helper.ts';
+import { DEFAULT_CHECKPOINT_SCHEMA, getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper.ts';
+import { RX_STORAGE_NAME_MONGODB, primarySwapMongoDBQuerySelector, swapToMongoSort } from './mongodb-helper.ts';
+import type { MongoDBDatabaseSettings, MongoDBPreparedQuery, MongoDBSettings, MongoDBStorageInternals } from './mongodb-types.ts';
+import { RxStorageInstanceMongoDB, createMongoDBStorageInstance } from './rx-storage-instance-mongodb.ts';
 
 export const RxStorageMongoDBStatics: RxStorageStatics = {
     prepareQuery<RxDocType>(

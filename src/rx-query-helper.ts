@@ -8,7 +8,7 @@ import type {
     QueryMatcher,
     RxDocumentData,
     RxJsonSchema
-} from './types';
+} from './types/index.d.ts';
 import {
     clone,
     firstPropertyNameOfObject,
@@ -17,7 +17,7 @@ import {
     flatClone,
     objectPathMonad,
     ObjectPathMonadFunction
-} from './plugins/utils/';
+} from './plugins/utils/index.ts';
 import {
     compare as mingoSortComparator
 } from 'mingo/util';

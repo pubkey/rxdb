@@ -6,7 +6,7 @@ import {
     flatClone,
     lastOfArray,
     toArray
-} from '../../plugins/utils';
+} from '../../plugins/utils/index.ts';
 
 import {
     doc,
@@ -24,31 +24,31 @@ import {
     documentId
 } from 'firebase/firestore';
 
-import { RxDBLeaderElectionPlugin } from '../leader-election';
+import { RxDBLeaderElectionPlugin } from '../leader-election/index.ts';
 import type {
     RxCollection,
     ReplicationPullOptions,
     ReplicationPushOptions,
     RxReplicationWriteToMasterRow,
     RxReplicationPullStreamItem
-} from '../../types';
+} from '../../types/index.d.ts';
 import {
     RxReplicationState,
     startReplicationOnLeaderShip
-} from '../replication';
+} from '../replication/index.ts';
 import {
     addRxPlugin,
     ById,
     getSchemaByObjectPath,
     newRxError,
     WithDeleted
-} from '../../';
+} from '../../index.ts';
 
 import type {
     FirestoreCheckpointType,
     FirestoreOptions,
     SyncOptionsFirestore
-} from './firestore-types';
+} from './firestore-types.ts';
 import { Subject } from 'rxjs';
 import {
     firestoreRowToDocData,
@@ -57,10 +57,10 @@ import {
     serverTimestampToIsoString,
     stripPrimaryKey,
     stripServerTimestampField
-} from './firestore-helper';
+} from './firestore-helper.ts';
 
-export * from './firestore-helper';
-export * from './firestore-types';
+export * from './firestore-helper.ts';
+export * from './firestore-types.ts';
 
 export class RxFirestoreReplicationState<RxDocType> extends RxReplicationState<RxDocType, FirestoreCheckpointType> {
     constructor(

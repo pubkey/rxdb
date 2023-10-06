@@ -8,7 +8,7 @@ import { filter } from 'rxjs/operators';
 import type {
     RxChangeEvent,
     RxCollection
-} from './types';
+} from './types/index.d.ts';
 
 export class ChangeEventBuffer {
     private subs: Subscription[] = [];

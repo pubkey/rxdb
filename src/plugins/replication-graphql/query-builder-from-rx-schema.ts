@@ -3,14 +3,14 @@ import {
     fillUpOptionals,
     Prefixes,
     SPACING
-} from './graphql-schema-from-rx-schema';
-import { ensureNotFalsy, ucfirst } from '../../plugins/utils';
+} from './graphql-schema-from-rx-schema.ts';
+import { ensureNotFalsy, ucfirst } from '../../plugins/utils/index.ts';
 import type {
     RxGraphQLReplicationPullQueryBuilder,
     RxGraphQLReplicationPullStreamQueryBuilder,
     RxGraphQLReplicationPushQueryBuilder,
     WithDeleted
-} from '../../types';
+} from '../../types/index.d.ts';
 
 export function pullQueryBuilderFromRxSchema(
     collectionName: string,

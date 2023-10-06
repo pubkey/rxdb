@@ -8,20 +8,20 @@ import type {
     RxStorage,
     RxStorageInstanceCreationParams,
     RxStorageStatics
-} from '../../types';
+} from '../../types/index.d.ts';
 import {
     ensureNotFalsy,
     flatClone
-} from '../utils';
+} from '../utils/index.ts';
 import {
     createLokiStorageInstance,
     RxStorageInstanceLoki
-} from './rx-storage-instance-loki';
-import { RX_STORAGE_NAME_LOKIJS } from './lokijs-helper';
+} from './rx-storage-instance-loki.ts';
+import { RX_STORAGE_NAME_LOKIJS } from './lokijs-helper.ts';
 import type { LeaderElector } from 'broadcast-channel';
 
-import { ensureRxStorageInstanceParamsAreCorrect } from '../../rx-storage-helper';
-import { DEFAULT_CHECKPOINT_SCHEMA } from '../../rx-schema-helper';
+import { ensureRxStorageInstanceParamsAreCorrect } from '../../rx-storage-helper.ts';
+import { DEFAULT_CHECKPOINT_SCHEMA } from '../../rx-schema-helper.ts';
 
 export const RxStorageLokiStatics: RxStorageStatics = {
     prepareQuery<RxDocType>(

@@ -3,30 +3,30 @@
  * for when the you call "import from 'rxdb'".
  */
 
-export { addRxPlugin } from './plugin';
+export { addRxPlugin } from './plugin.ts';
 
-export * from './rx-database';
-export * from './rx-error';
-export * from './rx-database-internal-store';
-export * from './overwritable';
-export * from './rx-collection';
-export * from './rx-collection-helper';
-export * from './rx-document';
-export * from './rx-change-event';
-export * from './rx-document-prototype-merge';
-export * from './rx-query';
-export * from './rx-query-helper';
-export * from './rx-schema';
-export * from './rx-schema-helper';
-export * from './rx-storage-helper';
-export * from './rx-storage-statics';
-export * from './replication-protocol/index';
-export * from './rx-storage-multiinstance';
-export * from './custom-index';
-export * from './query-planner';
-export * from './plugin-helpers';
-export * from './plugins/utils';
-export * from './hooks';
-export * from './query-cache';
+export * from './rx-database.ts';
+export * from './rx-error.ts';
+export * from './rx-database-internal-store.ts';
+export * from './overwritable.ts';
+export * from './rx-collection.ts';
+export * from './rx-collection-helper.ts';
+export * from './rx-document.ts';
+export * from './rx-change-event.ts';
+export * from './rx-document-prototype-merge.ts';
+export * from './rx-query.ts';
+export * from './rx-query-helper.ts';
+export * from './rx-schema.ts';
+export * from './rx-schema-helper.ts';
+export * from './rx-storage-helper.ts';
+export * from './rx-storage-statics.ts';
+export * from './replication-protocol/index.ts';
+export * from './rx-storage-multiinstance.ts';
+export * from './custom-index.ts';
+export * from './query-planner.ts';
+export * from './plugin-helpers.ts';
+export * from './plugins/utils/index.ts';
+export * from './hooks.ts';
+export * from './query-cache.ts';
 
-export type * from './types';
+export type * from './types/index.ts';

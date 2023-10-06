@@ -1,7 +1,7 @@
 import {
     isBulkWriteConflictError,
     rxStorageWriteErrorToRxError
-} from './rx-error';
+} from './rx-error.ts';
 import type {
     ModifyFunction,
     BulkWriteRow,
@@ -13,7 +13,7 @@ import type {
     RxStorageInstance,
     StringKeys,
     WithDeleted
-} from './types';
+} from './types/index.d.ts';
 import {
     clone,
     ensureNotFalsy,
@@ -21,7 +21,7 @@ import {
     getFromMapOrThrow,
     parseRevision,
     stripMetaDataFromDocument
-} from './plugins/utils';
+} from './plugins/utils/index.ts';
 
 
 

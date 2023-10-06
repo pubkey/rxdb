@@ -2,18 +2,18 @@ import type {
     BulkWriteRow,
     RxDocumentData,
     RxJsonSchema
-} from '../../types';
+} from '../../types/index.d.ts';
 import type {
     DocWithIndexString,
     MemoryStorageInternals,
     MemoryStorageInternalsByIndex
-} from './memory-types';
-import type { RxStorageInstanceMemory } from './rx-storage-instance-memory';
+} from './memory-types.ts';
+import type { RxStorageInstanceMemory } from './rx-storage-instance-memory.ts';
 import {
     pushAtSortPosition
 } from 'array-push-at-sort-position';
-import { newRxError } from '../../rx-error';
-import { boundEQ } from './binary-search-bounds';
+import { newRxError } from '../../rx-error.ts';
+import { boundEQ } from './binary-search-bounds.ts';
 
 
 export function getMemoryCollectionKey(
