@@ -577,7 +577,7 @@
     "stream": "0.0.2",
     "terser": "5.21.0",
     "terser-webpack-plugin": "5.3.9",
-    "ts-loader": "9.4.4",
+    "ts-loader": "9.5.0",
     "ts-mocha": "10.0.0",
     "ts-node": "10.9.1",
     "typescript": "5.2.2",
