@@ -9,13 +9,13 @@
  * - 'npm run test:browser' so it runs in the browser
  */
 import assert from 'assert';
+import AsyncTestUtil from 'async-test-util';
 import config from './config';
 
 import {
     createRxDatabase,
     randomCouchString
 } from '../../plugins/core';
-import { RxJsonSchema } from '../../src';
 
 describe('bug-report.test.js', () => {
     it('should fail because it reproduces the bug', async () => {
@@ -36,7 +36,7 @@ describe('bug-report.test.js', () => {
         }
 
         // create a schema
-        const mySchema: RxJsonSchema<any> = {
+        const mySchema = {
             version: 0,
             primaryKey: 'passportId',
             type: 'object',
@@ -55,25 +55,8 @@ describe('bug-report.test.js', () => {
                     type: 'integer',
                     minimum: 0,
                     maximum: 150
-                },
-                tags: {
-                    type: 'object',
-                    patternProperties: {
-                        '.*': {
-                            type: 'object',
-                            properties: {
-                                created: {
-                                    type: 'integer',
-                                },
-                                name: {
-                                    type: 'string',
-                                },
-                            },
-                            required: ['created', 'name'],
-                        }
-                    },
-                },
-            },
+                }
+            }
         };
 
         /**
@@ -100,47 +83,54 @@ describe('bug-report.test.js', () => {
             }
         });
 
-        const tags = {
-            hello: {
-                created: 1,
-                name: 'hello',
-            },
-            world: {
-                created: 2,
-                name: 'world',
-            }
-        };
-
         // insert a document
         await collections.mycollection.insert({
             passportId: 'foobar',
             firstName: 'Bob',
             lastName: 'Kelso',
-            age: 56,
-            tags,
+            age: 56
         });
 
-        const myDocument = await collections.mycollection
+        /**
+         * to simulate the event-propagation over multiple browser-tabs,
+         * we create the same database again
+         */
+        const dbInOtherTab = await createRxDatabase({
+            name,
+            storage: config.storage.getStorage(),
+            eventReduce: true,
+            ignoreDuplicate: true
+        });
+        // create a collection
+        const collectionInOtherTab = await dbInOtherTab.addCollections({
+            mycollection: {
+                schema: mySchema
+            }
+        });
+
+        // find the document in the other tab
+        const myDocument = await collectionInOtherTab.mycollection
             .findOne()
+            .where('firstName')
+            .eq('Bob')
             .exec();
 
         /*
          * assert things,
          * here your tests should fail to show that there is a bug
          */
-        assert.deepStrictEqual(myDocument.toJSON().tags.hello, tags.hello, 'myDocument.toJSON().tags.hello');
-        assert.deepStrictEqual(myDocument.toJSON().tags.world, tags.world, 'myDocument.toJSON().tags.world');
-        assert.deepStrictEqual(Object.keys(myDocument.toJSON().tags), Object.keys(tags), 'Object.keys(myDocument.toJSON().tags)');
+        assert.strictEqual(myDocument.age, 56);
 
-        assert.deepStrictEqual(myDocument.get('tags').hello, tags.hello, 'myDocument.get(\'tags\').hello');
-        assert.deepStrictEqual(myDocument.get('tags').world, tags.world, 'myDocument.get(\'tags\').world');
-        assert.deepStrictEqual(Object.keys(myDocument.get('tags')), Object.keys(tags), 'Object.keys(myDocument.get(\'tags\'))');
-
-        assert.deepStrictEqual(myDocument.tags.hello, tags.hello, 'myDocument.tags.hello');
-        assert.deepStrictEqual(myDocument.tags.world, tags.world, 'myDocument.tags.world');
-        assert.deepStrictEqual(Object.keys(myDocument.tags), Object.keys(tags), 'Object.keys(myDocument.tags)');
+        // you can also wait for events
+        const emitted = [];
+        const sub = collectionInOtherTab.mycollection
+            .findOne().$
+            .subscribe(doc => emitted.push(doc));
+        await AsyncTestUtil.waitUntil(() => emitted.length === 1);
 
         // clean up afterwards
+        sub.unsubscribe();
         db.destroy();
+        dbInOtherTab.destroy();
     });
 });
