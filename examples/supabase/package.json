@@ -28,7 +28,7 @@
     "css-loader": "6.8.1",
     "testcafe": "3.3.0",
     "testcafe-hammerhead": "31.6.2",
-    "ts-loader": "9.4.4",
+    "ts-loader": "9.5.0",
     "typescript": "5.2.2",
     "webpack": "5.88.2",
     "webpack-cli": "5.1.4",

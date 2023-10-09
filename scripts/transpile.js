@@ -46,6 +46,9 @@ nconf.argv()
         file: confLocation
     });
 
+
+const createdFolders = new Set();
+
 async function transpileFile(
     srcLocations,
     outDir,
@@ -56,7 +59,11 @@ async function transpileFile(
     }
     // ensure folder exists
     const folder = path.join(outDir);
-    if (!fs.existsSync(folder)) {
+    if (
+        !createdFolders.has(folder) &&
+        !fs.existsSync(folder)
+    ) {
+        createdFolders.add(folder);
         shell.mkdir('-p', folder);
     }
 

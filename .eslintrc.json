@@ -25,6 +25,10 @@
     "project": "./tsconfig.lint.json"
   },
   "rules": {
+    // disable this rule, we often define things like <'foobar' | string> so that the ide
+    // can better propose values to the developer
+    "@typescript-eslint/no-redundant-type-constituents": "off",
+
     "@typescript-eslint/consistent-type-definitions": "off",
     "@typescript-eslint/dot-notation": "off",
     "@typescript-eslint/explicit-member-accessibility": [

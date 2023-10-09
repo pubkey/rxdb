@@ -169,7 +169,7 @@ export function normalizeMangoQuery<RxDocType>(
  * a query over the db would do.
  */
 export function getSortComparator<RxDocType>(
-    schema: RxJsonSchema<RxDocumentData<RxDocType>> | RxJsonSchema<RxDocumentData<RxDocType>>,
+    schema: RxJsonSchema<RxDocumentData<RxDocType>>,
     query: FilledMangoQuery<RxDocType> | FilledMangoQuery<RxDocumentData<RxDocType>>
 ): DeterministicSortComparator<RxDocType> {
     if (!query.sort) {
