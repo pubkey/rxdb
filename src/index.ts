@@ -3,8 +3,7 @@
  * for when the you call "import from 'rxdb'".
  */
 
-export { addRxPlugin } from './plugin.ts';
-
+export * from './plugin.ts';
 export * from './rx-database.ts';
 export * from './rx-error.ts';
 export * from './rx-database-internal-store.ts';
@@ -28,5 +27,4 @@ export * from './plugin-helpers.ts';
 export * from './plugins/utils/index.ts';
 export * from './hooks.ts';
 export * from './query-cache.ts';
-
 export type * from './types/index.ts';

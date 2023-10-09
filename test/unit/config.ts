@@ -9,13 +9,6 @@ import * as path from 'path';
 import parallel from 'mocha.parallel';
 import { getRxStorageLoki } from '../../plugins/storage-lokijs/index.ts';
 import {
-    ensureNotFalsy,
-    randomCouchString,
-    RxStorage,
-    RxStorageDefaultStatics,
-    RxTestStorage
-} from '../../plugins/core/index.ts';
-import {
     getRxStorageDexie
 } from '../../plugins/storage-dexie/index.ts';
 import { getRxStorageRemoteWebsocket } from '../../plugins/storage-remote-websocket/index.ts';
@@ -27,6 +20,13 @@ import { isPromise } from 'async-test-util';
 import {
     wrappedKeyEncryptionCryptoJsStorage
 } from '../../plugins/encryption-crypto-js/index.ts';
+import {
+    ensureNotFalsy,
+    randomCouchString,
+    RxStorage,
+    RxStorageDefaultStatics,
+    RxTestStorage
+} from '../../plugins/core/index.ts';
 
 
 export const ENV_VARIABLES = process.versions.bun || ensureNotFalsy(detect()).name === 'node' ? process.env : (window as any).__karma__.config.env;
