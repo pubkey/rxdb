@@ -32,8 +32,8 @@ const TRANSPILE_FOLDERS = [
     {
         source: 'src',
         goals: {
-            es5: 'dist/lib',
-            es6: 'dist/es'
+            es5: 'dist/cjs',
+            es6: 'dist/esm'
         }
     },
     {

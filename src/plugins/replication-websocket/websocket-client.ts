@@ -7,8 +7,7 @@ import {
     WebsocketMessageType
 } from './websocket-types.ts';
 
-import ReconnectingWebSocketModule from 'reconnecting-websocket';
-const ReconnectingWebSocket = ReconnectingWebSocketModule.default;
+import ReconnectingWebSocket from 'reconnecting-websocket';
 
 import IsomorphicWebSocket from 'isomorphic-ws';
 import {

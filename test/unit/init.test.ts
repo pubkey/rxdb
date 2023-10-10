@@ -12,8 +12,8 @@ import { faker } from '@faker-js/faker';
 faker.seed(123);
 
 // add dev-mode plugin
-import { addRxPlugin } from '../../plugins/core/index.ts';
-import { RxDBDevModePlugin } from '../../plugins/dev-mode/index.ts';
+import { addRxPlugin } from '../../plugins/core/index.mjs';
+import { RxDBDevModePlugin } from '../../plugins/dev-mode/index.mjs';
 addRxPlugin(RxDBDevModePlugin);
 
 config.platform.isNode = function () {

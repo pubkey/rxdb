@@ -5,8 +5,7 @@
         "target": "es2022",
         // Search under node_modules for non-relative imports.
         // https://www.youtube.com/watch?v=H91aqUHn8sE
-        "module": "NodeNext",
-        "moduleResolution": "NodeNext",
+        "moduleResolution": "node",
         // Process & infer types from .js files.
         "allowJs": false,
         // Enable strictest settings like strictNullChecks & noImplicitAny.

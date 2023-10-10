@@ -5,7 +5,7 @@ import {
 import {
     enforceOptions as broadcastChannelEnforceOptions
 } from 'broadcast-channel';
-import * as path from 'path';
+import * as path from 'node:path';
 import parallel from 'mocha.parallel';
 import { getRxStorageLoki } from '../../plugins/storage-lokijs/index.ts';
 import {

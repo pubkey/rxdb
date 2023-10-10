@@ -50,7 +50,7 @@ if (process.env['NODE_ENV'] === 'es5') {
     plugins.unshift('@babel/plugin-transform-modules-commonjs');
 }
 
-export default {
+module.exports = {
     presets,
     plugins
 };
