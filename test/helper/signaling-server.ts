@@ -1,6 +1,8 @@
 import { nextPort } from './port-manager.ts';
 
-
+import * as http from 'node:http';
+import { createRequire } from 'module';
+const require = createRequire(import.meta.url);
 
 /**
  * Starts a WebRTC signaling server
@@ -10,7 +12,7 @@ export async function startSignalingServer(port?: number): Promise<string> {
     if (!port) {
         port = await nextPort();
     }
-    const server = require('http').createServer();
+    const server = http.createServer();
     const io = require('socket.io')(server, {
         cors: {
             origin: '*'

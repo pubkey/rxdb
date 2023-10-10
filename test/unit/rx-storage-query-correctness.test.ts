@@ -15,7 +15,7 @@ import {
     getQueryMatcher,
     getSortComparator,
     createRxDatabase
-} from '../../plugins/core/index.ts';
+} from '../../plugins/core/index.mjs';
 import { EXAMPLE_REVISION_1 } from '../helper/revisions.ts';
 import * as schemas from '../helper/schemas.ts';
 import {
@@ -26,7 +26,7 @@ import {
     simpleHumanV3,
     SimpleHumanV3DocumentType
 } from '../helper/schema-objects.ts';
-import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.ts';
+import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs';
 
 const TEST_CONTEXT = 'rx-storage-query-correctness.test.ts';
 config.parallel('rx-storage-query-correctness.test.ts', () => {

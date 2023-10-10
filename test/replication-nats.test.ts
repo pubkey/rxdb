@@ -5,7 +5,7 @@ import {
     RxCollection,
     ensureNotFalsy,
     WithDeleted
-} from '../plugins/core/index.ts';
+} from '../plugins/core/index.mjs';
 
 import * as humansCollection from './helper/humans-collection.ts';
 import * as schemaObjects from './helper/schema-objects.ts';
@@ -14,7 +14,7 @@ import {
     replicateNats,
     NatsSyncOptions,
     RxNatsReplicationState
-} from '../plugins/replication-nats/index.ts';
+} from '../plugins/replication-nats/index.mjs';
 import {
     ensureCollectionsHaveEqualState,
     ensureReplicationHasNoErrors

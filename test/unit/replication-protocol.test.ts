@@ -32,13 +32,13 @@ import {
     createBlob,
     blobToBase64String,
     RxAttachmentWriteData
-} from '../../plugins/core/index.ts';
+} from '../../plugins/core/index.mjs';
 
 
 import {
     RxLocalDocumentData,
     RX_LOCAL_DOCUMENT_SCHEMA
-} from '../../plugins/local-documents/index.ts';
+} from '../../plugins/local-documents/index.mjs';
 import * as schemas from '../helper/schemas.ts';
 import {
     clone,

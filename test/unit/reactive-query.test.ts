@@ -14,7 +14,7 @@ import {
     isRxDocument,
     promiseWait,
     randomCouchString
-} from '../../plugins/core/index.ts';
+} from '../../plugins/core/index.mjs';
 
 import {
     filter,

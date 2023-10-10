@@ -4,17 +4,17 @@ import {
     dbCount,
     BROADCAST_CHANNEL_BY_TOKEN,
     getFromMapOrThrow
-} from '../../plugins/core/index.ts';
+} from '../../plugins/core/index.mjs';
 import config from './config.ts';
 
 import {
     GRAPHQL_WEBSOCKET_BY_URL
-} from '../../plugins/replication-graphql/index.ts';
+} from '../../plugins/replication-graphql/index.mjs';
 import {
     OPEN_REMOTE_MESSAGE_CHANNELS,
     CACHE_ITEM_BY_MESSAGE_CHANNEL
-} from '../../plugins/storage-remote/index.ts';
-import { OPEN_MEMORY_INSTANCES } from '../../plugins/storage-memory/index.ts';
+} from '../../plugins/storage-remote/index.mjs';
+import { OPEN_MEMORY_INSTANCES } from '../../plugins/storage-memory/index.mjs';
 
 
 describe('last.test.ts (' + config.storage.name + ')', () => {

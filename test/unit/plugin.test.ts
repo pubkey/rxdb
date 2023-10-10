@@ -11,14 +11,11 @@ import {
     randomCouchString,
     _clearHook,
     RxPlugin
-} from '../../plugins/core/index.ts';
+} from '../../plugins/core/index.mjs';
 
 import * as humansCollection from '../helper/humans-collection.ts';
 import { assertThrows } from 'async-test-util';
-import { RxDBDevModePlugin, DEV_MODE_PLUGIN_NAME } from '../../plugins/dev-mode/index.ts';
-
-// used so that browserify will not require things in browsers
-const REQUIRE_FUN = require;
+import { RxDBDevModePlugin, DEV_MODE_PLUGIN_NAME } from '../../plugins/dev-mode/index.mjs';
 
 config.parallel('plugin.test.js', () => {
     if (!config.platform.isNode()) return;
@@ -48,7 +45,7 @@ config.parallel('plugin.test.js', () => {
             if (!config.platform.isNode())
                 return;
 
-            const spawn = REQUIRE_FUN('child-process-promise').spawn;
+            const { spawn } = await import('child-process-promise');
             const stdout: any[] = [];
             const stderr: any[] = [];
             const promise = spawn('mocha', [config.rootPath + 'test_tmp/unit/full.node.js']);

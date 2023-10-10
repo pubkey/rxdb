@@ -9,7 +9,7 @@ import config from './config.ts';
 import * as schemas from '../helper/schemas.ts';
 import * as schemaObjects from '../helper/schema-objects.ts';
 
-import { checkSchema } from '../../plugins/dev-mode/index.ts';
+import { checkSchema } from '../../plugins/dev-mode/index.mjs';
 
 import {
     createRxDatabase,
@@ -25,7 +25,7 @@ import {
     fillWithDefaultSettings,
     fillObjectWithDefaults,
     defaultHashSha256
-} from '../../plugins/core/index.ts';
+} from '../../plugins/core/index.mjs';
 
 config.parallel('rx-schema.test.js', () => {
     describe('static', () => {

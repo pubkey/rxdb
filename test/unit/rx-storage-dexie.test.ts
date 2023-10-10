@@ -10,13 +10,13 @@ import {
     randomCouchString,
     now,
     createRevision
-} from '../../plugins/core/index.ts';
+} from '../../plugins/core/index.mjs';
 
 import {
     getDexieStoreSchema,
     fromDexieToStorage,
     fromStorageToDexie
-} from '../../plugins/storage-dexie/index.ts';
+} from '../../plugins/storage-dexie/index.mjs';
 
 import * as schemaObjects from '../helper/schema-objects.ts';
 import {

@@ -17,10 +17,10 @@ import {
     RxDocumentData,
     RxStorageInstance,
     BulkWriteRow
-} from '../../plugins/core/index.ts';
+} from '../../plugins/core/index.mjs';
 
-import { wrappedValidateZSchemaStorage } from '../../plugins/validate-z-schema/index.ts';
-import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.ts';
+import { wrappedValidateZSchemaStorage } from '../../plugins/validate-z-schema/index.mjs';
+import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs';
 
 
 /**

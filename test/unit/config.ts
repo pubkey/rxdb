@@ -6,7 +6,14 @@ import {
     enforceOptions as broadcastChannelEnforceOptions
 } from 'broadcast-channel';
 import * as path from 'node:path';
+import * as events from 'node:events';
 import parallel from 'mocha.parallel';
+
+import { fileURLToPath } from 'node:url';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+
 import { getRxStorageLoki } from '../../plugins/storage-lokijs/index.mjs';
 import {
     getRxStorageDexie
@@ -29,7 +36,23 @@ import {
 } from '../../plugins/core/index.mjs';
 
 
-export const ENV_VARIABLES = process.versions.bun || ensureNotFalsy(detect()).name === 'node' ? process.env : (window as any).__karma__.config.env;
+function getEnvVariables() {
+
+    if (typeof window !== 'undefined' && "Deno" in window) {
+        const ret: any = {};
+        [
+            'DEFAULT_STORAGE',
+            'NODE_ENV'
+        ].forEach(k => {
+            ret[k] = Deno.env.get(k);
+        })
+        return ret;
+    }
+
+    return process.versions.bun || ensureNotFalsy(detect()).name === 'node' ? process.env : (window as any).__karma__.config.env;
+}
+export const ENV_VARIABLES = getEnvVariables();
+
 
 function isFastMode(): boolean {
     try {
@@ -105,7 +128,7 @@ const DEFAULT_STORAGE = ENV_VARIABLES.DEFAULT_STORAGE as string;
 console.log('DEFAULT_STORAGE: ' + DEFAULT_STORAGE);
 
 
-export function setDefaultStorage(storageKey: string) {
+export async function setDefaultStorage(storageKey: string) {
     if (storageKey === CUSTOM_STORAGE.name || storageKey === 'custom') {
         config.storage = CUSTOM_STORAGE;
         return;
@@ -318,9 +341,10 @@ export function getPassword(): Promise<string> {
     }
 }
 
+
 if (config.platform.name === 'node') {
     process.setMaxListeners(100);
-    require('events').EventEmitter.defaultMaxListeners = 100;
+    events.EventEmitter.defaultMaxListeners = 100;
     config.rootPath = path.join(__dirname, '../../');
     console.log('rootPath: ' + config.rootPath);
 

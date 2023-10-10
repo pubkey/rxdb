@@ -7,7 +7,7 @@ import {
     randomCouchString,
     RxCollection,
     RxJsonSchema
-} from '../../plugins/core/index.ts';
+} from '../../plugins/core/index.mjs';
 
 
 import * as schemas from '../helper/schemas.ts';

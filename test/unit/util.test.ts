@@ -21,18 +21,18 @@ import {
     blobToBase64String,
     createBlobFromBase64,
     overwritable
-} from '../../plugins/core/index.ts';
+} from '../../plugins/core/index.mjs';
 import config from './config.ts';
 
 import {
     validateDatabaseName,
     deepFreezeWhenDevMode
-} from '../../plugins/dev-mode/index.ts';
+} from '../../plugins/dev-mode/index.mjs';
 import {
     nativeSha256,
     jsSha256,
     canUseCryptoSubtle
-} from '../../plugins/utils/index.ts';
+} from '../../plugins/utils/index.mjs';
 import { EXAMPLE_REVISION_1 } from '../helper/revisions.ts';
 
 import { BIG_BASE64 } from '../helper/big-base64.ts';
@@ -289,7 +289,7 @@ describe('util.test.js', () => {
         });
     });
     describe('.deepFreezeWhenDevMode()', () => {
-        if (process.versions.bun) {
+        if (process && process.versions.bun) {
             // TODO for somehow bun has no strict mode here
             return;
         }

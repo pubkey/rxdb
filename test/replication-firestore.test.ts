@@ -9,7 +9,7 @@ import {
     RxCollection,
     ensureNotFalsy,
     WithDeleted
-} from '../plugins/core/index.ts';
+} from '../plugins/core/index.mjs';
 
 import * as firebase from 'firebase/app';
 
@@ -36,7 +36,7 @@ import {
     replicateFirestore,
     RxFirestoreReplicationState,
     SyncOptionsFirestore
-} from '../plugins/replication-firestore/index.ts';
+} from '../plugins/replication-firestore/index.mjs';
 import { ensureCollectionsHaveEqualState, ensureReplicationHasNoErrors } from './helper/test-util.ts';
 import { HumanDocumentType } from './helper/schemas.ts';
 

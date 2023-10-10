@@ -12,11 +12,11 @@ import {
     RxJsonSchema,
     RxCollection,
     RxStorageInstance,
-} from '../../plugins/core/index.ts';
+} from '../../plugins/core/index.mjs';
 import * as schemaObjects from '../helper/schema-objects.ts';
 import {
     wrappedKeyCompressionStorage
-} from '../../plugins/key-compression/index.ts';
+} from '../../plugins/key-compression/index.mjs';
 import { HumanDocumentType, human, enableKeyCompression } from '../helper/schemas.ts';
 
 

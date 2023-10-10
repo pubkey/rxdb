@@ -18,7 +18,7 @@ import * as humansCollection from '../helper/humans-collection.ts';
 
 import {
     wrappedValidateAjvStorage
-} from '../../plugins/validate-ajv/index.ts';
+} from '../../plugins/validate-ajv/index.mjs';
 
 import {
     RxCollection,
@@ -35,18 +35,18 @@ import {
     createBlob,
     RxAttachmentCreator,
     DeepReadonly
-} from '../../plugins/core/index.ts';
+} from '../../plugins/core/index.mjs';
 
 import {
     RxReplicationState,
     replicateRxCollection
-} from '../../plugins/replication/index.ts';
+} from '../../plugins/replication/index.mjs';
 
 import type {
     ReplicationPullHandler,
     ReplicationPushHandler,
     RxReplicationWriteToMasterRow
-} from '../../plugins/core/index.ts';
+} from '../../plugins/core/index.mjs';
 import { firstValueFrom, Observable, Subject } from 'rxjs';
 
 

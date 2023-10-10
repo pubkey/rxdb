@@ -9,12 +9,12 @@ import {
     randomCouchString,
     addRxPlugin,
     RxCollection
-} from '../../plugins/core/index.ts';
+} from '../../plugins/core/index.mjs';
 
 import { HumanDocumentType } from '../helper/schemas.ts';
-import { replicateRxCollection } from '../../plugins/replication/index.ts';
+import { replicateRxCollection } from '../../plugins/replication/index.mjs';
 
-import { RxDBCleanupPlugin } from '../../plugins/cleanup/index.ts';
+import { RxDBCleanupPlugin } from '../../plugins/cleanup/index.mjs';
 addRxPlugin(RxDBCleanupPlugin);
 
 config.parallel('cleanup.test.js', () => {

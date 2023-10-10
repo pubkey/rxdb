@@ -7,12 +7,12 @@ import {
     createRxDatabase,
     randomCouchString,
     RxCollection
-} from '../../plugins/core/index.ts';
+} from '../../plugins/core/index.mjs';
 
 import {
     getRxStorageMemory,
     RxStorageInstanceMemory
-} from '../../plugins/storage-memory/index.ts';
+} from '../../plugins/storage-memory/index.mjs';
 
 import { HumanDocumentType } from '../helper/schemas.ts';
 

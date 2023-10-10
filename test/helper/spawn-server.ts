@@ -4,8 +4,8 @@
  */
 
 import { randomString } from 'async-test-util';
-import { PROMISE_RESOLVE_VOID } from '../../plugins/core/index.ts';
-import { getFetchWithCouchDBAuthorization } from '../../plugins/replication-couchdb/index.ts';
+import { PROMISE_RESOLVE_VOID } from '../../plugins/core/index.mjs';
+import { getFetchWithCouchDBAuthorization } from '../../plugins/replication-couchdb/index.mjs';
 import { ENV_VARIABLES } from '../unit/config.ts';
 import { nextPort } from './port-manager.ts';
 

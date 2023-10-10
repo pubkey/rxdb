@@ -3,12 +3,12 @@ import assert from 'assert';
 import config from './config.ts';
 import type {
     MangoQuery
-} from '../../plugins/core/index.ts';
+} from '../../plugins/core/index.mjs';
 
 import {
     NoSqlQueryBuilder,
     createQueryBuilder
-} from '../../plugins/query-builder/index.ts';
+} from '../../plugins/query-builder/index.mjs';
 
 
 /**

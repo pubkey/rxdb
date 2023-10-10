@@ -14,19 +14,19 @@ import {
     addRxPlugin,
     randomCouchString,
     RxCollection
-} from '../../plugins/core/index.ts';
+} from '../../plugins/core/index.mjs';
 
 import {
     mergeUrlQueryParams,
     RxCouchDBReplicationState,
     replicateCouchDB,
     getFetchWithCouchDBAuthorization
-} from '../../plugins/replication-couchdb/index.ts';
+} from '../../plugins/replication-couchdb/index.mjs';
 
-import { RxDBUpdatePlugin } from '../../plugins/update/index.ts';
+import { RxDBUpdatePlugin } from '../../plugins/update/index.mjs';
 addRxPlugin(RxDBUpdatePlugin);
 
-import { CouchAllDocsResponse } from '../../plugins/core/index.ts';
+import { CouchAllDocsResponse } from '../../plugins/core/index.mjs';
 import { filter, firstValueFrom } from 'rxjs';
 import { waitUntil } from 'async-test-util';
 import { ensureCollectionsHaveEqualState } from '../helper/test-util.ts';
@@ -40,7 +40,8 @@ describe('replication-couchdb.test.ts', () => {
     ) {
         return;
     }
-    const SpawnServer = require('../helper/spawn-server');
+    console.log('SPAWN COUCH SERVER');
+    let SpawnServer: any;
 
     async function getAllServerDocs(serverUrl: string): Promise<any[]> {
         const url = serverUrl + '_all_docs?' + mergeUrlQueryParams({ include_docs: true });
@@ -91,6 +92,9 @@ describe('replication-couchdb.test.ts', () => {
     }
 
     describe('init', () => {
+        it('import server module', async () => {
+            SpawnServer = await import('../helper/spawn-server');
+        });
         it('wait until CouchDB server is reachable', async function () {
             this.timeout(500 * 1000);
             if (!ENV_VARIABLES.NATIVE_COUCHDB) {

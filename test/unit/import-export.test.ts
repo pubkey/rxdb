@@ -12,7 +12,7 @@ import {
     RxCollection,
     randomCouchString,
     createBlob
-} from '../../plugins/core/index.ts';
+} from '../../plugins/core/index.mjs';
 
 import AsyncTestUtil from 'async-test-util';
 import config, { getEncryptedStorage, getPassword } from './config.ts';

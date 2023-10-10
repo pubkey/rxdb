@@ -14,14 +14,14 @@ import {
     CompressionMode,
     b64EncodeUnicode,
     b64DecodeUnicode
-} from '../../plugins/core/index.ts';
+} from '../../plugins/core/index.mjs';
 import { HumanDocumentType } from '../helper/schemas.ts';
 
 import {
     wrappedAttachmentsCompressionStorage,
     compressBase64,
     decompressBase64
-} from '../../plugins/attachments-compression/index.ts';
+} from '../../plugins/attachments-compression/index.mjs';
 import * as humansCollection from '../helper/humans-collection.ts';
 
 const modes: CompressionMode[] = ['deflate'];

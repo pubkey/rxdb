@@ -9,7 +9,7 @@ import {
     createRxDatabase,
     randomCouchString,
     RxChangeEvent
-} from '../../plugins/core/index.ts';
+} from '../../plugins/core/index.mjs';
 
 
 import AsyncTestUtil from 'async-test-util';

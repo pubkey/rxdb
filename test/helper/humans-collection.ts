@@ -12,7 +12,7 @@ import {
     MigrationStrategies,
     RxAttachmentCreator,
     RxStorage
-} from '../../plugins/core/index.ts';
+} from '../../plugins/core/index.mjs';
 
 import { HumanDocumentType } from './schemas.ts';
 

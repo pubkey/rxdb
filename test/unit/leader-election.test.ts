@@ -9,11 +9,11 @@ import {
     createRxDatabase,
     randomCouchString,
     addRxPlugin,
-} from '../../plugins/core/index.ts';
+} from '../../plugins/core/index.mjs';
 
 import {
     RxDBLeaderElectionPlugin
-} from '../../plugins/leader-election/index.ts';
+} from '../../plugins/leader-election/index.mjs';
 
 describe('leader-election.test.js', () => {
     if (!config.storage.hasMultiInstance) {

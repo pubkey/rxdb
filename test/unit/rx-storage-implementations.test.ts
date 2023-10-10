@@ -38,15 +38,15 @@ import {
     RxStorageBulkWriteResponse,
     RxStorageChangeEvent,
     RxStorageInstance
-} from '../../plugins/core/index.ts';
+} from '../../plugins/core/index.mjs';
 import ajvModule from 'ajv';
 const Ajv = ajvModule.default;
 import {
     getCompressionStateByRxJsonSchema
-} from '../../plugins/key-compression/index.ts';
+} from '../../plugins/key-compression/index.mjs';
 import * as schemas from '../helper/schemas.ts';
-import { RxDBQueryBuilderPlugin } from '../../plugins/query-builder/index.ts';
-import { defaultHashSha256 } from '../../plugins/utils/index.ts';
+import { RxDBQueryBuilderPlugin } from '../../plugins/query-builder/index.mjs';
+import { defaultHashSha256 } from '../../plugins/utils/index.mjs';
 import {
     clone,
     randomString,

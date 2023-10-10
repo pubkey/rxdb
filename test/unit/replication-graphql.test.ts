@@ -5,7 +5,9 @@ import {
     wait,
     waitUntil
 } from 'async-test-util';
-import { WebSocket as IsomorphicWebSocket } from 'isomorphic-ws';
+import pkg from 'isomorphic-ws';
+const { WebSocket: IsomorphicWebSocket } = pkg;
+
 
 import {
     first
@@ -29,7 +31,7 @@ import {
     RxReplicationWriteToMasterRow,
     ReplicationPullHandlerResult,
     RxCollection
-} from '../../plugins/core/index.ts';
+} from '../../plugins/core/index.mjs';
 
 import {
     replicateGraphQL,
@@ -39,10 +41,10 @@ import {
     RxGraphQLReplicationState,
     pullStreamBuilderFromRxSchema,
     graphQLRequest
-} from '../../plugins/replication-graphql/index.ts';
+} from '../../plugins/replication-graphql/index.mjs';
 import {
     wrappedKeyCompressionStorage
-} from '../../plugins/key-compression/index.ts';
+} from '../../plugins/key-compression/index.mjs';
 import * as schemas from '../helper/schemas.ts';
 import {
     GRAPHQL_PATH,
@@ -51,7 +53,7 @@ import {
 
 import {
     wrappedValidateAjvStorage
-} from '../../plugins/validate-ajv/index.ts';
+} from '../../plugins/validate-ajv/index.mjs';
 
 import {
     GraphQLServerModule
@@ -61,7 +63,7 @@ import {
     buildSchema,
     parse as parseQuery
 } from 'graphql';
-import { ReplicationPushHandlerResult, RxDocumentData } from '../../plugins/core/index.ts';
+import { ReplicationPushHandlerResult, RxDocumentData } from '../../plugins/core/index.mjs';
 import { enableKeyCompression } from '../helper/schemas.ts';
 
 declare type WithDeleted<T> = T & { deleted: boolean; };
@@ -164,9 +166,7 @@ describe('replication-graphql.test.ts', () => {
         if (!config.platform.isNode()) {
             return;
         }
-        const REQUIRE_FUN = require;
-        const SpawnServer: GraphQLServerModule = REQUIRE_FUN('../helper/graphql-server');
-        const { createClient } = REQUIRE_FUN('graphql-ws');
+        let SpawnServer: GraphQLServerModule;
         const ERROR_URL = 'http://localhost:15898/foobar';
         function getTestData(amount: number): WithDeleted<HumanWithTimestampDocumentType>[] {
             return new Array(amount).fill(0)
@@ -176,6 +176,11 @@ describe('replication-graphql.test.ts', () => {
                     return doc;
                 });
         }
+        describe('init', () => {
+            it('import server module', async () => {
+                SpawnServer = await import('../helper/graphql-server');
+            });
+        });
         config.parallel('graphql-server.js', () => {
             it('spawn, reach and close a server', async () => {
                 const server = await SpawnServer.spawn();
@@ -220,6 +225,7 @@ describe('replication-graphql.test.ts', () => {
 
                 const endpointUrl = server.url.ws;
 
+                const { createClient } = await import('graphql-ws');
                 const client = createClient({
                     url: endpointUrl,
                     shouldRetry: () => false,

@@ -61,16 +61,12 @@ if (config.platform.name !== 'node') {
 }
 
 
-if (config.platform.name === 'node') {
-    const { startTestServers } = require('../helper/test-servers' + '');
-    startTestServers();
-}
 
 /**
  * MONKEYPATCH console.error on firefox
  * this is needed because core-js has its own non-caught-promise-behavior
  * and spams the console with useless error-logs.
- */
+*/
 if (config.platform.name === 'firefox') {
     const consoleErrorBefore = console.error.bind(console);
     console.error = function (msg: string) {
@@ -79,9 +75,20 @@ if (config.platform.name === 'firefox') {
     };
 }
 
+
+
 describe('init.test.js', () => {
+    console.log('!!!!');
     it('clear BroadcastChannel tmp folder', async () => {
+        console.log('!!!!2');
         await clearNodeFolder();
+    });
+    it('start test servers', async () => {
+        if (config.platform.name === 'node') {
+            console.log('START TEST SERVERS');
+            const { startTestServers } = await import('../helper/test-servers.js');
+            startTestServers();
+        }
     });
     it('must run in strict mode', () => {
         return; // TODO enable this and make it work

@@ -15,7 +15,7 @@ import {
     RxCollection,
     defaultHashSha256,
     ensureNotFalsy
-} from '../../plugins/core/index.ts';
+} from '../../plugins/core/index.mjs';
 
 import {
     replicateWebRTC,
@@ -23,7 +23,7 @@ import {
     // getConnectionHandlerP2PCF,
     isMasterInWebRTCReplication,
     getConnectionHandlerSimplePeer
-} from '../../plugins/replication-webrtc/index.ts';
+} from '../../plugins/replication-webrtc/index.mjs';
 
 import { randomString, wait, waitUntil } from 'async-test-util';
 

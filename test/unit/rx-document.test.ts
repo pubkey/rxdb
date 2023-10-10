@@ -19,12 +19,12 @@ import {
     createBlob,
     defaultHashSha256,
     RxJsonSchema
-} from '../../plugins/core/index.ts';
+} from '../../plugins/core/index.mjs';
 
 
-import { RxDBAttachmentsPlugin } from '../../plugins/attachments/index.ts';
+import { RxDBAttachmentsPlugin } from '../../plugins/attachments/index.mjs';
 addRxPlugin(RxDBAttachmentsPlugin);
-import { RxDBJsonDumpPlugin } from '../../plugins/json-dump/index.ts';
+import { RxDBJsonDumpPlugin } from '../../plugins/json-dump/index.mjs';
 addRxPlugin(RxDBJsonDumpPlugin);
 
 describe('rx-document.test.js', () => {

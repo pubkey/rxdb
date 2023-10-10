@@ -1,7 +1,7 @@
 import type { Func } from 'mocha';
 import assert from 'assert';
-import { RxCollection, requestIdlePromise } from '../../plugins/core/index.ts';
-import { RxReplicationState } from '../../plugins/replication/index.ts';
+import { RxCollection, requestIdlePromise } from '../../plugins/core/index.mjs';
+import { RxReplicationState } from '../../plugins/replication/index.mjs';
 
 export function testMultipleTimes(times: number, title: string, test: Func) {
     new Array(times).fill(0).forEach(() => {

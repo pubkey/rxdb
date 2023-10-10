@@ -12,10 +12,10 @@ import {
     ensureNotFalsy,
     RxLocalDocument,
     RxCollection
-} from '../../plugins/core/index.ts';
+} from '../../plugins/core/index.mjs';
 
 
-import { RxDBLocalDocumentsPlugin } from '../../plugins/local-documents/index.ts';
+import { RxDBLocalDocumentsPlugin } from '../../plugins/local-documents/index.mjs';
 addRxPlugin(RxDBLocalDocumentsPlugin);
 import config from './config.ts';
 import {

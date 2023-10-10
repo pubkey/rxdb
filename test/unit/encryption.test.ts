@@ -18,15 +18,15 @@ import {
     ensureNotFalsy,
     getComposedPrimaryKeyOfDocumentData,
     getFromMapOrThrow
-} from '../../plugins/core/index.ts';
+} from '../../plugins/core/index.mjs';
 
 import {
     encryptString,
     decryptString
-} from '../../plugins/encryption-crypto-js/index.ts';
-import { replicateRxCollection } from '../../plugins/replication/index.ts';
+} from '../../plugins/encryption-crypto-js/index.mjs';
+import { replicateRxCollection } from '../../plugins/replication/index.mjs';
 import { getPullHandler, getPushHandler } from './replication.test.ts';
-import { getRxStorageMemory, RxStorageInstanceMemory } from '../../plugins/storage-memory/index.ts';
+import { getRxStorageMemory, RxStorageInstanceMemory } from '../../plugins/storage-memory/index.mjs';
 
 
 config.parallel('encryption.test.ts', () => {

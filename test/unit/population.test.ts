@@ -11,7 +11,7 @@ import {
     createRxSchema,
     RxJsonSchema,
     defaultHashSha256,
-} from '../../plugins/core/index.ts';
+} from '../../plugins/core/index.mjs';
 
 
 config.parallel('population.test.js', () => {

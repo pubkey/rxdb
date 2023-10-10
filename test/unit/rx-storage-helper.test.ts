@@ -8,7 +8,7 @@ import {
     categorizeBulkWriteRows,
     getPrimaryFieldOfPrimaryKey,
     BulkWriteRow
-} from '../../plugins/core/index.ts';
+} from '../../plugins/core/index.mjs';
 import * as schemas from '../helper/schemas.ts';
 import {
     EXAMPLE_REVISION_1

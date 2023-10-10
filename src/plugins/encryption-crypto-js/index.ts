@@ -3,10 +3,9 @@
  * It's using crypto-js/aes for password-encryption
  * @link https://github.com/brix/crypto-js
  */
-import {
-    AES,
-    enc as cryptoEnc
-} from 'crypto-js';
+import pkg from 'crypto-js';
+const { AES, enc: cryptoEnc } = pkg;
+
 import { wrapRxStorageInstance } from '../../plugin-helpers.ts';
 import { newRxError, newRxTypeError } from '../../rx-error.ts';
 import { hasEncryption } from '../../rx-storage-helper.ts';

@@ -25,7 +25,7 @@ import {
     createBlob,
     blobToString,
     RxDocumentWriteData
-} from '../../plugins/core/index.ts';
+} from '../../plugins/core/index.mjs';
 import { HumanDocumentType } from '../helper/schemas.ts';
 
 const STATIC_FILE_SERVER_URL = 'http://localhost:18001/';

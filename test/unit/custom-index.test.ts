@@ -18,7 +18,7 @@ import {
     getIndexStringLength,
     getPrimaryKeyFromIndexableString,
     ensureNotFalsy
-} from '../../plugins/core/index.ts';
+} from '../../plugins/core/index.mjs';
 import { EXAMPLE_REVISION_1 } from '../helper/revisions.ts';
 import * as schemas from '../helper/schemas.ts';
 import * as schemaObjects from '../helper/schema-objects.ts';

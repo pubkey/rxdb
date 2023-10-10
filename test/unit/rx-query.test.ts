@@ -14,7 +14,7 @@ import {
     promiseWait,
     randomCouchString,
     ensureNotFalsy,
-} from '../../plugins/core/index.ts';
+} from '../../plugins/core/index.mjs';
 
 import { firstValueFrom } from 'rxjs';
 

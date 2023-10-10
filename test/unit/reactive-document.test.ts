@@ -14,14 +14,14 @@ import {
     randomCouchString,
     promiseWait,
     ensureNotFalsy
-} from '../../plugins/core/index.ts';
+} from '../../plugins/core/index.mjs';
 
 import {
     first,
 } from 'rxjs/operators';
 import type {
     RxChangeEvent
-} from '../../plugins/core/index.ts';
+} from '../../plugins/core/index.mjs';
 import { HumanDocumentType } from '../helper/schemas.ts';
 import { firstValueFrom } from 'rxjs';
 

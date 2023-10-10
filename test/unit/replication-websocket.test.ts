@@ -8,10 +8,10 @@ import * as humansCollection from '../helper/humans-collection.ts';
 import {
     startWebsocketServer,
     replicateWithWebsocketServer
-} from '../../plugins/replication-websocket/index.ts';
+} from '../../plugins/replication-websocket/index.mjs';
 import {
     RxCollection, randomCouchString
-} from '../../plugins/core/index.ts';
+} from '../../plugins/core/index.mjs';
 import { nextPort } from '../helper/port-manager.ts';
 import { humanWithTimestamp } from '../helper/schemas.ts';
 

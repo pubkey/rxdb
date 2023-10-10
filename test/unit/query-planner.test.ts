@@ -14,12 +14,12 @@ import {
     INDEX_MAX,
     lastOfArray,
     INDEX_MIN
-} from '../../plugins/core/index.ts';
+} from '../../plugins/core/index.mjs';
 
 
 import type {
     RxDocumentData
-} from '../../plugins/core/index.ts';
+} from '../../plugins/core/index.mjs';
 import { HumanDocumentType } from '../helper/schemas.ts';
 
 

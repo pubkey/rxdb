@@ -9,11 +9,11 @@ import {
     RxCollection,
     RxDocument,
     MangoQuery
-} from '../../plugins/core/index.ts';
+} from '../../plugins/core/index.mjs';
 
 import {
     wrappedKeyCompressionStorage
-} from '../../plugins/key-compression/index.ts';
+} from '../../plugins/key-compression/index.mjs';
 
 import config from './config.ts';
 

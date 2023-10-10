@@ -33,16 +33,16 @@ import {
     getFromMapOrThrow,
     RxCollectionCreator,
     parseRevision
-} from '../../plugins/core/index.ts';
+} from '../../plugins/core/index.mjs';
 
-import { RxDBUpdatePlugin } from '../../plugins/update/index.ts';
+import { RxDBUpdatePlugin } from '../../plugins/update/index.mjs';
 addRxPlugin(RxDBUpdatePlugin);
-import { RxDBMigrationPlugin } from '../../plugins/migration/index.ts';
+import { RxDBMigrationPlugin } from '../../plugins/migration/index.mjs';
 addRxPlugin(RxDBMigrationPlugin);
 
 import { firstValueFrom } from 'rxjs';
 import { HumanDocumentType } from '../helper/schemas.ts';
-import { RxDocumentData } from '../../plugins/core/index.ts';
+import { RxDocumentData } from '../../plugins/core/index.mjs';
 
 describe('rx-collection.test.ts', () => {
     async function getDb(): Promise<RxDatabase> {
