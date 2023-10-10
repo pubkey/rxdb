@@ -8,12 +8,12 @@ import {
     getPseudoSchemaForVersion,
     now,
     randomCouchString
-} from '../../plugins/core/index.ts';
+} from '../../plugins/core/index.mjs';
 
 import {
     getRxStorageLoki,
     RxStorageInstanceLoki
-} from '../../plugins/storage-lokijs/index.ts';
+} from '../../plugins/storage-lokijs/index.mjs';
 
 import * as humansCollections from '../helper/humans-collection.ts';
 import * as schemaObjects from '../helper/schema-objects.ts';

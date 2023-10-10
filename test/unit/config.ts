@@ -7,26 +7,26 @@ import {
 } from 'broadcast-channel';
 import * as path from 'node:path';
 import parallel from 'mocha.parallel';
-import { getRxStorageLoki } from '../../plugins/storage-lokijs/index.ts';
+import { getRxStorageLoki } from '../../plugins/storage-lokijs/index.mjs';
 import {
     getRxStorageDexie
-} from '../../plugins/storage-dexie/index.ts';
-import { getRxStorageRemoteWebsocket } from '../../plugins/storage-remote-websocket/index.ts';
-import { getRxStorageMemory } from '../../plugins/storage-memory/index.ts';
+} from '../../plugins/storage-dexie/index.mjs';
+import { getRxStorageRemoteWebsocket } from '../../plugins/storage-remote-websocket/index.mjs';
+import { getRxStorageMemory } from '../../plugins/storage-memory/index.mjs';
 import { CUSTOM_STORAGE } from './custom-storage.ts';
-import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.ts';
+import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs';
 import { isPromise } from 'async-test-util';
 
 import {
     wrappedKeyEncryptionCryptoJsStorage
-} from '../../plugins/encryption-crypto-js/index.ts';
+} from '../../plugins/encryption-crypto-js/index.mjs';
 import {
     ensureNotFalsy,
     randomCouchString,
     RxStorage,
     RxStorageDefaultStatics,
     RxTestStorage
-} from '../../plugins/core/index.ts';
+} from '../../plugins/core/index.mjs';
 
 
 export const ENV_VARIABLES = process.versions.bun || ensureNotFalsy(detect()).name === 'node' ? process.env : (window as any).__karma__.config.env;
