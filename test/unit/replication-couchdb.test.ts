@@ -93,7 +93,7 @@ describe('replication-couchdb.test.ts', () => {
 
     describe('init', () => {
         it('import server module', async () => {
-            SpawnServer = await import('../helper/spawn-server');
+            SpawnServer = await import('../helper/spawn-server.js');
         });
         it('wait until CouchDB server is reachable', async function () {
             this.timeout(500 * 1000);

@@ -9,15 +9,18 @@ import { getFetchWithCouchDBAuthorization } from '../../plugins/replication-couc
 import { ENV_VARIABLES } from '../unit/config.ts';
 import { nextPort } from './port-manager.ts';
 
-const express = require('express');
+import express from 'express';
 const app = express();
-const PouchDB = require('pouchdb');
+import PouchDB from 'pouchdb';
+import memdown from 'memdown';
 const InMemPouchDB = PouchDB.defaults({
     prefix: '/test_tmp/server-temp-pouch/',
-    db: require('memdown'),
+    db: memdown,
     configPath: 'test_tmp/'
 });
-const expressPouch = require('express-pouchdb')(InMemPouchDB);
+import expressPouch from 'express-pouchdb';
+
+expressPouch(InMemPouchDB);
 
 if (ENV_VARIABLES.NATIVE_COUCHDB) {
     console.log('ENV_VARIABLES.NATIVE_COUCHDB: ' + ENV_VARIABLES.NATIVE_COUCHDB);
