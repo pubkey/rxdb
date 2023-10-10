@@ -111,7 +111,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 documentData
             });
         } else {
-            console.error('EQUAL AGE (' + ageA + ') !!! ' + context);
+            console.error('EQUAL AGE (' + ageA + ') ' + context);
             console.log(JSON.stringify(input, null, 4));
             throw new Error('equal age ' + ageA + ' ctxt: ' + context);
         }

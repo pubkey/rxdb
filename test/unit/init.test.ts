@@ -78,9 +78,7 @@ if (config.platform.name === 'firefox') {
 
 
 describe('init.test.js', () => {
-    console.log('!!!!');
     it('clear BroadcastChannel tmp folder', async () => {
-        console.log('!!!!2');
         await clearNodeFolder();
     });
     it('start test servers', async () => {

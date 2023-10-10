@@ -6,9 +6,9 @@ import type {
     WebSocket,
     ServerOptions
 } from 'isomorphic-ws';
-import {
-    WebSocketServer
-} from 'isomorphic-ws';
+import pkg from 'isomorphic-ws';
+const { WebSocketServer } = pkg;
+
 import type {
     WebsocketMessageResponseType,
     WebsocketMessageType,
