@@ -16,7 +16,7 @@
         // Import non-ES modules as default imports.
         "esModuleInterop": true,
         "outDir": "./dist/typings",
-        "noEmit": true,
+        "noEmit": false,
         "declaration": true,
         /**
          * @link https://spblog.net/post/2018/10/26/TypeScript-Tips-How-to-reduce-the-size-of-a-bundle

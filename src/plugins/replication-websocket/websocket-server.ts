@@ -17,7 +17,7 @@ import {
     PROMISE_RESOLVE_VOID, getFromMapOrCreate
 } from '../../plugins/utils/index.ts';
 import { Subject } from 'rxjs';
-import { createRequire } from 'module';
+import { createRequire } from 'node:module';
 const require = createRequire(import.meta.url);
 
 export function startSocketServer(options: ServerOptions): WebsocketServerState {
