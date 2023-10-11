@@ -320,7 +320,7 @@ export async function setDefaultStorage(storageKey: string) {
     }
 }
 
-setDefaultStorage(DEFAULT_STORAGE);
+await setDefaultStorage(DEFAULT_STORAGE);
 console.log('# use RxStorage: ' + config.storage.name);
 
 export function getEncryptedStorage(baseStorage = config.storage.getStorage()): RxStorage<any, any> {
