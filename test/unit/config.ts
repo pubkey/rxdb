@@ -41,9 +41,9 @@ import {
 import LokiFsStructuredAdapter from 'lokijs/src/loki-fs-structured-adapter.js';
 import LokiIncrementalIndexedDBAdapter from 'lokijs/src/incremental-indexeddb-adapter.js';
 
+import { createRequire } from 'node:module';
 
-async function nodeRequire(filePath: string) {
-    const { createRequire } = await import('node:module' + '');
+function nodeRequire(filePath: string) {
     const require = createRequire(import.meta.url);
     return require(filePath);
 }
@@ -51,7 +51,7 @@ async function nodeRequire(filePath: string) {
 
 declare const Deno: any;
 const isDeno = typeof window !== 'undefined' && 'Deno' in window;
-const isBun = typeof process !== 'undefined' && process.versions.bun;
+const isBun = typeof process !== 'undefined' && !!process.versions.bun;
 
 function getEnvVariables() {
     if (isDeno) {
@@ -263,7 +263,7 @@ export function setDefaultStorage(storageKey: string) {
             const foundationDBAPIVersion = 630;
 
 
-            let getStorageFnFoundation;
+            let getStorageFnFoundation: any;
             config.storage = {
                 async init() {
                     // use a dynamic import so it does not break browser bundling
@@ -294,7 +294,7 @@ export function setDefaultStorage(storageKey: string) {
             // use a dynamic import so it does not break browser bundling
 
             const mongoConnectionString = 'mongodb://localhost:27017';
-            let getStorageFnMongo;
+            let getStorageFnMongo: any;
             config.storage = {
                 async init() {
                     const { getRxStorageMongoDB } = await nodeRequire('../../plugins/storage-mongodb/index.cjs');
