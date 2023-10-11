@@ -778,18 +778,24 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version-file: ".nvmrc"
-      - uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: latest
 
       - name: prepare RxDB core
         run: |
           npm install
           npm run build
 
+
+      # bun
+      - uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
       - run: npm run test:bun:dexie
       - run: npm run test:performance:memory:bun
 
+      # deno
+      - uses: denoland/setup-deno@v1
+        with:
+          deno-version: "1.37.1"
       - run: npm run test:deno:dexie
       - run: npm run test:performance:memory:deno
 
