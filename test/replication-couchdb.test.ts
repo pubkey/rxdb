@@ -1,29 +1,29 @@
 import assert from 'assert';
-import config, { ENV_VARIABLES } from './config.ts';
+import config, { ENV_VARIABLES } from './unit/config.ts';
 
-import * as schemaObjects from '../helper/schema-objects.ts';
-import * as humansCollection from '../helper/humans-collection.ts';
+import * as schemaObjects from './helper/schema-objects.ts';
+import * as humansCollection from './helper/humans-collection.ts';
 
 import {
     addRxPlugin,
     randomCouchString,
     RxCollection
-} from '../../plugins/core/index.mjs';
+} from './../plugins/core/index.mjs';
 
 import {
     mergeUrlQueryParams,
     RxCouchDBReplicationState,
     replicateCouchDB,
     getFetchWithCouchDBAuthorization
-} from '../../plugins/replication-couchdb/index.mjs';
+} from './../plugins/replication-couchdb/index.mjs';
 
-import { RxDBUpdatePlugin } from '../../plugins/update/index.mjs';
+import { RxDBUpdatePlugin } from './../plugins/update/index.mjs';
 addRxPlugin(RxDBUpdatePlugin);
 
-import { CouchAllDocsResponse } from '../../plugins/core/index.mjs';
+import { CouchAllDocsResponse } from './../plugins/core/index.mjs';
 import { filter, firstValueFrom } from 'rxjs';
 import { waitUntil } from 'async-test-util';
-import { ensureCollectionsHaveEqualState } from '../helper/test-util.ts';
+import { ensureCollectionsHaveEqualState } from './helper/test-util.ts';
 
 const fetchWithCouchDBAuth = ENV_VARIABLES.NATIVE_COUCHDB ? getFetchWithCouchDBAuthorization('root', 'root') : fetch;
 

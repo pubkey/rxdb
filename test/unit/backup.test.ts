@@ -41,7 +41,7 @@ describe('backup.test.ts', () => {
 
     describe('init', () => {
         it('add plugin', async () => {
-            const { RxDBBackupPlugin } = await import('../../plugins/backup');
+            const { RxDBBackupPlugin } = await import('../../plugins/backup/index.mjs');
             addRxPlugin(RxDBBackupPlugin);
         });
     });
