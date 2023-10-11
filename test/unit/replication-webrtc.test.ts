@@ -1,9 +1,3 @@
-/**
- * pouchdb allows to easily replicate database across devices.
- * This behaviour is tested here
- * @link https://pouchdb.com/guides/replication.html
- */
-
 import assert from 'assert';
 import config from './config.ts';
 
