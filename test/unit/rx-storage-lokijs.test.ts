@@ -220,7 +220,7 @@ describe('rx-storage-lokijs.test.js', () => {
             /**
              * @link https://github.com/techfort/LokiJS/blob/master/tutorials/Persistence%20Adapters.md#an-example-using-fastest-and-most-scalable-lokifsstructuredadapter-for-nodejs-might-look-like-
              */
-            const lfsa = await import('lokijs/src/loki-fs-structured-adapter.js');
+            const lfsa: any = await import('lokijs/src/loki-fs-structured-adapter.js');
             const adapter = new lfsa.default();
             const storage = getRxStorageLoki({
                 adapter
@@ -270,7 +270,7 @@ describe('rx-storage-lokijs.test.js', () => {
             if (!config.platform.isNode()) {
                 return;
             }
-            const lfsa = await import('lokijs/src/loki-fs-structured-adapter.js');
+            const lfsa: any = await import('lokijs/src/loki-fs-structured-adapter.js');
             const adapter = new lfsa.default();
 
             let callbackCalledCount = 0;
@@ -409,7 +409,7 @@ describe('rx-storage-lokijs.test.js', () => {
             if (!config.platform.isNode()) {
                 return;
             }
-            const lfsa = await import('lokijs/src/loki-fs-structured-adapter.js');
+            const lfsa: any = await import('lokijs/src/loki-fs-structured-adapter.js');
             const adapter = new lfsa.default();
             const storage = getRxStorageLoki({
                 adapter

@@ -16,6 +16,7 @@ import {
 import * as humansCollection from '../helper/humans-collection.ts';
 import { assertThrows } from 'async-test-util';
 import { RxDBDevModePlugin, DEV_MODE_PLUGIN_NAME } from '../../plugins/dev-mode/index.mjs';
+import { createRequire } from 'node:module';
 
 config.parallel('plugin.test.js', () => {
     if (!config.platform.isNode()) return;
@@ -45,7 +46,8 @@ config.parallel('plugin.test.js', () => {
             if (!config.platform.isNode())
                 return;
 
-            const { spawn } = await import('child-process-promise');
+            const require = createRequire(import.meta.url);
+            const { spawn } = await require('child-process-promise');
             const stdout: any[] = [];
             const stderr: any[] = [];
             const promise = spawn('mocha', [config.rootPath + 'test_tmp/unit/full.node.js']);

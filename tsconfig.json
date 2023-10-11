@@ -6,6 +6,7 @@
         // Search under node_modules for non-relative imports.
         // https://www.youtube.com/watch?v=H91aqUHn8sE
         "moduleResolution": "node",
+        "module": "es2022",
         // Process & infer types from .js files.
         "allowJs": false,
         // Enable strictest settings like strictNullChecks & noImplicitAny.
@@ -34,8 +35,7 @@
     },
     "include": [
         "test",
-        "src",
-        "plugins"
+        "src"
     ],
     "exclude": [
         "node_modules",

@@ -39,8 +39,7 @@ import {
     RxStorageChangeEvent,
     RxStorageInstance
 } from '../../plugins/core/index.mjs';
-import ajvModule from 'ajv';
-const Ajv = ajvModule.default;
+import Ajv from 'ajv';
 import {
     getCompressionStateByRxJsonSchema
 } from '../../plugins/key-compression/index.mjs';
@@ -2392,7 +2391,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     devMode: true
                 });
 
-                const emitted: EventBulk<RxStorageChangeEvent<RxDocumentData<TestDocType>>, any>[] = [];
+                const emitted: EventBulk<RxStorageChangeEvent<TestDocType>, any>[] = [];
                 const sub = storageInstance.changeStream().subscribe(x => {
                     emitted.push(x);
                 });
@@ -2481,7 +2480,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     devMode: true
                 });
 
-                const emitted: EventBulk<RxStorageChangeEvent<RxDocumentData<TestDocType>>, any>[] = [];
+                const emitted: EventBulk<RxStorageChangeEvent<TestDocType>, any>[] = [];
                 const sub = storageInstance.changeStream().subscribe(x => {
                     emitted.push(x);
                 });

@@ -24,8 +24,8 @@ import { CouchAllDocsResponse } from './../plugins/core/index.mjs';
 import { filter, firstValueFrom } from 'rxjs';
 import { waitUntil } from 'async-test-util';
 import { ensureCollectionsHaveEqualState } from './helper/test-util.ts';
-
 const fetchWithCouchDBAuth = ENV_VARIABLES.NATIVE_COUCHDB ? getFetchWithCouchDBAuthorization('root', 'root') : fetch;
+import * as SpawnServer from './helper/spawn-server.ts';
 
 describe('replication-couchdb.test.ts', () => {
     if (
@@ -35,7 +35,6 @@ describe('replication-couchdb.test.ts', () => {
         return;
     }
     console.log('SPAWN COUCH SERVER');
-    let SpawnServer: any;
 
     async function getAllServerDocs(serverUrl: string): Promise<any[]> {
         const url = serverUrl + '_all_docs?' + mergeUrlQueryParams({ include_docs: true });
@@ -87,7 +86,6 @@ describe('replication-couchdb.test.ts', () => {
 
     describe('init', () => {
         it('import server module', async () => {
-            SpawnServer = await import('../helper/spawn-server.js');
         });
         it('wait until CouchDB server is reachable', async function () {
             this.timeout(500 * 1000);

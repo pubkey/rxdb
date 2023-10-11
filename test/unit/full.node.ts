@@ -80,7 +80,7 @@ const run = async function () {
      * all replication timeouts are cleared up when the collection
      * gets destroyed.
      */
-    await replicateRxCollection({
+    await replicateRxCollection<any, any>({
         collection,
         replicationIdentifier: 'my-custom-rest-replication',
         live: true,
@@ -88,14 +88,16 @@ const run = async function () {
         retryTime: 50000,
         pull: {
             handler() {
-                return {
+                return Promise.resolve({
                     documents: [],
-                    hasMoreDocuments: false
-                };
+                    hasMoreDocuments: false,
+                    checkpoint: null
+                });
             }
         },
         push: {
-            async handler() {
+            handler() {
+                return Promise.resolve([]);
             },
             batchSize: 5
         }

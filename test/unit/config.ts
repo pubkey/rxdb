@@ -43,8 +43,8 @@ async function nodeRequire(filePath: string) {
 }
 
 
+declare const Deno: any;
 function getEnvVariables() {
-
     if (typeof window !== 'undefined' && 'Deno' in window) {
         const ret: any = {};
         [

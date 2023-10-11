@@ -199,7 +199,7 @@ describe('replication-graphql.test.ts', () => {
                 server.close();
             });
             it('server.setDocument()', async () => {
-                const server = await SpawnServer.spawn<WithDeleted<HumanWithTimestampDocumentType>>();
+                const server = await SpawnServer.spawn();
                 const doc = getTestData(1).pop();
                 if (!doc) {
                     throw new Error('missing doc');
@@ -728,7 +728,7 @@ describe('replication-graphql.test.ts', () => {
                 const docs = await c.find().exec();
                 assert.strictEqual(docs.length, 0);
 
-                const server = await SpawnServer.spawn<HumanWithTimestampDocumentType>();
+                const server = await SpawnServer.spawn();
                 const replicationState = replicateGraphQL({
                     replicationIdentifier: randomCouchString(10),
                     collection: c,
@@ -860,7 +860,7 @@ describe('replication-graphql.test.ts', () => {
                 const amount = batchSize;
                 const [c, server] = await Promise.all([
                     humansCollection.createHumanWithTimestamp(amount),
-                    SpawnServer.spawn<WithDeleted<HumanWithTimestampDocumentType>>()
+                    SpawnServer.spawn()
                 ]);
 
                 const doc = await c.findOne().exec(true);
@@ -2061,7 +2061,7 @@ describe('replication-graphql.test.ts', () => {
                 const collection = collections.humans;
                 await collection.insert(schemaObjects.humanWithTimestamp());
 
-                const server = await SpawnServer.spawn<HumanWithTimestampDocumentType>([]);
+                const server = await SpawnServer.spawn([]);
 
                 const replicationState = replicateGraphQL({
                     replicationIdentifier: randomCouchString(10),
