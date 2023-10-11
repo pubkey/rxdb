@@ -307,7 +307,7 @@
     "test": "npm run test:node && npm run test:browser",
     "// test:fast": "run tests in the fast-mode. Most of them will run in parrallel, skips tests that are known slow",
     "test:fast": "npm run test:fast:memory && npm run test:fast:lokijs && npm run test:fast:dexie",
-    "test:fast:memory": "npm run transpile && cross-env DEFAULT_STORAGE=memory NODE_ENV=fast mocha --config ./config/.mocharc.cjs ./test/unit.test.ts",
+    "test:fast:memory": "npm run transpile && cross-env DEFAULT_STORAGE=memory NODE_ENV=fast mocha --config ./config/.mocharc.cjs ./test_tmp/unit.test.js",
     "test:fast:memory-validation": "npm run transpile && cross-env DEFAULT_STORAGE=memory-validation NODE_ENV=fast mocha --config ./config/.mocharc.cjs ./test_tmp/unit.test.js",
     "test:fast:lokijs": "npm run transpile && cross-env DEFAULT_STORAGE=lokijs NODE_ENV=fast mocha --config ./config/.mocharc.cjs ./test_tmp/unit.test.js",
     "test:fast:dexie": "npm run transpile && cross-env DEFAULT_STORAGE=dexie NODE_ENV=fast mocha --config ./config/.mocharc.cjs ./test_tmp/unit.test.js",
