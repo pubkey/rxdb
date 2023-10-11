@@ -248,23 +248,23 @@ export function setDefaultStorage(storageKey: string) {
             const foundationDBAPIVersion = 630;
 
 
-            let getStorageFn;
+            let getStorageFnFoundation;
             config.storage = {
                 async init() {
                     // use a dynamic import so it does not break browser bundling
                     const { getRxStorageFoundationDB } = await nodeRequire('../../plugins/storage-foundationdb/index.cjs');
-                    getStorageFn = getRxStorageFoundationDB;
+                    getStorageFnFoundation = getRxStorageFoundationDB;
                 },
                 name: storageKey,
                 getStorage: () => {
-                    return getStorageFn({
+                    return getStorageFnFoundation({
                         apiVersion: foundationDBAPIVersion
                     });
                 },
                 getPerformanceStorage() {
                     return {
                         description: 'foundationdb-native',
-                        storage: getStorageFn({
+                        storage: getStorageFnFoundation({
                             apiVersion: foundationDBAPIVersion
                         })
                     };
@@ -279,22 +279,22 @@ export function setDefaultStorage(storageKey: string) {
             // use a dynamic import so it does not break browser bundling
 
             const mongoConnectionString = 'mongodb://localhost:27017';
-            let getStorageFn;
+            let getStorageFnMongo;
             config.storage = {
                 async init() {
                     const { getRxStorageMongoDB } = await nodeRequire('../../plugins/storage-mongodb/index.cjs');
-                    getStorageFn = getRxStorageMongoDB;
-                }
+                    getStorageFnMongo = getRxStorageMongoDB;
+                },
                 name: storageKey,
                 getStorage: () => {
-                    return getStorageFn({
+                    return getStorageFnMongo({
                         connection: mongoConnectionString
                     });
                 },
                 getPerformanceStorage() {
                     return {
                         description: 'mongodb-native',
-                        storage: getStorageFn({
+                        storage: getStorageFnMongo({
                             connection: mongoConnectionString
                         })
                     };
