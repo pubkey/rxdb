@@ -38,14 +38,14 @@ import {
 
 function getEnvVariables() {
 
-    if (typeof window !== 'undefined' && "Deno" in window) {
+    if (typeof window !== 'undefined' && 'Deno' in window) {
         const ret: any = {};
         [
             'DEFAULT_STORAGE',
             'NODE_ENV'
         ].forEach(k => {
             ret[k] = Deno.env.get(k);
-        })
+        });
         return ret;
     }
 
@@ -174,13 +174,14 @@ export async function setDefaultStorage(storageKey: string) {
             };
             break;
         case 'lokijs':
+            const LokiFsStructuredAdapter = await import('lokijs/src/loki-fs-structured-adapter.js');
+            const LokiIncrementalIndexedDBAdapter = await import('lokijs/src/incremental-indexeddb-adapter');
             config.storage = {
                 name: storageKey,
                 getStorage: () => getRxStorageLoki(),
                 getPerformanceStorage() {
                     if (config.platform.name === 'node') {
                         // Node.js
-                        const LokiFsStructuredAdapter = require('lokijs/src/loki-fs-structured-adapter.js');
                         return {
                             storage: getRxStorageLoki({
                                 adapter: new LokiFsStructuredAdapter()
@@ -189,7 +190,6 @@ export async function setDefaultStorage(storageKey: string) {
                         };
                     } else {
                         // browser
-                        const LokiIncrementalIndexedDBAdapter = require('lokijs/src/incremental-indexeddb-adapter');
                         return {
                             storage: getRxStorageLoki({
                                 adapter: new LokiIncrementalIndexedDBAdapter()
@@ -204,11 +204,11 @@ export async function setDefaultStorage(storageKey: string) {
             };
             break;
         case 'dexie':
+            const { indexedDB, IDBKeyRange } = await import('fake-indexeddb');
             config.storage = {
                 name: storageKey,
                 getStorage: () => {
                     if (config.platform.name === 'node' || config.isFastMode()) {
-                        const { indexedDB, IDBKeyRange } = require('fake-indexeddb');
                         return getRxStorageDexie({
                             indexedDB,
                             IDBKeyRange
@@ -219,7 +219,6 @@ export async function setDefaultStorage(storageKey: string) {
                 },
                 getPerformanceStorage() {
                     if (config.platform.name === 'node') {
-                        const { indexedDB, IDBKeyRange } = require('fake-indexeddb');
                         return {
                             storage: getRxStorageDexie({
                                 indexedDB,
@@ -243,7 +242,7 @@ export async function setDefaultStorage(storageKey: string) {
             const foundationDBAPIVersion = 630;
 
             // use a dynamic import so it does not break browser bundling
-            const { getRxStorageFoundationDB } = require('../../plugins/storage-foundationdb' + '');
+            const { getRxStorageFoundationDB } = await import('../../plugins/storage-foundationdb' + '');
 
             config.storage = {
                 name: storageKey,
@@ -268,7 +267,7 @@ export async function setDefaultStorage(storageKey: string) {
         case 'mongodb':
 
             // use a dynamic import so it does not break browser bundling
-            const { getRxStorageMongoDB } = require('../../plugins/storage-mongodb' + '');
+            const { getRxStorageMongoDB } = await import('../../plugins/storage-mongodb' + '');
 
             const mongoConnectionString = 'mongodb://localhost:27017';
             config.storage = {
