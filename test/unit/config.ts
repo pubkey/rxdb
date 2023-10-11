@@ -34,6 +34,8 @@ import {
     indexedDB as fakeIndexedDB,
     IDBKeyRange as fakeIDBKeyRange
 } from 'fake-indexeddb';
+import LokiFsStructuredAdapter from 'lokijs/src/loki-fs-structured-adapter.js';
+import LokiIncrementalIndexedDBAdapter from 'lokijs/src/incremental-indexeddb-adapter.js';
 
 
 async function nodeRequire(filePath: string) {
@@ -181,8 +183,6 @@ export async function setDefaultStorage(storageKey: string) {
             };
             break;
         case 'lokijs':
-            const LokiFsStructuredAdapter = await nodeRequire('lokijs/src/loki-fs-structured-adapter.js');
-            const LokiIncrementalIndexedDBAdapter = await nodeRequire('lokijs/src/incremental-indexeddb-adapter.js');
             config.storage = {
                 name: storageKey,
                 getStorage: () => getRxStorageLoki(),
