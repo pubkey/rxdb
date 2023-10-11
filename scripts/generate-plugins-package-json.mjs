@@ -92,18 +92,18 @@ async function run() {
             // write index file
             fs.writeFileSync(
                 path.join(pluginFolderPath, 'index.mjs'),
-                'export * from \'../../dist/esm/' + pluginFolderName + 'index.js\';',
+                'export * from \'../../dist/esm/' + pluginFolderName + 'index.js\';\n',
                 'utf-8'
             );
             fs.writeFileSync(
                 path.join(pluginFolderPath, 'index.cjs'),
                 'const pkg = require(\'../../dist/cjs/' + pluginFolderName + 'index.js\');\n' +
-                'module.exports = pkg;',
+                'module.exports = pkg;\n',
                 'utf-8'
             );
             fs.writeFileSync(
                 path.join(pluginFolderPath, 'index.ts'),
-                'export * from \'../../dist/types/' + pluginFolderName + 'index.d.ts\';',
+                'export * from \'../../dist/types/' + pluginFolderName + 'index.d.ts\';\n',
                 'utf-8'
             );
 
@@ -111,7 +111,7 @@ async function run() {
             ['ts', 'mts', 'cts'].forEach(fileEnding => {
                 fs.writeFileSync(
                     path.join(pluginFolderPath, 'index.d.' + fileEnding),
-                    'export * from \'../../dist/types/' + pluginFolderName + 'index\';',
+                    'export * from \'../../dist/types/' + pluginFolderName + 'index\';\n',
                     'utf-8'
                 );
             });
