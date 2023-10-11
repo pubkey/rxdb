@@ -111,7 +111,7 @@ async function run() {
             ['ts', 'mts', 'cts'].forEach(fileEnding => {
                 fs.writeFileSync(
                     path.join(pluginFolderPath, 'index.d.' + fileEnding),
-                    'export * from \'../../dist/types/' + pluginFolderName + 'index.d.ts\';',
+                    'export * from \'../../dist/types/' + pluginFolderName + 'index\';',
                     'utf-8'
                 );
             });
