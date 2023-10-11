@@ -83,6 +83,8 @@
   "license": "Apache-2.0",
   "types": "./dist/types/index.d.ts",
   "sideEffects": false,
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
   "exports": {
     ".": {
       "types": "./dist/types/index.d.ts",
@@ -91,10 +93,10 @@
       "default": "./dist/esm/index.js"
     },
     "./plugins/core": {
-      "types": "./dist/types/core/index.d.ts",
-      "require": "./dist/cjs/core/index.js",
-      "import": "./dist/esm/core/index.js",
-      "default": "./dist/esm/core/index.js"
+      "types": "./dist/types/index.d.ts",
+      "require": "./dist/cjs/index.js",
+      "import": "./dist/esm/index.js",
+      "default": "./dist/esm/index.js"
     },
     "./plugins/utils": {
       "types": "./dist/types/plugins/utils/index.d.ts",
