@@ -790,6 +790,10 @@ jobs:
       - run: npm run test:bun:dexie
       - run: npm run test:performance:memory:bun
 
+      - run: npm run test:deno:dexie
+      - run: npm run test:performance:memory:deno
+
+
       - run: npm run test:replication-couchdb
       - run: npm run test:replication-firestore
       - name: nats replication
