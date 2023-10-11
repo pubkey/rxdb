@@ -56,10 +56,6 @@ import {
 } from '../../plugins/validate-ajv/index.mjs';
 
 import {
-    GraphQLServerModule
-} from '../helper/graphql-server.ts';
-
-import {
     buildSchema,
     parse as parseQuery
 } from 'graphql';
@@ -166,7 +162,7 @@ describe('replication-graphql.test.ts', () => {
         if (!config.platform.isNode()) {
             return;
         }
-        let SpawnServer: GraphQLServerModule;
+        let SpawnServer: any;
         const ERROR_URL = 'http://localhost:15898/foobar';
         function getTestData(amount: number): WithDeleted<HumanWithTimestampDocumentType>[] {
             return new Array(amount).fill(0)

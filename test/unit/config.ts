@@ -6,12 +6,7 @@ import {
     enforceOptions as broadcastChannelEnforceOptions
 } from 'broadcast-channel';
 import * as path from 'node:path';
-import * as events from 'node:events';
 import parallel from 'mocha.parallel';
-
-import { fileURLToPath } from 'node:url';
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
 
 
 import { getRxStorageLoki } from '../../plugins/storage-lokijs/index.mjs';
@@ -34,6 +29,14 @@ import {
     RxStorageDefaultStatics,
     RxTestStorage
 } from '../../plugins/core/index.mjs';
+
+
+
+async function nodeRequire(filePath: string) {
+    const { createRequire } = await import('node:module' + '');
+    const require = createRequire(import.meta.url);
+    return require(filePath);
+}
 
 
 function getEnvVariables() {
@@ -174,8 +177,8 @@ export async function setDefaultStorage(storageKey: string) {
             };
             break;
         case 'lokijs':
-            const LokiFsStructuredAdapter = await import('lokijs/src/loki-fs-structured-adapter.js');
-            const LokiIncrementalIndexedDBAdapter = await import('lokijs/src/incremental-indexeddb-adapter');
+            const LokiFsStructuredAdapter = await nodeRequire('lokijs/src/loki-fs-structured-adapter.js');
+            const LokiIncrementalIndexedDBAdapter = await nodeRequire('lokijs/src/incremental-indexeddb-adapter.js');
             config.storage = {
                 name: storageKey,
                 getStorage: () => getRxStorageLoki(),
@@ -204,7 +207,7 @@ export async function setDefaultStorage(storageKey: string) {
             };
             break;
         case 'dexie':
-            const { indexedDB, IDBKeyRange } = await import('fake-indexeddb');
+            const { indexedDB, IDBKeyRange } = await nodeRequire('fake-indexeddb');
             config.storage = {
                 name: storageKey,
                 getStorage: () => {
@@ -242,7 +245,7 @@ export async function setDefaultStorage(storageKey: string) {
             const foundationDBAPIVersion = 630;
 
             // use a dynamic import so it does not break browser bundling
-            const { getRxStorageFoundationDB } = await import('../../plugins/storage-foundationdb' + '');
+            const { getRxStorageFoundationDB } = await nodeRequire('../../plugins/storage-foundationdb/index.mjs');
 
             config.storage = {
                 name: storageKey,
@@ -267,7 +270,7 @@ export async function setDefaultStorage(storageKey: string) {
         case 'mongodb':
 
             // use a dynamic import so it does not break browser bundling
-            const { getRxStorageMongoDB } = await import('../../plugins/storage-mongodb' + '');
+            const { getRxStorageMongoDB } = await nodeRequire('../../plugins/storage-mongodb/index.mjs');
 
             const mongoConnectionString = 'mongodb://localhost:27017';
             config.storage = {
@@ -343,7 +346,16 @@ export function getPassword(): Promise<string> {
 
 if (config.platform.name === 'node') {
     process.setMaxListeners(100);
+    const events = await import('node:events');
+
     events.EventEmitter.defaultMaxListeners = 100;
+
+
+    const { fileURLToPath } = await nodeRequire('node:url');
+    const __filename = fileURLToPath(import.meta.url);
+    const __dirname = path.dirname(__filename);
+
+
     config.rootPath = path.join(__dirname, '../../');
     console.log('rootPath: ' + config.rootPath);
 

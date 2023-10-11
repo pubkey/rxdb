@@ -9,7 +9,7 @@ import { startRemoteStorageServer } from './remote-storage-server.js';
 import {
     blobToBase64String
 } from '../../plugins/core/index.mjs';
-import { fileURLToPath } from 'url';
+import { fileURLToPath } from 'node:url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 

@@ -15,7 +15,7 @@ import os from 'os';
 import walkSync from 'walk-sync';
 import shell from 'shelljs';
 import existsFile from 'exists-file';
-import { fileURLToPath } from 'url';
+import { fileURLToPath } from 'node:url';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const basePath = path.join(__dirname, '..');

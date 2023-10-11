@@ -84,7 +84,7 @@ describe('init.test.js', () => {
     it('start test servers', async () => {
         if (config.platform.name === 'node') {
             console.log('START TEST SERVERS');
-            const { startTestServers } = await import('../helper/test-servers.js');
+            const { startTestServers } = await import('' + '../helper/test-servers.js' + '');
             startTestServers();
         }
     });
