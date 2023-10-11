@@ -46,8 +46,11 @@ async function nodeRequire(filePath: string) {
 
 
 declare const Deno: any;
+const isDeno = typeof window !== 'undefined' && 'Deno' in window;
+const isBun = typeof process !== 'undefined' && process.versions.bun;
+
 function getEnvVariables() {
-    if (typeof window !== 'undefined' && 'Deno' in window) {
+    if (isDeno) {
         const ret: any = {};
         [
             'DEFAULT_STORAGE',
@@ -58,7 +61,7 @@ function getEnvVariables() {
         return ret;
     }
 
-    return process.versions.bun || ensureNotFalsy(detect()).name === 'node' ? process.env : (window as any).__karma__.config.env;
+    return isBun || ensureNotFalsy(detect()).name === 'node' ? process.env : (window as any).__karma__.config.env;
 }
 export const ENV_VARIABLES = getEnvVariables();
 
@@ -109,6 +112,8 @@ try {
 
 
 const config: {
+    isDeno: boolean;
+    isBun: boolean;
     platform: any;
     parallel: typeof useParallel;
     rootPath: string;
@@ -116,6 +121,8 @@ const config: {
     storage: RxTestStorage;
     isNotOneOfTheseStorages: (names: string[]) => boolean;
 } = {
+    isDeno,
+    isBun,
     platform: Object.assign({}, detect(), {
         isNode: () => ensureNotFalsy(detect()).name === 'node'
     }),
@@ -214,7 +221,11 @@ export function setDefaultStorage(storageKey: string) {
             config.storage = {
                 name: storageKey,
                 getStorage: () => {
-                    if (config.platform.name === 'node' || config.isFastMode()) {
+                    if (
+                        config.platform.name === 'node' ||
+                        isDeno ||
+                        config.isFastMode()
+                    ) {
                         return getRxStorageDexie({
                             indexedDB: fakeIndexedDB,
                             IDBKeyRange: fakeIDBKeyRange

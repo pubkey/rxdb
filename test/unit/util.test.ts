@@ -289,7 +289,7 @@ describe('util.test.js', () => {
         });
     });
     describe('.deepFreezeWhenDevMode()', () => {
-        if (process && process.versions.bun) {
+        if (config.isBun) {
             // TODO for somehow bun has no strict mode here
             return;
         }

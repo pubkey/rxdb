@@ -2226,7 +2226,7 @@ describe('replication-graphql.test.ts', () => {
         });
         config.parallel('issues', () => {
             it('push not working on slow db', async () => {
-                if (process.versions.bun) {
+                if (config.isBun) {
                     // TODO for somehow bun times out here
                     return;
                 }
@@ -2533,7 +2533,7 @@ describe('replication-graphql.test.ts', () => {
         }
         describe('issues', () => {
             it('push not working on slow db', async () => {
-                if (process.versions.bun) {
+                if (config.isBun) {
                     // TODO for somehow bun times out here
                     return;
                 }
