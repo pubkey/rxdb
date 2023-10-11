@@ -380,7 +380,7 @@
     "lint:debug:files": "DEBUG=eslint:cli-engine eslint --ext .js,.ts,.json .",
     "lint:debug:time": "TIMING=1 eslint --ext .js,.ts,.json .",
     "check-types": "tsc",
-    "transpile": "npm run build:version && node scripts/transpile.mjs && echo '{ \"type\": \"module\", \"sideEffects\": false }' > test_tmp/package.json",
+    "transpile": "npm run build:version && node scripts/transpile.mjs && echo '{ \"type\": \"module\" }' > test_tmp/package.json",
     "build:version": "node ./scripts/update-version-variable.mjs",
     "build:es": "npm run build:version && rimraf -rf --max-retries=3 dist/es && cross-env NODE_ENV=es6 babel src --out-dir dist/es --source-maps --extensions \".ts,.js\" && echo '{ \"type\": \"module\", \"sideEffects\": false }' > dist/esm/package.json",
     "build:types": "npm run build:version && rimraf -rf --max-retries=3 ./dist/types && tsc --project ./config/tsconfig.types.json && cp -r ./src/types ./dist/types/types",
