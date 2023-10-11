@@ -15,22 +15,22 @@ process.on('unhandledRejection', function (err) {
     process.exit(1);
 });
 
-const {
+import {
     createRxDatabase,
     isRxDocument,
     randomCouchString,
     addRxPlugin
-} = require('../../plugins/core');
-const {
+} from '../../plugins/core/index.mjs';
+import {
     RxDBLeaderElectionPlugin
-} = require('../../plugins/leader-election');
+} from '../../plugins/leader-election/index.mjs';
 addRxPlugin(RxDBLeaderElectionPlugin);
-const {
+import {
     getRxStorageMemory
-} = require('../../plugins/storage-memory');
-const {
+} from '../../plugins/storage-memory/index.mjs';
+import {
     replicateRxCollection
-} = require('../../plugins/replication');
+} from '../../plugins/replication/index.mjs';
 import type {
     RxJsonSchema,
 } from '../../plugins/core/index.mjs';
