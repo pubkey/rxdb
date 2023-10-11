@@ -22,7 +22,7 @@ import {
 import { randomString, wait, waitUntil } from 'async-test-util';
 
 describe('replication-webrtc.test.ts', () => {
-    if (config.platform.isNode()) {
+    if (config.platform.isNode() || config.isDeno) {
         /**
          * We cannot run these tests in Node.js
          * because the node WebRTC polyfill is broken

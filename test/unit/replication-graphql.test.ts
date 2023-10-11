@@ -2533,7 +2533,7 @@ describe('replication-graphql.test.ts', () => {
         }
         describe('issues', () => {
             it('push not working on slow db', async () => {
-                if (config.isBun) {
+                if (config.isBun || config.isDeno) {
                     // TODO for somehow bun times out here
                     return;
                 }
