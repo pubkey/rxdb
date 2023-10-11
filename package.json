@@ -327,7 +327,7 @@
     "test:node:lokijs": "npm run transpile && cross-env DEFAULT_STORAGE=lokijs mocha --expose-gc --config ./config/.mocharc.cjs ./test_tmp/unit.test.js",
     "test:node:dexie": "npm run transpile && cross-env DEFAULT_STORAGE=dexie mocha --expose-gc --config ./config/.mocharc.cjs ./test_tmp/unit.test.js",
     "test:bun:dexie": "npm run transpile && cross-env DEFAULT_STORAGE=dexie NODE_ENV=fast bun run ./node_modules/mocha/bin/mocha test_tmp/unit.test.js --bail",
-    "test:deno:dexie": "npm run transpile && cross-env DEFAULT_STORAGE=dexie deno run --allow-env --allow-read -A npm:mocha ./test/unit.test.ts",
+    "test:deno:dexie": "npm run transpile && cross-env DEFAULT_STORAGE=dexie deno run --unstable --allow-env --allow-read -A npm:mocha ./test/unit.test.ts",
     "test:node:foundationdb": "npm run transpile && cross-env DEFAULT_STORAGE=foundationdb mocha --expose-gc --config ./config/.mocharc.cjs ./test_tmp/unit.test.js",
     "test:node:mongodb": "npm run transpile && cross-env DEFAULT_STORAGE=mongodb mocha --expose-gc --config ./config/.mocharc.cjs ./test_tmp/unit.test.js",
     "test:node:mongodb:loop": "npm run test:node:mongodb && npm run test:node:mongodb:loop",
