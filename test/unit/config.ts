@@ -30,6 +30,10 @@ import {
     RxTestStorage
 } from '../../plugins/core/index.mjs';
 
+import {
+    indexedDB as fakeIndexedDB,
+    IDBKeyRange as fakeIDBKeyRange
+} from 'fake-indexeddb';
 
 
 async function nodeRequire(filePath: string) {
@@ -207,14 +211,13 @@ export async function setDefaultStorage(storageKey: string) {
             };
             break;
         case 'dexie':
-            const { indexedDB, IDBKeyRange } = await nodeRequire('fake-indexeddb');
             config.storage = {
                 name: storageKey,
                 getStorage: () => {
                     if (config.platform.name === 'node' || config.isFastMode()) {
                         return getRxStorageDexie({
-                            indexedDB,
-                            IDBKeyRange
+                            indexedDB: fakeIndexedDB,
+                            IDBKeyRange: fakeIDBKeyRange
                         });
                     } else {
                         return getRxStorageDexie({});
