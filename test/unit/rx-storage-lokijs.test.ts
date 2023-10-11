@@ -27,7 +27,9 @@ import { HumanDocumentType } from '../helper/schemas.ts';
 import { EXAMPLE_REVISION_1 } from '../helper/revisions.ts';
 import { RxDBLeaderElectionPlugin } from '../../plugins/leader-election/index.mjs';
 import { RxDBLocalDocumentsPlugin } from '../../plugins/local-documents/index.mjs';
-
+import { fileURLToPath } from 'node:url';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 /**
  * RxStorageLokiJS specific tests
  */
@@ -218,8 +220,8 @@ describe('rx-storage-lokijs.test.js', () => {
             /**
              * @link https://github.com/techfort/LokiJS/blob/master/tutorials/Persistence%20Adapters.md#an-example-using-fastest-and-most-scalable-lokifsstructuredadapter-for-nodejs-might-look-like-
              */
-            const lfsa = require('lokijs/src/loki-fs-structured-adapter.js');
-            const adapter = new lfsa();
+            const lfsa = await import('lokijs/src/loki-fs-structured-adapter.js');
+            const adapter = new lfsa.default();
             const storage = getRxStorageLoki({
                 adapter
             });
@@ -268,8 +270,8 @@ describe('rx-storage-lokijs.test.js', () => {
             if (!config.platform.isNode()) {
                 return;
             }
-            const lfsa = require('lokijs/src/loki-fs-structured-adapter.js');
-            const adapter = new lfsa();
+            const lfsa = await import('lokijs/src/loki-fs-structured-adapter.js');
+            const adapter = new lfsa.default();
 
             let callbackCalledCount = 0;
             const storage = getRxStorageLoki({
@@ -407,8 +409,8 @@ describe('rx-storage-lokijs.test.js', () => {
             if (!config.platform.isNode()) {
                 return;
             }
-            const lfsa = require('lokijs/src/loki-fs-structured-adapter.js');
-            const adapter = new lfsa();
+            const lfsa = await import('lokijs/src/loki-fs-structured-adapter.js');
+            const adapter = new lfsa.default();
             const storage = getRxStorageLoki({
                 adapter
             });
