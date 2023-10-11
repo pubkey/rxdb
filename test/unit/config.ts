@@ -245,7 +245,7 @@ export async function setDefaultStorage(storageKey: string) {
             const foundationDBAPIVersion = 630;
 
             // use a dynamic import so it does not break browser bundling
-            const { getRxStorageFoundationDB } = await nodeRequire('../../plugins/storage-foundationdb/index.mjs');
+            const { getRxStorageFoundationDB } = await nodeRequire('../../plugins/storage-foundationdb/index.cjs');
 
             config.storage = {
                 name: storageKey,
@@ -270,7 +270,7 @@ export async function setDefaultStorage(storageKey: string) {
         case 'mongodb':
 
             // use a dynamic import so it does not break browser bundling
-            const { getRxStorageMongoDB } = await nodeRequire('../../plugins/storage-mongodb/index.mjs');
+            const { getRxStorageMongoDB } = await nodeRequire('../../plugins/storage-mongodb/index.cjs');
 
             const mongoConnectionString = 'mongodb://localhost:27017';
             config.storage = {
