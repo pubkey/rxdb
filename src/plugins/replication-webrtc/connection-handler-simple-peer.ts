@@ -1,5 +1,9 @@
 import { Subject } from 'rxjs';
-import { getFromMapOrThrow, PROMISE_RESOLVE_VOID, randomCouchString } from '../../plugins/utils/index.ts';
+import {
+    getFromMapOrThrow,
+    PROMISE_RESOLVE_VOID,
+    randomCouchString
+} from '../../plugins/utils/index.ts';
 import type {
     WebRTCConnectionHandler,
     WebRTCConnectionHandlerCreator,
@@ -23,12 +27,12 @@ export function getConnectionHandlerSimplePeer(
     serverUrl: string,
     wrtc?: any
 ): WebRTCConnectionHandlerCreator {
-    const { io } = require('socket.io-client');
-
-
-    const creator: WebRTCConnectionHandlerCreator = (options) => {
+    
+    
+    const creator: WebRTCConnectionHandlerCreator = async(options) => {
+        const { io } = await import('socket.io-client');
         const socket = io(serverUrl);
-
+        
         const peerId = randomCouchString(10);
         socket.emit('join', {
             room: options.topic,

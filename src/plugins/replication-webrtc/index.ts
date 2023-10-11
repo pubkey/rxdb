@@ -71,7 +71,7 @@ export async function replicateWebRTC<RxDocType>(
     const pool = new RxWebRTCReplicationPool(
         collection,
         options,
-        options.connectionHandlerCreator(options)
+        await options.connectionHandlerCreator(options)
     );
 
 

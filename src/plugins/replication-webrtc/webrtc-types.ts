@@ -43,7 +43,7 @@ export type WebRTCConnectionHandler = {
 
 export type WebRTCConnectionHandlerCreator = (
     opts: SyncOptionsWebRTC<any>
-) => WebRTCConnectionHandler;
+) => Promise<WebRTCConnectionHandler>;
 
 export type WebRTCSyncPushOptions<RxDocType> = Omit<
 ReplicationPushOptions<RxDocType>,
