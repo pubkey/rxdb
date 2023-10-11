@@ -4,11 +4,12 @@ import {
     overwritable,
     requestIdlePromise
 } from '../plugins/core/index.mjs';
-import * as assert from 'assert';
+import * as assert from 'node:assert';
 import * as schemas from './helper/schemas.ts';
 import * as schemaObjects from './helper/schema-objects.ts';
 import config from './unit/config.ts';
 import { wait } from 'async-test-util';
+declare const Deno: any;
 
 /**
  * Runs some performance tests.
@@ -211,6 +212,14 @@ describe('performance.test.ts', () => {
         console.log('Performance test for ' + perfStorage.description);
         console.log(JSON.stringify(timeToLog, null, 4));
         // process.exit();
+    });
+    /**
+     * Some runtimes do not automatically exit for whatever reason.
+     */
+    it('exit the process', () => {
+        if (config.isDeno) {
+            Deno.exit(0);
+        }
     });
 });
 

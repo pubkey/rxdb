@@ -6,7 +6,11 @@ import {
     enforceOptions as broadcastChannelEnforceOptions
 } from 'broadcast-channel';
 import * as path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import events from 'node:events';
+
 import parallel from 'mocha.parallel';
+
 
 
 import { getRxStorageLoki } from '../../plugins/storage-lokijs/index.mjs';
@@ -368,15 +372,11 @@ export function getPassword(): Promise<string> {
 
 if (config.platform.name === 'node') {
     process.setMaxListeners(100);
-    const events = await import('node:events');
 
     events.EventEmitter.defaultMaxListeners = 100;
 
-
-    const { fileURLToPath } = await nodeRequire('node:url');
     const __filename = fileURLToPath(import.meta.url);
     const __dirname = path.dirname(__filename);
-
 
     config.rootPath = path.join(__dirname, '../../');
     console.log('rootPath: ' + config.rootPath);
