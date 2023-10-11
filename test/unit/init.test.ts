@@ -78,6 +78,11 @@ if (config.platform.name === 'firefox') {
 
 
 describe('init.test.js', () => {
+    it('init storage', async () => {
+        if (config.storage.init) {
+            await config.storage.init();
+        }
+    });
     it('clear BroadcastChannel tmp folder', async () => {
         await clearNodeFolder();
     });

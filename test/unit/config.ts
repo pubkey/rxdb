@@ -137,7 +137,7 @@ const DEFAULT_STORAGE = ENV_VARIABLES.DEFAULT_STORAGE as string;
 console.log('DEFAULT_STORAGE: ' + DEFAULT_STORAGE);
 
 
-export async function setDefaultStorage(storageKey: string) {
+export function setDefaultStorage(storageKey: string) {
     if (storageKey === CUSTOM_STORAGE.name || storageKey === 'custom') {
         config.storage = CUSTOM_STORAGE;
         return;
@@ -247,20 +247,24 @@ export async function setDefaultStorage(storageKey: string) {
         case 'foundationdb':
             const foundationDBAPIVersion = 630;
 
-            // use a dynamic import so it does not break browser bundling
-            const { getRxStorageFoundationDB } = await nodeRequire('../../plugins/storage-foundationdb/index.cjs');
 
+            let getStorageFn;
             config.storage = {
+                async init() {
+                    // use a dynamic import so it does not break browser bundling
+                    const { getRxStorageFoundationDB } = await nodeRequire('../../plugins/storage-foundationdb/index.cjs');
+                    getStorageFn = getRxStorageFoundationDB;
+                },
                 name: storageKey,
                 getStorage: () => {
-                    return getRxStorageFoundationDB({
+                    return getStorageFn({
                         apiVersion: foundationDBAPIVersion
                     });
                 },
                 getPerformanceStorage() {
                     return {
                         description: 'foundationdb-native',
-                        storage: getRxStorageFoundationDB({
+                        storage: getStorageFn({
                             apiVersion: foundationDBAPIVersion
                         })
                     };
@@ -273,20 +277,24 @@ export async function setDefaultStorage(storageKey: string) {
         case 'mongodb':
 
             // use a dynamic import so it does not break browser bundling
-            const { getRxStorageMongoDB } = await nodeRequire('../../plugins/storage-mongodb/index.cjs');
 
             const mongoConnectionString = 'mongodb://localhost:27017';
+            let getStorageFn;
             config.storage = {
+                async init() {
+                    const { getRxStorageMongoDB } = await nodeRequire('../../plugins/storage-mongodb/index.cjs');
+                    getStorageFn = getRxStorageMongoDB;
+                }
                 name: storageKey,
                 getStorage: () => {
-                    return getRxStorageMongoDB({
+                    return getStorageFn({
                         connection: mongoConnectionString
                     });
                 },
                 getPerformanceStorage() {
                     return {
                         description: 'mongodb-native',
-                        storage: getRxStorageMongoDB({
+                        storage: getStorageFn({
                             connection: mongoConnectionString
                         })
                     };
@@ -326,7 +334,7 @@ export async function setDefaultStorage(storageKey: string) {
     }
 }
 
-await setDefaultStorage(DEFAULT_STORAGE);
+setDefaultStorage(DEFAULT_STORAGE);
 console.log('# use RxStorage: ' + config.storage.name);
 
 export function getEncryptedStorage(baseStorage = config.storage.getStorage()): RxStorage<any, any> {
