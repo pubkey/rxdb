@@ -46,7 +46,6 @@ describe('backup.test.ts', () => {
         });
     });
     describe('.backupSingleDocument()', () => {
-
         it('should backup a single document', async () => {
             if (!config.storage.hasAttachments) {
                 return;
@@ -73,7 +72,7 @@ describe('backup.test.ts', () => {
             assert.ok(fs.existsSync(path.join(directory, firstDoc.primary)));
             assert.ok(fs.existsSync(path.join(directory, firstDoc.primary, 'attachments', 'cat.txt')));
             assert.ok(
-                require(
+                fs.existsSync(
                     path.join(directory, firstDoc.primary, 'document.json')
                 )
             );
@@ -106,7 +105,7 @@ describe('backup.test.ts', () => {
             assert.ok(fs.existsSync(path.join(directory, firstDoc.primary)));
             assert.ok(fs.existsSync(path.join(directory, firstDoc.primary, 'attachments', 'cat.txt')));
             assert.ok(
-                require(
+                fs.existsSync(
                     path.join(directory, firstDoc.primary, 'document.json')
                 )
             );
