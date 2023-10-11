@@ -360,7 +360,7 @@
     "test:performance:memory:browser": "npm run transpile && cross-env DEFAULT_STORAGE=memory CI=true karma start ./config/karma.performance.conf.cjs --single-run",
     "test:performance:memory:node": "npm run transpile && cross-env DEFAULT_STORAGE=memory mocha --config ./config/.mocharc.cjs ./test_tmp/performance.test.js --unhandled-rejections=strict --expose-gc",
     "test:performance:memory:bun": "npm run transpile && cross-env DEFAULT_STORAGE=memory bun run ./node_modules/mocha/bin/mocha test_tmp/performance.test.js --bail",
-    "test:performance:memory:deno": "npm run transpile && cross-env DEFAULT_STORAGE=memory deno run ./node_modules/mocha/bin/mocha test_tmp/performance.test.js --bail",
+    "test:performance:memory:deno": "npm run transpile && cross-env DEFAULT_STORAGE=memory deno run --unstable --allow-env --allow-read -A npm:mocha test/performance.test.ts --bail",
     "test:performance:foundationdb": "npm run transpile && cross-env DEFAULT_STORAGE=foundationdb mocha --config ./config/.mocharc.cjs ./test_tmp/performance.test.js --unhandled-rejections=strict --expose-gc",
     "test:performance:mongodb": "npm run transpile && cross-env DEFAULT_STORAGE=mongodb mocha --config ./config/.mocharc.cjs ./test_tmp/performance.test.js --unhandled-rejections=strict --expose-gc",
     "test:performance:custom:browser": "npm run transpile && cross-env DEFAULT_STORAGE=custom CI=true karma start ./config/karma.performance.conf.cjs --single-run",
