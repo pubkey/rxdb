@@ -415,7 +415,7 @@
     "@babel/runtime": "7.23.1",
     "@types/clone": "2.1.2",
     "@types/cors": "2.8.14",
-    "@types/express": "4.17.18",
+    "@types/express": "4.17.19",
     "@types/lokijs": "1.5.10",
     "@types/simple-peer": "9.11.6",
     "@types/ws": "8.5.6",
