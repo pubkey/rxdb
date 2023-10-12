@@ -479,7 +479,7 @@
     "@types/mocha": "10.0.2",
     "@types/node": "18.16.19",
     "@types/pako": "2.0.1",
-    "@types/request": "2.48.9",
+    "@types/request": "2.48.10",
     "@types/request-promise-native": "1.0.19",
     "@types/source-map-support": "0.5.8",
     "@typescript-eslint/eslint-plugin": "6.7.5",
