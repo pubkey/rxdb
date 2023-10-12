@@ -16,7 +16,8 @@ import {
     now,
     RxDocumentData,
     RxStorageInstance,
-    BulkWriteRow
+    BulkWriteRow,
+    RxStorage
 } from '../../plugins/core/index.mjs';
 
 import { wrappedValidateZSchemaStorage } from '../../plugins/validate-z-schema/index.mjs';
@@ -89,8 +90,13 @@ validationImplementations.forEach(
             });
         }
 
-        const storage = validationImplementation.implementation({
-            storage: config.storage.getStorage()
+        let storage: RxStorage<any, any>;
+        describe('init', () => {
+            it('create storage', () => {
+                storage = validationImplementation.implementation({
+                    storage: config.storage.getStorage()
+                });
+            });
         });
         describe('RxStorageInstance', () => {
             function getRxStorageInstance<RxDocType>(schema: RxJsonSchema<RxDocType>) {

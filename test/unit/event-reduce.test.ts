@@ -221,7 +221,7 @@ describe('event-reduce.test.js', () => {
      * is the same as the result calculated by event-reduce.
      */
     new Array(config.isFastMode() ? 1 : 5).fill(0).forEach(() => {
-        if (config.storage.getStorage().name === 'lokijs') {
+        if (config.storage.name === 'lokijs') {
             // TODO why does this fail on lokijs?
             return;
         }

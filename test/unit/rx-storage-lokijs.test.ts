@@ -279,6 +279,8 @@ describe('rx-storage-lokijs.test.js', () => {
                 autosaveCallback: () => callbackCalledCount = callbackCalledCount + 1
             });
             const databaseName = 'lokijs-fs-test-autosaveCallback-' + randomCouchString(12);
+            const __filename = url.fileURLToPath(import.meta.url);
+            const __dirname = path.dirname(__filename);
             const dbLocation = path.join(
                 __dirname,
                 '../',
@@ -416,6 +418,8 @@ describe('rx-storage-lokijs.test.js', () => {
             });
 
             const databaseName = 'lokijs-migration-test-' + randomCouchString(12);
+            const __filename = url.fileURLToPath(import.meta.url);
+            const __dirname = path.dirname(__filename);
             const dbLocation = path.join(
                 __dirname,
                 '../',

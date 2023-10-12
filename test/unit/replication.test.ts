@@ -45,7 +45,8 @@ import {
 import type {
     ReplicationPullHandler,
     ReplicationPushHandler,
-    RxReplicationWriteToMasterRow
+    RxReplicationWriteToMasterRow,
+    RxStorage
 } from '../../plugins/core/index.mjs';
 import { firstValueFrom, Observable, Subject } from 'rxjs';
 
@@ -160,10 +161,14 @@ describe('replication.test.js', () => {
         });
     }
 
-    const storageWithValidation = wrappedValidateAjvStorage({
-        storage: config.storage.getStorage()
+    let storageWithValidation: RxStorage<any, any>;
+    describe('init', () => {
+        it('create storage', () => {
+            storageWithValidation = wrappedValidateAjvStorage({
+                storage: config.storage.getStorage()
+            });
+        });
     });
-
     config.parallel('non-live replication', () => {
         it('should replicate both sides', async () => {
             const docsPerSide = 15;

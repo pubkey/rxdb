@@ -277,11 +277,16 @@ config.parallel('crdt.test.js', () => {
 
     describe('conflict handling', () => {
         const schema = enableCRDTinSchema(fillWithDefaultSettings(schemas.human));
-        const conflictHandler = getCRDTConflictHandler<WithCRDTs<schemas.HumanDocumentType>>(
-            defaultHashSha256,
-            config.storage.getStorage().statics,
-            schema
-        );
+        let conflictHandler: ReturnType<typeof getCRDTConflictHandler>;
+        describe('init', () => {
+            it('init', () => {
+                conflictHandler = getCRDTConflictHandler<WithCRDTs<schemas.HumanDocumentType>>(
+                    defaultHashSha256,
+                    config.storage.getStorage().statics,
+                    schema
+                );
+            });
+        });
         describe('.getCRDTConflictHandler()', () => {
             it('should merge 2 inserts correctly', async () => {
                 const writeData = schemaObjects.human();

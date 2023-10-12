@@ -17,7 +17,8 @@ import {
     ensureNoStartupErrors,
     ensureNotFalsy,
     getComposedPrimaryKeyOfDocumentData,
-    getFromMapOrThrow
+    getFromMapOrThrow,
+    RxStorage
 } from '../../plugins/core/index.mjs';
 
 import {
@@ -30,8 +31,6 @@ import { getRxStorageMemory, RxStorageInstanceMemory } from '../../plugins/stora
 
 
 config.parallel('encryption.test.ts', () => {
-    const storage = getEncryptedStorage();
-
     async function createEncryptedCollection(
         amount: number = 10,
         useStorage?: typeof storage
@@ -64,6 +63,12 @@ config.parallel('encryption.test.ts', () => {
 
         return collections.encryptedhuman;
     }
+    let storage: RxStorage<any, any>;
+    describe('init', () => {
+        it('create storage', () => {
+            storage = getEncryptedStorage();
+        });
+    });
     describe('basics', () => {
         describe('.encryptString()', () => {
             it('string', () => {
