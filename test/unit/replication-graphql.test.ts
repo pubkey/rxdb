@@ -174,7 +174,11 @@ describe('replication-graphql.test.ts', () => {
         }
         describe('init', () => {
             it('import server module', async () => {
-                SpawnServer = await import('../helper/graphql-server.js');
+                if (config.platform.name === 'node') {
+                    SpawnServer = await import('../helper/graphql-server.js');
+                } else if (config.isDeno) {
+                    SpawnServer = await import('../helper/graphql-server.ts');
+                }
             });
         });
         config.parallel('graphql-server.js', () => {

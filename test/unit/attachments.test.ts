@@ -106,7 +106,7 @@ config.parallel('attachments.test.ts', () => {
             );
         });
         it('image attachment should be usable as img-element after base64<->Blob transformations', async function () {
-            if (config.platform.isNode()) {
+            if (config.platform.isNode() || config.isDeno) {
                 return;
             }
             const attachmentUrl = STATIC_FILE_SERVER_URL + 'files/no-sql.png';
@@ -429,7 +429,7 @@ config.parallel('attachments.test.ts', () => {
             c.database.destroy();
         });
         it('should be able to render an encrypted stored image attachment', async () => {
-            if (config.platform.isNode()) {
+            if (config.platform.isNode() || config.isDeno) {
                 return;
             }
             const c = await createEncryptedAttachmentsCollection(1);

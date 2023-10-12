@@ -3,9 +3,9 @@ import fs from 'node:fs';
 import express from 'express';
 import cors from 'cors';
 
-import * as GraphQLServer from './graphql-server.js';
-import * as SignalingServer from './signaling-server.js';
-import { startRemoteStorageServer } from './remote-storage-server.js';
+import * as GraphQLServer from './graphql-server.ts';
+import * as SignalingServer from './signaling-server.ts';
+import { startRemoteStorageServer } from './remote-storage-server.ts';
 import {
     blobToBase64String
 } from '../../plugins/core/index.mjs';

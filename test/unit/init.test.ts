@@ -91,6 +91,10 @@ describe('init.test.js', () => {
             console.log('START TEST SERVERS');
             const { startTestServers } = await import('' + '../helper/test-servers.js' + '');
             startTestServers();
+        } else if (config.isDeno) {
+            console.log('START TEST SERVERS');
+            const { startTestServers } = await import('' + '../helper/test-servers.ts' + '');
+            startTestServers();
         }
     });
     it('must run in strict mode', () => {
