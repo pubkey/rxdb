@@ -277,7 +277,7 @@ config.parallel('crdt.test.js', () => {
 
     describe('conflict handling', () => {
         const schema = enableCRDTinSchema(fillWithDefaultSettings(schemas.human));
-        let conflictHandler: ReturnType<typeof getCRDTConflictHandler>;
+        let conflictHandler: any;
         describe('init', () => {
             it('init', () => {
                 conflictHandler = getCRDTConflictHandler<WithCRDTs<schemas.HumanDocumentType>>(
