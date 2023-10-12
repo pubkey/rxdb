@@ -4,8 +4,11 @@
  */
 
 
-const path = require('path');
-const fs = require('fs');
+import path from 'node:path';
+import fs from 'node:fs';
+import { fileURLToPath } from 'node:url';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const args = process.argv;
 const version = args[2];
@@ -22,8 +25,10 @@ const rootPath = path.join(
 async function run() {
 
     // update version in package.json
-    const packageJson = require(
-        path.join(rootPath, 'package.json')
+    const packageJson = JSON.parse(
+        await fs.promises.readFile(
+            path.join(rootPath, 'package.json')
+        )
     );
     packageJson.version = version;
     await fs.promises.writeFile(
