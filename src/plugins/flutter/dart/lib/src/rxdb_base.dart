@@ -18,6 +18,8 @@ Future<dynamic> patchJavaScriptRuntime(FlutterQjs engine) async {
   await engine.evaluate('console = {};');
 
   await engine.evaluate('BigInt = {};');
+  await engine.evaluate('BigInt64Array = {};');
+  await engine.evaluate('BigUint64Array = {};');
 
 
   final setToGlobalObject =
