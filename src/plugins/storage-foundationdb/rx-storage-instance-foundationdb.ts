@@ -1,5 +1,5 @@
 import { Observable, Subject } from 'rxjs';
-import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
+import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper.ts';
 import type {
     BulkWriteRow,
     CategorizeBulkWriteRowsOutput,
@@ -8,17 +8,17 @@ import type {
     RxConflictResultionTask,
     RxConflictResultionTaskSolution,
     RxDocumentData,
-    RxDocumentDataById,
     RxJsonSchema,
     RxStorageBulkWriteResponse,
     RxStorageChangeEvent,
     RxStorageCountResult,
     RxStorageDefaultCheckpoint,
+    RxStorageInfoResult,
     RxStorageInstance,
     RxStorageInstanceCreationParams,
     RxStorageQueryResult,
     StringKeys
-} from '../../types';
+} from '../../types/index.d.ts';
 import type {
     FoundationDBDatabase,
     FoundationDBIndexMeta,
@@ -27,7 +27,7 @@ import type {
     RxStorageFoundationDB,
     RxStorageFoundationDBInstanceCreationOptions,
     RxStorageFoundationDBSettings
-} from './foundationdb-types';
+} from './foundationdb-types.ts';
 // import {
 //     open as foundationDBOpen,
 //     directory as foundationDBDirectory,
@@ -37,18 +37,18 @@ import type {
 // } from 'foundationdb';
 import {
     categorizeBulkWriteRows
-} from '../../rx-storage-helper';
+} from '../../rx-storage-helper.ts';
 import {
 
     CLEANUP_INDEX,
     FOUNDATION_DB_WRITE_BATCH_SIZE,
     getFoundationDBIndexName
-} from './foundationdb-helpers';
+} from './foundationdb-helpers.ts';
 import {
     getIndexableStringMonad,
     getStartIndexStringFromLowerBound,
     getStartIndexStringFromUpperBound
-} from '../../custom-index';
+} from '../../custom-index.ts';
 import {
     appendToArray,
     batchArray,
@@ -57,10 +57,10 @@ import {
     now,
     PROMISE_RESOLVE_VOID,
     toArray
-} from '../../plugins/utils';
-import { queryFoundationDB } from './foundationdb-query';
-import { INDEX_MAX } from '../../query-planner';
-import { attachmentMapKey } from '../storage-memory';
+} from '../../plugins/utils/index.ts';
+import { queryFoundationDB } from './foundationdb-query.ts';
+import { INDEX_MAX } from '../../query-planner.ts';
+import { attachmentMapKey } from '../storage-memory/index.ts';
 
 export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstance<
     RxDocType,
@@ -91,8 +91,8 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
     ): Promise<RxStorageBulkWriteResponse<RxDocType>> {
         const dbs = await this.internals.dbsPromise;
         const ret: RxStorageBulkWriteResponse<RxDocType> = {
-            success: {},
-            error: {}
+            success: [],
+            error: []
         };
 
         /**
@@ -119,8 +119,6 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
                             docsInDB.set(id, doc);
                         })
                     );
-
-
                     categorized = categorizeBulkWriteRows<RxDocType>(
                         this,
                         this.primaryPath as any,
@@ -128,15 +126,12 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
                         writeBatch,
                         context
                     );
-
-                    Object.keys(categorized.errors).forEach(errorKey => {
-                        ret.error[errorKey] = ensureNotFalsy(categorized).errors[errorKey];
-                    });
+                    appendToArray(ret.error, categorized.errors);
 
                     // INSERTS
                     categorized.bulkInsertDocs.forEach(writeRow => {
                         const docId: string = writeRow.document[this.primaryPath] as any;
-                        ret.success[docId] = writeRow.document as any;
+                        ret.success.push(writeRow.document);
 
                         // insert document data
                         mainTx.set(docId, writeRow.document);
@@ -165,7 +160,7 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
                                 indexTx.set(newIndexString, docId);
                             }
                         });
-                        ret.success[docId] = writeRow.document as any;
+                        ret.success.push(writeRow.document as any);
                     });
 
                     // attachments
@@ -209,10 +204,10 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
         return ret;
     }
 
-    async findDocumentsById(ids: string[], withDeleted: boolean): Promise<RxDocumentDataById<RxDocType>> {
+    async findDocumentsById(ids: string[], withDeleted: boolean): Promise<RxDocumentData<RxDocType>[]> {
         const dbs = await this.internals.dbsPromise;
         return dbs.main.doTransaction(async (tx: any) => {
-            const ret: RxDocumentDataById<RxDocType> = {};
+            const ret: RxDocumentData<RxDocType>[] = [];
             await Promise.all(
                 ids.map(async (docId) => {
                     const docInDb = await tx.get(docId);
@@ -223,7 +218,7 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
                             withDeleted
                         )
                     ) {
-                        ret[docId] = docInDb;
+                        ret.push(docInDb);
                     }
                 })
             );
@@ -247,6 +242,22 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
             mode: 'fast'
         };
     }
+    async info(): Promise<RxStorageInfoResult> {
+        const dbs = await this.internals.dbsPromise;
+        const ret: RxStorageInfoResult = {
+            totalCount: -1
+        };
+        await dbs.root.doTransaction(async (tx: any) => {
+            const mainTx = tx.at(dbs.main.subspace);
+            const range = await mainTx.getRangeAll(
+                '',
+                INDEX_MAX
+            );
+            ret.totalCount = range.length;
+        });
+        return ret;
+    }
+
     async getAttachmentData(documentId: string, attachmentId: string, _digest: string): Promise<string> {
         const dbs = await this.internals.dbsPromise;
         const attachment = await dbs.attachments.get(attachmentMapKey(documentId, attachmentId));

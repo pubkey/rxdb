@@ -15,7 +15,7 @@ RxDB, a powerful JavaScript database, has garnered attention as an optimal solut
 
 <center>
     <a href="https://rxdb.info/">
-        <img src="../files/logo/logo_text.svg" alt="JavaScript React Database" width="221">
+        <img src="../files/logo/rxdb_javascript_database.svg" alt="JavaScript React Database" width="221">
     </a>
 </center>
 

@@ -1,22 +1,22 @@
-import * as path from 'path';
-import * as fs from 'fs';
+import * as path from 'node:path';
+import * as fs from 'node:fs';
 
 import assert from 'assert';
 import { waitUntil } from 'async-test-util';
-import config from './config';
+import config from './config.ts';
 
-import * as schemaObjects from '../helper/schema-objects';
+import * as schemaObjects from '../helper/schema-objects.ts';
 import {
     addRxPlugin, createBlob
-} from '../../plugins/core';
-import { createAttachments } from '../helper/humans-collection';
+} from '../../plugins/core/index.mjs';
+import { createAttachments } from '../helper/humans-collection.ts';
 import {
     backupSingleDocument,
     clearFolder,
     RxBackupState,
     getMeta
-} from '../../plugins/backup';
-import { BackupMetaFileContent, RxBackupWriteEvent } from '../../src/types';
+} from '../../plugins/backup/index.mjs';
+import { BackupMetaFileContent, RxBackupWriteEvent } from '../../plugins/core/index.mjs';
 
 describe('backup.test.ts', () => {
 
@@ -25,8 +25,7 @@ describe('backup.test.ts', () => {
         return;
     }
 
-    const { RxDBBackupPlugin } = require('../../plugins/backup');
-    addRxPlugin(RxDBBackupPlugin);
+    console.log('bbbackup 1');
 
     const backupRootPath = path.join(
         config.rootPath,
@@ -40,6 +39,12 @@ describe('backup.test.ts', () => {
         return path.join(backupRootPath, lastBackupDirIndex + '');
     };
 
+    describe('init', () => {
+        it('add plugin', async () => {
+            const { RxDBBackupPlugin } = await import('../../plugins/backup/index.mjs');
+            addRxPlugin(RxDBBackupPlugin);
+        });
+    });
     describe('.backupSingleDocument()', () => {
         it('should backup a single document', async () => {
             if (!config.storage.hasAttachments) {
@@ -67,7 +72,7 @@ describe('backup.test.ts', () => {
             assert.ok(fs.existsSync(path.join(directory, firstDoc.primary)));
             assert.ok(fs.existsSync(path.join(directory, firstDoc.primary, 'attachments', 'cat.txt')));
             assert.ok(
-                require(
+                fs.existsSync(
                     path.join(directory, firstDoc.primary, 'document.json')
                 )
             );
@@ -100,7 +105,7 @@ describe('backup.test.ts', () => {
             assert.ok(fs.existsSync(path.join(directory, firstDoc.primary)));
             assert.ok(fs.existsSync(path.join(directory, firstDoc.primary, 'attachments', 'cat.txt')));
             assert.ok(
-                require(
+                fs.existsSync(
                     path.join(directory, firstDoc.primary, 'document.json')
                 )
             );

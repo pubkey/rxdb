@@ -1,7 +1,7 @@
 {
   "name": "rxdb",
   "description": "A local-first realtime NoSQL Database for JavaScript applications - https://rxdb.info/",
-  "version": "14.17.1",
+  "version": "15.0.0-beta.1",
   "author": "pubkey",
   "repository": {
     "type": "git",
@@ -77,264 +77,230 @@
     "database engine",
     "datastore"
   ],
+  "engines": {
+    "node": ">=18"
+  },
   "license": "Apache-2.0",
-  "main": "./dist/lib/index.js",
-  "jsnext:main": "./dist/es/index.js",
-  "module": "./dist/es/index.js",
   "types": "./dist/types/index.d.ts",
   "sideEffects": false,
+  "main": "./dist/cjs/index.js",
+  "module": "./dist/esm/index.js",
   "exports": {
     ".": {
       "types": "./dist/types/index.d.ts",
-      "node": "./dist/lib/index.js",
-      "require": "./dist/lib/index.js",
-      "es2015": "./dist/es/index.js",
-      "default": "./dist/es/index.js"
+      "require": "./dist/cjs/index.js",
+      "import": "./dist/esm/index.js",
+      "default": "./dist/esm/index.js"
     },
     "./plugins/core": {
-      "types": "./dist/types/core/index.d.ts",
-      "node": "./dist/lib/core/index.js",
-      "require": "./dist/lib/core/index.js",
-      "es2015": "./dist/es/core/index.js",
-      "default": "./dist/es/core/index.js"
+      "types": "./dist/types/index.d.ts",
+      "require": "./dist/cjs/index.js",
+      "import": "./dist/esm/index.js",
+      "default": "./dist/esm/index.js"
     },
     "./plugins/utils": {
       "types": "./dist/types/plugins/utils/index.d.ts",
-      "node": "./dist/lib/plugins/utils/index.js",
-      "require": "./dist/lib/plugins/utils/index.js",
-      "es2015": "./dist/es/plugins/utils/index.js",
-      "default": "./dist/es/plugins/utils/index.js"
+      "require": "./dist/cjs/plugins/utils/index.js",
+      "import": "./dist/esm/plugins/utils/index.js",
+      "default": "./dist/esm/plugins/utils/index.js"
     },
     "./plugins/backup": {
       "types": "./dist/types/plugins/backup/index.d.ts",
-      "node": "./dist/lib/plugins/backup/index.js",
-      "require": "./dist/lib/plugins/backup/index.js",
-      "es2015": "./dist/es/plugins/backup/index.js",
-      "default": "./dist/es/plugins/backup/index.js"
+      "require": "./dist/cjs/plugins/backup/index.js",
+      "import": "./dist/esm/plugins/backup/index.js",
+      "default": "./dist/esm/plugins/backup/index.js"
     },
     "./plugins/cleanup": {
       "types": "./dist/types/plugins/cleanup/index.d.ts",
-      "node": "./dist/lib/plugins/cleanup/index.js",
-      "require": "./dist/lib/plugins/cleanup/index.js",
-      "es2015": "./dist/es/plugins/cleanup/index.js",
-      "default": "./dist/es/plugins/cleanup/index.js"
+      "require": "./dist/cjs/plugins/cleanup/index.js",
+      "import": "./dist/esm/plugins/cleanup/index.js",
+      "default": "./dist/esm/plugins/cleanup/index.js"
     },
     "./plugins/crdt": {
       "types": "./dist/types/plugins/crdt/index.d.ts",
-      "node": "./dist/lib/plugins/crdt/index.js",
-      "require": "./dist/lib/plugins/crdt/index.js",
-      "es2015": "./dist/es/plugins/crdt/index.js",
-      "default": "./dist/es/plugins/crdt/index.js"
+      "require": "./dist/cjs/plugins/crdt/index.js",
+      "import": "./dist/esm/plugins/crdt/index.js",
+      "default": "./dist/esm/plugins/crdt/index.js"
     },
     "./plugins/dev-mode": {
       "types": "./dist/types/plugins/dev-mode/index.d.ts",
-      "node": "./dist/lib/plugins/dev-mode/index.js",
-      "require": "./dist/lib/plugins/dev-mode/index.js",
-      "es2015": "./dist/es/plugins/dev-mode/index.js",
-      "default": "./dist/es/plugins/dev-mode/index.js"
+      "require": "./dist/cjs/plugins/dev-mode/index.js",
+      "import": "./dist/esm/plugins/dev-mode/index.js",
+      "default": "./dist/esm/plugins/dev-mode/index.js"
     },
     "./plugins/storage-dexie": {
       "types": "./dist/types/plugins/storage-dexie/index.d.ts",
-      "node": "./dist/lib/plugins/storage-dexie/index.js",
-      "require": "./dist/lib/plugins/storage-dexie/index.js",
-      "es2015": "./dist/es/plugins/storage-dexie/index.js",
-      "default": "./dist/es/plugins/storage-dexie/index.js"
+      "require": "./dist/cjs/plugins/storage-dexie/index.js",
+      "import": "./dist/esm/plugins/storage-dexie/index.js",
+      "default": "./dist/esm/plugins/storage-dexie/index.js"
     },
     "./plugins/electron": {
       "types": "./dist/types/plugins/electron/index.d.ts",
-      "node": "./dist/lib/plugins/electron/index.js",
-      "require": "./dist/lib/plugins/electron/index.js",
-      "es2015": "./dist/es/plugins/electron/index.js",
-      "default": "./dist/es/plugins/electron/index.js"
+      "require": "./dist/cjs/plugins/electron/index.js",
+      "import": "./dist/esm/plugins/electron/index.js",
+      "default": "./dist/esm/plugins/electron/index.js"
     },
     "./plugins/flutter": {
       "types": "./dist/types/plugins/flutter/index.d.ts",
-      "node": "./dist/lib/plugins/flutter/index.js",
-      "require": "./dist/lib/plugins/flutter/index.js",
-      "es2015": "./dist/es/plugins/flutter/index.js",
-      "default": "./dist/es/plugins/flutter/index.js"
+      "require": "./dist/cjs/plugins/flutter/index.js",
+      "import": "./dist/esm/plugins/flutter/index.js",
+      "default": "./dist/esm/plugins/flutter/index.js"
     },
     "./plugins/storage-foundationdb": {
       "types": "./dist/types/plugins/storage-foundationdb/index.d.ts",
-      "node": "./dist/lib/plugins/storage-foundationdb/index.js",
-      "require": "./dist/lib/plugins/storage-foundationdb/index.js",
-      "es2015": "./dist/es/plugins/storage-foundationdb/index.js",
-      "default": "./dist/es/plugins/storage-foundationdb/index.js"
+      "require": "./dist/cjs/plugins/storage-foundationdb/index.js",
+      "import": "./dist/esm/plugins/storage-foundationdb/index.js",
+      "default": "./dist/esm/plugins/storage-foundationdb/index.js"
     },
     "./plugins/local-documents": {
       "types": "./dist/types/plugins/local-documents/index.d.ts",
-      "node": "./dist/lib/plugins/local-documents/index.js",
-      "require": "./dist/lib/plugins/local-documents/index.js",
-      "es2015": "./dist/es/plugins/local-documents/index.js",
-      "default": "./dist/es/plugins/local-documents/index.js"
+      "require": "./dist/cjs/plugins/local-documents/index.js",
+      "import": "./dist/esm/plugins/local-documents/index.js",
+      "default": "./dist/esm/plugins/local-documents/index.js"
     },
     "./plugins/storage-lokijs": {
       "types": "./dist/types/plugins/storage-lokijs/index.d.ts",
-      "node": "./dist/lib/plugins/storage-lokijs/index.js",
-      "require": "./dist/lib/plugins/storage-lokijs/index.js",
-      "es2015": "./dist/es/plugins/storage-lokijs/index.js",
-      "default": "./dist/es/plugins/storage-lokijs/index.js"
+      "require": "./dist/cjs/plugins/storage-lokijs/index.js",
+      "import": "./dist/esm/plugins/storage-lokijs/index.js",
+      "default": "./dist/esm/plugins/storage-lokijs/index.js"
     },
     "./plugins/storage-memory": {
       "types": "./dist/types/plugins/storage-memory/index.d.ts",
-      "node": "./dist/lib/plugins/storage-memory/index.js",
-      "require": "./dist/lib/plugins/storage-memory/index.js",
-      "es2015": "./dist/es/plugins/storage-memory/index.js",
-      "default": "./dist/es/plugins/storage-memory/index.js"
+      "require": "./dist/cjs/plugins/storage-memory/index.js",
+      "import": "./dist/esm/plugins/storage-memory/index.js",
+      "default": "./dist/esm/plugins/storage-memory/index.js"
     },
     "./plugins/storage-mongodb": {
       "types": "./dist/types/plugins/storage-mongodb/index.d.ts",
-      "node": "./dist/lib/plugins/storage-mongodb/index.js",
-      "require": "./dist/lib/plugins/storage-mongodb/index.js",
-      "es2015": "./dist/es/plugins/storage-mongodb/index.js",
-      "default": "./dist/es/plugins/storage-mongodb/index.js"
+      "require": "./dist/cjs/plugins/storage-mongodb/index.js",
+      "import": "./dist/esm/plugins/storage-mongodb/index.js",
+      "default": "./dist/esm/plugins/storage-mongodb/index.js"
     },
     "./plugins/migration": {
       "types": "./dist/types/plugins/migration/index.d.ts",
-      "node": "./dist/lib/plugins/migration/index.js",
-      "require": "./dist/lib/plugins/migration/index.js",
-      "es2015": "./dist/es/plugins/migration/index.js",
-      "default": "./dist/es/plugins/migration/index.js"
+      "require": "./dist/cjs/plugins/migration/index.js",
+      "import": "./dist/esm/plugins/migration/index.js",
+      "default": "./dist/esm/plugins/migration/index.js"
     },
     "./plugins/query-builder": {
       "types": "./dist/types/plugins/query-builder/index.d.ts",
-      "node": "./dist/lib/plugins/query-builder/index.js",
-      "require": "./dist/lib/plugins/query-builder/index.js",
-      "es2015": "./dist/es/plugins/query-builder/index.js",
-      "default": "./dist/es/plugins/query-builder/index.js"
+      "require": "./dist/cjs/plugins/query-builder/index.js",
+      "import": "./dist/esm/plugins/query-builder/index.js",
+      "default": "./dist/esm/plugins/query-builder/index.js"
     },
     "./plugins/replication": {
       "types": "./dist/types/plugins/replication/index.d.ts",
-      "node": "./dist/lib/plugins/replication/index.js",
-      "require": "./dist/lib/plugins/replication/index.js",
-      "es2015": "./dist/es/plugins/replication/index.js",
-      "default": "./dist/es/plugins/replication/index.js"
+      "require": "./dist/cjs/plugins/replication/index.js",
+      "import": "./dist/esm/plugins/replication/index.js",
+      "default": "./dist/esm/plugins/replication/index.js"
     },
     "./plugins/replication-firestore": {
       "types": "./dist/types/plugins/replication-firestore/index.d.ts",
-      "node": "./dist/lib/plugins/replication-firestore/index.js",
-      "require": "./dist/lib/plugins/replication-firestore/index.js",
-      "es2015": "./dist/es/plugins/replication-firestore/index.js",
-      "default": "./dist/es/plugins/replication-firestore/index.js"
+      "require": "./dist/cjs/plugins/replication-firestore/index.js",
+      "import": "./dist/esm/plugins/replication-firestore/index.js",
+      "default": "./dist/esm/plugins/replication-firestore/index.js"
     },
     "./plugins/replication-graphql": {
       "types": "./dist/types/plugins/replication-graphql/index.d.ts",
-      "node": "./dist/lib/plugins/replication-graphql/index.js",
-      "require": "./dist/lib/plugins/replication-graphql/index.js",
-      "es2015": "./dist/es/plugins/replication-graphql/index.js",
-      "default": "./dist/es/plugins/replication-graphql/index.js"
+      "require": "./dist/cjs/plugins/replication-graphql/index.js",
+      "import": "./dist/esm/plugins/replication-graphql/index.js",
+      "default": "./dist/esm/plugins/replication-graphql/index.js"
     },
-    "./plugins/replication-p2p": {
-      "types": "./dist/types/plugins/replication-p2p/index.d.ts",
-      "node": "./dist/lib/plugins/replication-p2p/index.js",
-      "require": "./dist/lib/plugins/replication-p2p/index.js",
-      "es2015": "./dist/es/plugins/replication-p2p/index.js",
-      "default": "./dist/es/plugins/replication-p2p/index.js"
+    "./plugins/replication-webrtc": {
+      "types": "./dist/types/plugins/replication-webrtc/index.d.ts",
+      "require": "./dist/cjs/plugins/replication-webrtc/index.js",
+      "import": "./dist/esm/plugins/replication-webrtc/index.js",
+      "default": "./dist/esm/plugins/replication-webrtc/index.js"
     },
     "./plugins/replication-websocket": {
       "types": "./dist/types/plugins/replication-websocket/index.d.ts",
-      "node": "./dist/lib/plugins/replication-websocket/index.js",
-      "require": "./dist/lib/plugins/replication-websocket/index.js",
-      "es2015": "./dist/es/plugins/replication-websocket/index.js",
-      "default": "./dist/es/plugins/replication-websocket/index.js"
+      "require": "./dist/cjs/plugins/replication-websocket/index.js",
+      "import": "./dist/esm/plugins/replication-websocket/index.js",
+      "default": "./dist/esm/plugins/replication-websocket/index.js"
     },
     "./plugins/storage-remote": {
       "types": "./dist/types/plugins/storage-remote/index.d.ts",
-      "node": "./dist/lib/plugins/storage-remote/index.js",
-      "require": "./dist/lib/plugins/storage-remote/index.js",
-      "es2015": "./dist/es/plugins/storage-remote/index.js",
-      "default": "./dist/es/plugins/storage-remote/index.js"
+      "require": "./dist/cjs/plugins/storage-remote/index.js",
+      "import": "./dist/esm/plugins/storage-remote/index.js",
+      "default": "./dist/esm/plugins/storage-remote/index.js"
     },
     "./plugins/storage-remote-websocket": {
       "types": "./dist/types/plugins/storage-remote-websocket/index.d.ts",
-      "node": "./dist/lib/plugins/storage-remote-websocket/index.js",
-      "require": "./dist/lib/plugins/storage-remote-websocket/index.js",
-      "es2015": "./dist/es/plugins/storage-remote-websocket/index.js",
-      "default": "./dist/es/plugins/storage-remote-websocket/index.js"
+      "require": "./dist/cjs/plugins/storage-remote-websocket/index.js",
+      "import": "./dist/esm/plugins/storage-remote-websocket/index.js",
+      "default": "./dist/esm/plugins/storage-remote-websocket/index.js"
     },
     "./plugins/attachments": {
       "types": "./dist/types/plugins/attachments/index.d.ts",
-      "node": "./dist/lib/plugins/attachments/index.js",
-      "require": "./dist/lib/plugins/attachments/index.js",
-      "es2015": "./dist/es/plugins/attachments/index.js",
-      "default": "./dist/es/plugins/attachments/index.js"
+      "require": "./dist/cjs/plugins/attachments/index.js",
+      "import": "./dist/esm/plugins/attachments/index.js",
+      "default": "./dist/esm/plugins/attachments/index.js"
     },
     "./plugins/attachments-compression": {
       "types": "./dist/types/plugins/attachments-compression/index.d.ts",
-      "node": "./dist/lib/plugins/attachments-compression/index.js",
-      "require": "./dist/lib/plugins/attachments-compression/index.js",
-      "es2015": "./dist/es/plugins/attachments-compression/index.js",
-      "default": "./dist/es/plugins/attachments-compression/index.js"
+      "require": "./dist/cjs/plugins/attachments-compression/index.js",
+      "import": "./dist/esm/plugins/attachments-compression/index.js",
+      "default": "./dist/esm/plugins/attachments-compression/index.js"
     },
     "./plugins/encryption-crypto-js": {
       "types": "./dist/types/plugins/encryption-crypto-js/index.d.ts",
-      "node": "./dist/lib/plugins/encryption-crypto-js/index.js",
-      "require": "./dist/lib/plugins/encryption-crypto-js/index.js",
-      "es2015": "./dist/es/plugins/encryption-crypto-js/index.js",
-      "default": "./dist/es/plugins/encryption-crypto-js/index.js"
+      "require": "./dist/cjs/plugins/encryption-crypto-js/index.js",
+      "import": "./dist/esm/plugins/encryption-crypto-js/index.js",
+      "default": "./dist/esm/plugins/encryption-crypto-js/index.js"
     },
     "./plugins/json-dump": {
       "types": "./dist/types/plugins/json-dump/index.d.ts",
-      "node": "./dist/lib/plugins/json-dump/index.js",
-      "require": "./dist/lib/plugins/json-dump/index.js",
-      "es2015": "./dist/es/plugins/json-dump/index.js",
-      "default": "./dist/es/plugins/json-dump/index.js"
+      "require": "./dist/cjs/plugins/json-dump/index.js",
+      "import": "./dist/esm/plugins/json-dump/index.js",
+      "default": "./dist/esm/plugins/json-dump/index.js"
     },
     "./plugins/key-compression": {
       "types": "./dist/types/plugins/key-compression/index.d.ts",
-      "node": "./dist/lib/plugins/key-compression/index.js",
-      "require": "./dist/lib/plugins/key-compression/index.js",
-      "es2015": "./dist/es/plugins/key-compression/index.js",
-      "default": "./dist/es/plugins/key-compression/index.js"
+      "require": "./dist/cjs/plugins/key-compression/index.js",
+      "import": "./dist/esm/plugins/key-compression/index.js",
+      "default": "./dist/esm/plugins/key-compression/index.js"
     },
     "./plugins/leader-election": {
       "types": "./dist/types/plugins/leader-election/index.d.ts",
-      "node": "./dist/lib/plugins/leader-election/index.js",
-      "require": "./dist/lib/plugins/leader-election/index.js",
-      "es2015": "./dist/es/plugins/leader-election/index.js",
-      "default": "./dist/es/plugins/leader-election/index.js"
+      "require": "./dist/cjs/plugins/leader-election/index.js",
+      "import": "./dist/esm/plugins/leader-election/index.js",
+      "default": "./dist/esm/plugins/leader-election/index.js"
     },
     "./plugins/replication-couchdb": {
       "types": "./dist/types/plugins/replication-couchdb/index.d.ts",
-      "node": "./dist/lib/plugins/replication-couchdb/index.js",
-      "require": "./dist/lib/plugins/replication-couchdb/index.js",
-      "es2015": "./dist/es/plugins/replication-couchdb/index.js",
-      "default": "./dist/es/plugins/replication-couchdb/index.js"
+      "require": "./dist/cjs/plugins/replication-couchdb/index.js",
+      "import": "./dist/esm/plugins/replication-couchdb/index.js",
+      "default": "./dist/esm/plugins/replication-couchdb/index.js"
     },
     "./plugins/replication-nats": {
       "types": "./dist/types/plugins/replication-nats/index.d.ts",
-      "node": "./dist/lib/plugins/replication-nats/index.js",
-      "require": "./dist/lib/plugins/replication-nats/index.js",
-      "es2015": "./dist/es/plugins/replication-nats/index.js",
-      "default": "./dist/es/plugins/replication-nats/index.js"
+      "require": "./dist/cjs/plugins/replication-nats/index.js",
+      "import": "./dist/esm/plugins/replication-nats/index.js",
+      "default": "./dist/esm/plugins/replication-nats/index.js"
     },
     "./plugins/update": {
       "types": "./dist/types/plugins/update/index.d.ts",
-      "node": "./dist/lib/plugins/update/index.js",
-      "require": "./dist/lib/plugins/update/index.js",
-      "es2015": "./dist/es/plugins/update/index.js",
-      "default": "./dist/es/plugins/update/index.js"
+      "require": "./dist/cjs/plugins/update/index.js",
+      "import": "./dist/esm/plugins/update/index.js",
+      "default": "./dist/esm/plugins/update/index.js"
     },
     "./plugins/validate-ajv": {
       "types": "./dist/types/plugins/validate-ajv/index.d.ts",
-      "node": "./dist/lib/plugins/validate-ajv/index.js",
-      "require": "./dist/lib/plugins/validate-ajv/index.js",
-      "es2015": "./dist/es/plugins/validate-ajv/index.js",
-      "default": "./dist/es/plugins/validate-ajv/index.js"
+      "require": "./dist/cjs/plugins/validate-ajv/index.js",
+      "import": "./dist/esm/plugins/validate-ajv/index.js",
+      "default": "./dist/esm/plugins/validate-ajv/index.js"
     },
     "./plugins/validate-is-my-json-valid": {
       "types": "./dist/types/plugins/validate-is-my-json-valid/index.d.ts",
-      "node": "./dist/lib/plugins/validate-is-my-json-valid/index.js",
-      "require": "./dist/lib/plugins/validate-is-my-json-valid/index.js",
-      "es2015": "./dist/es/plugins/validate-is-my-json-valid/index.js",
-      "default": "./dist/es/plugins/validate-is-my-json-valid/index.js"
+      "require": "./dist/cjs/plugins/validate-is-my-json-valid/index.js",
+      "import": "./dist/esm/plugins/validate-is-my-json-valid/index.js",
+      "default": "./dist/esm/plugins/validate-is-my-json-valid/index.js"
     },
     "./plugins/validate-z-schema": {
       "types": "./dist/types/plugins/validate-z-schema/index.d.ts",
-      "node": "./dist/lib/plugins/validate-z-schema/index.js",
-      "require": "./dist/lib/plugins/validate-z-schema/index.js",
-      "es2015": "./dist/es/plugins/validate-z-schema/index.js",
-      "default": "./dist/es/plugins/validate-z-schema/index.js"
+      "require": "./dist/cjs/plugins/validate-z-schema/index.js",
+      "import": "./dist/esm/plugins/validate-z-schema/index.js",
+      "default": "./dist/esm/plugins/validate-z-schema/index.js"
     },
     "./package.json": "./package.json"
   },
@@ -343,12 +309,12 @@
     "test": "npm run test:node && npm run test:browser",
     "// test:fast": "run tests in the fast-mode. Most of them will run in parrallel, skips tests that are known slow",
     "test:fast": "npm run test:fast:memory && npm run test:fast:lokijs && npm run test:fast:dexie",
-    "test:fast:memory": "npm run transpile && cross-env DEFAULT_STORAGE=memory NODE_ENV=fast mocha --config ./config/.mocharc.js ./test_tmp/unit.test.js",
-    "test:fast:memory-validation": "npm run transpile && cross-env DEFAULT_STORAGE=memory-validation NODE_ENV=fast mocha --config ./config/.mocharc.js ./test_tmp/unit.test.js",
-    "test:fast:lokijs": "npm run transpile && cross-env DEFAULT_STORAGE=lokijs NODE_ENV=fast mocha --config ./config/.mocharc.js ./test_tmp/unit.test.js",
-    "test:fast:dexie": "npm run transpile && cross-env DEFAULT_STORAGE=dexie NODE_ENV=fast mocha --config ./config/.mocharc.js ./test_tmp/unit.test.js",
-    "test:fast:foundationdb": "npm run transpile && cross-env DEFAULT_STORAGE=foundationdb NODE_ENV=fast mocha --config ./config/.mocharc.js ./test_tmp/unit.test.js",
-    "test:fast:mongodb": "npm run transpile && cross-env DEFAULT_STORAGE=mongodb NODE_ENV=fast mocha --config ./config/.mocharc.js ./test_tmp/unit.test.js",
+    "test:fast:memory": "npm run transpile && cross-env DEFAULT_STORAGE=memory NODE_ENV=fast mocha --config ./config/.mocharc.cjs ./test_tmp/unit.test.js",
+    "test:fast:memory-validation": "npm run transpile && cross-env DEFAULT_STORAGE=memory-validation NODE_ENV=fast mocha --config ./config/.mocharc.cjs ./test_tmp/unit.test.js",
+    "test:fast:lokijs": "npm run transpile && cross-env DEFAULT_STORAGE=lokijs NODE_ENV=fast mocha --config ./config/.mocharc.cjs ./test_tmp/unit.test.js",
+    "test:fast:dexie": "npm run transpile && cross-env DEFAULT_STORAGE=dexie NODE_ENV=fast mocha --config ./config/.mocharc.cjs ./test_tmp/unit.test.js",
+    "test:fast:foundationdb": "npm run transpile && cross-env DEFAULT_STORAGE=foundationdb NODE_ENV=fast mocha --config ./config/.mocharc.cjs ./test_tmp/unit.test.js",
+    "test:fast:mongodb": "npm run transpile && cross-env DEFAULT_STORAGE=mongodb NODE_ENV=fast mocha --config ./config/.mocharc.cjs ./test_tmp/unit.test.js",
     "// test:fast:loop": "runs tests in the fast-mode in a loop. Use this to debug tests that only fail sometimes",
     "test:fast:loop": "npm run test:fast && npm run test:fast:loop",
     "test:fast:loop:lokijs": "npm run test:fast:lokijs && npm run test:fast:loop:lokijs",
@@ -356,45 +322,50 @@
     "test:fast:loop:dexie": "npm run test:fast:dexie && npm run test:fast:loop:dexie",
     "test:fast:loop:mongodb": "npm run test:fast:mongodb && npm run test:fast:loop:mongodb",
     "test:node": "npm run test:node:lokijs && npm run test:node:dexie",
-    "test:node:memory": "npm run transpile && cross-env DEFAULT_STORAGE=memory mocha --expose-gc --config ./config/.mocharc.js ./test_tmp/unit.test.js",
-    "test:node:memory-validation": "npm run transpile && cross-env DEFAULT_STORAGE=memory-validation mocha --expose-gc --config ./config/.mocharc.js ./test_tmp/unit.test.js",
-    "test:node:lokijs": "npm run transpile && cross-env DEFAULT_STORAGE=lokijs mocha --expose-gc --config ./config/.mocharc.js ./test_tmp/unit.test.js",
-    "test:node:dexie": "npm run transpile && cross-env DEFAULT_STORAGE=dexie mocha --expose-gc --config ./config/.mocharc.js ./test_tmp/unit.test.js",
+    "test:node:memory": "npm run transpile && cross-env DEFAULT_STORAGE=memory mocha --expose-gc --config ./config/.mocharc.cjs ./test_tmp/unit.test.js",
+    "test:node:memory-validation": "npm run transpile && cross-env DEFAULT_STORAGE=memory-validation mocha --expose-gc --config ./config/.mocharc.cjs ./test_tmp/unit.test.js",
+    "test:node:lokijs": "npm run transpile && cross-env DEFAULT_STORAGE=lokijs mocha --expose-gc --config ./config/.mocharc.cjs ./test_tmp/unit.test.js",
+    "test:node:dexie": "npm run transpile && cross-env DEFAULT_STORAGE=dexie mocha --expose-gc --config ./config/.mocharc.cjs ./test_tmp/unit.test.js",
     "test:bun:dexie": "npm run transpile && cross-env DEFAULT_STORAGE=dexie NODE_ENV=fast bun run ./node_modules/mocha/bin/mocha test_tmp/unit.test.js --bail",
-    "test:node:foundationdb": "npm run transpile && cross-env DEFAULT_STORAGE=foundationdb mocha --expose-gc --config ./config/.mocharc.js ./test_tmp/unit.test.js",
-    "test:node:mongodb": "npm run transpile && cross-env DEFAULT_STORAGE=mongodb mocha --expose-gc --config ./config/.mocharc.js ./test_tmp/unit.test.js",
-    "test:node:remote": "npm run transpile && cross-env DEFAULT_STORAGE=remote mocha --expose-gc --config ./config/.mocharc.js ./test_tmp/unit.test.js",
+    "test:deno:dexie": "npm run transpile && cross-env DEFAULT_STORAGE=dexie deno run --unstable --allow-env --allow-read -A npm:mocha ./test/unit.test.ts --bail",
+    "test:deno:memory": "npm run transpile && cross-env DEFAULT_STORAGE=memory deno run --unstable --allow-env --allow-read -A npm:mocha ./test/unit.test.ts --bail",
+    "test:node:foundationdb": "npm run transpile && cross-env DEFAULT_STORAGE=foundationdb mocha --expose-gc --config ./config/.mocharc.cjs ./test_tmp/unit.test.js",
+    "test:node:mongodb": "npm run transpile && cross-env DEFAULT_STORAGE=mongodb mocha --expose-gc --config ./config/.mocharc.cjs ./test_tmp/unit.test.js",
+    "test:node:mongodb:loop": "npm run test:node:mongodb && npm run test:node:mongodb:loop",
+    "test:node:remote": "npm run transpile && cross-env DEFAULT_STORAGE=remote mocha --expose-gc --config ./config/.mocharc.cjs ./test_tmp/unit.test.js",
     "test:node:lokijs:loop": "npm run test:node:lokijs && npm run test:node:lokijs:loop",
     "test:node:memory:loop": "npm run test:node:memory && npm run test:node:memory:loop",
     "test:node:dexie:loop": "npm run test:node:dexie && npm run test:node:dexie:loop",
     "test:node:foundationdb:loop": "npm run test:node:foundationdb && npm run test:node:foundationdb:loop",
-    "test:node:custom": "npm run transpile && cross-env DEFAULT_STORAGE=custom mocha --expose-gc --config ./config/.mocharc.js ./test_tmp/unit.test.js",
+    "test:node:custom": "npm run transpile && cross-env DEFAULT_STORAGE=custom mocha --expose-gc --config ./config/.mocharc.cjs ./test_tmp/unit.test.js",
     "// test:node:loop": "runs tests in node in a loop. Use this to debug tests that only fail sometimes",
     "test:node:loop": "npm run test:node && npm run test:node:loop",
     "test:browser:loop": "npm run test:browser && npm run test:browser:loop",
-    "test:browser:lokijs": " npm run transpile && cross-env CI=true DEFAULT_STORAGE=lokijs  karma start ./config/karma.conf.js --single-run",
-    "test:browser:memory": " npm run transpile && cross-env CI=true DEFAULT_STORAGE=memory  karma start ./config/karma.conf.js --single-run",
-    "test:browser:dexie": "  npm run transpile && cross-env CI=true DEFAULT_STORAGE=dexie   karma start ./config/karma.conf.js --single-run",
-    "test:browser:remote": "  npm run transpile && cross-env CI=true DEFAULT_STORAGE=remote karma start ./config/karma.conf.js --single-run",
-    "test:browser:custom": " npm run transpile && cross-env CI=true DEFAULT_STORAGE=custom  karma start ./config/karma.conf.js --single-run",
-    "test:replication-firestore": "npm run transpile && firebase emulators:exec \"cross-env DEFAULT_STORAGE=dexie mocha --expose-gc --config ./config/.mocharc.js ./test_tmp/replication-firestore.test.js\" --only firestore --project 'rxdb-test'",
-    "test:replication-couchdb": "npm run transpile && concurrently \"npm run couch:start\" \"cross-env NATIVE_COUCHDB=5984 DEFAULT_STORAGE=dexie mocha --config ./config/.mocharc.js ./test_tmp/unit/replication-couchdb.test.js\" --success first --kill-others",
-    "test:replication-nats": "npm run transpile && concurrently \"npm run nats:start\" \"cross-env DEFAULT_STORAGE=dexie mocha --config ./config/.mocharc.js ./test_tmp/replication-nats.test.js\" --success first --kill-others",
+    "test:browser:lokijs": " npm run transpile && cross-env CI=true DEFAULT_STORAGE=lokijs  karma start ./config/karma.conf.cjs --single-run",
+    "test:browser:memory": " npm run transpile && cross-env CI=true DEFAULT_STORAGE=memory  karma start ./config/karma.conf.cjs --single-run",
+    "test:browser:dexie": "  npm run transpile && cross-env CI=true DEFAULT_STORAGE=dexie   karma start ./config/karma.conf.cjs --single-run",
+    "test:browser:remote": "  npm run transpile && cross-env CI=true DEFAULT_STORAGE=remote karma start ./config/karma.conf.cjs --single-run",
+    "test:browser:remote:loop": "npm run test:browser:remote && npm run test:browser:remote:loop",
+    "test:browser:custom": " npm run transpile && cross-env CI=true DEFAULT_STORAGE=custom  karma start ./config/karma.conf.cjs --single-run",
+    "test:replication-firestore": "npm run transpile && firebase emulators:exec \"cross-env DEFAULT_STORAGE=dexie mocha --expose-gc --config ./config/.mocharc.cjs ./test_tmp/replication-firestore.test.js\" --only firestore --project 'rxdb-test'",
+    "test:replication-couchdb": "npm run transpile && concurrently \"npm run couch:start\" \"cross-env NATIVE_COUCHDB=5984 DEFAULT_STORAGE=dexie mocha --config ./config/.mocharc.cjs ./test_tmp/replication-couchdb.test.js\" --success first --kill-others",
+    "test:replication-nats": "npm run transpile && concurrently \"npm run nats:start\" \"cross-env DEFAULT_STORAGE=dexie mocha --config ./config/.mocharc.cjs ./test_tmp/replication-nats.test.js\" --success first --kill-others",
     "test:core": "npm run transpile && mocha ./test_tmp/unit/core.node.js",
     "test:full": "npm run transpile && mocha ./test_tmp/unit/full.node.js",
-    "test:typings": "tsc --noEmit --lib \"ES2021,DOM\" ./test/typings.test.ts",
-    "test:deps": "npm run build && dependency-check ./package.json ./dist/lib/index.js ./dist/lib/plugins/validate-is-my-json-valid/index.js ./dist/lib/plugins/attachments-compression/index.js ./dist/lib/plugins/validate-ajv/index.js ./dist/lib/plugins/update/index.js ./dist/lib/plugins/key-compression/index.js ./dist/lib/plugins/dev-mode/index.js ./dist/lib/plugins/encryption-crypto-js/index.js ./dist/lib/plugins/replication-graphql/index.js ./dist/lib/plugins/replication-p2p/index.js ./dist/lib/plugins/replication-websocket/index.js ./dist/lib/plugins/replication-firestore/index.js ./dist/lib/plugins/replication-nats/index.js ./dist/lib/plugins/validate-z-schema/index.js ./dist/lib/plugins/storage-lokijs/index.js ./dist/lib/plugins/storage-dexie/index.js ./dist/lib/plugins/storage-memory/index.js ./dist/lib/plugins/storage-mongodb/index.js --no-dev --ignore-module util --ignore-module url --ignore-module ws --ignore-module graphql --ignore-module as-typed --ignore-module \"@types/*\"",
-    "test:circular": "npm run build && madge --circular ./dist/es/index.js && madge --circular ./dist/es/plugins/storage-dexie/index.js",
-    "test:performance:lokijs:browser": "npm run transpile && cross-env DEFAULT_STORAGE=lokijs CI=true karma start ./config/karma.performance.conf.js --single-run",
-    "test:performance:lokijs:node": "npm run transpile && cross-env DEFAULT_STORAGE=lokijs mocha --config ./config/.mocharc.js ./test_tmp/performance.test.js --unhandled-rejections=strict --expose-gc",
-    "test:performance:dexie": "npm run transpile && cross-env DEFAULT_STORAGE=dexie CI=true karma start ./config/karma.performance.conf.js --single-run",
-    "test:performance:memory:browser": "npm run transpile && cross-env DEFAULT_STORAGE=memory CI=true karma start ./config/karma.performance.conf.js --single-run",
-    "test:performance:memory:node": "npm run transpile && cross-env DEFAULT_STORAGE=memory mocha --config ./config/.mocharc.js ./test_tmp/performance.test.js --unhandled-rejections=strict --expose-gc",
+    "test:typings": "npm run build:plugins && tsc --allowImportingTsExtensions --noEmit --lib \"ES2021,DOM\" ./test/typings.test.ts",
+    "test:deps": "npm run build && dependency-check ./package.json ./dist/cjs/index.js ./dist/cjs/plugins/validate-is-my-json-valid/index.js ./dist/cjs/plugins/attachments-compression/index.js ./dist/cjs/plugins/validate-ajv/index.js ./dist/cjs/plugins/update/index.js ./dist/cjs/plugins/key-compression/index.js ./dist/cjs/plugins/dev-mode/index.js ./dist/cjs/plugins/encryption-crypto-js/index.js ./dist/cjs/plugins/replication-graphql/index.js ./dist/cjs/plugins/replication-webrtc/index.js ./dist/cjs/plugins/replication-websocket/index.js ./dist/cjs/plugins/replication-firestore/index.js ./dist/cjs/plugins/replication-nats/index.js ./dist/cjs/plugins/validate-z-schema/index.js ./dist/cjs/plugins/storage-lokijs/index.js ./dist/cjs/plugins/storage-dexie/index.js ./dist/cjs/plugins/storage-memory/index.js ./dist/cjs/plugins/storage-mongodb/index.js --no-dev --ignore-module util --ignore-module url --ignore-module ws --ignore-module graphql --ignore-module socket.io-client --ignore-module as-typed --ignore-module \"@types/*\"",
+    "test:circular": "npm run build && madge --circular ./dist/esm/index.js && madge --circular ./dist/esm/plugins/storage-dexie/index.js",
+    "test:performance:lokijs:browser": "npm run transpile && cross-env DEFAULT_STORAGE=lokijs CI=true karma start ./config/karma.performance.conf.cjs --single-run",
+    "test:performance:lokijs:node": "npm run transpile && cross-env DEFAULT_STORAGE=lokijs mocha --config ./config/.mocharc.cjs ./test_tmp/performance.test.js --unhandled-rejections=strict --expose-gc",
+    "test:performance:dexie": "npm run transpile && cross-env DEFAULT_STORAGE=dexie CI=true karma start ./config/karma.performance.conf.cjs --single-run",
+    "test:performance:memory:browser": "npm run transpile && cross-env DEFAULT_STORAGE=memory CI=true karma start ./config/karma.performance.conf.cjs --single-run",
+    "test:performance:memory:node": "npm run transpile && cross-env DEFAULT_STORAGE=memory mocha --config ./config/.mocharc.cjs ./test_tmp/performance.test.js --unhandled-rejections=strict --expose-gc",
     "test:performance:memory:bun": "npm run transpile && cross-env DEFAULT_STORAGE=memory bun run ./node_modules/mocha/bin/mocha test_tmp/performance.test.js --bail",
-    "test:performance:foundationdb": "npm run transpile && cross-env DEFAULT_STORAGE=foundationdb mocha --config ./config/.mocharc.js ./test_tmp/performance.test.js --unhandled-rejections=strict --expose-gc",
-    "test:performance:mongodb": "npm run transpile && cross-env DEFAULT_STORAGE=mongodb mocha --config ./config/.mocharc.js ./test_tmp/performance.test.js --unhandled-rejections=strict --expose-gc",
-    "test:performance:custom:browser": "npm run transpile && cross-env DEFAULT_STORAGE=custom CI=true karma start ./config/karma.performance.conf.js --single-run",
-    "test:performance:custom:node": "npm run transpile && cross-env DEFAULT_STORAGE=custom mocha --config ./config/.mocharc.js ./test_tmp/performance.test.js --unhandled-rejections=strict --expose-gc",
+    "test:performance:memory:deno": "npm run transpile && cross-env DEFAULT_STORAGE=memory deno run --unstable --allow-env --allow-read -A npm:mocha test/performance.test.ts --bail",
+    "test:performance:foundationdb": "npm run transpile && cross-env DEFAULT_STORAGE=foundationdb mocha --config ./config/.mocharc.cjs ./test_tmp/performance.test.js --unhandled-rejections=strict --expose-gc",
+    "test:performance:mongodb": "npm run transpile && cross-env DEFAULT_STORAGE=mongodb mocha --config ./config/.mocharc.cjs ./test_tmp/performance.test.js --unhandled-rejections=strict --expose-gc",
+    "test:performance:custom:browser": "npm run transpile && cross-env DEFAULT_STORAGE=custom CI=true karma start ./config/karma.performance.conf.cjs --single-run",
+    "test:performance:custom:node": "npm run transpile && cross-env DEFAULT_STORAGE=custom mocha --config ./config/.mocharc.cjs ./test_tmp/performance.test.js --unhandled-rejections=strict --expose-gc",
     "test:performance": "npm run build && npm run test:performance:lokijs:browser && npm run test:performance:lokijs:node && npm run test:performance:dexie && npm run test:performance:memory:browser && npm run test:performance:memory:node && npm run test:performance:foundationdb",
     "couch:start": "docker run -p 5984:5984 -e COUCHDB_USER=root -e COUCHDB_PASSWORD=root --rm --name rxdb-couchdb couchdb:3.3.1",
     "couch:stop": "docker rm -f rxdb-couchdb",
@@ -403,20 +374,19 @@
     "nats:start": "docker run --rm --name rxdb-nats -p 4222:4222 nats:2.9.17 -js",
     "nats:stop": "docker rm -f rxdb-nats",
     "dockertest": "docker run -it -v $(pwd):/usr/src/app markadams/chromium-xvfb-js:latest-onbuild",
-    "profile": "npm run transpile && rm -f isolate-* && cross-env STORAGE=memory NODE_ENV=fast NODE_PROF=true mocha --config ./config/.mocharc.js ./test_tmp/performance.test.js --v8-prof --expose-gc && node scripts/profile.js",
+    "profile": "npm run transpile && rm -f isolate-* && cross-env STORAGE=memory NODE_ENV=fast NODE_PROF=true mocha --config ./config/.mocharc.cjs ./test_tmp/performance.test.js --v8-prof --expose-gc && node scripts/profile.mjs",
     "clear": "rimraf -rf test_tmp/ && rimraf -rf dist/ && rimraf .transpile_state.json",
     "lint": "eslint . --ext .js,.ts --cache",
     "lint:fix": "eslint --fix . --ext .js,.ts",
     "lint:debug:files": "DEBUG=eslint:cli-engine eslint --ext .js,.ts,.json .",
     "lint:debug:time": "TIMING=1 eslint --ext .js,.ts,.json .",
     "check-types": "tsc",
-    "transpile": "npm run build:version && node scripts/transpile.js",
-    "build:version": "node ./scripts/update-version-variable.js",
-    "build:es": "npm run build:version && rimraf -rf --max-retries=3 dist/es && cross-env NODE_ENV=es6 babel src --out-dir dist/es --source-maps --extensions \".ts,.js\"",
+    "transpile": "npm run build:version && node scripts/transpile.mjs && echo '{ \"type\": \"module\" }' > test_tmp/package.json",
+    "build:version": "node ./scripts/update-version-variable.mjs",
+    "build:es": "npm run build:version && rimraf -rf --max-retries=3 dist/es && cross-env NODE_ENV=es6 babel src --out-dir dist/es --source-maps --extensions \".ts,.js\" && echo '{ \"type\": \"module\", \"sideEffects\": false }' > dist/esm/package.json",
     "build:types": "npm run build:version && rimraf -rf --max-retries=3 ./dist/types && tsc --project ./config/tsconfig.types.json && cp -r ./src/types ./dist/types/types",
-    "build": "npm run clear && npm run build:version && concurrently \"npm run transpile\" \"npm run build:es\" \"npm run build:types\" \"npm run build:plugins\" && browserify dist/lib/browserify.index.js > dist/rxdb.browserify.js && terser --compress --mangle --output dist/rxdb.browserify.min.js -- dist/rxdb.browserify.js",
-    "build:plugins": "node ./scripts/generate-plugins-package-json.js",
-    "build:min": "npm run transpile && browserify dist/lib/browserify.index.js > dist/rxdb.browserify.js && terser --compress --mangle --output dist/rxdb.browserify.min.js -- dist/rxdb.browserify.js",
+    "build": "npm run clear && npm run build:version && concurrently \"npm run transpile\" \"npm run build:es\" \"npm run build:types\" \"npm run build:plugins\"",
+    "build:plugins": "node ./scripts/generate-plugins-package-json.mjs",
     "build:webpack": "npm run build && cross-env NODE_ENV=build webpack --config ./config/webpack.config.js",
     "build:rollup": "npm run build && rollup --config ./config/rollup.config.mjs",
     "build:size": "npm run build:webpack && echo \"Build-Size (minified+gzip):\" && gzip-size --raw ./test_tmp/webpack.bundle.js",
@@ -429,7 +399,7 @@
     "docs:serve": "gitbook serve docs-src",
     "docs:build": "gitbook install docs-src && gitbook build docs-src docs && cp docs-src/files/logo/icon.png docs/gitbook/images/apple-touch-icon-precomposed-152.png && cp docs-src/files/logo/icon.ico docs/gitbook/images/favicon.ico && npm run docs:copy && npm run docs:remove:time",
     "docs:copy": "cp -r docs-src/files docs/files && npm run docs:landingpage:copy",
-    "docs:remove:time": "node ./scripts/docs-remove-time.js",
+    "docs:remove:time": "node ./scripts/docs-remove-time.mjs",
     "disc": "npm run transpile && npm run build:es && cross-env NODE_ENV=disc webpack --config ./config/webpack.config.js",
     "preversion": "npm run lint && npm run test",
     "dev": "watch 'npm run test:node:memory' src/ test/",
@@ -482,7 +452,6 @@
     "z-schema": "6.0.1"
   },
   "devDependencies": {
-    "@types/node": "18.18.4",
     "@babel/cli": "7.23.0",
     "@babel/core": "7.23.0",
     "@babel/plugin-external-helpers": "7.22.5",
@@ -508,9 +477,11 @@
     "@types/cors": "2.8.14",
     "@types/crypto-js": "4.1.2",
     "@types/mocha": "10.0.2",
+    "@types/node": "18.16.19",
     "@types/pako": "2.0.1",
     "@types/request": "2.48.9",
     "@types/request-promise-native": "1.0.19",
+    "@types/source-map-support": "0.5.8",
     "@typescript-eslint/eslint-plugin": "6.7.5",
     "@typescript-eslint/parser": "6.7.5",
     "assert": "2.1.0",
@@ -518,7 +489,6 @@
     "babel-loader": "9.1.3",
     "babel-plugin-transform-class-properties": "6.24.1",
     "brfs": "2.0.2",
-    "browserify": "17.0.0",
     "child-process-promise": "2.2.1",
     "clone": "2.1.2",
     "concurrently": "8.2.1",
@@ -535,7 +505,6 @@
     "exists-file": "3.0.2",
     "express": "4.18.2",
     "express-graphql": "0.12.0",
-    "express-pouchdb": "4.2.0",
     "fake-indexeddb": "4.0.2",
     "firebase-tools": "12.6.2",
     "get-port": "5.1.1",
@@ -558,14 +527,14 @@
     "karma-webpack": "5.0.0",
     "leveldown": "6.1.1",
     "madge": "6.1.0",
-    "memdown": "6.1.1",
     "mini-css-extract-plugin": "2.7.6",
     "mocha": "10.2.0",
     "mocha.parallel": "0.15.6",
     "nconf": "0.12.0",
     "node-pre-gyp": "0.17.0",
-    "pouchdb": "8.0.1",
     "pre-commit": "1.2.2",
+    "process": "0.11.10",
+    "querystring-es3": "0.2.1",
     "random-int": "3.0.0",
     "readline": "1.3.0",
     "rimraf": "5.0.5",

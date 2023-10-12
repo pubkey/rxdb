@@ -1,12 +1,12 @@
 import {
     isBulkWriteConflictError,
     newRxError
-} from './rx-error';
+} from './rx-error.ts';
 import {
     fillWithDefaultSettings,
     getComposedPrimaryKeyOfDocumentData
-} from './rx-schema-helper';
-import { getSingleDocument, writeSingle } from './rx-storage-helper';
+} from './rx-schema-helper.ts';
+import { getSingleDocument, writeSingle } from './rx-storage-helper.ts';
 import type {
     CollectionsOfDatabase,
     InternalStoreCollectionDocType,
@@ -20,14 +20,14 @@ import type {
     RxStorageInstance,
     RxStorageStatics,
     RxStorageWriteErrorConflict
-} from './types';
+} from './types/index.d.ts';
 import {
     clone,
     ensureNotFalsy,
     getDefaultRevision,
     getDefaultRxDocumentMeta,
     randomCouchString
-} from './plugins/utils';
+} from './plugins/utils/index.ts';
 
 export const INTERNAL_CONTEXT_COLLECTION = 'collection';
 export const INTERNAL_CONTEXT_STORAGE_TOKEN = 'storage-token';
@@ -156,7 +156,7 @@ export async function ensureStorageTokenDocumentExists<Collections extends Colle
     const storageToken = randomCouchString(10);
 
     const passwordHash = rxDatabase.password ?
-        rxDatabase.hashFunction(JSON.stringify(rxDatabase.password)) :
+        await rxDatabase.hashFunction(JSON.stringify(rxDatabase.password)) :
         undefined;
 
     const docData: RxDocumentData<InternalStoreStorageTokenDocType> = {
@@ -185,23 +185,22 @@ export async function ensureStorageTokenDocumentExists<Collections extends Colle
         [{ document: docData }],
         'internal-add-storage-token'
     );
-    if (writeResult.success[STORAGE_TOKEN_DOCUMENT_ID]) {
-        return writeResult.success[STORAGE_TOKEN_DOCUMENT_ID];
+    if (writeResult.success[0]) {
+        return writeResult.success[0];
     }
+
 
     /**
      * If we get a 409 error,
      * it means another instance already inserted the storage token.
      * So we get that token from the database and return that one.
      */
-    const error = ensureNotFalsy(writeResult.error[STORAGE_TOKEN_DOCUMENT_ID]);
+    const error = ensureNotFalsy(writeResult.error[0]);
     if (
         error.isError &&
         (error as RxStorageWriteError<InternalStoreStorageTokenDocType>).status === 409
     ) {
         const conflictError = (error as RxStorageWriteErrorConflict<InternalStoreStorageTokenDocType>);
-
-
         if (
             passwordHash &&
             passwordHash !== conflictError.documentInDb.data.passwordHash
@@ -227,6 +226,19 @@ export async function addConnectedStorageToCollection(
     storageCollectionName: string,
     schema: RxJsonSchema<any>
 ) {
+
+    if (collection.schema.version !== schema.version) {
+        throw newRxError('SNH', {
+            schema,
+            version: collection.schema.version,
+            name: collection.name,
+            collection,
+            args: {
+                storageCollectionName
+            }
+        });
+    }
+
     const collectionNameWithVersion = _collectionNamePrimary(collection.name, collection.schema.jsonSchema);
     const collectionDocId = getPrimaryKeyOfInternalDocument(
         collectionNameWithVersion,
@@ -239,13 +251,6 @@ export async function addConnectedStorageToCollection(
             collectionDocId
         );
         const saveData: RxDocumentData<InternalStoreCollectionDocType> = clone(ensureNotFalsy(collectionDoc));
-        /**
-         * Add array if not exist for backwards compatibility
-         * TODO remove this in 2023
-         */
-        if (!saveData.data.connectedStorages) {
-            saveData.data.connectedStorages = [];
-        }
 
         // do nothing if already in array
         const alreadyThere = saveData.data.connectedStorages

@@ -2,7 +2,7 @@ import type {
     ReplicationOptions,
     ReplicationPullOptions,
     ReplicationPushOptions
-} from '../../types';
+} from '../../types/index.d.ts';
 
 
 import {

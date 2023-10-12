@@ -3,10 +3,10 @@ import {
     first
 } from 'rxjs/operators';
 
-import config from './config';
-import * as schemas from '../helper/schemas';
-import * as schemaObjects from '../helper/schema-objects';
-import * as humansCollection from '../helper/humans-collection';
+import config from './config.ts';
+import * as schemas from '../helper/schemas.ts';
+import * as schemaObjects from '../helper/schema-objects.ts';
+import * as humansCollection from '../helper/humans-collection.ts';
 
 import {
     createRxDatabase,
@@ -14,7 +14,7 @@ import {
     promiseWait,
     randomCouchString,
     RxChangeEvent
-} from '../../plugins/core';
+} from '../../plugins/core/index.mjs';
 
 
 config.parallel('hooks.test.js', () => {
@@ -390,7 +390,7 @@ config.parallel('hooks.test.js', () => {
 
                     // check in storage
                     const docInStorage = await c.storageInstance.findDocumentsById([firstDoc.primary], true);
-                    assert.strictEqual(docInStorage[firstDoc.primary].lastName, 'by-hook');
+                    assert.strictEqual(docInStorage[0].lastName, 'by-hook');
 
                     // check the emitted event
                     const ev = emitted[0];

@@ -1,32 +1,38 @@
 import {
-    combineLatest,
     Observable
 } from 'rxjs';
 import {
-    shareReplay,
-    switchMap
-} from 'rxjs/operators';
+    shareReplay
+} from 'rxjs';
 import type {
     RxPlugin,
     RxCollection,
-    RxDatabase,
-    AllMigrationStates
-} from '../../types';
-import { getFromMapOrCreate, PROMISE_RESOLVE_FALSE, RXJS_SHARE_REPLAY_DEFAULTS } from '../../plugins/utils';
+    RxDatabase
+} from '../../types/index.ts';
 import {
-    mustMigrate,
-    DataMigrator
-} from './data-migrator';
+    getFromMapOrCreate,
+    PROMISE_RESOLVE_FALSE,
+    RXJS_SHARE_REPLAY_DEFAULTS
+} from '../../plugins/utils/index.ts';
+import {
+    RxMigrationState
+} from './rx-migration-state.ts';
 import {
     getMigrationStateByDatabase,
+    mustMigrate,
     onDatabaseDestroy
-} from './migration-state';
+} from './migration-helpers.ts';
+import { addRxPlugin } from '../../plugin.ts';
+import { RxDBLocalDocumentsPlugin } from '../local-documents/index.ts';
 
-export const DATA_MIGRATOR_BY_COLLECTION: WeakMap<RxCollection, DataMigrator> = new WeakMap();
+export const DATA_MIGRATOR_BY_COLLECTION: WeakMap<RxCollection, RxMigrationState> = new WeakMap();
 
 export const RxDBMigrationPlugin: RxPlugin = {
     name: 'migration',
     rxdb: true,
+    init() {
+        addRxPlugin(RxDBLocalDocumentsPlugin);
+    },
     hooks: {
         preDestroyRxDatabase: {
             after: onDatabaseDestroy
@@ -34,19 +40,18 @@ export const RxDBMigrationPlugin: RxPlugin = {
     },
     prototypes: {
         RxDatabase: (proto: any) => {
-            proto.migrationStates = function (this: RxDatabase): Observable<AllMigrationStates> {
+            proto.migrationStates = function (this: RxDatabase): Observable<RxMigrationState[]> {
                 return getMigrationStateByDatabase(this).pipe(
-                    switchMap(list => combineLatest(list)),
                     shareReplay(RXJS_SHARE_REPLAY_DEFAULTS)
                 );
             };
         },
         RxCollection: (proto: any) => {
-            proto.getDataMigrator = function (this: RxCollection): DataMigrator {
+            proto.getMigrationState = function (this: RxCollection): RxMigrationState {
                 return getFromMapOrCreate(
                     DATA_MIGRATOR_BY_COLLECTION,
                     this,
-                    () => new DataMigrator(
+                    () => new RxMigrationState(
                         this.asRxCollection,
                         this.migrationStrategies
                     )
@@ -56,21 +61,13 @@ export const RxDBMigrationPlugin: RxPlugin = {
                 if (this.schema.version === 0) {
                     return PROMISE_RESOLVE_FALSE;
                 }
-                return mustMigrate(this.getDataMigrator());
+                return mustMigrate(this.getMigrationState());
             };
         }
     }
 };
 
 
-// used in tests
-export {
-    _getOldCollections,
-    getBatchOfOldCollection,
-    migrateDocumentData,
-    _migrateDocuments,
-    deleteOldCollection,
-    migrateOldCollection,
-    migratePromise,
-    DataMigrator
-} from './data-migrator';
+export * from './rx-migration-state.ts';
+export * from './migration-helpers.ts';
+export * from './migration-types.ts';

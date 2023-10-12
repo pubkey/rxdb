@@ -398,7 +398,7 @@ To observe the replication, the `RxReplicationState` has some `Observable` prope
 myRxReplicationState.received$.subscribe(doc => console.dir(doc));
 
 // emits each document that was send to the remote
-myRxReplicationState.send$.subscribe(doc => console.dir(doc));
+myRxReplicationState.sent$.subscribe(doc => console.dir(doc));
 
 // emits all errors that happen when running the push- & pull-handlers.
 myRxReplicationState.error$.subscribe(error => console.dir(error));
@@ -513,4 +513,21 @@ const replicationState = replicateRxCollection({
     }
 });
 ```
+
+
+
+### Attachment replication (beta)
+
+Attachment replication is supported in the RxDB replication protocol itself. However not all replication plugins support it.
+If you start the replication with a collection which has [enabled RxAttachments](./rx-attachment.md) attachments data will be added to all push- and write data.
+
+The pushed documents will contain an `_attachments` object which contains:
+
+- The attachment meta data (id, length, digest) of all non-attachments
+- The full attachment data of all attachments that have been updated/added from the client.
+- Deleted attachments are spared out in the pushed document.
+
+With this data, the backend can decide onto which attachments must be deleted, added or overwritten.
+
+Accordingly, the pulled document must contain the same data, if the backend has a new document state with updated attachments.
 

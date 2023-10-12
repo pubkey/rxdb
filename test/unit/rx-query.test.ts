@@ -1,11 +1,11 @@
 import assert from 'assert';
 import AsyncTestUtil from 'async-test-util';
-import config from './config';
+import config from './config.ts';
 import clone from 'clone';
 
-import * as humansCollection from './../helper/humans-collection';
-import * as schemaObjects from '../helper/schema-objects';
-import * as schemas from './../helper/schemas';
+import * as humansCollection from './../helper/humans-collection.ts';
+import * as schemaObjects from '../helper/schema-objects.ts';
+import * as schemas from './../helper/schemas.ts';
 
 import {
     isRxQuery,
@@ -14,7 +14,7 @@ import {
     promiseWait,
     randomCouchString,
     ensureNotFalsy,
-} from '../../plugins/core';
+} from '../../plugins/core/index.mjs';
 
 import { firstValueFrom } from 'rxjs';
 
@@ -111,7 +111,7 @@ describe('rx-query.test.ts', () => {
         it('ISSUE #190: should contain the regex', async () => {
             const col = await humansCollection.create(0);
             const queryWithoutRegex = col.find();
-            const queryWithRegex = queryWithoutRegex.where('color').regex(new RegExp(/foobar/g));
+            const queryWithRegex = queryWithoutRegex.where('color').regex('foobar');
             const queryString = queryWithRegex.toString();
 
             assert.ok(queryString.includes('foobar'));
@@ -1094,10 +1094,12 @@ describe('rx-query.test.ts', () => {
             assert.strictEqual(allDocs.length, 2);
 
             // test 1 with RegExp object
-            const regexp = new RegExp('^Doe$', 'i');
             const result1 = await collection.find({
                 selector: {
-                    lastName: { $regex: regexp }
+                    lastName: {
+                        $regex: '^Doe$',
+                        $options: 'i'
+                    }
                 }
             }).exec();
 

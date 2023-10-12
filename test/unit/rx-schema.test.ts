@@ -1,12 +1,15 @@
 import assert from 'assert';
 import clone from 'clone';
+import {
+    assertThrows
+} from 'async-test-util';
 import AsyncTestUtil from 'async-test-util';
 
-import config from './config';
-import * as schemas from '../helper/schemas';
-import * as schemaObjects from '../helper/schema-objects';
+import config from './config.ts';
+import * as schemas from '../helper/schemas.ts';
+import * as schemaObjects from '../helper/schema-objects.ts';
 
-import { checkSchema } from '../../plugins/dev-mode';
+import { checkSchema } from '../../plugins/dev-mode/index.mjs';
 
 import {
     createRxDatabase,
@@ -22,7 +25,7 @@ import {
     fillWithDefaultSettings,
     fillObjectWithDefaults,
     defaultHashSha256
-} from '../../plugins/core';
+} from '../../plugins/core/index.mjs';
 
 config.parallel('rx-schema.test.js', () => {
     describe('static', () => {
@@ -500,6 +503,30 @@ config.parallel('rx-schema.test.js', () => {
                         required: ['firstName']
                     }), Error);
                 });
+                /**
+                 * @link https://github.com/pubkey/rxdb/issues/4926#issuecomment-1712223984
+                 */
+                it('throw when $ref field is used', async () => {
+                    await assertThrows(
+                        () => checkSchema({
+                            version: 0,
+                            primaryKey: 'userId',
+                            type: 'object',
+                            properties: {
+                                userId: {
+                                    type: 'string',
+                                    maxLength: 100
+                                },
+                                sub: {
+                                    $ref: '#/definitions/person'
+                                } as any
+                            },
+                            required: ['firstName']
+                        }),
+                        'RxError',
+                        'SC40'
+                    );
+                });
             });
         });
         describe('.fillWithDefaultSettings() / .normalizeRxJsonSchema()', () => {
@@ -650,17 +677,17 @@ config.parallel('rx-schema.test.js', () => {
         });
         describe('.hash', () => {
             describe('positive', () => {
-                it('should hash', () => {
+                it('should hash', async () => {
                     const schema = createRxSchema(schemas.human, defaultHashSha256);
-                    const hash = schema.hash;
+                    const hash = await schema.hash;
                     assert.strictEqual(typeof hash, 'string');
                     assert.ok(hash.length >= 5);
                 });
-                it('should normalize one schema with two different orders and generate for each the same hash', () => {
+                it('should normalize one schema with two different orders and generate for each the same hash', async () => {
                     const schema1 = createRxSchema(schemas.humanNormalizeSchema1, defaultHashSha256);
                     const schema2 = createRxSchema(schemas.humanNormalizeSchema2, defaultHashSha256);
-                    const hash1 = schema1.hash;
-                    const hash2 = schema2.hash;
+                    const hash1 = await schema1.hash;
+                    const hash2 = await schema2.hash;
                     assert.strictEqual(hash1, hash2);
                 });
                 /**
@@ -670,15 +697,15 @@ config.parallel('rx-schema.test.js', () => {
                  * so by not re-ordering we can ensure deterministic hashing.
                  * @link https://github.com/pubkey/rxdb/pull/4005
                  */
-                it('#4005 should respect the sort order', () => {
+                it('#4005 should respect the sort order', async () => {
                     const schema1 = createRxSchema(Object.assign({}, schemas.humanDefault, {
                         indexes: ['firstName', 'lastName']
                     }), defaultHashSha256);
                     const schema2 = createRxSchema(Object.assign({}, schemas.humanDefault, {
                         indexes: ['lastName', 'firstName']
                     }), defaultHashSha256);
-                    const hash1 = schema1.hash;
-                    const hash2 = schema2.hash;
+                    const hash1 = await schema1.hash;
+                    const hash2 = await schema2.hash;
                     assert.ok(hash1 !== hash2);
                 });
             });

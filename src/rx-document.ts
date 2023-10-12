@@ -15,15 +15,15 @@ import {
     flatClone,
     PROMISE_RESOLVE_NULL,
     RXJS_SHARE_REPLAY_DEFAULTS,
-    getFromObjectOrThrow,
-    getProperty
-} from './plugins/utils';
+    getProperty,
+    getFromMapOrCreate
+} from './plugins/utils/index.ts';
 import {
     newRxError
-} from './rx-error';
+} from './rx-error.ts';
 import {
     runPluginHooks
-} from './hooks';
+} from './hooks.ts';
 
 import type {
     RxDocument,
@@ -33,12 +33,12 @@ import type {
     UpdateQuery,
     CRDTEntry,
     ModifyFunction
-} from './types';
-import { getDocumentDataOfRxChangeEvent } from './rx-change-event';
-import { overwritable } from './overwritable';
-import { getSchemaByObjectPath } from './rx-schema-helper';
-import { throwIfIsStorageWriteError } from './rx-storage-helper';
-import { modifierFromPublicToInternal } from './incremental-write';
+} from './types/index.d.ts';
+import { getDocumentDataOfRxChangeEvent } from './rx-change-event.ts';
+import { overwritable } from './overwritable.ts';
+import { getSchemaByObjectPath } from './rx-schema-helper.ts';
+import { throwIfIsStorageWriteError } from './rx-storage-helper.ts';
+import { modifierFromPublicToInternal } from './incremental-write.ts';
 
 export const basePrototype = {
     get primaryPath() {
@@ -68,7 +68,7 @@ export const basePrototype = {
             return undefined;
         }
         return _this.$.pipe(
-            map((d: any) => d._deleted)
+            map((d: any) => d._data._deleted)
         );
     },
     get deleted() {
@@ -126,6 +126,7 @@ export const basePrototype = {
                 this.collection.schema.jsonSchema,
                 path
             );
+
             if (!schemaObj) {
                 throw newRxError('DOC4', {
                     path
@@ -184,40 +185,52 @@ export const basePrototype = {
     },
     /**
      * get data by objectPath
+     * @hotPath Performance here is really important,
+     * run some tests before changing anything.
      */
     get(this: RxDocument, objPath: string): any | null {
-        if (!this._data) {
-            return undefined;
-        }
-
-        const fromCache = this._propertyCache.get(objPath);
-        if (fromCache) {
-            return fromCache;
-        }
-
-        let valueObj = getProperty(this._data, objPath);
-
-        // direct return if array or non-object
-        if (
-            typeof valueObj !== 'object' ||
-            Array.isArray(valueObj)
-        ) {
-            return overwritable.deepFreezeWhenDevMode(valueObj);
-        }
-
-        /**
-         * TODO find a way to deep-freeze together with defineGetterSetter
-         * so we do not have to do a deep clone here.
-         */
-        valueObj = clone(valueObj);
-        defineGetterSetter(
-            this.collection.schema,
-            valueObj,
+        return getFromMapOrCreate(
+            this._propertyCache,
             objPath,
-            this as any
+            () => {
+                const valueObj = getProperty(this._data, objPath);
+
+                // direct return if array or non-object
+                if (
+                    typeof valueObj !== 'object' ||
+                    Array.isArray(valueObj)
+                ) {
+                    return overwritable.deepFreezeWhenDevMode(valueObj);
+                }
+                const _this = this;
+                const proxy = new Proxy(
+                    /**
+                     * In dev-mode, the _data is deep-frozen
+                     * so we have to flat clone here so that
+                     * the proxy can work.
+                     */
+                    flatClone(valueObj),
+                    {
+                        get(target, property: any) {
+                            if (typeof property !== 'string') {
+                                return target[property];
+                            }
+                            const lastChar = property.charAt(property.length - 1);
+                            if (lastChar === '$') {
+                                const key = property.slice(0, -1);
+                                return _this.get$(trimDots(objPath + '.' + key));
+                            } else if (lastChar === '_') {
+                                const key = property.slice(0, -1);
+                                return _this.populate(trimDots(objPath + '.' + key));
+                            } else {
+                                return _this.get(trimDots(objPath + '.' + property));
+                            }
+                        }
+                    });
+                return proxy;
+            }
         );
-        this._propertyCache.set(objPath, valueObj);
-        return valueObj;
+
     },
 
     toJSON(this: RxDocument, withMetaFields = false) {
@@ -345,12 +358,12 @@ export const basePrototype = {
             document: newData
         }], 'rx-document-save-data');
 
-        const isError = writeResult.error[this.primary];
+        const isError = writeResult.error[0];
         throwIfIsStorageWriteError(this.collection, this.primary, newData, isError);
 
         await this.collection._runHooks('post', 'save', newData, this);
         return this.collection._docCache.getCachedRxDocument(
-            getFromObjectOrThrow(writeResult.success, this.primary)
+            writeResult.success[0]
         );
     },
 
@@ -377,9 +390,9 @@ export const basePrototype = {
                     previous: this._data,
                     document: deletedData
                 }], 'rx-document-remove');
-                const isError = writeResult.error[this.primary];
+                const isError = writeResult.error[0];
                 throwIfIsStorageWriteError(collection, this.primary, deletedData, isError);
-                return getFromObjectOrThrow(writeResult.success, this.primary);
+                return writeResult.success[0];
             })
             .then((removed) => {
                 removedDocData = removed;
@@ -426,75 +439,6 @@ export function createRxDocumentConstructor(proto = basePrototype) {
     return constructor;
 }
 
-export function defineGetterSetter(
-    schema: any,
-    valueObj: any,
-    objPath = '',
-    thisObj = false
-) {
-    if (valueObj === null) {
-        return;
-    }
-
-
-    let pathProperties = getSchemaByObjectPath(
-        schema.jsonSchema,
-        objPath
-    );
-
-    if (typeof pathProperties === 'undefined') return;
-    if (pathProperties.properties) pathProperties = pathProperties.properties;
-
-    Object.keys(pathProperties)
-        .forEach(key => {
-            const fullPath = trimDots(objPath + '.' + key);
-
-            // getter - value
-            valueObj.__defineGetter__(
-                key,
-                function (this: RxDocument) {
-                    const _this: RxDocument = thisObj ? thisObj : (this as any);
-                    if (!_this.get || typeof _this.get !== 'function') {
-                        /**
-                         * When an object gets added to the state of a vuejs-component,
-                         * it happens that this getter is called with another scope.
-                         * To prevent errors, we have to return undefined in this case
-                         */
-                        return undefined;
-                    }
-                    const ret = _this.get(fullPath);
-                    return ret;
-                }
-            );
-            // getter - observable$
-            Object.defineProperty(valueObj, key + '$', {
-                get: function () {
-                    const _this = thisObj ? thisObj : this;
-                    return _this.get$(fullPath);
-                },
-                enumerable: false,
-                configurable: false
-            });
-            // getter - populate_
-            Object.defineProperty(valueObj, key + '_', {
-                get: function () {
-                    const _this = thisObj ? thisObj : this;
-                    return _this.populate(fullPath);
-                },
-                enumerable: false,
-                configurable: false
-            });
-            // setter - value
-            valueObj.__defineSetter__(key, function (
-                this: RxDocument,
-                val: any
-            ) {
-                const _this: any = thisObj ? thisObj : this;
-                return _this.set(fullPath, val);
-            });
-        });
-}
-
 export function createWithConstructor<RxDocType>(
     constructor: any,
     collection: RxCollection<RxDocType>,
@@ -533,3 +477,4 @@ export function beforeDocumentUpdateWrite<RxDocType>(
     }
     return collection._runHooks('pre', 'save', newData, oldData);
 }
+

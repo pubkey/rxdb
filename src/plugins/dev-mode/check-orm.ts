@@ -1,9 +1,9 @@
 import {
     newRxError,
     newRxTypeError
-} from '../../rx-error';
-import type { KeyFunctionMap, RxJsonSchema } from '../../types';
-import { rxCollectionProperties, rxDocumentProperties } from './entity-properties';
+} from '../../rx-error.ts';
+import type { KeyFunctionMap, RxJsonSchema } from '../../types/index.d.ts';
+import { rxCollectionProperties, rxDocumentProperties } from './entity-properties.ts';
 
 /**
  * checks if the given static methods are allowed

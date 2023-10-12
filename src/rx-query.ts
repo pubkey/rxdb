@@ -14,21 +14,21 @@ import {
 } from 'rxjs/operators';
 import {
     sortObject,
-    stringifyFilter,
     pluginMissing,
     overwriteGetterForCaching,
     now,
     PROMISE_RESOLVE_FALSE,
     RXJS_SHARE_REPLAY_DEFAULTS,
     ensureNotFalsy,
-    areRxDocumentArraysEqual
-} from './plugins/utils';
+    areRxDocumentArraysEqual,
+    appendToArray
+} from './plugins/utils/index.ts';
 import {
     newRxError
-} from './rx-error';
+} from './rx-error.ts';
 import {
     runPluginHooks
-} from './hooks';
+} from './hooks.ts';
 import type {
     RxCollection,
     RxDocument,
@@ -42,10 +42,10 @@ import type {
     RxDocumentWriteData,
     RxDocumentData,
     QueryMatcher
-} from './types';
-import { calculateNewResults } from './event-reduce';
-import { triggerCacheReplacement } from './query-cache';
-import { getQueryMatcher, normalizeMangoQuery } from './rx-query-helper';
+} from './types/index.d.ts';
+import { calculateNewResults } from './event-reduce.ts';
+import { triggerCacheReplacement } from './query-cache.ts';
+import { getQueryMatcher, normalizeMangoQuery } from './rx-query-helper.ts';
 
 let _queryCount = 0;
 const newQueryID = function (): number {
@@ -223,7 +223,6 @@ export class RxQueryBase<
         const docsDataMap = new Map();
         const docsMap = new Map();
 
-
         const docs = newResultData.map(docData => this.collection._docCache.getCachedRxDocument(docData));
 
         /**
@@ -288,7 +287,7 @@ export class RxQueryBase<
             // everything which was not in docCache must be fetched from the storage
             if (mustBeQueried.length > 0) {
                 const docs = await this.collection.storageInstance.findDocumentsById(mustBeQueried, false);
-                Object.values(docs).forEach(docData => {
+                docs.forEach(docData => {
                     const doc = this.collection._docCache.getCachedRxDocument(docData);
                     ret.set(doc.primary, doc);
                 });
@@ -373,7 +372,7 @@ export class RxQueryBase<
             query: this.mangoQuery,
             other: this.other
         }, true);
-        const value = JSON.stringify(stringObj, stringifyFilter);
+        const value = JSON.stringify(stringObj);
         this.toString = () => value;
         return value;
     }
@@ -688,10 +687,8 @@ export async function queryCollection<RxDocType>(
             });
             // otherwise get from storage
             if (docIds.length > 0) {
-                const docsMap = await collection.storageInstance.findDocumentsById(docIds, false);
-                Object.values(docsMap).forEach(docData => {
-                    docs.push(docData);
-                });
+                const docsFromStorage = await collection.storageInstance.findDocumentsById(docIds, false);
+                appendToArray(docs, docsFromStorage);
             }
         } else {
             const docId = rxQuery.isFindOneByIdQuery;
@@ -700,9 +697,9 @@ export async function queryCollection<RxDocType>(
             let docData = rxQuery.collection._docCache.getLatestDocumentDataIfExists(docId);
             if (!docData) {
                 // otherwise get from storage
-                const docsMap = await collection.storageInstance.findDocumentsById([docId], false);
-                if (docsMap.hasOwnProperty(docId)) {
-                    docData = docsMap[docId];
+                const fromStorageList = await collection.storageInstance.findDocumentsById([docId], false);
+                if (fromStorageList[0]) {
+                    docData = fromStorageList[0];
                 }
             }
             if (docData && !docData._deleted) {

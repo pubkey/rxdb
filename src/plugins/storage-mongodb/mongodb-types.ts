@@ -5,7 +5,7 @@ import type {
 } from 'mongodb';
 import type {
     MangoQuery
-} from '../../types';
+} from '../../types/index.d.ts';
 export type MongoQuerySelector<RxDocType> = MongoQueryFilter<RxDocType | any>;
 export type MongoDBDatabaseSettings = {
     /**

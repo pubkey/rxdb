@@ -1,4 +1,4 @@
-import config, { getPassword } from './config';
+import config, { getPassword } from './config.ts';
 import assert from 'assert';
 
 import {
@@ -9,12 +9,12 @@ import {
     RxDatabase,
     isRxDatabaseFirstTimeInstantiated,
     defaultHashSha256
-} from '../../plugins/core';
+} from '../../plugins/core/index.mjs';
 
 import AsyncTestUtil from 'async-test-util';
-import * as schemas from '../helper/schemas';
-import * as humansCollection from '../helper/humans-collection';
-import * as schemaObjects from '../helper/schema-objects';
+import * as schemas from '../helper/schemas.ts';
+import * as humansCollection from '../helper/humans-collection.ts';
+import * as schemaObjects from '../helper/schema-objects.ts';
 
 
 config.parallel('rx-database.test.js', () => {
@@ -145,13 +145,26 @@ config.parallel('rx-database.test.js', () => {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),
                     storage: config.storage.getStorage(),
-                    hashFunction(i: string) {
-                        return defaultHashSha256(i) + 'xxx';
+                    async hashFunction(i: string) {
+                        const hash = await defaultHashSha256(i);
+                        return hash + 'xxx';
                     }
                 });
-                const hash = db.hashFunction('foobar');
-                assert.ok(hash.endsWith('xxx'));
+                const hasHash = await db.hashFunction('foobar');
+                assert.ok(hasHash.endsWith('xxx'));
                 db.destroy();
+            });
+            /**
+             * @link https://github.com/pubkey/rxdb/pull/4614
+             */
+            it('should have eventReduce: true as a default', async () => {
+                const db = await createRxDatabase({
+                    name: randomCouchString(10),
+                    storage: config.storage.getStorage()
+                });
+                assert.strictEqual(db.eventReduce, true);
+                db.destroy();
+
             });
         });
         describe('negative', () => {

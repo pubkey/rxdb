@@ -1,5 +1,5 @@
-import { newRxError } from '../../rx-error';
-import { RxDocumentData } from '../../types';
+import { newRxError } from '../../rx-error.ts';
+import type { RxDocumentData } from '../../types/index.d.ts';
 
 export function ensurePrimaryKeyValid(
     primaryKey: string,

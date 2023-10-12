@@ -1,14 +1,18 @@
-const path = require('path');
-const fs = require('fs');
-const express = require('express');
-const cors = require('cors');
+import path from 'node:path';
+import fs from 'node:fs';
+import express from 'express';
+import cors from 'cors';
 
-const GraphQLServer = require('./graphql-server');
-const SignalingServer = require('./signaling-server');
-const { startRemoteStorageServer } = require('./remote-storage-server');
-const {
+import * as GraphQLServer from './graphql-server.ts';
+import * as SignalingServer from './signaling-server.ts';
+import { startRemoteStorageServer } from './remote-storage-server.ts';
+import {
     blobToBase64String
-} = require('../../plugins/core');
+} from '../../plugins/core/index.mjs';
+import { fileURLToPath } from 'node:url';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
 export const TEST_STATIC_FILE_SERVER_PORT = 18001;
 export function startTestServers() {
     const staticFilesPath = path.join(

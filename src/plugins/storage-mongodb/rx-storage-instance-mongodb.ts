@@ -5,44 +5,43 @@ import {
     filter,
     firstValueFrom
 } from 'rxjs';
-import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
+import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper.ts';
 import type {
     BulkWriteRow,
-    ById,
     EventBulk,
     RxConflictResultionTask,
     RxConflictResultionTaskSolution,
     RxDocumentData,
-    RxDocumentDataById,
     RxJsonSchema,
     RxStorageBulkWriteResponse,
     RxStorageChangeEvent,
     RxStorageCountResult,
     RxStorageDefaultCheckpoint,
+    RxStorageInfoResult,
     RxStorageInstance,
     RxStorageInstanceCreationParams,
     RxStorageQueryResult,
     RxStorageWriteErrorConflict,
     StringKeys
-} from '../../types';
+} from '../../types/index.d.ts';
 import {
     ensureNotFalsy,
     getFromMapOrThrow,
-    getFromObjectOrThrow,
     isMaybeReadonlyArray,
     lastOfArray,
     now,
+    PROMISE_RESOLVE_VOID,
     requestIdlePromise,
     RX_META_LWT_MINIMUM
-} from '../../plugins/utils';
+} from '../../plugins/utils/index.ts';
 import {
     MongoDBPreparedQuery,
     MongoDBStorageInternals,
     MongoQuerySelector,
     RxStorageMongoDBInstanceCreationOptions,
     RxStorageMongoDBSettings
-} from './mongodb-types';
-import { RxStorageMongoDB } from './rx-storage-mongodb';
+} from './mongodb-types.ts';
+import { RxStorageMongoDB } from './rx-storage-mongodb.ts';
 import {
     Db as MongoDatabase,
     Collection as MongoCollection,
@@ -50,13 +49,13 @@ import {
     ObjectId,
     ClientSession
 } from 'mongodb';
-import { categorizeBulkWriteRows } from '../../rx-storage-helper';
+import { categorizeBulkWriteRows } from '../../rx-storage-helper.ts';
 import {
     MONGO_ID_SUBSTITUTE_FIELDNAME,
     getMongoDBIndexName,
     swapMongoToRxDoc,
     swapRxDocToMongo
-} from './mongodb-helper';
+} from './mongodb-helper.ts';
 
 export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
     RxDocType,
@@ -82,7 +81,7 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
      * they can be awaited.
      */
     public readonly runningOperations = new BehaviorSubject(0);
-    public readonly runningWrites = new BehaviorSubject(0);
+    public writeQueue: Promise<any> = PROMISE_RESOLVE_VOID;
 
     /**
      * We use this to be able to still fetch
@@ -175,141 +174,151 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
      * so we have to do a update-if-previous-is-correct like operations.
      * (Similar to what RxDB does with the revision system)
      */
-    async bulkWrite(
+    bulkWrite(
         documentWrites: BulkWriteRow<RxDocType>[],
         context: string
     ): Promise<RxStorageBulkWriteResponse<RxDocType>> {
-        this.runningOperations.next(this.runningOperations.getValue() + 1);
-        await firstValueFrom(this.runningWrites.pipe(filter(c => c === 0)));
-        this.runningWrites.next(this.runningWrites.getValue() + 1);
-        const mongoCollection = await this.mongoCollectionPromise;
-        if (this.closed) {
-            return Promise.reject(new Error('already closed'));
-        }
-        const primaryPath = this.primaryPath;
-        const ret: RxStorageBulkWriteResponse<RxDocType> = {
-            success: {},
-            error: {}
-        };
 
-        const docIds = documentWrites.map(d => (d.document as any)[primaryPath]);
-        const documentStates = await this.findDocumentsById(
-            docIds,
-            true
-        );
-        const categorized = categorizeBulkWriteRows<RxDocType>(
-            this,
-            primaryPath as any,
-            documentStates,
-            documentWrites,
-            context
-        );
-        ret.error = categorized.errors;
+        this.writeQueue = this.writeQueue.then(async () => {
+            this.runningOperations.next(this.runningOperations.getValue() + 1);
 
-        /**
-         * Reset the event bulk because
-         * conflicts can still appear after the categorization
-         */
-        const eventBulk = categorized.eventBulk;
-        eventBulk.events = [];
-
-        await Promise.all([
-            /**
-             * Inserts
-             * @link https://sparkbyexamples.com/mongodb/mongodb-insert-if-not-exists/
-             */
-            Promise.all(
-                categorized.bulkInsertDocs.map(async (writeRow) => {
-                    const docId: string = writeRow.document[primaryPath] as any;
-                    const writeResult = await mongoCollection.findOneAndUpdate(
-                        {
-                            [this.inMongoPrimaryPath]: docId
-                        },
-                        {
-                            $setOnInsert: swapRxDocToMongo(writeRow.document)
-                        },
-                        {
-                            upsert: true,
-                            includeResultMetadata: true
-                        }
-                    );
-                    if (writeResult.value) {
-                        // had insert conflict
-                        const conflictError: RxStorageWriteErrorConflict<RxDocType> = {
-                            status: 409,
-                            documentId: docId,
-                            writeRow,
-                            documentInDb: swapMongoToRxDoc(writeResult.value),
-                            isError: true
-                        };
-                        ret.error[docId] = conflictError;
-                    } else {
-                        const event = categorized.changeByDocId.get(docId);
-                        if (event) {
-                            eventBulk.events.push(event);
-                        }
-                        ret.success[docId as any] = writeRow.document;
-                    }
-                })
-            ),
-            /**
-             * Updates
-             */
-            Promise.all(
-                categorized.bulkUpdateDocs.map(async (writeRow) => {
-                    const docId = writeRow.document[primaryPath] as string;
-                    const writeResult = await mongoCollection.findOneAndReplace(
-                        {
-                            [this.inMongoPrimaryPath]: docId,
-                            _rev: ensureNotFalsy(writeRow.previous)._rev
-                        },
-                        swapRxDocToMongo(writeRow.document),
-                        {
-                            includeResultMetadata: true,
-                            upsert: false
-                        }
-                    );
-                    if (!writeResult.value) {
-                        const currentDocState = await this.findDocumentsById([docId], true);
-                        const currentDoc = getFromObjectOrThrow(currentDocState, docId);
-                        // had insert conflict
-                        const conflictError: RxStorageWriteErrorConflict<RxDocType> = {
-                            status: 409,
-                            documentId: docId,
-                            writeRow,
-                            documentInDb: currentDoc,
-                            isError: true
-                        };
-                        ret.error[docId] = conflictError;
-                    } else {
-                        const event = getFromMapOrThrow(categorized.changeByDocId, docId);
-                        eventBulk.events.push(event);
-                        ret.success[docId as any] = writeRow.document;
-                    }
-
-                })
-            )
-        ]);
-
-        if (categorized.eventBulk.events.length > 0) {
-            const lastState = ensureNotFalsy(categorized.newestRow).document;
-            categorized.eventBulk.checkpoint = {
-                id: lastState[primaryPath],
-                lwt: lastState._meta.lwt
+            const mongoCollection = await this.mongoCollectionPromise;
+            if (this.closed) {
+                return Promise.reject(new Error('already closed'));
+            }
+            const primaryPath = this.primaryPath;
+            const ret: RxStorageBulkWriteResponse<RxDocType> = {
+                success: [],
+                error: []
             };
-            this.changes$.next(categorized.eventBulk);
-        }
 
-        this.runningWrites.next(this.runningWrites.getValue() - 1);
-        this.runningOperations.next(this.runningOperations.getValue() - 1);
-        return ret;
+
+            const docIds = documentWrites.map(d => (d.document as any)[primaryPath]);
+            const documentStates = await this.findDocumentsById(
+                docIds,
+                true
+            );
+            const documentStatesMap = new Map();
+            documentStates.forEach(doc => {
+                const docId = doc[primaryPath];
+                documentStatesMap.set(docId, doc);
+            });
+            const categorized = categorizeBulkWriteRows<RxDocType>(
+                this,
+                primaryPath as any,
+                documentStatesMap,
+                documentWrites,
+                context
+            );
+            ret.error = categorized.errors;
+
+            /**
+             * Reset the event bulk because
+             * conflicts can still appear after the categorization
+             */
+            const eventBulk = categorized.eventBulk;
+            eventBulk.events = [];
+
+            await Promise.all([
+                /**
+                 * Inserts
+                 * @link https://sparkbyexamples.com/mongodb/mongodb-insert-if-not-exists/
+                 */
+                Promise.all(
+                    categorized.bulkInsertDocs.map(async (writeRow) => {
+                        const docId: string = writeRow.document[primaryPath] as any;
+                        const writeResult = await mongoCollection.findOneAndUpdate(
+                            {
+                                [this.inMongoPrimaryPath]: docId
+                            },
+                            {
+                                $setOnInsert: swapRxDocToMongo(writeRow.document)
+                            },
+                            {
+                                upsert: true,
+                                includeResultMetadata: true
+                            }
+                        );
+                        if (writeResult.value) {
+                            // had insert conflict
+                            const conflictError: RxStorageWriteErrorConflict<RxDocType> = {
+                                status: 409,
+                                documentId: docId,
+                                writeRow,
+                                documentInDb: swapMongoToRxDoc(ensureNotFalsy(writeResult.value)),
+                                isError: true
+                            };
+                            ret.error.push(conflictError);
+                        } else {
+                            const event = categorized.changeByDocId.get(docId);
+                            if (event) {
+                                eventBulk.events.push(event);
+                            }
+                            ret.success.push(writeRow.document);
+                        }
+                    })
+                ),
+                /**
+                 * Updates
+                 */
+                Promise.all(
+                    categorized.bulkUpdateDocs.map(async (writeRow) => {
+                        const docId = writeRow.document[primaryPath] as string;
+                        const writeResult = await mongoCollection.findOneAndReplace(
+                            {
+                                [this.inMongoPrimaryPath]: docId,
+                                _rev: ensureNotFalsy(writeRow.previous)._rev
+                            },
+                            swapRxDocToMongo(writeRow.document),
+                            {
+                                includeResultMetadata: true,
+                                upsert: false,
+                                returnDocument: 'before'
+                            }
+                        );
+                        if (!writeResult.ok) {
+                            const currentDocState = await this.findDocumentsById([docId], true);
+                            const currentDoc = currentDocState[0];
+                            // had insert conflict
+                            const conflictError: RxStorageWriteErrorConflict<RxDocType> = {
+                                status: 409,
+                                documentId: docId,
+                                writeRow,
+                                documentInDb: ensureNotFalsy(currentDoc),
+                                isError: true
+                            };
+                            ret.error.push(conflictError);
+                        } else {
+                            const event = getFromMapOrThrow(categorized.changeByDocId, docId);
+                            eventBulk.events.push(event);
+                            ret.success.push(writeRow.document);
+                        }
+
+                    })
+                )
+            ]);
+
+            if (categorized.eventBulk.events.length > 0) {
+                const lastState = ensureNotFalsy(categorized.newestRow).document;
+                categorized.eventBulk.checkpoint = {
+                    id: lastState[primaryPath],
+                    lwt: lastState._meta.lwt
+                };
+                this.changes$.next(categorized.eventBulk);
+            }
+
+            this.runningOperations.next(this.runningOperations.getValue() - 1);
+            return ret;
+        });
+        return this.writeQueue;
+
     }
 
     async findDocumentsById(
         docIds: string[],
         withDeleted: boolean,
         session?: ClientSession
-    ): Promise<RxDocumentDataById<RxDocType>> {
+    ): Promise<RxDocumentData<RxDocType>[]> {
         this.runningOperations.next(this.runningOperations.getValue() + 1);
         const mongoCollection = await this.mongoCollectionPromise;
         const primaryPath = this.primaryPath;
@@ -322,7 +331,7 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
         if (!withDeleted) {
             plainQuery._deleted = false;
         }
-        const result: ById<RxDocumentData<RxDocType>> = {};
+        const result: RxDocumentData<RxDocType>[] = [];
         const queryResult = await mongoCollection.find(
             plainQuery,
             {
@@ -330,8 +339,10 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
             }
         ).toArray();
         queryResult.forEach(row => {
-            result[(row as any)[primaryPath]] = swapMongoToRxDoc(
-                row as any
+            result.push(
+                swapMongoToRxDoc(
+                    row as any
+                )
             );
         });
         this.runningOperations.next(this.runningOperations.getValue() - 1);
@@ -342,6 +353,7 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
         preparedQuery: MongoDBPreparedQuery<RxDocType>
     ): Promise<RxStorageQueryResult<RxDocType>> {
         this.runningOperations.next(this.runningOperations.getValue() + 1);
+        await this.writeQueue;
         const mongoCollection = await this.mongoCollectionPromise;
 
         let query = mongoCollection.find(preparedQuery.mongoSelector);
@@ -365,12 +377,24 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
         preparedQuery: MongoDBPreparedQuery<RxDocType>
     ): Promise<RxStorageCountResult> {
         this.runningOperations.next(this.runningOperations.getValue() + 1);
+        await this.writeQueue;
         const mongoCollection = await this.mongoCollectionPromise;
         const count = await mongoCollection.countDocuments(preparedQuery.mongoSelector);
         this.runningOperations.next(this.runningOperations.getValue() - 1);
         return {
             count,
             mode: 'fast'
+        };
+    }
+
+    async info(): Promise<RxStorageInfoResult> {
+        this.runningOperations.next(this.runningOperations.getValue() + 1);
+        await this.writeQueue;
+        const mongoCollection = await this.mongoCollectionPromise;
+        const totalCount = await mongoCollection.countDocuments();
+        this.runningOperations.next(this.runningOperations.getValue() - 1);
+        return {
+            totalCount
         };
     }
 

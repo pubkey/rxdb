@@ -1,6 +1,6 @@
-import { MangoQuerySelector } from '../rx-query';
-import { StringKeys } from '../util';
-import { UpdateQuery } from './update';
+import type { MangoQuerySelector } from '../rx-query.d.ts';
+import type { StringKeys } from '../util.d.ts';
+import type { UpdateQuery } from './update.d.ts';
 
 
 export type CRDTEntry<RxDocType> = {

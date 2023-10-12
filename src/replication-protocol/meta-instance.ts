@@ -2,8 +2,8 @@ import {
     fillWithDefaultSettings,
     getComposedPrimaryKeyOfDocumentData,
     getLengthOfPrimaryKey
-} from '../rx-schema-helper';
-import { flatCloneDocWithMeta } from '../rx-storage-helper';
+} from '../rx-schema-helper.ts';
+import { flatCloneDocWithMeta } from '../rx-storage-helper.ts';
 import type {
     BulkWriteRow,
     ById,
@@ -12,9 +12,11 @@ import type {
     RxStorageInstanceReplicationState,
     RxStorageReplicationMeta,
     WithDeleted
-} from '../types';
-import { getDefaultRevision, createRevision, now } from '../plugins/utils';
+} from '../types/index.d.ts';
+import { getDefaultRevision, createRevision, now } from '../plugins/utils/index.ts';
 
+
+export const META_INSTANCE_SCHEMA_TITLE = 'RxReplicationProtocolMetaData';
 
 export function getRxReplicationMetaInstanceSchema(
     replicatedDocumentsSchema: RxJsonSchema<RxDocumentData<any>>,
@@ -23,6 +25,7 @@ export function getRxReplicationMetaInstanceSchema(
     const parentPrimaryKeyLength = getLengthOfPrimaryKey(replicatedDocumentsSchema);
 
     const baseSchema: RxJsonSchema<RxStorageReplicationMeta> = {
+        title: META_INSTANCE_SCHEMA_TITLE,
         primaryKey: {
             key: 'id',
             fields: [
@@ -32,7 +35,7 @@ export function getRxReplicationMetaInstanceSchema(
             separator: '|'
         },
         type: 'object',
-        version: 0,
+        version: replicatedDocumentsSchema.version,
         additionalProperties: false,
         properties: {
             id: {
@@ -52,7 +55,11 @@ export function getRxReplicationMetaInstanceSchema(
             },
             itemId: {
                 type: 'string',
-                maxLength: parentPrimaryKeyLength
+                /**
+                 * ensure that all values of RxStorageReplicationDirection ('DOWN' has 4 chars) fit into it
+                 * because checkpoints use the itemId field for that.
+                 */
+                maxLength: parentPrimaryKeyLength > 4 ? parentPrimaryKeyLength : 4
             },
             data: {
                 type: 'object',
@@ -122,12 +129,12 @@ export function getAssumedMasterState<RxDocType>(
 }
 
 
-export function getMetaWriteRow<RxDocType>(
+export async function getMetaWriteRow<RxDocType>(
     state: RxStorageInstanceReplicationState<RxDocType>,
     newMasterDocState: WithDeleted<RxDocType>,
     previous?: RxDocumentData<RxStorageReplicationMeta>,
     isResolvedConflict?: string
-): BulkWriteRow<RxStorageReplicationMeta> {
+): Promise<BulkWriteRow<RxStorageReplicationMeta>> {
     const docId: string = (newMasterDocState as any)[state.primaryPath];
     const newMeta: RxDocumentData<RxStorageReplicationMeta> = previous ? flatCloneDocWithMeta(
         previous
@@ -151,7 +158,7 @@ export function getMetaWriteRow<RxDocType>(
         newMeta
     );
     newMeta._rev = createRevision(
-        state.input.identifier,
+        await state.checkpointKey,
         previous
     );
     return {

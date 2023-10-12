@@ -1397,3 +1397,204 @@ AFTER1: (faster event keys)
 32
 31
 
+
+
+
+## bulkWrite() return arrays instead of indexed-objects
+24 september 2023
+> npm run test:performance:memory:node
+
+BEFORE:
+{
+    "description": "memory",
+    "platform": "node",
+    "collectionsAmount": 4,
+    "docsAmount": 1200,
+    "time-to-first-insert": 1.42,
+    "insert-documents-200": 3.22,
+    "find-by-ids": 0.3,
+    "find-by-query": 2.05,
+    "find-by-query-parallel-4": 2.26,
+    "count": 0.33
+}
+{
+    "description": "memory",
+    "platform": "node",
+    "collectionsAmount": 4,
+    "docsAmount": 1200,
+    "time-to-first-insert": 1.44,
+    "insert-documents-200": 3.14,
+    "find-by-ids": 0.27,
+    "find-by-query": 2,
+    "find-by-query-parallel-4": 2.23,
+    "count": 0.29
+}
+{
+    "description": "memory",
+    "platform": "node",
+    "collectionsAmount": 4,
+    "docsAmount": 1200,
+    "time-to-first-insert": 1.41,
+    "insert-documents-200": 3.17,
+    "find-by-ids": 0.31,
+    "find-by-query": 2.08,
+    "find-by-query-parallel-4": 2.32,
+    "count": 0.34
+}
+
+
+
+AFTER:
+{
+    "description": "memory",
+    "platform": "node",
+    "collectionsAmount": 4,
+    "docsAmount": 1200,
+    "time-to-first-insert": 1.36,
+    "insert-documents-200": 2.77,
+    "find-by-ids": 0.86,
+    "find-by-query": 1.91,
+    "find-by-query-parallel-4": 2.12,
+    "count": 0.28
+}
+{
+    "description": "memory",
+    "platform": "node",
+    "collectionsAmount": 4,
+    "docsAmount": 1200,
+    "time-to-first-insert": 1.4,
+    "insert-documents-200": 2.8,
+    "find-by-ids": 0.85,
+    "find-by-query": 2.01,
+    "find-by-query-parallel-4": 2.23,
+    "count": 0.29
+}
+
+AFTER2: (lazy writes)
+
+{
+    "description": "memory",
+    "platform": "node",
+    "collectionsAmount": 4,
+    "docsAmount": 1200,
+    "time-to-first-insert": 1.53,
+    "insert-documents-200": 0.97,
+    "find-by-ids": 0.95,
+    "find-by-query": 2.05,
+    "find-by-query-parallel-4": 2.39,
+    "count": 0.35
+}
+{
+    "description": "memory",
+    "platform": "node",
+    "collectionsAmount": 4,
+    "docsAmount": 1200,
+    "time-to-first-insert": 1.49,
+    "insert-documents-200": 1.11,
+    "find-by-ids": 0.13,
+    "find-by-query": 2.09,
+    "find-by-query-parallel-4": 2.51,
+    "count": 0.42
+}
+
+
+{
+    "description": "memory",
+    "platform": "node",
+    "collectionsAmount": 4,
+    "docsAmount": 1200,
+    "time-to-first-insert": 2.04,
+    "insert-documents-200": 1.85,
+    "find-by-ids": 0.24,
+    "find-by-query": 4.44,
+    "find-by-query-parallel-4": 4.29,
+    "count": 0.44
+}
+{
+    "description": "memory",
+    "platform": "node",
+    "collectionsAmount": 4,
+    "docsAmount": 1200,
+    "time-to-first-insert": 2.71,
+    "insert-documents-200": 1.53,
+    "find-by-ids": 0.14,
+    "find-by-query": 2.73,
+    "find-by-query-parallel-4": 2.74,
+    "count": 0.72
+}
+
+
+## Improve property access time (04 October 2023)
+
+> npm run test:performance:memory:node
+
+BEFORE:
+"property-access": 6.97
+"property-access": 7.21
+
+AFTER:
+"property-access": 4.71
+"property-access": 5.14
+"property-access": 5.07
+"property-access": 4.56
+
+
+
+
+## Deno vs Node
+tested the memory storage
+
+deno:
+{
+    "description": "memory",
+    "collectionsAmount": 4,
+    "docsAmount": 1200,
+    "time-to-first-insert": 1.4,
+    "insert-documents-200": 0.92,
+    "find-by-ids": 0.11,
+    "find-by-query": 1.97,
+    "find-by-query-parallel-4": 2.36,
+    "count": 0.34,
+    "property-access": 4.89
+}
+{
+    "description": "memory",
+    "collectionsAmount": 4,
+    "docsAmount": 1200,
+    "time-to-first-insert": 1.93,
+    "insert-documents-200": 0.96,
+    "find-by-ids": 0.13,
+    "find-by-query": 2.05,
+    "find-by-query-parallel-4": 2.5,
+    "count": 0.43,
+    "property-access": 5.72
+}
+
+
+Node:
+{
+    "description": "memory",
+    "platform": "node",
+    "collectionsAmount": 4,
+    "docsAmount": 1200,
+    "time-to-first-insert": 1.55,
+    "insert-documents-200": 0.95,
+    "find-by-ids": 0.13,
+    "find-by-query": 2,
+    "find-by-query-parallel-4": 2.36,
+    "count": 0.37,
+    "property-access": 4.8
+}
+{
+    "description": "memory",
+    "platform": "node",
+    "collectionsAmount": 4,
+    "docsAmount": 1200,
+    "time-to-first-insert": 1.49,
+    "insert-documents-200": 0.95,
+    "find-by-ids": 0.14,
+    "find-by-query": 2.4,
+    "find-by-query-parallel-4": 2.4,
+    "count": 0.36,
+    "property-access": 6.01
+}

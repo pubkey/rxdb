@@ -1,20 +1,19 @@
-import { getComposedPrimaryKeyOfDocumentData } from '../rx-schema-helper';
-import { stackCheckpoints } from '../rx-storage-helper';
+import { getComposedPrimaryKeyOfDocumentData } from '../rx-schema-helper.ts';
+import { stackCheckpoints } from '../rx-storage-helper.ts';
 import type {
     RxDocumentData,
     RxStorageInstanceReplicationInput,
     RxStorageInstanceReplicationState,
     RxStorageReplicationDirection,
     RxStorageReplicationMeta
-} from '../types';
+} from '../types/index.d.ts';
 import {
     createRevision,
     ensureNotFalsy,
     getDefaultRevision,
     getDefaultRxDocumentMeta,
-    getFromObjectOrThrow,
     now
-} from '../plugins/utils';
+} from '../plugins/utils/index.ts';
 
 export async function getLastCheckpointDoc<RxDocType, CheckpointType>(
     state: RxStorageInstanceReplicationState<RxDocType>,
@@ -34,7 +33,7 @@ export async function getLastCheckpointDoc<RxDocType, CheckpointType>(
         false
     );
 
-    const checkpointDoc = checkpointResult[checkpointDocId];
+    const checkpointDoc = checkpointResult[0];
     state.lastCheckpointDoc[direction] = checkpointDoc;
     if (checkpointDoc) {
         return checkpointDoc.data;
@@ -103,7 +102,7 @@ export async function setCheckpoint<RxDocType, CheckpointType>(
             }
             newDoc._meta.lwt = now();
             newDoc._rev = createRevision(
-                state.input.identifier,
+                await state.checkpointKey,
                 previousCheckpointDoc
             );
             const result = await state.input.metaInstance.bulkWrite([{
@@ -111,23 +110,18 @@ export async function setCheckpoint<RxDocType, CheckpointType>(
                 document: newDoc
             }], 'replication-set-checkpoint');
 
-            if (result.success[newDoc.id]) {
-                state.lastCheckpointDoc[direction] = getFromObjectOrThrow(
-                    result.success,
-                    newDoc.id
-                );
+            const sucessDoc = result.success[0];
+            if (sucessDoc) {
+                state.lastCheckpointDoc[direction] = sucessDoc;
                 return;
             } else {
-                const error = getFromObjectOrThrow(
-                    result.error,
-                    newDoc.id
-                );
+                const error = result.error[0];
                 if (error.status !== 409) {
                     throw error;
                 } else {
                     previousCheckpointDoc = ensureNotFalsy(error.documentInDb);
                     newDoc._rev = createRevision(
-                        state.input.identifier,
+                        await state.checkpointKey,
                         previousCheckpointDoc
                     );
                 }
@@ -136,13 +130,13 @@ export async function setCheckpoint<RxDocType, CheckpointType>(
     }
 }
 
-export function getCheckpointKey<RxDocType>(
+export async function getCheckpointKey<RxDocType>(
     input: RxStorageInstanceReplicationInput<RxDocType>
-): string {
-    const hash = input.hashFunction([
+): Promise<string> {
+    const hash = await input.hashFunction([
         input.identifier,
         input.forkInstance.databaseName,
         input.forkInstance.collectionName
     ].join('||'));
-    return 'rx-storage-replication-' + hash;
+    return 'rx_storage_replication_' + hash;
 }

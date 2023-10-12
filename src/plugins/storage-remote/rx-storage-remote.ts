@@ -11,29 +11,29 @@ import type {
     RxConflictResultionTask,
     RxConflictResultionTaskSolution,
     RxDocumentData,
-    RxDocumentDataById,
     RxJsonSchema,
     RxStorage,
     RxStorageBulkWriteResponse,
     RxStorageChangeEvent,
     RxStorageCountResult,
+    RxStorageInfoResult,
     RxStorageInstance,
     RxStorageInstanceCreationParams,
     RxStorageQueryResult,
     RxStorageStatics
-} from '../../types';
+} from '../../types/index.d.ts';
 import {
     randomCouchString
-} from '../../plugins/utils';
+} from '../../plugins/utils/index.ts';
 import type {
     MessageFromRemote,
     MessageToRemote,
     RemoteMessageChannel,
     RxStorageRemoteInternals,
     RxStorageRemoteSettings
-} from './storage-remote-types';
-import { closeMessageChannel, getMessageChannel } from './message-channel-cache';
-import { ensureRxStorageInstanceParamsAreCorrect } from '../../rx-storage-helper';
+} from './storage-remote-types.ts';
+import { closeMessageChannel, getMessageChannel } from './message-channel-cache.ts';
+import { ensureRxStorageInstanceParamsAreCorrect } from '../../rx-storage-helper.ts';
 
 
 export class RxStorageRemote implements RxStorage<RxStorageRemoteInternals, any> {
@@ -232,7 +232,7 @@ export class RxStorageInstanceRemote<RxDocType> implements RxStorageInstance<RxD
     ): Promise<RxStorageBulkWriteResponse<RxDocType>> {
         return this.requestRemote('bulkWrite', [documentWrites, context]);
     }
-    findDocumentsById(ids: string[], deleted: boolean): Promise<RxDocumentDataById<RxDocType>> {
+    findDocumentsById(ids: string[], deleted: boolean): Promise<RxDocumentData<RxDocType>[]> {
         return this.requestRemote('findDocumentsById', [ids, deleted]);
     }
     query(preparedQuery: any): Promise<RxStorageQueryResult<RxDocType>> {
@@ -240,6 +240,9 @@ export class RxStorageInstanceRemote<RxDocType> implements RxStorageInstance<RxD
     }
     count(preparedQuery: any): Promise<RxStorageCountResult> {
         return this.requestRemote('count', [preparedQuery]);
+    }
+    info(): Promise<RxStorageInfoResult> {
+        return this.requestRemote('info', []);
     }
     getAttachmentData(documentId: string, attachmentId: string, digest: string): Promise<string> {
         return this.requestRemote('getAttachmentData', [documentId, attachmentId, digest]);

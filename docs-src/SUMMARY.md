@@ -115,7 +115,7 @@
     * [Replication GraphQL](./replication-graphql.md)
     * [Replication Websocket](./replication-websocket.md)
     * [Replication CouchDB](./replication-couchdb.md)
-    * [Replication P2P](./replication-p2p.md)
+    * [Replication WebRTC](./replication-webrtc.md)
     * [Replication Firestore](./replication-firestore.md)
     * [Replication NATS](./replication-nats.md)
 
@@ -132,7 +132,7 @@
 
 * [Key Compression](./key-compression.md)
 
-* [DataMigration](./data-migration.md)
+* [Data Migration](./data-migration.md)
 
 * [LeaderElection](./leader-election.md)
 
@@ -168,6 +168,7 @@
 
 * Release Notes
     * [CHANGELOG](https://github.com/pubkey/rxdb/blob/master/CHANGELOG.md)
+    * [15.0.0](./releases/15.0.0.md)
     * [14.0.0](./releases/14.0.0.md)
     * [13.0.0](./releases/13.0.0.md)
     * [12.0.0](./releases/12.0.0.md)

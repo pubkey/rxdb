@@ -2,12 +2,12 @@ import { filter, Subscription } from 'rxjs';
 import type {
     RxStorageInstance,
     RxStorageInstanceCreationParams
-} from '../../types';
+} from '../../types/index.d.ts';
 import {
     deepEqual,
     ensureNotFalsy
-} from '../../plugins/utils';
-import { createAnswer, createErrorAnswer } from './storage-remote-helpers';
+} from '../../plugins/utils/index.ts';
+import { createAnswer, createErrorAnswer } from './storage-remote-helpers.ts';
 import type {
     MessageFromRemote,
     MessageToRemote,
@@ -15,7 +15,7 @@ import type {
     RxStorageRemoteExposeSettingsRxDatabase,
     RxStorageRemoteExposeSettingsRxStorage,
     RxStorageRemoteExposeType
-} from './storage-remote-types';
+} from './storage-remote-types.ts';
 
 /**
  * Run this on the 'remote' part,

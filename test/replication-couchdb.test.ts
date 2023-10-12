@@ -1,37 +1,31 @@
-/**
- * pouchdb allows to easily replicate database across devices.
- * This behaviour is tested here
- * @link https://pouchdb.com/guides/replication.html
- */
-
 import assert from 'assert';
-import config, { ENV_VARIABLES } from './config';
+import config, { ENV_VARIABLES } from './unit/config.ts';
 
-import * as schemaObjects from '../helper/schema-objects';
-import * as humansCollection from '../helper/humans-collection';
+import * as schemaObjects from './helper/schema-objects.ts';
+import * as humansCollection from './helper/humans-collection.ts';
 
 import {
     addRxPlugin,
     randomCouchString,
     RxCollection
-} from '../../plugins/core';
+} from './../plugins/core/index.mjs';
 
 import {
     mergeUrlQueryParams,
     RxCouchDBReplicationState,
     replicateCouchDB,
     getFetchWithCouchDBAuthorization
-} from '../../plugins/replication-couchdb';
+} from './../plugins/replication-couchdb/index.mjs';
 
-import { RxDBUpdatePlugin } from '../../plugins/update';
+import { RxDBUpdatePlugin } from './../plugins/update/index.mjs';
 addRxPlugin(RxDBUpdatePlugin);
 
-import { CouchAllDocsResponse } from '../../src/types';
+import { CouchAllDocsResponse } from './../plugins/core/index.mjs';
 import { filter, firstValueFrom } from 'rxjs';
 import { waitUntil } from 'async-test-util';
-import { ensureCollectionsHaveEqualState } from '../helper/test-util';
-
+import { ensureCollectionsHaveEqualState } from './helper/test-util.ts';
 const fetchWithCouchDBAuth = ENV_VARIABLES.NATIVE_COUCHDB ? getFetchWithCouchDBAuthorization('root', 'root') : fetch;
+import * as SpawnServer from './helper/spawn-server.ts';
 
 describe('replication-couchdb.test.ts', () => {
     if (
@@ -40,7 +34,7 @@ describe('replication-couchdb.test.ts', () => {
     ) {
         return;
     }
-    const SpawnServer = require('../helper/spawn-server');
+    console.log('SPAWN COUCH SERVER');
 
     async function getAllServerDocs(serverUrl: string): Promise<any[]> {
         const url = serverUrl + '_all_docs?' + mergeUrlQueryParams({ include_docs: true });
@@ -63,8 +57,13 @@ describe('replication-couchdb.test.ts', () => {
         });
     }
 
-    async function syncOnce(collection: RxCollection, server: any) {
+    async function syncOnce(collection: RxCollection, server: {
+        dbName: string;
+        url: string;
+        close: () => Promise<void>;
+    }) {
         const replicationState = replicateCouchDB({
+            replicationIdentifier: 'sync-once' + server.url,
             collection,
             url: server.url,
             fetch: fetchWithCouchDBAuth,
@@ -86,6 +85,8 @@ describe('replication-couchdb.test.ts', () => {
     }
 
     describe('init', () => {
+        it('import server module', async () => {
+        });
         it('wait until CouchDB server is reachable', async function () {
             this.timeout(500 * 1000);
             if (!ENV_VARIABLES.NATIVE_COUCHDB) {
@@ -247,6 +248,7 @@ describe('replication-couchdb.test.ts', () => {
             server: any
         ): Promise<RxCouchDBReplicationState<RxDocType>> {
             const replicationState = replicateCouchDB<RxDocType>({
+                replicationIdentifier: randomCouchString(10),
                 collection,
                 url: server.url,
                 fetch: fetchWithCouchDBAuth,
@@ -334,6 +336,7 @@ describe('replication-couchdb.test.ts', () => {
             });
 
             const replicationState = replicateCouchDB({
+                replicationIdentifier: randomCouchString(10),
                 url: server.url,
                 collection,
                 fetch: fetchWithCouchDBAuth,
@@ -379,6 +382,7 @@ describe('replication-couchdb.test.ts', () => {
             const server = await SpawnServer.spawn();
             const collection = await humansCollection.create(0);
             const replicationState = replicateCouchDB({
+                replicationIdentifier: randomCouchString(10),
                 url: server.url,
                 collection,
                 fetch: fetchWithCouchDBAuth,

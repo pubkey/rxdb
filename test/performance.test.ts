@@ -3,19 +3,25 @@ import {
     randomCouchString,
     overwritable,
     requestIdlePromise
-} from '../plugins/core';
+} from '../plugins/core/index.mjs';
 import * as assert from 'assert';
-import * as schemas from './helper/schemas';
-import * as schemaObjects from './helper/schema-objects';
-import config from './unit/config';
+import * as schemas from './helper/schemas.ts';
+import * as schemaObjects from './helper/schema-objects.ts';
+import config from './unit/config.ts';
 import { wait } from 'async-test-util';
+declare const Deno: any;
 
 /**
- * Running these performance tests in the unit test suite
- * was the easiest way to make it run on all storages and platforms.
- * Maybe we should move this into a different npm script instead.
+ * Runs some performance tests.
+ * Mostly used to compare the performance of the different RxStorage implementations.
+ * Run via 'npm run test:performance:memory:node' and change 'memory' for other storage names.
  */
 describe('performance.test.ts', () => {
+    it('init storage', async () => {
+        if (config.storage.init) {
+            await config.storage.init();
+        }
+    });
     it('should not have enabled dev-mode which would affect the performance', () => {
         assert.strictEqual(
             overwritable.isDevMode(),
@@ -178,6 +184,21 @@ describe('performance.test.ts', () => {
             updateTime('count');
             assert.ok(countQueryResult >= (docsAmount / 2));
             assert.ok(countQueryResult < (docsAmount * 0.8));
+            await awaitBetweenTest();
+
+            // test property access time
+            updateTime();
+            let sum = 0;
+            for (let i = 0; i < queryResult.length; i++) {
+                const doc = queryResult[i];
+
+                // access the same property exactly 2 times
+                sum += doc.deep.deeper.deepNr;
+                sum += doc.deep.deeper.deepNr;
+            }
+            updateTime('property-access');
+            assert.ok(sum > 10);
+
 
             await db.remove();
         }
@@ -196,6 +217,14 @@ describe('performance.test.ts', () => {
         console.log('Performance test for ' + perfStorage.description);
         console.log(JSON.stringify(timeToLog, null, 4));
         // process.exit();
+    });
+    /**
+     * Some runtimes do not automatically exit for whatever reason.
+     */
+    it('exit the process', () => {
+        if (config.isDeno) {
+            Deno.exit(0);
+        }
     });
 });
 

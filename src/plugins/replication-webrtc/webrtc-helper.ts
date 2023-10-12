@@ -1,11 +1,12 @@
 import type {
     HashFunction
-} from '../../types';
+} from '../../types/index.d.ts';
 import type {
-    P2PConnectionHandler,
-    P2PMessage,
-    P2PPeer,
-    P2PResponse} from './p2p-types';
+    WebRTCConnectionHandler,
+    WebRTCMessage,
+    WebRTCPeer,
+    WebRTCResponse
+} from './webrtc-types.ts';
 import { filter, firstValueFrom, map } from 'rxjs';
 
 
@@ -17,23 +18,23 @@ import { filter, firstValueFrom, map } from 'rxjs';
  * a storageToken like 'aaaaaa' is not always the master
  * for all peers.
  */
-export function isMasterInP2PReplication(
+export async function isMasterInWebRTCReplication(
     hashFunction: HashFunction,
     ownStorageToken: string,
     otherStorageToken: string
-): boolean {
+): Promise<boolean> {
     const isMaster =
-        hashFunction([ownStorageToken, otherStorageToken].join('|'))
+        await hashFunction([ownStorageToken, otherStorageToken].join('|'))
         >
-        hashFunction([otherStorageToken, ownStorageToken].join('|'));
+        await hashFunction([otherStorageToken, ownStorageToken].join('|'));
     return isMaster;
 }
 
 export function sendMessageAndAwaitAnswer(
-    handler: P2PConnectionHandler,
-    peer: P2PPeer,
-    message: P2PMessage
-): Promise<P2PResponse> {
+    handler: WebRTCConnectionHandler,
+    peer: WebRTCPeer,
+    message: WebRTCMessage
+): Promise<WebRTCResponse> {
     const requestId = message.id;
     const answerPromise = firstValueFrom(
         handler.response$.pipe(

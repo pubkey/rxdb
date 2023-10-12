@@ -11,14 +11,17 @@ For [in-browser data storage](./articles/browser-database.md), you have some opt
 - The **FileSystem API** could be used to store plain binary files, but it is [only supported in chrome](https://caniuse.com/filesystem) for now.
 - **IndexedDB** is an indexed key-object database. It can store json data and iterate over its indexes. It is [widely supported](https://caniuse.com/indexeddb) and stable.
 
+------------------------------
+
 ### **UPDATE April 2023:** Since beginning of 2023, all modern browsers ship the **File System Access API** which allows to persistently store data in the browser with a way better performance. For [RxDB](https://rxdb.info/) you can use the [OPFS RxStorage](./rx-storage-opfs.md) to get about 4x performance improvement compared to IndexedDB.
 
 <center>
     <a href="https://rxdb.info/">
-        <img src="./files/logo/logo_text.svg" alt="IndexedDB Database" width="120">
+        <img src="./files/logo/rxdb_javascript_database.svg" alt="IndexedDB Database" width="250">
     </a>
 </center>
 
+------------------------------
 
 
 It becomes clear that the only way to go is IndexedDB. You start developing your app and everything goes fine.

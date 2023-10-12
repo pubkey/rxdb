@@ -5,46 +5,44 @@ import {
 import {
     getStartIndexStringFromLowerBound,
     getStartIndexStringFromUpperBound
-} from '../../custom-index';
-import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
+} from '../../custom-index.ts';
+import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper.ts';
 import {
     categorizeBulkWriteRows
-} from '../../rx-storage-helper';
+} from '../../rx-storage-helper.ts';
 import type {
     BulkWriteRow,
-    ById,
     EventBulk,
     QueryMatcher,
     RxConflictResultionTask,
     RxConflictResultionTaskSolution,
     RxDocumentData,
-    RxDocumentDataById,
     RxJsonSchema,
     RxStorageBulkWriteResponse,
     RxStorageChangeEvent,
     RxStorageCountResult,
     RxStorageDefaultCheckpoint,
+    RxStorageInfoResult,
     RxStorageInstance,
     RxStorageInstanceCreationParams,
     RxStorageQueryResult,
-    RxStorageWriteError,
     StringKeys
-} from '../../types';
+} from '../../types/index.d.ts';
 import {
     ensureNotFalsy,
-    getFromMapOrThrow,
     lastOfArray,
     now,
     PROMISE_RESOLVE_TRUE,
     PROMISE_RESOLVE_VOID,
+    requestIdlePromise,
     RX_META_LWT_MINIMUM
-} from '../../plugins/utils';
+} from '../../plugins/utils/index.ts';
 import {
     boundGE,
     boundGT,
     boundLE,
     boundLT
-} from './binary-search-bounds';
+} from './binary-search-bounds.ts';
 import {
     attachmentMapKey,
     compareDocsWithIndex,
@@ -52,19 +50,26 @@ import {
     getMemoryCollectionKey,
     putWriteRowToState,
     removeDocFromState
-} from './memory-helper';
+} from './memory-helper.ts';
 import {
     addIndexesToInternalsState,
     getMemoryIndexName
-} from './memory-indexes';
+} from './memory-indexes.ts';
 import type {
     MemoryPreparedQuery,
     MemoryStorageInternals,
     RxStorageMemory,
     RxStorageMemoryInstanceCreationOptions,
     RxStorageMemorySettings
-} from './memory-types';
-import { getQueryMatcher, getSortComparator } from '../../rx-query-helper';
+} from './memory-types.ts';
+import { getQueryMatcher, getSortComparator } from '../../rx-query-helper.ts';
+
+
+/**
+ * Used in tests to ensure everything
+ * is closed correctly
+ */
+export const OPEN_MEMORY_INSTANCES = new Set<RxStorageInstanceMemory<any>>();
 
 export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
     RxDocType,
@@ -85,6 +90,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         public readonly options: Readonly<RxStorageMemoryInstanceCreationOptions>,
         public readonly settings: RxStorageMemorySettings
     ) {
+        OPEN_MEMORY_INSTANCES.add(this);
         this.primaryPath = getPrimaryFieldOfPrimaryKey(this.schema.primaryKey);
     }
 
@@ -92,13 +98,11 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         documentWrites: BulkWriteRow<RxDocType>[],
         context: string
     ): Promise<RxStorageBulkWriteResponse<RxDocType>> {
+        this.ensurePersistence();
         ensureNotRemoved(this);
         const internals = this.internals;
         const documentsById = this.internals.documents;
         const primaryPath = this.primaryPath;
-
-        const success: RxDocumentDataById<RxDocType> = {};
-        let error: ById<RxStorageWriteError<RxDocType>> = {};
 
         const categorized = categorizeBulkWriteRows<RxDocType>(
             this,
@@ -107,7 +111,67 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
             documentWrites,
             context
         );
-        error = categorized.errors;
+        const error = categorized.errors;
+        const success: RxDocumentData<RxDocType>[] = new Array(categorized.bulkInsertDocs.length);
+        const bulkInsertDocs = categorized.bulkInsertDocs;
+        for (let i = 0; i < bulkInsertDocs.length; ++i) {
+            const writeRow = bulkInsertDocs[i];
+            const doc = writeRow.document;
+            success[i] = doc;
+        }
+        const bulkUpdateDocs = categorized.bulkUpdateDocs;
+        for (let i = 0; i < bulkUpdateDocs.length; ++i) {
+            const writeRow = bulkUpdateDocs[i];
+            const doc = writeRow.document;
+            success.push(doc);
+        }
+
+        this.internals.ensurePersistenceTask = categorized;
+        if (!this.internals.ensurePersistenceIdlePromise) {
+            this.internals.ensurePersistenceIdlePromise = requestIdlePromise(1000).then(() => {
+                this.internals.ensurePersistenceIdlePromise = undefined;
+                this.ensurePersistence();
+            });
+        }
+
+        /**
+         * Important: The events must be emitted AFTER the persistence
+         * task has been added.
+         */
+        if (categorized.eventBulk.events.length > 0) {
+            const lastState = ensureNotFalsy(categorized.newestRow).document;
+            categorized.eventBulk.checkpoint = {
+                id: lastState[primaryPath],
+                lwt: lastState._meta.lwt
+            };
+            internals.changes$.next(categorized.eventBulk);
+        }
+
+
+
+        return Promise.resolve({ success, error });
+    }
+
+    /**
+     * Instead of directly inserting the documents into all indexes,
+     * we do it lazy in the background. This gives the application time
+     * to directly work with the write-result and to do stuff like rendering DOM
+     * notes and processing RxDB queries.
+     * Then in some later time, or just before the next read/write,
+     * it is ensured that the indexes have been written.
+     */
+    public ensurePersistence() {
+        if (
+            !this.internals.ensurePersistenceTask
+        ) {
+            return;
+        }
+        const internals = this.internals;
+        const documentsById = this.internals.documents;
+        const primaryPath = this.primaryPath;
+
+        const categorized = this.internals.ensurePersistenceTask;
+        delete this.internals.ensurePersistenceTask;
 
         /**
          * Do inserts/updates
@@ -117,7 +181,8 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         const bulkInsertDocs = categorized.bulkInsertDocs;
         for (let i = 0; i < bulkInsertDocs.length; ++i) {
             const writeRow = bulkInsertDocs[i];
-            const docId = writeRow.document[primaryPath];
+            const doc = writeRow.document;
+            const docId = doc[primaryPath];
             putWriteRowToState(
                 docId as any,
                 internals,
@@ -125,13 +190,13 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
                 writeRow,
                 undefined
             );
-            success[docId as any] = writeRow.document;
         }
 
         const bulkUpdateDocs = categorized.bulkUpdateDocs;
         for (let i = 0; i < bulkUpdateDocs.length; ++i) {
             const writeRow = bulkUpdateDocs[i];
-            const docId = writeRow.document[primaryPath];
+            const doc = writeRow.document;
+            const docId = doc[primaryPath];
             putWriteRowToState(
                 docId as any,
                 internals,
@@ -139,7 +204,6 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
                 writeRow,
                 documentsById.get(docId as any)
             );
-            success[docId as any] = writeRow.document;
         }
 
         /**
@@ -173,24 +237,18 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
                 });
             }
         }
-
-        if (categorized.eventBulk.events.length > 0) {
-            const lastState = ensureNotFalsy(categorized.newestRow).document;
-            categorized.eventBulk.checkpoint = {
-                id: lastState[primaryPath],
-                lwt: lastState._meta.lwt
-            };
-            internals.changes$.next(categorized.eventBulk);
-        }
-        return Promise.resolve({ success, error });
     }
 
     findDocumentsById(
         docIds: string[],
         withDeleted: boolean
-    ): Promise<RxDocumentDataById<RxDocType>> {
+    ): Promise<RxDocumentData<RxDocType>[]> {
+        this.ensurePersistence();
         const documentsById = this.internals.documents;
-        const ret: RxDocumentDataById<RxDocType> = {};
+        const ret: RxDocumentData<RxDocType>[] = [];
+        if (documentsById.size === 0) {
+            return Promise.resolve(ret);
+        }
         for (let i = 0; i < docIds.length; ++i) {
             const docId = docIds[i];
             const docInDb = documentsById.get(docId);
@@ -201,7 +259,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
                     withDeleted
                 )
             ) {
-                ret[docId] = docInDb;
+                ret.push(docInDb);
             }
         }
         return Promise.resolve(ret);
@@ -210,6 +268,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
     query(
         preparedQuery: MemoryPreparedQuery<RxDocType>
     ): Promise<RxStorageQueryResult<RxDocType>> {
+        this.ensurePersistence();
         const queryPlan = preparedQuery.queryPlan;
         const query = preparedQuery.query;
 
@@ -304,11 +363,19 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
     async count(
         preparedQuery: MemoryPreparedQuery<RxDocType>
     ): Promise<RxStorageCountResult> {
+        this.ensurePersistence();
         const result = await this.query(preparedQuery);
         return {
             count: result.documents.length,
             mode: 'fast'
         };
+    }
+
+    info(): Promise<RxStorageInfoResult> {
+        this.ensurePersistence();
+        return Promise.resolve({
+            totalCount: this.internals.documents.size
+        });
     }
 
     getChangedDocumentsSince(
@@ -318,6 +385,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         documents: RxDocumentData<RxDocType>[];
         checkpoint: RxStorageDefaultCheckpoint;
     }> {
+        this.ensurePersistence();
         const sinceLwt = checkpoint ? checkpoint.lwt : RX_META_LWT_MINIMUM;
         const sinceId = checkpoint ? checkpoint.id : '';
 
@@ -365,6 +433,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
     }
 
     cleanup(minimumDeletedTime: number): Promise<boolean> {
+        this.ensurePersistence();
         const maxDeletionTime = now() - minimumDeletedTime;
         const index = ['_deleted', '_meta.lwt', this.primaryPath as any];
         const indexName = getMemoryIndexName(index);
@@ -412,16 +481,17 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         attachmentId: string,
         digest: string
     ): Promise<string> {
+        this.ensurePersistence();
         ensureNotRemoved(this);
-        const data = getFromMapOrThrow(
-            this.internals.attachments,
-            attachmentMapKey(documentId, attachmentId)
-        );
+        const key = attachmentMapKey(documentId, attachmentId);
+        const data = this.internals.attachments.get(key);
+
         if (
             !digest ||
+            !data ||
             data.digest !== digest
         ) {
-            throw new Error('attachment does not exist');
+            throw new Error('attachment does not exist: ' + key);
         }
         return Promise.resolve(data.writeData.data);
     }
@@ -432,6 +502,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
     }
 
     async remove(): Promise<void> {
+        this.ensurePersistence();
         ensureNotRemoved(this);
 
         this.internals.removed = true;
@@ -446,6 +517,9 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
     }
 
     close(): Promise<void> {
+        OPEN_MEMORY_INSTANCES.delete(this);
+
+        this.ensurePersistence();
         if (this.closed) {
             return Promise.reject(new Error('already closed'));
         }

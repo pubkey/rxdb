@@ -11,17 +11,17 @@ import type {
     RxCollection,
     RxDocument,
     RxDocumentData
-} from './types';
+} from './types/index.d.ts';
 import {
     createRxDocumentConstructor,
     basePrototype,
     createWithConstructor as createRxDocumentWithConstructor
-} from './rx-document';
+} from './rx-document.ts';
 import {
     runPluginHooks
-} from './hooks';
-import { overwritable } from './overwritable';
-import { getFromMapOrCreate } from './plugins/utils';
+} from './hooks.ts';
+import { overwritable } from './overwritable.ts';
+import { getFromMapOrCreate } from './plugins/utils/index.ts';
 
 const constructorForCollection = new WeakMap();
 

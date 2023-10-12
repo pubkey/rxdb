@@ -113,6 +113,7 @@ export async function createDatabase(): Promise<Plugin> {
     const url = syncURL + colName + '/';
     console.log('url: ' + url);
     const replicationState = replicateCouchDB({
+      replicationIdentifier: 'my-vue-couch-replication',
       collection: col,
       url,
       live: true,

@@ -8,9 +8,9 @@ import {
     getFromMapOrThrow,
     now,
     promiseWait
-} from '../../plugins/utils';
+} from '../../plugins/utils/index.ts';
 
-import { RxDBLeaderElectionPlugin } from '../leader-election';
+import { RxDBLeaderElectionPlugin } from '../leader-election/index.ts';
 import type {
     RxCollection,
     ReplicationPullOptions,
@@ -21,40 +21,39 @@ import type {
     CouchBulkDocResultRow,
     CouchAllDocsResponse,
     RxConflictHandler
-} from '../../types';
+} from '../../types/index.d.ts';
 import {
     RxReplicationState,
     startReplicationOnLeaderShip
-} from '../replication';
+} from '../replication/index.ts';
 import {
     addRxPlugin,
     newRxError,
     WithDeleted
-} from '../../index';
+} from '../../index.ts';
 
 import { Subject } from 'rxjs';
 import type {
     CouchDBCheckpointType,
     FetchMethodType,
     SyncOptionsCouchDB
-} from './couchdb-types';
+} from './couchdb-types.ts';
 import {
     couchDBDocToRxDocData,
-    COUCHDB_NEW_REPLICATION_PLUGIN_IDENTITY_PREFIX,
     mergeUrlQueryParams,
     couchSwapPrimaryToId,
     getDefaultFetch
-} from './couchdb-helper';
-import { awaitRetry } from '../replication/replication-helper';
+} from './couchdb-helper.ts';
+import { awaitRetry } from '../replication/replication-helper.ts';
 
-export * from './couchdb-helper';
-export * from './couchdb-types';
+export * from './couchdb-helper.ts';
+export * from './couchdb-types.ts';
 
 export class RxCouchDBReplicationState<RxDocType> extends RxReplicationState<RxDocType, CouchDBCheckpointType> {
     constructor(
         public readonly url: string,
         public fetch: FetchMethodType,
-        public readonly replicationIdentifierHash: string,
+        public readonly replicationIdentifier: string,
         public readonly collection: RxCollection<RxDocType>,
         public readonly pull?: ReplicationPullOptions<RxDocType, CouchDBCheckpointType>,
         public readonly push?: ReplicationPushOptions<RxDocType>,
@@ -63,7 +62,7 @@ export class RxCouchDBReplicationState<RxDocType> extends RxReplicationState<RxD
         public autoStart: boolean = true
     ) {
         super(
-            replicationIdentifierHash,
+            replicationIdentifier,
             collection,
             '_deleted',
             pull,
@@ -258,7 +257,7 @@ export function replicateCouchDB<RxDocType>(
     const replicationState = new RxCouchDBReplicationState<RxDocType>(
         options.url,
         options.fetch ? options.fetch : getDefaultFetch(),
-        COUCHDB_NEW_REPLICATION_PLUGIN_IDENTITY_PREFIX + options.collection.database.hashFunction(options.url),
+        options.replicationIdentifier,
         collection,
         replicationPrimitivesPull,
         replicationPrimitivesPush,

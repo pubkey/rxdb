@@ -2,7 +2,7 @@ import {
     filter,
     map,
     mergeMap
-} from 'rxjs/operators';
+} from 'rxjs';
 
 import {
     ucfirst,
@@ -12,41 +12,40 @@ import {
     ensureNotFalsy,
     getFromMapOrThrow,
     PROMISE_RESOLVE_FALSE,
-    PROMISE_RESOLVE_VOID,
-    appendToArray
-} from './plugins/utils';
+    PROMISE_RESOLVE_VOID
+} from './plugins/utils/index.ts';
 import {
     fillObjectDataBeforeInsert,
     createRxCollectionStorageInstance,
     removeCollectionStorages
-} from './rx-collection-helper';
+} from './rx-collection-helper.ts';
 import {
     createRxQuery,
     _getDefaultQuery
-} from './rx-query';
+} from './rx-query.ts';
 import {
     newRxError,
     newRxTypeError
-} from './rx-error';
+} from './rx-error.ts';
 import type {
-    DataMigrator
-} from './plugins/migration';
+    RxMigrationState
+} from './plugins/migration/index.ts';
 import {
     DocumentCache
-} from './doc-cache';
+} from './doc-cache.ts';
 import {
     QueryCache,
     createQueryCache,
     defaultCacheReplacementPolicy
-} from './query-cache';
+} from './query-cache.ts';
 import {
     ChangeEventBuffer,
     createChangeEventBuffer
-} from './change-event-buffer';
+} from './change-event-buffer.ts';
 import {
     runAsyncPluginHooks,
     runPluginHooks
-} from './hooks';
+} from './hooks.ts';
 
 import {
     Subscription,
@@ -55,7 +54,6 @@ import {
 
 import type {
     KeyFunctionMap,
-    MigrationState,
     RxCollection,
     RxDatabase,
     RxQuery,
@@ -81,26 +79,27 @@ import type {
     RxConflictHandler,
     MaybePromise,
     CRDTEntry,
-    MangoQuerySelectorAndIndex
-} from './types';
+    MangoQuerySelectorAndIndex,
+    MigrationStrategies
+} from './types/index.d.ts';
 
 import {
     RxSchema
-} from './rx-schema';
+} from './rx-schema.ts';
 
 import {
     createNewRxDocument
-} from './rx-document-prototype-merge';
+} from './rx-document-prototype-merge.ts';
 import {
     getWrappedStorageInstance,
     storageChangeEventToRxChangeEvent,
     throwIfIsStorageWriteError,
     WrappedRxStorageInstance
-} from './rx-storage-helper';
-import { defaultConflictHandler } from './replication-protocol';
-import { IncrementalWriteQueue } from './incremental-write';
-import { beforeDocumentUpdateWrite } from './rx-document';
-import { overwritable } from './overwritable';
+} from './rx-storage-helper.ts';
+import { defaultConflictHandler } from './replication-protocol/index.ts';
+import { IncrementalWriteQueue } from './incremental-write.ts';
+import { beforeDocumentUpdateWrite } from './rx-document.ts';
+import { overwritable } from './overwritable.ts';
 
 const HOOKS_WHEN = ['pre', 'post'] as const;
 type HookWhenType = typeof HOOKS_WHEN[number];
@@ -129,7 +128,7 @@ export class RxCollectionBase<
         public schema: RxSchema<RxDocumentType>,
         public internalStorageInstance: RxStorageInstance<RxDocumentType, any, InstanceCreationOptions>,
         public instanceCreationOptions: InstanceCreationOptions = {} as any,
-        public migrationStrategies: KeyFunctionMap = {},
+        public migrationStrategies: MigrationStrategies = {},
         public methods: KeyFunctionMap = {},
         public attachments: KeyFunctionMap = {},
         public options: any = {},
@@ -269,14 +268,14 @@ export class RxCollectionBase<
     migrationNeeded(): Promise<boolean> {
         throw pluginMissing('migration');
     }
-    getDataMigrator(): DataMigrator {
+    getMigrationState(): RxMigrationState {
         throw pluginMissing('migration');
     }
-    migrate(batchSize: number = 10): Observable<MigrationState> {
-        return this.getDataMigrator().migrate(batchSize);
+    startMigration(batchSize: number = 10): Promise<void> {
+        return this.getMigrationState().startMigration(batchSize);
     }
     migratePromise(batchSize: number = 10): Promise<any> {
-        return this.getDataMigrator().migratePromise(batchSize);
+        return this.getMigrationState().migratePromise(batchSize);
     }
 
     async insert(
@@ -321,9 +320,7 @@ export class RxCollectionBase<
                         });
                 })
             ) : useDocs;
-        const docsMap: Map<string, RxDocumentType> = new Map();
         const insertRows: BulkWriteRow<RxDocumentType>[] = docs.map(doc => {
-            docsMap.set((doc as any)[primaryPath] as any, doc);
             const row: BulkWriteRow<RxDocumentType> = { document: doc };
             return row;
         });
@@ -333,10 +330,14 @@ export class RxCollectionBase<
         );
 
         // create documents
-        const rxDocuments = Object.values(results.success)
+        const rxDocuments = results.success
             .map((writtenDocData) => this._docCache.getCachedRxDocument(writtenDocData));
 
         if (this.hasHooks('post', 'insert')) {
+            const docsMap: Map<string, RxDocumentType> = new Map();
+            docs.forEach(doc => {
+                docsMap.set((doc as any)[primaryPath] as any, doc);
+            });
             await Promise.all(
                 rxDocuments.map(doc => {
                     return this._runHooks(
@@ -350,7 +351,7 @@ export class RxCollectionBase<
 
         return {
             success: rxDocuments,
-            error: Object.values(results.error)
+            error: results.error
         };
     }
 
@@ -360,6 +361,7 @@ export class RxCollectionBase<
         success: RxDocument<RxDocumentType, OrmMethods>[];
         error: RxStorageWriteError<RxDocumentType>[];
     }> {
+        const primaryPath = this.schema.primaryPath;
         /**
          * Optimization shortcut,
          * do nothing when called with an empty array
@@ -399,7 +401,7 @@ export class RxCollectionBase<
             'rx-collection-bulk-remove'
         );
 
-        const successIds: string[] = Object.keys(results.success);
+        const successIds: string[] = results.success.map(d => d[primaryPath] as string);
 
         // run hooks
         await Promise.all(
@@ -417,14 +419,17 @@ export class RxCollectionBase<
 
         return {
             success: rxDocuments,
-            error: Object.values(results.error)
+            error: results.error
         };
     }
 
     /**
      * same as bulkInsert but overwrites existing document with same primary
      */
-    async bulkUpsert(docsData: Partial<RxDocumentType>[]): Promise<RxDocument<RxDocumentType, OrmMethods>[]> {
+    async bulkUpsert(docsData: Partial<RxDocumentType>[]): Promise<{
+        success: RxDocument<RxDocumentType, OrmMethods>[];
+        error: RxStorageWriteError<RxDocumentType>[];
+    }> {
         const insertData: RxDocumentType[] = [];
         const useJsonByDocId: Map<string, RxDocumentType> = new Map();
         docsData.forEach(docData => {
@@ -442,32 +447,42 @@ export class RxCollectionBase<
         });
 
         const insertResult = await this.bulkInsert(insertData);
-        const ret = insertResult.success.slice(0);
-        const updatedDocs = await Promise.all(
-            insertResult.error.map(async (error) => {
-                if (error.status !== 409) {
-                    throw newRxError('VD2', {
-                        collection: this.name,
-                        writeError: error
-                    });
+        const success = insertResult.success.slice(0);
+        const error: RxStorageWriteError<RxDocumentType>[] = [];
+
+        // update the ones that existed already
+        await Promise.all(
+            insertResult.error.map(async (err) => {
+                if (err.status !== 409) {
+                    error.push(err);
+                } else {
+                    const id = err.documentId;
+                    const writeData = getFromMapOrThrow(useJsonByDocId, id);
+                    const docDataInDb = ensureNotFalsy(err.documentInDb);
+                    const doc = this._docCache.getCachedRxDocument(docDataInDb);
+                    const newDoc = await doc.incrementalModify(() => writeData);
+                    success.push(newDoc);
                 }
-                const id = error.documentId;
-                const writeData = getFromMapOrThrow(useJsonByDocId, id);
-                const docDataInDb = ensureNotFalsy(error.documentInDb);
-                const doc = this._docCache.getCachedRxDocument(docDataInDb);
-                const newDoc = await doc.incrementalModify(() => writeData);
-                return newDoc;
             })
         );
-        appendToArray(ret, updatedDocs);
-        return ret;
+        return {
+            error,
+            success
+        };
     }
 
     /**
      * same as insert but overwrites existing document with same primary
      */
-    upsert(json: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType, OrmMethods>> {
-        return this.bulkUpsert([json]).then(result => result[0]);
+    async upsert(json: Partial<RxDocumentType>): Promise<RxDocument<RxDocumentType, OrmMethods>> {
+        const bulkResult = await this.bulkUpsert([json]);
+        throwIfIsStorageWriteError<RxDocumentType>(
+            this.asRxCollection,
+            (json as any)[this.schema.primaryPath],
+            json as any,
+            bulkResult.error[0]
+        );
+        return bulkResult.success[0];
     }
 
     /**

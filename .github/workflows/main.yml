@@ -33,9 +33,9 @@ jobs:
           path: |
             ~/.npm
             ./node_modules
-          key: ${{ runner.os }}-npm-core-x8-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-core-x9-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-core-x8-
+            ${{ runner.os }}-npm-core-x9-
 
       - name: install npm dependencies
         run: npm install
@@ -64,9 +64,9 @@ jobs:
           path: |
             ~/.npm
             ./node_modules
-          key: ${{ runner.os }}-npm-loki-x8-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-loki-x9-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-loki-x8-
+            ${{ runner.os }}-npm-loki-x9-
 
       - name: install npm dependencies
         run: npm install
@@ -108,9 +108,9 @@ jobs:
           path: |
             ~/.npm
             ./node_modules
-          key: ${{ runner.os }}-npm-memory-x8-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-memory-x9-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-memory-x8-
+            ${{ runner.os }}-npm-memory-x9-
 
       - name: install npm dependencies
         run: npm install
@@ -162,9 +162,9 @@ jobs:
           path: |
             ~/.npm
             ./node_modules
-          key: ${{ runner.os }}-npm-remote-x8-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-remote-x9-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-remote-x8-
+            ${{ runner.os }}-npm-remote-x9-
 
       - name: install npm dependencies
         run: npm install
@@ -196,9 +196,9 @@ jobs:
           path: |
             ~/.npm
             ./node_modules
-          key: ${{ runner.os }}-npm-storage-dexie-x8-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-storage-dexie-x9-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-storage-dexie-x8-
+            ${{ runner.os }}-npm-storage-dexie-x9-
 
       - name: install npm dependencies
         run: npm install
@@ -239,9 +239,9 @@ jobs:
           path: |
             ~/.npm
             ./node_modules
-          key: ${{ runner.os }}-npm-storage-foundationdb-x8-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-storage-foundationdb-x9-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-storage-foundationdb-x8-
+            ${{ runner.os }}-npm-storage-foundationdb-x9-
 
       - name: install FoundationDB client and server
         working-directory: ./scripts
@@ -264,7 +264,7 @@ jobs:
 
   storage-mongodb:
     runs-on: ubuntu-22.04
-   
+
     steps:
       - uses: actions/checkout@v4
       - name: Set node version
@@ -280,9 +280,9 @@ jobs:
           path: |
             ~/.npm
             ./node_modules
-          key: ${{ runner.os }}-npm-storage-mongodb-x8-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-storage-mongodb-x9-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-storage-mongodb-x8-
+            ${{ runner.os }}-npm-storage-mongodb-x9-
 
       - name: Start MongoDB
         uses: supercharge/mongodb-github-action@1.10.0
@@ -319,9 +319,9 @@ jobs:
             ./node_modules
             ./examples/angular/node_modules
           # invalidate cache when any package.json changes
-          key: ${{ runner.os }}-npm-angular-x8-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-angular-x9-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-angular-x8-
+            ${{ runner.os }}-npm-angular-x9-
 
       - name: prepare RxDB core
         run: |
@@ -369,9 +369,9 @@ jobs:
           path: |
             ~/.npm
             ./node_modules
-          key: ${{ runner.os }}-npm-test-builds-x8-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-test-builds-x9-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-test-builds-x8-
+            ${{ runner.os }}-npm-test-builds-x9-
 
       - name: prepare RxDB core
         run: |
@@ -402,9 +402,9 @@ jobs:
           path: |
             ~/.npm
             ./node_modules
-          key: ${{ runner.os }}-npm-test-code-style-x8-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-test-code-style-x9-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-test-code-style-x8-
+            ${{ runner.os }}-npm-test-code-style-x9-
 
       - name: prepare RxDB core
         run: |
@@ -778,17 +778,11 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version-file: ".nvmrc"
-      - uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: latest
 
       - name: prepare RxDB core
         run: |
           npm install
           npm run build
-
-      - run: npm run test:bun:dexie
-      - run: npm run test:performance:memory:bun
 
       - run: npm run test:replication-couchdb
       - run: npm run test:replication-firestore
@@ -798,6 +792,21 @@ jobs:
         run: |
           docker pull nats:2.9.17
           npm run test:replication-nats
+
+      # bun
+      - uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+      - run: npm run test:bun:dexie
+      - run: npm run test:performance:memory:bun
+
+      # deno (must be last because it messes up with file permissions)
+      - uses: denoland/setup-deno@v1
+        with:
+          deno-version: "1.37.1"
+      - run: npm run test:deno:dexie
+      # TODO fix deno performance test
+      #- run: npm run test:performance:memory:deno
 
   # I found out that people are stupid and use the npm downloads count
   # to measure the quality of an open source project.

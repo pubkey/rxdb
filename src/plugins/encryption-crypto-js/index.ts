@@ -3,11 +3,12 @@
  * It's using crypto-js/aes for password-encryption
  * @link https://github.com/brix/crypto-js
  */
-import AES from 'crypto-js/aes';
-import * as cryptoEnc from 'crypto-js/enc-utf8';
-import { wrapRxStorageInstance } from '../../plugin-helpers';
-import { newRxError, newRxTypeError } from '../../rx-error';
-import { hasEncryption } from '../../rx-storage-helper';
+import pkg from 'crypto-js';
+const { AES, enc: cryptoEnc } = pkg;
+
+import { wrapRxStorageInstance } from '../../plugin-helpers.ts';
+import { newRxError, newRxTypeError } from '../../rx-error.ts';
+import { hasEncryption } from '../../rx-storage-helper.ts';
 import type {
     InternalStoreDocType,
     RxAttachmentWriteData,
@@ -16,7 +17,7 @@ import type {
     RxJsonSchema,
     RxStorage,
     RxStorageInstanceCreationParams
-} from '../../types';
+} from '../../types/index.d.ts';
 import {
     b64DecodeUnicode,
     b64EncodeUnicode,
@@ -25,7 +26,7 @@ import {
     flatClone,
     getProperty,
     setProperty
-} from '../../plugins/utils';
+} from '../../plugins/utils/index.ts';
 
 export const MINIMUM_PASSWORD_LENGTH: 8 = 8;
 
@@ -50,7 +51,7 @@ export function decryptString(cipherText: string, password: any): string {
     }
 
     const decrypted = AES.decrypt(cipherText, password);
-    const ret = decrypted.toString(cryptoEnc);
+    const ret = decrypted.toString(cryptoEnc.Utf8);
     return ret;
 }
 

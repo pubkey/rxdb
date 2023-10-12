@@ -1,34 +1,28 @@
-/**
- * pouchdb allows to easily replicate database across devices.
- * This behaviour is tested here
- * @link https://pouchdb.com/guides/replication.html
- */
-
 import assert from 'assert';
-import config from './config';
+import config from './config.ts';
 
-import * as schemaObjects from '../helper/schema-objects';
-import * as humansCollection from '../helper/humans-collection';
+import * as schemaObjects from '../helper/schema-objects.ts';
+import * as humansCollection from '../helper/humans-collection.ts';
 
 import {
     randomCouchString,
     RxCollection,
     defaultHashSha256,
     ensureNotFalsy
-} from '../../plugins/core';
+} from '../../plugins/core/index.mjs';
 
 import {
-    replicateP2P,
-    RxP2PReplicationPool,
+    replicateWebRTC,
+    RxWebRTCReplicationPool,
     // getConnectionHandlerP2PCF,
-    isMasterInP2PReplication,
+    isMasterInWebRTCReplication,
     getConnectionHandlerSimplePeer
-} from '../../plugins/replication-p2p';
+} from '../../plugins/replication-webrtc/index.mjs';
 
 import { randomString, wait, waitUntil } from 'async-test-util';
 
-describe('replication-p2p.test.ts', () => {
-    if (config.platform.isNode()) {
+describe('replication-webrtc.test.ts', () => {
+    if (config.platform.isNode() || config.isDeno) {
         /**
          * We cannot run these tests in Node.js
          * because the node WebRTC polyfill is broken
@@ -56,20 +50,20 @@ describe('replication-p2p.test.ts', () => {
     let wrtc: any;
     const signalingServerUrl: string = 'ws://localhost:18006';
     describe('utils', () => {
-        describe('.isMasterInP2PReplication()', () => {
+        describe('.isMasterInWebRTCReplication()', () => {
             new Array(10).fill(0).forEach(() => {
                 const id1 = randomString(7);
                 const id2 = randomString(7);
-                it('should have exactly one master ' + id1 + ' - ' + id2, () => {
-                    const isMasterA = isMasterInP2PReplication(defaultHashSha256, id1, id2);
-                    const isMasterB = isMasterInP2PReplication(defaultHashSha256, id2, id1);
+                it('should have exactly one master ' + id1 + ' - ' + id2, async () => {
+                    const isMasterA = await isMasterInWebRTCReplication(defaultHashSha256, id1, id2);
+                    const isMasterB = await isMasterInWebRTCReplication(defaultHashSha256, id2, id1);
                     assert.ok(isMasterA !== isMasterB);
                 });
             });
         });
     });
 
-    function ensureReplicationHasNoErrors(replicationPool: RxP2PReplicationPool<any>) {
+    function ensureReplicationHasNoErrors(replicationPool: RxWebRTCReplicationPool<any>) {
         /**
          * We do not have to unsubscribe because the observable will cancel anyway.
          */
@@ -111,10 +105,10 @@ describe('replication-p2p.test.ts', () => {
         topic: string,
         secret: string,
         collections: RxCollection<RxDocType>[]
-    ): Promise<RxP2PReplicationPool<RxDocType>[]> {
+    ): Promise<RxWebRTCReplicationPool<RxDocType>[]> {
         const ret = await Promise.all(
             collections.map(async (collection) => {
-                const replicationPool = await replicateP2P<RxDocType>({
+                const replicationPool = await replicateWebRTC<RxDocType>({
                     collection,
                     topic,
                     secret,

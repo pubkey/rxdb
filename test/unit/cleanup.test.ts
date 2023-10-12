@@ -1,20 +1,20 @@
 import assert from 'assert';
 import { wait, waitUntil } from 'async-test-util';
 
-import config from './config';
-import * as schemas from '../helper/schemas';
-import * as schemaObjects from '../helper/schema-objects';
+import config from './config.ts';
+import * as schemas from '../helper/schemas.ts';
+import * as schemaObjects from '../helper/schema-objects.ts';
 import {
     createRxDatabase,
     randomCouchString,
     addRxPlugin,
     RxCollection
-} from '../../plugins/core';
+} from '../../plugins/core/index.mjs';
 
-import { HumanDocumentType } from '../helper/schemas';
-import { replicateRxCollection } from '../../plugins/replication';
+import { HumanDocumentType } from '../helper/schemas.ts';
+import { replicateRxCollection } from '../../plugins/replication/index.mjs';
 
-import { RxDBCleanupPlugin } from '../../plugins/cleanup';
+import { RxDBCleanupPlugin } from '../../plugins/cleanup/index.mjs';
 addRxPlugin(RxDBCleanupPlugin);
 
 config.parallel('cleanup.test.js', () => {
@@ -48,8 +48,8 @@ config.parallel('cleanup.test.js', () => {
                 ],
                 true
             );
-            assert.ok(deletedDocInStorage[notDeleted.primary]);
-            const deletedDocStillInStorage = !!deletedDocInStorage[doc.primary];
+            assert.ok(deletedDocInStorage.find(d => d[collection.schema.primaryPath] === notDeleted.primary));
+            const deletedDocStillInStorage = !!deletedDocInStorage.find(d => d[collection.schema.primaryPath] === doc.primary);
             return !deletedDocStillInStorage;
         });
 
@@ -100,7 +100,7 @@ config.parallel('cleanup.test.js', () => {
             [doc.primary],
             true
         );
-        assert.ok(deletedDocInStorage[doc.primary]);
+        assert.ok(deletedDocInStorage[0]);
 
         db.destroy();
     });

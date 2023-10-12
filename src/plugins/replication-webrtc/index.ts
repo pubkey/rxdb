@@ -6,33 +6,40 @@ import {
     Subject,
     Subscription
 } from 'rxjs';
-import { addRxPlugin } from '../../plugin';
-import { rxStorageInstanceToReplicationHandler } from '../../replication-protocol';
+import { addRxPlugin } from '../../plugin.ts';
+import { rxStorageInstanceToReplicationHandler } from '../../replication-protocol/index.ts';
 import type {
     RxCollection,
     RxError,
     RxReplicationHandler,
     RxReplicationWriteToMasterRow,
     RxTypeError
-} from '../../types';
-import { ensureNotFalsy, getFromMapOrThrow, randomCouchString } from '../../plugins/utils';
-import { RxDBLeaderElectionPlugin } from '../leader-election';
-import { replicateRxCollection } from '../replication';
-import { isMasterInP2PReplication, sendMessageAndAwaitAnswer } from './p2p-helper';
+} from '../../types/index.d.ts';
+import {
+    ensureNotFalsy,
+    getFromMapOrThrow,
+    randomCouchString
+} from '../../plugins/utils/index.ts';
+import { RxDBLeaderElectionPlugin } from '../leader-election/index.ts';
+import { replicateRxCollection } from '../replication/index.ts';
+import {
+    isMasterInWebRTCReplication,
+    sendMessageAndAwaitAnswer
+} from './webrtc-helper.ts';
 import type {
-    P2PConnectionHandler,
-    P2PPeer,
-    P2PPeerState,
-    P2PReplicationCheckpoint,
-    P2PResponse,
-    RxP2PReplicationState,
-    SyncOptionsP2P
-} from './p2p-types';
+    WebRTCConnectionHandler,
+    WebRTCPeer,
+    WebRTCPeerState,
+    WebRTCReplicationCheckpoint,
+    WebRTCResponse,
+    RxWebRTCReplicationState,
+    SyncOptionsWebRTC
+} from './webrtc-types.ts';
 
 
-export async function replicateP2P<RxDocType>(
-    options: SyncOptionsP2P<RxDocType>
-): Promise<RxP2PReplicationPool<RxDocType>> {
+export async function replicateWebRTC<RxDocType>(
+    options: SyncOptionsWebRTC<RxDocType>
+): Promise<RxWebRTCReplicationPool<RxDocType>> {
     const collection = options.collection;
     addRxPlugin(RxDBLeaderElectionPlugin);
 
@@ -61,10 +68,10 @@ export async function replicateP2P<RxDocType>(
     }
 
     const storageToken = await collection.database.storageToken;
-    const pool = new RxP2PReplicationPool(
+    const pool = new RxWebRTCReplicationPool(
         collection,
         options,
-        options.connectionHandlerCreator(options)
+        await options.connectionHandlerCreator(options)
     );
 
 
@@ -105,13 +112,13 @@ export async function replicateP2P<RxDocType>(
                 }
             );
             const peerToken: string = tokenResponse.result;
-            const isMaster = isMasterInP2PReplication(collection.database.hashFunction, storageToken, peerToken);
+            const isMaster = await isMasterInWebRTCReplication(collection.database.hashFunction, storageToken, peerToken);
 
-            let replicationState: RxP2PReplicationState<RxDocType> | undefined;
+            let replicationState: RxWebRTCReplicationState<RxDocType> | undefined;
             if (isMaster) {
                 const masterHandler = pool.masterReplicationHandler;
                 const masterChangeStreamSub = masterHandler.masterChangeStream$.subscribe(ev => {
-                    const streamResponse: P2PResponse = {
+                    const streamResponse: WebRTCResponse = {
                         id: 'masterChangeStream$',
                         result: ev
                     };
@@ -139,7 +146,7 @@ export async function replicateP2P<RxDocType>(
                          */
                         const method = (masterHandler as any)[message.method].bind(masterHandler);
                         const result = await (method as any)(...message.params);
-                        const response: P2PResponse = {
+                        const response: WebRTCResponse = {
                             id: message.id,
                             result
                         };
@@ -156,7 +163,7 @@ export async function replicateP2P<RxDocType>(
                     retryTime: options.retryTime,
                     waitForLeadership: false,
                     pull: options.pull ? Object.assign({}, options.pull, {
-                        async handler(lastPulledCheckpoint: P2PReplicationCheckpoint) {
+                        async handler(lastPulledCheckpoint: WebRTCReplicationCheckpoint) {
                             const answer = await sendMessageAndAwaitAnswer(
                                 pool.connectionHandler,
                                 peer,
@@ -201,22 +208,22 @@ export async function replicateP2P<RxDocType>(
 
 
 /**
- * Because the P2P replication runs between many instances,
+ * Because the WebRTC replication runs between many instances,
  * we use a Pool instead of returning a single replication state.
  */
-export class RxP2PReplicationPool<RxDocType> {
+export class RxWebRTCReplicationPool<RxDocType> {
 
-    peerStates$: BehaviorSubject<Map<P2PPeer, P2PPeerState<RxDocType>>> = new BehaviorSubject(new Map());
+    peerStates$: BehaviorSubject<Map<WebRTCPeer, WebRTCPeerState<RxDocType>>> = new BehaviorSubject(new Map());
     canceled: boolean = false;
-    masterReplicationHandler: RxReplicationHandler<RxDocType, P2PReplicationCheckpoint>;
+    masterReplicationHandler: RxReplicationHandler<RxDocType, WebRTCReplicationCheckpoint>;
     subs: Subscription[] = [];
 
     public error$ = new Subject<RxError | RxTypeError>();
 
     constructor(
         public readonly collection: RxCollection<RxDocType>,
-        public readonly options: SyncOptionsP2P<RxDocType>,
-        public readonly connectionHandler: P2PConnectionHandler
+        public readonly options: SyncOptionsWebRTC<RxDocType>,
+        public readonly connectionHandler: WebRTCConnectionHandler
     ) {
         this.collection.onDestroy.push(() => this.cancel());
         this.masterReplicationHandler = rxStorageInstanceToReplicationHandler(
@@ -227,10 +234,10 @@ export class RxP2PReplicationPool<RxDocType> {
     }
 
     addPeer(
-        peer: P2PPeer,
-        replicationState?: RxP2PReplicationState<RxDocType>
+        peer: WebRTCPeer,
+        replicationState?: RxWebRTCReplicationState<RxDocType>
     ) {
-        const peerState: P2PPeerState<RxDocType> = {
+        const peerState: WebRTCPeerState<RxDocType> = {
             peer,
             replicationState,
             subs: []
@@ -242,7 +249,7 @@ export class RxP2PReplicationPool<RxDocType> {
             );
         }
     }
-    removePeer(peer: P2PPeer) {
+    removePeer(peer: WebRTCPeer) {
         const peerState = getFromMapOrThrow(this.peerStates$.getValue(), peer);
         this.peerStates$.getValue().delete(peer);
         this.peerStates$.next(this.peerStates$.getValue());
@@ -274,8 +281,8 @@ export class RxP2PReplicationPool<RxDocType> {
     }
 }
 
-export * from './p2p-helper';
-export * from './p2p-types';
+export * from './webrtc-helper.ts';
+export * from './webrtc-types.ts';
 // export * from './connection-handler-webtorrent';
 // export * from './connection-handler-p2pcf';
-export * from './connection-handler-simple-peer';
+export * from './connection-handler-simple-peer.ts';

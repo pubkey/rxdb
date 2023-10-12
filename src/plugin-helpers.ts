@@ -1,12 +1,11 @@
 import { filter, mergeMap, tap } from 'rxjs/operators';
-import { getPrimaryFieldOfPrimaryKey } from './rx-schema-helper';
-import { WrappedRxStorageInstance } from './rx-storage-helper';
+import { getPrimaryFieldOfPrimaryKey } from './rx-schema-helper.ts';
+import { WrappedRxStorageInstance } from './rx-storage-helper.ts';
 import type {
     BulkWriteRow,
     EventBulk,
     RxChangeEvent,
     RxDocumentData,
-    RxDocumentDataById,
     RxDocumentWriteData,
     RxJsonSchema,
     RxStorage,
@@ -18,13 +17,12 @@ import type {
     RxValidationError,
     RxStorageWriteErrorConflict,
     MaybePromise
-} from './types';
+} from './types/index.d.ts';
 import {
-    defaultHashSha256,
     flatClone,
     getFromMapOrCreate,
     requestIdleCallbackIfAvailable
-} from './plugins/utils';
+} from './plugins/utils/index.ts';
 import { BehaviorSubject, firstValueFrom } from 'rxjs';
 
 
@@ -41,8 +39,11 @@ type WrappedStorageFunction = <Internals, InstanceCreationOptions>(
 type ValidatorFunction = (docData: RxDocumentData<any>) => RxValidationError[];
 
 /**
- * cache the validators by the schema-hash
+ * cache the validators by the schema string
  * so we can reuse them when multiple collections have the same schema
+ *
+ * Notice: to make it easier and not dependent on a hash function,
+ * we use the plain json string.
  */
 const VALIDATOR_CACHE_BY_VALIDATOR_KEY: Map<string, Map<string, ValidatorFunction>> = new Map();
 
@@ -70,10 +71,9 @@ export function wrappedValidateStorageFactory(
     function initValidator(
         schema: RxJsonSchema<any>
     ): ValidatorFunction {
-        const hash = defaultHashSha256(JSON.stringify(schema));
         return getFromMapOrCreate(
             VALIDATOR_CACHE,
-            hash,
+            JSON.stringify(schema),
             () => getValidator(schema)
         );
     }
@@ -123,10 +123,12 @@ export function wrappedValidateStorageFactory(
                                 continueWrites.push(row);
                             }
                         });
-                        const writePromise: Promise<RxStorageBulkWriteResponse<RxDocType>> = continueWrites.length > 0 ? oldBulkWrite(continueWrites, context) : Promise.resolve({ error: {}, success: {} });
+                        const writePromise: Promise<RxStorageBulkWriteResponse<RxDocType>> = continueWrites.length > 0 ?
+                            oldBulkWrite(continueWrites, context) :
+                            Promise.resolve({ error: [], success: [] });
                         return writePromise.then(writeResult => {
                             errors.forEach(validationError => {
-                                writeResult.error[validationError.documentId] = validationError;
+                                writeResult.error.push(validationError);
                             });
                             return writeResult;
                         });
@@ -191,6 +193,7 @@ export function wrapRxStorageInstance<RxDocType>(
         schema: instance.schema,
         collectionName: instance.collectionName,
         count: instance.count.bind(instance),
+        info: instance.info.bind(instance),
         remove: instance.remove.bind(instance),
         originalStorageInstance: instance,
         bulkWrite: async (
@@ -210,18 +213,18 @@ export function wrapRxStorageInstance<RxDocType>(
 
             const writeResult = await instance.bulkWrite(useRows, context);
             const ret: RxStorageBulkWriteResponse<RxDocType> = {
-                success: {},
-                error: {}
+                success: [],
+                error: []
             };
             const promises: Promise<any>[] = [];
-            Object.entries(writeResult.success).forEach(([k, v]) => {
+            writeResult.success.forEach(v => {
                 promises.push(
-                    fromStorage(v).then(v2 => ret.success[k] = v2)
+                    fromStorage(v).then(v2 => ret.success.push(v2))
                 );
             });
-            Object.entries(writeResult.error).forEach(([k, error]) => {
+            writeResult.error.forEach(error => {
                 promises.push(
-                    errorFromStorage(error).then(err => ret.error[k] = err)
+                    errorFromStorage(error).then(err => ret.error.push(err))
                 );
             });
             await Promise.all(promises);
@@ -258,11 +261,11 @@ export function wrapRxStorageInstance<RxDocType>(
         findDocumentsById: (ids, deleted) => {
             return instance.findDocumentsById(ids, deleted)
                 .then(async (findResult) => {
-                    const ret: RxDocumentDataById<RxDocType> = {};
+                    const ret: RxDocumentData<RxDocType>[] = [];
                     await Promise.all(
-                        Object.entries(findResult)
-                            .map(async ([key, doc]) => {
-                                ret[key] = await fromStorage(doc);
+                        findResult
+                            .map(async (doc) => {
+                                ret.push(await fromStorage(doc));
                             })
                     );
                     return ret;

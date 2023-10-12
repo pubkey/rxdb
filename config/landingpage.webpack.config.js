@@ -13,10 +13,14 @@ module.exports = {
             {
                 test: /\.tsx?$/,
                 loader: 'ts-loader',
-                exclude: /node_modules/,
+                exclude: [
+                    '/node_modules/'
+                ],
                 options: {
+                    transpileOnly: true,
                     compilerOptions: {
-                        noEmit: false
+                        noEmit: false,
+                        allowImportingTsExtensions: false
                     }
                 }
             },

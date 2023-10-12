@@ -10,7 +10,7 @@ import {
     lastOfArray,
     ensureNotFalsy,
     appendToArray
-} from '../utils';
+} from '../utils/index.ts';
 import type {
     RxStorageInstance,
     RxStorageChangeEvent,
@@ -22,19 +22,19 @@ import type {
     RxStorageInstanceCreationParams,
     EventBulk,
     StringKeys,
-    RxDocumentDataById,
     RxConflictResultionTask,
     RxConflictResultionTaskSolution,
     RxStorageDefaultCheckpoint,
     CategorizeBulkWriteRowsOutput,
     RxStorageCountResult,
-    DefaultPreparedQuery
-} from '../../types';
-import {
+    DefaultPreparedQuery,
+    RxStorageInfoResult
+} from '../../types/index.d.ts';
+import type {
     DexieSettings,
     DexieStorageInternals
-} from '../../types/plugins/dexie';
-import { RxStorageDexie } from './rx-storage-dexie';
+} from '../../types/plugins/dexie.d.ts';
+import { RxStorageDexie } from './rx-storage-dexie.ts';
 import {
     closeDexieDb,
     fromDexieToStorage,
@@ -42,12 +42,12 @@ import {
     getDexieDbWithTables,
     getDocsInDb,
     RX_STORAGE_NAME_DEXIE
-} from './dexie-helper';
-import { dexieCount, dexieQuery } from './dexie-query';
-import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
-import { categorizeBulkWriteRows } from '../../rx-storage-helper';
-import { addRxStorageMultiInstanceSupport } from '../../rx-storage-multiinstance';
-import { newRxError } from '../../rx-error';
+} from './dexie-helper.ts';
+import { dexieCount, dexieQuery } from './dexie-query.ts';
+import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper.ts';
+import { categorizeBulkWriteRows } from '../../rx-storage-helper.ts';
+import { addRxStorageMultiInstanceSupport } from '../../rx-storage-multiinstance.ts';
+import { newRxError } from '../../rx-error.ts';
 
 let instanceId = now();
 
@@ -102,8 +102,8 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
 
         const state = await this.internals;
         const ret: RxStorageBulkWriteResponse<RxDocType> = {
-            success: {},
-            error: {}
+            success: [],
+            error: []
         };
 
         const documentKeys: string[] = documentWrites.map(writeRow => writeRow.document[this.primaryPath] as any);
@@ -142,13 +142,12 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
                 const bulkRemoveDeletedDocs: string[] = [];
 
                 categorized.bulkInsertDocs.forEach(row => {
-                    const docId: string = (row.document as any)[this.primaryPath];
-                    ret.success[docId] = row.document as any;
+                    ret.success.push(row.document);
                     bulkPutDocs.push(row.document);
                 });
                 categorized.bulkUpdateDocs.forEach(row => {
                     const docId: string = (row.document as any)[this.primaryPath];
-                    ret.success[docId] = row.document as any;
+                    ret.success.push(row.document);
                     if (
                         row.document._deleted &&
                         (row.previous && !row.previous._deleted)
@@ -196,10 +195,10 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
     async findDocumentsById(
         ids: string[],
         deleted: boolean
-    ): Promise<RxDocumentDataById<RxDocType>> {
+    ): Promise<RxDocumentData<RxDocType>[]> {
         ensureNotClosed(this);
         const state = await this.internals;
-        const ret: RxDocumentDataById<RxDocType> = {};
+        const ret: RxDocumentData<RxDocType>[] = [];
 
         await state.dexieDb.transaction(
             'r',
@@ -218,7 +217,7 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
                         documentInDb &&
                         (!documentInDb._deleted || deleted)
                     ) {
-                        ret[id] = fromDexieToStorage(documentInDb);
+                        ret.push(fromDexieToStorage(documentInDb));
                     }
                 });
             });
@@ -248,6 +247,27 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
                 mode: 'slow'
             };
         }
+    }
+
+    async info(): Promise<RxStorageInfoResult> {
+        const state = await this.internals;
+        const ret: RxStorageInfoResult = {
+            totalCount: -1
+        };
+        await state.dexieDb.transaction(
+            'r',
+            state.dexieTable,
+            state.dexieDeletedTable,
+            async (_dexieTx) => {
+                const [nonDeleted, deleted] = await Promise.all([
+                    state.dexieTable.count(),
+                    state.dexieDeletedTable.count()
+                ]);
+                ret.totalCount = nonDeleted + deleted;
+            }
+        );
+
+        return ret;
     }
 
     async getChangedDocumentsSince(

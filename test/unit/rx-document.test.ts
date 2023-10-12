@@ -2,10 +2,10 @@ import assert from 'assert';
 import AsyncTestUtil, { wait } from 'async-test-util';
 import { Observable } from 'rxjs';
 
-import config from './config';
-import * as humansCollection from './../helper/humans-collection';
-import * as schemaObjects from '../helper/schema-objects';
-import * as schemas from '../helper/schemas';
+import config from './config.ts';
+import * as humansCollection from './../helper/humans-collection.ts';
+import * as schemaObjects from '../helper/schema-objects.ts';
+import * as schemas from '../helper/schemas.ts';
 
 import {
     createRxDatabase,
@@ -17,13 +17,14 @@ import {
     addRxPlugin,
     RxCollection,
     createBlob,
-    defaultHashSha256
-} from '../../plugins/core';
+    defaultHashSha256,
+    RxJsonSchema
+} from '../../plugins/core/index.mjs';
 
 
-import { RxDBAttachmentsPlugin } from '../../plugins/attachments';
+import { RxDBAttachmentsPlugin } from '../../plugins/attachments/index.mjs';
 addRxPlugin(RxDBAttachmentsPlugin);
-import { RxDBJsonDumpPlugin } from '../../plugins/json-dump';
+import { RxDBJsonDumpPlugin } from '../../plugins/json-dump/index.mjs';
 addRxPlugin(RxDBJsonDumpPlugin);
 
 describe('rx-document.test.js', () => {
@@ -60,9 +61,6 @@ describe('rx-document.test.js', () => {
                     assert.strictEqual(testObj[k], testObjData[k]); // getter attribute
                     assert.strictEqual(testObj[k + '$'], 'Observable:' + k); // getter observable
                     assert.strictEqual(testObj[k + '_'], 'Promise:' + k); // getter populate
-                    // test setter
-                    testObj[k] = 'foo';
-                    assert.strictEqual(testObjData[k], 'foo');
                 });
             });
         });
@@ -1114,6 +1112,74 @@ describe('rx-document.test.js', () => {
                     name: 'test1'
                 }
             }).remove();
+
+            // clean up afterwards
+            db.destroy();
+        });
+        it('#4949 RxDocument.get() on additonalProperty', async () => {
+            const mySchema: RxJsonSchema<any> = {
+                version: 0,
+                primaryKey: 'passportId',
+                type: 'object',
+                properties: {
+                    passportId: {
+                        type: 'string',
+                        maxLength: 100
+                    },
+                    firstName: {
+                        type: 'string'
+                    },
+                    lastName: {
+                        type: 'string'
+                    },
+                    age: {
+                        type: 'integer',
+                        minimum: 0,
+                        maximum: 150
+                    },
+                    tags: {
+                        type: 'object',
+                        additionalProperties: true,
+                    },
+                },
+            };
+            const db = await createRxDatabase({
+                name: randomCouchString(10),
+                storage: config.storage.getStorage()
+            });
+            const collections = await db.addCollections({
+                mycollection: {
+                    schema: mySchema
+                }
+            });
+            const tags = {
+                hello: {
+                    created: 1,
+                    name: 'hello',
+                },
+                world: {
+                    created: 2,
+                    name: 'world',
+                }
+            };
+            const myDocument = await collections.mycollection.insert({
+                passportId: 'foobar',
+                firstName: 'Bob',
+                lastName: 'Kelso',
+                age: 56,
+                tags
+            });
+
+            assert.deepStrictEqual(myDocument.toJSON().tags.hello, tags.hello, 'myDocument.toJSON().tags.hello');
+            assert.deepStrictEqual(myDocument.toJSON().tags.world, tags.world, 'myDocument.toJSON().tags.world');
+            assert.deepStrictEqual(Object.keys(myDocument.toJSON().tags), Object.keys(tags), 'Object.keys(myDocument.toJSON().tags)');
+            assert.deepStrictEqual(JSON.stringify(myDocument.get('tags').hello), JSON.stringify(tags.hello), 'myDocument.get(\'tags\').hello');
+            assert.deepStrictEqual(JSON.stringify(myDocument.get('tags').world), JSON.stringify(tags.world), 'myDocument.get(\'tags\').world');
+            assert.deepStrictEqual(Object.keys(myDocument.get('tags')), Object.keys(tags), 'Object.keys(myDocument.get(\'tags\'))');
+
+            assert.deepStrictEqual(JSON.stringify(myDocument.tags.hello), JSON.stringify(tags.hello), 'myDocument.tags.hello');
+            assert.deepStrictEqual(JSON.stringify(myDocument.tags.world), JSON.stringify(tags.world), 'myDocument.tags.world');
+            assert.deepStrictEqual(Object.keys(myDocument.tags), Object.keys(tags), 'Object.keys(myDocument.tags)');
 
             // clean up afterwards
             db.destroy();

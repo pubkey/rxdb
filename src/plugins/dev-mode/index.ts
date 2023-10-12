@@ -4,32 +4,32 @@ import type {
     RxDatabaseCreator,
     RxErrorKey,
     RxDocument
-} from '../../types';
+} from '../../types/index.d.ts';
 
 import {
     ERROR_MESSAGES
-} from './error-messages';
+} from './error-messages.ts';
 import {
     checkSchema
-} from './check-schema';
+} from './check-schema.ts';
 import {
     checkOrmDocumentMethods,
     checkOrmMethods
-} from './check-orm';
-import { checkMigrationStrategies } from './check-migration-strategies';
+} from './check-orm.ts';
+import { checkMigrationStrategies } from './check-migration-strategies.ts';
 import {
     ensureCollectionNameValid,
     ensureDatabaseNameIsValid
-} from './unallowed-properties';
-import { checkMangoQuery, checkQuery } from './check-query';
-import { newRxError } from '../../rx-error';
-import { DeepReadonly } from '../../types/util';
-import { deepFreeze } from '../../plugins/utils';
-import { ensurePrimaryKeyValid } from './check-document';
+} from './unallowed-properties.ts';
+import { checkMangoQuery, checkQuery } from './check-query.ts';
+import { newRxError } from '../../rx-error.ts';
+import { DeepReadonly } from '../../types/util.ts';
+import { deepFreeze } from '../../plugins/utils/index.ts';
+import { ensurePrimaryKeyValid } from './check-document.ts';
 
-export * from './check-schema';
-export * from './unallowed-properties';
-export * from './check-query';
+export * from './check-schema.ts';
+export * from './unallowed-properties.ts';
+export * from './check-query.ts';
 
 
 /**
@@ -67,8 +67,8 @@ export const RxDBDevModePlugin: RxPlugin = {
                 '',
                 '🤗 Hint: To get the most out of RxDB, check out the Premium Plugins',
                 'to get access to faster storages and more professional features: https://rxdb.info/premium.html',
-                '',
-                'Also take part in the RxDB User Survey: https://rxdb.info/survey.html',
+                // '',
+                // 'Also take part in the RxDB User Survey: https://rxdb.info/survey.html',
                 '---------------------------------------------------------------------'
             ].join('\n')
         );

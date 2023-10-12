@@ -1,6 +1,6 @@
-import { RxCollectionBase } from '../../rx-collection';
-import { RxDatabaseBase } from '../../rx-database';
-import { createRxDocumentConstructor, basePrototype } from '../../rx-document';
+import { RxCollectionBase } from '../../rx-collection.ts';
+import { RxDatabaseBase } from '../../rx-database.ts';
+import { createRxDocumentConstructor, basePrototype } from '../../rx-document.ts';
 
 /**
  * returns all possible properties of a RxCollection-instance

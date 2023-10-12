@@ -11,14 +11,14 @@ import {
     waitUntil
 } from 'async-test-util';
 
-import config from './config';
-import * as schemaObjects from '../helper/schema-objects';
-import * as schemas from '../helper/schemas';
-import * as humansCollection from '../helper/humans-collection';
+import config from './config.ts';
+import * as schemaObjects from '../helper/schema-objects.ts';
+import * as schemas from '../helper/schemas.ts';
+import * as humansCollection from '../helper/humans-collection.ts';
 
 import {
     wrappedValidateAjvStorage
-} from '../../plugins/validate-ajv';
+} from '../../plugins/validate-ajv/index.mjs';
 
 import {
     RxCollection,
@@ -31,19 +31,24 @@ import {
     createRxDatabase,
     RxReplicationPullStreamItem,
     lastOfArray,
-    RxJsonSchema
-} from '../../plugins/core';
+    RxJsonSchema,
+    createBlob,
+    RxAttachmentCreator,
+    DeepReadonly
+} from '../../plugins/core/index.mjs';
 
 import {
+    RxReplicationState,
     replicateRxCollection
-} from '../../plugins/replication';
+} from '../../plugins/replication/index.mjs';
 
 import type {
     ReplicationPullHandler,
     ReplicationPushHandler,
-    RxReplicationWriteToMasterRow
-} from '../../src/types';
-import { firstValueFrom, Subject } from 'rxjs';
+    RxReplicationWriteToMasterRow,
+    RxStorage
+} from '../../plugins/core/index.mjs';
+import { firstValueFrom, Observable, Subject } from 'rxjs';
 
 
 type CheckpointType = any;
@@ -53,15 +58,15 @@ type TestDocType = schemaObjects.HumanWithTimestampDocumentType;
  * Creates a pull handler that always returns
  * all documents.
  */
-export function getPullHandler(
-    remoteCollection: RxCollection<TestDocType, {}, {}, {}>
-): ReplicationPullHandler<TestDocType, CheckpointType> {
+export function getPullHandler<RxDocType>(
+    remoteCollection: RxCollection<RxDocType, {}, {}, {}>
+): ReplicationPullHandler<RxDocType, CheckpointType> {
     const helper = rxStorageInstanceToReplicationHandler(
         remoteCollection.storageInstance,
         remoteCollection.database.conflictHandler as any,
         remoteCollection.database.token
     );
-    const handler: ReplicationPullHandler<TestDocType, CheckpointType> = async (
+    const handler: ReplicationPullHandler<RxDocType, CheckpointType> = async (
         latestPullCheckpoint: CheckpointType | null,
         batchSize: number
     ) => {
@@ -70,22 +75,33 @@ export function getPullHandler(
     };
     return handler;
 }
-export function getPushHandler(
-    remoteCollection: RxCollection<TestDocType, {}, {}, {}>
-): ReplicationPushHandler<TestDocType> {
+export function getPullStream<RxDocType>(
+    remoteCollection: RxCollection<RxDocType, {}, {}, {}>
+): Observable<RxReplicationPullStreamItem<RxDocType, any>> {
     const helper = rxStorageInstanceToReplicationHandler(
         remoteCollection.storageInstance,
         remoteCollection.conflictHandler,
         remoteCollection.database.token
     );
-    const handler: ReplicationPushHandler<TestDocType> = async (
-        rows: RxReplicationWriteToMasterRow<TestDocType>[]
+    return helper.masterChangeStream$;
+}
+export function getPushHandler<RxDocType>(
+    remoteCollection: RxCollection<RxDocType, {}, {}, {}>
+): ReplicationPushHandler<RxDocType> {
+    const helper = rxStorageInstanceToReplicationHandler(
+        remoteCollection.storageInstance,
+        remoteCollection.conflictHandler,
+        remoteCollection.database.token
+    );
+    const handler: ReplicationPushHandler<RxDocType> = async (
+        rows: RxReplicationWriteToMasterRow<RxDocType>[]
     ) => {
         const result = await helper.masterWrite(rows);
         return result;
     };
     return handler;
 }
+
 
 describe('replication.test.js', () => {
     const REPLICATION_IDENTIFIER_TEST = 'replication-ident-tests';
@@ -100,11 +116,59 @@ describe('replication.test.js', () => {
             remoteCollection
         };
     }
+    function ensureReplicationHasNoErrors(replicationState: RxReplicationState<any, any>) {
+        /**
+         * We do not have to unsubscribe because the observable will cancel anyway.
+         */
+        replicationState.error$.subscribe(err => {
+            console.error('ensureReplicationHasNoErrors() has error:');
+            console.dir(err.toString());
+            throw err;
+        });
+    }
+    async function ensureEqualState<RxDocType>(
+        collectionA: RxCollection<RxDocType>,
+        collectionB: RxCollection<RxDocType>,
+        context?: string
+    ) {
+        const [
+            docsA,
+            docsB
+        ] = await Promise.all([
+            collectionA.find().exec().then(docs => docs.map(d => d.toJSON(true))),
+            collectionB.find().exec().then(docs => docs.map(d => d.toJSON(true)))
+        ]);
 
-    const storageWithValidation = wrappedValidateAjvStorage({
-        storage: config.storage.getStorage()
+        docsA.forEach((docA, idx) => {
+            const docB = docsB[idx];
+            const cleanDocToCompare = (doc: DeepReadonly<RxDocType>) => {
+                return Object.assign({}, doc, {
+                    _meta: undefined,
+                    _rev: undefined
+                });
+            };
+            try {
+                assert.deepStrictEqual(
+                    cleanDocToCompare(docA),
+                    cleanDocToCompare(docB)
+                );
+            } catch (err) {
+                console.log('## ERROR: State not equal (context: "' + context + '")');
+                console.log(JSON.stringify(docA, null, 4));
+                console.log(JSON.stringify(docB, null, 4));
+                throw new Error('STATE not equal');
+            }
+        });
+    }
+
+    let storageWithValidation: RxStorage<any, any>;
+    describe('init', () => {
+        it('create storage', () => {
+            storageWithValidation = wrappedValidateAjvStorage({
+                storage: config.storage.getStorage()
+            });
+        });
     });
-
     config.parallel('non-live replication', () => {
         it('should replicate both sides', async () => {
             const docsPerSide = 15;
@@ -139,11 +203,7 @@ describe('replication.test.js', () => {
                     }
                 }
             });
-            replicationState.error$.subscribe(err => {
-                console.log('got error :');
-                console.log(JSON.stringify(err, null, 4));
-                throw err;
-            });
+            ensureReplicationHasNoErrors(replicationState);
 
             await replicationState.awaitInitialReplication();
 
@@ -338,10 +398,7 @@ describe('replication.test.js', () => {
                     handler: getPushHandler(remoteCollection)
                 }
             });
-            replicationState.error$.subscribe(err => {
-                console.log('got error :');
-                console.dir(err);
-            });
+            ensureReplicationHasNoErrors(replicationState);
 
             await replicationState.awaitInitialReplication();
             const docsRemoteQuery = await remoteCollection.findOne();
@@ -396,16 +453,12 @@ describe('replication.test.js', () => {
                         if (docs.length === 0 || docs.length > batchSize) {
                             throw new Error('push.batchSize(' + batchSize + ') not respected ' + docs.length);
                         }
-                        return getPushHandler(remoteCollection)(docs);
+                        return getPushHandler(remoteCollection)(docs as any);
                     },
                     batchSize
                 }
             });
-            replicationState.error$.subscribe(err => {
-                console.log('got error :');
-                console.dir(err);
-                throw err;
-            });
+            ensureReplicationHasNoErrors(replicationState);
 
             /**
              * Insert many documents at once to
@@ -439,11 +492,7 @@ describe('replication.test.js', () => {
                     handler: getPushHandler(remoteCollection)
                 }
             });
-            replicationState.error$.subscribe(err => {
-                console.log('got error :');
-                console.dir(err);
-                throw err;
-            });
+            ensureReplicationHasNoErrors(replicationState);
 
             const values: boolean[] = [];
             replicationState.active$.subscribe((active) => {
@@ -693,6 +742,110 @@ describe('replication.test.js', () => {
 
             localCollection.database.destroy();
             remoteCollection.database.destroy();
+        });
+    });
+    config.parallel('attachment replication', () => {
+        if (!config.storage.hasAttachments) {
+            return;
+        }
+        /**
+         * Here we use a RxDatabase insteaf of the plain RxStorageInstance.
+         * This makes handling attachment easier
+         */
+        it('attachments replication: up and down with streaming', async () => {
+            const localCollection = await humansCollection.createAttachments(3);
+            const remoteCollection = await humansCollection.createAttachments(3);
+
+            const localDocs = await localCollection.find().exec();
+            const remoteDocs = await remoteCollection.find().exec();
+
+            const replicationState = replicateRxCollection({
+                collection: localCollection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: true,
+                pull: {
+                    handler: getPullHandler(remoteCollection),
+                    stream$: getPullStream(remoteCollection)
+                },
+                push: {
+                    handler: getPushHandler(remoteCollection),
+                }
+            });
+            ensureReplicationHasNoErrors(replicationState);
+            await replicationState.awaitInitialReplication();
+
+            function getRandomAttachment(
+                id = randomCouchString(10),
+                size = 20
+            ): RxAttachmentCreator {
+                const attachmentData = randomCouchString(size);
+                const dataBlob = createBlob(attachmentData, 'text/plain');
+                return {
+                    id,
+                    data: dataBlob,
+                    type: 'text/plain'
+                };
+            }
+
+            await replicationState.awaitInitialReplication();
+            await ensureEqualState(localCollection, remoteCollection, 'first sync');
+
+            // add attachments
+            await remoteDocs[0].getLatest().putAttachment(getRandomAttachment('master1'));
+            await localDocs[0].getLatest().putAttachment(getRandomAttachment('fork1'));
+
+            await Promise.all([
+                localDocs[1].getLatest().putAttachment(getRandomAttachment()),
+                localDocs[2].getLatest().putAttachment(getRandomAttachment()),
+                remoteDocs[1].getLatest().putAttachment(getRandomAttachment()),
+                remoteDocs[2].getLatest().putAttachment(getRandomAttachment())
+            ]);
+
+            await replicationState.awaitInSync();
+            await ensureEqualState(localCollection, remoteCollection, 'after adding');
+
+            // add more attachments to docs that already have attachments
+            await localDocs[0].getLatest().putAttachment(getRandomAttachment('fork2'));
+            await remoteDocs[0].getLatest().putAttachment(getRandomAttachment('master2'));
+
+            await wait(100);
+            await replicationState.awaitInSync();
+            await ensureEqualState(localCollection, remoteCollection, 'after add more');
+
+            // overwrite attachments
+            await localDocs[0].getLatest().putAttachment(getRandomAttachment('fork1', 5));
+            await remoteDocs[0].getLatest().putAttachment(getRandomAttachment('master1', 5));
+
+            await wait(100);
+            await replicationState.awaitInSync();
+            await ensureEqualState(localCollection, remoteCollection, 'after overwrite');
+
+
+            /**
+             * The meta instance should not contain attachments data
+             */
+            const metaStorage = ensureNotFalsy(replicationState.metaInstance);
+            const preparedQuery = config.storage.getStorage().statics.prepareQuery(
+                metaStorage.schema,
+                normalizeMangoQuery(
+                    metaStorage.schema,
+                    {}
+                )
+            );
+            const result = await metaStorage.query(preparedQuery);
+            const metaDocs = result.documents;
+            metaDocs.forEach(doc => {
+                if (doc.isCheckpoint !== '1' && doc.data._attachments) {
+                    Object.values(doc.data._attachments).forEach((attachment) => {
+                        if ((attachment as RxAttachmentCreator).data) {
+                            throw new Error('meta doc contains attachment data');
+                        }
+                    });
+                }
+            });
+
+            await localCollection.database.destroy();
+            await remoteCollection.database.destroy();
         });
     });
     config.parallel('issues', () => {

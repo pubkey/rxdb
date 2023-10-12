@@ -1,7 +1,7 @@
 import type {
     MaybePromise,
     MaybeReadonly
-} from '../../types';
+} from '../../types/index.d.ts';
 
 export function lastOfArray<T>(ar: T[]): T | undefined {
     return ar[ar.length - 1];

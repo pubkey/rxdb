@@ -11,7 +11,7 @@ At the heart of PWAs lies efficient data management, and RxDB steps in as a reli
 
 <center>
     <a href="https://rxdb.info/">
-        <img src="../files/logo/logo_text.svg" alt="Progressive Web App Database" width="228">
+        <img src="../files/logo/rxdb_javascript_database.svg" alt="Progressive Web App Database" width="228">
     </a>
 </center>
 
@@ -66,7 +66,7 @@ To facilitate seamless data synchronization between PWA clients and servers, RxD
 
 - [Firestore Replication](../replication-firestore.md): RxDB synchronizes data with Google Firestore, a real-time cloud-hosted NoSQL database. This integration guarantees up-to-date data across different instances of the PWA.
 
-- [Peer-to-Peer (P2P)](../replication-p2p.md) Replication: RxDB supports P2P replication, facilitating direct data synchronization between clients without intermediaries. This decentralized approach is invaluable in scenarios where server infrastructure is limited.
+- [Peer-to-Peer (P2P) via WebRTC](../replication-webrtc.md) Replication: RxDB supports P2P replication, facilitating direct data synchronization between clients without intermediaries. This decentralized approach is invaluable in scenarios where server infrastructure is limited.
 
 ## Advanced RxDB Features and Techniques
 ### Encryption of Local Data

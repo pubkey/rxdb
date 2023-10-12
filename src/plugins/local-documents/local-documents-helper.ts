@@ -1,12 +1,12 @@
-import { filter } from 'rxjs/operators';
-import { DocumentCache } from '../../doc-cache';
-import { IncrementalWriteQueue } from '../../incremental-write';
-import { newRxError } from '../../rx-error';
-import { fillWithDefaultSettings } from '../../rx-schema-helper';
+import { filter } from 'rxjs';
+import { DocumentCache } from '../../doc-cache.ts';
+import { IncrementalWriteQueue } from '../../incremental-write.ts';
+import { newRxError } from '../../rx-error.ts';
+import { fillWithDefaultSettings } from '../../rx-schema-helper.ts';
 import {
     getWrappedStorageInstance,
     storageChangeEventToRxChangeEvent
-} from '../../rx-storage-helper';
+} from '../../rx-storage-helper.ts';
 import type {
     LocalDocumentParent,
     LocalDocumentState,
@@ -17,10 +17,10 @@ import type {
     RxJsonSchema,
     RxLocalDocumentData,
     RxStorage
-} from '../../types';
-import { randomCouchString } from '../../plugins/utils';
-import { createRxLocalDocument } from './rx-local-document';
-import { overwritable } from '../../overwritable';
+} from '../../types/index.d.ts';
+import { randomCouchString } from '../../plugins/utils/index.ts';
+import { createRxLocalDocument } from './rx-local-document.ts';
+import { overwritable } from '../../overwritable.ts';
 
 export const LOCAL_DOC_STATE_BY_PARENT: WeakMap<LocalDocumentParent, Promise<LocalDocumentState>> = new WeakMap();
 export const LOCAL_DOC_STATE_BY_PARENT_RESOLVED: WeakMap<LocalDocumentParent, LocalDocumentState> = new WeakMap();

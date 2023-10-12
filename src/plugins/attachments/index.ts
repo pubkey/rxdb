@@ -1,6 +1,6 @@
 import {
     map
-} from 'rxjs/operators';
+} from 'rxjs';
 
 import {
     blobToBase64String,
@@ -9,39 +9,19 @@ import {
     flatClone,
     getBlobSize,
     PROMISE_RESOLVE_VOID
-} from '../../plugins/utils';
-import {
-    newRxError
-} from '../../rx-error';
+} from '../../plugins/utils/index.ts';
 import type {
     RxDocument,
     RxPlugin,
-    OldRxCollection,
     RxDocumentWriteData,
     RxAttachmentData,
     RxDocumentData,
     RxAttachmentCreator,
     RxAttachmentWriteData
-} from '../../types';
+} from '../../types/index.ts';
+import { assignMethodsToAttachment, ensureSchemaSupportsAttachments } from './attachments-utils.ts';
 
-function ensureSchemaSupportsAttachments(doc: any) {
-    const schemaJson = doc.collection.schema.jsonSchema;
-    if (!schemaJson.attachments) {
-        throw newRxError('AT1', {
-            link: 'https://pubkey.github.io/rxdb/rx-attachment.html'
-        });
-    }
-}
 
-const _assignMethodsToAttachment = function (attachment: any) {
-    Object
-        .entries(attachment.doc.collection.attachments)
-        .forEach(([funName, fun]) => {
-            Object.defineProperty(attachment, funName, {
-                get: () => (fun as any).bind(attachment)
-            });
-        });
-};
 
 /**
  * an RxAttachment is basically just the attachment-stub
@@ -66,7 +46,7 @@ export class RxAttachment {
         this.length = length;
         this.digest = digest;
 
-        _assignMethodsToAttachment(this);
+        assignMethodsToAttachment(this);
     }
 
     remove(): Promise<void> {
@@ -116,6 +96,8 @@ export function fromStorageInstanceResult<RxDocType>(
     });
 }
 
+
+
 export async function putAttachment<RxDocType>(
     this: RxDocument<RxDocType>,
     attachmentData: RxAttachmentCreator
@@ -124,6 +106,7 @@ export async function putAttachment<RxDocType>(
 
     const dataSize = getBlobSize(attachmentData.data);
     const dataString = await blobToBase64String(attachmentData.data);
+    const digest = await this.collection.database.hashFunction(dataString);
 
     const id = attachmentData.id;
     const type = attachmentData.type;
@@ -132,12 +115,13 @@ export async function putAttachment<RxDocType>(
     return this.collection.incrementalWriteQueue.addWrite(
         this._data,
         (docWriteData: RxDocumentWriteData<RxDocType>) => {
+            docWriteData = flatClone(docWriteData);
             docWriteData._attachments = flatClone(docWriteData._attachments);
-
             docWriteData._attachments[id] = {
                 length: dataSize,
                 type,
-                data
+                data,
+                digest
             };
             return docWriteData;
         }).then(writeResult => {
@@ -199,7 +183,7 @@ export function allAttachments(
 export async function preMigrateDocument<RxDocType>(
     data: {
         docData: RxDocumentData<RxDocType>;
-        oldCollection: OldRxCollection;
+        oldCollection: any; // TODO
     }
 ): Promise<void> {
     const attachments = data.docData._attachments;
@@ -214,10 +198,12 @@ export async function preMigrateDocument<RxDocType>(
                     attachmentId,
                     attachment.digest
                 );
+                const digest = await data.oldCollection.database.hashFunction(rawAttachmentData);
                 newAttachments[attachmentId] = {
                     length: attachment.length,
                     type: attachment.type,
-                    data: rawAttachmentData
+                    data: rawAttachmentData,
+                    digest
                 };
             })
         );
@@ -278,3 +264,6 @@ export const RxDBAttachmentsPlugin: RxPlugin = {
         }
     }
 };
+
+
+export * from './attachments-utils.ts';

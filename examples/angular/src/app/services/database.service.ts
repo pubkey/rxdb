@@ -132,6 +132,7 @@ async function _create(): Promise<RxHeroesDatabase> {
         if (environment.isServerSideRendering) {
             console.log('DatabaseService: await initial replication to ensure SSR has all data');
             const firstReplication = await replicateCouchDB({
+                replicationIdentifier: 'couch-server-side-sync',
                 collection: db.hero,
                 url: environment.rxdbSyncUrl + db.hero.name + '/',
                 live: false,
@@ -146,6 +147,7 @@ async function _create(): Promise<RxHeroesDatabase> {
          */
         console.log('DatabaseService: start ongoing replication');
         const ongoingReplication = replicateCouchDB({
+            replicationIdentifier: 'couch-client-side-sync',
             collection: db.hero,
             url: environment.rxdbSyncUrl + db.hero.name + '/',
             live: true,

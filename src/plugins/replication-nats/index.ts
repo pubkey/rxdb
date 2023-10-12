@@ -1,43 +1,43 @@
 import {
     ensureNotFalsy,
     errorToPlainJson
-} from '../../plugins/utils';
+} from '../../plugins/utils/index.ts';
 
 
-import { RxDBLeaderElectionPlugin } from '../leader-election';
+import { RxDBLeaderElectionPlugin } from '../leader-election/index.ts';
 import type {
     RxCollection,
     ReplicationPullOptions,
     ReplicationPushOptions,
     RxReplicationWriteToMasterRow,
     RxReplicationPullStreamItem
-} from '../../types';
+} from '../../types/index.d.ts';
 import {
     RxReplicationState,
     startReplicationOnLeaderShip
-} from '../replication';
+} from '../replication/index.ts';
 import {
     addRxPlugin,
     newRxError,
     WithDeleted
-} from '../../';
+} from '../../index.ts';
 
 import { Subject } from 'rxjs';
 import type {
     NatsCheckpointType,
     NatsSyncOptions
-} from './nats-types';
+} from './nats-types.ts';
 import { connect, DeliverPolicy, JSONCodec, ReplayPolicy } from 'nats';
-import { NATS_REPLICATION_PLUGIN_IDENTITY_PREFIX, getNatsServerDocumentState } from './nats-helper';
-import { awaitRetry } from '../replication/replication-helper';
+import { getNatsServerDocumentState } from './nats-helper.ts';
+import { awaitRetry } from '../replication/replication-helper.ts';
 
-export * from './nats-types';
-export * from './nats-helper';
+export * from './nats-types.ts';
+export * from './nats-helper.ts';
 
 
 export class RxNatsReplicationState<RxDocType> extends RxReplicationState<RxDocType, NatsCheckpointType> {
     constructor(
-        public readonly replicationIdentifierHash: string,
+        public readonly replicationIdentifier: string,
         public readonly collection: RxCollection<RxDocType>,
         public readonly pull?: ReplicationPullOptions<RxDocType, NatsCheckpointType>,
         public readonly push?: ReplicationPushOptions<RxDocType>,
@@ -46,7 +46,7 @@ export class RxNatsReplicationState<RxDocType> extends RxReplicationState<RxDocT
         public autoStart: boolean = true
     ) {
         super(
-            replicationIdentifierHash,
+            replicationIdentifier,
             collection,
             '_deleted',
             pull,
@@ -228,7 +228,7 @@ export function replicateNats<RxDocType>(
 
 
     const replicationState = new RxNatsReplicationState<RxDocType>(
-        NATS_REPLICATION_PLUGIN_IDENTITY_PREFIX + options.collection.database.hashFunction(options.replicationIdentifier),
+        options.replicationIdentifier,
         collection,
         replicationPrimitivesPull,
         replicationPrimitivesPush,

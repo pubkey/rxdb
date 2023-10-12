@@ -1,11 +1,11 @@
-import { RxJsonSchema } from './rx-schema';
+import type { RxJsonSchema } from './rx-schema.d.ts';
 import {
     RxSchema
-} from '../rx-schema';
-import { RxPlugin } from './rx-plugin';
-import { ERROR_MESSAGES } from '../plugins/dev-mode/error-messages';
-import { RxReplicationWriteToMasterRow } from './replication-protocol';
-import { BulkWriteRow, RxDocumentData } from './rx-storage';
+} from '../rx-schema.ts';
+import type { RxPlugin } from './rx-plugin.d.ts';
+import { ERROR_MESSAGES } from '../plugins/dev-mode/error-messages.ts';
+import type { RxReplicationWriteToMasterRow } from './replication-protocol.d.ts';
+import type { BulkWriteRow, RxDocumentData } from './rx-storage.d.ts';
 
 type KeyOf<T extends object> = Extract<keyof T, string>;
 export type RxErrorKey = KeyOf<typeof ERROR_MESSAGES>;
@@ -13,7 +13,7 @@ export type RxErrorKey = KeyOf<typeof ERROR_MESSAGES>;
 export type {
     RxError,
     RxTypeError
-} from '../rx-error';
+} from '../rx-error.ts';
 
 /**
  * this lists all possible parameters

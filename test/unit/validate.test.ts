@@ -4,9 +4,9 @@ import {
     clone
 } from 'async-test-util';
 
-import config from './config';
-import * as schemas from '../helper/schemas';
-import * as schemaObjects from '../helper/schema-objects';
+import config from './config.ts';
+import * as schemas from '../helper/schemas.ts';
+import * as schemaObjects from '../helper/schema-objects.ts';
 import {
     createRxDatabase,
     randomCouchString,
@@ -16,11 +16,12 @@ import {
     now,
     RxDocumentData,
     RxStorageInstance,
-    BulkWriteRow
-} from '../../plugins/core';
+    BulkWriteRow,
+    RxStorage
+} from '../../plugins/core/index.mjs';
 
-import { wrappedValidateZSchemaStorage } from '../../plugins/validate-z-schema';
-import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv';
+import { wrappedValidateZSchemaStorage } from '../../plugins/validate-z-schema/index.mjs';
+import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs';
 
 
 /**
@@ -31,7 +32,7 @@ import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv';
 // import { wrappedValidateIsMyJsonValidStorage } from '../../plugins/validate-is-my-json-valid';
 
 
-import { EXAMPLE_REVISION_1 } from '../helper/revisions';
+import { EXAMPLE_REVISION_1 } from '../helper/revisions.ts';
 
 const validationImplementations: {
     key: string;
@@ -65,7 +66,7 @@ validationImplementations.forEach(
             writeRows: BulkWriteRow<RxDocType>[],
         ) {
             const result = await instance.bulkWrite(writeRows, testContext);
-            assert.deepStrictEqual(result.error, {});
+            assert.deepStrictEqual(result.error, []);
         }
         async function assertBulkWriteValidationError<RxDocType>(
             instance: RxStorageInstance<RxDocType, any, any>,
@@ -73,8 +74,8 @@ validationImplementations.forEach(
             errorMustContain?: string
         ) {
             const result = await instance.bulkWrite(writeRows, testContext);
-            assert.deepStrictEqual(result.success, {});
-            const errors = Object.values(result.error);
+            assert.deepStrictEqual(result.success, []);
+            const errors = result.error;
             errors.forEach(err => {
                 assert.strictEqual(err.status, 422);
                 if (errorMustContain) {
@@ -89,8 +90,13 @@ validationImplementations.forEach(
             });
         }
 
-        const storage = validationImplementation.implementation({
-            storage: config.storage.getStorage()
+        let storage: RxStorage<any, any>;
+        describe('init', () => {
+            it('create storage', () => {
+                storage = validationImplementation.implementation({
+                    storage: config.storage.getStorage()
+                });
+            });
         });
         describe('RxStorageInstance', () => {
             function getRxStorageInstance<RxDocType>(schema: RxJsonSchema<RxDocType>) {
@@ -392,7 +398,7 @@ validationImplementations.forEach(
                     const result = await instance.bulkWrite([{
                         document: toRxDocumentData(obj)
                     }], testContext);
-                    const err = result.error['foobar'];
+                    const err = result.error[0];
                     const message = (err as any).validationErrors[0].message;
                     assert.ok(message.includes('dditional'));
                     await instance.close();
@@ -408,7 +414,7 @@ validationImplementations.forEach(
                     const result = await instance.bulkWrite([{
                         document: toRxDocumentData(obj) as any
                     }], testContext);
-                    const err = result.error['foobar'];
+                    const err = result.error[0];
                     const deepParam = (err as any).validationErrors[0];
                     assert.ok(
                         JSON.stringify(deepParam).includes('age')

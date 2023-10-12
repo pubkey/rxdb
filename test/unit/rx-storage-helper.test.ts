@@ -1,6 +1,6 @@
 
-import config from './config';
-import * as schemaObjects from '../helper/schema-objects';
+import config from './config.ts';
+import * as schemaObjects from '../helper/schema-objects.ts';
 import {
     randomCouchString,
     now,
@@ -8,11 +8,11 @@ import {
     categorizeBulkWriteRows,
     getPrimaryFieldOfPrimaryKey,
     BulkWriteRow
-} from '../../plugins/core';
-import * as schemas from '../helper/schemas';
+} from '../../plugins/core/index.mjs';
+import * as schemas from '../helper/schemas.ts';
 import {
     EXAMPLE_REVISION_1
-} from '../helper/revisions';
+} from '../helper/revisions.ts';
 import assert from 'assert';
 
 
@@ -50,7 +50,7 @@ config.parallel('rx-storage-helper.test.ts', () => {
 
             const startTime = performance.now();
 
-            categorizeBulkWriteRows(
+            await categorizeBulkWriteRows(
                 instance,
                 primaryPath,
                 new Map(),

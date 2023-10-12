@@ -8,7 +8,7 @@
 import assert from 'assert';
 import AsyncTestUtil, { wait, waitUntil } from 'async-test-util';
 
-import config, { getEncryptedStorage, getPassword } from './config';
+import config, { getEncryptedStorage, getPassword } from './config.ts';
 import {
     isRxDatabase,
     createRxDatabase,
@@ -17,12 +17,12 @@ import {
     RxDatabase,
     RxDocument,
     ensureNotFalsy,
-} from '../../plugins/core';
+} from '../../plugins/core/index.mjs';
 
-import * as schemas from './../helper/schemas';
-import * as schemaObjects from './../helper/schema-objects';
-import * as humansCollection from './../helper/humans-collection';
-import { HumanDocumentType } from './../helper/schemas';
+import * as schemas from './../helper/schemas.ts';
+import * as schemaObjects from './../helper/schema-objects.ts';
+import * as humansCollection from './../helper/humans-collection.ts';
+import { HumanDocumentType } from './../helper/schemas.ts';
 
 config.parallel('cross-instance.test.js', () => {
     if (!config.storage.hasMultiInstance) {
@@ -284,10 +284,11 @@ config.parallel('cross-instance.test.js', () => {
             });
 
             await AsyncTestUtil.waitUntil(() => secretAfter.name === 'foo');
-            assert.deepStrictEqual(secretAfter, {
+
+            assert.deepStrictEqual(JSON.stringify(secretAfter), JSON.stringify({
                 name: 'foo',
                 subname: 'bar'
-            });
+            }));
 
             db1.destroy();
             db2.destroy();

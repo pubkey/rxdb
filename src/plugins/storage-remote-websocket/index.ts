@@ -5,25 +5,25 @@ import type {
 import {
     PROMISE_RESOLVE_VOID,
     getFromMapOrThrow
-} from '../../plugins/utils';
+} from '../../plugins/utils/index.ts';
 import {
     createWebSocketClient,
     startSocketServer
-} from '../replication-websocket';
-import { exposeRxStorageRemote } from '../storage-remote/remote';
-import { getRxStorageRemote } from '../storage-remote/rx-storage-remote';
-import { createErrorAnswer } from '../storage-remote/storage-remote-helpers';
+} from '../replication-websocket/index.ts';
+import { exposeRxStorageRemote } from '../storage-remote/remote.ts';
+import { getRxStorageRemote } from '../storage-remote/rx-storage-remote.ts';
+import { createErrorAnswer } from '../storage-remote/storage-remote-helpers.ts';
 import type {
     MessageFromRemote,
     MessageToRemote,
     RxStorageRemoteExposeSettings
-} from '../storage-remote/storage-remote-types';
+} from '../storage-remote/storage-remote-types.ts';
 import type {
     RxStorageRemoteWebsocketClient,
     RxStorageRemoteWebsocketClientOptions,
     RxStorageRemoteWebsocketServerOptions,
     RxStorageRemoteWebsocketServerState
-} from './types';
+} from './types.ts';
 export function startRxStorageRemoteWebsocketServer(
     options: RxStorageRemoteWebsocketServerOptions
 ): RxStorageRemoteWebsocketServerState {
@@ -111,5 +111,5 @@ export function getRxStorageRemoteWebsocket(
 }
 
 
-export * from './types';
+export * from './types.ts';
 

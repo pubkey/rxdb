@@ -8,6 +8,7 @@
 import {
     BehaviorSubject,
     combineLatest,
+    filter,
     mergeMap,
     Observable,
     Subject,
@@ -28,8 +29,8 @@ import type {
     RxStorageReplicationMeta,
     RxTypeError,
     WithDeleted
-} from '../../types';
-import { RxDBLeaderElectionPlugin } from '../leader-election';
+} from '../../types/index.d.ts';
+import { RxDBLeaderElectionPlugin } from '../leader-election/index.ts';
 import {
     ensureNotFalsy,
     errorToPlainJson,
@@ -38,30 +39,30 @@ import {
     PROMISE_RESOLVE_FALSE,
     PROMISE_RESOLVE_TRUE,
     toArray
-} from '../../plugins/utils';
+} from '../../plugins/utils/index.ts';
 import {
     awaitRxStorageReplicationFirstInSync,
     awaitRxStorageReplicationInSync,
     cancelRxStorageReplication,
     getRxReplicationMetaInstanceSchema,
     replicateRxStorageInstance
-} from '../../replication-protocol';
-import { newRxError } from '../../rx-error';
+} from '../../replication-protocol/index.ts';
+import { newRxError } from '../../rx-error.ts';
 import {
     awaitRetry,
     DEFAULT_MODIFIER,
     swapDefaultDeletedTodeletedField,
     handlePulledDocuments
-} from './replication-helper';
+} from './replication-helper.ts';
 import {
     addConnectedStorageToCollection
-} from '../../rx-database-internal-store';
-import { addRxPlugin } from '../../plugin';
-import { hasEncryption } from '../../rx-storage-helper';
-import { overwritable } from '../../overwritable';
+} from '../../rx-database-internal-store.ts';
+import { addRxPlugin } from '../../plugin.ts';
+import { hasEncryption } from '../../rx-storage-helper.ts';
+import { overwritable } from '../../overwritable.ts';
 import {
     runAsyncPluginHooks
-} from '../../hooks';
+} from '../../hooks.ts';
 
 
 export const REPLICATION_STATE_BY_COLLECTION: WeakMap<RxCollection, RxReplicationState<any, any>[]> = new WeakMap();
@@ -70,25 +71,25 @@ export class RxReplicationState<RxDocType, CheckpointType> {
     public readonly subs: Subscription[] = [];
     public readonly subjects = {
         received: new Subject<RxDocumentData<RxDocType>>(), // all documents that are received from the endpoint
-        send: new Subject<WithDeleted<RxDocType>>(), // all documents that are send to the endpoint
+        sent: new Subject<WithDeleted<RxDocType>>(), // all documents that are send to the endpoint
         error: new Subject<RxError | RxTypeError>(), // all errors that are received from the endpoint, emits new Error() objects
         canceled: new BehaviorSubject<boolean>(false), // true when the replication was canceled
         active: new BehaviorSubject<boolean>(false) // true when something is running, false when not
     };
 
     readonly received$: Observable<RxDocumentData<RxDocType>> = this.subjects.received.asObservable();
-    readonly send$: Observable<WithDeleted<RxDocType>> = this.subjects.send.asObservable();
+    readonly sent$: Observable<WithDeleted<RxDocType>> = this.subjects.sent.asObservable();
     readonly error$: Observable<RxError | RxTypeError> = this.subjects.error.asObservable();
     readonly canceled$: Observable<any> = this.subjects.canceled.asObservable();
     readonly active$: Observable<boolean> = this.subjects.active.asObservable();
 
-    private startPromise: Promise<void>;
+    public startPromise: Promise<void>;
     constructor(
         /**
-         * hash of the identifier, used to flag revisions
+         * The identifier, used to flag revisions
          * and to identify which documents state came from the remote.
          */
-        public readonly replicationIdentifierHash: string,
+        public readonly replicationIdentifier: string,
         public readonly collection: RxCollection<RxDocType>,
         public readonly deletedField: string,
         public readonly pull?: ReplicationPullOptions<RxDocType, CheckpointType>,
@@ -137,7 +138,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
         const pushModifier = this.push && this.push.modifier ? this.push.modifier : DEFAULT_MODIFIER;
 
         const database = this.collection.database;
-        const metaInstanceCollectionName = this.collection.name + '-rx-replication-' + this.replicationIdentifierHash;
+        const metaInstanceCollectionName = await database.hashFunction(this.collection.name + '-rx-replication-' + this.replicationIdentifier);
         const metaInstanceSchema = getRxReplicationMetaInstanceSchema(
             this.collection.schema.jsonSchema,
             hasEncryption(this.collection.schema.jsonSchema)
@@ -171,10 +172,11 @@ export class RxReplicationState<RxDocType, CheckpointType> {
             forkInstance: this.collection.storageInstance,
             metaInstance: this.metaInstance,
             hashFunction: database.hashFunction,
-            identifier: 'rxdbreplication' + this.replicationIdentifierHash,
+            identifier: 'rxdbreplication' + this.replicationIdentifier,
             conflictHandler: this.collection.conflictHandler,
             replicationHandler: {
                 masterChangeStream$: this.remoteEvents$.asObservable().pipe(
+                    filter(_v => !!this.pull),
                     mergeMap(async (ev) => {
                         if (ev === 'RESYNC') {
                             return ev;
@@ -325,7 +327,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                 .subscribe(row => this.subjects.received.next(row.document as any)),
             this.internalReplicationState.events.processed.up
                 .subscribe(writeToMasterRow => {
-                    this.subjects.send.next(writeToMasterRow.newDocumentState);
+                    this.subjects.sent.next(writeToMasterRow.newDocumentState);
                 }),
             combineLatest([
                 this.internalReplicationState.events.active.down,
@@ -437,7 +439,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
         this.subjects.canceled.complete();
         this.subjects.error.complete();
         this.subjects.received.complete();
-        this.subjects.send.complete();
+        this.subjects.sent.complete();
 
         return Promise.all(promises);
     }
@@ -458,15 +460,8 @@ export function replicateRxCollection<RxDocType, CheckpointType>(
     }: ReplicationOptions<RxDocType, CheckpointType>
 ): RxReplicationState<RxDocType, CheckpointType> {
     addRxPlugin(RxDBLeaderElectionPlugin);
-    const replicationIdentifierHash = collection.database.hashFunction(
-        [
-            collection.database.name,
-            collection.name,
-            replicationIdentifier
-        ].join('|')
-    );
     const replicationState = new RxReplicationState<RxDocType, CheckpointType>(
-        replicationIdentifierHash,
+        replicationIdentifier,
         collection,
         deletedField,
         pull,

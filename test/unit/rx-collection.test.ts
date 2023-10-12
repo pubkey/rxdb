@@ -1,6 +1,6 @@
 import assert from 'assert';
 import clone from 'clone';
-import config from './config';
+import config from './config.ts';
 import AsyncTestUtil, {
     randomBoolean,
     randomNumber,
@@ -9,9 +9,9 @@ import AsyncTestUtil, {
     assertThrows
 } from 'async-test-util';
 
-import * as schemas from '../helper/schemas';
-import * as schemaObjects from '../helper/schema-objects';
-import * as humansCollection from '../helper/humans-collection';
+import * as schemas from '../helper/schemas.ts';
+import * as schemaObjects from '../helper/schema-objects.ts';
+import * as humansCollection from '../helper/humans-collection.ts';
 
 import {
     isRxCollection,
@@ -33,16 +33,16 @@ import {
     getFromMapOrThrow,
     RxCollectionCreator,
     parseRevision
-} from '../../plugins/core';
+} from '../../plugins/core/index.mjs';
 
-import { RxDBUpdatePlugin } from '../../plugins/update';
+import { RxDBUpdatePlugin } from '../../plugins/update/index.mjs';
 addRxPlugin(RxDBUpdatePlugin);
-import { RxDBMigrationPlugin } from '../../plugins/migration';
+import { RxDBMigrationPlugin } from '../../plugins/migration/index.mjs';
 addRxPlugin(RxDBMigrationPlugin);
 
 import { firstValueFrom } from 'rxjs';
-import { HumanDocumentType } from '../helper/schemas';
-import { RxDocumentData } from '../../src/types';
+import { HumanDocumentType } from '../helper/schemas.ts';
+import { RxDocumentData } from '../../plugins/core/index.mjs';
 
 describe('rx-collection.test.ts', () => {
     async function getDb(): Promise<RxDatabase> {
@@ -283,6 +283,30 @@ describe('rx-collection.test.ts', () => {
                         'contains \n linebreak',
                         '' // empty string
                     ].map(id => ensurePrimaryKeyInsertThrows(id)));
+                    c.database.destroy();
+                });
+                /**
+                 * @link https://github.com/pubkey/rxdb/issues/5046
+                 */
+                it('should throw a helpful error on non-plain-json data', async () => {
+                    const c = await humansCollection.create(1);
+
+                    // inserts
+                    const doc = schemaObjects.human();
+                    (doc as any).lastName = () => { };
+                    await assertThrows(
+                        () => c.insert(doc),
+                        'RxError',
+                        'DOC24'
+                    );
+
+                    // updates
+                    const doc2 = await c.findOne().exec(true);
+                    await assertThrows(
+                        () => doc2.patch({ lastName: (() => { }) as any }),
+                        'RxError',
+                        'DOC24'
+                    );
                     c.database.destroy();
                 });
             });
@@ -844,7 +868,7 @@ describe('rx-collection.test.ts', () => {
                         const query = c.find({
                             selector: {
                                 firstName: {
-                                    $regex: /Match/
+                                    $regex: 'Match'
                                 }
                             }
                         });
@@ -860,7 +884,10 @@ describe('rx-collection.test.ts', () => {
                         matchHuman.firstName = 'FooMatchBar';
                         await c.insert(matchHuman);
                         const docs = await c.find()
-                            .where('firstName').regex(/match/i)
+                            .where('firstName').regex({
+                                $regex: 'match',
+                                $options: 'i'
+                            })
                             .exec();
 
                         assert.strictEqual(docs.length, 1);
@@ -874,7 +901,7 @@ describe('rx-collection.test.ts', () => {
                         matchHuman.firstName = 'FooMatchBar';
                         await c.insert(matchHuman);
                         const docs = await c.find()
-                            .where('firstName').regex(/Match/)
+                            .where('firstName').regex('Match')
                             .exec();
 
                         assert.strictEqual(docs.length, 1);
@@ -884,6 +911,37 @@ describe('rx-collection.test.ts', () => {
                     });
                 });
                 describe('negative', () => {
+                    /**
+                     * Disallowed since RxDB version 15.
+                     * RegExp objects are mutable and cannot be JSON.stringify-ed.
+                     * So in a query you have to always use string based regexes.
+                     */
+                    it('should not allow to use RegExp objects', async () => {
+                        const c = await humansCollection.create(10);
+
+                        // normal selector
+                        await assertThrows(
+                            () => c.find({
+                                selector: {
+                                    firstName: {
+                                        $regex: /Match/ as any
+                                    }
+                                }
+                            }),
+                            'RxError',
+                            'QU16'
+                        );
+
+                        // query builder
+                        await assertThrows(
+                            () => c.find()
+                                .where('firstName').regex(/Match/ as any),
+                            'RxError',
+                            'QU16'
+                        );
+
+                        c.database.destroy();
+                    });
                 });
             });
             config.parallel('.remove()', () => {
@@ -1349,7 +1407,8 @@ describe('rx-collection.test.ts', () => {
                     data.age = 100;
                     return data;
                 });
-                await c.bulkUpsert(docsData);
+                const result = await c.bulkUpsert(docsData);
+                assert.deepStrictEqual(result.error, []);
                 allDocs = await c.find().exec();
                 assert.strictEqual(allDocs.length, amount);
                 allDocs.forEach(d => assert.strictEqual(d.age, 100));
@@ -1559,7 +1618,7 @@ describe('rx-collection.test.ts', () => {
                     ]);
 
                     const viaStorage = await c.storageInstance.findDocumentsById([docId], true);
-                    const viaStorageDoc = viaStorage[docId];
+                    const viaStorageDoc = viaStorage[0];
                     assert.ok(parseRevision(viaStorageDoc._rev).height >= 3);
 
                     const docData2 = clone(docData);

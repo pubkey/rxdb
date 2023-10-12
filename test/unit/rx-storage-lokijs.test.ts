@@ -1,6 +1,6 @@
 import assert from 'assert';
 
-import config from './config';
+import config from './config.ts';
 import {
     addRxPlugin,
     ensureNotFalsy,
@@ -8,26 +8,26 @@ import {
     getPseudoSchemaForVersion,
     now,
     randomCouchString
-} from '../../plugins/core';
+} from '../../plugins/core/index.mjs';
 
 import {
     getRxStorageLoki,
     RxStorageInstanceLoki
-} from '../../plugins/storage-lokijs';
+} from '../../plugins/storage-lokijs/index.mjs';
 
-import * as humansCollections from '../helper/humans-collection';
-import * as schemaObjects from '../helper/schema-objects';
-import * as schemas from '../helper/schemas';
+import * as humansCollections from '../helper/humans-collection.ts';
+import * as schemaObjects from '../helper/schema-objects.ts';
+import * as schemas from '../helper/schemas.ts';
 
 import { waitUntil } from 'async-test-util';
-import * as path from 'path';
-import * as fs from 'fs';
+import * as path from 'node:path';
+import * as fs from 'node:fs';
 import { LeaderElector } from 'broadcast-channel';
-import { HumanDocumentType } from '../helper/schemas';
-import { EXAMPLE_REVISION_1 } from '../helper/revisions';
-import { RxDBLeaderElectionPlugin } from '../../plugins/leader-election';
-import { RxDBLocalDocumentsPlugin } from '../../plugins/local-documents';
-
+import { HumanDocumentType } from '../helper/schemas.ts';
+import { EXAMPLE_REVISION_1 } from '../helper/revisions.ts';
+import { RxDBLeaderElectionPlugin } from '../../plugins/leader-election/index.mjs';
+import { RxDBLocalDocumentsPlugin } from '../../plugins/local-documents/index.mjs';
+import url from 'node:url';
 /**
  * RxStorageLokiJS specific tests
  */
@@ -218,13 +218,15 @@ describe('rx-storage-lokijs.test.js', () => {
             /**
              * @link https://github.com/techfort/LokiJS/blob/master/tutorials/Persistence%20Adapters.md#an-example-using-fastest-and-most-scalable-lokifsstructuredadapter-for-nodejs-might-look-like-
              */
-            const lfsa = require('lokijs/src/loki-fs-structured-adapter.js');
-            const adapter = new lfsa();
+            const lfsa: any = await import('lokijs/src/loki-fs-structured-adapter.js');
+            const adapter = new lfsa.default();
             const storage = getRxStorageLoki({
                 adapter
             });
 
             const databaseName = 'lokijs-fs-adapter-test-' + randomCouchString(12);
+            const __filename = url.fileURLToPath(import.meta.url);
+            const __dirname = path.dirname(__filename);
             const dbLocation = path.join(
                 __dirname,
                 '../',
@@ -254,7 +256,7 @@ describe('rx-storage-lokijs.test.js', () => {
                     _attachments: {}
                 }
             }], 'loki-test');
-            assert.deepStrictEqual(writeResponse.error, {});
+            assert.deepStrictEqual(writeResponse.error, []);
 
             /**
              * It should have written the file to the filesystem
@@ -268,8 +270,8 @@ describe('rx-storage-lokijs.test.js', () => {
             if (!config.platform.isNode()) {
                 return;
             }
-            const lfsa = require('lokijs/src/loki-fs-structured-adapter.js');
-            const adapter = new lfsa();
+            const lfsa: any = await import('lokijs/src/loki-fs-structured-adapter.js');
+            const adapter = new lfsa.default();
 
             let callbackCalledCount = 0;
             const storage = getRxStorageLoki({
@@ -277,6 +279,8 @@ describe('rx-storage-lokijs.test.js', () => {
                 autosaveCallback: () => callbackCalledCount = callbackCalledCount + 1
             });
             const databaseName = 'lokijs-fs-test-autosaveCallback-' + randomCouchString(12);
+            const __filename = url.fileURLToPath(import.meta.url);
+            const __dirname = path.dirname(__filename);
             const dbLocation = path.join(
                 __dirname,
                 '../',
@@ -407,13 +411,15 @@ describe('rx-storage-lokijs.test.js', () => {
             if (!config.platform.isNode()) {
                 return;
             }
-            const lfsa = require('lokijs/src/loki-fs-structured-adapter.js');
-            const adapter = new lfsa();
+            const lfsa: any = await import('lokijs/src/loki-fs-structured-adapter.js');
+            const adapter = new lfsa.default();
             const storage = getRxStorageLoki({
                 adapter
             });
 
             const databaseName = 'lokijs-migration-test-' + randomCouchString(12);
+            const __filename = url.fileURLToPath(import.meta.url);
+            const __dirname = path.dirname(__filename);
             const dbLocation = path.join(
                 __dirname,
                 '../',
@@ -456,7 +462,7 @@ describe('rx-storage-lokijs.test.js', () => {
             });
 
             const docFromStorage = await storageInstance2.findDocumentsById([key], true);
-            const doc = ensureNotFalsy(docFromStorage[key]);
+            const doc = ensureNotFalsy(docFromStorage[0]);
 
             assert.ok(doc._meta);
             assert.strictEqual(doc._meta.lwt, lwtValue);

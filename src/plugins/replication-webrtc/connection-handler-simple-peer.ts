@@ -1,20 +1,24 @@
 import { Subject } from 'rxjs';
-import { getFromMapOrThrow, PROMISE_RESOLVE_VOID, randomCouchString } from '../../plugins/utils';
+import {
+    getFromMapOrThrow,
+    PROMISE_RESOLVE_VOID,
+    randomCouchString
+} from '../../plugins/utils/index.ts';
 import type {
-    P2PConnectionHandler,
-    P2PConnectionHandlerCreator,
-    P2PMessage,
-    P2PPeer,
+    WebRTCConnectionHandler,
+    WebRTCConnectionHandlerCreator,
+    WebRTCMessage,
+    WebRTCPeer,
     PeerWithMessage,
     PeerWithResponse
-} from './p2p-types';
+} from './webrtc-types.ts';
 
 import {
     Instance as SimplePeer,
     default as Peer
 } from 'simple-peer';
-import { RxError, RxTypeError } from '../../types';
-import { newRxError } from '../../rx-error';
+import type { RxError, RxTypeError } from '../../types/index.d.ts';
+import { newRxError } from '../../rx-error.ts';
 
 /**
  * Returns a connection handler that uses simple-peer and the signaling server.
@@ -22,21 +26,21 @@ import { newRxError } from '../../rx-error';
 export function getConnectionHandlerSimplePeer(
     serverUrl: string,
     wrtc?: any
-): P2PConnectionHandlerCreator {
-    const { io } = require('socket.io-client');
-
-
-    const creator: P2PConnectionHandlerCreator = (options) => {
+): WebRTCConnectionHandlerCreator {
+    
+    
+    const creator: WebRTCConnectionHandlerCreator = async(options) => {
+        const { io } = await import('socket.io-client');
         const socket = io(serverUrl);
-
+        
         const peerId = randomCouchString(10);
         socket.emit('join', {
             room: options.topic,
             peerId
         });
 
-        const connect$ = new Subject<P2PPeer>();
-        const disconnect$ = new Subject<P2PPeer>();
+        const connect$ = new Subject<WebRTCPeer>();
+        const disconnect$ = new Subject<WebRTCPeer>();
         const message$ = new Subject<PeerWithMessage>();
         const response$ = new Subject<PeerWithResponse>();
         const error$ = new Subject<RxError | RxTypeError>();
@@ -87,7 +91,7 @@ export function getConnectionHandlerSimplePeer(
                 });
 
                 newPeer.on('error', (error) => {
-                    error$.next(newRxError('RC_P2P_PEER', {
+                    error$.next(newRxError('RC_WEBRTC_PEER', {
                         error
                     }));
                 });
@@ -105,13 +109,13 @@ export function getConnectionHandlerSimplePeer(
             peer.signal(data.signal);
         });
 
-        const handler: P2PConnectionHandler = {
+        const handler: WebRTCConnectionHandler = {
             error$,
             connect$,
             disconnect$,
             message$,
             response$,
-            async send(peer: P2PPeer, message: P2PMessage) {
+            async send(peer: WebRTCPeer, message: WebRTCMessage) {
                 await (peer as any).send(JSON.stringify(message));
             },
             destroy() {

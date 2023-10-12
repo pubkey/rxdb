@@ -11,8 +11,8 @@ import {
     getSortDocumentsByLastWriteTimeComparator,
     RX_META_LWT_MINIMUM,
     lastOfArray
-} from '../utils';
-import { newRxError } from '../../rx-error';
+} from '../utils/index.ts';
+import { newRxError } from '../../rx-error.ts';
 import type {
     RxStorageInstance,
     LokiSettings,
@@ -29,13 +29,13 @@ import type {
     LokiLocalDatabaseState,
     EventBulk,
     StringKeys,
-    RxDocumentDataById,
     DeepReadonly,
     RxConflictResultionTask,
     RxConflictResultionTaskSolution,
     RxStorageDefaultCheckpoint,
-    RxStorageCountResult
-} from '../../types';
+    RxStorageCountResult,
+    RxStorageInfoResult
+} from '../../types/index.d.ts';
 import {
     closeLokiCollections,
     getLokiDatabase,
@@ -49,14 +49,14 @@ import {
     handleRemoteRequest,
     RX_STORAGE_NAME_LOKIJS,
     transformRegexToRegExp
-} from './lokijs-helper';
+} from './lokijs-helper.ts';
 import type {
     Collection
 } from 'lokijs';
-import type { RxStorageLoki } from './rx-storage-lokijs';
-import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
-import { categorizeBulkWriteRows } from '../../rx-storage-helper';
-import { addRxStorageMultiInstanceSupport, removeBroadcastChannelReference } from '../../rx-storage-multiinstance';
+import type { RxStorageLoki } from './rx-storage-lokijs.ts';
+import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper.ts';
+import { categorizeBulkWriteRows } from '../../rx-storage-helper.ts';
+import { addRxStorageMultiInstanceSupport, removeBroadcastChannelReference } from '../../rx-storage-multiinstance.ts';
 
 let instanceId = now();
 
@@ -101,6 +101,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
                 close: this.close.bind(this),
                 query: this.query.bind(this),
                 count: this.count.bind(this),
+                info: this.info.bind(this),
                 findDocumentsById: this.findDocumentsById.bind(this),
                 collectionName: this.collectionName,
                 databaseName: this.databaseName,
@@ -139,8 +140,8 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         }
 
         const ret: RxStorageBulkWriteResponse<RxDocType> = {
-            success: {},
-            error: {}
+            success: [],
+            error: []
         };
 
         const docsInDb: Map<RxDocumentData<RxDocType>[StringKeys<RxDocType>], RxDocumentData<RxDocType>> = new Map();
@@ -167,9 +168,8 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         ret.error = categorized.errors;
 
         categorized.bulkInsertDocs.forEach(writeRow => {
-            const docId = writeRow.document[this.primaryPath];
             localState.collection.insert(flatClone(writeRow.document));
-            ret.success[docId as any] = writeRow.document;
+            ret.success.push(writeRow.document);
         });
         categorized.bulkUpdateDocs.forEach(writeRow => {
             const docId = writeRow.document[this.primaryPath];
@@ -182,7 +182,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
                 }
             );
             localState.collection.update(writeDoc);
-            ret.success[docId as any] = writeRow.document;
+            ret.success.push(writeRow.document);
         });
         localState.databaseState.saveQueue.addWrite();
 
@@ -197,20 +197,20 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
 
         return ret;
     }
-    async findDocumentsById(ids: string[], deleted: boolean): Promise<RxDocumentDataById<RxDocType>> {
+    async findDocumentsById(ids: string[], deleted: boolean): Promise<RxDocumentData<RxDocType>[]> {
         const localState = await mustUseLocalState(this);
         if (!localState) {
             return requestRemoteInstance(this, 'findDocumentsById', [ids, deleted]);
         }
 
-        const ret: RxDocumentDataById<RxDocType> = {};
+        const ret: RxDocumentData<RxDocType>[] = [];
         ids.forEach(id => {
             const documentInDb = localState.collection.by(this.primaryPath, id);
             if (
                 documentInDb &&
                 (!documentInDb._deleted || deleted)
             ) {
-                ret[id] = stripLokiKey(documentInDb);
+                ret.push(stripLokiKey(documentInDb));
             }
         });
         return ret;
@@ -262,6 +262,17 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
     }
     getAttachmentData(_documentId: string, _attachmentId: string, _digest: string): Promise<string> {
         throw new Error('Attachments are not implemented in the lokijs RxStorage. Make a pull request.');
+    }
+
+
+    async info(): Promise<RxStorageInfoResult> {
+        const localState = await mustUseLocalState(this);
+        if (!localState) {
+            return requestRemoteInstance(this, 'info', []);
+        }
+        return {
+            totalCount: localState.collection.count()
+        };
     }
 
 

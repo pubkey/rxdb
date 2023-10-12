@@ -1,7 +1,8 @@
 console.log('######## init.test.js ########');
-require('source-map-support').install();
+import sourceMapSupport from 'source-map-support';
+sourceMapSupport.install();
 import '@babel/polyfill';
-import config from './config';
+import config from './config.ts';
 import {
     clearNodeFolder
 } from 'broadcast-channel';
@@ -11,8 +12,8 @@ import { faker } from '@faker-js/faker';
 faker.seed(123);
 
 // add dev-mode plugin
-import { addRxPlugin } from '../../plugins/core';
-import { RxDBDevModePlugin } from '../../plugins/dev-mode';
+import { addRxPlugin } from '../../plugins/core/index.mjs';
+import { RxDBDevModePlugin } from '../../plugins/dev-mode/index.mjs';
 addRxPlugin(RxDBDevModePlugin);
 
 config.platform.isNode = function () {
@@ -60,16 +61,12 @@ if (config.platform.name !== 'node') {
 }
 
 
-if (config.platform.name === 'node') {
-    const { startTestServers } = require('../helper/test-servers' + '');
-    startTestServers();
-}
 
 /**
  * MONKEYPATCH console.error on firefox
  * this is needed because core-js has its own non-caught-promise-behavior
  * and spams the console with useless error-logs.
- */
+*/
 if (config.platform.name === 'firefox') {
     const consoleErrorBefore = console.error.bind(console);
     console.error = function (msg: string) {
@@ -78,9 +75,27 @@ if (config.platform.name === 'firefox') {
     };
 }
 
+
+
 describe('init.test.js', () => {
+    it('init storage', async () => {
+        if (config.storage.init) {
+            await config.storage.init();
+        }
+    });
     it('clear BroadcastChannel tmp folder', async () => {
         await clearNodeFolder();
+    });
+    it('start test servers', async () => {
+        if (config.platform.name === 'node') {
+            console.log('START TEST SERVERS');
+            const { startTestServers } = await import('' + '../helper/test-servers.js' + '');
+            startTestServers();
+        } else if (config.isDeno) {
+            console.log('START TEST SERVERS');
+            const { startTestServers } = await import('' + '../helper/test-servers.ts' + '');
+            startTestServers();
+        }
     });
     it('must run in strict mode', () => {
         return; // TODO enable this and make it work

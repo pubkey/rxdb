@@ -10,7 +10,6 @@ import type {
     RxCollection,
     RxDumpDatabase,
     RxDumpDatabaseAny,
-    AllMigrationStates,
     BackupOptions,
     RxStorage,
     RxStorageInstance,
@@ -27,7 +26,7 @@ import type {
     RxError,
     HashFunction,
     MaybePromise
-} from './types';
+} from './types/index.d.ts';
 
 import {
     pluginMissing,
@@ -38,18 +37,18 @@ import {
     getDefaultRevision,
     getDefaultRxDocumentMeta,
     defaultHashSha256
-} from './plugins/utils';
+} from './plugins/utils/index.ts';
 import {
     newRxError
-} from './rx-error';
+} from './rx-error.ts';
 import {
     createRxSchema,
     RxSchema
-} from './rx-schema';
+} from './rx-schema.ts';
 import {
     runPluginHooks,
     runAsyncPluginHooks
-} from './hooks';
+} from './hooks.ts';
 import {
     Subject,
     Subscription,
@@ -60,15 +59,15 @@ import {
 } from 'rxjs/operators';
 import {
     createRxCollection
-} from './rx-collection';
+} from './rx-collection.ts';
 import {
     flatCloneDocWithMeta,
     getSingleDocument,
     getWrappedStorageInstance,
     INTERNAL_STORAGE_NAME,
     WrappedRxStorageInstance
-} from './rx-storage-helper';
-import type { RxBackupState } from './plugins/backup';
+} from './rx-storage-helper.ts';
+import type { RxBackupState } from './plugins/backup/index.ts';
 import { ObliviousSet } from 'oblivious-set';
 import {
     ensureStorageTokenDocumentExists,
@@ -77,9 +76,10 @@ import {
     INTERNAL_CONTEXT_COLLECTION,
     INTERNAL_STORE_SCHEMA,
     _collectionNamePrimary
-} from './rx-database-internal-store';
-import { removeCollectionStorages } from './rx-collection-helper';
-import { overwritable } from './overwritable';
+} from './rx-database-internal-store.ts';
+import { removeCollectionStorages } from './rx-collection-helper.ts';
+import { overwritable } from './overwritable.ts';
+import type { RxMigrationState } from './plugins/migration/index.ts';
 
 /**
  * stores the used database names
@@ -273,63 +273,66 @@ export class RxDatabaseBase<
         const bulkPutDocs: BulkWriteRow<InternalStoreCollectionDocType>[] = [];
         const useArgsByCollectionName: any = {};
 
-        Object.entries(collectionCreators).forEach(([name, args]) => {
-            const collectionName: keyof CreatedCollections = name as any;
-            const rxJsonSchema = (args as RxCollectionCreator<any>).schema;
-            jsonSchemas[collectionName] = rxJsonSchema;
-            const schema = createRxSchema(rxJsonSchema, this.hashFunction);
-            schemas[collectionName] = schema;
+        await Promise.all(
+            Object.entries(collectionCreators).map(async ([name, args]) => {
+                const collectionName: keyof CreatedCollections = name as any;
+                const rxJsonSchema = (args as RxCollectionCreator<any>).schema;
+                jsonSchemas[collectionName] = rxJsonSchema;
+                const schema = createRxSchema(rxJsonSchema, this.hashFunction);
+                schemas[collectionName] = schema;
 
-            // collection already exists
-            if ((this.collections as any)[name]) {
-                throw newRxError('DB3', {
-                    name
-                });
-            }
-
-            const collectionNameWithVersion = _collectionNamePrimary(name, rxJsonSchema);
-            const collectionDocData: RxDocumentData<InternalStoreCollectionDocType> = {
-                id: getPrimaryKeyOfInternalDocument(
-                    collectionNameWithVersion,
-                    INTERNAL_CONTEXT_COLLECTION
-                ),
-                key: collectionNameWithVersion,
-                context: INTERNAL_CONTEXT_COLLECTION,
-                data: {
-                    name: collectionName as any,
-                    schemaHash: schema.hash,
-                    schema: schema.jsonSchema,
-                    version: schema.version,
-                    connectedStorages: []
-                },
-                _deleted: false,
-                _meta: getDefaultRxDocumentMeta(),
-                _rev: getDefaultRevision(),
-                _attachments: {}
-            };
-            bulkPutDocs.push({
-                document: collectionDocData
-            });
-
-            const useArgs: any = Object.assign(
-                {},
-                args,
-                {
-                    name: collectionName,
-                    schema,
-                    database: this
+                // collection already exists
+                if ((this.collections as any)[name]) {
+                    throw newRxError('DB3', {
+                        name
+                    });
                 }
-            );
 
-            // run hooks
-            const hookData: RxCollectionCreator<any> & { name: string; } = flatClone(args) as any;
-            (hookData as any).database = this;
-            hookData.name = name;
-            runPluginHooks('preCreateRxCollection', hookData);
-            useArgs.conflictHandler = hookData.conflictHandler;
+                const collectionNameWithVersion = _collectionNamePrimary(name, rxJsonSchema);
+                const collectionDocData: RxDocumentData<InternalStoreCollectionDocType> = {
+                    id: getPrimaryKeyOfInternalDocument(
+                        collectionNameWithVersion,
+                        INTERNAL_CONTEXT_COLLECTION
+                    ),
+                    key: collectionNameWithVersion,
+                    context: INTERNAL_CONTEXT_COLLECTION,
+                    data: {
+                        name: collectionName as any,
+                        schemaHash: await schema.hash,
+                        schema: schema.jsonSchema,
+                        version: schema.version,
+                        connectedStorages: []
+                    },
+                    _deleted: false,
+                    _meta: getDefaultRxDocumentMeta(),
+                    _rev: getDefaultRevision(),
+                    _attachments: {}
+                };
+                bulkPutDocs.push({
+                    document: collectionDocData
+                });
 
-            useArgsByCollectionName[collectionName] = useArgs;
-        });
+                const useArgs: any = Object.assign(
+                    {},
+                    args,
+                    {
+                        name: collectionName,
+                        schema,
+                        database: this
+                    }
+                );
+
+                // run hooks
+                const hookData: RxCollectionCreator<any> & { name: string; } = flatClone(args) as any;
+                (hookData as any).database = this;
+                hookData.name = name;
+                runPluginHooks('preCreateRxCollection', hookData);
+                useArgs.conflictHandler = hookData.conflictHandler;
+
+                useArgsByCollectionName[collectionName] = useArgs;
+            })
+        );
+
 
         const putDocsResult = await this.internalStore.bulkWrite(
             bulkPutDocs,
@@ -338,28 +341,30 @@ export class RxDatabaseBase<
 
         await ensureNoStartupErrors(this);
 
-        Object.entries(putDocsResult.error).forEach(([_id, error]) => {
-            if (error.status !== 409) {
-                throw newRxError('DB12', {
-                    database: this.name,
-                    writeError: error
-                });
-            }
-            const docInDb: RxDocumentData<InternalStoreCollectionDocType> = ensureNotFalsy(error.documentInDb);
-            const collectionName = docInDb.data.name;
-            const schema = (schemas as any)[collectionName];
-            // collection already exists but has different schema
-            if (docInDb.data.schemaHash !== schema.hash) {
-                throw newRxError('DB6', {
-                    database: this.name,
-                    collection: collectionName,
-                    previousSchemaHash: docInDb.data.schemaHash,
-                    schemaHash: schema.hash,
-                    previousSchema: docInDb.data.schema,
-                    schema: ensureNotFalsy((jsonSchemas as any)[collectionName])
-                });
-            }
-        });
+        await Promise.all(
+            putDocsResult.error.map(async (error) => {
+                if (error.status !== 409) {
+                    throw newRxError('DB12', {
+                        database: this.name,
+                        writeError: error
+                    });
+                }
+                const docInDb: RxDocumentData<InternalStoreCollectionDocType> = ensureNotFalsy(error.documentInDb);
+                const collectionName = docInDb.data.name;
+                const schema = (schemas as any)[collectionName];
+                // collection already exists but has different schema
+                if (docInDb.data.schemaHash !== await schema.hash) {
+                    throw newRxError('DB6', {
+                        database: this.name,
+                        collection: collectionName,
+                        previousSchemaHash: docInDb.data.schemaHash,
+                        schemaHash: await schema.hash,
+                        previousSchema: docInDb.data.schema,
+                        schema: ensureNotFalsy((jsonSchemas as any)[collectionName])
+                    });
+                }
+            })
+        );
 
         const ret: { [key in keyof CreatedCollections]: RxCollection } = {} as any;
         await Promise.all(
@@ -429,7 +434,7 @@ export class RxDatabaseBase<
         throw pluginMissing('leader-election');
     }
 
-    public migrationStates(): Observable<AllMigrationStates> {
+    public migrationStates(): Observable<RxMigrationState[]> {
         throw pluginMissing('migration');
     }
 
@@ -556,7 +561,7 @@ export function createRxDatabase<
         name,
         password,
         multiInstance = true,
-        eventReduce = false,
+        eventReduce = true,
         ignoreDuplicate = false,
         options = {},
         cleanupPolicy,

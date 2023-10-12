@@ -1,14 +1,14 @@
 import assert from 'assert';
-import config from './config';
+import config from './config.ts';
 
-import * as humansCollection from '../helper/humans-collection';
+import * as humansCollection from '../helper/humans-collection.ts';
 import {
     isRxDatabase,
     isRxCollection,
     isRxQuery,
     isRxDocument,
     isRxSchema
-} from '../../plugins/core';
+} from '../../plugins/core/index.mjs';
 
 config.parallel('instance-of-check.test.js', () => {
     it('positive', async () => {

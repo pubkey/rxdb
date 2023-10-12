@@ -16,6 +16,12 @@ Future<dynamic> patchJavaScriptRuntime(FlutterQjs engine) async {
   await engine.evaluate('process = {};');
   await engine.evaluate('window = {};');
   await engine.evaluate('console = {};');
+
+  await engine.evaluate('BigInt = {};');
+  await engine.evaluate('BigInt64Array = {};');
+  await engine.evaluate('BigUint64Array = {};');
+
+
   final setToGlobalObject =
       await engine.evaluate("(key, val) => { this[key] = val; }");
   await setToGlobalObject.invoke([

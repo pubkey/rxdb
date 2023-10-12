@@ -2,9 +2,9 @@ import type {
     RxDocumentData,
     StringKeys,
     WithDeleted
-} from '../../types';
-import { b64EncodeUnicode, flatClone } from '../../plugins/utils';
-import { URLQueryParams } from './couchdb-types';
+} from '../../types/index.d.ts';
+import { b64EncodeUnicode, flatClone } from '../../plugins/utils/index.ts';
+import { URLQueryParams } from './couchdb-types.ts';
 
 
 export const COUCHDB_NEW_REPLICATION_PLUGIN_IDENTITY_PREFIX = 'couchdb';

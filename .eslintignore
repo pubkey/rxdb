@@ -4,6 +4,7 @@ test_tmp/
 tmp/
 dist/
 package.json
+plugins/
 examples/angular
 examples/electron
 examples/electron-remote

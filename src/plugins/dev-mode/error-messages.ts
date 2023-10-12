@@ -44,6 +44,8 @@ export const ERROR_MESSAGES = {
     QU14: 'Running a count() query in slow mode is now allowed. Either run a count() query with a selector that fully matches an index ' +
         'or set allowSlowCount=true when calling the createRxDatabase',
     QU15: 'For count queries it is not allowed to use skip or limit',
+    QU16: '$regex queries must be defined by a string, not an RegExp instance. ' +
+        'This is because RegExp objects cannot be JSON stringified and also they are mutable which would be dangerous',
 
     // mquery.js
     MQ1: 'path must be a string or object',
@@ -118,11 +120,14 @@ export const ERROR_MESSAGES = {
     DOC21: 'PrimaryKey must be equal to PrimaryKey.trim(). It cannot start or end with a whitespace',
     DOC22: 'PrimaryKey must not contain a linebreak',
     DOC23: 'PrimaryKey must not contain a double-quote ["]',
+    DOC24: 'Given document data could not be structured cloned. This happens if you pass non-plain-json data into it, like a Date() or a Function. ' +
+        'In vue.js this happens if you use ref() on the document data which transforms it into a Proxy object.',
 
     // data-migrator.js
     DM1: 'migrate() Migration has already run',
     DM2: 'migration of document failed final document does not match final schema',
     DM3: 'migration already running',
+    DM4: 'Migration errored',
 
     // plugins/attachments.js
     AT1: 'to use attachments, please define this in your schema',
@@ -161,7 +166,7 @@ export const ERROR_MESSAGES = {
     RC_STREAM: 'RxReplication pull stream$ threw an error - see .errors for more details',
     RC_PUSH: 'RxReplication push handler threw an error - see .errors for more details',
     RC_PUSH_NO_AR: 'RxReplication push handler did not return an array with the conflicts',
-    RC_P2P_PEER: 'RxReplication P2P Peer has error',
+    RC_WEBRTC_PEER: 'RxReplication WebRTC Peer has error',
     RC_COUCHDB_1: 'replicateCouchDB() url must end with a slash like \'https://example.com/mydatabase/\'',
     RC_COUCHDB_2: 'replicateCouchDB() did not get valid result with rows.',
 
@@ -202,6 +207,8 @@ export const ERROR_MESSAGES = {
     SC37: 'Fields of type number that are used in an index, must have set the minimum and maximum attribute in the schema',
     SC38: 'Fields of type boolean that are used in an index, must be required in the schema',
     SC39: 'The primary key must have the maxLength attribute set',
+    SC40: '$ref fields in the schema are not allowed. RxDB cannot resolve related schemas because it would have a negative performance impact.' +
+        'It would have to run http requests on runtime. $ref fields should be resolved during build time.',
 
     // plugins/dev-mode
     // removed in 13.9.0, use PL3 instead - DEV1: 'dev-mode added multiple times',

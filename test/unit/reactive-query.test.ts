@@ -1,11 +1,11 @@
 import assert from 'assert';
 import clone from 'clone';
-import config from './config';
+import config from './config.ts';
 
 
-import * as schemaObjects from '../helper/schema-objects';
-import * as schemas from '../helper/schemas';
-import * as humansCollection from '../helper/humans-collection';
+import * as schemaObjects from '../helper/schema-objects.ts';
+import * as schemas from '../helper/schemas.ts';
+import * as humansCollection from '../helper/humans-collection.ts';
 
 import AsyncTestUtil, { wait, waitUntil } from 'async-test-util';
 import {
@@ -14,14 +14,14 @@ import {
     isRxDocument,
     promiseWait,
     randomCouchString
-} from '../../plugins/core';
+} from '../../plugins/core/index.mjs';
 
 import {
     filter,
     map,
     first
 } from 'rxjs/operators';
-import { HumanDocumentType } from '../helper/schemas';
+import { HumanDocumentType } from '../helper/schemas.ts';
 
 config.parallel('reactive-query.test.js', () => {
     config.parallel('positive', () => {

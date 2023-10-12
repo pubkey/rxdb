@@ -1,6 +1,20 @@
 const webpack = require('webpack');
+
+
+const externals = {};
+[
+    'path',
+    'events',
+    'url',
+    'fs',
+    'module',
+    'http',
+    'assert'
+].forEach(k => externals['node:' + k] = '{}');
+
 module.exports = {
     target: 'web',
+    externals: externals,
     resolve: {
         fallback: {
             fs: false,
@@ -11,6 +25,7 @@ module.exports = {
             crypto: false,
             tls: false,
             net: false,
+            async_hooks: false,
             zlib: false,
             child_process: false,
             os: false,
@@ -21,7 +36,13 @@ module.exports = {
             'try-thread-sleep': false,
             express: false,
             'pouchdb-fauxton': false,
-            timers: false
+            timers: false,
+            'querystring': require.resolve('querystring-es3'),
+
+            /**
+             * @link https://github.com/react-dnd/react-dnd/issues/3425#issuecomment-1214554950
+             */
+            'process/browser': require.resolve('process/browser')
         },
         extensions: ['.ts', '.js', '.json']
     },

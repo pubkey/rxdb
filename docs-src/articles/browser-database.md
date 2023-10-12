@@ -4,7 +4,7 @@ In the world of web development, efficient data management is a cornerstone of b
 
 <center>
     <a href="https://rxdb.info/">
-        <img src="../files/logo/logo_text.svg" alt="JavaScript Browser Database" width="220">
+        <img src="../files/logo/rxdb_javascript_database.svg" alt="JavaScript Browser Database" width="220">
     </a>
 </center>
 

@@ -2,11 +2,10 @@
  * this tests the behaviour of util.js
  */
 import assert from 'assert';
-import AsyncTestUtil, { wait } from 'async-test-util';
+import AsyncTestUtil, { randomString, wait } from 'async-test-util';
 import {
     randomCouchString,
     defaultHashSha256,
-    sortObject,
     now,
     sortDocumentsByLastWriteTime,
     RxDocumentData,
@@ -16,56 +15,67 @@ import {
     b64EncodeUnicode,
     batchArray,
     clone as rxdbClone,
-    isBlob,
     createBlob,
     blobToString,
     getBlobSize,
     blobToBase64String,
     createBlobFromBase64,
-    ParsedRegex,
-    parseRegex,
     overwritable
-} from '../../plugins/core';
-import config from './config';
+} from '../../plugins/core/index.mjs';
+import config from './config.ts';
 
 import {
     validateDatabaseName,
     deepFreezeWhenDevMode
-} from '../../plugins/dev-mode';
-import { EXAMPLE_REVISION_1 } from '../helper/revisions';
+} from '../../plugins/dev-mode/index.mjs';
+import {
+    nativeSha256,
+    jsSha256,
+    canUseCryptoSubtle
+} from '../../plugins/utils/index.mjs';
+import { EXAMPLE_REVISION_1 } from '../helper/revisions.ts';
 
-import { BIG_BASE64 } from '../helper/big-base64';
+import { BIG_BASE64 } from '../helper/big-base64.ts';
 
 describe('util.test.js', () => {
     describe('.defaultHashSha256()', () => {
-        it('should work with a string', () => {
-            const hash = defaultHashSha256('foobar');
+        it('should work with a string', async () => {
+            const hash = await defaultHashSha256('foobar');
             assert.strictEqual(typeof hash, 'string');
             assert.ok(hash.length > 0);
         });
-        it('should get the same hash twice', () => {
+        it('should get the same hash twice', async () => {
             const str = randomCouchString(10);
-            const hash = defaultHashSha256(str);
-            const hash2 = defaultHashSha256(str);
+            const hash = await defaultHashSha256(str);
+            const hash2 = await defaultHashSha256(str);
             assert.strictEqual(hash, hash2);
         });
-        it('should work with a very large string', () => {
+        it('should work with a very large string', async () => {
             const str = randomCouchString(5000);
-            const hash = defaultHashSha256(str);
+            const hash = await defaultHashSha256(str);
             assert.strictEqual(typeof hash, 'string');
             assert.ok(hash.length > 0);
+        });
+        it('must have enabled canUseCryptoSubtle', ()=> {
+            assert.ok(canUseCryptoSubtle);
+        });
+        it('both versions must return the exact same value', async () => {
+            const values: string[] = [
+                'foobar',
+                randomString(100),
+                'asdf#äge#äö34g?!§"=$%'
+            ];
+
+            for (const value of values) {
+                const hashNative = await nativeSha256(value);
+                const hashJavaScript = await jsSha256(value);
+                if (hashJavaScript !== hashNative) {
+                    throw new Error('hashes not equal for value: ' + value);
+                }
+            }
         });
     });
     describe('.sortObject()', () => {
-        it('should sort when regex in object', () => {
-            const obj = {
-                color: {
-                    '$regex': /foobar/g
-                }
-            };
-            const sorted = sortObject(obj);
-            assert.ok(sorted.color.$regex instanceof RegExp);
-        });
     });
     describe('.recursiveDeepCopy()', () => {
         /**
@@ -202,7 +212,6 @@ describe('util.test.js', () => {
         it('should be able to run all functions', async () => {
             const text = 'foobar';
             const blob = createBlob(text, 'plain/text');
-            assert.ok(isBlob(blob));
             const asString = await blobToString(blob);
             assert.strictEqual(text, asString);
         });
@@ -280,7 +289,7 @@ describe('util.test.js', () => {
         });
     });
     describe('.deepFreezeWhenDevMode()', () => {
-        if (process.versions.bun) {
+        if (config.isBun) {
             // TODO for somehow bun has no strict mode here
             return;
         }
@@ -447,66 +456,6 @@ describe('util.test.js', () => {
                 objectPathMonad('not.here.nes.ted')(docData),
                 undefined
             );
-        });
-    });
-    describe('.parseRegex()', () => {
-        it('should return the correct parsed RegExp', () => {
-            const tests: {
-                regex: RegExp;
-                should: ParsedRegex;
-            }[] = [
-                    {
-                        regex: /some regex/gi,
-                        should: {
-                            pattern: 'some regex',
-                            flags: 'gi'
-                        }
-                    },
-                    {
-                        regex: /with\/backslash/gi,
-                        should: {
-                            pattern: 'with\\/backslash',
-                            flags: 'gi'
-                        }
-                    },
-                    {
-                        regex: /^dummy.*[a-z]$/gim,
-                        should: {
-                            pattern: '^dummy.*[a-z]$',
-                            flags: 'gim'
-                        }
-                    },
-                    {
-                        regex: /\/singlehash/i,
-                        should: {
-                            pattern: '\\/singlehash',
-                            flags: 'i'
-                        }
-                    },
-                    {
-                        regex: /no-flags/,
-                        should: {
-                            pattern: 'no-flags',
-                            flags: ''
-                        }
-                    }
-                ];
-            tests.forEach(test => {
-                const parsed = parseRegex(test.regex);
-                try {
-                    assert.deepStrictEqual(parsed, test.should);
-                } catch (err) {
-                    console.log('ERROR: Regex: ' + test.regex.toString());
-                    console.dir(parsed);
-                    throw err;
-                }
-
-                const rebuild = new RegExp(parsed.pattern, parsed.flags);
-                assert.strictEqual(
-                    test.regex.toString(),
-                    rebuild.toString()
-                );
-            });
         });
     });
 });

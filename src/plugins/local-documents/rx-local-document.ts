@@ -5,18 +5,18 @@ import {
     map,
     shareReplay,
     startWith
-} from 'rxjs/operators';
-import { overwritable } from '../../overwritable';
-import { getDocumentDataOfRxChangeEvent } from '../../rx-change-event';
+} from 'rxjs';
+import { overwritable } from '../../overwritable.ts';
+import { getDocumentDataOfRxChangeEvent } from '../../rx-change-event.ts';
 import {
     basePrototype,
     createRxDocumentConstructor
-} from '../../rx-document';
+} from '../../rx-document.ts';
 import {
     newRxError,
     newRxTypeError
-} from '../../rx-error';
-import { writeSingle } from '../../rx-storage-helper';
+} from '../../rx-error.ts';
+import { writeSingle } from '../../rx-storage-helper.ts';
 import type {
     LocalDocumentModifyFunction,
     RxCollection,
@@ -26,17 +26,16 @@ import type {
     RxDocumentWriteData,
     RxLocalDocument,
     RxLocalDocumentData
-} from '../../types';
+} from '../../types/index.d.ts';
 import {
     flatClone,
     getDefaultRevision,
     getDefaultRxDocumentMeta,
     getFromMapOrThrow,
-    getFromObjectOrThrow,
     getProperty,
     RXJS_SHARE_REPLAY_DEFAULTS
-} from '../../plugins/utils';
-import { getLocalDocStateByParent, LOCAL_DOC_STATE_BY_PARENT_RESOLVED } from './local-documents-helper';
+} from '../../plugins/utils/index.ts';
+import { getLocalDocStateByParent, LOCAL_DOC_STATE_BY_PARENT_RESOLVED } from './local-documents-helper.ts';
 
 const RxDocumentParent = createRxDocumentConstructor() as any;
 
@@ -72,16 +71,18 @@ const RxLocalDocumentPrototype: any = {
     get primary() {
         return this.id;
     },
-    get $(): Observable<RxDocumentData<RxLocalDocumentData>> {
+    get $(): Observable<RxLocalDocument<any, any>> {
         const _this: RxLocalDocumentClass = this as any;
+        const state = getFromMapOrThrow(LOCAL_DOC_STATE_BY_PARENT_RESOLVED, this.parent);
         return _this.parent.$.pipe(
-            filter(changeEvent => changeEvent.isLocal),
             filter(changeEvent => changeEvent.documentId === this.primary),
+            filter(changeEvent => changeEvent.isLocal),
             map(changeEvent => getDocumentDataOfRxChangeEvent(changeEvent)),
-            startWith(this._data),
+            startWith(state.docCache.getLatestDocumentData(this.primary)),
             distinctUntilChanged((prev, curr) => prev._rev === curr._rev),
+            map(docData => state.docCache.getCachedRxDocument(docData)),
             shareReplay(RXJS_SHARE_REPLAY_DEFAULTS)
-        );
+        ) as Observable<any>;
     },
     getLatest(this: RxLocalDocument<any>): RxLocalDocument<any> {
         const state = getFromMapOrThrow(LOCAL_DOC_STATE_BY_PARENT_RESOLVED, this.parent);
@@ -119,6 +120,7 @@ const RxLocalDocumentPrototype: any = {
         }
         return this.$
             .pipe(
+                map(localDocument => localDocument._data),
                 map(data => getProperty(data, objPath)),
                 distinctUntilChanged()
             );
@@ -156,9 +158,9 @@ const RxLocalDocumentPrototype: any = {
             document: newData
         }], 'local-document-save-data')
             .then((res) => {
-                const docResult = res.success[newData.id];
+                const docResult = res.success[0];
                 if (!docResult) {
-                    throw getFromObjectOrThrow(res.error, newData.id);
+                    throw res.error[0];
                 }
                 newData = flatClone(newData);
                 newData._rev = docResult._rev;

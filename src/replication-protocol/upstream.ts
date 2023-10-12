@@ -1,5 +1,5 @@
 import { firstValueFrom, filter } from 'rxjs';
-import { stackCheckpoints } from '../rx-storage-helper';
+import { stackCheckpoints } from '../rx-storage-helper.ts';
 import type {
     BulkWriteRow,
     BulkWriteRowById,
@@ -11,24 +11,29 @@ import type {
     RxStorageInstanceReplicationState,
     RxStorageReplicationMeta,
     WithDeleted
-} from '../types';
+} from '../types/index.d.ts';
 import {
     appendToArray,
     batchArray,
+    clone,
     ensureNotFalsy,
     parseRevision,
     PROMISE_RESOLVE_FALSE
-} from '../plugins/utils';
+} from '../plugins/utils/index.ts';
 import {
     getLastCheckpointDoc,
     setCheckpoint
-} from './checkpoint';
-import { resolveConflictError } from './conflicts';
-import { writeDocToDocState } from './helper';
+} from './checkpoint.ts';
+import { resolveConflictError } from './conflicts.ts';
+import {
+    stripAttachmentsDataFromMetaWriteRows,
+    writeDocToDocState
+} from './helper.ts';
 import {
     getAssumedMasterState,
     getMetaWriteRow
-} from './meta-instance';
+} from './meta-instance.ts';
+import { fillWriteDataForAttachmentsChange } from '../plugins/attachments/index.ts';
 
 /**
  * Writes all document changes from the fork to the master.
@@ -41,7 +46,6 @@ import {
 export async function startReplicationUpstream<RxDocType, CheckpointType>(
     state: RxStorageInstanceReplicationState<RxDocType>
 ) {
-
     if (
         state.input.initialCheckpoint &&
         state.input.initialCheckpoint.upstream
@@ -73,12 +77,21 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
         time: number;
     };
     const openTasks: TaskWithTime[] = [];
-
+    let persistenceQueue: Promise<boolean> = PROMISE_RESOLVE_FALSE;
+    const nonPersistedFromMaster: {
+        checkpoint?: CheckpointType;
+        docs: ById<RxDocumentData<RxDocType>>;
+    } = {
+        docs: {}
+    };
 
     const sub = state.input.forkInstance.changeStream()
-        .pipe(
-            filter(eventBulk => eventBulk.context !== state.downstreamBulkWriteFlag)
-        ).subscribe(eventBulk => {
+        .subscribe(async (eventBulk) => {
+            // ignore writes that came from the downstream
+            if (eventBulk.context === await state.downstreamBulkWriteFlag) {
+                return;
+            }
+
             state.stats.up.forkChangeStreamEmit = state.stats.up.forkChangeStreamEmit + 1;
             openTasks.push({
                 task: eventBulk,
@@ -198,14 +211,6 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
         });
     }
 
-    let persistenceQueue: Promise<boolean> = PROMISE_RESOLVE_FALSE;
-    const nonPersistedFromMaster: {
-        checkpoint?: CheckpointType;
-        docs: ById<RxDocumentData<RxDocType>>;
-    } = {
-        docs: {}
-    };
-
     /**
      * Returns true if had conflicts,
      * false if not.
@@ -224,7 +229,6 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
             nonPersistedFromMaster.docs[docId] = docData;
         });
         nonPersistedFromMaster.checkpoint = checkpoint;
-
 
         persistenceQueue = persistenceQueue.then(async () => {
             if (state.events.canceled.getValue()) {
@@ -253,7 +257,7 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
                 docIds.map(async (docId) => {
                     const fullDocData: RxDocumentData<RxDocType> = upDocsById[docId];
                     forkStateById[docId] = fullDocData;
-                    const docData: WithDeleted<RxDocType> = writeDocToDocState(fullDocData);
+                    const docData: WithDeleted<RxDocType> = writeDocToDocState(fullDocData, state.hasAttachments, !!state.input.keepMeta);
                     const assumedMasterDoc = assumedMasterState[docId];
 
                     /**
@@ -293,7 +297,7 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
                         assumedMasterState: assumedMasterDoc ? assumedMasterDoc.docData : undefined,
                         newDocumentState: docData
                     };
-                    writeRowsToMeta[docId] = getMetaWriteRow(
+                    writeRowsToMeta[docId] = await getMetaWriteRow(
                         state,
                         docData,
                         assumedMasterDoc ? assumedMasterDoc.metaDocument : undefined
@@ -319,6 +323,21 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
             const writeBatches = batchArray(writeRowsArray, state.input.pushBatchSize);
             await Promise.all(
                 writeBatches.map(async (writeBatch) => {
+
+                    // enhance docs with attachments
+                    if (state.hasAttachments) {
+                        await Promise.all(
+                            writeBatch.map(async (row) => {
+                                row.newDocumentState = await fillWriteDataForAttachmentsChange(
+                                    state.primaryPath,
+                                    state.input.forkInstance,
+                                    clone(row.newDocumentState),
+                                    row.assumedMasterState
+                                );
+                            })
+                        );
+                    }
+
                     const masterWriteResult = await replicationHandler.masterWrite(writeBatch);
                     masterWriteResult.forEach(conflictDoc => {
                         const id = (conflictDoc as any)[state.primaryPath];
@@ -328,9 +347,7 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
                 })
             );
 
-
             const useWriteRowsToMeta: BulkWriteRow<RxStorageReplicationMeta>[] = [];
-
 
             writeRowsToMasterIds.forEach(docId => {
                 if (!conflictIds.has(docId)) {
@@ -341,7 +358,7 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
 
             if (useWriteRowsToMeta.length > 0) {
                 await state.input.metaInstance.bulkWrite(
-                    useWriteRowsToMeta,
+                    stripAttachmentsDataFromMetaWriteRows(state, useWriteRowsToMeta),
                     'replication-up-write-meta'
                 );
                 // TODO what happens when we have conflicts here?
@@ -372,7 +389,7 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
                                 state,
                                 input,
                                 forkStateById[docId]
-                            ).then(resolved => {
+                            ).then(async (resolved) => {
                                 if (resolved) {
                                     state.events.resolvedConflicts.next({
                                         input,
@@ -383,7 +400,7 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
                                         document: resolved.resolvedDoc
                                     });
                                     const assumedMasterDoc = assumedMasterState[docId];
-                                    conflictWriteMeta[docId] = getMetaWriteRow(
+                                    conflictWriteMeta[docId] = await getMetaWriteRow(
                                         state,
                                         ensureNotFalsy(realMasterState),
                                         assumedMasterDoc ? assumedMasterDoc.metaDocument : undefined,
@@ -409,16 +426,16 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
                      * that will then resolved the conflict again.
                      */
                     const useMetaWrites: BulkWriteRow<RxStorageReplicationMeta>[] = [];
-                    Object
-                        .keys(forkWriteResult.success)
-                        .forEach((docId) => {
+                    forkWriteResult.success
+                        .forEach(docData => {
+                            const docId = (docData as any)[state.primaryPath];
                             useMetaWrites.push(
                                 conflictWriteMeta[docId]
                             );
                         });
                     if (useMetaWrites.length > 0) {
                         await state.input.metaInstance.bulkWrite(
-                            useMetaWrites,
+                            stripAttachmentsDataFromMetaWriteRows(state, useMetaWrites),
                             'replication-up-write-conflict-meta'
                         );
                     }
@@ -446,4 +463,3 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
         return persistenceQueue;
     }
 }
-

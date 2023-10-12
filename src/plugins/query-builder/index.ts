@@ -2,10 +2,10 @@ import {
     createQueryBuilder,
     OTHER_MANGO_ATTRIBUTES,
     OTHER_MANGO_OPERATORS
-} from './mquery/nosql-query-builder';
-import type { RxPlugin, RxQuery } from '../../types';
-import { createRxQuery } from '../../rx-query';
-import { clone } from '../../plugins/utils';
+} from './mquery/nosql-query-builder.ts';
+import type { RxPlugin, RxQuery } from '../../types/index.d.ts';
+import { createRxQuery } from '../../rx-query.ts';
+import { clone } from '../../plugins/utils/index.ts';
 
 // if the query-builder plugin is used, we have to save its last path
 const RXQUERY_OTHER_FLAG = 'queryBuilderPath';
@@ -41,7 +41,7 @@ export function applyBuildingStep(
     };
 }
 
-export * from './mquery/nosql-query-builder';
+export * from './mquery/nosql-query-builder.ts';
 
 export const RxDBQueryBuilderPlugin: RxPlugin = {
     name: 'query-builder',

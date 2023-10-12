@@ -4,11 +4,9 @@ import {
 } from 'firebase/firestore';
 import type {
     WithDeleted
-} from '../../types';
-import { flatClone, now } from '../../plugins/utils';
-import type { GetQuery } from './firestore-types';
-
-export const FIRESTORE_REPLICATION_PLUGIN_IDENTITY_PREFIX = 'firestore';
+} from '../../types/index.d.ts';
+import { flatClone, now } from '../../plugins/utils/index.ts';
+import type { GetQuery } from './firestore-types.ts';
 
 
 export function getFirestoreSortFieldValue(docData: any, primaryKey: string): string {

@@ -1,6 +1,6 @@
 import assert from 'assert';
 
-import config from './config';
+import config from './config.ts';
 import {
     RxJsonSchema,
     randomCouchString,
@@ -15,9 +15,9 @@ import {
     getQueryMatcher,
     getSortComparator,
     createRxDatabase
-} from '../../plugins/core';
-import { EXAMPLE_REVISION_1 } from '../helper/revisions';
-import * as schemas from '../helper/schemas';
+} from '../../plugins/core/index.mjs';
+import { EXAMPLE_REVISION_1 } from '../helper/revisions.ts';
+import * as schemas from '../helper/schemas.ts';
 import {
     HeroArrayDocumentType,
     human,
@@ -25,8 +25,8 @@ import {
     NestedHumanDocumentType,
     simpleHumanV3,
     SimpleHumanV3DocumentType
-} from '../helper/schema-objects';
-import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv';
+} from '../helper/schema-objects.ts';
+import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs';
 
 const TEST_CONTEXT = 'rx-storage-query-correctness.test.ts';
 config.parallel('rx-storage-query-correctness.test.ts', () => {

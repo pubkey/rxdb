@@ -1,19 +1,22 @@
 
 import assert from 'assert';
 
-import config from './config';
+import config from './config.ts';
 import {
-    RxStorageDefaultStatics, createRxDatabase, fillWithDefaultSettings, randomCouchString
-} from '../../plugins/core';
-import { nextPort } from '../helper/port-manager';
-import * as humansCollections from '../helper/humans-collection';
-import * as schemaObjects from '../helper/schema-objects';
-import * as schemas from '../helper/schemas';
+    RxStorageDefaultStatics,
+    createRxDatabase,
+    fillWithDefaultSettings,
+    randomCouchString
+} from '../../plugins/core/index.mjs';
+import { nextPort } from '../helper/port-manager.ts';
+import * as humansCollections from '../helper/humans-collection.ts';
+import * as schemaObjects from '../helper/schema-objects.ts';
+import * as schemas from '../helper/schemas.ts';
 import {
     getRxStorageRemoteWebsocket,
     startRxStorageRemoteWebsocketServer
-} from '../../plugins/storage-remote-websocket';
-import { getRxStorageMemory, } from '../../plugins/storage-memory';
+} from '../../plugins/storage-remote-websocket/index.mjs';
+import { getRxStorageMemory, } from '../../plugins/storage-memory/index.mjs';
 
 config.parallel('rx-storage-remote.test.ts', () => {
     /**

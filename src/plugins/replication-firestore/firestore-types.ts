@@ -4,7 +4,7 @@ import type {
     ReplicationPullOptions,
     ReplicationPushOptions,
     WithDeleted
-} from '../../types';
+} from '../../types/index.d.ts';
 
 import type {
     CollectionReference,
@@ -48,7 +48,7 @@ export type FirestoreSyncPushOptions<RxDocType> = Omit<ReplicationPushOptions<Rx
 
 export type SyncOptionsFirestore<RxDocType> = Omit<
     ReplicationOptions<RxDocType, any>,
-    'pull' | 'push' | 'replicationIdentifier'
+    'pull' | 'push'
 > & {
     firestore: FirestoreOptions<RxDocType>;
     /**

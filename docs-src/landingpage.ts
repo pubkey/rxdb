@@ -149,7 +149,7 @@ window.onload = async function () {
 
     beatingValuesDoc.$
         .pipe(
-            map(d => d.data),
+            map(asdfasdfsdad => asdfasdfsdad._data.data),
             distinctUntilChanged((a, b) => JSON.stringify(a) === JSON.stringify(b))
         )
         .subscribe((beatingValuesDocInner: BeatingValuesType) => {
@@ -249,14 +249,14 @@ function startTiltToMouse(mousePosDoc: RxLocalDocument<any, MousePositionType>) 
     }
 
     mousePosDoc.$.subscribe((mousePos) => {
-        if (!mousePos.data.time) {
+        if (!mousePos._data.data.time) {
             return;
         }
         Array.from($$tiltToMouse).forEach($element => {
             if (!isInViewport($element)) {
                 return;
             }
-            const position = ensureNotFalsy([mousePos.data.x, mousePos.data.y]).concat([$element]);
+            const position = ensureNotFalsy([mousePos._data.data.x, mousePos._data.data.y]).concat([$element]);
             transformElement($element, position);
         });
     });
@@ -287,42 +287,46 @@ function startEnlargeOnMousePos(mousePosDoc: RxLocalDocument<any, MousePositionT
         el.style.transform = transform;
     }
 
-    mousePosDoc.$.subscribe((mousePos) => {
-        if (
-            !mousePos.data.time ||
-            !mousePos.data.x ||
-            !mousePos.data.y
-        ) {
-            return;
-        }
-
-        Array.from($$enlargeOnMouse).forEach($element => {
-            if (!isInViewport($element)) {
+    mousePosDoc.$
+        .pipe(
+            map(d => d._data)
+        )
+        .subscribe((mousePos) => {
+            if (
+                !mousePos.data.time ||
+                !mousePos.data.x ||
+                !mousePos.data.y
+            ) {
                 return;
             }
-            const elementPosition = getElementPosition($element);
 
-            const dx = mousePos.data.x - elementPosition.centerX;
-            const dy = mousePos.data.y - elementPosition.centerY;
+            Array.from($$enlargeOnMouse).forEach($element => {
+                if (!isInViewport($element)) {
+                    return;
+                }
+                const elementPosition = getElementPosition($element);
 
-            const distance = Math.sqrt(dx * dx + dy * dy);
+                const dx = mousePos.data.x - elementPosition.centerX;
+                const dy = mousePos.data.y - elementPosition.centerY;
 
-            function easeInQuint(x: number): number {
-                return x ^ 1.9;
-            }
+                const distance = Math.sqrt(dx * dx + dy * dy);
 
-            let scale = 1 + (elementPosition.width / 2) / (easeInQuint(distance + 300));
-            if (scale > 1.5) {
-                scale = 1.5;
-            }
-            if (scale < 1.01) {
-                scale = 1;
-            }
+                function easeInQuint(x: number): number {
+                    return x ^ 1.9;
+                }
 
-            enlargeElement($element, scale);
+                let scale = 1 + (elementPosition.width / 2) / (easeInQuint(distance + 300));
+                if (scale > 1.5) {
+                    scale = 1.5;
+                }
+                if (scale < 1.01) {
+                    scale = 1;
+                }
 
+                enlargeElement($element, scale);
+
+            });
         });
-    });
 
 }
 

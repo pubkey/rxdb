@@ -10,29 +10,29 @@ import {
     execute,
     subscribe
 } from 'graphql';
-import { createServer } from 'http';
-import * as ws from 'ws';
+import { createServer } from 'node:http';
+import ws from 'ws';
 import { useServer } from 'graphql-ws/lib/use/ws';
 import { Request, Response, NextFunction } from 'express';
 
-const express = require('express');
+import express from 'express';
 // we need cors because this server is also used in browser-tests
-const cors = require('cors');
+import cors from 'cors';
 import { graphqlHTTP } from 'express-graphql';
 
 import {
     GRAPHQL_PATH,
     GRAPHQL_SUBSCRIPTION_PATH
-} from './graphql-config';
+} from './graphql-config.ts';
 import { ensureNotFalsy, lastOfArray } from 'event-reduce-js';
-import { RxReplicationWriteToMasterRow } from '../../src';
-import { HumanWithTimestampDocumentType } from './schema-objects';
-import { GraphQLServerUrl, RxGraphQLReplicationClientState } from '../../src/types';
-import { nextPort } from './port-manager';
+import { RxReplicationWriteToMasterRow } from '../../plugins/core/index.mjs';
+import { HumanWithTimestampDocumentType } from './schema-objects.ts';
+import { GraphQLServerUrl, RxGraphQLReplicationClientState } from '../../plugins/core/index.mjs';
+import { nextPort } from './port-manager.ts';
 
 import {
     graphQLRequest
-} from '../../plugins/replication-graphql';
+} from '../../plugins/replication-graphql/index.mjs';
 
 function sortByUpdatedAtAndPrimary(
     a: any,
