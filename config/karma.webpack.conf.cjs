@@ -8,7 +8,8 @@ const externals = {};
     'url',
     'fs',
     'module',
-    'http'
+    'http',
+    'assert'
 ].forEach(k => externals['node:' + k] = '{}');
 
 module.exports = {
