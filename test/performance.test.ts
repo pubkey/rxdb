@@ -17,6 +17,11 @@ declare const Deno: any;
  * Run via 'npm run test:performance:memory:node' and change 'memory' for other storage names.
  */
 describe('performance.test.ts', () => {
+    it('init storage', async () => {
+        if (config.storage.init) {
+            await config.storage.init();
+        }
+    });
     it('should not have enabled dev-mode which would affect the performance', () => {
         assert.strictEqual(
             overwritable.isDevMode(),
