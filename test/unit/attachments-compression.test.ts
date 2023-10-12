@@ -1,9 +1,9 @@
 import assert from 'assert';
-import config from './config';
+import config from './config.ts';
 import AsyncTestUtil from 'async-test-util';
 
-import * as schemas from '../helper/schemas';
-import * as schemaObjects from '../helper/schema-objects';
+import * as schemas from '../helper/schemas.ts';
+import * as schemaObjects from '../helper/schema-objects.ts';
 import {
     clone,
     createRxDatabase,
@@ -14,15 +14,15 @@ import {
     CompressionMode,
     b64EncodeUnicode,
     b64DecodeUnicode
-} from '../../plugins/core';
-import { HumanDocumentType } from '../helper/schemas';
+} from '../../plugins/core/index.mjs';
+import { HumanDocumentType } from '../helper/schemas.ts';
 
 import {
     wrappedAttachmentsCompressionStorage,
     compressBase64,
     decompressBase64
-} from '../../plugins/attachments-compression';
-import * as humansCollection from '../helper/humans-collection';
+} from '../../plugins/attachments-compression/index.mjs';
+import * as humansCollection from '../helper/humans-collection.ts';
 
 const modes: CompressionMode[] = ['deflate'];
 modes.forEach(mode => {

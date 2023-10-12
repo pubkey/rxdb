@@ -3,10 +3,11 @@ import type {
     RxJsonSchema,
     RxStorageStatics,
     FilledMangoQuery,
-    DefaultPreparedQuery} from './types';
-import { newRxError } from './rx-error';
-import { getQueryPlan } from './query-planner';
-import { DEFAULT_CHECKPOINT_SCHEMA } from './rx-schema-helper';
+    DefaultPreparedQuery
+} from './types/index.d.ts';
+import { newRxError } from './rx-error.ts';
+import { getQueryPlan } from './query-planner.ts';
+import { DEFAULT_CHECKPOINT_SCHEMA } from './rx-schema-helper.ts';
 
 
 /**

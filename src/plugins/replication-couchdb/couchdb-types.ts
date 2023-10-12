@@ -1,9 +1,9 @@
-import {
+import type {
     ById,
     ReplicationOptions,
     ReplicationPullOptions,
     ReplicationPushOptions
-} from '../../types';
+} from '../../types/index.d.ts';
 
 export type CouchDBCheckpointType = {
     sequence: number;

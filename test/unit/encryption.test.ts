@@ -1,9 +1,9 @@
 import assert from 'assert';
-import config, { getEncryptedStorage, getPassword } from './config';
+import config, { getEncryptedStorage, getPassword } from './config.ts';
 import AsyncTestUtil from 'async-test-util';
 
-import * as schemas from '../helper/schemas';
-import * as schemaObjects from '../helper/schema-objects';
+import * as schemas from '../helper/schemas.ts';
+import * as schemaObjects from '../helper/schema-objects.ts';
 
 import {
     createRxDatabase,
@@ -17,21 +17,20 @@ import {
     ensureNoStartupErrors,
     ensureNotFalsy,
     getComposedPrimaryKeyOfDocumentData,
-    getFromMapOrThrow
-} from '../../plugins/core';
+    getFromMapOrThrow,
+    RxStorage
+} from '../../plugins/core/index.mjs';
 
 import {
     encryptString,
     decryptString
-} from '../../plugins/encryption-crypto-js';
-import { replicateRxCollection } from '../../plugins/replication';
-import { getPullHandler, getPushHandler } from './replication.test';
-import { getRxStorageMemory, RxStorageInstanceMemory } from '../../plugins/storage-memory';
+} from '../../plugins/encryption-crypto-js/index.mjs';
+import { replicateRxCollection } from '../../plugins/replication/index.mjs';
+import { getPullHandler, getPushHandler } from './replication.test.ts';
+import { getRxStorageMemory, RxStorageInstanceMemory } from '../../plugins/storage-memory/index.mjs';
 
 
 config.parallel('encryption.test.ts', () => {
-    const storage = getEncryptedStorage();
-
     async function createEncryptedCollection(
         amount: number = 10,
         useStorage?: typeof storage
@@ -64,6 +63,12 @@ config.parallel('encryption.test.ts', () => {
 
         return collections.encryptedhuman;
     }
+    let storage: RxStorage<any, any>;
+    describe('init', () => {
+        it('create storage', () => {
+            storage = getEncryptedStorage();
+        });
+    });
     describe('basics', () => {
         describe('.encryptString()', () => {
             it('string', () => {

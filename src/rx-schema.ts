@@ -2,13 +2,13 @@ import {
     overwriteGetterForCaching,
     isMaybeReadonlyArray,
     deepEqual
-} from './plugins/utils';
+} from './plugins/utils/index.ts';
 import {
     newRxError,
-} from './rx-error';
+} from './rx-error.ts';
 import {
     runPluginHooks
-} from './hooks';
+} from './hooks.ts';
 
 import type {
     DeepMutable,
@@ -19,7 +19,7 @@ import type {
     RxDocumentData,
     RxJsonSchema,
     StringKeys
-} from './types';
+} from './types/index.d.ts';
 import {
     fillWithDefaultSettings,
     getComposedPrimaryKeyOfDocumentData,
@@ -27,8 +27,8 @@ import {
     getPrimaryFieldOfPrimaryKey,
     getSchemaByObjectPath,
     normalizeRxJsonSchema
-} from './rx-schema-helper';
-import { overwritable } from './overwritable';
+} from './rx-schema-helper.ts';
+import { overwritable } from './overwritable.ts';
 
 export class RxSchema<RxDocType = any> {
     public indexes: MaybeReadonly<string[]>[];

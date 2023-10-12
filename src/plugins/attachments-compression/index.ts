@@ -1,11 +1,11 @@
-import { wrapRxStorageInstance } from '../../plugin-helpers';
+import { wrapRxStorageInstance } from '../../plugin-helpers.ts';
 import type {
     RxStorage,
     RxStorageInstanceCreationParams,
     RxDocumentWriteData,
     CompressionMode,
     RxAttachmentWriteData
-} from '../../types';
+} from '../../types/index.d.ts';
 
 import {
     deflate,
@@ -16,7 +16,7 @@ import {
     base64ToArrayBuffer,
     ensureNotFalsy,
     flatClone
-} from '../utils';
+} from '../utils/index.ts';
 
 
 export function compressBase64(

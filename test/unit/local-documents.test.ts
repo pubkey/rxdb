@@ -1,9 +1,9 @@
 import assert from 'assert';
 import AsyncTestUtil, { wait, waitUntil, randomString } from 'async-test-util';
 
-import * as humansCollection from '../helper/humans-collection';
-import * as schemas from '../helper/schemas';
-import * as schemaObjects from '../helper/schema-objects';
+import * as humansCollection from '../helper/humans-collection.ts';
+import * as schemas from '../helper/schemas.ts';
+import * as schemaObjects from '../helper/schema-objects.ts';
 import {
     createRxDatabase,
     randomCouchString,
@@ -12,12 +12,12 @@ import {
     ensureNotFalsy,
     RxLocalDocument,
     RxCollection
-} from '../../plugins/core';
+} from '../../plugins/core/index.mjs';
 
 
-import { RxDBLocalDocumentsPlugin } from '../../plugins/local-documents';
+import { RxDBLocalDocumentsPlugin } from '../../plugins/local-documents/index.mjs';
 addRxPlugin(RxDBLocalDocumentsPlugin);
-import config from './config';
+import config from './config.ts';
 import {
     filter,
     first,

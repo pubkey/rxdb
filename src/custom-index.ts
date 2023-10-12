@@ -11,21 +11,21 @@
 
 import {
     getSchemaByObjectPath
-} from './rx-schema-helper';
+} from './rx-schema-helper.ts';
 import type {
     JsonSchema,
     RxDocumentData,
     RxJsonSchema
-} from './types';
+} from './types/index.ts';
 import {
     ensureNotFalsy,
     objectPathMonad,
     ObjectPathMonadFunction
-} from './plugins/utils';
+} from './plugins/utils/index.ts';
 import {
     INDEX_MAX,
     INDEX_MIN
-} from './query-planner';
+} from './query-planner.ts';
 
 
 /**

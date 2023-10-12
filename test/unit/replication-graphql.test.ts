@@ -5,7 +5,9 @@ import {
     wait,
     waitUntil
 } from 'async-test-util';
-import { WebSocket as IsomorphicWebSocket } from 'isomorphic-ws';
+import pkg from 'isomorphic-ws';
+const { WebSocket: IsomorphicWebSocket } = pkg;
+
 
 import {
     first
@@ -14,12 +16,12 @@ import {
     firstValueFrom
 } from 'rxjs';
 
-import config, { getEncryptedStorage, getPassword } from './config';
-import * as schemaObjects from '../helper/schema-objects';
+import config, { getEncryptedStorage, getPassword } from './config.ts';
+import * as schemaObjects from '../helper/schema-objects.ts';
 import {
     HumanWithTimestampDocumentType
-} from '../helper/schema-objects';
-import * as humansCollection from '../helper/humans-collection';
+} from '../helper/schema-objects.ts';
+import * as humansCollection from '../helper/humans-collection.ts';
 
 import {
     createRxDatabase,
@@ -29,7 +31,7 @@ import {
     RxReplicationWriteToMasterRow,
     ReplicationPullHandlerResult,
     RxCollection
-} from '../../plugins/core';
+} from '../../plugins/core/index.mjs';
 
 import {
     replicateGraphQL,
@@ -39,30 +41,26 @@ import {
     RxGraphQLReplicationState,
     pullStreamBuilderFromRxSchema,
     graphQLRequest
-} from '../../plugins/replication-graphql';
+} from '../../plugins/replication-graphql/index.mjs';
 import {
     wrappedKeyCompressionStorage
-} from '../../plugins/key-compression';
-import * as schemas from '../helper/schemas';
+} from '../../plugins/key-compression/index.mjs';
+import * as schemas from '../helper/schemas.ts';
 import {
     GRAPHQL_PATH,
     getDocsOnServer
-} from '../helper/graphql-config';
+} from '../helper/graphql-config.ts';
 
 import {
     wrappedValidateAjvStorage
-} from '../../plugins/validate-ajv';
-
-import {
-    GraphQLServerModule
-} from '../helper/graphql-server';
+} from '../../plugins/validate-ajv/index.mjs';
 
 import {
     buildSchema,
     parse as parseQuery
 } from 'graphql';
-import { ReplicationPushHandlerResult, RxDocumentData } from '../../src/types';
-import { enableKeyCompression } from '../helper/schemas';
+import { ReplicationPushHandlerResult, RxDocumentData } from '../../plugins/core/index.mjs';
+import { enableKeyCompression } from '../helper/schemas.ts';
 
 declare type WithDeleted<T> = T & { deleted: boolean; };
 
@@ -164,9 +162,7 @@ describe('replication-graphql.test.ts', () => {
         if (!config.platform.isNode()) {
             return;
         }
-        const REQUIRE_FUN = require;
-        const SpawnServer: GraphQLServerModule = REQUIRE_FUN('../helper/graphql-server');
-        const { createClient } = REQUIRE_FUN('graphql-ws');
+        let SpawnServer: any;
         const ERROR_URL = 'http://localhost:15898/foobar';
         function getTestData(amount: number): WithDeleted<HumanWithTimestampDocumentType>[] {
             return new Array(amount).fill(0)
@@ -176,6 +172,15 @@ describe('replication-graphql.test.ts', () => {
                     return doc;
                 });
         }
+        describe('init', () => {
+            it('import server module', async () => {
+                if (config.platform.name === 'node') {
+                    SpawnServer = await import('../helper/graphql-server.js');
+                } else if (config.isDeno) {
+                    SpawnServer = await import('../helper/graphql-server.ts');
+                }
+            });
+        });
         config.parallel('graphql-server.js', () => {
             it('spawn, reach and close a server', async () => {
                 const server = await SpawnServer.spawn();
@@ -198,7 +203,7 @@ describe('replication-graphql.test.ts', () => {
                 server.close();
             });
             it('server.setDocument()', async () => {
-                const server = await SpawnServer.spawn<WithDeleted<HumanWithTimestampDocumentType>>();
+                const server = await SpawnServer.spawn();
                 const doc = getTestData(1).pop();
                 if (!doc) {
                     throw new Error('missing doc');
@@ -220,6 +225,7 @@ describe('replication-graphql.test.ts', () => {
 
                 const endpointUrl = server.url.ws;
 
+                const { createClient } = await import('graphql-ws');
                 const client = createClient({
                     url: endpointUrl,
                     shouldRetry: () => false,
@@ -726,7 +732,7 @@ describe('replication-graphql.test.ts', () => {
                 const docs = await c.find().exec();
                 assert.strictEqual(docs.length, 0);
 
-                const server = await SpawnServer.spawn<HumanWithTimestampDocumentType>();
+                const server = await SpawnServer.spawn();
                 const replicationState = replicateGraphQL({
                     replicationIdentifier: randomCouchString(10),
                     collection: c,
@@ -858,7 +864,7 @@ describe('replication-graphql.test.ts', () => {
                 const amount = batchSize;
                 const [c, server] = await Promise.all([
                     humansCollection.createHumanWithTimestamp(amount),
-                    SpawnServer.spawn<WithDeleted<HumanWithTimestampDocumentType>>()
+                    SpawnServer.spawn()
                 ]);
 
                 const doc = await c.findOne().exec(true);
@@ -2059,7 +2065,7 @@ describe('replication-graphql.test.ts', () => {
                 const collection = collections.humans;
                 await collection.insert(schemaObjects.humanWithTimestamp());
 
-                const server = await SpawnServer.spawn<HumanWithTimestampDocumentType>([]);
+                const server = await SpawnServer.spawn([]);
 
                 const replicationState = replicateGraphQL({
                     replicationIdentifier: randomCouchString(10),
@@ -2224,7 +2230,7 @@ describe('replication-graphql.test.ts', () => {
         });
         config.parallel('issues', () => {
             it('push not working on slow db', async () => {
-                if (process.versions.bun) {
+                if (config.isBun) {
                     // TODO for somehow bun times out here
                     return;
                 }
@@ -2531,7 +2537,7 @@ describe('replication-graphql.test.ts', () => {
         }
         describe('issues', () => {
             it('push not working on slow db', async () => {
-                if (process.versions.bun) {
+                if (config.isBun || config.isDeno) {
                     // TODO for somehow bun times out here
                     return;
                 }

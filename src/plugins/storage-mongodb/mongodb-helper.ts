@@ -1,13 +1,13 @@
-import {
+import type {
     MangoQuerySelector,
     MangoQuerySortPart,
     RxDocumentData
-} from '../../types';
+} from '../../types/index.d.ts';
 import {
     Sort as MongoSort
 } from 'mongodb';
-import { flatClone } from '../utils';
-import { MongoQuerySelector } from './mongodb-types';
+import { flatClone } from '../utils/index.ts';
+import { MongoQuerySelector } from './mongodb-types.ts';
 export const RX_STORAGE_NAME_MONGODB = 'mongodb';
 
 /**

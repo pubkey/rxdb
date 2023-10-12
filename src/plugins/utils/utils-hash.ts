@@ -1,5 +1,5 @@
 import { sha256 } from 'ohash';
-import type { HashFunction } from '../../types';
+import type { HashFunction } from '../../types/index.d.ts';
 
 
 /**

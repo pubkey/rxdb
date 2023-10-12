@@ -1,10 +1,10 @@
-import { newRxError } from '../../rx-error';
+import { newRxError } from '../../rx-error.ts';
 import type {
     RxAttachmentWriteData,
     RxStorageInstance,
     WithDeletedAndAttachments
-} from '../../types';
-import { ensureNotFalsy } from '../utils';
+} from '../../types/index.d.ts';
+import { ensureNotFalsy } from '../utils/index.ts';
 
 export function ensureSchemaSupportsAttachments(doc: any) {
     const schemaJson = doc.collection.schema.jsonSchema;

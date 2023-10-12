@@ -1,6 +1,6 @@
 import { useOperators, OperatorType } from 'mingo/core';
 import { Query } from 'mingo/query';
-import type { MangoQuerySelector } from './types';
+import type { MangoQuerySelector } from './types/index.d.ts';
 import {
     $project,
     $sort

@@ -4,18 +4,19 @@ import {
     dbCount,
     BROADCAST_CHANNEL_BY_TOKEN,
     getFromMapOrThrow
-} from '../../plugins/core';
-import config from './config';
+} from '../../plugins/core/index.mjs';
+import config from './config.ts';
 
 import {
     GRAPHQL_WEBSOCKET_BY_URL
-} from '../../plugins/replication-graphql';
+} from '../../plugins/replication-graphql/index.mjs';
 import {
     OPEN_REMOTE_MESSAGE_CHANNELS,
     CACHE_ITEM_BY_MESSAGE_CHANNEL
-} from '../../plugins/storage-remote';
-import { OPEN_MEMORY_INSTANCES } from '../../plugins/storage-memory';
+} from '../../plugins/storage-remote/index.mjs';
+import { OPEN_MEMORY_INSTANCES } from '../../plugins/storage-memory/index.mjs';
 
+declare const Deno: any;
 
 describe('last.test.ts (' + config.storage.name + ')', () => {
     it('ensure all Memory RxStorage instances are closed', async () => {
@@ -88,4 +89,14 @@ describe('last.test.ts (' + config.storage.name + ')', () => {
             throw new Error('not all graphql websockets have been closed (' + openSocketUrls.length + ')');
         }
     });
+
+    /**
+     * Some runtimes do not automatically exit for whatever reason.
+     */
+    it('exit the process', () => {
+        if (config.isDeno) {
+            Deno.exit(0);
+        }
+    });
 });
+

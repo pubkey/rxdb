@@ -1,6 +1,6 @@
 import type {
     DeepReadonlyObject
-} from '../../types';
+} from '../../types/index.d.ts';
 
 export function deepFreeze<T>(o: T): T {
     Object.freeze(o);

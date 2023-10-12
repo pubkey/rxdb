@@ -264,7 +264,7 @@ jobs:
 
   storage-mongodb:
     runs-on: ubuntu-22.04
-   
+
     steps:
       - uses: actions/checkout@v4
       - name: Set node version
@@ -778,17 +778,11 @@ jobs:
         uses: actions/setup-node@v3
         with:
           node-version-file: ".nvmrc"
-      - uses: oven-sh/setup-bun@v1
-        with:
-          bun-version: latest
 
       - name: prepare RxDB core
         run: |
           npm install
           npm run build
-
-      - run: npm run test:bun:dexie
-      - run: npm run test:performance:memory:bun
 
       - run: npm run test:replication-couchdb
       - run: npm run test:replication-firestore
@@ -798,6 +792,21 @@ jobs:
         run: |
           docker pull nats:2.9.17
           npm run test:replication-nats
+
+      # bun
+      - uses: oven-sh/setup-bun@v1
+        with:
+          bun-version: latest
+      - run: npm run test:bun:dexie
+      - run: npm run test:performance:memory:bun
+
+      # deno (must be last because it messes up with file permissions)
+      - uses: denoland/setup-deno@v1
+        with:
+          deno-version: "1.37.1"
+      - run: npm run test:deno:dexie
+      # TODO fix deno performance test
+      #- run: npm run test:performance:memory:deno
 
   # I found out that people are stupid and use the npm downloads count
   # to measure the quality of an open source project.

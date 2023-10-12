@@ -1,19 +1,19 @@
 import assert from 'assert';
 import AsyncTestUtil from 'async-test-util';
-import config from './config';
+import config from './config.ts';
 
-import * as schemas from '../helper/schemas';
-import * as humansCollection from '../helper/humans-collection';
+import * as schemas from '../helper/schemas.ts';
+import * as humansCollection from '../helper/humans-collection.ts';
 
 import {
     createRxDatabase,
     randomCouchString,
     addRxPlugin,
-} from '../../plugins/core';
+} from '../../plugins/core/index.mjs';
 
 import {
     RxDBLeaderElectionPlugin
-} from '../../plugins/leader-election';
+} from '../../plugins/leader-election/index.mjs';
 
 describe('leader-election.test.js', () => {
     if (!config.storage.hasMultiInstance) {

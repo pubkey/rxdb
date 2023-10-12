@@ -6,26 +6,26 @@ import {
     Subject,
     Subscription
 } from 'rxjs';
-import { addRxPlugin } from '../../plugin';
-import { rxStorageInstanceToReplicationHandler } from '../../replication-protocol';
+import { addRxPlugin } from '../../plugin.ts';
+import { rxStorageInstanceToReplicationHandler } from '../../replication-protocol/index.ts';
 import type {
     RxCollection,
     RxError,
     RxReplicationHandler,
     RxReplicationWriteToMasterRow,
     RxTypeError
-} from '../../types';
+} from '../../types/index.d.ts';
 import {
     ensureNotFalsy,
     getFromMapOrThrow,
     randomCouchString
-} from '../../plugins/utils';
-import { RxDBLeaderElectionPlugin } from '../leader-election';
-import { replicateRxCollection } from '../replication';
+} from '../../plugins/utils/index.ts';
+import { RxDBLeaderElectionPlugin } from '../leader-election/index.ts';
+import { replicateRxCollection } from '../replication/index.ts';
 import {
     isMasterInWebRTCReplication,
     sendMessageAndAwaitAnswer
-} from './webrtc-helper';
+} from './webrtc-helper.ts';
 import type {
     WebRTCConnectionHandler,
     WebRTCPeer,
@@ -34,7 +34,7 @@ import type {
     WebRTCResponse,
     RxWebRTCReplicationState,
     SyncOptionsWebRTC
-} from './webrtc-types';
+} from './webrtc-types.ts';
 
 
 export async function replicateWebRTC<RxDocType>(
@@ -71,7 +71,7 @@ export async function replicateWebRTC<RxDocType>(
     const pool = new RxWebRTCReplicationPool(
         collection,
         options,
-        options.connectionHandlerCreator(options)
+        await options.connectionHandlerCreator(options)
     );
 
 
@@ -281,8 +281,8 @@ export class RxWebRTCReplicationPool<RxDocType> {
     }
 }
 
-export * from './webrtc-helper';
-export * from './webrtc-types';
+export * from './webrtc-helper.ts';
+export * from './webrtc-types.ts';
 // export * from './connection-handler-webtorrent';
 // export * from './connection-handler-p2pcf';
-export * from './connection-handler-simple-peer';
+export * from './connection-handler-simple-peer.ts';

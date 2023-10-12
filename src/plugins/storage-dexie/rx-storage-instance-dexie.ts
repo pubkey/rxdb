@@ -10,7 +10,7 @@ import {
     lastOfArray,
     ensureNotFalsy,
     appendToArray
-} from '../utils';
+} from '../utils/index.ts';
 import type {
     RxStorageInstance,
     RxStorageChangeEvent,
@@ -29,12 +29,12 @@ import type {
     RxStorageCountResult,
     DefaultPreparedQuery,
     RxStorageInfoResult
-} from '../../types';
-import {
+} from '../../types/index.d.ts';
+import type {
     DexieSettings,
     DexieStorageInternals
-} from '../../types/plugins/dexie';
-import { RxStorageDexie } from './rx-storage-dexie';
+} from '../../types/plugins/dexie.d.ts';
+import { RxStorageDexie } from './rx-storage-dexie.ts';
 import {
     closeDexieDb,
     fromDexieToStorage,
@@ -42,12 +42,12 @@ import {
     getDexieDbWithTables,
     getDocsInDb,
     RX_STORAGE_NAME_DEXIE
-} from './dexie-helper';
-import { dexieCount, dexieQuery } from './dexie-query';
-import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
-import { categorizeBulkWriteRows } from '../../rx-storage-helper';
-import { addRxStorageMultiInstanceSupport } from '../../rx-storage-multiinstance';
-import { newRxError } from '../../rx-error';
+} from './dexie-helper.ts';
+import { dexieCount, dexieQuery } from './dexie-query.ts';
+import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper.ts';
+import { categorizeBulkWriteRows } from '../../rx-storage-helper.ts';
+import { addRxStorageMultiInstanceSupport } from '../../rx-storage-multiinstance.ts';
+import { newRxError } from '../../rx-error.ts';
 
 let instanceId = now();
 

@@ -1,21 +1,21 @@
 import type {
     RxStorage,
     RxStorageInstanceCreationParams
-} from '../../types';
+} from '../../types/index.d.ts';
 import {
     ensureNoBooleanIndex,
     RxStorageDexieStatics,
     RX_STORAGE_NAME_DEXIE
-} from './dexie-helper';
+} from './dexie-helper.ts';
 import type {
     DexieSettings,
     DexieStorageInternals
-} from '../../types/plugins/dexie';
+} from '../../types/plugins/dexie.d.ts';
 import {
     createDexieStorageInstance,
     RxStorageInstanceDexie
-} from './rx-storage-instance-dexie';
-import { ensureRxStorageInstanceParamsAreCorrect } from '../../rx-storage-helper';
+} from './rx-storage-instance-dexie.ts';
+import { ensureRxStorageInstanceParamsAreCorrect } from '../../rx-storage-helper.ts';
 
 
 

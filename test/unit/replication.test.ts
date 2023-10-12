@@ -11,14 +11,14 @@ import {
     waitUntil
 } from 'async-test-util';
 
-import config from './config';
-import * as schemaObjects from '../helper/schema-objects';
-import * as schemas from '../helper/schemas';
-import * as humansCollection from '../helper/humans-collection';
+import config from './config.ts';
+import * as schemaObjects from '../helper/schema-objects.ts';
+import * as schemas from '../helper/schemas.ts';
+import * as humansCollection from '../helper/humans-collection.ts';
 
 import {
     wrappedValidateAjvStorage
-} from '../../plugins/validate-ajv';
+} from '../../plugins/validate-ajv/index.mjs';
 
 import {
     RxCollection,
@@ -35,18 +35,19 @@ import {
     createBlob,
     RxAttachmentCreator,
     DeepReadonly
-} from '../../plugins/core';
+} from '../../plugins/core/index.mjs';
 
 import {
     RxReplicationState,
     replicateRxCollection
-} from '../../plugins/replication';
+} from '../../plugins/replication/index.mjs';
 
 import type {
     ReplicationPullHandler,
     ReplicationPushHandler,
-    RxReplicationWriteToMasterRow
-} from '../../src/types';
+    RxReplicationWriteToMasterRow,
+    RxStorage
+} from '../../plugins/core/index.mjs';
 import { firstValueFrom, Observable, Subject } from 'rxjs';
 
 
@@ -160,10 +161,14 @@ describe('replication.test.js', () => {
         });
     }
 
-    const storageWithValidation = wrappedValidateAjvStorage({
-        storage: config.storage.getStorage()
+    let storageWithValidation: RxStorage<any, any>;
+    describe('init', () => {
+        it('create storage', () => {
+            storageWithValidation = wrappedValidateAjvStorage({
+                storage: config.storage.getStorage()
+            });
+        });
     });
-
     config.parallel('non-live replication', () => {
         it('should replicate both sides', async () => {
             const docsPerSide = 15;

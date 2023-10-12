@@ -2,10 +2,10 @@ import assert from 'assert';
 import AsyncTestUtil, { wait } from 'async-test-util';
 import { Observable } from 'rxjs';
 
-import config from './config';
-import * as humansCollection from './../helper/humans-collection';
-import * as schemaObjects from '../helper/schema-objects';
-import * as schemas from '../helper/schemas';
+import config from './config.ts';
+import * as humansCollection from './../helper/humans-collection.ts';
+import * as schemaObjects from '../helper/schema-objects.ts';
+import * as schemas from '../helper/schemas.ts';
 
 import {
     createRxDatabase,
@@ -19,12 +19,12 @@ import {
     createBlob,
     defaultHashSha256,
     RxJsonSchema
-} from '../../plugins/core';
+} from '../../plugins/core/index.mjs';
 
 
-import { RxDBAttachmentsPlugin } from '../../plugins/attachments';
+import { RxDBAttachmentsPlugin } from '../../plugins/attachments/index.mjs';
 addRxPlugin(RxDBAttachmentsPlugin);
-import { RxDBJsonDumpPlugin } from '../../plugins/json-dump';
+import { RxDBJsonDumpPlugin } from '../../plugins/json-dump/index.mjs';
 addRxPlugin(RxDBJsonDumpPlugin);
 
 describe('rx-document.test.js', () => {

@@ -1,7 +1,7 @@
 import clone from 'clone';
-import * as schemas from './schemas';
-import * as schemaObjects from './schema-objects';
-import config from '../unit/config';
+import * as schemas from './schemas.ts';
+import * as schemaObjects from './schema-objects.ts';
+import config from '../unit/config.ts';
 
 import {
     createRxDatabase,
@@ -12,9 +12,9 @@ import {
     MigrationStrategies,
     RxAttachmentCreator,
     RxStorage
-} from '../../plugins/core';
+} from '../../plugins/core/index.mjs';
 
-import { HumanDocumentType } from './schemas';
+import { HumanDocumentType } from './schemas.ts';
 
 export async function create(
     size: number = 20,

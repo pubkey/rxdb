@@ -1,8 +1,8 @@
-import { getIndexableStringMonad } from '../../custom-index';
-import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
-import type { RxDocumentData, RxJsonSchema } from '../../types';
-import { toArray } from '../../plugins/utils';
-import type { MemoryStorageInternals } from './memory-types';
+import { getIndexableStringMonad } from '../../custom-index.ts';
+import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper.ts';
+import type { RxDocumentData, RxJsonSchema } from '../../types/index.d.ts';
+import { toArray } from '../../plugins/utils/index.ts';
+import type { MemoryStorageInternals } from './memory-types.ts';
 
 export function addIndexesToInternalsState<RxDocType>(
     state: MemoryStorageInternals<RxDocType>,

@@ -1,15 +1,15 @@
-import { ensureRxStorageInstanceParamsAreCorrect } from '../../rx-storage-helper';
-import type { RxStorageInstanceCreationParams } from '../../types';
+import { ensureRxStorageInstanceParamsAreCorrect } from '../../rx-storage-helper.ts';
+import type { RxStorageInstanceCreationParams } from '../../types/index.d.ts';
 import type {
     RxStorageMemory,
     RxStorageMemoryInstanceCreationOptions,
     RxStorageMemorySettings
-} from './memory-types';
+} from './memory-types.ts';
 import {
     createMemoryStorageInstance,
     RxStorageInstanceMemory
-} from './rx-storage-instance-memory';
-import { RxStorageDefaultStatics } from '../../rx-storage-statics';
+} from './rx-storage-instance-memory.ts';
+import { RxStorageDefaultStatics } from '../../rx-storage-statics.ts';
 
 /**
  * Keep the state even when the storage instance is closed.
@@ -45,8 +45,8 @@ export function getRxStorageMemory(
 }
 
 
-export * from './memory-helper';
-export * from './binary-search-bounds';
-export * from './memory-types';
-export * from './memory-indexes';
-export * from './rx-storage-instance-memory';
+export * from './memory-helper.ts';
+export * from './binary-search-bounds.ts';
+export * from './memory-types.ts';
+export * from './memory-indexes.ts';
+export * from './rx-storage-instance-memory.ts';

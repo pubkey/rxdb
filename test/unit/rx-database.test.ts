@@ -1,4 +1,4 @@
-import config, { getPassword } from './config';
+import config, { getPassword } from './config.ts';
 import assert from 'assert';
 
 import {
@@ -9,12 +9,12 @@ import {
     RxDatabase,
     isRxDatabaseFirstTimeInstantiated,
     defaultHashSha256
-} from '../../plugins/core';
+} from '../../plugins/core/index.mjs';
 
 import AsyncTestUtil from 'async-test-util';
-import * as schemas from '../helper/schemas';
-import * as humansCollection from '../helper/humans-collection';
-import * as schemaObjects from '../helper/schema-objects';
+import * as schemas from '../helper/schemas.ts';
+import * as humansCollection from '../helper/humans-collection.ts';
+import * as schemaObjects from '../helper/schema-objects.ts';
 
 
 config.parallel('rx-database.test.js', () => {

@@ -3,12 +3,12 @@ import type {
     RxDocument,
     MigrationStrategies,
     RxConflictHandler
-} from './';
+} from './index.d.ts';
 import type {
     RxCollectionBase
-} from '../rx-collection';
-import type { QueryCache } from '../query-cache';
-import { RxLocalDocumentMutation } from './rx-database';
+} from '../rx-collection.d.ts';
+import type { QueryCache } from '../query-cache.d.ts';
+import type { RxLocalDocumentMutation } from './rx-database.d.ts';
 
 export interface KeyFunctionMap {
     [key: string]: Function;

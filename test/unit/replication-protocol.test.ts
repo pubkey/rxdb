@@ -1,7 +1,7 @@
 import assert from 'assert';
 
-import config from './config';
-import * as schemaObjects from '../helper/schema-objects';
+import config from './config.ts';
+import * as schemaObjects from '../helper/schema-objects.ts';
 import {
     randomCouchString,
     now,
@@ -32,26 +32,26 @@ import {
     createBlob,
     blobToBase64String,
     RxAttachmentWriteData
-} from '../../plugins/core';
+} from '../../plugins/core/index.mjs';
 
 
 import {
     RxLocalDocumentData,
     RX_LOCAL_DOCUMENT_SCHEMA
-} from '../../plugins/local-documents';
-import * as schemas from '../helper/schemas';
+} from '../../plugins/local-documents/index.mjs';
+import * as schemas from '../helper/schemas.ts';
 import {
     clone,
     wait,
     waitUntil,
     randomBoolean
 } from 'async-test-util';
-import { HumanDocumentType } from '../helper/schemas';
+import { HumanDocumentType } from '../helper/schemas.ts';
 import {
     EXAMPLE_REVISION_1,
     EXAMPLE_REVISION_2,
     EXAMPLE_REVISION_3
-} from '../helper/revisions';
+} from '../helper/revisions.ts';
 
 const testContext = 'replication-protocol.test.ts';
 
@@ -111,7 +111,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 documentData
             });
         } else {
-            console.error('EQUAL AGE (' + ageA + ') !!! ' + context);
+            console.error('EQUAL AGE (' + ageA + ') ' + context);
             console.log(JSON.stringify(input, null, 4));
             throw new Error('equal age ' + ageA + ' ctxt: ' + context);
         }

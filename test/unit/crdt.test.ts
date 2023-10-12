@@ -1,9 +1,9 @@
 import assert from 'assert';
 import AsyncTestUtil, { clone } from 'async-test-util';
 
-import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv';
-import * as schemas from '../helper/schemas';
-import * as schemaObjects from '../helper/schema-objects';
+import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs';
+import * as schemas from '../helper/schemas.ts';
+import * as schemaObjects from '../helper/schema-objects.ts';
 import {
     createRxDatabase,
     randomCouchString,
@@ -18,7 +18,7 @@ import {
     rxStorageInstanceToReplicationHandler,
     RxReplicationWriteToMasterRow,
     defaultConflictHandler
-} from '../../plugins/core';
+} from '../../plugins/core/index.mjs';
 
 
 
@@ -26,11 +26,11 @@ import {
     getCRDTSchemaPart,
     RxDBcrdtPlugin,
     getCRDTConflictHandler
-} from '../../plugins/crdt';
+} from '../../plugins/crdt/index.mjs';
 addRxPlugin(RxDBcrdtPlugin);
-import config from './config';
-import { replicateRxCollection, RxReplicationState } from '../../plugins/replication';
-import { ReplicationPullHandler, ReplicationPushHandler } from '../../src/types';
+import config from './config.ts';
+import { replicateRxCollection, RxReplicationState } from '../../plugins/replication/index.mjs';
+import { ReplicationPullHandler, ReplicationPushHandler } from '../../plugins/core/index.mjs';
 
 config.parallel('crdt.test.js', () => {
     type WithCRDTs<RxDocType> = RxDocType & {
@@ -277,11 +277,16 @@ config.parallel('crdt.test.js', () => {
 
     describe('conflict handling', () => {
         const schema = enableCRDTinSchema(fillWithDefaultSettings(schemas.human));
-        const conflictHandler = getCRDTConflictHandler<WithCRDTs<schemas.HumanDocumentType>>(
-            defaultHashSha256,
-            config.storage.getStorage().statics,
-            schema
-        );
+        let conflictHandler: any;
+        describe('init', () => {
+            it('init', () => {
+                conflictHandler = getCRDTConflictHandler<WithCRDTs<schemas.HumanDocumentType>>(
+                    defaultHashSha256,
+                    config.storage.getStorage().statics,
+                    schema
+                );
+            });
+        });
         describe('.getCRDTConflictHandler()', () => {
             it('should merge 2 inserts correctly', async () => {
                 const writeData = schemaObjects.human();

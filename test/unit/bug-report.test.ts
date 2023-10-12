@@ -10,12 +10,12 @@
  */
 import assert from 'assert';
 import AsyncTestUtil from 'async-test-util';
-import config from './config';
+import config from './config.ts';
 
 import {
     createRxDatabase,
     randomCouchString
-} from '../../plugins/core';
+} from '../../plugins/core/index.mjs';
 
 describe('bug-report.test.js', () => {
     it('should fail because it reproduces the bug', async () => {

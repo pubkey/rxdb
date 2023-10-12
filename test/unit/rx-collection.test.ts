@@ -1,6 +1,6 @@
 import assert from 'assert';
 import clone from 'clone';
-import config from './config';
+import config from './config.ts';
 import AsyncTestUtil, {
     randomBoolean,
     randomNumber,
@@ -9,9 +9,9 @@ import AsyncTestUtil, {
     assertThrows
 } from 'async-test-util';
 
-import * as schemas from '../helper/schemas';
-import * as schemaObjects from '../helper/schema-objects';
-import * as humansCollection from '../helper/humans-collection';
+import * as schemas from '../helper/schemas.ts';
+import * as schemaObjects from '../helper/schema-objects.ts';
+import * as humansCollection from '../helper/humans-collection.ts';
 
 import {
     isRxCollection,
@@ -33,16 +33,16 @@ import {
     getFromMapOrThrow,
     RxCollectionCreator,
     parseRevision
-} from '../../plugins/core';
+} from '../../plugins/core/index.mjs';
 
-import { RxDBUpdatePlugin } from '../../plugins/update';
+import { RxDBUpdatePlugin } from '../../plugins/update/index.mjs';
 addRxPlugin(RxDBUpdatePlugin);
-import { RxDBMigrationPlugin } from '../../plugins/migration';
+import { RxDBMigrationPlugin } from '../../plugins/migration/index.mjs';
 addRxPlugin(RxDBMigrationPlugin);
 
 import { firstValueFrom } from 'rxjs';
-import { HumanDocumentType } from '../helper/schemas';
-import { RxDocumentData } from '../../src/types';
+import { HumanDocumentType } from '../helper/schemas.ts';
+import { RxDocumentData } from '../../plugins/core/index.mjs';
 
 describe('rx-collection.test.ts', () => {
     async function getDb(): Promise<RxDatabase> {

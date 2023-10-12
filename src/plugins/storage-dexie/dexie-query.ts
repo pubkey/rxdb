@@ -1,18 +1,18 @@
-import { INDEX_MIN } from '../../query-planner';
-import { getQueryMatcher, getSortComparator } from '../../rx-query-helper';
+import { INDEX_MIN } from '../../query-planner.ts';
+import { getQueryMatcher, getSortComparator } from '../../rx-query-helper.ts';
 import type {
     DefaultPreparedQuery,
     QueryMatcher,
     RxDocumentData,
     RxQueryPlan,
     RxStorageQueryResult
-} from '../../types';
+} from '../../types/index.d.ts';
 import {
     dexieReplaceIfStartsWithPipe,
     DEXIE_DOCS_TABLE_NAME,
     fromDexieToStorage
-} from './dexie-helper';
-import type { RxStorageInstanceDexie } from './rx-storage-instance-dexie';
+} from './dexie-helper.ts';
+import type { RxStorageInstanceDexie } from './rx-storage-instance-dexie.ts';
 
 export function mapKeyForKeyRange(k: any) {
     if (k === INDEX_MIN) {

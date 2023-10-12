@@ -1,4 +1,4 @@
-import { AnyKeys, AnyObject } from '../util';
+import type { AnyKeys, AnyObject } from '../util.d.ts';
 
 /**
  * @link https://github.com/Automattic/mongoose/blob/eb292d2c4cc98ee315f118d6199a83938f06d901/types/index.d.ts#L466

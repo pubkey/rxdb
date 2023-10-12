@@ -15,25 +15,25 @@ process.on('unhandledRejection', function (err) {
     process.exit(1);
 });
 
-const {
+import {
     createRxDatabase,
     isRxDocument,
     randomCouchString,
     addRxPlugin
-} = require('../../plugins/core');
-const {
+} from '../../plugins/core/index.mjs';
+import {
     RxDBLeaderElectionPlugin
-} = require('../../plugins/leader-election');
+} from '../../plugins/leader-election/index.mjs';
 addRxPlugin(RxDBLeaderElectionPlugin);
-const {
+import {
     getRxStorageMemory
-} = require('../../plugins/storage-memory');
-const {
+} from '../../plugins/storage-memory/index.mjs';
+import {
     replicateRxCollection
-} = require('../../plugins/replication');
+} from '../../plugins/replication/index.mjs';
 import type {
     RxJsonSchema,
-} from '../../plugins/core';
+} from '../../plugins/core/index.mjs';
 
 const schema: RxJsonSchema<{ passportId: string; firstName: string; lastName: string; }> = {
     title: 'human schema',
@@ -80,7 +80,7 @@ const run = async function () {
      * all replication timeouts are cleared up when the collection
      * gets destroyed.
      */
-    await replicateRxCollection({
+    await replicateRxCollection<any, any>({
         collection,
         replicationIdentifier: 'my-custom-rest-replication',
         live: true,
@@ -88,14 +88,16 @@ const run = async function () {
         retryTime: 50000,
         pull: {
             handler() {
-                return {
+                return Promise.resolve({
                     documents: [],
-                    hasMoreDocuments: false
-                };
+                    hasMoreDocuments: false,
+                    checkpoint: null
+                });
             }
         },
         push: {
-            async handler() {
+            handler() {
+                return Promise.resolve([]);
             },
             batchSize: 5
         }

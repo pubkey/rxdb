@@ -1,8 +1,8 @@
-import type { LokiDatabaseSettings } from '../../types';
+import type { LokiDatabaseSettings } from '../../types/index.d.ts';
 import {
     PROMISE_RESOLVE_VOID,
     requestIdlePromise
-} from '../utils';
+} from '../utils/index.ts';
 
 /**
  * The autosave feature of lokijs has strange behaviors

@@ -1,19 +1,19 @@
-import { getComposedPrimaryKeyOfDocumentData } from '../rx-schema-helper';
-import { stackCheckpoints } from '../rx-storage-helper';
+import { getComposedPrimaryKeyOfDocumentData } from '../rx-schema-helper.ts';
+import { stackCheckpoints } from '../rx-storage-helper.ts';
 import type {
     RxDocumentData,
     RxStorageInstanceReplicationInput,
     RxStorageInstanceReplicationState,
     RxStorageReplicationDirection,
     RxStorageReplicationMeta
-} from '../types';
+} from '../types/index.d.ts';
 import {
     createRevision,
     ensureNotFalsy,
     getDefaultRevision,
     getDefaultRxDocumentMeta,
     now
-} from '../plugins/utils';
+} from '../plugins/utils/index.ts';
 
 export async function getLastCheckpointDoc<RxDocType, CheckpointType>(
     state: RxStorageInstanceReplicationState<RxDocType>,

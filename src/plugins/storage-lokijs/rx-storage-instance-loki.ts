@@ -11,8 +11,8 @@ import {
     getSortDocumentsByLastWriteTimeComparator,
     RX_META_LWT_MINIMUM,
     lastOfArray
-} from '../utils';
-import { newRxError } from '../../rx-error';
+} from '../utils/index.ts';
+import { newRxError } from '../../rx-error.ts';
 import type {
     RxStorageInstance,
     LokiSettings,
@@ -35,7 +35,7 @@ import type {
     RxStorageDefaultCheckpoint,
     RxStorageCountResult,
     RxStorageInfoResult
-} from '../../types';
+} from '../../types/index.d.ts';
 import {
     closeLokiCollections,
     getLokiDatabase,
@@ -49,14 +49,14 @@ import {
     handleRemoteRequest,
     RX_STORAGE_NAME_LOKIJS,
     transformRegexToRegExp
-} from './lokijs-helper';
+} from './lokijs-helper.ts';
 import type {
     Collection
 } from 'lokijs';
-import type { RxStorageLoki } from './rx-storage-lokijs';
-import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
-import { categorizeBulkWriteRows } from '../../rx-storage-helper';
-import { addRxStorageMultiInstanceSupport, removeBroadcastChannelReference } from '../../rx-storage-multiinstance';
+import type { RxStorageLoki } from './rx-storage-lokijs.ts';
+import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper.ts';
+import { categorizeBulkWriteRows } from '../../rx-storage-helper.ts';
+import { addRxStorageMultiInstanceSupport, removeBroadcastChannelReference } from '../../rx-storage-multiinstance.ts';
 
 let instanceId = now();
 

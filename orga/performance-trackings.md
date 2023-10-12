@@ -1537,3 +1537,64 @@ AFTER:
 "property-access": 5.14
 "property-access": 5.07
 "property-access": 4.56
+
+
+
+
+## Deno vs Node
+tested the memory storage
+
+deno:
+{
+    "description": "memory",
+    "collectionsAmount": 4,
+    "docsAmount": 1200,
+    "time-to-first-insert": 1.4,
+    "insert-documents-200": 0.92,
+    "find-by-ids": 0.11,
+    "find-by-query": 1.97,
+    "find-by-query-parallel-4": 2.36,
+    "count": 0.34,
+    "property-access": 4.89
+}
+{
+    "description": "memory",
+    "collectionsAmount": 4,
+    "docsAmount": 1200,
+    "time-to-first-insert": 1.93,
+    "insert-documents-200": 0.96,
+    "find-by-ids": 0.13,
+    "find-by-query": 2.05,
+    "find-by-query-parallel-4": 2.5,
+    "count": 0.43,
+    "property-access": 5.72
+}
+
+
+Node:
+{
+    "description": "memory",
+    "platform": "node",
+    "collectionsAmount": 4,
+    "docsAmount": 1200,
+    "time-to-first-insert": 1.55,
+    "insert-documents-200": 0.95,
+    "find-by-ids": 0.13,
+    "find-by-query": 2,
+    "find-by-query-parallel-4": 2.36,
+    "count": 0.37,
+    "property-access": 4.8
+}
+{
+    "description": "memory",
+    "platform": "node",
+    "collectionsAmount": 4,
+    "docsAmount": 1200,
+    "time-to-first-insert": 1.49,
+    "insert-documents-200": 0.95,
+    "find-by-ids": 0.14,
+    "find-by-query": 2.4,
+    "find-by-query-parallel-4": 2.4,
+    "count": 0.36,
+    "property-access": 6.01
+}

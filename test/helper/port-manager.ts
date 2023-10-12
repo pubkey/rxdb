@@ -1,7 +1,7 @@
 import getPort, { makeRange } from 'get-port';
 import {
     PROMISE_RESOLVE_VOID
-} from '../../plugins/core';
+} from '../../plugins/core/index.mjs';
 
 /**
  * For easier debugging, we increase the port each time

@@ -5,11 +5,11 @@ import {
 import {
     getStartIndexStringFromLowerBound,
     getStartIndexStringFromUpperBound
-} from '../../custom-index';
-import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
+} from '../../custom-index.ts';
+import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper.ts';
 import {
     categorizeBulkWriteRows
-} from '../../rx-storage-helper';
+} from '../../rx-storage-helper.ts';
 import type {
     BulkWriteRow,
     EventBulk,
@@ -27,7 +27,7 @@ import type {
     RxStorageInstanceCreationParams,
     RxStorageQueryResult,
     StringKeys
-} from '../../types';
+} from '../../types/index.d.ts';
 import {
     ensureNotFalsy,
     lastOfArray,
@@ -36,13 +36,13 @@ import {
     PROMISE_RESOLVE_VOID,
     requestIdlePromise,
     RX_META_LWT_MINIMUM
-} from '../../plugins/utils';
+} from '../../plugins/utils/index.ts';
 import {
     boundGE,
     boundGT,
     boundLE,
     boundLT
-} from './binary-search-bounds';
+} from './binary-search-bounds.ts';
 import {
     attachmentMapKey,
     compareDocsWithIndex,
@@ -50,19 +50,19 @@ import {
     getMemoryCollectionKey,
     putWriteRowToState,
     removeDocFromState
-} from './memory-helper';
+} from './memory-helper.ts';
 import {
     addIndexesToInternalsState,
     getMemoryIndexName
-} from './memory-indexes';
+} from './memory-indexes.ts';
 import type {
     MemoryPreparedQuery,
     MemoryStorageInternals,
     RxStorageMemory,
     RxStorageMemoryInstanceCreationOptions,
     RxStorageMemorySettings
-} from './memory-types';
-import { getQueryMatcher, getSortComparator } from '../../rx-query-helper';
+} from './memory-types.ts';
+import { getQueryMatcher, getSortComparator } from '../../rx-query-helper.ts';
 
 
 /**

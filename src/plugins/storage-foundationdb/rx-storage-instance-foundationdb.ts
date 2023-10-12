@@ -1,5 +1,5 @@
 import { Observable, Subject } from 'rxjs';
-import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
+import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper.ts';
 import type {
     BulkWriteRow,
     CategorizeBulkWriteRowsOutput,
@@ -18,7 +18,7 @@ import type {
     RxStorageInstanceCreationParams,
     RxStorageQueryResult,
     StringKeys
-} from '../../types';
+} from '../../types/index.d.ts';
 import type {
     FoundationDBDatabase,
     FoundationDBIndexMeta,
@@ -27,7 +27,7 @@ import type {
     RxStorageFoundationDB,
     RxStorageFoundationDBInstanceCreationOptions,
     RxStorageFoundationDBSettings
-} from './foundationdb-types';
+} from './foundationdb-types.ts';
 // import {
 //     open as foundationDBOpen,
 //     directory as foundationDBDirectory,
@@ -37,18 +37,18 @@ import type {
 // } from 'foundationdb';
 import {
     categorizeBulkWriteRows
-} from '../../rx-storage-helper';
+} from '../../rx-storage-helper.ts';
 import {
 
     CLEANUP_INDEX,
     FOUNDATION_DB_WRITE_BATCH_SIZE,
     getFoundationDBIndexName
-} from './foundationdb-helpers';
+} from './foundationdb-helpers.ts';
 import {
     getIndexableStringMonad,
     getStartIndexStringFromLowerBound,
     getStartIndexStringFromUpperBound
-} from '../../custom-index';
+} from '../../custom-index.ts';
 import {
     appendToArray,
     batchArray,
@@ -57,10 +57,10 @@ import {
     now,
     PROMISE_RESOLVE_VOID,
     toArray
-} from '../../plugins/utils';
-import { queryFoundationDB } from './foundationdb-query';
-import { INDEX_MAX } from '../../query-planner';
-import { attachmentMapKey } from '../storage-memory';
+} from '../../plugins/utils/index.ts';
+import { queryFoundationDB } from './foundationdb-query.ts';
+import { INDEX_MAX } from '../../query-planner.ts';
+import { attachmentMapKey } from '../storage-memory/index.ts';
 
 export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstance<
     RxDocType,

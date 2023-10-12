@@ -6,7 +6,7 @@
  * this checks if typings work as expected
  */
 import * as assert from 'assert';
-import * as schemas from './helper/schemas';
+import * as schemas from './helper/schemas.js';
 import {
     createRxDatabase,
     RxDatabase,
@@ -20,8 +20,8 @@ import {
     RxPlugin,
     addRxPlugin,
     createBlob
-} from '../';
-import { getRxStorageMemory } from '../plugins/storage-memory';
+} from '../plugins/core/index.mjs';
+import { getRxStorageMemory } from '../plugins/storage-memory/index.mjs';
 
 type DefaultDocType = {
     passportId: string;

@@ -21,19 +21,19 @@ import type {
     RxStorageInstanceCreationParams,
     RxStorageQueryResult,
     RxStorageStatics
-} from '../../types';
+} from '../../types/index.d.ts';
 import {
     randomCouchString
-} from '../../plugins/utils';
+} from '../../plugins/utils/index.ts';
 import type {
     MessageFromRemote,
     MessageToRemote,
     RemoteMessageChannel,
     RxStorageRemoteInternals,
     RxStorageRemoteSettings
-} from './storage-remote-types';
-import { closeMessageChannel, getMessageChannel } from './message-channel-cache';
-import { ensureRxStorageInstanceParamsAreCorrect } from '../../rx-storage-helper';
+} from './storage-remote-types.ts';
+import { closeMessageChannel, getMessageChannel } from './message-channel-cache.ts';
+import { ensureRxStorageInstanceParamsAreCorrect } from '../../rx-storage-helper.ts';
 
 
 export class RxStorageRemote implements RxStorage<RxStorageRemoteInternals, any> {

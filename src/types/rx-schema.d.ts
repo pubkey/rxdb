@@ -1,6 +1,6 @@
 import { AsTyped } from 'as-typed';
-import { CRDTSchemaOptions } from './plugins/crdt';
-import { StringKeys } from './util';
+import type { CRDTSchemaOptions } from './plugins/crdt.d.ts';
+import type { StringKeys } from './util.d.ts';
 
 /**
  * @link https://github.com/types/lib-json-schema/blob/master/v4/index.d.ts

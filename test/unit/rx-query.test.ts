@@ -1,11 +1,11 @@
 import assert from 'assert';
 import AsyncTestUtil from 'async-test-util';
-import config from './config';
+import config from './config.ts';
 import clone from 'clone';
 
-import * as humansCollection from './../helper/humans-collection';
-import * as schemaObjects from '../helper/schema-objects';
-import * as schemas from './../helper/schemas';
+import * as humansCollection from './../helper/humans-collection.ts';
+import * as schemaObjects from '../helper/schema-objects.ts';
+import * as schemas from './../helper/schemas.ts';
 
 import {
     isRxQuery,
@@ -14,7 +14,7 @@ import {
     promiseWait,
     randomCouchString,
     ensureNotFalsy,
-} from '../../plugins/core';
+} from '../../plugins/core/index.mjs';
 
 import { firstValueFrom } from 'rxjs';
 

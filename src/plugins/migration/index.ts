@@ -3,27 +3,27 @@ import {
 } from 'rxjs';
 import {
     shareReplay
-} from 'rxjs/operators';
+} from 'rxjs';
 import type {
     RxPlugin,
     RxCollection,
     RxDatabase
-} from '../../types';
+} from '../../types/index.ts';
 import {
     getFromMapOrCreate,
     PROMISE_RESOLVE_FALSE,
     RXJS_SHARE_REPLAY_DEFAULTS
-} from '../../plugins/utils';
+} from '../../plugins/utils/index.ts';
 import {
     RxMigrationState
-} from './rx-migration-state';
+} from './rx-migration-state.ts';
 import {
     getMigrationStateByDatabase,
     mustMigrate,
     onDatabaseDestroy
-} from './migration-helpers';
-import { addRxPlugin } from '../../plugin';
-import { RxDBLocalDocumentsPlugin } from '../local-documents';
+} from './migration-helpers.ts';
+import { addRxPlugin } from '../../plugin.ts';
+import { RxDBLocalDocumentsPlugin } from '../local-documents/index.ts';
 
 export const DATA_MIGRATOR_BY_COLLECTION: WeakMap<RxCollection, RxMigrationState> = new WeakMap();
 
@@ -68,6 +68,6 @@ export const RxDBMigrationPlugin: RxPlugin = {
 };
 
 
-export * from './rx-migration-state';
-export * from './migration-helpers';
-export * from './migration-types';
+export * from './rx-migration-state.ts';
+export * from './migration-helpers.ts';
+export * from './migration-types.ts';

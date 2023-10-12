@@ -1,22 +1,22 @@
 import assert from 'assert';
-import config from './config';
+import config from './config.ts';
 
-import * as schemas from '../helper/schemas';
-import * as schemaObjects from '../helper/schema-objects';
-import * as humansCollection from '../helper/humans-collection';
+import * as schemas from '../helper/schemas.ts';
+import * as schemaObjects from '../helper/schema-objects.ts';
+import * as humansCollection from '../helper/humans-collection.ts';
 
 import {
     createRxDatabase,
     randomCouchString,
     RxChangeEvent
-} from '../../plugins/core';
+} from '../../plugins/core/index.mjs';
 
 
 import AsyncTestUtil from 'async-test-util';
 import {
     first
 } from 'rxjs/operators';
-import { HumanDocumentType } from '../helper/schemas';
+import { HumanDocumentType } from '../helper/schemas.ts';
 import { firstValueFrom } from 'rxjs';
 
 config.parallel('reactive-collection.test.js', () => {

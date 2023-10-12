@@ -1,4 +1,4 @@
-import { newRxError } from '../../rx-error';
+import { newRxError } from '../../rx-error.ts';
 import type {
     CRDTDocumentField,
     CRDTEntry,
@@ -13,7 +13,7 @@ import type {
     RxPlugin,
     RxStorageStatics,
     WithDeleted
-} from '../../types';
+} from '../../types/index.d.ts';
 import {
     clone,
     deepEqual,
@@ -23,7 +23,7 @@ import {
     objectPathMonad,
     setProperty,
     toArray
-} from '../../plugins/utils';
+} from '../../plugins/utils/index.ts';
 import modifyjs from 'modifyjs';
 import {
     getQueryMatcher,
@@ -31,7 +31,7 @@ import {
     RxCollection,
     RxDocumentWriteData,
     RxError
-} from '../..';
+} from '../../index.ts';
 
 
 

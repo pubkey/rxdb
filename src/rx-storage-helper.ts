@@ -2,12 +2,12 @@
  * Helper functions for accessing the RxStorage instances.
  */
 
-import { overwritable } from './overwritable';
-import { newRxError } from './rx-error';
+import { overwritable } from './overwritable.ts';
+import { newRxError } from './rx-error.ts';
 import {
     fillPrimaryKey,
     getPrimaryFieldOfPrimaryKey
-} from './rx-schema-helper';
+} from './rx-schema-helper.ts';
 import type {
     BulkWriteRow,
     BulkWriteRowProcessed,
@@ -28,7 +28,7 @@ import type {
     StringKeys,
     RxStorageWriteErrorConflict,
     RxStorageWriteErrorAttachment
-} from './types';
+} from './types/index.d.ts';
 import {
     appendToArray,
     createRevision,
@@ -38,7 +38,7 @@ import {
     getDefaultRxDocumentMeta,
     now,
     randomCouchString
-} from './plugins/utils';
+} from './plugins/utils/index.ts';
 import { Observable, filter, map, startWith, switchMap } from 'rxjs';
 
 export const INTERNAL_STORAGE_NAME = '_rxdb_internal';

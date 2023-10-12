@@ -1,4 +1,4 @@
-import { RxStorage } from './rx-storage.interface';
+import type { RxStorage } from './rx-storage.interface.d.ts';
 
 export type MaybePromise<T> = Promise<T> | T;
 
@@ -70,6 +70,8 @@ export type ById<T> = {
  * configuration values.
  */
 export type RxTestStorage = {
+    // can be used to setup async stuff
+    readonly init?: () => any;
     // TODO remove name here, it can be read out already via getStorage().name
     readonly name: string;
     readonly getStorage: () => RxStorage<any, any>;

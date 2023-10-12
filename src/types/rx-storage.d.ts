@@ -1,10 +1,10 @@
 import type { ChangeEvent } from 'event-reduce-js';
-import { RxChangeEvent } from './rx-change-event';
-import { RxDocumentMeta } from './rx-document';
-import { RxStorageWriteError } from './rx-error';
-import { MangoQuery } from './rx-query';
-import { RxJsonSchema } from './rx-schema';
-import { Override } from './util';
+import type { RxChangeEvent } from './rx-change-event.d.ts';
+import type { RxDocumentMeta } from './rx-document.d.ts';
+import type { RxStorageWriteError } from './rx-error.d.ts';
+import type { MangoQuery } from './rx-query.d.ts';
+import type { RxJsonSchema } from './rx-schema.d.ts';
+import type { Override } from './util.d.ts';
 
 /**
  * The document data how it comes out of the storage instance.

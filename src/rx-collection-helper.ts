@@ -7,23 +7,23 @@ import type {
     RxStorage,
     RxStorageInstance,
     RxStorageInstanceCreationParams
-} from './types';
+} from './types/index.d.ts';
 import {
     createRevision,
     flatClone,
     getDefaultRevision,
     getDefaultRxDocumentMeta,
     now
-} from './plugins/utils';
+} from './plugins/utils/index.ts';
 import {
     fillObjectWithDefaults,
     fillPrimaryKey
-} from './rx-schema-helper';
-import type { RxSchema } from './rx-schema';
-import { runAsyncPluginHooks } from './hooks';
-import { getAllCollectionDocuments } from './rx-database-internal-store';
-import { flatCloneDocWithMeta } from './rx-storage-helper';
-import { overwritable } from './overwritable';
+} from './rx-schema-helper.ts';
+import type { RxSchema } from './rx-schema.ts';
+import { runAsyncPluginHooks } from './hooks.ts';
+import { getAllCollectionDocuments } from './rx-database-internal-store.ts';
+import { flatCloneDocWithMeta } from './rx-storage-helper.ts';
+import { overwritable } from './overwritable.ts';
 
 /**
  * fills in the default data.

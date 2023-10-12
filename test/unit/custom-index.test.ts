@@ -18,11 +18,11 @@ import {
     getIndexStringLength,
     getPrimaryKeyFromIndexableString,
     ensureNotFalsy
-} from '../../plugins/core';
-import { EXAMPLE_REVISION_1 } from '../helper/revisions';
-import * as schemas from '../helper/schemas';
-import * as schemaObjects from '../helper/schema-objects';
-import config from './config';
+} from '../../plugins/core/index.mjs';
+import { EXAMPLE_REVISION_1 } from '../helper/revisions.ts';
+import * as schemas from '../helper/schemas.ts';
+import * as schemaObjects from '../helper/schema-objects.ts';
+import config from './config.ts';
 
 config.parallel('custom-index.test.ts', () => {
 

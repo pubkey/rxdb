@@ -1,5 +1,5 @@
-import { LOGICAL_OPERATORS } from './query-planner';
-import { getPrimaryFieldOfPrimaryKey } from './rx-schema-helper';
+import { LOGICAL_OPERATORS } from './query-planner.ts';
+import { getPrimaryFieldOfPrimaryKey } from './rx-schema-helper.ts';
 import type {
     DeterministicSortComparator,
     FilledMangoQuery,
@@ -8,7 +8,7 @@ import type {
     QueryMatcher,
     RxDocumentData,
     RxJsonSchema
-} from './types';
+} from './types/index.d.ts';
 import {
     clone,
     firstPropertyNameOfObject,
@@ -17,12 +17,12 @@ import {
     flatClone,
     objectPathMonad,
     ObjectPathMonadFunction
-} from './plugins/utils';
+} from './plugins/utils/index.ts';
 import {
     compare as mingoSortComparator
 } from 'mingo/util';
-import { newRxError } from './rx-error';
-import { getMingoQuery } from './rx-query-mingo';
+import { newRxError } from './rx-error.ts';
+import { getMingoQuery } from './rx-query-mingo.ts';
 
 /**
  * Normalize the query to ensure we have all fields set

@@ -1,5 +1,5 @@
-import { RxGraphQLReplicationClientState, RxGraphQLReplicationQueryBuilderResponseObject } from '../../types';
-import { ensureNotFalsy } from '../../plugins/utils';
+import type { RxGraphQLReplicationClientState, RxGraphQLReplicationQueryBuilderResponseObject } from '../../types/index.d.ts';
+import { ensureNotFalsy } from '../../plugins/utils/index.ts';
 
 export const GRAPHQL_REPLICATION_PLUGIN_IDENTITY_PREFIX = 'graphql';
 

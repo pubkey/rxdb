@@ -1,16 +1,20 @@
-import { replicateRxCollection, RxReplicationState } from '../replication';
+import {
+    replicateRxCollection,
+    RxReplicationState
+} from '../replication/index.ts';
 import {
     WebsocketClientOptions,
     WebsocketMessageType
-} from './websocket-types';
+} from './websocket-types.ts';
 
 import ReconnectingWebSocket from 'reconnecting-websocket';
+
 import IsomorphicWebSocket from 'isomorphic-ws';
 import {
     errorToPlainJson,
     randomCouchString,
     toArray
-} from '../../plugins/utils';
+} from '../../plugins/utils/index.ts';
 import {
     filter,
     map,
@@ -18,15 +22,15 @@ import {
     firstValueFrom,
     BehaviorSubject
 } from 'rxjs';
-import {
+import type {
     RxError,
     RxReplicationWriteToMasterRow
-} from '../../types';
-import { newRxError } from '../../rx-error';
+} from '../../types/index.d.ts';
+import { newRxError } from '../../rx-error.ts';
 
 export type WebsocketClient = {
     url: string;
-    socket: ReconnectingWebSocket;
+    socket: any;
     connected$: BehaviorSubject<boolean>;
     message$: Subject<any>;
     error$: Subject<RxError>;

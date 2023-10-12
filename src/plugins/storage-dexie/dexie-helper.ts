@@ -2,16 +2,16 @@ import type {
     DexieStorageInternals,
     RxDocumentData,
     RxJsonSchema
-} from '../../types';
+} from '../../types/index.d.ts';
 import { Dexie } from 'dexie';
-import { DexieSettings } from '../../types';
-import { flatClone, getFromMapOrCreate, toArray } from '../utils';
-import { newRxError } from '../../rx-error';
+import type { DexieSettings } from '../../types/index.d.ts';
+import { flatClone, getFromMapOrCreate, toArray } from '../utils/index.ts';
+import { newRxError } from '../../rx-error.ts';
 import {
     getPrimaryFieldOfPrimaryKey,
     getSchemaByObjectPath
-} from '../../rx-schema-helper';
-import { RxStorageDefaultStatics } from '../../rx-storage-statics';
+} from '../../rx-schema-helper.ts';
+import { RxStorageDefaultStatics } from '../../rx-storage-statics.ts';
 
 export const DEXIE_DOCS_TABLE_NAME = 'docs';
 export const DEXIE_DELETED_DOCS_TABLE_NAME = 'deleted-docs';

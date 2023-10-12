@@ -1,8 +1,8 @@
 import assert from 'assert';
-import config from './config';
+import config from './config.ts';
 import { faker } from '@faker-js/faker';
 
-import * as humansCollection from '../helper/humans-collection';
+import * as humansCollection from '../helper/humans-collection.ts';
 
 import {
     createRxDatabase,
@@ -11,7 +11,7 @@ import {
     createRxSchema,
     RxJsonSchema,
     defaultHashSha256,
-} from '../../plugins/core';
+} from '../../plugins/core/index.mjs';
 
 
 config.parallel('population.test.js', () => {

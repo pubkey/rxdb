@@ -1,10 +1,10 @@
 import assert from 'assert';
-import config from './config';
+import config from './config.ts';
 import AsyncTestUtil, { waitUntil } from 'async-test-util';
 
-import * as schemas from '../helper/schemas';
-import * as schemaObjects from '../helper/schema-objects';
-import * as humansCollection from '../helper/humans-collection';
+import * as schemas from '../helper/schemas.ts';
+import * as schemaObjects from '../helper/schema-objects.ts';
+import * as humansCollection from '../helper/humans-collection.ts';
 
 import {
     createRxDatabase,
@@ -21,20 +21,20 @@ import {
     ensureNotFalsy,
     MigrationStrategies,
     MigrationStrategy
-} from '../../plugins/core';
+} from '../../plugins/core/index.mjs';
 
 import {
     RxMigrationState,
     RxMigrationStatus,
     getOldCollectionMeta
-} from '../../plugins/migration';
-import { HumanDocumentType } from '../helper/schemas';
-import { EXAMPLE_REVISION_1 } from '../helper/revisions';
+} from '../../plugins/migration/index.mjs';
+import { HumanDocumentType } from '../helper/schemas.ts';
+import { EXAMPLE_REVISION_1 } from '../helper/revisions.ts';
 
-import { RxDBMigrationPlugin } from '../../plugins/migration';
-import { RxDBAttachmentsPlugin } from '../../plugins/attachments';
-import { SimpleHumanAgeDocumentType } from '../helper/schema-objects';
-import { replicateRxCollection } from '../../plugins/replication';
+import { RxDBMigrationPlugin } from '../../plugins/migration/index.mjs';
+import { RxDBAttachmentsPlugin } from '../../plugins/attachments/index.mjs';
+import { SimpleHumanAgeDocumentType } from '../helper/schema-objects.ts';
+import { replicateRxCollection } from '../../plugins/replication/index.mjs';
 
 
 config.parallel('data-migration.test.ts', () => {

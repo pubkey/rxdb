@@ -22,13 +22,13 @@ import {
     ensureNotFalsy,
     areRxDocumentArraysEqual,
     appendToArray
-} from './plugins/utils';
+} from './plugins/utils/index.ts';
 import {
     newRxError
-} from './rx-error';
+} from './rx-error.ts';
 import {
     runPluginHooks
-} from './hooks';
+} from './hooks.ts';
 import type {
     RxCollection,
     RxDocument,
@@ -42,10 +42,10 @@ import type {
     RxDocumentWriteData,
     RxDocumentData,
     QueryMatcher
-} from './types';
-import { calculateNewResults } from './event-reduce';
-import { triggerCacheReplacement } from './query-cache';
-import { getQueryMatcher, normalizeMangoQuery } from './rx-query-helper';
+} from './types/index.d.ts';
+import { calculateNewResults } from './event-reduce.ts';
+import { triggerCacheReplacement } from './query-cache.ts';
+import { getQueryMatcher, normalizeMangoQuery } from './rx-query-helper.ts';
 
 let _queryCount = 0;
 const newQueryID = function (): number {

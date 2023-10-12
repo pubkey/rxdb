@@ -9,12 +9,12 @@ import {
     RxCollection,
     ensureNotFalsy,
     WithDeleted
-} from '../';
+} from '../plugins/core/index.mjs';
 
 import * as firebase from 'firebase/app';
 
-import * as humansCollection from './helper/humans-collection';
-import * as schemaObjects from './helper/schema-objects';
+import * as humansCollection from './helper/humans-collection.ts';
+import * as schemaObjects from './helper/schema-objects.ts';
 
 
 import {
@@ -36,9 +36,9 @@ import {
     replicateFirestore,
     RxFirestoreReplicationState,
     SyncOptionsFirestore
-} from '../plugins/replication-firestore';
-import { ensureCollectionsHaveEqualState, ensureReplicationHasNoErrors } from './helper/test-util';
-import { HumanDocumentType } from './helper/schemas';
+} from '../plugins/replication-firestore/index.mjs';
+import { ensureCollectionsHaveEqualState, ensureReplicationHasNoErrors } from './helper/test-util.ts';
+import { HumanDocumentType } from './helper/schemas.ts';
 
 
 /**

@@ -1,6 +1,6 @@
 import { filter, mergeMap, tap } from 'rxjs/operators';
-import { getPrimaryFieldOfPrimaryKey } from './rx-schema-helper';
-import { WrappedRxStorageInstance } from './rx-storage-helper';
+import { getPrimaryFieldOfPrimaryKey } from './rx-schema-helper.ts';
+import { WrappedRxStorageInstance } from './rx-storage-helper.ts';
 import type {
     BulkWriteRow,
     EventBulk,
@@ -17,12 +17,12 @@ import type {
     RxValidationError,
     RxStorageWriteErrorConflict,
     MaybePromise
-} from './types';
+} from './types/index.d.ts';
 import {
     flatClone,
     getFromMapOrCreate,
     requestIdleCallbackIfAvailable
-} from './plugins/utils';
+} from './plugins/utils/index.ts';
 import { BehaviorSubject, firstValueFrom } from 'rxjs';
 
 

@@ -7,7 +7,7 @@ import type {
     RxStorageInstance,
     RxStorageInstanceCreationParams,
     RxStorageStatics
-} from '../../types';
+} from '../../types/index.d.ts';
 
 
 

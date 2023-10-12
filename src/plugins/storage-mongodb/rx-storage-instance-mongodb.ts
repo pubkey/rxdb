@@ -5,7 +5,7 @@ import {
     filter,
     firstValueFrom
 } from 'rxjs';
-import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
+import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper.ts';
 import type {
     BulkWriteRow,
     EventBulk,
@@ -23,7 +23,7 @@ import type {
     RxStorageQueryResult,
     RxStorageWriteErrorConflict,
     StringKeys
-} from '../../types';
+} from '../../types/index.d.ts';
 import {
     ensureNotFalsy,
     getFromMapOrThrow,
@@ -33,15 +33,15 @@ import {
     PROMISE_RESOLVE_VOID,
     requestIdlePromise,
     RX_META_LWT_MINIMUM
-} from '../../plugins/utils';
+} from '../../plugins/utils/index.ts';
 import {
     MongoDBPreparedQuery,
     MongoDBStorageInternals,
     MongoQuerySelector,
     RxStorageMongoDBInstanceCreationOptions,
     RxStorageMongoDBSettings
-} from './mongodb-types';
-import { RxStorageMongoDB } from './rx-storage-mongodb';
+} from './mongodb-types.ts';
+import { RxStorageMongoDB } from './rx-storage-mongodb.ts';
 import {
     Db as MongoDatabase,
     Collection as MongoCollection,
@@ -49,13 +49,13 @@ import {
     ObjectId,
     ClientSession
 } from 'mongodb';
-import { categorizeBulkWriteRows } from '../../rx-storage-helper';
+import { categorizeBulkWriteRows } from '../../rx-storage-helper.ts';
 import {
     MONGO_ID_SUBSTITUTE_FIELDNAME,
     getMongoDBIndexName,
     swapMongoToRxDoc,
     swapRxDocToMongo
-} from './mongodb-helper';
+} from './mongodb-helper.ts';
 
 export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
     RxDocType,

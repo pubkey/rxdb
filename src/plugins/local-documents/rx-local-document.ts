@@ -5,18 +5,18 @@ import {
     map,
     shareReplay,
     startWith
-} from 'rxjs/operators';
-import { overwritable } from '../../overwritable';
-import { getDocumentDataOfRxChangeEvent } from '../../rx-change-event';
+} from 'rxjs';
+import { overwritable } from '../../overwritable.ts';
+import { getDocumentDataOfRxChangeEvent } from '../../rx-change-event.ts';
 import {
     basePrototype,
     createRxDocumentConstructor
-} from '../../rx-document';
+} from '../../rx-document.ts';
 import {
     newRxError,
     newRxTypeError
-} from '../../rx-error';
-import { writeSingle } from '../../rx-storage-helper';
+} from '../../rx-error.ts';
+import { writeSingle } from '../../rx-storage-helper.ts';
 import type {
     LocalDocumentModifyFunction,
     RxCollection,
@@ -26,7 +26,7 @@ import type {
     RxDocumentWriteData,
     RxLocalDocument,
     RxLocalDocumentData
-} from '../../types';
+} from '../../types/index.d.ts';
 import {
     flatClone,
     getDefaultRevision,
@@ -34,8 +34,8 @@ import {
     getFromMapOrThrow,
     getProperty,
     RXJS_SHARE_REPLAY_DEFAULTS
-} from '../../plugins/utils';
-import { getLocalDocStateByParent, LOCAL_DOC_STATE_BY_PARENT_RESOLVED } from './local-documents-helper';
+} from '../../plugins/utils/index.ts';
+import { getLocalDocStateByParent, LOCAL_DOC_STATE_BY_PARENT_RESOLVED } from './local-documents-helper.ts';
 
 const RxDocumentParent = createRxDocumentConstructor() as any;
 

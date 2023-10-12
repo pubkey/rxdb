@@ -1,6 +1,6 @@
 import {
     map
-} from 'rxjs/operators';
+} from 'rxjs';
 
 import {
     blobToBase64String,
@@ -9,7 +9,7 @@ import {
     flatClone,
     getBlobSize,
     PROMISE_RESOLVE_VOID
-} from '../../plugins/utils';
+} from '../../plugins/utils/index.ts';
 import type {
     RxDocument,
     RxPlugin,
@@ -18,8 +18,8 @@ import type {
     RxDocumentData,
     RxAttachmentCreator,
     RxAttachmentWriteData
-} from '../../types';
-import { assignMethodsToAttachment, ensureSchemaSupportsAttachments } from './attachments-utils';
+} from '../../types/index.ts';
+import { assignMethodsToAttachment, ensureSchemaSupportsAttachments } from './attachments-utils.ts';
 
 
 
@@ -266,4 +266,4 @@ export const RxDBAttachmentsPlugin: RxPlugin = {
 };
 
 
-export * from './attachments-utils';
+export * from './attachments-utils.ts';

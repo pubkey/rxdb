@@ -4,15 +4,15 @@ import type {
     RxConflictHandlerOutput,
     RxDocumentData,
     RxStorageInstanceReplicationState
-} from '../types';
+} from '../types/index.d.ts';
 import {
     getDefaultRevision,
     createRevision,
     now,
     flatClone,
     deepEqual
-} from '../plugins/utils';
-import { stripAttachmentsDataFromDocument } from '../rx-storage-helper';
+} from '../plugins/utils/index.ts';
+import { stripAttachmentsDataFromDocument } from '../rx-storage-helper.ts';
 
 export const defaultConflictHandler: RxConflictHandler<any> = function (
     i: RxConflictHandlerInput<any>,

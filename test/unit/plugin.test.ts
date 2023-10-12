@@ -5,20 +5,18 @@
 
 import assert from 'assert';
 
-import config from './config';
+import config from './config.ts';
 import {
     addRxPlugin,
     randomCouchString,
     _clearHook,
     RxPlugin
-} from '../../plugins/core';
+} from '../../plugins/core/index.mjs';
 
-import * as humansCollection from '../helper/humans-collection';
+import * as humansCollection from '../helper/humans-collection.ts';
 import { assertThrows } from 'async-test-util';
-import { RxDBDevModePlugin, DEV_MODE_PLUGIN_NAME } from '../../plugins/dev-mode';
-
-// used so that browserify will not require things in browsers
-const REQUIRE_FUN = require;
+import { RxDBDevModePlugin, DEV_MODE_PLUGIN_NAME } from '../../plugins/dev-mode/index.mjs';
+import { createRequire } from 'node:module';
 
 config.parallel('plugin.test.js', () => {
     if (!config.platform.isNode()) return;
@@ -48,7 +46,8 @@ config.parallel('plugin.test.js', () => {
             if (!config.platform.isNode())
                 return;
 
-            const spawn = REQUIRE_FUN('child-process-promise').spawn;
+            const require = createRequire(import.meta.url);
+            const { spawn } = await require('child-process-promise');
             const stdout: any[] = [];
             const stderr: any[] = [];
             const promise = spawn('mocha', [config.rootPath + 'test_tmp/unit/full.node.js']);

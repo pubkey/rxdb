@@ -1,5 +1,5 @@
-import { countUntilNotMatching } from './plugins/utils';
-import { getPrimaryFieldOfPrimaryKey } from './rx-schema-helper';
+import { countUntilNotMatching } from './plugins/utils/index.ts';
+import { getPrimaryFieldOfPrimaryKey } from './rx-schema-helper.ts';
 import type {
     FilledMangoQuery,
     MangoQuerySelector,
@@ -7,7 +7,7 @@ import type {
     RxJsonSchema,
     RxQueryPlan,
     RxQueryPlanerOpts
-} from './types';
+} from './types/index.d.ts';
 
 
 export const INDEX_MAX = String.fromCharCode(65535);

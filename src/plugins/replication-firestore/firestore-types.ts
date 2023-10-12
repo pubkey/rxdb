@@ -4,7 +4,7 @@ import type {
     ReplicationPullOptions,
     ReplicationPushOptions,
     WithDeleted
-} from '../../types';
+} from '../../types/index.d.ts';
 
 import type {
     CollectionReference,

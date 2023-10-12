@@ -8,9 +8,9 @@ import type {
     RxStorageDefaultCheckpoint,
     RxTypeError,
     StringKeys
-} from '../../types';
-import { RxReplicationState } from '../replication';
-import { WebsocketMessageResponseType, WebsocketMessageType } from '../replication-websocket';
+} from '../../types/index.d.ts';
+import { RxReplicationState } from '../replication/index.ts';
+import { WebsocketMessageResponseType, WebsocketMessageType } from '../replication-websocket/index.ts';
 
 export type WebRTCPeer = {
     id: string;
@@ -43,7 +43,7 @@ export type WebRTCConnectionHandler = {
 
 export type WebRTCConnectionHandlerCreator = (
     opts: SyncOptionsWebRTC<any>
-) => WebRTCConnectionHandler;
+) => Promise<WebRTCConnectionHandler>;
 
 export type WebRTCSyncPushOptions<RxDocType> = Omit<
 ReplicationPushOptions<RxDocType>,

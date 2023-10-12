@@ -7,10 +7,10 @@ import type {
     RxDocumentData,
     MangoQuerySelector,
     DefaultPreparedQuery
-} from '../../types';
-import { newRxError, newRxTypeError } from '../../rx-error';
-import { RxStorageDexieStatics } from '../storage-dexie';
-import { deepEqual } from '../utils';
+} from '../../types/index.d.ts';
+import { newRxError, newRxTypeError } from '../../rx-error.ts';
+import { RxStorageDexieStatics } from '../storage-dexie/index.ts';
+import { deepEqual } from '../utils/index.ts';
 
 /**
  * accidentally passing a non-valid object into the query params

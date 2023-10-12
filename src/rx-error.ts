@@ -2,13 +2,13 @@
  * here we use custom errors with the additional field 'parameters'
  */
 
-import { overwritable } from './overwritable';
+import { overwritable } from './overwritable.ts';
 import type {
     RxErrorParameters,
     RxErrorKey,
     RxStorageWriteError,
     RxStorageWriteErrorConflict
-} from './types';
+} from './types/index.d.ts';
 
 /**
  * transform an object of parameters to a presentable string
