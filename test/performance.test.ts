@@ -4,7 +4,7 @@ import {
     overwritable,
     requestIdlePromise
 } from '../plugins/core/index.mjs';
-import * as assert from 'node:assert';
+import * as assert from 'assert';
 import * as schemas from './helper/schemas.ts';
 import * as schemaObjects from './helper/schema-objects.ts';
 import config from './unit/config.ts';
