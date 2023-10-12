@@ -27,9 +27,7 @@ import { HumanDocumentType } from '../helper/schemas.ts';
 import { EXAMPLE_REVISION_1 } from '../helper/revisions.ts';
 import { RxDBLeaderElectionPlugin } from '../../plugins/leader-election/index.mjs';
 import { RxDBLocalDocumentsPlugin } from '../../plugins/local-documents/index.mjs';
-import { fileURLToPath } from 'node:url';
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import url from 'node:url';
 /**
  * RxStorageLokiJS specific tests
  */
@@ -227,6 +225,8 @@ describe('rx-storage-lokijs.test.js', () => {
             });
 
             const databaseName = 'lokijs-fs-adapter-test-' + randomCouchString(12);
+            const __filename = url.fileURLToPath(import.meta.url);
+            const __dirname = path.dirname(__filename);
             const dbLocation = path.join(
                 __dirname,
                 '../',

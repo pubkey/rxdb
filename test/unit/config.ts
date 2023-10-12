@@ -6,7 +6,7 @@ import {
     enforceOptions as broadcastChannelEnforceOptions
 } from 'broadcast-channel';
 import * as path from 'node:path';
-import { fileURLToPath } from 'node:url';
+import url from 'node:url';
 import events from 'node:events';
 
 import parallel from 'mocha.parallel';
@@ -375,7 +375,7 @@ if (config.platform.name === 'node') {
 
     events.EventEmitter.defaultMaxListeners = 100;
 
-    const __filename = fileURLToPath(import.meta.url);
+    const __filename = url.fileURLToPath(import.meta.url);
     const __dirname = path.dirname(__filename);
 
     config.rootPath = path.join(__dirname, '../../');
