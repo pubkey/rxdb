@@ -33,6 +33,7 @@ import {
     clone,
     deepEqual,
     ensureNotFalsy,
+    errorToPlainJson,
     getDefaultRevision,
     getDefaultRxDocumentMeta
 } from '../utils/index.ts';
@@ -218,6 +219,7 @@ export class RxMigrationState {
             await oldStorageInstance.close();
             await this.updateStatus(s => {
                 s.status = 'ERROR';
+                s.error = errorToPlainJson(err as Error);
                 return s;
             });
             return;
@@ -374,7 +376,7 @@ export class RxMigrationState {
                             .map(async (row) => {
                                 let newDocData = row.newDocumentState;
                                 if (newStorage.schema.title === META_INSTANCE_SCHEMA_TITLE) {
-                                    newDocData = row.newDocumentState.data;
+                                    newDocData = row.newDocumentState.docData;
                                     if (row.newDocumentState.isCheckpoint === '1') {
                                         return {
                                             assumedMasterState: undefined,
@@ -391,7 +393,7 @@ export class RxMigrationState {
                                     // drop the assumed master state, we do not have to care about conflicts here.
                                     assumedMasterState: undefined,
                                     newDocumentState: newStorage.schema.title === META_INSTANCE_SCHEMA_TITLE
-                                        ? Object.assign({}, row.newDocumentState, { data: migratedDocData })
+                                        ? Object.assign({}, row.newDocumentState, { docData: migratedDocData })
                                         : migratedDocData
                                 };
                                 return newRow;
@@ -540,7 +542,8 @@ export class RxMigrationState {
 
         if (result.status === 'ERROR') {
             throw newRxError('DM4', {
-                collection: this.collection.name
+                collection: this.collection.name,
+                error: result.error
             });
         } else {
             return result;

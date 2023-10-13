@@ -12,12 +12,20 @@ import {
     RxJsonSchema,
     RxCollection,
     RxStorageInstance,
+    ensureNotFalsy,
+    WrappedRxStorageInstance,
+    RxStorageReplicationMeta,
+    FilledMangoQuery,
 } from '../../plugins/core/index.mjs';
 import * as schemaObjects from '../helper/schema-objects.ts';
 import {
     wrappedKeyCompressionStorage
 } from '../../plugins/key-compression/index.mjs';
 import { HumanDocumentType, human, enableKeyCompression } from '../helper/schemas.ts';
+import { getPullHandler, getPushHandler } from './replication.test.ts';
+import { replicateRxCollection } from '../../plugins/replication/index.mjs';
+import { ensureReplicationHasNoErrors } from '../helper/test-util.ts';
+import { SimpleHumanDocumentType } from '../helper/schema-objects.ts';
 
 
 config.parallel('key-compression.test.js', () => {
@@ -81,6 +89,13 @@ config.parallel('key-compression.test.js', () => {
             assert.strictEqual((storageDoc as any)['|a'], docData.firstName);
             c.database.destroy();
         });
+        it('storage.schema should contain non-compressed schema', async () => {
+            const c = await getCollection();
+            const storageSchema = c.storageInstance.schema;
+            assert.ok(storageSchema.properties.firstName);
+
+            c.database.destroy();
+        });
     });
     describe('query', () => {
         it('should properly run the compressed query', async () => {
@@ -118,6 +133,53 @@ config.parallel('key-compression.test.js', () => {
             assert.strictEqual(doc.passportId, 'bbb');
 
             col.database.destroy();
+        });
+    });
+    describe('replication', () => {
+        it('replication state should contain key-compressed document data', async () => {
+            const col = await getCollection();
+            await col.bulkInsert([
+                schemaObjects.simpleHuman(),
+                schemaObjects.simpleHuman()
+            ]);
+            const remoteCollection = await getCollection();
+
+
+            const replicationState = replicateRxCollection({
+                collection: col,
+                replicationIdentifier: randomCouchString(10),
+                live: true,
+                pull: {
+                    handler: getPullHandler(remoteCollection)
+                },
+                push: {
+                    handler: getPushHandler(remoteCollection)
+                }
+            });
+            ensureReplicationHasNoErrors(replicationState);
+            await replicationState.awaitInSync();
+
+            const replicationMetaStorage: RxStorageInstance<RxStorageReplicationMeta<SimpleHumanDocumentType, any>, any, any> = (
+                ensureNotFalsy(replicationState.metaInstance) as WrappedRxStorageInstance<any, any, any>
+            ).originalStorageInstance;
+
+            const preparedQuery = config.storage.getStorage().statics.prepareQuery(
+                replicationMetaStorage.schema,
+                {
+                    selector: {},
+                    skip: 0,
+                    sort: [{ passportId: 'asc' }]
+                } as FilledMangoQuery<SimpleHumanDocumentType>
+            );
+            const metaDocs = await replicationMetaStorage.query(preparedQuery);
+
+
+            assert.ok(
+                JSON.stringify(metaDocs).includes('firstName') === false
+            );
+
+            col.database.destroy();
+            remoteCollection.database.destroy();
         });
     });
     describe('issues', () => {

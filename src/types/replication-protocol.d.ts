@@ -16,7 +16,7 @@ import type {
 } from './rx-storage.interface.d.ts';
 import type { HashFunction } from './util.d.ts';
 
-export type RxStorageReplicationMeta = {
+export type RxStorageReplicationMeta<RxDocType, CheckpointType> = {
 
     /**
      * Combined primary key consisting
@@ -39,12 +39,13 @@ export type RxStorageReplicationMeta = {
      * in the combined primary key 'id'
      */
     isCheckpoint: '0' | '1';
+    checkpointData?: CheckpointType;
 
     /**
-     * Either the document state of the master
-     * or the checkpoint data.
+     * the document state of the master
+     * only set if not checkpoint.
      */
-    data: any;
+    docData?: RxDocType | RxDocumentData<RxDocType> | any;
     /**
      * If the current assumed master was written while
      * resolving a conflict, this field contains
@@ -147,7 +148,7 @@ export type RxStorageInstanceReplicationInput<RxDocType> = {
      * the replication checkpoints are also stored in this instance.
      *
      */
-    metaInstance: RxStorageInstance<RxStorageReplicationMeta, any, any>;
+    metaInstance: RxStorageInstance<RxStorageReplicationMeta<RxDocType, any>, any, any>;
 
     /**
      * When a write happens to the fork,
@@ -276,7 +277,7 @@ export type RxStorageInstanceReplicationState<RxDocType> = {
      * conflicts.
      */
     lastCheckpointDoc: {
-        [direction in RxStorageReplicationDirection]?: RxDocumentData<RxStorageReplicationMeta>;
+        [direction in RxStorageReplicationDirection]?: RxDocumentData<RxStorageReplicationMeta<RxDocType, any>>;
     };
 };
 

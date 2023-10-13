@@ -58,16 +58,16 @@ export function writeDocToDocState<RxDocType>(
 }
 
 
-export function stripAttachmentsDataFromMetaWriteRows(
+export function stripAttachmentsDataFromMetaWriteRows<RxDocType>(
     state: RxStorageInstanceReplicationState<any>,
-    rows: BulkWriteRow<RxStorageReplicationMeta>[]
-): BulkWriteRow<RxStorageReplicationMeta>[] {
+    rows: BulkWriteRow<RxStorageReplicationMeta<RxDocType, any>>[]
+): BulkWriteRow<RxStorageReplicationMeta<RxDocType, any>>[] {
     if (!state.hasAttachments) {
         return rows;
     }
     return rows.map(row => {
         const document = clone(row.document);
-        document.data = stripAttachmentsDataFromDocument(document.data);
+        document.docData = stripAttachmentsDataFromDocument(document.docData);
         return {
             document,
             previous: row.previous

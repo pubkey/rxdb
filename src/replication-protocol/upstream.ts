@@ -250,7 +250,7 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
 
             const writeRowsToMaster: ById<RxReplicationWriteToMasterRow<RxDocType>> = {};
             const writeRowsToMasterIds: string[] = [];
-            const writeRowsToMeta: BulkWriteRowById<RxStorageReplicationMeta> = {};
+            const writeRowsToMeta: BulkWriteRowById<RxStorageReplicationMeta<RxDocType, any>> = {};
             const forkStateById: ById<RxDocumentData<RxDocType>> = {};
 
             await Promise.all(
@@ -347,7 +347,7 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
                 })
             );
 
-            const useWriteRowsToMeta: BulkWriteRow<RxStorageReplicationMeta>[] = [];
+            const useWriteRowsToMeta: BulkWriteRow<RxStorageReplicationMeta<RxDocType, any>>[] = [];
 
             writeRowsToMasterIds.forEach(docId => {
                 if (!conflictIds.has(docId)) {
@@ -374,7 +374,7 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
             if (conflictIds.size > 0) {
                 state.stats.up.persistToMasterHadConflicts = state.stats.up.persistToMasterHadConflicts + 1;
                 const conflictWriteFork: BulkWriteRow<RxDocType>[] = [];
-                const conflictWriteMeta: BulkWriteRowById<RxStorageReplicationMeta> = {};
+                const conflictWriteMeta: BulkWriteRowById<RxStorageReplicationMeta<RxDocType, any>> = {};
                 await Promise.all(
                     Object
                         .entries(conflictsById)
@@ -425,7 +425,7 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
                      * in between which will anyway trigger a new upstream cycle
                      * that will then resolved the conflict again.
                      */
-                    const useMetaWrites: BulkWriteRow<RxStorageReplicationMeta>[] = [];
+                    const useMetaWrites: BulkWriteRow<RxStorageReplicationMeta<RxDocType, any>>[] = [];
                     forkWriteResult.success
                         .forEach(docData => {
                             const docId = (docData as any)[state.primaryPath];
