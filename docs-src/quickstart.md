@@ -1,20 +1,16 @@
 # RxDB Quickstart
 
-Welcome to the RxDB Quickstart. In a few minutes you will be shown how to create a simple realtime TODO-app with RxDB.
+Welcome to the RxDB Quickstart. Here we'll create a simple realtime TODO-app with RxDB to demonstrate the basic concepts.
 
 ## Installation
 
-RxDB is distributed via npm and can be installed with the command:
+RxDB is distributed via npm and uses rxjs as a dependency. Install both with:
 
-`npm install rxdb`
-
-RxDB uses the rxjs library as peerDependency which must also be installed:
-
-`npm install rxjs`
+`npm install rxjs rxdb --save`
 
 ## Enable dev-mode
 
-When you use RxDB in development mode, you should enable the [dev-mode plugin](./dev-mode.md) which adds helpful checks and validations to RxDB and tells you if you do something wrong.
+When you use RxDB in development, you should enable the [dev-mode plugin](./dev-mode.md) which adds helpful checks and validations and tells you if you do something wrong.
 
 ```ts
 import { addRxPlugin } from 'rxdb';
@@ -22,11 +18,11 @@ import { RxDBDevModePlugin } from 'rxdb/plugins/dev-mode';
 addRxPlugin(RxDBDevModePlugin);
 ```
 
-## Create a RxDatabase
+## Creating an RxDatabase
 
-### Choose a RxStorage
+### Choose an RxStorage adapter
 
-RxDB can be used in different JavaScript runtimes which have different methods to store persistend data. Depending on the runtime, a different [RxStorage](./rx-storage.md) must be used. For **browser** applications it is recommended to start with the [Dexie.js RxStorage](./rx-storage-dexie.md) which comes directly with the RxDB npm package.
+RxDB can be used in a range of JavaScript runtime environments, and depending on the runtime the appropriate [RxStorage adapter](./rx-storage.md) must be used. For **browser** applications it is recommended to start with the [Dexie.js RxStorage adapter](./rx-storage-dexie.md) which is bundled with RxDB.
 
 ```ts
 import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
@@ -34,7 +30,7 @@ import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
 
 ### Create the RxDatabase
 
-With the `storage` and a picked database `name`, you can now create the [RxDatabase](./rx-database.md) instance:
+You can now create the [RxDatabase](./rx-database.md) instance:
 
 ```ts
 import { createRxDatabase } from 'rxdb';
@@ -46,17 +42,16 @@ const myDatabase = await createRxDatabase({
 });
 ```
 
-### Create a RxCollection
+### Create an RxCollection
 
-On top of the RxDatabase, you can add any amount of collections. A [RxCollection](./rx-collection.md) can then be used to store and query the actual documents.
+An RxDatabase contains [RxCollection](./rx-collection.md)s for storing and querying data. A collection is similar to a SQL table, and individual records are stored in the collection as JSON documents. An RxDatabase can have as many collections as you need.
 
-#### Create a schema for a collection
+#### Creating a schema for a collection
 
-RxDB requires a json schema for each collection that defines how the stored documents of that collection look like.
-For the example app, we create a simple schema that stores todo-document:
+RxDB uses [JSON Schema](https://json-schema.org){:target="_blank"} to describe the documents stored in each collection. For our example app we create a simple schema that describes a todo document:
 
 ```ts
-const mySchema = {
+const todoSchema = {
     version: 0,
     primaryKey: 'id',
     type: 'object',
@@ -79,14 +74,14 @@ const mySchema = {
 }
 ```
 
-#### Add a RxCollection to the RxDatabase
+#### Adding an RxCollection to the RxDatabase
 
-With that schema we can now add the `todos` collection to the database:
+With this schema we can now add the `todos` collection to the database:
 
 ```ts
 await myDatabase.addCollections({
   todos: {
-    schema: mySchema
+    schema: todoSchema
   }
 });
 ```
@@ -94,9 +89,9 @@ await myDatabase.addCollections({
 
 ## Write Operations
 
-Now that we have a RxCollection, we can store some documents in it.
+Now that we have an RxCollection we can store some documents in it.
 
-### Insert a document
+### Inserting a document
 
 ```ts
 const myDocument = await myDatabase.todos.insert({
@@ -107,10 +102,17 @@ const myDocument = await myDatabase.todos.insert({
 });
 ```
 
-### Update a document
+### Updating a document
 
-There are multiple ways to update a RxDocument. The simplest one is the `modify` method that takes a plain JavaScript function
-which mutates the document state and returns the mutated version.
+There are multiple ways to update an RxDocument. The simplest is with `patch`:
+
+```ts
+await myDocument.patch({
+    done: true
+});
+```
+
+You can also use `modify` which takes a plain JavaScript function that mutates the document state and returns the mutated version.
 
 ```ts
 await myDocument.modify(docData => {
@@ -119,20 +121,16 @@ await myDocument.modify(docData => {
 });
 ```
 
-For the other methods to change a documents data, [see here](./rx-document.md#update)
-
 ### Delete a document
 
-Delete a RxDocument by calling `myDocument.remove()`. This will set the documents state to `DELETED` which ensures that it will be no longer found in query results. RxDB stores even deleted documents so that it is able to sync the deleted state to other instances during [replication](./replication.md). The deleted document will be purged in a later point in time with the [cleanup plugin](./cleanup.md).
-
+You can soft delete an RxDocument by calling `myDocument.remove()`. This will set the document's state to `DELETED` which ensures that it will not be returned in query results. RxDB keeps deleted documents in the database so that it is able to sync the deleted state to other instances during database [replication](./replication.md). Deleted documents can be purged in a later point with the [cleanup plugin](./cleanup.md) if needed.
 
 
 ## Query Operations
 
-### Normal Query
+### Simple Query
 
-Like many NoSQL databases, RxDB uses the Mango syntax for query operations.
-To run a query, you first create an RxQuery object with `myCollection.find()` and then call `.exec()` on that object to fetch the query results.
+Like many NoSQL databases, RxDB uses the [Mango syntax](https://github.com/cloudant/mango){:target="_blank"} for query operations. To run a query, you first create an RxQuery object with `myCollection.find()` and then call `.exec()` on that object to fetch the query results.
 
 ```ts
 const foundDocuments = await myDatabase.todos.find({
@@ -144,23 +142,20 @@ const foundDocuments = await myDatabase.todos.find({
 }).exec();
 ```
 
-Other examples for the Mango Query syntax can be found [here](./rx-query.html#examples).
-In addition to the `.find()` RxQuery, RxDB has additional query objects that can be used to find the desired documents:
+More Mango query examples can be found [here](./rx-query.html#examples). In addition to the `.find()` RxQuery, RxDB has additional query methods for fetching the documents you need:
 
 - [findOne()](./rx-collection.md#findone)
 - [findByIds()](./rx-collection.md#findByIds)
 
 
-
 ## Observing data
 
-When you build a modern realtime application with RxDB, you do not only need data once, but instead you might want to subscribe to the data so that your UI is always up-to-date with the data stored on disc.
-RxDB allows to subscribe to data which is then updated even when it was changed in an other part of your application, an other browser tab or by the [replication](./replication.md).
+You might want to subscribe to data changes so that your UI is always up-to-date with the data stored on disc. RxDB allows you to subscribe to data changes even when the change happens in another part of your application, another browser tab, or during database [replication/synchronization](./replication.md).
 
 
 ### Observing queries
 
-To observe a query, instead of calling `.exec()` you get the observable of the RxQuery object via `.$` and then subscribe to it.
+To observe changes to records returned from a query, instead of calling `.exec()` you get the observable of the RxQuery object via `.$` and then subscribe to it.
 
 ```ts
 const observable = myDatabase.todos.find({
@@ -170,14 +165,14 @@ const observable = myDatabase.todos.find({
         }
     }
 }).$;
-observable.subscribe(allNonDoneTodos => {
-    console.log('Currently have ' + allNonDoneTodos.length + 'things to do');
+observable.subscribe(notDone => {
+    console.log('Currently have ' + notDone.length + 'things to do');
 });
 ```
 
 ### Subscribe to a document value
 
-In addition to queries, you can also subscribe to the fields of a single RxDocument. Therefore you add the `$` sign to the desired field and then subscribe to the returned observable.
+You can also subscribe to the fields of a single RxDocument. Add the `$` sign to the desired field and then subscribe to the returned observable.
 
 ```ts
 myDocument.done$.subscribe(isDone => {
@@ -185,7 +180,6 @@ myDocument.done$.subscribe(isDone => {
 });
 ```
 
+## Next steps
 
-## Follow Up
-
-You are now prepared to dive deeper into RxDB. If you have any questions, you can ask the community at the [RxDB Chat](./chat.html). Also do not forget to leave a star at the [RxDB github repository](https://github.com/pubkey/rxdb).
+You are now ready to dive deeper into RxDB. Please continue reading the documentation, and join the community to ask questions on our [Discord chat](./chat.html). If you like RxDB please star the [GitHub repository](https://github.com/pubkey/rxdb), and if you are using RxDB in a production environment and able to support its continued development, please consider becoming a [sponsor on GitHub](https://github.com/sponsors/pubkey) or [OpenCollective](https://opencollective.com/rxdbjs).
