@@ -191,8 +191,8 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
 
         return storageInstance;
     }
-    async function createMetaInstance(parentSchema: RxJsonSchema<RxDocumentData<any>>): Promise<RxStorageInstance<RxStorageReplicationMeta, any, any>> {
-        const instance = await config.storage.getStorage().createStorageInstance<RxStorageReplicationMeta>({
+    async function createMetaInstance<RxDocType>(parentSchema: RxJsonSchema<RxDocumentData<RxDocType>>): Promise<RxStorageInstance<RxStorageReplicationMeta<RxDocType, any>, any, any>> {
+        const instance = await config.storage.getStorage().createStorageInstance<RxStorageReplicationMeta<RxDocType, any>>({
             databaseInstanceToken: randomCouchString(10),
             databaseName: randomCouchString(12),
             collectionName: randomCouchString(12),
