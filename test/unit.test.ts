@@ -52,13 +52,11 @@ import './unit/reactive-document.test.ts';
 import './unit/cleanup.test.ts';
 import './unit/hooks.test.ts';
 import './unit/orm.test.ts';
-
 import './unit/replication.test.ts';
 import './unit/replication-protocol.test.ts';
 import './unit/replication-graphql.test.ts';
 import './unit/replication-websocket.test.ts';
 import './unit/replication-webrtc.test.ts';
-
 import './unit/data-migration.test.ts';
 import './unit/crdt.test.ts';
 import './unit/population.test.ts';

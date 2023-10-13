@@ -168,7 +168,7 @@ config.parallel('key-compression.test.js', () => {
                 {
                     selector: {},
                     skip: 0,
-                    sort: [{ passportId: 'asc' }]
+                    sort: [{ id: 'asc' }]
                 } as FilledMangoQuery<SimpleHumanDocumentType>
             );
             const metaDocs = await replicationMetaStorage.query(preparedQuery);
