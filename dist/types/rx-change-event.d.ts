@@ -3,7 +3,7 @@
  * they can be grabbed by the observables of database, collection and document
  */
 import type { ChangeEvent as EventReduceChangeEvent } from 'event-reduce-js';
-import type { EventBulk, RxChangeEvent, RxDocumentData } from './types';
+import type { EventBulk, RxChangeEvent, RxDocumentData } from './types/index.d.ts';
 export declare function getDocumentDataOfRxChangeEvent<T>(rxChangeEvent: RxChangeEvent<T>): RxDocumentData<T>;
 /**
  * Might return null which means an

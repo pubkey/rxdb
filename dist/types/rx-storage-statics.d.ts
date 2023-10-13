@@ -1,4 +1,4 @@
-import type { RxStorageStatics } from './types';
+import type { RxStorageStatics } from './types/index.d.ts';
 /**
  * Most RxStorage implementations use these static functions.
  * But you can use anything that implements the interface,

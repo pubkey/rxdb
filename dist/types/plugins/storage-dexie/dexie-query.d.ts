@@ -1,5 +1,5 @@
-import type { DefaultPreparedQuery, RxQueryPlan, RxStorageQueryResult } from '../../types';
-import type { RxStorageInstanceDexie } from './rx-storage-instance-dexie';
+import type { DefaultPreparedQuery, RxQueryPlan, RxStorageQueryResult } from '../../types/index.d.ts';
+import type { RxStorageInstanceDexie } from './rx-storage-instance-dexie.ts';
 export declare function mapKeyForKeyRange(k: any): any;
 export declare function getKeyRangeByQueryPlan(queryPlan: RxQueryPlan, IDBKeyRange?: any): any;
 /**

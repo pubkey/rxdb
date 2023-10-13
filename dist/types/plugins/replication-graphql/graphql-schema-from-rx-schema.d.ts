@@ -1,4 +1,4 @@
-import { RxJsonSchema } from '../../types';
+import type { RxJsonSchema } from '../../types/index.d.ts';
 export type Prefixes = {
     push?: string;
     pushRow?: string;

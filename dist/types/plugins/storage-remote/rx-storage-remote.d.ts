@@ -1,6 +1,6 @@
 import { Observable } from 'rxjs';
-import type { BulkWriteRow, EventBulk, RxConflictResultionTask, RxConflictResultionTaskSolution, RxDocumentData, RxDocumentDataById, RxJsonSchema, RxStorage, RxStorageBulkWriteResponse, RxStorageChangeEvent, RxStorageCountResult, RxStorageInstance, RxStorageInstanceCreationParams, RxStorageQueryResult, RxStorageStatics } from '../../types';
-import type { MessageFromRemote, RemoteMessageChannel, RxStorageRemoteInternals, RxStorageRemoteSettings } from './storage-remote-types';
+import type { BulkWriteRow, EventBulk, RxConflictResultionTask, RxConflictResultionTaskSolution, RxDocumentData, RxJsonSchema, RxStorage, RxStorageBulkWriteResponse, RxStorageChangeEvent, RxStorageCountResult, RxStorageInfoResult, RxStorageInstance, RxStorageInstanceCreationParams, RxStorageQueryResult, RxStorageStatics } from '../../types/index.d.ts';
+import type { MessageFromRemote, RemoteMessageChannel, RxStorageRemoteInternals, RxStorageRemoteSettings } from './storage-remote-types.ts';
 export declare class RxStorageRemote implements RxStorage<RxStorageRemoteInternals, any> {
     readonly settings: RxStorageRemoteSettings;
     readonly statics: RxStorageStatics;
@@ -28,9 +28,10 @@ export declare class RxStorageInstanceRemote<RxDocType> implements RxStorageInst
     constructor(storage: RxStorageRemote, databaseName: string, collectionName: string, schema: Readonly<RxJsonSchema<RxDocumentData<RxDocType>>>, internals: RxStorageRemoteInternals, options: Readonly<any>);
     private requestRemote;
     bulkWrite(documentWrites: BulkWriteRow<RxDocType>[], context: string): Promise<RxStorageBulkWriteResponse<RxDocType>>;
-    findDocumentsById(ids: string[], deleted: boolean): Promise<RxDocumentDataById<RxDocType>>;
+    findDocumentsById(ids: string[], deleted: boolean): Promise<RxDocumentData<RxDocType>[]>;
     query(preparedQuery: any): Promise<RxStorageQueryResult<RxDocType>>;
     count(preparedQuery: any): Promise<RxStorageCountResult>;
+    info(): Promise<RxStorageInfoResult>;
     getAttachmentData(documentId: string, attachmentId: string, digest: string): Promise<string>;
     getChangedDocumentsSince(limit: number, checkpoint?: any): Promise<{
         documents: RxDocumentData<RxDocType>[];

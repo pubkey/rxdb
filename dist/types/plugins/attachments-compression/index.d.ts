@@ -1,4 +1,4 @@
-import type { RxStorage, CompressionMode } from '../../types';
+import type { RxStorage, CompressionMode } from '../../types/index.d.ts';
 export declare function compressBase64(_mode: CompressionMode, base64String: string): string;
 export declare function decompressBase64(_mode: CompressionMode, base64String: string): string;
 /**

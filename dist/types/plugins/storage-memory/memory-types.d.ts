@@ -1,5 +1,5 @@
 import { Subject } from 'rxjs';
-import type { DefaultPreparedQuery, EventBulk, RxAttachmentWriteData, RxConflictResultionTask, RxDocumentData, RxStorage, RxStorageChangeEvent, RxStorageDefaultCheckpoint } from '../../types';
+import type { CategorizeBulkWriteRowsOutput, DefaultPreparedQuery, EventBulk, RxAttachmentWriteData, RxConflictResultionTask, RxDocumentData, RxStorage, RxStorageChangeEvent, RxStorageDefaultCheckpoint } from '../../types/index.d.ts';
 export type RxStorageMemorySettings = {};
 export type RxStorageMemoryInstanceCreationOptions = {};
 export type RxStorageMemory = RxStorage<MemoryStorageInternals<any>, RxStorageMemoryInstanceCreationOptions> & {
@@ -19,7 +19,7 @@ export type MemoryStorageInternalsByIndex<RxDocType> = {
  */
 export type MemoryStorageInternals<RxDocType> = {
     /**
-     * We re-use the memory state when multiple instances
+     * We reuse the memory state when multiple instances
      * are created with the same params.
      * If refCount becomes 0, we can delete the state.
      */
@@ -51,6 +51,11 @@ export type MemoryStorageInternals<RxDocType> = {
          */
         [indexName: string]: MemoryStorageInternalsByIndex<RxDocType>;
     };
+    /**
+     * We need these to do lazy writes.
+     */
+    ensurePersistenceTask?: CategorizeBulkWriteRowsOutput<RxDocType>;
+    ensurePersistenceIdlePromise?: Promise<void>;
     /**
      * To easier test the conflict resolution,
      * the memory storage exposes the conflict resolution task subject

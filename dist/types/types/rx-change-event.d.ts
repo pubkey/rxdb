@@ -1,7 +1,7 @@
-import {
+import type {
     EventBulk,
     RxDocumentData
-} from './rx-storage';
+} from './rx-storage.d.ts';
 
 
 export type RxChangeEventBase<RxDocType> = {

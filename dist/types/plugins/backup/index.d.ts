@@ -1,5 +1,5 @@
 import { Observable } from 'rxjs';
-import type { BackupOptions, RxBackupWriteEvent, RxDatabase, RxDocument, RxPlugin } from '../../types';
+import type { BackupOptions, RxBackupWriteEvent, RxDatabase, RxDocument, RxPlugin } from '../../types/index.d.ts';
 /**
  * Backups a single documents,
  * returns the paths to all written files
@@ -33,5 +33,5 @@ export declare class RxBackupState {
     cancel(): Promise<boolean>;
 }
 export declare function backup(this: RxDatabase, options: BackupOptions): RxBackupState;
-export * from './file-util';
+export * from './file-util.ts';
 export declare const RxDBBackupPlugin: RxPlugin;

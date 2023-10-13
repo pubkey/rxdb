@@ -1,4 +1,4 @@
-import type { RxChangeEvent, RxDocument, RxDocumentData } from './types';
+import type { RxChangeEvent, RxDocument, RxDocumentData } from './types/index.d.ts';
 import { Observable } from 'rxjs';
 declare type CacheItem<RxDocType, OrmMethods> = {
     /**

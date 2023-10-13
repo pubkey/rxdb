@@ -1,12 +1,12 @@
-import type { DexieStorageInternals, RxDocumentData, RxJsonSchema } from '../../types';
-import { DexieSettings } from '../../types';
+import type { DexieStorageInternals, RxDocumentData, RxJsonSchema } from '../../types/index.d.ts';
+import type { DexieSettings } from '../../types/index.d.ts';
 export declare const DEXIE_DOCS_TABLE_NAME = "docs";
 export declare const DEXIE_DELETED_DOCS_TABLE_NAME = "deleted-docs";
 export declare const DEXIE_CHANGES_TABLE_NAME = "changes";
 export declare const RX_STORAGE_NAME_DEXIE = "dexie";
 export declare const RxStorageDexieStatics: Readonly<{
-    prepareQuery<RxDocType>(schema: RxJsonSchema<RxDocumentData<RxDocType>>, mutateableQuery: import("../../types").FilledMangoQuery<RxDocType>): any;
-    checkpointSchema: import("../../types").DeepReadonlyObject<import("../../types").JsonSchema>;
+    prepareQuery<RxDocType>(schema: RxJsonSchema<RxDocumentData<RxDocType>>, mutateableQuery: import("../../types/rx-storage.interface").FilledMangoQuery<RxDocType>): any;
+    checkpointSchema: import("../../types/util").DeepReadonlyObject<import("../../types/rx-schema").JsonSchema>;
 }>;
 export declare function getDexieDbWithTables(databaseName: string, collectionName: string, settings: DexieSettings, schema: RxJsonSchema<any>): DexieStorageInternals;
 export declare function closeDexieDb(statePromise: DexieStorageInternals): Promise<void>;

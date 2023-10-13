@@ -13,7 +13,7 @@
  * Do not use this if the storage anyway broadcasts the events like when using MongoDB
  * or in the future W3C might introduce a way to listen to IndexedDB changes.
  */
-import type { EventBulk, RxStorageInstance, RxStorageInstanceCreationParams } from './types';
+import type { EventBulk, RxStorageInstance, RxStorageInstanceCreationParams } from './types/index.d.ts';
 import { BroadcastChannel } from 'broadcast-channel';
 /**
  * The broadcast-channel is reused by the databaseInstanceToken.

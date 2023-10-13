@@ -1,5 +1,5 @@
 import type { Filter as MongoQueryFilter, Sort as MongoSort, TransactionOptions } from 'mongodb';
-import type { MangoQuery } from '../../types';
+import type { MangoQuery } from '../../types/index.d.ts';
 export type MongoQuerySelector<RxDocType> = MongoQueryFilter<RxDocType | any>;
 export type MongoDBDatabaseSettings = {
     /**

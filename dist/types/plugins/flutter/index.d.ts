@@ -1,4 +1,4 @@
-import type { RxDatabase } from '../../types';
+import type { RxDatabase } from '../../types/index.d.ts';
 export type CreateRxDatabaseFunctionType = (databaseName: string) => Promise<RxDatabase>;
 export declare function setFlutterRxDatabaseConnector(createDB: CreateRxDatabaseFunctionType): void;
 /**

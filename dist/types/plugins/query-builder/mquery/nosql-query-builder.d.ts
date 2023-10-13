@@ -1,4 +1,4 @@
-import type { MangoQuery, MangoQuerySelector, MangoQuerySortPart } from '../../../types';
+import type { MangoQuery, MangoQuerySelector, MangoQuerySortPart } from '../../../types/index.d.ts';
 declare type MQueryOptions = {
     limit?: number;
     skip?: number;

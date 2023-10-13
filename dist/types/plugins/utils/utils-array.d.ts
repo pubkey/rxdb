@@ -1,4 +1,4 @@
-import type { MaybePromise, MaybeReadonly } from '../../types';
+import type { MaybePromise, MaybeReadonly } from '../../types/index.d.ts';
 export declare function lastOfArray<T>(ar: T[]): T | undefined;
 /**
  * shuffle the given array

@@ -1,4 +1,4 @@
-import type { RxPluginPreCreateRxQueryArgs, RxPluginPrePrepareQueryArgs, FilledMangoQuery, RxJsonSchema, RxDocumentData } from '../../types';
+import type { RxPluginPreCreateRxQueryArgs, RxPluginPrePrepareQueryArgs, FilledMangoQuery, RxJsonSchema, RxDocumentData } from '../../types/index.d.ts';
 /**
  * accidentally passing a non-valid object into the query params
  * is very hard to debug especially when queries are observed
@@ -7,3 +7,8 @@ import type { RxPluginPreCreateRxQueryArgs, RxPluginPrePrepareQueryArgs, FilledM
 export declare function checkQuery(args: RxPluginPreCreateRxQueryArgs): void;
 export declare function checkMangoQuery(args: RxPluginPrePrepareQueryArgs): void;
 export declare function areSelectorsSatisfiedByIndex<RxDocType>(schema: RxJsonSchema<RxDocumentData<RxDocType>>, query: FilledMangoQuery<RxDocType>): boolean;
+/**
+ * Ensures that the selector does not contain any RegExp instance.
+ * @recursive
+ */
+export declare function ensureObjectDoesNotContainRegExp(selector: any): void;

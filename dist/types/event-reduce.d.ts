@@ -1,5 +1,5 @@
 import { QueryParams } from 'event-reduce-js';
-import type { RxQuery, MangoQuery, RxChangeEvent, StringKeys, RxDocumentData } from './types';
+import type { RxQuery, MangoQuery, RxChangeEvent, StringKeys, RxDocumentData } from './types/index.d.ts';
 export type EventReduceResultNeg = {
     runFullQueryAgain: true;
 };

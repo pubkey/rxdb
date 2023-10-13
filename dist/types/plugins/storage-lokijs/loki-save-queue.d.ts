@@ -1,4 +1,4 @@
-import type { LokiDatabaseSettings } from '../../types';
+import type { LokiDatabaseSettings } from '../../types/index.d.ts';
 /**
  * The autosave feature of lokijs has strange behaviors
  * and often runs a save in critical moments when other

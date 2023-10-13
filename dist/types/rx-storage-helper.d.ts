@@ -1,15 +1,21 @@
 /**
  * Helper functions for accessing the RxStorage instances.
  */
-import type { BulkWriteRow, BulkWriteRowProcessed, ById, CategorizeBulkWriteRowsOutput, RxAttachmentData, RxAttachmentWriteData, RxChangeEvent, RxCollection, RxDatabase, RxDocumentData, RxDocumentWriteData, RxJsonSchema, RxStorageWriteError, RxStorageChangeEvent, RxStorageInstance, RxStorageInstanceCreationParams, StringKeys } from './types';
+import type { BulkWriteRow, BulkWriteRowProcessed, CategorizeBulkWriteRowsOutput, RxAttachmentData, RxAttachmentWriteData, RxChangeEvent, RxCollection, RxDatabase, RxDocumentData, RxDocumentWriteData, RxJsonSchema, RxStorageWriteError, RxStorageChangeEvent, RxStorageInstance, RxStorageInstanceCreationParams, StringKeys } from './types/index.d.ts';
+import { Observable } from 'rxjs';
 export declare const INTERNAL_STORAGE_NAME = "_rxdb_internal";
 export declare const RX_DATABASE_LOCAL_DOCS_STORAGE_NAME = "rxdatabase_storage_local";
-export declare function getSingleDocument<RxDocType>(storageInstance: RxStorageInstance<RxDocType, any, any>, documentId: string): Promise<RxDocumentData<RxDocType> | null>;
+export declare function getSingleDocument<RxDocType>(storageInstance: RxStorageInstance<RxDocType, any, any>, documentId: string): Promise<RxDocumentData<RxDocType> | undefined>;
 /**
  * Writes a single document,
  * throws RxStorageBulkWriteError on failure
  */
 export declare function writeSingle<RxDocType>(instance: RxStorageInstance<RxDocType, any, any>, writeRow: BulkWriteRow<RxDocType>, context: string): Promise<RxDocumentData<RxDocType>>;
+/**
+ * Observe the plain document data of a single document.
+ * Do not forget to unsubscribe.
+ */
+export declare function observeSingle<RxDocType>(storageInstance: RxStorageInstance<RxDocType, any, any>, documentId: string): Observable<RxDocumentData<RxDocType>>;
 /**
  * Checkpoints must be stackable over another.
  * This is required form some RxStorage implementations
@@ -18,7 +24,7 @@ export declare function writeSingle<RxDocType>(instance: RxStorageInstance<RxDoc
  */
 export declare function stackCheckpoints<CheckpointType>(checkpoints: CheckpointType[]): CheckpointType;
 export declare function storageChangeEventToRxChangeEvent<DocType>(isLocal: boolean, rxStorageChangeEvent: RxStorageChangeEvent<DocType>, rxCollection?: RxCollection): RxChangeEvent<DocType>;
-export declare function throwIfIsStorageWriteError<RxDocType>(collection: RxCollection<RxDocType>, documentId: string, writeData: RxDocumentWriteData<RxDocType> | RxDocType, error: RxStorageWriteError<RxDocType> | undefined): void;
+export declare function throwIfIsStorageWriteError<RxDocType>(collection: RxCollection<RxDocType, any, any>, documentId: string, writeData: RxDocumentWriteData<RxDocType> | RxDocType, error: RxStorageWriteError<RxDocType> | undefined): void;
 /**
  * Analyzes a list of BulkWriteRows and determines
  * which documents must be inserted, updated or deleted
@@ -32,13 +38,9 @@ export declare function categorizeBulkWriteRows<RxDocType>(storageInstance: RxSt
  * Current state of the documents
  * inside of the storage. Used to determine
  * which writes cause conflicts.
- * This can be a Map for better performance
- * but it can also be an object because some storages
- * need to work with something that is JSON-stringify-able
- * and we do not want to transform a big object into a Map
- * each time we use it.
+ * This must be a Map for better performance.
  */
-docsInDb: Map<RxDocumentData<RxDocType>[StringKeys<RxDocType>] | string, RxDocumentData<RxDocType>> | ById<RxDocumentData<RxDocType>>, 
+docsInDb: Map<RxDocumentData<RxDocType>[StringKeys<RxDocType>] | string, RxDocumentData<RxDocType>>, 
 /**
  * The write rows that are passed to
  * RxStorageInstance().bulkWrite().
@@ -63,7 +65,7 @@ export declare function flatCloneDocWithMeta<RxDocType>(doc: RxDocumentData<RxDo
  * to make it easy to filter out duplicates
  * even on flattened eventBulks
  */
-export declare function getUniqueDeterministicEventKey(eventBulkId: string, rowId: number, docId: string, writeRow: BulkWriteRow<any>): string;
+export declare function getUniqueDeterministicEventKey(eventBulkId: string, rowId: number, docId: string, writeRowDocument: RxDocumentWriteData<any>): string;
 export type WrappedRxStorageInstance<RxDocumentType, Internals, InstanceCreationOptions> = RxStorageInstance<RxDocumentType, any, InstanceCreationOptions> & {
     originalStorageInstance: RxStorageInstance<RxDocumentType, Internals, InstanceCreationOptions>;
 };

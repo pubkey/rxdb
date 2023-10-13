@@ -8,7 +8,6 @@
  */
 export declare function createBlob(data: string, type: string): Blob;
 export declare function createBlobFromBase64(base64String: string, type: string): Promise<Blob>;
-export declare function isBlob(data: any): boolean;
 export declare function blobToString(blob: Blob | string): Promise<string>;
 export declare function blobToBase64String(blob: Blob | string): Promise<string>;
 export declare function getBlobSize(blob: Blob): number;

@@ -2,7 +2,7 @@
  * this plugin adds the leader-election-capabilities to rxdb
  */
 import { LeaderElector, BroadcastChannel } from 'broadcast-channel';
-import type { RxDatabase, RxPlugin } from '../../types';
+import type { RxDatabase, RxPlugin } from '../../types/index.d.ts';
 /**
  * Returns the leader elector of a broadcast channel.
  * Used to ensure we reuse the same elector for the channel each time.

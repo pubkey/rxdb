@@ -1,3 +1,3 @@
-import type { RxPlugin } from '../../types';
+import type { RxPlugin } from '../../types/index.d.ts';
 export declare const RxDBCleanupPlugin: RxPlugin;
-export * from './cleanup';
+export * from './cleanup.ts';

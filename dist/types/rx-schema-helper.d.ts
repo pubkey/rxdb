@@ -1,5 +1,5 @@
-import type { DeepReadonly, JsonSchema, PrimaryKey, RxDocumentData, RxJsonSchema, RxStorageDefaultCheckpoint, StringKeys } from './types';
-import type { RxSchema } from './rx-schema';
+import type { DeepReadonly, JsonSchema, PrimaryKey, RxDocumentData, RxJsonSchema, RxStorageDefaultCheckpoint, StringKeys } from './types/index.d.ts';
+import type { RxSchema } from './rx-schema.ts';
 /**
  * Helper function to create a valid RxJsonSchema
  * with a given version.

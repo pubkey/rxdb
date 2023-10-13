@@ -2,7 +2,7 @@
  * the query-cache makes sure that on every query-state, exactly one instance can exist
  * if you use the same mango-query more then once, it will reuse the first RxQuery
  */
-import type { RxQuery, RxCacheReplacementPolicy, RxCollection } from './types';
+import type { RxQuery, RxCacheReplacementPolicy, RxCollection } from './types/index.d.ts';
 export declare class QueryCache {
     _map: Map<string, RxQuery>;
     /**

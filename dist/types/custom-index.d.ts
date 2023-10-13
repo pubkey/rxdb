@@ -8,8 +8,8 @@
  * which is why the code sometimes looks strange.
  * Run performance tests before and after you touch anything here!
  */
-import type { JsonSchema, RxDocumentData, RxJsonSchema } from './types';
-import { ObjectPathMonadFunction } from './plugins/utils';
+import type { JsonSchema, RxDocumentData, RxJsonSchema } from './types/index.ts';
+import { ObjectPathMonadFunction } from './plugins/utils/index.ts';
 /**
  * Prepare all relevant information
  * outside of the returned function

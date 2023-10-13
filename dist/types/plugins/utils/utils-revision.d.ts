@@ -1,4 +1,4 @@
-import type { RxDocumentData } from '../../types';
+import type { RxDocumentData } from '../../types/index.d.ts';
 export declare function parseRevision(revision: string): {
     height: number;
     hash: string;

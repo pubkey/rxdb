@@ -1,4 +1,4 @@
-import type { RxDocument, RxPlugin, OldRxCollection, RxAttachmentData, RxDocumentData, RxAttachmentCreator } from '../../types';
+import type { RxDocument, RxPlugin, RxAttachmentData, RxDocumentData, RxAttachmentCreator } from '../../types/index.ts';
 /**
  * an RxAttachment is basically just the attachment-stub
  * wrapped so that you can access the attachment-data
@@ -29,7 +29,8 @@ export declare function getAttachment(this: RxDocument, id: string): RxAttachmen
 export declare function allAttachments(this: RxDocument): RxAttachment[];
 export declare function preMigrateDocument<RxDocType>(data: {
     docData: RxDocumentData<RxDocType>;
-    oldCollection: OldRxCollection;
+    oldCollection: any;
 }): Promise<void>;
 export declare function postMigrateDocument(_action: any): Promise<void>;
 export declare const RxDBAttachmentsPlugin: RxPlugin;
+export * from './attachments-utils.ts';

@@ -1,5 +1,5 @@
-import type { HashFunction, InternalStoreDocType, RxDatabase, RxDocumentData, RxStorage, RxStorageInstance, RxStorageInstanceCreationParams } from './types';
-import type { RxSchema } from './rx-schema';
+import type { HashFunction, InternalStoreDocType, RxDatabase, RxDocumentData, RxStorage, RxStorageInstance, RxStorageInstanceCreationParams } from './types/index.d.ts';
+import type { RxSchema } from './rx-schema.ts';
 /**
  * fills in the default data.
  * This also clones the data.

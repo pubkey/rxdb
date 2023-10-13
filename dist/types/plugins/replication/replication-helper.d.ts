@@ -1,4 +1,4 @@
-import type { RxCollection, WithDeleted } from '../../types';
+import type { RxCollection, WithDeleted } from '../../types/index.d.ts';
 export declare const DEFAULT_MODIFIER: (d: any) => Promise<any>;
 export declare function swapDefaultDeletedTodeletedField<RxDocType>(deletedField: string, doc: WithDeleted<RxDocType>): RxDocType;
 /**

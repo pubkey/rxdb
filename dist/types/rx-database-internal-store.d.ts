@@ -1,4 +1,4 @@
-import type { CollectionsOfDatabase, InternalStoreCollectionDocType, InternalStoreDocType, InternalStoreStorageTokenDocType, RxCollection, RxDatabase, RxDocumentData, RxJsonSchema, RxStorageInstance, RxStorageStatics } from './types';
+import type { CollectionsOfDatabase, InternalStoreCollectionDocType, InternalStoreDocType, InternalStoreStorageTokenDocType, RxCollection, RxDatabase, RxDocumentData, RxJsonSchema, RxStorageInstance, RxStorageStatics } from './types/index.d.ts';
 export declare const INTERNAL_CONTEXT_COLLECTION = "collection";
 export declare const INTERNAL_CONTEXT_STORAGE_TOKEN = "storage-token";
 /**

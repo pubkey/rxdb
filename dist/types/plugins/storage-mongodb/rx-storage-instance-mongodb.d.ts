@@ -1,7 +1,7 @@
 import { BehaviorSubject, Observable } from 'rxjs';
-import type { BulkWriteRow, EventBulk, RxConflictResultionTask, RxConflictResultionTaskSolution, RxDocumentData, RxDocumentDataById, RxJsonSchema, RxStorageBulkWriteResponse, RxStorageChangeEvent, RxStorageCountResult, RxStorageDefaultCheckpoint, RxStorageInstance, RxStorageInstanceCreationParams, RxStorageQueryResult, StringKeys } from '../../types';
-import { MongoDBPreparedQuery, MongoDBStorageInternals, RxStorageMongoDBInstanceCreationOptions, RxStorageMongoDBSettings } from './mongodb-types';
-import { RxStorageMongoDB } from './rx-storage-mongodb';
+import type { BulkWriteRow, EventBulk, RxConflictResultionTask, RxConflictResultionTaskSolution, RxDocumentData, RxJsonSchema, RxStorageBulkWriteResponse, RxStorageChangeEvent, RxStorageCountResult, RxStorageDefaultCheckpoint, RxStorageInfoResult, RxStorageInstance, RxStorageInstanceCreationParams, RxStorageQueryResult, StringKeys } from '../../types/index.d.ts';
+import { MongoDBPreparedQuery, MongoDBStorageInternals, RxStorageMongoDBInstanceCreationOptions, RxStorageMongoDBSettings } from './mongodb-types.ts';
+import { RxStorageMongoDB } from './rx-storage-mongodb.ts';
 import { Db as MongoDatabase, Collection as MongoCollection, MongoClient, ObjectId, ClientSession } from 'mongodb';
 export declare class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<RxDocType, MongoDBStorageInternals, RxStorageMongoDBInstanceCreationOptions, RxStorageDefaultCheckpoint> {
     readonly storage: RxStorageMongoDB;
@@ -25,7 +25,7 @@ export declare class RxStorageInstanceMongoDB<RxDocType> implements RxStorageIns
      * they can be awaited.
      */
     readonly runningOperations: BehaviorSubject<number>;
-    readonly runningWrites: BehaviorSubject<number>;
+    writeQueue: Promise<any>;
     /**
      * We use this to be able to still fetch
      * the objectId after transforming the document from mongo-style (with _id)
@@ -40,9 +40,10 @@ export declare class RxStorageInstanceMongoDB<RxDocType> implements RxStorageIns
      * (Similar to what RxDB does with the revision system)
      */
     bulkWrite(documentWrites: BulkWriteRow<RxDocType>[], context: string): Promise<RxStorageBulkWriteResponse<RxDocType>>;
-    findDocumentsById(docIds: string[], withDeleted: boolean, session?: ClientSession): Promise<RxDocumentDataById<RxDocType>>;
+    findDocumentsById(docIds: string[], withDeleted: boolean, session?: ClientSession): Promise<RxDocumentData<RxDocType>[]>;
     query(preparedQuery: MongoDBPreparedQuery<RxDocType>): Promise<RxStorageQueryResult<RxDocType>>;
     count(preparedQuery: MongoDBPreparedQuery<RxDocType>): Promise<RxStorageCountResult>;
+    info(): Promise<RxStorageInfoResult>;
     getChangedDocumentsSince(limit: number, checkpoint?: RxStorageDefaultCheckpoint): Promise<{
         documents: RxDocumentData<RxDocType>[];
         checkpoint: RxStorageDefaultCheckpoint;

@@ -16,6 +16,10 @@ export declare function ucfirst(str: string): string;
  */
 export declare function trimDots(str: string): string;
 /**
+ * @link https://stackoverflow.com/a/44950500/3443137
+ */
+export declare function lastCharOfString(str: string): string;
+/**
  * returns true if the given name is likely a folder path
  */
 export declare function isFolderPath(name: string): boolean;

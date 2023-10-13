@@ -1,4 +1,4 @@
-import type { KeyFunctionMap, RxJsonSchema } from '../../types';
+import type { KeyFunctionMap, RxJsonSchema } from '../../types/index.d.ts';
 /**
  * checks if the given static methods are allowed
  * @throws if not allowed

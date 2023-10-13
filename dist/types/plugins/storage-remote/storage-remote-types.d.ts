@@ -1,5 +1,5 @@
 import type { Observable } from 'rxjs';
-import type { MaybePromise, PlainJsonError, RxDatabase, RxStorage, RxStorageInstance, RxStorageInstanceCreationParams, RxStorageStatics } from '../../types';
+import type { MaybePromise, PlainJsonError, RxDatabase, RxStorage, RxStorageInstance, RxStorageInstanceCreationParams, RxStorageStatics } from '../../types/index.d.ts';
 export type MessageFromRemote = {
     connectionId: string;
     answerTo: string;

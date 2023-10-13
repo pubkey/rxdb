@@ -1,4 +1,4 @@
-import type { RxJsonSchema } from '../../types';
+import type { RxJsonSchema } from '../../types/index.d.ts';
 /**
  * checks if the fieldname is allowed
  * this makes sure that the fieldnames can be transformed into javascript-vars

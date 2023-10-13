@@ -1,4 +1,4 @@
-import type { RxDocumentData, RxDocumentMeta, StringKeys } from '../../types';
+import type { RxDocumentData, RxDocumentMeta, StringKeys } from '../../types/index.d.ts';
 /**
  * We use 1 as minimum so that the value is never falsy.
  * This const is used in several places because querying

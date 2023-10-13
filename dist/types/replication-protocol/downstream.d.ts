@@ -1,4 +1,4 @@
-import type { RxStorageInstanceReplicationState } from '../types';
+import type { RxStorageInstanceReplicationState } from '../types/index.d.ts';
 /**
  * Writes all documents from the master to the fork.
  * The downstream has two operation modes

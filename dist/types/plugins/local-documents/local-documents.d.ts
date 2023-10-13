@@ -1,4 +1,4 @@
-import type { RxCollection, RxDatabase, RxLocalDocument } from '../../types';
+import type { RxCollection, RxDatabase, RxLocalDocument } from '../../types/index.d.ts';
 import { Observable } from 'rxjs';
 /**
  * save the local-document-data

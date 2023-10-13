@@ -4,6 +4,9 @@
  * because it is currently an esm only module.
  * TODO use the npm package again when RxDB is also fully esm.
  */
+/**
+ * TODO we need some performance tests and improvements here.
+ */
 export declare function getProperty(object: any, path: string | string[], value?: any): any;
 export declare function setProperty(object: any, path: string, value: any): any;
 export declare function deleteProperty(object: any, path: string): boolean | undefined;

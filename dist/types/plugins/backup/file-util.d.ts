@@ -1,4 +1,4 @@
-import { BackupMetaFileContent, BackupOptions, RxDatabase } from '../../types';
+import type { BackupMetaFileContent, BackupOptions, RxDatabase } from '../../types/index.d.ts';
 /**
  * ensure that the given folder exists
  */

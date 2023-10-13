@@ -1,4 +1,4 @@
-import type { RxChangeEvent, RxCollection } from './types';
+import type { RxChangeEvent, RxCollection } from './types/index.d.ts';
 export declare class ChangeEventBuffer {
     collection: RxCollection;
     private subs;

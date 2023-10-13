@@ -1,4 +1,4 @@
-import type { FilledMangoQuery, MangoQuerySelector, RxDocumentData, RxJsonSchema, RxQueryPlan, RxQueryPlanerOpts } from './types';
+import type { FilledMangoQuery, MangoQuerySelector, RxDocumentData, RxJsonSchema, RxQueryPlan, RxQueryPlanerOpts } from './types/index.d.ts';
 export declare const INDEX_MAX: string;
 /**
  * Do not use -Infinity here because it would be

@@ -1,6 +1,6 @@
-import { MangoQuerySelector, MangoQuerySortPart, RxDocumentData } from '../../types';
+import type { MangoQuerySelector, MangoQuerySortPart, RxDocumentData } from '../../types/index.d.ts';
 import { Sort as MongoSort } from 'mongodb';
-import { MongoQuerySelector } from './mongodb-types';
+import { MongoQuerySelector } from './mongodb-types.ts';
 export declare const RX_STORAGE_NAME_MONGODB = "mongodb";
 /**
  * MongoDB uses the _id field by itself (max 12 bytes)

@@ -5,14 +5,14 @@
  * but also can be used as standalone with a custom replication handler.
  */
 import { BehaviorSubject, Observable, Subject, Subscription } from 'rxjs';
-import type { ReplicationOptions, ReplicationPullOptions, ReplicationPushOptions, RxCollection, RxDocumentData, RxError, RxReplicationPullStreamItem, RxStorageInstance, RxStorageInstanceReplicationState, RxStorageReplicationMeta, RxTypeError, WithDeleted } from '../../types';
+import type { ReplicationOptions, ReplicationPullOptions, ReplicationPushOptions, RxCollection, RxDocumentData, RxError, RxReplicationPullStreamItem, RxStorageInstance, RxStorageInstanceReplicationState, RxStorageReplicationMeta, RxTypeError, WithDeleted } from '../../types/index.d.ts';
 export declare const REPLICATION_STATE_BY_COLLECTION: WeakMap<RxCollection, RxReplicationState<any, any>[]>;
 export declare class RxReplicationState<RxDocType, CheckpointType> {
     /**
-     * hash of the identifier, used to flag revisions
+     * The identifier, used to flag revisions
      * and to identify which documents state came from the remote.
      */
-    readonly replicationIdentifierHash: string;
+    readonly replicationIdentifier: string;
     readonly collection: RxCollection<RxDocType>;
     readonly deletedField: string;
     readonly pull?: ReplicationPullOptions<RxDocType, CheckpointType> | undefined;
@@ -23,26 +23,26 @@ export declare class RxReplicationState<RxDocType, CheckpointType> {
     readonly subs: Subscription[];
     readonly subjects: {
         received: Subject<RxDocumentData<RxDocType>>;
-        send: Subject<WithDeleted<RxDocType>>;
+        sent: Subject<WithDeleted<RxDocType>>;
         error: Subject<RxError | RxTypeError>;
         canceled: BehaviorSubject<boolean>;
         active: BehaviorSubject<boolean>;
     };
     readonly received$: Observable<RxDocumentData<RxDocType>>;
-    readonly send$: Observable<WithDeleted<RxDocType>>;
+    readonly sent$: Observable<WithDeleted<RxDocType>>;
     readonly error$: Observable<RxError | RxTypeError>;
     readonly canceled$: Observable<any>;
     readonly active$: Observable<boolean>;
-    private startPromise;
+    startPromise: Promise<void>;
     constructor(
     /**
-     * hash of the identifier, used to flag revisions
+     * The identifier, used to flag revisions
      * and to identify which documents state came from the remote.
      */
-    replicationIdentifierHash: string, collection: RxCollection<RxDocType>, deletedField: string, pull?: ReplicationPullOptions<RxDocType, CheckpointType> | undefined, push?: ReplicationPushOptions<RxDocType> | undefined, live?: boolean | undefined, retryTime?: number | undefined, autoStart?: boolean | undefined);
+    replicationIdentifier: string, collection: RxCollection<RxDocType>, deletedField: string, pull?: ReplicationPullOptions<RxDocType, CheckpointType> | undefined, push?: ReplicationPushOptions<RxDocType> | undefined, live?: boolean | undefined, retryTime?: number | undefined, autoStart?: boolean | undefined);
     private callOnStart;
     internalReplicationState?: RxStorageInstanceReplicationState<RxDocType>;
-    metaInstance?: RxStorageInstance<RxStorageReplicationMeta, any, {}, any>;
+    metaInstance?: RxStorageInstance<RxStorageReplicationMeta<RxDocType, CheckpointType>, any, {}, any>;
     remoteEvents$: Subject<RxReplicationPullStreamItem<RxDocType, CheckpointType>>;
     start(): Promise<void>;
     isStopped(): boolean;

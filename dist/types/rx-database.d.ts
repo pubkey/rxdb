@@ -1,10 +1,11 @@
 import { IdleQueue } from 'custom-idle-queue';
 import type { LeaderElector } from 'broadcast-channel';
-import type { CollectionsOfDatabase, RxDatabase, RxCollectionCreator, RxCollection, RxDumpDatabase, RxDumpDatabaseAny, AllMigrationStates, BackupOptions, RxStorage, RxStorageInstance, RxChangeEvent, RxDatabaseCreator, RxChangeEventBulk, RxDocumentData, RxCleanupPolicy, InternalStoreDocType, InternalStoreStorageTokenDocType, RxTypeError, RxError, HashFunction, MaybePromise } from './types';
+import type { CollectionsOfDatabase, RxDatabase, RxCollectionCreator, RxCollection, RxDumpDatabase, RxDumpDatabaseAny, BackupOptions, RxStorage, RxStorageInstance, RxChangeEvent, RxDatabaseCreator, RxChangeEventBulk, RxDocumentData, RxCleanupPolicy, InternalStoreDocType, InternalStoreStorageTokenDocType, RxTypeError, RxError, HashFunction, MaybePromise } from './types/index.d.ts';
 import { Subject, Subscription, Observable } from 'rxjs';
-import { WrappedRxStorageInstance } from './rx-storage-helper';
-import type { RxBackupState } from './plugins/backup';
+import { WrappedRxStorageInstance } from './rx-storage-helper.ts';
+import type { RxBackupState } from './plugins/backup/index.ts';
 import { ObliviousSet } from 'oblivious-set';
+import type { RxMigrationState } from './plugins/migration/index.ts';
 export declare class RxDatabaseBase<Internals, InstanceCreationOptions, Collections = CollectionsOfDatabase> {
     readonly name: string;
     /**
@@ -132,7 +133,7 @@ export declare class RxDatabaseBase<Internals, InstanceCreationOptions, Collecti
      * returns a promise which resolves when the instance becomes leader
      */
     waitForLeadership(): Promise<boolean>;
-    migrationStates(): Observable<AllMigrationStates>;
+    migrationStates(): Observable<RxMigrationState[]>;
     /**
      * destroys the database-instance and all collections
      */

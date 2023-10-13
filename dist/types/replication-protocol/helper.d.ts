@@ -1,3 +1,4 @@
-import type { RxDocumentData, WithDeleted } from '../types';
-export declare function docStateToWriteDoc<RxDocType>(databaseInstanceToken: string, docState: WithDeleted<RxDocType>, previous?: RxDocumentData<RxDocType>): RxDocumentData<RxDocType>;
-export declare function writeDocToDocState<RxDocType>(writeDoc: RxDocumentData<RxDocType>): WithDeleted<RxDocType>;
+import type { BulkWriteRow, RxDocumentData, RxDocumentWriteData, RxStorageInstanceReplicationState, RxStorageReplicationMeta, WithDeletedAndAttachments } from '../types/index.d.ts';
+export declare function docStateToWriteDoc<RxDocType>(databaseInstanceToken: string, hasAttachments: boolean, keepMeta: boolean, docState: WithDeletedAndAttachments<RxDocType>, previous?: RxDocumentData<RxDocType>): RxDocumentWriteData<RxDocType>;
+export declare function writeDocToDocState<RxDocType>(writeDoc: RxDocumentData<RxDocType>, keepAttachments: boolean, keepMeta: boolean): WithDeletedAndAttachments<RxDocType>;
+export declare function stripAttachmentsDataFromMetaWriteRows<RxDocType>(state: RxStorageInstanceReplicationState<any>, rows: BulkWriteRow<RxStorageReplicationMeta<RxDocType, any>>[]): BulkWriteRow<RxStorageReplicationMeta<RxDocType, any>>[];

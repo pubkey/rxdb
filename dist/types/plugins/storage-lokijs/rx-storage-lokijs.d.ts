@@ -1,5 +1,5 @@
-import type { FilledMangoQuery, LokiDatabaseSettings, LokiSettings, LokiStorageInternals, RxDocumentData, RxJsonSchema, RxStorage, RxStorageInstanceCreationParams, RxStorageStatics } from '../../types';
-import { RxStorageInstanceLoki } from './rx-storage-instance-loki';
+import type { FilledMangoQuery, LokiDatabaseSettings, LokiSettings, LokiStorageInternals, RxDocumentData, RxJsonSchema, RxStorage, RxStorageInstanceCreationParams, RxStorageStatics } from '../../types/index.d.ts';
+import { RxStorageInstanceLoki } from './rx-storage-instance-loki.ts';
 import type { LeaderElector } from 'broadcast-channel';
 export declare const RxStorageLokiStatics: RxStorageStatics;
 export declare class RxStorageLoki implements RxStorage<LokiStorageInternals, LokiSettings> {
@@ -7,7 +7,7 @@ export declare class RxStorageLoki implements RxStorage<LokiStorageInternals, Lo
     name: string;
     statics: Readonly<{
         prepareQuery<RxDocType>(schema: RxJsonSchema<RxDocumentData<RxDocType>>, mutateableQuery: FilledMangoQuery<RxDocType>): any;
-        checkpointSchema: import("../../types").DeepReadonlyObject<import("../../types").JsonSchema>;
+        checkpointSchema: import("../../types/util").DeepReadonlyObject<import("../../types/rx-schema").JsonSchema>;
     }>;
     /**
      * Create one leader elector by db name.

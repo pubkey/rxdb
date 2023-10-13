@@ -1,5 +1,5 @@
-import { RxStorageRemote, RxStorageRemoteSettings } from '../storage-remote';
-import type { RxStorageStatics } from '../../types';
+import { RxStorageRemote, RxStorageRemoteSettings } from '../storage-remote/index.ts';
+import type { RxStorageStatics } from '../../types/index.d.ts';
 export type RxStorageIpcRendererSettings = {
     /**
      * Set the same key on both sides

@@ -7,7 +7,7 @@ import type {
     RxReplicationPullStreamItem,
     RxReplicationWriteToMasterRow,
     WithDeleted
-} from '../../types';
+} from '../../types/index.d.ts';
 
 
 export type InternalStoreReplicationPushDocType = InternalStoreDocType<{

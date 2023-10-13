@@ -1,4 +1,4 @@
-import { RemoteMessageChannel, RxStorageRemoteSettings } from './storage-remote-types';
+import { RemoteMessageChannel, RxStorageRemoteSettings } from './storage-remote-types.ts';
 export type RemoteMessageChannelCacheItem = {
     identifier: string;
     cacheKey: string;

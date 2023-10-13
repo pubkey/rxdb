@@ -1,4 +1,4 @@
-import type { ReplicationOptions, ReplicationPullOptions, ReplicationPushOptions } from '../../types';
+import type { ReplicationOptions, ReplicationPullOptions, ReplicationPushOptions } from '../../types/index.d.ts';
 import { ConnectionOptions } from 'nats';
 export type NatsCheckpointType = {
     sequence: number;

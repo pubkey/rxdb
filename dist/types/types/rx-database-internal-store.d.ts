@@ -1,4 +1,7 @@
-import { RxJsonSchema } from './rx-schema';
+import type {
+    RxMigrationStatus
+} from '../plugins/migration/index.ts';
+import type { RxJsonSchema } from './rx-schema.d.ts';
 
 export type InternalStoreDocType<Data = any> = {
     id: string;
@@ -29,6 +32,7 @@ export type InternalStoreCollectionDocType = InternalStoreDocType<{
     schema: RxJsonSchema<any>;
     schemaHash: string;
     version: number;
+
     /**
      * Storages that are connected to this collection
      * so that when the collection is removed,
@@ -40,4 +44,10 @@ export type InternalStoreCollectionDocType = InternalStoreDocType<{
         collectionName: string;
         schema: RxJsonSchema<any>;
     }[];
+
+    /**
+     * Contains the migration status
+     * only if a migration has been started.
+     */
+    migrationStatus?: RxMigrationStatus;
 }>;

@@ -1,13 +1,22 @@
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
-import { RxConflictHandler, RxConflictHandlerInput, RxConflictHandlerOutput } from './conflict-handling';
-import { RxError, RxTypeError } from './rx-error';
-import { BulkWriteRow, RxDocumentData, WithDeleted } from './rx-storage';
+import type {
+    RxConflictHandler,
+    RxConflictHandlerInput,
+    RxConflictHandlerOutput
+} from './conflict-handling.d.ts';
+import type { RxError, RxTypeError } from './rx-error.d.ts';
+import type {
+    BulkWriteRow,
+    RxDocumentData,
+    WithDeleted,
+    WithDeletedAndAttachments
+} from './rx-storage.d.ts';
 import type {
     RxStorageInstance
-} from './rx-storage.interface';
-import { HashFunction } from './util';
+} from './rx-storage.interface.d.ts';
+import type { HashFunction } from './util.d.ts';
 
-export type RxStorageReplicationMeta = {
+export type RxStorageReplicationMeta<RxDocType, CheckpointType> = {
 
     /**
      * Combined primary key consisting
@@ -30,12 +39,13 @@ export type RxStorageReplicationMeta = {
      * in the combined primary key 'id'
      */
     isCheckpoint: '0' | '1';
+    checkpointData?: CheckpointType;
 
     /**
-     * Either the document state of the master
-     * or the checkpoint data.
+     * the document state of the master
+     * only set if not checkpoint.
      */
-    data: any;
+    docData?: RxDocType | RxDocumentData<RxDocType> | any;
     /**
      * If the current assumed master was written while
      * resolving a conflict, this field contains
@@ -46,13 +56,13 @@ export type RxStorageReplicationMeta = {
 };
 
 export type RxReplicationWriteToMasterRow<RxDocType> = {
-    assumedMasterState?: WithDeleted<RxDocType>;
-    newDocumentState: WithDeleted<RxDocType>;
+    assumedMasterState?: WithDeletedAndAttachments<RxDocType>;
+    newDocumentState: WithDeletedAndAttachments<RxDocType>;
 };
 
 
 export type DocumentsWithCheckpoint<RxDocType, CheckpointType> = {
-    documents: WithDeleted<RxDocType>[];
+    documents: WithDeletedAndAttachments<RxDocType>[];
     checkpoint: CheckpointType;
 };
 
@@ -111,6 +121,9 @@ export type RxStorageInstanceReplicationInput<RxDocType> = {
     replicationHandler: RxReplicationHandler<RxDocType, any>;
     conflictHandler: RxConflictHandler<RxDocType>;
 
+    // can be set to also replicate the _meta field of the document.
+    keepMeta?: boolean;
+
     /**
      * The fork is the one that contains the forked chain of document writes.
      * All conflicts are solved on the fork and only resolved correct document data
@@ -135,7 +148,7 @@ export type RxStorageInstanceReplicationInput<RxDocType> = {
      * the replication checkpoints are also stored in this instance.
      *
      */
-    metaInstance: RxStorageInstance<RxStorageReplicationMeta, any, any>;
+    metaInstance: RxStorageInstance<RxStorageReplicationMeta<RxDocType, any>, any, any>;
 
     /**
      * When a write happens to the fork,
@@ -163,6 +176,7 @@ export type RxStorageInstanceReplicationInput<RxDocType> = {
 export type RxStorageInstanceReplicationState<RxDocType> = {
     // store the primaryPath here for better reuse and performance.
     primaryPath: string;
+    hasAttachments: boolean;
     input: RxStorageInstanceReplicationInput<RxDocType>;
 
     events: {
@@ -226,10 +240,18 @@ export type RxStorageInstanceReplicationState<RxDocType> = {
      * Used in checkpoints and ._meta fields
      * to ensure we do not mix up meta data of
      * different replications.
+     * We have to use the promise because the key is hashed which runs async.
      */
-    checkpointKey: string;
+    checkpointKey: Promise<string>;
 
-    downstreamBulkWriteFlag: string;
+    /**
+     * Storage.bulkWrites() that are initialized from the
+     * downstream, get this flag as context-param
+     * so that the emitted event bulk can be identified
+     * to be sourced from the downstream and it will not try
+     * to upstream these documents again.
+     */
+    downstreamBulkWriteFlag: Promise<string>;
 
     /**
      * Tracks if the streams have been in sync
@@ -255,7 +277,7 @@ export type RxStorageInstanceReplicationState<RxDocType> = {
      * conflicts.
      */
     lastCheckpointDoc: {
-        [direction in RxStorageReplicationDirection]?: RxDocumentData<RxStorageReplicationMeta>;
+        [direction in RxStorageReplicationDirection]?: RxDocumentData<RxStorageReplicationMeta<RxDocType, any>>;
     };
 };
 
