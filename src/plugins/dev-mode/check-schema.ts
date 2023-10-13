@@ -70,7 +70,8 @@ export function validateFieldsDeep(rxJsonSchema: RxJsonSchema<any>): true {
         if (
             typeof fieldName === 'string' &&
             typeof schemaObj === 'object' &&
-            !Array.isArray(schemaObj)
+            !Array.isArray(schemaObj) &&
+            path.split('.').pop() !== 'patternProperties'
         ) checkFieldNameRegex(fieldName);
 
         // 'item' only allowed it type=='array'

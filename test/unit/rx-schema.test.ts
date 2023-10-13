@@ -1074,6 +1074,102 @@ config.parallel('rx-schema.test.js', () => {
 
             db.destroy();
         });
+        it('#4951 patternProperties are allowed', async () => {
+            /**
+             * Dexie.js does not support boolean indexes,
+             * see docs-src/rx-storage-dexie.md
+             */
+            if (config.storage.name.includes('dexie')) {
+                return;
+            }
+
+            const db = await createRxDatabase({
+                name: randomCouchString(10),
+                storage: config.storage.getStorage()
+            });
+
+            const mySchema = {
+                'keyCompression': false,
+                'version': 0,
+                'primaryKey': 'passportId',
+                'type': 'object',
+                'properties': {
+                    passportId: {
+                        type: 'string',
+                        maxLength: 100
+                    },
+                    firstName: {
+                        type: 'string'
+                    },
+                    lastName: {
+                        type: 'string'
+                    },
+                    age: {
+                        type: 'integer',
+                        minimum: 0,
+                        maximum: 150
+                    },
+                    tags: {
+                        type: 'object',
+                        patternProperties: {
+                            '.*': {
+                                type: 'object',
+                                properties: {
+                                    created: {
+                                        type: 'integer',
+                                    },
+                                    name: {
+                                        type: 'string',
+                                    },
+                                },
+                                required: ['created', 'name'],
+                            }
+                        },
+                    },
+                },
+            };
+            const collections = await db.addCollections({
+                test: {
+                    schema: mySchema
+                }
+            });
+
+            const tags = {
+                hello: {
+                    created: 1,
+                    name: 'hello',
+                },
+                world: {
+                    created: 2,
+                    name: 'world',
+                }
+            };
+
+            // insert a document
+            await collections.test.insert({
+                passportId: 'foobar',
+                firstName: 'Bob',
+                lastName: 'Kelso',
+                age: 56,
+                tags,
+            });
+
+            const myDocument = await collections.test
+                .findOne()
+                .exec();
+
+            assert.deepStrictEqual(myDocument.toJSON().tags.hello, tags.hello, 'myDocument.toJSON().tags.hello');
+            assert.deepStrictEqual(myDocument.toJSON().tags.world, tags.world, 'myDocument.toJSON().tags.world');
+            assert.deepStrictEqual(Object.keys(myDocument.toJSON().tags), Object.keys(tags), 'Object.keys(myDocument.toJSON().tags)');
+
+            assert.deepStrictEqual(myDocument.get('tags').hello, tags.hello, 'myDocument.get(\'tags\').hello');
+            assert.deepStrictEqual(myDocument.get('tags').world, tags.world, 'myDocument.get(\'tags\').world');
+
+            assert.deepStrictEqual(myDocument.tags.hello, tags.hello, 'myDocument.tags.hello');
+            assert.deepStrictEqual(myDocument.tags.world, tags.world, 'myDocument.tags.world');
+
+            db.destroy();
+        });
     });
     describe('wait a bit', () => {
         it('w8 a bit', async () => {
