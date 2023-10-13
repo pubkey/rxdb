@@ -779,6 +779,20 @@ jobs:
         with:
           node-version-file: ".nvmrc"
 
+
+      - name: Reuse npm cache folder
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: |
+            ~/.npm
+            ~/.cache/deno
+            ./node_modules
+          key: ${{ runner.os }}-npm-others-x9-${{ hashFiles('**/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-others-x9-
+
       - name: prepare RxDB core
         run: |
           npm install
