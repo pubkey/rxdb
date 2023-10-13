@@ -125,7 +125,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
     private callOnStart: () => void = undefined as any;
 
     public internalReplicationState?: RxStorageInstanceReplicationState<RxDocType>;
-    public metaInstance?: RxStorageInstance<RxStorageReplicationMeta, any, {}, any>;
+    public metaInstance?: RxStorageInstance<RxStorageReplicationMeta<RxDocType, CheckpointType>, any, {}, any>;
     public remoteEvents$: Subject<RxReplicationPullStreamItem<RxDocType, CheckpointType>> = new Subject();
 
     public async start(): Promise<void> {
@@ -144,7 +144,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
             hasEncryption(this.collection.schema.jsonSchema)
         );
         const [metaInstance] = await Promise.all([
-            this.collection.database.storage.createStorageInstance({
+            this.collection.database.storage.createStorageInstance<RxStorageReplicationMeta<RxDocType, CheckpointType>>({
                 databaseName: database.name,
                 collectionName: metaInstanceCollectionName,
                 databaseInstanceToken: database.token,

@@ -835,8 +835,8 @@ describe('replication.test.js', () => {
             const result = await metaStorage.query(preparedQuery);
             const metaDocs = result.documents;
             metaDocs.forEach(doc => {
-                if (doc.isCheckpoint !== '1' && doc.data._attachments) {
-                    Object.values(doc.data._attachments).forEach((attachment) => {
+                if (doc.isCheckpoint !== '1' && doc.docData._attachments) {
+                    Object.values(doc.docData._attachments).forEach((attachment) => {
                         if ((attachment as RxAttachmentCreator).data) {
                             throw new Error('meta doc contains attachment data');
                         }

@@ -165,6 +165,7 @@ export function wrappedKeyEncryptionCryptoJsStorage<Internals, InstanceCreationO
                 }
 
                 return wrapRxStorageInstance(
+                    params.schema,
                     instance,
                     modifyToStorage,
                     modifyFromStorage,

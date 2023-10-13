@@ -110,6 +110,7 @@ export function wrappedAttachmentsCompressionStorage<Internals, InstanceCreation
                 );
 
                 return wrapRxStorageInstance(
+                    params.schema,
                     instance,
                     modifyToStorage,
                     d => d,

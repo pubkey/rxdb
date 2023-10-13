@@ -203,6 +203,7 @@ export function wrappedKeyCompressionStorage<Internals, InstanceCreationOptions>
                 );
 
                 return wrapRxStorageInstance(
+                    params.schema,
                     instance,
                     modifyToStorage,
                     modifyFromStorage

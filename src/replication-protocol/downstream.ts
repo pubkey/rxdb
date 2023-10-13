@@ -269,8 +269,8 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
 
             const writeRowsToFork: BulkWriteRow<RxDocType>[] = [];
             const writeRowsToForkById: ById<BulkWriteRow<RxDocType>> = {};
-            const writeRowsToMeta: BulkWriteRowById<RxStorageReplicationMeta> = {};
-            const useMetaWriteRows: BulkWriteRow<RxStorageReplicationMeta>[] = [];
+            const writeRowsToMeta: BulkWriteRowById<RxStorageReplicationMeta<RxDocType, CheckpointType>> = {};
+            const useMetaWriteRows: BulkWriteRow<RxStorageReplicationMeta<RxDocType, CheckpointType>>[] = [];
 
             return Promise.all([
                 state.input.forkInstance.findDocumentsById(docIds, true),

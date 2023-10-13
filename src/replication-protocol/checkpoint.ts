@@ -36,7 +36,7 @@ export async function getLastCheckpointDoc<RxDocType, CheckpointType>(
     const checkpointDoc = checkpointResult[0];
     state.lastCheckpointDoc[direction] = checkpointDoc;
     if (checkpointDoc) {
-        return checkpointDoc.data;
+        return checkpointDoc.checkpointData;
     } else {
         return undefined;
     }
@@ -69,16 +69,16 @@ export async function setCheckpoint<RxDocType, CheckpointType>(
          */
         (
             !previousCheckpointDoc ||
-            JSON.stringify(previousCheckpointDoc.data) !== JSON.stringify(checkpoint)
+            JSON.stringify(previousCheckpointDoc.checkpointData) !== JSON.stringify(checkpoint)
         )
     ) {
-        const newDoc: RxDocumentData<RxStorageReplicationMeta> = {
+        const newDoc: RxDocumentData<RxStorageReplicationMeta<RxDocType, CheckpointType>> = {
             id: '',
             isCheckpoint: '1',
             itemId: direction,
             _deleted: false,
             _attachments: {},
-            data: checkpoint,
+            checkpointData: checkpoint,
             _meta: getDefaultRxDocumentMeta(),
             _rev: getDefaultRevision()
         };
@@ -95,9 +95,9 @@ export async function setCheckpoint<RxDocType, CheckpointType>(
              * checkpoint.
              */
             if (previousCheckpointDoc) {
-                newDoc.data = stackCheckpoints([
-                    previousCheckpointDoc.data,
-                    newDoc.data
+                newDoc.checkpointData = stackCheckpoints([
+                    previousCheckpointDoc.checkpointData,
+                    newDoc.checkpointData
                 ]);
             }
             newDoc._meta.lwt = now();

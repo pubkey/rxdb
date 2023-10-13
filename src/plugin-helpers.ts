@@ -149,6 +149,7 @@ export function wrappedValidateStorageFactory(
  * data of that storage instance.
  */
 export function wrapRxStorageInstance<RxDocType>(
+    originalSchema: RxJsonSchema<RxDocumentData<RxDocType>>,
     instance: RxStorageInstance<RxDocType, any, any>,
     modifyToStorage: (docData: RxDocumentWriteData<RxDocType>) => MaybePromise<RxDocumentData<any>>,
     modifyFromStorage: (docData: RxDocumentData<any>) => MaybePromise<RxDocumentData<RxDocType>>,
@@ -190,7 +191,7 @@ export function wrapRxStorageInstance<RxDocType>(
         cleanup: instance.cleanup.bind(instance),
         options: instance.options,
         close: instance.close.bind(instance),
-        schema: instance.schema,
+        schema: originalSchema,
         collectionName: instance.collectionName,
         count: instance.count.bind(instance),
         info: instance.info.bind(instance),

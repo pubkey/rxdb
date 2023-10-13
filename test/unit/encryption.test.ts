@@ -18,7 +18,8 @@ import {
     ensureNotFalsy,
     getComposedPrimaryKeyOfDocumentData,
     getFromMapOrThrow,
-    RxStorage
+    RxStorage,
+    WrappedRxStorageInstance
 } from '../../plugins/core/index.mjs';
 
 import {
@@ -27,7 +28,7 @@ import {
 } from '../../plugins/encryption-crypto-js/index.mjs';
 import { replicateRxCollection } from '../../plugins/replication/index.mjs';
 import { getPullHandler, getPushHandler } from './replication.test.ts';
-import { getRxStorageMemory, RxStorageInstanceMemory } from '../../plugins/storage-memory/index.mjs';
+import { getRxStorageMemory } from '../../plugins/storage-memory/index.mjs';
 
 
 config.parallel('encryption.test.ts', () => {
@@ -312,7 +313,10 @@ config.parallel('encryption.test.ts', () => {
             const replicatedDoc = await clientCollection.findOne(human.passportId).exec(true);
             assert.strictEqual(replicatedDoc.secret, secret);
 
-            const metaInstance: RxStorageInstanceMemory<any> = ensureNotFalsy(replicationState.metaInstance) as any;
+            const metaInstance = (
+                ensureNotFalsy(replicationState.metaInstance) as WrappedRxStorageInstance<any, any, any>
+            ).originalStorageInstance;
+
             const metaDocId = getComposedPrimaryKeyOfDocumentData(
                 metaInstance.schema,
                 {

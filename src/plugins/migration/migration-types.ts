@@ -1,10 +1,13 @@
 import type {
-    InternalStoreDocType
+    InternalStoreDocType,
+    PlainJsonError
 } from '../../types/index.d.ts';
 
 export type RxMigrationStatus = {
     collectionName: string;
     status: 'RUNNING' | 'DONE' | 'ERROR';
+    error?: PlainJsonError;
+
     /**
      * Counters so that you can display
      * the migration state to your user in the UI
