@@ -108,7 +108,7 @@ async function run() {
             );
 
             // @link https://stackoverflow.com/q/72457791/3443137
-            ['ts', 'mts', 'cts'].forEach(fileEnding => {
+            ['mts', 'cts'].forEach(fileEnding => {
                 fs.writeFileSync(
                     path.join(pluginFolderPath, 'index.d.' + fileEnding),
                     'export * from \'../../dist/types/' + pluginFolderName + 'index\';\n',
