@@ -27,12 +27,12 @@ export function getConnectionHandlerSimplePeer(
     serverUrl: string,
     wrtc?: any
 ): WebRTCConnectionHandlerCreator {
-    
-    
-    const creator: WebRTCConnectionHandlerCreator = async(options) => {
+
+
+    const creator: WebRTCConnectionHandlerCreator = async (options) => {
         const { io } = await import('socket.io-client');
         const socket = io(serverUrl);
-        
+
         const peerId = randomCouchString(10);
         socket.emit('join', {
             room: options.topic,
