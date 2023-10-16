@@ -3726,7 +3726,7 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpac
   \*********************************************************************/
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
-eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpack_require__.d(__webpack_exports__, {\n/* harmony export */   \"default\": () => (/* binding */ _isNativeFunction)\n/* harmony export */ });\nfunction _isNativeFunction(fn) {\n  return Function.toString.call(fn).indexOf(\"[native code]\") !== -1;\n}\n\n//# sourceURL=webpack://rxdb/./node_modules/@babel/runtime/helpers/esm/isNativeFunction.js?");
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpack_require__.d(__webpack_exports__, {\n/* harmony export */   \"default\": () => (/* binding */ _isNativeFunction)\n/* harmony export */ });\nfunction _isNativeFunction(fn) {\n  try {\n    return Function.toString.call(fn).indexOf(\"[native code]\") !== -1;\n  } catch (e) {\n    return typeof fn === \"function\";\n  }\n}\n\n//# sourceURL=webpack://rxdb/./node_modules/@babel/runtime/helpers/esm/isNativeFunction.js?");
 
 /***/ }),
 

@@ -1,1 +1,1 @@
-export * from '../../dist/types/plugins/attachments/index.d.ts';
+export * from '../../dist/types/plugins/attachments/index';

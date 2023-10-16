@@ -1,1 +1,1 @@
-export * from '../../dist/types/plugins/local-documents/index.d.ts';
+export * from '../../dist/types/plugins/local-documents/index';

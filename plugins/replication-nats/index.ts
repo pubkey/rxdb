@@ -1,1 +1,1 @@
-export * from '../../dist/types/plugins/replication-nats/index.d.ts';
+export * from '../../dist/types/plugins/replication-nats/index';
