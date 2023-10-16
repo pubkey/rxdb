@@ -477,7 +477,7 @@
     "@types/cors": "2.8.14",
     "@types/crypto-js": "4.1.2",
     "@types/mocha": "10.0.2",
-    "@types/node": "18.16.19",
+    "@types/node": "18.18.5",
     "@types/pako": "2.0.1",
     "@types/request": "2.48.10",
     "@types/request-promise-native": "1.0.19",
