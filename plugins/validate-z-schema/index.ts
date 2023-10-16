@@ -1,1 +1,1 @@
-export * from '../../dist/types/plugins/validate-z-schema/index.d.ts';
+export * from '../../dist/types/plugins/validate-z-schema/index';
