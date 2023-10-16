@@ -103,7 +103,7 @@ async function run() {
             );
             fs.writeFileSync(
                 path.join(pluginFolderPath, 'index.ts'),
-                'export * from \'../../dist/types/' + pluginFolderName + 'index\';\n',
+                'export * from \'../../dist/types/' + pluginFolderName + 'index.d.ts\';\n',
                 'utf-8'
             );
 
