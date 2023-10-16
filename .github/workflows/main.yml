@@ -815,8 +815,10 @@ jobs:
       # deno (must be last because it messes up with file permissions)
       - uses: denoland/setup-deno@v1
         with:
-          deno-version: "1.37.1"
-      - run: npm run test:deno:dexie
+          deno-version: "1.37.2"
+      - run: |
+          deno info
+          npm run test:deno:dexie
       # TODO fix deno performance test
       #- run: npm run test:performance:memory:deno
 
