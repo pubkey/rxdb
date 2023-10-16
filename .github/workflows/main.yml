@@ -787,7 +787,6 @@ jobs:
         with:
           path: |
             ~/.npm
-            ./node_modules
           key: ${{ runner.os }}-npm-others-x1-${{ hashFiles('**/package.json') }}
           restore-keys: |
             ${{ runner.os }}-npm-others-x1-
