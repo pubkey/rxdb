@@ -1,1 +1,1 @@
-export * from '../../dist/types/plugins/storage-remote-websocket/index';
+export * from '../../dist/types/plugins/storage-remote-websocket/index.d.ts';

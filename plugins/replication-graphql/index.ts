@@ -1,1 +1,1 @@
-export * from '../../dist/types/plugins/replication-graphql/index';
+export * from '../../dist/types/plugins/replication-graphql/index.d.ts';

@@ -1,1 +1,1 @@
-export * from '../../dist/types/plugins/flutter/index';
+export * from '../../dist/types/plugins/flutter/index.d.ts';

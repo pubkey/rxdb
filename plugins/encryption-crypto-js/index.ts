@@ -1,1 +1,1 @@
-export * from '../../dist/types/plugins/encryption-crypto-js/index';
+export * from '../../dist/types/plugins/encryption-crypto-js/index.d.ts';
