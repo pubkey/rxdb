@@ -5,7 +5,7 @@
 
 <!-- ADD new changes here! -->
 
-### 15.0.0-beta.8 (17 October 2023)
+### 15.0.0-beta.10 (17 October 2023)
 
 <!-- /CHANGELOG NEWEST -->
 
