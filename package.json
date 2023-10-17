@@ -469,7 +469,7 @@
     "@babel/preset-env": "7.23.2",
     "@babel/preset-typescript": "7.23.2",
     "@babel/types": "7.23.0",
-    "@faker-js/faker": "8.1.0",
+    "@faker-js/faker": "8.2.0",
     "@rollup/plugin-commonjs": "25.0.7",
     "@rollup/plugin-node-resolve": "15.2.3",
     "@types/assert": "1.5.7",
