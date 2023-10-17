@@ -13,7 +13,6 @@ examples/ionic2
 examples/flutter
 examples/node
 examples/react-native
-examples/vanilla
 examples/vue
 examples/svelte
 examples/react/build

@@ -5,7 +5,6 @@ In this folder you can find some example projects with RxDB.
 
 Technology           | Status
 -------------------- | ---------------------
-browser (vanilla-js) | [done](./vanilla)
 nodeJS               | [done](./node)
 react-native         | [done](./react-native)
 ionic2               | [done](./ionic2)
