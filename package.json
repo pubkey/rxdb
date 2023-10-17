@@ -506,7 +506,7 @@
     "express": "4.18.2",
     "express-graphql": "0.12.0",
     "fake-indexeddb": "4.0.2",
-    "firebase-tools": "12.6.2",
+    "firebase-tools": "12.7.0",
     "get-port": "5.1.1",
     "gitbook-cli": "2.3.2",
     "graphql-subscriptions": "2.0.0",
