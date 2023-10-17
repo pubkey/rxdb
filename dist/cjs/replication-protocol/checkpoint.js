@@ -69,6 +69,9 @@ async function setCheckpoint(state, direction, checkpoint) {
       }
       newDoc._meta.lwt = (0, _index.now)();
       newDoc._rev = (0, _index.createRevision)(await state.checkpointKey, previousCheckpointDoc);
+      if (state.events.canceled.getValue()) {
+        return;
+      }
       var result = await state.input.metaInstance.bulkWrite([{
         previous: previousCheckpointDoc,
         document: newDoc
