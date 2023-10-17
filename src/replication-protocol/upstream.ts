@@ -356,6 +356,10 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
                 }
             });
 
+            if (state.events.canceled.getValue()) {
+                return false;
+            }
+
             if (useWriteRowsToMeta.length > 0) {
                 await state.input.metaInstance.bulkWrite(
                     stripAttachmentsDataFromMetaWriteRows(state, useWriteRowsToMeta),
