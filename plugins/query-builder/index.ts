@@ -1,1 +1,1 @@
-export * from '../../dist/types/plugins/query-builder/index.d.ts';
+export * from '../../dist/types/plugins/query-builder/index';
