@@ -17,7 +17,7 @@ import * as humansCollection from '../helper/humans-collection.ts';
 import * as schemaObjects from '../helper/schema-objects.ts';
 
 
-config.parallel('rx-database.test.js', () => {
+config.parallel('rx-database.test.ts', () => {
     describe('.create()', () => {
         describe('positive', () => {
             it('normal', async () => {
