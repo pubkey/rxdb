@@ -415,7 +415,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
         this.remoteEvents$.next(ev);
     }
 
-    cancel(): Promise<any> {
+    async cancel(): Promise<any> {
         if (this.isStopped()) {
             return PROMISE_RESOLVE_FALSE;
         }
@@ -423,7 +423,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
         const promises: Promise<any>[] = [];
 
         if (this.internalReplicationState) {
-            cancelRxStorageReplication(this.internalReplicationState);
+            await cancelRxStorageReplication(this.internalReplicationState);
         }
         if (this.metaInstance) {
             promises.push(
