@@ -475,11 +475,11 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
                  * but to ensure order on parallel checkpoint writes,
                  * we have to use a queue.
                  */
-                state.checkpointQueue = state.checkpointQueue.then(() => setCheckpoint(
+                setCheckpoint(
                     state,
                     'down',
                     useCheckpoint
-                ));
+                );
             });
         }).catch(unhandledError => state.events.error.next(unhandledError));
         return persistenceQueue;

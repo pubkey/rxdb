@@ -52,87 +52,90 @@ export async function setCheckpoint<RxDocType, CheckpointType>(
     direction: RxStorageReplicationDirection,
     checkpoint: CheckpointType
 ) {
-    let previousCheckpointDoc = state.lastCheckpointDoc[direction];
-    if (
-        checkpoint &&
-        /**
-         * If the replication is already canceled,
-         * we do not write a checkpoint
-         * because that could mean we write a checkpoint
-         * for data that has been fetched from the master
-         * but not been written to the child.
-         */
-        !state.events.canceled.getValue() &&
-        /**
-         * Only write checkpoint if it is different from before
-         * to have less writes to the storage.
-         */
-        (
-            !previousCheckpointDoc ||
-            JSON.stringify(previousCheckpointDoc.checkpointData) !== JSON.stringify(checkpoint)
-        )
-    ) {
-        const newDoc: RxDocumentData<RxStorageReplicationMeta<RxDocType, CheckpointType>> = {
-            id: '',
-            isCheckpoint: '1',
-            itemId: direction,
-            _deleted: false,
-            _attachments: {},
-            checkpointData: checkpoint,
-            _meta: getDefaultRxDocumentMeta(),
-            _rev: getDefaultRevision()
-        };
-        newDoc.id = getComposedPrimaryKeyOfDocumentData(
-            state.input.metaInstance.schema,
-            newDoc
-        );
-        while (!state.events.canceled.getValue()) {
+    state.checkpointQueue = state.checkpointQueue.then(async () => {
+        let previousCheckpointDoc = state.lastCheckpointDoc[direction];
+        if (
+            checkpoint &&
             /**
-             * Instead of just storing the new checkpoint,
-             * we have to stack up the checkpoint with the previous one.
-             * This is required for plugins like the sharding RxStorage
-             * where the changeStream events only contain a Partial of the
-             * checkpoint.
+             * If the replication is already canceled,
+             * we do not write a checkpoint
+             * because that could mean we write a checkpoint
+             * for data that has been fetched from the master
+             * but not been written to the child.
              */
-            if (previousCheckpointDoc) {
-                newDoc.checkpointData = stackCheckpoints([
-                    previousCheckpointDoc.checkpointData,
-                    newDoc.checkpointData
-                ]);
-            }
-            newDoc._meta.lwt = now();
-            newDoc._rev = createRevision(
-                await state.checkpointKey,
-                previousCheckpointDoc
+            !state.events.canceled.getValue() &&
+            /**
+             * Only write checkpoint if it is different from before
+             * to have less writes to the storage.
+             */
+            (
+                !previousCheckpointDoc ||
+                JSON.stringify(previousCheckpointDoc.checkpointData) !== JSON.stringify(checkpoint)
+            )
+        ) {
+            const newDoc: RxDocumentData<RxStorageReplicationMeta<RxDocType, CheckpointType>> = {
+                id: '',
+                isCheckpoint: '1',
+                itemId: direction,
+                _deleted: false,
+                _attachments: {},
+                checkpointData: checkpoint,
+                _meta: getDefaultRxDocumentMeta(),
+                _rev: getDefaultRevision()
+            };
+            newDoc.id = getComposedPrimaryKeyOfDocumentData(
+                state.input.metaInstance.schema,
+                newDoc
             );
+            while (!state.events.canceled.getValue()) {
+                /**
+                 * Instead of just storing the new checkpoint,
+                 * we have to stack up the checkpoint with the previous one.
+                 * This is required for plugins like the sharding RxStorage
+                 * where the changeStream events only contain a Partial of the
+                 * checkpoint.
+                 */
+                if (previousCheckpointDoc) {
+                    newDoc.checkpointData = stackCheckpoints([
+                        previousCheckpointDoc.checkpointData,
+                        newDoc.checkpointData
+                    ]);
+                }
+                newDoc._meta.lwt = now();
+                newDoc._rev = createRevision(
+                    await state.checkpointKey,
+                    previousCheckpointDoc
+                );
 
-            if (state.events.canceled.getValue()) {
-                return;
-            }
+                if (state.events.canceled.getValue()) {
+                    return;
+                }
 
-            const result = await state.input.metaInstance.bulkWrite([{
-                previous: previousCheckpointDoc,
-                document: newDoc
-            }], 'replication-set-checkpoint');
+                const result = await state.input.metaInstance.bulkWrite([{
+                    previous: previousCheckpointDoc,
+                    document: newDoc
+                }], 'replication-set-checkpoint');
 
-            const sucessDoc = result.success[0];
-            if (sucessDoc) {
-                state.lastCheckpointDoc[direction] = sucessDoc;
-                return;
-            } else {
-                const error = result.error[0];
-                if (error.status !== 409) {
-                    throw error;
+                const sucessDoc = result.success[0];
+                if (sucessDoc) {
+                    state.lastCheckpointDoc[direction] = sucessDoc;
+                    return;
                 } else {
-                    previousCheckpointDoc = ensureNotFalsy(error.documentInDb);
-                    newDoc._rev = createRevision(
-                        await state.checkpointKey,
-                        previousCheckpointDoc
-                    );
+                    const error = result.error[0];
+                    if (error.status !== 409) {
+                        throw error;
+                    } else {
+                        previousCheckpointDoc = ensureNotFalsy(error.documentInDb);
+                        newDoc._rev = createRevision(
+                            await state.checkpointKey,
+                            previousCheckpointDoc
+                        );
+                    }
                 }
             }
         }
-    }
+    });
+    await state.checkpointQueue;
 }
 
 export async function getCheckpointKey<RxDocType>(

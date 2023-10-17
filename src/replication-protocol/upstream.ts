@@ -448,11 +448,11 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
              * but to ensure order on parallel checkpoint writes,
              * we have to use a queue.
              */
-            state.checkpointQueue = state.checkpointQueue.then(() => setCheckpoint(
+            setCheckpoint(
                 state,
                 'up',
                 useCheckpoint
-            ));
+            );
 
             return hadConflictWrites;
         }).catch(unhandledError => {
