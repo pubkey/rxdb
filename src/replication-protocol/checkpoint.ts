@@ -105,6 +105,11 @@ export async function setCheckpoint<RxDocType, CheckpointType>(
                 await state.checkpointKey,
                 previousCheckpointDoc
             );
+
+            if (state.events.canceled.getValue()) {
+                return;
+            }
+
             const result = await state.input.metaInstance.bulkWrite([{
                 previous: previousCheckpointDoc,
                 document: newDoc

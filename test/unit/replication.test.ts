@@ -156,7 +156,7 @@ describe('replication.test.js', () => {
                 console.log('## ERROR: State not equal (context: "' + context + '")');
                 console.log(JSON.stringify(docA, null, 4));
                 console.log(JSON.stringify(docB, null, 4));
-                throw new Error('STATE not equal');
+                throw new Error('STATE not equal (context: "' + context + '")');
             }
         });
     }
