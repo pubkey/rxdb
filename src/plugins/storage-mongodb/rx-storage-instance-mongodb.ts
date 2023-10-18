@@ -474,6 +474,9 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
     }
 
     async remove(): Promise<void> {
+        if (this.closed) {
+            throw new Error('already closed');
+        }
         this.runningOperations.next(this.runningOperations.getValue() + 1);
         const mongoCollection = await this.mongoCollectionPromise;
         await mongoCollection.drop();
