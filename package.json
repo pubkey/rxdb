@@ -472,7 +472,7 @@
     "@faker-js/faker": "8.2.0",
     "@rollup/plugin-commonjs": "25.0.7",
     "@rollup/plugin-node-resolve": "15.2.3",
-    "@types/assert": "1.5.7",
+    "@types/assert": "1.5.8",
     "@types/core-js": "2.5.6",
     "@types/cors": "2.8.14",
     "@types/crypto-js": "4.1.2",
