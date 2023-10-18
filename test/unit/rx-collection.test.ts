@@ -1260,7 +1260,7 @@ describe('rx-collection.test.ts', () => {
                 });
                 it('should not count deleted documents', async () => {
                     if (config.storage.name === 'mongodb') {
-                        // TODO this test randomly failes with mongodb
+                        // TODO this test randomly fails with mongodb
                         return;
                     }
                     const c = await humansCollection.create(2);
