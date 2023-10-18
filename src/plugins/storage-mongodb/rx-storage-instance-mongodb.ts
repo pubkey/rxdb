@@ -66,7 +66,7 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
 
     public readonly primaryPath: StringKeys<RxDocumentData<RxDocType>>;
     public readonly inMongoPrimaryPath: string;
-    public closed = false;
+    public closed?: Promise<void>;
     private readonly changes$: Subject<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, RxStorageDefaultCheckpoint>> = new Subject();
     public readonly mongoClient: MongoClient;
     public readonly mongoDatabase: MongoDatabase;
@@ -486,13 +486,15 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
         await requestIdlePromise(200);
 
         if (this.closed) {
-            return Promise.reject(new Error('already closed'));
+            return this.closed;
         }
-        this.closed = true;
-        await this.mongoCollectionPromise;
-        await firstValueFrom(this.runningOperations.pipe(filter(c => c === 0)));
-        // await ensureNotFalsy(this.mongoChangeStream).close();
-        await this.mongoClient.close();
+        this.closed = (async () => {
+            await this.mongoCollectionPromise;
+            await firstValueFrom(this.runningOperations.pipe(filter(c => c === 0)));
+            // await ensureNotFalsy(this.mongoChangeStream).close();
+            await this.mongoClient.close();
+        })();
+        return this.closed;
     }
 
     conflictResultionTasks(): Observable<RxConflictResultionTask<RxDocType>> {
