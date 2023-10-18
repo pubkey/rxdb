@@ -414,7 +414,7 @@
   "dependencies": {
     "@babel/runtime": "7.23.2",
     "@types/clone": "2.1.2",
-    "@types/cors": "2.8.14",
+    "@types/cors": "2.8.15",
     "@types/express": "4.17.19",
     "@types/lokijs": "1.5.10",
     "@types/simple-peer": "9.11.6",
@@ -474,7 +474,7 @@
     "@rollup/plugin-node-resolve": "15.2.3",
     "@types/assert": "1.5.8",
     "@types/core-js": "2.5.7",
-    "@types/cors": "2.8.14",
+    "@types/cors": "2.8.15",
     "@types/crypto-js": "4.1.2",
     "@types/mocha": "10.0.3",
     "@types/node": "18.18.5",
