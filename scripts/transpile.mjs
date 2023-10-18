@@ -9,9 +9,9 @@ events.EventEmitter.defaultMaxListeners = 0;
  * remembers mtime of files and only transpiles the changed ones
  */
 import nconf from 'nconf';
-import path from 'path';
-import fs from 'fs';
-import os from 'os';
+import path from 'node:path';
+import fs from 'node:fs';
+import os from 'node:os';
 import walkSync from 'walk-sync';
 import shell from 'shelljs';
 import existsFile from 'exists-file';
@@ -51,7 +51,6 @@ nconf.argv()
     });
 
 
-const createdFolders = new Set();
 
 async function transpileFile(
     srcLocations,
@@ -63,13 +62,12 @@ async function transpileFile(
     }
     // ensure folder exists
     const folder = path.join(outDir);
-    if (
-        !createdFolders.has(folder) &&
-        !fs.existsSync(folder)
-    ) {
-        createdFolders.add(folder);
-        shell.mkdir('-p', folder);
-    }
+    await fs.promises.mkdir(
+        folder,
+        {
+            recursive: true,
+        }
+    );
 
     // const outFilePath =
     // await del.promise([outDir]);
