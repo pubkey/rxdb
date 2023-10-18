@@ -13,7 +13,7 @@ export declare class RxStorageInstanceLoki<RxDocType> implements RxStorageInstan
     readonly primaryPath: StringKeys<RxDocumentData<RxDocType>>;
     private changes$;
     readonly instanceId: number;
-    closed: boolean;
+    closed?: Promise<void>;
     constructor(databaseInstanceToken: string, storage: RxStorageLoki, databaseName: string, collectionName: string, schema: Readonly<RxJsonSchema<RxDocumentData<RxDocType>>>, internals: LokiStorageInternals, options: Readonly<LokiSettings>, databaseSettings: LokiDatabaseSettings);
     bulkWrite(documentWrites: BulkWriteRow<RxDocType>[], context: string): Promise<RxStorageBulkWriteResponse<RxDocType>>;
     findDocumentsById(ids: string[], deleted: boolean): Promise<RxDocumentData<RxDocType>[]>;

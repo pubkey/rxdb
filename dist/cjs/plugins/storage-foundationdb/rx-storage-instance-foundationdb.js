@@ -23,7 +23,6 @@ var _index2 = require("../storage-memory/index.js");
 // } from 'foundationdb';
 var RxStorageInstanceFoundationDB = exports.RxStorageInstanceFoundationDB = /*#__PURE__*/function () {
   function RxStorageInstanceFoundationDB(storage, databaseName, collectionName, schema, internals, options, settings) {
-    this.closed = false;
     this.changes$ = new _rxjs.Subject();
     this.storage = storage;
     this.databaseName = databaseName;
@@ -282,15 +281,18 @@ var RxStorageInstanceFoundationDB = exports.RxStorageInstanceFoundationDB = /*#_
   };
   _proto.close = async function close() {
     if (this.closed) {
-      return Promise.reject(new Error('already closed'));
+      return this.closed;
     }
-    this.closed = true;
-    this.changes$.complete();
-    var dbs = await this.internals.dbsPromise;
-    dbs.root.close();
+    this.closed = (async () => {
+      this.changes$.complete();
+      var dbs = await this.internals.dbsPromise;
+      await dbs.root.close();
 
-    // TODO shouldn't we close the index databases?
-    // Object.values(dbs.indexes).forEach(db => db.close());
+      // TODO shouldn't we close the index databases?
+      // Object.values(dbs.indexes).forEach(db => db.close());
+    })();
+
+    return this.closed;
   };
   return RxStorageInstanceFoundationDB;
 }();

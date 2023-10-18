@@ -232,6 +232,9 @@ async function startReplicationUpstream(state) {
           useWriteRowsToMeta.push(writeRowsToMeta[docId]);
         }
       });
+      if (state.events.canceled.getValue()) {
+        return false;
+      }
       if (useWriteRowsToMeta.length > 0) {
         await state.input.metaInstance.bulkWrite((0, _helper.stripAttachmentsDataFromMetaWriteRows)(state, useWriteRowsToMeta), 'replication-up-write-meta');
         // TODO what happens when we have conflicts here?
@@ -297,7 +300,7 @@ async function startReplicationUpstream(state) {
        * but to ensure order on parallel checkpoint writes,
        * we have to use a queue.
        */
-      state.checkpointQueue = state.checkpointQueue.then(() => (0, _checkpoint.setCheckpoint)(state, 'up', useCheckpoint));
+      (0, _checkpoint.setCheckpoint)(state, 'up', useCheckpoint);
       return hadConflictWrites;
     }).catch(unhandledError => {
       state.events.error.next(unhandledError);

@@ -383,13 +383,11 @@ async function mustUseLocalState(instance) {
      * This must never happen because when RxDB closes a collection or database,
      * all tasks must be cleared so that no more calls are made the the storage.
      */
-    throw (0, _rxError.newRxError)('SNH', {
-      args: {
-        instanceClosed: instance.closed,
-        databaseName: instance.databaseName,
-        collectionName: instance.collectionName
-      }
-    });
+    throw new Error('already closed ' + JSON.stringify({
+      instanceClosed: instance.closed,
+      databaseName: instance.databaseName,
+      collectionName: instance.collectionName
+    }));
   }
   if (instance.internals.localState) {
     return instance.internals.localState;

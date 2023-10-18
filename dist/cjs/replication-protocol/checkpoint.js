@@ -29,68 +29,71 @@ async function getLastCheckpointDoc(state, direction) {
  * automatically resolves conflicts that appear.
  */
 async function setCheckpoint(state, direction, checkpoint) {
-  var previousCheckpointDoc = state.lastCheckpointDoc[direction];
-  if (checkpoint &&
-  /**
-   * If the replication is already canceled,
-   * we do not write a checkpoint
-   * because that could mean we write a checkpoint
-   * for data that has been fetched from the master
-   * but not been written to the child.
-   */
-  !state.events.canceled.getValue() && (
-  /**
-   * Only write checkpoint if it is different from before
-   * to have less writes to the storage.
-   */
+  state.checkpointQueue = state.checkpointQueue.then(async () => {
+    var previousCheckpointDoc = state.lastCheckpointDoc[direction];
+    if (checkpoint &&
+    /**
+     * If the replication is already canceled,
+     * we do not write a checkpoint
+     * because that could mean we write a checkpoint
+     * for data that has been fetched from the master
+     * but not been written to the child.
+     */
+    !state.events.canceled.getValue() && (
+    /**
+     * Only write checkpoint if it is different from before
+     * to have less writes to the storage.
+     */
 
-  !previousCheckpointDoc || JSON.stringify(previousCheckpointDoc.checkpointData) !== JSON.stringify(checkpoint))) {
-    var newDoc = {
-      id: '',
-      isCheckpoint: '1',
-      itemId: direction,
-      _deleted: false,
-      _attachments: {},
-      checkpointData: checkpoint,
-      _meta: (0, _index.getDefaultRxDocumentMeta)(),
-      _rev: (0, _index.getDefaultRevision)()
-    };
-    newDoc.id = (0, _rxSchemaHelper.getComposedPrimaryKeyOfDocumentData)(state.input.metaInstance.schema, newDoc);
-    while (!state.events.canceled.getValue()) {
-      /**
-       * Instead of just storing the new checkpoint,
-       * we have to stack up the checkpoint with the previous one.
-       * This is required for plugins like the sharding RxStorage
-       * where the changeStream events only contain a Partial of the
-       * checkpoint.
-       */
-      if (previousCheckpointDoc) {
-        newDoc.checkpointData = (0, _rxStorageHelper.stackCheckpoints)([previousCheckpointDoc.checkpointData, newDoc.checkpointData]);
-      }
-      newDoc._meta.lwt = (0, _index.now)();
-      newDoc._rev = (0, _index.createRevision)(await state.checkpointKey, previousCheckpointDoc);
-      if (state.events.canceled.getValue()) {
-        return;
-      }
-      var result = await state.input.metaInstance.bulkWrite([{
-        previous: previousCheckpointDoc,
-        document: newDoc
-      }], 'replication-set-checkpoint');
-      var sucessDoc = result.success[0];
-      if (sucessDoc) {
-        state.lastCheckpointDoc[direction] = sucessDoc;
-        return;
-      } else {
-        var error = result.error[0];
-        if (error.status !== 409) {
-          throw error;
+    !previousCheckpointDoc || JSON.stringify(previousCheckpointDoc.checkpointData) !== JSON.stringify(checkpoint))) {
+      var newDoc = {
+        id: '',
+        isCheckpoint: '1',
+        itemId: direction,
+        _deleted: false,
+        _attachments: {},
+        checkpointData: checkpoint,
+        _meta: (0, _index.getDefaultRxDocumentMeta)(),
+        _rev: (0, _index.getDefaultRevision)()
+      };
+      newDoc.id = (0, _rxSchemaHelper.getComposedPrimaryKeyOfDocumentData)(state.input.metaInstance.schema, newDoc);
+      while (!state.events.canceled.getValue()) {
+        /**
+         * Instead of just storing the new checkpoint,
+         * we have to stack up the checkpoint with the previous one.
+         * This is required for plugins like the sharding RxStorage
+         * where the changeStream events only contain a Partial of the
+         * checkpoint.
+         */
+        if (previousCheckpointDoc) {
+          newDoc.checkpointData = (0, _rxStorageHelper.stackCheckpoints)([previousCheckpointDoc.checkpointData, newDoc.checkpointData]);
+        }
+        newDoc._meta.lwt = (0, _index.now)();
+        newDoc._rev = (0, _index.createRevision)(await state.checkpointKey, previousCheckpointDoc);
+        if (state.events.canceled.getValue()) {
+          return;
+        }
+        var result = await state.input.metaInstance.bulkWrite([{
+          previous: previousCheckpointDoc,
+          document: newDoc
+        }], 'replication-set-checkpoint');
+        var sucessDoc = result.success[0];
+        if (sucessDoc) {
+          state.lastCheckpointDoc[direction] = sucessDoc;
+          return;
         } else {
-          previousCheckpointDoc = (0, _index.ensureNotFalsy)(error.documentInDb);
-          newDoc._rev = (0, _index.createRevision)(await state.checkpointKey, previousCheckpointDoc);
+          var error = result.error[0];
+          if (error.status !== 409) {
+            throw error;
+          } else {
+            previousCheckpointDoc = (0, _index.ensureNotFalsy)(error.documentInDb);
+            newDoc._rev = (0, _index.createRevision)(await state.checkpointKey, previousCheckpointDoc);
+          }
         }
       }
     }
-  }
+  });
+  await state.checkpointQueue;
 }
 async function getCheckpointKey(input) {
   var hash = await input.hashFunction([input.identifier, input.forkInstance.databaseName, input.forkInstance.collectionName].join('||'));

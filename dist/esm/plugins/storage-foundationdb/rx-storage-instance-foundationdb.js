@@ -16,7 +16,6 @@ import { INDEX_MAX } from "../../query-planner.js";
 import { attachmentMapKey } from "../storage-memory/index.js";
 export var RxStorageInstanceFoundationDB = /*#__PURE__*/function () {
   function RxStorageInstanceFoundationDB(storage, databaseName, collectionName, schema, internals, options, settings) {
-    this.closed = false;
     this.changes$ = new Subject();
     this.storage = storage;
     this.databaseName = databaseName;
@@ -275,15 +274,18 @@ export var RxStorageInstanceFoundationDB = /*#__PURE__*/function () {
   };
   _proto.close = async function close() {
     if (this.closed) {
-      return Promise.reject(new Error('already closed'));
+      return this.closed;
     }
-    this.closed = true;
-    this.changes$.complete();
-    var dbs = await this.internals.dbsPromise;
-    dbs.root.close();
+    this.closed = (async () => {
+      this.changes$.complete();
+      var dbs = await this.internals.dbsPromise;
+      await dbs.root.close();
 
-    // TODO shouldn't we close the index databases?
-    // Object.values(dbs.indexes).forEach(db => db.close());
+      // TODO shouldn't we close the index databases?
+      // Object.values(dbs.indexes).forEach(db => db.close());
+    })();
+
+    return this.closed;
   };
   return RxStorageInstanceFoundationDB;
 }();
