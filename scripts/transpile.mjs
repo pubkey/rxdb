@@ -67,7 +67,9 @@ async function transpileFile(
         {
             recursive: true,
         }
-    );
+    ).catch(err => {
+        console.error('# transpile.mjs: could not create directory: ' + folder, err);
+    });
 
     // const outFilePath =
     // await del.promise([outDir]);
