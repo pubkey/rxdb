@@ -18,6 +18,7 @@ on:
 jobs:
   core:
     runs-on: ubuntu-22.04
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - name: Set node version
@@ -49,6 +50,7 @@ jobs:
   # run the node tests for the LokiJS RxStorage
   storage-lokijs:
     runs-on: ubuntu-22.04
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - name: Set node version
@@ -93,6 +95,7 @@ jobs:
 
   storage-memory:
     runs-on: ubuntu-22.04
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - name: Set node version
@@ -147,6 +150,7 @@ jobs:
 
   storage-remote:
     runs-on: ubuntu-22.04
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - name: Set node version
@@ -181,6 +185,7 @@ jobs:
 
   storage-dexie:
     runs-on: ubuntu-22.04
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - name: Set node version
@@ -224,6 +229,7 @@ jobs:
 
   storage-foundationdb:
     runs-on: ubuntu-22.04
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - name: Set node version
@@ -231,7 +237,7 @@ jobs:
         with:
           node-version-file: ".nvmrc"
 
-      - name: Reuse npm cache folder
+      - name: Reuse npm cache folder and docker layers
         uses: actions/cache@v3
         env:
           cache-name: cache-node-modules
@@ -239,9 +245,16 @@ jobs:
           path: |
             ~/.npm
             ./node_modules
+            /tmp/.buildx-cache
           key: ${{ runner.os }}-npm-storage-foundationdb-x1-${{ hashFiles('**/package.json') }}
           restore-keys: |
             ${{ runner.os }}-npm-storage-foundationdb-x1-
+
+
+      - name: pre-pull foundationdb docker images
+        # ensure it has downloaded the image
+        run: |
+          docker pull foundationdb/foundationdb:7.3.23
 
       - name: install FoundationDB client and server
         working-directory: ./scripts
@@ -250,7 +263,7 @@ jobs:
       - name: install npm dependencies
         run: npm install
 
-      - run: npm install foundationdb@1.1.3
+      - run: npm install foundationdb@1.1.4
 
       - name: build
         run: npm run build
@@ -264,6 +277,7 @@ jobs:
 
   storage-mongodb:
     runs-on: ubuntu-22.04
+    timeout-minutes: 30
 
     steps:
       - uses: actions/checkout@v4
@@ -300,6 +314,7 @@ jobs:
 
   example-angular:
     runs-on: ubuntu-22.04
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       #- name: install dependencies
@@ -354,6 +369,7 @@ jobs:
 
   test-builds:
     runs-on: ubuntu-22.04
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - name: Set node version
@@ -387,6 +403,7 @@ jobs:
 
   test-code-style:
     runs-on: ubuntu-22.04
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - name: Set node version
@@ -450,6 +467,7 @@ jobs:
 
   example-electron:
     runs-on: ubuntu-22.04
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - name: Set node version
@@ -478,6 +496,7 @@ jobs:
 
   example-react:
     runs-on: ubuntu-22.04
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - name: Set node version
@@ -506,6 +525,7 @@ jobs:
 
   example-react-native-expo:
     runs-on: ubuntu-22.04
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - name: Set node version
@@ -531,6 +551,7 @@ jobs:
 
   example-supabase:
     runs-on: ubuntu-22.04
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - name: Set node version
@@ -588,6 +609,7 @@ jobs:
 
   example-vue:
     runs-on: ubuntu-22.04
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - name: install dependencies
@@ -617,6 +639,7 @@ jobs:
 
   example-svelte:
     runs-on: ubuntu-22.04
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - name: install dependencies
@@ -645,6 +668,7 @@ jobs:
 
   vite-vanilla-ts:
     runs-on: ubuntu-22.04
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - name: install dependencies
@@ -672,6 +696,7 @@ jobs:
 
   example-graphql:
     runs-on: ubuntu-22.04
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - name: install dependencies
@@ -706,6 +731,7 @@ jobs:
 
   example-flutter:
     runs-on: ubuntu-22.04
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - name: Set node version
@@ -754,6 +780,7 @@ jobs:
 
   test-tutorials:
     runs-on: ubuntu-22.04
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - name: Set node version
@@ -772,6 +799,7 @@ jobs:
 
   test-others:
     runs-on: ubuntu-22.04
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - name: Set node version
