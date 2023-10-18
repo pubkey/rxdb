@@ -8,7 +8,7 @@ environment:
 
 dependencies:
   flutter_qjs: 0.3.7
-  shared_preferences: 2.0.17
+  shared_preferences: 2.2.2
   rxdart: 0.27.5
 dev_dependencies:
   lints: 2.1.1
