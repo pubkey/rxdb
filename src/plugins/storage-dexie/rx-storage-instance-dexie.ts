@@ -60,7 +60,7 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
     public readonly primaryPath: StringKeys<RxDocumentData<RxDocType>>;
     private changes$: Subject<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, RxStorageDefaultCheckpoint>> = new Subject();
     public readonly instanceId = instanceId++;
-    public closed = false;
+    public closed?: Promise<void>;
 
     constructor(
         public readonly storage: RxStorageDexie,
@@ -315,16 +315,6 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
         };
     }
 
-    async remove(): Promise<void> {
-        ensureNotClosed(this);
-        const state = await this.internals;
-        await Promise.all([
-            state.dexieDeletedTable.clear(),
-            state.dexieTable.clear()
-        ]);
-        return this.close();
-    }
-
     changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, RxStorageDefaultCheckpoint>> {
         ensureNotClosed(this);
         return this.changes$.asObservable();
@@ -361,12 +351,26 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
         throw new Error('Attachments are not implemented in the dexie RxStorage. Make a pull request.');
     }
 
-    close(): Promise<void> {
+    async remove(): Promise<void> {
         ensureNotClosed(this);
-        this.closed = true;
-        this.changes$.complete();
-        closeDexieDb(this.internals);
-        return PROMISE_RESOLVE_VOID;
+        const state = await this.internals;
+        await Promise.all([
+            state.dexieDeletedTable.clear(),
+            state.dexieTable.clear()
+        ]);
+        return this.close();
+    }
+
+
+    close(): Promise<void> {
+        if (this.closed) {
+            return this.closed;
+        }
+        this.closed = (async () => {
+            this.changes$.complete();
+            await closeDexieDb(this.internals);
+        })();
+        return this.closed;
     }
 
     conflictResultionTasks(): Observable<RxConflictResultionTask<RxDocType>> {

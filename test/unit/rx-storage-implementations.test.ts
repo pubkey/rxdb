@@ -3102,6 +3102,33 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 await storageInstance.close();
             });
         });
+        describe('.close()', () => {
+            /**
+             * There are cases where closing happens multiple times,
+             * like when we call collection.destroy() and replicationState.cancel()
+             * at the same time.
+             * By making it possible to call close() multiple times,
+             * many randomly failing tests are fixed.
+             */
+            it('closing multiple times should not error', async () => {
+                const collectionName = randomCouchString(12);
+                const databaseName = randomCouchString(12);
+                const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
+                    databaseInstanceToken: randomCouchString(10),
+                    databaseName,
+                    collectionName,
+                    schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
+                    options: {},
+                    multiInstance: false,
+                    devMode: true
+                });
+
+                await Promise.all([
+                    storageInstance.close(),
+                    storageInstance.close()
+                ]);
+            });
+        });
         describe('.remove()', () => {
             it('should have deleted all data', async () => {
                 const databaseName = randomCouchString(12);
@@ -3146,11 +3173,24 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
 
                 storageInstance2.close();
             });
-            /**
-             * To ensure the equal behavior across all storages,
-             * the call to close() must throw an error if the storage is already removed.
-             */
-            it('should throw on call to .close() after .remove()', async () => {
+            it('should throw on call to .remove() after .close()', async () => {
+                const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
+                    databaseInstanceToken: randomCouchString(10),
+                    databaseName: randomCouchString(12),
+                    collectionName: randomCouchString(12),
+                    schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
+                    options: {},
+                    multiInstance: false,
+                    devMode: true
+                });
+                await storageInstance.close();
+
+                await assertThrows(
+                    () => storageInstance.remove(),
+                    undefined
+                );
+            });
+            it('should NOT throw on call to .close() after .remove()', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
                     databaseInstanceToken: randomCouchString(10),
                     databaseName: randomCouchString(12),
@@ -3161,13 +3201,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     devMode: true
                 });
                 await storageInstance.remove();
-                await assertThrows(
-                    () => storageInstance.close(),
-                    /**
-                     * Yes, this must be an Error. This MUST NOT be a RxError!
-                     */
-                    Error
-                );
+                await storageInstance.close();
             });
         });
     });
