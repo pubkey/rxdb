@@ -106,7 +106,6 @@ var RxStorageInstanceRemote = exports.RxStorageInstanceRemote = /*#__PURE__*/fun
     this.changes$ = new _rxjs.Subject();
     this.conflicts$ = new _rxjs.Subject();
     this.subs = [];
-    this.closed = false;
     this.storage = storage;
     this.databaseName = databaseName;
     this.collectionName = collectionName;
@@ -174,18 +173,25 @@ var RxStorageInstanceRemote = exports.RxStorageInstanceRemote = /*#__PURE__*/fun
   };
   _proto2.close = async function close() {
     if (this.closed) {
-      return Promise.reject(new Error('already closed'));
+      return this.closed;
     }
-    this.closed = true;
-    this.subs.forEach(sub => sub.unsubscribe());
-    this.changes$.complete();
-    await this.requestRemote('close', []);
-    await (0, _messageChannelCache.closeMessageChannel)(this.internals.messageChannel);
+    this.closed = (async () => {
+      this.subs.forEach(sub => sub.unsubscribe());
+      this.changes$.complete();
+      await this.requestRemote('close', []);
+      await (0, _messageChannelCache.closeMessageChannel)(this.internals.messageChannel);
+    })();
+    return this.closed;
   };
   _proto2.remove = async function remove() {
-    this.closed = true;
-    await this.requestRemote('remove', []);
-    await (0, _messageChannelCache.closeMessageChannel)(this.internals.messageChannel);
+    if (this.closed) {
+      throw new Error('already closed');
+    }
+    this.closed = (async () => {
+      await this.requestRemote('remove', []);
+      await (0, _messageChannelCache.closeMessageChannel)(this.internals.messageChannel);
+    })();
+    return this.closed;
   };
   _proto2.conflictResultionTasks = function conflictResultionTasks() {
     return this.conflicts$;

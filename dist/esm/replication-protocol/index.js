@@ -191,7 +191,7 @@ keepMeta = false) {
   };
   return replicationHandler;
 }
-export function cancelRxStorageReplication(replicationState) {
+export async function cancelRxStorageReplication(replicationState) {
   replicationState.events.canceled.next(true);
   replicationState.events.active.up.complete();
   replicationState.events.active.down.complete();
@@ -199,5 +199,6 @@ export function cancelRxStorageReplication(replicationState) {
   replicationState.events.processed.down.complete();
   replicationState.events.resolvedConflicts.complete();
   replicationState.events.canceled.complete();
+  await replicationState.checkpointQueue;
 }
 //# sourceMappingURL=index.js.map

@@ -294,6 +294,9 @@ var RxStorageInstanceMemory = exports.RxStorageInstanceMemory = /*#__PURE__*/fun
     return this.internals.changes$.asObservable();
   };
   _proto.remove = async function remove() {
+    if (this.closed) {
+      throw new Error('closed');
+    }
     this.ensurePersistence();
     (0, _memoryHelper.ensureNotRemoved)(this);
     this.internals.removed = true;
@@ -304,7 +307,7 @@ var RxStorageInstanceMemory = exports.RxStorageInstanceMemory = /*#__PURE__*/fun
     OPEN_MEMORY_INSTANCES.delete(this);
     this.ensurePersistence();
     if (this.closed) {
-      return Promise.reject(new Error('already closed'));
+      return _index.PROMISE_RESOLVE_VOID;
     }
     this.closed = true;
     this.internals.refCount = this.internals.refCount - 1;

@@ -10,7 +10,6 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
   function RxStorageInstanceLoki(databaseInstanceToken, storage, databaseName, collectionName, schema, internals, options, databaseSettings) {
     this.changes$ = new Subject();
     this.instanceId = instanceId++;
-    this.closed = false;
     this.databaseInstanceToken = databaseInstanceToken;
     this.storage = storage;
     this.databaseName = databaseName;
@@ -223,17 +222,19 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
   };
   _proto.close = async function close() {
     if (this.closed) {
-      return Promise.reject(new Error('already closed'));
+      return this.closed;
     }
-    this.closed = true;
-    this.changes$.complete();
-    OPEN_LOKIJS_STORAGE_INSTANCES.delete(this);
-    if (this.internals.localState) {
-      var localState = await this.internals.localState;
-      var dbState = await getLokiDatabase(this.databaseName, this.databaseSettings);
-      await dbState.saveQueue.run();
-      await closeLokiCollections(this.databaseName, [localState.collection]);
-    }
+    this.closed = (async () => {
+      this.changes$.complete();
+      OPEN_LOKIJS_STORAGE_INSTANCES.delete(this);
+      if (this.internals.localState) {
+        var localState = await this.internals.localState;
+        var dbState = await getLokiDatabase(this.databaseName, this.databaseSettings);
+        await dbState.saveQueue.run();
+        await closeLokiCollections(this.databaseName, [localState.collection]);
+      }
+    })();
+    return this.closed;
   };
   _proto.remove = async function remove() {
     var localState = await mustUseLocalState(this);
