@@ -80,7 +80,7 @@ export var RxReplicationState = /*#__PURE__*/function () {
     var pullModifier = this.pull && this.pull.modifier ? this.pull.modifier : DEFAULT_MODIFIER;
     var pushModifier = this.push && this.push.modifier ? this.push.modifier : DEFAULT_MODIFIER;
     var database = this.collection.database;
-    var metaInstanceCollectionName = await database.hashFunction(this.collection.name + '-rx-replication-' + this.replicationIdentifier);
+    var metaInstanceCollectionName = 'rx-replication-meta-' + (await database.hashFunction([this.collection.name, this.replicationIdentifier].join('-')));
     var metaInstanceSchema = getRxReplicationMetaInstanceSchema(this.collection.schema.jsonSchema, hasEncryption(this.collection.schema.jsonSchema));
     var [metaInstance] = await Promise.all([this.collection.database.storage.createStorageInstance({
       databaseName: database.name,

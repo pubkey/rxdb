@@ -1,12 +1,12 @@
 import { Subject, filter, firstValueFrom, map, shareReplay } from 'rxjs';
 import { isBulkWriteConflictError, newRxError } from "../../rx-error.js";
-import { MIGRATION_DEFAULT_BATCH_SIZE, MIGRATION_STATUS_INTERNAL_DOCUMENT_CONTEXT, addMigrationStateToDatabase, getOldCollectionMeta, migrateDocumentData, mustMigrate } from "./migration-helpers.js";
+import { MIGRATION_DEFAULT_BATCH_SIZE, addMigrationStateToDatabase, getOldCollectionMeta, migrateDocumentData, mustMigrate } from "./migration-helpers.js";
 import { PROMISE_RESOLVE_TRUE, RXJS_SHARE_REPLAY_DEFAULTS, clone, deepEqual, ensureNotFalsy, errorToPlainJson, getDefaultRevision, getDefaultRxDocumentMeta } from "../utils/index.js";
 import { getSingleDocument, hasEncryption, observeSingle, writeSingle } from "../../rx-storage-helper.js";
 import { BroadcastChannel, createLeaderElection } from 'broadcast-channel';
 import { META_INSTANCE_SCHEMA_TITLE, awaitRxStorageReplicationFirstInSync, cancelRxStorageReplication, defaultConflictHandler, getRxReplicationMetaInstanceSchema, replicateRxStorageInstance, rxStorageInstanceToReplicationHandler } from "../../replication-protocol/index.js";
 import { overwritable } from "../../overwritable.js";
-import { addConnectedStorageToCollection, getPrimaryKeyOfInternalDocument } from "../../rx-database-internal-store.js";
+import { INTERNAL_CONTEXT_MIGRATION_STATUS, addConnectedStorageToCollection, getPrimaryKeyOfInternalDocument } from "../../rx-database-internal-store.js";
 export var RxMigrationState = /*#__PURE__*/function () {
   function RxMigrationState(collection, migrationStrategies, statusDocKey = [collection.name, 'v', collection.schema.version].join('-')) {
     this.started = false;
@@ -18,7 +18,7 @@ export var RxMigrationState = /*#__PURE__*/function () {
     this.database = collection.database;
     this.oldCollectionMeta = getOldCollectionMeta(this);
     this.mustMigrate = mustMigrate(this);
-    this.statusDocId = getPrimaryKeyOfInternalDocument(this.statusDocKey, MIGRATION_STATUS_INTERNAL_DOCUMENT_CONTEXT);
+    this.statusDocId = getPrimaryKeyOfInternalDocument(this.statusDocKey, INTERNAL_CONTEXT_MIGRATION_STATUS);
     addMigrationStateToDatabase(this);
     this.$ = observeSingle(this.database.internalStore, this.statusDocId).pipe(filter(d => !!d), map(d => ensureNotFalsy(d).data), shareReplay(RXJS_SHARE_REPLAY_DEFAULTS));
   }
@@ -138,7 +138,7 @@ export var RxMigrationState = /*#__PURE__*/function () {
           newDoc = {
             id: this.statusDocId,
             key: this.statusDocKey,
-            context: MIGRATION_STATUS_INTERNAL_DOCUMENT_CONTEXT,
+            context: INTERNAL_CONTEXT_MIGRATION_STATUS,
             data: {
               collectionName: this.collection.name,
               status: 'RUNNING',
@@ -167,7 +167,7 @@ export var RxMigrationState = /*#__PURE__*/function () {
           await writeSingle(this.database.internalStore, {
             previous,
             document: ensureNotFalsy(newDoc)
-          }, MIGRATION_STATUS_INTERNAL_DOCUMENT_CONTEXT);
+          }, INTERNAL_CONTEXT_MIGRATION_STATUS);
 
           // write successful
           this.updateStatusHandlers = [];

@@ -4,6 +4,7 @@ import { getSingleDocument, writeSingle } from "./rx-storage-helper.js";
 import { clone, ensureNotFalsy, getDefaultRevision, getDefaultRxDocumentMeta, randomCouchString } from "./plugins/utils/index.js";
 export var INTERNAL_CONTEXT_COLLECTION = 'collection';
 export var INTERNAL_CONTEXT_STORAGE_TOKEN = 'storage-token';
+export var INTERNAL_CONTEXT_MIGRATION_STATUS = 'rx-migration-status';
 
 /**
  * Do not change the title,
@@ -33,7 +34,7 @@ export var INTERNAL_STORE_SCHEMA = fillWithDefaultSettings({
     },
     context: {
       type: 'string',
-      enum: [INTERNAL_CONTEXT_COLLECTION, INTERNAL_CONTEXT_STORAGE_TOKEN, 'OTHER']
+      enum: [INTERNAL_CONTEXT_COLLECTION, INTERNAL_CONTEXT_STORAGE_TOKEN, INTERNAL_CONTEXT_MIGRATION_STATUS, 'OTHER']
     },
     data: {
       type: 'object',

@@ -24,7 +24,7 @@ var RxMigrationState = exports.RxMigrationState = /*#__PURE__*/function () {
     this.database = collection.database;
     this.oldCollectionMeta = (0, _migrationHelpers.getOldCollectionMeta)(this);
     this.mustMigrate = (0, _migrationHelpers.mustMigrate)(this);
-    this.statusDocId = (0, _rxDatabaseInternalStore.getPrimaryKeyOfInternalDocument)(this.statusDocKey, _migrationHelpers.MIGRATION_STATUS_INTERNAL_DOCUMENT_CONTEXT);
+    this.statusDocId = (0, _rxDatabaseInternalStore.getPrimaryKeyOfInternalDocument)(this.statusDocKey, _rxDatabaseInternalStore.INTERNAL_CONTEXT_MIGRATION_STATUS);
     (0, _migrationHelpers.addMigrationStateToDatabase)(this);
     this.$ = (0, _rxStorageHelper.observeSingle)(this.database.internalStore, this.statusDocId).pipe((0, _rxjs.filter)(d => !!d), (0, _rxjs.map)(d => (0, _index.ensureNotFalsy)(d).data), (0, _rxjs.shareReplay)(_index.RXJS_SHARE_REPLAY_DEFAULTS));
   }
@@ -144,7 +144,7 @@ var RxMigrationState = exports.RxMigrationState = /*#__PURE__*/function () {
           newDoc = {
             id: this.statusDocId,
             key: this.statusDocKey,
-            context: _migrationHelpers.MIGRATION_STATUS_INTERNAL_DOCUMENT_CONTEXT,
+            context: _rxDatabaseInternalStore.INTERNAL_CONTEXT_MIGRATION_STATUS,
             data: {
               collectionName: this.collection.name,
               status: 'RUNNING',
@@ -173,7 +173,7 @@ var RxMigrationState = exports.RxMigrationState = /*#__PURE__*/function () {
           await (0, _rxStorageHelper.writeSingle)(this.database.internalStore, {
             previous,
             document: (0, _index.ensureNotFalsy)(newDoc)
-          }, _migrationHelpers.MIGRATION_STATUS_INTERNAL_DOCUMENT_CONTEXT);
+          }, _rxDatabaseInternalStore.INTERNAL_CONTEXT_MIGRATION_STATUS);
 
           // write successful
           this.updateStatusHandlers = [];
