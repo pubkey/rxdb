@@ -172,7 +172,7 @@ export class RxStorageInstanceRemote<RxDocType> implements RxStorageInstance<RxD
     private conflicts$: Subject<RxConflictResultionTask<RxDocType>> = new Subject();
     private subs: Subscription[] = [];
 
-    private closed: boolean = false;
+    private closed?: Promise<void>;
     messages$: Observable<MessageFromRemote>;
 
     constructor(
@@ -265,18 +265,25 @@ export class RxStorageInstanceRemote<RxDocType> implements RxStorageInstance<RxD
     }
     async close(): Promise<void> {
         if (this.closed) {
-            return Promise.reject(new Error('already closed'));
+            return this.closed;
         }
-        this.closed = true;
-        this.subs.forEach(sub => sub.unsubscribe());
-        this.changes$.complete();
-        await this.requestRemote('close', []);
-        await closeMessageChannel(this.internals.messageChannel);
+        this.closed = (async () => {
+            this.subs.forEach(sub => sub.unsubscribe());
+            this.changes$.complete();
+            await this.requestRemote('close', []);
+            await closeMessageChannel(this.internals.messageChannel);
+        })();
+        return this.closed;
     }
     async remove(): Promise<void> {
-        this.closed = true;
-        await this.requestRemote('remove', []);
-        await closeMessageChannel(this.internals.messageChannel);
+        if (this.closed) {
+            throw new Error('already closed');
+        }
+        this.closed = (async () => {
+            await this.requestRemote('remove', []);
+            await closeMessageChannel(this.internals.messageChannel);
+        })();
+        return this.closed;
     }
     conflictResultionTasks(): Observable<RxConflictResultionTask<RxDocType>> {
         return this.conflicts$;

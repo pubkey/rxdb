@@ -17,7 +17,7 @@ import * as humansCollection from '../helper/humans-collection.ts';
 import * as schemaObjects from '../helper/schema-objects.ts';
 
 
-config.parallel('rx-database.test.js', () => {
+config.parallel('rx-database.test.ts', () => {
     describe('.create()', () => {
         describe('positive', () => {
             it('normal', async () => {
@@ -47,7 +47,8 @@ config.parallel('rx-database.test.js', () => {
 
                 assert.strictEqual(
                     await isRxDatabaseFirstTimeInstantiated(db),
-                    true
+                    true,
+                    'isRxDatabaseFirstTimeInstantiated must be true'
                 );
 
                 const db2 = await createRxDatabase({
@@ -64,7 +65,8 @@ config.parallel('rx-database.test.js', () => {
                 if (config.storage.hasMultiInstance) {
                     assert.strictEqual(
                         await isRxDatabaseFirstTimeInstantiated(db2),
-                        false
+                        false,
+                        'isRxDatabaseFirstTimeInstantiated must be false'
                     );
                 }
 

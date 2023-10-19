@@ -272,7 +272,7 @@ keepMeta = false) {
   };
   return replicationHandler;
 }
-function cancelRxStorageReplication(replicationState) {
+async function cancelRxStorageReplication(replicationState) {
   replicationState.events.canceled.next(true);
   replicationState.events.active.up.complete();
   replicationState.events.active.down.complete();
@@ -280,5 +280,6 @@ function cancelRxStorageReplication(replicationState) {
   replicationState.events.processed.down.complete();
   replicationState.events.resolvedConflicts.complete();
   replicationState.events.canceled.complete();
+  await replicationState.checkpointQueue;
 }
 //# sourceMappingURL=index.js.map

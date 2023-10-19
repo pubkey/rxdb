@@ -10,7 +10,7 @@ export declare class RxStorageInstanceFoundationDB<RxDocType> implements RxStora
     readonly options: Readonly<RxStorageFoundationDBInstanceCreationOptions>;
     readonly settings: RxStorageFoundationDBSettings;
     readonly primaryPath: StringKeys<RxDocumentData<RxDocType>>;
-    closed: boolean;
+    closed?: Promise<void>;
     private changes$;
     constructor(storage: RxStorageFoundationDB, databaseName: string, collectionName: string, schema: Readonly<RxJsonSchema<RxDocumentData<RxDocType>>>, internals: FoundationDBStorageInternals<RxDocType>, options: Readonly<RxStorageFoundationDBInstanceCreationOptions>, settings: RxStorageFoundationDBSettings);
     bulkWrite(documentWrites: BulkWriteRow<RxDocType>[], context: string): Promise<RxStorageBulkWriteResponse<RxDocType>>;
@@ -28,6 +28,6 @@ export declare class RxStorageInstanceFoundationDB<RxDocType> implements RxStora
     cleanup(minimumDeletedTime: number): Promise<boolean>;
     conflictResultionTasks(): Observable<RxConflictResultionTask<RxDocType>>;
     resolveConflictResultionTask(_taskSolution: RxConflictResultionTaskSolution<RxDocType>): Promise<void>;
-    close(): Promise<undefined>;
+    close(): Promise<void>;
 }
 export declare function createFoundationDBStorageInstance<RxDocType>(storage: RxStorageFoundationDB, params: RxStorageInstanceCreationParams<RxDocType, RxStorageFoundationDBInstanceCreationOptions>, settings: RxStorageFoundationDBSettings): Promise<RxStorageInstanceFoundationDB<RxDocType>>;

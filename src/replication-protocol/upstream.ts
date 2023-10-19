@@ -356,6 +356,10 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
                 }
             });
 
+            if (state.events.canceled.getValue()) {
+                return false;
+            }
+
             if (useWriteRowsToMeta.length > 0) {
                 await state.input.metaInstance.bulkWrite(
                     stripAttachmentsDataFromMetaWriteRows(state, useWriteRowsToMeta),
@@ -448,11 +452,11 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
              * but to ensure order on parallel checkpoint writes,
              * we have to use a queue.
              */
-            state.checkpointQueue = state.checkpointQueue.then(() => setCheckpoint(
+            setCheckpoint(
                 state,
                 'up',
                 useCheckpoint
-            ));
+            );
 
             return hadConflictWrites;
         }).catch(unhandledError => {

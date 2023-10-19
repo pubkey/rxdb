@@ -71,7 +71,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
     private changes$: Subject<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, RxStorageDefaultCheckpoint>> = new Subject();
     public readonly instanceId = instanceId++;
 
-    public closed = false;
+    public closed?: Promise<void>;
 
     constructor(
         public readonly databaseInstanceToken: string,
@@ -354,26 +354,27 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
 
     async close(): Promise<void> {
         if (this.closed) {
-            return Promise.reject(new Error('already closed'));
+            return this.closed;
         }
-        this.closed = true;
-        this.changes$.complete();
-        OPEN_LOKIJS_STORAGE_INSTANCES.delete(this);
-
-        if (this.internals.localState) {
-            const localState = await this.internals.localState;
-            const dbState = await getLokiDatabase(
-                this.databaseName,
-                this.databaseSettings
-            );
-            await dbState.saveQueue.run();
-            await closeLokiCollections(
-                this.databaseName,
-                [
-                    localState.collection
-                ]
-            );
-        }
+        this.closed = (async () => {
+            this.changes$.complete();
+            OPEN_LOKIJS_STORAGE_INSTANCES.delete(this);
+            if (this.internals.localState) {
+                const localState = await this.internals.localState;
+                const dbState = await getLokiDatabase(
+                    this.databaseName,
+                    this.databaseSettings
+                );
+                await dbState.saveQueue.run();
+                await closeLokiCollections(
+                    this.databaseName,
+                    [
+                        localState.collection
+                    ]
+                );
+            }
+        })();
+        return this.closed;
     }
     async remove(): Promise<void> {
         const localState = await mustUseLocalState(this);

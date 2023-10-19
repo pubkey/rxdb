@@ -13,7 +13,7 @@ export declare class RxStorageInstanceDexie<RxDocType> implements RxStorageInsta
     readonly primaryPath: StringKeys<RxDocumentData<RxDocType>>;
     private changes$;
     readonly instanceId: number;
-    closed: boolean;
+    closed?: Promise<void>;
     constructor(storage: RxStorageDexie, databaseName: string, collectionName: string, schema: Readonly<RxJsonSchema<RxDocumentData<RxDocType>>>, internals: DexieStorageInternals, options: Readonly<DexieSettings>, settings: DexieSettings);
     bulkWrite(documentWrites: BulkWriteRow<RxDocType>[], context: string): Promise<RxStorageBulkWriteResponse<RxDocType>>;
     findDocumentsById(ids: string[], deleted: boolean): Promise<RxDocumentData<RxDocType>[]>;
@@ -24,10 +24,10 @@ export declare class RxStorageInstanceDexie<RxDocType> implements RxStorageInsta
         documents: RxDocumentData<RxDocType>[];
         checkpoint: RxStorageDefaultCheckpoint;
     }>;
-    remove(): Promise<void>;
     changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, RxStorageDefaultCheckpoint>>;
     cleanup(minimumDeletedTime: number): Promise<boolean>;
     getAttachmentData(_documentId: string, _attachmentId: string, _digest: string): Promise<string>;
+    remove(): Promise<void>;
     close(): Promise<void>;
     conflictResultionTasks(): Observable<RxConflictResultionTask<RxDocType>>;
     resolveConflictResultionTask(_taskSolution: RxConflictResultionTaskSolution<RxDocType>): Promise<void>;

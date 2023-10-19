@@ -18,7 +18,6 @@ var RxStorageInstanceLoki = exports.RxStorageInstanceLoki = /*#__PURE__*/functio
   function RxStorageInstanceLoki(databaseInstanceToken, storage, databaseName, collectionName, schema, internals, options, databaseSettings) {
     this.changes$ = new _rxjs.Subject();
     this.instanceId = instanceId++;
-    this.closed = false;
     this.databaseInstanceToken = databaseInstanceToken;
     this.storage = storage;
     this.databaseName = databaseName;
@@ -231,17 +230,19 @@ var RxStorageInstanceLoki = exports.RxStorageInstanceLoki = /*#__PURE__*/functio
   };
   _proto.close = async function close() {
     if (this.closed) {
-      return Promise.reject(new Error('already closed'));
+      return this.closed;
     }
-    this.closed = true;
-    this.changes$.complete();
-    _lokijsHelper.OPEN_LOKIJS_STORAGE_INSTANCES.delete(this);
-    if (this.internals.localState) {
-      var localState = await this.internals.localState;
-      var dbState = await (0, _lokijsHelper.getLokiDatabase)(this.databaseName, this.databaseSettings);
-      await dbState.saveQueue.run();
-      await (0, _lokijsHelper.closeLokiCollections)(this.databaseName, [localState.collection]);
-    }
+    this.closed = (async () => {
+      this.changes$.complete();
+      _lokijsHelper.OPEN_LOKIJS_STORAGE_INSTANCES.delete(this);
+      if (this.internals.localState) {
+        var localState = await this.internals.localState;
+        var dbState = await (0, _lokijsHelper.getLokiDatabase)(this.databaseName, this.databaseSettings);
+        await dbState.saveQueue.run();
+        await (0, _lokijsHelper.closeLokiCollections)(this.databaseName, [localState.collection]);
+      }
+    })();
+    return this.closed;
   };
   _proto.remove = async function remove() {
     var localState = await (0, _lokijsHelper.mustUseLocalState)(this);

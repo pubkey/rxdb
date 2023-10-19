@@ -182,4 +182,4 @@ myDocument.done$.subscribe(isDone => {
 
 ## Next steps
 
-You are now ready to dive deeper into RxDB. Please continue reading the documentation, and join the community to ask questions on our [Discord chat](./chat.html). If you like RxDB please star the [GitHub repository](https://github.com/pubkey/rxdb), and if you are using RxDB in a production environment and able to support its continued development, please consider becoming a [sponsor on GitHub](https://github.com/sponsors/pubkey) or [OpenCollective](https://opencollective.com/rxdbjs).
+You are now ready to dive deeper into RxDB. Please continue reading the documentation, join the community on our [Discord chat](./chat.html), and star the [GitHub repo](https://github.com/pubkey/rxdb). If you are using RxDB in a production environment and able to support its continued development, please take a look at the [Premium package](https://rxdb.info/premium.html) which includes additional plugins and utilities.

@@ -18,6 +18,7 @@ on:
 jobs:
   core:
     runs-on: ubuntu-22.04
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - name: Set node version
@@ -33,9 +34,9 @@ jobs:
           path: |
             ~/.npm
             ./node_modules
-          key: ${{ runner.os }}-npm-core-x9-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-core-x1-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-core-x9-
+            ${{ runner.os }}-npm-core-x1-
 
       - name: install npm dependencies
         run: npm install
@@ -49,6 +50,7 @@ jobs:
   # run the node tests for the LokiJS RxStorage
   storage-lokijs:
     runs-on: ubuntu-22.04
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - name: Set node version
@@ -64,9 +66,9 @@ jobs:
           path: |
             ~/.npm
             ./node_modules
-          key: ${{ runner.os }}-npm-loki-x9-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-loki-x1-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-loki-x9-
+            ${{ runner.os }}-npm-loki-x1-
 
       - name: install npm dependencies
         run: npm install
@@ -93,6 +95,7 @@ jobs:
 
   storage-memory:
     runs-on: ubuntu-22.04
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - name: Set node version
@@ -108,9 +111,9 @@ jobs:
           path: |
             ~/.npm
             ./node_modules
-          key: ${{ runner.os }}-npm-memory-x9-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-memory-x1-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-memory-x9-
+            ${{ runner.os }}-npm-memory-x1-
 
       - name: install npm dependencies
         run: npm install
@@ -147,6 +150,7 @@ jobs:
 
   storage-remote:
     runs-on: ubuntu-22.04
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - name: Set node version
@@ -162,9 +166,9 @@ jobs:
           path: |
             ~/.npm
             ./node_modules
-          key: ${{ runner.os }}-npm-remote-x9-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-remote-x1-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-remote-x9-
+            ${{ runner.os }}-npm-remote-x1-
 
       - name: install npm dependencies
         run: npm install
@@ -181,6 +185,7 @@ jobs:
 
   storage-dexie:
     runs-on: ubuntu-22.04
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - name: Set node version
@@ -196,9 +201,9 @@ jobs:
           path: |
             ~/.npm
             ./node_modules
-          key: ${{ runner.os }}-npm-storage-dexie-x9-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-storage-dexie-x1-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-storage-dexie-x9-
+            ${{ runner.os }}-npm-storage-dexie-x1-
 
       - name: install npm dependencies
         run: npm install
@@ -224,6 +229,7 @@ jobs:
 
   storage-foundationdb:
     runs-on: ubuntu-22.04
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - name: Set node version
@@ -231,7 +237,7 @@ jobs:
         with:
           node-version-file: ".nvmrc"
 
-      - name: Reuse npm cache folder
+      - name: Reuse npm cache folder and docker layers
         uses: actions/cache@v3
         env:
           cache-name: cache-node-modules
@@ -239,9 +245,16 @@ jobs:
           path: |
             ~/.npm
             ./node_modules
-          key: ${{ runner.os }}-npm-storage-foundationdb-x9-${{ hashFiles('**/package.json') }}
+            /tmp/.buildx-cache
+          key: ${{ runner.os }}-npm-storage-foundationdb-x1-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-storage-foundationdb-x9-
+            ${{ runner.os }}-npm-storage-foundationdb-x1-
+
+
+      - name: pre-pull foundationdb docker images
+        # ensure it has downloaded the image
+        run: |
+          docker pull foundationdb/foundationdb:7.3.23
 
       - name: install FoundationDB client and server
         working-directory: ./scripts
@@ -250,7 +263,7 @@ jobs:
       - name: install npm dependencies
         run: npm install
 
-      - run: npm install foundationdb@1.1.3
+      - run: npm install foundationdb@1.1.4
 
       - name: build
         run: npm run build
@@ -264,6 +277,7 @@ jobs:
 
   storage-mongodb:
     runs-on: ubuntu-22.04
+    timeout-minutes: 30
 
     steps:
       - uses: actions/checkout@v4
@@ -280,9 +294,9 @@ jobs:
           path: |
             ~/.npm
             ./node_modules
-          key: ${{ runner.os }}-npm-storage-mongodb-x9-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-storage-mongodb-x1-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-storage-mongodb-x9-
+            ${{ runner.os }}-npm-storage-mongodb-x1-
 
       - name: Start MongoDB
         uses: supercharge/mongodb-github-action@1.10.0
@@ -300,6 +314,7 @@ jobs:
 
   example-angular:
     runs-on: ubuntu-22.04
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       #- name: install dependencies
@@ -319,9 +334,9 @@ jobs:
             ./node_modules
             ./examples/angular/node_modules
           # invalidate cache when any package.json changes
-          key: ${{ runner.os }}-npm-angular-x9-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-angular-x1-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-angular-x9-
+            ${{ runner.os }}-npm-angular-x1-
 
       - name: prepare RxDB core
         run: |
@@ -354,6 +369,7 @@ jobs:
 
   test-builds:
     runs-on: ubuntu-22.04
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - name: Set node version
@@ -369,9 +385,9 @@ jobs:
           path: |
             ~/.npm
             ./node_modules
-          key: ${{ runner.os }}-npm-test-builds-x9-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-test-builds-x1-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-test-builds-x9-
+            ${{ runner.os }}-npm-test-builds-x1-
 
       - name: prepare RxDB core
         run: |
@@ -387,6 +403,7 @@ jobs:
 
   test-code-style:
     runs-on: ubuntu-22.04
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - name: Set node version
@@ -402,9 +419,9 @@ jobs:
           path: |
             ~/.npm
             ./node_modules
-          key: ${{ runner.os }}-npm-test-code-style-x9-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-test-code-style-x1-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-test-code-style-x9-
+            ${{ runner.os }}-npm-test-code-style-x1-
 
       - name: prepare RxDB core
         run: |
@@ -450,6 +467,7 @@ jobs:
 
   example-electron:
     runs-on: ubuntu-22.04
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - name: Set node version
@@ -478,6 +496,7 @@ jobs:
 
   example-react:
     runs-on: ubuntu-22.04
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - name: Set node version
@@ -506,6 +525,7 @@ jobs:
 
   example-react-native-expo:
     runs-on: ubuntu-22.04
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - name: Set node version
@@ -531,6 +551,7 @@ jobs:
 
   example-supabase:
     runs-on: ubuntu-22.04
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - name: Set node version
@@ -588,6 +609,7 @@ jobs:
 
   example-vue:
     runs-on: ubuntu-22.04
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - name: install dependencies
@@ -617,6 +639,7 @@ jobs:
 
   example-svelte:
     runs-on: ubuntu-22.04
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - name: install dependencies
@@ -645,6 +668,7 @@ jobs:
 
   vite-vanilla-ts:
     runs-on: ubuntu-22.04
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - name: install dependencies
@@ -672,6 +696,7 @@ jobs:
 
   example-graphql:
     runs-on: ubuntu-22.04
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - name: install dependencies
@@ -706,6 +731,7 @@ jobs:
 
   example-flutter:
     runs-on: ubuntu-22.04
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - name: Set node version
@@ -726,9 +752,9 @@ jobs:
             ~/.npm
             ./node_modules
             ./examples/flutter/javascript/node_modules
-          key: ${{ runner.os }}-npm-flutter-x9-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-flutter-x1-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-flutter-x9-
+            ${{ runner.os }}-npm-flutter-x1-
       - name: prepare RxDB core
         run: |
           npm install --legacy-peer-deps
@@ -754,6 +780,7 @@ jobs:
 
   test-tutorials:
     runs-on: ubuntu-22.04
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - name: Set node version
@@ -772,6 +799,7 @@ jobs:
 
   test-others:
     runs-on: ubuntu-22.04
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v4
       - name: Set node version
@@ -787,10 +815,10 @@ jobs:
         with:
           path: |
             ~/.npm
-            ./node_modules
-          key: ${{ runner.os }}-npm-others-x9-${{ hashFiles('**/package.json') }}
+            /home/runner/.cache/deno
+          key: ${{ runner.os }}-npm-others-x1-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-others-x9-
+            ${{ runner.os }}-npm-others-x1-
 
       - name: prepare RxDB core
         run: |
@@ -816,8 +844,10 @@ jobs:
       # deno (must be last because it messes up with file permissions)
       - uses: denoland/setup-deno@v1
         with:
-          deno-version: "1.37.1"
-      - run: npm run test:deno:dexie
+          deno-version: "1.37.2"
+      - run: |
+          deno info
+          npm run test:deno:dexie
       # TODO fix deno performance test
       #- run: npm run test:performance:memory:deno
 

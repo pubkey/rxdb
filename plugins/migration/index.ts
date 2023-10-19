@@ -1,1 +1,1 @@
-export * from '../../dist/types/plugins/migration/index.d.ts';
+export * from '../../dist/types/plugins/migration/index';

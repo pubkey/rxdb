@@ -28,7 +28,6 @@ var RxStorageInstanceMongoDB = exports.RxStorageInstanceMongoDB = /*#__PURE__*/f
    */
 
   function RxStorageInstanceMongoDB(storage, databaseName, collectionName, schema, internals, options, settings) {
-    this.closed = false;
     this.changes$ = new _rxjs.Subject();
     this.runningOperations = new _rxjs.BehaviorSubject(0);
     this.writeQueue = _index.PROMISE_RESOLVE_VOID;
@@ -335,6 +334,9 @@ var RxStorageInstanceMongoDB = exports.RxStorageInstanceMongoDB = /*#__PURE__*/f
     return this.changes$;
   };
   _proto.remove = async function remove() {
+    if (this.closed) {
+      throw new Error('already closed');
+    }
     this.runningOperations.next(this.runningOperations.getValue() + 1);
     var mongoCollection = await this.mongoCollectionPromise;
     await mongoCollection.drop();
@@ -345,13 +347,15 @@ var RxStorageInstanceMongoDB = exports.RxStorageInstanceMongoDB = /*#__PURE__*/f
     // TODO without this next-tick we have random fails in the tests
     await (0, _index.requestIdlePromise)(200);
     if (this.closed) {
-      return Promise.reject(new Error('already closed'));
+      return this.closed;
     }
-    this.closed = true;
-    await this.mongoCollectionPromise;
-    await (0, _rxjs.firstValueFrom)(this.runningOperations.pipe((0, _rxjs.filter)(c => c === 0)));
-    // await ensureNotFalsy(this.mongoChangeStream).close();
-    await this.mongoClient.close();
+    this.closed = (async () => {
+      await this.mongoCollectionPromise;
+      await (0, _rxjs.firstValueFrom)(this.runningOperations.pipe((0, _rxjs.filter)(c => c === 0)));
+      // await ensureNotFalsy(this.mongoChangeStream).close();
+      await this.mongoClient.close();
+    })();
+    return this.closed;
   };
   _proto.conflictResultionTasks = function conflictResultionTasks() {
     return new _rxjs.Subject();

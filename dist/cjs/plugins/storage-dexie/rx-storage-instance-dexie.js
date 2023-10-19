@@ -18,7 +18,6 @@ var RxStorageInstanceDexie = exports.RxStorageInstanceDexie = /*#__PURE__*/funct
   function RxStorageInstanceDexie(storage, databaseName, collectionName, schema, internals, options, settings) {
     this.changes$ = new _rxjs.Subject();
     this.instanceId = instanceId++;
-    this.closed = false;
     this.storage = storage;
     this.databaseName = databaseName;
     this.collectionName = collectionName;
@@ -190,12 +189,6 @@ var RxStorageInstanceDexie = exports.RxStorageInstanceDexie = /*#__PURE__*/funct
       }
     };
   };
-  _proto.remove = async function remove() {
-    ensureNotClosed(this);
-    var state = await this.internals;
-    await Promise.all([state.dexieDeletedTable.clear(), state.dexieTable.clear()]);
-    return this.close();
-  };
   _proto.changeStream = function changeStream() {
     ensureNotClosed(this);
     return this.changes$.asObservable();
@@ -222,12 +215,21 @@ var RxStorageInstanceDexie = exports.RxStorageInstanceDexie = /*#__PURE__*/funct
     ensureNotClosed(this);
     throw new Error('Attachments are not implemented in the dexie RxStorage. Make a pull request.');
   };
-  _proto.close = function close() {
+  _proto.remove = async function remove() {
     ensureNotClosed(this);
-    this.closed = true;
-    this.changes$.complete();
-    (0, _dexieHelper.closeDexieDb)(this.internals);
-    return _index.PROMISE_RESOLVE_VOID;
+    var state = await this.internals;
+    await Promise.all([state.dexieDeletedTable.clear(), state.dexieTable.clear()]);
+    return this.close();
+  };
+  _proto.close = function close() {
+    if (this.closed) {
+      return this.closed;
+    }
+    this.closed = (async () => {
+      this.changes$.complete();
+      await (0, _dexieHelper.closeDexieDb)(this.internals);
+    })();
+    return this.closed;
   };
   _proto.conflictResultionTasks = function conflictResultionTasks() {
     return new _rxjs.Subject();
