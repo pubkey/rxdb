@@ -20,8 +20,6 @@ import {
 } from '../utils/index.ts';
 import { RxMigrationState } from './rx-migration-state.ts';
 
-export const MIGRATION_STATUS_INTERNAL_DOCUMENT_CONTEXT = 'rx-migration-status';
-
 export async function getOldCollectionMeta(
     migrationState: RxMigrationState
 ): Promise<RxDocumentData<InternalStoreCollectionDocType>> {
