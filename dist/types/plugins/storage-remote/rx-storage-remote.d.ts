@@ -23,7 +23,7 @@ export declare class RxStorageInstanceRemote<RxDocType> implements RxStorageInst
     private changes$;
     private conflicts$;
     private subs;
-    private closed;
+    private closed?;
     messages$: Observable<MessageFromRemote>;
     constructor(storage: RxStorageRemote, databaseName: string, collectionName: string, schema: Readonly<RxJsonSchema<RxDocumentData<RxDocType>>>, internals: RxStorageRemoteInternals, options: Readonly<any>);
     private requestRemote;

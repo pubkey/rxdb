@@ -304,13 +304,13 @@ var RxReplicationState = exports.RxReplicationState = /*#__PURE__*/function () {
   _proto.emitEvent = function emitEvent(ev) {
     this.remoteEvents$.next(ev);
   };
-  _proto.cancel = function cancel() {
+  _proto.cancel = async function cancel() {
     if (this.isStopped()) {
       return _index2.PROMISE_RESOLVE_FALSE;
     }
     var promises = [];
     if (this.internalReplicationState) {
-      (0, _index3.cancelRxStorageReplication)(this.internalReplicationState);
+      await (0, _index3.cancelRxStorageReplication)(this.internalReplicationState);
     }
     if (this.metaInstance) {
       promises.push((0, _index2.ensureNotFalsy)(this.internalReplicationState).checkpointQueue.then(() => (0, _index2.ensureNotFalsy)(this.metaInstance).close()));

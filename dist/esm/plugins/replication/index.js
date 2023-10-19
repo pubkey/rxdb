@@ -296,13 +296,13 @@ export var RxReplicationState = /*#__PURE__*/function () {
   _proto.emitEvent = function emitEvent(ev) {
     this.remoteEvents$.next(ev);
   };
-  _proto.cancel = function cancel() {
+  _proto.cancel = async function cancel() {
     if (this.isStopped()) {
       return PROMISE_RESOLVE_FALSE;
     }
     var promises = [];
     if (this.internalReplicationState) {
-      cancelRxStorageReplication(this.internalReplicationState);
+      await cancelRxStorageReplication(this.internalReplicationState);
     }
     if (this.metaInstance) {
       promises.push(ensureNotFalsy(this.internalReplicationState).checkpointQueue.then(() => ensureNotFalsy(this.metaInstance).close()));

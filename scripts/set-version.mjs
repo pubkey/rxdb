@@ -75,17 +75,23 @@ async function run() {
         // add this line for a backlink and to have a big image appear in peoples github newsfeed.
         `<p align="center">
             <a href="https://rxdb.info/">
-                <img src="https://rxdb.info/files/logo/logo_text.svg" width="380px" alt="JavaScript Database" />
+                <img src="https://rxdb.info/files/logo/rxdb_javascript_database.svg" width="380px" alt="JavaScript Database" />
             </a>
         </p>`,
         '',
-        '## Changes:'
     ];
     releaseBodyRows.push(newRows.slice(0));
     releaseBodyRows.push([
         '',
         '',
         '**NOTICE:** An overview about all releases can be found [at the changelog](https://github.com/pubkey/rxdb/blob/master/CHANGELOG.md)'
+    ]);
+    releaseBodyRows.push([
+        '### Join RxDB:',
+        '- [Join the RxDB Chat](https://rxdb.info/chat.html)',
+        '- [Star the RxDB Repo](https://github.com/pubkey/rxdb)',
+        '- [Subscribe to the newsletter](https://rxdb.info/newsletter.html)',
+        '- [Follow at Twitter](https://twitter.com/intent/user?screen_name=rxdbjs)'
     ]);
     releaseBodyRows = releaseBodyRows.flat();
 

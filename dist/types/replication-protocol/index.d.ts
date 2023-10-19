@@ -21,4 +21,4 @@ export declare function rxStorageInstanceToReplicationHandler<RxDocType, MasterC
  * (Used in the migration to ensure checkpoints are still valid)
  */
 keepMeta?: boolean): RxReplicationHandler<RxDocType, MasterCheckpointType>;
-export declare function cancelRxStorageReplication(replicationState: RxStorageInstanceReplicationState<any>): void;
+export declare function cancelRxStorageReplication(replicationState: RxStorageInstanceReplicationState<any>): Promise<void>;

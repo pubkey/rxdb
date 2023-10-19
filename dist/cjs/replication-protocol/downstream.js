@@ -303,7 +303,7 @@ async function startReplicationDownstream(state) {
          * but to ensure order on parallel checkpoint writes,
          * we have to use a queue.
          */
-        state.checkpointQueue = state.checkpointQueue.then(() => (0, _checkpoint.setCheckpoint)(state, 'down', useCheckpoint));
+        (0, _checkpoint.setCheckpoint)(state, 'down', useCheckpoint);
       });
     }).catch(unhandledError => state.events.error.next(unhandledError));
     return persistenceQueue;

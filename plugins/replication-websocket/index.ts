@@ -1,1 +1,1 @@
-export * from '../../dist/types/plugins/replication-websocket/index.d.ts';
+export * from '../../dist/types/plugins/replication-websocket/index';

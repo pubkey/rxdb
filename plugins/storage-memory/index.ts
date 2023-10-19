@@ -1,1 +1,1 @@
-export * from '../../dist/types/plugins/storage-memory/index.d.ts';
+export * from '../../dist/types/plugins/storage-memory/index';

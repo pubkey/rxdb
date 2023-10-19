@@ -1,1 +1,1 @@
-export * from '../../dist/types/plugins/crdt/index.d.ts';
+export * from '../../dist/types/plugins/crdt/index';

@@ -13,7 +13,7 @@ export declare class RxStorageInstanceMongoDB<RxDocType> implements RxStorageIns
     readonly settings: RxStorageMongoDBSettings;
     readonly primaryPath: StringKeys<RxDocumentData<RxDocType>>;
     readonly inMongoPrimaryPath: string;
-    closed: boolean;
+    closed?: Promise<void>;
     private readonly changes$;
     readonly mongoClient: MongoClient;
     readonly mongoDatabase: MongoDatabase;

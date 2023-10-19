@@ -1,1 +1,1 @@
-export * from '../../dist/types/plugins/replication-webrtc/index.d.ts';
+export * from '../../dist/types/plugins/replication-webrtc/index';

@@ -302,7 +302,7 @@ export function rxStorageInstanceToReplicationHandler<RxDocType, MasterCheckpoin
 }
 
 
-export function cancelRxStorageReplication(
+export async function cancelRxStorageReplication(
     replicationState: RxStorageInstanceReplicationState<any>
 ) {
     replicationState.events.canceled.next(true);
@@ -312,4 +312,5 @@ export function cancelRxStorageReplication(
     replicationState.events.processed.down.complete();
     replicationState.events.resolvedConflicts.complete();
     replicationState.events.canceled.complete();
+    await replicationState.checkpointQueue;
 }

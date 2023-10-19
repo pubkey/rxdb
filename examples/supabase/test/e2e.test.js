@@ -24,7 +24,7 @@ async function waitUntilPageIsLoaded(t) {
         const ret = !content.includes('..'); // dots mean that something is loading
         if (!ret) console.log(content);
         return ret;
-    }, 0, 500);
+    }, 1000 * 60, 500);
     console.log('waitUntilPageIsLoaded(): done');
 }
 

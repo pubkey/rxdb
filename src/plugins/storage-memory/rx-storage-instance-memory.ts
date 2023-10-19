@@ -502,6 +502,9 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
     }
 
     async remove(): Promise<void> {
+        if (this.closed) {
+            throw new Error('closed');
+        }
         this.ensurePersistence();
         ensureNotRemoved(this);
 
@@ -521,7 +524,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
 
         this.ensurePersistence();
         if (this.closed) {
-            return Promise.reject(new Error('already closed'));
+            return PROMISE_RESOLVE_VOID;
         }
         this.closed = true;
 

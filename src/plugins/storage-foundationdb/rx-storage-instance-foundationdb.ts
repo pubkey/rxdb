@@ -70,7 +70,7 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
 > {
     public readonly primaryPath: StringKeys<RxDocumentData<RxDocType>>;
 
-    public closed = false;
+    public closed?: Promise<void>;
     private changes$: Subject<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, RxStorageDefaultCheckpoint>> = new Subject();
 
     constructor(
@@ -404,16 +404,17 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
 
     async close() {
         if (this.closed) {
-            return Promise.reject(new Error('already closed'));
+            return this.closed;
         }
-        this.closed = true;
-        this.changes$.complete();
+        this.closed = (async () => {
+            this.changes$.complete();
+            const dbs = await this.internals.dbsPromise;
+            await dbs.root.close();
 
-        const dbs = await this.internals.dbsPromise;
-        dbs.root.close();
-
-        // TODO shouldn't we close the index databases?
-        // Object.values(dbs.indexes).forEach(db => db.close());
+            // TODO shouldn't we close the index databases?
+            // Object.values(dbs.indexes).forEach(db => db.close());
+        })();
+        return this.closed;
     }
 }
 

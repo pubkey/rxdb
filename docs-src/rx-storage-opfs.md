@@ -20,7 +20,7 @@ If no more data can be written, a `QuotaExceededError` is thrown which should be
 
 ## How the OPFS API works
 
-The OPFS API is pretty straightforward to use. First you get the root filesystem. Then you can create files and directory on that. Notice that whenever you writ to, or read from a file, an `ArrayBuffer` must be used that contains the data. It is not possible to write plain strings or objects into the file. Therefore the `TextEncoder` and `TextDecoder` API must be used.
+The OPFS API is pretty straightforward to use. First you get the root filesystem. Then you can create files and directory on that. Notice that whenever you write to, or read from a file, an `ArrayBuffer` must be used that contains the data. It is not possible to write plain strings or objects into the file. Therefore the `TextEncoder` and `TextDecoder` API must be used.
 
 Also notice that the methods of `FileSystemSyncAccessHandle` have been asynchronous in the past, but are synchronous since Chromium 108. To make it less confusing, we just use `await` in front of them, so it will work in both cases.
 
