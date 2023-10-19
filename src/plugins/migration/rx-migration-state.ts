@@ -343,7 +343,6 @@ export class RxMigrationState {
             devMode: overwritable.isDevMode()
         });
 
-
         const replicationHandlerBase = rxStorageInstanceToReplicationHandler(
             newStorage,
             /**

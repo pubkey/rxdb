@@ -147,8 +147,6 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
             internals.changes$.next(categorized.eventBulk);
         }
 
-
-
         return Promise.resolve({ success, error });
     }
 
