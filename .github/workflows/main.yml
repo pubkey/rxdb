@@ -115,25 +115,19 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-npm-memory-x1-
 
-      - name: install npm dependencies
-        run: npm install
+      - run: npm install
 
-      - name: build
-        run: npm run build
+      - run: npm run build
 
-      - name: npm run test:node:memory
-        run: npm run test:node:memory
-
-      - name: npm run test:fast:memory
-        run: npm run test:fast:memory
+      - run: npm run test:node:memory
+      - run: npm run test:fast:memory
 
       - name: npm run test:browser:memory
         uses: GabrielBB/xvfb-action@v1
         with:
           run: npm run test:browser:memory
 
-      - name: npm run test:fast:memory-validation
-        run: npm run test:fast:memory-validation
+      - run: npm run test:fast:memory-validation
 
       - name: performance test
         uses: GabrielBB/xvfb-action@v1

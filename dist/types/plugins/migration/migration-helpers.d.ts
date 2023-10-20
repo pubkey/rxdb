@@ -1,7 +1,6 @@
 import { BehaviorSubject } from 'rxjs';
 import type { InternalStoreCollectionDocType, RxCollection, RxDatabase, RxDocumentData } from '../../types/index.d.ts';
 import { RxMigrationState } from './rx-migration-state.ts';
-export declare const MIGRATION_STATUS_INTERNAL_DOCUMENT_CONTEXT = "rx-migration-status";
 export declare function getOldCollectionMeta(migrationState: RxMigrationState): Promise<RxDocumentData<InternalStoreCollectionDocType>>;
 /**
  * runs the doc-data through all following migrationStrategies

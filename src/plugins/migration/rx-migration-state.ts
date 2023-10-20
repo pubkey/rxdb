@@ -21,7 +21,6 @@ import type {
 } from '../../types/index.d.ts';
 import {
     MIGRATION_DEFAULT_BATCH_SIZE,
-    MIGRATION_STATUS_INTERNAL_DOCUMENT_CONTEXT,
     addMigrationStateToDatabase,
     getOldCollectionMeta,
     migrateDocumentData,
@@ -63,6 +62,7 @@ import {
 } from '../../replication-protocol/index.ts';
 import { overwritable } from '../../overwritable.ts';
 import {
+    INTERNAL_CONTEXT_MIGRATION_STATUS,
     addConnectedStorageToCollection,
     getPrimaryKeyOfInternalDocument
 } from '../../rx-database-internal-store.ts';
@@ -94,7 +94,7 @@ export class RxMigrationState {
         this.mustMigrate = mustMigrate(this);
         this.statusDocId = getPrimaryKeyOfInternalDocument(
             this.statusDocKey,
-            MIGRATION_STATUS_INTERNAL_DOCUMENT_CONTEXT
+            INTERNAL_CONTEXT_MIGRATION_STATUS
         );
         addMigrationStateToDatabase(this);
 
@@ -269,7 +269,7 @@ export class RxMigrationState {
                     newDoc = {
                         id: this.statusDocId,
                         key: this.statusDocKey,
-                        context: MIGRATION_STATUS_INTERNAL_DOCUMENT_CONTEXT,
+                        context: INTERNAL_CONTEXT_MIGRATION_STATUS,
                         data: {
                             collectionName: this.collection.name,
                             status: 'RUNNING',
@@ -308,7 +308,7 @@ export class RxMigrationState {
                             previous,
                             document: ensureNotFalsy(newDoc)
                         },
-                        MIGRATION_STATUS_INTERNAL_DOCUMENT_CONTEXT
+                        INTERNAL_CONTEXT_MIGRATION_STATUS
                     );
 
                     // write successful
@@ -342,7 +342,6 @@ export class RxMigrationState {
             password: this.database.password,
             devMode: overwritable.isDevMode()
         });
-
 
         const replicationHandlerBase = rxStorageInstanceToReplicationHandler(
             newStorage,
@@ -476,7 +475,7 @@ export class RxMigrationState {
                         }
 
                         const newSchema = getRxReplicationMetaInstanceSchema(
-                            clone(connectedStorage.schema),
+                            clone(this.collection.schema.jsonSchema),
                             hasEncryption(connectedStorage.schema)
                         );
                         newSchema.version = this.collection.schema.version;

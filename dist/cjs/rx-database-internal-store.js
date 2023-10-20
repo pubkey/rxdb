@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.STORAGE_TOKEN_DOCUMENT_KEY = exports.STORAGE_TOKEN_DOCUMENT_ID = exports.INTERNAL_STORE_SCHEMA_TITLE = exports.INTERNAL_STORE_SCHEMA = exports.INTERNAL_CONTEXT_STORAGE_TOKEN = exports.INTERNAL_CONTEXT_COLLECTION = void 0;
+exports.STORAGE_TOKEN_DOCUMENT_KEY = exports.STORAGE_TOKEN_DOCUMENT_ID = exports.INTERNAL_STORE_SCHEMA_TITLE = exports.INTERNAL_STORE_SCHEMA = exports.INTERNAL_CONTEXT_STORAGE_TOKEN = exports.INTERNAL_CONTEXT_MIGRATION_STATUS = exports.INTERNAL_CONTEXT_COLLECTION = void 0;
 exports._collectionNamePrimary = _collectionNamePrimary;
 exports.addConnectedStorageToCollection = addConnectedStorageToCollection;
 exports.ensureStorageTokenDocumentExists = ensureStorageTokenDocumentExists;
@@ -15,6 +15,7 @@ var _rxStorageHelper = require("./rx-storage-helper.js");
 var _index = require("./plugins/utils/index.js");
 var INTERNAL_CONTEXT_COLLECTION = exports.INTERNAL_CONTEXT_COLLECTION = 'collection';
 var INTERNAL_CONTEXT_STORAGE_TOKEN = exports.INTERNAL_CONTEXT_STORAGE_TOKEN = 'storage-token';
+var INTERNAL_CONTEXT_MIGRATION_STATUS = exports.INTERNAL_CONTEXT_MIGRATION_STATUS = 'rx-migration-status';
 
 /**
  * Do not change the title,
@@ -44,7 +45,7 @@ var INTERNAL_STORE_SCHEMA = exports.INTERNAL_STORE_SCHEMA = (0, _rxSchemaHelper.
     },
     context: {
       type: 'string',
-      enum: [INTERNAL_CONTEXT_COLLECTION, INTERNAL_CONTEXT_STORAGE_TOKEN, 'OTHER']
+      enum: [INTERNAL_CONTEXT_COLLECTION, INTERNAL_CONTEXT_STORAGE_TOKEN, INTERNAL_CONTEXT_MIGRATION_STATUS, 'OTHER']
     },
     data: {
       type: 'object',

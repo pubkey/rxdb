@@ -138,11 +138,15 @@ export class RxReplicationState<RxDocType, CheckpointType> {
         const pushModifier = this.push && this.push.modifier ? this.push.modifier : DEFAULT_MODIFIER;
 
         const database = this.collection.database;
-        const metaInstanceCollectionName = await database.hashFunction(this.collection.name + '-rx-replication-' + this.replicationIdentifier);
+        const metaInstanceCollectionName = 'rx-replication-meta-' + await database.hashFunction([
+            this.collection.name,
+            this.replicationIdentifier
+        ].join('-'));
         const metaInstanceSchema = getRxReplicationMetaInstanceSchema(
             this.collection.schema.jsonSchema,
             hasEncryption(this.collection.schema.jsonSchema)
         );
+
         const [metaInstance] = await Promise.all([
             this.collection.database.storage.createStorageInstance<RxStorageReplicationMeta<RxDocType, CheckpointType>>({
                 databaseName: database.name,

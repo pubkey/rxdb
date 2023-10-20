@@ -2,7 +2,7 @@ import { Subject } from 'rxjs';
 import { getStartIndexStringFromLowerBound, getStartIndexStringFromUpperBound } from "../../custom-index.js";
 import { getPrimaryFieldOfPrimaryKey } from "../../rx-schema-helper.js";
 import { categorizeBulkWriteRows } from "../../rx-storage-helper.js";
-import { ensureNotFalsy, lastOfArray, now, PROMISE_RESOLVE_TRUE, PROMISE_RESOLVE_VOID, requestIdlePromise, RX_META_LWT_MINIMUM } from "../../plugins/utils/index.js";
+import { deepEqual, ensureNotFalsy, lastOfArray, now, PROMISE_RESOLVE_TRUE, PROMISE_RESOLVE_VOID, requestIdlePromise, RX_META_LWT_MINIMUM } from "../../plugins/utils/index.js";
 import { boundGE, boundGT, boundLE, boundLT } from "./binary-search-bounds.js";
 import { attachmentMapKey, compareDocsWithIndex, ensureNotRemoved, getMemoryCollectionKey, putWriteRowToState, removeDocFromState } from "./memory-helper.js";
 import { addIndexesToInternalsState, getMemoryIndexName } from "./memory-indexes.js";
@@ -320,6 +320,7 @@ export function createMemoryStorageInstance(storage, params, settings) {
   var internals = storage.collectionStates.get(collectionKey);
   if (!internals) {
     internals = {
+      schema: params.schema,
       removed: false,
       refCount: 1,
       documents: new Map(),
@@ -331,6 +332,16 @@ export function createMemoryStorageInstance(storage, params, settings) {
     addIndexesToInternalsState(internals, params.schema);
     storage.collectionStates.set(collectionKey, internals);
   } else {
+    /**
+     * Ensure that the storage was not already
+     * created with a different schema.
+     * This is very important because if this check
+     * does not exist here, we have hard-to-debug problems
+     * downstream.
+     */
+    if (params.devMode && !deepEqual(internals.schema, params.schema)) {
+      throw new Error('storage was already created with a different schema');
+    }
     internals.refCount = internals.refCount + 1;
   }
   var instance = new RxStorageInstanceMemory(storage, params.databaseName, params.collectionName, params.schema, internals, params.options, settings);

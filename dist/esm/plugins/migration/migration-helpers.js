@@ -2,7 +2,6 @@ import { BehaviorSubject } from 'rxjs';
 import { INTERNAL_CONTEXT_COLLECTION, getPrimaryKeyOfInternalDocument } from "../../rx-database-internal-store.js";
 import { getPreviousVersions } from "../../rx-schema.js";
 import { PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_NULL, clone, flatClone, getFromMapOrCreate, toPromise } from "../utils/index.js";
-export var MIGRATION_STATUS_INTERNAL_DOCUMENT_CONTEXT = 'rx-migration-status';
 export async function getOldCollectionMeta(migrationState) {
   var collectionDocKeys = getPreviousVersions(migrationState.collection.schema.jsonSchema).map(version => migrationState.collection.name + '-' + version);
   var found = await migrationState.database.internalStore.findDocumentsById(collectionDocKeys.map(key => getPrimaryKeyOfInternalDocument(key, INTERNAL_CONTEXT_COLLECTION)), false);

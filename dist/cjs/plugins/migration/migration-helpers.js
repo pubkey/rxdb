@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.MIGRATION_STATUS_INTERNAL_DOCUMENT_CONTEXT = exports.MIGRATION_DEFAULT_BATCH_SIZE = exports.DATA_MIGRATION_STATE_SUBJECT_BY_DATABASE = void 0;
+exports.MIGRATION_DEFAULT_BATCH_SIZE = exports.DATA_MIGRATION_STATE_SUBJECT_BY_DATABASE = void 0;
 exports.addMigrationStateToDatabase = addMigrationStateToDatabase;
 exports.getMigrationStateByDatabase = getMigrationStateByDatabase;
 exports.getOldCollectionMeta = getOldCollectionMeta;
@@ -15,7 +15,6 @@ var _rxjs = require("rxjs");
 var _rxDatabaseInternalStore = require("../../rx-database-internal-store.js");
 var _rxSchema = require("../../rx-schema.js");
 var _index = require("../utils/index.js");
-var MIGRATION_STATUS_INTERNAL_DOCUMENT_CONTEXT = exports.MIGRATION_STATUS_INTERNAL_DOCUMENT_CONTEXT = 'rx-migration-status';
 async function getOldCollectionMeta(migrationState) {
   var collectionDocKeys = (0, _rxSchema.getPreviousVersions)(migrationState.collection.schema.jsonSchema).map(version => migrationState.collection.name + '-' + version);
   var found = await migrationState.database.internalStore.findDocumentsById(collectionDocKeys.map(key => (0, _rxDatabaseInternalStore.getPrimaryKeyOfInternalDocument)(key, _rxDatabaseInternalStore.INTERNAL_CONTEXT_COLLECTION)), false);

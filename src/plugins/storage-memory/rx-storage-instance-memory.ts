@@ -29,6 +29,7 @@ import type {
     StringKeys
 } from '../../types/index.d.ts';
 import {
+    deepEqual,
     ensureNotFalsy,
     lastOfArray,
     now,
@@ -146,8 +147,6 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
             };
             internals.changes$.next(categorized.eventBulk);
         }
-
-
 
         return Promise.resolve({ success, error });
     }
@@ -554,6 +553,7 @@ export function createMemoryStorageInstance<RxDocType>(
     let internals = storage.collectionStates.get(collectionKey);
     if (!internals) {
         internals = {
+            schema: params.schema,
             removed: false,
             refCount: 1,
             documents: new Map(),
@@ -565,6 +565,19 @@ export function createMemoryStorageInstance<RxDocType>(
         addIndexesToInternalsState(internals, params.schema);
         storage.collectionStates.set(collectionKey, internals);
     } else {
+        /**
+         * Ensure that the storage was not already
+         * created with a different schema.
+         * This is very important because if this check
+         * does not exist here, we have hard-to-debug problems
+         * downstream.
+         */
+        if (
+            params.devMode &&
+            !deepEqual(internals.schema, params.schema)
+        ) {
+            throw new Error('storage was already created with a different schema');
+        }
         internals.refCount = internals.refCount + 1;
     }
 

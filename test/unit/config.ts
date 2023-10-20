@@ -188,7 +188,7 @@ export function setDefaultStorage(storageKey: string) {
                         })
                     };
                 },
-                hasPersistence: false,
+                hasPersistence: true,
                 hasMultiInstance: false,
                 hasAttachments: true
             };

@@ -1,6 +1,7 @@
 import type { CollectionsOfDatabase, InternalStoreCollectionDocType, InternalStoreDocType, InternalStoreStorageTokenDocType, RxCollection, RxDatabase, RxDocumentData, RxJsonSchema, RxStorageInstance, RxStorageStatics } from './types/index.d.ts';
 export declare const INTERNAL_CONTEXT_COLLECTION = "collection";
 export declare const INTERNAL_CONTEXT_STORAGE_TOKEN = "storage-token";
+export declare const INTERNAL_CONTEXT_MIGRATION_STATUS = "rx-migration-status";
 /**
  * Do not change the title,
  * we have to flag the internal schema so that
