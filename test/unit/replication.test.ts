@@ -795,26 +795,26 @@ describe('replication.test.js', () => {
             await localDocs[0].getLatest().putAttachment(getRandomAttachment('fork1'));
 
             await Promise.all([
-                localDocs[1].getLatest().putAttachment(getRandomAttachment()),
-                localDocs[2].getLatest().putAttachment(getRandomAttachment()),
                 remoteDocs[1].getLatest().putAttachment(getRandomAttachment()),
-                remoteDocs[2].getLatest().putAttachment(getRandomAttachment())
+                remoteDocs[2].getLatest().putAttachment(getRandomAttachment()),
+                localDocs[1].getLatest().putAttachment(getRandomAttachment()),
+                localDocs[2].getLatest().putAttachment(getRandomAttachment())
             ]);
 
             await replicationState.awaitInSync();
             await ensureEqualState(localCollection, remoteCollection, 'after adding');
 
             // add more attachments to docs that already have attachments
-            await localDocs[0].getLatest().putAttachment(getRandomAttachment('fork2'));
             await remoteDocs[0].getLatest().putAttachment(getRandomAttachment('master2'));
+            await localDocs[0].getLatest().putAttachment(getRandomAttachment('fork2'));
 
             await wait(100);
             await replicationState.awaitInSync();
             await ensureEqualState(localCollection, remoteCollection, 'after add more');
 
             // overwrite attachments
-            await localDocs[0].getLatest().putAttachment(getRandomAttachment('fork1', 5));
             await remoteDocs[0].getLatest().putAttachment(getRandomAttachment('master1', 5));
+            await localDocs[0].getLatest().putAttachment(getRandomAttachment('fork1', 5));
 
             await wait(100);
             await replicationState.awaitInSync();

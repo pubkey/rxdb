@@ -34,7 +34,7 @@ export type MemoryStorageInternalsByIndex<RxDocType> = {
 export type MemoryStorageInternals<RxDocType> = {
 
     /**
-     * Schema of the first instance createdd with the given settings.
+     * Schema of the first instance created with the given settings.
      * Used to ensure that the same storage is not re-created with
      * a different schema.
      */
