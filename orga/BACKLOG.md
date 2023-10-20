@@ -3,16 +3,6 @@
 This file contains a list with things that should be implemented in the future. If you want to create a PR with one of these things, please create an issue before starting your work, so we can prevent duplication.
 
 
-## Full Text Search
-
-Add a plugin with full-text-search like
-- https://github.com/pouchdb-community/pouchdb-quick-search
-- https://docs.mongodb.com/manual/core/index-text/
-
-See [#259](https://github.com/pubkey/rxdb/issues/259)
-
-
-
 ## Upsert atomic with attachments
 
 See [#494](https://github.com/pubkey/rxdb/issues/494)
