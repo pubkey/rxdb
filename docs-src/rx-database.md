@@ -1,18 +1,18 @@
 # RxDatabase
 
-A RxDatabase-Object contains your collections and handles the synchronization of change-events.
+An RxDatabase contains your collections and handles the synchronization of change-events. 
 
 ## Creation
 
-The database is created by the asynchronous `.createRxDatabase()` function of the core RxDB module. It has the following parameters:
+The database is created with the asynchronous `.createRxDatabase()` function of the core RxDB module, as follows:
 
 ```javascript
 import { createRxDatabase } from 'rxdb';
 import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
 
 const db = await createRxDatabase({
-  name: 'heroesdb',                   // <- name
-  storage: getRxStorageDexie(),       // <- RxStorage
+  name: 'heroesdb',                   // <- the database name
+  storage: getRxStorageDexie(),       // <- RxStorage plugin to use for this database
 
   /* Optional parameters: */
   password: 'myPassword',             // <- password (optional)
@@ -24,22 +24,16 @@ const db = await createRxDatabase({
 
 ### name
 
-The database-name is a string which uniquely identifies the database. When two RxDatabases have the same name and use the same `RxStorage`, their data can be assumed as equal and they will share events between each other.
-Depending on the storage or adapter this can also be used to define the filesystem folder of your data.
+A string which uniquely identifies the database. When two RxDatabases have the same name and use the same `RxStorage`, their data can be assumed as equal and they will share events between each other. If using filesystem based storage the name will be used to define the directory used for your data.
 
 
 ### storage
 
-RxDB works on top of an implementation of the [RxStorage](./rx-storage.md) interface. This interface is an abstraction that allows you to use different underlying databases that actually handle the documents. Depending on your use case you might use a different `storage` with different tradeoffs in performance, bundle size or supported runtimes.
-
-There are many `RxStorage` implementations that can be used depending on the JavaScript environment and performance requirements.
-For example you can use the [Dexie RxStorage](./rx-storage-dexie.md) in the browser or use the LokiJS storage with the filesystem adapter in Node.js.
-
-- [List of RxStorage implementations](./rx-storage.md)
+RxDatabase makes used of the `RxStorage` interface. This interface is an abstraction that allows you to use different underlying databases for data handling/persistence. Different `RxStorage` plugins can be chosen for your application depending on target environment and performance requirements. For example you can use the [Dexie RxStorage](./rx-storage-dexie.md) in the browser or the LokiJS plugin with the filesystem adapter in Node.js.
 
 ```javascript
 
-// use the Dexie.js RxStorage that stores data in IndexedDB.
+// use the Dexie.js RxStorage which stores data in IndexedDB.
 import { getRxStorageDexie } from 'rxdb/plugins/storage-dexie';
 
 const dbDexie = await createRxDatabase({
@@ -60,31 +54,27 @@ const dbLoki = await createRxDatabase({
 });
 ```
 
+Please refer to the full list of [RxStorage implementations](./rx-storage.md) here.
 
 ### password
 `(optional)`
-If you want to use encrypted fields in the collections of a database, you have to set a password for it. The password must be a string with at least 12 characters.
-
-[Read more about encryption here](./encryption.md).
+If you want to [use encrypted fields](./encryption.md) in your database you, or the user, will need to provide a password. The password must be a string with at least 12 characters.
 
 ### multiInstance
 `(optional=true)`
-When you create more than one instance of the same database in a single javascript-runtime, you should set `multiInstance` to ```true```. This will enable the event sharing between the two instances. For example when the user has opened multiple browser windows, events will be shared between them so that both windows react to the same changes.
-`multiInstance` should be set to `false` when you have single-instances like a single Node.js-process, a react-native-app, a cordova-app or a single-window electron app which can decrease the startup time because no instance coordination has to be done.
+When you create more than one instance of the same database in a single javascript-runtime, you should set `multiInstance` to ```true```. This will enable event sharing between the active instances. For example when the user has opened multiple browser windows, events will be shared between them so that all windows react to the same changes.
+`multiInstance` should be set to `false` when you have single instances like a single Node.js-process, a react-native-app, a cordova-app or a single-window electron app, and  decreases app startup time because no coordination is needed.
 
 ### eventReduce
 `(optional=false)`
 
-One big benefit of having a realtime database is that big performance optimizations can be done when the database knows a query is observed and the updated results are needed continuously. RxDB uses the [EventReduce Algorithm](https://github.com/pubkey/event-reduce) to optimize observer or recurring queries.
+One big benefit of having a realtime database is that significant performance optimizations are possible when the database knows a query is observed and the updated results are needed continuously. RxDB uses the [EventReduce Algorithm](https://github.com/pubkey/event-reduce) to optimize observed or recurring queries.
 
 For better performance, you should always set `eventReduce: true`. This will also be the default in the next major RxDB version.
 
-
 ### ignoreDuplicate
 `(optional=false)`
-If you create multiple RxDatabase-instances with the same name and same adapter, it's very likely that you have done something wrong.
-To prevent this common mistake, RxDB will throw an error when you do this.
-In some rare cases like unit-tests, you want to do this intentional by setting `ignoreDuplicate` to `true`.
+If you create multiple RxDatabase instances with the same name and adapter, it's very likely that you have done something wrong. To prevent this common mistake, RxDB will throw an error in such cases. In rare instances where this is intentional (such as unit tests) you can set `ignoreDuplicate` to `true` to prevent the error.
 
 ```js
 const db1 = await createRxDatabase({
@@ -102,17 +92,21 @@ const db2 = await createRxDatabase({
 ## Methods
 
 ### Observe with $
-Calling this will return an [rxjs-Observable](http://reactivex.io/documentation/observable.html) which streams all write events of the `RxDatabase`.
+Calling this will return an [rxjs-Observable](http://reactivex.io/documentation/observable.html) which streams all write events on the `RxDatabase`.
 
 ```javascript
-myDb.$.subscribe(changeEvent => console.dir(changeEvent));
+const myDatabase = await createRxDatabase({
+  name: 'mydatabase',
+  storage: getRxStorageDexie()
+});
+
+myDatabase.$.subscribe(changeEvent => console.dir(changeEvent));
 ```
 
 ### exportJSON()
-Use this function to create a json-export from every piece of data in every collection of this database. You can pass `true` as a parameter to decrypt the encrypted data-fields of your document.
+Use this function to create a json export of all documents in all collections in the database. You can pass `true` as a parameter to decrypt any encrypted document fields.
 
-
-Before `exportJSON()` and `importJSON()` can be used, you have to add the `json-dump` plugin.
+To use the `exportJSON()` and `importJSON()` functions you have to add the `json-dump` plugin.
 
 ```javascript
 import { addRxPlugin } from 'rxdb';
@@ -127,7 +121,7 @@ myDatabase.exportJSON()
 ```
 
 ### importJSON()
-To import the json-dumps into your database, use this function.
+To import a json dump into your database, use this function (see `exportJSON` above to make the plugin available). 
 
 ```javascript
 // import the dump to the database
@@ -144,7 +138,7 @@ Returns a Promise which resolves when the RxDatabase becomes [elected leader](./
 
 ### requestIdlePromise()
 Returns a promise which resolves when the database is in idle. This works similar to [requestIdleCallback](https://developer.mozilla.org/de/docs/Web/API/Window/requestIdleCallback) but tracks the idle-ness of the database instead of the CPU.
-Use this for semi-important tasks like cleanups which should not affect the speed of important tasks.
+Use this for semi-important tasks like cleanups which should not affect the speed of more important tasks.
 
 ```javascript
 
@@ -163,14 +157,17 @@ myDatabase.requestIdlePromise(1000 /* time in ms */).then(() => {
 ```
 
 ### destroy()
-Destroys the databases object-instance. This is to free up memory and stop all observers and replications.
+Destroys the RxDatabase object instance. This is to free up memory and stop all observers and replications.
 Returns a `Promise` that resolves when the database is destroyed.
+
 ```javascript
 await myDatabase.destroy();
 ```
 
+Note that `destroy()` will not remove the data from storage, the data will still be available when an RxDatabase instance with the same name and storage adapter is created again. 
+
 ### remove()
-Wipes all documents from the storage. Use this to free up disc space.
+Deletes all documents from the storage. Use this to free up disc space.
 
 ```javascript
 await myDatabase.remove();
@@ -185,5 +182,5 @@ removeRxDatabase('mydatabasename', 'localstorage');
 Returns true if the given object is an instance of RxDatabase. Returns false if not.
 ```javascript
 import { isRxDatabase } from 'rxdb';
-const is = isRxDatabase(myObj);
+const isRXDBInstance = isRxDatabase(myObj);
 ```
