@@ -146,6 +146,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
             this.collection.schema.jsonSchema,
             hasEncryption(this.collection.schema.jsonSchema)
         );
+
         const [metaInstance] = await Promise.all([
             this.collection.database.storage.createStorageInstance<RxStorageReplicationMeta<RxDocType, CheckpointType>>({
                 databaseName: database.name,

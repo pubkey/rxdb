@@ -475,7 +475,7 @@ export class RxMigrationState {
                         }
 
                         const newSchema = getRxReplicationMetaInstanceSchema(
-                            clone(connectedStorage.schema),
+                            clone(this.collection.schema.jsonSchema),
                             hasEncryption(connectedStorage.schema)
                         );
                         newSchema.version = this.collection.schema.version;

@@ -751,7 +751,11 @@ config.parallel('data-migration.test.ts', () => {
                 db.humans.insert(schemaObjects.simpleHumanAge({ passportId: 'local-3' })),
                 remoteDb.humans.insert(schemaObjects.simpleHumanAge({ passportId: 'remote-1' })),
                 remoteDb.humans.insert(schemaObjects.simpleHumanAge({ passportId: 'remote-2' })),
-                remoteDb.humans.insert(schemaObjects.simpleHumanAge({ passportId: 'remote-3' }))
+                remoteDb.humans.insert(schemaObjects.simpleHumanAge({ passportId: 'remote-3' })),
+
+                // one with full primaryKey length
+                db.humans.insert(schemaObjects.simpleHumanAge({ passportId: randomCouchString(schemas.simpleHuman.properties.passportId.maxLength) })),
+                remoteDb.humans.insert(schemaObjects.simpleHumanAge({ passportId: randomCouchString(schemas.simpleHuman.properties.passportId.maxLength) }))
             ]);
 
             const replicationState = replicateRxCollection({
@@ -791,7 +795,6 @@ config.parallel('data-migration.test.ts', () => {
                     migrationStrategies
                 }
             });
-
 
             const replicationState2 = replicateRxCollection({
                 collection: db2.humans,
