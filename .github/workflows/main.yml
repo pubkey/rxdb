@@ -841,7 +841,6 @@ jobs:
           cache-name: cache-deno-modules
         with:
           path: |
-            ~/.npm
             /home/runner/.cache/deno
           # do not cache based on package.json because deno install randomly fails
           # and it would then never succeed on the first run on dependency updateds
