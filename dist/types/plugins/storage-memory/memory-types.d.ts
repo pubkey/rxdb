@@ -1,5 +1,5 @@
 import { Subject } from 'rxjs';
-import type { CategorizeBulkWriteRowsOutput, DefaultPreparedQuery, EventBulk, RxAttachmentWriteData, RxConflictResultionTask, RxDocumentData, RxStorage, RxStorageChangeEvent, RxStorageDefaultCheckpoint } from '../../types/index.d.ts';
+import type { CategorizeBulkWriteRowsOutput, DefaultPreparedQuery, EventBulk, RxAttachmentWriteData, RxConflictResultionTask, RxDocumentData, RxJsonSchema, RxStorage, RxStorageChangeEvent, RxStorageDefaultCheckpoint } from '../../types/index.d.ts';
 export type RxStorageMemorySettings = {};
 export type RxStorageMemoryInstanceCreationOptions = {};
 export type RxStorageMemory = RxStorage<MemoryStorageInternals<any>, RxStorageMemoryInstanceCreationOptions> & {
@@ -18,6 +18,12 @@ export type MemoryStorageInternalsByIndex<RxDocType> = {
  * that have been created with the same [databaseName+collectionName] combination.
  */
 export type MemoryStorageInternals<RxDocType> = {
+    /**
+     * Schema of the first instance created with the given settings.
+     * Used to ensure that the same storage is not re-created with
+     * a different schema.
+     */
+    schema: RxJsonSchema<RxDocumentData<RxDocType>>;
     /**
      * We reuse the memory state when multiple instances
      * are created with the same params.

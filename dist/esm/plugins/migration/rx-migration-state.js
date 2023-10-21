@@ -282,7 +282,7 @@ export var RxMigrationState = /*#__PURE__*/function () {
       if (connectedStorage.schema.title !== META_INSTANCE_SCHEMA_TITLE) {
         throw new Error('unknown migration handling for schema');
       }
-      var newSchema = getRxReplicationMetaInstanceSchema(clone(connectedStorage.schema), hasEncryption(connectedStorage.schema));
+      var newSchema = getRxReplicationMetaInstanceSchema(clone(this.collection.schema.jsonSchema), hasEncryption(connectedStorage.schema));
       newSchema.version = this.collection.schema.version;
       var [oldStorage, newStorage] = await Promise.all([this.database.storage.createStorageInstance({
         databaseInstanceToken: this.database.token,
