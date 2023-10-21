@@ -838,7 +838,7 @@ jobs:
       - name: Reuse npm cache folder
         uses: actions/cache@v3
         env:
-          cache-name: cache-node-modules
+          cache-name: cache-deno-modules
         with:
           path: |
             ~/.npm
