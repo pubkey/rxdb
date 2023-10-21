@@ -2272,5 +2272,43 @@ describe('rx-collection.test.ts', () => {
             sub.unsubscribe();
             collection.database.destroy();
         });
+        it('should keep the _meta.lwt value of the documents when the database is reopened', async () => {
+            if (!config.storage.hasPersistence) {
+                return;
+            }
+            const name = randomCouchString(10);
+            const db = await createRxDatabase({
+                name,
+                storage: config.storage.getStorage(),
+                ignoreDuplicate: true
+            });
+            await db.addCollections({
+                human: {
+                    schema: schemas.human
+                }
+            });
+            const doc = await db.human.insert(schemaObjects.human('local-1'));
+
+            const lwtBefore = doc.toJSON(true)._meta.lwt;
+            await db.destroy();
+
+            // check correct lwt
+            const dbX = await createRxDatabase({
+                name,
+                storage: config.storage.getStorage(),
+                ignoreDuplicate: true
+            });
+            await dbX.addCollections({
+                human: {
+                    schema: schemas.human,
+                    autoMigrate: false
+                }
+            });
+            const docX = await dbX.human.findOne('local-1').exec(true);
+            if (docX.toJSON(true)._meta.lwt !== lwtBefore) {
+                throw new Error('._meta.lwt not equal');
+            }
+            await dbX.destroy();
+        });
     });
 });

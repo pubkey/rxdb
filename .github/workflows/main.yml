@@ -809,7 +809,6 @@ jobs:
         with:
           path: |
             ~/.npm
-            /home/runner/.cache/deno
           key: ${{ runner.os }}-npm-others-x1-${{ hashFiles('**/package.json') }}
           restore-keys: |
             ${{ runner.os }}-npm-others-x1-
@@ -836,8 +835,20 @@ jobs:
       - run: npm run test:performance:memory:bun
 
       # deno (must be last because it messes up with file permissions)
+      - name: Reuse npm cache folder
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: |
+            ~/.npm
+            /home/runner/.cache/deno
+          # do not cache based on package.json because deno install randomly fails
+          # and it would then never succeed on the first run on dependency updateds
+          key: ${{ runner.os }}-deno-x1-
       - uses: denoland/setup-deno@v1
         with:
+          # https://github.com/denoland/deno/releases
           deno-version: "1.37.2"
       - run: |
           deno info
