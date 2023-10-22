@@ -7,7 +7,7 @@ RxDB is not a self contained database. Instead the data is stored in an implemen
 
 - In the Browser: Use the [OPFS RxStorage](./rx-storage-opfs.md) if you have [premium access](https://rxdb.info/premium.html), otherwise use the [Dexie.js](./rx-storage-dexie.md) storage.
 - In Electron and ReactNative: Use the [SQLite RxStorage](./rx-storage-sqlite.md) if you have [premium access](https://rxdb.info/premium.html), otherwise use the [LokiJS](./rx-storage-lokijs.md) storage.
-- In Capactior: Use the [SQLite RxStorage](./rx-storage-sqlite.md) if you have [premium access](https://rxdb.info/premium.html), otherwise use the [Dexie.js](./rx-storage-dexie.md) storage.
+- In Capacitor: Use the [SQLite RxStorage](./rx-storage-sqlite.md) if you have [premium access](https://rxdb.info/premium.html), otherwise use the [Dexie.js](./rx-storage-dexie.md) storage.
 
 
 ## Implementations
