@@ -74,7 +74,7 @@ config.parallel('custom-index.test.ts', () => {
             _deleted: false,
             _attachments: {},
             _meta: {
-                lwt: new Date().getTime()
+                lwt: Date.now()
             },
             _rev: EXAMPLE_REVISION_1
         }, partial);
@@ -335,7 +335,7 @@ config.parallel('custom-index.test.ts', () => {
                     _deleted: false,
                     _attachments: {},
                     _meta: {
-                        lwt: new Date().getTime()
+                        lwt: Date.now()
                     },
                     _rev: EXAMPLE_REVISION_1
                 },
@@ -345,7 +345,7 @@ config.parallel('custom-index.test.ts', () => {
                     _deleted: false,
                     _attachments: {},
                     _meta: {
-                        lwt: new Date().getTime()
+                        lwt: Date.now()
                     },
                     _rev: EXAMPLE_REVISION_1
                 }

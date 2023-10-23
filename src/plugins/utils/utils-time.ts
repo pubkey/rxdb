@@ -17,7 +17,7 @@ let _lastNow: number = 0;
  * also ensures to not return the same value twice.
  */
 export function now(): number {
-    let ret = new Date().getTime();
+    let ret = Date.now();
     ret = ret + 0.01;
     if (ret <= _lastNow) {
         ret = _lastNow + 0.01;

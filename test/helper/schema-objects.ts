@@ -339,7 +339,7 @@ export function humanWithTimestamp(givenData: Partial<HumanWithTimestampDocument
         name: faker.person.firstName(),
         age: randomNumber(1, 100),
         // use some time in the past week
-        updatedAt: new Date().getTime()
+        updatedAt: Date.now()
     };
     ret = Object.assign({}, ret, givenData);
     return ret;

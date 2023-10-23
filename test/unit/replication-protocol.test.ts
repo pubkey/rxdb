@@ -63,9 +63,9 @@ function ensureReplicationHasNoErrors(replicationState: RxStorageInstanceReplica
      * We do not have to unsubscribe because the observable will cancel anyway.
      */
     replicationState.events.error.subscribe(err => {
-        console.error('ensureReplicationHasNoErrors() has error:');
-        console.error(err);
-        console.dir(err.toString());
+        // console.error('ensureReplicationHasNoErrors() has error:');
+        // console.error(err);
+        // console.dir(err.toString());
         throw err;
     });
 }
@@ -87,8 +87,8 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
             });
         }
 
-        console.log('THROWING_CONFLICT_HANDLER will throw with input:');
-        console.log(JSON.stringify(input, null, 4));
+        // console.log('THROWING_CONFLICT_HANDLER will throw with input:');
+        // console.log(JSON.stringify(input, null, 4));
 
         throw new Error('THROWING_CONFLICT_HANDLER: This handler should never be called. (context: ' + context + ')');
     };
@@ -406,7 +406,6 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
 
             // ensure ._meta.lwt is set correctly
             const firstDoc = docsOnFork[0];
-            console.dir(firstDoc);
             assert.ok(firstDoc._meta.lwt > 10);
 
             // check ongoing doc
@@ -1361,7 +1360,6 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
             await awaitRxStorageReplicationInSync(replicationState);
 
             let docZero = (await forkInstance.findDocumentsById(['master'], true))[0];
-            console.dir(docZero);
             assert.strictEqual(docZero._meta.lwt, 1337);
             assert.strictEqual(docZero._rev, '1-first-master');
 

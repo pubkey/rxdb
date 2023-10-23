@@ -67,7 +67,7 @@ declare type WithDeleted<T> = T & { deleted: boolean; };
 describe('replication-graphql.test.ts', () => {
     // for port see karma.config.js
     const browserServerUrl = 'http://localhost:18000' + GRAPHQL_PATH;
-    const getTimestamp = () => new Date().getTime();
+    const getTimestamp = () => Date.now();
 
     const batchSize = 5 as const;
     const pullQueryBuilder = (checkpoint: any, limit: number) => {
@@ -465,7 +465,7 @@ describe('replication-graphql.test.ts', () => {
              */
             it('should handle truthy deleted flag values', async () => {
                 const doc: any = schemaObjects.humanWithTimestamp();
-                doc['deletedAt'] = Math.floor(new Date().getTime());
+                doc['deletedAt'] = Math.floor(Date.now());
                 const [c, server] = await Promise.all([
                     humansCollection.createHumanWithTimestamp(0),
                     SpawnServer.spawn([doc])
@@ -708,7 +708,7 @@ describe('replication-graphql.test.ts', () => {
                 await wait(250);
 
                 const firstDoc: typeof testData[0] = clone(testData[0]);
-                firstDoc.updatedAt = new Date().getTime();
+                firstDoc.updatedAt = Date.now();
                 firstDoc.deleted = true;
 
                 await server.setDocument(firstDoc);
@@ -2402,7 +2402,7 @@ describe('replication-graphql.test.ts', () => {
                 const doc = await collection.findOne().exec(true);
                 await doc.incrementalPatch({
                     age: newAge,
-                    updatedAt: new Date().getTime()
+                    updatedAt: Date.now()
                 });
 
                 const docAfter = await collection.findOne().exec(true);

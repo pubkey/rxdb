@@ -882,7 +882,7 @@ describe('replication.test.js', () => {
                                 ? lastCheckpoint
                                 : {
                                     id: mycollection.schema.getPrimaryOfDocumentData(lastDoc),
-                                    updatedAt: new Date().getTime()
+                                    updatedAt: Date.now()
                                 }
                         };
                     },
