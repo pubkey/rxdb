@@ -95,6 +95,14 @@ export type RxTestStorage = {
     readonly hasPersistence: boolean;
     readonly hasMultiInstance: boolean;
     readonly hasAttachments: boolean;
+
+    /**
+     * Some storages likes the memory-synced storage,
+     * are not able to provide a replication while guaranteeing
+     * data integrity.
+     */
+    readonly hasReplication: boolean;
+
     /**
      * To make it possible to test alternative encryption plugins,
      * you can specify hasEncryption to signal
