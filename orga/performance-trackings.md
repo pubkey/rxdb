@@ -933,7 +933,7 @@ AFTER:
 }
 
 
-## 25. Juli 2022
+## 25. July 2022
 Do not use md5 as default hashing method.
 
 BEFORE:
@@ -1214,7 +1214,7 @@ BEFORE:
 
 
 
-## 4 April 2023 - improve OPFS strorage performance 
+## 4 April 2023 - improve OPFS storage performance 
 
 #### (time-to-first-insert)
 
