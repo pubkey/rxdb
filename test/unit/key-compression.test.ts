@@ -136,6 +136,9 @@ config.parallel('key-compression.test.js', () => {
         });
     });
     describe('replication', () => {
+        if (!config.storage.hasReplication) {
+            return;
+        }
         it('replication state should contain key-compressed document data', async () => {
             const col = await getCollection();
             await col.bulkInsert([

@@ -103,7 +103,10 @@ export function getPushHandler<RxDocType>(
 }
 
 
-describe('replication.test.js', () => {
+describe('replication.test.ts', () => {
+    if (!config.storage.hasReplication) {
+        return;
+    }
     const REPLICATION_IDENTIFIER_TEST = 'replication-ident-tests';
     async function getTestCollections(docsAmount: { local: number; remote: number; }): Promise<{
         localCollection: RxCollection<TestDocType, {}, {}, {}>;

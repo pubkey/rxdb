@@ -16,6 +16,9 @@ import { nextPort } from '../helper/port-manager.ts';
 import { humanWithTimestamp } from '../helper/schemas.ts';
 
 config.parallel('replication-websocket.test.ts', () => {
+    if (!config.storage.hasReplication) {
+        return;
+    }
     if (!config.platform.isNode()) {
         // creating a server only works on node.js
         return;

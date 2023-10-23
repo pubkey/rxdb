@@ -38,7 +38,10 @@ import { replicateRxCollection } from '../../plugins/replication/index.mjs';
 
 
 config.parallel('data-migration.test.ts', () => {
-    if (!config.storage.hasPersistence) {
+    if (
+        !config.storage.hasPersistence ||
+        !config.storage.hasReplication
+    ) {
         return;
     }
     addRxPlugin(RxDBMigrationPlugin);

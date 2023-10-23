@@ -318,6 +318,9 @@ config.parallel('crdt.test.js', () => {
             });
         });
         describe('conflicts during replication', () => {
+            if (!config.storage.hasReplication) {
+                return;
+            }
             const REPLICATION_IDENTIFIER_TEST = 'replication-crdt-tests';
             type TestDocType = WithCRDTs<schemas.HumanDocumentType>;
             type CheckpointType = any;

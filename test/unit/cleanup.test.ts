@@ -56,6 +56,9 @@ config.parallel('cleanup.test.js', () => {
         db.destroy();
     });
     it('should pause the cleanup when a replication is not in sync', async () => {
+        if (!config.storage.hasReplication) {
+            return;
+        }
         const db = await createRxDatabase({
             name: randomCouchString(10),
             storage: config.storage.getStorage(),

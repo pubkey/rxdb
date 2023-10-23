@@ -65,7 +65,6 @@ import type {
 } from './memory-types.ts';
 import { getQueryMatcher, getSortComparator } from '../../rx-query-helper.ts';
 
-
 /**
  * Used in tests to ensure everything
  * is closed correctly

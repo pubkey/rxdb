@@ -15,6 +15,7 @@ The main reason to use this is to improve initial page load and query/write time
 - When the JavaScript process is killed ungracefully like when the browser crashes or the power of the PC is terminated, it might happen that some memory writes are not persisted to the parent storage.
 - This can only be used if all data fits into the memory of the JavaScript process. This is normally not a problem because a browser has much memory these days and plain json document data is not that big.
 - Because it has to await an initial replication from the parent storage into the memory, initial page load time can increase when much data is already stored. This is likely not a problem when you store less then `10k` documents.
+- The memory-synced storage itself does not support replication and migration. Instead you have to replicate the underlying parent storage.
 
 
 **NOTICE:** The `memory-synced` plugin is part of [RxDB premium](https://rxdb.info/premium.html). It is not part of the default RxDB module.
@@ -104,3 +105,49 @@ const storage = getMemorySyncedRxStorage({
 The [LokiJS RxStorage](./rx-storage-lokijs.md) also loads the whole database state into the memory to improve operation time.
 In comparison to LokiJS, the `Memory Synced` RxStorage has many improvements and performance optimizations to reduce initial load time. Also it uses replication instead of the leader election to handle multi-tab usage. This alone decreases the initial page load by about 200 milliseconds.
 
+
+
+## Replication and Migration with the memory-synced storage
+
+The memory-synced storage itself does not support replication and migration. Instead you have to replicate the underlying parent storage.
+For example when you use it on top of an [IndexedDB storage](./rx-storage-indexeddb.md), you have to run replication on that storage instead by creating a different [RxDatabase](./rx-database.md).
+
+```js
+const parentStorage = getRxStorageIndexedDB({
+    indexedDB,
+    IDBKeyRange
+});
+
+const memorySyncedStorage = getMemorySyncedRxStorage({
+    storage: parentStorage
+});
+
+const databaseName = 'mydata';
+
+/**
+ * Creata a memory-synced database
+ * and use it for writes and queries.
+ */
+const memoryDatabase = await createRxDatabase({
+    name: databaseName,
+    storage: memorySyncedStorage
+});
+await memoryDatabase.addCollections(/* ... */);
+
+/**
+ * Create an equal parent database with the same name+collections
+ * and use it for replication and migration.
+ */
+const parentDatabase = await createRxDatabase({
+    name: databaseName,
+    storage: parentStorage
+});
+await parentDatabase.addCollections(/* ... */);
+
+replicateRxCollection({
+    collection: parentDatabase.myCollection,
+    /* ... */
+});
+
+
+```

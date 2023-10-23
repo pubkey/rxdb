@@ -288,6 +288,9 @@ config.parallel('encryption.test.ts', () => {
         });
     });
     describe('replication', () => {
+        if (!config.storage.hasReplication) {
+            return;
+        }
         it('replication state meta should not contain a secret in cleartext', async () => {
             if (config.storage.hasEncryption) {
                 return;

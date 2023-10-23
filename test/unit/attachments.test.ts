@@ -550,7 +550,10 @@ config.parallel('attachments.test.ts', () => {
         });
     });
     describe('migration', () => {
-        if (!config.storage.hasPersistence) {
+        if (
+            !config.storage.hasPersistence ||
+            !config.storage.hasReplication
+        ) {
             return;
         }
         it('should keep the attachments during migration', async () => {

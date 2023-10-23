@@ -167,7 +167,8 @@ export function setDefaultStorage(storageKey: string) {
                 },
                 hasPersistence: true,
                 hasMultiInstance: false,
-                hasAttachments: true
+                hasAttachments: true,
+                hasReplication: true
             };
             break;
         /**
@@ -190,7 +191,8 @@ export function setDefaultStorage(storageKey: string) {
                 },
                 hasPersistence: true,
                 hasMultiInstance: false,
-                hasAttachments: true
+                hasAttachments: true,
+                hasReplication: true
             };
             break;
         case 'lokijs':
@@ -218,7 +220,8 @@ export function setDefaultStorage(storageKey: string) {
                 },
                 hasPersistence: true,
                 hasMultiInstance: true,
-                hasAttachments: false
+                hasAttachments: false,
+                hasReplication: true
             };
             break;
         case 'dexie':
@@ -256,7 +259,8 @@ export function setDefaultStorage(storageKey: string) {
                 },
                 hasPersistence: true,
                 hasMultiInstance: true,
-                hasAttachments: false
+                hasAttachments: false,
+                hasReplication: true
             };
             break;
         case 'foundationdb':
@@ -286,7 +290,8 @@ export function setDefaultStorage(storageKey: string) {
                 },
                 hasPersistence: true,
                 hasMultiInstance: false,
-                hasAttachments: true
+                hasAttachments: true,
+                hasReplication: true
             };
             break;
         case 'mongodb':
@@ -316,7 +321,8 @@ export function setDefaultStorage(storageKey: string) {
                 },
                 hasPersistence: true,
                 hasMultiInstance: false,
-                hasAttachments: false
+                hasAttachments: false,
+                hasReplication: true
             };
             break;
         case 'remote':
@@ -341,7 +347,8 @@ export function setDefaultStorage(storageKey: string) {
                 },
                 hasPersistence: true,
                 hasMultiInstance: true,
-                hasAttachments: true
+                hasAttachments: true,
+                hasReplication: true
             };
             break;
         default:

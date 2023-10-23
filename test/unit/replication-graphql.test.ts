@@ -65,6 +65,9 @@ import { enableKeyCompression } from '../helper/schemas.ts';
 declare type WithDeleted<T> = T & { deleted: boolean; };
 
 describe('replication-graphql.test.ts', () => {
+    if (!config.storage.hasReplication) {
+        return;
+    }
     // for port see karma.config.js
     const browserServerUrl = 'http://localhost:18000' + GRAPHQL_PATH;
     const getTimestamp = () => Date.now();

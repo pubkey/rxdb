@@ -72,6 +72,10 @@ function ensureReplicationHasNoErrors(replicationState: RxStorageInstanceReplica
 }
 
 useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () => {
+    if (!config.storage.hasReplication) {
+        return;
+    }
+
     const THROWING_CONFLICT_HANDLER: RxConflictHandler<HumanDocumentType> = (input, context) => {
 
 
