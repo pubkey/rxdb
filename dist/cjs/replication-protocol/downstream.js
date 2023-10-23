@@ -238,7 +238,9 @@ async function startReplicationDownstream(state) {
             _attachments: state.hasAttachments && masterState._attachments ? masterState._attachments : {},
             _rev: (0, _index.getDefaultRevision)()
           } : {
-            _meta: (0, _index.getDefaultRxDocumentMeta)(),
+            _meta: {
+              lwt: (0, _index.now)()
+            },
             _rev: (0, _index.getDefaultRevision)(),
             _attachments: state.hasAttachments && masterState._attachments ? masterState._attachments : {}
           });
@@ -253,12 +255,18 @@ async function startReplicationDownstream(state) {
           if (masterState._rev) {
             var nextRevisionHeight = !forkStateFullDoc ? 1 : (0, _index.parseRevision)(forkStateFullDoc._rev).height + 1;
             newForkState._meta[state.input.identifier] = nextRevisionHeight;
+            if (state.input.keepMeta) {
+              newForkState._rev = masterState._rev;
+            }
+          }
+          if (state.input.keepMeta && masterState._meta) {
+            newForkState._meta = masterState._meta;
           }
           var forkWriteRow = {
             previous: forkStateFullDoc,
             document: newForkState
           };
-          forkWriteRow.document._rev = (0, _index.createRevision)(identifierHash, forkWriteRow.previous);
+          forkWriteRow.document._rev = forkWriteRow.document._rev ? forkWriteRow.document._rev : (0, _index.createRevision)(identifierHash, forkWriteRow.previous);
           writeRowsToFork.push(forkWriteRow);
           writeRowsToForkById[docId] = forkWriteRow;
           writeRowsToMeta[docId] = await (0, _metaInstance.getMetaWriteRow)(state, masterState, assumedMaster ? assumedMaster.metaDocument : undefined);

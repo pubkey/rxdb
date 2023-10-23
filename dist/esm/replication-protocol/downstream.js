@@ -1,7 +1,7 @@
 import { firstValueFrom, filter } from 'rxjs';
 import { newRxError } from "../rx-error.js";
 import { stackCheckpoints } from "../rx-storage-helper.js";
-import { appendToArray, createRevision, ensureNotFalsy, flatClone, getDefaultRevision, getDefaultRxDocumentMeta, parseRevision, PROMISE_RESOLVE_VOID } from "../plugins/utils/index.js";
+import { appendToArray, createRevision, ensureNotFalsy, flatClone, getDefaultRevision, now, parseRevision, PROMISE_RESOLVE_VOID } from "../plugins/utils/index.js";
 import { getLastCheckpointDoc, setCheckpoint } from "./checkpoint.js";
 import { stripAttachmentsDataFromMetaWriteRows, writeDocToDocState } from "./helper.js";
 import { getAssumedMasterState, getMetaWriteRow } from "./meta-instance.js";
@@ -233,7 +233,9 @@ export async function startReplicationDownstream(state) {
             _attachments: state.hasAttachments && masterState._attachments ? masterState._attachments : {},
             _rev: getDefaultRevision()
           } : {
-            _meta: getDefaultRxDocumentMeta(),
+            _meta: {
+              lwt: now()
+            },
             _rev: getDefaultRevision(),
             _attachments: state.hasAttachments && masterState._attachments ? masterState._attachments : {}
           });
@@ -248,12 +250,18 @@ export async function startReplicationDownstream(state) {
           if (masterState._rev) {
             var nextRevisionHeight = !forkStateFullDoc ? 1 : parseRevision(forkStateFullDoc._rev).height + 1;
             newForkState._meta[state.input.identifier] = nextRevisionHeight;
+            if (state.input.keepMeta) {
+              newForkState._rev = masterState._rev;
+            }
+          }
+          if (state.input.keepMeta && masterState._meta) {
+            newForkState._meta = masterState._meta;
           }
           var forkWriteRow = {
             previous: forkStateFullDoc,
             document: newForkState
           };
-          forkWriteRow.document._rev = createRevision(identifierHash, forkWriteRow.previous);
+          forkWriteRow.document._rev = forkWriteRow.document._rev ? forkWriteRow.document._rev : createRevision(identifierHash, forkWriteRow.previous);
           writeRowsToFork.push(forkWriteRow);
           writeRowsToForkById[docId] = forkWriteRow;
           writeRowsToMeta[docId] = await getMetaWriteRow(state, masterState, assumedMaster ? assumedMaster.metaDocument : undefined);

@@ -14,9 +14,11 @@ function docStateToWriteDoc(databaseInstanceToken, hasAttachments, keepMeta, doc
     _meta: keepMeta ? docState._meta : {
       lwt: (0, _index.now)()
     },
-    _rev: (0, _index.getDefaultRevision)()
+    _rev: keepMeta ? docState._rev : (0, _index.getDefaultRevision)()
   });
-  docData._rev = (0, _index.createRevision)(databaseInstanceToken, previous);
+  if (!docData._rev) {
+    docData._rev = (0, _index.createRevision)(databaseInstanceToken, previous);
+  }
   return docData;
 }
 function writeDocToDocState(writeDoc, keepAttachments, keepMeta) {
@@ -26,8 +28,8 @@ function writeDocToDocState(writeDoc, keepAttachments, keepMeta) {
   }
   if (!keepMeta) {
     delete ret._meta;
+    delete ret._rev;
   }
-  delete ret._rev;
   return ret;
 }
 function stripAttachmentsDataFromMetaWriteRows(state, rows) {

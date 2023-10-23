@@ -16,7 +16,7 @@ var _lastNow = 0;
  * also ensures to not return the same value twice.
  */
 export function now() {
-  var ret = new Date().getTime();
+  var ret = Date.now();
   ret = ret + 0.01;
   if (ret <= _lastNow) {
     ret = _lastNow + 0.01;

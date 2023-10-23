@@ -189,7 +189,7 @@ bulkWriteRows, context) {
       }
       if (!insertedIsDeleted) {
         var event = {
-          eventId: getUniqueDeterministicEventKey(eventBulkId, rowId, docId, writeRow),
+          eventId: getUniqueDeterministicEventKey(eventBulkId, rowId, docId, writeRow.document),
           documentId: docId,
           operation: 'INSERT',
           documentData: hasAttachments ? stripAttachmentsDataFromDocument(document) : document,

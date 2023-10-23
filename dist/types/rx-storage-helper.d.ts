@@ -65,7 +65,7 @@ export declare function flatCloneDocWithMeta<RxDocType>(doc: RxDocumentData<RxDo
  * to make it easy to filter out duplicates
  * even on flattened eventBulks
  */
-export declare function getUniqueDeterministicEventKey(eventBulkId: string, rowId: number, docId: string, writeRowDocument: RxDocumentWriteData<any>): string;
+export declare function getUniqueDeterministicEventKey<RxDocType>(eventBulkId: string, rowId: number, docId: string, writeRowDocument: RxDocumentWriteData<RxDocType>): string;
 export type WrappedRxStorageInstance<RxDocumentType, Internals, InstanceCreationOptions> = RxStorageInstance<RxDocumentType, any, InstanceCreationOptions> & {
     originalStorageInstance: RxStorageInstance<RxDocumentType, Internals, InstanceCreationOptions>;
 };
