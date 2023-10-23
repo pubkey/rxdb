@@ -279,6 +279,7 @@ export function rxStorageInstanceToReplicationHandler<RxDocType, MasterCheckpoin
                         }
                     })
             );
+
             if (writeRows.length > 0) {
                 const result = await instance.bulkWrite(
                     writeRows,

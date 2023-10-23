@@ -31,7 +31,8 @@ import {
     RxDocumentWriteData,
     createBlob,
     blobToBase64String,
-    RxAttachmentWriteData
+    RxAttachmentWriteData,
+    flatClone
 } from '../../plugins/core/index.mjs';
 
 
@@ -56,17 +57,39 @@ import {
 const testContext = 'replication-protocol.test.ts';
 
 const useParallel = config.storage.name === 'dexie-worker' ? describe : config.parallel;
+
+function ensureReplicationHasNoErrors(replicationState: RxStorageInstanceReplicationState<any>) {
+    /**
+     * We do not have to unsubscribe because the observable will cancel anyway.
+     */
+    replicationState.events.error.subscribe(err => {
+        console.error('ensureReplicationHasNoErrors() has error:');
+        console.error(err);
+        console.dir(err.toString());
+        throw err;
+    });
+}
+
 useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () => {
     const THROWING_CONFLICT_HANDLER: RxConflictHandler<HumanDocumentType> = (input, context) => {
 
-        if (deepEqual(input.newDocumentState, input.realMasterState)) {
+
+        function withoutMeta(d: any) {
+            d = flatClone(d);
+            delete d._meta;
+            delete d._rev;
+            return d;
+        }
+
+        if (deepEqual(withoutMeta(input.newDocumentState), withoutMeta(input.realMasterState))) {
             return Promise.resolve({
                 isEqual: true
             });
         }
 
-        // console.log('THROWING_CONFLICT_HANDLER will throw with input:');
-        // console.log(JSON.stringify(input, null, 4));
+        console.log('THROWING_CONFLICT_HANDLER will throw with input:');
+        console.log(JSON.stringify(input, null, 4));
+
         throw new Error('THROWING_CONFLICT_HANDLER: This handler should never be called. (context: ' + context + ')');
     };
     const HIGHER_AGE_CONFLICT_HANDLER: RxConflictHandler<HumanDocumentType> = (
@@ -381,6 +404,11 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
             const docsOnFork = await runQuery(forkInstance);
             assert.strictEqual(docsOnFork.length, 1);
 
+            // ensure ._meta.lwt is set correctly
+            const firstDoc = docsOnFork[0];
+            console.dir(firstDoc);
+            assert.ok(firstDoc._meta.lwt > 10);
+
             // check ongoing doc
             await masterInstance.bulkWrite([{
                 document: getDocData()
@@ -400,7 +428,6 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
             const forkInstance = await createRxStorageInstance(1);
             const metaInstance = await createMetaInstance(forkInstance.schema);
 
-
             const replicationState = replicateRxStorageInstance({
                 identifier: randomCouchString(10),
                 replicationHandler: rxStorageInstanceToReplicationHandler(masterInstance, THROWING_CONFLICT_HANDLER, randomCouchString(10)),
@@ -417,7 +444,9 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
             const docsOnMaster = await runQuery(masterInstance);
             assert.strictEqual(docsOnMaster.length, 1);
 
-
+            // ensure ._meta.lwt is set correctly
+            const firstDoc = docsOnMaster[0];
+            assert.ok(firstDoc._meta.lwt > 10);
 
             // check ongoing doc
             await forkInstance.bulkWrite([{
@@ -1274,8 +1303,134 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 conflictHandler: THROWING_CONFLICT_HANDLER,
                 hashFunction: defaultHashSha256
             });
+            ensureReplicationHasNoErrors(replicationState);
 
             await awaitRxStorageReplicationFirstInSync(replicationState);
+            await cleanUp(replicationState, masterInstance);
+        });
+
+        /**
+         * This is important on the memory-synced storage where the
+         * memory storage must contain the exact equal .lwt times as the parent storage
+         * and it should also keep the _rev values.
+         */
+        it('should be able to replicate the ._meta.lwt time and the ._rev', async () => {
+
+            const masterInstance = await createRxStorageInstance(0);
+            const forkInstance = await createRxStorageInstance(0);
+            const metaInstance = await createMetaInstance(forkInstance.schema);
+
+            // DOWNSTREAM
+            const docData = getDocData({ passportId: 'master' });
+            docData._meta.lwt = 1337;
+            docData._rev = '1-first-master';
+            await masterInstance.bulkWrite(
+                [{ document: docData }],
+                testContext
+            );
+            const identifier = randomCouchString(10);
+            const replicationState = replicateRxStorageInstance({
+                identifier,
+                keepMeta: true,
+                replicationHandler: rxStorageInstanceToReplicationHandler(
+                    masterInstance,
+                    THROWING_CONFLICT_HANDLER,
+                    randomCouchString(10),
+                    true
+                ),
+                forkInstance,
+                metaInstance,
+                /**
+                 * Must be smaller then the amount of document
+                 */
+                pullBatchSize: 100,
+                pushBatchSize: 100,
+                conflictHandler: THROWING_CONFLICT_HANDLER,
+                hashFunction: defaultHashSha256,
+            });
+            ensureReplicationHasNoErrors(replicationState);
+            await awaitRxStorageReplicationFirstInSync(replicationState);
+
+            let docDataStream = getDocData({ passportId: 'master-stream' });
+            docDataStream._meta.lwt = 1339;
+            docDataStream._rev = '1-first-master-stream';
+            await masterInstance.bulkWrite(
+                [{ document: docDataStream }],
+                testContext
+            );
+            await awaitRxStorageReplicationInSync(replicationState);
+
+            let docZero = (await forkInstance.findDocumentsById(['master'], true))[0];
+            console.dir(docZero);
+            assert.strictEqual(docZero._meta.lwt, 1337);
+            assert.strictEqual(docZero._rev, '1-first-master');
+
+            let docZeroStream: any;
+            await waitUntil(async () => {
+                const doc = (await forkInstance.findDocumentsById(['master-stream'], true))[0];
+                docZeroStream = doc;
+                return !!doc;
+            });
+            assert.strictEqual(docZeroStream._meta.lwt, 1339);
+            assert.strictEqual(docZeroStream._rev, '1-first-master-stream');
+            await cancelRxStorageReplication(replicationState);
+
+
+            // UPSTREAM
+            const docDataFork = getDocData({ passportId: 'fork' });
+            docDataFork._meta.lwt = 1338;
+            docDataFork._rev = '1-first-fork';
+            await forkInstance.bulkWrite(
+                [{ document: docDataFork }],
+                testContext
+            );
+
+            const replicationState2 = replicateRxStorageInstance({
+                identifier,
+                keepMeta: true,
+                replicationHandler: rxStorageInstanceToReplicationHandler(
+                    masterInstance,
+                    THROWING_CONFLICT_HANDLER,
+                    randomCouchString(10),
+                    true
+                ),
+                forkInstance,
+                metaInstance,
+                /**
+                 * Must be smaller then the amount of document
+                 */
+                pullBatchSize: 100,
+                pushBatchSize: 100,
+                conflictHandler: THROWING_CONFLICT_HANDLER,
+                hashFunction: defaultHashSha256,
+            });
+            ensureReplicationHasNoErrors(replicationState2);
+            await awaitRxStorageReplicationFirstInSync(replicationState2);
+
+            docZero = (await masterInstance.findDocumentsById(['fork'], true))[0];
+            assert.strictEqual(docZero._meta.lwt, 1338);
+            assert.strictEqual(docZero._rev, '1-first-fork');
+
+            docDataStream = getDocData({ passportId: 'fork-stream' });
+            docDataStream._meta.lwt = 1339;
+            docDataStream._rev = '1-first-fork-stream';
+            await forkInstance.bulkWrite(
+                [{ document: docDataStream }],
+                testContext
+            );
+            await awaitRxStorageReplicationInSync(replicationState);
+            await waitUntil(async () => {
+                const doc = (await forkInstance.findDocumentsById(['fork-stream'], true))[0];
+                docZeroStream = doc;
+                return !!doc;
+            });
+            assert.strictEqual(docZeroStream._meta.lwt, 1339);
+            assert.strictEqual(docZeroStream._rev, '1-first-fork-stream');
+
+            await cancelRxStorageReplication(replicationState2);
+
+
+
             await cleanUp(replicationState, masterInstance);
         });
     });

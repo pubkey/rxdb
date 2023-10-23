@@ -30,13 +30,15 @@ export function docStateToWriteDoc<RxDocType>(
             _meta: keepMeta ? (docState as any)._meta : {
                 lwt: now()
             },
-            _rev: getDefaultRevision()
+            _rev: keepMeta ? (docState as any)._rev : getDefaultRevision()
         }
     );
-    docData._rev = createRevision(
-        databaseInstanceToken,
-        previous
-    );
+    if (!docData._rev) {
+        docData._rev = createRevision(
+            databaseInstanceToken,
+            previous
+        );
+    }
     return docData;
 }
 
@@ -52,8 +54,8 @@ export function writeDocToDocState<RxDocType>(
     }
     if (!keepMeta) {
         delete (ret as any)._meta;
+        delete (ret as any)._rev;
     }
-    delete (ret as any)._rev;
     return ret;
 }
 
