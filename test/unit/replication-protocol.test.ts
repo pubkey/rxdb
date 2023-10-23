@@ -32,7 +32,8 @@ import {
     createBlob,
     blobToBase64String,
     RxAttachmentWriteData,
-    flatClone
+    flatClone,
+    requestIdlePromise
 } from '../../plugins/core/index.mjs';
 
 
@@ -1314,7 +1315,6 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
          * and it should also keep the _rev values.
          */
         it('should be able to replicate the ._meta.lwt time and the ._rev', async () => {
-
             const masterInstance = await createRxStorageInstance(0);
             const forkInstance = await createRxStorageInstance(0);
             const metaInstance = await createMetaInstance(forkInstance.schema);
@@ -1416,7 +1416,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 [{ document: docDataStream }],
                 testContext
             );
-            await awaitRxStorageReplicationInSync(replicationState);
+            await awaitRxStorageReplicationInSync(replicationState2);
             await waitUntil(async () => {
                 const doc = (await forkInstance.findDocumentsById(['fork-stream'], true))[0];
                 docZeroStream = doc;
@@ -1429,6 +1429,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
 
 
 
+            await requestIdlePromise();
             await cleanUp(replicationState, masterInstance);
         });
     });
