@@ -337,7 +337,6 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
                             })
                         );
                     }
-
                     const masterWriteResult = await replicationHandler.masterWrite(writeBatch);
                     masterWriteResult.forEach(conflictDoc => {
                         const id = (conflictDoc as any)[state.primaryPath];

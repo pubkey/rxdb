@@ -21,6 +21,8 @@ import './unit/rx-storage-implementations.test.ts';
 import './unit/rx-storage-query-correctness.test.ts';
 import './unit/rx-storage-helper.test.ts';
 
+import './unit/replication-protocol.test.ts';
+
 import './unit/rx-storage-lokijs.test.ts';
 import './unit/rx-storage-dexie.test.ts';
 import './unit/rx-storage-remote.test.ts';
@@ -51,7 +53,6 @@ import './unit/cleanup.test.ts';
 import './unit/hooks.test.ts';
 import './unit/orm.test.ts';
 import './unit/replication.test.ts';
-import './unit/replication-protocol.test.ts';
 import './unit/replication-graphql.test.ts';
 import './unit/replication-websocket.test.ts';
 import './unit/replication-webrtc.test.ts';

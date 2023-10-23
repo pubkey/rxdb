@@ -21,7 +21,7 @@ import {
     ensureNotFalsy,
     flatClone,
     getDefaultRevision,
-    getDefaultRxDocumentMeta,
+    now,
     parseRevision,
     PROMISE_RESOLVE_VOID
 } from '../plugins/utils/index.ts';
@@ -29,7 +29,10 @@ import {
     getLastCheckpointDoc,
     setCheckpoint
 } from './checkpoint.ts';
-import { stripAttachmentsDataFromMetaWriteRows, writeDocToDocState } from './helper.ts';
+import {
+    stripAttachmentsDataFromMetaWriteRows,
+    writeDocToDocState
+} from './helper.ts';
 import {
     getAssumedMasterState,
     getMetaWriteRow
@@ -393,10 +396,13 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
                                 _attachments: state.hasAttachments && masterState._attachments ? masterState._attachments : {},
                                 _rev: getDefaultRevision()
                             } : {
-                                _meta: getDefaultRxDocumentMeta(),
+                                _meta: {
+                                    lwt: now()
+                                },
                                 _rev: getDefaultRevision(),
                                 _attachments: state.hasAttachments && masterState._attachments ? masterState._attachments : {}
-                            });
+                            }
+                        );
                         /**
                          * If the remote works with revisions,
                          * we store the height of the next fork-state revision
@@ -408,6 +414,15 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
                         if ((masterState as any)._rev) {
                             const nextRevisionHeight = !forkStateFullDoc ? 1 : parseRevision(forkStateFullDoc._rev).height + 1;
                             newForkState._meta[state.input.identifier] = nextRevisionHeight;
+                            if (state.input.keepMeta) {
+                                newForkState._rev = (masterState as any)._rev;
+                            }
+                        }
+                        if (
+                            state.input.keepMeta &&
+                            (masterState as any)._meta
+                        ) {
+                            newForkState._meta = (masterState as any)._meta;
                         }
 
                         const forkWriteRow = {
@@ -415,7 +430,7 @@ export async function startReplicationDownstream<RxDocType, CheckpointType = any
                             document: newForkState
                         };
 
-                        forkWriteRow.document._rev = createRevision(
+                        forkWriteRow.document._rev = forkWriteRow.document._rev ? forkWriteRow.document._rev : createRevision(
                             identifierHash,
                             forkWriteRow.previous
                         );

@@ -300,7 +300,7 @@ export function categorizeBulkWriteRows<RxDocType>(
                         eventBulkId,
                         rowId,
                         docId,
-                        writeRow
+                        writeRow.document
                     ),
                     documentId: docId,
                     operation: 'INSERT' as const,
@@ -544,11 +544,11 @@ export function flatCloneDocWithMeta<RxDocType>(
  * to make it easy to filter out duplicates
  * even on flattened eventBulks
  */
-export function getUniqueDeterministicEventKey(
+export function getUniqueDeterministicEventKey<RxDocType>(
     eventBulkId: string,
     rowId: number,
     docId: string,
-    writeRowDocument: RxDocumentWriteData<any>
+    writeRowDocument: RxDocumentWriteData<RxDocType>
 ): string {
     return eventBulkId + '|' + rowId + '|' + docId + '|' + writeRowDocument._rev;
 }
