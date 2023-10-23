@@ -1172,16 +1172,16 @@ header .logo img {
 
 
 .trophy.twitter {
-    color: #00acee;
+    color: white;
     background-color: var(--bg-color-dark);
 }
 
 .trophy.twitter:hover {
-    box-shadow: 2px 2px 13px #00acee, -2px -1px 14px #00acee
+    box-shadow: 2px 2px 13px white, -2px -1px 14px white
 }
 
 .trophy.twitter .arrow-up {
-    border-bottom: 9px solid #00acee;
+    border-bottom: 9px solid white;
 }
 
 .trophy.discord {
