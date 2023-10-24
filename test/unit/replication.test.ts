@@ -608,7 +608,7 @@ describe('replication.test.ts', () => {
                 remoteCollection.database.destroy();
             });
         });
-        it('should clean up the replication meta storage the get collection gets removed', async () => {
+        it('should clean up the replication meta storage when the get collection gets removed', async () => {
             const { localCollection, remoteCollection } = await getTestCollections({ local: 5, remote: 5 });
             const localDbName = localCollection.database.name;
 

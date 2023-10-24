@@ -343,6 +343,7 @@
     "test:browser:loop": "npm run test:browser && npm run test:browser:loop",
     "test:browser:lokijs": " npm run transpile && cross-env CI=true DEFAULT_STORAGE=lokijs  karma start ./config/karma.conf.cjs --single-run",
     "test:browser:memory": " npm run transpile && cross-env CI=true DEFAULT_STORAGE=memory  karma start ./config/karma.conf.cjs --single-run",
+    "test:browser:memory:loop": "npm run test:browser:memory && npm run test:browser:memory:loop",
     "test:browser:dexie": "  npm run transpile && cross-env CI=true DEFAULT_STORAGE=dexie   karma start ./config/karma.conf.cjs --single-run",
     "test:browser:remote": "  npm run transpile && cross-env CI=true DEFAULT_STORAGE=remote karma start ./config/karma.conf.cjs --single-run",
     "test:browser:remote:loop": "npm run test:browser:remote && npm run test:browser:remote:loop",

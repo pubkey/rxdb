@@ -18,6 +18,7 @@ module.exports = {
     resolve: {
         fallback: {
             fs: false,
+            url: false,
             path: false,
             http: false,
             https: false,
