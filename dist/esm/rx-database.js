@@ -1,6 +1,6 @@
 import _createClass from "@babel/runtime/helpers/createClass";
 import { IdleQueue } from 'custom-idle-queue';
-import { pluginMissing, flatClone, PROMISE_RESOLVE_FALSE, randomCouchString, ensureNotFalsy, getDefaultRevision, getDefaultRxDocumentMeta, defaultHashSha256 } from "./plugins/utils/index.js";
+import { pluginMissing, flatClone, PROMISE_RESOLVE_FALSE, randomCouchString, ensureNotFalsy, getDefaultRevision, getDefaultRxDocumentMeta, defaultHashSha256, RXDB_VERSION } from "./plugins/utils/index.js";
 import { newRxError } from "./rx-error.js";
 import { createRxSchema } from "./rx-schema.js";
 import { runPluginHooks, runAsyncPluginHooks } from "./hooks.js";
@@ -36,6 +36,7 @@ export var RxDatabaseBase = /*#__PURE__*/function () {
    */
   internalStore, hashFunction, cleanupPolicy, allowSlowCount) {
     this.idleQueue = new IdleQueue();
+    this.rxdbVersion = RXDB_VERSION;
     this.storageInstances = new Set();
     this._subs = [];
     this.startupErrors = [];
