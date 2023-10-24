@@ -9,6 +9,7 @@ import {
     randomString
 } from 'async-test-util';
 import { HumanDocumentType } from './schemas.ts';
+import { ensureNotFalsy, lastOfArray } from '../../plugins/core/index.mjs';
 
 
 /**
@@ -16,9 +17,11 @@ import { HumanDocumentType } from './schemas.ts';
  * So we add these to all test strings.
  * TODO add emojis
  */
-const randomCharset = '0987654321ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzäöüÖÄÜ[]{}\'';
+export const TEST_DATA_CHARSET = '0987654321ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzäöüÖÄßÜ[]{}\'';
+export const TEST_DATA_CHARSET_LAST_SORTED = ensureNotFalsy(lastOfArray(TEST_DATA_CHARSET.split('').sort()));
+// const someEmojis = '😊💩👵🍌';
 export function randomStringWithSpecialChars(length: number) {
-    return randomString(length, randomCharset);
+    return randomString(length, TEST_DATA_CHARSET);
 }
 
 

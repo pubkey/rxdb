@@ -391,7 +391,7 @@ describe('rx-query.test.ts', () => {
             assert.strictEqual(query._latestChangeEvent, 2);
 
             const addObj = schemaObjects.human();
-            addObj.passportId = 'zzzzzzzz';
+            addObj.passportId = schemaObjects.TEST_DATA_CHARSET_LAST_SORTED.repeat(10);
             await col.insert(addObj);
             assert.strictEqual(query.collection._changeEventBuffer.counter, 3);
 
