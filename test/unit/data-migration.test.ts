@@ -956,6 +956,7 @@ config.parallel('data-migration.test.ts', () => {
                 name: dbName,
                 storage: config.storage.getStorage(),
             });
+            await db.storageTokenDocument;
 
             // fake an older database state by changing the internal version.
             const tokenDoc: RxDocumentData<InternalStoreStorageTokenDocType> = (await db.internalStore.findDocumentsById([STORAGE_TOKEN_DOCUMENT_ID], false))[0];

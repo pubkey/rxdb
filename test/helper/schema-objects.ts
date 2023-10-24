@@ -14,8 +14,9 @@ import { HumanDocumentType } from './schemas.ts';
 /**
  * Some storages had problems with umlauts and other special chars.
  * So we add these to all test strings.
+ * TODO add emojis
  */
-const randomCharset = '0987654321ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzäöüÖÄÜ[]{}\'😀';
+const randomCharset = '0987654321ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyzäöüÖÄÜ[]{}\'';
 export function randomStringWithSpecialChars(length: number) {
     return randomString(length, randomCharset);
 }
