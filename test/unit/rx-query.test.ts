@@ -385,7 +385,7 @@ describe('rx-query.test.ts', () => {
                 fired.push(res);
             });
 
-            await AsyncTestUtil.waitUntil(() => fired.length === 1);
+            await AsyncTestUtil.waitUntil(() => fired.length === 1, 1000);
 
             assert.strictEqual(query._execOverDatabaseCount, 1);
             assert.strictEqual(query._latestChangeEvent, 2);
@@ -395,10 +395,10 @@ describe('rx-query.test.ts', () => {
             await col.insert(addObj);
             assert.strictEqual(query.collection._changeEventBuffer.counter, 3);
 
-            await AsyncTestUtil.waitUntil(() => query._latestChangeEvent === 3);
+            await AsyncTestUtil.waitUntil(() => query._latestChangeEvent === 3, 1000);
             assert.strictEqual(query._latestChangeEvent, 3);
 
-            await AsyncTestUtil.waitUntil(() => fired.length === 2);
+            await AsyncTestUtil.waitUntil(() => fired.length === 2, 1000);
             assert.strictEqual(fired[1].pop().passportId, addObj.passportId);
             sub1.unsubscribe();
             col.database.destroy();

@@ -277,6 +277,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
         instanceA: RxStorageInstance<RxDocType, any, any>,
         instanceB: RxStorageInstance<RxDocType, any, any>
     ) {
+        await requestIdlePromise();
         const [resA, resB] = await Promise.all([
             runQuery(instanceA),
             runQuery(instanceB)
