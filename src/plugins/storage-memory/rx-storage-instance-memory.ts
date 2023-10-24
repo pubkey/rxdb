@@ -128,7 +128,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
 
         this.internals.ensurePersistenceTask = categorized;
         if (!this.internals.ensurePersistenceIdlePromise) {
-            this.internals.ensurePersistenceIdlePromise = requestIdlePromise(1000).then(() => {
+            this.internals.ensurePersistenceIdlePromise = Promise.resolve().then(() => {
                 this.internals.ensurePersistenceIdlePromise = undefined;
                 this.ensurePersistence();
             });
