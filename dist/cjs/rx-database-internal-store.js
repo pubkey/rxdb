@@ -9,6 +9,7 @@ exports.addConnectedStorageToCollection = addConnectedStorageToCollection;
 exports.ensureStorageTokenDocumentExists = ensureStorageTokenDocumentExists;
 exports.getAllCollectionDocuments = getAllCollectionDocuments;
 exports.getPrimaryKeyOfInternalDocument = getPrimaryKeyOfInternalDocument;
+exports.isDatabaseStateVersionCompatibleWithDatabaseCode = isDatabaseStateVersionCompatibleWithDatabaseCode;
 var _rxError = require("./rx-error.js");
 var _rxSchemaHelper = require("./rx-schema-helper.js");
 var _rxStorageHelper = require("./rx-storage-helper.js");
@@ -113,6 +114,7 @@ async function ensureStorageTokenDocumentExists(rxDatabase) {
     context: INTERNAL_CONTEXT_STORAGE_TOKEN,
     key: STORAGE_TOKEN_DOCUMENT_KEY,
     data: {
+      rxdbVersion: rxDatabase.rxdbVersion,
       token: storageToken,
       /**
        * We add the instance token here
@@ -142,8 +144,16 @@ async function ensureStorageTokenDocumentExists(rxDatabase) {
    * So we get that token from the database and return that one.
    */
   var error = (0, _index.ensureNotFalsy)(writeResult.error[0]);
-  if (error.isError && error.status === 409) {
+  if (error.isError && (0, _rxError.isBulkWriteConflictError)(error)) {
     var conflictError = error;
+    if (!isDatabaseStateVersionCompatibleWithDatabaseCode(conflictError.documentInDb.data.rxdbVersion, rxDatabase.rxdbVersion)) {
+      throw (0, _rxError.newRxError)('DM5', {
+        args: {
+          databaseStateVersion: conflictError.documentInDb.data.rxdbVersion,
+          codeVersion: rxDatabase.rxdbVersion
+        }
+      });
+    }
     if (passwordHash && passwordHash !== conflictError.documentInDb.data.passwordHash) {
       throw (0, _rxError.newRxError)('DB1', {
         passwordHash,
@@ -154,6 +164,20 @@ async function ensureStorageTokenDocumentExists(rxDatabase) {
     return (0, _index.ensureNotFalsy)(storageTokenDocInDb);
   }
   throw error;
+}
+function isDatabaseStateVersionCompatibleWithDatabaseCode(databaseStateVersion, codeVersion) {
+  if (!databaseStateVersion) {
+    return false;
+  }
+  if (codeVersion.includes('beta') && codeVersion !== databaseStateVersion) {
+    return false;
+  }
+  var stateMajor = databaseStateVersion.split('.')[0];
+  var codeMajor = codeVersion.split('.')[0];
+  if (stateMajor !== codeMajor) {
+    return false;
+  }
+  return true;
 }
 async function addConnectedStorageToCollection(collection, storageCollectionName, schema) {
   if (collection.schema.version !== schema.version) {

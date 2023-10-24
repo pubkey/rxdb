@@ -26,6 +26,7 @@ export declare function getAllCollectionDocuments(storageStatics: RxStorageStati
 export declare const STORAGE_TOKEN_DOCUMENT_KEY = "storageToken";
 export declare const STORAGE_TOKEN_DOCUMENT_ID: string;
 export declare function ensureStorageTokenDocumentExists<Collections extends CollectionsOfDatabase = any>(rxDatabase: RxDatabase<Collections>): Promise<RxDocumentData<InternalStoreStorageTokenDocType>>;
+export declare function isDatabaseStateVersionCompatibleWithDatabaseCode(databaseStateVersion: string, codeVersion: string): boolean;
 export declare function addConnectedStorageToCollection(collection: RxCollection<any>, storageCollectionName: string, schema: RxJsonSchema<any>): Promise<void>;
 /**
  * returns the primary for a given collection-data

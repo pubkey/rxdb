@@ -56,7 +56,7 @@ var RxStorageInstanceMemory = exports.RxStorageInstanceMemory = /*#__PURE__*/fun
     }
     this.internals.ensurePersistenceTask = categorized;
     if (!this.internals.ensurePersistenceIdlePromise) {
-      this.internals.ensurePersistenceIdlePromise = (0, _index.requestIdlePromise)(1000).then(() => {
+      this.internals.ensurePersistenceIdlePromise = (0, _index.promiseWait)(0).then(() => {
         this.internals.ensurePersistenceIdlePromise = undefined;
         this.ensurePersistence();
       });

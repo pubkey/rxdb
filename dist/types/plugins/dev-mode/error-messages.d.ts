@@ -91,6 +91,7 @@ export declare const ERROR_MESSAGES: {
     DM2: string;
     DM3: string;
     DM4: string;
+    DM5: string;
     AT1: string;
     EN1: string;
     EN2: string;

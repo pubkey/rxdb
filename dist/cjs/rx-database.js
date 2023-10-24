@@ -50,6 +50,7 @@ var RxDatabaseBase = exports.RxDatabaseBase = /*#__PURE__*/function () {
    */
   internalStore, hashFunction, cleanupPolicy, allowSlowCount) {
     this.idleQueue = new _customIdleQueue.IdleQueue();
+    this.rxdbVersion = _index.RXDB_VERSION;
     this.storageInstances = new Set();
     this._subs = [];
     this.startupErrors = [];

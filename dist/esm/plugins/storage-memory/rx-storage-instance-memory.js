@@ -2,7 +2,7 @@ import { Subject } from 'rxjs';
 import { getStartIndexStringFromLowerBound, getStartIndexStringFromUpperBound } from "../../custom-index.js";
 import { getPrimaryFieldOfPrimaryKey } from "../../rx-schema-helper.js";
 import { categorizeBulkWriteRows } from "../../rx-storage-helper.js";
-import { deepEqual, ensureNotFalsy, lastOfArray, now, PROMISE_RESOLVE_TRUE, PROMISE_RESOLVE_VOID, requestIdlePromise, RX_META_LWT_MINIMUM } from "../../plugins/utils/index.js";
+import { deepEqual, ensureNotFalsy, lastOfArray, now, PROMISE_RESOLVE_TRUE, PROMISE_RESOLVE_VOID, promiseWait, RX_META_LWT_MINIMUM } from "../../plugins/utils/index.js";
 import { boundGE, boundGT, boundLE, boundLT } from "./binary-search-bounds.js";
 import { attachmentMapKey, compareDocsWithIndex, ensureNotRemoved, getMemoryCollectionKey, putWriteRowToState, removeDocFromState } from "./memory-helper.js";
 import { addIndexesToInternalsState, getMemoryIndexName } from "./memory-indexes.js";
@@ -50,7 +50,7 @@ export var RxStorageInstanceMemory = /*#__PURE__*/function () {
     }
     this.internals.ensurePersistenceTask = categorized;
     if (!this.internals.ensurePersistenceIdlePromise) {
-      this.internals.ensurePersistenceIdlePromise = requestIdlePromise(1000).then(() => {
+      this.internals.ensurePersistenceIdlePromise = promiseWait(0).then(() => {
         this.internals.ensurePersistenceIdlePromise = undefined;
         this.ensurePersistence();
       });

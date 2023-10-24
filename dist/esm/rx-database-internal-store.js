@@ -102,6 +102,7 @@ export async function ensureStorageTokenDocumentExists(rxDatabase) {
     context: INTERNAL_CONTEXT_STORAGE_TOKEN,
     key: STORAGE_TOKEN_DOCUMENT_KEY,
     data: {
+      rxdbVersion: rxDatabase.rxdbVersion,
       token: storageToken,
       /**
        * We add the instance token here
@@ -131,8 +132,16 @@ export async function ensureStorageTokenDocumentExists(rxDatabase) {
    * So we get that token from the database and return that one.
    */
   var error = ensureNotFalsy(writeResult.error[0]);
-  if (error.isError && error.status === 409) {
+  if (error.isError && isBulkWriteConflictError(error)) {
     var conflictError = error;
+    if (!isDatabaseStateVersionCompatibleWithDatabaseCode(conflictError.documentInDb.data.rxdbVersion, rxDatabase.rxdbVersion)) {
+      throw newRxError('DM5', {
+        args: {
+          databaseStateVersion: conflictError.documentInDb.data.rxdbVersion,
+          codeVersion: rxDatabase.rxdbVersion
+        }
+      });
+    }
     if (passwordHash && passwordHash !== conflictError.documentInDb.data.passwordHash) {
       throw newRxError('DB1', {
         passwordHash,
@@ -143,6 +152,20 @@ export async function ensureStorageTokenDocumentExists(rxDatabase) {
     return ensureNotFalsy(storageTokenDocInDb);
   }
   throw error;
+}
+export function isDatabaseStateVersionCompatibleWithDatabaseCode(databaseStateVersion, codeVersion) {
+  if (!databaseStateVersion) {
+    return false;
+  }
+  if (codeVersion.includes('beta') && codeVersion !== databaseStateVersion) {
+    return false;
+  }
+  var stateMajor = databaseStateVersion.split('.')[0];
+  var codeMajor = codeVersion.split('.')[0];
+  if (stateMajor !== codeMajor) {
+    return false;
+  }
+  return true;
 }
 export async function addConnectedStorageToCollection(collection, storageCollectionName, schema) {
   if (collection.schema.version !== schema.version) {
