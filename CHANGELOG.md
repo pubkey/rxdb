@@ -8,6 +8,7 @@
 ### 15.0.0-beta.19 (24 October 2023)
 
 - A list of changes for RxDB v15 can be found [here](./docs-src/releases/15.0.0.md)
+- [Help testing the RxDB v15 release](https://github.com/pubkey/rxdb/issues/5155)
 
 <!-- /CHANGELOG NEWEST -->
 
