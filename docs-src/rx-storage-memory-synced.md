@@ -125,18 +125,10 @@ const memorySyncedStorage = getMemorySyncedRxStorage({
 const databaseName = 'mydata';
 
 /**
- * Creata a memory-synced database
- * and use it for writes and queries.
- */
-const memoryDatabase = await createRxDatabase({
-    name: databaseName,
-    storage: memorySyncedStorage
-});
-await memoryDatabase.addCollections(/* ... */);
-
-/**
- * Create an equal parent database with the same name+collections
+ * Create an parent database with the same name+collections
  * and use it for replication and migration.
+ * The parent database must be created BEFORE the memory-synced database
+ * to ensure migration has already been run.
  */
 const parentDatabase = await createRxDatabase({
     name: databaseName,
@@ -148,6 +140,17 @@ replicateRxCollection({
     collection: parentDatabase.myCollection,
     /* ... */
 });
+
+
+/**
+ * Creata an equal memory-synced database with the same name+collections
+ * and use it for writes and queries.
+ */
+const memoryDatabase = await createRxDatabase({
+    name: databaseName,
+    storage: memorySyncedStorage
+});
+await memoryDatabase.addCollections(/* ... */);
 
 
 ```
