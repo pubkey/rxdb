@@ -34,7 +34,8 @@ import {
     RxJsonSchema,
     createBlob,
     RxAttachmentCreator,
-    DeepReadonly
+    DeepReadonly,
+    requestIdlePromise
 } from '../../plugins/core/index.mjs';
 
 import {
@@ -805,6 +806,7 @@ describe('replication.test.ts', () => {
             ]);
 
             await replicationState.awaitInSync();
+            await requestIdlePromise();
             await ensureEqualState(localCollection, remoteCollection, 'after adding');
 
             // add more attachments to docs that already have attachments
