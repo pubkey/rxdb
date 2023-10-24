@@ -132,7 +132,6 @@
 
 * [Key Compression](./key-compression.md)
 
-* [Data Migration](./data-migration.md)
 
 * [LeaderElection](./leader-election.md)
 
@@ -152,7 +151,8 @@
 
 * [Query Optimizer](./query-optimizer.md)
 
-* [Storage Migration](./storage-migration.md)
+* [Schema Migration](./migration-schema.md)
+* [Storage Migration](./migration-storage.md)
 
 * [Transactions, Conflicts and Revisions](./transactions-conflicts-revisions.md)
 

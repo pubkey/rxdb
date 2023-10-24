@@ -38,7 +38,7 @@ The schema defines how the documents of the collection are structured. RxDB uses
 With the parameters `statics`, `methods` and `attachments`, you can define ORM-functions that are applied to each of these objects that belong to this collection. See [ORM/DRM](./orm.md).
 
 ### Migration
-With the parameters `migrationStrategies` and `autoMigrate` you can specify how migration between different schema-versions should be done. [See Migration](./data-migration.md).
+With the parameters `migrationStrategies` and `autoMigrate` you can specify how migration between different schema-versions should be done. [See Migration](./migration-schema.md).
 
 ## Get a collection from the database
 To get an existing collection from the database, call the collection name directly on the database:

@@ -15,6 +15,7 @@ export type InternalStoreDocType<Data = any> = {
  * The collection.name is the 'key' value.
  */
 export type InternalStoreStorageTokenDocType = InternalStoreDocType<{
+    rxdbVersion: string;
     token: string;
     instanceToken: string;
     passwordHash?: string;

@@ -135,7 +135,7 @@ RxDB's [realtime replication algorithm](../replication.md) is designed to be fle
 RxDB provides a [flexible storage layer](../rx-storage.md) that enables code reuse across different platforms. Whether you're building applications with [Electron.js](../electron-database.md), [React Native](../react-native-database.md), hybrid apps using [Capacitor.js](../capacitor-database.md), or traditional web browsers, RxDB allows you to reuse the same codebase and leverage the power of a frontend database across different environments.
 
 ### Handling schema changes in distributed environments
-In distributed environments where data is stored on multiple client devices, handling schema changes can be challenging. RxDB tackles this challenge by providing robust mechanisms for [handling schema changes](../data-migration.md). It ensures that schema updates propagate smoothly across devices, maintaining data integrity and enabling seamless schema evolution.
+In distributed environments where data is stored on multiple client devices, handling schema changes can be challenging. RxDB tackles this challenge by providing robust mechanisms for [handling schema changes](../migration-schema.md). It ensures that schema updates propagate smoothly across devices, maintaining data integrity and enabling seamless schema evolution.
 
 ## Follow Up
 To further explore RxDB and get started with using it in your frontend applications, consider the following resources:

@@ -36,7 +36,8 @@ import {
     ensureNotFalsy,
     getDefaultRevision,
     getDefaultRxDocumentMeta,
-    defaultHashSha256
+    defaultHashSha256,
+    RXDB_VERSION
 } from './plugins/utils/index.ts';
 import {
     newRxError
@@ -96,6 +97,7 @@ export class RxDatabaseBase<
 > {
 
     public readonly idleQueue: IdleQueue = new IdleQueue();
+    public readonly rxdbVersion = RXDB_VERSION;
 
     /**
      * Contains all known non-closed storage instances

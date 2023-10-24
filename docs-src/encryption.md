@@ -132,7 +132,7 @@ const db = await createRxDatabase({
 ## Changing the password
 
 The password is set database specific and it is not possible to change the password of a database. Opening an existing database with a different password will throw an error. To change the password you can either:
-- Use the [storage migration plugin](./storage-migration.md) to migrate the database state into a new database.
+- Use the [storage migration plugin](./migration-storage.md) to migrate the database state into a new database.
 - Store a randomly created meta-password in a different RxDatabase as a value of a [local document](./rx-local-document.md). Encrypt the meta password with the actual user password and read it out before creating the actual database.
 
 ## Encrypted attachments

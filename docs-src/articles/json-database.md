@@ -34,7 +34,7 @@ Compression storage for JSON documents is made effortless with RxDB's [key-compr
 
 ## Schema Validation and Data Migration on Schema Changes
 Storing JSON documents inside of an application, can cause a problem when the format of the data changes. Instead of having a single server where the data must be migrated, many client devices are out there that have to run a migration.
-When your application's schema evolves, RxDB provides [migration strategies](../data-migration.md) to facilitate the transition, ensuring data consistency throughout schema updates.
+When your application's schema evolves, RxDB provides [migration strategies](../migration-schema.md) to facilitate the transition, ensuring data consistency throughout schema updates.
 
 **JSONSchema Validation Plugins**: RxDB supports multiple [JSONSchema validation plugins](../schema-validation.md), guaranteeing that only valid data is stored in the database. RxDB uses the JsonSchema standardization that you might know from other technologies like OpenAPI (aka Swagger).
 

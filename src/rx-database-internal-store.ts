@@ -16,7 +16,6 @@ import type {
     RxDatabase,
     RxDocumentData,
     RxJsonSchema,
-    RxStorageWriteError,
     RxStorageInstance,
     RxStorageStatics,
     RxStorageWriteErrorConflict
@@ -166,6 +165,7 @@ export async function ensureStorageTokenDocumentExists<Collections extends Colle
         context: INTERNAL_CONTEXT_STORAGE_TOKEN,
         key: STORAGE_TOKEN_DOCUMENT_KEY,
         data: {
+            rxdbVersion: rxDatabase.rxdbVersion,
             token: storageToken,
             /**
              * We add the instance token here
@@ -191,7 +191,6 @@ export async function ensureStorageTokenDocumentExists<Collections extends Colle
         return writeResult.success[0];
     }
 
-
     /**
      * If we get a 409 error,
      * it means another instance already inserted the storage token.
@@ -200,9 +199,24 @@ export async function ensureStorageTokenDocumentExists<Collections extends Colle
     const error = ensureNotFalsy(writeResult.error[0]);
     if (
         error.isError &&
-        (error as RxStorageWriteError<InternalStoreStorageTokenDocType>).status === 409
+        isBulkWriteConflictError(error)
     ) {
         const conflictError = (error as RxStorageWriteErrorConflict<InternalStoreStorageTokenDocType>);
+
+        if (
+            !isDatabaseStateVersionCompatibleWithDatabaseCode(
+                conflictError.documentInDb.data.rxdbVersion,
+                rxDatabase.rxdbVersion
+            )
+        ) {
+            throw newRxError('DM5', {
+                args: {
+                    databaseStateVersion: conflictError.documentInDb.data.rxdbVersion,
+                    codeVersion: rxDatabase.rxdbVersion
+                }
+            });
+        }
+
         if (
             passwordHash &&
             passwordHash !== conflictError.documentInDb.data.passwordHash
@@ -217,6 +231,30 @@ export async function ensureStorageTokenDocumentExists<Collections extends Colle
         return ensureNotFalsy(storageTokenDocInDb);
     }
     throw error;
+}
+
+
+export function isDatabaseStateVersionCompatibleWithDatabaseCode(
+    databaseStateVersion: string,
+    codeVersion: string
+): boolean {
+    if (!databaseStateVersion) {
+        return false;
+    }
+
+    if (
+        codeVersion.includes('beta') &&
+        codeVersion !== databaseStateVersion
+    ) {
+        return false;
+    }
+
+    const stateMajor = databaseStateVersion.split('.')[0];
+    const codeMajor = codeVersion.split('.')[0];
+    if (stateMajor !== codeMajor) {
+        return false;
+    }
+    return true;
 }
 
 

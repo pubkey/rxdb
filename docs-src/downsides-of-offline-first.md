@@ -99,7 +99,7 @@ This always requires you to implement your custom replication endpoint like what
 While developing your app, sooner or later you want to change the data layout. You want to add some new fields to documents or change the format of them. So you have to update the database schema and also migrate the stored documents.
 With 'normal' applications, this is already hard enough and often dangerous. You wait until midnight, stop the webserver, make a database backup, deploy the new schema and then you hope that nothing goes wrong while it updates that many documents.
 
-With offline first applications, it is even more fun. You do not only have to migrate your local backend database, you also have to provide a [migration strategy](./data-migration.md) for all of these client databases out there. And you also cannot migrate everything at the same time. The clients can only migrate when the new code was updated from the appstore or the user visited your website again. This could be today or in a few weeks.
+With offline first applications, it is even more fun. You do not only have to migrate your local backend database, you also have to provide a [migration strategy](./migration-schema.md) for all of these client databases out there. And you also cannot migrate everything at the same time. The clients can only migrate when the new code was updated from the appstore or the user visited your website again. This could be today or in a few weeks.
 
 
 ## Performance is not native

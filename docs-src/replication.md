@@ -475,7 +475,7 @@ replicationState.isStopped(); // true/false
 By default, the push replication will start from the beginning of time and push all documents from there to the remote.
 By setting a custom `push.initialCheckpoint`, you can tell the replication to only push writes that are newer than the given checkpoint.
 
-This is often used when replication is used together with the [schema migration](./data-migration.md).
+This is often used when replication is used together with the [schema migration](./migration-schema.md).
 After a migration has run, the collection with the new version would push all migrated documents to the remote.
 This might not be desired, for example when you already have run the migration on the backend server.
 

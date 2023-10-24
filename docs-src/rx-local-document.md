@@ -8,7 +8,7 @@ They come in handy when you want to store settings or additional data next to yo
 - Local Documents do not get replicated.
 - Local Documents will not be found on queries.
 - Local Documents can not have attachments.
-- Local Documents will not get handled by the [data-migration](./data-migration.md).
+- Local Documents will not get handled by the [migration-schema](./migration-schema.md).
 - The id of a local document has the `maxLength` of `128` characters.
 
 

@@ -73,7 +73,7 @@ One of the defining features of client-side applications is the ability to funct
 ### NoSQL Has Better TypeScript Support
 TypeScript, a popular superset of JavaScript, is renowned for its static typing and enhanced developer experience. NoSQL databases like RxDB are inherently flexible, making them well-suited for TypeScript integration. With well-defined data structures and clear typings, NoSQL RxDB offers [improved type safety](../tutorials/typescript.md) and easier development when compared to traditional SQL databases like SQLite. This results in reduced debugging time and increased code reliability.
 
-### Easier [Schema Migration](../data-migration.md) with NoSQL Documents
+### Easier [Schema Migration](../migration-schema.md) with NoSQL Documents
 Schema changes are a common occurrence in application development, and dealing with them can be challenging. NoSQL databases, including RxDB, are more forgiving in this aspect. Since documents in NoSQL databases don't enforce a rigid structure like tables in relational databases, schema changes are often simpler to manage. This flexibility makes it easier to evolve your app's data structure over time without the need for complex migration scripts, a notable advantage when compared to SQLite.
 
 ## Great Performance

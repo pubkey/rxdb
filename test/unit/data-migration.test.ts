@@ -20,7 +20,10 @@ import {
     createBlob,
     ensureNotFalsy,
     MigrationStrategies,
-    MigrationStrategy
+    MigrationStrategy,
+    STORAGE_TOKEN_DOCUMENT_ID,
+    RxDocumentData,
+    InternalStoreStorageTokenDocType
 } from '../../plugins/core/index.mjs';
 
 import {
@@ -946,6 +949,52 @@ config.parallel('data-migration.test.ts', () => {
             assert.strictEqual(attachment.length, attachmentData.length);
 
             col.database.destroy();
+        });
+        it('opening an older RxDB database state with a new major version should throw an error', async () => {
+            const dbName = randomCouchString(10);
+            const db = await createRxDatabase({
+                name: dbName,
+                storage: config.storage.getStorage(),
+            });
+
+            // fake an older database state by changing the internal version.
+            const tokenDoc: RxDocumentData<InternalStoreStorageTokenDocType> = (await db.internalStore.findDocumentsById([STORAGE_TOKEN_DOCUMENT_ID], false))[0];
+            const newTokenDoc = clone(tokenDoc);
+            newTokenDoc.data.rxdbVersion = '14.x.x';
+
+            const writeResponse = await db.internalStore.bulkWrite([{
+                previous: tokenDoc,
+                document: newTokenDoc
+            }], 'fake-old-version');
+            assert.deepStrictEqual(writeResponse.error, []);
+            await db.destroy();
+
+
+            const newDb = await createRxDatabase({
+                name: dbName,
+                storage: config.storage.getStorage(),
+            });
+
+            await AsyncTestUtil.assertThrows(
+                () => newDb.addCollections({
+                    foo: {
+                        schema: {
+                            version: 0,
+                            primaryKey: 'name',
+                            type: 'object',
+                            properties: {
+                                name: {
+                                    type: 'string',
+                                    maxLength: 100
+                                },
+                            }
+                        }
+                    }
+                }),
+                'RxError',
+                'DM5'
+            );
+            await newDb.destroy();
         });
     });
 });
