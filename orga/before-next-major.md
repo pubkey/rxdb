@@ -4,7 +4,7 @@ This list contains things that have to be done but will create breaking changes.
 
 
 
-
+## Ideas from https://github.com/pubkey/rxdb/issues/4994
 
 
 ## Skip responding full document data on bulkWrites (only in all happy case)
