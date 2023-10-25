@@ -851,6 +851,7 @@ jobs:
           deno-version: "1.37.2"
       - run: |
           deno info
+          timeout 1h bash -c 'deno cache test/unit.test.ts; do sleep 10; done'
           npm run test:deno:dexie
       # TODO fix deno performance test
       #- run: npm run test:performance:memory:deno
