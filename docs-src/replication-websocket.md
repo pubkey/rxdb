@@ -21,7 +21,7 @@ const myDatabase = await createRxDatabase({/* ... */});
 const serverState = await startWebsocketServer({
     database: myDatabase,
     port: 1337,
-    path: 'socket'
+    path: '/socket'
 });
 
 // stop the server
