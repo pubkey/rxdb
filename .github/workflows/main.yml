@@ -12,6 +12,11 @@ on:
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
 
+# https://stackoverflow.com/a/72408109/3443137
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
 # For a lower total time
 # the jobs which take longes must come before the faster ones
 # because github will start them likely earlier
