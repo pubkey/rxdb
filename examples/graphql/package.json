@@ -36,7 +36,7 @@
     "ws": "8.14.2"
   },
   "devDependencies": {
-    "async-test-util": "2.1.1",
+    "async-test-util": "2.2.1",
     "css-loader": "6.8.1",
     "eslint": "8.52.0",
     "esm": "3.2.25",

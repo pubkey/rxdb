@@ -14,7 +14,7 @@
     "test:e2e": "testcafe chrome -e test/ --hostname localhost --selector-timeout 8000 --retry-test-pages"
   },
   "devDependencies": {
-    "async-test-util": "2.1.1",
+    "async-test-util": "2.2.1",
     "concurrently": "8.2.2",
     "copyfiles": "2.4.1",
     "testcafe": "3.3.0",
