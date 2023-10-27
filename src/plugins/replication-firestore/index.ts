@@ -123,7 +123,7 @@ export function replicateFirestore<RxDocType>(
     if (options.pull) {
         replicationPrimitivesPull = {
             async handler(
-                lastPulledCheckpoint: FirestoreCheckpointType,
+                lastPulledCheckpoint: FirestoreCheckpointType | undefined,
                 batchSize: number
             ) {
                 let newerQuery: ReturnType<typeof query>;
@@ -191,7 +191,7 @@ export function replicateFirestore<RxDocType>(
 
                 if (useDocs.length === 0) {
                     return {
-                        checkpoint: lastPulledCheckpoint,
+                        checkpoint: lastPulledCheckpoint ?? null,
                         documents: []
                     };
                 }

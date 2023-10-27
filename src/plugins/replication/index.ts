@@ -194,7 +194,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                     })
                 ),
                 masterChangesSince: async (
-                    checkpoint: CheckpointType,
+                    checkpoint: CheckpointType | undefined,
                     batchSize: number
                 ) => {
                     if (!this.pull) {
