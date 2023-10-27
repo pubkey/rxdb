@@ -506,7 +506,7 @@
     "exists-file": "3.0.2",
     "express": "4.18.2",
     "express-graphql": "0.12.0",
-    "fake-indexeddb": "4.0.2",
+    "fake-indexeddb": "5.0.1",
     "firebase-tools": "12.7.0",
     "get-port": "5.1.1",
     "gitbook-cli": "2.3.2",
