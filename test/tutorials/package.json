@@ -10,7 +10,7 @@
   "devDependencies": {
     "@types/node": "18.18.6",
     "@types/request-promise-native": "1.0.20",
-    "async-test-util": "2.1.1",
+    "async-test-util": "2.2.1",
     "request": "2.88.2",
     "request-promise-native": "1.0.9",
     "ts-node": "10.9.1",
