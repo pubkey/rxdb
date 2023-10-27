@@ -27,7 +27,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Set node version
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version-file: ".nvmrc"
 
@@ -59,7 +59,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Set node version
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version-file: ".nvmrc"
 
@@ -104,7 +104,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Set node version
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version-file: ".nvmrc"
 
@@ -153,7 +153,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Set node version
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version-file: ".nvmrc"
 
@@ -188,7 +188,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Set node version
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version-file: ".nvmrc"
 
@@ -232,7 +232,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Set node version
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version-file: ".nvmrc"
 
@@ -281,7 +281,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Set node version
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version-file: ".nvmrc"
 
@@ -319,7 +319,7 @@ jobs:
       #- name: install dependencies
       #  run: sudo apt-get update && sudo apt-get install -y chromium-browser
       - name: Set node version
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version-file: ".nvmrc"
 
@@ -372,7 +372,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Set node version
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version-file: ".nvmrc"
 
@@ -406,7 +406,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Set node version
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version-file: ".nvmrc"
 
@@ -470,7 +470,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Set node version
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version-file: ".nvmrc"
 
@@ -499,7 +499,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Set node version
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version-file: ".nvmrc"
       - name: install dependencies
@@ -528,7 +528,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Set node version
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           # TODO using latest node version does not work with expo-cli https://github.com/expo/expo-cli/issues/4478
           node-version: 18.18.0
@@ -554,7 +554,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Set node version
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version-file: ".nvmrc"
       - name: Reuse npm cache folder
@@ -614,7 +614,7 @@ jobs:
       - name: install dependencies
         run: sudo apt-get update && sudo apt-get install -y chromium-browser
       - name: Set node version
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version-file: ".nvmrc"
       - name: prepare RxDB core
@@ -644,7 +644,7 @@ jobs:
       - name: install dependencies
         run: sudo apt-get update && sudo apt-get install -y chromium-browser
       - name: Set node version
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version-file: ".nvmrc"
       - name: prepare RxDB core
@@ -673,7 +673,7 @@ jobs:
       - name: install dependencies
         run: sudo apt-get update && sudo apt-get install -y chromium-browser
       - name: Set node version
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version-file: ".nvmrc"
       - name: prepare RxDB core
@@ -701,7 +701,7 @@ jobs:
       - name: install dependencies
         run: sudo apt-get update && sudo apt-get install -y chromium-browser
       - name: Set node version
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version-file: ".nvmrc"
       - name: prepare RxDB core
@@ -734,7 +734,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Set node version
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version-file: ".nvmrc"
       - uses: subosito/flutter-action@v2
@@ -783,7 +783,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Set node version
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version-file: ".nvmrc"
       - name: prepare RxDB core
@@ -802,7 +802,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Set node version
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
           node-version-file: ".nvmrc"
 
