@@ -17,6 +17,8 @@ export async function queryDenoKV<RxDocType>(
     instance: RxStorageInstanceDenoKV<RxDocType>,
     preparedQuery: DenoKVPreparedQuery<RxDocType>
 ): Promise<RxStorageQueryResult<RxDocType>> {
+    console.log('## queryDenoKV()');
+    console.dir(preparedQuery);
     const queryPlan = preparedQuery.queryPlan;
     const query = preparedQuery.query;
     const skip = query.skip ? query.skip : 0;

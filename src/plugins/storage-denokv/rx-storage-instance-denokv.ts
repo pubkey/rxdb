@@ -27,10 +27,10 @@ import type { DenoKVIndexMeta, DenoKVPreparedQuery, DenoKVSettings, DenoKVStorag
 import { RxStorageDenoKV } from './index.ts';
 import { CLEANUP_INDEX, DENOKV_DOCUMENT_ROOT_PATH, RX_STORAGE_NAME_DENOKV, getDenoKVIndexName } from "./denokv-helper.ts";
 import { getIndexableStringMonad, getStartIndexStringFromLowerBound, increaseIndexableStringByOneQuantum } from "../../custom-index.ts";
-import { batchArray, lastOfArray, toArray } from "../utils/utils-array.ts";
+import { appendToArray, batchArray, lastOfArray, toArray } from "../utils/utils-array.ts";
 import { ensureNotFalsy } from "../utils/utils-other.ts";
 import { randomCouchString } from "../utils/utils-string.ts";
-import { getUniqueDeterministicEventKey } from "../../rx-storage-helper.ts";
+import { categorizeBulkWriteRows, getUniqueDeterministicEventKey } from "../../rx-storage-helper.ts";
 import { now } from "../utils/utils-time.ts";
 import { newRxError } from "../../rx-error.ts";
 import { queryDenoKV } from "./denokv-query.ts";
@@ -50,6 +50,7 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
     public readonly primaryPath: StringKeys<RxDocumentData<RxDocType>>;
     private changes$: Subject<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, RxStorageDefaultCheckpoint>> = new Subject();
     public closed?: Promise<void>;
+    public readonly kvPromise: Promise<Deno.Kv>;
 
     constructor(
         public readonly storage: RxStorageDenoKV,
@@ -59,14 +60,19 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
         public readonly internals: DenoKVStorageInternals<RxDocType>,
         public readonly options: Readonly<DenoKVSettings>,
         public readonly settings: DenoKVSettings,
-        public readonly kvPromise = Deno.openKv(settings.openKvPath),
         public readonly keySpace = ['rxdb', databaseName, collectionName, schema.version].join('|'),
         public readonly kvOptions = { consistency: settings.consistencyLevel }
     ) {
         this.primaryPath = getPrimaryFieldOfPrimaryKey(this.schema.primaryKey);
+        this.kvPromise = Deno.openKv(settings.openKvPath).then(async (kv) => {
+            // insert writeBlockKey
+            await kv.set([this.keySpace], 1);
+            return kv;
+        });
     }
     async bulkWrite(documentWrites: BulkWriteRow<RxDocType>[], context: string): Promise<RxStorageBulkWriteResponse<RxDocType>> {
         const kv = await this.kvPromise;
+        const primaryPath = this.primaryPath;
         const startTime = now();
         const ret: RxStorageBulkWriteResponse<RxDocType> = {
             success: [],
@@ -81,85 +87,74 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
         };
 
 
+        const batches = batchArray(documentWrites, ensureNotFalsy(this.settings.batchSize));
+
         /**
-         * TODO is it possible to use batch operations
-         * so that we do not have to create one tx per row?
+         * DenoKV does not have transactions
+         * so we use a special writeBlock row to ensure
+         * atomic writes (per document)
+         * and so that we can do bulkWrites
          */
-        await Promise.all(
-            documentWrites.map(async (writeRow, rowId) => {
-                const previous = writeRow.previous;
-                const document = writeRow.document;
-                const docId: string = writeRow.document[this.primaryPath] as any;
-                const kvKey = [this.keySpace, DENOKV_DOCUMENT_ROOT_PATH, docId];
-                const previousDoc = await kv.get<RxDocumentData<RxDocType>>(kvKey, this.kvOptions);
+        for (const writeBatch of batches) {
+            while (true) {
+                const writeBlockKey = await kv.get<number>([this.keySpace], this.kvOptions);
+                const docsInDB = new Map<string, RxDocumentData<RxDocType>>();
 
-                if (
-                    (previousDoc.value && !writeRow.previous) ||
-                    previousDoc.value && previousDoc.value._rev !== ensureNotFalsy(writeRow.previous)._rev
-                ) {
-                    ret.error.push({
-                        documentId: docId,
-                        isError: true,
-                        status: 409,
-                        documentInDb: previousDoc.value,
-                        writeRow
-                    });
-                    return;
-                }
+                /**
+                 * TODO the max amount for .getMany() is 10 which is defined by deno itself.
+                 * How can this be increased?
+                 */
+                const readManyBatches = batchArray(writeBatch, 10);
+                await Promise.all(
+                    readManyBatches.map(async (readManyBatch) => {
+                        const docsResult = await kv.getMany(
+                            readManyBatch.map(writeRow => {
+                                const docId: string = writeRow.document[primaryPath] as any;
+                                return [this.keySpace, DENOKV_DOCUMENT_ROOT_PATH, docId];
+                            })
+                        );
+                        docsResult.map((row: any) => {
+                            const docData = row.value;
+                            if (!docData) {
+                                return;
+                            }
+                            const docId: string = docData[primaryPath] as any;
+                            docsInDB.set(docId, docData);
+                        });
+                    })
+                );
+                const categorized = categorizeBulkWriteRows<RxDocType>(
+                    this,
+                    this.primaryPath as any,
+                    docsInDB,
+                    writeBatch,
+                    context
+                );
 
-                if (!previousDoc.value) {
-                    // INSERT
-                    const insertedIsDeleted = writeRow.document._deleted ? true : false;
-                    let tx = kv.atomic();
-                    tx = tx.check({ key: kvKey, versionstamp: null });
+                let tx = kv.atomic();
+                tx = tx.set([this.keySpace], ensureNotFalsy(writeBlockKey.value) + 1);
+                tx = tx.check(writeBlockKey);
+
+                // INSERTS
+                categorized.bulkInsertDocs.forEach(writeRow => {
+                    const docId: string = writeRow.document[this.primaryPath] as any;
+                    ret.success.push(writeRow.document);
 
                     // insert document data
-                    tx = tx.set(kvKey, writeRow.document);
+                    tx = tx.set([this.keySpace, DENOKV_DOCUMENT_ROOT_PATH, docId], writeRow.document);
 
                     // insert secondary indexes
                     Object.values(this.internals.indexes).forEach(indexMeta => {
                         const indexString = indexMeta.getIndexableString(writeRow.document as any);
                         tx = tx.set([this.keySpace, indexMeta.indexName, indexString], docId);
                     });
-
-                    const commitRes = await tx.commit();
-
-                    if (commitRes.ok) {
-                        if (!insertedIsDeleted) {
-                            const event = {
-                                eventId: getUniqueDeterministicEventKey(
-                                    eventBulkId,
-                                    rowId,
-                                    docId,
-                                    writeRow.document
-                                ),
-                                documentId: docId,
-                                operation: 'INSERT' as const,
-                                documentData: writeRow.document,
-                                previousDocumentData: undefined,
-                                startTime,
-                                endTime: now()
-                            };
-                            eventBulk.events.push(event);
-                        }
-                        ret.success.push(writeRow.document);
-                    } else {
-                        const inDbDoc = await kv.get<RxDocumentData<RxDocType>>(kvKey, this.kvOptions);
-                        ret.error.push({
-                            documentId: docId,
-                            isError: true,
-                            status: 409,
-                            documentInDb: inDbDoc.value as any,
-                            writeRow
-                        });
-                    }
-                } else {
-                    // UPDATE
-                    let tx = kv.atomic();
-                    tx = tx.check(previousDoc);
+                });
+                // UPDATES
+                categorized.bulkUpdateDocs.forEach((writeRow: BulkWriteRow<RxDocType>) => {
+                    const docId: string = writeRow.document[this.primaryPath] as any;
 
                     // insert document data
-                    tx = tx.set(kvKey, writeRow.document);
+                    tx = tx.set([this.keySpace, DENOKV_DOCUMENT_ROOT_PATH, docId], writeRow.document);
 
                     // insert secondary indexes
                     Object.values(this.internals.indexes).forEach(indexMeta => {
@@ -170,57 +165,17 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
                             tx = tx.set([this.keySpace, indexMeta.indexName, newIndexString], docId);
                         }
                     });
+                    ret.success.push(writeRow.document as any);
+                });
 
-                    const commitRes = await tx.commit();
-                    if (commitRes.ok) {
-                        let eventDocumentData: RxDocumentData<RxDocType> | undefined = null as any;
-                        let previousEventDocumentData: RxDocumentData<RxDocType> | undefined = null as any;
-                        let operation: 'INSERT' | 'UPDATE' | 'DELETE' = null as any;
-
-                        if (previous && previous._deleted && !document._deleted) {
-                            operation = 'INSERT';
-                            eventDocumentData = document as any;
-                        } else if (previous && !previous._deleted && !document._deleted) {
-                            operation = 'UPDATE';
-                            eventDocumentData = document as any;
-                            previousEventDocumentData = previous;
-                        } else if (document._deleted) {
-                            operation = 'DELETE';
-                            eventDocumentData = ensureNotFalsy(document) as any;
-                            previousEventDocumentData = previous;
-                        } else {
-                            throw newRxError('SNH', { args: { writeRow } });
-                        }
-
-                        const event = {
-                            eventId: getUniqueDeterministicEventKey(
-                                eventBulkId,
-                                rowId,
-                                docId,
-                                document
-                            ),
-                            documentId: docId,
-                            documentData: eventDocumentData as RxDocumentData<RxDocType>,
-                            previousDocumentData: previousEventDocumentData,
-                            operation: operation,
-                            startTime,
-                            endTime: now()
-                        };
-                        eventBulk.events.push(event);
-                        ret.success.push(writeRow.document);
-                    } else {
-                        ret.error.push({
-                            documentId: docId,
-                            isError: true,
-                            status: 409,
-                            documentInDb: previousDoc.value,
-                            writeRow
-                        });
-                    }
+                const txResult = await tx.commit();
+                if (txResult.ok) {
+                    appendToArray(ret.error, categorized.errors);
+                    appendToArray(eventBulk.events, categorized.eventBulk.events);
+                    break;
                 }
-
-            })
-        );
+            }
+        }
 
         if (eventBulk.events.length > 0) {
             const lastEvent = ensureNotFalsy(lastOfArray(eventBulk.events));
