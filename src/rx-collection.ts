@@ -12,7 +12,8 @@ import {
     ensureNotFalsy,
     getFromMapOrThrow,
     PROMISE_RESOLVE_FALSE,
-    PROMISE_RESOLVE_VOID
+    PROMISE_RESOLVE_VOID,
+    clone
 } from './plugins/utils/index.ts';
 import {
     fillObjectDataBeforeInsert,
@@ -519,6 +520,8 @@ export class RxCollectionBase<
         RxDocumentType,
         RxDocument<RxDocumentType, OrmMethods>[]
     > {
+        queryObj = clone(queryObj);
+
         if (typeof queryObj === 'string') {
             throw newRxError('COL5', {
                 queryObj
@@ -539,6 +542,7 @@ export class RxCollectionBase<
         RxDocumentType,
         RxDocument<RxDocumentType, OrmMethods> | null
     > {
+        queryObj = clone(queryObj);
         let query;
 
         if (typeof queryObj === 'string') {
@@ -551,7 +555,8 @@ export class RxCollectionBase<
         } else {
             if (!queryObj) {
                 queryObj = _getDefaultQuery();
-            }
+            } 
+            
 
             // cannot have limit on findOne queries because it will be overwritten
             if ((queryObj as MangoQuery).limit) {

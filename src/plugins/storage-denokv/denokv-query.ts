@@ -101,7 +101,7 @@ export async function queryDenoKV<RxDocType>(
     console.log(JSON.stringify({
         start: [instance.keySpace, indexMeta.indexId, lowerBoundString],
         end: [instance.keySpace, indexMeta.indexId, upperBoundString],
-        limit,
+        limit: (!mustManuallyResort && !queryPlan.selectorSatisfiedByIndex) ? skipPlusLimit : undefined
         // schema: instance.schema
     }, null, 4));
 
@@ -111,12 +111,13 @@ export async function queryDenoKV<RxDocType>(
         end: [instance.keySpace, indexMeta.indexId, upperBoundString]
     }, {
         consistency: instance.settings.consistencyLevel,
-        limit: mustManuallyResort ? undefined : skipPlusLimit,
+        limit: (!mustManuallyResort && queryPlan.selectorSatisfiedByIndex) ? skipPlusLimit : undefined,
         batchSize: instance.settings.batchSize
     });
 
     for await (const indexDocEntry of range) {
         const docId = indexDocEntry.value;
+        console.log('inner query docId: ' + docId);
         const docDataResult = await kv.get<RxDocumentData<RxDocType>>([instance.keySpace, DENOKV_DOCUMENT_ROOT_PATH, docId], instance.kvOptions);
         const docData = ensureNotFalsy(docDataResult.value);
         if (!queryMatcher || queryMatcher(docData)) {

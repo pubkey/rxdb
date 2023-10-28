@@ -438,7 +438,7 @@ export function createDenoKVStorageInstance<RxDocType>(
     useIndexesFinal.forEach((indexAr, indexId) => {
         const indexName = getDenoKVIndexName(indexAr);
         indexDBs[indexName] = {
-            indexId: indexId + '',
+            indexId: '|' + indexId + '|',
             indexName,
             getIndexableString: getIndexableStringMonad(params.schema, indexAr),
             index: indexAr
