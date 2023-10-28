@@ -520,8 +520,6 @@ export class RxCollectionBase<
         RxDocumentType,
         RxDocument<RxDocumentType, OrmMethods>[]
     > {
-        queryObj = clone(queryObj);
-
         if (typeof queryObj === 'string') {
             throw newRxError('COL5', {
                 queryObj
@@ -542,7 +540,17 @@ export class RxCollectionBase<
         RxDocumentType,
         RxDocument<RxDocumentType, OrmMethods> | null
     > {
-        queryObj = clone(queryObj);
+
+        // TODO move this check to dev-mode plugin
+        if (
+            typeof queryObj === 'number' ||
+            Array.isArray(queryObj)
+        ) {
+            throw newRxTypeError('COL6', {
+                queryObj
+            });
+        }
+
         let query;
 
         if (typeof queryObj === 'string') {
@@ -563,18 +571,11 @@ export class RxCollectionBase<
                 throw newRxError('QU6');
             }
 
+            queryObj = flatClone(queryObj);
             (queryObj as any).limit = 1;
             query = createRxQuery<RxDocumentType>('findOne', queryObj, this as any);
         }
 
-        if (
-            typeof queryObj === 'number' ||
-            Array.isArray(queryObj)
-        ) {
-            throw newRxTypeError('COL6', {
-                queryObj
-            });
-        }
 
         return query as any;
     }
