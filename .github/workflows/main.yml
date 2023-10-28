@@ -858,5 +858,6 @@ jobs:
           sudo npm i -g cross-env
           deno info
           timeout 1h bash -c 'until npm run test:deno:dexie; do sleep 5; done'
+          timeout 1h bash -c 'until npm run test:deno:denokv; do sleep 5; done'
       # TODO fix deno performance test
       #- run: npm run test:performance:memory:deno
