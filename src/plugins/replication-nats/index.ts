@@ -96,7 +96,7 @@ export function replicateNats<RxDocType>(
     if (options.pull) {
         replicationPrimitivesPull = {
             async handler(
-                lastPulledCheckpoint: NatsCheckpointType,
+                lastPulledCheckpoint: NatsCheckpointType | undefined,
                 batchSize: number
             ) {
                 const cn = await connectionStatePromise;
