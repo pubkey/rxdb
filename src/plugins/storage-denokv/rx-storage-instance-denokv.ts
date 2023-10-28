@@ -26,7 +26,7 @@ import { addRxStorageMultiInstanceSupport } from '../../rx-storage-multiinstance
 import type { DenoKVIndexMeta, DenoKVPreparedQuery, DenoKVSettings, DenoKVStorageInternals } from './denokv-types.ts';
 import { RxStorageDenoKV } from './index.ts';
 import { CLEANUP_INDEX, DENOKV_DOCUMENT_ROOT_PATH, RX_STORAGE_NAME_DENOKV, getDenoKVIndexName } from "./denokv-helper.ts";
-import { getIndexableStringMonad, getStartIndexStringFromLowerBound, increaseIndexableStringByOneQuantum } from "../../custom-index.ts";
+import { getIndexableStringMonad, getStartIndexStringFromLowerBound, changeIndexableStringByOneQuantum } from "../../custom-index.ts";
 import { appendToArray, batchArray, lastOfArray, toArray } from "../utils/utils-array.ts";
 import { ensureNotFalsy } from "../utils/utils-other.ts";
 import { randomCouchString } from "../utils/utils-string.ts";
@@ -258,7 +258,7 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
                 }
             };
             lowerBoundString = indexMeta.getIndexableString(checkpointPartialDoc);
-            lowerBoundString = increaseIndexableStringByOneQuantum(lowerBoundString);
+            lowerBoundString = changeIndexableStringByOneQuantum(lowerBoundString, 1);
         }
 
         const range = kv.list<string>({

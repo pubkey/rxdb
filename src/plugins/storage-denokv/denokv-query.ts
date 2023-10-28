@@ -1,4 +1,5 @@
 import {
+    changeIndexableStringByOneQuantum,
     getStartIndexStringFromLowerBound,
     getStartIndexStringFromUpperBound
 } from '../../custom-index.ts';
@@ -18,7 +19,7 @@ export async function queryDenoKV<RxDocType>(
     preparedQuery: DenoKVPreparedQuery<RxDocType>
 ): Promise<RxStorageQueryResult<RxDocType>> {
     console.log('## queryDenoKV()');
-    console.dir(preparedQuery);
+    console.log(JSON.stringify(preparedQuery, null, 4));
     const queryPlan = preparedQuery.queryPlan;
     const query = preparedQuery.query;
     const skip = query.skip ? query.skip : 0;
@@ -46,21 +47,27 @@ export async function queryDenoKV<RxDocType>(
 
     let lowerBound: any[] = queryPlan.startKeys;
     lowerBound = [false].concat(lowerBound);
-    const lowerBoundString = getStartIndexStringFromLowerBound(
+    let lowerBoundString = getStartIndexStringFromLowerBound(
         instance.schema,
         indexForName,
         lowerBound,
         queryPlan.inclusiveStart
     );
+    if (!queryPlan.inclusiveStart) {
+        lowerBoundString = changeIndexableStringByOneQuantum(lowerBoundString, 1);
+    }
 
     let upperBound: any[] = queryPlan.endKeys;
     upperBound = [false].concat(upperBound);
-    const upperBoundString = getStartIndexStringFromUpperBound(
+    let upperBoundString = getStartIndexStringFromUpperBound(
         instance.schema,
         indexForName,
         upperBound,
         queryPlan.inclusiveEnd
     );
+    if (!queryPlan.inclusiveEnd) {
+        upperBoundString = changeIndexableStringByOneQuantum(upperBoundString, -1);
+    }
 
 
     let result: RxDocumentData<RxDocType>[] = [];
@@ -90,12 +97,19 @@ export async function queryDenoKV<RxDocType>(
     }
 
 
+    console.log('range:');
+    console.log(JSON.stringify({
+        start: [instance.keySpace, indexMeta.indexName, lowerBoundString],
+        end: [instance.keySpace, indexMeta.indexName, upperBoundString],
+        limit
+    }, null, 4));
+
     const range = kv.list<string>({
         start: [instance.keySpace, indexMeta.indexName, lowerBoundString],
         end: [instance.keySpace, indexMeta.indexName, upperBoundString]
     }, {
         consistency: instance.settings.consistencyLevel,
-        limit,
+        limit: mustManuallyResort ? undefined : skipPlusLimit,
         batchSize: instance.settings.batchSize
     });
 
