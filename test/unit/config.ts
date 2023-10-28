@@ -363,7 +363,7 @@ export function setDefaultStorage(storageKey: string) {
                     };
                 },
                 hasPersistence: true,
-                hasMultiInstance: false,
+                hasMultiInstance: true,
                 hasAttachments: false,
                 hasReplication: true
             };

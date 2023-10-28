@@ -750,6 +750,7 @@ describe('rx-collection.test.ts', () => {
 
                         assert.strictEqual(last['_data'].passportId, docs[(docs.length - 1)]._data.passportId);
                         assert.notStrictEqual(firstDoc['_data'].passportId, last['_data'].passportId);
+
                         c.database.destroy();
                     });
                     it('reset limit with .limit(null)', async () => {
@@ -836,6 +837,7 @@ describe('rx-collection.test.ts', () => {
                         .fill(0).forEach(() => {
                             it('skip first and limit (storage: ' + config.storage.name + ')', async () => {
                                 const c = await humansCollection.create(5);
+
                                 const docs = await c.find().sort('passportId').exec();
                                 const second = await c.find().sort('passportId').skip(1).limit(1).exec();
 
@@ -1234,17 +1236,19 @@ describe('rx-collection.test.ts', () => {
             describe('negative', () => {
                 it('BUG: should throw when no-string given (number)', async () => {
                     const c = await humansCollection.create();
-                    assert.throws(
+                    await assertThrows(
                         () => (c as any).findOne(5),
-                        TypeError
+                        'RxTypeError',
+                        'COL6'
                     );
                     c.database.destroy();
                 });
                 it('BUG: should throw when no-string given (array)', async () => {
                     const c = await humansCollection.create();
-                    assert.throws(
+                    await assertThrows(
                         () => (c as any).findOne([]),
-                        TypeError
+                        'RxTypeError',
+                        'COL6'
                     );
                     c.database.destroy();
                 });

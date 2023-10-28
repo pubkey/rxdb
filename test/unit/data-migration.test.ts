@@ -40,7 +40,8 @@ import { SimpleHumanAgeDocumentType } from '../helper/schema-objects.ts';
 import { replicateRxCollection } from '../../plugins/replication/index.mjs';
 
 
-config.parallel('data-migration.test.ts', () => {
+config.parallel('data-migration.test.ts', function () {
+    this.timeout(1000 * 5);
     if (
         !config.storage.hasPersistence ||
         !config.storage.hasReplication

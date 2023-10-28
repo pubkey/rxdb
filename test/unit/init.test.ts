@@ -3,6 +3,7 @@ import sourceMapSupport from 'source-map-support';
 sourceMapSupport.install();
 import '@babel/polyfill';
 import config from './config.ts';
+import assert from 'assert';
 import {
     clearNodeFolder
 } from 'broadcast-channel';
@@ -12,7 +13,7 @@ import { faker } from '@faker-js/faker';
 faker.seed(123);
 
 // add dev-mode plugin
-import { addRxPlugin } from '../../plugins/core/index.mjs';
+import { addRxPlugin, overwritable } from '../../plugins/core/index.mjs';
 import { RxDBDevModePlugin } from '../../plugins/dev-mode/index.mjs';
 addRxPlugin(RxDBDevModePlugin);
 
@@ -78,6 +79,9 @@ if (config.platform.name === 'firefox') {
 
 
 describe('init.test.js', () => {
+    it('ensure dev-mode is activated', ()=> {
+        assert.ok(overwritable.isDevMode());
+    });
     it('init storage', async () => {
         if (config.storage.init) {
             await config.storage.init();

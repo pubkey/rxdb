@@ -73,7 +73,6 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
     async bulkWrite(documentWrites: BulkWriteRow<RxDocType>[], context: string): Promise<RxStorageBulkWriteResponse<RxDocType>> {
         const kv = await this.kvPromise;
         const primaryPath = this.primaryPath;
-        const startTime = now();
         const ret: RxStorageBulkWriteResponse<RxDocType> = {
             success: [],
             error: []

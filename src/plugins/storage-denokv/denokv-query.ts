@@ -18,8 +18,6 @@ export async function queryDenoKV<RxDocType>(
     instance: RxStorageInstanceDenoKV<RxDocType>,
     preparedQuery: DenoKVPreparedQuery<RxDocType>
 ): Promise<RxStorageQueryResult<RxDocType>> {
-    console.log('## queryDenoKV()');
-    console.log(JSON.stringify(preparedQuery, null, 4));
     const queryPlan = preparedQuery.queryPlan;
     const query = preparedQuery.query;
     const skip = query.skip ? query.skip : 0;
@@ -96,16 +94,6 @@ export async function queryDenoKV<RxDocType>(
         };
     }
 
-
-    console.log('range:');
-    console.log(JSON.stringify({
-        start: [instance.keySpace, indexMeta.indexId, lowerBoundString],
-        end: [instance.keySpace, indexMeta.indexId, upperBoundString],
-        limit: (!mustManuallyResort && !queryPlan.selectorSatisfiedByIndex) ? skipPlusLimit : undefined
-        // schema: instance.schema
-    }, null, 4));
-
-
     const range = kv.list<string>({
         start: [instance.keySpace, indexMeta.indexId, lowerBoundString],
         end: [instance.keySpace, indexMeta.indexId, upperBoundString]
@@ -117,7 +105,6 @@ export async function queryDenoKV<RxDocType>(
 
     for await (const indexDocEntry of range) {
         const docId = indexDocEntry.value;
-        console.log('inner query docId: ' + docId);
         const docDataResult = await kv.get<RxDocumentData<RxDocType>>([instance.keySpace, DENOKV_DOCUMENT_ROOT_PATH, docId], instance.kvOptions);
         const docData = ensureNotFalsy(docDataResult.value);
         if (!queryMatcher || queryMatcher(docData)) {

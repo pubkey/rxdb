@@ -14,6 +14,7 @@ import {
     promiseWait,
     randomCouchString,
     ensureNotFalsy,
+    deepFreeze
 } from '../../plugins/core/index.mjs';
 
 import { firstValueFrom } from 'rxjs';
@@ -809,7 +810,7 @@ describe('rx-query.test.ts', () => {
                         properties: {
                             title: {
                                 type: 'string',
-                                maxLength: 1000
+                                maxLength: 100
                             },
                         },
                     }
@@ -1167,9 +1168,57 @@ describe('rx-query.test.ts', () => {
 
             collection.database.destroy();
         });
+        it('should not mutate the query input', async () => {
+            const db = await createRxDatabase({
+                name: randomCouchString(10),
+                storage: config.storage.getStorage(),
+                eventReduce: false
+            });
+            const schema = clone(schemas.human);
+            schema.keyCompression = false;
+
+            const cols = await db.addCollections({
+                humans: {
+                    schema
+                }
+            });
+            const c = cols.humans;
+
+
+
+            const docDataMatching = schemaObjects.human('docMatching');
+            docDataMatching.age = 42;
+            await c.insert(docDataMatching);
+
+            const docDataNotMatching = schemaObjects.human('docNotMatching');
+            docDataNotMatching.age = 99;
+            await c.insert(docDataNotMatching);
+
+            /**
+             * Deep freeze the params so that it will throw
+             * at the first place it is mutated.
+             */
+            const queryParams = deepFreeze({
+                selector: {
+                    age: 42
+                }
+            });
+            const queryMatching = c.find(queryParams);
+            const queryMatchingOne = c.findOne(queryParams);
+            if (queryMatching.mangoQuery.limit) {
+                throw new Error('queryMatching must not have a limit ' + JSON.stringify(queryMatching.mangoQuery));
+            }
+            const res1 = await queryMatching.exec();
+            const resOne1 = await queryMatchingOne.exec();
+            assert.strictEqual(res1.length, 1);
+            assert.ok(resOne1);
+            assert.strictEqual(resOne1.age, 42);
+            db.destroy();
+        });
         /**
         * via gitter @sfordjasiri 27.8.2020 10:27
         */
+
         it('gitter: mutating find-params causes different results', async () => {
             const db = await createRxDatabase({
                 name: randomCouchString(10),
@@ -1186,13 +1235,16 @@ describe('rx-query.test.ts', () => {
             });
             const c = cols.humans;
 
-            const docDataMatching = schemaObjects.human();
+
+
+            const docDataMatching = schemaObjects.human('docMatching');
             docDataMatching.age = 42;
             await c.insert(docDataMatching);
 
-            const docDataNotMatching = schemaObjects.human();
+            const docDataNotMatching = schemaObjects.human('docNotMatching');
             docDataNotMatching.age = 99;
             await c.insert(docDataNotMatching);
+
 
             const queryParams = {
                 selector: {
@@ -1201,7 +1253,9 @@ describe('rx-query.test.ts', () => {
             };
             const queryMatching = c.find(queryParams);
             const queryMatchingOne = c.findOne(queryParams);
-
+            if (queryMatching.mangoQuery.limit) {
+                throw new Error('queryMatching must not have a limit ' + JSON.stringify(queryMatching.mangoQuery));
+            }
             const res1 = await queryMatching.exec();
             const resOne1 = await queryMatchingOne.exec();
             assert.strictEqual(res1.length, 1);
@@ -1211,7 +1265,7 @@ describe('rx-query.test.ts', () => {
             queryParams.selector.age = 0;
 
             // trigger a write so the results are not cached
-            const addData = schemaObjects.human();
+            const addData = schemaObjects.human('a-trigger-write');
             addData.age = 55;
             await c.insert(addData);
 
@@ -1224,6 +1278,7 @@ describe('rx-query.test.ts', () => {
 
             db.destroy();
         });
+
         it('#3498 RxQuery returns outdated result in second subscription', async () => {
             const schema = {
                 version: 0,
