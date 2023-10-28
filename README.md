@@ -97,7 +97,7 @@ No matter what kind of runtime you have, as long as it runs JavaScript, it can r
   <img height="13" src="docs-src/files/icons/react-native.png" />
   <a href="https://rxdb.info/react-native-database.html">React Native</a>
   <img height="13" src="docs-src/files/icons/cordova.png" />
-  Cordova/Phonegap
+  <a href="https://rxdb.info/adapters.html#cordova--phonegap--capacitor">Cordova/Phonegap<a>
   <img height="13" src="docs-src/files/icons/capacitor.svg" />
   <a href="https://rxdb.info/capacitor-database.html">Capacitor</a>
   <img height="13" src="docs-src/files/icons/nativescript.svg" />
