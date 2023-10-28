@@ -439,7 +439,7 @@
     "lokijs": "1.5.12",
     "mingo": "6.4.8",
     "modifyjs": "0.3.1",
-    "mongodb": "6.1.0",
+    "mongodb": "6.2.0",
     "nats": "2.17.0",
     "oblivious-set": "1.4.0",
     "ohash": "1.1.3",
