@@ -25,7 +25,7 @@ import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper.ts';
 import { addRxStorageMultiInstanceSupport } from '../../rx-storage-multiinstance.ts';
 import type { DenoKVIndexMeta, DenoKVPreparedQuery, DenoKVSettings, DenoKVStorageInternals } from './denokv-types.ts';
 import { RxStorageDenoKV } from './index.ts';
-import { CLEANUP_INDEX, DENOKV_DOCUMENT_ROOT_PATH, RX_STORAGE_NAME_DENOKV, getDenoKVIndexName } from "./denokv-helper.ts";
+import { CLEANUP_INDEX, DENOKV_DOCUMENT_ROOT_PATH, RX_STORAGE_NAME_DENOKV, getDenoGlobal, getDenoKVIndexName } from "./denokv-helper.ts";
 import { getIndexableStringMonad, getStartIndexStringFromLowerBound, changeIndexableStringByOneQuantum } from "../../custom-index.ts";
 import { appendToArray, batchArray, lastOfArray, toArray } from "../utils/utils-array.ts";
 import { ensureNotFalsy } from "../utils/utils-other.ts";
@@ -39,7 +39,6 @@ import { PROMISE_RESOLVE_VOID } from "../utils/utils-promise.ts";
 import { flatClone } from "../utils/utils-object.ts";
 
 
-// const Deno = (globalThis as any).Deno;
 
 export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
     RxDocType,
@@ -50,7 +49,7 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
     public readonly primaryPath: StringKeys<RxDocumentData<RxDocType>>;
     private changes$: Subject<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, RxStorageDefaultCheckpoint>> = new Subject();
     public closed?: Promise<void>;
-    public readonly kvPromise: Promise<Deno.Kv>;
+    public readonly kvPromise: Promise<any>;
 
     constructor(
         public readonly storage: RxStorageDenoKV,
@@ -64,7 +63,7 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
         public readonly kvOptions = { consistency: settings.consistencyLevel }
     ) {
         this.primaryPath = getPrimaryFieldOfPrimaryKey(this.schema.primaryKey);
-        this.kvPromise = Deno.openKv(settings.openKvPath).then(async (kv) => {
+        this.kvPromise = getDenoGlobal().openKv(settings.openKvPath).then(async (kv: any) => {
             // insert writeBlockKey
             await kv.set([this.keySpace], 1);
             return kv;
@@ -96,7 +95,7 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
          */
         for (const writeBatch of batches) {
             while (true) {
-                const writeBlockKey = await kv.get<number>([this.keySpace], this.kvOptions);
+                const writeBlockKey = await kv.get([this.keySpace], this.kvOptions);
                 const docsInDB = new Map<string, RxDocumentData<RxDocType>>();
 
                 /**
@@ -193,7 +192,7 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
         await Promise.all(
             ids.map(async (docId) => {
                 const kvKey = [this.keySpace, DENOKV_DOCUMENT_ROOT_PATH, docId];
-                const findSingleResult = await kv.get<RxDocumentData<RxDocType>>(kvKey, this.kvOptions);
+                const findSingleResult = await kv.get(kvKey, this.kvOptions);
                 const docInDb = findSingleResult.value;
                 if (
                     docInDb &&
@@ -225,7 +224,7 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
     }
     async info(): Promise<RxStorageInfoResult> {
         const kv = await this.kvPromise;
-        const range = kv.list<string>({
+        const range = kv.list({
             start: [this.keySpace, DENOKV_DOCUMENT_ROOT_PATH],
             end: [this.keySpace, DENOKV_DOCUMENT_ROOT_PATH, INDEX_MAX]
         }, this.kvOptions);
@@ -260,7 +259,7 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
             lowerBoundString = changeIndexableStringByOneQuantum(lowerBoundString, 1);
         }
 
-        const range = kv.list<string>({
+        const range = kv.list({
             start: [this.keySpace, indexMeta.indexId, lowerBoundString],
             end: [this.keySpace, indexMeta.indexId, INDEX_MAX]
         }, {
@@ -268,7 +267,7 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
             limit,
             batchSize: this.settings.batchSize
         });
-        const docIds: Deno.KvKey[] = [];
+        const docIds: any[] = [];
         for await (const row of range) {
             const docId = row.value;
             docIds.push([this.keySpace, DENOKV_DOCUMENT_ROOT_PATH, docId]);
@@ -283,7 +282,7 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
 
         for (const batch of batches) {
             const docs = await kv.getMany(batch);
-            docs.forEach(row => {
+            docs.forEach((row: any) => {
                 const docData = row.value;
                 result.push(docData as any);
             });
@@ -334,7 +333,7 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
         );
         let noMoreUndeleted: boolean = true;
 
-        const range = kv.list<string>({
+        const range = kv.list({
             start: [this.keySpace, indexMeta.indexId, lowerBoundString],
             end: [this.keySpace, indexMeta.indexId, upperBoundString]
         }, {
@@ -347,7 +346,7 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
         for await (const row of range) {
             rangeCount = rangeCount + 1;
             const docId = row.value;
-            const docDataResult = await kv.get<RxDocumentData<RxDocType>>([this.keySpace, DENOKV_DOCUMENT_ROOT_PATH, docId], this.kvOptions);
+            const docDataResult = await kv.get([this.keySpace, DENOKV_DOCUMENT_ROOT_PATH, docId], this.kvOptions);
             const docData = ensureNotFalsy(docDataResult.value);
             if (
                 !docData._deleted ||
@@ -383,7 +382,7 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
     async remove(): Promise<void> {
         ensureNotClosed(this);
         const kv = await this.kvPromise;
-        const range = kv.list<any>({
+        const range = kv.list({
             start: [this.keySpace],
             end: [this.keySpace, INDEX_MAX]
         }, {

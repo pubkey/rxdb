@@ -80,10 +80,10 @@ export async function queryDenoKV<RxDocType>(
      * can rely on .getRangeBatch() in all cases.
      */
     if (lowerBoundString === upperBoundString) {
-        const singleDocResult = await kv.get<string>([instance.keySpace, indexMeta.indexId, lowerBoundString], instance.kvOptions);
+        const singleDocResult = await kv.get([instance.keySpace, indexMeta.indexId, lowerBoundString], instance.kvOptions);
         if (singleDocResult.value) {
             const docId: string = singleDocResult.value;
-            const docDataResult = await kv.get<RxDocumentData<RxDocType>>([instance.keySpace, DENOKV_DOCUMENT_ROOT_PATH, docId], instance.kvOptions);
+            const docDataResult = await kv.get([instance.keySpace, DENOKV_DOCUMENT_ROOT_PATH, docId], instance.kvOptions);
             const docData = ensureNotFalsy(docDataResult.value);
             if (!queryMatcher || queryMatcher(docData)) {
                 result.push(docData);
@@ -94,7 +94,7 @@ export async function queryDenoKV<RxDocType>(
         };
     }
 
-    const range = kv.list<string>({
+    const range = kv.list({
         start: [instance.keySpace, indexMeta.indexId, lowerBoundString],
         end: [instance.keySpace, indexMeta.indexId, upperBoundString]
     }, {
@@ -105,7 +105,7 @@ export async function queryDenoKV<RxDocType>(
 
     for await (const indexDocEntry of range) {
         const docId = indexDocEntry.value;
-        const docDataResult = await kv.get<RxDocumentData<RxDocType>>([instance.keySpace, DENOKV_DOCUMENT_ROOT_PATH, docId], instance.kvOptions);
+        const docDataResult = await kv.get([instance.keySpace, DENOKV_DOCUMENT_ROOT_PATH, docId], instance.kvOptions);
         const docData = ensureNotFalsy(docDataResult.value);
         if (!queryMatcher || queryMatcher(docData)) {
             result.push(docData);
