@@ -82,7 +82,7 @@ export async function queryDenoKV<RxDocType>(
      * can rely on .getRangeBatch() in all cases.
      */
     if (lowerBoundString === upperBoundString) {
-        const singleDocResult = await kv.get<string>([instance.keySpace, indexMeta.indexName, lowerBoundString], instance.kvOptions);
+        const singleDocResult = await kv.get<string>([instance.keySpace, indexMeta.indexId, lowerBoundString], instance.kvOptions);
         if (singleDocResult.value) {
             const docId: string = singleDocResult.value;
             const docDataResult = await kv.get<RxDocumentData<RxDocType>>([instance.keySpace, DENOKV_DOCUMENT_ROOT_PATH, docId], instance.kvOptions);
@@ -99,14 +99,16 @@ export async function queryDenoKV<RxDocType>(
 
     console.log('range:');
     console.log(JSON.stringify({
-        start: [instance.keySpace, indexMeta.indexName, lowerBoundString],
-        end: [instance.keySpace, indexMeta.indexName, upperBoundString],
-        limit
+        start: [instance.keySpace, indexMeta.indexId, lowerBoundString],
+        end: [instance.keySpace, indexMeta.indexId, upperBoundString],
+        limit,
+        // schema: instance.schema
     }, null, 4));
 
+
     const range = kv.list<string>({
-        start: [instance.keySpace, indexMeta.indexName, lowerBoundString],
-        end: [instance.keySpace, indexMeta.indexName, upperBoundString]
+        start: [instance.keySpace, indexMeta.indexId, lowerBoundString],
+        end: [instance.keySpace, indexMeta.indexId, upperBoundString]
     }, {
         consistency: instance.settings.consistencyLevel,
         limit: mustManuallyResort ? undefined : skipPlusLimit,

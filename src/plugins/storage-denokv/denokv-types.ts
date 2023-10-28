@@ -12,6 +12,7 @@ export type DenoKVStorageInternals<RxDocType> = {
 };
 
 export type DenoKVIndexMeta<RxDocType> = {
+    indexId: string;
     indexName: string;
     index: string[];
     getIndexableString: (doc: RxDocumentData<RxDocType>) => string;

@@ -146,7 +146,7 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
                     // insert secondary indexes
                     Object.values(this.internals.indexes).forEach(indexMeta => {
                         const indexString = indexMeta.getIndexableString(writeRow.document as any);
-                        tx = tx.set([this.keySpace, indexMeta.indexName, indexString], docId);
+                        tx = tx.set([this.keySpace, indexMeta.indexId, indexString], docId);
                     });
                 });
                 // UPDATES
@@ -161,8 +161,8 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
                         const oldIndexString = indexMeta.getIndexableString(ensureNotFalsy(writeRow.previous));
                         const newIndexString = indexMeta.getIndexableString(writeRow.document as any);
                         if (oldIndexString !== newIndexString) {
-                            tx = tx.delete([this.keySpace, indexMeta.indexName, oldIndexString]);
-                            tx = tx.set([this.keySpace, indexMeta.indexName, newIndexString], docId);
+                            tx = tx.delete([this.keySpace, indexMeta.indexId, oldIndexString]);
+                            tx = tx.set([this.keySpace, indexMeta.indexId, newIndexString], docId);
                         }
                     });
                     ret.success.push(writeRow.document as any);
@@ -262,8 +262,8 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
         }
 
         const range = kv.list<string>({
-            start: [this.keySpace, indexMeta.indexName, lowerBoundString],
-            end: [this.keySpace, indexMeta.indexName, INDEX_MAX]
+            start: [this.keySpace, indexMeta.indexId, lowerBoundString],
+            end: [this.keySpace, indexMeta.indexId, INDEX_MAX]
         }, {
             consistency: this.settings.consistencyLevel,
             limit,
@@ -336,8 +336,8 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
         let noMoreUndeleted: boolean = true;
 
         const range = kv.list<string>({
-            start: [this.keySpace, indexMeta.indexName, lowerBoundString],
-            end: [this.keySpace, indexMeta.indexName, upperBoundString]
+            start: [this.keySpace, indexMeta.indexId, lowerBoundString],
+            end: [this.keySpace, indexMeta.indexId, upperBoundString]
         }, {
             consistency: this.settings.consistencyLevel,
             batchSize: this.settings.batchSize,
@@ -364,7 +364,7 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
             Object
                 .values(this.internals.indexes)
                 .forEach(indexMetaInner => {
-                    tx = tx.delete([this.keySpace, indexMetaInner.indexName, docId]);
+                    tx = tx.delete([this.keySpace, indexMetaInner.indexId, docId]);
                 });
             await tx.commit();
         }
@@ -435,9 +435,10 @@ export function createDenoKVStorageInstance<RxDocType>(
         primaryPath
     ]);
     useIndexesFinal.push(CLEANUP_INDEX);
-    useIndexesFinal.forEach(indexAr => {
+    useIndexesFinal.forEach((indexAr, indexId) => {
         const indexName = getDenoKVIndexName(indexAr);
         indexDBs[indexName] = {
+            indexId: indexId + '',
             indexName,
             getIndexableString: getIndexableStringMonad(params.schema, indexAr),
             index: indexAr
