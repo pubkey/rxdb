@@ -12,8 +12,7 @@ import {
     ensureNotFalsy,
     getFromMapOrThrow,
     PROMISE_RESOLVE_FALSE,
-    PROMISE_RESOLVE_VOID,
-    clone
+    PROMISE_RESOLVE_VOID
 } from './plugins/utils/index.ts';
 import {
     fillObjectDataBeforeInsert,
@@ -563,8 +562,8 @@ export class RxCollectionBase<
         } else {
             if (!queryObj) {
                 queryObj = _getDefaultQuery();
-            } 
-            
+            }
+
 
             // cannot have limit on findOne queries because it will be overwritten
             if ((queryObj as MangoQuery).limit) {
