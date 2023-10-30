@@ -27,7 +27,7 @@
     "async-test-util": "2.2.1",
     "css-loader": "6.8.1",
     "testcafe": "3.3.0",
-    "testcafe-hammerhead": "31.6.2",
+    "testcafe-hammerhead": "31.6.3",
     "ts-loader": "9.5.0",
     "typescript": "5.2.2",
     "webpack": "5.89.0",
