@@ -840,7 +840,7 @@ jobs:
       - run: npm run test:performance:memory:bun
 
       # deno (must be last because it messes up with file permissions)
-      - name: Reuse npm cache folder
+      - name: Reuse deno cache folder
         uses: actions/cache@v3
         env:
           cache-name: cache-deno-modules
@@ -854,7 +854,8 @@ jobs:
         with:
           # https://github.com/denoland/deno/releases
           deno-version: "1.37.2"
-      - run: |
+      - name: run deno tests
+        run: |
           sudo npm i -g cross-env
           deno info
           timeout 1h bash -c 'until npm run test:deno:dexie; do sleep 5; done'
