@@ -122,7 +122,7 @@ export async function replicateWithWebsocketServer<RxDocType, CheckpointType>(
                 filter(msg => msg.id === 'stream' && msg.collection === options.collection.name),
                 map(msg => msg.result)
             ),
-            async handler(lastPulledCheckpoint: CheckpointType, batchSize: number) {
+            async handler(lastPulledCheckpoint: CheckpointType | undefined, batchSize: number) {
                 const requestId = getRequestId();
                 const request: WebsocketMessageType = {
                     id: requestId,

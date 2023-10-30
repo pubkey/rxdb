@@ -1,3 +1,15 @@
+| Announcement                                                        |
+| :--: |
+| &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; [Help testing the RxDB version 15 release](https://github.com/pubkey/rxdb/issues/5155) &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; |
+
+
+<!-- 
+| Announcement                                                        |
+| :--: |
+| &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; Version **15.0.0** is now released, read the [ANNOUNCEMENT](https://rxdb.info/releases/15.0.0.html) &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; |
+-->
+
+
 <!--
 | Announcement                                                        |
 | :--: |
@@ -96,8 +108,6 @@ No matter what kind of runtime you have, as long as it runs JavaScript, it can r
   <a href="https://rxdb.info/electron-database.html">Electron</a>
   <img height="13" src="docs-src/files/icons/react-native.png" />
   <a href="https://rxdb.info/react-native-database.html">React Native</a>
-  <img height="13" src="docs-src/files/icons/cordova.png" />
-  Cordova/Phonegap
   <img height="13" src="docs-src/files/icons/capacitor.svg" />
   <a href="https://rxdb.info/capacitor-database.html">Capacitor</a>
   <img height="13" src="docs-src/files/icons/nativescript.svg" />

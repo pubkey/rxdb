@@ -163,7 +163,7 @@ export async function replicateWebRTC<RxDocType>(
                     retryTime: options.retryTime,
                     waitForLeadership: false,
                     pull: options.pull ? Object.assign({}, options.pull, {
-                        async handler(lastPulledCheckpoint: WebRTCReplicationCheckpoint) {
+                        async handler(lastPulledCheckpoint: WebRTCReplicationCheckpoint | undefined) {
                             const answer = await sendMessageAndAwaitAnswer(
                                 pool.connectionHandler,
                                 peer,
