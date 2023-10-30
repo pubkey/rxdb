@@ -15,7 +15,7 @@
   "author": "pubkey",
   "license": "MIT",
   "dependencies": {
-    "@supabase/supabase-js": "1.35.7",
+    "@supabase/supabase-js": "2.38.4",
     "html-webpack-plugin": "5.5.3",
     "mini-css-extract-plugin": "2.7.6",
     "rxdb": "file:rxdb-local.tgz",
