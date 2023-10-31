@@ -4,7 +4,7 @@ version: 0.0.1
 # homepage: https://www.example.com
 
 environment:
-  sdk: '>=2.18.2 <3.0.0'
+  sdk: '<4.0.0'
 
 dependencies:
   flutter_qjs: 0.3.7
