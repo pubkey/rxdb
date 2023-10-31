@@ -349,3 +349,15 @@ export function getStartIndexStringFromUpperBound(
     });
     return str;
 }
+
+/**
+ * Used in storages where it is not possible
+ * to define inclusiveEnd/inclusiveStart
+ */
+export function changeIndexableStringByOneQuantum(str: string, direction: 1 | -1): string {
+    const lastChar = str.slice(-1);
+    let charCode = lastChar.charCodeAt(0);
+    charCode = charCode + direction;
+    const withoutLastChar = str.slice(0, -1);
+    return withoutLastChar + String.fromCharCode(charCode);
+}

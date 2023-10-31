@@ -271,6 +271,7 @@ export function getLokiLeaderElector(
     databaseName: string
 ): LeaderElector {
     const broadcastChannel = getBroadcastChannelReference(
+        RX_STORAGE_NAME_LOKIJS,
         databaseInstanceToken,
         databaseName,
         broadcastChannelRefObject

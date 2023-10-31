@@ -539,6 +539,17 @@ export class RxCollectionBase<
         RxDocumentType,
         RxDocument<RxDocumentType, OrmMethods> | null
     > {
+
+        // TODO move this check to dev-mode plugin
+        if (
+            typeof queryObj === 'number' ||
+            Array.isArray(queryObj)
+        ) {
+            throw newRxTypeError('COL6', {
+                queryObj
+            });
+        }
+
         let query;
 
         if (typeof queryObj === 'string') {
@@ -553,23 +564,17 @@ export class RxCollectionBase<
                 queryObj = _getDefaultQuery();
             }
 
+
             // cannot have limit on findOne queries because it will be overwritten
             if ((queryObj as MangoQuery).limit) {
                 throw newRxError('QU6');
             }
 
+            queryObj = flatClone(queryObj);
             (queryObj as any).limit = 1;
             query = createRxQuery<RxDocumentType>('findOne', queryObj, this as any);
         }
 
-        if (
-            typeof queryObj === 'number' ||
-            Array.isArray(queryObj)
-        ) {
-            throw newRxTypeError('COL6', {
-                queryObj
-            });
-        }
 
         return query as any;
     }

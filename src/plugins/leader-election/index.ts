@@ -41,6 +41,7 @@ export function getForDatabase(this: RxDatabase): LeaderElector {
 
 
     const broadcastChannel = getBroadcastChannelReference(
+        this.storage.name,
         this.token,
         this.name,
         this

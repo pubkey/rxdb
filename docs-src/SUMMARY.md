@@ -102,6 +102,7 @@
     * [RxStorage SQLite](./rx-storage-sqlite.md)
     * [RxStorage Filesystem Node](./rx-storage-filesystem-node.md)
     * [RxStorage MongoDB](./rx-storage-mongodb.md)
+    * [RxStorage DenoKV](./rx-storage-denokv.md)
     * [RxStorage FoundationDB](./rx-storage-foundationdb.md)
     * [RxStorage Worker](./rx-storage-worker.md)
     * [RxStorage Shared Worker](./rx-storage-shared-worker.md)

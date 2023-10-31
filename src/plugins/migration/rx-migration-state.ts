@@ -259,6 +259,8 @@ export class RxMigrationState {
                 return;
             }
             // re-run until no conflict
+            const useHandlers = this.updateStatusHandlers;
+            this.updateStatusHandlers = [];
             while (true) {
                 const previous = await getSingleDocument<RxMigrationStatusDocument>(
                     this.database.internalStore,
@@ -287,7 +289,7 @@ export class RxMigrationState {
                 }
 
                 let status = ensureNotFalsy(newDoc).data;
-                for (const oneHandler of this.updateStatusHandlers) {
+                for (const oneHandler of useHandlers) {
                     status = oneHandler(status);
                 }
                 status.count.percent = Math.round((status.count.handled / status.count.total) * 100);
@@ -296,7 +298,6 @@ export class RxMigrationState {
                     newDoc && previous &&
                     deepEqual(newDoc.data, previous.data)
                 ) {
-                    this.updateStatusHandlers = [];
                     break;
                 }
 
@@ -312,7 +313,6 @@ export class RxMigrationState {
                     );
 
                     // write successful
-                    this.updateStatusHandlers = [];
                     break;
                 } catch (err) {
                     // ignore conflicts
@@ -321,7 +321,6 @@ export class RxMigrationState {
                     }
                 }
             }
-
         });
         return this.updateStatusQueue;
     }

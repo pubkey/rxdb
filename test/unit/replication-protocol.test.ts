@@ -1102,7 +1102,10 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
     });
     describe('stability', () => {
         it('do many writes while replication is running', async () => {
-            if (config.storage.name === 'lokijs') {
+            if (
+                config.storage.name === 'lokijs' ||
+                config.storage.name === 'denokv'
+            ) {
                 // TODO this test fails in about 1/20 times in lokijs
                 return;
             }

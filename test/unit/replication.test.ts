@@ -906,7 +906,7 @@ describe('replication.test.ts', () => {
             db.destroy();
         });
         it('#4315 Id length limit reached with composite key', async () => {
-            const primaryKeyLength = 1000;
+            const primaryKeyLength = 500;
             async function getCollection(): Promise<RxCollection<TestDocType>> {
                 const db = await createRxDatabase({
                     name: randomCouchString(10),

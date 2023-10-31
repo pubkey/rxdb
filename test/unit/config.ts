@@ -19,6 +19,7 @@ import {
 } from '../../plugins/storage-dexie/index.mjs';
 import { getRxStorageRemoteWebsocket } from '../../plugins/storage-remote-websocket/index.mjs';
 import { getRxStorageMemory } from '../../plugins/storage-memory/index.mjs';
+import { getRxStorageDenoKV } from '../../plugins/storage-denokv/index.mjs';
 import { CUSTOM_STORAGE } from './custom-storage.ts';
 import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs';
 import { isPromise } from 'async-test-util';
@@ -348,6 +349,22 @@ export function setDefaultStorage(storageKey: string) {
                 hasPersistence: true,
                 hasMultiInstance: true,
                 hasAttachments: true,
+                hasReplication: true
+            };
+            break;
+        case 'denokv':
+            config.storage = {
+                name: storageKey,
+                getStorage: () => getRxStorageDenoKV(),
+                getPerformanceStorage() {
+                    return {
+                        description: 'denokv',
+                        storage: getRxStorageDenoKV()
+                    };
+                },
+                hasPersistence: true,
+                hasMultiInstance: true,
+                hasAttachments: false,
                 hasReplication: true
             };
             break;
