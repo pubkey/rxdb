@@ -27,7 +27,7 @@ export function errorToPlainJson(err) {
      * shows urls to the source code that can be clicked to inspect
      * the correct place in the code.
      */
-    stack: !err.stack ? undefined : err.stack.replaceAll('\n', ' \n ')
+    stack: !err.stack ? undefined : err.stack.replace(/\n/g, ' \n ')
   };
   return ret;
 }

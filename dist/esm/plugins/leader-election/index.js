@@ -20,7 +20,7 @@ export function getLeaderElectorByBroadcastChannel(broadcastChannel) {
  * @overwrites RxDatabase().leaderElector for caching
  */
 export function getForDatabase() {
-  var broadcastChannel = getBroadcastChannelReference(this.token, this.name, this);
+  var broadcastChannel = getBroadcastChannelReference(this.storage.name, this.token, this.name, this);
 
   /**
    * Clean up the reference on RxDatabase.destroy()

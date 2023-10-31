@@ -31,7 +31,7 @@ import { BroadcastChannel } from 'broadcast-channel';
  * Otherwise we have forgot something.
  */
 export var BROADCAST_CHANNEL_BY_TOKEN = new Map();
-export function getBroadcastChannelReference(databaseInstanceToken, databaseName, refObject) {
+export function getBroadcastChannelReference(storageName, databaseInstanceToken, databaseName, refObject) {
   var state = BROADCAST_CHANNEL_BY_TOKEN.get(databaseInstanceToken);
   if (!state) {
     state = {
@@ -40,7 +40,7 @@ export function getBroadcastChannelReference(databaseInstanceToken, databaseName
        * in the BroadcastChannel name because different instances must end with the same
        * channel name to be able to broadcast messages between each other.
        */
-      bc: new BroadcastChannel('RxDB:' + databaseName),
+      bc: new BroadcastChannel(['RxDB:', storageName, databaseName].join('|')),
       refs: new Set()
     };
     BROADCAST_CHANNEL_BY_TOKEN.set(databaseInstanceToken, state);
@@ -68,7 +68,7 @@ providedBroadcastChannel) {
   if (!instanceCreationParams.multiInstance) {
     return;
   }
-  var broadcastChannel = providedBroadcastChannel ? providedBroadcastChannel : getBroadcastChannelReference(instanceCreationParams.databaseInstanceToken, instance.databaseName, instance);
+  var broadcastChannel = providedBroadcastChannel ? providedBroadcastChannel : getBroadcastChannelReference(storageName, instanceCreationParams.databaseInstanceToken, instance.databaseName, instance);
   var changesFromOtherInstances$ = new Subject();
   var eventListener = msg => {
     if (msg.storageName === storageName && msg.databaseName === instanceCreationParams.databaseName && msg.collectionName === instanceCreationParams.collectionName && msg.version === instanceCreationParams.schema.version) {

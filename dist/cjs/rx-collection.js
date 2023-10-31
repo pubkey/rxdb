@@ -309,6 +309,12 @@ var RxCollectionBase = exports.RxCollectionBase = /*#__PURE__*/function () {
     return query;
   };
   _proto.findOne = function findOne(queryObj) {
+    // TODO move this check to dev-mode plugin
+    if (typeof queryObj === 'number' || Array.isArray(queryObj)) {
+      throw (0, _rxError.newRxTypeError)('COL6', {
+        queryObj
+      });
+    }
     var query;
     if (typeof queryObj === 'string') {
       query = (0, _rxQuery.createRxQuery)('findOne', {
@@ -326,13 +332,9 @@ var RxCollectionBase = exports.RxCollectionBase = /*#__PURE__*/function () {
       if (queryObj.limit) {
         throw (0, _rxError.newRxError)('QU6');
       }
+      queryObj = (0, _index.flatClone)(queryObj);
       queryObj.limit = 1;
       query = (0, _rxQuery.createRxQuery)('findOne', queryObj, this);
-    }
-    if (typeof queryObj === 'number' || Array.isArray(queryObj)) {
-      throw (0, _rxError.newRxTypeError)('COL6', {
-        queryObj
-      });
     }
     return query;
   };

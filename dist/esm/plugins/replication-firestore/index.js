@@ -92,7 +92,7 @@ export function replicateFirestore(options) {
         }
         if (useDocs.length === 0) {
           return {
-            checkpoint: lastPulledCheckpoint,
+            checkpoint: lastPulledCheckpoint ?? null,
             documents: []
           };
         }

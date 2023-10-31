@@ -3,6 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.changeIndexableStringByOneQuantum = changeIndexableStringByOneQuantum;
 exports.getIndexMeta = getIndexMeta;
 exports.getIndexStringLength = getIndexStringLength;
 exports.getIndexableStringMonad = getIndexableStringMonad;
@@ -255,5 +256,17 @@ function getStartIndexStringFromUpperBound(schema, index, upperBound, inclusiveE
     }
   });
   return str;
+}
+
+/**
+ * Used in storages where it is not possible
+ * to define inclusiveEnd/inclusiveStart
+ */
+function changeIndexableStringByOneQuantum(str, direction) {
+  var lastChar = str.slice(-1);
+  var charCode = lastChar.charCodeAt(0);
+  charCode = charCode + direction;
+  var withoutLastChar = str.slice(0, -1);
+  return withoutLastChar + String.fromCharCode(charCode);
 }
 //# sourceMappingURL=custom-index.js.map

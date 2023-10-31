@@ -137,6 +137,8 @@ var RxMigrationState = exports.RxMigrationState = /*#__PURE__*/function () {
         return;
       }
       // re-run until no conflict
+      var useHandlers = this.updateStatusHandlers;
+      this.updateStatusHandlers = [];
       while (true) {
         var previous = await (0, _rxStorageHelper.getSingleDocument)(this.database.internalStore, this.statusDocId);
         var newDoc = (0, _index.clone)(previous);
@@ -161,12 +163,11 @@ var RxMigrationState = exports.RxMigrationState = /*#__PURE__*/function () {
           };
         }
         var status = (0, _index.ensureNotFalsy)(newDoc).data;
-        for (var oneHandler of this.updateStatusHandlers) {
+        for (var oneHandler of useHandlers) {
           status = oneHandler(status);
         }
         status.count.percent = Math.round(status.count.handled / status.count.total * 100);
         if (newDoc && previous && (0, _index.deepEqual)(newDoc.data, previous.data)) {
-          this.updateStatusHandlers = [];
           break;
         }
         try {
@@ -176,7 +177,6 @@ var RxMigrationState = exports.RxMigrationState = /*#__PURE__*/function () {
           }, _rxDatabaseInternalStore.INTERNAL_CONTEXT_MIGRATION_STATUS);
 
           // write successful
-          this.updateStatusHandlers = [];
           break;
         } catch (err) {
           // ignore conflicts

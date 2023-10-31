@@ -229,7 +229,7 @@ function getLokiSortComparator(_schema, query) {
   return fun;
 }
 function getLokiLeaderElector(databaseInstanceToken, broadcastChannelRefObject, databaseName) {
-  var broadcastChannel = (0, _rxStorageMultiinstance.getBroadcastChannelReference)(databaseInstanceToken, databaseName, broadcastChannelRefObject);
+  var broadcastChannel = (0, _rxStorageMultiinstance.getBroadcastChannelReference)(RX_STORAGE_NAME_LOKIJS, databaseInstanceToken, databaseName, broadcastChannelRefObject);
   var elector = (0, _index2.getLeaderElectorByBroadcastChannel)(broadcastChannel);
   return elector;
 }

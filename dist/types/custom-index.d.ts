@@ -50,4 +50,9 @@ export declare function getPrimaryKeyFromIndexableString(indexableString: string
 export declare function getNumberIndexString(parsedLengths: ParsedLengths, fieldValue: number): string;
 export declare function getStartIndexStringFromLowerBound(schema: RxJsonSchema<any>, index: string[], lowerBound: (string | boolean | number | null | undefined)[], inclusiveStart: boolean): string;
 export declare function getStartIndexStringFromUpperBound(schema: RxJsonSchema<any>, index: string[], upperBound: (string | boolean | number | null | undefined)[], inclusiveEnd: boolean): string;
+/**
+ * Used in storages where it is not possible
+ * to define inclusiveEnd/inclusiveStart
+ */
+export declare function changeIndexableStringByOneQuantum(str: string, direction: 1 | -1): string;
 export {};

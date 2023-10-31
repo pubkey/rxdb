@@ -39,7 +39,7 @@ var _broadcastChannel = require("broadcast-channel");
  * Otherwise we have forgot something.
  */
 var BROADCAST_CHANNEL_BY_TOKEN = exports.BROADCAST_CHANNEL_BY_TOKEN = new Map();
-function getBroadcastChannelReference(databaseInstanceToken, databaseName, refObject) {
+function getBroadcastChannelReference(storageName, databaseInstanceToken, databaseName, refObject) {
   var state = BROADCAST_CHANNEL_BY_TOKEN.get(databaseInstanceToken);
   if (!state) {
     state = {
@@ -48,7 +48,7 @@ function getBroadcastChannelReference(databaseInstanceToken, databaseName, refOb
        * in the BroadcastChannel name because different instances must end with the same
        * channel name to be able to broadcast messages between each other.
        */
-      bc: new _broadcastChannel.BroadcastChannel('RxDB:' + databaseName),
+      bc: new _broadcastChannel.BroadcastChannel(['RxDB:', storageName, databaseName].join('|')),
       refs: new Set()
     };
     BROADCAST_CHANNEL_BY_TOKEN.set(databaseInstanceToken, state);
@@ -76,7 +76,7 @@ providedBroadcastChannel) {
   if (!instanceCreationParams.multiInstance) {
     return;
   }
-  var broadcastChannel = providedBroadcastChannel ? providedBroadcastChannel : getBroadcastChannelReference(instanceCreationParams.databaseInstanceToken, instance.databaseName, instance);
+  var broadcastChannel = providedBroadcastChannel ? providedBroadcastChannel : getBroadcastChannelReference(storageName, instanceCreationParams.databaseInstanceToken, instance.databaseName, instance);
   var changesFromOtherInstances$ = new _rxjs.Subject();
   var eventListener = msg => {
     if (msg.storageName === storageName && msg.databaseName === instanceCreationParams.databaseName && msg.collectionName === instanceCreationParams.collectionName && msg.version === instanceCreationParams.schema.version) {

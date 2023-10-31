@@ -18,14 +18,14 @@ export type InternalStoreReplicationPullDocType<RxDocType> = InternalStoreDocTyp
 }>;
 
 export type ReplicationPullHandlerResult<RxDocType, CheckpointType> = {
-    checkpoint: CheckpointType;
+    checkpoint: CheckpointType | null;
     documents: WithDeleted<RxDocType>[];
 };
 
 export type ReplicationPushHandlerResult<RxDocType> = RxDocType[];
 
 export type ReplicationPullHandler<RxDocType, CheckpointType> = (
-    lastPulledCheckpoint: CheckpointType,
+    lastPulledCheckpoint: CheckpointType | undefined,
     batchSize: number
 ) => Promise<ReplicationPullHandlerResult<RxDocType, CheckpointType>>;
 export type ReplicationPullOptions<RxDocType, CheckpointType> = {

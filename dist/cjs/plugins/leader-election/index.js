@@ -32,7 +32,7 @@ function getLeaderElectorByBroadcastChannel(broadcastChannel) {
  * @overwrites RxDatabase().leaderElector for caching
  */
 function getForDatabase() {
-  var broadcastChannel = (0, _rxStorageMultiinstance.getBroadcastChannelReference)(this.token, this.name, this);
+  var broadcastChannel = (0, _rxStorageMultiinstance.getBroadcastChannelReference)(this.storage.name, this.token, this.name, this);
 
   /**
    * Clean up the reference on RxDatabase.destroy()
