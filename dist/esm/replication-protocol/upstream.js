@@ -61,15 +61,31 @@ export async function startReplicationUpstream(state) {
     }
     state.checkpointQueue = state.checkpointQueue.then(() => getLastCheckpointDoc(state, 'up'));
     var lastCheckpoint = await state.checkpointQueue;
-    var promises = [];
-    while (!state.events.canceled.getValue()) {
+    var promises = new Set();
+    var _loop = async function () {
       initialSyncStartTime = timer++;
+
+      /**
+       * Throttle the calls to
+       * forkInstance.getChangedDocumentsSince() so that
+       * if the pushing to the remote is slower compared to the
+       * pulling out of forkInstance, we do not block the UI too much
+       * and have a big memory spike with all forkInstance documents.
+       */
+      if (promises.size > 3) {
+        await Promise.race(Array.from(promises));
+      }
       var upResult = await state.input.forkInstance.getChangedDocumentsSince(state.input.pushBatchSize, lastCheckpoint);
       if (upResult.documents.length === 0) {
-        break;
+        return 1; // break
       }
       lastCheckpoint = stackCheckpoints([lastCheckpoint, upResult.checkpoint]);
-      promises.push(persistToMaster(upResult.documents, ensureNotFalsy(lastCheckpoint)));
+      var promise = persistToMaster(upResult.documents, ensureNotFalsy(lastCheckpoint));
+      promises.add(promise);
+      promise.catch().then(() => promises.delete(promise));
+    };
+    while (!state.events.canceled.getValue()) {
+      if (await _loop()) break;
     }
 
     /**
