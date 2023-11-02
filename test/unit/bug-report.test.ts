@@ -125,9 +125,9 @@ describe('bug-report.test.js', () => {
          * assert things,
          * here your tests should fail to show that there is a bug
          */
-        assert.strictEqual(myDocument.toJSON().tags, tags);
-        assert.strictEqual(myDocument.get('tags'), tags);
-        assert.strictEqual(myDocument.tags, tags);
+        assert.deepStrictEqual(myDocument.toJSON().tags, tags);
+        assert.deepStrictEqual(myDocument.get('tags'), tags);
+        assert.deepStrictEqual(myDocument.tags, tags);
 
         // clean up afterwards
         db.destroy();
