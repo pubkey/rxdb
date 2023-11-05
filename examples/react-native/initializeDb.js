@@ -1,7 +1,7 @@
 import { addRxPlugin, createRxDatabase } from 'rxdb';
 import fetch from 'cross-fetch';
 import { RxDBDevModePlugin } from 'rxdb/plugins/dev-mode';
-import { RxDBMigrationPlugin } from 'rxdb/plugins/migration'
+import { RxDBMigrationPlugin } from 'rxdb/plugins/migration-schema'
 import { RxDBUpdatePlugin } from 'rxdb/plugins/update'
 import { RxDBQueryBuilderPlugin } from 'rxdb/plugins/query-builder'
 import { replicateCouchDB } from 'rxdb/plugins/replication-couchdb'
