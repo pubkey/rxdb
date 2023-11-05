@@ -119,21 +119,21 @@ export async function migrateCollection<RxDocType>(
          */
         if (schema.attachments) {
             await Promise.all(
-                docs.map(async (doc) => {
+                docs.map(async (doc: any) => {
                     const docId: string = (doc as any)[primaryPath];
                     await Promise.all(
                         Object.entries(doc._attachments).map(async ([attachmentId, attachmentMeta]) => {
                             const attachmentData = await oldStorageInstance.getAttachmentData(
                                 docId,
                                 attachmentId,
-                                attachmentMeta.digest
+                                (attachmentMeta as any).digest
                             );
                             const attachmentDataString = await blobToBase64String(attachmentData);
                             (doc as any)._attachments[attachmentId] = {
                                 data: attachmentDataString,
-                                digest: attachmentMeta.digest,
-                                length: attachmentMeta.length,
-                                type: attachmentMeta.type
+                                digest: (attachmentMeta as any).digest,
+                                length: (attachmentMeta as any).length,
+                                type: (attachmentMeta as any).type
                             }
                         })
                     );
@@ -145,7 +145,7 @@ export async function migrateCollection<RxDocType>(
         /**
          * Insert the documents to the new storage
          */
-        const insertToNewWriteRows: BulkWriteRow<any>[] = docs.map(document => {
+        const insertToNewWriteRows: BulkWriteRow<any>[] = docs.map((document: any) => {
             return { document };
         });
         const writeToNewResult: RxStorageBulkWriteResponse<any> = await collection.storageInstance.bulkWrite(
@@ -163,7 +163,7 @@ export async function migrateCollection<RxDocType>(
         /**
          * Remove the docs from the old storage
          */
-        const writeToOldRows = docs.map((_doc, idx) => {
+        const writeToOldRows = docs.map((_doc: any, idx: number) => {
             const previous = docsNonMutated[idx];
             if (!previous._meta) {
                 previous._meta = {
