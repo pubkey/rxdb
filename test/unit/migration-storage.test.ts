@@ -29,27 +29,17 @@ addRxPlugin(RxDBAttachmentsPlugin);
 addRxPluginOld(RxDBAttachmentsPluginOld);
 
 
-import {
-    getRxStorageMemory as getRxStorageMemoryOld
-} from 'rxdb-old/plugins/storage-memory';
 
 import {
     getRxStorageLoki as getRxStorageLokiOld
 } from 'rxdb-old/plugins/storage-lokijs';
-import {
-    getRxStorageLoki
-} from '../../plugins/storage-lokijs/index.mjs';
 
 import {
     AfterMigrateBatchHandlerInput,
     migrateStorage
 } from '../../plugins/migration-storage/index.mjs';
 
-import { randomNumber, randomString } from 'async-test-util';
 import * as schemaObjects from '../helper/schema-objects.ts';
-import {
-    wrappedKeyCompressionStorage
-} from '../../plugins/key-compression/index.mjs';
 import { HumanDocumentType, human } from '../helper/schemas.ts';
 import config from './config.ts';
 
@@ -231,7 +221,7 @@ testStorages.forEach(storages => {
             const oldCol = oldDb[collectionName];
 
             const docsAmount = 100;
-            const docsData: HumanDocumentType[] = new Array(docsAmount).fill(0).map((_x, idx) => {
+            const docsData: HumanDocumentType[] = new Array(docsAmount).fill(0).map((_x) => {
                 return schemaObjects.human();
             });
 
