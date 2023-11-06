@@ -852,7 +852,7 @@ jobs:
           key: ${{ runner.os }}-deno-x1-
 
       - name: clear denoKV storage files
-        run: rf -rf /home/runner/.cache/deno/location_data/*
+        run: rm -rf /home/runner/.cache/deno/location_data/*
 
       - uses: denoland/setup-deno@v1
         with:
