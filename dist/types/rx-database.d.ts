@@ -5,7 +5,7 @@ import { Subject, Subscription, Observable } from 'rxjs';
 import { WrappedRxStorageInstance } from './rx-storage-helper.ts';
 import type { RxBackupState } from './plugins/backup/index.ts';
 import { ObliviousSet } from 'oblivious-set';
-import type { RxMigrationState } from './plugins/migration/index.ts';
+import type { RxMigrationState } from './plugins/migration-schema/index.ts';
 export declare class RxDatabaseBase<Internals, InstanceCreationOptions, Collections = CollectionsOfDatabase> {
     readonly name: string;
     /**
@@ -27,7 +27,7 @@ export declare class RxDatabaseBase<Internals, InstanceCreationOptions, Collecti
     readonly cleanupPolicy?: Partial<RxCleanupPolicy> | undefined;
     readonly allowSlowCount?: boolean | undefined;
     readonly idleQueue: IdleQueue;
-    readonly rxdbVersion = "15.0.0-beta.22";
+    readonly rxdbVersion = "15.0.0-beta.23";
     /**
      * Contains all known non-closed storage instances
      * that belong to this database.

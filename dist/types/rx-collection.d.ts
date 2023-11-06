@@ -1,4 +1,4 @@
-import type { RxMigrationState } from './plugins/migration/index.ts';
+import type { RxMigrationState } from './plugins/migration-schema/index.ts';
 import { DocumentCache } from './doc-cache.ts';
 import { QueryCache } from './query-cache.ts';
 import { ChangeEventBuffer } from './change-event-buffer.ts';

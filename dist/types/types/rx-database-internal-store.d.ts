@@ -1,6 +1,6 @@
 import type {
     RxMigrationStatus
-} from '../plugins/migration/index.ts';
+} from '../plugins/migration-schema/index.ts';
 import type { RxJsonSchema } from './rx-schema.d.ts';
 
 export type InternalStoreDocType<Data = any> = {

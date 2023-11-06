@@ -3436,7 +3436,7 @@ eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpac
   \******************************************************/
 /***/ ((__unused_webpack___webpack_module__, __webpack_exports__, __webpack_require__) => {
 
-eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpack_require__.d(__webpack_exports__, {\n/* harmony export */   RXDB_VERSION: () => (/* binding */ RXDB_VERSION)\n/* harmony export */ });\n/**\n * This file is replaced in the 'npm run build:version' script.\n */\nvar RXDB_VERSION = '15.0.0-beta.22';\n//# sourceMappingURL=utils-rxdb-version.js.map\n\n//# sourceURL=webpack://rxdb/./dist/esm/plugins/utils/utils-rxdb-version.js?");
+eval("__webpack_require__.r(__webpack_exports__);\n/* harmony export */ __webpack_require__.d(__webpack_exports__, {\n/* harmony export */   RXDB_VERSION: () => (/* binding */ RXDB_VERSION)\n/* harmony export */ });\n/**\n * This file is replaced in the 'npm run build:version' script.\n */\nvar RXDB_VERSION = '15.0.0-beta.23';\n//# sourceMappingURL=utils-rxdb-version.js.map\n\n//# sourceURL=webpack://rxdb/./dist/esm/plugins/utils/utils-rxdb-version.js?");
 
 /***/ }),
 
