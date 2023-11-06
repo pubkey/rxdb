@@ -80,7 +80,7 @@ import {
 } from './rx-database-internal-store.ts';
 import { removeCollectionStorages } from './rx-collection-helper.ts';
 import { overwritable } from './overwritable.ts';
-import type { RxMigrationState } from './plugins/migration/index.ts';
+import type { RxMigrationState } from './plugins/migration-schema/index.ts';
 
 /**
  * stores the used database names

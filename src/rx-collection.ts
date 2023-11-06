@@ -29,7 +29,7 @@ import {
 } from './rx-error.ts';
 import type {
     RxMigrationState
-} from './plugins/migration/index.ts';
+} from './plugins/migration-schema/index.ts';
 import {
     DocumentCache
 } from './doc-cache.ts';

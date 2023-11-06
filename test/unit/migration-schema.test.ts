@@ -30,17 +30,17 @@ import {
     RxMigrationState,
     RxMigrationStatus,
     getOldCollectionMeta
-} from '../../plugins/migration/index.mjs';
+} from '../../plugins/migration-schema/index.mjs';
 import { HumanDocumentType } from '../helper/schemas.ts';
 import { EXAMPLE_REVISION_1 } from '../helper/revisions.ts';
 
-import { RxDBMigrationPlugin } from '../../plugins/migration/index.mjs';
+import { RxDBMigrationPlugin } from '../../plugins/migration-schema/index.mjs';
 import { RxDBAttachmentsPlugin } from '../../plugins/attachments/index.mjs';
 import { SimpleHumanAgeDocumentType } from '../helper/schema-objects.ts';
 import { replicateRxCollection } from '../../plugins/replication/index.mjs';
 
 
-config.parallel('data-migration.test.ts', function () {
+config.parallel('migration-schema.test.ts', function () {
     this.timeout(1000 * 5);
     if (
         !config.storage.hasPersistence ||

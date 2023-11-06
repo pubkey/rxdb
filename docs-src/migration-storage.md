@@ -3,11 +3,9 @@
 The storage migration plugin can be used to migrate all data from one existing RxStorage into another. This is useful when:
 
 - You want to migration from one [RxStorage](./rx-storage.md) to another one.
-- You want to migrate to a new major RxDB version while keeping the previous saved data.
+- You want to migrate to a new major RxDB version while keeping the previous saved data. This function only works from the previous major version upwards. Do not use it to migrate like rxdb v9 to v14.
 
 The storage migration **drops deleted documents** and filters them out during the migration.
-
-**NOTICE:** The storage migration plugin is part of [RxDB premium](https://rxdb.info/premium.html). It is not part of the default RxDB module.
 
 
 ## Usage
@@ -15,7 +13,7 @@ The storage migration **drops deleted documents** and filters them out during th
 Lets say you want to migrate from LokiJs to the [Dexie.js](./rx-storage-dexie.md) RxStorage.
 
 ```ts
-import { migrateStorage } from 'rxdb-premium/plugins/migrate-storage';
+import { migrateStorage } from 'rxdb/plugins/migration-storage';
 import {
     getRxStorageLoki
 } from 'rxdb/plugins/storage-loki';
@@ -53,7 +51,7 @@ To migrate from a previous RxDB major version, you have to install the 'old' RxD
 ```json
 {
     "dependencies": {
-        "rxdb-old": "npm:rxdb@12.7.16",
+        "rxdb-old": "npm:rxdb@14.17.1",
     }
 }
 ```
@@ -62,7 +60,7 @@ The you can run the migration by providing the old storage:
 
 ```ts
 /* ... */
-import { migrateStorage } from 'rxdb-premium/plugins/migrate-storage';
+import { migrateStorage } from 'rxdb/plugins/migration-storage';
 import {
     getRxStorageLoki
 } from 'rxdb-old/plugins/storage-loki'; // <- import from the old RxDB version
