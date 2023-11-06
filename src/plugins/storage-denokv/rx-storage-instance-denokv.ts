@@ -347,6 +347,9 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
             rangeCount = rangeCount + 1;
             const docId = row.value;
             const docDataResult = await kv.get([this.keySpace, DENOKV_DOCUMENT_ROOT_PATH, docId], this.kvOptions);
+            if (!docDataResult.value) {
+                continue;
+            }
             const docData = ensureNotFalsy(docDataResult.value);
             if (
                 !docData._deleted ||
