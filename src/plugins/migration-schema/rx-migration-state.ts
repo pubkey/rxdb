@@ -429,6 +429,7 @@ export class RxMigrationState {
         await awaitRxStorageReplicationFirstInSync(replicationState);
         await cancelRxStorageReplication(replicationState);
 
+        await this.updateStatusQueue;
         if (hasError) {
             await replicationMetaStorageInstance.close();
             throw hasError;
