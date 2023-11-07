@@ -66,6 +66,10 @@ module.exports = async function (config) {
                 ];
                 const browsers = availableBrowser
                     .filter(b => !doNotUseTheseBrowsers.includes(b));
+
+                console.log('# Karma browsers:');
+                console.dir(browsers);
+
                 return browsers;
             }
         },
