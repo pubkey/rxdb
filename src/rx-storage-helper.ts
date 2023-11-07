@@ -897,7 +897,9 @@ export function randomDelayStorage<Internals, InstanceCreationOptions>(
         name: 'random-delay-' + input.storage.name,
         statics: input.storage.statics,
         async createStorageInstance(params) {
+            await promiseWait(input.delayTimeBefore());
             const storageInstance = await input.storage.createStorageInstance(params);
+            await promiseWait(input.delayTimeAfter());
 
             // write still must be processed in order
             let writeQueue: Promise<any> = PROMISE_RESOLVE_TRUE;

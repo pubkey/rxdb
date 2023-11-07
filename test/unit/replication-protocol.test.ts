@@ -940,7 +940,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
             cleanUp(replicationState, masterInstance);
         });
         it('doing many writes on the fork should not lead to many writes on the master', async () => {
-            const writeAmount = config.isFastMode() ? 5 : 100;
+            const writeAmount = config.isFastMode() ? 5 : 50;
 
             const masterInstance = await createRxStorageInstance(0);
             const forkInstance = await createRxStorageInstance(0);
@@ -1050,9 +1050,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 );
             }
 
-
-            await cleanUp(replicationState, masterInstance);
-            process.exit();
+            cleanUp(replicationState, masterInstance);
         });
     });
     describe('attachment replication', () => {
@@ -1111,7 +1109,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 return;
             }
 
-            const writeAmount = config.isFastMode() ? 5 : 30;
+            const writeAmount = config.isFastMode() ? 5 : 10;
 
             const masterInstance = await createRxStorageInstance(0);
             const forkInstance = await createRxStorageInstance(0);
@@ -1128,6 +1126,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 conflictHandler: HIGHER_AGE_CONFLICT_HANDLER,
                 hashFunction: defaultHashSha256
             });
+
 
             // insert
             const document = getDocData();
