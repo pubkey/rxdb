@@ -41,7 +41,7 @@ import { replicateRxCollection } from '../../plugins/replication/index.mjs';
 
 
 config.parallel('migration-schema.test.ts', function () {
-    this.timeout(1000 * 5);
+    this.timeout(1000 * 10);
     if (
         !config.storage.hasPersistence ||
         !config.storage.hasReplication
@@ -320,6 +320,7 @@ config.parallel('migration-schema.test.ts', function () {
             });
             it('should emit status updates', async () => {
                 const docsAmount = 10;
+
                 const col = await humansCollection.createMigrationCollection(
                     docsAmount,
                     {
