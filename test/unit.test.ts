@@ -10,9 +10,6 @@ import './unit/util.test.ts';
 import './unit/custom-index.test.ts';
 import './unit/query-planner.test.ts';
 
-import './unit/migration-schema.test.ts';
-import './unit/replication-protocol.test.ts';
-import './unit/rx-collection.test.ts';
 
 /**
  * Move these tests around so that
@@ -35,6 +32,7 @@ import './unit/rx-schema.test.ts';
 import './unit/bug-report.test.ts';
 import './unit/rx-database.test.ts';
 import './unit/rx-document.test.ts';
+import './unit/rx-collection.test.ts';
 import './unit/validate.test.ts';
 import './unit/encryption.test.ts';
 import './unit/rx-query.test.ts';
@@ -53,10 +51,12 @@ import './unit/reactive-document.test.ts';
 import './unit/cleanup.test.ts';
 import './unit/hooks.test.ts';
 import './unit/orm.test.ts';
+import './unit/replication-protocol.test.ts';
 import './unit/replication.test.ts';
 import './unit/replication-graphql.test.ts';
 import './unit/replication-websocket.test.ts';
 import './unit/replication-webrtc.test.ts';
+import './unit/migration-schema.test.ts';
 import './unit/attachments.test.ts';
 import './unit/attachments-compression.test.ts';
 import './unit/migration-storage.test.ts';

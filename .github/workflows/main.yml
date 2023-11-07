@@ -52,6 +52,48 @@ jobs:
       - name: test:typings
         run: npm run test:typings
 
+  storage-dexie:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set node version
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+
+      - name: Reuse npm cache folder
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: |
+            ~/.npm
+            ./node_modules
+          key: ${{ runner.os }}-npm-storage-dexie-x1-${{ hashFiles('**/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-storage-dexie-x1-
+
+      - name: install npm dependencies
+        run: npm install
+
+      - name: build
+        run: npm run build
+
+      - run: npm run test:node:dexie
+
+      - run: npm run test:fast:dexie
+
+      - name: npm run test:browser:dexie
+        uses: GabrielBB/xvfb-action@v1
+        with:
+          run: npm run test:browser:dexie
+
+      - name: performance test
+        uses: GabrielBB/xvfb-action@v1
+        with:
+          run: npm run test:performance:dexie
+
   # run the node tests for the LokiJS RxStorage
   storage-lokijs:
     runs-on: ubuntu-22.04
@@ -182,50 +224,6 @@ jobs:
         uses: GabrielBB/xvfb-action@v1
         with:
           run: npm run test:browser:remote
-
-  storage-dexie:
-    runs-on: ubuntu-22.04
-    timeout-minutes: 30
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set node version
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: ".nvmrc"
-
-      - name: Reuse npm cache folder
-        uses: actions/cache@v3
-        env:
-          cache-name: cache-node-modules
-        with:
-          path: |
-            ~/.npm
-            ./node_modules
-          key: ${{ runner.os }}-npm-storage-dexie-x1-${{ hashFiles('**/package.json') }}
-          restore-keys: |
-            ${{ runner.os }}-npm-storage-dexie-x1-
-
-      - name: install npm dependencies
-        run: npm install
-
-      - name: build
-        run: npm run build
-
-      - name: npm run test:node:dexie
-        run: npm run test:node:dexie
-
-      - name: npm run test:fast:dexie
-        run: npm run test:fast:dexie
-
-      - name: npm run test:browser:dexie
-        uses: GabrielBB/xvfb-action@v1
-        with:
-          run: npm run test:browser:dexie
-
-      - name: performance test
-        uses: GabrielBB/xvfb-action@v1
-        with:
-          run: npm run test:performance:dexie
 
   storage-foundationdb:
     runs-on: ubuntu-22.04
