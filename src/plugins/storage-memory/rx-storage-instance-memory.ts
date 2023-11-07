@@ -338,8 +338,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
             }
 
             if (
-                (rows.length >= skipPlusLimit && !mustManuallyResort) ||
-                indexOfLower >= docsWithIndex.length
+                (rows.length >= skipPlusLimit && !mustManuallyResort)
             ) {
                 done = true;
             }
