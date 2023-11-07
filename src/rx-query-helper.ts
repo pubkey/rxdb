@@ -223,13 +223,8 @@ export function getQueryMatcher<RxDocType>(
         if (doc._deleted) {
             return false;
         }
-        const cursor = mingoQuery.find([doc]);
-        const next = cursor.next();
-        if (next) {
-            return true;
-        } else {
-            return false;
-        }
+
+        return mingoQuery.test(doc);
     };
     return fun;
 }
