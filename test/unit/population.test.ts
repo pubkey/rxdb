@@ -134,8 +134,7 @@ config.parallel('population.test.js', () => {
                                 ref: 'human'
                             }
                         }
-                    }, defaultHashSha256),
-                    Error
+                    }, defaultHashSha256)
                 );
             });
             it('throw if ref-type is no string (array)', () => {
@@ -156,8 +155,7 @@ config.parallel('population.test.js', () => {
                                 }
                             }
                         }
-                    }, defaultHashSha256),
-                    Error
+                    }, defaultHashSha256)
                 );
             });
         });
