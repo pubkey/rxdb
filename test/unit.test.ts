@@ -10,6 +10,7 @@ import './unit/util.test.ts';
 import './unit/custom-index.test.ts';
 import './unit/query-planner.test.ts';
 
+import './unit/rx-collection.test.ts';
 
 /**
  * Move these tests around so that
@@ -21,7 +22,6 @@ import './unit/rx-storage-implementations.test.ts';
 import './unit/rx-storage-query-correctness.test.ts';
 import './unit/rx-storage-helper.test.ts';
 
-import './unit/replication-protocol.test.ts';
 
 import './unit/rx-storage-lokijs.test.ts';
 import './unit/rx-storage-dexie.test.ts';
@@ -32,7 +32,6 @@ import './unit/instance-of-check.test.ts';
 import './unit/rx-schema.test.ts';
 import './unit/bug-report.test.ts';
 import './unit/rx-database.test.ts';
-import './unit/rx-collection.test.ts';
 import './unit/rx-document.test.ts';
 import './unit/validate.test.ts';
 import './unit/encryption.test.ts';
@@ -52,6 +51,7 @@ import './unit/reactive-document.test.ts';
 import './unit/cleanup.test.ts';
 import './unit/hooks.test.ts';
 import './unit/orm.test.ts';
+import './unit/replication-protocol.test.ts';
 import './unit/replication.test.ts';
 import './unit/replication-graphql.test.ts';
 import './unit/replication-websocket.test.ts';

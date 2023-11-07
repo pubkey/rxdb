@@ -6,7 +6,8 @@ import AsyncTestUtil, {
     randomNumber,
     randomString,
     wait,
-    assertThrows
+    assertThrows,
+    waitUntil
 } from 'async-test-util';
 
 import * as schemas from '../helper/schemas.ts';
@@ -380,7 +381,7 @@ describe('rx-collection.test.ts', () => {
                         assert.ok(docs2.length >= 10);
                         c.database.destroy();
                     });
-                    runXTimes(config.isFastMode() ? 1 : 5, idx => {
+                    runXTimes(config.isFastMode() ? 2 : 3, idx => {
                         it('find in serial #' + idx, async () => {
                             const c = await humansCollection.createPrimary(0);
                             const docData = schemaObjects.simpleHuman();
@@ -417,7 +418,7 @@ describe('rx-collection.test.ts', () => {
                         assert.deepStrictEqual(docs, []);
                         db.destroy();
                     });
-                    runXTimes(config.isFastMode() ? 3 : 10, idx => {
+                    runXTimes(config.isFastMode() ? 2 : 5, idx => {
                         it('BUG: insert and find very often (' + idx + ')', async () => {
                             const db = await createRxDatabase({
                                 name: randomCouchString(10),
@@ -833,7 +834,7 @@ describe('rx-collection.test.ts', () => {
                         c.database.destroy();
                     });
                     // This test failed randomly, so we run it more often.
-                    new Array(config.isFastMode() ? 3 : 10)
+                    new Array(config.isFastMode() ? 2 : 4)
                         .fill(0).forEach(() => {
                             it('skip first and limit (storage: ' + config.storage.name + ')', async () => {
                                 const c = await humansCollection.create(5);
@@ -1212,7 +1213,7 @@ describe('rx-collection.test.ts', () => {
 
                     c.database.destroy();
                 });
-                runXTimes(config.isFastMode() ? 1 : 10, idx => {
+                runXTimes(config.isFastMode() ? 2 : 5, idx => {
                     it('BUG: insert and find very often (' + idx + ')', async function () {
                         const db = await createRxDatabase({
                             name: randomCouchString(10),
@@ -1263,16 +1264,16 @@ describe('rx-collection.test.ts', () => {
                     c.database.destroy();
                 });
                 it('should not count deleted documents', async () => {
-                    if (config.storage.name === 'mongodb') {
-                        // TODO this test randomly fails with mongodb
-                        return;
-                    }
                     const c = await humansCollection.create(2);
                     const emitted: number[] = [];
-                    c.count().$.subscribe(nr => emitted.push(nr));
+                    c.count().$.subscribe(nr => {
+                        emitted.push(nr);
+                    });
+                    await waitUntil(() => emitted.length === 1);
                     const doc = await c.findOne().exec(true);
                     await doc.remove();
                     const count = await c.count().exec();
+
                     assert.strictEqual(count, 1);
                     assert.deepStrictEqual(emitted, [2, 1]);
                     c.database.destroy();

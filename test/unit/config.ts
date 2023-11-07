@@ -22,7 +22,7 @@ import { getRxStorageMemory } from '../../plugins/storage-memory/index.mjs';
 import { getRxStorageDenoKV } from '../../plugins/storage-denokv/index.mjs';
 import { CUSTOM_STORAGE } from './custom-storage.ts';
 import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs';
-import { isPromise } from 'async-test-util';
+import { isPromise, randomNumber } from 'async-test-util';
 
 import {
     wrappedKeyEncryptionCryptoJsStorage
@@ -32,7 +32,8 @@ import {
     randomCouchString,
     RxStorage,
     RxStorageDefaultStatics,
-    RxTestStorage
+    RxTestStorage,
+    randomDelayStorage
 } from '../../plugins/core/index.mjs';
 
 import {
@@ -196,7 +197,36 @@ export function setDefaultStorage(storageKey: string) {
                 hasReplication: true
             };
             break;
-        case 'lokijs':
+        /**
+         * We run the tests once with random delays
+         * on reads and writes. Used to easier detect flaky tests.
+         */
+        case 'memory-random-delay':
+
+            const delayFn = () => randomNumber(10, 50);
+            // const delayFn = () => 150;
+
+            config.storage = {
+                name: storageKey,
+                getStorage: () => randomDelayStorage(
+                    getRxStorageMemory(),
+                    delayFn
+                ),
+                getPerformanceStorage() {
+                    return {
+                        description: 'memory',
+                        storage: randomDelayStorage(
+                            getRxStorageMemory(),
+                            delayFn
+                        )
+                    };
+                },
+                hasPersistence: true,
+                hasMultiInstance: false,
+                hasAttachments: true,
+                hasReplication: true
+            };
+            break; case 'lokijs':
             config.storage = {
                 name: storageKey,
                 getStorage: () => getRxStorageLoki(),

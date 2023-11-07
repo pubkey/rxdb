@@ -133,6 +133,7 @@ jobs:
           run: npm run test:browser:memory
 
       - run: npm run test:fast:memory-validation
+      - run: npm run test:fast:memory-random-delay
 
       - name: performance test
         uses: GabrielBB/xvfb-action@v1
@@ -248,7 +249,6 @@ jobs:
           key: ${{ runner.os }}-npm-storage-foundationdb-x1-${{ hashFiles('**/package.json') }}
           restore-keys: |
             ${{ runner.os }}-npm-storage-foundationdb-x1-
-
 
       - name: pre-pull foundationdb docker images
         # ensure it has downloaded the image
@@ -805,7 +805,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: ".nvmrc"
-
 
       - name: Reuse npm cache folder
         uses: actions/cache@v3

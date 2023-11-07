@@ -27,7 +27,8 @@ import type {
     RxStorageInstanceCreationParams,
     StringKeys,
     RxStorageWriteErrorConflict,
-    RxStorageWriteErrorAttachment
+    RxStorageWriteErrorAttachment,
+    RxStorage
 } from './types/index.d.ts';
 import {
     appendToArray,
@@ -37,6 +38,7 @@ import {
     getDefaultRevision,
     getDefaultRxDocumentMeta,
     now,
+    promiseWait,
     randomCouchString
 } from './plugins/utils/index.ts';
 import { Observable, filter, map, startWith, switchMap } from 'rxjs';
@@ -874,4 +876,85 @@ export function hasEncryption(jsonSchema: RxJsonSchema<any>): boolean {
     } else {
         return false;
     }
+}
+
+
+
+/**
+ * Wraps the storage and simluates
+ * delays. Mostly used in tests.
+ */
+export function randomDelayStorage<Internals, InstanceCreationOptions>(
+    storage: RxStorage<Internals, InstanceCreationOptions>,
+    delayTime: () => number
+): RxStorage<Internals, InstanceCreationOptions> {
+
+    const ret: RxStorage<Internals, InstanceCreationOptions> = {
+        name: 'random-delay-' + storage.name,
+        statics: storage.statics,
+        async createStorageInstance(params) {
+            const storageInstance = await storage.createStorageInstance(params);
+
+            return {
+                databaseName: storageInstance.databaseName,
+                internals: storageInstance.internals,
+                options: storageInstance.options,
+                schema: storageInstance.schema,
+                collectionName: storageInstance.collectionName,
+                async bulkWrite(a, b) {
+                    const response = await storageInstance.bulkWrite(a, b);
+                    await promiseWait(delayTime());
+                    return response;
+                },
+                async findDocumentsById(a, b) {
+                    await promiseWait(delayTime());
+                    return storageInstance.findDocumentsById(a, b);
+                },
+                async query(a) {
+                    await promiseWait(delayTime());
+                    return storageInstance.query(a);
+                },
+                async count(a) {
+                    await promiseWait(delayTime());
+                    return storageInstance.count(a);
+                },
+                async info() {
+                    await promiseWait(delayTime());
+                    return storageInstance.info();
+                },
+                async getAttachmentData(a, b, c) {
+                    await promiseWait(delayTime());
+                    return storageInstance.getAttachmentData(a, b, c);
+                },
+                async getChangedDocumentsSince(a, b) {
+                    await promiseWait(delayTime());
+                    return storageInstance.getChangedDocumentsSince(a, b);
+                },
+                changeStream() {
+                    return storageInstance.changeStream();
+                },
+                conflictResultionTasks() {
+                    return storageInstance.conflictResultionTasks();
+                },
+                resolveConflictResultionTask(a) {
+                    return storageInstance.resolveConflictResultionTask(a);
+                },
+                async cleanup(a) {
+                    await promiseWait(delayTime());
+                    return storageInstance.cleanup(a);
+                },
+                async close() {
+                    await promiseWait(delayTime());
+                    return storageInstance.close();
+                },
+                async remove() {
+                    await promiseWait(delayTime());
+                    return storageInstance.remove();
+                },
+            };
+
+
+        }
+    };
+    return ret;
 }

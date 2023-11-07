@@ -76,30 +76,30 @@ export type FilledMangoQuery<RxDocType> = Override<
     MangoQuery<RxDocType>,
     {
         /**
-             * The selector is required here.
-             */
+         * The selector is required here.
+         */
         selector: MangoQuerySelector<RxDocType>;
 
         /**
-             * In contrast to the user-provided MangoQuery,
-             * the sorting is required here because
-             * RxDB has to ensure that the primary key is always
-             * part of the sort params.
-             */
+         * In contrast to the user-provided MangoQuery,
+         * the sorting is required here because
+         * RxDB has to ensure that the primary key is always
+         * part of the sort params.
+         */
         sort: MangoQuerySortPart<RxDocType>[];
 
         /**
-             * In the normalized mango query,
-             * the index must always be a string[],
-             * never just a string.
-             * This makes it easier to use the query because
-             * we do not have to do an array check.
-             */
+         * In the normalized mango query,
+         * the index must always be a string[],
+         * never just a string.
+         * This makes it easier to use the query because
+         * we do not have to do an array check.
+         */
         index?: string[];
 
         /**
-             * Skip must be set which defaults to 0
-             */
+         * Skip must be set which defaults to 0
+         */
         skip: number;
     }
 >;
