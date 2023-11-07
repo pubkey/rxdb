@@ -4,7 +4,8 @@ import {
     filter,
     firstValueFrom,
     map,
-    shareReplay
+    shareReplay,
+    tap
 } from 'rxjs';
 import {
     isBulkWriteConflictError,
@@ -529,6 +530,10 @@ export class RxMigrationState {
         const result = await Promise.race([
             firstValueFrom(
                 this.$.pipe(
+                    tap(x => {
+                        console.log('migrate promise await emitted:');
+                        console.dir(x);
+                    }),
                     filter(d => d.status === 'DONE')
                 )
             ),
