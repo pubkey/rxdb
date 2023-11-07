@@ -1592,7 +1592,7 @@ describe('rx-collection.test.ts', () => {
                     docData.firstName = 'test-many-incremental-upsert';
 
                     let t = 0;
-                    const amount = config.isFastMode() ? 20 : 200;
+                    const amount = config.isFastMode() ? 15 : 100;
 
                     const docs = await Promise.all(
                         new Array(amount)

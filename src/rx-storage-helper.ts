@@ -31,6 +31,7 @@ import type {
     RxStorage
 } from './types/index.d.ts';
 import {
+    PROMISE_RESOLVE_TRUE,
     appendToArray,
     createRevision,
     ensureNotFalsy,
@@ -885,15 +886,21 @@ export function hasEncryption(jsonSchema: RxJsonSchema<any>): boolean {
  * delays. Mostly used in tests.
  */
 export function randomDelayStorage<Internals, InstanceCreationOptions>(
-    storage: RxStorage<Internals, InstanceCreationOptions>,
-    delayTime: () => number
+    input: {
+        storage: RxStorage<Internals, InstanceCreationOptions>;
+        delayTimeBefore: () => number;
+        delayTimeAfter: () => number;
+    }
 ): RxStorage<Internals, InstanceCreationOptions> {
 
-    const ret: RxStorage<Internals, InstanceCreationOptions> = {
-        name: 'random-delay-' + storage.name,
-        statics: storage.statics,
+    const retStorage: RxStorage<Internals, InstanceCreationOptions> = {
+        name: 'random-delay-' + input.storage.name,
+        statics: input.storage.statics,
         async createStorageInstance(params) {
-            const storageInstance = await storage.createStorageInstance(params);
+            const storageInstance = await input.storage.createStorageInstance(params);
+
+            // write still must be processed in order
+            let writeQueue: Promise<any> = PROMISE_RESOLVE_TRUE;
 
             return {
                 databaseName: storageInstance.databaseName,
@@ -902,33 +909,54 @@ export function randomDelayStorage<Internals, InstanceCreationOptions>(
                 schema: storageInstance.schema,
                 collectionName: storageInstance.collectionName,
                 async bulkWrite(a, b) {
-                    const response = await storageInstance.bulkWrite(a, b);
-                    await promiseWait(delayTime());
-                    return response;
+                    writeQueue = writeQueue.then(async () => {
+                        await promiseWait(input.delayTimeBefore());
+                        const response = await storageInstance.bulkWrite(a, b);
+                        await promiseWait(input.delayTimeAfter());
+                        return response;
+                    });
+                    const ret = await writeQueue;
+                    return ret;
                 },
                 async findDocumentsById(a, b) {
-                    await promiseWait(delayTime());
-                    return storageInstance.findDocumentsById(a, b);
+                    await promiseWait(input.delayTimeBefore());
+                    const ret = await storageInstance.findDocumentsById(a, b);
+                    await promiseWait(input.delayTimeAfter());
+                    return ret;
                 },
                 async query(a) {
-                    await promiseWait(delayTime());
-                    return storageInstance.query(a);
+                    await promiseWait(input.delayTimeBefore());
+                    const ret = await storageInstance.query(a);
+                    await promiseWait(input.delayTimeAfter());
+                    return ret;
                 },
                 async count(a) {
-                    await promiseWait(delayTime());
-                    return storageInstance.count(a);
+                    await promiseWait(input.delayTimeBefore());
+                    const ret = await storageInstance.count(a);
+                    await promiseWait(input.delayTimeAfter());
+                    return ret;
+
                 },
                 async info() {
-                    await promiseWait(delayTime());
-                    return storageInstance.info();
+                    await promiseWait(input.delayTimeBefore());
+                    const ret = await storageInstance.info();
+                    await promiseWait(input.delayTimeAfter());
+                    return ret;
+
                 },
                 async getAttachmentData(a, b, c) {
-                    await promiseWait(delayTime());
-                    return storageInstance.getAttachmentData(a, b, c);
+                    await promiseWait(input.delayTimeBefore());
+                    const ret = await storageInstance.getAttachmentData(a, b, c);
+                    await promiseWait(input.delayTimeAfter());
+                    return ret;
+
                 },
                 async getChangedDocumentsSince(a, b) {
-                    await promiseWait(delayTime());
-                    return storageInstance.getChangedDocumentsSince(a, b);
+                    await promiseWait(input.delayTimeBefore());
+                    const ret = await storageInstance.getChangedDocumentsSince(a, b);
+                    await promiseWait(input.delayTimeAfter());
+                    return ret;
+
                 },
                 changeStream() {
                     return storageInstance.changeStream();
@@ -940,21 +968,29 @@ export function randomDelayStorage<Internals, InstanceCreationOptions>(
                     return storageInstance.resolveConflictResultionTask(a);
                 },
                 async cleanup(a) {
-                    await promiseWait(delayTime());
-                    return storageInstance.cleanup(a);
+                    await promiseWait(input.delayTimeBefore());
+                    const ret = await storageInstance.cleanup(a);
+                    await promiseWait(input.delayTimeAfter());
+                    return ret;
+
                 },
                 async close() {
-                    await promiseWait(delayTime());
-                    return storageInstance.close();
+                    await promiseWait(input.delayTimeBefore());
+                    const ret = await storageInstance.close();
+                    await promiseWait(input.delayTimeAfter());
+                    return ret;
+
                 },
                 async remove() {
-                    await promiseWait(delayTime());
-                    return storageInstance.remove();
+                    await promiseWait(input.delayTimeBefore());
+                    const ret = await storageInstance.remove();
+                    await promiseWait(input.delayTimeAfter());
+                    return ret;
                 },
             };
 
 
         }
     };
-    return ret;
+    return retStorage;
 }

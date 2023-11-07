@@ -28,6 +28,30 @@ export const PROMISE_RESOLVE_NULL: Promise<null> = Promise.resolve(null);
 export const PROMISE_RESOLVE_VOID: Promise<void> = Promise.resolve();
 
 
+export function requestIdlePromiseNoQueue(timeout: number | undefined = undefined) {
+    /**
+     * Do not use window.requestIdleCallback
+     * because some javascript runtimes like react-native,
+     * do not have a window object, but still have a global
+     * requestIdleCallback function.
+     * @link https://github.com/pubkey/rxdb/issues/4804
+    */
+    if (
+        typeof requestIdleCallback === 'function'
+    ) {
+        return new Promise<void>(res => {
+            requestIdleCallback(
+                () => res(),
+                {
+                    timeout
+                }
+            );
+        });
+    } else {
+        return promiseWait(0);
+    }
+}
+
 /**
  * If multiple operations wait for an requestIdlePromise
  * we do not want them to resolve all at the same time.
@@ -38,27 +62,7 @@ export function requestIdlePromise(
     timeout: number | undefined = undefined
 ) {
     idlePromiseQueue = idlePromiseQueue.then(() => {
-        /**
-         * Do not use window.requestIdleCallback
-         * because some javascript runtimes like react-native,
-         * do not have a window object, but still have a global
-         * requestIdleCallback function.
-         * @link https://github.com/pubkey/rxdb/issues/4804
-        */
-        if (
-            typeof requestIdleCallback === 'function'
-        ) {
-            return new Promise<void>(res => {
-                requestIdleCallback(
-                    () => res(),
-                    {
-                        timeout
-                    }
-                );
-            });
-        } else {
-            return promiseWait(0);
-        }
+        return requestIdlePromiseNoQueue(timeout);
     });
     return idlePromiseQueue;
 }

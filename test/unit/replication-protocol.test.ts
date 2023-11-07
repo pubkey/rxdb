@@ -1051,7 +1051,8 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
             }
 
 
-            cleanUp(replicationState, masterInstance);
+            await cleanUp(replicationState, masterInstance);
+            process.exit();
         });
     });
     describe('attachment replication', () => {

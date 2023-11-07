@@ -6,10 +6,11 @@ import './unit/util.test.ts';
  * Helpers that
  * do not fully test RxDB but
  * just single methods
- */
+*/
 import './unit/custom-index.test.ts';
 import './unit/query-planner.test.ts';
 
+import './unit/replication-protocol.test.ts';
 import './unit/rx-collection.test.ts';
 
 /**
@@ -51,7 +52,6 @@ import './unit/reactive-document.test.ts';
 import './unit/cleanup.test.ts';
 import './unit/hooks.test.ts';
 import './unit/orm.test.ts';
-import './unit/replication-protocol.test.ts';
 import './unit/replication.test.ts';
 import './unit/replication-graphql.test.ts';
 import './unit/replication-websocket.test.ts';

@@ -1016,7 +1016,7 @@ config.parallel('rx-schema.test.js', () => {
              * Dexie.js does not support boolean indexes,
              * see docs-src/rx-storage-dexie.md
              */
-            if (config.storage.name.includes('dexie')) {
+            if (config.storage.name.includes('dexie') || config.storage.name.includes('random-delay')) {
                 return;
             }
 

@@ -208,22 +208,30 @@ export function setDefaultStorage(storageKey: string) {
 
             config.storage = {
                 name: storageKey,
-                getStorage: () => randomDelayStorage(
-                    getRxStorageMemory(),
-                    delayFn
-                ),
+                getStorage: () => randomDelayStorage({
+                    storage: getRxStorageDexie({
+                        indexedDB: fakeIndexedDB,
+                        IDBKeyRange: fakeIDBKeyRange
+                    }),
+                    delayTimeBefore: delayFn,
+                    delayTimeAfter: delayFn
+                }),
                 getPerformanceStorage() {
                     return {
-                        description: 'memory',
-                        storage: randomDelayStorage(
-                            getRxStorageMemory(),
-                            delayFn
-                        )
+                        description: 'memory-random-delay',
+                        storage: randomDelayStorage({
+                            storage: getRxStorageDexie({
+                                indexedDB: fakeIndexedDB,
+                                IDBKeyRange: fakeIDBKeyRange
+                            }),
+                            delayTimeBefore: delayFn,
+                            delayTimeAfter: delayFn
+                        })
                     };
                 },
                 hasPersistence: true,
-                hasMultiInstance: false,
-                hasAttachments: true,
+                hasMultiInstance: true,
+                hasAttachments: false,
                 hasReplication: true
             };
             break; case 'lokijs':
