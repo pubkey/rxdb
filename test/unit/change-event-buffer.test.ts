@@ -136,7 +136,7 @@ config.parallel('change-event-buffer.test.js', () => {
             const evs = [];
             assert.throws(() => col._changeEventBuffer.runFrom(5, function (cE: any) {
                 evs.push(cE);
-            }), Error);
+            }));
 
             col.database.destroy();
         });

@@ -36,6 +36,7 @@ import {
     PROMISE_RESOLVE_TRUE,
     PROMISE_RESOLVE_VOID,
     promiseWait,
+    requestIdlePromiseNoQueue,
     RX_META_LWT_MINIMUM
 } from '../../plugins/utils/index.ts';
 import {
@@ -128,7 +129,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
 
         this.internals.ensurePersistenceTask = categorized;
         if (!this.internals.ensurePersistenceIdlePromise) {
-            this.internals.ensurePersistenceIdlePromise = promiseWait(0).then(() => {
+            this.internals.ensurePersistenceIdlePromise = requestIdlePromiseNoQueue().then(() => {
                 this.internals.ensurePersistenceIdlePromise = undefined;
                 this.ensurePersistence();
             });

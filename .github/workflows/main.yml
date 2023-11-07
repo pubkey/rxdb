@@ -52,6 +52,48 @@ jobs:
       - name: test:typings
         run: npm run test:typings
 
+  storage-dexie:
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set node version
+        uses: actions/setup-node@v4
+        with:
+          node-version-file: ".nvmrc"
+
+      - name: Reuse npm cache folder
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-node-modules
+        with:
+          path: |
+            ~/.npm
+            ./node_modules
+          key: ${{ runner.os }}-npm-storage-dexie-x1-${{ hashFiles('**/package.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-storage-dexie-x1-
+
+      - name: install npm dependencies
+        run: npm install
+
+      - name: build
+        run: npm run build
+
+      - run: npm run test:node:dexie
+
+      - run: npm run test:fast:dexie
+
+      - name: npm run test:browser:dexie
+        uses: coactions/setup-xvfb@v1
+        with:
+          run: npm run test:browser:dexie
+
+      - name: performance test
+        uses: coactions/setup-xvfb@v1
+        with:
+          run: npm run test:performance:dexie
+
   # run the node tests for the LokiJS RxStorage
   storage-lokijs:
     runs-on: ubuntu-22.04
@@ -88,12 +130,12 @@ jobs:
         run: npm run test:fast:lokijs
 
       - name: npm run test:browser:lokijs
-        uses: GabrielBB/xvfb-action@v1
+        uses: coactions/setup-xvfb@v1
         with:
           run: npm run test:browser:lokijs
 
       - name: performance test
-        uses: GabrielBB/xvfb-action@v1
+        uses: coactions/setup-xvfb@v1
         with:
           run: npm run test:performance:lokijs:browser
       - run: npm run test:performance:lokijs:node
@@ -128,14 +170,15 @@ jobs:
       - run: npm run test:fast:memory
 
       - name: npm run test:browser:memory
-        uses: GabrielBB/xvfb-action@v1
+        uses: coactions/setup-xvfb@v1
         with:
           run: npm run test:browser:memory
 
       - run: npm run test:fast:memory-validation
+      - run: npm run test:fast:memory-random-delay
 
       - name: performance test
-        uses: GabrielBB/xvfb-action@v1
+        uses: coactions/setup-xvfb@v1
         with:
           run: npm run test:performance:memory:browser
 
@@ -178,53 +221,9 @@ jobs:
       - run: npm run test:node:remote
 
       - name: npm run test:browser:remote
-        uses: GabrielBB/xvfb-action@v1
+        uses: coactions/setup-xvfb@v1
         with:
           run: npm run test:browser:remote
-
-  storage-dexie:
-    runs-on: ubuntu-22.04
-    timeout-minutes: 30
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set node version
-        uses: actions/setup-node@v4
-        with:
-          node-version-file: ".nvmrc"
-
-      - name: Reuse npm cache folder
-        uses: actions/cache@v3
-        env:
-          cache-name: cache-node-modules
-        with:
-          path: |
-            ~/.npm
-            ./node_modules
-          key: ${{ runner.os }}-npm-storage-dexie-x1-${{ hashFiles('**/package.json') }}
-          restore-keys: |
-            ${{ runner.os }}-npm-storage-dexie-x1-
-
-      - name: install npm dependencies
-        run: npm install
-
-      - name: build
-        run: npm run build
-
-      - name: npm run test:node:dexie
-        run: npm run test:node:dexie
-
-      - name: npm run test:fast:dexie
-        run: npm run test:fast:dexie
-
-      - name: npm run test:browser:dexie
-        uses: GabrielBB/xvfb-action@v1
-        with:
-          run: npm run test:browser:dexie
-
-      - name: performance test
-        uses: GabrielBB/xvfb-action@v1
-        with:
-          run: npm run test:performance:dexie
 
   storage-foundationdb:
     runs-on: ubuntu-22.04
@@ -248,7 +247,6 @@ jobs:
           key: ${{ runner.os }}-npm-storage-foundationdb-x1-${{ hashFiles('**/package.json') }}
           restore-keys: |
             ${{ runner.os }}-npm-storage-foundationdb-x1-
-
 
       - name: pre-pull foundationdb docker images
         # ensure it has downloaded the image
@@ -353,7 +351,7 @@ jobs:
 
       - name: angular test
         # uses: DevExpress/testcafe-action@latest
-        uses: GabrielBB/xvfb-action@v1.6
+        uses: coactions/setup-xvfb@v1
         with:
           working-directory: ./examples/angular
           run: npm run test:build
@@ -488,7 +486,7 @@ jobs:
           npm install --legacy-peer-deps
 
       - name: electron test
-        uses: GabrielBB/xvfb-action@v1.6
+        uses: coactions/setup-xvfb@v1
         with:
           working-directory: ./examples/electron
           run: npm run test
@@ -517,7 +515,7 @@ jobs:
           npm run build
 
       - name: react test
-        uses: GabrielBB/xvfb-action@v1.6
+        uses: coactions/setup-xvfb@v1
         with:
           working-directory: ./examples/react
           run: npm run test:build
@@ -601,7 +599,7 @@ jobs:
         working-directory: ./examples/supabase
         run: npm run build
       - name: test
-        uses: GabrielBB/xvfb-action@v1.6
+        uses: coactions/setup-xvfb@v1
         with:
           working-directory: ./examples/supabase
           run: npm run test:dexie
@@ -631,7 +629,7 @@ jobs:
           npm run build
 
       - name: vue test
-        uses: GabrielBB/xvfb-action@v1
+        uses: coactions/setup-xvfb@v1
         with:
           working-directory: ./examples/vue
           run: npm run test
@@ -660,7 +658,7 @@ jobs:
           npm run build
 
       - name: svelte test
-        uses: GabrielBB/xvfb-action@v1
+        uses: coactions/setup-xvfb@v1
         with:
           working-directory: ./examples/svelte
           run: npm run test
@@ -688,7 +686,7 @@ jobs:
           npm install --legacy-peer-deps
           npm run build
       - name: vite vanilla ts test
-        uses: GabrielBB/xvfb-action@v1
+        uses: coactions/setup-xvfb@v1
         with:
           working-directory: ./examples/vite-vanilla-ts
           run: npm run test
@@ -718,12 +716,12 @@ jobs:
         working-directory: ./examples/graphql
         run: npm run build
       - name: test test:lokijs
-        uses: GabrielBB/xvfb-action@v1.6
+        uses: coactions/setup-xvfb@v1
         with:
           working-directory: ./examples/graphql
           run: npm run test:lokijs
       - name: test test:dexie
-        uses: GabrielBB/xvfb-action@v1.6
+        uses: coactions/setup-xvfb@v1
         with:
           working-directory: ./examples/graphql
           run: npm run test:dexie
@@ -770,7 +768,7 @@ jobs:
           sudo apt-get update -y
           sudo apt-get install -y ninja-build libgtk-3-dev
       - name: flutter test
-        uses: GabrielBB/xvfb-action@v1.6
+        uses: coactions/setup-xvfb@v1
         with:
           working-directory: ./examples/flutter
           run: |
@@ -805,7 +803,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version-file: ".nvmrc"
-
 
       - name: Reuse npm cache folder
         uses: actions/cache@v3
@@ -857,7 +854,7 @@ jobs:
       - uses: denoland/setup-deno@v1
         with:
           # https://github.com/denoland/deno/releases
-          deno-version: "1.37.2"
+          deno-version: "1.38.0"
       - name: run deno tests
         run: |
           sudo npm i -g cross-env

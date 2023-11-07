@@ -46,7 +46,8 @@ import { HumanDocumentType } from './helper/schemas.ts';
  * do not run in the normal test suite
  * because it is too slow to setup the firestore backend emulators.
  */
-describe('replication-firestore.test.js', () => {
+describe('replication-firestore.test.js', function () {
+    this.timeout(1000 * 20);
     /**
      * Use a low batchSize in all tests
      * to make it easier to test boundaries.

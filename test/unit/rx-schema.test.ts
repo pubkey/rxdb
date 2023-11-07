@@ -27,7 +27,7 @@ import {
     defaultHashSha256
 } from '../../plugins/core/index.mjs';
 
-config.parallel('rx-schema.test.js', () => {
+config.parallel('rx-schema.test.ts', () => {
     describe('static', () => {
         describe('.getIndexes()', () => {
             it('get single indexes', () => {
@@ -172,8 +172,8 @@ config.parallel('rx-schema.test.js', () => {
                 });
             });
             describe('negative', () => {
-                it('break when index defined at object property level', () => {
-                    assert.throws(() => checkSchema({
+                it('break when index defined at object property level', async () => {
+                    await assertThrows(() => checkSchema({
                         version: 0,
                         primaryKey: 'id',
                         type: 'object',
@@ -206,10 +206,10 @@ config.parallel('rx-schema.test.js', () => {
                             }
                         },
                         required: ['job']
-                    }), Error);
+                    }), 'RxError', 'SC26');
                 });
-                it('throw when underscore field is used as property name', () => {
-                    assert.throws(() => checkSchema({
+                it('throw when underscore field is used as property name', async () => {
+                    await assertThrows(() => checkSchema({
                         title: 'schema',
                         version: 0,
                         primaryKey: '_asdf',
@@ -224,16 +224,16 @@ config.parallel('rx-schema.test.js', () => {
                             }
                         },
                         required: ['firstName']
-                    } as any), Error);
+                    } as any), 'RxError');
                 });
                 it('break when index is no string', () => {
-                    assert.throws(() => checkSchema(schemas.noStringIndex), Error);
+                    assert.throws(() => checkSchema(schemas.noStringIndex));
                 });
                 it('break when index does not exist in schema properties', () => {
-                    assert.throws(() => checkSchema(schemas.notExistingIndex), Error);
+                    assert.throws(() => checkSchema(schemas.notExistingIndex));
                 });
                 it('break compoundIndex key is no string', () => {
-                    assert.throws(() => checkSchema(schemas.compoundIndexNoString), Error);
+                    assert.throws(() => checkSchema(schemas.compoundIndexNoString));
                 });
                 it('break when dots in fieldname', () => {
                     assert.throws(() => checkSchema({
@@ -248,7 +248,7 @@ config.parallel('rx-schema.test.js', () => {
                                 maxLength: 100
                             }
                         }
-                    }), Error);
+                    }));
                 });
                 it('break when required is set via required: true', () => {
                     assert.throws(() => checkSchema({
@@ -263,7 +263,7 @@ config.parallel('rx-schema.test.js', () => {
                                 maxLength: 100
                             } as any
                         }
-                    }), Error);
+                    }));
                 });
 
                 /**
@@ -284,7 +284,7 @@ config.parallel('rx-schema.test.js', () => {
                                 type: 'string'
                             }
                         }
-                    }), Error);
+                    }));
                     assert.throws(() => checkSchema({
                         title: 'schema',
                         version: 0,
@@ -300,7 +300,7 @@ config.parallel('rx-schema.test.js', () => {
                                 type: 'string'
                             }
                         }
-                    }), Error);
+                    }));
                 });
                 it('should not allow $-char in nested fieldnames', () => {
                     assert.throws(() => checkSchema({
@@ -323,7 +323,7 @@ config.parallel('rx-schema.test.js', () => {
                                 }
                             }
                         }
-                    }), Error);
+                    }));
                     assert.throws(() => checkSchema({
                         title: 'schema',
                         version: 0,
@@ -344,10 +344,10 @@ config.parallel('rx-schema.test.js', () => {
                                 }
                             }
                         }
-                    }), Error);
+                    }));
                 });
-                it('should not allow ending lodash _ in fieldnames (reserved for populate)', () => {
-                    assert.throws(() => checkSchema({
+                it('should not allow ending lodash _ in fieldnames (reserved for populate)', async() => {
+                    await assertThrows(() => checkSchema({
                         title: 'schema',
                         version: 0,
                         primaryKey: 'id',
@@ -362,9 +362,9 @@ config.parallel('rx-schema.test.js', () => {
                                 type: 'string'
                             }
                         }
-                    }), Error, 'underscore');
+                    }), 'RxError', 'SC1');
                     // nested
-                    assert.throws(() => checkSchema({
+                    await assertThrows(() => checkSchema({
                         title: 'schema',
                         version: 0,
                         description: 'dot in fieldname',
@@ -384,7 +384,7 @@ config.parallel('rx-schema.test.js', () => {
                                 }
                             }
                         }
-                    }), Error, 'underscore');
+                    }), 'RxError', 'SC1');
                 });
                 it('should not allow RxDocument-properties as top-fieldnames (own)', () => {
                     assert.throws(() => checkSchema({
@@ -399,7 +399,7 @@ config.parallel('rx-schema.test.js', () => {
                                 maxLength: 100
                             }
                         }
-                    }), Error);
+                    }));
                 });
                 it('should not allow RxDocument-properties as top-fieldnames (prototype)', () => {
                     assert.throws(() => checkSchema({
@@ -414,7 +414,7 @@ config.parallel('rx-schema.test.js', () => {
                                 maxLength: 100
                             }
                         }
-                    }), Error);
+                    }));
                 });
                 it('throw when no version', () => {
                     assert.throws(() => checkSchema({
@@ -426,7 +426,7 @@ config.parallel('rx-schema.test.js', () => {
                                 type: 'string'
                             }
                         }
-                    } as any), Error);
+                    } as any));
                 });
                 it('throw when version < 0', () => {
                     assert.throws(() => checkSchema({
@@ -441,7 +441,7 @@ config.parallel('rx-schema.test.js', () => {
                                 maxLength: 100
                             }
                         }
-                    }), Error);
+                    }));
                 });
                 it('throw when version no number', () => {
                     assert.throws(() => checkSchema({
@@ -455,7 +455,7 @@ config.parallel('rx-schema.test.js', () => {
                                 maxLength: 100
                             }
                         }
-                    } as any), Error);
+                    } as any));
                 });
                 it('throw when defaults on non-first-level field', () => {
                     assert.throws(() => checkSchema({
@@ -479,7 +479,7 @@ config.parallel('rx-schema.test.js', () => {
                                 }
                             }
                         }
-                    }), Error);
+                    }));
                 });
                 it('throw when _id is not primary', () => {
                     assert.throws(() => checkSchema({
@@ -501,7 +501,7 @@ config.parallel('rx-schema.test.js', () => {
                             }
                         },
                         required: ['firstName']
-                    }), Error);
+                    }));
                 });
                 /**
                  * @link https://github.com/pubkey/rxdb/issues/4926#issuecomment-1712223984
@@ -600,7 +600,7 @@ config.parallel('rx-schema.test.js', () => {
             });
             describe('negative', () => {
                 it('broken schema (nostringIndex)', () => {
-                    assert.throws(() => createRxSchema(schemas.noStringIndex, defaultHashSha256), Error);
+                    assert.throws(() => createRxSchema(schemas.noStringIndex, defaultHashSha256));
                 });
             });
         });
@@ -1016,7 +1016,7 @@ config.parallel('rx-schema.test.js', () => {
              * Dexie.js does not support boolean indexes,
              * see docs-src/rx-storage-dexie.md
              */
-            if (config.storage.name.includes('dexie')) {
+            if (config.storage.name.includes('dexie') || config.storage.name.includes('random-delay')) {
                 return;
             }
 

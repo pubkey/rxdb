@@ -78,7 +78,7 @@ if (config.platform.name === 'firefox') {
 
 
 
-describe('init.test.js', () => {
+describe('init.test.ts', () => {
     it('ensure dev-mode is activated', ()=> {
         assert.ok(overwritable.isDevMode());
     });

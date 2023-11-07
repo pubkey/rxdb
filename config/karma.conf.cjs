@@ -62,10 +62,21 @@ module.exports = async function (config) {
                     'SafariTechPreview',
                     'FirefoxAurora',
                     'FirefoxNightly',
-                    'ChromeCanary'
+                    'ChromeCanary',
+
+                    /**
+                     * To ensure that we only run in one chromium based
+                     * browser in Github Actions, we strip chromium here
+                     * for faster CI runs.
+                     */
+                    'Chromium'
                 ];
                 const browsers = availableBrowser
                     .filter(b => !doNotUseTheseBrowsers.includes(b));
+
+                console.log('# Karma browsers:');
+                console.dir(browsers);
+
                 return browsers;
             }
         },
