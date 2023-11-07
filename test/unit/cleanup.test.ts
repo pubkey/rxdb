@@ -107,4 +107,32 @@ config.parallel('cleanup.test.js', () => {
 
         db.destroy();
     });
+    it('should work by manually calling RxCollection.cleanup()', async () => {
+        const db = await createRxDatabase({
+            name: randomCouchString(10),
+            storage: config.storage.getStorage()
+        });
+        const cols = await db.addCollections({
+            humans: {
+                schema: schemas.human
+            }
+        });
+        const collection: RxCollection<HumanDocumentType> = cols.humans;
+        const notDeleted = await collection.insert(schemaObjects.human());
+        const doc = await collection.insert(schemaObjects.human());
+        await doc.remove();
+
+
+        await collection.cleanup(0);
+        const deletedDocInStorage = await collection.storageInstance.findDocumentsById(
+            [
+                doc.primary,
+                notDeleted.primary
+            ],
+            true
+        );
+        assert.strictEqual(deletedDocInStorage.length, 1);
+
+        db.destroy();
+    });
 });

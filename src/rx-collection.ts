@@ -264,6 +264,14 @@ export class RxCollectionBase<
     }
 
 
+    /**
+     * Manually call the cleanup function of the storage.
+     * @link https://rxdb.info/cleanup.html
+     */
+    cleanup(_minimumDeletedTime: number): Promise<boolean> {
+        throw pluginMissing('cleanup');
+    }
+
     // overwritten by migration-plugin
     migrationNeeded(): Promise<boolean> {
         throw pluginMissing('migration');

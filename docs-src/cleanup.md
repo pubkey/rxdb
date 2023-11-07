@@ -66,3 +66,31 @@ const db = await createRxDatabase({
   }
 });
 ```
+
+
+## Calling cleanup manually
+
+You can manually run a cleanup per collection by calling `RxCollection.cleanup()`.
+
+```ts
+
+/**
+ * Manually run the cleanup with the
+ * minimumDeletedTime from the cleanupPolicy.
+ */
+await myRxCollection.cleanup();
+
+
+/**
+ * Overwrite the minimumDeletedTime
+ * be setting it explicitly (time in milliseconds)
+ */
+await myRxCollection.cleanup(1000);
+
+/**
+ * Purge all deleted documents no
+ * mather when they where deleted
+ * by setting minimumDeletedTime to zero.
+ */
+await myRxCollection.cleanup(0);
+```
