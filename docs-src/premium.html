@@ -429,13 +429,31 @@
                     target="_blank"
                 >here</a>.
             </details>
+            <details>
+                <summary>
+                    Can I still use the premium plugins when the license has expired?
+                </summary>
+                By default you are not allowed to use the premium plugins after the license has expired and you will no
+                longer be able to install them.
+                But you can choose the <b>Perpetual license</b> option. With the perpetual license
+                option, you can still use the plugins even after the license is expired. But you
+                will no longer get any updates from newer RxDB versions.
+            </details>
+            <details>
+                <summary>
+                    Is there any tracking code inside of the premium plugins?
+                </summary>
+                No, the premium plugins themself do not contain any tracking code. When you build your
+                application with RxDB and deploy it to production, it will not make requests to any RxDB server.
+                But when you run "npm install" with the premium package there will be some metadata send to RxDB.
+            </details>
         </div>
     </div>
 
 
     <div class="block">
         <div class="content centered">
-            <h2>Estimated Price <b class="underline">Calculator</b></h2>
+            <h2>RxDB Premium <b class="underline">Price Calculator</b></h2>
 
 
             <div class="price-calculator">
@@ -456,6 +474,21 @@
                                 <datalist id="home-country">
                                     <!-- filled by premium.ts -->
                                 </datalist>
+                            </div>
+                        </div>
+
+                        <div class="field">
+                            <label for="company-size">Company Size:</label>
+                            <div class="input">
+                                <input
+                                    type="number"
+                                    name="company-size"
+                                    min="1"
+                                    max="1000000"
+                                    required
+                                    onkeydown="return event.keyCode !== 69 && event.keyCode !== 189 && event.keyCode !== 190"
+                                />
+                                <div class="suffix">employee(s)</div>
                             </div>
                         </div>
                         <div class="field">
@@ -479,21 +512,6 @@
                                     <option value="infinity">Infinity</option>
                                 </select>
                                 <div class="suffix">project(s)</div>
-                            </div>
-                        </div>
-
-                        <div class="field">
-                            <label for="company-size">Company Size:</label>
-                            <div class="input">
-                                <input
-                                    type="number"
-                                    name="company-size"
-                                    min="1"
-                                    max="1000000"
-                                    required
-                                    onkeydown="return event.keyCode !== 69 && event.keyCode !== 189 && event.keyCode !== 190"
-                                />
-                                <div class="suffix">employee(s)</div>
                             </div>
                         </div>
 
@@ -628,6 +646,7 @@
                             </div>
 
 
+                            <div class="clear"></div>
                             <h3>Other Options:</h3>
 
                             <div class="package bg-gradient-left-top">
@@ -699,7 +718,10 @@
                                     </p>
                                 </div>
                             </div>
+
+                            <div class="clear"></div>
                         </div>
+
 
                         <div
                             class="button"
@@ -715,10 +737,10 @@
                         <h4>Estimated Price:</h4>
                         <table>
                             <tr>
-                                <th>Estimated Price Per Developer per Month</th>
+                                <th>Price Per Project per Month</th>
                                 <td>
                                     <a
-                                        id="total-per-developer-per-month"
+                                        id="total-per-project-per-month"
                                         target="_blank"
                                         rel="nofollow noopener noreferrer"
                                         title="Click to convert to other currency"
@@ -727,10 +749,22 @@
                                 </td>
                             </tr>
                             <tr>
-                                <th>Estimated Total Price per Year</th>
+                                <th>Total Price per Year</th>
                                 <td>
                                     <a
                                         id="total-per-year"
+                                        target="_blank"
+                                        rel="nofollow noopener noreferrer"
+                                        title="Click to convert to other currency"
+                                        href="#"
+                                    >XX €</a>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>Total Price</th>
+                                <td>
+                                    <a
+                                        id="total-price"
                                         target="_blank"
                                         rel="nofollow noopener noreferrer"
                                         title="Click to convert to other currency"
@@ -760,19 +794,15 @@
             <div class="content centered premium-request">
                 <h2>Request Premium <b class="underline">Form</b></h2>
 
-                <ol>
-                    <li>Fill out the form below.</li>
-                    <li>I will send you a license agreement that you can sign online.</li>
-                    <li>After signing I will send you an invoice.</li>
-                    <li>After payment I will send you an access token.</li>
-                </ol>
+                <p>
+                </p>
 
                 <iframe
                     id="request-premium-form"
-                    src="https://webforms.pipedrive.com/f/6rAw4GGXeleL4JGz2Vn0kv0gbALmQXruUXRjUOlDqG3lB9UZ8n4OOSmHBNDJ187e5t"
+                    src="https://webforms.pipedrive.com/f/6qflURDWONiPpj67lpG6r45n8feakrtS2AqMRcBf1EuCPRvNcXWdvNH2unFm5EpjW3"
                 >
                     Your browser doesn't support iframes, <a
-                        href="https://webforms.pipedrive.com/f/6rAw4GGXeleL4JGz2Vn0kv0gbALmQXruUXRjUOlDqG3lB9UZ8n4OOSmHBNDJ187e5t"
+                        href="https://webforms.pipedrive.com/f/6qflURDWONiPpj67lpG6r45n8feakrtS2AqMRcBf1EuCPRvNcXWdvNH2unFm5EpjW3"
                         rel="nofollow"
                     >go here</a>
                 </iframe>
