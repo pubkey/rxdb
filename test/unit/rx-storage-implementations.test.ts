@@ -2324,8 +2324,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                         filter(() => true)
                     )
                     .subscribe(x => {
-                        assert.ok(x.startTime > testStartTime);
-                        assert.ok(x.startTime < x.endTime);
+                        assert.ok(x.startTime > testStartTime, 'startTime must be after testStartTime');
+                        assert.ok(x.startTime < x.endTime, 'startTime must be smaller endTime');
                         emitted.push(x);
                     });
 
