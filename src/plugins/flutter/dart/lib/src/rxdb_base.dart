@@ -129,16 +129,13 @@ class RxChangeEvent<RxDocType> {
   String documentId;
   String? collectionName;
   bool isLocal;
-  num? startTime;
-  num? endTime;
   RxChangeEvent(
       this.operation,
       this.previousDocumentData,
       this.documentId,
       this.collectionName,
-      this.isLocal,
-      this.startTime,
-      this.endTime);
+      this.isLocal
+  );
 
   static RxChangeEvent<RxDocType> fromJSON<RxDocType>(dynamic json) {
     RxChangeEvent<RxDocType> ret = RxChangeEvent<RxDocType>(
@@ -146,9 +143,8 @@ class RxChangeEvent<RxDocType> {
         json['previousDocumentData'],
         json['documentId'],
         json['collectionName'],
-        json['isLocal'],
-        json['startTime'],
-        json['endTime']);
+        json['isLocal']
+    );
     return ret;
   }
 }

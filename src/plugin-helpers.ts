@@ -299,8 +299,6 @@ export function wrapRxStorageInstance<RxDocType>(
                             const ev: RxChangeEvent<RxDocType> = {
                                 operation: event.operation,
                                 documentId: event.documentId,
-                                endTime: event.endTime,
-                                startTime: event.startTime,
                                 documentData: documentData as any,
                                 previousDocumentData: previousDocumentData as any,
                                 isLocal: false
@@ -312,7 +310,9 @@ export function wrapRxStorageInstance<RxDocType>(
                         id: eventBulk.id,
                         events: useEvents,
                         checkpoint: eventBulk.checkpoint,
-                        context: eventBulk.context
+                        context: eventBulk.context,
+                        startTime: eventBulk.startTime,
+                        endTime: eventBulk.endTime
                     };
                     return ret;
                 }),

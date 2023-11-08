@@ -2311,6 +2311,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     multiInstance: false,
                     devMode: true
                 });
+                const testStartTime = now();
 
                 const emitted: EventBulk<RxStorageChangeEvent<TestDocType>, any>[] = [];
                 const sub = storageInstance.changeStream()
@@ -2323,6 +2324,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                         filter(() => true)
                     )
                     .subscribe(x => {
+                        assert.ok(x.startTime > testStartTime);
+                        assert.ok(x.startTime < x.endTime);
                         emitted.push(x);
                     });
 

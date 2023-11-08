@@ -130,8 +130,6 @@ export function storageChangeEventToRxChangeEvent<DocType>(
     const ret: RxChangeEvent<DocType> = {
         documentId: rxStorageChangeEvent.documentId,
         collectionName: rxCollection ? rxCollection.name : undefined,
-        startTime: rxStorageChangeEvent.startTime,
-        endTime: rxStorageChangeEvent.endTime,
         isLocal,
         operation: rxStorageChangeEvent.operation,
         documentData: overwritable.deepFreezeWhenDevMode(documentData as any),
@@ -202,7 +200,9 @@ export function categorizeBulkWriteRows<RxDocType>(
         id: eventBulkId,
         events: [],
         checkpoint: null,
-        context
+        context,
+        startTime: now(),
+        endTime: 0
     };
     const eventBulkEvents = eventBulk.events;
 
@@ -223,9 +223,6 @@ export function categorizeBulkWriteRows<RxDocType>(
         attachmentData: RxAttachmentWriteData;
         digest: string;
     }[] = [];
-
-
-    const startTime = now();
 
     const hasDocsInDb = docsInDb.size > 0;
     let newestRow: BulkWriteRowProcessed<RxDocType> | undefined;
@@ -296,11 +293,7 @@ export function categorizeBulkWriteRows<RxDocType>(
                     documentId: docId,
                     operation: 'INSERT' as const,
                     documentData: hasAttachments ? stripAttachmentsDataFromDocument(document) : document as any,
-                    previousDocumentData: hasAttachments && previous ? stripAttachmentsDataFromDocument(previous) : previous as any,
-                    // TODO do we even need the startTime and endTime?
-                    // maybe it should be defined per event-bulk, not per each single event
-                    startTime,
-                    endTime: now()
+                    previousDocumentData: hasAttachments && previous ? stripAttachmentsDataFromDocument(previous) : previous as any
                 };
                 eventBulkEvents.push(event);
             }
@@ -437,9 +430,7 @@ export function categorizeBulkWriteRows<RxDocType>(
                 documentId: docId,
                 documentData: eventDocumentData as RxDocumentData<RxDocType>,
                 previousDocumentData: previousEventDocumentData,
-                operation: operation,
-                startTime,
-                endTime: now()
+                operation: operation
             };
             eventBulkEvents.push(event);
         }

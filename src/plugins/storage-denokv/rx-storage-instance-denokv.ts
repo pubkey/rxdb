@@ -18,7 +18,6 @@ import type {
     RxStorageDefaultCheckpoint,
     RxStorageCountResult,
     RxStorageInfoResult,
-    PreparedQuery,
     RxConflictResultionTask
 } from '../../types/index.d.ts';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper.ts';
@@ -30,9 +29,8 @@ import { getIndexableStringMonad, getStartIndexStringFromLowerBound, changeIndex
 import { appendToArray, batchArray, lastOfArray, toArray } from "../utils/utils-array.ts";
 import { ensureNotFalsy } from "../utils/utils-other.ts";
 import { randomCouchString } from "../utils/utils-string.ts";
-import { categorizeBulkWriteRows, getUniqueDeterministicEventKey } from "../../rx-storage-helper.ts";
+import { categorizeBulkWriteRows } from "../../rx-storage-helper.ts";
 import { now } from "../utils/utils-time.ts";
-import { newRxError } from "../../rx-error.ts";
 import { queryDenoKV } from "./denokv-query.ts";
 import { INDEX_MAX } from "../../query-planner.ts";
 import { PROMISE_RESOLVE_VOID } from "../utils/utils-promise.ts";
@@ -81,7 +79,9 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
             id: eventBulkId,
             events: [],
             checkpoint: null,
-            context
+            context,
+            startTime: now(),
+            endTime: 0
         };
 
 
@@ -181,6 +181,7 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
                 id: lastEvent.documentData[this.primaryPath],
                 lwt: lastEvent.documentData._meta.lwt
             };
+            eventBulk.endTime = now();
             this.changes$.next(eventBulk);
         }
 

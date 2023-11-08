@@ -235,7 +235,9 @@ export class RxCollectionBase<
                 )),
                 databaseToken: this.database.token,
                 checkpoint: eventBulk.checkpoint,
-                context: eventBulk.context
+                context: eventBulk.context,
+                endTime: eventBulk.endTime,
+                startTime: eventBulk.startTime
             };
             this.database.$emit(changeEventBulk);
         });

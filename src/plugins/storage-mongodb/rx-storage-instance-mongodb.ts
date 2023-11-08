@@ -152,9 +152,9 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
                 //             documentId,
                 //             operation: 'INSERT',
                 //             previousDocumentData: undefined,
+                //         }],
                 //             startTime: now(),
                 //             endTime: now()
-                //         }]
                 //     };
 
                 //     this.changes$.next(eventBulk);

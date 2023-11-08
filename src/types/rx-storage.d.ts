@@ -285,6 +285,16 @@ export type EventBulk<EventType, CheckpointType> = {
      * that caused this EventBulk.
      */
     context: string;
+
+    /**
+     * Unix timestamp in milliseconds of when the operation was triggered
+     * and when it was finished.
+     * This is optional because we do not have this time
+     * for events that come from the internal storage instance changestream.
+     * TODO do we even need this values?
+     */
+    startTime: number;
+    endTime: number;
 };
 
 export type ChangeStreamEvent<DocType> = ChangeEvent<RxDocumentData<DocType>> & {
