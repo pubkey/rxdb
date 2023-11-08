@@ -26,7 +26,7 @@
   },
   "devDependencies": {
     "@types/node": "18.18.6",
-    "@types/pouchdb-adapter-http": "6.1.4",
+    "@types/pouchdb-adapter-http": "6.1.6",
     "@types/pouchdb-adapter-idb": "6.1.5",
     "@typescript-eslint/eslint-plugin": "6.10.0",
     "@typescript-eslint/parser": "6.10.0",
