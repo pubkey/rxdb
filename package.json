@@ -497,7 +497,7 @@
     "@types/mocha": "10.0.4",
     "@types/node": "18.18.6",
     "@types/pako": "2.0.3",
-    "@types/request": "2.48.11",
+    "@types/request": "2.48.12",
     "@types/request-promise-native": "1.0.21",
     "@types/source-map-support": "0.5.10",
     "@typescript-eslint/eslint-plugin": "6.10.0",
