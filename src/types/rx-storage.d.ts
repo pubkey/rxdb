@@ -322,7 +322,6 @@ export type CategorizeBulkWriteRowsOutput<RxDocType> = {
     bulkInsertDocs: BulkWriteRowProcessed<RxDocType>[];
     bulkUpdateDocs: BulkWriteRowProcessed<RxDocType>[];
 
-    changeByDocId: Map<string, RxStorageChangeEvent<RxDocumentData<RxDocType>>>;
     errors: RxStorageWriteError<RxDocType>[];
     eventBulk: EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, any>;
     attachmentsAdd: {

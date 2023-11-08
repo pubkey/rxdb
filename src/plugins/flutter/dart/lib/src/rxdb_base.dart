@@ -126,7 +126,6 @@ Future<RxDatabase> getRxDatabase(String jsFilePath, String databaseName) async {
 class RxChangeEvent<RxDocType> {
   String operation;
   dynamic previousDocumentData;
-  String eventId;
   String documentId;
   String? collectionName;
   bool isLocal;
@@ -135,7 +134,6 @@ class RxChangeEvent<RxDocType> {
   RxChangeEvent(
       this.operation,
       this.previousDocumentData,
-      this.eventId,
       this.documentId,
       this.collectionName,
       this.isLocal,
@@ -146,7 +144,6 @@ class RxChangeEvent<RxDocType> {
     RxChangeEvent<RxDocType> ret = RxChangeEvent<RxDocType>(
         json['operation'],
         json['previousDocumentData'],
-        json['eventId'],
         json['documentId'],
         json['collectionName'],
         json['isLocal'],

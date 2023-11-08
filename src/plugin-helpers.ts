@@ -298,7 +298,6 @@ export function wrapRxStorageInstance<RxDocType>(
                             ]);
                             const ev: RxChangeEvent<RxDocType> = {
                                 operation: event.operation,
-                                eventId: event.eventId,
                                 documentId: event.documentId,
                                 endTime: event.endTime,
                                 startTime: event.startTime,

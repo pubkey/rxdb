@@ -7,11 +7,6 @@ import type {
 export type RxChangeEventBase<RxDocType> = {
     operation: 'INSERT' | 'UPDATE' | 'DELETE';
 
-    /**
-     * Unique identifier for the event.
-     * When another event with the same id appears, it will be skipped.
-     */
-    readonly eventId: string;
     readonly documentId: string;
 
     // optional, does not exist on changes to localdocs of the database

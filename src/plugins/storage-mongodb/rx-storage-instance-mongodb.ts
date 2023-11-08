@@ -150,7 +150,6 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
                 //         events: [{
                 //             documentData: newDocData,
                 //             documentId,
-                //             eventId: randomCouchString(10),
                 //             operation: 'INSERT',
                 //             previousDocumentData: undefined,
                 //             startTime: now(),
@@ -210,6 +209,13 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
                 documentWrites,
                 context
             );
+
+            const changeByDocId = new Map<string, RxStorageChangeEvent<RxDocumentData<RxDocType>>>();
+            categorized.eventBulk.events.forEach(change => {
+                changeByDocId.set(change.documentId, change);
+            });
+
+
             ret.error = categorized.errors;
 
             /**
@@ -250,7 +256,7 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
                             };
                             ret.error.push(conflictError);
                         } else {
-                            const event = categorized.changeByDocId.get(docId);
+                            const event = changeByDocId.get(docId);
                             if (event) {
                                 eventBulk.events.push(event);
                             }
@@ -289,7 +295,7 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
                             };
                             ret.error.push(conflictError);
                         } else {
-                            const event = getFromMapOrThrow(categorized.changeByDocId, docId);
+                            const event = getFromMapOrThrow(changeByDocId, docId);
                             eventBulk.events.push(event);
                             ret.success.push(writeRow.document);
                         }

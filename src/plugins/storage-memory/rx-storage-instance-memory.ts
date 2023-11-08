@@ -99,12 +99,18 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         documentWrites: BulkWriteRow<RxDocType>[],
         context: string
     ): Promise<RxStorageBulkWriteResponse<RxDocType>> {
+
+
+        console.log(':____________________________________________');
+        console.log('bulkWrite(' + documentWrites.length + ') 1 - ' + performance.now());
+
         this.ensurePersistence();
         ensureNotRemoved(this);
         const internals = this.internals;
         const documentsById = this.internals.documents;
         const primaryPath = this.primaryPath;
 
+        console.log('bulkWrite 3 - ' + performance.now());
         const categorized = categorizeBulkWriteRows<RxDocType>(
             this,
             primaryPath as any,
@@ -112,6 +118,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
             documentWrites,
             context
         );
+        console.log('bulkWrite 4 - ' + performance.now());
         const error = categorized.errors;
         const success: RxDocumentData<RxDocType>[] = new Array(categorized.bulkInsertDocs.length);
         const bulkInsertDocs = categorized.bulkInsertDocs;
@@ -126,6 +133,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
             const doc = writeRow.document;
             success.push(doc);
         }
+        console.log('bulkWrite 5 - ' + performance.now());
 
         this.internals.ensurePersistenceTask = categorized;
         if (!this.internals.ensurePersistenceIdlePromise) {
@@ -145,10 +153,15 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
                 id: lastState[primaryPath],
                 lwt: lastState._meta.lwt
             };
-            internals.changes$.next(categorized.eventBulk);
+            PROMISE_RESOLVE_TRUE.then(() => {
+                internals.changes$.next(categorized.eventBulk);
+            });
         }
 
-        return Promise.resolve({ success, error });
+        console.log('bulkWrite 7 - ' + performance.now());
+        const ret = Promise.resolve({ success, error });
+        console.log('bulkWrite 8 - ' + performance.now());
+        return ret;
     }
 
     /**

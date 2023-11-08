@@ -1598,3 +1598,27 @@ Node:
     "count": 0.36,
     "property-access": 6.01
 }
+
+
+## indexeddb 
+08.11.2023
+
+BEFORE:
+16.07
+16.36
+15.97
+15.45
+
+AFTER:
+
+
+
+
+
+--- memory bulk write
+
+between nr 3 and nr 4
+0.6
+0.3
+0.1
+0.9

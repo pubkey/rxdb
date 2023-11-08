@@ -384,7 +384,7 @@
     "test:performance:mongodb": "npm run transpile && cross-env DEFAULT_STORAGE=mongodb mocha --config ./config/.mocharc.cjs ./test_tmp/performance.test.js --unhandled-rejections=strict --expose-gc",
     "test:performance:custom:browser": "npm run transpile && cross-env DEFAULT_STORAGE=custom CI=true karma start ./config/karma.performance.conf.cjs --single-run",
     "test:performance:custom:node": "npm run transpile && cross-env DEFAULT_STORAGE=custom mocha --config ./config/.mocharc.cjs ./test_tmp/performance.test.js --unhandled-rejections=strict --expose-gc",
-    "test:performance": "npm run build && npm run test:performance:lokijs:browser && npm run test:performance:lokijs:node && npm run test:performance:dexie && npm run test:performance:memory:browser && npm run test:performance:memory:node && npm run test:performance:foundationdb",
+    "test:performance": "npm run build && npm run test:performance:lokijs:browser && npm run test:performance:lokijs:node && npm run test:performance:dexie && npm run test:performance:memory:browser && npm run test:performance:memory:node",
     "couch:start": "docker run -p 5984:5984 -e COUCHDB_USER=root -e COUCHDB_PASSWORD=root --rm --name rxdb-couchdb couchdb:3.3.1",
     "couch:stop": "docker rm -f rxdb-couchdb",
     "mongodb:start": "docker run -p 27017:27017 -p 27018:27018 -p 27019:27019 --rm --name rxdb-mongodb mongo:7.0.1",
@@ -446,6 +446,7 @@
     "dexie": "4.0.0-alpha.4",
     "event-reduce-js": "4.0.1",
     "firebase": "10.5.2",
+    "foundationdb": "1.1.4",
     "get-graphql-from-jsonschema": "8.1.0",
     "graphql": "15.8.0",
     "graphql-ws": "5.14.2",
@@ -557,6 +558,7 @@
     "readline": "1.3.0",
     "rimraf": "5.0.5",
     "rollup": "4.3.0",
+    "rxdb-old": "npm:rxdb@14.17.1",
     "rxjs": "7.8.1",
     "shelljs": "0.8.5",
     "socket.io": "4.7.2",
@@ -572,7 +574,6 @@
     "webpack": "5.89.0",
     "webpack-bundle-analyzer": "4.9.1",
     "webpack-cli": "5.1.4",
-    "webpack-dev-server": "4.15.1",
-    "rxdb-old": "npm:rxdb@14.17.1"
+    "webpack-dev-server": "4.15.1"
   }
 }

@@ -128,7 +128,6 @@ export function storageChangeEventToRxChangeEvent<DocType>(
     const documentData = rxStorageChangeEvent.documentData;
     const previousDocumentData = rxStorageChangeEvent.previousDocumentData;
     const ret: RxChangeEvent<DocType> = {
-        eventId: rxStorageChangeEvent.eventId,
         documentId: rxStorageChangeEvent.documentId,
         collectionName: rxCollection ? rxCollection.name : undefined,
         startTime: rxStorageChangeEvent.startTime,
@@ -198,7 +197,6 @@ export function categorizeBulkWriteRows<RxDocType>(
     const bulkInsertDocs: BulkWriteRowProcessed<RxDocType>[] = [];
     const bulkUpdateDocs: BulkWriteRowProcessed<RxDocType>[] = [];
     const errors: RxStorageWriteError<RxDocType>[] = [];
-    const changeByDocId = new Map<string, RxStorageChangeEvent<RxDocumentData<RxDocType>>>();
     const eventBulkId = randomCouchString(10);
     const eventBulk: EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, any> = {
         id: eventBulkId,
@@ -243,6 +241,8 @@ export function categorizeBulkWriteRows<RxDocType>(
         const document = writeRow.document;
         const previous = writeRow.previous;
         const docId = document[primaryPath] as string;
+        const documentDeleted = document._deleted;
+        const previousDeleted = previous && previous._deleted;
 
         let documentInDb: RxDocumentData<RxDocType> | undefined = undefined as any;
         if (hasDocsInDb) {
@@ -255,7 +255,7 @@ export function categorizeBulkWriteRows<RxDocType>(
              * It is possible to insert already deleted documents,
              * this can happen on replication.
              */
-            const insertedIsDeleted = document._deleted ? true : false;
+            const insertedIsDeleted = documentDeleted ? true : false;
             if (hasAttachments) {
                 Object
                     .entries(document._attachments)
@@ -288,23 +288,11 @@ export function categorizeBulkWriteRows<RxDocType>(
                     bulkInsertDocs.push(writeRow as any);
                 }
 
-                // TODO can we assume the the last row always has the hightes _meta.lwt?
-                if (
-                    !newestRow ||
-                    newestRow.document._meta.lwt < document._meta.lwt
-                ) {
-                    newestRow = writeRow as any;
-                }
+                newestRow = writeRow as any;
             }
 
             if (!insertedIsDeleted) {
                 const event = {
-                    eventId: getUniqueDeterministicEventKey(
-                        eventBulkId,
-                        rowId,
-                        docId,
-                        writeRow.document
-                    ),
                     documentId: docId,
                     operation: 'INSERT' as const,
                     documentData: hasAttachments ? stripAttachmentsDataFromDocument(document) : document as any,
@@ -314,7 +302,6 @@ export function categorizeBulkWriteRows<RxDocType>(
                     startTime,
                     endTime: now()
                 };
-                changeByDocId.set(docId, event);
                 eventBulkEvents.push(event);
             }
         } else {
@@ -349,7 +336,7 @@ export function categorizeBulkWriteRows<RxDocType>(
 
             const updatedRow: BulkWriteRowProcessed<RxDocType> = hasAttachments ? stripAttachmentsDataFromRow(writeRow) : writeRow as any;
             if (hasAttachments) {
-                if (document._deleted) {
+                if (documentDeleted) {
                     /**
                      * Deleted documents must have cleared all their attachments.
                      */
@@ -424,26 +411,21 @@ export function categorizeBulkWriteRows<RxDocType>(
                 errors.push(attachmentError);
             } else {
                 bulkUpdateDocs.push(updatedRow);
-                if (
-                    !newestRow ||
-                    newestRow.document._meta.lwt < updatedRow.document._meta.lwt
-                ) {
-                    newestRow = updatedRow as any;
-                }
+                newestRow = updatedRow as any;
             }
 
             let eventDocumentData: RxDocumentData<RxDocType> | undefined = null as any;
             let previousEventDocumentData: RxDocumentData<RxDocType> | undefined = null as any;
             let operation: 'INSERT' | 'UPDATE' | 'DELETE' = null as any;
 
-            if (previous && previous._deleted && !document._deleted) {
+            if (previousDeleted && !documentDeleted) {
                 operation = 'INSERT';
                 eventDocumentData = hasAttachments ? stripAttachmentsDataFromDocument(document) : document as any;
-            } else if (previous && !previous._deleted && !document._deleted) {
+            } else if (previous && !previousDeleted && !documentDeleted) {
                 operation = 'UPDATE';
                 eventDocumentData = hasAttachments ? stripAttachmentsDataFromDocument(document) : document as any;
                 previousEventDocumentData = previous;
-            } else if (document._deleted) {
+            } else if (documentDeleted) {
                 operation = 'DELETE';
                 eventDocumentData = ensureNotFalsy(document) as any;
                 previousEventDocumentData = previous;
@@ -452,12 +434,6 @@ export function categorizeBulkWriteRows<RxDocType>(
             }
 
             const event = {
-                eventId: getUniqueDeterministicEventKey(
-                    eventBulkId,
-                    rowId,
-                    docId,
-                    document
-                ),
                 documentId: docId,
                 documentData: eventDocumentData as RxDocumentData<RxDocType>,
                 previousDocumentData: previousEventDocumentData,
@@ -465,7 +441,6 @@ export function categorizeBulkWriteRows<RxDocType>(
                 startTime,
                 endTime: now()
             };
-            changeByDocId.set(docId, event);
             eventBulkEvents.push(event);
         }
     }
@@ -475,7 +450,6 @@ export function categorizeBulkWriteRows<RxDocType>(
         bulkUpdateDocs,
         newestRow,
         errors,
-        changeByDocId,
         eventBulk,
         attachmentsAdd,
         attachmentsRemove,
@@ -541,21 +515,6 @@ export function flatCloneDocWithMeta<RxDocType>(
     ret._meta = flatClone(doc._meta);
     return ret;
 }
-
-/**
- * Each event is labeled with the id
- * to make it easy to filter out duplicates
- * even on flattened eventBulks
- */
-export function getUniqueDeterministicEventKey<RxDocType>(
-    eventBulkId: string,
-    rowId: number,
-    docId: string,
-    writeRowDocument: RxDocumentWriteData<RxDocType>
-): string {
-    return eventBulkId + '|' + rowId + '|' + docId + '|' + writeRowDocument._rev;
-}
-
 
 export type WrappedRxStorageInstance<RxDocumentType, Internals, InstanceCreationOptions> = RxStorageInstance<RxDocumentType, any, InstanceCreationOptions> & {
     originalStorageInstance: RxStorageInstance<RxDocumentType, Internals, InstanceCreationOptions>;
