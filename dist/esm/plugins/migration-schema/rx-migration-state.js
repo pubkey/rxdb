@@ -258,6 +258,7 @@ export var RxMigrationState = /*#__PURE__*/function () {
     });
     await awaitRxStorageReplicationFirstInSync(replicationState);
     await cancelRxStorageReplication(replicationState);
+    await this.updateStatusQueue;
     if (hasError) {
       await replicationMetaStorageInstance.close();
       throw hasError;

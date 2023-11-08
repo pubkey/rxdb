@@ -63,6 +63,11 @@ export declare class RxCollectionBase<InstanceCreationOptions, RxDocumentType = 
     onDestroy: (() => MaybePromise<any>)[];
     destroyed: boolean;
     prepare(): Promise<void>;
+    /**
+     * Manually call the cleanup function of the storage.
+     * @link https://rxdb.info/cleanup.html
+     */
+    cleanup(_minimumDeletedTime?: number): Promise<boolean>;
     migrationNeeded(): Promise<boolean>;
     getMigrationState(): RxMigrationState;
     startMigration(batchSize?: number): Promise<void>;

@@ -9,6 +9,7 @@ exports.promiseSeries = promiseSeries;
 exports.promiseWait = promiseWait;
 exports.requestIdleCallbackIfAvailable = requestIdleCallbackIfAvailable;
 exports.requestIdlePromise = requestIdlePromise;
+exports.requestIdlePromiseNoQueue = requestIdlePromiseNoQueue;
 exports.toPromise = toPromise;
 /**
  * returns a promise that resolves on the next tick
@@ -36,6 +37,24 @@ var PROMISE_RESOLVE_TRUE = exports.PROMISE_RESOLVE_TRUE = Promise.resolve(true);
 var PROMISE_RESOLVE_FALSE = exports.PROMISE_RESOLVE_FALSE = Promise.resolve(false);
 var PROMISE_RESOLVE_NULL = exports.PROMISE_RESOLVE_NULL = Promise.resolve(null);
 var PROMISE_RESOLVE_VOID = exports.PROMISE_RESOLVE_VOID = Promise.resolve();
+function requestIdlePromiseNoQueue(timeout = undefined) {
+  /**
+   * Do not use window.requestIdleCallback
+   * because some javascript runtimes like react-native,
+   * do not have a window object, but still have a global
+   * requestIdleCallback function.
+   * @link https://github.com/pubkey/rxdb/issues/4804
+  */
+  if (typeof requestIdleCallback === 'function') {
+    return new Promise(res => {
+      requestIdleCallback(() => res(), {
+        timeout
+      });
+    });
+  } else {
+    return promiseWait(0);
+  }
+}
 
 /**
  * If multiple operations wait for an requestIdlePromise
@@ -45,22 +64,7 @@ var PROMISE_RESOLVE_VOID = exports.PROMISE_RESOLVE_VOID = Promise.resolve();
 var idlePromiseQueue = PROMISE_RESOLVE_VOID;
 function requestIdlePromise(timeout = undefined) {
   idlePromiseQueue = idlePromiseQueue.then(() => {
-    /**
-     * Do not use window.requestIdleCallback
-     * because some javascript runtimes like react-native,
-     * do not have a window object, but still have a global
-     * requestIdleCallback function.
-     * @link https://github.com/pubkey/rxdb/issues/4804
-    */
-    if (typeof requestIdleCallback === 'function') {
-      return new Promise(res => {
-        requestIdleCallback(() => res(), {
-          timeout
-        });
-      });
-    } else {
-      return promiseWait(0);
-    }
+    return requestIdlePromiseNoQueue(timeout);
   });
   return idlePromiseQueue;
 }

@@ -188,13 +188,7 @@ export function getQueryMatcher(_schema, query) {
     if (doc._deleted) {
       return false;
     }
-    var cursor = mingoQuery.find([doc]);
-    var next = cursor.next();
-    if (next) {
-      return true;
-    } else {
-      return false;
-    }
+    return mingoQuery.test(doc);
   };
   return fun;
 }

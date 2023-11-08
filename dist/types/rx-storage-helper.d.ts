@@ -1,7 +1,7 @@
 /**
  * Helper functions for accessing the RxStorage instances.
  */
-import type { BulkWriteRow, BulkWriteRowProcessed, CategorizeBulkWriteRowsOutput, RxAttachmentData, RxAttachmentWriteData, RxChangeEvent, RxCollection, RxDatabase, RxDocumentData, RxDocumentWriteData, RxJsonSchema, RxStorageWriteError, RxStorageChangeEvent, RxStorageInstance, RxStorageInstanceCreationParams, StringKeys } from './types/index.d.ts';
+import type { BulkWriteRow, BulkWriteRowProcessed, CategorizeBulkWriteRowsOutput, RxAttachmentData, RxAttachmentWriteData, RxChangeEvent, RxCollection, RxDatabase, RxDocumentData, RxDocumentWriteData, RxJsonSchema, RxStorageWriteError, RxStorageChangeEvent, RxStorageInstance, RxStorageInstanceCreationParams, StringKeys, RxStorage } from './types/index.d.ts';
 import { Observable } from 'rxjs';
 export declare const INTERNAL_STORAGE_NAME = "_rxdb_internal";
 export declare const RX_DATABASE_LOCAL_DOCS_STORAGE_NAME = "rxdatabase_storage_local";
@@ -88,3 +88,12 @@ rxJsonSchema: RxJsonSchema<RxDocumentData<RxDocType>>): WrappedRxStorageInstance
  */
 export declare function ensureRxStorageInstanceParamsAreCorrect(params: RxStorageInstanceCreationParams<any, any>): void;
 export declare function hasEncryption(jsonSchema: RxJsonSchema<any>): boolean;
+/**
+ * Wraps the storage and simluates
+ * delays. Mostly used in tests.
+ */
+export declare function randomDelayStorage<Internals, InstanceCreationOptions>(input: {
+    storage: RxStorage<Internals, InstanceCreationOptions>;
+    delayTimeBefore: () => number;
+    delayTimeAfter: () => number;
+}): RxStorage<Internals, InstanceCreationOptions>;

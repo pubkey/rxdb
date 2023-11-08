@@ -56,7 +56,7 @@ var RxStorageInstanceMemory = exports.RxStorageInstanceMemory = /*#__PURE__*/fun
     }
     this.internals.ensurePersistenceTask = categorized;
     if (!this.internals.ensurePersistenceIdlePromise) {
-      this.internals.ensurePersistenceIdlePromise = (0, _index.promiseWait)(0).then(() => {
+      this.internals.ensurePersistenceIdlePromise = (0, _index.requestIdlePromiseNoQueue)().then(() => {
         this.internals.ensurePersistenceIdlePromise = undefined;
         this.ensurePersistence();
       });
@@ -196,7 +196,7 @@ var RxStorageInstanceMemory = exports.RxStorageInstanceMemory = /*#__PURE__*/fun
       if (!queryMatcher || queryMatcher(currentDoc)) {
         rows.push(currentDoc);
       }
-      if (rows.length >= skipPlusLimit && !mustManuallyResort || indexOfLower >= docsWithIndex.length) {
+      if (rows.length >= skipPlusLimit && !mustManuallyResort) {
         done = true;
       }
       indexOfLower++;

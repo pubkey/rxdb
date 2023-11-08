@@ -7,6 +7,7 @@ var _exportNames = {
   RxDBCleanupPlugin: true
 };
 exports.RxDBCleanupPlugin = void 0;
+var _cleanupHelper = require("./cleanup-helper.js");
 var _cleanup = require("./cleanup.js");
 Object.keys(_cleanup).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
@@ -22,7 +23,22 @@ Object.keys(_cleanup).forEach(function (key) {
 var RxDBCleanupPlugin = exports.RxDBCleanupPlugin = {
   name: 'cleanup',
   rxdb: true,
-  prototypes: {},
+  prototypes: {
+    RxCollection: proto => {
+      proto.cleanup = async function (minimumDeletedTime) {
+        var cleanupPolicy = Object.assign({}, _cleanupHelper.DEFAULT_CLEANUP_POLICY, this.database.cleanupPolicy ? this.database.cleanupPolicy : {});
+        if (typeof minimumDeletedTime === 'undefined') {
+          minimumDeletedTime = cleanupPolicy.minimumDeletedTime;
+        }
+
+        // run cleanup() until it returns true
+        var isDone = false;
+        while (!isDone && !this.destroyed) {
+          isDone = await this.storageInstance.cleanup(minimumDeletedTime);
+        }
+      };
+    }
+  },
   hooks: {
     createRxCollection: {
       after: i => {

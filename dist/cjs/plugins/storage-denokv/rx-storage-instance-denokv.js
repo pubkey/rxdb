@@ -274,23 +274,28 @@ var RxStorageInstanceDenoKV = exports.RxStorageInstanceDenoKV = /*#__PURE__*/fun
     });
     var rangeCount = 0;
     var _loop2 = async function () {
-      rangeCount = rangeCount + 1;
-      var docId = row.value;
-      var docDataResult = await kv.get([_this2.keySpace, _denokvHelper.DENOKV_DOCUMENT_ROOT_PATH, docId], _this2.kvOptions);
-      var docData = (0, _utilsOther.ensureNotFalsy)(docDataResult.value);
-      if (!docData._deleted || docData._meta.lwt > maxDeletionTime) {
-        return 1; // continue
-      }
-      var tx = kv.atomic();
-      tx = tx.check(docDataResult);
-      tx = tx.delete([_this2.keySpace, _denokvHelper.DENOKV_DOCUMENT_ROOT_PATH, docId]);
-      Object.values(_this2.internals.indexes).forEach(indexMetaInner => {
-        tx = tx.delete([_this2.keySpace, indexMetaInner.indexId, docId]);
-      });
-      await tx.commit();
-    };
+        rangeCount = rangeCount + 1;
+        var docId = row.value;
+        var docDataResult = await kv.get([_this2.keySpace, _denokvHelper.DENOKV_DOCUMENT_ROOT_PATH, docId], _this2.kvOptions);
+        if (!docDataResult.value) {
+          return 0; // continue
+        }
+        var docData = (0, _utilsOther.ensureNotFalsy)(docDataResult.value);
+        if (!docData._deleted || docData._meta.lwt > maxDeletionTime) {
+          return 0; // continue
+        }
+        var tx = kv.atomic();
+        tx = tx.check(docDataResult);
+        tx = tx.delete([_this2.keySpace, _denokvHelper.DENOKV_DOCUMENT_ROOT_PATH, docId]);
+        Object.values(_this2.internals.indexes).forEach(indexMetaInner => {
+          tx = tx.delete([_this2.keySpace, indexMetaInner.indexId, docId]);
+        });
+        await tx.commit();
+      },
+      _ret;
     for await (var row of range) {
-      if (await _loop2()) continue;
+      _ret = await _loop2();
+      if (_ret === 0) continue;
     }
     return noMoreUndeleted;
   };

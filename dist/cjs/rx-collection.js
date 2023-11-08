@@ -106,6 +106,14 @@ var RxCollectionBase = exports.RxCollectionBase = /*#__PURE__*/function () {
     return _index.PROMISE_RESOLVE_VOID;
   }
 
+  /**
+   * Manually call the cleanup function of the storage.
+   * @link https://rxdb.info/cleanup.html
+   */;
+  _proto.cleanup = function cleanup(_minimumDeletedTime) {
+    throw (0, _index.pluginMissing)('cleanup');
+  }
+
   // overwritten by migration-plugin
   ;
   _proto.migrationNeeded = function migrationNeeded() {

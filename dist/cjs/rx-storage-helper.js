@@ -14,6 +14,7 @@ exports.getUniqueDeterministicEventKey = getUniqueDeterministicEventKey;
 exports.getWrappedStorageInstance = getWrappedStorageInstance;
 exports.hasEncryption = hasEncryption;
 exports.observeSingle = observeSingle;
+exports.randomDelayStorage = randomDelayStorage;
 exports.stackCheckpoints = stackCheckpoints;
 exports.storageChangeEventToRxChangeEvent = storageChangeEventToRxChangeEvent;
 exports.stripAttachmentsDataFromDocument = stripAttachmentsDataFromDocument;
@@ -654,5 +655,105 @@ function hasEncryption(jsonSchema) {
   } else {
     return false;
   }
+}
+
+/**
+ * Wraps the storage and simluates
+ * delays. Mostly used in tests.
+ */
+function randomDelayStorage(input) {
+  var retStorage = {
+    name: 'random-delay-' + input.storage.name,
+    statics: input.storage.statics,
+    async createStorageInstance(params) {
+      await (0, _index.promiseWait)(input.delayTimeBefore());
+      var storageInstance = await input.storage.createStorageInstance(params);
+      await (0, _index.promiseWait)(input.delayTimeAfter());
+
+      // write still must be processed in order
+      var writeQueue = _index.PROMISE_RESOLVE_TRUE;
+      return {
+        databaseName: storageInstance.databaseName,
+        internals: storageInstance.internals,
+        options: storageInstance.options,
+        schema: storageInstance.schema,
+        collectionName: storageInstance.collectionName,
+        async bulkWrite(a, b) {
+          writeQueue = writeQueue.then(async () => {
+            await (0, _index.promiseWait)(input.delayTimeBefore());
+            var response = await storageInstance.bulkWrite(a, b);
+            await (0, _index.promiseWait)(input.delayTimeAfter());
+            return response;
+          });
+          var ret = await writeQueue;
+          return ret;
+        },
+        async findDocumentsById(a, b) {
+          await (0, _index.promiseWait)(input.delayTimeBefore());
+          var ret = await storageInstance.findDocumentsById(a, b);
+          await (0, _index.promiseWait)(input.delayTimeAfter());
+          return ret;
+        },
+        async query(a) {
+          await (0, _index.promiseWait)(input.delayTimeBefore());
+          var ret = await storageInstance.query(a);
+          await (0, _index.promiseWait)(input.delayTimeAfter());
+          return ret;
+        },
+        async count(a) {
+          await (0, _index.promiseWait)(input.delayTimeBefore());
+          var ret = await storageInstance.count(a);
+          await (0, _index.promiseWait)(input.delayTimeAfter());
+          return ret;
+        },
+        async info() {
+          await (0, _index.promiseWait)(input.delayTimeBefore());
+          var ret = await storageInstance.info();
+          await (0, _index.promiseWait)(input.delayTimeAfter());
+          return ret;
+        },
+        async getAttachmentData(a, b, c) {
+          await (0, _index.promiseWait)(input.delayTimeBefore());
+          var ret = await storageInstance.getAttachmentData(a, b, c);
+          await (0, _index.promiseWait)(input.delayTimeAfter());
+          return ret;
+        },
+        async getChangedDocumentsSince(a, b) {
+          await (0, _index.promiseWait)(input.delayTimeBefore());
+          var ret = await storageInstance.getChangedDocumentsSince(a, b);
+          await (0, _index.promiseWait)(input.delayTimeAfter());
+          return ret;
+        },
+        changeStream() {
+          return storageInstance.changeStream();
+        },
+        conflictResultionTasks() {
+          return storageInstance.conflictResultionTasks();
+        },
+        resolveConflictResultionTask(a) {
+          return storageInstance.resolveConflictResultionTask(a);
+        },
+        async cleanup(a) {
+          await (0, _index.promiseWait)(input.delayTimeBefore());
+          var ret = await storageInstance.cleanup(a);
+          await (0, _index.promiseWait)(input.delayTimeAfter());
+          return ret;
+        },
+        async close() {
+          await (0, _index.promiseWait)(input.delayTimeBefore());
+          var ret = await storageInstance.close();
+          await (0, _index.promiseWait)(input.delayTimeAfter());
+          return ret;
+        },
+        async remove() {
+          await (0, _index.promiseWait)(input.delayTimeBefore());
+          var ret = await storageInstance.remove();
+          await (0, _index.promiseWait)(input.delayTimeAfter());
+          return ret;
+        }
+      };
+    }
+  };
+  return retStorage;
 }
 //# sourceMappingURL=rx-storage-helper.js.map
