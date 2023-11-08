@@ -189,7 +189,13 @@ export function categorizeBulkWriteRows<RxDocType>(
      * RxStorageInstance().bulkWrite().
      */
     bulkWriteRows: BulkWriteRow<RxDocType>[],
-    context: string
+    context: string,
+    /**
+     * Used by some storages for better performance.
+     * For example when get-by-id and insert/update can run in parallel.
+     */
+    onInsert?: (docData: RxDocumentData<RxDocType>) => void,
+    onUpdate?: (docData: RxDocumentData<RxDocType>) => void
 ): CategorizeBulkWriteRowsOutput<RxDocType> {
     const hasAttachments = !!storageInstance.schema.attachments;
     const bulkInsertDocs: BulkWriteRowProcessed<RxDocType>[] = [];
@@ -281,8 +287,14 @@ export function categorizeBulkWriteRows<RxDocType>(
             if (!attachmentError) {
                 if (hasAttachments) {
                     bulkInsertDocs.push(stripAttachmentsDataFromRow(writeRow));
+                    if (onInsert) {
+                        onInsert(document);
+                    }
                 } else {
                     bulkInsertDocs.push(writeRow as any);
+                    if (onInsert) {
+                        onInsert(document);
+                    }
                 }
 
                 newestRow = writeRow as any;
@@ -403,7 +415,17 @@ export function categorizeBulkWriteRows<RxDocType>(
             if (attachmentError) {
                 errors.push(attachmentError);
             } else {
-                bulkUpdateDocs.push(updatedRow);
+                if (hasAttachments) {
+                    bulkUpdateDocs.push(stripAttachmentsDataFromRow(updatedRow));
+                    if (onUpdate) {
+                        onUpdate(document);
+                    }
+                } else {
+                    bulkUpdateDocs.push(updatedRow);
+                    if (onUpdate) {
+                        onUpdate(document);
+                    }
+                }
                 newestRow = updatedRow as any;
             }
 
