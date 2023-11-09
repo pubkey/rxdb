@@ -805,6 +805,7 @@ describe('replication.test.ts', () => {
                 localDocs[2].getLatest().putAttachment(getRandomAttachment())
             ]);
 
+            await replicationState.reSync();
             await replicationState.awaitInSync();
             await requestIdlePromise();
             await ensureEqualState(localCollection, remoteCollection, 'after adding');
@@ -813,7 +814,7 @@ describe('replication.test.ts', () => {
             await remoteDocs[0].getLatest().putAttachment(getRandomAttachment('master2'));
             await localDocs[0].getLatest().putAttachment(getRandomAttachment('fork2'));
 
-            await wait(100);
+            await replicationState.reSync();
             await replicationState.awaitInSync();
             await ensureEqualState(localCollection, remoteCollection, 'after add more');
 
@@ -821,7 +822,7 @@ describe('replication.test.ts', () => {
             await remoteDocs[0].getLatest().putAttachment(getRandomAttachment('master1', 5));
             await localDocs[0].getLatest().putAttachment(getRandomAttachment('fork1', 5));
 
-            await wait(100);
+            await replicationState.reSync();
             await replicationState.awaitInSync();
             await ensureEqualState(localCollection, remoteCollection, 'after overwrite');
 
