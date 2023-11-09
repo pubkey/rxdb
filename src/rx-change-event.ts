@@ -85,9 +85,19 @@ export function flattenEvents<EventType>(
 
     const usedIds = new Set<string>();
     const nonDuplicate: EventType[] = [];
+
+    function getEventId(ev: any): string {
+        return [
+            ev.documentId,
+            ev.documentData ? ev.documentData._rev : '',
+            ev.previousDocumentData ? ev.previousDocumentData._rev : ''
+        ].join('|');
+    }
+
     output.forEach(ev => {
-        if (!usedIds.has((ev as any).eventId)) {
-            usedIds.add((ev as any).eventId);
+        const eventId = getEventId(ev);
+        if (!usedIds.has(eventId)) {
+            usedIds.add(eventId);
             nonDuplicate.push(ev);
         }
     });

@@ -145,10 +145,14 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
                 id: lastState[primaryPath],
                 lwt: lastState._meta.lwt
             };
-            internals.changes$.next(categorized.eventBulk);
+            categorized.eventBulk.endTime = now();
+            PROMISE_RESOLVE_TRUE.then(() => {
+                internals.changes$.next(categorized.eventBulk);
+            });
         }
 
-        return Promise.resolve({ success, error });
+        const ret = Promise.resolve({ success, error });
+        return ret;
     }
 
     /**
@@ -313,6 +317,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
             } as any,
             compareDocsWithIndex
         );
+
         const indexOfUpper = (queryPlan.inclusiveEnd ? boundLE : boundLT)(
             docsWithIndex,
             {

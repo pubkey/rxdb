@@ -31,7 +31,7 @@ import type {
     RxMigrationState
 } from './plugins/migration-schema/index.ts';
 import {
-    DocumentCache
+    DocumentCache, mapDocumentsDataToCacheDocs
 } from './doc-cache.ts';
 import {
     QueryCache,
@@ -235,7 +235,9 @@ export class RxCollectionBase<
                 )),
                 databaseToken: this.database.token,
                 checkpoint: eventBulk.checkpoint,
-                context: eventBulk.context
+                context: eventBulk.context,
+                endTime: eventBulk.endTime,
+                startTime: eventBulk.startTime
             };
             this.database.$emit(changeEventBulk);
         });
@@ -338,8 +340,7 @@ export class RxCollectionBase<
         );
 
         // create documents
-        const rxDocuments = results.success
-            .map((writtenDocData) => this._docCache.getCachedRxDocument(writtenDocData));
+        const rxDocuments = mapDocumentsDataToCacheDocs<RxDocumentType, OrmMethods>(this._docCache, results.success);
 
         if (this.hasHooks('post', 'insert')) {
             const docsMap: Map<string, RxDocumentType> = new Map();

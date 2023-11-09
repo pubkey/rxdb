@@ -184,8 +184,7 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
                 id: lastState[this.primaryPath],
                 lwt: lastState._meta.lwt
             };
-            const endTime = now();
-            categorized.eventBulk.events.forEach(event => (event as any).endTime = endTime);
+            categorized.eventBulk.endTime = now();
             this.changes$.next(categorized.eventBulk);
         }
 

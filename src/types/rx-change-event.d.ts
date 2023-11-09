@@ -7,11 +7,6 @@ import type {
 export type RxChangeEventBase<RxDocType> = {
     operation: 'INSERT' | 'UPDATE' | 'DELETE';
 
-    /**
-     * Unique identifier for the event.
-     * When another event with the same id appears, it will be skipped.
-     */
-    readonly eventId: string;
     readonly documentId: string;
 
     // optional, does not exist on changes to localdocs of the database
@@ -19,16 +14,6 @@ export type RxChangeEventBase<RxDocType> = {
 
     // true if the event is about a local document, false if not.
     readonly isLocal: boolean;
-
-    /**
-     * Unix timestamp in milliseconds of when the operation was triggered
-     * and when it was finished.
-     * This is optional because we do not have this time
-     * for events that come from the internal storage instance changestream.
-     * TODO do we even need this values?
-     */
-    readonly startTime?: number;
-    readonly endTime?: number;
 
     documentData: RxDocumentData<RxDocType>;
 };

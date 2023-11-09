@@ -1598,3 +1598,86 @@ Node:
     "count": 0.36,
     "property-access": 6.01
 }
+
+
+## indexeddb 
+08.11.2023
+
+BEFORE:
+16.07
+16.36
+15.97
+15.45
+
+AFTER:
+
+
+
+
+
+--- memory query
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX START 5273.516776999459
+__ensureEqual 1 5273.764967000112
+__ensureEqual 2 5273.826345998794
+__ensureEqual 3 5273.86046099849
+query collection 5273.905810998753
+getprepared query 1 5273.937525998801
+getprepared query 2 5273.996019998565
+getprepared query 3 5274.101761000231
+query collection -> query storage 5274.139894999564
+--------------------------
+{
+    "query": {
+        "selector": {},
+        "sort": [
+            {
+                "var2": "asc"
+            },
+            {
+                "var1": "asc"
+            },
+            {
+                "id": "asc"
+            }
+        ],
+        "skip": 0
+    },
+    "queryPlan": {
+        "index": [
+            "var2",
+            "var1",
+            "id"
+        ],
+        "startKeys": [
+            5e-324,
+            5e-324,
+            5e-324
+        ],
+        "endKeys": [
+            "￿",
+            "￿",
+            "￿"
+        ],
+        "inclusiveEnd": true,
+        "inclusiveStart": true,
+        "sortFieldsSameAsIndexFields": true,
+        "selectorSatisfiedByIndex": true
+    }
+}
+0 - 5274.287611998618
+1 - 5274.379308998585
+2 - 5274.433486999944
+3 - 5274.472461000085
+4 - 5274.764843000099
+5 - 5274.79949099943
+6 - 5274.832651998848
+__ensureEqual 3.5 5274.88329000026
+__ensureEqual 3.51 5274.914865000173
+__ensureEqual 3.52 5274.944271000102
+_setResultData 1 - 5274.9826020002365
+_setResultData 2 - 5275.014417998493
+_setResultData 3 - 5276.716801999137
+_setResultData 4 - 5277.9068539999425
+__ensureEqual 3.53 5277.988210000098
+__ensureEqual 3.6 5278.026985999197
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX END 5278.41909699887

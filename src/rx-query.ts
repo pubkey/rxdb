@@ -46,6 +46,7 @@ import type {
 import { calculateNewResults } from './event-reduce.ts';
 import { triggerCacheReplacement } from './query-cache.ts';
 import { getQueryMatcher, normalizeMangoQuery } from './rx-query-helper.ts';
+import { RxQuerySingleResult } from './rx-query-single-result.ts';
 
 let _queryCount = 0;
 const newQueryID = function (): number {
@@ -81,20 +82,7 @@ export class RxQueryBase<
      * Contains the current result state
      * or null if query has not run yet.
      */
-    public _result: {
-        docsData: RxDocumentData<RxDocType>[];
-        // A key->document map, used in the event reduce optimization.
-        docsDataMap: Map<string, RxDocType>;
-        docsMap: Map<string, RxDocument<RxDocType>>;
-        docs: RxDocument<RxDocType>[];
-        count: number;
-        /**
-         * Time at which the current _result state was created.
-         * Used to determine if the result set has changed since X
-         * so that we do not emit the same result multiple times on subscription.
-         */
-        time: number;
-    } | null = null;
+    public _result: RxQuerySingleResult<RxDocType> | null = null;
 
 
     constructor(
@@ -152,13 +140,13 @@ export class RxQueryBase<
                         return useResult.count;
                     } else if (this.op === 'findOne') {
                         // findOne()-queries emit RxDocument or null
-                        return useResult.docs.length === 0 ? null : useResult.docs[0];
+                        return useResult.documents.length === 0 ? null : useResult.documents[0];
                     } else if (this.op === 'findByIds') {
                         return useResult.docsMap;
                     } else {
                         // find()-queries emit RxDocument[]
                         // Flat copy the array so it won't matter if the user modifies it.
-                        return useResult.docs.slice(0);
+                        return useResult.documents.slice(0);
                     }
                 })
             );
@@ -207,43 +195,22 @@ export class RxQueryBase<
      */
     _setResultData(newResultData: RxDocumentData<RxDocType>[] | number | Map<string, RxDocumentData<RxDocType>>): void {
         if (typeof newResultData === 'number') {
-            this._result = {
-                docsData: [],
-                docsMap: new Map(),
-                docsDataMap: new Map(),
-                count: newResultData,
-                docs: [],
-                time: now()
-            };
+            this._result = new RxQuerySingleResult<RxDocType>(
+                this.collection,
+                [],
+                newResultData
+            );
             return;
         } else if (newResultData instanceof Map) {
             newResultData = Array.from((newResultData as Map<string, RxDocumentData<RxDocType>>).values());
         }
 
-        const docsDataMap = new Map();
-        const docsMap = new Map();
-
-        const docs = newResultData.map(docData => this.collection._docCache.getCachedRxDocument(docData));
-
-        /**
-         * Instead of using the newResultData in the result cache,
-         * we directly use the objects that are stored in the RxDocument
-         * to ensure we do not store the same data twice and fill up the memory.
-         */
-        const docsData = docs.map(doc => {
-            docsDataMap.set(doc.primary, doc._data);
-            docsMap.set(doc.primary, doc);
-            return doc._data;
-        });
-
-        this._result = {
-            docsData,
-            docsMap,
-            docsDataMap,
-            count: docsData.length,
-            docs,
-            time: now()
-        };
+        const newQueryResult = new RxQuerySingleResult<RxDocType>(
+            this.collection,
+            newResultData,
+            newResultData.length
+        );
+        this._result = newQueryResult;
     }
 
     /**
@@ -614,8 +581,6 @@ function __ensureEqual<RxDocType>(rxQuery: RxQueryBase<RxDocType>): Promise<bool
         }
     }
 
-
-
     // oh no we have to re-execute the whole query over the database
     if (mustReExec) {
         // counter can change while _execOverDatabase() is running so we save it here
@@ -649,6 +614,7 @@ function __ensureEqual<RxDocType>(rxQuery: RxQueryBase<RxDocType>): Promise<bool
                 return ret;
             });
     }
+
     return Promise.resolve(ret); // true if results have changed
 }
 
