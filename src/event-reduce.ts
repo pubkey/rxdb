@@ -6,7 +6,20 @@ import {
     QueryMatcher,
     DeterministicSortComparator,
     StateResolveFunctionInput,
-    ChangeEvent
+    ChangeEvent,
+    hasLimit,
+    isUpdate,
+    isDelete,
+    isFindOne,
+    isInsert,
+    hasSkip,
+    wasResultsEmpty,
+    wasInResult,
+    wasSortedAfterLast,
+    previousUnknown,
+    wasLimitReached,
+    wasMatching,
+    doesMatchNow
 } from 'event-reduce-js';
 import type {
     RxQuery,
@@ -112,6 +125,39 @@ export function getQueryParams<RxDocType>(
     );
 }
 
+// This catches a specific case where we have a limit query (of say LIMIT items), and then
+// a document is removed from the result set by the current change. In this case,
+// the event-reduce library (rightly) tells us we need to recompute the query to get a
+// full result set of LIMIT items.
+// However, if we have a "limit buffer", we can instead fill in the missing result from there.
+// For more info, see the rx-query.test tests under "Limit Buffer".
+// This function checks if we are actually in the specific case where the limit buffer can be used.
+function canFillResultSetFromLimitBuffer<RxDocumentType>(s: StateResolveFunctionInput<RxDocumentType>) {
+    // We figure out if this event is our special case using the same "state resolve" functions that event-reduce uses:
+    // https://github.com/pubkey/event-reduce/blob/fcb46947b29eac97c97dcb05e08af337f362fe5c/javascript/src/states/index.ts#L87
+    return (
+        !isInsert(s) && // inserts can never cause
+        (isUpdate(s) || isDelete(s)) && // both updates and deletes can remove a doc from our results
+        hasLimit(s) && // only limit queries
+        !isFindOne(s) && // if it's a findOne, we have no buffer and have to re-compute
+        !hasSkip(s) && // we could potentially make skip queries work later, but for now ignore them -- too hard
+        !wasResultsEmpty(s) && // this should never happen
+        !previousUnknown(s) && // we need to have had the prev result set
+        wasLimitReached(s) && // if not, the event reducer shouldn't have a problem
+        // any value of wasFirst(s), position is not relevant for this case, as wasInResults
+        // any value of wasLast(s) , position is not relevant for this case, as wasInResults
+        // any value of sortParamsChanged(s), eg a doc could be archived but also have last_status_update changed. TODO: is this relevant for the other case where an item moves out of sort position?
+        wasInResult(s) && // we only care about docs already in the results set being removed
+        // any value of wasSortedBeforeFirst(s) -- this is true when the doc is first in the results set
+        !wasSortedAfterLast(s) && // I don't think this could be true anyways, but whatever
+        // any value of isSortedBeforeFirst(s) -- this is true when the doc is first in order (but it could still be filtered out)
+        // any value of isSortedAfterLast(s) // TODO: because there's a case where a doc is kicked out of the top LIMIT docs, but stays in the filter results? test this.
+        wasMatching(s) && // it couldn't have been wasInResult unless it was also matching
+        !doesMatchNow(s) // TODO: should be any value of doesMatchNow(s) -- true if it has just been kicked out of sort, or false if it was eg archived
+    );
+}
+
+
 
 export function calculateNewResults<RxDocumentType>(
     rxQuery: RxQuery<RxDocumentType>,
@@ -140,6 +186,25 @@ export function calculateNewResults<RxDocumentType>(
 
         const actionName: ActionName = calculateActionName(stateResolveFunctionInput);
         if (actionName === 'runFullQueryAgain') {
+            if (canFillResultSetFromLimitBuffer(stateResolveFunctionInput) && rxQuery._limitBufferResults != null && rxQuery._limitBufferResults.length > 0) {
+                // replace the missing item with an item rom our limit buffer!
+                changed = true;
+
+                // Our documents have ids, but I guess in some rxdb schemas they may not? so we have to coerce the type
+                const replacementItem = rxQuery._limitBufferResults.shift() as RxDocumentData<RxDocumentType> & {id: string;};
+                runAction(
+                    'removeExisting',
+                    queryParams,
+                    eventReduceEvent,
+                    previousResults,
+                    previousResultsMap,
+                );
+                previousResults.push(replacementItem);
+                if (previousResultsMap) {
+                    previousResultsMap.set(replacementItem.id, replacementItem);
+                }
+                return false;
+            }
             return true;
         } else if (actionName !== 'doNothing') {
             changed = true;
