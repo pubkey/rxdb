@@ -317,6 +317,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
             } as any,
             compareDocsWithIndex
         );
+
         const indexOfUpper = (queryPlan.inclusiveEnd ? boundLE : boundLT)(
             docsWithIndex,
             {
