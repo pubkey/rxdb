@@ -197,12 +197,12 @@ function getCachedRxDocumentMonad<RxDocType, OrmMethods>(
     return fn;
 }
 
-export function mapDocumentsDataToCacheDocs<RxDocType>(
-    docCache: DocumentCache<RxDocType, {}>,
+export function mapDocumentsDataToCacheDocs<RxDocType, OrmMethods>(
+    docCache: DocumentCache<RxDocType, OrmMethods>,
     docsData: RxDocumentData<RxDocType>[]
 ) {
     const getCachedRxDocument = docCache.getCachedRxDocument;
-    const documents: RxDocument<RxDocType>[] = [];
+    const documents: RxDocument<RxDocType, OrmMethods>[] = [];
     for (let i = 0; i < docsData.length; i++) {
         const docData = docsData[i];
         const doc = getCachedRxDocument(docData);
