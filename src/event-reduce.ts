@@ -135,6 +135,7 @@ export function getQueryParams<RxDocType>(
 function canFillResultSetFromLimitBuffer<RxDocumentType>(s: StateResolveFunctionInput<RxDocumentType>) {
     // We figure out if this event is our special case using the same "state resolve" functions that event-reduce uses:
     // https://github.com/pubkey/event-reduce/blob/fcb46947b29eac97c97dcb05e08af337f362fe5c/javascript/src/states/index.ts#L87
+    // (we also keep the state resolve functions in the same order they're defined in event-reduce.js)
     return (
         !isInsert(s) && // inserts can never cause
         (isUpdate(s) || isDelete(s)) && // both updates and deletes can remove a doc from our results
@@ -146,14 +147,14 @@ function canFillResultSetFromLimitBuffer<RxDocumentType>(s: StateResolveFunction
         wasLimitReached(s) && // if not, the event reducer shouldn't have a problem
         // any value of wasFirst(s), position is not relevant for this case, as wasInResults
         // any value of wasLast(s) , position is not relevant for this case, as wasInResults
-        // any value of sortParamsChanged(s), eg a doc could be archived but also have last_status_update changed. TODO: is this relevant for the other case where an item moves out of sort position?
+        // any value of sortParamsChanged(s), eg a doc could be archived but also have last_status_update changed
         wasInResult(s) && // we only care about docs already in the results set being removed
         // any value of wasSortedBeforeFirst(s) -- this is true when the doc is first in the results set
         !wasSortedAfterLast(s) && // I don't think this could be true anyways, but whatever
         // any value of isSortedBeforeFirst(s) -- this is true when the doc is first in order (but it could still be filtered out)
-        // any value of isSortedAfterLast(s) // TODO: because there's a case where a doc is kicked out of the top LIMIT docs, but stays in the filter results? test this.
+        // any value of isSortedAfterLast(s)
         wasMatching(s) && // it couldn't have been wasInResult unless it was also matching
-        !doesMatchNow(s) // TODO: should be any value of doesMatchNow(s) -- true if it has just been kicked out of sort, or false if it was eg archived
+        !doesMatchNow(s) // Limit buffer only cares rn when the changed doc was indeed removed (so no longer matching)
     );
 }
 
@@ -187,11 +188,13 @@ export function calculateNewResults<RxDocumentType>(
         const actionName: ActionName = calculateActionName(stateResolveFunctionInput);
         if (actionName === 'runFullQueryAgain') {
             if (canFillResultSetFromLimitBuffer(stateResolveFunctionInput) && rxQuery._limitBufferResults != null && rxQuery._limitBufferResults.length > 0) {
-                // replace the missing item with an item rom our limit buffer!
-                changed = true;
+                // replace the missing item with an item from our limit buffer!
+                const replacementItem = rxQuery._limitBufferResults.shift();
+                if (replacementItem === undefined) {
+                    return true;
+                }
 
-                // Our documents have ids, but I guess in some rxdb schemas they may not? so we have to coerce the type
-                const replacementItem = rxQuery._limitBufferResults.shift() as RxDocumentData<RxDocumentType> & {id: string;};
+                changed = true;
                 runAction(
                     'removeExisting',
                     queryParams,
@@ -201,7 +204,9 @@ export function calculateNewResults<RxDocumentType>(
                 );
                 previousResults.push(replacementItem);
                 if (previousResultsMap) {
-                    previousResultsMap.set(replacementItem.id, replacementItem);
+                    // We have to assume the primaryKey value is a string. According to the rxdb docs, this is always the case:
+                    // https://github.com/pubkey/rxdb/blob/c8162c25c7b033fa9f70191512ee84d44d0dd913/docs/rx-schema.html#L2523
+                    previousResultsMap.set(replacementItem[rxQuery.collection.schema.primaryPath] as string, replacementItem);
                 }
                 return false;
             }
