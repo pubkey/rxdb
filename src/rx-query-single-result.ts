@@ -7,7 +7,7 @@ import type {
 } from './types';
 
 /**
- * RxDB nees the query results in multiple formats.
+ * RxDB needs the query results in multiple formats.
  * Sometimes as a Map or an array with only the documentData.
  * For better performance we work with this class
  * that initializes stuff lazily so that
