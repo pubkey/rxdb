@@ -31,7 +31,9 @@ export function createLocalDocStateByParent(parent) {
         events: eventBulk.events.map(ev => storageChangeEventToRxChangeEvent(true, ev, parent.database ? parent : undefined)),
         databaseToken: database.token,
         checkpoint: eventBulk.checkpoint,
-        context: eventBulk.context
+        context: eventBulk.context,
+        endTime: eventBulk.endTime,
+        startTime: eventBulk.startTime
       };
       database.$emit(changeEventBulk);
     });

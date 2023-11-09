@@ -10,7 +10,6 @@ exports.ensureRxStorageInstanceParamsAreCorrect = ensureRxStorageInstanceParamsA
 exports.flatCloneDocWithMeta = flatCloneDocWithMeta;
 exports.getAttachmentSize = getAttachmentSize;
 exports.getSingleDocument = getSingleDocument;
-exports.getUniqueDeterministicEventKey = getUniqueDeterministicEventKey;
 exports.getWrappedStorageInstance = getWrappedStorageInstance;
 exports.hasEncryption = hasEncryption;
 exports.observeSingle = observeSingle;
@@ -80,11 +79,8 @@ function storageChangeEventToRxChangeEvent(isLocal, rxStorageChangeEvent, rxColl
   var documentData = rxStorageChangeEvent.documentData;
   var previousDocumentData = rxStorageChangeEvent.previousDocumentData;
   var ret = {
-    eventId: rxStorageChangeEvent.eventId,
     documentId: rxStorageChangeEvent.documentId,
     collectionName: rxCollection ? rxCollection.name : undefined,
-    startTime: rxStorageChangeEvent.startTime,
-    endTime: rxStorageChangeEvent.endTime,
     isLocal,
     operation: rxStorageChangeEvent.operation,
     documentData: _overwritable.overwritable.deepFreezeWhenDevMode(documentData),
@@ -134,24 +130,29 @@ docsInDb,
  * The write rows that are passed to
  * RxStorageInstance().bulkWrite().
  */
-bulkWriteRows, context) {
+bulkWriteRows, context,
+/**
+ * Used by some storages for better performance.
+ * For example when get-by-id and insert/update can run in parallel.
+ */
+onInsert, onUpdate) {
   var hasAttachments = !!storageInstance.schema.attachments;
   var bulkInsertDocs = [];
   var bulkUpdateDocs = [];
   var errors = [];
-  var changeByDocId = new Map();
   var eventBulkId = (0, _index.randomCouchString)(10);
   var eventBulk = {
     id: eventBulkId,
     events: [],
     checkpoint: null,
-    context
+    context,
+    startTime: (0, _index.now)(),
+    endTime: 0
   };
   var eventBulkEvents = eventBulk.events;
   var attachmentsAdd = [];
   var attachmentsRemove = [];
   var attachmentsUpdate = [];
-  var startTime = (0, _index.now)();
   var hasDocsInDb = docsInDb.size > 0;
   var newestRow;
 
@@ -166,6 +167,8 @@ bulkWriteRows, context) {
     var document = writeRow.document;
     var previous = writeRow.previous;
     var docId = document[primaryPath];
+    var documentDeleted = document._deleted;
+    var previousDeleted = previous && previous._deleted;
     var documentInDb = undefined;
     if (hasDocsInDb) {
       documentInDb = docsInDb.get(docId);
@@ -176,7 +179,7 @@ bulkWriteRows, context) {
        * It is possible to insert already deleted documents,
        * this can happen on replication.
        */
-      var insertedIsDeleted = document._deleted ? true : false;
+      var insertedIsDeleted = documentDeleted ? true : false;
       if (hasAttachments) {
         Object.entries(document._attachments).forEach(([attachmentId, attachmentData]) => {
           if (!attachmentData.data) {
@@ -201,28 +204,24 @@ bulkWriteRows, context) {
       if (!attachmentError) {
         if (hasAttachments) {
           bulkInsertDocs.push(stripAttachmentsDataFromRow(writeRow));
+          if (onInsert) {
+            onInsert(document);
+          }
         } else {
           bulkInsertDocs.push(writeRow);
+          if (onInsert) {
+            onInsert(document);
+          }
         }
-
-        // TODO can we assume the the last row always has the hightes _meta.lwt?
-        if (!newestRow || newestRow.document._meta.lwt < document._meta.lwt) {
-          newestRow = writeRow;
-        }
+        newestRow = writeRow;
       }
       if (!insertedIsDeleted) {
         var event = {
-          eventId: getUniqueDeterministicEventKey(eventBulkId, rowId, docId, writeRow.document),
           documentId: docId,
           operation: 'INSERT',
           documentData: hasAttachments ? stripAttachmentsDataFromDocument(document) : document,
-          previousDocumentData: hasAttachments && previous ? stripAttachmentsDataFromDocument(previous) : previous,
-          // TODO do we even need the startTime and endTime?
-          // maybe it should be defined per event-bulk, not per each single event
-          startTime,
-          endTime: (0, _index.now)()
+          previousDocumentData: hasAttachments && previous ? stripAttachmentsDataFromDocument(previous) : previous
         };
-        changeByDocId.set(docId, event);
         eventBulkEvents.push(event);
       }
     } else {
@@ -249,7 +248,7 @@ bulkWriteRows, context) {
 
       var updatedRow = hasAttachments ? stripAttachmentsDataFromRow(writeRow) : writeRow;
       if (hasAttachments) {
-        if (document._deleted) {
+        if (documentDeleted) {
           /**
            * Deleted documents must have cleared all their attachments.
            */
@@ -311,22 +310,30 @@ bulkWriteRows, context) {
       if (attachmentError) {
         errors.push(attachmentError);
       } else {
-        bulkUpdateDocs.push(updatedRow);
-        if (!newestRow || newestRow.document._meta.lwt < updatedRow.document._meta.lwt) {
-          newestRow = updatedRow;
+        if (hasAttachments) {
+          bulkUpdateDocs.push(stripAttachmentsDataFromRow(updatedRow));
+          if (onUpdate) {
+            onUpdate(document);
+          }
+        } else {
+          bulkUpdateDocs.push(updatedRow);
+          if (onUpdate) {
+            onUpdate(document);
+          }
         }
+        newestRow = updatedRow;
       }
       var eventDocumentData = null;
       var previousEventDocumentData = null;
       var operation = null;
-      if (previous && previous._deleted && !document._deleted) {
+      if (previousDeleted && !documentDeleted) {
         operation = 'INSERT';
         eventDocumentData = hasAttachments ? stripAttachmentsDataFromDocument(document) : document;
-      } else if (previous && !previous._deleted && !document._deleted) {
+      } else if (previous && !previousDeleted && !documentDeleted) {
         operation = 'UPDATE';
         eventDocumentData = hasAttachments ? stripAttachmentsDataFromDocument(document) : document;
         previousEventDocumentData = previous;
-      } else if (document._deleted) {
+      } else if (documentDeleted) {
         operation = 'DELETE';
         eventDocumentData = (0, _index.ensureNotFalsy)(document);
         previousEventDocumentData = previous;
@@ -338,15 +345,11 @@ bulkWriteRows, context) {
         });
       }
       var _event = {
-        eventId: getUniqueDeterministicEventKey(eventBulkId, rowId, docId, document),
         documentId: docId,
         documentData: eventDocumentData,
         previousDocumentData: previousEventDocumentData,
-        operation: operation,
-        startTime,
-        endTime: (0, _index.now)()
+        operation: operation
       };
-      changeByDocId.set(docId, _event);
       eventBulkEvents.push(_event);
     }
   };
@@ -358,7 +361,6 @@ bulkWriteRows, context) {
     bulkUpdateDocs,
     newestRow,
     errors,
-    changeByDocId,
     eventBulk,
     attachmentsAdd,
     attachmentsRemove,
@@ -412,15 +414,6 @@ function flatCloneDocWithMeta(doc) {
   var ret = (0, _index.flatClone)(doc);
   ret._meta = (0, _index.flatClone)(doc._meta);
   return ret;
-}
-
-/**
- * Each event is labeled with the id
- * to make it easy to filter out duplicates
- * even on flattened eventBulks
- */
-function getUniqueDeterministicEventKey(eventBulkId, rowId, docId, writeRowDocument) {
-  return eventBulkId + '|' + rowId + '|' + docId + '|' + writeRowDocument._rev;
 }
 /**
  * Wraps the normal storageInstance of a RxCollection

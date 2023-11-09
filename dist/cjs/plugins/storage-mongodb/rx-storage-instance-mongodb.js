@@ -87,12 +87,11 @@ var RxStorageInstanceMongoDB = exports.RxStorageInstanceMongoDB = /*#__PURE__*/f
       //         events: [{
       //             documentData: newDocData,
       //             documentId,
-      //             eventId: randomCouchString(10),
       //             operation: 'INSERT',
       //             previousDocumentData: undefined,
+      //         }],
       //             startTime: now(),
       //             endTime: now()
-      //         }]
       //     };
 
       //     this.changes$.next(eventBulk);
@@ -129,6 +128,10 @@ var RxStorageInstanceMongoDB = exports.RxStorageInstanceMongoDB = /*#__PURE__*/f
         documentStatesMap.set(docId, doc);
       });
       var categorized = (0, _rxStorageHelper.categorizeBulkWriteRows)(this, primaryPath, documentStatesMap, documentWrites, context);
+      var changeByDocId = new Map();
+      categorized.eventBulk.events.forEach(change => {
+        changeByDocId.set(change.documentId, change);
+      });
       ret.error = categorized.errors;
 
       /**
@@ -163,7 +166,7 @@ var RxStorageInstanceMongoDB = exports.RxStorageInstanceMongoDB = /*#__PURE__*/f
           };
           ret.error.push(conflictError);
         } else {
-          var event = categorized.changeByDocId.get(docId);
+          var event = changeByDocId.get(docId);
           if (event) {
             eventBulk.events.push(event);
           }
@@ -196,7 +199,7 @@ var RxStorageInstanceMongoDB = exports.RxStorageInstanceMongoDB = /*#__PURE__*/f
           };
           ret.error.push(conflictError);
         } else {
-          var event = (0, _index.getFromMapOrThrow)(categorized.changeByDocId, docId);
+          var event = (0, _index.getFromMapOrThrow)(changeByDocId, docId);
           eventBulk.events.push(event);
           ret.success.push(writeRow.document);
         }
@@ -207,6 +210,7 @@ var RxStorageInstanceMongoDB = exports.RxStorageInstanceMongoDB = /*#__PURE__*/f
           id: lastState[primaryPath],
           lwt: lastState._meta.lwt
         };
+        categorized.eventBulk.endTime = (0, _index.now)();
         this.changes$.next(categorized.eventBulk);
       }
       this.runningOperations.next(this.runningOperations.getValue() - 1);

@@ -197,10 +197,7 @@ export function wrapRxStorageInstance(originalSchema, instance, modifyToStorage,
           var [documentData, previousDocumentData] = await Promise.all([fromStorage(event.documentData), fromStorage(event.previousDocumentData)]);
           var ev = {
             operation: event.operation,
-            eventId: event.eventId,
             documentId: event.documentId,
-            endTime: event.endTime,
-            startTime: event.startTime,
             documentData: documentData,
             previousDocumentData: previousDocumentData,
             isLocal: false
@@ -211,7 +208,9 @@ export function wrapRxStorageInstance(originalSchema, instance, modifyToStorage,
           id: eventBulk.id,
           events: useEvents,
           checkpoint: eventBulk.checkpoint,
-          context: eventBulk.context
+          context: eventBulk.context,
+          startTime: eventBulk.startTime,
+          endTime: eventBulk.endTime
         };
         return ret;
       }), tap(() => processingChangesCount$.next(processingChangesCount$.getValue() - 1)));

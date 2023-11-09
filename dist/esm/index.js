@@ -14,6 +14,7 @@ export * from "./rx-document.js";
 export * from "./rx-change-event.js";
 export * from "./rx-document-prototype-merge.js";
 export * from "./rx-query.js";
+export * from "./rx-query-single-result.js";
 export * from "./rx-query-helper.js";
 export * from "./rx-schema.js";
 export * from "./rx-schema-helper.js";

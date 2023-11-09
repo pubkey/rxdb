@@ -80,12 +80,11 @@ export var RxStorageInstanceMongoDB = /*#__PURE__*/function () {
       //         events: [{
       //             documentData: newDocData,
       //             documentId,
-      //             eventId: randomCouchString(10),
       //             operation: 'INSERT',
       //             previousDocumentData: undefined,
+      //         }],
       //             startTime: now(),
       //             endTime: now()
-      //         }]
       //     };
 
       //     this.changes$.next(eventBulk);
@@ -122,6 +121,10 @@ export var RxStorageInstanceMongoDB = /*#__PURE__*/function () {
         documentStatesMap.set(docId, doc);
       });
       var categorized = categorizeBulkWriteRows(this, primaryPath, documentStatesMap, documentWrites, context);
+      var changeByDocId = new Map();
+      categorized.eventBulk.events.forEach(change => {
+        changeByDocId.set(change.documentId, change);
+      });
       ret.error = categorized.errors;
 
       /**
@@ -156,7 +159,7 @@ export var RxStorageInstanceMongoDB = /*#__PURE__*/function () {
           };
           ret.error.push(conflictError);
         } else {
-          var event = categorized.changeByDocId.get(docId);
+          var event = changeByDocId.get(docId);
           if (event) {
             eventBulk.events.push(event);
           }
@@ -189,7 +192,7 @@ export var RxStorageInstanceMongoDB = /*#__PURE__*/function () {
           };
           ret.error.push(conflictError);
         } else {
-          var event = getFromMapOrThrow(categorized.changeByDocId, docId);
+          var event = getFromMapOrThrow(changeByDocId, docId);
           eventBulk.events.push(event);
           ret.success.push(writeRow.document);
         }
@@ -200,6 +203,7 @@ export var RxStorageInstanceMongoDB = /*#__PURE__*/function () {
           id: lastState[primaryPath],
           lwt: lastState._meta.lwt
         };
+        categorized.eventBulk.endTime = now();
         this.changes$.next(categorized.eventBulk);
       }
       this.runningOperations.next(this.runningOperations.getValue() - 1);

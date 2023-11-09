@@ -107,8 +107,7 @@ var RxStorageInstanceDexie = exports.RxStorageInstanceDexie = /*#__PURE__*/funct
         id: lastState[this.primaryPath],
         lwt: lastState._meta.lwt
       };
-      var endTime = (0, _index.now)();
-      categorized.eventBulk.events.forEach(event => event.endTime = endTime);
+      categorized.eventBulk.endTime = (0, _index.now)();
       this.changes$.next(categorized.eventBulk);
     }
     return ret;

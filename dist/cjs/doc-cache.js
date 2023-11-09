@@ -1,9 +1,12 @@
 "use strict";
 
+var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.DocumentCache = void 0;
+exports.mapDocumentsDataToCacheDocs = mapDocumentsDataToCacheDocs;
+var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
 var _index = require("./plugins/utils/index.js");
 var _overwritable = require("./overwritable.js");
 var _rxChangeEvent = require("./rx-change-event.js");
@@ -28,6 +31,12 @@ var DocumentCache = exports.DocumentCache = /*#__PURE__*/function () {
    * but at least works.
    */
 
+  /**
+   * Calling registry.register(() has shown to have
+   * really bad performance. So we add the cached documents
+   * lazily.
+   */
+
   function DocumentCache(primaryPath, changes$,
   /**
    * A method that can create a RxDocument by the given document data.
@@ -38,8 +47,8 @@ var DocumentCache = exports.DocumentCache = /*#__PURE__*/function () {
       var docId = docMeta.docId;
       var cacheItem = this.cacheItemByDocId.get(docId);
       if (cacheItem) {
-        cacheItem.documentByRevisionHeight.delete(docMeta.revisionHeight);
-        if (cacheItem.documentByRevisionHeight.size === 0) {
+        cacheItem.byRev.delete(docMeta.revisionHeight);
+        if (cacheItem.byRev.size === 0) {
           /**
            * No state of the document is cached anymore,
            * so we can clean up.
@@ -48,6 +57,7 @@ var DocumentCache = exports.DocumentCache = /*#__PURE__*/function () {
         }
       }
     }) : undefined;
+    this.registerIdleTasks = [];
     this.primaryPath = primaryPath;
     this.changes$ = changes$;
     this.documentCreator = documentCreator;
@@ -56,7 +66,7 @@ var DocumentCache = exports.DocumentCache = /*#__PURE__*/function () {
       var cacheItem = this.cacheItemByDocId.get(docId);
       if (cacheItem) {
         var documentData = (0, _rxChangeEvent.getDocumentDataOfRxChangeEvent)(changeEvent);
-        cacheItem.latestDoc = documentData;
+        cacheItem.last = documentData;
       }
     });
   }
@@ -64,47 +74,92 @@ var DocumentCache = exports.DocumentCache = /*#__PURE__*/function () {
   /**
    * Get the RxDocument from the cache
    * and create a new one if not exits before.
+   * @overwrites itself with the actual function
+   * because this is @performance relevant.
+   * It is called on each document row for each write and read.
    */
   var _proto = DocumentCache.prototype;
-  _proto.getCachedRxDocument = function getCachedRxDocument(docData) {
-    var docId = docData[this.primaryPath];
-    var revisionHeight = (0, _index.getHeightOfRevision)(docData._rev);
-    var cacheItem = (0, _index.getFromMapOrCreate)(this.cacheItemByDocId, docId, () => getNewCacheItem(docData));
-    var cachedRxDocumentWeakRef = cacheItem.documentByRevisionHeight.get(revisionHeight);
-    var cachedRxDocument = cachedRxDocumentWeakRef ? cachedRxDocumentWeakRef.deref() : undefined;
-    if (!cachedRxDocument) {
-      docData = _overwritable.overwritable.deepFreezeWhenDevMode(docData);
-      cachedRxDocument = this.documentCreator(docData);
-      cacheItem.documentByRevisionHeight.set(revisionHeight, createWeakRefWithFallback(cachedRxDocument));
-      if (this.registry) {
-        this.registry.register(cachedRxDocument, {
-          docId,
-          revisionHeight
-        });
-      }
-    }
-    return cachedRxDocument;
-  }
-
   /**
    * Throws if not exists
-   */;
+   */
   _proto.getLatestDocumentData = function getLatestDocumentData(docId) {
     var cacheItem = (0, _index.getFromMapOrThrow)(this.cacheItemByDocId, docId);
-    return cacheItem.latestDoc;
+    return cacheItem.last;
   };
   _proto.getLatestDocumentDataIfExists = function getLatestDocumentDataIfExists(docId) {
     var cacheItem = this.cacheItemByDocId.get(docId);
     if (cacheItem) {
-      return cacheItem.latestDoc;
+      return cacheItem.last;
     }
   };
+  (0, _createClass2.default)(DocumentCache, [{
+    key: "getCachedRxDocument",
+    get: function () {
+      var fn = getCachedRxDocumentMonad(this);
+      return (0, _index.overwriteGetterForCaching)(this, 'getCachedRxDocument', fn);
+    }
+  }]);
   return DocumentCache;
 }();
+/**
+ * This function is called very very often.
+ * This is likely the most important function for RxDB overall performance
+ */
+function getCachedRxDocumentMonad(docCache) {
+  var primaryPath = docCache.primaryPath;
+  var cacheItemByDocId = docCache.cacheItemByDocId;
+  var registry = docCache.registry;
+  var deepFreezeWhenDevMode = _overwritable.overwritable.deepFreezeWhenDevMode;
+  var documentCreator = docCache.documentCreator;
+  var fn = docData => {
+    var docId = docData[primaryPath];
+    var revisionHeight = (0, _index.getHeightOfRevision)(docData._rev);
+    var cacheItem = (0, _index.getFromMapOrCreate)(cacheItemByDocId, docId, () => getNewCacheItem(docData));
+    var byRev = cacheItem.byRev;
+    var cachedRxDocumentWeakRef = byRev.get(revisionHeight);
+    var cachedRxDocument = cachedRxDocumentWeakRef ? cachedRxDocumentWeakRef.deref() : undefined;
+    if (!cachedRxDocument) {
+      docData = deepFreezeWhenDevMode(docData);
+      cachedRxDocument = documentCreator(docData);
+      byRev.set(revisionHeight, createWeakRefWithFallback(cachedRxDocument));
+      if (registry) {
+        docCache.registerIdleTasks.push(cachedRxDocument);
+        if (!docCache.registerIdlePromise) {
+          docCache.registerIdlePromise = (0, _index.requestIdlePromiseNoQueue)().then(() => {
+            docCache.registerIdlePromise = undefined;
+            var tasks = docCache.registerIdleTasks;
+            if (tasks.length === 0) {
+              return;
+            }
+            docCache.registerIdleTasks = [];
+            tasks.forEach(doc => {
+              registry.register(doc, {
+                docId: doc.primary,
+                revisionHeight: (0, _index.getHeightOfRevision)(doc.revision)
+              });
+            });
+          });
+        }
+      }
+    }
+    return cachedRxDocument;
+  };
+  return fn;
+}
+function mapDocumentsDataToCacheDocs(docCache, docsData) {
+  var getCachedRxDocument = docCache.getCachedRxDocument;
+  var documents = [];
+  for (var i = 0; i < docsData.length; i++) {
+    var _docData = docsData[i];
+    var doc = getCachedRxDocument(_docData);
+    documents.push(doc);
+  }
+  return documents;
+}
 function getNewCacheItem(docData) {
   return {
-    documentByRevisionHeight: new Map(),
-    latestDoc: docData
+    byRev: new Map(),
+    last: docData
   };
 }
 
@@ -114,15 +169,15 @@ function getNewCacheItem(docData) {
  * but at least works.
  */
 var HAS_WEAK_REF = typeof WeakRef === 'function';
-function createWeakRefWithFallback(obj) {
-  if (HAS_WEAK_REF) {
-    return new WeakRef(obj);
-  } else {
-    return {
-      deref() {
-        return obj;
-      }
-    };
-  }
+var createWeakRefWithFallback = HAS_WEAK_REF ? createWeakRef : createWeakRefFallback;
+function createWeakRef(obj) {
+  return new WeakRef(obj);
+}
+function createWeakRefFallback(obj) {
+  return {
+    deref() {
+      return obj;
+    }
+  };
 }
 //# sourceMappingURL=doc-cache.js.map

@@ -85,7 +85,9 @@ var RxCollectionBase = exports.RxCollectionBase = /*#__PURE__*/function () {
         events: eventBulk.events.map(ev => (0, _rxStorageHelper.storageChangeEventToRxChangeEvent)(false, ev, this)),
         databaseToken: this.database.token,
         checkpoint: eventBulk.checkpoint,
-        context: eventBulk.context
+        context: eventBulk.context,
+        endTime: eventBulk.endTime,
+        startTime: eventBulk.startTime
       };
       this.database.$emit(changeEventBulk);
     });
@@ -165,7 +167,7 @@ var RxCollectionBase = exports.RxCollectionBase = /*#__PURE__*/function () {
     var results = await this.storageInstance.bulkWrite(insertRows, 'rx-collection-bulk-insert');
 
     // create documents
-    var rxDocuments = results.success.map(writtenDocData => this._docCache.getCachedRxDocument(writtenDocData));
+    var rxDocuments = (0, _docCache.mapDocumentsDataToCacheDocs)(this._docCache, results.success);
     if (this.hasHooks('post', 'insert')) {
       var docsMap = new Map();
       docs.forEach(doc => {

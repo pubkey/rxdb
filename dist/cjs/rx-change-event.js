@@ -74,9 +74,13 @@ function flattenEvents(input) {
   }
   var usedIds = new Set();
   var nonDuplicate = [];
+  function getEventId(ev) {
+    return [ev.documentId, ev.documentData ? ev.documentData._rev : '', ev.previousDocumentData ? ev.previousDocumentData._rev : ''].join('|');
+  }
   output.forEach(ev => {
-    if (!usedIds.has(ev.eventId)) {
-      usedIds.add(ev.eventId);
+    var eventId = getEventId(ev);
+    if (!usedIds.has(eventId)) {
+      usedIds.add(eventId);
       nonDuplicate.push(ev);
     }
   });

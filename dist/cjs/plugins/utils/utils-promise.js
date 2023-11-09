@@ -37,7 +37,14 @@ var PROMISE_RESOLVE_TRUE = exports.PROMISE_RESOLVE_TRUE = Promise.resolve(true);
 var PROMISE_RESOLVE_FALSE = exports.PROMISE_RESOLVE_FALSE = Promise.resolve(false);
 var PROMISE_RESOLVE_NULL = exports.PROMISE_RESOLVE_NULL = Promise.resolve(null);
 var PROMISE_RESOLVE_VOID = exports.PROMISE_RESOLVE_VOID = Promise.resolve();
-function requestIdlePromiseNoQueue(timeout = undefined) {
+function requestIdlePromiseNoQueue(
+/**
+ * We always set a timeout!
+ * RxDB might be used on the server side where the
+ * server runs 24/4 on 99% CPU. So without a timeout
+ * this would never resolve which could cause a memory leak.
+ */
+timeout = 10000) {
   /**
    * Do not use window.requestIdleCallback
    * because some javascript runtimes like react-native,

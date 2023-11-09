@@ -54,7 +54,9 @@ var RxStorageInstanceDenoKV = exports.RxStorageInstanceDenoKV = /*#__PURE__*/fun
       id: eventBulkId,
       events: [],
       checkpoint: null,
-      context
+      context,
+      startTime: (0, _utilsTime.now)(),
+      endTime: 0
     };
     var batches = (0, _utilsArray.batchArray)(documentWrites, (0, _utilsOther.ensureNotFalsy)(this.settings.batchSize));
 
@@ -142,6 +144,7 @@ var RxStorageInstanceDenoKV = exports.RxStorageInstanceDenoKV = /*#__PURE__*/fun
         id: lastEvent.documentData[this.primaryPath],
         lwt: lastEvent.documentData._meta.lwt
       };
+      eventBulk.endTime = (0, _utilsTime.now)();
       this.changes$.next(eventBulk);
     }
     return ret;

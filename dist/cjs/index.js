@@ -124,6 +124,17 @@ Object.keys(_rxQuery).forEach(function (key) {
     }
   });
 });
+var _rxQuerySingleResult = require("./rx-query-single-result.js");
+Object.keys(_rxQuerySingleResult).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (key in exports && exports[key] === _rxQuerySingleResult[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function () {
+      return _rxQuerySingleResult[key];
+    }
+  });
+});
 var _rxQueryHelper = require("./rx-query-helper.js");
 Object.keys(_rxQueryHelper).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;

@@ -20,6 +20,7 @@ var _hooks = require("./hooks.js");
 var _eventReduce = require("./event-reduce.js");
 var _queryCache = require("./query-cache.js");
 var _rxQueryHelper = require("./rx-query-helper.js");
+var _rxQuerySingleResult = require("./rx-query-single-result.js");
 var _queryCount = 0;
 var newQueryID = function () {
   return ++_queryCount;
@@ -75,40 +76,13 @@ var RxQueryBase = exports.RxQueryBase = /*#__PURE__*/function () {
    */
   _proto._setResultData = function _setResultData(newResultData) {
     if (typeof newResultData === 'number') {
-      this._result = {
-        docsData: [],
-        docsMap: new Map(),
-        docsDataMap: new Map(),
-        count: newResultData,
-        docs: [],
-        time: (0, _index.now)()
-      };
+      this._result = new _rxQuerySingleResult.RxQuerySingleResult(this.collection, [], newResultData);
       return;
     } else if (newResultData instanceof Map) {
       newResultData = Array.from(newResultData.values());
     }
-    var docsDataMap = new Map();
-    var docsMap = new Map();
-    var docs = newResultData.map(docData => this.collection._docCache.getCachedRxDocument(docData));
-
-    /**
-     * Instead of using the newResultData in the result cache,
-     * we directly use the objects that are stored in the RxDocument
-     * to ensure we do not store the same data twice and fill up the memory.
-     */
-    var docsData = docs.map(doc => {
-      docsDataMap.set(doc.primary, doc._data);
-      docsMap.set(doc.primary, doc);
-      return doc._data;
-    });
-    this._result = {
-      docsData,
-      docsMap,
-      docsDataMap,
-      count: docsData.length,
-      docs,
-      time: (0, _index.now)()
-    };
+    var newQueryResult = new _rxQuerySingleResult.RxQuerySingleResult(this.collection, newResultData, newResultData.length);
+    this._result = newQueryResult;
   }
 
   /**
@@ -323,13 +297,13 @@ var RxQueryBase = exports.RxQueryBase = /*#__PURE__*/function () {
             return useResult.count;
           } else if (this.op === 'findOne') {
             // findOne()-queries emit RxDocument or null
-            return useResult.docs.length === 0 ? null : useResult.docs[0];
+            return useResult.documents.length === 0 ? null : useResult.documents[0];
           } else if (this.op === 'findByIds') {
             return useResult.docsMap;
           } else {
             // find()-queries emit RxDocument[]
             // Flat copy the array so it won't matter if the user modifies it.
-            return useResult.docs.slice(0);
+            return useResult.documents.slice(0);
           }
         }));
         this._$ = (0, _rxjs.merge)(results$,

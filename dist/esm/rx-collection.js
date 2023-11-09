@@ -4,7 +4,7 @@ import { ucfirst, flatClone, promiseSeries, pluginMissing, ensureNotFalsy, getFr
 import { fillObjectDataBeforeInsert, createRxCollectionStorageInstance, removeCollectionStorages } from "./rx-collection-helper.js";
 import { createRxQuery, _getDefaultQuery } from "./rx-query.js";
 import { newRxError, newRxTypeError } from "./rx-error.js";
-import { DocumentCache } from "./doc-cache.js";
+import { DocumentCache, mapDocumentsDataToCacheDocs } from "./doc-cache.js";
 import { createQueryCache, defaultCacheReplacementPolicy } from "./query-cache.js";
 import { createChangeEventBuffer } from "./change-event-buffer.js";
 import { runAsyncPluginHooks, runPluginHooks } from "./hooks.js";
@@ -76,7 +76,9 @@ export var RxCollectionBase = /*#__PURE__*/function () {
         events: eventBulk.events.map(ev => storageChangeEventToRxChangeEvent(false, ev, this)),
         databaseToken: this.database.token,
         checkpoint: eventBulk.checkpoint,
-        context: eventBulk.context
+        context: eventBulk.context,
+        endTime: eventBulk.endTime,
+        startTime: eventBulk.startTime
       };
       this.database.$emit(changeEventBulk);
     });
@@ -156,7 +158,7 @@ export var RxCollectionBase = /*#__PURE__*/function () {
     var results = await this.storageInstance.bulkWrite(insertRows, 'rx-collection-bulk-insert');
 
     // create documents
-    var rxDocuments = results.success.map(writtenDocData => this._docCache.getCachedRxDocument(writtenDocData));
+    var rxDocuments = mapDocumentsDataToCacheDocs(this._docCache, results.success);
     if (this.hasHooks('post', 'insert')) {
       var docsMap = new Map();
       docs.forEach(doc => {

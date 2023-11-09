@@ -47,7 +47,9 @@ export var RxStorageInstanceDenoKV = /*#__PURE__*/function () {
       id: eventBulkId,
       events: [],
       checkpoint: null,
-      context
+      context,
+      startTime: now(),
+      endTime: 0
     };
     var batches = batchArray(documentWrites, ensureNotFalsy(this.settings.batchSize));
 
@@ -135,6 +137,7 @@ export var RxStorageInstanceDenoKV = /*#__PURE__*/function () {
         id: lastEvent.documentData[this.primaryPath],
         lwt: lastEvent.documentData._meta.lwt
       };
+      eventBulk.endTime = now();
       this.changes$.next(eventBulk);
     }
     return ret;

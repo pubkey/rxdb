@@ -13,6 +13,7 @@ export * from './rx-document.ts';
 export * from './rx-change-event.ts';
 export * from './rx-document-prototype-merge.ts';
 export * from './rx-query.ts';
+export * from './rx-query-single-result.ts';
 export * from './rx-query-helper.ts';
 export * from './rx-schema.ts';
 export * from './rx-schema-helper.ts';

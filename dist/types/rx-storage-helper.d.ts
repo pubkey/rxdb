@@ -45,7 +45,12 @@ docsInDb: Map<RxDocumentData<RxDocType>[StringKeys<RxDocType>] | string, RxDocum
  * The write rows that are passed to
  * RxStorageInstance().bulkWrite().
  */
-bulkWriteRows: BulkWriteRow<RxDocType>[], context: string): CategorizeBulkWriteRowsOutput<RxDocType>;
+bulkWriteRows: BulkWriteRow<RxDocType>[], context: string, 
+/**
+ * Used by some storages for better performance.
+ * For example when get-by-id and insert/update can run in parallel.
+ */
+onInsert?: (docData: RxDocumentData<RxDocType>) => void, onUpdate?: (docData: RxDocumentData<RxDocType>) => void): CategorizeBulkWriteRowsOutput<RxDocType>;
 export declare function stripAttachmentsDataFromRow<RxDocType>(writeRow: BulkWriteRow<RxDocType>): BulkWriteRowProcessed<RxDocType>;
 export declare function getAttachmentSize(attachmentBase64String: string): number;
 /**
@@ -60,12 +65,6 @@ export declare function stripAttachmentsDataFromDocument<RxDocType>(doc: RxDocum
  * during replication etc.
  */
 export declare function flatCloneDocWithMeta<RxDocType>(doc: RxDocumentData<RxDocType>): RxDocumentData<RxDocType>;
-/**
- * Each event is labeled with the id
- * to make it easy to filter out duplicates
- * even on flattened eventBulks
- */
-export declare function getUniqueDeterministicEventKey<RxDocType>(eventBulkId: string, rowId: number, docId: string, writeRowDocument: RxDocumentWriteData<RxDocType>): string;
 export type WrappedRxStorageInstance<RxDocumentType, Internals, InstanceCreationOptions> = RxStorageInstance<RxDocumentType, any, InstanceCreationOptions> & {
     originalStorageInstance: RxStorageInstance<RxDocumentType, Internals, InstanceCreationOptions>;
 };

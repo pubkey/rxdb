@@ -1,5 +1,6 @@
 import { BehaviorSubject, Observable } from 'rxjs';
 import type { RxCollection, RxDocument, RxQueryOP, RxQuery, MangoQuery, MangoQuerySortPart, MangoQuerySelector, PreparedQuery, RxDocumentWriteData, RxDocumentData, QueryMatcher } from './types/index.d.ts';
+import { RxQuerySingleResult } from './rx-query-single-result.ts';
 export declare class RxQueryBase<RxDocType, RxQueryResult = RxDocument<RxDocType>[] | RxDocument<RxDocType>> {
     op: RxQueryOP;
     mangoQuery: Readonly<MangoQuery<RxDocType>>;
@@ -19,19 +20,7 @@ export declare class RxQueryBase<RxDocType, RxQueryResult = RxDocument<RxDocType
      * Contains the current result state
      * or null if query has not run yet.
      */
-    _result: {
-        docsData: RxDocumentData<RxDocType>[];
-        docsDataMap: Map<string, RxDocType>;
-        docsMap: Map<string, RxDocument<RxDocType>>;
-        docs: RxDocument<RxDocType>[];
-        count: number;
-        /**
-         * Time at which the current _result state was created.
-         * Used to determine if the result set has changed since X
-         * so that we do not emit the same result multiple times on subscription.
-         */
-        time: number;
-    } | null;
+    _result: RxQuerySingleResult<RxDocType> | null;
     constructor(op: RxQueryOP, mangoQuery: Readonly<MangoQuery<RxDocType>>, collection: RxCollection<RxDocType>, other?: any);
     get $(): BehaviorSubject<RxQueryResult>;
     _latestChangeEvent: -1 | number;

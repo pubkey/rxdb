@@ -66,12 +66,16 @@ export var RxStorageInstanceMemory = /*#__PURE__*/function () {
         id: lastState[primaryPath],
         lwt: lastState._meta.lwt
       };
-      internals.changes$.next(categorized.eventBulk);
+      categorized.eventBulk.endTime = now();
+      PROMISE_RESOLVE_TRUE.then(() => {
+        internals.changes$.next(categorized.eventBulk);
+      });
     }
-    return Promise.resolve({
+    var ret = Promise.resolve({
       success,
       error
     });
+    return ret;
   }
 
   /**

@@ -110,6 +110,7 @@ var RxStorageInstanceLoki = exports.RxStorageInstanceLoki = /*#__PURE__*/functio
         id: lastState[this.primaryPath],
         lwt: lastState._meta.lwt
       };
+      categorized.eventBulk.endTime = (0, _index.now)();
       this.changes$.next(categorized.eventBulk);
     }
     return ret;
