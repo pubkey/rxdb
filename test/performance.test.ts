@@ -140,6 +140,7 @@ describe('performance.test.ts', () => {
             await awaitBetweenTest();
 
             // find by query
+            console.log('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX START ' + performance.now());
             updateTime();
             const query = collection.find({
                 selector: {},
@@ -150,6 +151,7 @@ describe('performance.test.ts', () => {
             });
             const queryResult = await query.exec();
             updateTime('find-by-query');
+            console.log('XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX END ' + performance.now());
             assert.strictEqual(queryResult.length, docsAmount + 1);
             await awaitBetweenTest();
 
@@ -253,5 +255,6 @@ function roundToTwo(num: number) {
 async function awaitBetweenTest() {
     await requestIdlePromise();
     await wait(100);
+    await requestIdlePromise();
     await requestIdlePromise();
 }
