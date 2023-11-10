@@ -623,6 +623,7 @@ describe('replication.test.ts', () => {
                     handler: getPushHandler(remoteCollection)
                 }
             });
+            ensureReplicationHasNoErrors(replicationState1);
             await replicationState1.awaitInitialReplication();
 
             async function docsInMeta(repState: typeof replicationState1): Promise<number> {
@@ -666,6 +667,8 @@ describe('replication.test.ts', () => {
                 },
                 autoStart: false
             });
+            ensureReplicationHasNoErrors(replicationState2);
+
             await replicationState2.start();
             const docsInMetaAfter = await docsInMeta(replicationState2);
 
@@ -712,6 +715,7 @@ describe('replication.test.ts', () => {
                     initialCheckpoint: lastLocalCheckpoint
                 }
             });
+            ensureReplicationHasNoErrors(replicationState);
             await replicationState.awaitInitialReplication();
 
             const remoteDocs = await remoteCollection.find().exec();
@@ -739,6 +743,7 @@ describe('replication.test.ts', () => {
                     handler: getPushHandler(remoteCollection),
                 }
             });
+            ensureReplicationHasNoErrors(replicationState);
             await replicationState.awaitInitialReplication();
 
             const localDocs = await localCollection.find().exec();
