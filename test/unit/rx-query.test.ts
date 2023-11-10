@@ -1418,7 +1418,7 @@ describe('rx-query.test.ts', () => {
     }
 
     config.parallel('Limit Buffer', () => {
-        it.only('By default, limit queries will have to re-exec when item is removed', async () => {
+        it('By default, limit queries will have to re-exec when item is removed', async () => {
             // Set up the query, without using the limit buffer:
             const { query, collection, numRowsTotal, limitRows, initialResults } = await setUpLimitBufferCollectionAndQuery(undefined);
 
@@ -1438,7 +1438,7 @@ describe('rx-query.test.ts', () => {
 
             collection.database.destroy();
         });
-        it.only('Limit buffer works properly in usual cases', async () => {
+        it('Limit buffer works properly in usual cases', async () => {
             const limitBufferSize = 5;
             const {query, collection, numRowsTotal, limitRows, initialResults} = await setUpLimitBufferCollectionAndQuery(limitBufferSize, 30);
 
@@ -1492,7 +1492,7 @@ describe('rx-query.test.ts', () => {
 
             collection.database.destroy();
         });
-        it.only('Limit buffer doesn\'t do anything when fewer than LIMIT items', async () => {
+        it('Limit buffer doesn\'t do anything when fewer than LIMIT items', async () => {
             // Set up with only 8 rows total, but a limit of 10 (and limit buffer 5):
             const limitBufferSize = 5;
             const {query, collection, numRowsTotal, initialResults} = await setUpLimitBufferCollectionAndQuery(limitBufferSize, 8);
@@ -1514,7 +1514,7 @@ describe('rx-query.test.ts', () => {
 
             collection.database.destroy();
         });
-        it.only('Limit buffer works with skip=0', async () => {
+        it('Limit buffer works with skip=0', async () => {
             // Set up with a skip=0 (limit buffer should work normally)
             const limitBufferSize = 5;
             const {query, collection, initialResults} = await setUpLimitBufferCollectionAndQuery(limitBufferSize, 20, 0);
@@ -1524,7 +1524,7 @@ describe('rx-query.test.ts', () => {
             assert.strictEqual(query._execOverDatabaseCount, 1);
             collection.database.destroy();
         });
-        it.only('Limit buffer does nothing with a non-zero skip', async () => {
+        it('Limit buffer does nothing with a non-zero skip', async () => {
             const limitBufferSize = 5;
             const {query, collection, initialResults} = await setUpLimitBufferCollectionAndQuery(limitBufferSize, 20, 10);
             assert.strictEqual(query._limitBufferResults, null);
@@ -1533,7 +1533,7 @@ describe('rx-query.test.ts', () => {
             assert.strictEqual(query._execOverDatabaseCount, 2);
             collection.database.destroy();
         });
-        it.only('Limit buffer does nothing if item is removed from results due to sort changing only', async () => {
+        it('Limit buffer does nothing if item is removed from results due to sort changing only', async () => {
             // Do a normal setup with the limit, and confirm the limit buffer gets filled:
             const limitBufferSize = 5;
             const {query, collection, initialResults} = await setUpLimitBufferCollectionAndQuery(limitBufferSize, 20);
