@@ -1388,7 +1388,7 @@ describe('rx-query.test.ts', () => {
             firstName: {
                 $ne: 'Dollaritas'
             }
-        }}).sort('-passportId').limit(limitRows);
+        }}).sort('-lastName').limit(limitRows);
 
         if (skipRows !== undefined) {
             query = query.skip(skipRows);
@@ -1531,6 +1531,30 @@ describe('rx-query.test.ts', () => {
             await removeSingleDocFromMatchingQuery(collection, initialResults[1]);
             await query.exec();
             assert.strictEqual(query._execOverDatabaseCount, 2);
+            collection.database.destroy();
+        });
+        it.only('Limit buffer does nothing if item is removed from results due to sort changing only', async () => {
+            // Do a normal setup with the limit, and confirm the limit buffer gets filled:
+            const limitBufferSize = 5;
+            const {query, collection, initialResults} = await setUpLimitBufferCollectionAndQuery(limitBufferSize, 20);
+            assert.strictEqual(query._limitBufferResults?.length, limitBufferSize);
+            assert.strictEqual(query._execOverDatabaseCount, 1);
+
+            // Instead of removing an item from the results by making it break the query selector
+            // (what removeSingleDocFromMatchingQuery does) just move it to the end of the sort
+            // which will kick it out of the query results due to the LIMIT
+            await collection.find({selector: {passportId: initialResults[0].passportId}}).update({
+                $set: {
+                    lastName: 'AAAAAAAAAAAAAAA'
+                }
+            });
+
+            // Explicitly, the limit buffer does not replace items in this case (although it technically
+            // could with little trouble in the future, we just haven't implemented it)
+            // so the query should re-run on the database to fill in the missing document:
+            const updatedResults = await query.exec();
+            assert.strictEqual(query._execOverDatabaseCount, 2);
+            assert.notStrictEqual(updatedResults[0].passportId, initialResults[0].passportId);
             collection.database.destroy();
         });
     });
