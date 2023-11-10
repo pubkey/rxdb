@@ -33,7 +33,7 @@ var _assignMethodsToAttachment = function (attachment) {
  * an RxAttachment is basically just the attachment-stub
  * wrapped so that you can access the attachment-data
  */
-var RxAttachment = /*#__PURE__*/function () {
+var RxAttachment = exports.RxAttachment = /*#__PURE__*/function () {
   function RxAttachment({
     doc,
     id,
@@ -71,7 +71,6 @@ var RxAttachment = /*#__PURE__*/function () {
   };
   return RxAttachment;
 }();
-exports.RxAttachment = RxAttachment;
 function fromStorageInstanceResult(id, attachmentData, rxDocument) {
   return new RxAttachment({
     doc: rxDocument,
@@ -160,7 +159,7 @@ function postMigrateDocument(_action) {
    */
   return _utils.PROMISE_RESOLVE_VOID;
 }
-var RxDBAttachmentsPlugin = {
+var RxDBAttachmentsPlugin = exports.RxDBAttachmentsPlugin = {
   name: 'attachments',
   rxdb: true,
   prototypes: {
@@ -189,5 +188,4 @@ var RxDBAttachmentsPlugin = {
     }
   }
 };
-exports.RxDBAttachmentsPlugin = RxDBAttachmentsPlugin;
 //# sourceMappingURL=index.js.map

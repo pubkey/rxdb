@@ -14,7 +14,7 @@ var _binarySearchBounds = require("./binary-search-bounds");
 var _memoryHelper = require("./memory-helper");
 var _memoryIndexes = require("./memory-indexes");
 var _rxQueryHelper = require("../../rx-query-helper");
-var RxStorageInstanceMemory = /*#__PURE__*/function () {
+var RxStorageInstanceMemory = exports.RxStorageInstanceMemory = /*#__PURE__*/function () {
   function RxStorageInstanceMemory(storage, databaseName, collectionName, schema, internals, options, settings) {
     this.closed = false;
     this.storage = storage;
@@ -245,7 +245,6 @@ var RxStorageInstanceMemory = /*#__PURE__*/function () {
   };
   return RxStorageInstanceMemory;
 }();
-exports.RxStorageInstanceMemory = RxStorageInstanceMemory;
 function createMemoryStorageInstance(storage, params, settings) {
   var collectionKey = (0, _memoryHelper.getMemoryCollectionKey)(params.databaseName, params.collectionName, params.schema.version);
   var internals = storage.collectionStates.get(collectionKey);

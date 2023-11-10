@@ -14,7 +14,7 @@ var _rxStorageHelper = require("../../rx-storage-helper");
 var _rxStorageMultiinstance = require("../../rx-storage-multiinstance");
 var _rxError = require("../../rx-error");
 var instanceId = (0, _utils.now)();
-var RxStorageInstanceDexie = /*#__PURE__*/function () {
+var RxStorageInstanceDexie = exports.RxStorageInstanceDexie = /*#__PURE__*/function () {
   function RxStorageInstanceDexie(storage, databaseName, collectionName, schema, internals, options, settings) {
     this.changes$ = new _rxjs.Subject();
     this.instanceId = instanceId++;
@@ -225,7 +225,6 @@ var RxStorageInstanceDexie = /*#__PURE__*/function () {
   _proto.resolveConflictResultionTask = async function resolveConflictResultionTask(_taskSolution) {};
   return RxStorageInstanceDexie;
 }();
-exports.RxStorageInstanceDexie = RxStorageInstanceDexie;
 function createDexieStorageInstance(storage, params, settings) {
   var internals = (0, _dexieHelper.getDexieDbWithTables)(params.databaseName, params.collectionName, settings, params.schema);
   var instance = new RxStorageInstanceDexie(storage, params.databaseName, params.collectionName, params.schema, internals, params.options, settings);

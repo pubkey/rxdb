@@ -9,7 +9,7 @@ var _rxjs = require("rxjs");
 var _utils = require("../../plugins/utils");
 var _messageChannelCache = require("./message-channel-cache");
 var _rxStorageHelper = require("../../rx-storage-helper");
-var RxStorageRemote = /*#__PURE__*/function () {
+var RxStorageRemote = exports.RxStorageRemote = /*#__PURE__*/function () {
   function RxStorageRemote(settings) {
     this.name = 'remote';
     this.seed = (0, _utils.randomCouchString)(10);
@@ -90,7 +90,6 @@ var RxStorageRemote = /*#__PURE__*/function () {
  * which must then be JSON.parse()-ed before RxDB can use it.
  * @link https://surma.dev/things/is-postmessage-slow/
  */
-exports.RxStorageRemote = RxStorageRemote;
 function getMessageReturn(msg) {
   if (msg.method === 'getAttachmentData') {
     return msg.return;
@@ -102,7 +101,7 @@ function getMessageReturn(msg) {
     }
   }
 }
-var RxStorageInstanceRemote = /*#__PURE__*/function () {
+var RxStorageInstanceRemote = exports.RxStorageInstanceRemote = /*#__PURE__*/function () {
   function RxStorageInstanceRemote(storage, databaseName, collectionName, schema, internals, options) {
     this.changes$ = new _rxjs.Subject();
     this.conflicts$ = new _rxjs.Subject();
@@ -193,7 +192,6 @@ var RxStorageInstanceRemote = /*#__PURE__*/function () {
   };
   return RxStorageInstanceRemote;
 }();
-exports.RxStorageInstanceRemote = RxStorageInstanceRemote;
 function getRxStorageRemote(settings) {
   var withDefaults = Object.assign({
     mode: 'storage'

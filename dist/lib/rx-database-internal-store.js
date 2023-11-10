@@ -13,9 +13,8 @@ var _rxError = require("./rx-error");
 var _rxSchemaHelper = require("./rx-schema-helper");
 var _rxStorageHelper = require("./rx-storage-helper");
 var _utils = require("./plugins/utils");
-var INTERNAL_CONTEXT_COLLECTION = 'collection';
-exports.INTERNAL_CONTEXT_COLLECTION = INTERNAL_CONTEXT_COLLECTION;
-var INTERNAL_CONTEXT_STORAGE_TOKEN = 'storage-token';
+var INTERNAL_CONTEXT_COLLECTION = exports.INTERNAL_CONTEXT_COLLECTION = 'collection';
+var INTERNAL_CONTEXT_STORAGE_TOKEN = exports.INTERNAL_CONTEXT_STORAGE_TOKEN = 'storage-token';
 
 /**
  * Do not change the title,
@@ -25,10 +24,8 @@ var INTERNAL_CONTEXT_STORAGE_TOKEN = 'storage-token';
  * is from the internals or not,
  * to do some optimizations in some cases.
  */
-exports.INTERNAL_CONTEXT_STORAGE_TOKEN = INTERNAL_CONTEXT_STORAGE_TOKEN;
-var INTERNAL_STORE_SCHEMA_TITLE = 'RxInternalDocument';
-exports.INTERNAL_STORE_SCHEMA_TITLE = INTERNAL_STORE_SCHEMA_TITLE;
-var INTERNAL_STORE_SCHEMA = (0, _rxSchemaHelper.fillWithDefaultSettings)({
+var INTERNAL_STORE_SCHEMA_TITLE = exports.INTERNAL_STORE_SCHEMA_TITLE = 'RxInternalDocument';
+var INTERNAL_STORE_SCHEMA = exports.INTERNAL_STORE_SCHEMA = (0, _rxSchemaHelper.fillWithDefaultSettings)({
   version: 0,
   title: INTERNAL_STORE_SCHEMA_TITLE,
   primaryKey: {
@@ -69,7 +66,6 @@ var INTERNAL_STORE_SCHEMA = (0, _rxSchemaHelper.fillWithDefaultSettings)({
     mode: 'collection'
   }
 });
-exports.INTERNAL_STORE_SCHEMA = INTERNAL_STORE_SCHEMA;
 function getPrimaryKeyOfInternalDocument(key, context) {
   return (0, _rxSchemaHelper.getComposedPrimaryKeyOfDocumentData)(INTERNAL_STORE_SCHEMA, {
     key,
@@ -101,10 +97,8 @@ async function getAllCollectionDocuments(storageStatics, storageInstance) {
  * name and adapter, but do not share state with this one (for example in-memory-instances),
  * we set a storage-token and use it in the broadcast-channel
  */
-var STORAGE_TOKEN_DOCUMENT_KEY = 'storageToken';
-exports.STORAGE_TOKEN_DOCUMENT_KEY = STORAGE_TOKEN_DOCUMENT_KEY;
-var STORAGE_TOKEN_DOCUMENT_ID = getPrimaryKeyOfInternalDocument(STORAGE_TOKEN_DOCUMENT_KEY, INTERNAL_CONTEXT_STORAGE_TOKEN);
-exports.STORAGE_TOKEN_DOCUMENT_ID = STORAGE_TOKEN_DOCUMENT_ID;
+var STORAGE_TOKEN_DOCUMENT_KEY = exports.STORAGE_TOKEN_DOCUMENT_KEY = 'storageToken';
+var STORAGE_TOKEN_DOCUMENT_ID = exports.STORAGE_TOKEN_DOCUMENT_ID = getPrimaryKeyOfInternalDocument(STORAGE_TOKEN_DOCUMENT_KEY, INTERNAL_CONTEXT_STORAGE_TOKEN);
 async function ensureStorageTokenDocumentExists(rxDatabase) {
   /**
    * To have less read-write cycles,

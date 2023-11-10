@@ -8,7 +8,7 @@ exports.getRxStorageDexie = getRxStorageDexie;
 var _dexieHelper = require("./dexie-helper");
 var _rxStorageInstanceDexie = require("./rx-storage-instance-dexie");
 var _rxStorageHelper = require("../../rx-storage-helper");
-var RxStorageDexie = /*#__PURE__*/function () {
+var RxStorageDexie = exports.RxStorageDexie = /*#__PURE__*/function () {
   function RxStorageDexie(settings) {
     this.name = _dexieHelper.RX_STORAGE_NAME_DEXIE;
     this.statics = _dexieHelper.RxStorageDexieStatics;
@@ -22,7 +22,6 @@ var RxStorageDexie = /*#__PURE__*/function () {
   };
   return RxStorageDexie;
 }();
-exports.RxStorageDexie = RxStorageDexie;
 function getRxStorageDexie(settings = {}) {
   var storage = new RxStorageDexie(settings);
   return storage;

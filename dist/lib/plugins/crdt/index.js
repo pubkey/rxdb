@@ -242,9 +242,8 @@ function getCRDTConflictHandler(hashFunction, storageStatics, schema) {
   };
   return conflictHandler;
 }
-var RX_CRDT_CONTEXT = 'rx-crdt';
-exports.RX_CRDT_CONTEXT = RX_CRDT_CONTEXT;
-var RxDBcrdtPlugin = {
+var RX_CRDT_CONTEXT = exports.RX_CRDT_CONTEXT = 'rx-crdt';
+var RxDBcrdtPlugin = exports.RxDBcrdtPlugin = {
   name: 'crdt',
   rxdb: true,
   prototypes: {
@@ -394,5 +393,4 @@ var RxDBcrdtPlugin = {
     }
   }
 };
-exports.RxDBcrdtPlugin = RxDBcrdtPlugin;
 //# sourceMappingURL=index.js.map

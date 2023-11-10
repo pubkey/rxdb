@@ -10,7 +10,7 @@ exports.runPluginHooks = runPluginHooks;
 /**
  * hook-functions that can be extended by the plugin
  */
-var HOOKS = {
+var HOOKS = exports.HOOKS = {
   /**
    * Runs before a plugin is added.
    * Use this to block the usage of non-compatible plugins.
@@ -101,7 +101,6 @@ var HOOKS = {
    */
   preReplicationMasterWriteDocumentsHandle: []
 };
-exports.HOOKS = HOOKS;
 function runPluginHooks(hookKey, obj) {
   if (HOOKS[hookKey]) {
     HOOKS[hookKey].forEach(fun => fun(obj));

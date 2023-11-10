@@ -170,13 +170,12 @@ function deepClone(src) {
   }
   return dest;
 }
-var clone = deepClone;
+var clone = exports.clone = deepClone;
 
 /**
  * overwrites the getter with the actual value
  * Mostly used for caching stuff on the first run
  */
-exports.clone = clone;
 function overwriteGetterForCaching(obj, getterName, value) {
   Object.defineProperty(obj, getterName, {
     get: function () {

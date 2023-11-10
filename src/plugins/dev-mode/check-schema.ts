@@ -70,7 +70,13 @@ export function validateFieldsDeep(rxJsonSchema: RxJsonSchema<any>): true {
         if (
             typeof fieldName === 'string' &&
             typeof schemaObj === 'object' &&
-            !Array.isArray(schemaObj)
+            !Array.isArray(schemaObj) &&
+
+            /*
+                READWISE modification. Related: https://github.com/pubkey/rxdb/pull/4951
+                TODO: remove once we're on version 15.
+            */
+            path.split('.').pop() !== 'patternProperties'
         ) checkFieldNameRegex(fieldName);
 
         // 'item' only allowed it type=='array'

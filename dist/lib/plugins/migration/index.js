@@ -58,9 +58,8 @@ var _operators = require("rxjs/operators");
 var _utils = require("../../plugins/utils");
 var _dataMigrator = require("./data-migrator");
 var _migrationState = require("./migration-state");
-var DATA_MIGRATOR_BY_COLLECTION = new WeakMap();
-exports.DATA_MIGRATOR_BY_COLLECTION = DATA_MIGRATOR_BY_COLLECTION;
-var RxDBMigrationPlugin = {
+var DATA_MIGRATOR_BY_COLLECTION = exports.DATA_MIGRATOR_BY_COLLECTION = new WeakMap();
+var RxDBMigrationPlugin = exports.RxDBMigrationPlugin = {
   name: 'migration',
   rxdb: true,
   hooks: {
@@ -89,5 +88,4 @@ var RxDBMigrationPlugin = {
 };
 
 // used in tests
-exports.RxDBMigrationPlugin = RxDBMigrationPlugin;
 //# sourceMappingURL=index.js.map

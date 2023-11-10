@@ -38,8 +38,7 @@ var _broadcastChannel = require("broadcast-channel");
  * we should ensure that all channels are closed and cleaned up.
  * Otherwise we have forgot something.
  */
-var BROADCAST_CHANNEL_BY_TOKEN = new Map();
-exports.BROADCAST_CHANNEL_BY_TOKEN = BROADCAST_CHANNEL_BY_TOKEN;
+var BROADCAST_CHANNEL_BY_TOKEN = exports.BROADCAST_CHANNEL_BY_TOKEN = new Map();
 function getBroadcastChannelReference(databaseInstanceToken, databaseName, refObject) {
   var state = BROADCAST_CHANNEL_BY_TOKEN.get(databaseInstanceToken);
   if (!state) {

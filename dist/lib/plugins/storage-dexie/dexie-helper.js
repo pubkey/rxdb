@@ -18,16 +18,11 @@ var _utils = require("../utils");
 var _rxError = require("../../rx-error");
 var _rxSchemaHelper = require("../../rx-schema-helper");
 var _rxStorageStatics = require("../../rx-storage-statics");
-var DEXIE_DOCS_TABLE_NAME = 'docs';
-exports.DEXIE_DOCS_TABLE_NAME = DEXIE_DOCS_TABLE_NAME;
-var DEXIE_DELETED_DOCS_TABLE_NAME = 'deleted-docs';
-exports.DEXIE_DELETED_DOCS_TABLE_NAME = DEXIE_DELETED_DOCS_TABLE_NAME;
-var DEXIE_CHANGES_TABLE_NAME = 'changes';
-exports.DEXIE_CHANGES_TABLE_NAME = DEXIE_CHANGES_TABLE_NAME;
-var RX_STORAGE_NAME_DEXIE = 'dexie';
-exports.RX_STORAGE_NAME_DEXIE = RX_STORAGE_NAME_DEXIE;
-var RxStorageDexieStatics = _rxStorageStatics.RxStorageDefaultStatics;
-exports.RxStorageDexieStatics = RxStorageDexieStatics;
+var DEXIE_DOCS_TABLE_NAME = exports.DEXIE_DOCS_TABLE_NAME = 'docs';
+var DEXIE_DELETED_DOCS_TABLE_NAME = exports.DEXIE_DELETED_DOCS_TABLE_NAME = 'deleted-docs';
+var DEXIE_CHANGES_TABLE_NAME = exports.DEXIE_CHANGES_TABLE_NAME = 'changes';
+var RX_STORAGE_NAME_DEXIE = exports.RX_STORAGE_NAME_DEXIE = 'dexie';
+var RxStorageDexieStatics = exports.RxStorageDexieStatics = _rxStorageStatics.RxStorageDefaultStatics;
 var DEXIE_STATE_DB_BY_NAME = new Map();
 var REF_COUNT_PER_DEXIE_DB = new Map();
 function getDexieDbWithTables(databaseName, collectionName, settings, schema) {
@@ -111,8 +106,7 @@ function ensureNoBooleanIndex(schema) {
  * keys as IndexedDB indexes. So we have to substitute the pipe-char
  * which comes from the key-compression plugin.
  */
-var DEXIE_PIPE_SUBSTITUTE = '__';
-exports.DEXIE_PIPE_SUBSTITUTE = DEXIE_PIPE_SUBSTITUTE;
+var DEXIE_PIPE_SUBSTITUTE = exports.DEXIE_PIPE_SUBSTITUTE = '__';
 function dexieReplaceIfStartsWithPipe(str) {
   var split = str.split('.');
   if (split.length > 1) {

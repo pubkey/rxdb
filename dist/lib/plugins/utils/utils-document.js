@@ -15,8 +15,7 @@ exports.stripMetaDataFromDocument = stripMetaDataFromDocument;
  * This const is used in several places because querying
  * with a value lower then the minimum could give false results.
  */
-var RX_META_LWT_MINIMUM = 1;
-exports.RX_META_LWT_MINIMUM = RX_META_LWT_MINIMUM;
+var RX_META_LWT_MINIMUM = exports.RX_META_LWT_MINIMUM = 1;
 function getDefaultRxDocumentMeta() {
   return {
     /**

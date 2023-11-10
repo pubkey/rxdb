@@ -15,7 +15,7 @@ var _utils = require("./plugins/utils");
  * - Running only one write even when there are multiple modifications to the same document.
  * - Run all writes ins a single bulkWrite() call even when there are writes to many documents.
  */
-var IncrementalWriteQueue = /*#__PURE__*/function () {
+var IncrementalWriteQueue = exports.IncrementalWriteQueue = /*#__PURE__*/function () {
   function IncrementalWriteQueue(storageInstance, primaryPath,
   // can be used to run hooks etc.
   preWrite, postWrite) {
@@ -134,7 +134,6 @@ var IncrementalWriteQueue = /*#__PURE__*/function () {
   };
   return IncrementalWriteQueue;
 }();
-exports.IncrementalWriteQueue = IncrementalWriteQueue;
 function modifierFromPublicToInternal(publicModifier) {
   var ret = async docData => {
     var withoutMeta = (0, _utils.stripMetaDataFromDocument)(docData);

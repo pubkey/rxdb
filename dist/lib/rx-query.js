@@ -24,7 +24,7 @@ var _queryCount = 0;
 var newQueryID = function () {
   return ++_queryCount;
 };
-var RxQueryBase = /*#__PURE__*/function () {
+var RxQueryBase = exports.RxQueryBase = /*#__PURE__*/function () {
   /**
    * Some stats then are used for debugging and cache replacement policies
    */
@@ -365,7 +365,6 @@ var RxQueryBase = /*#__PURE__*/function () {
   }]);
   return RxQueryBase;
 }();
-exports.RxQueryBase = RxQueryBase;
 function _getDefaultQuery() {
   return {
     selector: {}

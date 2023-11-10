@@ -41,7 +41,7 @@ Object.keys(_firestoreTypes).forEach(function (key) {
     }
   });
 });
-var RxFirestoreReplicationState = /*#__PURE__*/function (_RxReplicationState) {
+var RxFirestoreReplicationState = exports.RxFirestoreReplicationState = /*#__PURE__*/function (_RxReplicationState) {
   (0, _inheritsLoose2.default)(RxFirestoreReplicationState, _RxReplicationState);
   function RxFirestoreReplicationState(firestore, replicationIdentifierHash, collection, pull, push, live = true, retryTime = 1000 * 5, autoStart = true) {
     var _this;
@@ -58,7 +58,6 @@ var RxFirestoreReplicationState = /*#__PURE__*/function (_RxReplicationState) {
   }
   return RxFirestoreReplicationState;
 }(_replication.RxReplicationState);
-exports.RxFirestoreReplicationState = RxFirestoreReplicationState;
 function replicateFirestore(options) {
   var collection = options.collection;
   (0, _.addRxPlugin)(_leaderElection.RxDBLeaderElectionPlugin);

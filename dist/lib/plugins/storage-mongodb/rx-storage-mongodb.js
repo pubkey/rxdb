@@ -9,7 +9,7 @@ var _rxStorageHelper = require("../../rx-storage-helper");
 var _rxSchemaHelper = require("../../rx-schema-helper");
 var _mongodbHelper = require("./mongodb-helper");
 var _rxStorageInstanceMongodb = require("./rx-storage-instance-mongodb");
-var RxStorageMongoDBStatics = {
+var RxStorageMongoDBStatics = exports.RxStorageMongoDBStatics = {
   prepareQuery(schema, mutateableQuery) {
     var primaryKey = (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(schema.primaryKey);
     var preparedQuery = {
@@ -21,8 +21,7 @@ var RxStorageMongoDBStatics = {
   },
   checkpointSchema: _rxSchemaHelper.DEFAULT_CHECKPOINT_SCHEMA
 };
-exports.RxStorageMongoDBStatics = RxStorageMongoDBStatics;
-var RxStorageMongoDB = /*#__PURE__*/function () {
+var RxStorageMongoDB = exports.RxStorageMongoDB = /*#__PURE__*/function () {
   function RxStorageMongoDB(databaseSettings) {
     this.name = _mongodbHelper.RX_STORAGE_NAME_MONGODB;
     this.statics = RxStorageMongoDBStatics;
@@ -35,7 +34,6 @@ var RxStorageMongoDB = /*#__PURE__*/function () {
   };
   return RxStorageMongoDB;
 }();
-exports.RxStorageMongoDB = RxStorageMongoDB;
 function getRxStorageMongoDB(databaseSettings) {
   var storage = new RxStorageMongoDB(databaseSettings);
   return storage;

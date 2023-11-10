@@ -10,7 +10,7 @@ var _rxStorageInstanceLoki = require("./rx-storage-instance-loki");
 var _lokijsHelper = require("./lokijs-helper");
 var _rxStorageHelper = require("../../rx-storage-helper");
 var _rxSchemaHelper = require("../../rx-schema-helper");
-var RxStorageLokiStatics = {
+var RxStorageLokiStatics = exports.RxStorageLokiStatics = {
   prepareQuery(_schema, mutateableQuery) {
     mutateableQuery = (0, _utils.flatClone)(mutateableQuery);
     if (Object.keys((0, _utils.ensureNotFalsy)(mutateableQuery.selector)).length > 0) {
@@ -28,8 +28,7 @@ var RxStorageLokiStatics = {
   },
   checkpointSchema: _rxSchemaHelper.DEFAULT_CHECKPOINT_SCHEMA
 };
-exports.RxStorageLokiStatics = RxStorageLokiStatics;
-var RxStorageLoki = /*#__PURE__*/function () {
+var RxStorageLoki = exports.RxStorageLoki = /*#__PURE__*/function () {
   /**
    * Create one leader elector by db name.
    * This is done inside of the storage, not globally
@@ -49,7 +48,6 @@ var RxStorageLoki = /*#__PURE__*/function () {
   };
   return RxStorageLoki;
 }();
-exports.RxStorageLoki = RxStorageLoki;
 function getRxStorageLoki(databaseSettings = {}) {
   var storage = new RxStorageLoki(databaseSettings);
   return storage;

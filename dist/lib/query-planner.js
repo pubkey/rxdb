@@ -10,7 +10,7 @@ exports.isSelectorSatisfiedByIndex = isSelectorSatisfiedByIndex;
 exports.rateQueryPlan = rateQueryPlan;
 var _utils = require("./plugins/utils");
 var _rxSchemaHelper = require("./rx-schema-helper");
-var INDEX_MAX = String.fromCharCode(65535);
+var INDEX_MAX = exports.INDEX_MAX = String.fromCharCode(65535);
 
 /**
  * Do not use -Infinity here because it would be
@@ -22,8 +22,7 @@ var INDEX_MAX = String.fromCharCode(65535);
  * before we can use it in IDBKeyRange.bound.
  *
  */
-exports.INDEX_MAX = INDEX_MAX;
-var INDEX_MIN = Number.MIN_VALUE;
+var INDEX_MIN = exports.INDEX_MIN = Number.MIN_VALUE;
 
 /**
  * Returns the query plan which contains
@@ -32,7 +31,6 @@ var INDEX_MIN = Number.MIN_VALUE;
  *
  * This is used in some storage like Memory, dexie.js and IndexedDB.
  */
-exports.INDEX_MIN = INDEX_MIN;
 function getQueryPlan(schema, query) {
   var primaryPath = (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(schema.primaryKey);
   var selector = query.selector;
@@ -129,12 +127,9 @@ function getQueryPlan(schema, query) {
   }
   return currentBestQueryPlan;
 }
-var LOGICAL_OPERATORS = new Set(['$eq', '$gt', '$gte', '$lt', '$lte']);
-exports.LOGICAL_OPERATORS = LOGICAL_OPERATORS;
-var LOWER_BOUND_LOGICAL_OPERATORS = new Set(['$eq', '$gt', '$gte']);
-exports.LOWER_BOUND_LOGICAL_OPERATORS = LOWER_BOUND_LOGICAL_OPERATORS;
-var UPPER_BOUND_LOGICAL_OPERATORS = new Set(['$eq', '$lt', '$lte']);
-exports.UPPER_BOUND_LOGICAL_OPERATORS = UPPER_BOUND_LOGICAL_OPERATORS;
+var LOGICAL_OPERATORS = exports.LOGICAL_OPERATORS = new Set(['$eq', '$gt', '$gte', '$lt', '$lte']);
+var LOWER_BOUND_LOGICAL_OPERATORS = exports.LOWER_BOUND_LOGICAL_OPERATORS = new Set(['$eq', '$gt', '$gte']);
+var UPPER_BOUND_LOGICAL_OPERATORS = exports.UPPER_BOUND_LOGICAL_OPERATORS = new Set(['$eq', '$lt', '$lte']);
 function isSelectorSatisfiedByIndex(index, selector) {
   var selectorEntries = Object.entries(selector);
   var hasNonMatchingOperator = selectorEntries.find(([fieldName, operation]) => {

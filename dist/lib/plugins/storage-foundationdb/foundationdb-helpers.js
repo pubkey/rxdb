@@ -8,8 +8,6 @@ exports.getFoundationDBIndexName = getFoundationDBIndexName;
 function getFoundationDBIndexName(index) {
   return index.join('|');
 }
-var CLEANUP_INDEX = ['_deleted', '_meta.lwt'];
-exports.CLEANUP_INDEX = CLEANUP_INDEX;
-var FOUNDATION_DB_WRITE_BATCH_SIZE = 2000;
-exports.FOUNDATION_DB_WRITE_BATCH_SIZE = FOUNDATION_DB_WRITE_BATCH_SIZE;
+var CLEANUP_INDEX = exports.CLEANUP_INDEX = ['_deleted', '_meta.lwt'];
+var FOUNDATION_DB_WRITE_BATCH_SIZE = exports.FOUNDATION_DB_WRITE_BATCH_SIZE = 2000;
 //# sourceMappingURL=foundationdb-helpers.js.map

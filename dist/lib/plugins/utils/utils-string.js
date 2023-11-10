@@ -26,12 +26,11 @@ function randomCouchString(length = 10) {
 /**
  * A random string that is never inside of any storage
  */
-var RANDOM_STRING = 'Fz7SZXPmYJujkzjY1rpXWvlWBqoGAfAX';
+var RANDOM_STRING = exports.RANDOM_STRING = 'Fz7SZXPmYJujkzjY1rpXWvlWBqoGAfAX';
 
 /**
  * uppercase first char
  */
-exports.RANDOM_STRING = RANDOM_STRING;
 function ucfirst(str) {
   str += '';
   var f = str.charAt(0).toUpperCase();

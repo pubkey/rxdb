@@ -19,7 +19,7 @@ Object.keys(_cleanup).forEach(function (key) {
     }
   });
 });
-var RxDBCleanupPlugin = {
+var RxDBCleanupPlugin = exports.RxDBCleanupPlugin = {
   name: 'cleanup',
   rxdb: true,
   prototypes: {},
@@ -31,5 +31,4 @@ var RxDBCleanupPlugin = {
     }
   }
 };
-exports.RxDBCleanupPlugin = RxDBCleanupPlugin;
 //# sourceMappingURL=index.js.map

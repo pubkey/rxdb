@@ -8,8 +8,7 @@ exports.getMigrationStateByDatabase = getMigrationStateByDatabase;
 exports.onDatabaseDestroy = onDatabaseDestroy;
 var _rxjs = require("rxjs");
 var _utils = require("../../plugins/utils");
-var DATA_MIGRATION_STATE_SUBJECT_BY_DATABASE = new WeakMap();
-exports.DATA_MIGRATION_STATE_SUBJECT_BY_DATABASE = DATA_MIGRATION_STATE_SUBJECT_BY_DATABASE;
+var DATA_MIGRATION_STATE_SUBJECT_BY_DATABASE = exports.DATA_MIGRATION_STATE_SUBJECT_BY_DATABASE = new WeakMap();
 function getMigrationStateByDatabase(database) {
   return (0, _utils.getFromMapOrCreate)(DATA_MIGRATION_STATE_SUBJECT_BY_DATABASE, database, () => new _rxjs.BehaviorSubject([]));
 }

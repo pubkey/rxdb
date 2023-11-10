@@ -3,8 +3,8 @@
 
 require("@babel/polyfill");
 var RxDB = _interopRequireWildcard(require("./index.js"));
-function _getRequireWildcardCache(nodeInterop) { if (typeof WeakMap !== "function") return null; var cacheBabelInterop = new WeakMap(); var cacheNodeInterop = new WeakMap(); return (_getRequireWildcardCache = function (nodeInterop) { return nodeInterop ? cacheNodeInterop : cacheBabelInterop; })(nodeInterop); }
-function _interopRequireWildcard(obj, nodeInterop) { if (!nodeInterop && obj && obj.__esModule) { return obj; } if (obj === null || typeof obj !== "object" && typeof obj !== "function") { return { default: obj }; } var cache = _getRequireWildcardCache(nodeInterop); if (cache && cache.has(obj)) { return cache.get(obj); } var newObj = {}; var hasPropertyDescriptor = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var key in obj) { if (key !== "default" && Object.prototype.hasOwnProperty.call(obj, key)) { var desc = hasPropertyDescriptor ? Object.getOwnPropertyDescriptor(obj, key) : null; if (desc && (desc.get || desc.set)) { Object.defineProperty(newObj, key, desc); } else { newObj[key] = obj[key]; } } } newObj.default = obj; if (cache) { cache.set(obj, newObj); } return newObj; }
+function _getRequireWildcardCache(e) { if ("function" != typeof WeakMap) return null; var r = new WeakMap(), t = new WeakMap(); return (_getRequireWildcardCache = function (e) { return e ? t : r; })(e); }
+function _interopRequireWildcard(e, r) { if (!r && e && e.__esModule) return e; if (null === e || "object" != typeof e && "function" != typeof e) return { default: e }; var t = _getRequireWildcardCache(r); if (t && t.has(e)) return t.get(e); var n = { __proto__: null }, a = Object.defineProperty && Object.getOwnPropertyDescriptor; for (var u in e) if ("default" !== u && Object.prototype.hasOwnProperty.call(e, u)) { var i = a ? Object.getOwnPropertyDescriptor(e, u) : null; i && (i.get || i.set) ? Object.defineProperty(n, u, i) : n[u] = e[u]; } return n.default = e, t && t.set(e, n), n; }
 /**
  * this is the index for a browserify-build
  * which produces a single file that can be embedded into the html
@@ -25,7 +25,7 @@ var _operators = require("rxjs/operators");
 /**
  * a buffer-cache which holds the last X changeEvents of the collection
  */
-var ChangeEventBuffer = /*#__PURE__*/function () {
+var ChangeEventBuffer = exports.ChangeEventBuffer = /*#__PURE__*/function () {
   /**
    * array with changeEvents
    * starts with oldest known event, ends with newest
@@ -113,7 +113,6 @@ var ChangeEventBuffer = /*#__PURE__*/function () {
   };
   return ChangeEventBuffer;
 }();
-exports.ChangeEventBuffer = ChangeEventBuffer;
 function createChangeEventBuffer(collection) {
   return new ChangeEventBuffer(collection);
 }
@@ -401,7 +400,7 @@ var _rxChangeEvent = require("./rx-change-event");
  * only contains weak references to the RxDocuments themself.
  * @link https://caniuse.com/?search=weakref
  */
-var DocumentCache = /*#__PURE__*/function () {
+var DocumentCache = exports.DocumentCache = /*#__PURE__*/function () {
   /**
    * Some JavaScript runtimes like QuickJS,
    * so not have a FinalizationRegistry or WeakRef.
@@ -482,7 +481,6 @@ var DocumentCache = /*#__PURE__*/function () {
   };
   return DocumentCache;
 }();
-exports.DocumentCache = DocumentCache;
 function getNewCacheItem(docData) {
   return {
     documentByRevisionHeight: new Map(),
@@ -529,8 +527,7 @@ function getSortFieldsOfQuery(primaryKey, query) {
     return query.sort.map(part => Object.keys(part)[0]);
   }
 }
-var RXQUERY_QUERY_PARAMS_CACHE = new WeakMap();
-exports.RXQUERY_QUERY_PARAMS_CACHE = RXQUERY_QUERY_PARAMS_CACHE;
+var RXQUERY_QUERY_PARAMS_CACHE = exports.RXQUERY_QUERY_PARAMS_CACHE = new WeakMap();
 function getQueryParams(rxQuery) {
   return (0, _utils.getFromMapOrCreate)(RXQUERY_QUERY_PARAMS_CACHE, rxQuery, () => {
     var collection = rxQuery.collection;
@@ -629,7 +626,7 @@ exports.runPluginHooks = runPluginHooks;
 /**
  * hook-functions that can be extended by the plugin
  */
-var HOOKS = {
+var HOOKS = exports.HOOKS = {
   /**
    * Runs before a plugin is added.
    * Use this to block the usage of non-compatible plugins.
@@ -720,7 +717,6 @@ var HOOKS = {
    */
   preReplicationMasterWriteDocumentsHandle: []
 };
-exports.HOOKS = HOOKS;
 function runPluginHooks(hookKey, obj) {
   if (HOOKS[hookKey]) {
     HOOKS[hookKey].forEach(fun => fun(obj));
@@ -761,7 +757,7 @@ var _utils = require("./plugins/utils");
  * - Running only one write even when there are multiple modifications to the same document.
  * - Run all writes ins a single bulkWrite() call even when there are writes to many documents.
  */
-var IncrementalWriteQueue = /*#__PURE__*/function () {
+var IncrementalWriteQueue = exports.IncrementalWriteQueue = /*#__PURE__*/function () {
   function IncrementalWriteQueue(storageInstance, primaryPath,
   // can be used to run hooks etc.
   preWrite, postWrite) {
@@ -880,7 +876,6 @@ var IncrementalWriteQueue = /*#__PURE__*/function () {
   };
   return IncrementalWriteQueue;
 }();
-exports.IncrementalWriteQueue = IncrementalWriteQueue;
 function modifierFromPublicToInternal(publicModifier) {
   var ret = async docData => {
     var withoutMeta = (0, _utils.stripMetaDataFromDocument)(docData);
@@ -1219,7 +1214,7 @@ exports.overwritable = void 0;
  * and we do not want to have the full RxDB lib bundled in them.
  */
 
-var overwritable = {
+var overwritable = exports.overwritable = {
   /**
    * if this method is overwritten with one
    * that returns true, we do additional checks
@@ -1244,7 +1239,6 @@ var overwritable = {
     return "RxDB Error-Code " + message + ".\n        Error messages are not included in RxDB core to reduce build size.\n        - To find out what this error means, either use the dev-mode-plugin https://rxdb.info/dev-mode.html\n        - or search for the error code here: https://github.com/pubkey/rxdb/search?q=" + message + "\n        ";
   }
 };
-exports.overwritable = overwritable;
 
 },{}],10:[function(require,module,exports){
 "use strict";
@@ -2078,8 +2072,7 @@ exports.stripMetaDataFromDocument = stripMetaDataFromDocument;
  * This const is used in several places because querying
  * with a value lower then the minimum could give false results.
  */
-var RX_META_LWT_MINIMUM = 1;
-exports.RX_META_LWT_MINIMUM = RX_META_LWT_MINIMUM;
+var RX_META_LWT_MINIMUM = exports.RX_META_LWT_MINIMUM = 1;
 function getDefaultRxDocumentMeta() {
   return {
     /**
@@ -2749,13 +2742,12 @@ function deepClone(src) {
   }
   return dest;
 }
-var clone = deepClone;
+var clone = exports.clone = deepClone;
 
 /**
  * overwrites the getter with the actual value
  * Mostly used for caching stuff on the first run
  */
-exports.clone = clone;
 function overwriteGetterForCaching(obj, getterName, value) {
   Object.defineProperty(obj, getterName, {
     get: function () {
@@ -2808,11 +2800,10 @@ function ensureInteger(obj) {
  * So we use these defaults.
  * @link https://cartant.medium.com/rxjs-whats-changed-with-sharereplay-65c098843e95
  */
-var RXJS_SHARE_REPLAY_DEFAULTS = {
+var RXJS_SHARE_REPLAY_DEFAULTS = exports.RXJS_SHARE_REPLAY_DEFAULTS = {
   bufferSize: 1,
   refCount: true
 };
-exports.RXJS_SHARE_REPLAY_DEFAULTS = RXJS_SHARE_REPLAY_DEFAULTS;
 
 },{}],24:[function(require,module,exports){
 "use strict";
@@ -2849,20 +2840,16 @@ function toPromise(maybePromise) {
  * Reusing resolved promises has a better
  * performance than creating new ones each time.
  */
-var PROMISE_RESOLVE_TRUE = Promise.resolve(true);
-exports.PROMISE_RESOLVE_TRUE = PROMISE_RESOLVE_TRUE;
-var PROMISE_RESOLVE_FALSE = Promise.resolve(false);
-exports.PROMISE_RESOLVE_FALSE = PROMISE_RESOLVE_FALSE;
-var PROMISE_RESOLVE_NULL = Promise.resolve(null);
-exports.PROMISE_RESOLVE_NULL = PROMISE_RESOLVE_NULL;
-var PROMISE_RESOLVE_VOID = Promise.resolve();
+var PROMISE_RESOLVE_TRUE = exports.PROMISE_RESOLVE_TRUE = Promise.resolve(true);
+var PROMISE_RESOLVE_FALSE = exports.PROMISE_RESOLVE_FALSE = Promise.resolve(false);
+var PROMISE_RESOLVE_NULL = exports.PROMISE_RESOLVE_NULL = Promise.resolve(null);
+var PROMISE_RESOLVE_VOID = exports.PROMISE_RESOLVE_VOID = Promise.resolve();
 
 /**
  * If multiple operations wait for an requestIdlePromise
  * we do not want them to resolve all at the same time.
  * So we have to queue the calls.
  */
-exports.PROMISE_RESOLVE_VOID = PROMISE_RESOLVE_VOID;
 var idlePromiseQueue = PROMISE_RESOLVE_VOID;
 function requestIdlePromise(timeout = undefined) {
   idlePromiseQueue = idlePromiseQueue.then(() => {
@@ -2924,15 +2911,12 @@ Object.defineProperty(exports, "__esModule", {
 exports.REGEX_PARSE_REGEX_EXPRESSION = exports.REGEX_ALL_PIPES = exports.REGEX_ALL_DOTS = void 0;
 exports.parseRegex = parseRegex;
 var _utilsOther = require("./utils-other");
-var REGEX_ALL_DOTS = /\./g;
-exports.REGEX_ALL_DOTS = REGEX_ALL_DOTS;
-var REGEX_ALL_PIPES = /\|/g;
-exports.REGEX_ALL_PIPES = REGEX_ALL_PIPES;
+var REGEX_ALL_DOTS = exports.REGEX_ALL_DOTS = /\./g;
+var REGEX_ALL_PIPES = exports.REGEX_ALL_PIPES = /\|/g;
 /**
  * @link https://stackoverflow.com/a/26034888/3443137
 */
-var REGEX_PARSE_REGEX_EXPRESSION = /(\/?)(.+)\1([a-z]*)/i;
-exports.REGEX_PARSE_REGEX_EXPRESSION = REGEX_PARSE_REGEX_EXPRESSION;
+var REGEX_PARSE_REGEX_EXPRESSION = exports.REGEX_PARSE_REGEX_EXPRESSION = /(\/?)(.+)\1([a-z]*)/i;
 function parseRegex(regex) {
   var matches = (0, _utilsOther.ensureNotFalsy)(regex.toString().match(REGEX_PARSE_REGEX_EXPRESSION));
   return {
@@ -2989,8 +2973,7 @@ exports.RXDB_VERSION = void 0;
 /**
  * This file is replaced in the 'npm run build:version' script.
  */
-var RXDB_VERSION = '14.17.0';
-exports.RXDB_VERSION = RXDB_VERSION;
+var RXDB_VERSION = exports.RXDB_VERSION = '14.17.0';
 
 },{}],28:[function(require,module,exports){
 "use strict";
@@ -3021,12 +3004,11 @@ function randomCouchString(length = 10) {
 /**
  * A random string that is never inside of any storage
  */
-var RANDOM_STRING = 'Fz7SZXPmYJujkzjY1rpXWvlWBqoGAfAX';
+var RANDOM_STRING = exports.RANDOM_STRING = 'Fz7SZXPmYJujkzjY1rpXWvlWBqoGAfAX';
 
 /**
  * uppercase first char
  */
-exports.RANDOM_STRING = RANDOM_STRING;
 function ucfirst(str) {
   str += '';
   var f = str.charAt(0).toUpperCase();
@@ -3138,7 +3120,7 @@ var _utils = require("./plugins/utils");
  * the query-cache makes sure that on every query-state, exactly one instance can exist
  * if you use the same mango-query more then once, it will reuse the first RxQuery
  */
-var QueryCache = /*#__PURE__*/function () {
+var QueryCache = exports.QueryCache = /*#__PURE__*/function () {
   function QueryCache() {
     this._map = new Map();
   }
@@ -3154,7 +3136,6 @@ var QueryCache = /*#__PURE__*/function () {
   };
   return QueryCache;
 }();
-exports.QueryCache = QueryCache;
 function createQueryCache() {
   return new QueryCache();
 }
@@ -3166,9 +3147,8 @@ function uncacheRxQuery(queryCache, rxQuery) {
 function countRxQuerySubscribers(rxQuery) {
   return rxQuery.refCount$.observers.length;
 }
-var DEFAULT_TRY_TO_KEEP_MAX = 100;
-exports.DEFAULT_TRY_TO_KEEP_MAX = DEFAULT_TRY_TO_KEEP_MAX;
-var DEFAULT_UNEXECUTED_LIFETIME = 30 * 1000;
+var DEFAULT_TRY_TO_KEEP_MAX = exports.DEFAULT_TRY_TO_KEEP_MAX = 100;
+var DEFAULT_UNEXECUTED_LIFETIME = exports.DEFAULT_UNEXECUTED_LIFETIME = 30 * 1000;
 
 /**
  * The default cache replacement policy
@@ -3176,7 +3156,6 @@ var DEFAULT_UNEXECUTED_LIFETIME = 30 * 1000;
  * Notice that this runs often and should block the cpu as less as possible
  * This is a monad which makes it easier to unit test
  */
-exports.DEFAULT_UNEXECUTED_LIFETIME = DEFAULT_UNEXECUTED_LIFETIME;
 var defaultCacheReplacementPolicyMonad = (tryToKeepMax, unExecutedLifetime) => (_collection, queryCache) => {
   if (queryCache._map.size < tryToKeepMax) {
     return;
@@ -3205,9 +3184,8 @@ var defaultCacheReplacementPolicyMonad = (tryToKeepMax, unExecutedLifetime) => (
   toRemove.forEach(rxQuery => uncacheRxQuery(queryCache, rxQuery));
 };
 exports.defaultCacheReplacementPolicyMonad = defaultCacheReplacementPolicyMonad;
-var defaultCacheReplacementPolicy = defaultCacheReplacementPolicyMonad(DEFAULT_TRY_TO_KEEP_MAX, DEFAULT_UNEXECUTED_LIFETIME);
-exports.defaultCacheReplacementPolicy = defaultCacheReplacementPolicy;
-var COLLECTIONS_WITH_RUNNING_CLEANUP = new WeakSet();
+var defaultCacheReplacementPolicy = exports.defaultCacheReplacementPolicy = defaultCacheReplacementPolicyMonad(DEFAULT_TRY_TO_KEEP_MAX, DEFAULT_UNEXECUTED_LIFETIME);
+var COLLECTIONS_WITH_RUNNING_CLEANUP = exports.COLLECTIONS_WITH_RUNNING_CLEANUP = new WeakSet();
 
 /**
  * Triggers the cache replacement policy after waitTime has passed.
@@ -3215,7 +3193,6 @@ var COLLECTIONS_WITH_RUNNING_CLEANUP = new WeakSet();
  * we need all CPU to minimize latency.
  * Also this should not be triggered multiple times when waitTime is still waiting.
  */
-exports.COLLECTIONS_WITH_RUNNING_CLEANUP = COLLECTIONS_WITH_RUNNING_CLEANUP;
 function triggerCacheReplacement(rxCollection) {
   if (COLLECTIONS_WITH_RUNNING_CLEANUP.has(rxCollection)) {
     // already started
@@ -3249,7 +3226,7 @@ exports.isSelectorSatisfiedByIndex = isSelectorSatisfiedByIndex;
 exports.rateQueryPlan = rateQueryPlan;
 var _utils = require("./plugins/utils");
 var _rxSchemaHelper = require("./rx-schema-helper");
-var INDEX_MAX = String.fromCharCode(65535);
+var INDEX_MAX = exports.INDEX_MAX = String.fromCharCode(65535);
 
 /**
  * Do not use -Infinity here because it would be
@@ -3261,8 +3238,7 @@ var INDEX_MAX = String.fromCharCode(65535);
  * before we can use it in IDBKeyRange.bound.
  *
  */
-exports.INDEX_MAX = INDEX_MAX;
-var INDEX_MIN = Number.MIN_VALUE;
+var INDEX_MIN = exports.INDEX_MIN = Number.MIN_VALUE;
 
 /**
  * Returns the query plan which contains
@@ -3271,7 +3247,6 @@ var INDEX_MIN = Number.MIN_VALUE;
  *
  * This is used in some storage like Memory, dexie.js and IndexedDB.
  */
-exports.INDEX_MIN = INDEX_MIN;
 function getQueryPlan(schema, query) {
   var primaryPath = (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(schema.primaryKey);
   var selector = query.selector;
@@ -3368,12 +3343,9 @@ function getQueryPlan(schema, query) {
   }
   return currentBestQueryPlan;
 }
-var LOGICAL_OPERATORS = new Set(['$eq', '$gt', '$gte', '$lt', '$lte']);
-exports.LOGICAL_OPERATORS = LOGICAL_OPERATORS;
-var LOWER_BOUND_LOGICAL_OPERATORS = new Set(['$eq', '$gt', '$gte']);
-exports.LOWER_BOUND_LOGICAL_OPERATORS = LOWER_BOUND_LOGICAL_OPERATORS;
-var UPPER_BOUND_LOGICAL_OPERATORS = new Set(['$eq', '$lt', '$lte']);
-exports.UPPER_BOUND_LOGICAL_OPERATORS = UPPER_BOUND_LOGICAL_OPERATORS;
+var LOGICAL_OPERATORS = exports.LOGICAL_OPERATORS = new Set(['$eq', '$gt', '$gte', '$lt', '$lte']);
+var LOWER_BOUND_LOGICAL_OPERATORS = exports.LOWER_BOUND_LOGICAL_OPERATORS = new Set(['$eq', '$gt', '$gte']);
+var UPPER_BOUND_LOGICAL_OPERATORS = exports.UPPER_BOUND_LOGICAL_OPERATORS = new Set(['$eq', '$lt', '$lte']);
 function isSelectorSatisfiedByIndex(index, selector) {
   var selectorEntries = Object.entries(selector);
   var hasNonMatchingOperator = selectorEntries.find(([fieldName, operation]) => {
@@ -4888,7 +4860,7 @@ var _overwritable = require("./overwritable");
 var HOOKS_WHEN = ['pre', 'post'];
 var HOOKS_KEYS = ['insert', 'save', 'remove', 'create'];
 var hooksApplied = false;
-var RxCollectionBase = /*#__PURE__*/function () {
+var RxCollectionBase = exports.RxCollectionBase = /*#__PURE__*/function () {
   /**
    * Stores all 'normal' documents
    */
@@ -5404,7 +5376,6 @@ var RxCollectionBase = /*#__PURE__*/function () {
  * adds the hook-functions to the collections prototype
  * this runs only once
  */
-exports.RxCollectionBase = RxCollectionBase;
 function _applyHookFunctions(collection) {
   if (hooksApplied) return; // already run
   hooksApplied = true;
@@ -5545,9 +5516,8 @@ var _rxError = require("./rx-error");
 var _rxSchemaHelper = require("./rx-schema-helper");
 var _rxStorageHelper = require("./rx-storage-helper");
 var _utils = require("./plugins/utils");
-var INTERNAL_CONTEXT_COLLECTION = 'collection';
-exports.INTERNAL_CONTEXT_COLLECTION = INTERNAL_CONTEXT_COLLECTION;
-var INTERNAL_CONTEXT_STORAGE_TOKEN = 'storage-token';
+var INTERNAL_CONTEXT_COLLECTION = exports.INTERNAL_CONTEXT_COLLECTION = 'collection';
+var INTERNAL_CONTEXT_STORAGE_TOKEN = exports.INTERNAL_CONTEXT_STORAGE_TOKEN = 'storage-token';
 
 /**
  * Do not change the title,
@@ -5557,10 +5527,8 @@ var INTERNAL_CONTEXT_STORAGE_TOKEN = 'storage-token';
  * is from the internals or not,
  * to do some optimizations in some cases.
  */
-exports.INTERNAL_CONTEXT_STORAGE_TOKEN = INTERNAL_CONTEXT_STORAGE_TOKEN;
-var INTERNAL_STORE_SCHEMA_TITLE = 'RxInternalDocument';
-exports.INTERNAL_STORE_SCHEMA_TITLE = INTERNAL_STORE_SCHEMA_TITLE;
-var INTERNAL_STORE_SCHEMA = (0, _rxSchemaHelper.fillWithDefaultSettings)({
+var INTERNAL_STORE_SCHEMA_TITLE = exports.INTERNAL_STORE_SCHEMA_TITLE = 'RxInternalDocument';
+var INTERNAL_STORE_SCHEMA = exports.INTERNAL_STORE_SCHEMA = (0, _rxSchemaHelper.fillWithDefaultSettings)({
   version: 0,
   title: INTERNAL_STORE_SCHEMA_TITLE,
   primaryKey: {
@@ -5601,7 +5569,6 @@ var INTERNAL_STORE_SCHEMA = (0, _rxSchemaHelper.fillWithDefaultSettings)({
     mode: 'collection'
   }
 });
-exports.INTERNAL_STORE_SCHEMA = INTERNAL_STORE_SCHEMA;
 function getPrimaryKeyOfInternalDocument(key, context) {
   return (0, _rxSchemaHelper.getComposedPrimaryKeyOfDocumentData)(INTERNAL_STORE_SCHEMA, {
     key,
@@ -5633,10 +5600,8 @@ async function getAllCollectionDocuments(storageStatics, storageInstance) {
  * name and adapter, but do not share state with this one (for example in-memory-instances),
  * we set a storage-token and use it in the broadcast-channel
  */
-var STORAGE_TOKEN_DOCUMENT_KEY = 'storageToken';
-exports.STORAGE_TOKEN_DOCUMENT_KEY = STORAGE_TOKEN_DOCUMENT_KEY;
-var STORAGE_TOKEN_DOCUMENT_ID = getPrimaryKeyOfInternalDocument(STORAGE_TOKEN_DOCUMENT_KEY, INTERNAL_CONTEXT_STORAGE_TOKEN);
-exports.STORAGE_TOKEN_DOCUMENT_ID = STORAGE_TOKEN_DOCUMENT_ID;
+var STORAGE_TOKEN_DOCUMENT_KEY = exports.STORAGE_TOKEN_DOCUMENT_KEY = 'storageToken';
+var STORAGE_TOKEN_DOCUMENT_ID = exports.STORAGE_TOKEN_DOCUMENT_ID = getPrimaryKeyOfInternalDocument(STORAGE_TOKEN_DOCUMENT_KEY, INTERNAL_CONTEXT_STORAGE_TOKEN);
 async function ensureStorageTokenDocumentExists(rxDatabase) {
   /**
    * To have less read-write cycles,
@@ -5774,7 +5739,7 @@ var _overwritable = require("./overwritable");
  */
 var USED_DATABASE_NAMES = new Set();
 var DB_COUNT = 0;
-var RxDatabaseBase = /*#__PURE__*/function () {
+var RxDatabaseBase = exports.RxDatabaseBase = /*#__PURE__*/function () {
   /**
    * Contains all known non-closed storage instances
    * that belong to this database.
@@ -6130,7 +6095,6 @@ var RxDatabaseBase = /*#__PURE__*/function () {
  * checks if an instance with same name and adapter already exists
  * @throws {RxError} if used
  */
-exports.RxDatabaseBase = RxDatabaseBase;
 function throwIfDatabaseNameUsed(name) {
   if (!USED_DATABASE_NAMES.has(name)) {
     return;
@@ -6381,7 +6345,7 @@ var _overwritable = require("./overwritable");
 var _rxSchemaHelper = require("./rx-schema-helper");
 var _rxStorageHelper = require("./rx-storage-helper");
 var _incrementalWrite = require("./incremental-write");
-var basePrototype = {
+var basePrototype = exports.basePrototype = {
   get primaryPath() {
     var _this = this;
     if (!_this.isInstanceOfRxDocument) {
@@ -6666,7 +6630,6 @@ var basePrototype = {
     throw (0, _rxError.newRxError)('DOC14');
   }
 };
-exports.basePrototype = basePrototype;
 function createRxDocumentConstructor(proto = basePrototype) {
   var constructor = function RxDocumentConstructor(collection, docData) {
     this.collection = collection;
@@ -6803,7 +6766,7 @@ function parametersToString(parameters) {
 function messageForError(message, code, parameters) {
   return 'RxError (' + code + '):' + '\n' + message + '\n' + parametersToString(parameters);
 }
-var RxError = /*#__PURE__*/function (_Error) {
+var RxError = exports.RxError = /*#__PURE__*/function (_Error) {
   (0, _inheritsLoose2.default)(RxError, _Error);
   // always true, use this to detect if its an rxdb-error
 
@@ -6834,8 +6797,7 @@ var RxError = /*#__PURE__*/function (_Error) {
   }]);
   return RxError;
 }( /*#__PURE__*/(0, _wrapNativeSuper2.default)(Error));
-exports.RxError = RxError;
-var RxTypeError = /*#__PURE__*/function (_TypeError) {
+var RxTypeError = exports.RxTypeError = /*#__PURE__*/function (_TypeError) {
   (0, _inheritsLoose2.default)(RxTypeError, _TypeError);
   // always true, use this to detect if its an rxdb-error
 
@@ -6866,7 +6828,6 @@ var RxTypeError = /*#__PURE__*/function (_TypeError) {
   }]);
   return RxTypeError;
 }( /*#__PURE__*/(0, _wrapNativeSuper2.default)(TypeError));
-exports.RxTypeError = RxTypeError;
 function newRxError(code, parameters) {
   return new RxError(code, _overwritable.overwritable.tunnelErrorMessage(code), parameters);
 }
@@ -7220,7 +7181,7 @@ var _queryCount = 0;
 var newQueryID = function () {
   return ++_queryCount;
 };
-var RxQueryBase = /*#__PURE__*/function () {
+var RxQueryBase = exports.RxQueryBase = /*#__PURE__*/function () {
   /**
    * Some stats then are used for debugging and cache replacement policies
    */
@@ -7561,7 +7522,6 @@ var RxQueryBase = /*#__PURE__*/function () {
   }]);
   return RxQueryBase;
 }();
-exports.RxQueryBase = RxQueryBase;
 function _getDefaultQuery() {
   return {
     selector: {}
@@ -8004,7 +7964,7 @@ function fillWithDefaultSettings(schemaObj) {
   }
   return schemaObj;
 }
-var RX_META_SCHEMA = {
+var RX_META_SCHEMA = exports.RX_META_SCHEMA = {
   type: 'object',
   properties: {
     /**
@@ -8033,7 +7993,6 @@ var RX_META_SCHEMA = {
  * returns the final-fields of the schema
  * @return field-names of the final-fields
  */
-exports.RX_META_SCHEMA = RX_META_SCHEMA;
 function getFinalFields(jsonSchema) {
   var ret = Object.keys(jsonSchema.properties).filter(key => jsonSchema.properties[key].final);
 
@@ -8062,7 +8021,7 @@ function fillObjectWithDefaults(rxSchema, obj) {
   }
   return obj;
 }
-var DEFAULT_CHECKPOINT_SCHEMA = {
+var DEFAULT_CHECKPOINT_SCHEMA = exports.DEFAULT_CHECKPOINT_SCHEMA = {
   type: 'object',
   properties: {
     id: {
@@ -8075,7 +8034,6 @@ var DEFAULT_CHECKPOINT_SCHEMA = {
   required: ['id', 'lwt'],
   additionalProperties: false
 };
-exports.DEFAULT_CHECKPOINT_SCHEMA = DEFAULT_CHECKPOINT_SCHEMA;
 
 },{"./plugins/utils":12,"./rx-error":46}],51:[function(require,module,exports){
 "use strict";
@@ -8097,7 +8055,7 @@ var _hooks = require("./hooks");
 var _rxDocument = require("./rx-document");
 var _rxSchemaHelper = require("./rx-schema-helper");
 var _overwritable = require("./overwritable");
-var RxSchema = /*#__PURE__*/function () {
+var RxSchema = exports.RxSchema = /*#__PURE__*/function () {
   function RxSchema(jsonSchema, hashFunction) {
     this.jsonSchema = jsonSchema;
     this.hashFunction = hashFunction;
@@ -8167,7 +8125,6 @@ var RxSchema = /*#__PURE__*/function () {
   }]);
   return RxSchema;
 }();
-exports.RxSchema = RxSchema;
 function getIndexes(jsonSchema) {
   return (jsonSchema.indexes || []).map(index => (0, _utils.isMaybeReadonlyArray)(index) ? index : [index]);
 }
@@ -8233,10 +8190,8 @@ var _utils = require("./plugins/utils");
  * Helper functions for accessing the RxStorage instances.
  */
 
-var INTERNAL_STORAGE_NAME = '_rxdb_internal';
-exports.INTERNAL_STORAGE_NAME = INTERNAL_STORAGE_NAME;
-var RX_DATABASE_LOCAL_DOCS_STORAGE_NAME = 'rxdatabase_storage_local';
-exports.RX_DATABASE_LOCAL_DOCS_STORAGE_NAME = RX_DATABASE_LOCAL_DOCS_STORAGE_NAME;
+var INTERNAL_STORAGE_NAME = exports.INTERNAL_STORAGE_NAME = '_rxdb_internal';
+var RX_DATABASE_LOCAL_DOCS_STORAGE_NAME = exports.RX_DATABASE_LOCAL_DOCS_STORAGE_NAME = 'rxdatabase_storage_local';
 async function getSingleDocument(storageInstance, documentId) {
   var results = await storageInstance.findDocumentsById([documentId], false);
   var doc = results[documentId];
@@ -8868,8 +8823,7 @@ var _broadcastChannel = require("broadcast-channel");
  * we should ensure that all channels are closed and cleaned up.
  * Otherwise we have forgot something.
  */
-var BROADCAST_CHANNEL_BY_TOKEN = new Map();
-exports.BROADCAST_CHANNEL_BY_TOKEN = BROADCAST_CHANNEL_BY_TOKEN;
+var BROADCAST_CHANNEL_BY_TOKEN = exports.BROADCAST_CHANNEL_BY_TOKEN = new Map();
 function getBroadcastChannelReference(databaseInstanceToken, databaseName, refObject) {
   var state = BROADCAST_CHANNEL_BY_TOKEN.get(databaseInstanceToken);
   if (!state) {
@@ -8969,7 +8923,7 @@ var _rxSchemaHelper = require("./rx-schema-helper");
  * But you can use anything that implements the interface,
  * for example if your underlying database already has a query engine.
  */
-var RxStorageDefaultStatics = {
+var RxStorageDefaultStatics = exports.RxStorageDefaultStatics = {
   prepareQuery(schema, mutateableQuery) {
     if (!mutateableQuery.sort) {
       throw (0, _rxError.newRxError)('SNH', {
@@ -8989,7 +8943,6 @@ var RxStorageDefaultStatics = {
   },
   checkpointSchema: _rxSchemaHelper.DEFAULT_CHECKPOINT_SCHEMA
 };
-exports.RxStorageDefaultStatics = RxStorageDefaultStatics;
 
 },{"./query-planner":31,"./rx-error":46,"./rx-schema-helper":50}],55:[function(require,module,exports){
 "use strict";

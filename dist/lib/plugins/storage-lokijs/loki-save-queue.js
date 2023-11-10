@@ -12,7 +12,7 @@ var _utils = require("../utils");
  * So instead we use a custom save queue that ensures we
  * only run loki.saveDatabase() when nothing else is running.
  */
-var LokiSaveQueue = /*#__PURE__*/function () {
+var LokiSaveQueue = exports.LokiSaveQueue = /*#__PURE__*/function () {
   /**
    * Ensures that we do not run multiple saves
    * in parallel
@@ -86,5 +86,4 @@ var LokiSaveQueue = /*#__PURE__*/function () {
   };
   return LokiSaveQueue;
 }();
-exports.LokiSaveQueue = LokiSaveQueue;
 //# sourceMappingURL=loki-save-queue.js.map

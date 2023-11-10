@@ -13,7 +13,7 @@ var _rxError = require("../../../rx-error");
  * this is based on
  * @link https://github.com/aheckmann/mquery/blob/master/lib/mquery.js
  */
-var NoSqlQueryBuilderClass = /*#__PURE__*/function () {
+var NoSqlQueryBuilderClass = exports.NoSqlQueryBuilderClass = /*#__PURE__*/function () {
   /**
    * MQuery constructor used for building queries.
    *
@@ -358,7 +358,6 @@ var NoSqlQueryBuilderClass = /*#__PURE__*/function () {
   };
   return NoSqlQueryBuilderClass;
 }();
-exports.NoSqlQueryBuilderClass = NoSqlQueryBuilderClass;
 function mQuerySortToRxDBSort(sort) {
   return Object.entries(sort).map(([k, v]) => {
     var direction = v === 1 ? 'asc' : 'desc';
@@ -381,8 +380,7 @@ function mQuerySortToRxDBSort(sort) {
  *
  *     query.comment('feed query');
  */
-var OTHER_MANGO_ATTRIBUTES = ['limit', 'skip', 'maxScan', 'batchSize', 'comment'];
-exports.OTHER_MANGO_ATTRIBUTES = OTHER_MANGO_ATTRIBUTES;
+var OTHER_MANGO_ATTRIBUTES = exports.OTHER_MANGO_ATTRIBUTES = ['limit', 'skip', 'maxScan', 'batchSize', 'comment'];
 OTHER_MANGO_ATTRIBUTES.forEach(function (method) {
   NoSqlQueryBuilderClass.prototype[method] = function (v) {
     this.options[method] = v;
@@ -395,8 +393,7 @@ OTHER_MANGO_ATTRIBUTES.forEach(function (method) {
  *
  *     Thing.where('type').nin(array)
  */
-var OTHER_MANGO_OPERATORS = ['gt', 'gte', 'lt', 'lte', 'ne', 'in', 'nin', 'all', 'regex', 'size'];
-exports.OTHER_MANGO_OPERATORS = OTHER_MANGO_OPERATORS;
+var OTHER_MANGO_OPERATORS = exports.OTHER_MANGO_OPERATORS = ['gt', 'gte', 'lt', 'lte', 'ne', 'in', 'nin', 'all', 'regex', 'size'];
 OTHER_MANGO_OPERATORS.forEach(function ($conditional) {
   NoSqlQueryBuilderClass.prototype[$conditional] = function () {
     var path;

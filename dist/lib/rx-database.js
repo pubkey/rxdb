@@ -32,7 +32,7 @@ var _overwritable = require("./overwritable");
  */
 var USED_DATABASE_NAMES = new Set();
 var DB_COUNT = 0;
-var RxDatabaseBase = /*#__PURE__*/function () {
+var RxDatabaseBase = exports.RxDatabaseBase = /*#__PURE__*/function () {
   /**
    * Contains all known non-closed storage instances
    * that belong to this database.
@@ -388,7 +388,6 @@ var RxDatabaseBase = /*#__PURE__*/function () {
  * checks if an instance with same name and adapter already exists
  * @throws {RxError} if used
  */
-exports.RxDatabaseBase = RxDatabaseBase;
 function throwIfDatabaseNameUsed(name) {
   if (!USED_DATABASE_NAMES.has(name)) {
     return;

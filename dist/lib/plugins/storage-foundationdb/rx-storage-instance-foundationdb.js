@@ -21,7 +21,7 @@ var _storageMemory = require("../storage-memory");
 //     keySelector as foundationDBKeySelector,
 //     StreamingMode as foundationDBStreamingMode
 // } from 'foundationdb';
-var RxStorageInstanceFoundationDB = /*#__PURE__*/function () {
+var RxStorageInstanceFoundationDB = exports.RxStorageInstanceFoundationDB = /*#__PURE__*/function () {
   function RxStorageInstanceFoundationDB(storage, databaseName, collectionName, schema, internals, options, settings) {
     this.closed = false;
     this.changes$ = new _rxjs.Subject();
@@ -284,7 +284,6 @@ var RxStorageInstanceFoundationDB = /*#__PURE__*/function () {
   };
   return RxStorageInstanceFoundationDB;
 }();
-exports.RxStorageInstanceFoundationDB = RxStorageInstanceFoundationDB;
 function createFoundationDBStorageInstance(storage, params, settings) {
   var primaryPath = (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(params.schema.primaryKey);
   var {

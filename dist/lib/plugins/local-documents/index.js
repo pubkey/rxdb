@@ -43,7 +43,7 @@ Object.keys(_rxLocalDocument).forEach(function (key) {
     }
   });
 });
-var RxDBLocalDocumentsPlugin = {
+var RxDBLocalDocumentsPlugin = exports.RxDBLocalDocumentsPlugin = {
   name: 'local-documents',
   rxdb: true,
   prototypes: {
@@ -106,5 +106,4 @@ var RxDBLocalDocumentsPlugin = {
   },
   overwritable: {}
 };
-exports.RxDBLocalDocumentsPlugin = RxDBLocalDocumentsPlugin;
 //# sourceMappingURL=index.js.map

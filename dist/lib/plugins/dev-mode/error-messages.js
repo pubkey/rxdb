@@ -10,7 +10,7 @@ exports.ERROR_MESSAGES = void 0;
  * This is mainly because error-string are hard to compress and we need a smaller build
  */
 
-var ERROR_MESSAGES = {
+var ERROR_MESSAGES = exports.ERROR_MESSAGES = {
   // util.js / config
   UT1: 'given name is no string or empty',
   UT2: "collection- and database-names must match the regex to be compatible with couchdb databases.\n    See https://neighbourhood.ie/blog/2020/10/13/everything-you-need-to-know-about-couchdb-database-names/\n    info: if your database-name specifies a folder, the name must contain the slash-char '/' or '\\'",
@@ -221,5 +221,4 @@ var ERROR_MESSAGES = {
    */
   SNH: 'This should never happen'
 };
-exports.ERROR_MESSAGES = ERROR_MESSAGES;
 //# sourceMappingURL=error-messages.js.map

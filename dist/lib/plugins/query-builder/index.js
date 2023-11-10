@@ -42,7 +42,7 @@ function applyBuildingStep(proto, functionName) {
     return runBuildingStep(this, functionName, value);
   };
 }
-var RxDBQueryBuilderPlugin = {
+var RxDBQueryBuilderPlugin = exports.RxDBQueryBuilderPlugin = {
   name: 'query-builder',
   rxdb: true,
   prototypes: {
@@ -59,5 +59,4 @@ var RxDBQueryBuilderPlugin = {
     }
   }
 };
-exports.RxDBQueryBuilderPlugin = RxDBQueryBuilderPlugin;
 //# sourceMappingURL=index.js.map

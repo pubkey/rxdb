@@ -29,9 +29,8 @@ function ensureInteger(obj) {
  * So we use these defaults.
  * @link https://cartant.medium.com/rxjs-whats-changed-with-sharereplay-65c098843e95
  */
-var RXJS_SHARE_REPLAY_DEFAULTS = {
+var RXJS_SHARE_REPLAY_DEFAULTS = exports.RXJS_SHARE_REPLAY_DEFAULTS = {
   bufferSize: 1,
   refCount: true
 };
-exports.RXJS_SHARE_REPLAY_DEFAULTS = RXJS_SHARE_REPLAY_DEFAULTS;
 //# sourceMappingURL=utils-other.js.map

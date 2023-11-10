@@ -16,12 +16,11 @@ var _utils = require("../../plugins/utils");
  */
 
 // we use two spaces because get-graphql-from-jsonschema does also
-var SPACING = '  ';
+var SPACING = exports.SPACING = '  ';
 
 /**
  * Create a GraphQL schema from a given RxJsonSchema
  */
-exports.SPACING = SPACING;
 function graphQLSchemaFromRxSchema(input) {
   var ret = {
     asString: '',

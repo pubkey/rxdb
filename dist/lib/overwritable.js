@@ -11,7 +11,7 @@ exports.overwritable = void 0;
  * and we do not want to have the full RxDB lib bundled in them.
  */
 
-var overwritable = {
+var overwritable = exports.overwritable = {
   /**
    * if this method is overwritten with one
    * that returns true, we do additional checks
@@ -36,5 +36,4 @@ var overwritable = {
     return "RxDB Error-Code " + message + ".\n        Error messages are not included in RxDB core to reduce build size.\n        - To find out what this error means, either use the dev-mode-plugin https://rxdb.info/dev-mode.html\n        - or search for the error code here: https://github.com/pubkey/rxdb/search?q=" + message + "\n        ";
   }
 };
-exports.overwritable = overwritable;
 //# sourceMappingURL=overwritable.js.map

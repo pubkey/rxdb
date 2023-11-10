@@ -28,6 +28,5 @@ function getValidator(schema) {
     }
   };
 }
-var wrappedValidateAjvStorage = (0, _pluginHelpers.wrappedValidateStorageFactory)(getValidator, 'ajv');
-exports.wrappedValidateAjvStorage = wrappedValidateAjvStorage;
+var wrappedValidateAjvStorage = exports.wrappedValidateAjvStorage = (0, _pluginHelpers.wrappedValidateStorageFactory)(getValidator, 'ajv');
 //# sourceMappingURL=index.js.map

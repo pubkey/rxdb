@@ -9,7 +9,7 @@ var _operators = require("rxjs/operators");
 /**
  * a buffer-cache which holds the last X changeEvents of the collection
  */
-var ChangeEventBuffer = /*#__PURE__*/function () {
+var ChangeEventBuffer = exports.ChangeEventBuffer = /*#__PURE__*/function () {
   /**
    * array with changeEvents
    * starts with oldest known event, ends with newest
@@ -97,7 +97,6 @@ var ChangeEventBuffer = /*#__PURE__*/function () {
   };
   return ChangeEventBuffer;
 }();
-exports.ChangeEventBuffer = ChangeEventBuffer;
 function createChangeEventBuffer(collection) {
   return new ChangeEventBuffer(collection);
 }

@@ -198,7 +198,7 @@ function fillWithDefaultSettings(schemaObj) {
   }
   return schemaObj;
 }
-var RX_META_SCHEMA = {
+var RX_META_SCHEMA = exports.RX_META_SCHEMA = {
   type: 'object',
   properties: {
     /**
@@ -227,7 +227,6 @@ var RX_META_SCHEMA = {
  * returns the final-fields of the schema
  * @return field-names of the final-fields
  */
-exports.RX_META_SCHEMA = RX_META_SCHEMA;
 function getFinalFields(jsonSchema) {
   var ret = Object.keys(jsonSchema.properties).filter(key => jsonSchema.properties[key].final);
 
@@ -256,7 +255,7 @@ function fillObjectWithDefaults(rxSchema, obj) {
   }
   return obj;
 }
-var DEFAULT_CHECKPOINT_SCHEMA = {
+var DEFAULT_CHECKPOINT_SCHEMA = exports.DEFAULT_CHECKPOINT_SCHEMA = {
   type: 'object',
   properties: {
     id: {
@@ -269,5 +268,4 @@ var DEFAULT_CHECKPOINT_SCHEMA = {
   required: ['id', 'lwt'],
   additionalProperties: false
 };
-exports.DEFAULT_CHECKPOINT_SCHEMA = DEFAULT_CHECKPOINT_SCHEMA;
 //# sourceMappingURL=rx-schema-helper.js.map

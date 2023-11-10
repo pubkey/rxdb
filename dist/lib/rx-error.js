@@ -43,7 +43,7 @@ function parametersToString(parameters) {
 function messageForError(message, code, parameters) {
   return 'RxError (' + code + '):' + '\n' + message + '\n' + parametersToString(parameters);
 }
-var RxError = /*#__PURE__*/function (_Error) {
+var RxError = exports.RxError = /*#__PURE__*/function (_Error) {
   (0, _inheritsLoose2.default)(RxError, _Error);
   // always true, use this to detect if its an rxdb-error
 
@@ -74,8 +74,7 @@ var RxError = /*#__PURE__*/function (_Error) {
   }]);
   return RxError;
 }( /*#__PURE__*/(0, _wrapNativeSuper2.default)(Error));
-exports.RxError = RxError;
-var RxTypeError = /*#__PURE__*/function (_TypeError) {
+var RxTypeError = exports.RxTypeError = /*#__PURE__*/function (_TypeError) {
   (0, _inheritsLoose2.default)(RxTypeError, _TypeError);
   // always true, use this to detect if its an rxdb-error
 
@@ -106,7 +105,6 @@ var RxTypeError = /*#__PURE__*/function (_TypeError) {
   }]);
   return RxTypeError;
 }( /*#__PURE__*/(0, _wrapNativeSuper2.default)(TypeError));
-exports.RxTypeError = RxTypeError;
 function newRxError(code, parameters) {
   return new RxError(code, _overwritable.overwritable.tunnelErrorMessage(code), parameters);
 }

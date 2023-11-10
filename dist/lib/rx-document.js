@@ -18,7 +18,7 @@ var _overwritable = require("./overwritable");
 var _rxSchemaHelper = require("./rx-schema-helper");
 var _rxStorageHelper = require("./rx-storage-helper");
 var _incrementalWrite = require("./incremental-write");
-var basePrototype = {
+var basePrototype = exports.basePrototype = {
   get primaryPath() {
     var _this = this;
     if (!_this.isInstanceOfRxDocument) {
@@ -303,7 +303,6 @@ var basePrototype = {
     throw (0, _rxError.newRxError)('DOC14');
   }
 };
-exports.basePrototype = basePrototype;
 function createRxDocumentConstructor(proto = basePrototype) {
   var constructor = function RxDocumentConstructor(collection, docData) {
     this.collection = collection;

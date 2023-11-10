@@ -42,7 +42,7 @@ Object.keys(_natsTypes).forEach(function (key) {
     }
   });
 });
-var RxNatsReplicationState = /*#__PURE__*/function (_RxReplicationState) {
+var RxNatsReplicationState = exports.RxNatsReplicationState = /*#__PURE__*/function (_RxReplicationState) {
   (0, _inheritsLoose2.default)(RxNatsReplicationState, _RxReplicationState);
   function RxNatsReplicationState(replicationIdentifierHash, collection, pull, push, live = true, retryTime = 1000 * 5, autoStart = true) {
     var _this;
@@ -58,7 +58,6 @@ var RxNatsReplicationState = /*#__PURE__*/function (_RxReplicationState) {
   }
   return RxNatsReplicationState;
 }(_replication.RxReplicationState);
-exports.RxNatsReplicationState = RxNatsReplicationState;
 function replicateNats(options) {
   options.live = typeof options.live === 'undefined' ? true : options.live;
   options.waitForLeadership = typeof options.waitForLeadership === 'undefined' ? true : options.waitForLeadership;

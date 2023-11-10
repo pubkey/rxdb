@@ -44,6 +44,5 @@ function getValidator(schema) {
     }
   };
 }
-var wrappedValidateZSchemaStorage = (0, _pluginHelpers.wrappedValidateStorageFactory)(getValidator, 'z-schema');
-exports.wrappedValidateZSchemaStorage = wrappedValidateZSchemaStorage;
+var wrappedValidateZSchemaStorage = exports.wrappedValidateZSchemaStorage = (0, _pluginHelpers.wrappedValidateStorageFactory)(getValidator, 'z-schema');
 //# sourceMappingURL=index.js.map

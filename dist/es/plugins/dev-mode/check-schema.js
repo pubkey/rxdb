@@ -44,7 +44,12 @@ export function checkFieldNameRegex(fieldName) {
 export function validateFieldsDeep(rxJsonSchema) {
   var primaryPath = getPrimaryFieldOfPrimaryKey(rxJsonSchema.primaryKey);
   function checkField(fieldName, schemaObj, path) {
-    if (typeof fieldName === 'string' && typeof schemaObj === 'object' && !Array.isArray(schemaObj)) checkFieldNameRegex(fieldName);
+    if (typeof fieldName === 'string' && typeof schemaObj === 'object' && !Array.isArray(schemaObj) &&
+    /*
+        READWISE modification. Related: https://github.com/pubkey/rxdb/pull/4951
+        TODO: remove once we're on version 15.
+    */
+    path.split('.').pop() !== 'patternProperties') checkFieldNameRegex(fieldName);
 
     // 'item' only allowed it type=='array'
     if (schemaObj.hasOwnProperty('item') && schemaObj.type !== 'array') {

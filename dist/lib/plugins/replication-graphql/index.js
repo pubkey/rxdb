@@ -68,7 +68,7 @@ Object.keys(_queryBuilderFromRxSchema).forEach(function (key) {
  * this plugin adds the RxCollection.syncGraphQl()-function to rxdb
  * you can use it to sync collections with a remote graphql endpoint.
  */
-var RxGraphQLReplicationState = /*#__PURE__*/function (_RxReplicationState) {
+var RxGraphQLReplicationState = exports.RxGraphQLReplicationState = /*#__PURE__*/function (_RxReplicationState) {
   (0, _inheritsLoose2.default)(RxGraphQLReplicationState, _RxReplicationState);
   function RxGraphQLReplicationState(url, clientState, replicationIdentifierHash, collection, deletedField, pull, push, live, retryTime, autoStart) {
     var _this;
@@ -97,7 +97,6 @@ var RxGraphQLReplicationState = /*#__PURE__*/function (_RxReplicationState) {
   };
   return RxGraphQLReplicationState;
 }(_replication.RxReplicationState);
-exports.RxGraphQLReplicationState = RxGraphQLReplicationState;
 function replicateGraphQL({
   collection,
   url,

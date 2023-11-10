@@ -19,10 +19,8 @@ var _rxStorageHelper = require("../../rx-storage-helper");
 var _utils = require("../../plugins/utils");
 var _rxLocalDocument = require("./rx-local-document");
 var _overwritable = require("../../overwritable");
-var LOCAL_DOC_STATE_BY_PARENT = new WeakMap();
-exports.LOCAL_DOC_STATE_BY_PARENT = LOCAL_DOC_STATE_BY_PARENT;
-var LOCAL_DOC_STATE_BY_PARENT_RESOLVED = new WeakMap();
-exports.LOCAL_DOC_STATE_BY_PARENT_RESOLVED = LOCAL_DOC_STATE_BY_PARENT_RESOLVED;
+var LOCAL_DOC_STATE_BY_PARENT = exports.LOCAL_DOC_STATE_BY_PARENT = new WeakMap();
+var LOCAL_DOC_STATE_BY_PARENT_RESOLVED = exports.LOCAL_DOC_STATE_BY_PARENT_RESOLVED = new WeakMap();
 function createLocalDocStateByParent(parent) {
   var database = parent.database ? parent.database : parent;
   var collectionName = parent.database ? parent.name : '';
@@ -105,7 +103,7 @@ async function removeLocalDocumentsStorageInstance(storage, databaseName, collec
 function getCollectionLocalInstanceName(collectionName) {
   return 'plugin-local-documents-' + collectionName;
 }
-var RX_LOCAL_DOCUMENT_SCHEMA = (0, _rxSchemaHelper.fillWithDefaultSettings)({
+var RX_LOCAL_DOCUMENT_SCHEMA = exports.RX_LOCAL_DOCUMENT_SCHEMA = (0, _rxSchemaHelper.fillWithDefaultSettings)({
   title: 'RxLocalDocument',
   version: 0,
   primaryKey: 'id',
@@ -122,5 +120,4 @@ var RX_LOCAL_DOCUMENT_SCHEMA = (0, _rxSchemaHelper.fillWithDefaultSettings)({
   },
   required: ['id', 'data']
 });
-exports.RX_LOCAL_DOCUMENT_SCHEMA = RX_LOCAL_DOCUMENT_SCHEMA;
 //# sourceMappingURL=local-documents-helper.js.map

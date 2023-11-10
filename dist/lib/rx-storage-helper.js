@@ -27,10 +27,8 @@ var _utils = require("./plugins/utils");
  * Helper functions for accessing the RxStorage instances.
  */
 
-var INTERNAL_STORAGE_NAME = '_rxdb_internal';
-exports.INTERNAL_STORAGE_NAME = INTERNAL_STORAGE_NAME;
-var RX_DATABASE_LOCAL_DOCS_STORAGE_NAME = 'rxdatabase_storage_local';
-exports.RX_DATABASE_LOCAL_DOCS_STORAGE_NAME = RX_DATABASE_LOCAL_DOCS_STORAGE_NAME;
+var INTERNAL_STORAGE_NAME = exports.INTERNAL_STORAGE_NAME = '_rxdb_internal';
+var RX_DATABASE_LOCAL_DOCS_STORAGE_NAME = exports.RX_DATABASE_LOCAL_DOCS_STORAGE_NAME = 'rxdatabase_storage_local';
 async function getSingleDocument(storageInstance, documentId) {
   var results = await storageInstance.findDocumentsById([documentId], false);
   var doc = results[documentId];

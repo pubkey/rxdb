@@ -24,9 +24,8 @@ var _hooks = require("../../hooks");
  * but also can be used as standalone with a custom replication handler.
  */
 
-var REPLICATION_STATE_BY_COLLECTION = new WeakMap();
-exports.REPLICATION_STATE_BY_COLLECTION = REPLICATION_STATE_BY_COLLECTION;
-var RxReplicationState = /*#__PURE__*/function () {
+var REPLICATION_STATE_BY_COLLECTION = exports.REPLICATION_STATE_BY_COLLECTION = new WeakMap();
+var RxReplicationState = exports.RxReplicationState = /*#__PURE__*/function () {
   function RxReplicationState(
   /**
    * hash of the identifier, used to flag revisions
@@ -327,7 +326,6 @@ var RxReplicationState = /*#__PURE__*/function () {
   };
   return RxReplicationState;
 }();
-exports.RxReplicationState = RxReplicationState;
 function replicateRxCollection({
   replicationIdentifier,
   collection,

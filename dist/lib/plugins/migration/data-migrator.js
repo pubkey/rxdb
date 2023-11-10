@@ -37,7 +37,7 @@ var _migrationHelpers = require("./migration-helpers");
  * - This could have been done in much less code which would be easier to understand
  *
  */
-var DataMigrator = /*#__PURE__*/function () {
+var DataMigrator = exports.DataMigrator = /*#__PURE__*/function () {
   function DataMigrator(newestCollection, migrationStrategies) {
     this._migrated = false;
     this.nonMigratedOldCollections = [];
@@ -177,7 +177,6 @@ var DataMigrator = /*#__PURE__*/function () {
   };
   return DataMigrator;
 }();
-exports.DataMigrator = DataMigrator;
 async function createOldCollection(version, schemaObj, dataMigrator) {
   var database = dataMigrator.newestCollection.database;
   var storageInstanceCreationParams = {

@@ -13,8 +13,7 @@ exports.stripPrimaryKey = stripPrimaryKey;
 exports.stripServerTimestampField = stripServerTimestampField;
 var _firestore = require("firebase/firestore");
 var _utils = require("../../plugins/utils");
-var FIRESTORE_REPLICATION_PLUGIN_IDENTITY_PREFIX = 'firestore';
-exports.FIRESTORE_REPLICATION_PLUGIN_IDENTITY_PREFIX = FIRESTORE_REPLICATION_PLUGIN_IDENTITY_PREFIX;
+var FIRESTORE_REPLICATION_PLUGIN_IDENTITY_PREFIX = exports.FIRESTORE_REPLICATION_PLUGIN_IDENTITY_PREFIX = 'firestore';
 function getFirestoreSortFieldValue(docData, primaryKey) {
   var timeString = (0, _utils.now)() + '';
   return 'rxdb-' + timeString.padStart(15, '0') + '-' + docData[primaryKey];

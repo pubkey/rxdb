@@ -77,17 +77,15 @@ function onDestroy(db) {
     has.die();
   }
 }
-var rxdb = true;
-exports.rxdb = rxdb;
-var prototypes = {
+var rxdb = exports.rxdb = true;
+var prototypes = exports.prototypes = {
   RxDatabase: proto => {
     proto.leaderElector = getForDatabase;
     proto.isLeader = isLeader;
     proto.waitForLeadership = waitForLeadership;
   }
 };
-exports.prototypes = prototypes;
-var RxDBLeaderElectionPlugin = {
+var RxDBLeaderElectionPlugin = exports.RxDBLeaderElectionPlugin = {
   name: 'leader-election',
   rxdb,
   prototypes,
@@ -97,5 +95,4 @@ var RxDBLeaderElectionPlugin = {
     }
   }
 };
-exports.RxDBLeaderElectionPlugin = RxDBLeaderElectionPlugin;
 //# sourceMappingURL=index.js.map

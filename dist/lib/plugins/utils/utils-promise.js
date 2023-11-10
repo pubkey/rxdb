@@ -32,20 +32,16 @@ function toPromise(maybePromise) {
  * Reusing resolved promises has a better
  * performance than creating new ones each time.
  */
-var PROMISE_RESOLVE_TRUE = Promise.resolve(true);
-exports.PROMISE_RESOLVE_TRUE = PROMISE_RESOLVE_TRUE;
-var PROMISE_RESOLVE_FALSE = Promise.resolve(false);
-exports.PROMISE_RESOLVE_FALSE = PROMISE_RESOLVE_FALSE;
-var PROMISE_RESOLVE_NULL = Promise.resolve(null);
-exports.PROMISE_RESOLVE_NULL = PROMISE_RESOLVE_NULL;
-var PROMISE_RESOLVE_VOID = Promise.resolve();
+var PROMISE_RESOLVE_TRUE = exports.PROMISE_RESOLVE_TRUE = Promise.resolve(true);
+var PROMISE_RESOLVE_FALSE = exports.PROMISE_RESOLVE_FALSE = Promise.resolve(false);
+var PROMISE_RESOLVE_NULL = exports.PROMISE_RESOLVE_NULL = Promise.resolve(null);
+var PROMISE_RESOLVE_VOID = exports.PROMISE_RESOLVE_VOID = Promise.resolve();
 
 /**
  * If multiple operations wait for an requestIdlePromise
  * we do not want them to resolve all at the same time.
  * So we have to queue the calls.
  */
-exports.PROMISE_RESOLVE_VOID = PROMISE_RESOLVE_VOID;
 var idlePromiseQueue = PROMISE_RESOLVE_VOID;
 function requestIdlePromise(timeout = undefined) {
   idlePromiseQueue = idlePromiseQueue.then(() => {

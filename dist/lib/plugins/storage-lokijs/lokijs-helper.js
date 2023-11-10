@@ -24,19 +24,15 @@ var _rxError = require("../../rx-error");
 var _rxStorageMultiinstance = require("../../rx-storage-multiinstance");
 var _leaderElection = require("../leader-election");
 var _overwritable = require("../../overwritable");
-var CHANGES_COLLECTION_SUFFIX = '-rxdb-changes';
-exports.CHANGES_COLLECTION_SUFFIX = CHANGES_COLLECTION_SUFFIX;
-var LOKI_BROADCAST_CHANNEL_MESSAGE_TYPE = 'rxdb-lokijs-remote-request';
-exports.LOKI_BROADCAST_CHANNEL_MESSAGE_TYPE = LOKI_BROADCAST_CHANNEL_MESSAGE_TYPE;
-var LOKI_KEY_OBJECT_BROADCAST_CHANNEL_MESSAGE_TYPE = 'rxdb-lokijs-remote-request-key-object';
-exports.LOKI_KEY_OBJECT_BROADCAST_CHANNEL_MESSAGE_TYPE = LOKI_KEY_OBJECT_BROADCAST_CHANNEL_MESSAGE_TYPE;
-var RX_STORAGE_NAME_LOKIJS = 'lokijs';
+var CHANGES_COLLECTION_SUFFIX = exports.CHANGES_COLLECTION_SUFFIX = '-rxdb-changes';
+var LOKI_BROADCAST_CHANNEL_MESSAGE_TYPE = exports.LOKI_BROADCAST_CHANNEL_MESSAGE_TYPE = 'rxdb-lokijs-remote-request';
+var LOKI_KEY_OBJECT_BROADCAST_CHANNEL_MESSAGE_TYPE = exports.LOKI_KEY_OBJECT_BROADCAST_CHANNEL_MESSAGE_TYPE = 'rxdb-lokijs-remote-request-key-object';
+var RX_STORAGE_NAME_LOKIJS = exports.RX_STORAGE_NAME_LOKIJS = 'lokijs';
 
 /**
  * Loki attaches a $loki property to all data
  * which must be removed before returning the data back to RxDB.
  */
-exports.RX_STORAGE_NAME_LOKIJS = RX_STORAGE_NAME_LOKIJS;
 function stripLokiKey(docData) {
   if (!docData.$loki) {
     return docData;
@@ -62,9 +58,8 @@ function stripLokiKey(docData) {
 /**
  * Used to check in tests if all instances have been cleaned up.
  */
-var OPEN_LOKIJS_STORAGE_INSTANCES = new Set();
-exports.OPEN_LOKIJS_STORAGE_INSTANCES = OPEN_LOKIJS_STORAGE_INSTANCES;
-var LOKIJS_COLLECTION_DEFAULT_OPTIONS = {
+var OPEN_LOKIJS_STORAGE_INSTANCES = exports.OPEN_LOKIJS_STORAGE_INSTANCES = new Set();
+var LOKIJS_COLLECTION_DEFAULT_OPTIONS = exports.LOKIJS_COLLECTION_DEFAULT_OPTIONS = {
   disableChangesApi: true,
   disableMeta: true,
   disableDeltaChangesApi: true,
@@ -75,7 +70,6 @@ var LOKIJS_COLLECTION_DEFAULT_OPTIONS = {
   transactional: false,
   autoupdate: false
 };
-exports.LOKIJS_COLLECTION_DEFAULT_OPTIONS = LOKIJS_COLLECTION_DEFAULT_OPTIONS;
 var LOKI_DATABASE_STATE_BY_NAME = new Map();
 function getLokiDatabase(databaseName, databaseSettings) {
   return (0, _utils.getFromMapOrCreate)(LOKI_DATABASE_STATE_BY_NAME, databaseName, () => {

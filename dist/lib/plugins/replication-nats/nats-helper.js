@@ -5,8 +5,7 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.NATS_REPLICATION_PLUGIN_IDENTITY_PREFIX = void 0;
 exports.getNatsServerDocumentState = getNatsServerDocumentState;
-var NATS_REPLICATION_PLUGIN_IDENTITY_PREFIX = 'nats';
-exports.NATS_REPLICATION_PLUGIN_IDENTITY_PREFIX = NATS_REPLICATION_PLUGIN_IDENTITY_PREFIX;
+var NATS_REPLICATION_PLUGIN_IDENTITY_PREFIX = exports.NATS_REPLICATION_PLUGIN_IDENTITY_PREFIX = 'nats';
 async function getNatsServerDocumentState(natsStream, subjectPrefix, docId) {
   var remoteDocState = await natsStream.getMessage({
     last_by_subj: subjectPrefix + '.' + docId

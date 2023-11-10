@@ -11,8 +11,7 @@ exports.getDefaultFetch = getDefaultFetch;
 exports.getFetchWithCouchDBAuthorization = getFetchWithCouchDBAuthorization;
 exports.mergeUrlQueryParams = mergeUrlQueryParams;
 var _utils = require("../../plugins/utils");
-var COUCHDB_NEW_REPLICATION_PLUGIN_IDENTITY_PREFIX = 'couchdb';
-exports.COUCHDB_NEW_REPLICATION_PLUGIN_IDENTITY_PREFIX = COUCHDB_NEW_REPLICATION_PLUGIN_IDENTITY_PREFIX;
+var COUCHDB_NEW_REPLICATION_PLUGIN_IDENTITY_PREFIX = exports.COUCHDB_NEW_REPLICATION_PLUGIN_IDENTITY_PREFIX = 'couchdb';
 function mergeUrlQueryParams(params) {
   return Object.entries(params).filter(([_k, value]) => typeof value !== 'undefined').map(([key, value]) => key + '=' + value).join('&');
 }

@@ -65,9 +65,8 @@ function deepFreezeWhenDevMode(obj) {
   }
   return (0, _utils.deepFreeze)(obj);
 }
-var DEV_MODE_PLUGIN_NAME = 'dev-mode';
-exports.DEV_MODE_PLUGIN_NAME = DEV_MODE_PLUGIN_NAME;
-var RxDBDevModePlugin = {
+var DEV_MODE_PLUGIN_NAME = exports.DEV_MODE_PLUGIN_NAME = 'dev-mode';
+var RxDBDevModePlugin = exports.RxDBDevModePlugin = {
   name: DEV_MODE_PLUGIN_NAME,
   rxdb: true,
   init: () => {
@@ -142,5 +141,4 @@ var RxDBDevModePlugin = {
     }
   }
 };
-exports.RxDBDevModePlugin = RxDBDevModePlugin;
 //# sourceMappingURL=index.js.map

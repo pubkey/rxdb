@@ -174,7 +174,7 @@ async function replicateP2P(options) {
  * Because the P2P replication runs between many instances,
  * we use a Pool instead of returning a single replication state.
  */
-var RxP2PReplicationPool = /*#__PURE__*/function () {
+var RxP2PReplicationPool = exports.RxP2PReplicationPool = /*#__PURE__*/function () {
   function RxP2PReplicationPool(collection, options, connectionHandler) {
     this.peerStates$ = new _rxjs.BehaviorSubject(new Map());
     this.canceled = false;
@@ -227,5 +227,4 @@ var RxP2PReplicationPool = /*#__PURE__*/function () {
   return RxP2PReplicationPool;
 }(); // export * from './connection-handler-webtorrent';
 // export * from './connection-handler-p2pcf';
-exports.RxP2PReplicationPool = RxP2PReplicationPool;
 //# sourceMappingURL=index.js.map

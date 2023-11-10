@@ -14,7 +14,7 @@ var _utils = require("./plugins/utils");
  * the query-cache makes sure that on every query-state, exactly one instance can exist
  * if you use the same mango-query more then once, it will reuse the first RxQuery
  */
-var QueryCache = /*#__PURE__*/function () {
+var QueryCache = exports.QueryCache = /*#__PURE__*/function () {
   function QueryCache() {
     this._map = new Map();
   }
@@ -30,7 +30,6 @@ var QueryCache = /*#__PURE__*/function () {
   };
   return QueryCache;
 }();
-exports.QueryCache = QueryCache;
 function createQueryCache() {
   return new QueryCache();
 }
@@ -42,9 +41,8 @@ function uncacheRxQuery(queryCache, rxQuery) {
 function countRxQuerySubscribers(rxQuery) {
   return rxQuery.refCount$.observers.length;
 }
-var DEFAULT_TRY_TO_KEEP_MAX = 100;
-exports.DEFAULT_TRY_TO_KEEP_MAX = DEFAULT_TRY_TO_KEEP_MAX;
-var DEFAULT_UNEXECUTED_LIFETIME = 30 * 1000;
+var DEFAULT_TRY_TO_KEEP_MAX = exports.DEFAULT_TRY_TO_KEEP_MAX = 100;
+var DEFAULT_UNEXECUTED_LIFETIME = exports.DEFAULT_UNEXECUTED_LIFETIME = 30 * 1000;
 
 /**
  * The default cache replacement policy
@@ -52,7 +50,6 @@ var DEFAULT_UNEXECUTED_LIFETIME = 30 * 1000;
  * Notice that this runs often and should block the cpu as less as possible
  * This is a monad which makes it easier to unit test
  */
-exports.DEFAULT_UNEXECUTED_LIFETIME = DEFAULT_UNEXECUTED_LIFETIME;
 var defaultCacheReplacementPolicyMonad = (tryToKeepMax, unExecutedLifetime) => (_collection, queryCache) => {
   if (queryCache._map.size < tryToKeepMax) {
     return;
@@ -81,9 +78,8 @@ var defaultCacheReplacementPolicyMonad = (tryToKeepMax, unExecutedLifetime) => (
   toRemove.forEach(rxQuery => uncacheRxQuery(queryCache, rxQuery));
 };
 exports.defaultCacheReplacementPolicyMonad = defaultCacheReplacementPolicyMonad;
-var defaultCacheReplacementPolicy = defaultCacheReplacementPolicyMonad(DEFAULT_TRY_TO_KEEP_MAX, DEFAULT_UNEXECUTED_LIFETIME);
-exports.defaultCacheReplacementPolicy = defaultCacheReplacementPolicy;
-var COLLECTIONS_WITH_RUNNING_CLEANUP = new WeakSet();
+var defaultCacheReplacementPolicy = exports.defaultCacheReplacementPolicy = defaultCacheReplacementPolicyMonad(DEFAULT_TRY_TO_KEEP_MAX, DEFAULT_UNEXECUTED_LIFETIME);
+var COLLECTIONS_WITH_RUNNING_CLEANUP = exports.COLLECTIONS_WITH_RUNNING_CLEANUP = new WeakSet();
 
 /**
  * Triggers the cache replacement policy after waitTime has passed.
@@ -91,7 +87,6 @@ var COLLECTIONS_WITH_RUNNING_CLEANUP = new WeakSet();
  * we need all CPU to minimize latency.
  * Also this should not be triggered multiple times when waitTime is still waiting.
  */
-exports.COLLECTIONS_WITH_RUNNING_CLEANUP = COLLECTIONS_WITH_RUNNING_CLEANUP;
 function triggerCacheReplacement(rxCollection) {
   if (COLLECTIONS_WITH_RUNNING_CLEANUP.has(rxCollection)) {
     // already started

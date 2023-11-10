@@ -12,7 +12,7 @@ var _rxSchemaHelper = require("./rx-schema-helper");
  * But you can use anything that implements the interface,
  * for example if your underlying database already has a query engine.
  */
-var RxStorageDefaultStatics = {
+var RxStorageDefaultStatics = exports.RxStorageDefaultStatics = {
   prepareQuery(schema, mutateableQuery) {
     if (!mutateableQuery.sort) {
       throw (0, _rxError.newRxError)('SNH', {
@@ -32,5 +32,4 @@ var RxStorageDefaultStatics = {
   },
   checkpointSchema: _rxSchemaHelper.DEFAULT_CHECKPOINT_SCHEMA
 };
-exports.RxStorageDefaultStatics = RxStorageDefaultStatics;
 //# sourceMappingURL=rx-storage-statics.js.map

@@ -14,7 +14,7 @@ var _rxSchemaHelper = require("../../rx-schema-helper");
 var _rxStorageHelper = require("../../rx-storage-helper");
 var _rxStorageMultiinstance = require("../../rx-storage-multiinstance");
 var instanceId = (0, _utils.now)();
-var RxStorageInstanceLoki = /*#__PURE__*/function () {
+var RxStorageInstanceLoki = exports.RxStorageInstanceLoki = /*#__PURE__*/function () {
   function RxStorageInstanceLoki(databaseInstanceToken, storage, databaseName, collectionName, schema, internals, options, databaseSettings) {
     this.changes$ = new _rxjs.Subject();
     this.instanceId = instanceId++;
@@ -249,7 +249,6 @@ var RxStorageInstanceLoki = /*#__PURE__*/function () {
   _proto.resolveConflictResultionTask = async function resolveConflictResultionTask(_taskSolution) {};
   return RxStorageInstanceLoki;
 }();
-exports.RxStorageInstanceLoki = RxStorageInstanceLoki;
 async function createLokiLocalState(params, databaseSettings) {
   if (!params.options) {
     params.options = {};

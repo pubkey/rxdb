@@ -26,7 +26,7 @@ var _overwritable = require("./overwritable");
 var HOOKS_WHEN = ['pre', 'post'];
 var HOOKS_KEYS = ['insert', 'save', 'remove', 'create'];
 var hooksApplied = false;
-var RxCollectionBase = /*#__PURE__*/function () {
+var RxCollectionBase = exports.RxCollectionBase = /*#__PURE__*/function () {
   /**
    * Stores all 'normal' documents
    */
@@ -542,7 +542,6 @@ var RxCollectionBase = /*#__PURE__*/function () {
  * adds the hook-functions to the collections prototype
  * this runs only once
  */
-exports.RxCollectionBase = RxCollectionBase;
 function _applyHookFunctions(collection) {
   if (hooksApplied) return; // already run
   hooksApplied = true;

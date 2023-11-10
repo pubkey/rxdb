@@ -25,6 +25,5 @@ function getValidator(schema) {
     }
   };
 }
-var wrappedValidateIsMyJsonValidStorage = (0, _pluginHelpers.wrappedValidateStorageFactory)(getValidator, 'is-my-json-valid');
-exports.wrappedValidateIsMyJsonValidStorage = wrappedValidateIsMyJsonValidStorage;
+var wrappedValidateIsMyJsonValidStorage = exports.wrappedValidateIsMyJsonValidStorage = (0, _pluginHelpers.wrappedValidateStorageFactory)(getValidator, 'is-my-json-valid');
 //# sourceMappingURL=index.js.map

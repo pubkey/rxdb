@@ -13,8 +13,7 @@ var _isomorphicWs = _interopRequireDefault(require("isomorphic-ws"));
 var {
   WebSocket: IsomorphicWebSocket
 } = _isomorphicWs.default;
-var GRAPHQL_WEBSOCKET_BY_URL = new Map();
-exports.GRAPHQL_WEBSOCKET_BY_URL = GRAPHQL_WEBSOCKET_BY_URL;
+var GRAPHQL_WEBSOCKET_BY_URL = exports.GRAPHQL_WEBSOCKET_BY_URL = new Map();
 function getGraphQLWebSocket(url, headers) {
   var has = (0, _utils.getFromMapOrCreate)(GRAPHQL_WEBSOCKET_BY_URL, url, () => {
     var wsClient = (0, _graphqlWs.createClient)({

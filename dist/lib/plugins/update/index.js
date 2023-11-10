@@ -39,7 +39,7 @@ function RxQueryUpdate(updateObj) {
     }
   });
 }
-var RxDBUpdatePlugin = {
+var RxDBUpdatePlugin = exports.RxDBUpdatePlugin = {
   name: 'update',
   rxdb: true,
   prototypes: {
@@ -52,5 +52,4 @@ var RxDBUpdatePlugin = {
     }
   }
 };
-exports.RxDBUpdatePlugin = RxDBUpdatePlugin;
 //# sourceMappingURL=index.js.map

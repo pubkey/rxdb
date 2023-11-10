@@ -76,7 +76,7 @@ function importDumpRxCollection(exportedJSON) {
     };
   }), 'json-dump-import');
 }
-var RxDBJsonDumpPlugin = {
+var RxDBJsonDumpPlugin = exports.RxDBJsonDumpPlugin = {
   name: 'json-dump',
   rxdb: true,
   prototypes: {
@@ -91,5 +91,4 @@ var RxDBJsonDumpPlugin = {
   },
   overwritable: {}
 };
-exports.RxDBJsonDumpPlugin = RxDBJsonDumpPlugin;
 //# sourceMappingURL=index.js.map

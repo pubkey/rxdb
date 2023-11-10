@@ -18,8 +18,7 @@ function getSortFieldsOfQuery(primaryKey, query) {
     return query.sort.map(part => Object.keys(part)[0]);
   }
 }
-var RXQUERY_QUERY_PARAMS_CACHE = new WeakMap();
-exports.RXQUERY_QUERY_PARAMS_CACHE = RXQUERY_QUERY_PARAMS_CACHE;
+var RXQUERY_QUERY_PARAMS_CACHE = exports.RXQUERY_QUERY_PARAMS_CACHE = new WeakMap();
 function getQueryParams(rxQuery) {
   return (0, _utils.getFromMapOrCreate)(RXQUERY_QUERY_PARAMS_CACHE, rxQuery, () => {
     var collection = rxQuery.collection;

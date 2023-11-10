@@ -20,7 +20,7 @@ var _rxChangeEvent = require("./rx-change-event");
  * only contains weak references to the RxDocuments themself.
  * @link https://caniuse.com/?search=weakref
  */
-var DocumentCache = /*#__PURE__*/function () {
+var DocumentCache = exports.DocumentCache = /*#__PURE__*/function () {
   /**
    * Some JavaScript runtimes like QuickJS,
    * so not have a FinalizationRegistry or WeakRef.
@@ -101,7 +101,6 @@ var DocumentCache = /*#__PURE__*/function () {
   };
   return DocumentCache;
 }();
-exports.DocumentCache = DocumentCache;
 function getNewCacheItem(docData) {
   return {
     documentByRevisionHeight: new Map(),

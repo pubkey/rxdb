@@ -11,7 +11,7 @@ var _utils = require("../../plugins/utils");
 var _mongodb = require("mongodb");
 var _rxStorageHelper = require("../../rx-storage-helper");
 var _mongodbHelper = require("./mongodb-helper");
-var RxStorageInstanceMongoDB = /*#__PURE__*/function () {
+var RxStorageInstanceMongoDB = exports.RxStorageInstanceMongoDB = /*#__PURE__*/function () {
   // public mongoChangeStream?: MongoChangeStream<any, ChangeStreamDocument<any>>;
 
   /**
@@ -341,7 +341,6 @@ var RxStorageInstanceMongoDB = /*#__PURE__*/function () {
   _proto.resolveConflictResultionTask = async function resolveConflictResultionTask(_taskSolution) {};
   return RxStorageInstanceMongoDB;
 }();
-exports.RxStorageInstanceMongoDB = RxStorageInstanceMongoDB;
 function createMongoDBStorageInstance(storage, params, settings) {
   var instance = new RxStorageInstanceMongoDB(storage, params.databaseName, params.collectionName, params.schema, {}, params.options, settings);
   return Promise.resolve(instance);

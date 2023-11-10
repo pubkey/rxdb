@@ -17,7 +17,7 @@ var _hooks = require("./hooks");
 var _rxDocument = require("./rx-document");
 var _rxSchemaHelper = require("./rx-schema-helper");
 var _overwritable = require("./overwritable");
-var RxSchema = /*#__PURE__*/function () {
+var RxSchema = exports.RxSchema = /*#__PURE__*/function () {
   function RxSchema(jsonSchema, hashFunction) {
     this.jsonSchema = jsonSchema;
     this.hashFunction = hashFunction;
@@ -87,7 +87,6 @@ var RxSchema = /*#__PURE__*/function () {
   }]);
   return RxSchema;
 }();
-exports.RxSchema = RxSchema;
 function getIndexes(jsonSchema) {
   return (jsonSchema.indexes || []).map(index => (0, _utils.isMaybeReadonlyArray)(index) ? index : [index]);
 }

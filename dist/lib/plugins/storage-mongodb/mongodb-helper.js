@@ -10,16 +10,14 @@ exports.swapMongoToRxDoc = swapMongoToRxDoc;
 exports.swapRxDocToMongo = swapRxDocToMongo;
 exports.swapToMongoSort = swapToMongoSort;
 var _utils = require("../utils");
-var RX_STORAGE_NAME_MONGODB = 'mongodb';
+var RX_STORAGE_NAME_MONGODB = exports.RX_STORAGE_NAME_MONGODB = 'mongodb';
 
 /**
  * MongoDB uses the _id field by itself (max 12 bytes)
  * so we have to substitute the _id field if
  * it is used in the RxDocType.
  */
-exports.RX_STORAGE_NAME_MONGODB = RX_STORAGE_NAME_MONGODB;
-var MONGO_ID_SUBSTITUTE_FIELDNAME = '__id';
-exports.MONGO_ID_SUBSTITUTE_FIELDNAME = MONGO_ID_SUBSTITUTE_FIELDNAME;
+var MONGO_ID_SUBSTITUTE_FIELDNAME = exports.MONGO_ID_SUBSTITUTE_FIELDNAME = '__id';
 function primarySwapMongoDBQuerySelector(primaryKey, selector) {
   selector = (0, _utils.flatClone)(selector);
   selector._deleted = false;
