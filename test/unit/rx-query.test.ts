@@ -17,7 +17,7 @@ import {
 } from '../../';
 
 import { firstValueFrom } from 'rxjs';
-import { HumanDocumentType } from './../helper/schemas';
+import type { HumanDocumentType } from './../helper/schemas';
 
 describe('rx-query.test.ts', () => {
     config.parallel('.constructor', () => {
@@ -1556,6 +1556,25 @@ describe('rx-query.test.ts', () => {
             assert.strictEqual(query._execOverDatabaseCount, 2);
             assert.notStrictEqual(updatedResults[0].passportId, initialResults[0].passportId);
             collection.database.destroy();
+        });
+        it.skip('Limit buffer omits buffered items that have been modified to no longer', async () => {
+            const limitBufferSize = 5;
+            const {query, collection, initialResults} = await setUpLimitBufferCollectionAndQuery(limitBufferSize, 20);
+
+            // Get the first item from the limit buffer, and change it so it no longer matches the query selector:
+            const firstBufferItem = query._limitBufferResults[0];
+            await collection.find({selector: {passportId: firstBufferItem.passportId}}).update({
+                $set: {
+                    firstName: 'Dollaritas'
+                }
+            });
+            // Now, remove an item from the initial results, so that the buffer _should_ be used
+            // to fill the last item in the updated results.
+            await removeSingleDocFromMatchingQuery(collection, initialResults[1]);
+
+            // Make sure we DO NOT pull the modified item from the limit buffer, as it no longer matches query:
+            const updatedResults = await query.exec();
+            assert.notStrictEqual(updatedResults[updatedResults.length - 1].passportId, firstBufferItem.passportId);
         });
     });
 });
