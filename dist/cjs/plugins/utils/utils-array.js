@@ -9,6 +9,7 @@ exports.asyncFilter = asyncFilter;
 exports.batchArray = batchArray;
 exports.countUntilNotMatching = countUntilNotMatching;
 exports.isMaybeReadonlyArray = isMaybeReadonlyArray;
+exports.isOneItemOfArrayInOtherArray = isOneItemOfArrayInOtherArray;
 exports.lastOfArray = lastOfArray;
 exports.maxOfNumbers = maxOfNumbers;
 exports.removeOneFromArrayIfMatches = removeOneFromArrayIfMatches;
@@ -71,6 +72,16 @@ function isMaybeReadonlyArray(x) {
   // The type predicate here allows for both `Array<T>` and `Readonly<Array<T>>` to pass a type check while
   // still performing runtime type inspection.
   return Array.isArray(x);
+}
+function isOneItemOfArrayInOtherArray(ar1, ar2) {
+  for (var i = 0; i < ar1.length; i++) {
+    var el = ar1[i];
+    var has = ar2.includes(el);
+    if (has) {
+      return true;
+    }
+  }
+  return false;
 }
 
 /**
