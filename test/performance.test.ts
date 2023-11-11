@@ -213,7 +213,7 @@ describe('performance.test.ts', () => {
             docsAmount
         };
         Object.entries(totalTimes).forEach(([key, times]) => {
-            timeToLog[key] = roundToTwo(averageOfTimeValues(times, 90));
+            timeToLog[key] = roundToTwo(averageOfTimeValues(times, 95));
         });
 
         console.log('Performance test for ' + perfStorage.description);

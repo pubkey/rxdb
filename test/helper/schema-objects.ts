@@ -10,7 +10,7 @@ import {
 } from 'async-test-util';
 import { HumanDocumentType } from './schemas.ts';
 import { ensureNotFalsy, lastOfArray } from '../../plugins/core/index.mjs';
-
+import * as schemas from './schemas.ts';
 
 /**
  * Some storages had problems with umlauts and other special chars.
@@ -375,18 +375,21 @@ export interface AverageSchemaDocumentType {
         deep2: string;
     }[];
 }
+
+
+const averageSchemaForFieldLength = schemas.averageSchema() as any;
 export function averageSchema(
     partial: Partial<AverageSchemaDocumentType> = {}
 ): AverageSchemaDocumentType {
     return Object.assign(
         {},
         {
-            id: randomStringWithSpecialChars(12),
-            var1: randomStringWithSpecialChars(12),
-            var2: randomNumber(100, 50000),
+            id: randomStringWithSpecialChars(ensureNotFalsy(averageSchemaForFieldLength.properties.id.maxLength)),
+            var1: randomStringWithSpecialChars(ensureNotFalsy(averageSchemaForFieldLength.properties.var1.maxLength)),
+            var2: randomNumber(100, ensureNotFalsy(averageSchemaForFieldLength.properties.var2.maximum)),
             deep: {
-                deep1: randomStringWithSpecialChars(5),
-                deep2: randomStringWithSpecialChars(8),
+                deep1: randomStringWithSpecialChars(ensureNotFalsy(averageSchemaForFieldLength.properties.deep.properties.deep1.maxLength)),
+                deep2: randomStringWithSpecialChars(ensureNotFalsy(averageSchemaForFieldLength.properties.deep.properties.deep2.maxLength)),
                 deeper: {
                     deepNr: randomNumber(0, 10)
                 }

@@ -64,6 +64,16 @@ export function isMaybeReadonlyArray(x: any): x is MaybeReadonly<any[]> {
 
 
 
+export function isOneItemOfArrayInOtherArray<T>(ar1: T[], ar2: T[]): boolean {
+    for (let i = 0; i < ar1.length; i++) {
+        const el = ar1[i];
+        const has = ar2.includes(el);
+        if (has) {
+            return true;
+        }
+    }
+    return false;
+}
 
 
 /**
@@ -134,3 +144,5 @@ export function appendToArray<T>(ar: T[], add: T[] | readonly T[]): void {
         ar.push(element);
     }
 }
+
+
