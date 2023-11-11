@@ -1681,3 +1681,123 @@ _setResultData 4 - 5277.9068539999425
 __ensureEqual 3.53 5277.988210000098
 __ensureEqual 3.6 5278.026985999197
 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX END 5278.41909699887
+
+
+
+## indexeddb parallel queries
+
+BEFORE:
+57.83
+55.93
+55.3
+
+
+AFTER (reuse readonly transactions):
+44.17
+
+## indexeddb single query
+
+BEFORE:
+31.81
+31.63
+
+AFTER (pre-trigger tx creation):
+30.55
+
+
+## idb other improvements
+
+BEFORE:
+{
+    "description": "",
+    "platform": "indexeddb",
+    "collectionsAmount": 4,
+    "docsAmount": 1200,
+    "time-to-first-insert": 25.53,
+    "insert-documents-200": 7.5,
+    "find-by-ids": 47.77,
+    "find-by-query": 52.1,
+    "find-by-query-parallel-4": 38.3,
+    "count": 5.48,
+    "property-access": 5.27
+}
+{
+    "description": "",
+    "platform": "indexeddb",
+    "collectionsAmount": 4,
+    "docsAmount": 1200,
+    "time-to-first-insert": 25,
+    "insert-documents-200": 7.51,
+    "find-by-ids": 48.22,
+    "find-by-query": 51.7,
+    "find-by-query-parallel-4": 38.6,
+    "count": 5.33,
+    "property-access": 5.17
+}
+
+
+AFTER: (index option multiEntry=false)
+
+{
+    "description": "",
+    "platform": "indexeddb",
+    "collectionsAmount": 4,
+    "docsAmount": 1200,
+    "time-to-first-insert": 26.47,
+    "insert-documents-200": 7.4,
+    "find-by-ids": 44.58,
+    "find-by-query": 50.4,
+    "find-by-query-parallel-4": 39,
+    "count": 5.57,
+    "property-access": 5.3
+}
+{
+    "description": "",
+    "platform": "indexeddb",
+    "collectionsAmount": 4,
+    "docsAmount": 1200,
+    "time-to-first-insert": 24.93,
+    "insert-documents-200": 7.6,
+    "find-by-ids": 45.4,
+    "find-by-query": 49.3,
+    "find-by-query-parallel-4": 38.23,
+    "count": 5.35,
+    "property-access": 5.2
+}
+
+
+AFTER: fix wal cleanup promiseWait()
+"time-to-first-insert": 23.75
+
+
+BEFORE TX REUSED ON WRITES:
+"time-to-first-insert": 23.55
+
+LOG LOG: 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX START 11813.5'
+LOG LOG: 'ON UPDATE NEEDED test-db-performance-swhqajxkzi'
+LOG LOG: 'bulk write START internal-add-storage-token | 11826.40000000596'
+LOG LOG: 'storage-token|storageToken'
+LOG LOG: '# CREATE TX _rxdb_internal'
+LOG LOG: 'VVV ADD COLLECTIONS 11827.59999999404'
+LOG LOG: 'bulk write START rx-database-add-collection | 11829.5'
+LOG LOG: 'collection|sgphpgdqib_0-0, collection|anaymauczp_1-0, collection|fdrkxvqgbj_2-0, collection|pmoyfsfzeo_3-0'
+LOG LOG: '# CREATE TX _rxdb_internal'
+LOG LOG: 'bulk write DONE internal-add-storage-token | 11832.09999999404'
+LOG LOG: 'bulk write DONE rx-database-add-collection | 11837.09999999404'
+LOG LOG: 'ON UPDATE NEEDED test-db-performance-swhqajxkzi'
+LOG LOG: 'VVV START FIRST INSERT 11868.5'
+LOG LOG: 'bulk write START rx-collection-bulk-insert | 11869.09999999404'
+LOG LOG: 'kfigwywaxwil'
+LOG LOG: '# CREATE TX sgphpgdqib_0'
+LOG LOG: 'bulk write DONE rx-collection-bulk-insert | 11872.300000011921'
+LOG LOG: 'VVV END FIRST INSERT 11873.200000017881'
+LOG LOG: '- CLEANUP WAL ON IDLE!'
+LOG LOG: '# CREATE TX _rxdb_internal'
+LOG LOG: '# CREATE TX _rxdb_internal'
+LOG LOG: '# CREATE TX _rxdb_internal'
+LOG LOG: '# CREATE TX anaymauczp_1'
+LOG LOG: '# CREATE TX fdrkxvqgbj_2'
+LOG LOG: '# CREATE TX pmoyfsfzeo_3'
+LOG LOG: '# CREATE TX sgphpgdqib_0'
+LOG LOG: '# CREATE TX _rxdb_internal'
+LOG LOG: 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX DONE 11988.700000017881'
