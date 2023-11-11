@@ -21,6 +21,7 @@ supabase             | [done](./supabase/)
 
 ## Third Party Examples:
 
-Technology           | Third Party Link
--------------------- | ---------------------
-NativeScript         | [Link](https://github.com/herefishyfish/nativescript-angular-rxdb-lokijs-demo)
+Technology                 | Third Party Link
+-------------------------  | ---------------------
+NativeScript               | [Link](https://github.com/herefishyfish/nativescript-angular-rxdb-lokijs-demo)
+GraphQL + Svelte + Pothos  | [Link](https://github.com/ccfiel/rxdb-graphql-prisma-sample)
