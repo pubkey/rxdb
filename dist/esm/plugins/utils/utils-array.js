@@ -55,6 +55,16 @@ export function isMaybeReadonlyArray(x) {
   // still performing runtime type inspection.
   return Array.isArray(x);
 }
+export function isOneItemOfArrayInOtherArray(ar1, ar2) {
+  for (var i = 0; i < ar1.length; i++) {
+    var el = ar1[i];
+    var has = ar2.includes(el);
+    if (has) {
+      return true;
+    }
+  }
+  return false;
+}
 
 /**
  * Use this in array.filter() to remove all empty slots

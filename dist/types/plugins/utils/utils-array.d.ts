@@ -18,6 +18,7 @@ export declare function removeOneFromArrayIfMatches<T>(ar: T[], condition: (x: T
  * returns true if the supplied argument is either an Array<T> or a Readonly<Array<T>>
  */
 export declare function isMaybeReadonlyArray(x: any): x is MaybeReadonly<any[]>;
+export declare function isOneItemOfArrayInOtherArray<T>(ar1: T[], ar2: T[]): boolean;
 /**
  * Use this in array.filter() to remove all empty slots
  * and have the correct typings afterwards.
