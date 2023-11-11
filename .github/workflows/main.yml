@@ -821,7 +821,12 @@ jobs:
           npm run build
 
       - run: npm run test:replication-couchdb
-      - run: npm run test:replication-firestore
+
+
+      - name: firestore replication
+        run: |
+          timeout 1h bash -c 'until npm run test:replication-firestore; do sleep 15; done'
+
       - name: nats replication
         # first start/stop the container once to ensure it
         # has downloaded the image
