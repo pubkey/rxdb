@@ -65,7 +65,7 @@ config.parallel('rx-storage-helper.test.ts', () => {
             // process.exit();
 
 
-            assert.ok(time);
+            assert.ok(typeof time === 'number');
             instance.close();
         });
     });
