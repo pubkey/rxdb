@@ -953,16 +953,16 @@ export function averageSchema(): RxJsonSchema<AverageSchemaDocumentType> {
         properties: {
             id: {
                 type: 'string',
-                maxLength: 100
+                maxLength: 12
             },
             var1: {
                 type: 'string',
-                maxLength: 100
+                maxLength: 12
             },
             var2: {
                 type: 'number',
                 minimum: 0,
-                maximum: 1000000,
+                maximum: 50000,
                 multipleOf: 1
             },
             deep: {
@@ -970,10 +970,11 @@ export function averageSchema(): RxJsonSchema<AverageSchemaDocumentType> {
                 properties: {
                     deep1: {
                         type: 'string',
-                        maxLength: 100
+                        maxLength: 10
                     },
                     deep2: {
-                        type: 'string'
+                        type: 'string',
+                        maxLength: 10
                     }
                 }
             },
