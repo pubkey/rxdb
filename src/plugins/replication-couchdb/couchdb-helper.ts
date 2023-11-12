@@ -94,7 +94,7 @@ export function getFetchWithCouchDBAuthorization(username: string, password: str
             options.headers = {};
         }
         (options as any).headers['Authorization'] = 'Basic ' + b64EncodeUnicode(username + ':' + password);
-        return fetch(url, options);
+        return fetch(url as any, options);
     };
     return ret;
 }
