@@ -46,7 +46,7 @@
     "@angular/platform-browser": "16.2.12",
     "@angular/platform-browser-dynamic": "16.2.12",
     "@angular/platform-server": "16.2.12",
-    "@angular/pwa": "16.2.10",
+    "@angular/pwa": "17.0.0",
     "@angular/router": "16.2.12",
     "@angular/service-worker": "16.2.12",
     "@capacitor/android": "5.5.1",
@@ -70,8 +70,8 @@
     "zone.js": "0.14.2"
   },
   "devDependencies": {
-    "@angular-devkit/build-angular": "16.2.10",
-    "@angular/cli": "16.2.10",
+    "@angular-devkit/build-angular": "17.0.0",
+    "@angular/cli": "17.0.0",
     "@angular/compiler-cli": "16.2.12",
     "@angular/language-service": "16.2.12",
     "@capacitor/cli": "latest",
