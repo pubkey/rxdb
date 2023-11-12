@@ -731,6 +731,88 @@ validationImplementations.forEach(
                 // clean up afterwards
                 db.destroy();
             });
+            it('#5197 can\'t get data for object field defined with additionalProperties', async () => {
+                const mySchema: RxJsonSchema<any> = {
+                    version: 0,
+                    primaryKey: 'passportId',
+                    type: 'object',
+                    properties: {
+                        passportId: {
+                            type: 'string',
+                            maxLength: 100
+                        },
+                        firstName: {
+                            type: 'string'
+                        },
+                        lastName: {
+                            type: 'string'
+                        },
+                        age: {
+                            type: 'integer',
+                            minimum: 0,
+                            maximum: 150
+                        },
+                        tags: {
+                            type: 'object',
+                            additionalProperties: {
+                                properties: {
+                                    created: {
+                                        type: 'integer',
+                                    },
+                                    name: {
+                                        type: 'string',
+                                    },
+                                },
+                                required: ['created', 'name'],
+                            },
+                        },
+                    },
+                };
+
+                const name = randomCouchString(10);
+                const db = await createRxDatabase({
+                    name,
+                    storage: config.storage.getStorage(),
+                    eventReduce: true,
+                    ignoreDuplicate: true
+                });
+                // create a collection
+                const collections = await db.addCollections({
+                    mycollection: {
+                        schema: mySchema
+                    }
+                });
+
+                const tags = {
+                    hello: {
+                        created: 1,
+                        name: 'hello',
+                    },
+                    world: {
+                        created: 2,
+                        name: 'world',
+                    }
+                };
+
+                // insert a document
+                await collections.mycollection.insert({
+                    passportId: 'foobar',
+                    firstName: 'Bob',
+                    lastName: 'Kelso',
+                    age: 56,
+                    tags,
+                });
+
+                const myDocument = await collections.mycollection
+                    .findOne()
+                    .exec();
+
+                assert.deepStrictEqual(myDocument.toJSON().tags, tags);
+                assert.deepStrictEqual(myDocument.get('tags'), tags);
+                assert.deepStrictEqual(myDocument.tags, tags);
+
+                db.destroy();
+            });
         });
     })
 );
