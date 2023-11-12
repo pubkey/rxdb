@@ -496,7 +496,7 @@ export class RxDatabaseBase<
     remove(): Promise<string[]> {
         return this
             .destroy()
-            .then(() => removeRxDatabase(this.name, this.storage));
+            .then(() => removeRxDatabase(this.name, this.storage, this.password));
     }
 
     get asRxDatabase(): RxDatabase<
@@ -655,7 +655,8 @@ export function createRxDatabase<
  */
 export async function removeRxDatabase(
     databaseName: string,
-    storage: RxStorage<any, any>
+    storage: RxStorage<any, any>,
+    password?: string
 ): Promise<string[]> {
     const databaseInstanceToken = randomCouchString(10);
     const dbInternalsStorageInstance = await createRxDatabaseStorageInstance(
@@ -663,7 +664,8 @@ export async function removeRxDatabase(
         storage,
         databaseName,
         {},
-        false
+        false,
+        password
     );
 
     const collectionDocs = await getAllCollectionDocuments(
@@ -681,7 +683,8 @@ export async function removeRxDatabase(
             dbInternalsStorageInstance,
             databaseInstanceToken,
             databaseName,
-            collectionName
+            collectionName,
+            password
         ))
     );
 

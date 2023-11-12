@@ -331,8 +331,13 @@ config.parallel('encryption.test.ts', () => {
             const asString = JSON.stringify(metaDoc);
             assert.ok(!asString.includes(secret));
 
-            clientCollection.database.destroy();
-            remoteCollection.database.destroy();
+
+            /**
+             * Removing encrypted databases was broken,
+             * so remove instead of destroy here.
+             */
+            await clientCollection.database.remove();
+            await remoteCollection.database.remove();
         });
     });
     describe('ISSUES', () => {
