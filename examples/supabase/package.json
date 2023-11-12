@@ -9,7 +9,7 @@
     "build": "webpack",
     "build:serve": "ws -p 8888 -d dist/",
     "test:e2e": "testcafe chrome -e test/ --hostname localhost",
-    "test:dexie": "STORAGE=dexie concurrently \"npm run build:serve\" \"sleep 20 && npm run test:e2e\" --kill-others --success first"
+    "test:dexie": "STORAGE=dexie concurrently \"npm run build:serve\" \"sleep 50 && npm run test:e2e\" --kill-others --success first"
   },
   "private": true,
   "author": "pubkey",
