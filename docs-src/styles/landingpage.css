@@ -1570,6 +1570,13 @@ samp .cm-comment {
     font-size: 120%;
 }
 
+.price-calculator .field .prefix {
+    float: left;
+    margin-top: 4px;
+    margin-right: 10px;
+    font-size: 120%;
+}
+
 .price-calculator input,
 .price-calculator select {
     padding: 3px;
@@ -1693,7 +1700,7 @@ samp .cm-comment {
 
     box-shadow: 0px 0px 12px 8px var(--bg-color);
     border-color: rgba(255, 255, 255, 0.3);
-    border-radius: 6px;
+    border-radius: 14px;
 }
 
 @media (max-width: 800px) {
