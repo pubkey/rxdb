@@ -8,7 +8,8 @@ import {
     randomCouchString,
     RxCollection,
     ensureNotFalsy,
-    WithDeleted
+    WithDeleted,
+    createRxDatabase
 } from '../plugins/core/index.mjs';
 
 import * as firebase from 'firebase/app';
@@ -29,7 +30,8 @@ import {
     serverTimestamp,
     where,
     orderBy,
-    limit
+    limit,
+    getDoc
 } from 'firebase/firestore';
 import {
     FirestoreOptions,
@@ -39,6 +41,7 @@ import {
 } from '../plugins/replication-firestore/index.mjs';
 import { ensureCollectionsHaveEqualState, ensureReplicationHasNoErrors } from './helper/test-util.ts';
 import { HumanDocumentType } from './helper/schemas.ts';
+import config from './unit/config.ts';
 
 
 /**
@@ -327,6 +330,108 @@ describe('replication-firestore.test.js', function () {
             assert.strictEqual(docsOnServer[0].id, 'replicated');
 
             collection.database.destroy();
+        });
+    });
+    describe('issues', () => {
+        it('#4698 adding items quickly does not send them to the server', async () => {
+            const mySchema = {
+                version: 0,
+                primaryKey: 'passportId',
+                type: 'object',
+                properties: {
+                    passportId: {
+                        type: 'string',
+                        maxLength: 100
+                    },
+                    firstName: {
+                        type: 'string'
+                    },
+                    lastName: {
+                        type: 'string'
+                    },
+                    age: {
+                        type: 'integer',
+                        minimum: 0,
+                        maximum: 150
+                    }
+                }
+            };
+
+            /**
+             * Always generate a random database-name
+             * to ensure that different test runs do not affect each other.
+             */
+            const name = randomCouchString(10);
+
+            // create a database
+            const db = await createRxDatabase({
+                name,
+                /**
+                 * By calling config.storage.getStorage(),
+                 * we can ensure that all variations of RxStorage are tested in the CI.
+                 */
+                storage: config.storage.getStorage(),
+                eventReduce: true,
+                ignoreDuplicate: true
+            });
+
+            // create a collection
+            const collections = await db.addCollections({
+                mycollection: {
+                    schema: mySchema
+                }
+            });
+
+            const firestoreState = getFirestoreState();
+
+            console.log('------------------------------------------------');
+            console.log('------------------------------------------------');
+            console.log('------------------------------------------------');
+
+            const replicationState = replicateFirestore({
+                replicationIdentifier: firestoreState.projectId,
+                firestore: firestoreState,
+                collection: db.collections.mycollection,
+                pull: {},
+                push: {},
+                live: true,
+            });
+            replicationState.sent$.subscribe(x => {
+                console.log('# send:');
+                console.dir(x);
+            });
+            ensureReplicationHasNoErrors(replicationState);
+
+            // insert a document
+            const doc = await collections.mycollection.insert({
+                passportId: 'foobar',
+                firstName: 'Bob',
+                lastName: 'Kelso',
+                age: 56
+            });
+            await replicationState.awaitInitialReplication();
+
+            await doc.incrementalPatch({ age: 60 });
+            await doc.incrementalPatch({ age: 30 });
+            await replicationState.awaitInSync();
+
+            // ensure correct local value
+            const myDocument = await collections.mycollection.findOne({ selector: { passportId: 'foobar' } }).exec();
+            assert.strictEqual(myDocument.age, 30);
+
+
+            console.log('--- 1');
+            // ensure correct remote value
+            const docRef = DocRef(firestoreState.collection, 'foobar');
+            console.log('--- 2');
+            const docSnap = ensureNotFalsy(await getDoc(docRef));
+            console.log('--- 3');
+
+            assert.strictEqual(ensureNotFalsy(docSnap.data()).age, 30);
+            console.log('--- 4');
+
+            // clean up afterwards
+            db.destroy();
         });
     });
 });
