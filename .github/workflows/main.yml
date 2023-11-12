@@ -606,7 +606,7 @@ jobs:
         uses: coactions/setup-xvfb@v1
         with:
           working-directory: ./examples/supabase
-          run: timeout 1h bash -c 'until npm run test:dexie; do sleep 5; done'
+          run: timeout 1h bash -c 'until "npm run test:dexie"; do sleep 5; done'
 
   example-vue:
     runs-on: ubuntu-22.04
