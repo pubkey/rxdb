@@ -77,6 +77,7 @@ export async function removeCollectionStorages(
     databaseInstanceToken: string,
     databaseName: string,
     collectionName: string,
+    password?: string,
     /**
      * If no hash function is provided,
      * we assume that the whole internal store is removed anyway
@@ -132,6 +133,7 @@ export async function removeCollectionStorages(
                     multiInstance: false,
                     options: {},
                     schema: row.schema,
+                    password,
                     devMode: overwritable.isDevMode()
                 });
                 await storageInstance.remove();

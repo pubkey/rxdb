@@ -800,6 +800,7 @@ export class RxCollectionBase<
             this.database.token,
             this.database.name,
             this.name,
+            this.database.password,
             this.database.hashFunction
         );
     }
