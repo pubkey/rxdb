@@ -132,6 +132,7 @@ export class RxMigrationState {
         this.started = true;
 
 
+        let broadcastChannel: BroadcastChannel | undefined = undefined;
         /**
          * To ensure that multiple tabs do not migrate the same collection,
          * we use a new broadcastChannel/leaderElector for each collection.
@@ -139,7 +140,7 @@ export class RxMigrationState {
          * not all tabs might know about this collection.
          */
         if (this.database.multiInstance) {
-            const broadcastChannel = new BroadcastChannel([
+            broadcastChannel = new BroadcastChannel([
                 'rx-migration-state',
                 this.database.name,
                 this.collection.name,
@@ -147,7 +148,6 @@ export class RxMigrationState {
             ].join('|'));
             const leaderElector = createLeaderElection(broadcastChannel);
             await leaderElector.awaitLeadership();
-            await broadcastChannel.close();
         }
 
         /**
@@ -246,6 +246,9 @@ export class RxMigrationState {
             s.status = 'DONE';
             return s;
         });
+        if (broadcastChannel) {
+            await broadcastChannel.close();
+        }
     }
 
     public updateStatusHandlers: MigrationStatusUpdate[] = [];
