@@ -1,4 +1,4 @@
-# Replication with NATS (beta)
+# Replication with NATS
 
 With this RxDB plugin you can run a two-way realtime replication with a [NATS](https://nats.io/) server.
 

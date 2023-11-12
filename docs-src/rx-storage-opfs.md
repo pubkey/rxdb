@@ -79,7 +79,6 @@ A good comparison about real world scenarios, are the [performance results](./rx
 The OPFS [RxStorage](./rx-storage.md) itself must run inside a WebWorker. Therefore we use the [Worker RxStorage](./rx-storage-worker.md) and let it point to the prebuild `opfs.worker.js` file that comes shipped with RxDB Premium.
 
 Notice that the OPFS RxStorage is part of the [RxDB Premium](https://rxdb.info/premium.html) plugin that must be purchased.
-Also is in beta mode at the moment which means it can include breaking changes without a RxDB major version increment.
 
 ```ts
 import {
