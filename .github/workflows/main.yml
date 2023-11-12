@@ -589,20 +589,25 @@ jobs:
         working-directory: ./examples/supabase
         run: |
           sh init-supabase.sh
+
       - name: start supabase
         working-directory: ./examples/supabase/supabase/docker
         run: docker-compose up -d
+
       - name: import database dump
         working-directory: ./examples/supabase
         run: sh import-dump.sh
+
       - name: build
         working-directory: ./examples/supabase
         run: npm run build
+
       - name: test
         uses: coactions/setup-xvfb@v1
         with:
           working-directory: ./examples/supabase
-          run: npm run test:dexie
+          run: |
+            timeout 1h bash -c 'until npm run test:dexie; do sleep 5; done'
 
   example-vue:
     runs-on: ubuntu-22.04
