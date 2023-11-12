@@ -1,22 +1,23 @@
-
 import 'zone.js/node';
 
-import { APP_BASE_HREF } from '@angular/common';
-import { CommonEngine } from '@angular/ssr';
+import { ngExpressEngine } from '@nguniversal/express-engine';
 import * as express from 'express';
-import { existsSync } from 'node:fs';
-import { join } from 'node:path';
-import bootstrap from './src/main.server';
+import { join } from 'path';
+
+import { AppServerModule } from './src/main.server';
+import { APP_BASE_HREF } from '@angular/common';
+import { existsSync } from 'fs';
 
 // The Express app is exported so that it can be used by serverless Functions.
 export function app(): express.Express {
   const server = express();
   const distFolder = join(process.cwd(), 'dist/angular/browser');
-  const indexHtml = existsSync(join(distFolder, 'index.original.html'))
-    ? join(distFolder, 'index.original.html')
-    : join(distFolder, 'index.html');
+  const indexHtml = existsSync(join(distFolder, 'index.original.html')) ? 'index.original.html' : 'index';
 
-  const commonEngine = new CommonEngine();
+  // Our Universal express-engine (found @ https://github.com/angular/universal/tree/master/modules/express-engine)
+  server.engine('html', ngExpressEngine({
+    bootstrap: AppServerModule,
+  }));
 
   server.set('view engine', 'html');
   server.set('views', distFolder);
@@ -26,30 +27,26 @@ export function app(): express.Express {
   // Serve static files from /browser
   server.get('*.*', express.static(distFolder, {
     maxAge: '1y'
-  }));
+  }) as any);
 
-  // All regular routes use the Angular engine
-  server.get('*', (req, res, next) => {
-    const { protocol, originalUrl, baseUrl, headers } = req;
+  server.use(function (req, res, next) { (req as any).start = Date.now(); next(); });
 
-    commonEngine
-      .render({
-        bootstrap,
-        documentFilePath: indexHtml,
-        url: `${protocol}://${headers.host}${originalUrl}`,
-        publicPath: distFolder,
-        providers: [
-          { provide: APP_BASE_HREF, useValue: baseUrl },],
-      })
-      .then((html) => res.send(html))
-      .catch((err) => next(err));
+  // All regular routes use the Universal engine
+  server.get('*', (req, res) => {
+    console.log('# render via universal engine, url: ' + req.headers.host + req.url);
+    res.render(indexHtml, { req, providers: [{ provide: APP_BASE_HREF, useValue: req.baseUrl }] });
+  });
+
+  server.use(function (req, res) {
+    const time = Date.now() - (req as any).start;
+    console.log('time: ' + time);
   });
 
   return server;
 }
 
 function run(): void {
-  const port = process.env['PORT'] || 4000;
+  const port = process.env.PORT || 4000;
 
   // Start up the Node server
   const server = app();
@@ -68,4 +65,4 @@ if (moduleFilename === __filename || moduleFilename.includes('iisnode')) {
   run();
 }
 
-export default bootstrap;
+export * from './src/main.server';
