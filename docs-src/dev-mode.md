@@ -23,7 +23,7 @@ addRxPlugin(RxDBDevModePlugin);
 async function createDb() {
     if (process.env.NODE_ENV !== "production") {
         await import('rxdb/plugins/dev-mode').then(
-            module => addRxPlugin(module as any)
+            module => addRxPlugin(module.RxDBDevModePlugin)
         );
     }
     const db = createRxDatabase( /* ... */ );
@@ -39,7 +39,7 @@ import { isDevMode } from '@angular/core';
 async function createDb() {
     if (isDevMode()){
         await import('rxdb/plugins/dev-mode').then(
-            module => addRxPlugin(module as any)
+            module => addRxPlugin(module.RxDBDevModePlugin)
         );
     }
 
