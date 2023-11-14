@@ -140,7 +140,7 @@ var basePrototype = exports.basePrototype = {
       var valueObj = (0, _index.getProperty)(this._data, objPath);
 
       // direct return if array or non-object
-      if (typeof valueObj !== 'object' || Array.isArray(valueObj)) {
+      if (typeof valueObj !== 'object' || valueObj === null || Array.isArray(valueObj)) {
         return _overwritable.overwritable.deepFreezeWhenDevMode(valueObj);
       }
       var _this = this;

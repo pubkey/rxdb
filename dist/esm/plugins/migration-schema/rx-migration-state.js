@@ -44,7 +44,7 @@ export var RxMigrationState = /*#__PURE__*/function () {
       throw newRxError('DM1');
     }
     this.started = true;
-
+    var broadcastChannel = undefined;
     /**
      * To ensure that multiple tabs do not migrate the same collection,
      * we use a new broadcastChannel/leaderElector for each collection.
@@ -52,10 +52,9 @@ export var RxMigrationState = /*#__PURE__*/function () {
      * not all tabs might know about this collection.
      */
     if (this.database.multiInstance) {
-      var broadcastChannel = new BroadcastChannel(['rx-migration-state', this.database.name, this.collection.name, this.collection.schema.version].join('|'));
+      broadcastChannel = new BroadcastChannel(['rx-migration-state', this.database.name, this.collection.name, this.collection.schema.version].join('|'));
       var leaderElector = createLeaderElection(broadcastChannel);
       await leaderElector.awaitLeadership();
-      await broadcastChannel.close();
     }
 
     /**
@@ -123,6 +122,9 @@ export var RxMigrationState = /*#__PURE__*/function () {
       s.status = 'DONE';
       return s;
     });
+    if (broadcastChannel) {
+      await broadcastChannel.close();
+    }
   };
   _proto.updateStatus = function updateStatus(handler) {
     this.updateStatusHandlers.push(handler);

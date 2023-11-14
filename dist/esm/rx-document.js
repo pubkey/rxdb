@@ -130,7 +130,7 @@ export var basePrototype = {
       var valueObj = getProperty(this._data, objPath);
 
       // direct return if array or non-object
-      if (typeof valueObj !== 'object' || Array.isArray(valueObj)) {
+      if (typeof valueObj !== 'object' || valueObj === null || Array.isArray(valueObj)) {
         return overwritable.deepFreezeWhenDevMode(valueObj);
       }
       var _this = this;

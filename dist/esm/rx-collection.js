@@ -515,7 +515,7 @@ export var RxCollectionBase = /*#__PURE__*/function () {
    */;
   _proto.remove = async function remove() {
     await this.destroy();
-    await removeCollectionStorages(this.database.storage, this.database.internalStore, this.database.token, this.database.name, this.name, this.database.hashFunction);
+    await removeCollectionStorages(this.database.storage, this.database.internalStore, this.database.token, this.database.name, this.name, this.database.password, this.database.hashFunction);
   };
   _createClass(RxCollectionBase, [{
     key: "insert$",

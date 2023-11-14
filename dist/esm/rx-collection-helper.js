@@ -39,7 +39,7 @@ export async function createRxCollectionStorageInstance(rxDatabase, storageInsta
  * Removes the main storage of the collection
  * and all connected storages like the ones from the replication meta etc.
  */
-export async function removeCollectionStorages(storage, databaseInternalStorage, databaseInstanceToken, databaseName, collectionName,
+export async function removeCollectionStorages(storage, databaseInternalStorage, databaseInstanceToken, databaseName, collectionName, password,
 /**
  * If no hash function is provided,
  * we assume that the whole internal store is removed anyway
@@ -83,6 +83,7 @@ hashFunction) {
       multiInstance: false,
       options: {},
       schema: row.schema,
+      password,
       devMode: overwritable.isDevMode()
     });
     await storageInstance.remove();
