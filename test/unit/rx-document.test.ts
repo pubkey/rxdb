@@ -25,7 +25,6 @@ import {
 import { RxDBAttachmentsPlugin } from '../../plugins/attachments/index.mjs';
 addRxPlugin(RxDBAttachmentsPlugin);
 import { RxDBJsonDumpPlugin } from '../../plugins/json-dump/index.mjs';
-import { SimpleHumanV3DocumentType } from '../helper/schema-objects.ts';
 addRxPlugin(RxDBJsonDumpPlugin);
 
 describe('rx-document.test.js', () => {
