@@ -808,16 +808,9 @@ validationImplementations.forEach(
                     .findOne()
                     .exec();
 
-
-                console.log('-- 1');
                 assert.deepStrictEqual(myDocument.toJSON().tags, tags);
-                console.log('-- 2');
-                console.log(JSON.stringify(myDocument.get('tags'), null, 4));
-                console.log(JSON.stringify(tags, null, 4));
                 assert.ok(deepEqual(myDocument.get('tags'), tags));
-                console.log('-- 3');
                 assert.deepStrictEqual(myDocument.tags, tags);
-                console.log('-- 4');
 
                 db.destroy();
             });
