@@ -195,6 +195,10 @@ export const basePrototype = {
             () => {
                 const valueObj = getProperty(this._data, objPath);
 
+                if (!valueObj) {
+                    return valueObj;
+                }
+
                 // direct return if array or non-object
                 if (
                     typeof valueObj !== 'object' ||

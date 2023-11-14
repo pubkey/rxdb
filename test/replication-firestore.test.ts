@@ -384,10 +384,6 @@ describe('replication-firestore.test.js', function () {
 
             const firestoreState = getFirestoreState();
 
-            console.log('------------------------------------------------');
-            console.log('------------------------------------------------');
-            console.log('------------------------------------------------');
-
             const replicationState = replicateFirestore({
                 replicationIdentifier: firestoreState.projectId,
                 firestore: firestoreState,
@@ -420,15 +416,11 @@ describe('replication-firestore.test.js', function () {
             assert.strictEqual(myDocument.age, 30);
 
 
-            console.log('--- 1');
             // ensure correct remote value
             const docRef = DocRef(firestoreState.collection, 'foobar');
-            console.log('--- 2');
             const docSnap = ensureNotFalsy(await getDoc(docRef));
-            console.log('--- 3');
 
             assert.strictEqual(ensureNotFalsy(docSnap.data()).age, 30);
-            console.log('--- 4');
 
             // clean up afterwards
             db.destroy();

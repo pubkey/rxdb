@@ -25,6 +25,7 @@ import {
 import { RxDBAttachmentsPlugin } from '../../plugins/attachments/index.mjs';
 addRxPlugin(RxDBAttachmentsPlugin);
 import { RxDBJsonDumpPlugin } from '../../plugins/json-dump/index.mjs';
+import { SimpleHumanV3DocumentType } from '../helper/schema-objects.ts';
 addRxPlugin(RxDBJsonDumpPlugin);
 
 describe('rx-document.test.js', () => {
@@ -774,7 +775,7 @@ describe('rx-document.test.js', () => {
             c.database.destroy();
         });
     });
-    config.parallel('pseudo-Proxy', () => {
+    config.parallel('Proxy', () => {
         describe('get', () => {
             it('top-value', async () => {
                 const c = await humansCollection.create(1);
@@ -875,6 +876,108 @@ describe('rx-document.test.js', () => {
                 await promiseWait(5);
                 assert.strictEqual(value, true);
                 c.database.destroy();
+            });
+            it('null fields should not return a Proxy Object but null', async () => {
+                const db = await createRxDatabase({
+                    name: randomCouchString(10),
+                    storage: config.storage.getStorage(),
+                });
+                const cols = await await db.addCollections({
+                    heroes: {
+                        schema: {
+                            version: 0,
+                            keyCompression: false,
+                            primaryKey: 'passportId',
+                            type: 'object',
+                            properties: {
+                                passportId: {
+                                    type: 'string',
+                                    maxLength: 100
+                                },
+                                age: {
+                                    type: 'integer'
+                                },
+                                nullField: {
+                                    type: ['string', 'null']
+                                },
+                                nested: {
+                                    type: 'object',
+                                    properties: {
+                                        nullField: {
+                                            type: ['string', 'null']
+                                        }
+                                    }
+                                }
+                            },
+                            indexes: [],
+                            required: ['passportId', 'age']
+                        }
+                    }
+                });
+                const doc = await cols.heroes.insert({
+                    passportId: 'foobar',
+                    age: 99,
+                    nullField: null,
+                    nested: {
+                        nullField: null
+                    }
+                });
+
+                assert.strictEqual(doc.nullField, null);
+                assert.strictEqual(doc.nested.nullField, null);
+
+                db.destroy();
+            });
+            it('true fields should not return a Proxy Object but true', async () => {
+                const db = await createRxDatabase({
+                    name: randomCouchString(10),
+                    storage: config.storage.getStorage(),
+                });
+                const cols = await await db.addCollections({
+                    heroes: {
+                        schema: {
+                            version: 0,
+                            keyCompression: false,
+                            primaryKey: 'passportId',
+                            type: 'object',
+                            properties: {
+                                passportId: {
+                                    type: 'string',
+                                    maxLength: 100
+                                },
+                                age: {
+                                    type: 'integer'
+                                },
+                                trueField: {
+                                    type: 'boolean'
+                                },
+                                nested: {
+                                    type: 'object',
+                                    properties: {
+                                        trueField: {
+                                            type: 'boolean'
+                                        }
+                                    }
+                                }
+                            },
+                            indexes: [],
+                            required: ['passportId', 'age']
+                        }
+                    }
+                });
+                const doc = await cols.heroes.insert({
+                    passportId: 'foobar',
+                    age: 99,
+                    trueField: true,
+                    nested: {
+                        trueField: true
+                    }
+                });
+
+                assert.strictEqual(doc.trueField, true);
+                assert.strictEqual(doc.nested.trueField, true);
+
+                db.destroy();
             });
         });
     });
