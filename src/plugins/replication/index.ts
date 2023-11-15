@@ -255,9 +255,12 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                         collection: this.collection
                     });
 
-                    const useRows = await Promise.all(
+                    const useRowsOrNull = await Promise.all(
                         rows.map(async (row) => {
                             row.newDocumentState = await pushModifier(row.newDocumentState);
+                            if (row.newDocumentState === null) {
+                                return null;
+                            }
                             if (row.assumedMasterState) {
                                 row.assumedMasterState = await pushModifier(row.assumedMasterState);
                             }
@@ -270,6 +273,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                             return row;
                         })
                     );
+                    const useRows: RxReplicationWriteToMasterRow<RxDocType>[] = useRowsOrNull.filter(row => !!row) as any;
 
                     let result: WithDeleted<RxDocType>[] = null as any;
 

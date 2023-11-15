@@ -91,7 +91,7 @@ export type ReplicationPushOptions<RxDocType> = {
      * A modifier that runs on all pushed documents before
      * they are send into the push handler.
      */
-    modifier?: (docData: WithDeleted<RxDocType>) => MaybePromise<any>;
+    modifier?: (docData: WithDeleted<RxDocType>) => MaybePromise<any | null>;
 
     /**
      * How many local changes to process at once.
