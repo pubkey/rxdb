@@ -32,6 +32,7 @@ import type {
 } from '../../types/index.d.ts';
 import { RxDBLeaderElectionPlugin } from '../leader-election/index.ts';
 import {
+    arrayFilterNotEmpty,
     ensureNotFalsy,
     errorToPlainJson,
     flatClone,
@@ -273,7 +274,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                             return row;
                         })
                     );
-                    const useRows: RxReplicationWriteToMasterRow<RxDocType>[] = useRowsOrNull.filter(row => !!row) as any;
+                    const useRows = useRowsOrNull.filter(arrayFilterNotEmpty);
 
                     let result: WithDeleted<RxDocType>[] = null as any;
 
