@@ -232,6 +232,8 @@ const replicationState = await replicateRxCollection({
         /**
          * Modifies all documents before they are given to the push handler.
          * Can be used to swap out a custom deleted flag instead of the '_deleted' field.
+         * If the push modifier return null, the document will be skipped and not send to the remote.
+         * Notice that the modifier can be called multiple times and should not contain any side effects.
          * (optional)
          */
         modifier: d => d
@@ -276,6 +278,7 @@ const replicationState = await replicateRxCollection({
         /**
          * Modifies all documents after they have been pulled
          * but before they are used by RxDB.
+         * Notice that the modifier can be called multiple times and should not contain any side effects.
          * (optional)
          */
         modifier: d => d,

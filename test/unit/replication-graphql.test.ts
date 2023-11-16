@@ -2531,6 +2531,58 @@ describe('replication-graphql.test.ts', () => {
                 const result = await c.database.destroy().catch(e => error = e);
                 assert.strictEqual(error, undefined);
                 assert.strictEqual(result, true);
+                await server.close();
+            });
+            /**
+             * @link https://github.com/pubkey/rxdb/pull/5259#discussion_r1396062635
+             */
+            it('#5259 document push must be skipped when pushModifier returns null', async () => {
+                const [c, server] = await Promise.all([
+                    humansCollection.createHumanWithTimestamp(0),
+                    SpawnServer.spawn([])
+                ]);
+                const replicationState = replicateGraphQL<HumanWithTimestampDocumentType, any>({
+                    replicationIdentifier: randomCouchString(10),
+                    collection: c,
+                    url: server.url,
+                    pull: {
+                        batchSize,
+                        queryBuilder: pullQueryBuilder,
+                        streamQueryBuilder: pullStreamQueryBuilder,
+                    },
+                    push: {
+                        batchSize,
+                        queryBuilder: pushQueryBuilder,
+                        modifier: (docData) => {
+                            if (docData.age === 2) {
+                                return null;
+                            }
+                            return docData;
+                        }
+                    },
+                    live: true,
+                    deletedField: 'deleted'
+                });
+                ensureReplicationHasNoErrors(replicationState);
+                await replicationState.awaitInitialReplication();
+
+                // should push the original doc
+                const doc = await c.insert(schemaObjects.humanWithTimestamp({
+                    age: 1
+                }));
+                await replicationState.awaitInSync();
+                assert.strictEqual(server.getDocuments()[0].age, 1);
+
+
+                // should not push when modifier returns null
+                await doc.incrementalPatch({ age: 2 });
+                await replicationState.awaitInSync();
+                assert.strictEqual(server.getDocuments()[0].age, 1);
+
+                await replicationState.cancel();
+
+                await c.database.destroy();
+                await server.close();
             });
         });
     });

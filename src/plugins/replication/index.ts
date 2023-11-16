@@ -32,6 +32,7 @@ import type {
 } from '../../types/index.d.ts';
 import { RxDBLeaderElectionPlugin } from '../leader-election/index.ts';
 import {
+    arrayFilterNotEmpty,
     ensureNotFalsy,
     errorToPlainJson,
     flatClone,
@@ -255,9 +256,12 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                         collection: this.collection
                     });
 
-                    const useRows = await Promise.all(
+                    const useRowsOrNull = await Promise.all(
                         rows.map(async (row) => {
                             row.newDocumentState = await pushModifier(row.newDocumentState);
+                            if (row.newDocumentState === null) {
+                                return null;
+                            }
                             if (row.assumedMasterState) {
                                 row.assumedMasterState = await pushModifier(row.assumedMasterState);
                             }
@@ -270,6 +274,7 @@ export class RxReplicationState<RxDocType, CheckpointType> {
                             return row;
                         })
                     );
+                    const useRows = useRowsOrNull.filter(arrayFilterNotEmpty);
 
                     let result: WithDeleted<RxDocType>[] = null as any;
 

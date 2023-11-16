@@ -255,6 +255,7 @@ describe('replication.test.ts', () => {
                     }
                 }
             });
+            ensureReplicationHasNoErrors(replicationState);
             await replicationState.awaitInitialReplication();
 
             const docsLocal = await localCollection.find().exec();
@@ -270,6 +271,46 @@ describe('replication.test.ts', () => {
              * So here we just do a gte check instead of a strict equal.
              */
             assert.ok(pullModifiedLocal.length >= docsPerSide);
+
+            localCollection.database.destroy();
+            remoteCollection.database.destroy();
+        });
+        it('should skip the document when the push-modifier returns null', async () => {
+            const { localCollection, remoteCollection } = await getTestCollections({
+                local: 0,
+                remote: 0
+            });
+            await localCollection.bulkInsert(
+                new Array(10).fill(0).map((_v, idx) => {
+                    return schemaObjects.humanWithTimestamp({
+                        name: 'from-local',
+                        age: idx + 1
+                    });
+                })
+            );
+            const replicationState = replicateRxCollection<schemaObjects.HumanWithTimestampDocumentType, any>({
+                collection: localCollection,
+                replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
+                live: false,
+                pull: {
+                    handler: getPullHandler(remoteCollection)
+                },
+                push: {
+                    handler: getPushHandler(remoteCollection),
+                    modifier: (doc) => {
+                        // skip every second document
+                        if (doc.age % 2 === 0) {
+                            return null;
+                        }
+                        return doc;
+                    }
+                }
+            });
+            ensureReplicationHasNoErrors(replicationState);
+            await replicationState.awaitInitialReplication();
+
+            const docsRemote = await remoteCollection.find().exec();
+            assert.strictEqual(docsRemote.length, 5);
 
             localCollection.database.destroy();
             remoteCollection.database.destroy();
