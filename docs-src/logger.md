@@ -2,7 +2,7 @@
 
 With the logger plugin you can log all operations to the [storage layer](./rx-storage.md) of your [RxDatabase](./rx-database.md).
 
-This is usefull to debug performance problems and for monitoring with Application Performance Monitoring (APM) tools like **Bugsnag**, **Datadog**, **Elastic**, **Sentry** and others.
+This is useful to debug performance problems and for monitoring with Application Performance Monitoring (APM) tools like **Bugsnag**, **Datadog**, **Elastic**, **Sentry** and others.
 
 Notice that the logger plugin is not part of the RxDB core, it is part of [RxDB Premium](./premium.html).
 
@@ -13,7 +13,7 @@ Notice that the logger plugin is not part of the RxDB core, it is part of [RxDB 
 
 ## Using the logger plugin
 
-The logger is a wrapper that can be wrapped arround any [RxStorage](./rx-storage.md). Once your storage is wrapped, you can create your database with the wrapped storage and the logging will automatically happen.
+The logger is a wrapper that can be wrapped around any [RxStorage](./rx-storage.md). Once your storage is wrapped, you can create your database with the wrapped storage and the logging will automatically happen.
 
 ```ts
 
@@ -43,7 +43,7 @@ const db = await createRxDatabase({
 
 ## Specify what to be logged
 
-By default, the plugin will log all operations and it will also run a `console.time()/console.timeEnd()` arround each operation. You can specify what to log so that your logs are less noisy. For this you provide a settings object when calling `wrappedLoggerStorage()`.
+By default, the plugin will log all operations and it will also run a `console.time()/console.timeEnd()` around each operation. You can specify what to log so that your logs are less noisy. For this you provide a settings object when calling `wrappedLoggerStorage()`.
 
 ```ts
 const loggingStorage = wrappedLoggerStorage({
