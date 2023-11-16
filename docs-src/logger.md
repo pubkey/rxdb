@@ -50,14 +50,14 @@ const loggingStorage = wrappedLoggerStorage({
     storage: getRxStorageIndexedDB({}),
     {
         // can used to prefix all log strings, default=''
-        prefix: undefined,
+        prefix: 'my-prefix',
 
 
         /**
          * Be default, all settings are true.
          */
 
-        // if true, it will log timings with console.time()
+        // if true, it will log timings with console.time() and console.timeEnd()
         times: true,
 
         // if false, it will not log meta storage instances like used in replication
