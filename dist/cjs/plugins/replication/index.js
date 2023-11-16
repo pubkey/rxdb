@@ -172,8 +172,11 @@ var RxReplicationState = exports.RxReplicationState = /*#__PURE__*/function () {
             rows,
             collection: this.collection
           });
-          var useRows = await Promise.all(rows.map(async row => {
+          var useRowsOrNull = await Promise.all(rows.map(async row => {
             row.newDocumentState = await pushModifier(row.newDocumentState);
+            if (row.newDocumentState === null) {
+              return null;
+            }
             if (row.assumedMasterState) {
               row.assumedMasterState = await pushModifier(row.assumedMasterState);
             }
@@ -185,6 +188,7 @@ var RxReplicationState = exports.RxReplicationState = /*#__PURE__*/function () {
             }
             return row;
           }));
+          var useRows = useRowsOrNull.filter(_index2.arrayFilterNotEmpty);
           var result = null;
 
           // In case all the rows have been filtered and nothing has to be sent

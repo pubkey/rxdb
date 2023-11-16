@@ -7,7 +7,7 @@
 
 import { BehaviorSubject, combineLatest, filter, mergeMap, Subject } from 'rxjs';
 import { RxDBLeaderElectionPlugin } from "../leader-election/index.js";
-import { ensureNotFalsy, errorToPlainJson, flatClone, getFromMapOrCreate, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_TRUE, toArray } from "../../plugins/utils/index.js";
+import { arrayFilterNotEmpty, ensureNotFalsy, errorToPlainJson, flatClone, getFromMapOrCreate, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_TRUE, toArray } from "../../plugins/utils/index.js";
 import { awaitRxStorageReplicationFirstInSync, awaitRxStorageReplicationInSync, cancelRxStorageReplication, getRxReplicationMetaInstanceSchema, replicateRxStorageInstance } from "../../replication-protocol/index.js";
 import { newRxError } from "../../rx-error.js";
 import { awaitRetry, DEFAULT_MODIFIER, swapDefaultDeletedTodeletedField, handlePulledDocuments } from "./replication-helper.js";
@@ -164,8 +164,11 @@ export var RxReplicationState = /*#__PURE__*/function () {
             rows,
             collection: this.collection
           });
-          var useRows = await Promise.all(rows.map(async row => {
+          var useRowsOrNull = await Promise.all(rows.map(async row => {
             row.newDocumentState = await pushModifier(row.newDocumentState);
+            if (row.newDocumentState === null) {
+              return null;
+            }
             if (row.assumedMasterState) {
               row.assumedMasterState = await pushModifier(row.assumedMasterState);
             }
@@ -177,6 +180,7 @@ export var RxReplicationState = /*#__PURE__*/function () {
             }
             return row;
           }));
+          var useRows = useRowsOrNull.filter(arrayFilterNotEmpty);
           var result = null;
 
           // In case all the rows have been filtered and nothing has to be sent
