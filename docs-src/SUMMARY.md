@@ -150,10 +150,12 @@
 
 * [Creating Plugins](./plugins.md)
 
-* [Query Optimizer](./query-optimizer.md)
-
 * [Schema Migration](./migration-schema.md)
 * [Storage Migration](./migration-storage.md)
+
+* [Query Optimizer](./query-optimizer.md)
+* [Logger](./logger.md)
+
 
 * [Transactions, Conflicts and Revisions](./transactions-conflicts-revisions.md)
 
