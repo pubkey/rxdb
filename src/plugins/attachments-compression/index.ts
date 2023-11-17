@@ -66,12 +66,7 @@ export function wrappedAttachmentsCompressionStorage<Internals, InstanceCreation
                     return args.storage.createStorageInstance(params);
                 }
 
-
                 const mode = params.schema.attachments.compression;
-
-                if (mode !== 'deflate') {
-                    throw new Error('unknown compression mode ' + mode);
-                }
 
                 async function modifyToStorage(docData: RxDocumentWriteData<RxDocType>) {
                     await Promise.all(

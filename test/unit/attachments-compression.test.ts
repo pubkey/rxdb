@@ -24,7 +24,7 @@ import {
 } from '../../plugins/attachments-compression/index.mjs';
 import * as humansCollection from '../helper/humans-collection.ts';
 
-const modes: CompressionMode[] = ['deflate'];
+const modes: CompressionMode[] = ['deflate', 'gzip'];
 modes.forEach(mode => {
     config.parallel('attachments-compression.test.ts (mode: ' + mode + ')', () => {
         if (!config.storage.hasAttachments) {
