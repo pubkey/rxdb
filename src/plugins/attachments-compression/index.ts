@@ -8,10 +8,6 @@ import type {
 } from '../../types/index.d.ts';
 
 import {
-    deflate,
-    inflate
-} from 'pako';
-import {
     arrayBufferToBase64,
     base64ToArrayBuffer,
     ensureNotFalsy,
@@ -19,20 +15,27 @@ import {
 } from '../utils/index.ts';
 
 
-export function compressBase64(
-    _mode: CompressionMode,
+/**
+ * @link https://github.com/WICG/compression/blob/main/explainer.md
+ */
+export async function compressBase64(
+    mode: CompressionMode,
     base64String: string
-): string {
+): Promise<string> {
     const arrayBuffer = base64ToArrayBuffer(base64String);
-    const result = deflate(arrayBuffer, {});
+    const stream = ensureNotFalsy(new Response(arrayBuffer).body)
+        .pipeThrough(new CompressionStream(mode));
+    const result = await new Response(stream).arrayBuffer();
     return arrayBufferToBase64(result);
 }
-export function decompressBase64(
-    _mode: CompressionMode,
+export async function decompressBase64(
+    mode: CompressionMode,
     base64String: string
-): string {
+): Promise<string> {
     const arrayBuffer = base64ToArrayBuffer(base64String);
-    const result = inflate(arrayBuffer);
+    const stream = ensureNotFalsy(new Response(arrayBuffer).body)
+        .pipeThrough(new DecompressionStream(mode));
+    const result = await new Response(stream).arrayBuffer();
     return arrayBufferToBase64(result);
 }
 
@@ -40,11 +43,8 @@ export function decompressBase64(
 /**
  * A RxStorage wrapper that compresses attachment data on writes
  * and decompresses the data on reads.
- * This is currently using the 'pako' module
- * @link https://www.npmjs.com/package/pako
  *
- * In the future when firefox supports the CompressionStream API,
- * we should switch to using the native API in browsers and the zlib package in node.js
+ * This is using the CompressionStream API,
  * @link https://caniuse.com/?search=compressionstream
  */
 export function wrappedAttachmentsCompressionStorage<Internals, InstanceCreationOptions>(
@@ -66,12 +66,7 @@ export function wrappedAttachmentsCompressionStorage<Internals, InstanceCreation
                     return args.storage.createStorageInstance(params);
                 }
 
-
                 const mode = params.schema.attachments.compression;
-
-                if (mode !== 'deflate') {
-                    throw new Error('unknown compression mode ' + mode);
-                }
 
                 async function modifyToStorage(docData: RxDocumentWriteData<RxDocType>) {
                     await Promise.all(
@@ -85,7 +80,7 @@ export function wrappedAttachmentsCompressionStorage<Internals, InstanceCreation
                     );
                     return docData;
                 }
-                function modifyAttachmentFromStorage(attachmentData: string): string {
+                function modifyAttachmentFromStorage(attachmentData: string): Promise<string> {
                     return decompressBase64(mode, attachmentData);
                 }
 
