@@ -118,7 +118,7 @@ testStorages.forEach(storages => {
             });
             await oldDb.addCollections({
                 [collectionName]: {
-                    schema: human
+                    schema: human as any
                 }
             });
 
