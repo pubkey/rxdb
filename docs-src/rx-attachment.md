@@ -157,7 +157,7 @@ const data = await attachment.getStringData();
 Storing many attachments can be a problem when the disc space of the device is exceeded.
 Therefore it can make sense to compress the attachments before storing them in the [RxStorage](./rx-storage.md).
 With the `attachments-compression` plugin you can compress the attachments data on write and decompress it on reads.
-This happens internally and will now change on how you use the api.
+This happens internally and will now change on how you use the api. The compression is run with the [Compression Streams API](https://developer.mozilla.org/en-US/docs/Web/API/Compression_Streams_API) which is only supported on [newer browsers](https://caniuse.com/?search=compressionstream).
 
 ```ts
 import {
@@ -187,7 +187,7 @@ const mySchema = {
         // .
     },
     attachments: {
-        compression: 'deflate'  // <- Specify the compression mode here. Atm only 'deflate' mode is available.
+        compression: 'deflate'  // <- Specify the compression mode here. OneOf ['deflate', 'gzip']
     }
 };
 

@@ -83,10 +83,8 @@ export interface TopLevelProperty extends JsonSchema {
 
 /**
  * @link https://developer.mozilla.org/en-US/docs/Web/API/Compression_Streams_API
- * Notice that atm we only support the deflate mode because firefox
- * does not support the CompressionStream API.
  */
-export type CompressionMode = 'deflate';
+export type CompressionMode = 'deflate' | 'gzip';
 
 export type RxJsonSchema<
     /**
