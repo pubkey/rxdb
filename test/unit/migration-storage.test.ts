@@ -86,7 +86,7 @@ testStorages.forEach(storages => {
             });
             await oldDb.addCollections({
                 [randomCouchString(12)]: {
-                    schema: human
+                    schema: human as any
                 }
             });
             await oldDb.destroy();
