@@ -58,6 +58,12 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
     function testCorrectQueries<RxDocType>(
         input: TestCorrectQueriesInput<RxDocType>
     ) {
+
+        if (input.notRunIfTrue && input.notRunIfTrue()) {
+            return;
+        }
+
+
         it(input.testTitle, async () => {
             const schema = fillWithDefaultSettings(clone(input.schema));
             const primaryPath = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
