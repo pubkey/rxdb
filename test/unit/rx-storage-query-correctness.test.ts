@@ -161,7 +161,19 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                 try {
                     assert.deepStrictEqual(resultIds, queryData.expectedResultDocIds);
                 } catch (err) {
-                    console.log('WRONG QUERY RESULTS FROM .query(): ' + queryData.info);
+                    console.log('WRONG QUERY RESULTS FROM RxStorageInstance.query(): ' + queryData.info);
+                    console.dir(queryData);
+                    throw err;
+                }
+
+                // Test output of RxCollection.find()
+                const rxQuery = collection.find(queryData.query);
+                const resultFromCollection = await rxQuery.exec();
+                const resultFromCollectionIds = resultFromCollection.map(d => d.primary);
+                try {
+                    assert.deepStrictEqual(resultFromCollectionIds, queryData.expectedResultDocIds);
+                } catch (err) {
+                    console.log('WRONG QUERY RESULTS FROM RxCollection.find(): ' + queryData.info);
                     console.dir(queryData);
                     throw err;
                 }
@@ -182,17 +194,6 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                         console.dir(queryData);
                         throw err;
                     }
-                }
-
-                // Test output of RxCollection.find()
-                const resultFromCollection = await collection.find(queryData.query).exec();
-                const resultFromCollectionIds = resultFromCollection.map(d => d.primary);
-                try {
-                    assert.deepStrictEqual(resultFromCollectionIds, queryData.expectedResultDocIds);
-                } catch (err) {
-                    console.log('WRONG QUERY RESULTS FROM RxCollection.find(): ' + queryData.info);
-                    console.dir(queryData);
-                    throw err;
                 }
             }
 
@@ -357,6 +358,7 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                     },
                     sort: [{ age: 'asc' }]
                 },
+                selectorSatisfiedByIndex: true,
                 expectedResultDocIds: [
                     'aa',
                     'bb',
@@ -373,6 +375,7 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                     },
                     sort: [{ age: 'asc' }]
                 },
+                selectorSatisfiedByIndex: true,
                 expectedResultDocIds: [
                     'aa',
                     'bb',
@@ -390,6 +393,7 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                     },
                     sort: [{ passportId: 'asc' }]
                 },
+                selectorSatisfiedByIndex: false,
                 expectedResultDocIds: [
                     'aa',
                     'bb',
@@ -992,6 +996,80 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                     sort: [{ number: 'desc', integer: 'desc' }],
                 },
                 expectedResultDocIds: ['one|1|1'],
+            },
+        ],
+    });
+    /**
+     * @link https://github.com/pubkey/rxdb/issues/5273
+     */
+    testCorrectQueries<{
+        id: string;
+        hasHighlights: number;
+        lastOpenedAt: number;
+        exists: number;
+    }>({
+        testTitle: 'issue: compound index has wrong range',
+        data: [
+            {
+                id: '1',
+                exists: 1,
+                hasHighlights: 1,
+                lastOpenedAt: 1600000000000
+            },
+            {
+                id: '2',
+                exists: 1,
+                hasHighlights: 1,
+                lastOpenedAt: 1700000000000
+            }
+        ],
+        schema: {
+            version: 0,
+            indexes: [
+                ['exists', 'hasHighlights', 'lastOpenedAt']
+            ],
+            primaryKey: 'id',
+            type: 'object',
+            properties: {
+                id: {
+                    type: 'string',
+                    maxLength: 1
+                },
+                hasHighlights: {
+                    type: 'integer',
+                    minimum: 0,
+                    maximum: 1,
+                    multipleOf: 1
+                },
+                lastOpenedAt: {
+                    type: 'integer',
+                    minimum: 0,
+                    maximum: Number.MAX_SAFE_INTEGER,
+                    multipleOf: 1,
+                },
+                exists: {
+                    type: 'integer',
+                    minimum: 0,
+                    maximum: 1,
+                    multipleOf: 1
+                },
+            },
+            required: ['id', 'hasHighlights', 'lastOpenedAt', 'exists']
+        },
+        queries: [
+            {
+                info: '$eq primary key',
+                query: {
+                    selector: {
+                        exists: 1,
+                        lastOpenedAt: {
+                            $gte: 1600000000000,
+                            $lte: 1650000000000
+                        }
+                    }
+                },
+                selectorSatisfiedByIndex: false,
+                expectedResultDocIds: ['1']
             },
         ],
     });
