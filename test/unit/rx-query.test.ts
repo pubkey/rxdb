@@ -1578,6 +1578,8 @@ describe('rx-query.test.ts', () => {
             // Make sure we DO NOT pull the modified item from the limit buffer, as it no longer matches query:
             const updatedResults = await query.exec();
             assert.notStrictEqual(updatedResults[updatedResults.length - 1].passportId, firstBufferItem.passportId);
+
+            collection.database.destroy();
         });
     });
 });
