@@ -1067,7 +1067,7 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
         },
         queries: [
             {
-                info: '$eq primary key',
+                info: 'multiple operators',
                 query: {
                     selector: {
                         exists: 1,
@@ -1080,6 +1080,33 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                 selectorSatisfiedByIndex: false,
                 expectedResultDocIds: ['1']
             },
+            {
+                info: 'multiple operators 2',
+                query: {
+                    selector: {
+                        exists: 1,
+                        lastOpenedAt: {
+                            $gte: 1600000000000
+                        }
+                    }
+                },
+                selectorSatisfiedByIndex: false,
+                expectedResultDocIds: ['1', '2']
+            },
+            {
+                info: 'all operators in index',
+                query: {
+                    selector: {
+                        exists: 1,
+                        hasHighlights: 1,
+                        lastOpenedAt: {
+                            $gte: 1600000000000
+                        }
+                    }
+                },
+                selectorSatisfiedByIndex: true,
+                expectedResultDocIds: ['1', '2']
+            }
         ],
     });
     testCorrectQueries({

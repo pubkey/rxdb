@@ -172,8 +172,6 @@ export function isSelectorSatisfiedByIndex(
             return hasNonLogicOperator;
         });
 
-    console.log('hasNonMatchingOperator: ' + hasNonMatchingOperator);
-
     if (hasNonMatchingOperator) {
         return false;
     }
