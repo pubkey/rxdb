@@ -1557,10 +1557,13 @@ describe('rx-query.test.ts', () => {
             assert.notStrictEqual(updatedResults[0].passportId, initialResults[0].passportId);
             collection.database.destroy();
         });
-        it.skip('Limit buffer omits buffered items that have been modified to no longer', async () => {
+        it('Limit buffer omits buffered items that have been modified to no longer', async () => {
             const limitBufferSize = 5;
             const {query, collection, initialResults} = await setUpLimitBufferCollectionAndQuery(limitBufferSize, 20);
 
+            if (query._limitBufferResults === null) {
+                throw new Error('_limitBufferResults not set');
+            }
             // Get the first item from the limit buffer, and change it so it no longer matches the query selector:
             const firstBufferItem = query._limitBufferResults[0];
             await collection.find({selector: {passportId: firstBufferItem.passportId}}).update({

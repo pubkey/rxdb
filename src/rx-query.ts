@@ -600,6 +600,18 @@ function __ensureEqual<RxDocType>(rxQuery: RxQueryBase<RxDocType>): Promise<bool
                 ._changeEventBuffer
                 .reduceByLastOfDoc(missedChangeEvents);
 
+            if (rxQuery._limitBufferResults !== null) {
+                // Check if any item in our limit buffer was modified by a change event
+                for (const cE of runChangeEvents) {
+                    if (rxQuery._limitBufferResults.find((doc) => doc[rxQuery.collection.schema.primaryPath] === cE.documentId)) {
+                        // If so, the limit buffer is potential invalid -- let's just blow it up
+                        // TODO: could we instead update the documents in the limit buffer?
+                        rxQuery._limitBufferResults = null;
+                        break;
+                    }
+                }
+            }
+
             if (rxQuery.op === 'count') {
                 // 'count' query
                 const previousCount = ensureNotFalsy(rxQuery._result).count;

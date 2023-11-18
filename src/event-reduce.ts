@@ -187,7 +187,7 @@ export function calculateNewResults<RxDocumentType>(
 
         const actionName: ActionName = calculateActionName(stateResolveFunctionInput);
         if (actionName === 'runFullQueryAgain') {
-            if (canFillResultSetFromLimitBuffer(stateResolveFunctionInput) && rxQuery._limitBufferResults != null && rxQuery._limitBufferResults.length > 0) {
+            if (canFillResultSetFromLimitBuffer(stateResolveFunctionInput) && rxQuery._limitBufferResults !== null && rxQuery._limitBufferResults.length > 0) {
                 // replace the missing item with an item from our limit buffer!
                 const replacementItem = rxQuery._limitBufferResults.shift();
                 if (replacementItem === undefined) {
