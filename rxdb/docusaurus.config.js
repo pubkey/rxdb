@@ -34,11 +34,23 @@ const config = {
     locales: ['en'],
   },
 
+  scripts: [
+    {
+      src:
+        '/js/analytics.js',
+      async: false,
+    },
+  ],
+
   presets: [
     [
       'classic',
       /** @type {import('@docusaurus/preset-classic').Options} */
       ({
+        gtag: {
+          trackingID: 'G-62D63SY3S0',
+          anonymizeIP: false,
+        },  
         docs: {
           sidebarPath: './sidebars.js',
           editUrl: 'https://github.com/pubkey/rxdb/tree/main/docs/',
@@ -54,7 +66,7 @@ const config = {
           customCss: './src/css/custom.css',
         },
       }),
-    ],
+    ]
   ],
 
   themeConfig:

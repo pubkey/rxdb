@@ -138,7 +138,7 @@ export default function Home() {
         </div>
         <a
           href="https://github.com/pubkey/rxdb"
-          onClick="window.trigger('github_trophy_click', 0.20)"
+          onClick={() => window.trigger('github_trophy_click', 0.20)}
           target="_blank"
         >
           <div className="trophy">
@@ -295,7 +295,7 @@ export default function Home() {
         </div>
         <a
           href="https://twitter.com/intent/user?screen_name=rxdbjs"
-          onClick="window.trigger('twitter_trophy_click', 0.20)"
+          onClick={() => window.trigger('twitter_trophy_click', 0.20)}
           target="_blank"
         >
           <div className="trophy twitter">
@@ -399,7 +399,7 @@ export default function Home() {
         </div>
         <a
           href="https://rxdb.info/chat.html"
-          onClick="window.trigger('discord_trophy_click', 0.20)"
+          onClick={() => window.trigger('discord_trophy_click', 0.20)}
           target="_blank"
         >
           <div className="trophy discord">
@@ -729,7 +729,7 @@ export default function Home() {
                       href="https://github.com/pubkey/rxdb"
                       target="_blank"
                       rel="noopener"
-                      onClick="window.trigger('goto_code', 0.20)"
+                      onClick={() => window.trigger('goto_code', 0.20)}
                     >
                       <div className="buy-option-action bg-top hover-shadow-top">
                         Get the Code
@@ -831,7 +831,7 @@ export default function Home() {
                     </div>
                     <a
                       href="/premium.html"
-                      onClick="window.trigger('premium_request', 1)"
+                      onClick={() => window.trigger('premium_request', 1)}
                     >
                       <div className="buy-option-action bg-middle hover-shadow-middle">
                         Request Premium
@@ -859,7 +859,7 @@ export default function Home() {
                     <a
                       href="https://github.com/sponsors/pubkey?frequency=one-time&sponsor=pubkey"
                       target="_blank"
-                      onClick="window.trigger('consulting_session_request', 1.5)"
+                      onClick={() => window.trigger('consulting_session_request', 1.5)}
                     >
                       <div className="buy-option-action bg-bottom hover-shadow-bottom">
                         Book Now
@@ -881,7 +881,7 @@ export default function Home() {
                 href="/quickstart.html"
                 rel="noopener"
                 target="_blank"
-                onClick="window.trigger('start_now', 0.40)"
+                onClick={() => window.trigger('start_now', 0.40)}
               >
                 <div
                   className="button get-premium"
@@ -894,7 +894,7 @@ export default function Home() {
                 href="https://rxdb.info/newsletter.html"
                 rel="noopener"
                 target="_blank"
-                onClick="window.trigger('get_newsletter', 0.40)"
+                onClick={() => window.trigger('get_newsletter', 0.40)}
               >
                 <div className="button" style={{ left: '25%', marginLeft: '-90px' }}>
                   Get the Newsletter
@@ -904,7 +904,7 @@ export default function Home() {
                 href="https://rxdb.info/chat.html"
                 rel="noopener"
                 target="_blank"
-                onClick="window.trigger('join_chat', 0.40)"
+                onClick={() => window.trigger('join_chat', 0.40)}
               >
                 <div
                   className="button"
@@ -913,7 +913,7 @@ export default function Home() {
                   Join the Chat
                 </div>
               </a>
-              <a href="/premium.html" onClick="window.trigger('premium_request', 1)">
+              <a href="/premium.html" onClick={() => window.trigger('premium_request', 1)}>
                 <div
                   className="button"
                   style={{ top: '40%', left: '20%', marginLeft: '-70.5px' }}
@@ -925,7 +925,7 @@ export default function Home() {
                 href="https://twitter.com/intent/user?screen_name=rxdbjs"
                 rel="noopener"
                 target="_blank"
-                onClick="window.trigger('follow_twitter', 0.40)"
+                onClick={() => window.trigger('follow_twitter', 0.40)}
               >
                 <div
                   className="button"
@@ -938,7 +938,7 @@ export default function Home() {
                 href="https://github.com/pubkey/rxdb"
                 rel="noopener"
                 target="_blank"
-                onClick="window.trigger('goto_code', 0.40)"
+                onClick={() => window.trigger('goto_code', 0.40)}
               >
                 <div
                   className="button"
