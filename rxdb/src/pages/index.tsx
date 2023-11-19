@@ -26,28 +26,6 @@ import {
 import React, { useEffect } from 'react';
 import { trigger } from '../components/trigger-event';
 
-function HomepageHeader() {
-  const { siteConfig } = useDocusaurusContext();
-  return (
-    <header className={clsx('hero hero--primary', styles.heroBanner)}>
-      <div className="container">
-        <Heading as="h1" className="hero__title">
-          {siteConfig.title}
-        </Heading>
-        <p className="hero__subtitle">{siteConfig.tagline}</p>
-        <div className={styles.buttons}>
-          <Link
-            className="button button--secondary button--lg"
-            to="/docs/intro">aaa
-            Docusaurus Tutorial - 5min ⏱️
-          </Link>
-        </div>
-      </div>
-    </header>
-  );
-}
-
-
 type MousePositionType = {
   x: number;
   y: number;
@@ -418,14 +396,12 @@ export default function Home() {
                 >
                   <legend>Write</legend>
                   <samp>
-                    <span className="cm-keyword">await</span>
+                    <span className="cm-keyword">await </span>
                     <span className="cm-variable">collection</span>.
                     <span className="cm-method">upsert</span>({'{'}
                     <br />
-                    <span className="cm-property">&nbsp; id</span>:
-                    <span className="cm-string">'foobar'</span>,<br />
-                    <span className="cm-property">&nbsp; color</span>:
-                    <span className="cm-string">
+                    <span className="cm-property">&nbsp; id</span>: <span className="cm-string">'foobar'</span>,<br />
+                    <span className="cm-property">&nbsp; color</span>: <span className="cm-string">
                       '
                       <span className="beating-color-string beating-color">
                         #e6008d
@@ -444,7 +420,7 @@ export default function Home() {
                 >
                   <legend>Observe</legend>
                   <samp style={{ backgroundColor: 'var(--bg-color)' }}>
-                    <span className="cm-keyword">await</span>
+                    <span className="cm-keyword">await </span>
                     <span className="cm-variable">collection</span>.
                     <span className="cm-method">
                       findOne(<span className="cm-string">'foobar'</span>)
@@ -455,11 +431,11 @@ export default function Home() {
                     <br />
                     &nbsp;.<span className="cm-method">subscribe</span>(
                     <span className="cm-def">d</span>
-                    <span className="cm-operator">=&gt;</span> {'{'}
+                    <span className="cm-operator"> =&gt;</span> {'{'}
                     <br />
                     <span className="cm-variable">&nbsp;&nbsp; screen</span>.
                     <span className="cm-property">backgroundColor</span>
-                    <span className="cm-operator">=</span>
+                    <span className="cm-operator"> = </span>
                     <span className="cm-variable">d</span>.
                     <span className="cm-property beating-color">color</span>;<br />
                     &nbsp;{'}'});

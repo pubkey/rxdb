@@ -9,16 +9,22 @@ import {
     RxDBLocalDocumentsPlugin
 } from '../../../plugins/local-documents';
 
-export async function getDatabase() {
-    addRxPlugin(RxDBLocalDocumentsPlugin);
 
-    const database = await createRxDatabase({
-        name: 'rxdb-landing-v3',
-        localDocuments: true,
-        storage: getRxStorageDexie()
-    });
+let dbPromise;
 
-    return database;
+export function getDatabase() {
+    if (!dbPromise) {
+        dbPromise = (async () => {
+            addRxPlugin(RxDBLocalDocumentsPlugin);
+            const database = await createRxDatabase({
+                name: 'rxdb-landing-v3',
+                localDocuments: true,
+                storage: getRxStorageDexie()
+            });
+            return database;
+        })();
+    }
+    return dbPromise;
 }
 
 export const colors = [

@@ -33,7 +33,7 @@ setTimeout(function () {
 // /Reddit Pixel
 
 
-function parseQueryParams(url: any) {
+function parseQueryParams(url) {
     const urlSearchParams = new URL(url).searchParams;
     const queryParams = Object.fromEntries(urlSearchParams.entries());
     return queryParams;
