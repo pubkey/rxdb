@@ -48,7 +48,7 @@ html[data-theme='dark'] {
   --bg-color: #1a202c;
   --bg-color-dark: #171923;
   --fontSizes-xl: 1.25rem;
-  --fontSizes-6xl: 3.0rem;
+  --fontSizes-6xl: 2.5rem;
   --space-between-blocks: 0px;
 
 
@@ -1182,6 +1182,7 @@ body {
 
 .trophy {
   display: flex;
+  box-sizing: content-box;
   color: #eac54f;
   background-color: var(--bg-color);
   border-radius: 6px;
@@ -1207,36 +1208,42 @@ body {
 }
 
 .trophy img {
+  box-sizing: content-box;
   height: 100%;
   float: left;
   padding-right: 10px;
 }
 
 .trophy .subtitle {
+  box-sizing: content-box;
   text-transform: uppercase;
   font-size: 65%;
   font-weight: bold;
 }
 
 .trophy .title {
+  box-sizing: content-box;
   font-size: 140%;
+  line-height: normal;
   font-weight: bold;
-  margin-top: 5px;
 }
 
 .trophy .valuetitle {
+  box-sizing: content-box;
   text-transform: uppercase;
   font-size: 65%;
   font-weight: bold;
-  margin-top: 3px;
 }
 
 .trophy .value {
+  box-sizing: content-box;
   font-weight: bold;
-  margin-top: 5px;
+  margin-top: 3px;
+  line-height: normal;
 }
 
 .trophy .arrow-up {
+  box-sizing: content-box;
   width: 0;
   float: right;
   height: 0;

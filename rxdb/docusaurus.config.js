@@ -38,7 +38,7 @@ const config = {
     {
       src:
         '/js/analytics.js',
-      async: false,
+      async: true,
     },
   ],
 
@@ -50,7 +50,7 @@ const config = {
         gtag: {
           trackingID: 'G-62D63SY3S0',
           anonymizeIP: false,
-        },  
+        },
         docs: {
           sidebarPath: './sidebars.js',
           editUrl: 'https://github.com/pubkey/rxdb/tree/main/docs/',

@@ -39,11 +39,12 @@ export default function Home() {
           <div className="content">
             <div className="inner">
               <div className="half">
+                <br />
                 <h2>
                   The local <b className="underline">Database</b> for{' '}
-                  <b className="underline">JavaScript</b>
-                  Applications
+                  <b className="underline">JavaScript</b> Applications
                 </h2>
+                <br />
                 <ul className="checked">
                   <li>Realtime Queries</li>
                   <li>Realtime Replication</li>
