@@ -381,8 +381,9 @@ export default function Home() {
             <p>
               From the results of a query, to a single field of a document, with RxDB
               you can <b>observe everything</b>. This enables you to build realtime
-              applications <b>fast</b> and <b>reliable</b>. Whenever your data
-              changes, your UI reflects the new state.
+              applications <b>fast</b> and <b>reliable</b>. It does not matter if the data was changed by{' '}
+              <b>a user event</b>, <b>another browser tab</b> or by the<b> replication</b>.{' '}
+              Whenever your data changes, your UI reflects the new state.
             </p>
             <div className="inner">
               {/*
@@ -544,14 +545,14 @@ export default function Home() {
                 server or any custom{' '}
                 <a href="/replication-graphql.html" target="_blank">
                   GraphQL
-                </a>
+                </a>{' '}
                 endpoint which smoothly integrates with your existing infrastructure.
                 Also you can use the replication primitives plugin to create custom
                 replications over any protocol like{' '}
                 <a href="/replication.html" target="_blank">
                   REST
                 </a>
-                ,
+                ,{' '}
                 <a href="/replication-websocket.html" target="_blank">
                   Websocket
                 </a>
@@ -743,7 +744,7 @@ export default function Home() {
             <p>
               RxDB is based on a storage interface that enables you to swap out the
               underlying storage engine. This increases code reuse because the same
-              database code can be used in <b>any JavaScript runtime</b>
+              database code can be used in <b>any JavaScript runtime</b>{' '}
               by just switching out the storage settings.
               <br />
             </p>

@@ -1549,12 +1549,17 @@ samp .cm-comment {
 }
 
 .premium-blocks .premium-block-inner {
+  box-sizing: content-box;
   height: calc(100% - 20px);
   background-color: var(--bg-color-dark);
   padding: 10px;
   border-radius: 4px;
   position: relative;
   color: white;
+}
+
+a:hover {
+  text-decoration: none;
 }
 
 .premium-blocks p {
