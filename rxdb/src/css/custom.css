@@ -833,6 +833,10 @@ body {
   text-align: center;
 }
 
+.block.sixth .content {
+  box-sizing: content-box;
+}
+
 .block.sixth .buy-options {
   width: 100%;
 
@@ -851,6 +855,7 @@ body {
 
 
 .block.sixth .buy-option-inner {
+  box-sizing: content-box;
   min-height: 565px;
   background-color: var(--bg-color-dark);
   padding: 10px;
