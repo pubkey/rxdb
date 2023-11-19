@@ -1,4 +1,4 @@
-import { calculateActionName, runAction, hasLimit, isUpdate, isDelete, isFindOne, isInsert, hasSkip, wasResultsEmpty, wasInResult, wasSortedAfterLast, previousUnknown, wasLimitReached, wasMatching, doesMatchNow } from 'event-reduce-js';
+import { calculateActionName, runAction } from 'event-reduce-js';
 import { rxChangeEventToEventReduceChangeEvent } from './rx-change-event';
 import { arrayFilterNotEmpty, clone, ensureNotFalsy, getFromMapOrCreate } from './plugins/utils';
 import { getQueryMatcher, getSortComparator, normalizeMangoQuery } from './rx-query-helper';
@@ -55,50 +55,6 @@ export function getQueryParams(rxQuery) {
     return ret;
   });
 }
-
-// This catches a specific case where we have a limit query (of say LIMIT items), and then
-// a document is removed from the result set by the current change. In this case,
-// the event-reduce library (rightly) tells us we need to recompute the query to get a
-// full result set of LIMIT items.
-// However, if we have a "limit buffer", we can instead fill in the missing result from there.
-// For more info, see the rx-query.test tests under "Limit Buffer".
-// This function checks if we are actually in the specific case where the limit buffer can be used.
-function canFillResultSetFromLimitBuffer(s) {
-  // We figure out if this event is our special case using the same "state resolve" functions that event-reduce uses:
-  // https://github.com/pubkey/event-reduce/blob/fcb46947b29eac97c97dcb05e08af337f362fe5c/javascript/src/states/index.ts#L87
-  // (we also keep the state resolve functions in the same order they're defined in event-reduce.js)
-  return !isInsert(s) && (
-  // inserts can never cause
-  isUpdate(s) || isDelete(s)) &&
-  // both updates and deletes can remove a doc from our results
-  hasLimit(s) &&
-  // only limit queries
-  !isFindOne(s) &&
-  // if it's a findOne, we have no buffer and have to re-compute
-  !hasSkip(s) &&
-  // we could potentially make skip queries work later, but for now ignore them -- too hard
-  !wasResultsEmpty(s) &&
-  // this should never happen
-  !previousUnknown(s) &&
-  // we need to have had the prev result set
-  wasLimitReached(s) &&
-  // if not, the event reducer shouldn't have a problem
-  // any value of wasFirst(s), position is not relevant for this case, as wasInResults
-  // any value of wasLast(s) , position is not relevant for this case, as wasInResults
-  // any value of sortParamsChanged(s), eg a doc could be archived but also have last_status_update changed
-  wasInResult(s) &&
-  // we only care about docs already in the results set being removed
-  // any value of wasSortedBeforeFirst(s) -- this is true when the doc is first in the results set
-  !wasSortedAfterLast(s) &&
-  // I don't think this could be true anyways, but whatever
-  // any value of isSortedBeforeFirst(s) -- this is true when the doc is first in order (but it could still be filtered out)
-  // any value of isSortedAfterLast(s)
-  wasMatching(s) &&
-  // it couldn't have been wasInResult unless it was also matching
-  !doesMatchNow(s) // Limit buffer only cares rn when the changed doc was indeed removed (so no longer matching)
-  ;
-}
-
 export function calculateNewResults(rxQuery, rxChangeEvents) {
   if (!rxQuery.collection.database.eventReduce) {
     return {
@@ -119,22 +75,6 @@ export function calculateNewResults(rxQuery, rxChangeEvents) {
     };
     var actionName = calculateActionName(stateResolveFunctionInput);
     if (actionName === 'runFullQueryAgain') {
-      if (canFillResultSetFromLimitBuffer(stateResolveFunctionInput) && rxQuery._limitBufferResults !== null && rxQuery._limitBufferResults.length > 0) {
-        // replace the missing item with an item from our limit buffer!
-        var replacementItem = rxQuery._limitBufferResults.shift();
-        if (replacementItem === undefined) {
-          return true;
-        }
-        changed = true;
-        runAction('removeExisting', queryParams, eventReduceEvent, previousResults, previousResultsMap);
-        previousResults.push(replacementItem);
-        if (previousResultsMap) {
-          // We have to assume the primaryKey value is a string. According to the rxdb docs, this is always the case:
-          // https://github.com/pubkey/rxdb/blob/c8162c25c7b033fa9f70191512ee84d44d0dd913/docs/rx-schema.html#L2523
-          previousResultsMap.set(replacementItem[rxQuery.collection.schema.primaryPath], replacementItem);
-        }
-        return false;
-      }
       return true;
     } else if (actionName !== 'doNothing') {
       changed = true;
