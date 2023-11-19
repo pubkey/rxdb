@@ -7,6 +7,22 @@ import HomepageFeatures from '@site/src/components/HomepageFeatures';
 import Heading from '@theme/Heading';
 import styles from './index.module.css';
 
+import {
+  merge,
+  fromEvent,
+  map,
+  distinctUntilChanged
+} from 'rxjs';
+import {
+  ensureNotFalsy,
+  RxLocalDocument,
+  now,
+  promiseWait
+} from '../../../';
+import {
+  getDatabase
+} from '../components/database';
+
 function HomepageHeader() {
   const { siteConfig } = useDocusaurusContext();
   return (
@@ -27,6 +43,207 @@ function HomepageHeader() {
     </header>
   );
 }
+
+
+type MousePositionType = {
+    x: number;
+    y: number;
+    time: number;
+};
+
+type BeatingValuesType = {
+    beatPeriod: number;
+    text1: string;
+    text2: string;
+    color: string;
+};
+
+const dbPromise = getDatabase();
+async function startLandingpageAnimation() {
+
+
+  /**
+   * Having blinking stuff can be annoying for people with
+   * neuronal problems. So we disable it for everyone
+   * who has set the reduced motions settings in the browser/OS
+   * @link https://developer.mozilla.org/en-US/docs/Web/CSS/@media/prefers-reduced-motion
+   * @link https://web.dev/prefers-reduced-motion/
+   * @link https://github.com/pubkey/rxdb/pull/3800
+   * @link https://a11y-101.com/development/reduced-motion
+   */
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if (reducedMotion) {
+    console.log('reducedMotion is set to true');
+    return;
+  }
+
+
+  const database = await dbPromise;
+
+
+  // once insert if not exists
+  try {
+    await database.insertLocal<BeatingValuesType>('beatingvalues', {
+      beatPeriod: 0,
+      text1: 'JavaScript',
+      text2: 'you deserve',
+      color: colors[0]
+    });
+  } catch (err) { }
+
+  const beatingValuesDoc = ensureNotFalsy(await database.getLocal<BeatingValuesType>('beatingvalues'));
+  (async () => {
+    await promiseWait(heartbeatDuration);
+    while (true) {
+      const beatInfo = getBeatCurrentBeatInfo();
+      const nextBeatPromise = promiseWait(beatInfo.timeToNextPeriod);
+      // only every second interval so we have a pause in between
+      if (beatInfo.period % 2 === 0) {
+        try {
+          await beatingValuesDoc.incrementalModify(docData => {
+            if (docData.beatPeriod >= beatInfo.period) {
+              return docData;
+            }
+            docData.beatPeriod = beatInfo.period;
+            docData.color = colors[beatInfo.period % 3];
+
+            if (beatInfo.period % 4 === 0) {
+              docData.text1 = shuffleWithSeed(textsFirst, beatInfo.period)[0];
+            } else {
+              docData.text2 = shuffleWithSeed(textsSecond, beatInfo.period)[0];
+            }
+
+            return docData;
+          });
+        } catch (err) { }
+      }
+      await nextBeatPromise;
+    }
+  })();
+
+
+  // track mouse position
+  const mousePointerDoc = await database.upsertLocal<MousePositionType>('mousepos', {
+    x: 0,
+    y: 0,
+    time: 0
+  });
+  let currentMousePosition: number[] = [];
+  window.addEventListener('mousemove', (ev) => {
+    currentMousePosition = [ev.clientX, ev.clientY];
+  });
+
+
+  merge(
+    fromEvent(window, 'mousemove'),
+    fromEvent(window, 'scroll'),
+    fromEvent(window, 'resize')
+  ).subscribe(() => {
+    mousePointerDoc.incrementalPatch({
+      x: currentMousePosition[0],
+      y: currentMousePosition[1],
+      time: now()
+    });
+  });
+
+
+
+
+  startTiltToMouse(mousePointerDoc);
+  startEnlargeOnMousePos(mousePointerDoc);
+
+
+  /**
+   * Pointers to html elements are prefixed with $
+   * Lists of pointers have $$
+   */
+  const $$beating: any[] = document.getElementsByClassName('beating') as any;
+  const $$beatingFirst: any[] = document.getElementsByClassName('beating-first') as any;
+  const $$beatingSecond: any[] = document.getElementsByClassName('beating-second') as any;
+  const $$beatingNumber = document.getElementsByClassName('beating-number');
+  const $$beatingColor: any[] = document.getElementsByClassName('beating-color') as any;
+  const $$beatingColorString: any[] = document.getElementsByClassName('beating-color-string') as any;
+
+  // const $swapOutFirst = ensureNotFalsy(document.getElementById('swap-out-first'));
+  // const $swapOutSecond = ensureNotFalsy(document.getElementById('swap-out-second'));
+
+
+  const heartbeatListeners: any[] = [];
+  let heartbeatIndex = 0;
+  const heartbeatTimeToFirstBeat = 105;
+
+  getBeatCurrentBeatInfo();
+
+
+
+  beatingValuesDoc.$
+    .pipe(
+      map(asdfasdfsdad => asdfasdfsdad._data.data),
+      distinctUntilChanged((a, b) => JSON.stringify(a) === JSON.stringify(b))
+    )
+    .subscribe((beatingValuesDocInner: BeatingValuesType) => {
+
+      heartbeatListeners.forEach(function (listener) {
+        listener(heartbeatIndex);
+      });
+      heartbeatIndex = heartbeatIndex + 1;
+
+
+      // $swapOutFirst.innerHTML = beatingValuesDocInner.text1;
+      // $swapOutSecond.innerHTML = beatingValuesDocInner.text2;
+
+      const color = beatingValuesDocInner.color;
+      Array.from($$beatingColor).forEach(function (element) {
+        element.style.backgroundColor = color;
+      });
+
+      Array.from($$beatingColorString).forEach(function (element) {
+        element.innerHTML = color;
+      });
+    });
+
+  /**
+   * css animation of big logo on heartbeat
+   * Notice that we have to trigger a reflow
+   * when we want to restart the animation.
+   * @link https://css-tricks.com/restart-css-animation/
+   */
+  heartbeatListeners.push(function () {
+    Array.from($$beating).forEach(function (element) {
+      element.style.animationDuration = heartbeatDuration + 'ms';
+      element.classList.remove('animation');
+      void element.offsetWidth;
+      element.classList.add('animation');
+    });
+    Array.from($$beatingFirst).forEach(function (element) {
+      element.style.animationDuration = heartbeatDuration + 'ms';
+      element.classList.remove('animation');
+      void element.offsetWidth;
+      element.classList.add('animation');
+    });
+    Array.from($$beatingSecond).forEach(function (element) {
+      element.style.animationDuration = heartbeatDuration + 'ms';
+      element.classList.remove('animation');
+      void element.offsetWidth;
+      element.classList.add('animation');
+    });
+  });
+
+  // increase beating numbers
+  heartbeatListeners.push(function () {
+    Array.from($$beatingNumber).forEach(function (element) {
+      // only increase randomly so it looks more natural.
+      if (randomBoolean() && randomBoolean()) {
+        setTimeout(function () {
+          const value = parseFloat(element.innerHTML);
+          const newValue = value + 1;
+          element.innerHTML = newValue + '';
+        }, heartbeatTimeToFirstBeat);
+      }
+    });
+  });
+}
+
 
 export default function Home() {
   const { siteConfig } = useDocusaurusContext();
@@ -955,3 +1172,5 @@ export default function Home() {
     </Layout >
   );
 }
+
+
