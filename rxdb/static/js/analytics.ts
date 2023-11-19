@@ -1,34 +1,14 @@
+import { trigger } from '../../src/components/trigger-event';
+
 console.log('load analytics code');
 
-window.trigger = function (type, value) {
-    console.log('window trigger: ' + type + ': ' + value);
 
-    // reddit
-    if (typeof window.rdt === 'function') {
-        window.rdt('track', 'Lead', {
-            transactionId: type + '-' + new Date().getTime(),
-            value: value
-        });
-    }
-
-    // google analytics
-    if (typeof window.gtag === 'function') {
-        window.gtag(
-            'event',
-            type,
-            {
-                value,
-                currency: 'EUR'
-            }
-        );
-    }
-};
 
 setTimeout(function () {
-    window.trigger('spend_20_seconds_on_page', 0.01);
+    trigger('spend_20_seconds_on_page', 0.01);
 }, 20 * 1000);
 setTimeout(function () {
-    window.trigger('spend_60_seconds_on_page', 0.03);
+    trigger('spend_60_seconds_on_page', 0.03);
 }, 60 * 1000);
 
 
@@ -53,9 +33,9 @@ setTimeout(function () {
 // /Reddit Pixel
 
 
-function parseQueryParams(url) {
-    var urlSearchParams = new URL(url).searchParams;
-    var queryParams = Object.fromEntries(urlSearchParams.entries());
+function parseQueryParams(url: any) {
+    const urlSearchParams = new URL(url).searchParams;
+    const queryParams = Object.fromEntries(urlSearchParams.entries());
     return queryParams;
 }
 
@@ -119,7 +99,7 @@ function historyHack() {
     } else if (
         document.referrer &&
         new URL(document.referrer).hostname !== window.location.hostname &&
-        location.href.pathname !== '/'
+        location.pathname !== '/'
     ) {
         history.pushState(null, document.title, '/?' + queryParamFlag + '=true');
         history.pushState(null, document.title, originalUrl);
@@ -133,16 +113,16 @@ historyHack();
  * Chat call-to-action button
  */
 window.addEventListener('DOMContentLoaded', function () {
-    var elemDiv = document.createElement('a');
+    const elemDiv = document.createElement('a');
     elemDiv.id = 'fixed-chat-button';
     elemDiv.href = '/chat.html';
     elemDiv.target = '_blank';
     elemDiv.innerHTML = 'Community Chat';
     elemDiv.onclick = function () {
-        window.trigger('join_chat_action', 0.10);
+        trigger('join_chat_action', 0.10);
     };
 
-    var styleSheet = document.createElement('style');
+    const styleSheet = document.createElement('style');
     styleSheet.type = 'text/css';
     styleSheet.innerText = '#fixed-chat-button {' +
         'color: white;' +

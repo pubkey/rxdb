@@ -20,8 +20,11 @@ import {
   promiseWait
 } from '../../../';
 import {
+  colors,
   getDatabase
 } from '../components/database';
+import React, { useEffect } from 'react';
+import { trigger } from '../components/trigger-event';
 
 function HomepageHeader() {
   const { siteConfig } = useDocusaurusContext();
@@ -46,21 +49,28 @@ function HomepageHeader() {
 
 
 type MousePositionType = {
-    x: number;
-    y: number;
-    time: number;
+  x: number;
+  y: number;
+  time: number;
 };
 
 type BeatingValuesType = {
-    beatPeriod: number;
-    text1: string;
-    text2: string;
-    color: string;
+  beatPeriod: number;
+  text1: string;
+  text2: string;
+  color: string;
 };
 
 const dbPromise = getDatabase();
+
+let animationStarted = false;
 async function startLandingpageAnimation() {
 
+  if (animationStarted) {
+    return;
+  }
+  animationStarted = true;
+  console.log('start animation');
 
   /**
    * Having blinking stuff can be annoying for people with
@@ -94,7 +104,7 @@ async function startLandingpageAnimation() {
   const beatingValuesDoc = ensureNotFalsy(await database.getLocal<BeatingValuesType>('beatingvalues'));
   (async () => {
     await promiseWait(heartbeatDuration);
-    while (true) {
+    while (animationStarted) {
       const beatInfo = getBeatCurrentBeatInfo();
       const nextBeatPromise = promiseWait(beatInfo.timeToNextPeriod);
       // only every second interval so we have a pause in between
@@ -247,6 +257,14 @@ async function startLandingpageAnimation() {
 
 export default function Home() {
   const { siteConfig } = useDocusaurusContext();
+
+  useEffect(() => {
+    startLandingpageAnimation();
+    return () => {
+      console.log('stop animation');
+      animationStarted = false;
+    };
+  });
   return (
     <Layout
       title={`${siteConfig.title}`}
@@ -356,7 +374,7 @@ export default function Home() {
         </div>
         <a
           href="https://github.com/pubkey/rxdb"
-          onClick={() => window.trigger('github_trophy_click', 0.20)}
+          onClick={() => trigger('github_trophy_click', 0.20)}
           target="_blank"
         >
           <div className="trophy">
@@ -513,7 +531,7 @@ export default function Home() {
         </div>
         <a
           href="https://twitter.com/intent/user?screen_name=rxdbjs"
-          onClick={() => window.trigger('twitter_trophy_click', 0.20)}
+          onClick={() => trigger('twitter_trophy_click', 0.20)}
           target="_blank"
         >
           <div className="trophy twitter">
@@ -617,7 +635,7 @@ export default function Home() {
         </div>
         <a
           href="https://rxdb.info/chat.html"
-          onClick={() => window.trigger('discord_trophy_click', 0.20)}
+          onClick={() => trigger('discord_trophy_click', 0.20)}
           target="_blank"
         >
           <div className="trophy discord">
@@ -947,7 +965,7 @@ export default function Home() {
                       href="https://github.com/pubkey/rxdb"
                       target="_blank"
                       rel="noopener"
-                      onClick={() => window.trigger('goto_code', 0.20)}
+                      onClick={() => trigger('goto_code', 0.20)}
                     >
                       <div className="buy-option-action bg-top hover-shadow-top">
                         Get the Code
@@ -1049,7 +1067,7 @@ export default function Home() {
                     </div>
                     <a
                       href="/premium.html"
-                      onClick={() => window.trigger('premium_request', 1)}
+                      onClick={() => trigger('premium_request', 1)}
                     >
                       <div className="buy-option-action bg-middle hover-shadow-middle">
                         Request Premium
@@ -1077,7 +1095,7 @@ export default function Home() {
                     <a
                       href="https://github.com/sponsors/pubkey?frequency=one-time&sponsor=pubkey"
                       target="_blank"
-                      onClick={() => window.trigger('consulting_session_request', 1.5)}
+                      onClick={() => trigger('consulting_session_request', 1.5)}
                     >
                       <div className="buy-option-action bg-bottom hover-shadow-bottom">
                         Book Now
@@ -1099,7 +1117,7 @@ export default function Home() {
                 href="/quickstart.html"
                 rel="noopener"
                 target="_blank"
-                onClick={() => window.trigger('start_now', 0.40)}
+                onClick={() => trigger('start_now', 0.40)}
               >
                 <div
                   className="button get-premium"
@@ -1112,7 +1130,7 @@ export default function Home() {
                 href="https://rxdb.info/newsletter.html"
                 rel="noopener"
                 target="_blank"
-                onClick={() => window.trigger('get_newsletter', 0.40)}
+                onClick={() => trigger('get_newsletter', 0.40)}
               >
                 <div className="button" style={{ left: '25%', marginLeft: '-90px' }}>
                   Get the Newsletter
@@ -1122,7 +1140,7 @@ export default function Home() {
                 href="https://rxdb.info/chat.html"
                 rel="noopener"
                 target="_blank"
-                onClick={() => window.trigger('join_chat', 0.40)}
+                onClick={() => trigger('join_chat', 0.40)}
               >
                 <div
                   className="button"
@@ -1131,7 +1149,7 @@ export default function Home() {
                   Join the Chat
                 </div>
               </a>
-              <a href="/premium.html" onClick={() => window.trigger('premium_request', 1)}>
+              <a href="/premium.html" onClick={() => trigger('premium_request', 1)}>
                 <div
                   className="button"
                   style={{ top: '40%', left: '20%', marginLeft: '-70.5px' }}
@@ -1143,7 +1161,7 @@ export default function Home() {
                 href="https://twitter.com/intent/user?screen_name=rxdbjs"
                 rel="noopener"
                 target="_blank"
-                onClick={() => window.trigger('follow_twitter', 0.40)}
+                onClick={() => trigger('follow_twitter', 0.40)}
               >
                 <div
                   className="button"
@@ -1156,7 +1174,7 @@ export default function Home() {
                 href="https://github.com/pubkey/rxdb"
                 rel="noopener"
                 target="_blank"
-                onClick={() => window.trigger('goto_code', 0.40)}
+                onClick={() => trigger('goto_code', 0.40)}
               >
                 <div
                   className="button"
@@ -1173,4 +1191,210 @@ export default function Home() {
   );
 }
 
+
+
+/**
+ * @link https://armandocanals.com/posts/CSS-transform-rotating-a-3D-object-perspective-based-on-mouse-position.html
+ */
+function startTiltToMouse(mousePosDoc: RxLocalDocument<any, MousePositionType>) {
+  const $$tiltToMouse: any[] = document.getElementsByClassName('tilt-to-mouse') as any;
+
+  const constrain = 100;
+  function transforms(x: number, y: number, el: HTMLElement) {
+    const box = el.getBoundingClientRect();
+    const calcX = -(y - box.y - (box.height / 2)) / constrain;
+    const calcY = (x - box.x - (box.width / 2)) / constrain;
+
+    return `perspective(150px)    rotateX(${ensureInRange(calcX)}deg)    rotateY(${ensureInRange(calcY)}deg) `;
+  }
+
+  function transformElement(el: any, xyEl: number[]) {
+    el.style.transform = transforms.apply(null, xyEl as any);
+  }
+
+  mousePosDoc.$.subscribe((mousePos) => {
+    if (!mousePos._data.data.time) {
+      return;
+    }
+    Array.from($$tiltToMouse).forEach($element => {
+      if (!isInViewport($element)) {
+        return;
+      }
+      const position = ensureNotFalsy([mousePos._data.data.x, mousePos._data.data.y]).concat([$element]);
+      transformElement($element, position);
+    });
+  });
+}
+
+/**
+ * @link https://stackoverflow.com/a/16225919/3443137
+ */
+function startEnlargeOnMousePos(mousePosDoc: RxLocalDocument<any, MousePositionType>) {
+  const $$enlargeOnMouse: any[] = document.getElementsByClassName('enlarge-on-mouse') as any;
+
+  function getElementPosition(el: HTMLElement) {
+    const rect = el.getBoundingClientRect();
+
+    const centerX = rect.left + (rect.width / 2);
+    const centerY = rect.top + (rect.height / 2);
+
+    return {
+      centerX,
+      centerY,
+      width: rect.width,
+      height: rect.height
+    };
+  }
+
+  function enlargeElement(el: HTMLElement, scale: number) {
+    const transform = `scale(${scale})`;
+    el.style.transform = transform;
+  }
+
+  mousePosDoc.$
+    .pipe(
+      map(d => d._data)
+    )
+    .subscribe((mousePos) => {
+      if (
+        !mousePos.data.time ||
+        !mousePos.data.x ||
+        !mousePos.data.y
+      ) {
+        return;
+      }
+
+      Array.from($$enlargeOnMouse).forEach($element => {
+        if (!isInViewport($element)) {
+          return;
+        }
+        const elementPosition = getElementPosition($element);
+
+        const dx = mousePos.data.x - elementPosition.centerX;
+        const dy = mousePos.data.y - elementPosition.centerY;
+
+        const distance = Math.sqrt(dx * dx + dy * dy);
+
+        function easeInQuint(x: number): number {
+          return x ^ 1.9;
+        }
+
+        let scale = 1 + (elementPosition.width / 2) / (easeInQuint(distance + 300));
+        if (scale > 1.5) {
+          scale = 1.5;
+        }
+        if (scale < 1.01) {
+          scale = 1;
+        }
+
+        enlargeElement($element, scale);
+
+      });
+    });
+}
+
+const textsFirst = [
+  'NoSQL',
+  'OfflineFirst',
+  'JavaScript',
+  'observable',
+  'reactive',
+  'realtime',
+  'client side',
+  'fast'
+];
+const textsSecond = [
+  'for the Web',
+  'for Node.js',
+  'for Browsers',
+  'for Capacitor',
+  'for Electron',
+  'for hybrid apps',
+  'for PWAs',
+  'for React Native',
+  'for NativeScript',
+  'for UI apps',
+  'you deserve',
+  'that syncs',
+];
+
+const heartbeatDuration = 851;
+
+function getBeatCurrentBeatInfo() {
+  // remove a big chunk so we do not have a large number for better precision.
+  const time = new Date().getTime() - 1960000000;
+  const ratio = time / heartbeatDuration;
+  const period = Math.floor(ratio);
+  const timeToNextPeriod = (ratio - period) * heartbeatDuration;
+  return {
+    ratio,
+    period,
+    timeToNextPeriod
+  };
+}
+
+const maxDegree = 22;
+const minDegree = -1 * maxDegree;
+// use max values to ensure it never looks broken, even on big screens.
+function ensureInRange(val: number): number {
+  if (val < minDegree) {
+    return minDegree;
+  }
+  if (val > maxDegree) {
+    return maxDegree;
+  }
+  return val;
+}
+
+
+// UTILS
+
+function randomBoolean() {
+  return Math.random() < 0.5;
+}
+
+
+/**
+* @link https://stackoverflow.com/questions/16801687/javascript-random-ordering-with-seed
+*/
+function shuffleWithSeed<T>(array: T[], seed: number): T[] {
+  array = array.slice(0);
+  let m = array.length;
+  let t;
+  let i;
+
+  // While there remain elements to shuffle…
+  while (m) {
+
+    // Pick a remaining element…
+    i = Math.floor(random(seed) * m--);
+
+    // And swap it with the current element.
+    t = array[m];
+    array[m] = array[i];
+    array[i] = t;
+    ++seed;
+  }
+
+  return array;
+}
+
+function random(seed: number) {
+  const x = Math.sin(seed++) * 10000;
+  return x - Math.floor(x);
+}
+
+
+/**
+* @link https://www.javascripttutorial.net/dom/css/check-if-an-element-is-visible-in-the-viewport/
+*/
+function isInViewport(el: any) {
+  const rect = el.getBoundingClientRect();
+  return (
+    rect.top >= 0 &&
+    rect.left >= 0 &&
+    rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+    rect.right <= (window.innerWidth || document.documentElement.clientWidth)
+  );
+}
 
