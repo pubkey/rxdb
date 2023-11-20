@@ -34,12 +34,17 @@ html[data-theme='dark'] {
   --ifm-navbar-background-color: #171923;
 }
 
+/**
+ * Default font size was to big, decrease it here
+ */
 .markdown>h1 {
   font-size: 2.1rem;
 }
+
 .markdown>h2 {
   font-size: 1.75rem;
 }
+
 .markdown>p {
   font-size: 1rem;
 }
@@ -67,6 +72,13 @@ html[data-theme='dark'] {
   --color-bottom: #5f2688;
 }
 
+
+/* some images must have white background so transparent svg images a readable */
+article .img-padding {
+  background-color: white;
+  padding: 5px;
+  border-radius: 4px;
+}
 
 
 
@@ -1827,4 +1839,21 @@ footer {
 
 footer a:visited {
   color: white;
+}
+
+
+
+
+
+.redirectBox .ul-container {
+  text-align: center;
+}
+
+.redirectBox ul {
+  display: inline-block;
+  text-align: left;
+}
+
+.redirectBox li {
+  margin: 10px 0;
 }

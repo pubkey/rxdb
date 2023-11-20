@@ -1,5 +1,5 @@
 ---
-title: Backup Plugin
+title: 📥 Backup
 slug: backup.html
 ---
 

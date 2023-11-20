@@ -1,5 +1,5 @@
 ---
-title: Cleanup
+title: 🧹 Cleanup
 slug: cleanup.html
 ---
 

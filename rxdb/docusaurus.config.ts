@@ -111,7 +111,8 @@ const config: Config = {
             position: 'right',
           },
           {
-            href: '/chat.html',
+            to: '/chat.html',
+            target: '_blank',
             label: 'Chat',
             position: 'right',
           },
@@ -156,6 +157,10 @@ const config: Config = {
               {
                 label: 'GitHub',
                 href: 'https://github.com/facebook/docusaurus',
+              },
+              {
+                label: 'Imprint',
+                href: 'imprint.html',
               },
             ],
           },
