@@ -1857,3 +1857,32 @@ footer a:visited {
 .redirectBox li {
   margin: 10px 0;
 }
+
+
+/*
+ * Call to action button
+ */
+.call-to-action {
+  align-items: center;
+  display: flex;
+  flex: 1;
+  min-width: 0;
+}
+
+.call-to-action a {
+  cursor: pointer;
+  box-sizing: content-box;
+  background-color: var(--color-top);
+  color: white;
+  text-align: center;
+  padding-left: 15px;
+  padding-right: 15px;
+  line-height: 40px;
+  border-radius: 7px;
+  height: 40px;
+  vertical-align: middle;
+}
+
+.call-to-action a b {
+  color: white;
+}

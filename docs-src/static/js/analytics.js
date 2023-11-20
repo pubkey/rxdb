@@ -134,12 +134,11 @@ historyHack();
 
 /**
  * Chat call-to-action button
- * TODO
  */
 window.addEventListener('DOMContentLoaded', function () {
     const elemDiv = document.createElement('a');
     elemDiv.id = 'fixed-chat-button';
-    elemDiv.href = '/chat.html';
+    elemDiv.href = '/chat';
     elemDiv.target = '_blank';
     elemDiv.innerHTML = 'Community Chat';
     elemDiv.onclick = function () {
@@ -173,3 +172,85 @@ window.addEventListener('DOMContentLoaded', function () {
     document.body.appendChild(elemDiv);
 
 }, false);
+
+
+
+/**
+ * Add call to action button
+ */
+
+var callToActions = [
+    {
+        text: 'Follow at ',
+        keyword: '@twitter',
+        url: 'https://twitter.com/intent/user?screen_name=rxdbjs'
+    },
+    {
+        text: 'Chat at ',
+        keyword: '@discord',
+        url: 'https://rxdb.info/chat'
+    },
+    {
+        text: 'Star at ',
+        keyword: '@github',
+        url: 'https://rxdb.info/code'
+    },
+    {
+        text: 'Subscribe',
+        keyword: '@news',
+        url: 'https://rxdb.info/newsletter'
+    }
+];
+function insertAfter(referenceNode, newNode) {
+    referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
+}
+var callToActionButtonId = 'rxdb-call-to-action-button';
+function setCallToActionOnce() {
+    var randId = Date.now() % callToActions.length;
+    var callToAction = callToActions[randId];
+    var alreadyThere = document.querySelector('#' + callToActionButtonId);
+    if (alreadyThere) {
+        alreadyThere.parentNode.removeChild(alreadyThere);
+    }
+    
+    
+    console.log('setCallToActionOnce()');
+    var positionReferenceElement = document.querySelector('.navbar__items');
+    if (!positionReferenceElement) {
+        console.log('not laoded yet');
+        // not loaded yet!
+        return;
+    }
+
+    console.log('--- 1');
+
+    var newElementWrapper = document.createElement('div');
+    newElementWrapper.classList.add('call-to-action');
+
+    var newElement = document.createElement('a');
+    newElement.classList.add('hover-shadow-top');
+    newElement.id = callToActionButtonId;
+    newElement.innerHTML = callToAction.text + ' <b>' + callToAction.keyword + '</b>';
+    newElement.href = callToAction.url;
+    newElement.target = '_blank';
+    newElementWrapper.append(newElement);
+
+
+    insertAfter(positionReferenceElement, newElementWrapper);
+}
+function runSettingCallToActionButton() {
+    setCallToActionOnce();
+    /**
+     * Gitbook does a strange page change handling,
+     * so we have to re-run the function
+     * because listening to history changes did not work.
+     */
+    setInterval(function () {
+        var alreadyThere = document.querySelector('#' + callToActionButtonId);
+        // only add if not exists already, like on a page change.
+        if (!alreadyThere) {
+            setCallToActionOnce();
+        }
+    }, 100);
+}
+runSettingCallToActionButton();

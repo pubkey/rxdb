@@ -1,6 +1,6 @@
 ---
 title: Contribute to RxDB
-slug: contirubtion.html
+slug: contribution.html
 ---
 
 
