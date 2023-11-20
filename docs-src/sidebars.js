@@ -140,7 +140,7 @@ const sidebars = {
         'capacitor-database',
         'electron-database'
       ],
-    },
+    }
   ],
 };
 

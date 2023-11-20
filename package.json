@@ -411,7 +411,7 @@
     "docs:install": "(cd docs-src/ && npm install)",
     "// docs:serve": "start a local server to watch the docs. Served at http://localhost:4000/",
     "docs:serve": "(cd docs-src/ && npm start)",
-    "docs:build": "rimraf -rf ./docs && mkdir ./docs && (cd docs-src/ && npm run build) && cp -r ./docs-src/build/* ./docs",
+    "docs:build": "rimraf -rf ./docs && mkdir ./docs && (cd docs-src/ && npm run build) && cp -r ./docs-src/build/* ./docs && cp ./docs-src/CNAME ./docs/CNAME",
     "docs:remove:time": "node ./scripts/docs-remove-time.mjs",
     "disc": "npm run transpile && npm run build:esm && cross-env NODE_ENV=disc webpack --config ./config/webpack.config.js",
     "preversion": "npm run lint && npm run test",

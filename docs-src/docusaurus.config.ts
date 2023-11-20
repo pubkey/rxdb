@@ -107,6 +107,7 @@ const config: Config = {
           },
           {
             href: 'code',
+            target: '_blank',
             label: 'Code',
             position: 'right',
           },
@@ -125,15 +126,15 @@ const config: Config = {
             title: 'Docs',
             items: [
               {
-                label: 'Quickstart',
+                label: '🚀 Quickstart',
                 to: '/quickstart.html',
               },
               {
-                label: 'Storage',
+                label: '💾 Storage',
                 to: '/rx-storage.html',
               },
               {
-                label: 'Replication',
+                label: '🔄 Replication',
                 to: '/replication.html',
               },
             ],
@@ -143,7 +144,8 @@ const config: Config = {
             items: [
               {
                 label: 'Github',
-                href: 'https://github.com/pubkey/rxdb',
+                target: '_blank',
+                href: '/code',
               },
               {
                 label: 'Discord',
