@@ -382,6 +382,7 @@ jobs:
           path: |
             ~/.npm
             ./node_modules
+            ./docs-src/node_modules
           key: ${{ runner.os }}-npm-test-builds-x3-${{ hashFiles('**/package.json') }}
           restore-keys: |
             ${{ runner.os }}-npm-test-builds-x3-
