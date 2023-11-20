@@ -396,6 +396,11 @@ jobs:
 
       - run: npm run build:rollup
 
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v4.0.0
+        with:
+          node-version: 18
+
       - name: test docs build
         run: |
           npm run docs:install

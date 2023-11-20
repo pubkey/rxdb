@@ -55,14 +55,13 @@ jobs:
             ${{ runner.os }}-npm-rxdb-release-x2-
 
       # Build the docs, only do this if it is not a prerelease.
-      # TODO move from gitbook to honkit
-      # https://github.com/honkit/honkit
+      # docusaurus only works on node 18
       # so we do not need this
-      - name: downgrade nodejs for gitbook
+      - name: downgrade nodejs for docusaurus
         if: steps.vars.outputs.prerelease == 'false'
         uses: actions/setup-node@v4.0.0
         with:
-          node-version: 13.8.0
+          node-version: 18
 
       - name: Install old node version so it works with the shitty gitbook
         if: steps.vars.outputs.prerelease == 'false'
