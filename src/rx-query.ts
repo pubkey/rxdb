@@ -186,6 +186,10 @@ export class RxQueryBase<
     public _lastExecStart: number = 0;
     public _lastExecEnd: number = 0;
 
+    // Fields used for the Limit Buffer when enabled:
+    public _limitBufferSize: number | null = null;
+    public _limitBufferResults: RxDocumentData<RxDocType>[] | null = null;
+
     /**
      * ensures that the exec-runs
      * are not run in parallel
@@ -392,6 +396,11 @@ export class RxQueryBase<
                 this.mangoQuery
             )
         };
+
+        if (this._limitBufferSize !== null && hookInput.mangoQuery.limit) {
+            hookInput.mangoQuery.limit = hookInput.mangoQuery.limit + this._limitBufferSize;
+        }
+
         runPluginHooks('prePrepareQuery', hookInput);
 
         const value = this.collection.database.storage.statics.prepareQuery(
@@ -463,6 +472,19 @@ export class RxQueryBase<
     }
     limit(_amount: number | null): RxQuery<RxDocType, RxQueryResult> {
         throw pluginMissing('query-builder');
+    }
+
+    enableLimitBuffer(bufferSize: number) {
+        if (this._lastExecStart !== 0) {
+            console.error('Can\'t use limit buffer if query has already executed');
+            return this;
+        }
+        if (this.mangoQuery.skip || !this.mangoQuery.limit) {
+            console.error('Right now, limit buffer only works on non-skip, limit queries.');
+            return this;
+        }
+        this._limitBufferSize = bufferSize;
+        return this;
     }
 }
 
@@ -577,6 +599,18 @@ function __ensureEqual<RxDocType>(rxQuery: RxQueryBase<RxDocType>): Promise<bool
             const runChangeEvents: RxChangeEvent<any>[] = rxQuery.asRxQuery.collection
                 ._changeEventBuffer
                 .reduceByLastOfDoc(missedChangeEvents);
+
+            if (rxQuery._limitBufferResults !== null) {
+                // Check if any item in our limit buffer was modified by a change event
+                for (const cE of runChangeEvents) {
+                    if (rxQuery._limitBufferResults.find((doc) => doc[rxQuery.collection.schema.primaryPath] === cE.documentId)) {
+                        // If so, the limit buffer is potential invalid -- let's just blow it up
+                        // TODO: could we instead update the documents in the limit buffer?
+                        rxQuery._limitBufferResults = null;
+                        break;
+                    }
+                }
+            }
 
             if (rxQuery.op === 'count') {
                 // 'count' query
@@ -712,6 +746,11 @@ export async function queryCollection<RxDocType>(
     } else {
         const preparedQuery = rxQuery.getPreparedQuery();
         const queryResult = await collection.storageInstance.query(preparedQuery);
+        if (rxQuery._limitBufferSize !== null && rxQuery.mangoQuery.limit && queryResult.documents.length > rxQuery.mangoQuery.limit) {
+            // If there are more than query.limit results, we pull out our buffer items from the
+            // last rxQuery._limitBufferSize items of the results.
+            rxQuery._limitBufferResults = queryResult.documents.splice(rxQuery.mangoQuery.limit);
+        }
         docs = queryResult.documents;
     }
     return docs;

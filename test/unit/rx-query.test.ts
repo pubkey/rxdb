@@ -17,6 +17,7 @@ import {
 } from '../../';
 
 import { firstValueFrom } from 'rxjs';
+import type { HumanDocumentType } from './../helper/schemas';
 
 describe('rx-query.test.ts', () => {
     config.parallel('.constructor', () => {
@@ -1374,6 +1375,211 @@ describe('rx-query.test.ts', () => {
             assert.ok(!byId.has('constructor'));
 
             db.destroy();
+        });
+    });
+
+    async function setUpLimitBufferCollectionAndQuery(enableLimitBufferSize?: number, numRowsTotal=20, skipRows?: number) {
+        const limitRows = 10;
+        const collection = await humansCollection.create(numRowsTotal);
+
+        // Setup a query where the limit buffer would be useful.
+        // This .find initially matches all docs in the collection
+        let query = collection.find({selector: {
+            firstName: {
+                $ne: 'Dollaritas'
+            }
+        }}).sort('-lastName').limit(limitRows);
+
+        if (skipRows !== undefined) {
+            query = query.skip(skipRows);
+        }
+
+        if (enableLimitBufferSize !== undefined) {
+            query.enableLimitBuffer(enableLimitBufferSize);
+        }
+
+        const initialResults = await query.exec();
+
+        assert.strictEqual(initialResults.length, Math.min(limitRows, numRowsTotal));
+        assert.strictEqual(query._execOverDatabaseCount, 1);
+
+        // We already have a change event for each row from humansCollection.create:
+        assert.strictEqual(query._latestChangeEvent, numRowsTotal);
+
+        return {query, collection, numRowsTotal, limitRows, initialResults};
+    }
+
+    async function removeSingleDocFromMatchingQuery(collection: Awaited<ReturnType<typeof setUpLimitBufferCollectionAndQuery>>['collection'], doc: HumanDocumentType) {
+        await collection.find({selector: {passportId: doc.passportId}}).update({
+            $set: {
+                firstName: 'Dollaritas'
+            }
+        });
+    }
+
+    config.parallel('Limit Buffer', () => {
+        it('By default, limit queries will have to re-exec when item is removed', async () => {
+            // Set up the query, without using the limit buffer:
+            const { query, collection, numRowsTotal, limitRows, initialResults } = await setUpLimitBufferCollectionAndQuery(undefined);
+
+            // Now, make a change that removes a single doc from the result set
+            await removeSingleDocFromMatchingQuery(collection, initialResults[0]);
+
+            // Re-exec the query:
+            const updatedResults = await query.exec();
+            // Confirm the change was processed, and the results are correct:
+            assert.strictEqual(updatedResults.length, limitRows);
+            assert.notStrictEqual(updatedResults[0].passportId, initialResults[0].passportId);
+            assert.strictEqual(query.collection._changeEventBuffer.counter, numRowsTotal + 1);
+            assert.strictEqual(query._latestChangeEvent, numRowsTotal + 1);
+
+            // Confirm that the query had to run via db again instead of using the query cache:
+            assert.strictEqual(query._execOverDatabaseCount, 2);
+
+            collection.database.destroy();
+        });
+        it('Limit buffer works properly in usual cases', async () => {
+            const limitBufferSize = 5;
+            const {query, collection, numRowsTotal, limitRows, initialResults} = await setUpLimitBufferCollectionAndQuery(limitBufferSize, 30);
+
+            // Now, make a change that removes a single doc from the result set
+            await removeSingleDocFromMatchingQuery(collection, initialResults[0]);
+
+            // Re-exec the query:
+            const updatedResults = await query.exec();
+            // Confirm the change was processed, and the results are correct:
+            assert.strictEqual(updatedResults.length, limitRows);
+            assert.notStrictEqual(updatedResults[0].passportId, initialResults[0].passportId);
+            assert.strictEqual(query.collection._changeEventBuffer.counter, numRowsTotal + 1);
+            assert.strictEqual(query._latestChangeEvent, numRowsTotal + 1);
+
+            // Confirm that the query DID NOT exec over the db again, because it used the query cache via limit buffer:
+            assert.strictEqual(query._execOverDatabaseCount, 1);
+            // And that one item was taken from the limit buffer:
+            assert.strictEqual(query._limitBufferResults?.length, limitBufferSize - 1);
+
+            // Do it all again to make sure this is consistent across multiple updates:
+            await removeSingleDocFromMatchingQuery(collection, initialResults[8]);
+            const updatedResultsAgain = await query.exec();
+            assert.strictEqual(updatedResultsAgain.length, limitRows);
+            assert.strictEqual(query._execOverDatabaseCount, 1);
+
+            // However, if we "use up" the whole limit buffer (5 documents),
+            // the query will have to re-exec. Let's remove 3 more items to show that:
+            for (const doc of initialResults.slice(1, 4)) {
+                await removeSingleDocFromMatchingQuery(collection, doc);
+                await query.exec();
+                assert.strictEqual(query._execOverDatabaseCount, 1);
+            }
+
+            // The Limit buffer should now be empty:
+            assert.strictEqual(query._limitBufferResults?.length, 0);
+
+            // So removing one more item will require a re-exec on the db:
+            await removeSingleDocFromMatchingQuery(collection, initialResults[4]);
+            await query.exec();
+            assert.strictEqual(query._execOverDatabaseCount, 2);
+
+            // After this re-exec on the db, the limit buffer should be filled again:
+            assert.strictEqual(query._limitBufferResults?.length, limitBufferSize);
+
+            // And further removals will use the new limit buffer again:
+            await removeSingleDocFromMatchingQuery(collection, initialResults[5]);
+            const finalResults = await query.exec();
+            assert.strictEqual(finalResults.length, limitRows);
+            assert.strictEqual(query._execOverDatabaseCount, 2);
+            assert.strictEqual(query._limitBufferResults?.length, limitBufferSize - 1);
+
+            collection.database.destroy();
+        });
+        it('Limit buffer doesn\'t do anything when fewer than LIMIT items', async () => {
+            // Set up with only 8 rows total, but a limit of 10 (and limit buffer 5):
+            const limitBufferSize = 5;
+            const {query, collection, numRowsTotal, initialResults} = await setUpLimitBufferCollectionAndQuery(limitBufferSize, 8);
+
+            // Now, make a change that removes a single doc from the result set
+            await removeSingleDocFromMatchingQuery(collection, initialResults[0]);
+
+            // Re-exec the query after removing one, so the results should be 7 docs now:
+            const updatedResults = await query.exec();
+            // Confirm the change was processed, and the results are correct:
+            assert.strictEqual(updatedResults.length, numRowsTotal - 1);
+            assert.notStrictEqual(updatedResults[0].passportId, initialResults[0].passportId);
+
+            // And the limitBuffer wasn't filled at all:
+            assert.strictEqual(query._limitBufferResults, null);
+
+            // The query wouldn't have to re-exec because of the normal query cache:
+            assert.strictEqual(query._execOverDatabaseCount, 1);
+
+            collection.database.destroy();
+        });
+        it('Limit buffer works with skip=0', async () => {
+            // Set up with a skip=0 (limit buffer should work normally)
+            const limitBufferSize = 5;
+            const {query, collection, initialResults} = await setUpLimitBufferCollectionAndQuery(limitBufferSize, 20, 0);
+            assert.strictEqual(query._limitBufferResults?.length, limitBufferSize);
+            await removeSingleDocFromMatchingQuery(collection, initialResults[1]);
+            await query.exec();
+            assert.strictEqual(query._execOverDatabaseCount, 1);
+            collection.database.destroy();
+        });
+        it('Limit buffer does nothing with a non-zero skip', async () => {
+            const limitBufferSize = 5;
+            const {query, collection, initialResults} = await setUpLimitBufferCollectionAndQuery(limitBufferSize, 20, 10);
+            assert.strictEqual(query._limitBufferResults, null);
+            await removeSingleDocFromMatchingQuery(collection, initialResults[1]);
+            await query.exec();
+            assert.strictEqual(query._execOverDatabaseCount, 2);
+            collection.database.destroy();
+        });
+        it('Limit buffer does nothing if item is removed from results due to sort changing only', async () => {
+            // Do a normal setup with the limit, and confirm the limit buffer gets filled:
+            const limitBufferSize = 5;
+            const {query, collection, initialResults} = await setUpLimitBufferCollectionAndQuery(limitBufferSize, 20);
+            assert.strictEqual(query._limitBufferResults?.length, limitBufferSize);
+            assert.strictEqual(query._execOverDatabaseCount, 1);
+
+            // Instead of removing an item from the results by making it break the query selector
+            // (what removeSingleDocFromMatchingQuery does) just move it to the end of the sort
+            // which will kick it out of the query results due to the LIMIT
+            await collection.find({selector: {passportId: initialResults[0].passportId}}).update({
+                $set: {
+                    lastName: 'AAAAAAAAAAAAAAA'
+                }
+            });
+
+            // Explicitly, the limit buffer does not replace items in this case (although it technically
+            // could with little trouble in the future, we just haven't implemented it)
+            // so the query should re-run on the database to fill in the missing document:
+            const updatedResults = await query.exec();
+            assert.strictEqual(query._execOverDatabaseCount, 2);
+            assert.notStrictEqual(updatedResults[0].passportId, initialResults[0].passportId);
+            collection.database.destroy();
+        });
+        it('Limit buffer omits buffered items that have been modified to no longer', async () => {
+            const limitBufferSize = 5;
+            const {query, collection, initialResults} = await setUpLimitBufferCollectionAndQuery(limitBufferSize, 20);
+
+            if (query._limitBufferResults === null) {
+                throw new Error('_limitBufferResults not set');
+            }
+            // Get the first item from the limit buffer, and change it so it no longer matches the query selector:
+            const firstBufferItem = query._limitBufferResults[0];
+            await collection.find({selector: {passportId: firstBufferItem.passportId}}).update({
+                $set: {
+                    firstName: 'Dollaritas'
+                }
+            });
+            // Now, remove an item from the initial results, so that the buffer _should_ be used
+            // to fill the last item in the updated results.
+            await removeSingleDocFromMatchingQuery(collection, initialResults[1]);
+
+            // Make sure we DO NOT pull the modified item from the limit buffer, as it no longer matches query:
+            const updatedResults = await query.exec();
+            assert.notStrictEqual(updatedResults[updatedResults.length - 1].passportId, firstBufferItem.passportId);
+
+            collection.database.destroy();
         });
     });
 });
