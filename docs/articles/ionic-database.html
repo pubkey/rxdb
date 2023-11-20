@@ -1,109 +1,2717 @@
-<!doctype html>
-<html lang="en" dir="ltr" class="docs-wrapper plugin-docs plugin-id-default docs-version-current docs-doc-page docs-doc-id-articles/ionic-database" data-has-hydrated="false">
-<head>
-<meta charset="UTF-8">
-<meta name="generator" content="Docusaurus v3.0.0">
-<title data-rh="true">Ionic Storage - RxDB as database for hybrid apps | RxDB - JavaScript Database</title><meta data-rh="true" name="viewport" content="width=device-width,initial-scale=1"><meta data-rh="true" name="twitter:card" content="summary_large_image"><meta data-rh="true" property="og:image" content="https://rxdb.info/img/rxdb_social_card.png"><meta data-rh="true" name="twitter:image" content="https://rxdb.info/img/rxdb_social_card.png"><meta data-rh="true" property="og:url" content="https://rxdb.info/articles/ionic-database.html"><meta data-rh="true" property="og:locale" content="en"><meta data-rh="true" name="docusaurus_locale" content="en"><meta data-rh="true" name="docsearch:language" content="en"><meta data-rh="true" name="docusaurus_version" content="current"><meta data-rh="true" name="docusaurus_tag" content="docs-default-current"><meta data-rh="true" name="docsearch:version" content="current"><meta data-rh="true" name="docsearch:docusaurus_tag" content="docs-default-current"><meta data-rh="true" property="og:title" content="Ionic Storage - RxDB as database for hybrid apps | RxDB - JavaScript Database"><meta data-rh="true" name="description" content="In the fast-paced world of mobile app development, hybrid applications have emerged as a versatile solution, offering the best of both worlds - the web and native app experiences. One key challenge these apps face is efficiently storing and querying data on the client&#x27;s device. Enter RxDB, a powerful client-side database tailored for ionic hybrid applications. In this article, we&#x27;ll explore how RxDB addresses the requirements of storing and querying data in ionic apps, and why it stands out as a preferred choice."><meta data-rh="true" property="og:description" content="In the fast-paced world of mobile app development, hybrid applications have emerged as a versatile solution, offering the best of both worlds - the web and native app experiences. One key challenge these apps face is efficiently storing and querying data on the client&#x27;s device. Enter RxDB, a powerful client-side database tailored for ionic hybrid applications. In this article, we&#x27;ll explore how RxDB addresses the requirements of storing and querying data in ionic apps, and why it stands out as a preferred choice."><link data-rh="true" rel="icon" href="/img/favicon.ico"><link data-rh="true" rel="canonical" href="https://rxdb.info/articles/ionic-database.html"><link data-rh="true" rel="alternate" href="https://rxdb.info/articles/ionic-database.html" hreflang="en"><link data-rh="true" rel="alternate" href="https://rxdb.info/articles/ionic-database.html" hreflang="x-default"><link rel="alternate" type="application/rss+xml" href="/blog/rss.xml" title="RxDB - JavaScript Database RSS Feed">
-<link rel="alternate" type="application/atom+xml" href="/blog/atom.xml" title="RxDB - JavaScript Database Atom Feed">
 
-<link rel="preconnect" href="https://www.google-analytics.com">
-<link rel="preconnect" href="https://www.googletagmanager.com">
-<script async src="https://www.googletagmanager.com/gtag/js?id=G-62D63SY3S0"></script>
-<script>function gtag(){dataLayer.push(arguments)}window.dataLayer=window.dataLayer||[],gtag("js",new Date),gtag("config","G-62D63SY3S0",{})</script>
+<!DOCTYPE HTML>
+<html lang="" >
+    <head>
+        <meta charset="UTF-8">
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <title>Ionic Database · RxDB - JavaScript Database</title>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="description" content="">
+        <meta name="generator" content="GitBook 3.2.3">
+        
+        
+        
+    
+    <link rel="stylesheet" href="../gitbook/style.css">
+
+    
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-expandable-chapters/expandable-chapters.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-highlight/website.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-search/search.css">
+                
+            
+                
+                <link rel="stylesheet" href="../gitbook/gitbook-plugin-fontsettings/website.css">
+                
+            
+        
+
+    
+
+    
+        
+        <link rel="stylesheet" href="../styles/website.css">
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+        
+    
+    
+    <meta name="HandheldFriendly" content="true"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="apple-touch-icon-precomposed" sizes="152x152" href="../gitbook/images/apple-touch-icon-precomposed-152.png">
+    <link rel="shortcut icon" href="../gitbook/images/favicon.ico" type="image/x-icon">
+
+    
+    <link rel="next" href="json-database.html" />
+    
+    
+    <link rel="prev" href="localstorage.html" />
+    
+
+    </head>
+    <body>
+        
+<div class="book">
+    <div class="book-summary">
+        
+            
+<div id="book-search-input" role="search">
+    <input type="text" placeholder="Type to search" />
+</div>
+
+            
+                <nav role="navigation">
+                
 
 
-<script src="/js/analytics.js" async></script><link rel="stylesheet" href="/assets/css/styles.ee668bdd.css">
-<script src="/assets/js/runtime~main.d3bf293c.js" defer="defer"></script>
-<script src="/assets/js/main.9f8ad6b7.js" defer="defer"></script>
-</head>
-<body class="navigation-with-keyboard">
-<script>!function(){function t(t){document.documentElement.setAttribute("data-theme",t)}var e=function(){try{return new URLSearchParams(window.location.search).get("docusaurus-theme")}catch(t){}}()||function(){try{return localStorage.getItem("theme")}catch(t){}}();t(null!==e?e:"dark")}(),function(){try{const c=new URLSearchParams(window.location.search).entries();for(var[t,e]of c)if(t.startsWith("docusaurus-data-")){var a=t.replace("docusaurus-data-","data-");document.documentElement.setAttribute(a,e)}}catch(t){}}()</script><div id="__docusaurus"><div role="region" aria-label="Skip to main content"><a class="skipToContent_fXgn" href="#__docusaurus_skipToContent_fallback">Skip to main content</a></div><nav aria-label="Main" class="navbar navbar--fixed-top"><div class="navbar__inner"><div class="navbar__items"><button aria-label="Toggle navigation bar" aria-expanded="false" class="navbar__toggle clean-btn" type="button"><svg width="30" height="30" viewBox="0 0 30 30" aria-hidden="true"><path stroke="currentColor" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2" d="M4 7h22M4 15h22M4 23h22"></path></svg></button><a class="navbar__brand" href="/"><div class="navbar__logo"><img src="/files/logo/logo.svg" alt="RxDB Logo" class="themedComponent_mlkZ themedComponent--light_NVdE"><img src="/files/logo/logo.svg" alt="RxDB Logo" class="themedComponent_mlkZ themedComponent--dark_xIcU"></div><b class="navbar__title text--truncate">RxDB</b></a></div><div class="navbar__items navbar__items--right"><a class="navbar__item navbar__link" href="/articles/premium">Pricing</a><a class="navbar__item navbar__link" href="/quickstart.html">Docs</a><a href="https://github.com/pubkey/rxdb" target="_blank" rel="noopener noreferrer" class="navbar__item navbar__link">Code<svg width="13.5" height="13.5" aria-hidden="true" viewBox="0 0 24 24" class="iconExternalLink_nPIU"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"></path></svg></a><a class="navbar__item navbar__link" target="_blank" href="/chat">Chat</a><div class="navbarSearchContainer_Bca1"></div></div></div><div role="presentation" class="navbar-sidebar__backdrop"></div></nav><div id="__docusaurus_skipToContent_fallback" class="main-wrapper mainWrapper_z2l0"><div class="docsWrapper_hBAB"><button aria-label="Scroll back to top" class="clean-btn theme-back-to-top-button backToTopButton_sjWU" type="button"></button><div class="docRoot_UBD9"><aside class="theme-doc-sidebar-container docSidebarContainer_YfHR"><div class="sidebarViewport_aRkj"><div class="sidebar_njMd"><nav aria-label="Docs sidebar" class="menu thin-scrollbar menu_SIkG"><ul class="theme-doc-sidebar-menu menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/quickstart.html">🚀 Quickstart</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/install.html">Installation</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/dev-mode.html">Dev-Mode Plugin</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/rx-database.html">RxDatabase</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/rx-schema.html">RxSchema</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/rx-collection.html">RxCollection</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/rx-document.html">RxDocument</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/rx-query.html">RxQuery</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/rx-attachment.html">Attachments</a></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="menu__link menu__link--sublist menu__link--sublist-caret" aria-expanded="false" href="/rx-storage.html">💾 RxStorage</a></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="menu__link menu__link--sublist menu__link--sublist-caret" aria-expanded="false" href="/replication.html">🔄 Replication</a></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="menu__link menu__link--sublist menu__link--sublist-caret" aria-expanded="false" href="/migration-schema.html">Migration</a></div></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/encryption.html">Encryption</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/key-compression.html">Key Compression</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/rx-local-document.html">Local Documents</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/leader-election.html">Leader Election</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/cleanup.html">Cleanup</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/backup.html">Backup</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/transactions-conflicts-revisions.html">Transactions, Conflicts and Revisions</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/middleware.html">Middleware</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/query-cache.html">Query Cache</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/crdt.html">CRDT</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/population.html">Population</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/orm.html">ORM</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/query-optimizer.html">👑 Query Optimizer</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/logger.html">👑 Logger</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/plugins.html">Plugins</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/third-party-plugins.html">Third Party Plugins</a></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="menu__link menu__link--sublist menu__link--sublist-caret" aria-expanded="false" href="/tutorials/typescript.html">Tutorials</a></div></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/questions-answers.html">Questions and Answers</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-1 menu__list-item"><a class="menu__link" href="/contirubtion.html">Contribute to RxDB</a></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item menu__list-item--collapsed"><div class="menu__list-item-collapsible"><a class="menu__link menu__link--sublist menu__link--sublist-caret" aria-expanded="false" href="/releases/15.0.0.html">🆕 Releases</a></div></li><li class="theme-doc-sidebar-item-category theme-doc-sidebar-item-category-level-1 menu__list-item"><div class="menu__list-item-collapsible"><a class="menu__link menu__link--sublist menu__link--sublist-caret menu__link--active" aria-expanded="true" href="/offline-first.html">Articles</a></div><ul style="display:block;overflow:visible;height:auto" class="menu__list"><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/offline-first.html">Offline First</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/downsides-of-offline-first.html">Downsides of Offline First</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/slow-indexeddb.html">Slow IndexedDB</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/why-nosql.html">Why NOSQL</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/react-native-database.html">React Native Database</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/alternatives.html">Alternatives for realtime offline-first JavaScript applications</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/articles/angular-database.html">RxDB as a Database in an Angular Application</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/articles/browser-database.html">RxDB - The benefits of Browser Databases</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/articles/data-base.html">RxDB as a data base - Empowering Web Applications with Reactive Data Handling</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/articles/embedded-database.html">Using RxDB as an Embedded Database</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/articles/flutter-database.html">RxDB as a Database in a Flutter Application</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/articles/frontend-database.html">RxDB JavaScript Frontend Database - Efficient Data Storage in Frontend Applications</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/articles/in-memory-nosql-database.html">RxDB as In-memory NoSQL Database - Empowering Real-Time Applications</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link menu__link--active" aria-current="page" tabindex="0" href="/articles/ionic-database.html">Ionic Storage - RxDB as database for hybrid apps</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/articles/json-database.html">RxDB - JSON Database for JavaScript</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/articles/localstorage.html">Using localStorage in Modern Applications - A Comprehensive Guide</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/articles/mobile-database.html">Mobile Database - RxDB as Database for Mobile Applications</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/articles/progressive-web-app-database.html">RxDB as a Database for Progressive Web Apps (PWA)</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/articles/react-database.html">RxDB as a Database for React Applications</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/articles/realtime-database.html">What is a realtime database?</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/capacitor-database.html">Capacitor Database</a></li><li class="theme-doc-sidebar-item-link theme-doc-sidebar-item-link-level-2 menu__list-item"><a class="menu__link" tabindex="0" href="/electron-database.html">Electron Database</a></li></ul></li></ul></nav></div></div></aside><main class="docMainContainer_TBSr"><div class="container padding-top--md padding-bottom--lg"><div class="row"><div class="col docItemCol_VOVn"><div class="docItemContainer_Djhp"><article><nav class="theme-doc-breadcrumbs breadcrumbsContainer_Z_bl" aria-label="Breadcrumbs"><ul class="breadcrumbs" itemscope="" itemtype="https://schema.org/BreadcrumbList"><li class="breadcrumbs__item"><a aria-label="Home page" class="breadcrumbs__link" href="/"><svg viewBox="0 0 24 24" class="breadcrumbHomeIcon_YNFT"><path d="M10 19v-5h4v5c0 .55.45 1 1 1h3c.55 0 1-.45 1-1v-7h1.7c.46 0 .68-.57.33-.87L12.67 3.6c-.38-.34-.96-.34-1.34 0l-8.36 7.53c-.34.3-.13.87.33.87H5v7c0 .55.45 1 1 1h3c.55 0 1-.45 1-1z" fill="currentColor"></path></svg></a></li><li class="breadcrumbs__item"><span class="breadcrumbs__link">Articles</span><meta itemprop="position" content="1"></li><li itemscope="" itemprop="itemListElement" itemtype="https://schema.org/ListItem" class="breadcrumbs__item breadcrumbs__item--active"><span class="breadcrumbs__link" itemprop="name">Ionic Storage - RxDB as database for hybrid apps</span><meta itemprop="position" content="2"></li></ul></nav><div class="tocCollapsible_ETCw theme-doc-toc-mobile tocMobile_ITEo"><button type="button" class="clean-btn tocCollapsibleButton_TO0P">On this page</button></div><div class="theme-doc-markdown markdown"><h1>Ionic Storage - RxDB as database for hybrid apps</h1>
-<p>In the fast-paced world of mobile app development, <strong>hybrid applications</strong> have emerged as a versatile solution, offering the best of both worlds - the web and native app experiences. One key challenge these apps face is efficiently storing and querying data on the <strong>client&#x27;s device</strong>. Enter <a href="https://rxdb.info/" target="_blank" rel="noopener noreferrer">RxDB</a>, a powerful client-side database tailored for ionic hybrid applications. In this article, we&#x27;ll explore how RxDB addresses the requirements of storing and querying data in ionic apps, and why it stands out as a preferred choice.</p>
-<center><a href="https://rxdb.info/"><img src="../files/icons/ionic.svg" alt="Ionic Database Storage" width="120"></a></center>
-<h2 class="anchor anchorWithStickyNavbar_LWe7" id="what-are-ionic-hybrid-apps">What are Ionic Hybrid Apps?<a href="#what-are-ionic-hybrid-apps" class="hash-link" aria-label="Direct link to What are Ionic Hybrid Apps?" title="Direct link to What are Ionic Hybrid Apps?">​</a></h2>
+<ul class="summary">
+    
+    
+    
+        
+        <li>
+            <a href="/" target="_blank" class="custom-link">RxDB</a>
+        </li>
+    
+        
+        <li>
+            <a href="https://twitter.com/intent/user?screen_name=rxdbjs" target="_blank" class="custom-link">Follow @twitter </a>
+        </li>
+    
+        
+        <li>
+            <a href="https://rxdb.info/chat.html" target="_blank" class="custom-link">Chat @discord </a>
+        </li>
+    
+        
+        <li>
+            <a href="https://github.com/pubkey/rxdb" target="_blank" class="custom-link">Star @github </a>
+        </li>
+    
+        
+        <li>
+            <a href="https://github.com/sponsors/pubkey" target="_blank" class="custom-link">Donate @github </a>
+        </li>
+    
+    
+
+    
+    <li class="divider"></li>
+    
+
+    
+        
+        
+    
+        <li class="chapter " data-level="1.1" data-path="../">
+            
+                <a href="../">
+            
+                    
+                    Introduction
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2" data-path="../quickstart.html">
+            
+                <a href="../quickstart.html">
+            
+                    
+                    Quickstart
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3" data-path="../install.html">
+            
+                <a href="../install.html">
+            
+                    
+                    Install
+            
+                </a>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.3.1" data-path="../install.html">
+            
+                <a href="../install.html#npm">
+            
+                    
+                    npm
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3.2" data-path="../install.html">
+            
+                <a href="../install.html#import">
+            
+                    
+                    import
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4" data-path="../dev-mode.html">
+            
+                <a href="../dev-mode.html">
+            
+                    
+                    Dev Mode
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.5" data-path="../rx-database.html">
+            
+                <a href="../rx-database.html">
+            
+                    
+                    RxDatabase
+            
+                </a>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.5.1" data-path="../rx-database.html">
+            
+                <a href="../rx-database.html#creation">
+            
+                    
+                    Creation
+            
+                </a>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.5.1.1" data-path="../rx-database.html">
+            
+                <a href="../rx-database.html#name">
+            
+                    
+                    name
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.5.1.2" data-path="../rx-database.html">
+            
+                <a href="../rx-database.html#adapter">
+            
+                    
+                    adapter
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.5.1.3" data-path="../rx-database.html">
+            
+                <a href="../rx-database.html#password">
+            
+                    
+                    password
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.5.1.4" data-path="../rx-database.html">
+            
+                <a href="../rx-database.html#multiinstance">
+            
+                    
+                    multiInstance
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.5.1.5" data-path="../rx-database.html">
+            
+                <a href="../rx-database.html#eventreduce">
+            
+                    
+                    eventReduce
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.5.1.6" data-path="../rx-database.html">
+            
+                <a href="../rx-database.html#ignoreduplicate">
+            
+                    
+                    ignoreDuplicate
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.5.1.7" data-path="../rx-database.html">
+            
+                <a href="../rx-database.html#pouchSettings">
+            
+                    
+                    pouchSettings
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        <li class="chapter " data-level="1.5.2" data-path="../rx-database.html">
+            
+                <a href="../rx-database.html#functions">
+            
+                    
+                    Functions
+            
+                </a>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.5.2.1" data-path="../rx-database.html">
+            
+                <a href="../rx-database.html#observe-with-">
+            
+                    
+                    $
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.5.2.2" data-path="../rx-database.html">
+            
+                <a href="../rx-database.html#dump">
+            
+                    
+                    exportJSON()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.5.2.3" data-path="../rx-database.html">
+            
+                <a href="../rx-database.html#importdump">
+            
+                    
+                    importJSON()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.5.2.4" data-path="../rx-database.html">
+            
+                <a href="../rx-database.html#server">
+            
+                    
+                    server()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.5.2.5" data-path="../rx-database.html">
+            
+                <a href="../rx-database.html#waitforleadership">
+            
+                    
+                    waitForLeadership()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.5.2.6" data-path="../rx-database.html">
+            
+                <a href="../rx-database.html#requestidlepromise">
+            
+                    
+                    requestIdlePromise()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.5.2.7" data-path="../rx-database.html">
+            
+                <a href="../rx-database.html#destroy">
+            
+                    
+                    destroy()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.5.2.8" data-path="../rx-database.html">
+            
+                <a href="../rx-database.html#remove">
+            
+                    
+                    remove()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.5.2.9" data-path="../rx-database.html">
+            
+                <a href="../rx-database.html#checkadapter">
+            
+                    
+                    checkAdapter()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.5.2.10" data-path="../rx-database.html">
+            
+                <a href="../rx-database.html#isrxdatabase">
+            
+                    
+                    isRxDatabase()
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        <li class="chapter " data-level="1.6" data-path="../rx-schema.html">
+            
+                <a href="../rx-schema.html">
+            
+                    
+                    RxSchema
+            
+                </a>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.6.1" data-path="../rx-schema.html">
+            
+                <a href="../rx-schema.html#example">
+            
+                    
+                    Example
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.6.2" data-path="../rx-schema.html">
+            
+                <a href="../rx-schema.html#create-a-collection-with-the-schema">
+            
+                    
+                    Create a collection with the schema
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.6.3" data-path="../rx-schema.html">
+            
+                <a href="../rx-schema.html#version">
+            
+                    
+                    version
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.6.4" data-path="../rx-schema.html">
+            
+                <a href="../rx-schema.html#indexes">
+            
+                    
+                    indexes
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.6.5" data-path="../rx-schema.html">
+            
+                <a href="../rx-schema.html#attachments">
+            
+                    
+                    attachments
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.6.6" data-path="../rx-schema.html">
+            
+                <a href="../rx-schema.html#default">
+            
+                    
+                    default
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.6.7" data-path="../rx-schema.html">
+            
+                <a href="../rx-schema.html#final">
+            
+                    
+                    final
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        <li class="chapter " data-level="1.7" data-path="../schema-validation.html">
+            
+                <a href="../schema-validation.html">
+            
+                    
+                    Schema Validation
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.8" data-path="../rx-collection.html">
+            
+                <a href="../rx-collection.html">
+            
+                    
+                    RxCollection
+            
+                </a>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.8.1" data-path="../rx-collection.html">
+            
+                <a href="../rx-collection.html#creating-a-collection">
+            
+                    
+                    Creation
+            
+                </a>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.8.1.1" data-path="../rx-collection.html">
+            
+                <a href="../rx-collection.html#name">
+            
+                    
+                    name
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.8.1.2" data-path="../rx-collection.html">
+            
+                <a href="../rx-collection.html#schema">
+            
+                    
+                    schema
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.8.1.3" data-path="../rx-collection.html">
+            
+                <a href="../rx-collection.html#orm-functions">
+            
+                    
+                    ORM-functions
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.8.1.4" data-path="../rx-collection.html">
+            
+                <a href="../rx-collection.html#Migration">
+            
+                    
+                    Migration
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        <li class="chapter " data-level="1.8.2" data-path="../rx-collection.html">
+            
+                <a href="../rx-collection.html#functions">
+            
+                    
+                    Functions
+            
+                </a>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.8.2.1" data-path="../rx-collection.html">
+            
+                <a href="../rx-collection.html#observe-">
+            
+                    
+                    $
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.8.2.2" data-path="../rx-collection.html">
+            
+                <a href="../rx-collection.html#insert">
+            
+                    
+                    insert()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.8.2.3" data-path="../rx-collection.html">
+            
+                <a href="../rx-collection.html#bulkinsert">
+            
+                    
+                    bulkInsert()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.8.2.4" data-path="../rx-collection.html">
+            
+                <a href="../rx-collection.html#bulkremove">
+            
+                    
+                    bulkRemove()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.8.2.5" data-path="../rx-collection.html">
+            
+                <a href="../rx-collection.html#upsert">
+            
+                    
+                    upsert()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.8.2.6" data-path="../rx-collection.html">
+            
+                <a href="../rx-collection.html#incrementalUpsert">
+            
+                    
+                    incrementalUpsert()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.8.2.7" data-path="../rx-collection.html">
+            
+                <a href="../rx-collection.html#find">
+            
+                    
+                    find()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.8.2.8" data-path="../rx-collection.html">
+            
+                <a href="../rx-collection.html#findone">
+            
+                    
+                    findOne()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.8.2.9" data-path="../rx-collection.html">
+            
+                <a href="../rx-collection.html#findbyids">
+            
+                    
+                    findByIds()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.8.2.10" data-path="../rx-collection.html">
+            
+                <a href="../rx-collection.html#findbyids$">
+            
+                    
+                    findByIds$()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.8.2.11" data-path="../rx-collection.html">
+            
+                <a href="../rx-collection.html#dump">
+            
+                    
+                    exportJSON()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.8.2.12" data-path="../rx-collection.html">
+            
+                <a href="../rx-collection.html#importdump">
+            
+                    
+                    importJSON()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.8.2.13" data-path="../rx-collection.html">
+            
+                <a href="../rx-collection.html#remove">
+            
+                    
+                    remove()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.8.2.14" data-path="../rx-collection.html">
+            
+                <a href="../rx-collection.html#destroy">
+            
+                    
+                    destroy()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.8.2.15" data-path="../rx-collection.html">
+            
+                <a href="../rx-collection.html#isrxcollection">
+            
+                    
+                    isRxCollection()
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        <li class="chapter " data-level="1.9" data-path="../rx-document.html">
+            
+                <a href="../rx-document.html">
+            
+                    
+                    RxDocument
+            
+                </a>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.9.1" data-path="../rx-document.html">
+            
+                <a href="../rx-document.html#insert">
+            
+                    
+                    Insert
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.9.2" data-path="../rx-document.html">
+            
+                <a href="../rx-document.html#find">
+            
+                    
+                    Find
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.9.3" data-path="../rx-document.html">
+            
+                <a href="../rx-document.html#functions">
+            
+                    
+                    Functions
+            
+                </a>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.9.3.1" data-path="../rx-document.html">
+            
+                <a href="../rx-document.html#get">
+            
+                    
+                    get()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.9.3.2" data-path="../rx-document.html">
+            
+                <a href="../rx-document.html#get$">
+            
+                    
+                    get$()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.9.3.3" data-path="../rx-document.html">
+            
+                <a href="../rx-document.html#proxy-get">
+            
+                    
+                    proxy-get
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.9.3.4" data-path="../rx-document.html">
+            
+                <a href="../rx-document.html#update">
+            
+                    
+                    update()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.9.3.5" data-path="../rx-document.html">
+            
+                <a href="../rx-document.html#incrementalModify">
+            
+                    
+                    incrementalModify()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.9.3.6" data-path="../rx-document.html">
+            
+                <a href="../rx-document.html#incrementalPatch">
+            
+                    
+                    incrementalPatch()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.9.3.7" data-path="../rx-document.html">
+            
+                <a href="../rx-document.html#observe-">
+            
+                    
+                    $
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.9.3.8" data-path="../rx-document.html">
+            
+                <a href="../rx-document.html#remove">
+            
+                    
+                    remove()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.9.3.9" data-path="../rx-document.html">
+            
+                <a href="../rx-document.html#deleted$">
+            
+                    
+                    deleted$
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.9.3.10" data-path="../rx-document.html">
+            
+                <a href="../rx-document.html#tojson">
+            
+                    
+                    toJSON()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.9.3.11" data-path="../rx-document.html">
+            
+                <a href="../rx-document.html#set">
+            
+                    
+                    set()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.9.3.12" data-path="../rx-document.html">
+            
+                <a href="../rx-document.html#save">
+            
+                    
+                    save()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.9.3.13" data-path="../rx-document.html">
+            
+                <a href="../rx-document.html#isrxdocument">
+            
+                    
+                    isRxDocument()
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        <li class="chapter " data-level="1.10" data-path="../rx-query.html">
+            
+                <a href="../rx-query.html">
+            
+                    
+                    RxQuery
+            
+                </a>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.10.1" data-path="../rx-query.html">
+            
+                <a href="../rx-query.html#find">
+            
+                    
+                    find()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.10.2" data-path="../rx-query.html">
+            
+                <a href="../rx-query.html#findOne">
+            
+                    
+                    findOne()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.10.3" data-path="../rx-query.html">
+            
+                <a href="../rx-query.html#exec">
+            
+                    
+                    exec()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.10.4" data-path="../rx-query.html">
+            
+                <a href="../rx-query.html#observe-">
+            
+                    
+                    $
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.10.5" data-path="../rx-query.html">
+            
+                <a href="../rx-query.html#update">
+            
+                    
+                    update()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.10.6" data-path="../rx-query.html">
+            
+                <a href="../rx-query.html#remove">
+            
+                    
+                    remove()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.10.7" data-path="../rx-query.html">
+            
+                <a href="../rx-query.html#doesDocumentDataMatch">
+            
+                    
+                    doesDocumentDataMatch()
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.10.8" data-path="../rx-query.html">
+            
+                <a href="../rx-query.html#setting-a-specific-index">
+            
+                    
+                    Specific Index
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.10.9" data-path="../rx-query.html">
+            
+                <a href="../rx-query.html#examples">
+            
+                    
+                    Examples
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.10.10" data-path="../rx-query.html">
+            
+                <a href="../rx-query.html#isrxquery">
+            
+                    
+                    isRxQuery()
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        <li class="chapter " data-level="1.11" data-path="../rx-storage.html">
+            
+                <a href="../rx-storage.html">
+            
+                    
+                    RxStorage
+            
+                </a>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.11.1" data-path="../rx-storage-performance.html">
+            
+                <a href="../rx-storage-performance.html">
+            
+                    
+                    RxStorage Performance
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.11.2" data-path="../rx-storage-dexie.html">
+            
+                <a href="../rx-storage-dexie.html">
+            
+                    
+                    RxStorage Dexie.js
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.11.3" data-path="../rx-storage-lokijs.html">
+            
+                <a href="../rx-storage-lokijs.html">
+            
+                    
+                    RxStorage LokiJS
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.11.4" data-path="../rx-storage-memory.html">
+            
+                <a href="../rx-storage-memory.html">
+            
+                    
+                    RxStorage Memory
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.11.5" data-path="../rx-storage-indexeddb.html">
+            
+                <a href="../rx-storage-indexeddb.html">
+            
+                    
+                    RxStorage IndexedDB
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.11.6" data-path="../rx-storage-opfs.html">
+            
+                <a href="../rx-storage-opfs.html">
+            
+                    
+                    RxStorage OPFS
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.11.7" data-path="../rx-storage-sqlite.html">
+            
+                <a href="../rx-storage-sqlite.html">
+            
+                    
+                    RxStorage SQLite
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.11.8" data-path="../rx-storage-filesystem-node.html">
+            
+                <a href="../rx-storage-filesystem-node.html">
+            
+                    
+                    RxStorage Filesystem Node
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.11.9" data-path="../rx-storage-mongodb.html">
+            
+                <a href="../rx-storage-mongodb.html">
+            
+                    
+                    RxStorage MongoDB
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.11.10" data-path="../rx-storage-foundationdb.html">
+            
+                <a href="../rx-storage-foundationdb.html">
+            
+                    
+                    RxStorage FoundationDB
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.11.11" data-path="../rx-storage-worker.html">
+            
+                <a href="../rx-storage-worker.html">
+            
+                    
+                    RxStorage Worker
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.11.12" data-path="../rx-storage-shared-worker.html">
+            
+                <a href="../rx-storage-shared-worker.html">
+            
+                    
+                    RxStorage Shared Worker
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.11.13" data-path="../rx-storage-remote.html">
+            
+                <a href="../rx-storage-remote.html">
+            
+                    
+                    RxStorage Remote
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.11.14" data-path="../rx-storage-memory-synced.html">
+            
+                <a href="../rx-storage-memory-synced.html">
+            
+                    
+                    RxStorage Memory Synced
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.11.15" data-path="../rx-storage-sharding.html">
+            
+                <a href="../rx-storage-sharding.html">
+            
+                    
+                    RxStorage Sharding
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.11.16" data-path="../rx-storage-localstorage-meta-optimizer.html">
+            
+                <a href="../rx-storage-localstorage-meta-optimizer.html">
+            
+                    
+                    RxStorage Localstorage Meta Optimizer
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.11.17" data-path="../electron.html">
+            
+                <a href="../electron.html#rxstorage-electron-ipcrenderer--ipcmain">
+            
+                    
+                    RxStorage Electron IpcRenderer & IpcMain
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        <li class="chapter " data-level="1.12" data-path="../replication.html">
+            
+                <a href="../replication.html">
+            
+                    
+                    Replication
+            
+                </a>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.12.1" data-path="../replication-graphql.html">
+            
+                <a href="../replication-graphql.html">
+            
+                    
+                    Replication GraphQL
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.12.2" data-path="../replication-websocket.html">
+            
+                <a href="../replication-websocket.html">
+            
+                    
+                    Replication Websocket
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.12.3" data-path="../replication-couchdb.html">
+            
+                <a href="../replication-couchdb.html">
+            
+                    
+                    Replication CouchDB
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.12.4" data-path="../replication-p2p.html">
+            
+                <a href="../replication-p2p.html">
+            
+                    
+                    Replication P2P
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.12.5" data-path="../replication-firestore.html">
+            
+                <a href="../replication-firestore.html">
+            
+                    
+                    Replication Firestore
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.12.6" data-path="../replication-nats.html">
+            
+                <a href="../replication-nats.html">
+            
+                    
+                    Replication NATS
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        <li class="chapter " data-level="1.13" data-path="../rx-attachment.html">
+            
+                <a href="../rx-attachment.html">
+            
+                    
+                    RxAttachment
+            
+                </a>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.13.1" data-path="../rx-attachment.html">
+            
+                <a href="../rx-attachment.html#attachment-compression">
+            
+                    
+                    Attachment Compression
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        <li class="chapter " data-level="1.14" data-path="../middleware.html">
+            
+                <a href="../middleware.html">
+            
+                    
+                    Middleware-hooks
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.15" data-path="../orm.html">
+            
+                <a href="../orm.html">
+            
+                    
+                    ORM/DRM
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.16" data-path="../population.html">
+            
+                <a href="../population.html">
+            
+                    
+                    Population
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.17" data-path="../encryption.html">
+            
+                <a href="../encryption.html">
+            
+                    
+                    Encrypted Storage
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.18" data-path="../key-compression.html">
+            
+                <a href="../key-compression.html">
+            
+                    
+                    Key Compression
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.19" data-path="../data-migration.html">
+            
+                <a href="../data-migration.html">
+            
+                    
+                    DataMigration
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.20" data-path="../leader-election.html">
+            
+                <a href="../leader-election.html">
+            
+                    
+                    LeaderElection
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.21" data-path="../cleanup.html">
+            
+                <a href="../cleanup.html">
+            
+                    
+                    Cleanup
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.22" data-path="../backup.html">
+            
+                <a href="../backup.html">
+            
+                    
+                    Backup
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.23" data-path="../query-cache.html">
+            
+                <a href="../query-cache.html">
+            
+                    
+                    QueryCache
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.24" data-path="../rx-local-document.html">
+            
+                <a href="../rx-local-document.html">
+            
+                    
+                    LocalDocuments
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.25" data-path="../crdt.html">
+            
+                <a href="../crdt.html">
+            
+                    
+                    CRDT
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.26" data-path="../third-party-plugins.html">
+            
+                <a href="../third-party-plugins.html">
+            
+                    
+                    Third Party Plugins
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.27" data-path="../plugins.html">
+            
+                <a href="../plugins.html">
+            
+                    
+                    Creating Plugins
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.28" data-path="../query-optimizer.html">
+            
+                <a href="../query-optimizer.html">
+            
+                    
+                    Query Optimizer
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.29" data-path="../storage-migration.html">
+            
+                <a href="../storage-migration.html">
+            
+                    
+                    Storage Migration
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.30" data-path="../transactions-conflicts-revisions.html">
+            
+                <a href="../transactions-conflicts-revisions.html">
+            
+                    
+                    Transactions, Conflicts and Revisions
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.31" >
+            
+                <a target="_blank" href="https://rxdb.info/premium.html">
+            
+                    
+                    RxDB Premium
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.32" >
+            
+                <span>
+            
+                    
+                    Tutorials
+            
+                </span>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.32.1" data-path="../tutorials/typescript.html">
+            
+                <a href="../tutorials/typescript.html">
+            
+                    
+                    Use RxDB with Typescript
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.32.2" data-path="../nodejs-database.html">
+            
+                <a href="../nodejs-database.html">
+            
+                    
+                    RxDB as Node.js Database
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        <li class="chapter " data-level="1.33" data-path="../questions-answers.html">
+            
+                <a href="../questions-answers.html">
+            
+                    
+                    Questions & Answers
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.34" data-path="../contribute.html">
+            
+                <a href="../contribute.html">
+            
+                    
+                    Contribute
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.35" >
+            
+                <span>
+            
+                    
+                    Release Notes
+            
+                </span>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.35.1" >
+            
+                <a target="_blank" href="https://github.com/pubkey/rxdb/blob/master/CHANGELOG.md">
+            
+                    
+                    CHANGELOG
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.35.2" data-path="../releases/14.0.0.html">
+            
+                <a href="../releases/14.0.0.html">
+            
+                    
+                    14.0.0
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.35.3" data-path="../releases/13.0.0.html">
+            
+                <a href="../releases/13.0.0.html">
+            
+                    
+                    13.0.0
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.35.4" data-path="../releases/12.0.0.html">
+            
+                <a href="../releases/12.0.0.html">
+            
+                    
+                    12.0.0
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.35.5" data-path="../releases/11.0.0.html">
+            
+                <a href="../releases/11.0.0.html">
+            
+                    
+                    11.0.0
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.35.6" data-path="../releases/10.0.0.html">
+            
+                <a href="../releases/10.0.0.html">
+            
+                    
+                    10.0.0
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.35.7" data-path="../releases/9.0.0.html">
+            
+                <a href="../releases/9.0.0.html">
+            
+                    
+                    9.0.0
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.35.8" data-path="../releases/8.0.0.html">
+            
+                <a href="../releases/8.0.0.html">
+            
+                    
+                    8.0.0
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+
+    
+        
+        <li class="divider"></li>
+        
+        
+    
+        <li class="chapter " data-level="2.1" >
+            
+                <span>
+            
+                    
+                    Opinions & Articles
+            
+                </span>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="2.1.1" data-path="../offline-first.html">
+            
+                <a href="../offline-first.html">
+            
+                    
+                    Offline First
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="2.1.2" data-path="../downsides-of-offline-first.html">
+            
+                <a href="../downsides-of-offline-first.html">
+            
+                    
+                    Downsides of Offline First
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="2.1.3" data-path="../slow-indexeddb.html">
+            
+                <a href="../slow-indexeddb.html">
+            
+                    
+                    Slow IndexedDB
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="2.1.4" data-path="../why-nosql.html">
+            
+                <a href="../why-nosql.html">
+            
+                    
+                    Why NoSQL
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="2.1.5" data-path="../alternatives.html">
+            
+                <a href="../alternatives.html">
+            
+                    
+                    Alternatives
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="2.1.6" data-path="../react-native-database.html">
+            
+                <a href="../react-native-database.html">
+            
+                    
+                    React Native Database
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="2.1.7" data-path="../capacitor-database.html">
+            
+                <a href="../capacitor-database.html">
+            
+                    
+                    Capacitor Database
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="2.1.8" data-path="../electron-database.html">
+            
+                <a href="../electron-database.html">
+            
+                    
+                    Electron Database
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="2.1.9" data-path="angular-database.html">
+            
+                <a href="angular-database.html">
+            
+                    
+                    Angular Database
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="2.1.10" data-path="react-database.html">
+            
+                <a href="react-database.html">
+            
+                    
+                    React Database
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="2.1.11" data-path="browser-database.html">
+            
+                <a href="browser-database.html">
+            
+                    
+                    Browser Database
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="2.1.12" data-path="embedded-database.html">
+            
+                <a href="embedded-database.html">
+            
+                    
+                    Embedded Database
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="2.1.13" data-path="frontend-database.html">
+            
+                <a href="frontend-database.html">
+            
+                    
+                    Frontend Database
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="2.1.14" data-path="flutter-database.html">
+            
+                <a href="flutter-database.html">
+            
+                    
+                    Flutter Database
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="2.1.15" data-path="in-memory-nosql-database.html">
+            
+                <a href="in-memory-nosql-database.html">
+            
+                    
+                    In-memory NoSQL database
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="2.1.16" data-path="mobile-database.html">
+            
+                <a href="mobile-database.html">
+            
+                    
+                    Mobile database
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="2.1.17" data-path="progressive-web-app-database.html">
+            
+                <a href="progressive-web-app-database.html">
+            
+                    
+                    PWA database
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="2.1.18" data-path="data-base.html">
+            
+                <a href="data-base.html">
+            
+                    
+                    Data Base
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="2.1.19" data-path="localstorage.html">
+            
+                <a href="localstorage.html">
+            
+                    
+                    localStorage
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter active" data-level="2.1.20" data-path="ionic-database.html">
+            
+                <a href="ionic-database.html">
+            
+                    
+                    Ionic Database
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="2.1.21" data-path="json-database.html">
+            
+                <a href="json-database.html">
+            
+                    
+                    JSON Database
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="2.1.22" data-path="realtime-database.html">
+            
+                <a href="realtime-database.html">
+            
+                    
+                    Realtime Database
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        <li class="chapter " data-level="2.2" >
+            
+                <span>
+            
+                    
+                    Deprecated
+            
+                </span>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="2.2.1" data-path="../rx-storage-pouchdb.html">
+            
+                <a href="../rx-storage-pouchdb.html">
+            
+                    
+                    RxStorage PouchDB
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="2.2.2" data-path="../adapters.html">
+            
+                <a href="../adapters.html">
+            
+                    
+                    RxStorage PouchDB Adapters
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+
+    
+        
+        <li class="divider"></li>
+        
+        
+    
+        <li class="chapter " data-level="3.1" >
+            
+                <a target="_blank" href="https://rxdb.info/imprint.html">
+            
+                    
+                    Imprint
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+    
+
+    <li class="divider"></li>
+
+    <li>
+        <a href="https://www.gitbook.com" target="blank" class="gitbook-link">
+            Published with GitBook
+        </a>
+    </li>
+</ul>
+
+
+                </nav>
+            
+        
+    </div>
+
+    <div class="book-body">
+        
+            <div class="body-inner">
+                
+                    
+
+<div class="book-header" role="navigation">
+    
+
+    <!-- Title -->
+    <h1>
+        <i class="fa fa-circle-o-notch fa-spin"></i>
+        <a href=".." >Ionic Database</a>
+    </h1>
+</div>
+
+
+
+
+                    <div class="page-wrapper" tabindex="-1" role="main">
+                        <div class="page-inner">
+                            
+<div id="book-search-results">
+    <div class="search-noresults">
+    
+                                <section class="normal markdown-section">
+                                
+                                <h1 id="ionic-storage---rxdb-as-database-for-hybrid-apps">Ionic Storage - RxDB as database for hybrid apps</h1>
+<p>In the fast-paced world of mobile app development, <strong>hybrid applications</strong> have emerged as a versatile solution, offering the best of both worlds - the web and native app experiences. One key challenge these apps face is efficiently storing and querying data on the <strong>client&apos;s device</strong>. Enter <a href="https://rxdb.info/" target="_blank">RxDB</a>, a powerful client-side database tailored for ionic hybrid applications. In this article, we&apos;ll explore how RxDB addresses the requirements of storing and querying data in ionic apps, and why it stands out as a preferred choice.</p>
+<center>
+    <a href="https://rxdb.info/" target="_blank">
+        <img src="../files/icons/ionic.svg" alt="Ionic Database Storage" width="120">
+    </a>
+</center>
+
+<h2 id="what-are-ionic-hybrid-apps">What are Ionic Hybrid Apps?</h2>
 <p>Ionic (aka Ionic 2 ) hybrid apps combine the strengths of web technologies (HTML, CSS, JavaScript) with native app development to deliver cross-platform applications. They are built using web technologies and then wrapped in a native container to be deployed on various platforms like iOS, Android, and the web. These apps provide a consistent user experience across devices while benefiting from the efficiency and familiarity of web development.</p>
-<h2 class="anchor anchorWithStickyNavbar_LWe7" id="storing-and-querying-data-in-an-ionic-app">Storing and Querying Data in an Ionic App<a href="#storing-and-querying-data-in-an-ionic-app" class="hash-link" aria-label="Direct link to Storing and Querying Data in an Ionic App" title="Direct link to Storing and Querying Data in an Ionic App">​</a></h2>
-<p>Storing and querying data is a fundamental aspect of any application, including hybrid apps. These apps often need to operate offline, store user-generated content, and provide responsive user interfaces. Therefore, having a reliable and efficient way to manage data on the client&#x27;s device is crucial.</p>
-<h2 class="anchor anchorWithStickyNavbar_LWe7" id="introducing-rxdb-as-a-client-side-database-for-ionic-apps">Introducing RxDB as a Client-Side Database for Ionic Apps<a href="#introducing-rxdb-as-a-client-side-database-for-ionic-apps" class="hash-link" aria-label="Direct link to Introducing RxDB as a Client-Side Database for Ionic Apps" title="Direct link to Introducing RxDB as a Client-Side Database for Ionic Apps">​</a></h2>
-<p>RxDB steps in as a powerful solution to address the data management needs of ionic hybrid apps. It&#x27;s a NoSQL client-side database that offers exceptional performance and features tailored to the unique requirements of client-side applications. Let&#x27;s delve into the key features of RxDB that make it a great fit for these apps.</p>
-<h3 class="anchor anchorWithStickyNavbar_LWe7" id="getting-started-with-rxdb">Getting Started with RxDB<a href="#getting-started-with-rxdb" class="hash-link" aria-label="Direct link to Getting Started with RxDB" title="Direct link to Getting Started with RxDB">​</a></h3>
-<center><a href="https://rxdb.info/"><img src="../files/logo/rxdb_javascript_database.svg" alt="JavaScript Ionic Database Storage" width="220"></a></center>
-<h3 class="anchor anchorWithStickyNavbar_LWe7" id="what-is-rxdb">What is RxDB?<a href="#what-is-rxdb" class="hash-link" aria-label="Direct link to What is RxDB?" title="Direct link to What is RxDB?">​</a></h3>
-<p>At its core, <a href="https://rxdb.info/" target="_blank" rel="noopener noreferrer">RxDB</a> is a <strong>NoSQL</strong> database that operates with a <a href="/offline-first.html">local-first</a> approach. This means that your app&#x27;s data is stored and processed primarily on the client&#x27;s device, reducing the dependency on constant network connectivity. By doing so, RxDB ensures your app remains responsive and functional, even when offline.</p>
-<h3 class="anchor anchorWithStickyNavbar_LWe7" id="local-first-approach">Local-First Approach<a href="#local-first-approach" class="hash-link" aria-label="Direct link to Local-First Approach" title="Direct link to Local-First Approach">​</a></h3>
-<p>The <a href="/offline-first.html">local-first</a> approach adopted by RxDB is a game-changer for hybrid applications. Storing data locally allows your app to function seamlessly without an internet connection, providing users with uninterrupted access to their data. When connectivity is restored, RxDB handles the synchronization of data, ensuring that any changes made offline are appropriately propagated.</p>
-<h3 class="anchor anchorWithStickyNavbar_LWe7" id="observable-queries">Observable Queries<a href="#observable-queries" class="hash-link" aria-label="Direct link to Observable Queries" title="Direct link to Observable Queries">​</a></h3>
-<p>One of RxDB&#x27;s standout features is its implementation of observable queries. This concept allows your app&#x27;s user interface to be dynamically updated in real time as data changes within the database. RxDB&#x27;s observables create a bridge between your database and user interface, keeping them in sync effortlessly.</p>
-<p align="center"><img src="../files/animations/realtime.gif" alt="realtime ui updates" width="700"></p>
-<h3 class="anchor anchorWithStickyNavbar_LWe7" id="nosql-query-engine">NoSQL Query Engine<a href="#nosql-query-engine" class="hash-link" aria-label="Direct link to NoSQL Query Engine" title="Direct link to NoSQL Query Engine">​</a></h3>
-<p>RxDB&#x27;s NoSQL query engine empowers you to perform powerful queries on your app&#x27;s data, without the constraints imposed by traditional relational databases. This flexibility is particularly valuable when dealing with unstructured or semi-structured data. With the NoSQL query engine, you can retrieve, filter, and manipulate data according to your app&#x27;s unique requirements.</p>
-<div class="language-ts codeBlockContainer_Ckt0 theme-code-block" style="--prism-color:#F8F8F2;--prism-background-color:#282A36"><div class="codeBlockContent_biex"><pre tabindex="0" class="prism-code language-ts codeBlock_bY9V thin-scrollbar" style="color:#F8F8F2;background-color:#282A36"><code class="codeBlockLines_e6Vv"><span class="token-line" style="color:#F8F8F2"><span class="token keyword" style="color:rgb(189, 147, 249);font-style:italic">const</span><span class="token plain"> foundDocuments </span><span class="token operator">=</span><span class="token plain"> </span><span class="token keyword" style="color:rgb(189, 147, 249);font-style:italic">await</span><span class="token plain"> myDatabase</span><span class="token punctuation" style="color:rgb(248, 248, 242)">.</span><span class="token plain">todos</span><span class="token punctuation" style="color:rgb(248, 248, 242)">.</span><span class="token function" style="color:rgb(80, 250, 123)">find</span><span class="token punctuation" style="color:rgb(248, 248, 242)">(</span><span class="token punctuation" style="color:rgb(248, 248, 242)">{</span><span class="token plain"></span><br></span><span class="token-line" style="color:#F8F8F2"><span class="token plain">    selector</span><span class="token operator">:</span><span class="token plain"> </span><span class="token punctuation" style="color:rgb(248, 248, 242)">{</span><span class="token plain"></span><br></span><span class="token-line" style="color:#F8F8F2"><span class="token plain">        done</span><span class="token operator">:</span><span class="token plain"> </span><span class="token punctuation" style="color:rgb(248, 248, 242)">{</span><span class="token plain"></span><br></span><span class="token-line" style="color:#F8F8F2"><span class="token plain">            $eq</span><span class="token operator">:</span><span class="token plain"> </span><span class="token boolean">false</span><span class="token plain"></span><br></span><span class="token-line" style="color:#F8F8F2"><span class="token plain">        </span><span class="token punctuation" style="color:rgb(248, 248, 242)">}</span><span class="token plain"></span><br></span><span class="token-line" style="color:#F8F8F2"><span class="token plain">    </span><span class="token punctuation" style="color:rgb(248, 248, 242)">}</span><span class="token plain"></span><br></span><span class="token-line" style="color:#F8F8F2"><span class="token plain"></span><span class="token punctuation" style="color:rgb(248, 248, 242)">}</span><span class="token punctuation" style="color:rgb(248, 248, 242)">)</span><span class="token punctuation" style="color:rgb(248, 248, 242)">.</span><span class="token function" style="color:rgb(80, 250, 123)">exec</span><span class="token punctuation" style="color:rgb(248, 248, 242)">(</span><span class="token punctuation" style="color:rgb(248, 248, 242)">)</span><span class="token punctuation" style="color:rgb(248, 248, 242)">;</span><br></span></code></pre><div class="buttonGroup__atx"><button type="button" aria-label="Copy code to clipboard" title="Copy" class="clean-btn"><span class="copyButtonIcons_eSgA" aria-hidden="true"><svg viewBox="0 0 24 24" class="copyButtonIcon_y97N"><path fill="currentColor" d="M19,21H8V7H19M19,5H8A2,2 0 0,0 6,7V21A2,2 0 0,0 8,23H19A2,2 0 0,0 21,21V7A2,2 0 0,0 19,5M16,1H4A2,2 0 0,0 2,3V17H4V3H16V1Z"></path></svg><svg viewBox="0 0 24 24" class="copyButtonSuccessIcon_LjdS"><path fill="currentColor" d="M21,7L9,19L3.5,13.5L4.91,12.09L9,16.17L19.59,5.59L21,7Z"></path></svg></span></button></div></div></div>
-<h3 class="anchor anchorWithStickyNavbar_LWe7" id="great-observe-performance-with-eventreduce">Great Observe Performance with EventReduce<a href="#great-observe-performance-with-eventreduce" class="hash-link" aria-label="Direct link to Great Observe Performance with EventReduce" title="Direct link to Great Observe Performance with EventReduce">​</a></h3>
-<p>RxDB introduces a concept called <a href="https://github.com/pubkey/event-reduce" target="_blank" rel="noopener noreferrer">EventReduce</a>, which optimizes the observation process. Instead of overwhelming your app&#x27;s UI with every data change, EventReduce filters and batches these changes to provide a smooth and efficient experience. This leads to enhanced app performance, lower resource usage, and ultimately, happier users.</p>
-<h2 class="anchor anchorWithStickyNavbar_LWe7" id="why-nosql-is-a-better-fit-for-client-side-applications-compared-to-relational-databases-like-sqlite">Why NoSQL is a Better Fit for Client-Side Applications Compared to relational databases like SQLite<a href="#why-nosql-is-a-better-fit-for-client-side-applications-compared-to-relational-databases-like-sqlite" class="hash-link" aria-label="Direct link to Why NoSQL is a Better Fit for Client-Side Applications Compared to relational databases like SQLite" title="Direct link to Why NoSQL is a Better Fit for Client-Side Applications Compared to relational databases like SQLite">​</a></h2>
-<p>When it comes to choosing the right database solution for your client-side applications, NoSQL RxDB presents compelling advantages over traditional options like SQLite. Let&#x27;s delve into the key reasons why NoSQL RxDB is a superior fit for your ionic hybrid app development.</p>
-<h3 class="anchor anchorWithStickyNavbar_LWe7" id="easier-document-based-replication">Easier Document-Based Replication<a href="#easier-document-based-replication" class="hash-link" aria-label="Direct link to Easier Document-Based Replication" title="Direct link to Easier Document-Based Replication">​</a></h3>
-<p>NoSQL databases, like RxDB, inherently embrace a document-based approach to data storage. This design choice simplifies data <a href="/replication.html">replication</a> between clients and servers. With documents representing discrete units of data, you can easily synchronize individual pieces of information without the complexity that can arise when dealing with rows and tables in a relational database like SQLite. This document-centric replication model streamlines the synchronization process and ensures that your app&#x27;s data remains consistent across devices.</p>
-<h3 class="anchor anchorWithStickyNavbar_LWe7" id="offline-capable">Offline Capable<a href="#offline-capable" class="hash-link" aria-label="Direct link to Offline Capable" title="Direct link to Offline Capable">​</a></h3>
-<p>One of the defining features of client-side applications is the ability to function even when offline. NoSQL RxDB excels in this area by supporting a local-first approach. Data is cached on the client&#x27;s device, enabling the app to remain fully functional even without an internet connection. As connectivity is restored, RxDB handles data synchronization with the server seamlessly. This offline capability ensures a smooth user experience, critical for ionic hybrid apps catering to users in various network conditions.</p>
-<h3 class="anchor anchorWithStickyNavbar_LWe7" id="nosql-has-better-typescript-support">NoSQL Has Better TypeScript Support<a href="#nosql-has-better-typescript-support" class="hash-link" aria-label="Direct link to NoSQL Has Better TypeScript Support" title="Direct link to NoSQL Has Better TypeScript Support">​</a></h3>
-<p>TypeScript, a popular superset of JavaScript, is renowned for its static typing and enhanced developer experience. NoSQL databases like RxDB are inherently flexible, making them well-suited for TypeScript integration. With well-defined data structures and clear typings, NoSQL RxDB offers <a href="/tutorials/typescript.html">improved type safety</a> and easier development when compared to traditional SQL databases like SQLite. This results in reduced debugging time and increased code reliability.</p>
-<h3 class="anchor anchorWithStickyNavbar_LWe7" id="easier-schema-migration-with-nosql-documents">Easier <a href="/migration-schema.html">Schema Migration</a> with NoSQL Documents<a href="#easier-schema-migration-with-nosql-documents" class="hash-link" aria-label="Direct link to easier-schema-migration-with-nosql-documents" title="Direct link to easier-schema-migration-with-nosql-documents">​</a></h3>
-<p>Schema changes are a common occurrence in application development, and dealing with them can be challenging. NoSQL databases, including RxDB, are more forgiving in this aspect. Since documents in NoSQL databases don&#x27;t enforce a rigid structure like tables in relational databases, schema changes are often simpler to manage. This flexibility makes it easier to evolve your app&#x27;s data structure over time without the need for complex migration scripts, a notable advantage when compared to SQLite.</p>
-<h2 class="anchor anchorWithStickyNavbar_LWe7" id="great-performance">Great Performance<a href="#great-performance" class="hash-link" aria-label="Direct link to Great Performance" title="Direct link to Great Performance">​</a></h2>
-<p>RxDB&#x27;s <a href="/rx-storage-performance.html">excellent performance</a> stems from its advanced indexing capabilities, which streamline data retrieval and ensure swift query execution. Additionally, the <a href="/key-compression.html">JSON key compression</a> employed by RxDB minimizes storage overhead, enabling efficient data transfer and quicker loading times. The incorporation of real-time updates through change streams and the <strong>EventReduce mechanism</strong> further enhances RxDB&#x27;s performance, delivering a responsive user experience even as data changes are propagated seamlessly.</p>
-<h2 class="anchor anchorWithStickyNavbar_LWe7" id="using-rxdb-in-an-ionic-hybrid-app">Using RxDB in an Ionic Hybrid App<a href="#using-rxdb-in-an-ionic-hybrid-app" class="hash-link" aria-label="Direct link to Using RxDB in an Ionic Hybrid App" title="Direct link to Using RxDB in an Ionic Hybrid App">​</a></h2>
-<p>RxDB&#x27;s integration into your ionic hybrid app opens up a world of possibilities for efficient data management. Let&#x27;s explore how to set up RxDB, use it with popular JavaScript frameworks, and take advantage of its diverse storage options.</p>
-<h3 class="anchor anchorWithStickyNavbar_LWe7" id="setup-rxdb">Setup RxDB<a href="#setup-rxdb" class="hash-link" aria-label="Direct link to Setup RxDB" title="Direct link to Setup RxDB">​</a></h3>
-<p>Getting started with RxDB is a straightforward process. By including the RxDB library in your project, you can quickly start harnessing its capabilities. Begin by installing the <a href="https://www.npmjs.com/package/rxdb" target="_blank" rel="noopener noreferrer">RxDB package</a> from the npm registry. Then, configure your database instance to suit your app&#x27;s needs. This setup process paves the way for seamless data management in your ionic hybrid app.
-For a full instruction, follow the <a href="https://rxdb.info/quickstart.html" target="_blank" rel="noopener noreferrer">RxDB Quickstart</a>.</p>
-<h3 class="anchor anchorWithStickyNavbar_LWe7" id="using-rxdb-in-frameworks-react-angular-vuejs">Using RxDB in Frameworks (React, Angular, Vue.js)<a href="#using-rxdb-in-frameworks-react-angular-vuejs" class="hash-link" aria-label="Direct link to Using RxDB in Frameworks (React, Angular, Vue.js)" title="Direct link to Using RxDB in Frameworks (React, Angular, Vue.js)">​</a></h3>
-<p>RxDB seamlessly integrates with various JavaScript frameworks, ensuring compatibility with your preferred development environment. Whether you&#x27;re building your ionic hybrid app with <a href="/articles/react-database.html">React</a>, <a href="/articles/angular-database.html">Angular</a>, or <a href="https://github.com/pubkey/rxdb/tree/master/examples/vue" target="_blank" rel="noopener noreferrer">Vue.js</a>, RxDB offers bindings and tools that enable you to leverage its features effortlessly. This compatibility allows you to stay within the comfort zone of your chosen framework while benefiting from RxDB&#x27;s powerful data management capabilities.</p>
-<h3 class="anchor anchorWithStickyNavbar_LWe7" id="different-rxstorage-layers-for-rxdb">Different RxStorage Layers for RxDB<a href="#different-rxstorage-layers-for-rxdb" class="hash-link" aria-label="Direct link to Different RxStorage Layers for RxDB" title="Direct link to Different RxStorage Layers for RxDB">​</a></h3>
-<p>RxDB doesn&#x27;t limit you to a single storage solution. Instead, it provides a range of RxStorage layers to accommodate diverse use cases. These storage layers offer flexibility and customization, enabling you to tailor your data management strategy to match your app&#x27;s requirements. Let&#x27;s explore some of the available RxStorage options:</p>
+<h2 id="storing-and-querying-data-in-an-ionic-app">Storing and Querying Data in an Ionic App</h2>
+<p>Storing and querying data is a fundamental aspect of any application, including hybrid apps. These apps often need to operate offline, store user-generated content, and provide responsive user interfaces. Therefore, having a reliable and efficient way to manage data on the client&apos;s device is crucial.</p>
+<h2 id="introducing-rxdb-as-a-client-side-database-for-ionic-apps">Introducing RxDB as a Client-Side Database for Ionic Apps</h2>
+<p>RxDB steps in as a powerful solution to address the data management needs of ionic hybrid apps. It&apos;s a NoSQL client-side database that offers exceptional performance and features tailored to the unique requirements of client-side applications. Let&apos;s delve into the key features of RxDB that make it a great fit for these apps.</p>
+<h3 id="getting-started-with-rxdb">Getting Started with RxDB</h3>
+<center>
+    <a href="https://rxdb.info/" target="_blank">
+        <img src="../files/logo/rxdb_javascript_database.svg" alt="JavaScript Ionic Database Storage" width="220">
+    </a>
+</center>
+
+<h3 id="what-is-rxdb">What is RxDB?</h3>
+<p>At its core, <a href="https://rxdb.info/" target="_blank">RxDB</a> is a <strong>NoSQL</strong> database that operates with a <a href="../offline-first.html">local-first</a> approach. This means that your app&apos;s data is stored and processed primarily on the client&apos;s device, reducing the dependency on constant network connectivity. By doing so, RxDB ensures your app remains responsive and functional, even when offline.</p>
+<h3 id="local-first-approach">Local-First Approach</h3>
+<p>The <a href="../offline-first.html">local-first</a> approach adopted by RxDB is a game-changer for hybrid applications. Storing data locally allows your app to function seamlessly without an internet connection, providing users with uninterrupted access to their data. When connectivity is restored, RxDB handles the synchronization of data, ensuring that any changes made offline are appropriately propagated.</p>
+<h3 id="observable-queries">Observable Queries</h3>
+<p>One of RxDB&apos;s standout features is its implementation of observable queries. This concept allows your app&apos;s user interface to be dynamically updated in real time as data changes within the database. RxDB&apos;s observables create a bridge between your database and user interface, keeping them in sync effortlessly.</p>
+<p align="center">
+  <img src="../files/animations/realtime.gif" alt="realtime ui updates" width="700">
+</p>
+
+<h3 id="nosql-query-engine">NoSQL Query Engine</h3>
+<p>RxDB&apos;s NoSQL query engine empowers you to perform powerful queries on your app&apos;s data, without the constraints imposed by traditional relational databases. This flexibility is particularly valuable when dealing with unstructured or semi-structured data. With the NoSQL query engine, you can retrieve, filter, and manipulate data according to your app&apos;s unique requirements.</p>
+<pre><code class="lang-ts"><span class="hljs-keyword">const</span> foundDocuments = await myDatabase.todos.find({
+    selector: {
+        done: {
+            $eq: <span class="hljs-literal">false</span>
+        }
+    }
+}).exec();
+</code></pre>
+<h3 id="great-observe-performance-with-eventreduce">Great Observe Performance with EventReduce</h3>
+<p>RxDB introduces a concept called <a href="https://github.com/pubkey/event-reduce" target="_blank">EventReduce</a>, which optimizes the observation process. Instead of overwhelming your app&apos;s UI with every data change, EventReduce filters and batches these changes to provide a smooth and efficient experience. This leads to enhanced app performance, lower resource usage, and ultimately, happier users.</p>
+<h2 id="why-nosql-is-a-better-fit-for-client-side-applications-compared-to-relational-databases-like-sqlite">Why NoSQL is a Better Fit for Client-Side Applications Compared to relational databases like SQLite</h2>
+<p>When it comes to choosing the right database solution for your client-side applications, NoSQL RxDB presents compelling advantages over traditional options like SQLite. Let&apos;s delve into the key reasons why NoSQL RxDB is a superior fit for your ionic hybrid app development.</p>
+<h3 id="easier-document-based-replication">Easier Document-Based Replication</h3>
+<p>NoSQL databases, like RxDB, inherently embrace a document-based approach to data storage. This design choice simplifies data <a href="../replication.html">replication</a> between clients and servers. With documents representing discrete units of data, you can easily synchronize individual pieces of information without the complexity that can arise when dealing with rows and tables in a relational database like SQLite. This document-centric replication model streamlines the synchronization process and ensures that your app&apos;s data remains consistent across devices.</p>
+<h3 id="offline-capable">Offline Capable</h3>
+<p>One of the defining features of client-side applications is the ability to function even when offline. NoSQL RxDB excels in this area by supporting a local-first approach. Data is cached on the client&apos;s device, enabling the app to remain fully functional even without an internet connection. As connectivity is restored, RxDB handles data synchronization with the server seamlessly. This offline capability ensures a smooth user experience, critical for ionic hybrid apps catering to users in various network conditions.</p>
+<h3 id="nosql-has-better-typescript-support">NoSQL Has Better TypeScript Support</h3>
+<p>TypeScript, a popular superset of JavaScript, is renowned for its static typing and enhanced developer experience. NoSQL databases like RxDB are inherently flexible, making them well-suited for TypeScript integration. With well-defined data structures and clear typings, NoSQL RxDB offers <a href="../tutorials/typescript.html">improved type safety</a> and easier development when compared to traditional SQL databases like SQLite. This results in reduced debugging time and increased code reliability.</p>
+<h3 id="easier-schema-migration-with-nosql-documents">Easier <a href="../data-migration.html">Schema Migration</a> with NoSQL Documents</h3>
+<p>Schema changes are a common occurrence in application development, and dealing with them can be challenging. NoSQL databases, including RxDB, are more forgiving in this aspect. Since documents in NoSQL databases don&apos;t enforce a rigid structure like tables in relational databases, schema changes are often simpler to manage. This flexibility makes it easier to evolve your app&apos;s data structure over time without the need for complex migration scripts, a notable advantage when compared to SQLite.</p>
+<h2 id="great-performance">Great Performance</h2>
+<p>RxDB&apos;s <a href="../rx-storage-performance.html">excellent performance</a> stems from its advanced indexing capabilities, which streamline data retrieval and ensure swift query execution. Additionally, the <a href="../key-compression.html">JSON key compression</a> employed by RxDB minimizes storage overhead, enabling efficient data transfer and quicker loading times. The incorporation of real-time updates through change streams and the <strong>EventReduce mechanism</strong> further enhances RxDB&apos;s performance, delivering a responsive user experience even as data changes are propagated seamlessly.</p>
+<h2 id="using-rxdb-in-an-ionic-hybrid-app">Using RxDB in an Ionic Hybrid App</h2>
+<p>RxDB&apos;s integration into your ionic hybrid app opens up a world of possibilities for efficient data management. Let&apos;s explore how to set up RxDB, use it with popular JavaScript frameworks, and take advantage of its diverse storage options.</p>
+<h3 id="setup-rxdb">Setup RxDB</h3>
+<p>Getting started with RxDB is a straightforward process. By including the RxDB library in your project, you can quickly start harnessing its capabilities. Begin by installing the <a href="https://www.npmjs.com/package/rxdb" target="_blank">RxDB package</a> from the npm registry. Then, configure your database instance to suit your app&apos;s needs. This setup process paves the way for seamless data management in your ionic hybrid app.
+For a full instruction, follow the <a href="https://rxdb.info/quickstart.html" target="_blank">RxDB Quickstart</a>.</p>
+<h3 id="using-rxdb-in-frameworks-react-angular-vuejs">Using RxDB in Frameworks (React, Angular, Vue.js)</h3>
+<p>RxDB seamlessly integrates with various JavaScript frameworks, ensuring compatibility with your preferred development environment. Whether you&apos;re building your ionic hybrid app with <a href="react-database.html">React</a>, <a href="angular-database.html">Angular</a>, or <a href="https://github.com/pubkey/rxdb/tree/master/examples/vue" target="_blank">Vue.js</a>, RxDB offers bindings and tools that enable you to leverage its features effortlessly. This compatibility allows you to stay within the comfort zone of your chosen framework while benefiting from RxDB&apos;s powerful data management capabilities.</p>
+<h3 id="different-rxstorage-layers-for-rxdb">Different RxStorage Layers for RxDB</h3>
+<p>RxDB doesn&apos;t limit you to a single storage solution. Instead, it provides a range of RxStorage layers to accommodate diverse use cases. These storage layers offer flexibility and customization, enabling you to tailor your data management strategy to match your app&apos;s requirements. Let&apos;s explore some of the available RxStorage options:</p>
 <ul>
-<li><a href="/rx-storage-dexie.html">Dexie.js RxStorage</a>: Dexie.js is a popular JavaScript library for indexedDB, and RxDB offers a compatible RxStorage layer. This option leverages indexedDB&#x27;s capabilities to provide efficient data storage and retrieval.</li>
-<li><a href="/rx-storage-lokijs.html">LokiJS RxStorage</a>: LokiJS RxStorage integrates the LokiJS database with RxDB, giving you access to another powerful NoSQL database solution. LokiJS is known for its in-memory storage capabilities and ease of use.</li>
-<li><a href="/rx-storage-indexeddb.html">IndexedDB RxStorage</a>: Leveraging the native browser storage, IndexedDB RxStorage offers reliable data persistence. This storage option is suitable for a wide range of scenarios and is supported by most modern browsers.</li>
-<li><a href="/rx-storage-opfs.html">OPFS RxStorage</a>: Operating within the browser&#x27;s file system, OPFS RxStorage is a unique choice that can handle larger data volumes efficiently. It&#x27;s particularly useful for applications that require substantial data storage.</li>
-<li><a href="/rx-storage-memory.html">Memory RxStorage</a>: Memory RxStorage is perfect for temporary or cache-like data storage. It keeps data in memory, which can result in rapid data access but doesn&#x27;t provide long-term persistence.</li>
-<li><a href="/rx-storage-sqlite.html">SQLite RxStorage</a>: SQLite is the goto database for mobile applications. It is build in on android and iOS devices. The SQLite RxDB storage layer is build upon SQLite and offers the best performance on hybrid apps, like ionic.</li>
+<li><a href="../rx-storage-dexie.html">Dexie.js RxStorage</a>: Dexie.js is a popular JavaScript library for indexedDB, and RxDB offers a compatible RxStorage layer. This option leverages indexedDB&apos;s capabilities to provide efficient data storage and retrieval.</li>
+<li><a href="../rx-storage-lokijs.html">LokiJS RxStorage</a>: LokiJS RxStorage integrates the LokiJS database with RxDB, giving you access to another powerful NoSQL database solution. LokiJS is known for its in-memory storage capabilities and ease of use.</li>
+<li><a href="../rx-storage-indexeddb.html">IndexedDB RxStorage</a>: Leveraging the native browser storage, IndexedDB RxStorage offers reliable data persistence. This storage option is suitable for a wide range of scenarios and is supported by most modern browsers.</li>
+<li><a href="../rx-storage-opfs.html">OPFS RxStorage</a>: Operating within the browser&apos;s file system, OPFS RxStorage is a unique choice that can handle larger data volumes efficiently. It&apos;s particularly useful for applications that require substantial data storage.</li>
+<li><a href="../rx-storage-memory.html">Memory RxStorage</a>: Memory RxStorage is perfect for temporary or cache-like data storage. It keeps data in memory, which can result in rapid data access but doesn&apos;t provide long-term persistence.</li>
+<li><a href="../rx-storage-sqlite.html">SQLite RxStorage</a>: SQLite is the goto database for mobile applications. It is build in on android and iOS devices. The SQLite RxDB storage layer is build upon SQLite and offers the best performance on hybrid apps, like ionic.</li>
 </ul>
-<h2 class="anchor anchorWithStickyNavbar_LWe7" id="replication-of-data-with-rxdb-between-clients-and-servers">Replication of Data with RxDB between Clients and Servers<a href="#replication-of-data-with-rxdb-between-clients-and-servers" class="hash-link" aria-label="Direct link to Replication of Data with RxDB between Clients and Servers" title="Direct link to Replication of Data with RxDB between Clients and Servers">​</a></h2>
+<h2 id="replication-of-data-with-rxdb-between-clients-and-servers">Replication of Data with RxDB between Clients and Servers</h2>
 <p>Efficient data replication between clients and servers is the backbone of modern application development, ensuring that data remains consistent and up-to-date across various devices and platforms. RxDB provides a suite of replication methods that facilitate seamless communication between clients and servers, ensuring that your data is always in sync.</p>
-<h3 class="anchor anchorWithStickyNavbar_LWe7" id="rxdb-replication-algorithm">RxDB Replication Algorithm<a href="#rxdb-replication-algorithm" class="hash-link" aria-label="Direct link to RxDB Replication Algorithm" title="Direct link to RxDB Replication Algorithm">​</a></h3>
-<p>At the heart of RxDB&#x27;s replication capabilities lies a sophisticated <a href="/replication.html">algorithm</a> designed to manage data synchronization between clients and servers. This algorithm intelligently handles data changes, conflict resolution, and network connectivity fluctuations, resulting in reliable and efficient data replication. With the RxDB replication algorithm, your application can maintain data consistency across devices without unnecessary complexities.</p>
+<h3 id="rxdb-replication-algorithm">RxDB Replication Algorithm</h3>
+<p>At the heart of RxDB&apos;s replication capabilities lies a sophisticated <a href="../replication.html">algorithm</a> designed to manage data synchronization between clients and servers. This algorithm intelligently handles data changes, conflict resolution, and network connectivity fluctuations, resulting in reliable and efficient data replication. With the RxDB replication algorithm, your application can maintain data consistency across devices without unnecessary complexities.</p>
 <ul>
-<li>
-<p><a href="/replication-couchdb.html">CouchDB Replication</a>:
-RxDB&#x27;s integration with CouchDB replication presents a powerful way to synchronize data between clients and servers. CouchDB, a well-established NoSQL database, excels at distributed and decentralized data scenarios. By utilizing RxDB&#x27;s CouchDB replication, you can establish bidirectional synchronization between your RxDB-powered client and a CouchDB server. This synchronization ensures that data updates made on either end are seamlessly propagated to the other, facilitating collaboration and data sharing.</p>
+<li><p><a href="../replication-couchdb.html">CouchDB Replication</a>:
+RxDB&apos;s integration with CouchDB replication presents a powerful way to synchronize data between clients and servers. CouchDB, a well-established NoSQL database, excels at distributed and decentralized data scenarios. By utilizing RxDB&apos;s CouchDB replication, you can establish bidirectional synchronization between your RxDB-powered client and a CouchDB server. This synchronization ensures that data updates made on either end are seamlessly propagated to the other, facilitating collaboration and data sharing.</p>
 </li>
-<li>
-<p><a href="/replication-firestore.html">Firestore Replication</a>:
-Firestore, Google&#x27;s cloud-hosted NoSQL database, offers another avenue for data replication in RxDB. With Firestore replication, you can establish a connection between your RxDB-powered app and Firestore&#x27;s cloud infrastructure. This integration provides real-time updates to data across multiple instances of your application, ensuring that users always have access to the latest information. RxDB&#x27;s support for Firestore replication empowers you to build dynamic and responsive applications that thrive in today&#x27;s fast-paced digital landscape.</p>
+<li><p><a href="../replication-firestore.html">Firestore Replication</a>:
+Firestore, Google&apos;s cloud-hosted NoSQL database, offers another avenue for data replication in RxDB. With Firestore replication, you can establish a connection between your RxDB-powered app and Firestore&apos;s cloud infrastructure. This integration provides real-time updates to data across multiple instances of your application, ensuring that users always have access to the latest information. RxDB&apos;s support for Firestore replication empowers you to build dynamic and responsive applications that thrive in today&apos;s fast-paced digital landscape.</p>
 </li>
-<li>
-<p><a href="/replication-webrtc.html">WebRTC Replication</a>:
-Peer-to-peer (P2P) replication via WebRTC introduces a cutting-edge approach to data synchronization in RxDB. P2P replication allows devices to communicate directly with each other, bypassing the need for a central server. This method proves invaluable in scenarios where network connectivity is limited or unreliable. With WebRTC replication, devices can exchange data directly, enabling collaboration and information sharing even in challenging network conditions.</p>
+<li><p><a href="../replication-p2p.html">P2P Replication</a>:
+Peer-to-peer (P2P) replication introduces a cutting-edge approach to data synchronization in RxDB. P2P replication allows devices to communicate directly with each other, bypassing the need for a central server. This method proves invaluable in scenarios where network connectivity is limited or unreliable. With P2P replication, devices can exchange data directly, enabling collaboration and information sharing even in challenging network conditions.</p>
 </li>
 </ul>
-<h2 class="anchor anchorWithStickyNavbar_LWe7" id="rxdb-as-an-alternative-for-ionic-secure-storage">RxDB as an Alternative for Ionic Secure Storage<a href="#rxdb-as-an-alternative-for-ionic-secure-storage" class="hash-link" aria-label="Direct link to RxDB as an Alternative for Ionic Secure Storage" title="Direct link to RxDB as an Alternative for Ionic Secure Storage">​</a></h2>
-<p>When it comes to securing sensitive data in your Ionic applications, RxDB emerges as a powerful alternative to traditional secure storage solutions. Let&#x27;s delve into why RxDB is an exceptional choice for safeguarding your data while providing additional benefits.</p>
-<h3 class="anchor anchorWithStickyNavbar_LWe7" id="rxdb-on-device-encryption-plugin">RxDB On-Device Encryption Plugin<a href="#rxdb-on-device-encryption-plugin" class="hash-link" aria-label="Direct link to RxDB On-Device Encryption Plugin" title="Direct link to RxDB On-Device Encryption Plugin">​</a></h3>
-<p>RxDB offers an <a href="https://rxdb.info/encryption.html" target="_blank" rel="noopener noreferrer">on-device encryption plugin</a>, adding an extra layer of security to your app&#x27;s data. This means that data stored within the RxDB database can be encrypted, ensuring that even if the device falls into the wrong hands, the sensitive information remains inaccessible without the proper decryption key. This level of data protection is crucial for applications that deal with personal or confidential information. Encryption runs either with <code>AES</code> on <code>crypto-js</code> or with the <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API" target="_blank" rel="noopener noreferrer">Web Crypto API</a> which is faster and more secure.</p>
-<h3 class="anchor anchorWithStickyNavbar_LWe7" id="works-offline">Works Offline<a href="#works-offline" class="hash-link" aria-label="Direct link to Works Offline" title="Direct link to Works Offline">​</a></h3>
-<p>Security should never compromise functionality. RxDB excels in this area by allowing your application to operate seamlessly even when offline. The locally stored encrypted data remains accessible and functional, enabling users to interact with the app&#x27;s features even without an active internet connection. This offline capability ensures that user data is secure, while the app continues to deliver a responsive and uninterrupted experience.</p>
-<h3 class="anchor anchorWithStickyNavbar_LWe7" id="easy-to-setup-replication-with-your-backend">Easy-to-Setup Replication with Your Backend<a href="#easy-to-setup-replication-with-your-backend" class="hash-link" aria-label="Direct link to Easy-to-Setup Replication with Your Backend" title="Direct link to Easy-to-Setup Replication with Your Backend">​</a></h3>
+<h2 id="rxdb-as-an-alternative-for-ionic-secure-storage">RxDB as an Alternative for Ionic Secure Storage</h2>
+<p>When it comes to securing sensitive data in your Ionic applications, RxDB emerges as a powerful alternative to traditional secure storage solutions. Let&apos;s delve into why RxDB is an exceptional choice for safeguarding your data while providing additional benefits.</p>
+<h3 id="rxdb-on-device-encryption-plugin">RxDB On-Device Encryption Plugin</h3>
+<p>RxDB offers an <a href="https://rxdb.info/encryption.html" target="_blank">on-device encryption plugin</a>, adding an extra layer of security to your app&apos;s data. This means that data stored within the RxDB database can be encrypted, ensuring that even if the device falls into the wrong hands, the sensitive information remains inaccessible without the proper decryption key. This level of data protection is crucial for applications that deal with personal or confidential information. Encryption runs either with <code>AES</code> on <code>crypto-js</code> or with the <a href="https://developer.mozilla.org/en-US/docs/Web/API/Web_Crypto_API" target="_blank">Web Crypto API</a> which is faster and more secure.</p>
+<h3 id="works-offline">Works Offline</h3>
+<p>Security should never compromise functionality. RxDB excels in this area by allowing your application to operate seamlessly even when offline. The locally stored encrypted data remains accessible and functional, enabling users to interact with the app&apos;s features even without an active internet connection. This offline capability ensures that user data is secure, while the app continues to deliver a responsive and uninterrupted experience.</p>
+<h3 id="easy-to-setup-replication-with-your-backend">Easy-to-Setup Replication with Your Backend</h3>
 <p>Ensuring data consistency between your client-side application and backend is a key concern for developers. RxDB simplifies this process with its straightforward replication setup. You can effortlessly configure data synchronization between your local RxDB instance and your backend server. This replication capability ensures that encrypted data remains up-to-date and aligned with the central database, enhancing data integrity and security.</p>
-<h3 class="anchor anchorWithStickyNavbar_LWe7" id="compression-of-client-side-stored-data">Compression of Client-Side Stored Data<a href="#compression-of-client-side-stored-data" class="hash-link" aria-label="Direct link to Compression of Client-Side Stored Data" title="Direct link to Compression of Client-Side Stored Data">​</a></h3>
-<p>In addition to security and offline capabilities, RxDB also offers <a href="https://rxdb.info/key-compression.html" target="_blank" rel="noopener noreferrer">data compression</a>. This means that the data stored on the client&#x27;s device is efficiently compressed, reducing storage requirements and improving overall app performance. This compression ensures that your app remains responsive and efficient, even as data volumes grow.</p>
-<h3 class="anchor anchorWithStickyNavbar_LWe7" id="cost-effective-solution">Cost-Effective Solution<a href="#cost-effective-solution" class="hash-link" aria-label="Direct link to Cost-Effective Solution" title="Direct link to Cost-Effective Solution">​</a></h3>
-<p>In addition to its security features, RxDB offers cost-effective benefits. RxDB is <a href="/premium">priced more affordably</a> compared to some other secure storage solutions, making it an attractive option for developers seeking robust security without breaking the bank. For many users, the free version of RxDB provides ample features to meet their application&#x27;s security and data management needs.</p>
-<h2 class="anchor anchorWithStickyNavbar_LWe7" id="follow-up">Follow Up<a href="#follow-up" class="hash-link" aria-label="Direct link to Follow Up" title="Direct link to Follow Up">​</a></h2>
+<h3 id="compression-of-client-side-stored-data">Compression of Client-Side Stored Data</h3>
+<p>In addition to security and offline capabilities, RxDB also offers <a href="https://rxdb.info/key-compression.html" target="_blank">data compression</a>. This means that the data stored on the client&apos;s device is efficiently compressed, reducing storage requirements and improving overall app performance. This compression ensures that your app remains responsive and efficient, even as data volumes grow.</p>
+<h3 id="cost-effective-solution">Cost-Effective Solution</h3>
+<p>In addition to its security features, RxDB offers cost-effective benefits. RxDB is <a href="https://rxdb.info/premium.html" target="_blank">priced more affordably</a> compared to some other secure storage solutions, making it an attractive option for developers seeking robust security without breaking the bank. For many users, the free version of RxDB provides ample features to meet their application&apos;s security and data management needs.</p>
+<h2 id="follow-up">Follow Up</h2>
 <ul>
-<li>Try out the <a href="https://github.com/pubkey/rxdb/tree/master/examples/ionic2" target="_blank" rel="noopener noreferrer">RxDB ionic example project</a></li>
-<li>Try out the <a href="https://rxdb.info/quickstart.html" target="_blank" rel="noopener noreferrer">RxDB Quickstart</a></li>
-<li>Join the <a href="https://rxdb.info/chat.html" target="_blank" rel="noopener noreferrer">RxDB Chat</a></li>
-</ul></div><footer class="theme-doc-footer docusaurus-mt-lg"><div class="theme-doc-footer-edit-meta-row row"><div class="col"><a href="https://github.com/pubkey/rxdb/tree/main/docs-src/docs/articles/ionic-database.md" target="_blank" rel="noopener noreferrer" class="theme-edit-this-page"><svg fill="currentColor" height="20" width="20" viewBox="0 0 40 40" class="iconEdit_Z9Sw" aria-hidden="true"><g><path d="m34.5 11.7l-3 3.1-6.3-6.3 3.1-3q0.5-0.5 1.2-0.5t1.1 0.5l3.9 3.9q0.5 0.4 0.5 1.1t-0.5 1.2z m-29.5 17.1l18.4-18.5 6.3 6.3-18.4 18.4h-6.3v-6.2z"></path></g></svg>Edit this page</a></div><div class="col lastUpdated_vwxv"></div></div></footer></article><nav class="pagination-nav docusaurus-mt-lg" aria-label="Docs pages"><a class="pagination-nav__link pagination-nav__link--prev" href="/articles/in-memory-nosql-database.html"><div class="pagination-nav__sublabel">Previous</div><div class="pagination-nav__label">RxDB as In-memory NoSQL Database - Empowering Real-Time Applications</div></a><a class="pagination-nav__link pagination-nav__link--next" href="/articles/json-database.html"><div class="pagination-nav__sublabel">Next</div><div class="pagination-nav__label">RxDB - JSON Database for JavaScript</div></a></nav></div></div><div class="col col--3"><div class="tableOfContents_bqdL thin-scrollbar theme-doc-toc-desktop"><ul class="table-of-contents table-of-contents__left-border"><li><a href="#what-are-ionic-hybrid-apps" class="table-of-contents__link toc-highlight">What are Ionic Hybrid Apps?</a></li><li><a href="#storing-and-querying-data-in-an-ionic-app" class="table-of-contents__link toc-highlight">Storing and Querying Data in an Ionic App</a></li><li><a href="#introducing-rxdb-as-a-client-side-database-for-ionic-apps" class="table-of-contents__link toc-highlight">Introducing RxDB as a Client-Side Database for Ionic Apps</a><ul><li><a href="#getting-started-with-rxdb" class="table-of-contents__link toc-highlight">Getting Started with RxDB</a></li><li><a href="#what-is-rxdb" class="table-of-contents__link toc-highlight">What is RxDB?</a></li><li><a href="#local-first-approach" class="table-of-contents__link toc-highlight">Local-First Approach</a></li><li><a href="#observable-queries" class="table-of-contents__link toc-highlight">Observable Queries</a></li><li><a href="#nosql-query-engine" class="table-of-contents__link toc-highlight">NoSQL Query Engine</a></li><li><a href="#great-observe-performance-with-eventreduce" class="table-of-contents__link toc-highlight">Great Observe Performance with EventReduce</a></li></ul></li><li><a href="#why-nosql-is-a-better-fit-for-client-side-applications-compared-to-relational-databases-like-sqlite" class="table-of-contents__link toc-highlight">Why NoSQL is a Better Fit for Client-Side Applications Compared to relational databases like SQLite</a><ul><li><a href="#easier-document-based-replication" class="table-of-contents__link toc-highlight">Easier Document-Based Replication</a></li><li><a href="#offline-capable" class="table-of-contents__link toc-highlight">Offline Capable</a></li><li><a href="#nosql-has-better-typescript-support" class="table-of-contents__link toc-highlight">NoSQL Has Better TypeScript Support</a></li><li><a href="#easier-schema-migration-with-nosql-documents" class="table-of-contents__link toc-highlight">Easier Schema Migration with NoSQL Documents</a></li></ul></li><li><a href="#great-performance" class="table-of-contents__link toc-highlight">Great Performance</a></li><li><a href="#using-rxdb-in-an-ionic-hybrid-app" class="table-of-contents__link toc-highlight">Using RxDB in an Ionic Hybrid App</a><ul><li><a href="#setup-rxdb" class="table-of-contents__link toc-highlight">Setup RxDB</a></li><li><a href="#using-rxdb-in-frameworks-react-angular-vuejs" class="table-of-contents__link toc-highlight">Using RxDB in Frameworks (React, Angular, Vue.js)</a></li><li><a href="#different-rxstorage-layers-for-rxdb" class="table-of-contents__link toc-highlight">Different RxStorage Layers for RxDB</a></li></ul></li><li><a href="#replication-of-data-with-rxdb-between-clients-and-servers" class="table-of-contents__link toc-highlight">Replication of Data with RxDB between Clients and Servers</a><ul><li><a href="#rxdb-replication-algorithm" class="table-of-contents__link toc-highlight">RxDB Replication Algorithm</a></li></ul></li><li><a href="#rxdb-as-an-alternative-for-ionic-secure-storage" class="table-of-contents__link toc-highlight">RxDB as an Alternative for Ionic Secure Storage</a><ul><li><a href="#rxdb-on-device-encryption-plugin" class="table-of-contents__link toc-highlight">RxDB On-Device Encryption Plugin</a></li><li><a href="#works-offline" class="table-of-contents__link toc-highlight">Works Offline</a></li><li><a href="#easy-to-setup-replication-with-your-backend" class="table-of-contents__link toc-highlight">Easy-to-Setup Replication with Your Backend</a></li><li><a href="#compression-of-client-side-stored-data" class="table-of-contents__link toc-highlight">Compression of Client-Side Stored Data</a></li><li><a href="#cost-effective-solution" class="table-of-contents__link toc-highlight">Cost-Effective Solution</a></li></ul></li><li><a href="#follow-up" class="table-of-contents__link toc-highlight">Follow Up</a></li></ul></div></div></div></div></main></div></div></div><footer class="footer footer--dark"><div class="container container-fluid"><div class="row footer__links"><div class="col footer__col"><div class="footer__title">Docs</div><ul class="footer__items clean-list"><li class="footer__item"><a class="footer__link-item" href="/quickstart.html">Quickstart</a></li><li class="footer__item"><a class="footer__link-item" href="/rx-storage.html">Storage</a></li><li class="footer__item"><a class="footer__link-item" href="/replication.html">Replication</a></li></ul></div><div class="col footer__col"><div class="footer__title">Community</div><ul class="footer__items clean-list"><li class="footer__item"><a href="https://github.com/pubkey/rxdb" target="_blank" rel="noopener noreferrer" class="footer__link-item">Github<svg width="13.5" height="13.5" aria-hidden="true" viewBox="0 0 24 24" class="iconExternalLink_nPIU"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"></path></svg></a></li><li class="footer__item"><a class="footer__link-item" target="_blank" href="/chat">Discord</a></li><li class="footer__item"><a href="https://twitter.com/intent/user?screen_name=rxdbjs" target="_blank" rel="noopener noreferrer" class="footer__link-item">Twitter<svg width="13.5" height="13.5" aria-hidden="true" viewBox="0 0 24 24" class="iconExternalLink_nPIU"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"></path></svg></a></li><li class="footer__item"><a href="https://stackoverflow.com/questions/tagged/rxdb" target="_blank" rel="noopener noreferrer" class="footer__link-item">Stack Overflow<svg width="13.5" height="13.5" aria-hidden="true" viewBox="0 0 24 24" class="iconExternalLink_nPIU"><path fill="currentColor" d="M21 13v10h-21v-19h12v2h-10v15h17v-8h2zm3-12h-10.988l4.035 4-6.977 7.07 2.828 2.828 6.977-7.07 4.125 4.172v-11z"></path></svg></a></li></ul></div><div class="col footer__col"><div class="footer__title">More</div><ul class="footer__items clean-list"><li class="footer__item"><a class="footer__link-item" target="_blank" href="/premium">Pricing</a></li><li class="footer__item"><a class="footer__link-item" target="_blank" href="/imprint">Imprint</a></li></ul></div></div><div class="footer__bottom text--center"><div class="footer__copyright">Copyright © 2023 My Project, Inc. Built with Docusaurus.</div></div></div></footer></div>
-</body>
+<li>Try out the <a href="https://github.com/pubkey/rxdb/tree/master/examples/ionic2" target="_blank">RxDB ionic example project</a></li>
+<li>Try out the <a href="https://rxdb.info/quickstart.html" target="_blank">RxDB Quickstart</a></li>
+<li>Join the <a href="https://rxdb.info/chat.html" target="_blank">RxDB Chat</a></li>
+</ul>
+
+                                
+                                </section>
+                            
+    </div>
+    <div class="search-results">
+        <div class="has-results">
+            
+            <h1 class="search-results-title"><span class='search-results-count'></span> results matching "<span class='search-query'></span>"</h1>
+            <ul class="search-results-list"></ul>
+            
+        </div>
+        <div class="no-results">
+            
+            <h1 class="search-results-title">No results matching "<span class='search-query'></span>"</h1>
+            
+        </div>
+    </div>
+</div>
+
+                        </div>
+                    </div>
+                
+            </div>
+
+            
+                
+                <a href="localstorage.html" class="navigation navigation-prev " aria-label="Previous page: localStorage">
+                    <i class="fa fa-angle-left"></i>
+                </a>
+                
+                
+                <a href="json-database.html" class="navigation navigation-next " aria-label="Next page: JSON Database">
+                    <i class="fa fa-angle-right"></i>
+                </a>
+                
+            
+        
+    </div>
+
+    <script>
+        var gitbook = gitbook || [];
+        gitbook.push(function() {
+            gitbook.page.hasChanged({"page":{"title":"Ionic Database","level":"2.1.20","depth":2,"next":{"title":"JSON Database","level":"2.1.21","depth":2,"path":"articles/json-database.md","ref":"./articles/json-database.md","articles":[]},"previous":{"title":"localStorage","level":"2.1.19","depth":2,"path":"articles/localstorage.md","ref":"./articles/localstorage.md","articles":[]},"dir":"ltr"},"config":{"plugins":["edit-link","github","custom-favicon","-sharing","expandable-chapters","scripts"],"root":".","styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"pluginsConfig":{"github":{"url":"https://github.com/pubkey/rxdb"},"scripts":{"files":["./analytics.js","./next-button.js"]},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"fontsettings":{"theme":"white","family":"sans","size":2},"highlight":{},"favicon":"./files/logo/logo.svg","custom-favicon":{},"edit-link":{"label":"","base":"https://github.com/pubkey/rxdb/tree/master/docs-src"},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false},"expandable-chapters":{}},"theme":"default","pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"variables":{},"title":"RxDB - JavaScript Database","links":{"sidebar":{"RxDB":"/","Follow @twitter ":"https://twitter.com/intent/user?screen_name=rxdbjs","Chat @discord ":"https://rxdb.info/chat.html","Star @github ":"https://github.com/pubkey/rxdb","Donate @github ":"https://github.com/sponsors/pubkey"}},"gitbook":"3.2.3"},"file":{"path":"articles/ionic-database.md","mtime":"","type":"markdown"},"gitbook":{"version":"3.2.3","time":""},"basePath":"..","book":{"language":""}});
+        });
+    </script>
+</div>
+
+        
+    <script src="../gitbook/gitbook.js"></script>
+    <script src="../gitbook/theme.js"></script>
+    
+        
+        <script src="../gitbook/gitbook-plugin-edit-link/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-github/plugin.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-expandable-chapters/expandable-chapters.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-scripts/28fd35f20e40e37a9994a4812fc3c7cc-analytics.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-scripts/9bc541ba5d318730a5b44c9770ae18fc-next-button.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-search/search-engine.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-search/search.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-lunr/lunr.min.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-lunr/search-lunr.js"></script>
+        
+    
+        
+        <script src="../gitbook/gitbook-plugin-fontsettings/fontsettings.js"></script>
+        
+    
+
+    </body>
 </html>
+

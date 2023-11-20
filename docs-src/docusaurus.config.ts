@@ -106,7 +106,7 @@ const config: Config = {
             position: 'right',
           },
           {
-            href: 'https://github.com/pubkey/rxdb',
+            href: 'code',
             label: 'Code',
             position: 'right',
           },
