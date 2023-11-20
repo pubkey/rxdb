@@ -58,6 +58,10 @@ html[data-theme='dark'] {
 }
 
 
+p {
+  font-size: 1rem !important;
+}
+
 
 /* change the scrollbar to better match the dark layout */
 ::-webkit-scrollbar {

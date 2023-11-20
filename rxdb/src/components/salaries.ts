@@ -58,7 +58,7 @@ export const AVERAGE_FRONT_END_DEVELOPER_SALARY_BY_COUNTRY: AverageFrontEndDevel
     { 'name': 'Bulgaria', 'code': 'BG', salary: 23384 },
     // { 'name': 'Burkina Faso', 'code': 'BF', salary: false },
     // { 'name': 'Burundi', 'code': 'BI', salary: false },
-    // { 'name': 'Cambodia', 'code': 'KH', salary: false },
+    { 'name': 'Cambodia', 'code': 'KH', salary: 18000 },
     // { 'name': 'Cameroon', 'code': 'CM', salary: false },
     { 'name': 'Canada', 'code': 'CA', salary: 71554 },
     // { 'name': 'Cape Verde', 'code': 'CV', salary: false },

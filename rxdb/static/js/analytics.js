@@ -111,6 +111,7 @@ historyHack();
 
 /**
  * Chat call-to-action button
+ * TODO
  */
 window.addEventListener('DOMContentLoaded', function () {
     const elemDiv = document.createElement('a');

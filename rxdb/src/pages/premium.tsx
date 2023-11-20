@@ -330,7 +330,7 @@ export default function Home() {
                             No, the premium plugins themself do not contain any tracking code. When
                             you build your application with RxDB and deploy it to production, it
                             will not make requests to any RxDB server. But when you run "npm
-                            install" with the premium package there will be some metadata send to
+                            install" with the premium package there will be some metadata send from your developers machine to
                             RxDB.
                         </details>
                     </div>
