@@ -3,8 +3,9 @@ import {
 } from '../../../plugins/storage-dexie';
 import {
     createRxDatabase,
-    addRxPlugin
-} from '../../../';
+    addRxPlugin,
+    RxDatabase
+} from '../../../plugins/core';
 import {
     RxDBLocalDocumentsPlugin
 } from '../../../plugins/local-documents';
@@ -12,7 +13,7 @@ import {
 
 let dbPromise;
 
-export function getDatabase() {
+export function getDatabase(): Promise<RxDatabase> {
     if (!dbPromise) {
         dbPromise = (async () => {
             addRxPlugin(RxDBLocalDocumentsPlugin);

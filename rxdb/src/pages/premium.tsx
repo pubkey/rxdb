@@ -1,10 +1,46 @@
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import Layout from '@theme/Layout';
-import React from 'react';
-import { ensureNotFalsy } from '../../../';
+import React, { useEffect } from 'react';
+import { ensureNotFalsy, lastOfArray } from '../../../';
+import { AVERAGE_FRONT_END_DEVELOPER_SALARY_BY_COUNTRY } from '../components/salaries';
+import { LicensePeriod, PACKAGE_PRICE, PackageName, PriceCalculationInput, ProjectAmount, calculatePrice } from '../components/price-calculator';
+import { trigger } from '../components/trigger-event';
+import { getDatabase } from '../components/database';
+
+type FormValueDocData = {
+    homeCountry: string;
+    companySize: number;
+    projectAmount: ProjectAmount;
+    licensePeriod: LicensePeriod;
+    packages: PackageName[];
+};
+const FORM_VALUE_DOCUMENT_ID = 'premium-price-form-value';
 
 export default function Home() {
     const { siteConfig } = useDocusaurusContext();
+
+    useEffect(() => {
+        (async () => {
+            const database = await getDatabase();
+            const formValueDoc = await database.getLocal<FormValueDocData>(FORM_VALUE_DOCUMENT_ID);
+            if (formValueDoc) {
+                console.log('formValueDoc:');
+                console.dir(formValueDoc);
+
+                setToInput('home-country', formValueDoc._data.data.homeCountry);
+                setToInput('company-size', formValueDoc._data.data.companySize);
+                setToInput('project-amount', formValueDoc._data.data.projectAmount);
+                setToInput('license-period', formValueDoc._data.data.licensePeriod);
+
+                Object.keys(PACKAGE_PRICE).forEach(packageName => {
+                    setToInput('package-' + packageName, false);
+                });
+                formValueDoc._data.data.packages.forEach(packageName => {
+                    setToInput('package-' + packageName, true);
+                });
+            }
+        })();
+    });
 
     return (
         <Layout
@@ -65,18 +101,6 @@ export default function Home() {
                                         <p>
                                             A wrapper around any other storage that improves performance by
                                             applying the sharding technique.
-                                        </p>
-                                    </div>
-                                </div>
-                            </a>
-                            <a href="./migration-storage.html" target="_blank">
-                                <div className="premium-block hover-shadow-middle bg-gradient-right-top">
-                                    <div className="premium-block-inner">
-                                        <h4>Storage Migration</h4>
-                                        <p>
-                                            A plugins that migrates data from one storage to another. Use
-                                            this when you want to change the used RxStorage or to migrate
-                                            data from an older RxDB major version.
                                         </p>
                                     </div>
                                 </div>
@@ -331,7 +355,13 @@ export default function Home() {
                                                 autoComplete="off"
                                             />
                                             <datalist id="home-country">
-                                                {/* filled by premium.ts */}
+                                                {
+                                                    AVERAGE_FRONT_END_DEVELOPER_SALARY_BY_COUNTRY
+                                                        .sort((a, b) => a.code >= b.code ? 1 : -1)
+                                                        .map((country, idx) => {
+                                                            return <option key={idx} value={country.name} >{country.name}</option>;
+                                                        })
+                                                }
                                             </datalist>
                                         </div>
                                     </div>
@@ -483,11 +513,6 @@ export default function Home() {
                                                 </h4>
                                                 <ul>
                                                     <li>
-                                                        <a href="./migration-storage.html" target="_blank">
-                                                            Storage migration
-                                                        </a>
-                                                    </li>
-                                                    <li>
                                                         <a href="./logger.html" target="_blank">
                                                             Logger
                                                         </a>
@@ -566,7 +591,82 @@ export default function Home() {
                                         </div>
                                         <div className="clear" />
                                     </div>
-                                    <div className="button" id="price-calculator-submit">
+                                    <div
+                                        className="button"
+                                        id="price-calculator-submit"
+                                        onClick={async () => {
+                                            trigger('calculate_premium_price', 3);
+                                            const $priceCalculatorForm: HTMLFormElement = ensureNotFalsy(document.getElementById('price-calculator-form')) as any;
+                                            const isValid = ($priceCalculatorForm as any).reportValidity();
+                                            if (!isValid) {
+                                                console.log('form not valid');
+                                                return;
+                                            }
+
+                                            const formDataPlain = new FormData($priceCalculatorForm);
+                                            const formData = Object.fromEntries(formDataPlain.entries());
+
+                                            console.log('formData:');
+                                            console.dir(formData);
+
+
+                                            const homeCountry = AVERAGE_FRONT_END_DEVELOPER_SALARY_BY_COUNTRY
+                                                .find(o => o.name.toLowerCase() === (formData['home-country'] as string).toLowerCase());
+                                            if (!homeCountry) {
+                                                return;
+                                            }
+
+                                            const packageFields = Object.entries(formData)
+                                                .filter(([k, _v]) => k.startsWith('package-'));
+                                            const packages: PackageName[] = packageFields
+                                                .map(([k]) => lastOfArray(k.split('-')) as any);
+
+                                            const database = await getDatabase();
+                                            /**
+                                             * Save the input
+                                             * so we have to not re-insert manually on page reload.
+                                             */
+                                            await database.upsertLocal<FormValueDocData>(FORM_VALUE_DOCUMENT_ID, {
+                                                companySize: formData['company-size'] as any,
+                                                projectAmount: formData['project-amount'] as any,
+                                                licensePeriod: formData['license-period'] as any,
+                                                homeCountry: homeCountry.name,
+                                                packages
+                                            });
+                                            const priceCalculationInput: PriceCalculationInput = {
+                                                companySize: formData['company-size'] as any,
+                                                teamSize: formData['developer-count'] as any,
+                                                projectAmount: formData['project-amount'] as any,
+                                                licensePeriod: parseInt(formData['license-period'] as any, 10) as any,
+                                                homeCountryCode: homeCountry.code,
+                                                packages
+                                            };
+
+                                            const priceResult = calculatePrice(priceCalculationInput);
+                                            console.log('priceResult:');
+                                            console.log(JSON.stringify(priceResult, null, 4));
+
+                                            const $priceCalculatorResult = ensureNotFalsy(document.getElementById('price-calculator-result'));
+                                            const $priceCalculatorResultPerMonth = ensureNotFalsy(document.getElementById('total-per-project-per-month'));
+                                            const $priceCalculatorResultPerYear = ensureNotFalsy(document.getElementById('total-per-year'));
+                                            const $priceCalculatorResultTotal = ensureNotFalsy(document.getElementById('total-price'));
+                                            const setPrice = (element: typeof $priceCalculatorResultPerMonth, price: number) => {
+                                                console.log('setPrice:');
+                                                console.dir(price);
+                                                element.innerHTML = Math.ceil(price).toString() + ' &euro; (EUR)';
+                                                (element as any).href = getConverterUrl(Math.ceil(price));
+                                            };
+                                            const pricePerYear: number = (priceResult.totalPrice / priceCalculationInput.licensePeriod);
+                                            if (priceCalculationInput.projectAmount !== 'infinity') {
+                                                setPrice($priceCalculatorResultPerMonth, pricePerYear / parseInt(priceCalculationInput.projectAmount, 10) / 12);
+                                            } else {
+                                                setPrice($priceCalculatorResultPerMonth, 0);
+                                            }
+                                            setPrice($priceCalculatorResultPerYear, pricePerYear);
+                                            setPrice($priceCalculatorResultTotal, priceResult.totalPrice);
+                                            $priceCalculatorResult.style.display = 'block';
+                                        }}
+                                    >
                                         Estimate Price
                                     </div>
                                 </form>
@@ -622,7 +722,7 @@ export default function Home() {
                                     <div className="proceed-hint">
                                         Fill out
                                         <a href="#premium-request-form-block">
-                                            <b>this form</b>
+                                            {' '}<b>this form</b>{' '}
                                         </a>
                                         to proceed.
                                     </div>
@@ -650,4 +750,25 @@ export default function Home() {
             </main>
         </Layout >
     );
+}
+function getConverterUrl(price: number) {
+    return 'https://www.xe.com/en/currencyconverter/convert/?Amount=' + price + '&From=EUR&To=USD';
+}
+
+function setToInput(name: string, value: any) {
+    if (typeof value === 'undefined') {
+        return;
+    }
+    const element = document.querySelector('[name=' + name + ']') as any;
+    if (!element) {
+        return;
+    }
+
+
+    if (element.type && element.type === 'checkbox') {
+        element.checked = value;
+        return;
+    }
+
+    (element as any).value = value;
 }
