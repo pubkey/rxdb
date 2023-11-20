@@ -96,11 +96,6 @@ const config: Config = {
           // },
           // { to: '/blog', label: 'Blog', position: 'left' },
           {
-            href: 'premium',
-            label: 'Pricing',
-            position: 'right',
-          },
-          {
             href: '/quickstart.html',
             label: 'Docs',
             position: 'right',
@@ -109,6 +104,11 @@ const config: Config = {
             href: 'code',
             target: '_blank',
             label: 'Code',
+            position: 'right',
+          },
+          {
+            href: 'premium',
+            label: 'Pricing',
             position: 'right',
           },
           {

@@ -181,23 +181,23 @@ window.addEventListener('DOMContentLoaded', function () {
 
 var callToActions = [
     {
-        text: 'Follow at ',
+        text: 'Follow',
         keyword: '@twitter',
         url: 'https://twitter.com/intent/user?screen_name=rxdbjs'
     },
     {
-        text: 'Chat at ',
+        text: 'Chat',
         keyword: '@discord',
         url: 'https://rxdb.info/chat'
     },
     {
-        text: 'Star at ',
+        text: 'Star',
         keyword: '@github',
         url: 'https://rxdb.info/code'
     },
     {
-        text: 'Subscribe',
-        keyword: '@news',
+        text: '',
+        keyword: '@newsletter',
         url: 'https://rxdb.info/newsletter'
     }
 ];
@@ -212,8 +212,8 @@ function setCallToActionOnce() {
     if (alreadyThere) {
         alreadyThere.parentNode.removeChild(alreadyThere);
     }
-    
-    
+
+
     console.log('setCallToActionOnce()');
     var positionReferenceElement = document.querySelector('.navbar__items');
     if (!positionReferenceElement) {
