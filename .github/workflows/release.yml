@@ -50,18 +50,9 @@ jobs:
           path: |
             ~/.npm
             ./node_modules
-          key: ${{ runner.os }}-npm-rxdb-release-x2-${{ hashFiles('**/package.json') }}
+          key: ${{ runner.os }}-npm-rxdb-release-x3-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-rxdb-release-x2-
-
-      # Build the docs, only do this if it is not a prerelease.
-      # docusaurus only works on node 18
-      # so we do not need this
-      - name: downgrade nodejs for docusaurus
-        if: steps.vars.outputs.prerelease == 'false'
-        uses: actions/setup-node@v4.0.0
-        with:
-          node-version: 18
+            ${{ runner.os }}-npm-rxdb-release-x3-
 
       - name: Install old node version so it works with the shitty gitbook
         if: steps.vars.outputs.prerelease == 'false'
