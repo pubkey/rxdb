@@ -37,6 +37,8 @@ export declare class RxQueryBase<RxDocType, RxQueryResult = RxDocument<RxDocType
     _latestChangeEvent: -1 | number;
     _lastExecStart: number;
     _lastExecEnd: number;
+    _limitBufferSize: number | null;
+    _limitBufferResults: RxDocumentData<RxDocType>[] | null;
     /**
      * ensures that the exec-runs
      * are not run in parallel
@@ -106,6 +108,7 @@ export declare class RxQueryBase<RxDocType, RxQueryResult = RxDocument<RxDocType
     sort(_params: string | MangoQuerySortPart<RxDocType>): RxQuery<RxDocType, RxQueryResult>;
     skip(_amount: number | null): RxQuery<RxDocType, RxQueryResult>;
     limit(_amount: number | null): RxQuery<RxDocType, RxQueryResult>;
+    enableLimitBuffer(bufferSize: number): this;
 }
 export declare function _getDefaultQuery<RxDocType>(): MangoQuery<RxDocType>;
 /**
