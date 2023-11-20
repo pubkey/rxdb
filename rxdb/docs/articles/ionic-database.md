@@ -1,3 +1,8 @@
+---
+title: Ionic Storage - RxDB as database for hybrid apps
+slug: ionic-database.html
+---
+
 # Ionic Storage - RxDB as database for hybrid apps
 
 In the fast-paced world of mobile app development, **hybrid applications** have emerged as a versatile solution, offering the best of both worlds - the web and native app experiences. One key challenge these apps face is efficiently storing and querying data on the **client's device**. Enter [RxDB](https://rxdb.info/), a powerful client-side database tailored for ionic hybrid applications. In this article, we'll explore how RxDB addresses the requirements of storing and querying data in ionic apps, and why it stands out as a preferred choice.

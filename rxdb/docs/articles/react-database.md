@@ -1,3 +1,8 @@
+---
+title: RxDB as a Database for React Applications
+slug: react-database.html
+---
+
 # RxDB as a Database for React Applications
 In the rapidly evolving landscape of web development, React has emerged as a cornerstone technology for building dynamic and responsive user interfaces. With the increasing complexity of modern web applications, efficient data management becomes pivotal. This article delves into the integration of RxDB, a potent client-side database, with React applications to optimize data handling and elevate the overall user experience.
 

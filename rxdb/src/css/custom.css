@@ -34,6 +34,16 @@ html[data-theme='dark'] {
   --ifm-navbar-background-color: #171923;
 }
 
+.markdown>h1 {
+  font-size: 2.1rem;
+}
+.markdown>h2 {
+  font-size: 1.75rem;
+}
+.markdown>p {
+  font-size: 1rem;
+}
+
 .footer {
   background-color: var(--ifm-navbar-background-color);
 }
@@ -58,9 +68,6 @@ html[data-theme='dark'] {
 }
 
 
-p {
-  font-size: 1rem !important;
-}
 
 
 /* change the scrollbar to better match the dark layout */

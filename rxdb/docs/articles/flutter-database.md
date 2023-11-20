@@ -1,3 +1,9 @@
+---
+title: RxDB as a Database in a Flutter Application
+slug: flutter-database.html
+---
+
+
 # RxDB as a Database in a Flutter Application
 
 In the world of mobile application development, Flutter has gained significant popularity due to its cross-platform capabilities and rich UI framework. When it comes to building feature-rich Flutter applications, the choice of a robust and efficient database is crucial. In this article, we will explore [RxDB](https://rxdb.info/) as a database solution for Flutter applications. We'll delve into the core features of RxDB, its benefits over other database options, and how to integrate it into a Flutter app.

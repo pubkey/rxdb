@@ -1,3 +1,9 @@
+---
+title: Using localStorage in Modern Applications - A Comprehensive Guide
+slug: localstorage.html
+---
+
+
 # Using localStorage in Modern Applications: A Comprehensive Guide
 
 When it comes to client-side storage in web applications, the localStorage API stands out as a simple and widely supported solution. It allows developers to store key-value pairs directly in a user's browser. In this article, we will explore the various aspects of the localStorage API, its advantages, limitations, and alternative storage options available for modern applications.

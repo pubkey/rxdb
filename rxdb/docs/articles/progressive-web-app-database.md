@@ -1,3 +1,8 @@
+---
+title: RxDB as a Database for Progressive Web Apps (PWA)
+slug: progressive-web-app-database.html
+---
+
 # RxDB as a Database for Progressive Web Apps (PWA)
 Progressive Web Apps (PWAs) have revolutionized the digital landscape, offering users an immersive blend of web and native app experiences. At the heart of every successful PWA lies effective data management, and this is where RxDB comes into play. In this article, we'll explore the dynamic synergy between RxDB, a robust client-side database, and Progressive Web Apps, uncovering how RxDB enhances data handling, synchronization, and overall performance, propelling PWAs into a new era of excellence.
 

@@ -50,7 +50,7 @@ export default function Home() {
                 <div className="block first">
                     <div className="content centered">
                         <h2>
-                            <b className="underline">RxDB</b> Premium Plugins
+                        👑 <b className="underline">RxDB</b> Premium Plugins
                         </h2>
                         <p style={{ width: '80%' }}>
                             To make RxDB a sustainable project, some plugins are not part of the

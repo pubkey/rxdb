@@ -1,3 +1,8 @@
+---
+title: RxDB - JSON Database for JavaScript
+slug: json-database.html
+---
+
 # RxDB - JSON Database for JavaScript
 
 

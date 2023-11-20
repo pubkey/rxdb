@@ -1,3 +1,9 @@
+---
+title: What is a realtime database?
+slug: realtime-database.html
+---
+
+
 # What is a realtime database?
 
 I have been building [RxDB](https://rxdb.info/), a NoSQL **realtime** JavaScript database for many years.
