@@ -30,6 +30,9 @@ The limit of how much data you can store in IndexedDB depends on two factors: Wh
 
 The problem is, that you have no chance to really predict how much data can be stored. So you have to make assumptions that are hopefully true for all of your users. Also, you have no way to increase that space like you would add another hard drive to your backend server. Once your clients reach the limit, you likely have to rewrite big parts of your applications.
 
+
+UPDATE (2023): Newer versions of browsers can store way more data, for example firefox stores up to 10% of the total disk size. For an overview about how much can be stored, read [this guide](https://developer.mozilla.org/en-US/docs/Web/API/Storage_API/Storage_quotas_and_eviction_criteria)
+
 ## Browser storage is not really persistent
 
 When data is stored inside IndexedDB or one of the other storage APIs, it cannot be trusted to stay there forever.
