@@ -214,15 +214,11 @@ function setCallToActionOnce() {
     }
 
 
-    console.log('setCallToActionOnce()');
     var positionReferenceElement = document.querySelector('.navbar__items');
     if (!positionReferenceElement) {
-        console.log('not laoded yet');
         // not loaded yet!
         return;
     }
-
-    console.log('--- 1');
 
     var newElementWrapper = document.createElement('div');
     newElementWrapper.classList.add('call-to-action');
