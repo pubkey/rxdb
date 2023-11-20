@@ -468,8 +468,8 @@ Get started now by [reading the docs](https://rxdb.info/quickstart.html) or expl
 
 - [Check out how you can contribute to this project](./docs-src/contribute.md).
 - [Read this when you have found a bug](./orga/bug-checklist.md)
-- [Buy access to the premium plugins](https://rxdb.info/premium.html)
-- [Join us at discord to get help](https://rxdb.info/chat.html)
+- [Buy access to the premium plugins](https://rxdb.info/premium)
+- [Join us at discord to get help](https://rxdb.info/chat)
 
 
 <!-- 

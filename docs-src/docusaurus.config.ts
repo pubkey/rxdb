@@ -54,7 +54,7 @@ const config: Config = {
         },
         docs: {
           sidebarPath: './sidebars.js',
-          editUrl: 'https://github.com/pubkey/rxdb/tree/main/docs/',
+          editUrl: 'https://github.com/pubkey/rxdb/tree/main/docs-src/',
           routeBasePath: '',
           path: './docs',
         },

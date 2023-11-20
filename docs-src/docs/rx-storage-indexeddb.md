@@ -16,7 +16,7 @@ The IndexedDB `RxStorage` is based on plain IndexedDB and can be used in browser
 
 ### Cons
 
-- It is part of the [👑 RxDB Premium](https://rxdb.info/premium.html) plugin that must be purchased.
+- It is part of the [👑 RxDB Premium](/premium) plugin that must be purchased.
 - Only runs on runtimes that support [IndexedDB v2](https://caniuse.com/indexeddb2), so it does not work on Internet Explorer. 
 
 ## Usage

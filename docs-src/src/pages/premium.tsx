@@ -49,7 +49,6 @@ export default function Home() {
         <Layout
             title={`Premium Plugins - ${siteConfig.title}`}
             description="RxDB plugins for professionals. FAQ, pricing and license"
-            slug="premium.html"
         >
             <main>
                 <div className="block first">

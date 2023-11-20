@@ -15,7 +15,7 @@ This [RxStorage](./rx-storage.md) is based on [SQLite](https://www.sqlite.org/in
 
 ### Cons
 
-- It is part of [👑 RxDB Premium](https://rxdb.info/premium.html)
+- It is part of [👑 RxDB Premium](/premium)
 
 ### Requirements
 

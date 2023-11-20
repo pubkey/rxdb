@@ -8,7 +8,7 @@ slug: query-optimizer.html
 The query optimizer can be used to determine which index is the best to use for a given query.
 Because RxDB is used in client side applications, it cannot do any background checks or measurements to optimize the query plan because that would cause significant performance problems.
 
-**NOTICE:** The query optimizer is part of the [👑 RxDB Premium](https://rxdb.info/premium.html) plugin that must be purchased. It is not part of the default RxDB module.
+**NOTICE:** The query optimizer is part of the [👑 RxDB Premium](/premium) plugin that must be purchased. It is not part of the default RxDB module.
 
 ## Usage
 

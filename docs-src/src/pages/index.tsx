@@ -1046,7 +1046,7 @@ export default function Home() {
                       </ul>
                     </div>
                     <a
-                      href="/premium.html"
+                      href="/premium"
                       onClick={() => trigger('premium_request', 1)}
                     >
                       <div className="buy-option-action bg-middle hover-shadow-middle">
@@ -1129,7 +1129,7 @@ export default function Home() {
                   Join the Chat
                 </div>
               </a>
-              <a href="/premium.html" onClick={() => trigger('premium_request', 1)}>
+              <a href="/premium" onClick={() => trigger('premium_request', 1)}>
                 <div
                   className="button"
                   style={{ top: '40%', left: '20%', marginLeft: '-70.5px' }}
