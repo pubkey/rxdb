@@ -90,7 +90,7 @@ article .img-padding {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--color-top);
+  background: var(--color-top) !important;
   -webkit-border-radius: 1ex;
   -webkit-box-shadow: 0px 1px 2px rgba(0, 0, 0, 0.75);
 }

@@ -33,7 +33,7 @@ export default function NotFoundContent({ className }) {
           </p>
 
           <p>Maybe one of these can help you to find the desired content:</p>
-          <div class="ul-container">
+          <div className="ul-container">
             <ul>
               <li>
                 <a href="https://rxdb.info/quickstart.html">RxDB Documentation</a>

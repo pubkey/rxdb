@@ -1,4 +1,27 @@
-import { trigger } from '../../src/components/trigger-event';
+function trigger(type, value) {
+    console.log('window trigger: ' + type + ': ' + value);
+
+    // reddit
+    if (typeof window.rdt === 'function') {
+        window.rdt('track', 'Lead', {
+            transactionId: type + '-' + new Date().getTime(),
+            value: value
+        });
+    }
+
+    // google analytics
+    if (typeof window.gtag === 'function') {
+        window.gtag(
+            'event',
+            type,
+            {
+                value,
+                currency: 'EUR'
+            }
+        );
+    }
+}
+window.trigger = trigger;
 
 console.log('load analytics code');
 
