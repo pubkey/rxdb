@@ -78,7 +78,9 @@ leaderElector.onduplicate = async () => {
 
 In this example the leader is marked with the crown ♛
 
-![leader-election.gif](./files/leader-election.gif)
+<p align="center">
+    <img src="./files/leader-election.gif" alt="Leader Election" width="600" />
+</p>
 
 ## Try it out
 

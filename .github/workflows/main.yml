@@ -396,7 +396,10 @@ jobs:
 
       - run: npm run build:rollup
 
-      - run: npm run docs:landingpage:build
+      - name: test docs build
+        run: |
+          npm run docs:install
+          npm run docs:build
 
   test-code-style:
     runs-on: ubuntu-22.04

@@ -96,7 +96,7 @@ const config: Config = {
           // },
           // { to: '/blog', label: 'Blog', position: 'left' },
           {
-            href: '/premium.html',
+            href: 'premium',
             label: 'Pricing',
             position: 'right',
           },
@@ -111,7 +111,7 @@ const config: Config = {
             position: 'right',
           },
           {
-            to: '/chat.html',
+            to: 'chat',
             target: '_blank',
             label: 'Chat',
             position: 'right',
@@ -125,8 +125,16 @@ const config: Config = {
             title: 'Docs',
             items: [
               {
-                label: 'Tutorial',
-                to: '/docs/intro',
+                label: 'Quickstart',
+                to: '/quickstart.html',
+              },
+              {
+                label: 'Storage',
+                to: '/rx-storage.html',
+              },
+              {
+                label: 'Replication',
+                to: '/replication.html',
               },
             ],
           },
@@ -134,16 +142,21 @@ const config: Config = {
             title: 'Community',
             items: [
               {
-                label: 'Stack Overflow',
-                href: 'https://stackoverflow.com/questions/tagged/docusaurus',
+                label: 'Github',
+                href: 'https://github.com/pubkey/rxdb',
               },
               {
                 label: 'Discord',
-                href: 'https://discordapp.com/invite/docusaurus',
+                target: '_blank',
+                href: '/chat',
               },
               {
                 label: 'Twitter',
-                href: 'https://twitter.com/docusaurus',
+                href: 'https://twitter.com/intent/user?screen_name=rxdbjs',
+              },
+              {
+                label: 'Stack Overflow',
+                href: 'https://stackoverflow.com/questions/tagged/rxdb',
               },
             ],
           },
@@ -151,16 +164,14 @@ const config: Config = {
             title: 'More',
             items: [
               {
-                label: 'Blog',
-                to: '/blog',
-              },
-              {
-                label: 'GitHub',
-                href: 'https://github.com/facebook/docusaurus',
+                label: 'Pricing',
+                target: '_blank',
+                href: '/premium'
               },
               {
                 label: 'Imprint',
-                href: 'imprint.html',
+                target: '_blank',
+                href: '/imprint',
               },
             ],
           },

@@ -5,8 +5,8 @@ If you are a **single developer** and you use RxDB in your **side project**, you
 
 ## Open Tasks
 
+- Add a [local search](https://github.com/cmfcmf/docusaurus-search-local) plugin to the docusaurus docs. The search-bar must only appear on the documentation pages, not on the landingpage.
 
-- Set `"type": "module"` in the `package.json` and fix every problem that occurs with that change. [related](https://github.com/pubkey/rxdb/pull/4202)
 - Update **all** [open PRs from the renovate bot](https://github.com/pubkey/rxdb/pulls?q=is%3Apr+is%3Aopen+by%3A%40renovate) and ensure that the CI is green.
 
 (This list will be regularly updated with new Tasks)

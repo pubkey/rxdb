@@ -1,4 +1,4 @@
-# Database Replication
+# RxDB Database Replication Protocol
 
 The RxDB replication protocol provides the ability to replicate the database state in **realtime** between the clients and the server.
 

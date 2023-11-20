@@ -11,7 +11,7 @@ export default function NotFoundContent({ className }) {
             <a href="/">
               <div style={{ textAlign: 'center' }}>
                 <img
-                  src="./files/logo/rxdb_javascript_database.svg"
+                  src="https://rxdb.info/files/logo/rxdb_javascript_database.svg"
                   alt="RxDB"
                   width="160"
                 />

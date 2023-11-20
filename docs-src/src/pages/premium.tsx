@@ -5,7 +5,7 @@ import { ensureNotFalsy, lastOfArray } from '../../../';
 import { AVERAGE_FRONT_END_DEVELOPER_SALARY_BY_COUNTRY } from '../components/salaries';
 import { LicensePeriod, PACKAGE_PRICE, PackageName, PriceCalculationInput, ProjectAmount, calculatePrice } from '../components/price-calculator';
 import { trigger } from '../components/trigger-event';
-import { getDatabase } from '../components/database';
+import { getDatabase, hasIndexedDB } from '../components/database';
 
 type FormValueDocData = {
     homeCountry: string;
@@ -21,6 +21,9 @@ export default function Home() {
 
     useEffect(() => {
         (async () => {
+            if (!hasIndexedDB()) {
+                return;
+            }
             const database = await getDatabase();
             const formValueDoc = await database.getLocal<FormValueDocData>(FORM_VALUE_DOCUMENT_ID);
             if (formValueDoc) {
@@ -45,12 +48,14 @@ export default function Home() {
     return (
         <Layout
             title={`Premium Plugins - ${siteConfig.title}`}
-            description="RxDB plugins for professionals. FAQ, pricing and license">
+            description="RxDB plugins for professionals. FAQ, pricing and license"
+            slug="premium.html"
+        >
             <main>
                 <div className="block first">
                     <div className="content centered">
                         <h2>
-                        👑 <b className="underline">RxDB</b> Premium Plugins
+                            👑 <b className="underline">RxDB</b> Premium Plugins
                         </h2>
                         <p style={{ width: '80%' }}>
                             To make RxDB a sustainable project, some plugins are not part of the

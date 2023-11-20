@@ -13,6 +13,14 @@ import {
 
 let dbPromise;
 
+/**
+ * Server side rendering has no IndexedDB API
+ * so we have to skip using the database here.
+ */
+export function hasIndexedDB() {
+    return typeof window !== 'undefined' && window.indexedDB;
+}
+
 export function getDatabase(): Promise<RxDatabase> {
     if (!dbPromise) {
         dbPromise = (async () => {

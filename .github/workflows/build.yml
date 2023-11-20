@@ -29,35 +29,10 @@ jobs:
       - name: build code
         run: npm run build
       
-      # TODO move from gitbook to honkit
-      # https://github.com/honkit/honkit
-      # so we do not need this
-      - name: downgrade nodejs for gitbook
-        uses: actions/setup-node@v4.0.0
-        with:
-          node-version: 13.8.0
-
-      - name: reinstall with older node version
-        run: |
-          node -v
-          rm -r node_modules/
-          npm install
-
       - name: build docs
         run: |
+          npm run docs:install
           npm run docs:build
-
-      - name: Update node for landingpage
-        uses: actions/setup-node@v4.0.0
-        with:
-          node-version-file: '.nvmrc'
-
-      - name: build landingpage
-        run: |
-          node -v
-          rm -r node_modules/
-          npm install
-          npm run docs:landingpage:build
 
       - name: Commit files
         run: |

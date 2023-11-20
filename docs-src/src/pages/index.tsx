@@ -21,7 +21,8 @@ import {
 } from '../../../';
 import {
   colors,
-  getDatabase
+  getDatabase,
+  hasIndexedDB
 } from '../components/database';
 import React, { useEffect } from 'react';
 import { trigger } from '../components/trigger-event';
@@ -39,7 +40,6 @@ type BeatingValuesType = {
   color: string;
 };
 
-const dbPromise = getDatabase();
 
 let animationStarted = false;
 async function startLandingpageAnimation() {
@@ -66,7 +66,10 @@ async function startLandingpageAnimation() {
   }
 
 
-  const database = await dbPromise;
+  if (!hasIndexedDB()) {
+    return;
+  }
+  const database = await getDatabase();
 
 
   // once insert if not exists
