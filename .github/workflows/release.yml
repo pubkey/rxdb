@@ -64,6 +64,7 @@ jobs:
       - name: build docs
         if: steps.vars.outputs.prerelease == 'false'
         run: |
+          (cd docs-src && npm run install)
           npm run docs:build
 
       - name: Setup Node.js environment
