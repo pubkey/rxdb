@@ -166,6 +166,17 @@ export function isSelectorSatisfiedByIndex(index, selector) {
   if (hasMoreThenOneUpperBoundaryField) {
     return false;
   }
+  var selectorFields = new Set(Object.keys(selector));
+  for (var fieldName of index) {
+    if (selectorFields.size === 0) {
+      break;
+    }
+    if (selectorFields.has(fieldName)) {
+      selectorFields.delete(fieldName);
+    } else {
+      return false;
+    }
+  }
   return true;
 }
 export function getMatcherQueryOpts(operator, operatorValue) {
