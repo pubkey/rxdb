@@ -72,7 +72,7 @@ window.renderLogo = async function (selector, mode) {
     }
 
 
-    const svg = d3.select(selector).append('svg')
+    const svg = window.d3.select(selector).append('svg')
         .attr(':xmlns:dc', 'http://purl.org/dc/elements/1.1/')
         .attr(':xmlns:cc', 'http://creativecommons.org/ns#')
         .attr(':xmlns:rdf', 'http://www.w3.org/1999/02/22-rdf-syntax-ns#')
