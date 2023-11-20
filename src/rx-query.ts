@@ -475,6 +475,10 @@ export class RxQueryBase<
     }
 
     enableLimitBuffer(bufferSize: number) {
+        if (this._limitBufferSize !== null) {
+            // Limit buffer has already been enabled, do nothing:
+            return this;
+        }
         if (this._lastExecStart !== 0) {
             console.error('Can\'t use limit buffer if query has already executed');
             return this;

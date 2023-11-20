@@ -277,6 +277,10 @@ export var RxQueryBase = /*#__PURE__*/function () {
     throw pluginMissing('query-builder');
   };
   _proto.enableLimitBuffer = function enableLimitBuffer(bufferSize) {
+    if (this._limitBufferSize !== null) {
+      // Limit buffer has already been enabled, do nothing:
+      return this;
+    }
     if (this._lastExecStart !== 0) {
       console.error('Can\'t use limit buffer if query has already executed');
       return this;
