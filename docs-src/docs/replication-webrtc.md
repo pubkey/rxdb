@@ -55,20 +55,34 @@ const replicationPool = await replicateWebRTC(
          * To learn how to create a custom connection handler, read the source code,
          * it is pretty simple.
          */
-        connectionHandlerCreator: getConnectionHandlerSimplePeer(
-            'wss://example.com:8080',
-            // only in Node.js, we need the wrtc library
-            // because Node.js does not contain the WebRTC API.
-            require('wrtc')
-        ),
+        connectionHandlerCreator: getConnectionHandlerSimplePeer('wss://example.com:8080'),
         pull: {},
         push: {}
     }
 );
 replicationPool.error$.subscribe(err => { /* ... */ });
 replicationPool.cancel();
-
 ```
+
+### Polyfill the WebRTC API in Node.js
+
+While all modern browsers support the WebRTC API, it is missing in Node.js which will throw the error `No WebRTC support: Specify opts.wrtc option in this environment`. Therefore you have to polyfill it with a compatible WebRTC polyfill. It is recommended to use the [node-datachannel package](https://github.com/murat-dogan/node-datachannel/tree/master/polyfill).
+
+```ts
+import nodeDatachannelPolyfill from 'node-datachannel/polyfill';
+const replicationPool = await replicateWebRTC(
+    {
+        /* ... */
+        connectionHandlerCreator: getConnectionHandlerSimplePeer(
+            'wss://example.com:8080',
+            nodeDatachannelPolyfill
+        )
+        /* ... */
+    }
+);
+```
+
+
 
 
 ## Live replications
