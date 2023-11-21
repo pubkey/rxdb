@@ -400,7 +400,7 @@ jobs:
       - name: test docs build
         run: |
           npm -v
-          (cd docs-src && npm run install)
+          (cd docs-src && npm install)
           npm run docs:build
 
   test-code-style:
