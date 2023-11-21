@@ -42,6 +42,12 @@ jobs:
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
 
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v4.0.0
+        with:
+          node-version-file: ".nvmrc"
+          registry-url: "https://registry.npmjs.org"
+
       - name: Reuse npm cache folder
         uses: actions/cache@v3
         env:
@@ -55,24 +61,6 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-npm-rxdb-release-x3-
 
-      - name: Install old node version so it works with the shitty gitbook
-        if: steps.vars.outputs.prerelease == 'false'
-        run: |
-          node -v
-          npm install
-
-      - name: build docs
-        if: steps.vars.outputs.prerelease == 'false'
-        run: |
-          (cd docs-src && npm install)
-          npm run docs:build
-
-      - name: Setup Node.js environment
-        uses: actions/setup-node@v4.0.0
-        with:
-          node-version-file: ".nvmrc"
-          registry-url: "https://registry.npmjs.org"
-
       - name: install npm dependencies
         run: |
           node -v
@@ -84,11 +72,13 @@ jobs:
         run: |
           node set-version.mjs ${{github.event.inputs.version}}
 
-      - name: build landingpage and pricing page
-        if: steps.vars.outputs.prerelease == 'false'
-        run: npm run docs:landingpage:build
-
       - run: npm run build
+
+      - name: build docs
+        if: steps.vars.outputs.prerelease == 'false'
+        run: |
+          (cd docs-src && npm install)
+          npm run docs:build
 
       - name: add git tag
         run: |
