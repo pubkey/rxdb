@@ -20,24 +20,15 @@ import {
 } from '../../plugins/replication-webrtc/index.mjs';
 
 import { randomString, wait, waitUntil } from 'async-test-util';
+import nodeDatachannelPolyfill from 'node-datachannel/polyfill';
 
 describe('replication-webrtc.test.ts', () => {
     if (!config.storage.hasReplication) {
         return;
     }
-    if (config.platform.isNode() || config.isDeno) {
-        /**
-         * We cannot run these tests in Node.js
-         * because the node WebRTC polyfill is broken
-         * and does not work on mac.
-         * @link https://github.com/node-webrtc/node-webrtc/issues/729
-         */
-        return;
-    }
 
     if (
-        !config.storage.hasPersistence ||
-        config.storage.name === 'memory' // TODO this fails in the CI but works locally
+        !config.storage.hasPersistence
     ) {
         return;
     }
@@ -50,7 +41,7 @@ describe('replication-webrtc.test.ts', () => {
         return;
     }
 
-    let wrtc: any;
+    const wrtc = config.platform.isNode() ? nodeDatachannelPolyfill : undefined;
     const signalingServerUrl: string = 'ws://localhost:18006';
     describe('utils', () => {
         describe('.isMasterInWebRTCReplication()', () => {
@@ -117,7 +108,10 @@ describe('replication-webrtc.test.ts', () => {
                     secret,
                     // connectionHandlerCreator: getConnectionHandlerWebtorrent([webtorrentTrackerUrl]),
                     // connectionHandlerCreator: getConnectionHandlerP2PCF(),
-                    connectionHandlerCreator: getConnectionHandlerSimplePeer(signalingServerUrl, wrtc),
+                    connectionHandlerCreator: getConnectionHandlerSimplePeer(
+                        signalingServerUrl,
+                        wrtc
+                    ),
                     pull: {},
                     push: {}
                 });
