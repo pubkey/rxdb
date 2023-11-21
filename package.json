@@ -434,7 +434,7 @@
     "@types/clone": "2.1.4",
     "@types/cors": "2.8.16",
     "@types/express": "4.17.21",
-    "@types/lokijs": "1.5.10",
+    "@types/lokijs": "1.5.13",
     "@types/simple-peer": "9.11.8",
     "@types/ws": "8.5.9",
     "ajv": "8.12.0",
