@@ -22,11 +22,8 @@ import {
 import { randomString, wait, waitUntil } from 'async-test-util';
 
 describe('replication-webrtc.test.ts', () => {
-    if (!config.storage.hasReplication) {
-        return;
-    }
-
     if (
+        !config.storage.hasReplication ||
         !config.storage.hasPersistence
     ) {
         return;
