@@ -20,7 +20,6 @@ import {
 } from '../../plugins/replication-webrtc/index.mjs';
 
 import { randomString, wait, waitUntil } from 'async-test-util';
-import nodeDatachannelPolyfill from 'node-datachannel/polyfill';
 
 describe('replication-webrtc.test.ts', () => {
     if (!config.storage.hasReplication) {
@@ -41,8 +40,17 @@ describe('replication-webrtc.test.ts', () => {
         return;
     }
 
-    const wrtc = config.platform.isNode() ? nodeDatachannelPolyfill : undefined;
+    let wrtc: any;
     const signalingServerUrl: string = 'ws://localhost:18006';
+    describe('init', () => {
+        it('import WebRTC polyfills on Node.js', async () => {
+            if (config.platform.isNode()) {
+                const module = await import('node-datachannel/polyfill');
+                console.dir(module);
+                wrtc = module.default;
+            }
+        });
+    });
     describe('utils', () => {
         describe('.isMasterInWebRTCReplication()', () => {
             new Array(10).fill(0).forEach(() => {
