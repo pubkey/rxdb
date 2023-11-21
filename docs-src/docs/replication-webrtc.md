@@ -66,7 +66,7 @@ replicationPool.cancel();
 
 ### Polyfill the WebRTC API in Node.js
 
-While all modern browsers support the WebRTC API, it is missing in Node.js which will throw the error `No WebRTC support: Specify opts.wrtc option in this environment`. Therefore you have to polyfill it with a compatible WebRTC polyfill. It is recommended to use the [node-datachannel package](https://github.com/murat-dogan/node-datachannel/tree/master/polyfill).
+While all modern browsers support the WebRTC API, it is missing in Node.js which will throw the error `No WebRTC support: Specify opts.wrtc option in this environment`. Therefore you have to polyfill it with a compatible WebRTC polyfill. It is recommended to use the [node-datachannel package](https://github.com/murat-dogan/node-datachannel/tree/master/polyfill) which **does not** come with RxDB but has to be installed before via `npm install node-datachannel --save`.
 
 ```ts
 import nodeDatachannelPolyfill from 'node-datachannel/polyfill';
@@ -81,9 +81,6 @@ const replicationPool = await replicateWebRTC(
     }
 );
 ```
-
-
-
 
 ## Live replications
 
