@@ -22,7 +22,7 @@
 
 <p align="center">
   <a href="https://rxdb.info/">
-    <img src="./docs-src/files/logo/logo_text.svg" width="380px" alt="JavaScript Database" />
+    <img src="./docs-src/static/files/logo/logo_text.svg" width="380px" alt="JavaScript Database" />
   </a>
   <br />
   <br />
@@ -54,7 +54,7 @@
 <br />
 
 <h2>
-  <img height="16" width="16" src="./docs-src/files/logo/logo.svg">&nbsp;&nbsp;What is RxDB?
+  <img height="16" width="16" src="./docs-src/static/files/logo/logo.svg">&nbsp;&nbsp;What is RxDB?
 </h2>
 
 <p align="justify">
@@ -68,8 +68,8 @@
 Use the [quickstart](https://rxdb.info/quickstart.html), read the [documentation](https://rxdb.info/install.html) or explore the [example projects](https://github.com/pubkey/rxdb/tree/master/examples).
 
 <h2>
-  <img height="16" width="16" src="./docs-src/files/icons/with-gradient/multiplayer.svg">&nbsp;&nbsp;Multiplayer realtime applications
-  <img height="36" src="./docs-src/files/icons/with-gradient/text/made-easy.svg">
+  <img height="16" width="16" src="./docs-src/static/files/icons/with-gradient/multiplayer.svg">&nbsp;&nbsp;Multiplayer realtime applications
+  <img height="36" src="./docs-src/static/files/icons/with-gradient/text/made-easy.svg">
 </h2>
 
 
@@ -78,7 +78,7 @@ Use the [quickstart](https://rxdb.info/quickstart.html), read the [documentation
 
 
 <h2>
-  <img height="16" width="16" src="./docs-src/files/icons/with-gradient/replication.svg">&nbsp;&nbsp;Replicate with your <b style="color: #e6008d;">existing infrastructure</b>
+  <img height="16" width="16" src="./docs-src/static/files/icons/with-gradient/replication.svg">&nbsp;&nbsp;Replicate with your <b style="color: #e6008d;">existing infrastructure</b>
 </h2>
 
 RxDB provides an easy to implement, <b>battle-tested</b> <a href="https://rxdb.info/replication.html"> replication protocol</a> for realtime sync with your existing infrastructure.<br />
@@ -86,7 +86,7 @@ There are also plugins to easily replicate with <a href="https://rxdb.info/repli
 
 
 <h2>
-  <img height="16" width="16" src="./docs-src/files/icons/with-gradient/storage-layer.svg">&nbsp;&nbsp;<b style="color: #8D2089;">Flexible</b> storage layer
+  <img height="16" width="16" src="./docs-src/static/files/icons/with-gradient/storage-layer.svg">&nbsp;&nbsp;<b style="color: #8D2089;">Flexible</b> storage layer
 </h2>
 
 RxDB is based on a [storage interface](https://rxdb.info/rx-storage.html) that enables you to swap out the underlying storage engine. This increases **code reuse** because the same database code can be used in different JavaScript environments by just switching out the storage settings.
@@ -102,24 +102,24 @@ No matter what kind of runtime you have, as long as it runs JavaScript, it can r
   <img height="13" src="https://cdnjs.cloudflare.com/ajax/libs/browser-logos/39.2.2/edge/edge_24x24.png" />
   <img height="13" src="https://cdnjs.cloudflare.com/ajax/libs/browser-logos/39.2.2/archive/internet-explorer_9-11/internet-explorer_9-11_24x24.png" />
   <a href="./examples/angular">Browsers</a>
-  <img height="13" src="docs-src/files/icons/nodejs.png" />
+  <img height="13" src="docs-src/static/files/icons/nodejs.png" />
   <a href="./examples/node">Node.js</a>
-  <img height="13" src="docs-src/files/icons/electron.png" />
+  <img height="13" src="docs-src/static/files/icons/electron.png" />
   <a href="https://rxdb.info/electron-database.html">Electron</a>
-  <img height="13" src="docs-src/files/icons/react-native.png" />
+  <img height="13" src="docs-src/static/files/icons/react-native.png" />
   <a href="https://rxdb.info/react-native-database.html">React Native</a>
-  <img height="13" src="docs-src/files/icons/capacitor.svg" />
+  <img height="13" src="docs-src/static/files/icons/capacitor.svg" />
   <a href="https://rxdb.info/capacitor-database.html">Capacitor</a>
-  <img height="13" src="docs-src/files/icons/nativescript.svg" />
+  <img height="13" src="docs-src/static/files/icons/nativescript.svg" />
   <a href="https://github.com/herefishyfish/rxdb-nativescript">NativeScript</a>
-  <img height="13" src="docs-src/files/icons/flutter.svg" />
+  <img height="13" src="docs-src/static/files/icons/flutter.svg" />
   <a href="./examples/flutter">Flutter</a>
 </h4>
 
 
 
 <h2>
-  <img height="16" width="16" src="./docs-src/files/icons/with-gradient/rocket.svg">&nbsp;&nbsp;Quick start
+  <img height="16" width="16" src="./docs-src/static/files/icons/with-gradient/rocket.svg">&nbsp;&nbsp;Quick start
 </h2>
 
 
@@ -195,7 +195,7 @@ Continue with the [quickstart here](https://rxdb.info/quickstart.html).
 
 
 <h2>
-  <img height="16" width="16" src="./docs-src/files/icons/with-gradient/checklist.svg">&nbsp;&nbsp;More Features (click to toggle)
+  <img height="16" width="16" src="./docs-src/static/files/icons/with-gradient/checklist.svg">&nbsp;&nbsp;More Features (click to toggle)
 </h2>
 
 
@@ -455,7 +455,7 @@ And for any other use case, there are [many more plugins and addons](https://rxd
 
 
 <h2>
-  <img height="16" width="16" src="./docs-src/files/icons/with-gradient/rocket.svg">&nbsp;&nbsp;Get started
+  <img height="16" width="16" src="./docs-src/static/files/icons/with-gradient/rocket.svg">&nbsp;&nbsp;Get started
 </h2>
 
 
@@ -463,7 +463,7 @@ Get started now by [reading the docs](https://rxdb.info/quickstart.html) or expl
 
 
 <h2>
-  <img height="16" width="16" src="./docs-src/files/icons/with-gradient/contribute.svg">&nbsp;&nbsp;Support and Contribute
+  <img height="16" width="16" src="./docs-src/static/files/icons/with-gradient/contribute.svg">&nbsp;&nbsp;Support and Contribute
 </h2>
 
 - [Check out how you can contribute to this project](./docs-src/contribute.md).
