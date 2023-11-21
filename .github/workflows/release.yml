@@ -42,6 +42,12 @@ jobs:
           git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git config --local user.name "github-actions[bot]"
 
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v4.0.0
+        with:
+          node-version-file: ".nvmrc"
+          registry-url: "https://registry.npmjs.org"
+
       - name: Reuse npm cache folder
         uses: actions/cache@v3
         env:
@@ -50,36 +56,10 @@ jobs:
           path: |
             ~/.npm
             ./node_modules
-          key: ${{ runner.os }}-npm-rxdb-release-x2-${{ hashFiles('**/package.json') }}
+            ./docs-src/node_modules
+          key: ${{ runner.os }}-npm-rxdb-release-x3-${{ hashFiles('**/package.json') }}
           restore-keys: |
-            ${{ runner.os }}-npm-rxdb-release-x2-
-
-      # Build the docs, only do this if it is not a prerelease.
-      # TODO move from gitbook to honkit
-      # https://github.com/honkit/honkit
-      # so we do not need this
-      - name: downgrade nodejs for gitbook
-        if: steps.vars.outputs.prerelease == 'false'
-        uses: actions/setup-node@v4.0.0
-        with:
-          node-version: 13.8.0
-
-      - name: Install old node version so it works with the shitty gitbook
-        if: steps.vars.outputs.prerelease == 'false'
-        run: |
-          node -v
-          npm install
-
-      - name: build docs
-        if: steps.vars.outputs.prerelease == 'false'
-        run: |
-          npm run docs:build
-
-      - name: Setup Node.js environment
-        uses: actions/setup-node@v4.0.0
-        with:
-          node-version-file: ".nvmrc"
-          registry-url: "https://registry.npmjs.org"
+            ${{ runner.os }}-npm-rxdb-release-x3-
 
       - name: install npm dependencies
         run: |
@@ -92,11 +72,13 @@ jobs:
         run: |
           node set-version.mjs ${{github.event.inputs.version}}
 
-      - name: build landingpage and pricing page
-        if: steps.vars.outputs.prerelease == 'false'
-        run: npm run docs:landingpage:build
-
       - run: npm run build
+
+      - name: build docs
+        if: steps.vars.outputs.prerelease == 'false'
+        run: |
+          (cd docs-src && npm install)
+          npm run docs:build
 
       - name: add git tag
         run: |

@@ -19,6 +19,7 @@ export function startTestServers() {
         __dirname,
         '../../',
         'docs-src',
+        'static',
         'files'
     );
     console.log('staticFilesPath: ' + staticFilesPath);
