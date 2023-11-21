@@ -11,7 +11,6 @@
   },
   "ignorePaths": [
     "docs-src/static/files/logo/package.json",
-    "docs/files/files/logo/package.json",
     "docs/files/logo/package.json",
     "examples/ionic2/package.json",
     "examples/flutter/pubspec.yaml"
