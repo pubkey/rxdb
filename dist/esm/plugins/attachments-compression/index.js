@@ -1,25 +1,27 @@
 import { wrapRxStorageInstance } from "../../plugin-helpers.js";
-import { deflate, inflate } from 'pako';
 import { arrayBufferToBase64, base64ToArrayBuffer, ensureNotFalsy, flatClone } from "../utils/index.js";
-export function compressBase64(_mode, base64String) {
+
+/**
+ * @link https://github.com/WICG/compression/blob/main/explainer.md
+ */
+export async function compressBase64(mode, base64String) {
   var arrayBuffer = base64ToArrayBuffer(base64String);
-  var result = deflate(arrayBuffer, {});
+  var stream = ensureNotFalsy(new Response(arrayBuffer).body).pipeThrough(new CompressionStream(mode));
+  var result = await new Response(stream).arrayBuffer();
   return arrayBufferToBase64(result);
 }
-export function decompressBase64(_mode, base64String) {
+export async function decompressBase64(mode, base64String) {
   var arrayBuffer = base64ToArrayBuffer(base64String);
-  var result = inflate(arrayBuffer);
+  var stream = ensureNotFalsy(new Response(arrayBuffer).body).pipeThrough(new DecompressionStream(mode));
+  var result = await new Response(stream).arrayBuffer();
   return arrayBufferToBase64(result);
 }
 
 /**
  * A RxStorage wrapper that compresses attachment data on writes
  * and decompresses the data on reads.
- * This is currently using the 'pako' module
- * @link https://www.npmjs.com/package/pako
  *
- * In the future when firefox supports the CompressionStream API,
- * we should switch to using the native API in browsers and the zlib package in node.js
+ * This is using the CompressionStream API,
  * @link https://caniuse.com/?search=compressionstream
  */
 export function wrappedAttachmentsCompressionStorage(args) {
@@ -29,9 +31,6 @@ export function wrappedAttachmentsCompressionStorage(args) {
         return args.storage.createStorageInstance(params);
       }
       var mode = params.schema.attachments.compression;
-      if (mode !== 'deflate') {
-        throw new Error('unknown compression mode ' + mode);
-      }
       async function modifyToStorage(docData) {
         await Promise.all(Object.values(docData._attachments).map(async attachment => {
           if (!attachment.data) {

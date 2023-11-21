@@ -196,14 +196,14 @@ async function startReplicationUpstream(state) {
         assumedMasterDoc.metaDocument.isResolvedConflict !== fullDocData._rev && (await state.input.conflictHandler({
           realMasterState: assumedMasterDoc.docData,
           newDocumentState: docData
-        }, 'upstream-check-if-equal')).isEqual ||
+        }, 'upstream-check-if-equal')).isEqual || (
         /**
          * If the master works with _rev fields,
          * we use that to check if our current doc state
          * is different from the assumedMasterDoc.
          */
 
-        assumedMasterDoc && assumedMasterDoc.docData._rev && (0, _index.parseRevision)(fullDocData._rev).height === fullDocData._meta[state.input.identifier]) {
+        assumedMasterDoc && assumedMasterDoc.docData._rev && (0, _index.parseRevision)(fullDocData._rev).height === fullDocData._meta[state.input.identifier])) {
           return;
         }
         writeRowsToMasterIds.push(docId);

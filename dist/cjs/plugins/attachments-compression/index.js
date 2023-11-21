@@ -7,27 +7,28 @@ exports.compressBase64 = compressBase64;
 exports.decompressBase64 = decompressBase64;
 exports.wrappedAttachmentsCompressionStorage = wrappedAttachmentsCompressionStorage;
 var _pluginHelpers = require("../../plugin-helpers.js");
-var _pako = require("pako");
 var _index = require("../utils/index.js");
-function compressBase64(_mode, base64String) {
+/**
+ * @link https://github.com/WICG/compression/blob/main/explainer.md
+ */
+async function compressBase64(mode, base64String) {
   var arrayBuffer = (0, _index.base64ToArrayBuffer)(base64String);
-  var result = (0, _pako.deflate)(arrayBuffer, {});
+  var stream = (0, _index.ensureNotFalsy)(new Response(arrayBuffer).body).pipeThrough(new CompressionStream(mode));
+  var result = await new Response(stream).arrayBuffer();
   return (0, _index.arrayBufferToBase64)(result);
 }
-function decompressBase64(_mode, base64String) {
+async function decompressBase64(mode, base64String) {
   var arrayBuffer = (0, _index.base64ToArrayBuffer)(base64String);
-  var result = (0, _pako.inflate)(arrayBuffer);
+  var stream = (0, _index.ensureNotFalsy)(new Response(arrayBuffer).body).pipeThrough(new DecompressionStream(mode));
+  var result = await new Response(stream).arrayBuffer();
   return (0, _index.arrayBufferToBase64)(result);
 }
 
 /**
  * A RxStorage wrapper that compresses attachment data on writes
  * and decompresses the data on reads.
- * This is currently using the 'pako' module
- * @link https://www.npmjs.com/package/pako
  *
- * In the future when firefox supports the CompressionStream API,
- * we should switch to using the native API in browsers and the zlib package in node.js
+ * This is using the CompressionStream API,
  * @link https://caniuse.com/?search=compressionstream
  */
 function wrappedAttachmentsCompressionStorage(args) {
@@ -37,9 +38,6 @@ function wrappedAttachmentsCompressionStorage(args) {
         return args.storage.createStorageInstance(params);
       }
       var mode = params.schema.attachments.compression;
-      if (mode !== 'deflate') {
-        throw new Error('unknown compression mode ' + mode);
-      }
       async function modifyToStorage(docData) {
         await Promise.all(Object.values(docData._attachments).map(async attachment => {
           if (!attachment.data) {

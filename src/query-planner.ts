@@ -171,6 +171,7 @@ export function isSelectorSatisfiedByIndex(
                 .find(([op, _value]) => !LOGICAL_OPERATORS.has(op));
             return hasNonLogicOperator;
         });
+
     if (hasNonMatchingOperator) {
         return false;
     }
@@ -211,6 +212,19 @@ export function isSelectorSatisfiedByIndex(
     if (hasMoreThenOneUpperBoundaryField) {
         return false;
     }
+
+    const selectorFields = new Set(Object.keys(selector));
+    for (const fieldName of index) {
+        if (selectorFields.size === 0) {
+            break;
+        }
+        if (selectorFields.has(fieldName)) {
+            selectorFields.delete(fieldName);
+        } else {
+            return false;
+        }
+    }
+
 
     return true;
 }
