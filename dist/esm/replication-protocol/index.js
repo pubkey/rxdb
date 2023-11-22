@@ -6,10 +6,10 @@
 
 import { BehaviorSubject, combineLatest, filter, firstValueFrom, mergeMap, Subject } from 'rxjs';
 import { getPrimaryFieldOfPrimaryKey } from "../rx-schema-helper.js";
-import { clone, ensureNotFalsy, PROMISE_RESOLVE_VOID } from "../plugins/utils/index.js";
+import { clone, ensureNotFalsy, flatClone, PROMISE_RESOLVE_VOID } from "../plugins/utils/index.js";
 import { getCheckpointKey } from "./checkpoint.js";
 import { startReplicationDownstream } from "./downstream.js";
-import { docStateToWriteDoc, writeDocToDocState } from "./helper.js";
+import { docStateToWriteDoc, getUnderlyingPersistentStorage, writeDocToDocState } from "./helper.js";
 import { startReplicationUpstream } from "./upstream.js";
 import { fillWriteDataForAttachmentsChange } from "../plugins/attachments/index.js";
 export * from "./checkpoint.js";
@@ -19,6 +19,9 @@ export * from "./meta-instance.js";
 export * from "./conflicts.js";
 export * from "./helper.js";
 export function replicateRxStorageInstance(input) {
+  input = flatClone(input);
+  input.forkInstance = getUnderlyingPersistentStorage(input.forkInstance);
+  input.metaInstance = getUnderlyingPersistentStorage(input.metaInstance);
   var checkpointKeyPromise = getCheckpointKey(input);
   var state = {
     primaryPath: getPrimaryFieldOfPrimaryKey(input.forkInstance.schema.primaryKey),
@@ -102,6 +105,7 @@ export function rxStorageInstanceToReplicationHandler(instance, conflictHandler,
  * (Used in the migration to ensure checkpoints are still valid)
  */
 keepMeta = false) {
+  instance = getUnderlyingPersistentStorage(instance);
   var hasAttachments = !!instance.schema.attachments;
   var primaryPath = getPrimaryFieldOfPrimaryKey(instance.schema.primaryKey);
   var replicationHandler = {
@@ -113,7 +117,7 @@ keepMeta = false) {
           if (hasAttachments) {
             docData = await fillWriteDataForAttachmentsChange(primaryPath, instance, clone(docData),
             /**
-             * Notice the the master never knows
+             * Notice that the master never knows
              * the client state of the document.
              * Therefore we always send all attachments data.
              */

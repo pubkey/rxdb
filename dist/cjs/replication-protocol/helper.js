@@ -4,6 +4,7 @@ Object.defineProperty(exports, "__esModule", {
   value: true
 });
 exports.docStateToWriteDoc = docStateToWriteDoc;
+exports.getUnderlyingPersistentStorage = getUnderlyingPersistentStorage;
 exports.stripAttachmentsDataFromMetaWriteRows = stripAttachmentsDataFromMetaWriteRows;
 exports.writeDocToDocState = writeDocToDocState;
 var _index = require("../plugins/utils/index.js");
@@ -44,5 +45,14 @@ function stripAttachmentsDataFromMetaWriteRows(state, rows) {
       previous: row.previous
     };
   });
+}
+function getUnderlyingPersistentStorage(instance) {
+  while (true) {
+    if (instance.underlyingPersistentStorage) {
+      instance = instance.underlyingPersistentStorage;
+    } else {
+      return instance;
+    }
+  }
 }
 //# sourceMappingURL=helper.js.map

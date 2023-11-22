@@ -37,4 +37,13 @@ export function stripAttachmentsDataFromMetaWriteRows(state, rows) {
     };
   });
 }
+export function getUnderlyingPersistentStorage(instance) {
+  while (true) {
+    if (instance.underlyingPersistentStorage) {
+      instance = instance.underlyingPersistentStorage;
+    } else {
+      return instance;
+    }
+  }
+}
 //# sourceMappingURL=helper.js.map

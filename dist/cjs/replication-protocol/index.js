@@ -100,6 +100,9 @@ Object.keys(_conflicts).forEach(function (key) {
  */
 
 function replicateRxStorageInstance(input) {
+  input = (0, _index.flatClone)(input);
+  input.forkInstance = (0, _helper.getUnderlyingPersistentStorage)(input.forkInstance);
+  input.metaInstance = (0, _helper.getUnderlyingPersistentStorage)(input.metaInstance);
   var checkpointKeyPromise = (0, _checkpoint.getCheckpointKey)(input);
   var state = {
     primaryPath: (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(input.forkInstance.schema.primaryKey),
@@ -183,6 +186,7 @@ function rxStorageInstanceToReplicationHandler(instance, conflictHandler, databa
  * (Used in the migration to ensure checkpoints are still valid)
  */
 keepMeta = false) {
+  instance = (0, _helper.getUnderlyingPersistentStorage)(instance);
   var hasAttachments = !!instance.schema.attachments;
   var primaryPath = (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(instance.schema.primaryKey);
   var replicationHandler = {
@@ -194,7 +198,7 @@ keepMeta = false) {
           if (hasAttachments) {
             docData = await (0, _index2.fillWriteDataForAttachmentsChange)(primaryPath, instance, (0, _index.clone)(docData),
             /**
-             * Notice the the master never knows
+             * Notice that the master never knows
              * the client state of the document.
              * Therefore we always send all attachments data.
              */
