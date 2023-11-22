@@ -39,10 +39,9 @@ import {
     getCheckpointKey
 } from './checkpoint.ts';
 import { startReplicationDownstream } from './downstream.ts';
-import { docStateToWriteDoc, writeDocToDocState } from './helper.ts';
+import { docStateToWriteDoc, getUnderlyingPersistentStorage, writeDocToDocState } from './helper.ts';
 import { startReplicationUpstream } from './upstream.ts';
 import { fillWriteDataForAttachmentsChange } from '../plugins/attachments/index.ts';
-import { getUnderlyingPersistentStorage } from '../rx-storage-helper.ts';
 
 
 export * from './checkpoint.ts';
