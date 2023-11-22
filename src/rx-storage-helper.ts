@@ -851,6 +851,18 @@ export function hasEncryption(jsonSchema: RxJsonSchema<any>): boolean {
     }
 }
 
+export function getUnderlyingPersistentStorage<RxDocType>(
+    instance: RxStorageInstance<RxDocType, any, any, any>
+): RxStorageInstance<RxDocType, any, any, any> {
+    while (true) {
+        if (instance.underlyingPersistentStorage) {
+            instance = instance.underlyingPersistentStorage;
+        } else {
+            return instance;
+        }
+    }
+}
+
 
 
 /**
