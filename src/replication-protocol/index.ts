@@ -32,13 +32,14 @@ import type {
 import {
     clone,
     ensureNotFalsy,
+    flatClone,
     PROMISE_RESOLVE_VOID
 } from '../plugins/utils/index.ts';
 import {
     getCheckpointKey
 } from './checkpoint.ts';
 import { startReplicationDownstream } from './downstream.ts';
-import { docStateToWriteDoc, writeDocToDocState } from './helper.ts';
+import { docStateToWriteDoc, getUnderlyingPersistentStorage, writeDocToDocState } from './helper.ts';
 import { startReplicationUpstream } from './upstream.ts';
 import { fillWriteDataForAttachmentsChange } from '../plugins/attachments/index.ts';
 
@@ -54,6 +55,9 @@ export * from './helper.ts';
 export function replicateRxStorageInstance<RxDocType>(
     input: RxStorageInstanceReplicationInput<RxDocType>
 ): RxStorageInstanceReplicationState<RxDocType> {
+    input = flatClone(input);
+    input.forkInstance = getUnderlyingPersistentStorage(input.forkInstance);
+    input.metaInstance = getUnderlyingPersistentStorage(input.metaInstance);
     const checkpointKeyPromise = getCheckpointKey(input);
     const state: RxStorageInstanceReplicationState<RxDocType> = {
         primaryPath: getPrimaryFieldOfPrimaryKey(input.forkInstance.schema.primaryKey),
@@ -170,6 +174,8 @@ export function rxStorageInstanceToReplicationHandler<RxDocType, MasterCheckpoin
      */
     keepMeta: boolean = false
 ): RxReplicationHandler<RxDocType, MasterCheckpointType> {
+    instance = getUnderlyingPersistentStorage(instance);
+
     const hasAttachments = !!instance.schema.attachments;
     const primaryPath = getPrimaryFieldOfPrimaryKey(instance.schema.primaryKey);
     const replicationHandler: RxReplicationHandler<RxDocType, MasterCheckpointType> = {
@@ -186,7 +192,7 @@ export function rxStorageInstanceToReplicationHandler<RxDocType, MasterCheckpoin
                                     instance,
                                     clone(docData),
                                     /**
-                                     * Notice the the master never knows
+                                     * Notice that the master never knows
                                      * the client state of the document.
                                      * Therefore we always send all attachments data.
                                      */

@@ -851,8 +851,6 @@ export function hasEncryption(jsonSchema: RxJsonSchema<any>): boolean {
     }
 }
 
-
-
 /**
  * Wraps the storage and simluates
  * delays. Mostly used in tests.

@@ -2,6 +2,7 @@ import type {
     BulkWriteRow,
     RxDocumentData,
     RxDocumentWriteData,
+    RxStorageInstance,
     RxStorageInstanceReplicationState,
     RxStorageReplicationMeta,
     WithDeletedAndAttachments
@@ -75,4 +76,16 @@ export function stripAttachmentsDataFromMetaWriteRows<RxDocType>(
             previous: row.previous
         };
     });
+}
+
+export function getUnderlyingPersistentStorage<RxDocType>(
+    instance: RxStorageInstance<RxDocType, any, any, any>
+): RxStorageInstance<RxDocType, any, any, any> {
+    while (true) {
+        if (instance.underlyingPersistentStorage) {
+            instance = instance.underlyingPersistentStorage;
+        } else {
+            return instance;
+        }
+    }
 }
