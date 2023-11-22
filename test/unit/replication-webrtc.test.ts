@@ -14,7 +14,7 @@ import {
 import {
     replicateWebRTC,
     RxWebRTCReplicationPool,
-    // getConnectionHandlerP2PCF,
+    getConnectionHandlerP2PCF,
     isMasterInWebRTCReplication,
     getConnectionHandlerSimplePeer
 } from '../../plugins/replication-webrtc/index.mjs';
@@ -112,12 +112,12 @@ describe('replication-webrtc.test.ts', () => {
                     topic,
                     secret,
                     // connectionHandlerCreator: getConnectionHandlerWebtorrent([webtorrentTrackerUrl]),
-                    // connectionHandlerCreator: getConnectionHandlerP2PCF(),
-                    connectionHandlerCreator: getConnectionHandlerSimplePeer(
-                        signalingServerUrl,
-                        wrtc
-                    ),
-                    pull: {},
+                    connectionHandlerCreator: getConnectionHandlerP2PCF(),
+                    // connectionHandlerCreator: getConnectionHandlerSimplePeer(
+                    //     signalingServerUrl,
+                    //     wrtc
+                    // ),
+                    // pull: {},
                     push: {}
                 });
                 ensureReplicationHasNoErrors(replicationPool);

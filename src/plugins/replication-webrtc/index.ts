@@ -283,6 +283,6 @@ export class RxWebRTCReplicationPool<RxDocType> {
 
 export * from './webrtc-helper.ts';
 export * from './webrtc-types.ts';
-// export * from './connection-handler-webtorrent';
-// export * from './connection-handler-p2pcf';
+// export * from './connection-handler-webtorrent.ts';
+export * from './connection-handler-p2pcf.ts';
 export * from './connection-handler-simple-peer.ts';
