@@ -177,10 +177,10 @@ export interface RxStorageInstance<
     readonly collectionName: string;
 
     /**
-     * (Optional) reference to the underlying persisten storage instance.
+     * (Optional) reference to the underlying persistent storage instance.
      * If set, things like replication will run on that storageInstance instead of the parent.
      * This is mostly used in things like the memory-synced storage where we want to
-     * run replications and migrations on the persitent storage instead of the in-memory storage.
+     * run replications and migrations on the persistent storage instead of the in-memory storage.
      *
      * Having this is the least hacky option. The only other option would be to toggle all calls to the
      * storageInstance by checking the givent context-string. But this would make it impossible
