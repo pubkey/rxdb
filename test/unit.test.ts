@@ -10,6 +10,7 @@ import './unit/util.test.ts';
 import './unit/custom-index.test.ts';
 import './unit/query-planner.test.ts';
 
+import './unit/replication-webrtc.test.ts';
 
 /**
  * Move these tests around so that
@@ -55,7 +56,6 @@ import './unit/replication-protocol.test.ts';
 import './unit/replication.test.ts';
 import './unit/replication-graphql.test.ts';
 import './unit/replication-websocket.test.ts';
-import './unit/replication-webrtc.test.ts';
 import './unit/migration-schema.test.ts';
 import './unit/attachments.test.ts';
 import './unit/attachments-compression.test.ts';

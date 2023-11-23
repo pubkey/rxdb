@@ -1,5 +1,5 @@
 import { Subject } from 'rxjs';
-import P2PCF from 'p2pcf';
+import P2PCF from './p2pcf.ts';
 import {
     PROMISE_RESOLVE_VOID,
     randomCouchString
@@ -34,7 +34,12 @@ export function getConnectionHandlerP2PCF(
 
     const creator: WebRTCConnectionHandlerCreator = async (options) => {
         const clientId = randomCouchString(10);
-        const p2p2 = new P2PCF(clientId, options.topic, p2pCFOptions);
+        const p2p2 = new P2PCF(clientId, options.topic, {
+            fastPollingRateMs: 100,
+            slowPollingRateMs: 200,
+            idlePollingAfterMs: 1000
+        });
+        p2p2.start();
 
         const connect$ = new Subject<WebRTCPeer>();
         const disconnect$ = new Subject<WebRTCPeer>();
@@ -42,9 +47,19 @@ export function getConnectionHandlerP2PCF(
         const message$ = new Subject<PeerWithMessage>();
         const response$ = new Subject<PeerWithResponse>();
 
-        p2p2.on('peerconnect', (peer: SimplePeer) => connect$.next(peer as any));
+        p2p2.on('peerconnect', (peer: SimplePeer) =>{
+            console.log('peerconnect!');
+            connect$.next(peer as any);
+        });
+        p2p2.on('connect', (peer: SimplePeer) =>{
+            console.log('connect!');
+            connect$.next(peer as any);
+        });
 
-        p2p2.on('peerclose', (peer: SimplePeer) => disconnect$.next(peer as any));
+        p2p2.on('peerclose', (peer: SimplePeer) => {
+            console.log('peerclose');
+            disconnect$.next(peer as any);
+        });
 
         p2p2.on('msg', (peer: SimplePeer, messageOrResponse: any) => {
             if (messageOrResponse.result) {
@@ -68,7 +83,7 @@ export function getConnectionHandlerP2PCF(
             message$,
             response$,
             async send(peer: WebRTCPeer, message: WebRTCMessage) {
-                const [responsePeer, response] = await p2p2.send(peer as any, message);
+                const [responsePeer, response] = await p2p2.send(peer as any, message) as any;
                 return {
                     peer: responsePeer,
                     response
