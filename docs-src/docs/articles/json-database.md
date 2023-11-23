@@ -62,7 +62,8 @@ const mySchema = {
             type: 'boolean'
         },
         timestamp: {
-            type: 'date-time'
+            type: 'string',
+            format: 'date-time'
         }
     },
     required: ['id', 'name', 'done', 'timestamp']
