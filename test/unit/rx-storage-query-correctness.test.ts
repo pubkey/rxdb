@@ -1015,8 +1015,6 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
         lastOpenedAt: number;
         exists: number;
     }>({
-        // lokijs returns the wrong results here
-        notRunIfTrue: () => config.storage.name === 'lokijs',
         testTitle: 'issue: compound index has wrong range',
         data: [
             {

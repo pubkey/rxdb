@@ -56,7 +56,11 @@ import type {
 import type { RxStorageLoki } from './rx-storage-lokijs.ts';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper.ts';
 import { categorizeBulkWriteRows } from '../../rx-storage-helper.ts';
-import { addRxStorageMultiInstanceSupport, removeBroadcastChannelReference } from '../../rx-storage-multiinstance.ts';
+import {
+    addRxStorageMultiInstanceSupport,
+    removeBroadcastChannelReference
+} from '../../rx-storage-multiinstance.ts';
+import { getQueryMatcher } from '../../rx-query-helper.ts';
 
 let instanceId = now();
 
@@ -235,6 +239,9 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
             query = query.sort(getLokiSortComparator(this.schema, preparedQuery));
         }
 
+
+
+
         /**
          * Offset must be used before limit in LokiJS
          * @link https://github.com/techfort/LokiJS/issues/570
@@ -247,7 +254,21 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
             query = query.limit(preparedQuery.limit);
         }
 
-        const foundDocuments = query.data().map(lokiDoc => stripLokiKey(lokiDoc));
+        let foundDocuments = query.data().map(lokiDoc => stripLokiKey(lokiDoc));
+
+
+        /**
+         * LokiJS returned wrong results on some queries
+         * with complex indexes. Therefore we run the query-match
+         * over all result docs to patch this bug.
+         * TODO create an issue at the LokiJS repository.
+         */
+        const queryMatcher = getQueryMatcher(
+            this.schema,
+            preparedQuery as any
+        );
+        foundDocuments = foundDocuments.filter(d => queryMatcher(d));
+
         return {
             documents: foundDocuments
         };
