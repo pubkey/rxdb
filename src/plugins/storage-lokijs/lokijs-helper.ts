@@ -1,5 +1,5 @@
 import { createLokiLocalState, RxStorageInstanceLoki } from './rx-storage-instance-loki.ts';
-import lokijs, { Collection } from 'lokijs';
+import Loki, { Collection } from 'lokijs';
 import type {
     DeterministicSortComparator,
     LokiDatabaseSettings,
@@ -124,7 +124,7 @@ export function getLokiDatabase(
                         throttledSaves: false
                     }
                 );
-                const database = new lokijs(
+                const database = new Loki(
                     databaseName + '.db',
                     flatClone(useSettings)
                 );

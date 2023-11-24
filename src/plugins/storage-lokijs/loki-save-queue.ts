@@ -3,6 +3,7 @@ import {
     PROMISE_RESOLVE_VOID,
     requestIdlePromise
 } from '../utils/index.ts';
+import Loki from 'lokijs';
 
 /**
  * The autosave feature of lokijs has strange behaviors
