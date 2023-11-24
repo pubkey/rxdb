@@ -206,7 +206,7 @@ export async function closeLokiCollections(
         LOKI_DATABASE_STATE_BY_NAME.delete(databaseName);
         databaseState.unloads.forEach(u => u.remove());
         await new Promise<void>((res, rej) => {
-            databaseState.database.close(err => {
+            databaseState.database.close((err: any) => {
                 if (err) {
                     rej(err);
                 } else {

@@ -251,7 +251,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
             query = query.limit(preparedQuery.limit);
         }
 
-        let foundDocuments = query.data().map(lokiDoc => stripLokiKey(lokiDoc));
+        let foundDocuments = query.data().map((lokiDoc: any) => stripLokiKey(lokiDoc));
 
 
         /**
@@ -264,7 +264,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
             this.schema,
             preparedQuery as any
         );
-        foundDocuments = foundDocuments.filter(d => queryMatcher(d));
+        foundDocuments = foundDocuments.filter((d: any) => queryMatcher(d));
 
         return {
             documents: foundDocuments
@@ -331,10 +331,10 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         changedDocs = changedDocs.slice(0, limit);
         const lastDoc = lastOfArray(changedDocs);
         return {
-            documents: changedDocs.map(docData => stripLokiKey(docData)),
+            documents: changedDocs.map((docData: any) => stripLokiKey(docData)),
             checkpoint: lastDoc ? {
-                id: lastDoc[this.primaryPath],
-                lwt: lastDoc._meta.lwt
+                id: (lastDoc as any)[this.primaryPath],
+                lwt: (lastDoc as any)._meta.lwt
             } : checkpoint ? checkpoint : {
                 id: '',
                 lwt: 0
