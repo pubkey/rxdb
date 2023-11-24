@@ -3,7 +3,6 @@ import {
     PROMISE_RESOLVE_VOID,
     requestIdlePromise
 } from '../utils/index.ts';
-import Loki from 'lokijs';
 
 /**
  * The autosave feature of lokijs has strange behaviors
@@ -24,7 +23,7 @@ export class LokiSaveQueue {
     public saveQueueC = 0;
 
     constructor(
-        public readonly lokiDatabase: Loki,
+        public readonly lokiDatabase: any,
         public readonly databaseSettings: LokiDatabaseSettings
     ) {
 
