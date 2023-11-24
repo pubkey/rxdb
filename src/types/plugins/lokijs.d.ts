@@ -4,7 +4,7 @@ import { LokiSaveQueue } from '../../plugins/storage-lokijs/loki-save-queue.ts';
 
 export type LokiDatabaseSettings = any;
 
-export type LokiCollectionSettings = Partial<CollectionOptions<any>>;
+export type LokiCollectionSettings = Partial<any>;
 
 export type LokiSettings = {
     database?: LokiDatabaseSettings;

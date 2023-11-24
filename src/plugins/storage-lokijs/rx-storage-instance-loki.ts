@@ -445,7 +445,7 @@ export async function createLokiLocalState<RxDocType>(
     indices.push(primaryKey as string);
 
     const lokiCollectionName = params.collectionName + '-' + params.schema.version;
-    const collectionOptions: Partial<CollectionOptions<RxDocumentData<RxDocType>>> = Object.assign(
+    const collectionOptions: Partial<any> = Object.assign(
         {},
         lokiCollectionName,
         {
