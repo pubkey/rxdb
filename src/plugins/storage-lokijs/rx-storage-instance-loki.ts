@@ -50,9 +50,6 @@ import {
     RX_STORAGE_NAME_LOKIJS,
     transformRegexToRegExp
 } from './lokijs-helper.ts';
-import type {
-    Collection
-} from 'lokijs';
 import type { RxStorageLoki } from './rx-storage-lokijs.ts';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper.ts';
 import { categorizeBulkWriteRows } from '../../rx-storage-helper.ts';
@@ -458,7 +455,7 @@ export async function createLokiLocalState<RxDocType>(
         LOKIJS_COLLECTION_DEFAULT_OPTIONS
     );
 
-    const collection: Collection = databaseState.database.addCollection(
+    const collection: any = databaseState.database.addCollection(
         lokiCollectionName,
         collectionOptions as any
     );

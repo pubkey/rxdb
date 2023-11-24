@@ -1,5 +1,5 @@
 import { createLokiLocalState, RxStorageInstanceLoki } from './rx-storage-instance-loki.ts';
-import Loki, { Collection } from 'lokijs';
+import Loki from 'lokijs';
 import type {
     DeterministicSortComparator,
     LokiDatabaseSettings,
@@ -72,7 +72,7 @@ export function stripLokiKey<T>(docData: RxDocumentData<T> & { $loki?: number; }
 export const OPEN_LOKIJS_STORAGE_INSTANCES: Set<RxStorageInstanceLoki<any>> = new Set();
 
 
-export const LOKIJS_COLLECTION_DEFAULT_OPTIONS: Partial<CollectionOptions<any>> = {
+export const LOKIJS_COLLECTION_DEFAULT_OPTIONS: Partial<any> = {
     disableChangesApi: true,
     disableMeta: true,
     disableDeltaChangesApi: true,
@@ -189,7 +189,7 @@ export function getLokiDatabase(
 
 export async function closeLokiCollections(
     databaseName: string,
-    collections: Collection[]
+    collections: any[]
 ) {
     const databaseState = await LOKI_DATABASE_STATE_BY_NAME.get(databaseName);
     if (!databaseState) {
