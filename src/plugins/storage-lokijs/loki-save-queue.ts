@@ -75,7 +75,7 @@ export class LokiSaveQueue {
                 const writeAmount = this.writesSinceLastRun;
                 this.writesSinceLastRun = 0;
                 return new Promise<void>((res, rej) => {
-                    this.lokiDatabase.saveDatabase(err => {
+                    this.lokiDatabase.saveDatabase((err: any) => {
                         if (err) {
                             this.writesSinceLastRun = this.writesSinceLastRun + writeAmount;
                             rej(err);
