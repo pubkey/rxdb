@@ -38,7 +38,7 @@ export type LokiRemoteResponseBroadcastMessage = {
 };
 
 export type LokiDatabaseState = {
-    database: Loki;
+    database: any;
     databaseSettings: LokiDatabaseSettings;
     saveQueue: LokiSaveQueue;
 
@@ -56,5 +56,5 @@ export type LokiDatabaseState = {
 
 export type LokiLocalDatabaseState = {
     databaseState: LokiDatabaseState;
-    collection: Collection<any>;
+    collection: any;
 };
