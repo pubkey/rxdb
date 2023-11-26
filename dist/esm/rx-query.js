@@ -415,7 +415,7 @@ function __ensureEqual(rxQuery) {
       mustReExec = true;
     } else {
       rxQuery._latestChangeEvent = rxQuery.asRxQuery.collection._changeEventBuffer.counter;
-      var runChangeEvents = rxQuery.asRxQuery.collection._changeEventBuffer.reduceByLastOfDoc(missedChangeEvents);
+      var runChangeEvents = rxQuery.asRxQuery.collection._changeEventBuffer.reduceByLastOfDoc(missedChangeEvents).filter(ev => ev.documentData._meta.lwt > rxQuery._lastExecStart);
       if (rxQuery.op === 'count') {
         // 'count' query
         var previousCount = ensureNotFalsy(rxQuery._result).count;

@@ -13,6 +13,7 @@ var _lokijsHelper = require("./lokijs-helper.js");
 var _rxSchemaHelper = require("../../rx-schema-helper.js");
 var _rxStorageHelper = require("../../rx-storage-helper.js");
 var _rxStorageMultiinstance = require("../../rx-storage-multiinstance.js");
+var _rxQueryHelper = require("../../rx-query-helper.js");
 var instanceId = (0, _index.now)();
 var RxStorageInstanceLoki = exports.RxStorageInstanceLoki = /*#__PURE__*/function () {
   function RxStorageInstanceLoki(databaseInstanceToken, storage, databaseName, collectionName, schema, internals, options, databaseSettings) {
@@ -154,6 +155,15 @@ var RxStorageInstanceLoki = exports.RxStorageInstanceLoki = /*#__PURE__*/functio
       query = query.limit(preparedQuery.limit);
     }
     var foundDocuments = query.data().map(lokiDoc => (0, _lokijsHelper.stripLokiKey)(lokiDoc));
+
+    /**
+     * LokiJS returned wrong results on some queries
+     * with complex indexes. Therefore we run the query-match
+     * over all result docs to patch this bug.
+     * TODO create an issue at the LokiJS repository.
+     */
+    var queryMatcher = (0, _rxQueryHelper.getQueryMatcher)(this.schema, preparedQuery);
+    foundDocuments = foundDocuments.filter(d => queryMatcher(d));
     return {
       documents: foundDocuments
     };
