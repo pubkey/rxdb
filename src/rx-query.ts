@@ -540,9 +540,10 @@ function __ensureEqual<RxDocType>(rxQuery: RxQueryBase<RxDocType>): Promise<bool
         } else {
             rxQuery._latestChangeEvent = rxQuery.asRxQuery.collection._changeEventBuffer.counter;
 
-            const runChangeEvents: RxChangeEvent<any>[] = rxQuery.asRxQuery.collection
+            const runChangeEvents: RxChangeEvent<RxDocType>[] = rxQuery.asRxQuery.collection
                 ._changeEventBuffer
-                .reduceByLastOfDoc(missedChangeEvents);
+                .reduceByLastOfDoc(missedChangeEvents)
+                .filter(ev => ev.documentData._meta.lwt > rxQuery._lastExecStart);
 
             if (rxQuery.op === 'count') {
                 // 'count' query
