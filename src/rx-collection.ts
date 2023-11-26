@@ -173,7 +173,7 @@ export class RxCollectionBase<
     public _queryCache: QueryCache = createQueryCache();
     public $: Observable<RxChangeEvent<RxDocumentType>> = {} as any;
     public checkpoint$: Observable<any> = {} as any;
-    public _changeEventBuffer: ChangeEventBuffer = {} as ChangeEventBuffer;
+    public _changeEventBuffer: ChangeEventBuffer<RxDocumentType> = {} as ChangeEventBuffer<RxDocumentType>;
 
 
 
@@ -209,7 +209,7 @@ export class RxCollectionBase<
             map(changeEventBulk => changeEventBulk.checkpoint),
         );
 
-        this._changeEventBuffer = createChangeEventBuffer(this.asRxCollection);
+        this._changeEventBuffer = createChangeEventBuffer<RxDocumentType>(this.asRxCollection);
         this._docCache = new DocumentCache(
             this.schema.primaryPath,
             this.$.pipe(filter(cE => !cE.isLocal)),
