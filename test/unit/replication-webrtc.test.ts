@@ -156,6 +156,8 @@ describe('replication-webrtc.test.ts', () => {
             const secret = randomCouchString(10);
             await syncCollections(topic, secret, [c1, c2]);
 
+            console.log('--------- 0.5');
+
             await awaitCollectionsInSync([c1, c2]);
             await wait(100);
 
