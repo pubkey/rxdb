@@ -10,7 +10,6 @@ exports.removeBroadcastChannelReference = removeBroadcastChannelReference;
 var _rxjs = require("rxjs");
 var _operators = require("rxjs/operators");
 var _broadcastChannel = require("broadcast-channel");
-var _index = require("./plugins/utils/index.js");
 /**
  * When a persistent RxStorage is used in more the one JavaScript process,
  * the even stream of the changestream() function must be broadcasted to the other
@@ -75,7 +74,7 @@ function addRxStorageMultiInstanceSupport(storageName, instanceCreationParams, i
  */
 providedBroadcastChannel) {
   if (!instanceCreationParams.multiInstance) {
-    return _index.PROMISE_RESOLVE_VOID;
+    return;
   }
   var broadcastChannel = providedBroadcastChannel ? providedBroadcastChannel : getBroadcastChannelReference(storageName, instanceCreationParams.databaseInstanceToken, instance.databaseName, instance);
   var changesFromOtherInstances$ = new _rxjs.Subject();
@@ -84,20 +83,7 @@ providedBroadcastChannel) {
       changesFromOtherInstances$.next(msg.eventBulk);
     }
   };
-
-  /**
-   * Here we send one blank message. This is important for
-   * test cases where a 2nd multi-instance collection
-   * is directly created after an insert. Without this
-   * the new collection would directly emit the insert event
-   * which would then cause wrong results.
-   * By sending the blank message we can ensure that all messages
-   * from postMessage() calls that happened before the call to addRxStorageMultiInstanceSupport()
-   * have already been processed.
-   */
-  var returnPromise = broadcastChannel.postMessage({}).then(() => {
-    broadcastChannel.addEventListener('message', eventListener);
-  });
+  broadcastChannel.addEventListener('message', eventListener);
   var oldChangestream$ = instance.changeStream();
   var closed = false;
   var sub = oldChangestream$.subscribe(eventBulk => {
@@ -135,6 +121,5 @@ providedBroadcastChannel) {
     }
     return oldRemove();
   };
-  return returnPromise;
 }
 //# sourceMappingURL=rx-storage-multiinstance.js.map
