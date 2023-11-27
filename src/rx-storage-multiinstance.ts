@@ -26,9 +26,6 @@ import type {
 import {
     BroadcastChannel
 } from 'broadcast-channel';
-import {
-    PROMISE_RESOLVE_VOID
-} from './plugins/utils/index.ts';
 
 /**
  * The broadcast-channel is reused by the databaseInstanceToken.
@@ -111,9 +108,9 @@ export function addRxStorageMultiInstanceSupport<RxDocType>(
      * instead of an own one.
      */
     providedBroadcastChannel?: BroadcastChannel<any>
-): Promise<void> {
+) {
     if (!instanceCreationParams.multiInstance) {
-        return PROMISE_RESOLVE_VOID;
+        return;
     }
 
     type Emit = EventBulk<RxStorageChangeEvent<RxDocType>, any>;
@@ -141,19 +138,7 @@ export function addRxStorageMultiInstanceSupport<RxDocType>(
         }
     };
 
-    /**
-     * Here we send one blank message. This is important for
-     * test cases where a 2nd multi-instance collection
-     * is directly created after an insert. Without this
-     * the new collection would directly emit the insert event
-     * which would then cause wrong results.
-     * By sending the blank message we can ensure that all messages
-     * from postMessage() calls that happened before the call to addRxStorageMultiInstanceSupport()
-     * have already been processed.
-     */
-    const returnPromise = broadcastChannel.postMessage({} as any).then(() => {
-        broadcastChannel.addEventListener('message', eventListener);
-    });
+    broadcastChannel.addEventListener('message', eventListener);
 
     const oldChangestream$ = instance.changeStream();
 
@@ -204,6 +189,4 @@ export function addRxStorageMultiInstanceSupport<RxDocType>(
         }
         return oldRemove();
     };
-
-    return returnPromise;
 }
