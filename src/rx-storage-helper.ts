@@ -884,7 +884,17 @@ export function randomDelayStorage<Internals, InstanceCreationOptions>(
                     writeQueue = writeQueue.then(async () => {
                         await promiseWait(input.delayTimeBefore());
                         const response = await storageInstance.bulkWrite(a, b);
-                        await promiseWait(input.delayTimeAfter());
+
+
+                        /**
+                         * Adding a random delay here is not allowed.
+                         * RxDB requires the storage to directly return the results after
+                         * a write has been done and the events have been emitted.
+                         * Having a random delay here would allow to storage to run queries
+                         * in between which would lead to false results.
+                         */
+                        // await promiseWait(input.delayTimeAfter());
+
                         return response;
                     });
                     const ret = await writeQueue;
