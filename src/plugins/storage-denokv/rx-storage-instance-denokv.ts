@@ -411,7 +411,7 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
 
 
 
-export function createDenoKVStorageInstance<RxDocType>(
+export async function createDenoKVStorageInstance<RxDocType>(
     storage: RxStorageDenoKV,
     params: RxStorageInstanceCreationParams<RxDocType, DenoKVSettings>,
     settings: DenoKVSettings
@@ -460,7 +460,7 @@ export function createDenoKVStorageInstance<RxDocType>(
         settings
     );
 
-    addRxStorageMultiInstanceSupport(
+    await addRxStorageMultiInstanceSupport(
         RX_STORAGE_NAME_DENOKV,
         params,
         instance

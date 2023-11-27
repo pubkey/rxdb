@@ -26,6 +26,10 @@ import type {
 import {
     BroadcastChannel
 } from 'broadcast-channel';
+import {
+    promiseWait,
+    PROMISE_RESOLVE_VOID
+} from './plugins/utils/index.ts';
 
 /**
  * The broadcast-channel is reused by the databaseInstanceToken.
@@ -108,9 +112,9 @@ export function addRxStorageMultiInstanceSupport<RxDocType>(
      * instead of an own one.
      */
     providedBroadcastChannel?: BroadcastChannel<any>
-) {
+): Promise<void> {
     if (!instanceCreationParams.multiInstance) {
-        return;
+        return PROMISE_RESOLVE_VOID;
     }
 
     type Emit = EventBulk<RxStorageChangeEvent<RxDocType>, any>;
@@ -137,7 +141,17 @@ export function addRxStorageMultiInstanceSupport<RxDocType>(
             changesFromOtherInstances$.next(msg.eventBulk);
         }
     };
-    broadcastChannel.addEventListener('message', eventListener);
+
+    /**
+     * Here we wait one tick. This is important for
+     * test cases where a 2nd multi-instance collection
+     * is directly created after an insert. Without this
+     * the new collection would directly emit the insert event
+     * which would then cause wrong results.
+     */
+    const returnPromise = promiseWait(0).then(() => {
+        broadcastChannel.addEventListener('message', eventListener);
+    });
 
     const oldChangestream$ = instance.changeStream();
 
@@ -188,4 +202,6 @@ export function addRxStorageMultiInstanceSupport<RxDocType>(
         }
         return oldRemove();
     };
+
+    return returnPromise;
 }

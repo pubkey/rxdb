@@ -503,7 +503,7 @@ export async function createLokiStorageInstance<RxDocType>(
         databaseSettings
     );
 
-    addRxStorageMultiInstanceSupport(
+    await addRxStorageMultiInstanceSupport(
         RX_STORAGE_NAME_LOKIJS,
         params,
         instance,
