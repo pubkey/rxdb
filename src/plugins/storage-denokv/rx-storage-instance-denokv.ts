@@ -74,16 +74,6 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
             success: [],
             error: []
         };
-        const eventBulkId = randomCouchString(10);
-        const eventBulk: EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, any> = {
-            id: eventBulkId,
-            events: [],
-            checkpoint: null,
-            context,
-            startTime: now(),
-            endTime: 0
-        };
-
 
         const batches = batchArray(documentWrites, ensureNotFalsy(this.settings.batchSize));
 
@@ -169,20 +159,18 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
                 const txResult = await tx.commit();
                 if (txResult.ok) {
                     appendToArray(ret.error, categorized.errors);
-                    appendToArray(eventBulk.events, categorized.eventBulk.events);
+                    if (categorized.eventBulk.events.length > 0) {
+                        const lastState = ensureNotFalsy(categorized.newestRow).document;
+                        categorized.eventBulk.checkpoint = {
+                            id: lastState[primaryPath],
+                            lwt: lastState._meta.lwt
+                        };
+                        categorized.eventBulk.endTime = now();
+                        this.changes$.next(categorized.eventBulk);
+                    }
                     break;
                 }
             }
-        }
-
-        if (eventBulk.events.length > 0) {
-            const lastEvent = ensureNotFalsy(lastOfArray(eventBulk.events));
-            eventBulk.checkpoint = {
-                id: lastEvent.documentData[this.primaryPath],
-                lwt: lastEvent.documentData._meta.lwt
-            };
-            eventBulk.endTime = now();
-            this.changes$.next(eventBulk);
         }
 
         return ret;
@@ -411,7 +399,7 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
 
 
 
-export function createDenoKVStorageInstance<RxDocType>(
+export async function createDenoKVStorageInstance<RxDocType>(
     storage: RxStorageDenoKV,
     params: RxStorageInstanceCreationParams<RxDocType, DenoKVSettings>,
     settings: DenoKVSettings
@@ -460,7 +448,7 @@ export function createDenoKVStorageInstance<RxDocType>(
         settings
     );
 
-    addRxStorageMultiInstanceSupport(
+    await addRxStorageMultiInstanceSupport(
         RX_STORAGE_NAME_DENOKV,
         params,
         instance
