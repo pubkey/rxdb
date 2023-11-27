@@ -543,7 +543,7 @@ function __ensureEqual<RxDocType>(rxQuery: RxQueryBase<RxDocType>): Promise<bool
             const runChangeEvents: RxChangeEvent<RxDocType>[] = rxQuery.asRxQuery.collection
                 ._changeEventBuffer
                 .reduceByLastOfDoc(missedChangeEvents)
-                .filter(ev => ev.documentData._meta.lwt > rxQuery._lastExecStart);
+                .filter(ev => ev.documentData._meta.lwt > rxQuery._lastExecEnd);
 
             if (rxQuery.op === 'count') {
                 // 'count' query
