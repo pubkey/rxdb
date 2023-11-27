@@ -229,10 +229,10 @@ export var RxStorageInstanceDexie = /*#__PURE__*/function () {
   _proto.resolveConflictResultionTask = async function resolveConflictResultionTask(_taskSolution) {};
   return RxStorageInstanceDexie;
 }();
-export function createDexieStorageInstance(storage, params, settings) {
+export async function createDexieStorageInstance(storage, params, settings) {
   var internals = getDexieDbWithTables(params.databaseName, params.collectionName, settings, params.schema);
   var instance = new RxStorageInstanceDexie(storage, params.databaseName, params.collectionName, params.schema, internals, params.options, settings);
-  addRxStorageMultiInstanceSupport(RX_STORAGE_NAME_DEXIE, params, instance);
+  await addRxStorageMultiInstanceSupport(RX_STORAGE_NAME_DEXIE, params, instance);
   return Promise.resolve(instance);
 }
 function ensureNotClosed(instance) {

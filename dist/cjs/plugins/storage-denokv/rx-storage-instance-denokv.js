@@ -12,7 +12,6 @@ var _denokvHelper = require("./denokv-helper.js");
 var _customIndex = require("../../custom-index.js");
 var _utilsArray = require("../utils/utils-array.js");
 var _utilsOther = require("../utils/utils-other.js");
-var _utilsString = require("../utils/utils-string.js");
 var _rxStorageHelper = require("../../rx-storage-helper.js");
 var _utilsTime = require("../utils/utils-time.js");
 var _denokvQuery = require("./denokv-query.js");
@@ -48,15 +47,6 @@ var RxStorageInstanceDenoKV = exports.RxStorageInstanceDenoKV = /*#__PURE__*/fun
     var ret = {
       success: [],
       error: []
-    };
-    var eventBulkId = (0, _utilsString.randomCouchString)(10);
-    var eventBulk = {
-      id: eventBulkId,
-      events: [],
-      checkpoint: null,
-      context,
-      startTime: (0, _utilsTime.now)(),
-      endTime: 0
     };
     var batches = (0, _utilsArray.batchArray)(documentWrites, (0, _utilsOther.ensureNotFalsy)(this.settings.batchSize));
 
@@ -130,22 +120,21 @@ var RxStorageInstanceDenoKV = exports.RxStorageInstanceDenoKV = /*#__PURE__*/fun
         var txResult = await tx.commit();
         if (txResult.ok) {
           (0, _utilsArray.appendToArray)(ret.error, categorized.errors);
-          (0, _utilsArray.appendToArray)(eventBulk.events, categorized.eventBulk.events);
+          if (categorized.eventBulk.events.length > 0) {
+            var lastState = (0, _utilsOther.ensureNotFalsy)(categorized.newestRow).document;
+            categorized.eventBulk.checkpoint = {
+              id: lastState[primaryPath],
+              lwt: lastState._meta.lwt
+            };
+            categorized.eventBulk.endTime = (0, _utilsTime.now)();
+            _this.changes$.next(categorized.eventBulk);
+          }
           return 1; // break
         }
       };
       while (true) {
         if (await _loop()) break;
       }
-    }
-    if (eventBulk.events.length > 0) {
-      var lastEvent = (0, _utilsOther.ensureNotFalsy)((0, _utilsArray.lastOfArray)(eventBulk.events));
-      eventBulk.checkpoint = {
-        id: lastEvent.documentData[this.primaryPath],
-        lwt: lastEvent.documentData._meta.lwt
-      };
-      eventBulk.endTime = (0, _utilsTime.now)();
-      this.changes$.next(eventBulk);
     }
     return ret;
   };
@@ -338,7 +327,7 @@ var RxStorageInstanceDenoKV = exports.RxStorageInstanceDenoKV = /*#__PURE__*/fun
   };
   return RxStorageInstanceDenoKV;
 }();
-function createDenoKVStorageInstance(storage, params, settings) {
+async function createDenoKVStorageInstance(storage, params, settings) {
   settings = (0, _utilsObject.flatClone)(settings);
   if (!settings.batchSize) {
     settings.batchSize = 100;
@@ -368,7 +357,7 @@ function createDenoKVStorageInstance(storage, params, settings) {
     indexes: indexDBs
   };
   var instance = new RxStorageInstanceDenoKV(storage, params.databaseName, params.collectionName, params.schema, internals, params.options, settings);
-  (0, _rxStorageMultiinstance.addRxStorageMultiInstanceSupport)(_denokvHelper.RX_STORAGE_NAME_DENOKV, params, instance);
+  await (0, _rxStorageMultiinstance.addRxStorageMultiInstanceSupport)(_denokvHelper.RX_STORAGE_NAME_DENOKV, params, instance);
   return Promise.resolve(instance);
 }
 function ensureNotClosed(instance) {

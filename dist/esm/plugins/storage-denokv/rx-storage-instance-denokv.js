@@ -5,7 +5,6 @@ import { CLEANUP_INDEX, DENOKV_DOCUMENT_ROOT_PATH, RX_STORAGE_NAME_DENOKV, getDe
 import { getIndexableStringMonad, getStartIndexStringFromLowerBound, changeIndexableStringByOneQuantum } from "../../custom-index.js";
 import { appendToArray, batchArray, lastOfArray, toArray } from "../utils/utils-array.js";
 import { ensureNotFalsy } from "../utils/utils-other.js";
-import { randomCouchString } from "../utils/utils-string.js";
 import { categorizeBulkWriteRows } from "../../rx-storage-helper.js";
 import { now } from "../utils/utils-time.js";
 import { queryDenoKV } from "./denokv-query.js";
@@ -41,15 +40,6 @@ export var RxStorageInstanceDenoKV = /*#__PURE__*/function () {
     var ret = {
       success: [],
       error: []
-    };
-    var eventBulkId = randomCouchString(10);
-    var eventBulk = {
-      id: eventBulkId,
-      events: [],
-      checkpoint: null,
-      context,
-      startTime: now(),
-      endTime: 0
     };
     var batches = batchArray(documentWrites, ensureNotFalsy(this.settings.batchSize));
 
@@ -123,22 +113,21 @@ export var RxStorageInstanceDenoKV = /*#__PURE__*/function () {
         var txResult = await tx.commit();
         if (txResult.ok) {
           appendToArray(ret.error, categorized.errors);
-          appendToArray(eventBulk.events, categorized.eventBulk.events);
+          if (categorized.eventBulk.events.length > 0) {
+            var lastState = ensureNotFalsy(categorized.newestRow).document;
+            categorized.eventBulk.checkpoint = {
+              id: lastState[primaryPath],
+              lwt: lastState._meta.lwt
+            };
+            categorized.eventBulk.endTime = now();
+            _this.changes$.next(categorized.eventBulk);
+          }
           return 1; // break
         }
       };
       while (true) {
         if (await _loop()) break;
       }
-    }
-    if (eventBulk.events.length > 0) {
-      var lastEvent = ensureNotFalsy(lastOfArray(eventBulk.events));
-      eventBulk.checkpoint = {
-        id: lastEvent.documentData[this.primaryPath],
-        lwt: lastEvent.documentData._meta.lwt
-      };
-      eventBulk.endTime = now();
-      this.changes$.next(eventBulk);
     }
     return ret;
   };
@@ -331,7 +320,7 @@ export var RxStorageInstanceDenoKV = /*#__PURE__*/function () {
   };
   return RxStorageInstanceDenoKV;
 }();
-export function createDenoKVStorageInstance(storage, params, settings) {
+export async function createDenoKVStorageInstance(storage, params, settings) {
   settings = flatClone(settings);
   if (!settings.batchSize) {
     settings.batchSize = 100;
@@ -361,7 +350,7 @@ export function createDenoKVStorageInstance(storage, params, settings) {
     indexes: indexDBs
   };
   var instance = new RxStorageInstanceDenoKV(storage, params.databaseName, params.collectionName, params.schema, internals, params.options, settings);
-  addRxStorageMultiInstanceSupport(RX_STORAGE_NAME_DENOKV, params, instance);
+  await addRxStorageMultiInstanceSupport(RX_STORAGE_NAME_DENOKV, params, instance);
   return Promise.resolve(instance);
 }
 function ensureNotClosed(instance) {

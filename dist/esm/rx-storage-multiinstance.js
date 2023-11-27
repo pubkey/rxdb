@@ -17,6 +17,7 @@
 import { Subject } from 'rxjs';
 import { mergeWith } from 'rxjs/operators';
 import { BroadcastChannel } from 'broadcast-channel';
+import { PROMISE_RESOLVE_VOID } from "./plugins/utils/index.js";
 
 /**
  * The broadcast-channel is reused by the databaseInstanceToken.
@@ -66,7 +67,7 @@ export function addRxStorageMultiInstanceSupport(storageName, instanceCreationPa
  */
 providedBroadcastChannel) {
   if (!instanceCreationParams.multiInstance) {
-    return;
+    return PROMISE_RESOLVE_VOID;
   }
   var broadcastChannel = providedBroadcastChannel ? providedBroadcastChannel : getBroadcastChannelReference(storageName, instanceCreationParams.databaseInstanceToken, instance.databaseName, instance);
   var changesFromOtherInstances$ = new Subject();
@@ -75,7 +76,20 @@ providedBroadcastChannel) {
       changesFromOtherInstances$.next(msg.eventBulk);
     }
   };
-  broadcastChannel.addEventListener('message', eventListener);
+
+  /**
+   * Here we send one blank message. This is important for
+   * test cases where a 2nd multi-instance collection
+   * is directly created after an insert. Without this
+   * the new collection would directly emit the insert event
+   * which would then cause wrong results.
+   * By sending the blank message we can ensure that all messages
+   * from postMessage() calls that happened before the call to addRxStorageMultiInstanceSupport()
+   * have already been processed.
+   */
+  var returnPromise = broadcastChannel.postMessage({}).then(() => {
+    broadcastChannel.addEventListener('message', eventListener);
+  });
   var oldChangestream$ = instance.changeStream();
   var closed = false;
   var sub = oldChangestream$.subscribe(eventBulk => {
@@ -113,5 +127,6 @@ providedBroadcastChannel) {
     }
     return oldRemove();
   };
+  return returnPromise;
 }
 //# sourceMappingURL=rx-storage-multiinstance.js.map

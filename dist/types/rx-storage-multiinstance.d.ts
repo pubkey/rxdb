@@ -52,4 +52,4 @@ export declare function addRxStorageMultiInstanceSupport<RxDocType>(storageName:
  * If provided, that channel will be used
  * instead of an own one.
  */
-providedBroadcastChannel?: BroadcastChannel<any>): void;
+providedBroadcastChannel?: BroadcastChannel<any>): Promise<void>;
