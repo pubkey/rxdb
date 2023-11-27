@@ -75,7 +75,7 @@ export class RxQueryBase<
     // used to count the subscribers to the query
     public refCount$ = new BehaviorSubject(null);
 
-    public isFindOneByIdQuery: false | string | string[];
+    public isFindByIdQuery: false | string | string[];
 
 
     /**
@@ -96,7 +96,7 @@ export class RxQueryBase<
             this.mangoQuery = _getDefaultQuery();
         }
 
-        this.isFindOneByIdQuery = isFindOneByIdQuery(
+        this.isFindByIdQuery = isFindByIdQuery(
             this.collection.schema.primaryPath as string,
             mangoQuery
         );
@@ -169,10 +169,11 @@ export class RxQueryBase<
     // stores the changeEvent-number of the last handled change-event
     public _latestChangeEvent: -1 | number = -1;
 
-    // time stamps on when the last full exec over the database has run
-    // used to properly handle events that happen while the find-query is running
-    public _lastExecStart: number = 0;
-    public _lastExecEnd: number = 0;
+    /**
+     * The .time value of the queryResults from the last time
+     * the query was processed by the RxStorageInstance.
+     */
+    public lastExecTime: number = 0;
 
     /**
      * ensures that the exec-runs
@@ -219,8 +220,6 @@ export class RxQueryBase<
      */
     async _execOverDatabase(): Promise<RxDocumentData<RxDocType>[] | number> {
         this._execOverDatabaseCount = this._execOverDatabaseCount + 1;
-        this._lastExecStart = now();
-
 
         if (this.op === 'count') {
             const preparedQuery = this.getPreparedQuery();
@@ -264,9 +263,9 @@ export class RxQueryBase<
 
 
         const docsPromise = queryCollection<RxDocType>(this as any);
-        return docsPromise.then(docs => {
-            this._lastExecEnd = now();
-            return docs;
+        return docsPromise.then(result => {
+            this.lastExecTime = result.time;
+            return docs.documents;
         });
     }
 
@@ -543,7 +542,7 @@ function __ensureEqual<RxDocType>(rxQuery: RxQueryBase<RxDocType>): Promise<bool
             const runChangeEvents: RxChangeEvent<RxDocType>[] = rxQuery.asRxQuery.collection
                 ._changeEventBuffer
                 .reduceByLastOfDoc(missedChangeEvents)
-                .filter(ev => ev.documentData._meta.lwt > rxQuery._lastExecEnd);
+                .filter(ev => ev.documentData._meta.lwt > rxQuery.lastExecTime);
 
             if (rxQuery.op === 'count') {
                 // 'count' query
@@ -627,9 +626,13 @@ function __ensureEqual<RxDocType>(rxQuery: RxQueryBase<RxDocType>): Promise<bool
  */
 export async function queryCollection<RxDocType>(
     rxQuery: RxQuery<RxDocType> | RxQueryBase<RxDocType>
-): Promise<RxDocumentData<RxDocType>[]> {
-    let docs: RxDocumentData<RxDocType>[] = [];
+): Promise<{
+    documents: RxDocumentData<RxDocType>[];
+    time: number;
+}> {
     const collection = rxQuery.collection;
+    let documents: RxDocumentData<RxDocType>[] = [];
+    let time = collection.lastEventBulkTime;
 
     /**
      * Optimizations shortcut.
@@ -637,15 +640,15 @@ export async function queryCollection<RxDocType>(
      * then we do not have to use the slow query() method
      * but instead can use findDocumentsById()
      */
-    if (rxQuery.isFindOneByIdQuery) {
-        if (Array.isArray(rxQuery.isFindOneByIdQuery)) {
-            let docIds = rxQuery.isFindOneByIdQuery;
+    if (rxQuery.isFindByIdQuery) {
+        if (Array.isArray(rxQuery.isFindByIdQuery)) {
+            let docIds = rxQuery.isFindByIdQuery;
             docIds = docIds.filter(docId => {
                 // first try to fill from docCache
                 const docData = rxQuery.collection._docCache.getLatestDocumentDataIfExists(docId);
                 if (docData) {
                     if (!docData._deleted) {
-                        docs.push(docData);
+                        documents.push(docData);
                     }
                     return false;
                 } else {
@@ -655,42 +658,48 @@ export async function queryCollection<RxDocType>(
             // otherwise get from storage
             if (docIds.length > 0) {
                 const docsFromStorage = await collection.storageInstance.findDocumentsById(docIds, false);
-                appendToArray(docs, docsFromStorage);
+                time = docsFromStorage.time;
+                appendToArray(documents, docsFromStorage.documents);
             }
         } else {
-            const docId = rxQuery.isFindOneByIdQuery;
+            const docId = rxQuery.isFindByIdQuery;
 
             // first try to fill from docCache
             let docData = rxQuery.collection._docCache.getLatestDocumentDataIfExists(docId);
             if (!docData) {
                 // otherwise get from storage
                 const fromStorageList = await collection.storageInstance.findDocumentsById([docId], false);
-                if (fromStorageList[0]) {
-                    docData = fromStorageList[0];
+                if (fromStorageList.documents[0]) {
+                    docData = fromStorageList.documents[0];
+                    time = fromStorageList.time;
                 }
             }
             if (docData && !docData._deleted) {
-                docs.push(docData);
+                documents.push(docData);
             }
         }
     } else {
         const preparedQuery = rxQuery.getPreparedQuery();
         const queryResult = await collection.storageInstance.query(preparedQuery);
-        docs = queryResult.documents;
+        documents = queryResult.documents;
+        time = queryResult.time;
     }
-    return docs;
+    return {
+        documents,
+        time
+    };
 
 }
 
 /**
- * Returns true if the given query
+ * Returns trutyh if the given query
  * selects exactly one document by its id.
  * Used to optimize performance because these kind of
  * queries do not have to run over an index and can use get-by-id instead.
  * Returns false if no query of that kind.
  * Returns the document id otherwise.
  */
-export function isFindOneByIdQuery(
+export function isFindByIdQuery(
     primaryPath: string,
     query: MangoQuery<any>
 ): false | string | string[] {

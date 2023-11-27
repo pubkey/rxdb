@@ -171,16 +171,26 @@ export type RxStorageBulkWriteResponse<RxDocType> = {
 
 export type PreparedQuery<DocType> = MangoQuery<DocType> | any;
 
+
+export type WithTime<D> = D & {
+    /**
+     * Time (unix in millisecond) at which the query was processed.
+     * The storage guarantees that all emitted evens with a lower endTime
+     * have been calculated into these query results already.
+     */
+    time: number;
+};
+
 /**
  * We return a complex object instead of a single array
  * so we are able to add additional fields in the future.
  */
-export type RxStorageQueryResult<RxDocType> = {
+export type RxStorageQueryResult<RxDocType> = WithTime<{
     // the found documents, sort order is important.
     documents: RxDocumentData<RxDocType>[];
-};
+}>;
 
-export type RxStorageCountResult = {
+export type RxStorageCountResult = WithTime<{
     count: number;
     /**
      * Returns the mode which was used by the storage
@@ -189,9 +199,31 @@ export type RxStorageCountResult = {
      * if 'allowSlowCount' is not set.
      */
     mode: 'fast' | 'slow';
-};
+}>;
 
-export type RxStorageInfoResult = {
+
+export type RxStorageChangedDocumentsSinceResult<RxDocType, CheckpointType> = WithTime<{
+    documents: RxDocumentData<RxDocType>[];
+    /**
+     * The checkpoint contains data so that another
+     * call to getChangedDocumentsSince() will continue
+     * from exactly the last document that was returned before.
+     */
+    checkpoint: CheckpointType;
+}>;
+
+export type RxStorageFindDocumentsByIdResult<RxDocType> = WithTime<{
+    /**
+     * For better performance, we return an array
+     * instead of an indexed object because most consumers
+     * of this anyway have to fill a Map() instance or
+     * even do only need the list at all.
+     */
+    documents: RxDocumentData<RxDocType>[];
+}>;
+
+
+export type RxStorageInfoResult = WithTime<{
     /**
      * Contains the total amount of stored documents.
      * This contains the _deleted and non-_deleted documents.
@@ -199,7 +231,7 @@ export type RxStorageInfoResult = {
      * loading percentage in replication and migration.
      */
     totalCount: number;
-};
+}>;
 
 export type RxStorageInstanceCreationParams<RxDocType, InstanceCreationOptions> = {
 

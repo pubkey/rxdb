@@ -37,7 +37,9 @@ import {
     RxDocumentWriteData,
     RxStorageBulkWriteResponse,
     RxStorageChangeEvent,
-    RxStorageInstance
+    RxStorageInstance,
+    batchArray,
+    RxStorageQueryResult
 } from '../../plugins/core/index.mjs';
 import Ajv from 'ajv';
 import {
@@ -2489,7 +2491,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 sub.unsubscribe();
                 storageInstance.close();
             });
-            it('it should not emit an empty eventBulk when the write had only errors', async () => {
+            it('should not emit an empty eventBulk when the write had only errors', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
                     databaseInstanceToken: randomCouchString(10),
                     databaseName: randomCouchString(12),
@@ -2532,6 +2534,70 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 assert.strictEqual(emitted[0].events.length, 1);
 
                 sub.unsubscribe();
+                storageInstance.close();
+            });
+            /**
+             * This test ensures that the endTimes of the event bulks are correct compared to the
+             * times of query() results. This is very important to ensure that
+             * we do not run event-reduce on events that actually are in the query result already
+             * which would then lead to wrong results.
+             */
+            it('should emit the correct eventBulk time compared to the query time', async () => {
+                const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
+                    databaseInstanceToken: randomCouchString(10),
+                    databaseName: randomCouchString(12),
+                    collectionName: randomCouchString(12),
+                    schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
+                    options: {},
+                    multiInstance: false,
+                    devMode: true
+                });
+
+                const emittedEventBulks: EventBulk<RxStorageChangeEvent<TestDocType>, any>[] = [];
+                storageInstance.changeStream().subscribe(bulk => emittedEventBulks.push(bulk));
+
+                const docsAmount = config.isFastMode() ? 10 : 100;
+                const writeBatches = batchArray(
+                    new Array(docsAmount).fill(0).map(() => ({ document: getWriteData() })),
+                    3
+                );
+                const preparedQuery = config.storage.getStorage().statics.prepareQuery(
+                    storageInstance.schema,
+                    {
+                        selector: {},
+                        sort: [
+                            { key: 'asc' }
+                        ],
+                        skip: 0
+                    }
+                );
+                const queryResults: RxStorageQueryResult<TestDocType>[] = [];
+                const writeDonePromise = Promise.all(
+                    writeBatches.map(async (batch) => {
+                        await storageInstance.bulkWrite(batch, 'text-event-times');
+                        const queryResult = await storageInstance.query(preparedQuery);
+                        assert.ok(queryResult.time, 'queryResult.time is missing');
+                        queryResults.push(queryResult);
+                    })
+                );
+
+                await writeDonePromise;
+
+
+                /**
+                 * All query results must have either the document in the result
+                 * or have a .time low enough to have the event included.
+                 */
+                queryResults.forEach(result => {
+                    let opCount = result.documents.length;
+                    emittedEventBulks
+                        .filter(bulk => bulk.endTime > result.time)
+                        .forEach(bulk => opCount = opCount + bulk.events.length);
+                    assert.strictEqual(opCount, docsAmount);
+                    console.log('opcount ' + opCount);
+                });
+
+
                 storageInstance.close();
             });
         });

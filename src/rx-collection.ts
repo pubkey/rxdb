@@ -176,6 +176,8 @@ export class RxCollectionBase<
     public _changeEventBuffer: ChangeEventBuffer<RxDocumentType> = {} as ChangeEventBuffer<RxDocumentType>;
 
 
+    public lastEventBulkTime = -1;
+
 
     /**
      * When the collection is destroyed,
@@ -239,6 +241,7 @@ export class RxCollectionBase<
                 endTime: eventBulk.endTime,
                 startTime: eventBulk.startTime
             };
+            this.lastEventBulkTime = changeEventBulk.endTime;
             this.database.$emit(changeEventBulk);
         });
         this._subs.push(subDocs);

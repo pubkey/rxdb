@@ -359,7 +359,8 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         // apply skip and limit boundaries.
         rows = rows.slice(skip, skipPlusLimit);
         return Promise.resolve({
-            documents: rows
+            documents: rows,
+            time: now()
         });
     }
 

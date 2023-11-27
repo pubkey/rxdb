@@ -20,7 +20,9 @@ import type {
     RxConflictResultionTask,
     RxConflictResultionTaskSolution,
     RxJsonSchema,
-    RxQueryPlan
+    RxQueryPlan,
+    RxStorageChangedDocumentsSinceResult,
+    RxStorageFindDocumentsByIdResult
 } from './index.d.ts';
 import type {
     Observable
@@ -225,15 +227,7 @@ export interface RxStorageInstance<
          */
         withDeleted: boolean
 
-    ): Promise<
-        /**
-         * For better performance, we return an array
-         * instead of an indexed object because most consumers
-         * of this anyway have to fill a Map() instance or
-         * even do only need the list at all.
-         */
-        RxDocumentData<RxDocType>[]
-    >;
+    ): Promise<RxStorageFindDocumentsByIdResult<RxDocType>>;
 
     /**
      * Runs a NoSQL 'mango' query over the storage
@@ -297,15 +291,7 @@ export interface RxStorageInstance<
          * undefined is used as a checkpoint.
          */
         checkpoint?: CheckpointType
-    ): Promise<{
-        documents: RxDocumentData<RxDocType>[];
-        /**
-         * The checkpoint contains data so that another
-         * call to getChangedDocumentsSince() will continue
-         * from exactly the last document that was returned before.
-         */
-        checkpoint: CheckpointType;
-    }>;
+    ): Promise<RxStorageChangedDocumentsSinceResult<RxDocType, CheckpointType>>;
 
     /**
      * Returns an ongoing stream
