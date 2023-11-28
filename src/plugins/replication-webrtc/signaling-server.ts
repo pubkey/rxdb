@@ -3,10 +3,7 @@ import {
     randomCouchString
 } from '../utils/index.ts';
 import type {
-    PeerMessage,
-    SimplePeerJoinMessage,
-    SimplePeerJoinedMessage,
-    SimplePeerSignalMessage
+    PeerMessage
 } from './connection-handler-simple-peer.ts';
 import type {
     WebSocket
@@ -108,7 +105,6 @@ export async function startSignalingServerSimplePeer(port: number) {
                             return new Set();
                         }
                     );
-
 
                     room.add(peerId);
 
