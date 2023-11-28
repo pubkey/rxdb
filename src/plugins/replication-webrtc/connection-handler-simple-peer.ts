@@ -19,23 +19,34 @@ import {
 } from 'simple-peer';
 import type { RxError, RxTypeError } from '../../types/index.d.ts';
 import { newRxError } from '../../rx-error.ts';
+// import { WebSocket } from 'ws';
 
+export type SimplePeerInitMessage = {
+    type: 'init';
+    yourPeerId: string;
+};
 export type SimplePeerJoinMessage = {
+    type: 'join';
     room: string;
 };
 export type SimplePeerJoinedMessage = {
-    yourPeerId: string;
+    type: 'joined';
     otherPeerIds: string[];
 };
 export type SimplePeerSignalMessage = {
+    type: 'signal';
     room: string;
     senderPeerId: string;
     receiverPeerId: string;
     data: string;
 };
 
+export type PeerMessage = SimplePeerInitMessage | SimplePeerJoinMessage | SimplePeerJoinedMessage | SimplePeerSignalMessage;
 
-const sockets = new Set();
+
+function sendMessage(ws: WebSocket, msg: PeerMessage) {
+    ws.send(JSON.stringify(msg));
+}
 
 /**
  * Returns a connection handler that uses simple-peer and the signaling server.
@@ -48,22 +59,8 @@ export function getConnectionHandlerSimplePeer(
 
         console.log('getConnectionHandlerSimplePeer.creator()');
 
-        const io = await import('socket.io-client');
-       const manager = new io.Manager();
-        const socket = io.connect(serverUrl + '?rand=' + randomCouchString(10), {
-            transports: ["websocket"],
-            forceNew: true,
-            multiplex: false,
-            rememberUpgrade: true
-        });
+        const socket = new WebSocket(serverUrl);
 
-        sockets.add(socket);
-        console.log('socketid ' + socket.id);
-        console.log('total client sockets ' + sockets.size);
-
-        socket.emit('join', {
-            room: options.topic
-        } as SimplePeerJoinMessage);
 
         const connect$ = new Subject<WebRTCPeer>();
         const disconnect$ = new Subject<WebRTCPeer>();
@@ -73,77 +70,96 @@ export function getConnectionHandlerSimplePeer(
 
         const peers = new Map<string, SimplePeer>();
 
-        socket.on('joined', (message: SimplePeerJoinedMessage) => {
+        let ownPeerId: string;
+        socket.onopen = () => {
+            console.log('socket connection opened');
 
-            /**
-             * PeerId is created by the signaling server
-             * to prevent spoofing it.
-            */
-            const ownPeerId = message.yourPeerId;
-            console.log('CLIENT(' + ownPeerId + ') got joined ' + JSON.stringify(message));
+            socket.onmessage = msgEvent => {
 
-            message.otherPeerIds.forEach(remotePeerId => {
-                if (
-                    remotePeerId === ownPeerId ||
-                    peers.has(remotePeerId)
-                ) {
-                    return;
+                const msg: PeerMessage = JSON.parse(msgEvent.data);
+                console.log('client got message:');
+                console.dir(msg);
+
+                switch (msg.type) {
+                    case 'init':
+                        ownPeerId = msg.yourPeerId;
+                        sendMessage(socket, {
+                            type: 'join',
+                            room: options.topic
+                        });
+                        break;
+                    case 'joined':
+                        /**
+                         * PeerId is created by the signaling server
+                         * to prevent spoofing it.
+                         */
+                        console.log('CLIENT(' + ownPeerId + ') got joined ' + JSON.stringify(msg));
+
+                        msg.otherPeerIds.forEach(remotePeerId => {
+                            if (
+                                remotePeerId === ownPeerId ||
+                                peers.has(remotePeerId)
+                            ) {
+                                return;
+                            }
+                            console.log('CLIENT(' + ownPeerId + ') other user joined room remotePeerId: ' + remotePeerId + ' ownPeerId: ' + ownPeerId);
+                            console.log('CLIENT(' + ownPeerId + ') is initiator: ' + (remotePeerId > ownPeerId));
+                            const newPeer: SimplePeer = new Peer({
+                                initiator: remotePeerId > ownPeerId,
+                                wrtc,
+                                trickle: true
+                            }) as any;
+                            peers.set(remotePeerId, newPeer);
+
+                            newPeer.on('signal', (signal: any) => {
+                                console.log('CLIENT(' + ownPeerId + ') emit signal from ' + ownPeerId + ' to ' + remotePeerId);
+                                sendMessage(socket, {
+                                    type: 'signal',
+                                    senderPeerId: ownPeerId,
+                                    receiverPeerId: remotePeerId,
+                                    room: options.topic,
+                                    data: signal
+                                });
+                            });
+
+                            newPeer.on('data', (messageOrResponse: any) => {
+                                messageOrResponse = JSON.parse(messageOrResponse.toString());
+                                console.log('CLIENT(' + ownPeerId + ') got a message from peer3: ' + messageOrResponse)
+                                if (messageOrResponse.result) {
+                                    response$.next({
+                                        peer: newPeer as any,
+                                        response: messageOrResponse
+                                    });
+                                } else {
+                                    message$.next({
+                                        peer: newPeer as any,
+                                        message: messageOrResponse
+                                    });
+                                }
+                            });
+
+                            newPeer.on('error', (error) => {
+                                console.log('CLIENT(' + ownPeerId + ') peer got error:');
+                                console.dir(error);
+                                error$.next(newRxError('RC_WEBRTC_PEER', {
+                                    error
+                                }));
+                            });
+
+                            newPeer.on('connect', () => {
+                                connect$.next(newPeer as any);
+                            });
+
+                        });
+                        break;
+                    case 'signal':
+                        // console.log('got signal(' + peerId + ') ' + data.from + ' -> ' + data.to);
+                        const peer = getFromMapOrThrow(peers, msg.senderPeerId);
+                        peer.signal(msg.data);
+                        break;
                 }
-                console.log('CLIENT(' + ownPeerId + ') other user joined room remotePeerId: ' + remotePeerId + ' ownPeerId: ' + ownPeerId);
-                console.log('CLIENT(' + ownPeerId + ') is initiator: ' + (remotePeerId > ownPeerId));
-                const newPeer: SimplePeer = new Peer({
-                    initiator: remotePeerId > ownPeerId,
-                    wrtc,
-                    trickle: true
-                }) as any;
-                peers.set(remotePeerId, newPeer);
-
-                newPeer.on('signal', (signal: any) => {
-                    console.log('CLIENT(' + ownPeerId + ') emit signal from ' + ownPeerId + ' to ' + remotePeerId);
-                    socket.emit('signal', {
-                        senderPeerId: ownPeerId,
-                        receiverPeerId: remotePeerId,
-                        room: options.topic,
-                        data: signal
-                    } as SimplePeerSignalMessage);
-                });
-
-                newPeer.on('data', (messageOrResponse: any) => {
-                    messageOrResponse = JSON.parse(messageOrResponse.toString());
-                    console.log('CLIENT(' + ownPeerId + ') got a message from peer3: ' + messageOrResponse)
-                    if (messageOrResponse.result) {
-                        response$.next({
-                            peer: newPeer as any,
-                            response: messageOrResponse
-                        });
-                    } else {
-                        message$.next({
-                            peer: newPeer as any,
-                            message: messageOrResponse
-                        });
-                    }
-                });
-
-                newPeer.on('error', (error) => {
-                    console.log('CLIENT(' + ownPeerId + ') peer got error:');
-                    console.dir(error);
-                    error$.next(newRxError('RC_WEBRTC_PEER', {
-                        error
-                    }));
-                });
-
-                newPeer.on('connect', () => {
-                    connect$.next(newPeer as any);
-                });
-
-            });
-        });
-
-        socket.on('signal', (message: SimplePeerSignalMessage) => {
-            // console.log('got signal(' + peerId + ') ' + data.from + ' -> ' + data.to);
-            const peer = getFromMapOrThrow(peers, message.senderPeerId);
-            peer.signal(message.data);
-        });
+            }
+        };
 
         const handler: WebRTCConnectionHandler = {
             error$,
