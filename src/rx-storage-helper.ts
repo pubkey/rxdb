@@ -907,7 +907,6 @@ export function randomDelayStorage<Internals, InstanceCreationOptions>(
                 async query(a) {
                     await promiseWait(input.delayTimeBefore());
                     const ret = await storageInstance.query(a);
-                    await promiseWait(input.delayTimeAfter());
                     return ret;
                 },
                 async count(a) {
