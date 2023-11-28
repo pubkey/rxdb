@@ -56,11 +56,7 @@ export function getConnectionHandlerSimplePeer(
     wrtc?: any
 ): WebRTCConnectionHandlerCreator {
     const creator: WebRTCConnectionHandlerCreator = async (options) => {
-
-        console.log('getConnectionHandlerSimplePeer.creator()');
-
         const socket = new WebSocket(serverUrl);
-
 
         const connect$ = new Subject<WebRTCPeer>();
         const disconnect$ = new Subject<WebRTCPeer>();
@@ -72,14 +68,8 @@ export function getConnectionHandlerSimplePeer(
 
         let ownPeerId: string;
         socket.onopen = () => {
-            console.log('socket connection opened');
-
             socket.onmessage = msgEvent => {
-
                 const msg: PeerMessage = JSON.parse(msgEvent.data);
-                console.log('client got message:');
-                console.dir(msg);
-
                 switch (msg.type) {
                     case 'init':
                         ownPeerId = msg.yourPeerId;
@@ -93,8 +83,6 @@ export function getConnectionHandlerSimplePeer(
                          * PeerId is created by the signaling server
                          * to prevent spoofing it.
                          */
-                        console.log('CLIENT(' + ownPeerId + ') got joined ' + JSON.stringify(msg));
-
                         msg.otherPeerIds.forEach(remotePeerId => {
                             if (
                                 remotePeerId === ownPeerId ||
@@ -102,8 +90,6 @@ export function getConnectionHandlerSimplePeer(
                             ) {
                                 return;
                             }
-                            console.log('CLIENT(' + ownPeerId + ') other user joined room remotePeerId: ' + remotePeerId + ' ownPeerId: ' + ownPeerId);
-                            console.log('CLIENT(' + ownPeerId + ') is initiator: ' + (remotePeerId > ownPeerId));
                             const newPeer: SimplePeer = new Peer({
                                 initiator: remotePeerId > ownPeerId,
                                 wrtc,
@@ -112,7 +98,6 @@ export function getConnectionHandlerSimplePeer(
                             peers.set(remotePeerId, newPeer);
 
                             newPeer.on('signal', (signal: any) => {
-                                console.log('CLIENT(' + ownPeerId + ') emit signal from ' + ownPeerId + ' to ' + remotePeerId);
                                 sendMessage(socket, {
                                     type: 'signal',
                                     senderPeerId: ownPeerId,
@@ -124,7 +109,6 @@ export function getConnectionHandlerSimplePeer(
 
                             newPeer.on('data', (messageOrResponse: any) => {
                                 messageOrResponse = JSON.parse(messageOrResponse.toString());
-                                console.log('CLIENT(' + ownPeerId + ') got a message from peer3: ' + messageOrResponse)
                                 if (messageOrResponse.result) {
                                     response$.next({
                                         peer: newPeer as any,

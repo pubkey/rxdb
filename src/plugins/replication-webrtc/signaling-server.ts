@@ -31,8 +31,6 @@ export async function startSignalingServerSimplePeer(port: number) {
     const peersByRoom = new Map<string, Set<string>>();
 
     function disconnectSocket(peerId: string, reason: string) {
-        console.log('SERVER disconnectSocket(reason: ' + reason + ') ' + peerId);
-
         const peer = peerById.get(peerId);
         if (peer) {
             peer.socket.close(undefined, reason);
@@ -53,7 +51,6 @@ export async function startSignalingServerSimplePeer(port: number) {
          * actors from falsy claiming other peoples ids.
          */
         const peerId = randomCouchString(PEER_ID_LENGTH);
-        console.log('SERVER got connection ' + peerId);
         const peer: ServerPeer = {
             id: peerId,
             socket: ws,
@@ -65,25 +62,20 @@ export async function startSignalingServerSimplePeer(port: number) {
 
 
         ws.on('error', err => {
-            console.log('SERVER ERROR:');
+            console.error('SERVER ERROR:');
             console.dir(err);
             disconnectSocket(peerId, 'socket errored');
         });
         ws.on('close', () => {
-            console.log('SERVER(' + peerId + ') got disconnection');
             disconnectSocket(peerId, 'socket disconnected');
         });
 
         ws.on('message', msgEvent => {
-            console.log('SERVER received: %s', msgEvent.toString());
-
-
             const message = JSON.parse(msgEvent.toString());
             const type = message.type;
             switch (type) {
                 case 'join':
                     const roomId = message.room;
-                    console.log('SERVER(' + peerId + ') join room ' + roomId);
                     if (
                         !validateIdString(roomId) ||
                         !validateIdString(peerId)
@@ -100,10 +92,7 @@ export async function startSignalingServerSimplePeer(port: number) {
                     const room = getFromMapOrCreate(
                         peersByRoom,
                         message.room,
-                        () => {
-                            console.log('SERVER(' + peerId + ') START NEW ROOM: ' + roomId);
-                            return new Set();
-                        }
+                        () => new Set()
                     );
 
                     room.add(peerId);
@@ -123,9 +112,6 @@ export async function startSignalingServerSimplePeer(port: number) {
                     });
                     break;
                 case 'signal':
-                    console.log('SERVER(' + peerId + ') got signal from ' + peerId + ':');
-                    console.dir(message);
-
                     if (
                         message.senderPeerId !== peerId
                     ) {
