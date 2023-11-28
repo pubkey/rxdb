@@ -677,7 +677,6 @@ export function randomDelayStorage(input) {
         async query(a) {
           await promiseWait(input.delayTimeBefore());
           var ret = await storageInstance.query(a);
-          await promiseWait(input.delayTimeAfter());
           return ret;
         },
         async count(a) {

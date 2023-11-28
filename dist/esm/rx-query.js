@@ -451,10 +451,13 @@ function __ensureEqual(rxQuery) {
 
   // oh no we have to re-execute the whole query over the database
   if (mustReExec) {
-    // counter can change while _execOverDatabase() is running so we save it here
-    var latestAfter = rxQuery.collection._changeEventBuffer.counter;
     return rxQuery._execOverDatabase().then(newResultData => {
-      rxQuery._latestChangeEvent = latestAfter;
+      /**
+       * The RxStorage is defined to always first emit events and then return
+       * on bulkWrite() calls. So here we have to use the counter AFTER the execOverDatabase()
+       * has been run, not the one from before.
+       */
+      rxQuery._latestChangeEvent = rxQuery.collection._changeEventBuffer.counter;
 
       // A count query needs a different has-changed check.
       if (typeof newResultData === 'number') {
