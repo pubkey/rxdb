@@ -169,6 +169,32 @@ config.parallel('reactive-query.test.js', () => {
             sub.unsubscribe();
             c.database.destroy();
         });
+        it('doing insert after subscribe should end with the correct results', async () => {
+            console.log('-----------------------------------');
+            const c = await humansCollection.create(1);
+            c.$.subscribe(x => {
+                console.log('collection emitted:');
+                console.dir(x);
+            });
+
+            let result = [];
+            c.insert(schemaObjects.human()).then(() => console.log('2nd insert done')); // do not await here!
+            c.find().$.subscribe(r => {
+                console.log('emitted results ' + r.length);
+                result = r;
+            });
+
+            await c.insert(schemaObjects.human()).then(() => console.log('3rd insert done'));
+            await waitUntil(() => result.length === 3);
+
+            // should still have correct results after some time
+            await wait(50);
+            assert.strictEqual(result.length, 3);
+
+
+
+            c.database.destroy();
+        });
     });
     describe('negative', () => {
         it('get no change when nothing happens', async () => {

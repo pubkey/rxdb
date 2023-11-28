@@ -152,7 +152,7 @@ describe('replication-webrtc.test.ts', () => {
                  * TODO this test fails randomly in the ci with the remote storage.
                  * Likely because of the broadcast events when storage instances are opened too fast.
                  */
-                return;
+                // return;
             }
 
             const c1 = await humansCollection.create(1, 'aaa');

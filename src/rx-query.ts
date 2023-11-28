@@ -218,6 +218,7 @@ export class RxQueryBase<
      * @return results-array with document-data
      */
     async _execOverDatabase(): Promise<RxDocumentData<RxDocType>[] | number> {
+        console.log('_execOverDatabase() START');
         this._execOverDatabaseCount = this._execOverDatabaseCount + 1;
         this._lastExecStart = now();
 
@@ -508,6 +509,7 @@ function _ensureEqual(rxQuery: RxQueryBase<any>): Promise<boolean> {
  * @return true if results have changed
  */
 function __ensureEqual<RxDocType>(rxQuery: RxQueryBase<RxDocType>): Promise<boolean> {
+    console.log('__ENSURE EQUAL START rxQuery._latestChangeEvent : ' + rxQuery._latestChangeEvent);
     rxQuery._lastEnsureEqual = now();
 
     /**
@@ -519,6 +521,7 @@ function __ensureEqual<RxDocType>(rxQuery: RxQueryBase<RxDocType>): Promise<bool
         // nothing happened since last run
         _isResultsInSync(rxQuery)
     ) {
+        console.log('__ENSURE EQUAL DONE (false)');
         return PROMISE_RESOLVE_FALSE;
     }
 
@@ -534,6 +537,10 @@ function __ensureEqual<RxDocType>(rxQuery: RxQueryBase<RxDocType>): Promise<bool
      */
     if (!mustReExec) {
         const missedChangeEvents = rxQuery.asRxQuery.collection._changeEventBuffer.getFrom(rxQuery._latestChangeEvent + 1);
+
+        console.log('missedChangeEvents:');
+        console.dir(missedChangeEvents);
+
         if (missedChangeEvents === null) {
             // changeEventBuffer is of bounds -> we must re-execute over the database
             mustReExec = true;
@@ -583,11 +590,9 @@ function __ensureEqual<RxDocType>(rxQuery: RxQueryBase<RxDocType>): Promise<bool
 
     // oh no we have to re-execute the whole query over the database
     if (mustReExec) {
-        // counter can change while _execOverDatabase() is running so we save it here
-        const latestAfter: number = (rxQuery as any).collection._changeEventBuffer.counter;
         return rxQuery._execOverDatabase()
             .then(newResultData => {
-                rxQuery._latestChangeEvent = latestAfter;
+                rxQuery._latestChangeEvent = (rxQuery as any).collection._changeEventBuffer.counter;
 
                 // A count query needs a different has-changed check.
                 if (typeof newResultData === 'number') {
@@ -611,10 +616,12 @@ function __ensureEqual<RxDocType>(rxQuery: RxQueryBase<RxDocType>): Promise<bool
                     ret = true; // true because results changed
                     rxQuery._setResultData(newResultData as any);
                 }
+                console.log('__ENSURE EQUAL DONE (' + ret + ') EXEC OVER DB');
                 return ret;
             });
     }
 
+    console.log('__ENSURE EQUAL DONE (' + ret + ')');
     return Promise.resolve(ret); // true if results have changed
 }
 
