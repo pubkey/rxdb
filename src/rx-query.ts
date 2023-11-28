@@ -598,7 +598,7 @@ function __ensureEqual<RxDocType>(rxQuery: RxQueryBase<RxDocType>): Promise<bool
                  * on bulkWrite() calls. So here we have to use the counter AFTER the execOverDatabase()
                  * has been run, not the one from before.
                  */
-                rxQuery._latestChangeEvent = (rxQuery as any).collection._changeEventBuffer.counter;
+                rxQuery._latestChangeEvent = rxQuery.collection._changeEventBuffer.counter;
 
                 // A count query needs a different has-changed check.
                 if (typeof newResultData === 'number') {
