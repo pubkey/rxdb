@@ -81,43 +81,23 @@ The WebRTC replication is **always live** because there can not be a one-time sy
 
 For P2P replication to work with the RxDB WebRTC Replication Plugin, a [signaling server](https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Signaling_and_video_calling) is required. The signaling server helps peers discover each other and establish connections.
 
+RxDB ships with a default signaling server that can be used with the simple-peer connection handler.
+
 Creating a basic signaling server is straightforward. The provided example uses 'socket.io' for WebSocket communication. However, in production, you'd want to create a more robust signaling server with authentication and additional logic to suit your application's needs.
 
 Here is a quick example implementation of a signaling server that can be used with the connection handler from `getConnectionHandlerSimplePeer()`:
 
 ```ts
-export async function startSignalingServer(port: number): Promise<string> {
-    const server = require('http').createServer();
-    const io = require('socket.io')(server);
-    const socketByPeerId = new Map();
-    const socketsByRoom = new Map();
-    io.on('connection', function (socket: any) {
-        socket.on('signal', (message: any) => {
-            socketByPeerId.get(message.to).emit('signal', message);
-        });
-        socket.on('join', (message: any) => {
-            if (!socketsByRoom.has(message.room)) {
-                console.log('START NEW ROOM: ' + message.room);
-                socketsByRoom.set(message.room, []);
-            }
-            socketsByRoom.get(message.room).push({
-                socket,
-                peerId: message.peerId
-            });
-            socketByPeerId.set(message.peerId, socket);
-            const roomPeerIds = socketsByRoom.get(message.room).map((row: any) => row.peerId);
-            socketsByRoom.get(message.room).forEach((row: any) => {
-                row.socket.emit('joined', roomPeerIds);
-            });
-        });
-    });
-    return new Promise(res => {
-        server.listen(port, () => {
-            res('ws://localhost:' + port);
-        });
-    });
-}
+import {
+    startSignalingServerSimplePeer
+} from 'rxdb/plugins/replication-webrtc';
+
+const serverState = await startSignalingServerSimplePeer(
+    8080 // <- port
+);
 ```
+
+For custom signaling servers with more complex logic, you can check the [source code of the default one](https://github.com/pubkey/rxdb/blob/master/src/plugins/replication-webrtc/signaling-server.ts).
 
 ## Conflict detection in WebRTC replication
 
