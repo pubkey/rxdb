@@ -60,9 +60,9 @@ async function run() {
     });
     console.log('# WSS server is up');
 
-    // server.listen(443, () => {
-    //     console.log('# Started Server on 443');
-    // });
+    server.listen(443, () => {
+        console.log('# Started Server on 443');
+    });
 
 
     /**
