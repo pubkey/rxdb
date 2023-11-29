@@ -417,7 +417,8 @@
     "disc": "npm run transpile && npm run build:esm && cross-env NODE_ENV=disc webpack --config ./config/webpack.config.js",
     "preversion": "npm run lint && npm run test",
     "dev": "watch 'npm run test:node:memory' src/ test/",
-    "dev:example": "watch 'npm run transpile:src && echo \"done\"' src/ test/"
+    "dev:example": "watch 'npm run transpile:src && echo \"done\"' src/ test/",
+    "cloud-signaling-server": "node ./scripts/start-cloud-signaling-server.mjs"
   },
   "pre-commit": [
     "lint"

@@ -6,7 +6,8 @@ import type {
     PeerMessage
 } from './connection-handler-simple-peer.ts';
 import type {
-    WebSocket
+    WebSocket,
+    ServerOptions
 } from 'ws';
 
 export const PEER_ID_LENGTH = 12;
@@ -21,11 +22,11 @@ export type ServerPeer = {
  * Starts a WebRTC signaling server
  * that can be used in tests.
 */
-export async function startSignalingServerSimplePeer(port: number) {
+export async function startSignalingServerSimplePeer(
+    serverOptions: ServerOptions
+) {
     const { WebSocketServer } = await import('ws');
-    const wss = new WebSocketServer({
-        port,
-    });
+    const wss = new WebSocketServer(serverOptions);
 
     const peerById = new Map<string, ServerPeer>();
     const peersByRoom = new Map<string, Set<string>>();
@@ -134,9 +135,9 @@ export async function startSignalingServerSimplePeer(port: number) {
     });
 
     return {
-        port,
+        port: serverOptions.port,
         server: wss,
-        localUrl: 'ws://localhost:' + port
+        localUrl: 'ws://localhost:' + serverOptions.port
     };
 }
 

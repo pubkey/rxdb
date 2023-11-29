@@ -26,7 +26,9 @@ export function startTestServers() {
 
     // we need one graphql server so the browser can sync to it
     GraphQLServer.spawn([], 18000);
-    startSignalingServerSimplePeer(18006);
+    startSignalingServerSimplePeer({
+        port: 18006
+    });
     startRemoteStorageServer(18007);
 
     /**
