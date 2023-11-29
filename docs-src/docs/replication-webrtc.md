@@ -91,7 +91,7 @@ const replicationPool = await replicateWebRTC(
             signalingServerUrl: 'wss://example.com:8080',
             wrtc: nodeDatachannelPolyfill,
             webSocketConstructor: WebSocket
-    })
+        })
         /* ... */
     }
 );
