@@ -48,12 +48,9 @@ describe('replication-webrtc.test.ts', () => {
         it('import WebRTC polyfills on Node.js', async () => {
             if (config.platform.isNode()) {
                 const wrtcModule = await import('node-datachannel/polyfill');
-                console.dir(wrtcModule);
                 wrtc = wrtcModule.default as any;
 
                 const wsModule = await import('ws');
-                console.dir(wsModule);
-
                 webSocketConstructor = wsModule.WebSocket as any;
             }
         });
