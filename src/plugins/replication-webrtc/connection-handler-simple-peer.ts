@@ -1,8 +1,7 @@
 import { Subject } from 'rxjs';
 import {
     getFromMapOrThrow,
-    PROMISE_RESOLVE_VOID,
-    randomCouchString
+    PROMISE_RESOLVE_VOID
 } from '../../plugins/utils/index.ts';
 import type {
     WebRTCConnectionHandler,
@@ -15,11 +14,11 @@ import type {
 
 import {
     Instance as SimplePeer,
+    Options as SimplePeerOptions,
     default as Peer
 } from 'simple-peer';
 import type { RxError, RxTypeError } from '../../types/index.d.ts';
 import { newRxError } from '../../rx-error.ts';
-// import { WebSocket } from 'ws';
 
 export type SimplePeerInitMessage = {
     type: 'init';
@@ -50,25 +49,36 @@ function sendMessage(ws: WebSocket, msg: PeerMessage) {
 
 const DEFAULT_SIGNALING_SERVER_HOSTNAME = 'signaling.rxdb.info';
 export const DEFAULT_SIGNALING_SERVER = 'wss://' + DEFAULT_SIGNALING_SERVER_HOSTNAME + '/';
-
 let defaultServerWarningShown = false;
 
-/**
- * Returns a connection handler that uses simple-peer and the signaling server.
- */
-export function getConnectionHandlerSimplePeer(
+export type SimplePeerWrtc = SimplePeerOptions['wrtc'];
+
+export type SimplePeerConnectionHandlerOptions = {
     /**
      * If no server is specified, the default signaling server
      * from signaling.rxdb.info is used.
      * This server is not reliable and you should use
      * your own signaling server instead.
      */
-    serverUrl: string = DEFAULT_SIGNALING_SERVER,
-    wrtc?: any
-): WebRTCConnectionHandlerCreator {
+    signalingServerUrl?: string;
+    wrtc?: SimplePeerWrtc;
+    webSocketConstructor?: WebSocket;
+};
+
+/**
+ * Returns a connection handler that uses simple-peer and the signaling server.
+ */
+export function getConnectionHandlerSimplePeer({
+    signalingServerUrl,
+    wrtc,
+    webSocketConstructor
+}: SimplePeerConnectionHandlerOptions): WebRTCConnectionHandlerCreator {
+
+    signalingServerUrl = signalingServerUrl ? signalingServerUrl : DEFAULT_SIGNALING_SERVER;
+    webSocketConstructor = webSocketConstructor ? webSocketConstructor as any : WebSocket;
 
     if (
-        serverUrl.includes(DEFAULT_SIGNALING_SERVER_HOSTNAME) &&
+        signalingServerUrl.includes(DEFAULT_SIGNALING_SERVER_HOSTNAME) &&
         !defaultServerWarningShown
     ) {
         defaultServerWarningShown = true;
@@ -78,15 +88,15 @@ export function getConnectionHandlerSimplePeer(
                 'but you did not specify your own signaling server url.',
                 'By default it will use a signaling server provided by RxDB at ' + DEFAULT_SIGNALING_SERVER,
                 'This server is made for demonstration purposes and tryouts. It is not reliable and might be offline at any time.',
-                'In production you must always',
-                'use your own signaling server instead. Learn how to run your own server at https://rxdb.info/replication-webrtc.html',
-                'Also leave a start at the RxDB github repo 🙏'
+                'In production you must always use your own signaling server instead.',
+                'Learn how to run your own server at https://rxdb.info/replication-webrtc.html',
+                'Also leave a start at the RxDB github repo 🙏 https://github.com/pubkey/rxdb 🙏'
             ].join(' ')
         );
     }
 
     const creator: WebRTCConnectionHandlerCreator = async (options) => {
-        const socket = new WebSocket(serverUrl);
+        const socket = new (webSocketConstructor as any)(signalingServerUrl);
 
         const connect$ = new Subject<WebRTCPeer>();
         const disconnect$ = new Subject<WebRTCPeer>();
@@ -98,8 +108,8 @@ export function getConnectionHandlerSimplePeer(
 
         let ownPeerId: string;
         socket.onopen = () => {
-            socket.onmessage = msgEvent => {
-                const msg: PeerMessage = JSON.parse(msgEvent.data);
+            socket.onmessage = (msgEvent: any) => {
+                const msg: PeerMessage = JSON.parse(msgEvent.data as any);
                 switch (msg.type) {
                     case 'init':
                         ownPeerId = msg.yourPeerId;

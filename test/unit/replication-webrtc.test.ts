@@ -16,28 +16,16 @@ import {
     RxWebRTCReplicationPool,
     // getConnectionHandlerP2PCF,
     isMasterInWebRTCReplication,
-    getConnectionHandlerSimplePeer
+    getConnectionHandlerSimplePeer,
+    SimplePeerWrtc
 } from '../../plugins/replication-webrtc/index.mjs';
 
 import { randomString, wait, waitUntil } from 'async-test-util';
 
 describe('replication-webrtc.test.ts', () => {
-    if (!config.storage.hasReplication) {
-        return;
-    }
-    if (config.platform.isNode() || config.isDeno) {
-        /**
-         * We cannot run these tests in Node.js
-         * because the node WebRTC polyfill is broken
-         * and does not work on mac.
-         * @link https://github.com/node-webrtc/node-webrtc/issues/729
-         */
-        return;
-    }
-
     if (
-        !config.storage.hasPersistence ||
-        config.storage.name === 'memory' // TODO this fails in the CI but works locally
+        !config.storage.hasReplication ||
+        !config.storage.hasPersistence
     ) {
         return;
     }
@@ -50,9 +38,23 @@ describe('replication-webrtc.test.ts', () => {
         return;
     }
 
-    let wrtc: any;
+    let wrtc: SimplePeerWrtc;
+    let webSocketConstructor: WebSocket;
+
     const signalingServerUrl: string = 'ws://localhost:18006';
     // const signalingServerUrl: string = 'wss://signaling.rxdb.info/';
+
+    describe('init', () => {
+        it('import WebRTC polyfills on Node.js', async () => {
+            if (config.platform.isNode()) {
+                const wrtcModule = await import('node-datachannel/polyfill');
+                wrtc = wrtcModule.default as any;
+
+                const wsModule = await import('ws');
+                webSocketConstructor = wsModule.WebSocket as any;
+            }
+        });
+    });
     describe('utils', () => {
         describe('.isMasterInWebRTCReplication()', () => {
             new Array(10).fill(0).forEach(() => {
@@ -118,10 +120,11 @@ describe('replication-webrtc.test.ts', () => {
                     secret,
                     // connectionHandlerCreator: getConnectionHandlerWebtorrent([webtorrentTrackerUrl]),
                     // connectionHandlerCreator: getConnectionHandlerP2PCF(),
-                    connectionHandlerCreator: getConnectionHandlerSimplePeer(
+                    connectionHandlerCreator: getConnectionHandlerSimplePeer({
                         signalingServerUrl,
-                        wrtc
-                    ),
+                        wrtc,
+                        webSocketConstructor
+                    }),
                     pull: {},
                     push: {}
                 });

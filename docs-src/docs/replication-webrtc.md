@@ -55,25 +55,47 @@ const replicationPool = await replicateWebRTC(
          * To learn how to create a custom connection handler, read the source code,
          * it is pretty simple.
          */
-        connectionHandlerCreator: getConnectionHandlerSimplePeer(
+        connectionHandlerCreator: getConnectionHandlerSimplePeer({
             // Set the signaling server url.
             // You can use the server provided by RxDB for tryouts,
             // but in production you should use your own server instead.
-            'wss://signaling.rxdb.info/',
+            signalingServerUrl: 'wss://signaling.rxdb.info/',
 
             // only in Node.js, we need the wrtc library
             // because Node.js does not contain the WebRTC API.
-            require('wrtc')
-        ),
+            wrtc: require('node-datachannel/polyfill'),
+            // only in Node.js, we need the WebSocket library
+            // because Node.js does not contain the WebSocket API.
+            webSocketConstructor: require('ws').WebSocket
+    }),
         pull: {},
         push: {}
     }
 );
 replicationPool.error$.subscribe(err => { /* ... */ });
 replicationPool.cancel();
-
 ```
 
+### Polyfill the WebSocket and WebRTC API in Node.js
+
+While all modern browsers support the WebRTC and WebSocket APIs, they is missing in Node.js which will throw the error `No WebRTC support: Specify opts.wrtc option in this environment`. Therefore you have to polyfill it with a compatible WebRTC and WebSocket polyfill. It is recommended to use the [node-datachannel package](https://github.com/murat-dogan/node-datachannel/tree/master/polyfill) for WebRTC which **does not** come with RxDB but has to be installed before via `npm install node-datachannel --save`.
+For the Websocket API use the `ws` package that is included into RxDB.
+
+```ts
+import nodeDatachannelPolyfill from 'node-datachannel/polyfill';
+import { WebSocket } from 'ws';
+const replicationPool = await replicateWebRTC(
+    {
+        /* ... */
+        connectionHandlerCreator: getConnectionHandlerSimplePeer({
+            signalingServerUrl: 'wss://example.com:8080',
+            wrtc: nodeDatachannelPolyfill,
+            webSocketConstructor: WebSocket
+        })
+        /* ... */
+    }
+);
+```
 
 ## Live replications
 
