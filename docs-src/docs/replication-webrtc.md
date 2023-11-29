@@ -92,9 +92,9 @@ import {
     startSignalingServerSimplePeer
 } from 'rxdb/plugins/replication-webrtc';
 
-const serverState = await startSignalingServerSimplePeer(
-    8080 // <- port
-);
+const serverState = await startSignalingServerSimplePeer({
+    port: 8080 // <- port
+});
 ```
 
 For custom signaling servers with more complex logic, you can check the [source code of the default one](https://github.com/pubkey/rxdb/blob/master/src/plugins/replication-webrtc/signaling-server.ts).
