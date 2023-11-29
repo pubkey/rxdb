@@ -91,7 +91,6 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
     }
 
     async bulkWrite(documentWrites: BulkWriteRow<RxDocType>[], context: string): Promise<RxStorageBulkWriteResponse<RxDocType>> {
-        console.log('DENO bulk write START');
         const kv = await this.kvPromise;
         const primaryPath = this.primaryPath;
         const ret: RxStorageBulkWriteResponse<RxDocType> = {
@@ -196,7 +195,6 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
                 }
             }
         }
-        console.log('DENO bulk write DONE');
         return ret;
     }
     async findDocumentsById(ids: string[], withDeleted: boolean): Promise<RxDocumentData<RxDocType>[]> {
