@@ -16,7 +16,8 @@ import {
     RxWebRTCReplicationPool,
     // getConnectionHandlerP2PCF,
     isMasterInWebRTCReplication,
-    getConnectionHandlerSimplePeer
+    getConnectionHandlerSimplePeer,
+    SimplePeerWrtc
 } from '../../plugins/replication-webrtc/index.mjs';
 
 import { randomString, wait, waitUntil } from 'async-test-util';
@@ -37,16 +38,23 @@ describe('replication-webrtc.test.ts', () => {
         return;
     }
 
-    let wrtc: any;
+    let wrtc: SimplePeerWrtc;
+    let webSocketConstructor: WebSocket;
+
     const signalingServerUrl: string = 'ws://localhost:18006';
     // const signalingServerUrl: string = 'wss://signaling.rxdb.info/';
 
     describe('init', () => {
         it('import WebRTC polyfills on Node.js', async () => {
             if (config.platform.isNode()) {
-                const module = await import('node-datachannel/polyfill');
-                console.dir(module);
-                wrtc = module.default;
+                const wrtcModule = await import('node-datachannel/polyfill');
+                console.dir(wrtcModule);
+                wrtc = wrtcModule.default as any;
+
+                const wsModule = await import('ws');
+                console.dir(wsModule);
+
+                webSocketConstructor = wsModule.WebSocket as any;
             }
         });
     });
@@ -115,10 +123,11 @@ describe('replication-webrtc.test.ts', () => {
                     secret,
                     // connectionHandlerCreator: getConnectionHandlerWebtorrent([webtorrentTrackerUrl]),
                     // connectionHandlerCreator: getConnectionHandlerP2PCF(),
-                    connectionHandlerCreator: getConnectionHandlerSimplePeer(
+                    connectionHandlerCreator: getConnectionHandlerSimplePeer({
                         signalingServerUrl,
-                        wrtc
-                    ),
+                        wrtc,
+                        webSocketConstructor
+                    }),
                     pull: {},
                     push: {}
                 });
