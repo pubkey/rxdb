@@ -307,6 +307,7 @@ export var RxQueryBase = /*#__PURE__*/function () {
 
     // time stamps on when the last full exec over the database has run
     // used to properly handle events that happen while the find-query is running
+
     /**
      * ensures that the exec-runs
      * are not run in parallel

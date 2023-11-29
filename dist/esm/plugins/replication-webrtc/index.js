@@ -181,6 +181,7 @@ export var RxWebRTCReplicationPool = /*#__PURE__*/function () {
   return RxWebRTCReplicationPool;
 }();
 export * from "./webrtc-helper.js";
+export * from "./signaling-server.js";
 export * from "./webrtc-types.js";
 // export * from './connection-handler-webtorrent';
 // export * from './connection-handler-p2pcf';

@@ -39,7 +39,26 @@ var RxStorageInstanceDenoKV = exports.RxStorageInstanceDenoKV = /*#__PURE__*/fun
       return kv;
     });
   }
+
+  /**
+   * DenoKV has no transactions
+   * so we have to ensure that there is no write in between our queries
+   * which would confuse RxDB and return wrong query results.
+   */
   var _proto = RxStorageInstanceDenoKV.prototype;
+  _proto.retryUntilNoWriteInBetween = async function retryUntilNoWriteInBetween(fn) {
+    var kv = await this.kvPromise;
+    while (true) {
+      var writeBlockKeyBefore = await kv.get([this.keySpace], this.kvOptions);
+      var writeBlockValueBefore = writeBlockKeyBefore ? writeBlockKeyBefore.value : -1;
+      var result = await fn();
+      var writeBlockKeyAfter = await kv.get([this.keySpace], this.kvOptions);
+      var writeBlockValueAfter = writeBlockKeyAfter ? writeBlockKeyAfter.value : -1;
+      if (writeBlockValueBefore === writeBlockValueAfter) {
+        return result;
+      }
+    }
+  };
   _proto.bulkWrite = async function bulkWrite(documentWrites, context) {
     var _this = this;
     var kv = await this.kvPromise;
@@ -152,7 +171,7 @@ var RxStorageInstanceDenoKV = exports.RxStorageInstanceDenoKV = /*#__PURE__*/fun
     return ret;
   };
   _proto.query = function query(preparedQuery) {
-    return (0, _denokvQuery.queryDenoKV)(this, preparedQuery);
+    return this.retryUntilNoWriteInBetween(() => (0, _denokvQuery.queryDenoKV)(this, preparedQuery));
   };
   _proto.count = async function count(preparedQuery) {
     /**
@@ -160,83 +179,87 @@ var RxStorageInstanceDenoKV = exports.RxStorageInstanceDenoKV = /*#__PURE__*/fun
      * range counts. So we have to run a normal query and use the result set length.
      * @link https://github.com/denoland/deno/issues/18965
      */
-    var result = await this.query(preparedQuery);
+    var result = await this.retryUntilNoWriteInBetween(() => this.query(preparedQuery));
     return {
       count: result.documents.length,
       mode: 'fast'
     };
   };
   _proto.info = async function info() {
-    var kv = await this.kvPromise;
-    var range = kv.list({
-      start: [this.keySpace, _denokvHelper.DENOKV_DOCUMENT_ROOT_PATH],
-      end: [this.keySpace, _denokvHelper.DENOKV_DOCUMENT_ROOT_PATH, _queryPlanner.INDEX_MAX]
-    }, this.kvOptions);
-    var totalCount = 0;
-    for await (var res of range) {
-      totalCount++;
-    }
-    return {
-      totalCount
-    };
+    return this.retryUntilNoWriteInBetween(async () => {
+      var kv = await this.kvPromise;
+      var range = kv.list({
+        start: [this.keySpace, _denokvHelper.DENOKV_DOCUMENT_ROOT_PATH],
+        end: [this.keySpace, _denokvHelper.DENOKV_DOCUMENT_ROOT_PATH, _queryPlanner.INDEX_MAX]
+      }, this.kvOptions);
+      var totalCount = 0;
+      for await (var res of range) {
+        totalCount++;
+      }
+      return {
+        totalCount
+      };
+    });
   };
   _proto.getAttachmentData = function getAttachmentData(documentId, attachmentId, digest) {
     throw new Error("Method not implemented.");
   };
   _proto.getChangedDocumentsSince = async function getChangedDocumentsSince(limit, checkpoint) {
-    var kv = await this.kvPromise;
-    var index = ['_meta.lwt', this.primaryPath];
-    var indexName = (0, _denokvHelper.getDenoKVIndexName)(index);
-    var indexMeta = this.internals.indexes[indexName];
-    var lowerBoundString = '';
-    if (checkpoint) {
-      var checkpointPartialDoc = {
-        [this.primaryPath]: checkpoint.id,
-        _meta: {
-          lwt: checkpoint.lwt
+    return this.retryUntilNoWriteInBetween(async () => {
+      var kv = await this.kvPromise;
+      var index = ['_meta.lwt', this.primaryPath];
+      var indexName = (0, _denokvHelper.getDenoKVIndexName)(index);
+      var indexMeta = this.internals.indexes[indexName];
+      var lowerBoundString = '';
+      if (checkpoint) {
+        var checkpointPartialDoc = {
+          [this.primaryPath]: checkpoint.id,
+          _meta: {
+            lwt: checkpoint.lwt
+          }
+        };
+        lowerBoundString = indexMeta.getIndexableString(checkpointPartialDoc);
+        lowerBoundString = (0, _customIndex.changeIndexableStringByOneQuantum)(lowerBoundString, 1);
+      }
+      var range = kv.list({
+        start: [this.keySpace, indexMeta.indexId, lowerBoundString],
+        end: [this.keySpace, indexMeta.indexId, _queryPlanner.INDEX_MAX]
+      }, {
+        consistency: this.settings.consistencyLevel,
+        limit,
+        batchSize: this.settings.batchSize
+      });
+      var docIds = [];
+      for await (var row of range) {
+        var docId = row.value;
+        docIds.push([this.keySpace, _denokvHelper.DENOKV_DOCUMENT_ROOT_PATH, docId]);
+      }
+
+      /**
+       * We have to run in batches because without it says
+       * "TypeError: too many ranges (max 10)"
+       */
+      var batches = (0, _utilsArray.batchArray)(docIds, 10);
+      var result = [];
+      for (var batch of batches) {
+        var docs = await kv.getMany(batch);
+        docs.forEach(row => {
+          var docData = row.value;
+          result.push(docData);
+        });
+      }
+      var lastDoc = (0, _utilsArray.lastOfArray)(result);
+      return {
+        documents: result,
+        checkpoint: lastDoc ? {
+          id: lastDoc[this.primaryPath],
+          lwt: lastDoc._meta.lwt
+        } : checkpoint ? checkpoint : {
+          id: '',
+          lwt: 0
         }
       };
-      lowerBoundString = indexMeta.getIndexableString(checkpointPartialDoc);
-      lowerBoundString = (0, _customIndex.changeIndexableStringByOneQuantum)(lowerBoundString, 1);
-    }
-    var range = kv.list({
-      start: [this.keySpace, indexMeta.indexId, lowerBoundString],
-      end: [this.keySpace, indexMeta.indexId, _queryPlanner.INDEX_MAX]
-    }, {
-      consistency: this.settings.consistencyLevel,
-      limit,
-      batchSize: this.settings.batchSize
     });
-    var docIds = [];
-    for await (var row of range) {
-      var docId = row.value;
-      docIds.push([this.keySpace, _denokvHelper.DENOKV_DOCUMENT_ROOT_PATH, docId]);
-    }
-
-    /**
-     * We have to run in batches because without it says
-     * "TypeError: too many ranges (max 10)"
-     */
-    var batches = (0, _utilsArray.batchArray)(docIds, 10);
-    var result = [];
-    for (var batch of batches) {
-      var docs = await kv.getMany(batch);
-      docs.forEach(row => {
-        var docData = row.value;
-        result.push(docData);
-      });
-    }
-    var lastDoc = (0, _utilsArray.lastOfArray)(result);
-    return {
-      documents: result,
-      checkpoint: lastDoc ? {
-        id: lastDoc[this.primaryPath],
-        lwt: lastDoc._meta.lwt
-      } : checkpoint ? checkpoint : {
-        id: '',
-        lwt: 0
-      }
-    };
   };
   _proto.changeStream = function changeStream() {
     return this.changes$.asObservable();
