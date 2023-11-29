@@ -87,11 +87,11 @@ import { WebSocket } from 'ws';
 const replicationPool = await replicateWebRTC(
     {
         /* ... */
-        connectionHandlerCreator: getConnectionHandlerSimplePeer(
-            'wss://example.com:8080',
-            nodeDatachannelPolyfill,
+        connectionHandlerCreator: getConnectionHandlerSimplePeer({
+            signalingServerUrl: 'wss://example.com:8080',
+            wrtc: nodeDatachannelPolyfill,
             webSocketConstructor: WebSocket
-        )
+    })
         /* ... */
     }
 );
