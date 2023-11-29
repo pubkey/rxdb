@@ -320,6 +320,7 @@ var RxQueryBase = exports.RxQueryBase = /*#__PURE__*/function () {
 
     // time stamps on when the last full exec over the database has run
     // used to properly handle events that happen while the find-query is running
+
     /**
      * ensures that the exec-runs
      * are not run in parallel
@@ -464,10 +465,13 @@ function __ensureEqual(rxQuery) {
 
   // oh no we have to re-execute the whole query over the database
   if (mustReExec) {
-    // counter can change while _execOverDatabase() is running so we save it here
-    var latestAfter = rxQuery.collection._changeEventBuffer.counter;
     return rxQuery._execOverDatabase().then(newResultData => {
-      rxQuery._latestChangeEvent = latestAfter;
+      /**
+       * The RxStorage is defined to always first emit events and then return
+       * on bulkWrite() calls. So here we have to use the counter AFTER the execOverDatabase()
+       * has been run, not the one from before.
+       */
+      rxQuery._latestChangeEvent = rxQuery.collection._changeEventBuffer.counter;
 
       // A count query needs a different has-changed check.
       if (typeof newResultData === 'number') {

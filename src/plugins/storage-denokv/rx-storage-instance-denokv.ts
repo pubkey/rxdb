@@ -67,6 +67,29 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
             return kv;
         });
     }
+
+    /**
+     * DenoKV has no transactions
+     * so we have to ensure that there is no write in between our queries
+     * which would confuse RxDB and return wrong query results.
+     */
+    async retryUntilNoWriteInBetween<T>(
+        fn: () => Promise<T>
+    ): Promise<T> {
+        const kv = await this.kvPromise;
+        while (true) {
+            const writeBlockKeyBefore = await kv.get([this.keySpace], this.kvOptions);
+            const writeBlockValueBefore = writeBlockKeyBefore ? writeBlockKeyBefore.value : -1;
+            const result = await fn();
+            const writeBlockKeyAfter = await kv.get([this.keySpace], this.kvOptions);
+            const writeBlockValueAfter = writeBlockKeyAfter ? writeBlockKeyAfter.value : -1;
+
+            if (writeBlockValueBefore === writeBlockValueAfter) {
+                return result;
+            }
+        }
+    }
+
     async bulkWrite(documentWrites: BulkWriteRow<RxDocType>[], context: string): Promise<RxStorageBulkWriteResponse<RxDocType>> {
         const kv = await this.kvPromise;
         const primaryPath = this.primaryPath;
@@ -74,16 +97,6 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
             success: [],
             error: []
         };
-        const eventBulkId = randomCouchString(10);
-        const eventBulk: EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, any> = {
-            id: eventBulkId,
-            events: [],
-            checkpoint: null,
-            context,
-            startTime: now(),
-            endTime: 0
-        };
-
 
         const batches = batchArray(documentWrites, ensureNotFalsy(this.settings.batchSize));
 
@@ -169,22 +182,19 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
                 const txResult = await tx.commit();
                 if (txResult.ok) {
                     appendToArray(ret.error, categorized.errors);
-                    appendToArray(eventBulk.events, categorized.eventBulk.events);
+                    if (categorized.eventBulk.events.length > 0) {
+                        const lastState = ensureNotFalsy(categorized.newestRow).document;
+                        categorized.eventBulk.checkpoint = {
+                            id: lastState[primaryPath],
+                            lwt: lastState._meta.lwt
+                        };
+                        categorized.eventBulk.endTime = now();
+                        this.changes$.next(categorized.eventBulk);
+                    }
                     break;
                 }
             }
         }
-
-        if (eventBulk.events.length > 0) {
-            const lastEvent = ensureNotFalsy(lastOfArray(eventBulk.events));
-            eventBulk.checkpoint = {
-                id: lastEvent.documentData[this.primaryPath],
-                lwt: lastEvent.documentData._meta.lwt
-            };
-            eventBulk.endTime = now();
-            this.changes$.next(eventBulk);
-        }
-
         return ret;
     }
     async findDocumentsById(ids: string[], withDeleted: boolean): Promise<RxDocumentData<RxDocType>[]> {
@@ -209,7 +219,9 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
         return ret;
     }
     query(preparedQuery: DenoKVPreparedQuery<RxDocType>): Promise<RxStorageQueryResult<RxDocType>> {
-        return queryDenoKV(this, preparedQuery);
+        return this.retryUntilNoWriteInBetween(
+            () => queryDenoKV(this, preparedQuery)
+        );
     }
     async count(preparedQuery: DenoKVPreparedQuery<RxDocType>): Promise<RxStorageCountResult> {
         /**
@@ -217,89 +229,98 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
          * range counts. So we have to run a normal query and use the result set length.
          * @link https://github.com/denoland/deno/issues/18965
          */
-        const result = await this.query(preparedQuery);
+        const result = await this.retryUntilNoWriteInBetween(
+            () => this.query(preparedQuery)
+        );
         return {
             count: result.documents.length,
             mode: 'fast'
         };
     }
     async info(): Promise<RxStorageInfoResult> {
-        const kv = await this.kvPromise;
-        const range = kv.list({
-            start: [this.keySpace, DENOKV_DOCUMENT_ROOT_PATH],
-            end: [this.keySpace, DENOKV_DOCUMENT_ROOT_PATH, INDEX_MAX]
-        }, this.kvOptions);
-        let totalCount = 0;
-        for await (const res of range) {
-            totalCount++;
-        }
-        return {
-            totalCount
-        };
+        return this.retryUntilNoWriteInBetween(
+            async () => {
+                const kv = await this.kvPromise;
+                const range = kv.list({
+                    start: [this.keySpace, DENOKV_DOCUMENT_ROOT_PATH],
+                    end: [this.keySpace, DENOKV_DOCUMENT_ROOT_PATH, INDEX_MAX]
+                }, this.kvOptions);
+                let totalCount = 0;
+                for await (const res of range) {
+                    totalCount++;
+                }
+                return {
+                    totalCount
+                };
+            }
+        );
     }
     getAttachmentData(documentId: string, attachmentId: string, digest: string): Promise<string> {
         throw new Error("Method not implemented.");
     }
     async getChangedDocumentsSince(limit: number, checkpoint?: RxStorageDefaultCheckpoint | undefined): Promise<{ documents: RxDocumentData<RxDocType>[]; checkpoint: RxStorageDefaultCheckpoint; }> {
-        const kv = await this.kvPromise;
-        const index = [
-            '_meta.lwt',
-            this.primaryPath as any
-        ];
-        const indexName = getDenoKVIndexName(index);
-        const indexMeta = this.internals.indexes[indexName];
-        let lowerBoundString = '';
-        if (checkpoint) {
-            const checkpointPartialDoc: any = {
-                [this.primaryPath]: checkpoint.id,
-                _meta: {
-                    lwt: checkpoint.lwt
+        return this.retryUntilNoWriteInBetween(
+            async () => {
+                const kv = await this.kvPromise;
+                const index = [
+                    '_meta.lwt',
+                    this.primaryPath as any
+                ];
+                const indexName = getDenoKVIndexName(index);
+                const indexMeta = this.internals.indexes[indexName];
+                let lowerBoundString = '';
+                if (checkpoint) {
+                    const checkpointPartialDoc: any = {
+                        [this.primaryPath]: checkpoint.id,
+                        _meta: {
+                            lwt: checkpoint.lwt
+                        }
+                    };
+                    lowerBoundString = indexMeta.getIndexableString(checkpointPartialDoc);
+                    lowerBoundString = changeIndexableStringByOneQuantum(lowerBoundString, 1);
                 }
-            };
-            lowerBoundString = indexMeta.getIndexableString(checkpointPartialDoc);
-            lowerBoundString = changeIndexableStringByOneQuantum(lowerBoundString, 1);
-        }
 
-        const range = kv.list({
-            start: [this.keySpace, indexMeta.indexId, lowerBoundString],
-            end: [this.keySpace, indexMeta.indexId, INDEX_MAX]
-        }, {
-            consistency: this.settings.consistencyLevel,
-            limit,
-            batchSize: this.settings.batchSize
-        });
-        const docIds: any[] = [];
-        for await (const row of range) {
-            const docId = row.value;
-            docIds.push([this.keySpace, DENOKV_DOCUMENT_ROOT_PATH, docId]);
-        }
+                const range = kv.list({
+                    start: [this.keySpace, indexMeta.indexId, lowerBoundString],
+                    end: [this.keySpace, indexMeta.indexId, INDEX_MAX]
+                }, {
+                    consistency: this.settings.consistencyLevel,
+                    limit,
+                    batchSize: this.settings.batchSize
+                });
+                const docIds: any[] = [];
+                for await (const row of range) {
+                    const docId = row.value;
+                    docIds.push([this.keySpace, DENOKV_DOCUMENT_ROOT_PATH, docId]);
+                }
 
-        /**
-         * We have to run in batches because without it says
-         * "TypeError: too many ranges (max 10)"
-         */
-        const batches = batchArray(docIds, 10);
-        const result: RxDocumentData<RxDocType>[] = [];
+                /**
+                 * We have to run in batches because without it says
+                 * "TypeError: too many ranges (max 10)"
+                 */
+                const batches = batchArray(docIds, 10);
+                const result: RxDocumentData<RxDocType>[] = [];
 
-        for (const batch of batches) {
-            const docs = await kv.getMany(batch);
-            docs.forEach((row: any) => {
-                const docData = row.value;
-                result.push(docData as any);
+                for (const batch of batches) {
+                    const docs = await kv.getMany(batch);
+                    docs.forEach((row: any) => {
+                        const docData = row.value;
+                        result.push(docData as any);
+                    });
+                }
+
+                const lastDoc = lastOfArray(result);
+                return {
+                    documents: result,
+                    checkpoint: lastDoc ? {
+                        id: lastDoc[this.primaryPath] as any,
+                        lwt: lastDoc._meta.lwt
+                    } : checkpoint ? checkpoint : {
+                        id: '',
+                        lwt: 0
+                    }
+                };
             });
-        }
-
-        const lastDoc = lastOfArray(result);
-        return {
-            documents: result,
-            checkpoint: lastDoc ? {
-                id: lastDoc[this.primaryPath] as any,
-                lwt: lastDoc._meta.lwt
-            } : checkpoint ? checkpoint : {
-                id: '',
-                lwt: 0
-            }
-        };
     }
     changeStream() {
         return this.changes$.asObservable();
@@ -411,7 +432,7 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
 
 
 
-export function createDenoKVStorageInstance<RxDocType>(
+export async function createDenoKVStorageInstance<RxDocType>(
     storage: RxStorageDenoKV,
     params: RxStorageInstanceCreationParams<RxDocType, DenoKVSettings>,
     settings: DenoKVSettings
@@ -460,7 +481,7 @@ export function createDenoKVStorageInstance<RxDocType>(
         settings
     );
 
-    addRxStorageMultiInstanceSupport(
+    await addRxStorageMultiInstanceSupport(
         RX_STORAGE_NAME_DENOKV,
         params,
         instance

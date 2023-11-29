@@ -171,9 +171,9 @@ const config: Config = {
                 href: '/premium'
               },
               {
-                label: 'Imprint',
+                label: 'Legal Notice',
                 target: '_blank',
-                href: '/imprint',
+                href: '/legal-notice',
               },
             ],
           },

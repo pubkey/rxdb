@@ -10,19 +10,19 @@ import type {
     RxCollection
 } from './types/index.d.ts';
 
-export class ChangeEventBuffer {
+export class ChangeEventBuffer<RxDocType> {
     private subs: Subscription[] = [];
     public limit: number = 100;
     public counter: number = 0;
     private eventCounterMap: WeakMap<
-    RxChangeEvent<any>, number
+        RxChangeEvent<RxDocType>, number
     > = new WeakMap();
 
     /**
      * array with changeEvents
      * starts with oldest known event, ends with newest
      */
-    public buffer: RxChangeEvent<any>[] = [];
+    public buffer: RxChangeEvent<RxDocType>[] = [];
 
     constructor(
         public collection: RxCollection
@@ -34,7 +34,7 @@ export class ChangeEventBuffer {
         );
     }
 
-    _handleChangeEvent(changeEvent: RxChangeEvent<any>) {
+    _handleChangeEvent(changeEvent: RxChangeEvent<RxDocType>) {
         this.counter++;
         this.buffer.push(changeEvent);
         this.eventCounterMap.set(changeEvent, this.counter);
@@ -64,7 +64,7 @@ export class ChangeEventBuffer {
      * get all changeEvents which came in later than the pointer-event
      * @return array with change-events. If null, pointer out of bounds
      */
-    getFrom(pointer: number): RxChangeEvent<any>[] | null {
+    getFrom(pointer: number): RxChangeEvent<RxDocType>[] | null {
         const ret = [];
         let currentIndex = this.getArrayIndexByPointer(pointer);
         if (currentIndex === null) // out of bounds
@@ -95,7 +95,7 @@ export class ChangeEventBuffer {
      * only the last operation has to be checked to calculate the new state
      * this function reduces the events to the last ChangeEvent of each doc
      */
-    reduceByLastOfDoc(changeEvents: RxChangeEvent<any>[]): RxChangeEvent<any>[] {
+    reduceByLastOfDoc(changeEvents: RxChangeEvent<RxDocType>[]): RxChangeEvent<RxDocType>[] {
         return changeEvents.slice(0);
         // TODO the old implementation was wrong
         // because it did not correctly reassigned the previousData of the changeevents
@@ -112,8 +112,8 @@ export class ChangeEventBuffer {
     }
 }
 
-export function createChangeEventBuffer(
-    collection: RxCollection<any, any>
+export function createChangeEventBuffer<RxdocType>(
+    collection: RxCollection<RxdocType, any>
 ) {
-    return new ChangeEventBuffer(collection);
+    return new ChangeEventBuffer<RxdocType>(collection);
 }

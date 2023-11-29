@@ -285,7 +285,6 @@ export var RxStorageInstanceFoundationDB = /*#__PURE__*/function () {
       // TODO shouldn't we close the index databases?
       // Object.values(dbs.indexes).forEach(db => db.close());
     })();
-
     return this.closed;
   };
   return RxStorageInstanceFoundationDB;

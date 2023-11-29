@@ -21,6 +21,12 @@ export declare class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInst
     constructor(storage: RxStorageDenoKV, databaseName: string, collectionName: string, schema: Readonly<RxJsonSchema<RxDocumentData<RxDocType>>>, internals: DenoKVStorageInternals<RxDocType>, options: Readonly<DenoKVSettings>, settings: DenoKVSettings, keySpace?: string, kvOptions?: {
         consistency: "strong" | "eventual";
     });
+    /**
+     * DenoKV has no transactions
+     * so we have to ensure that there is no write in between our queries
+     * which would confuse RxDB and return wrong query results.
+     */
+    retryUntilNoWriteInBetween<T>(fn: () => Promise<T>): Promise<T>;
     bulkWrite(documentWrites: BulkWriteRow<RxDocType>[], context: string): Promise<RxStorageBulkWriteResponse<RxDocType>>;
     findDocumentsById(ids: string[], withDeleted: boolean): Promise<RxDocumentData<RxDocType>[]>;
     query(preparedQuery: DenoKVPreparedQuery<RxDocType>): Promise<RxStorageQueryResult<RxDocType>>;

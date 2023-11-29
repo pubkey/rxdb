@@ -39,6 +39,8 @@ describe('replication-webrtc.test.ts', () => {
 
     let wrtc: any;
     const signalingServerUrl: string = 'ws://localhost:18006';
+    // const signalingServerUrl: string = 'wss://signaling.rxdb.info/';
+
     describe('init', () => {
         it('import WebRTC polyfills on Node.js', async () => {
             if (config.platform.isNode()) {
@@ -145,22 +147,38 @@ describe('replication-webrtc.test.ts', () => {
          * without to re-create connections.
          */
         it('should stream changes over the replication to other collections', async function () {
+
+            if (config.storage.name === 'remote') {
+                /**
+                 * TODO this test fails randomly in the ci with the remote storage.
+                 * Likely because of the broadcast events when storage instances are opened too fast.
+                 */
+                // return;
+            }
+
             const c1 = await humansCollection.create(1, 'aaa');
             const c2 = await humansCollection.create(1, 'bbb');
+
+            console.log('--------- 0');
 
             // initial sync
             const topic = randomCouchString(10);
             const secret = randomCouchString(10);
             await syncCollections(topic, secret, [c1, c2]);
 
+            console.log('--------- 0.5');
+
             await awaitCollectionsInSync([c1, c2]);
             await wait(100);
 
+            console.log('--------- 1');
 
             // insert
             await c1.insert(schemaObjects.human('inserted-after-first-sync'));
             await awaitCollectionsInSync([c1, c2]);
             await wait(100);
+
+            console.log('--------- 2');
 
             // update
             const doc = await c1.findOne().exec(true);
@@ -169,15 +187,21 @@ describe('replication-webrtc.test.ts', () => {
             assert.strictEqual(doc.getLatest().age, 100);
             await wait(100);
 
+            console.log('--------- 3');
+
             // delete
             await doc.getLatest().remove();
             await awaitCollectionsInSync([c1, c2]);
             await wait(100);
 
+            console.log('--------- 4');
+
             // add another collection to sync
             const c3 = await humansCollection.create(1, 'ccc');
             await syncCollections(topic, secret, [c3]);
             await awaitCollectionsInSync([c1, c2, c3]);
+
+            console.log('--------- 5');
 
             // remove one peer
             await c2.database.destroy();

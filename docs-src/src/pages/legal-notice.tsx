@@ -9,8 +9,8 @@ export default function Home() {
 
     return (
         <Layout
-            title={`Imprint - ${siteConfig.title}`}
-            description="RxDB Imprint"
+            title={`Legal Notice - ${siteConfig.title}`}
+            description="RxDB Legal Notice"
         >
             <main>
                 <div className='redirectBox' style={{ textAlign: 'center' }}>
@@ -19,7 +19,7 @@ export default function Home() {
                             <img src="./files/logo/logo_text.svg" alt="RxDB" width={160} />
                         </div>
                     </a>
-                    <h1><a href="https://rxdb.info/">RxDB</a> Imprint</h1>
+                    <h1><a href="https://rxdb.info/">RxDB</a> Legal Notice</h1>
                     <p>
                         Daniel Meyer<br />
                         c/o Grosch Postflex #1154<br />

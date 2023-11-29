@@ -103,7 +103,6 @@ function getPathSegments(path) {
 
           // Falls through
         }
-
       default:
         {
           if (currentPart === 'index' && !digits.has(character)) {
@@ -146,7 +145,6 @@ function getPathSegments(path) {
       }
     // No default
   }
-
   return parts;
 }
 function isStringIndex(object, key) {

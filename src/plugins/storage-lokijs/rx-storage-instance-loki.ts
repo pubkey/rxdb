@@ -50,13 +50,14 @@ import {
     RX_STORAGE_NAME_LOKIJS,
     transformRegexToRegExp
 } from './lokijs-helper.ts';
-import type {
-    Collection
-} from 'lokijs';
 import type { RxStorageLoki } from './rx-storage-lokijs.ts';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper.ts';
 import { categorizeBulkWriteRows } from '../../rx-storage-helper.ts';
-import { addRxStorageMultiInstanceSupport, removeBroadcastChannelReference } from '../../rx-storage-multiinstance.ts';
+import {
+    addRxStorageMultiInstanceSupport,
+    removeBroadcastChannelReference
+} from '../../rx-storage-multiinstance.ts';
+import { getQueryMatcher } from '../../rx-query-helper.ts';
 
 let instanceId = now();
 
@@ -235,6 +236,9 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
             query = query.sort(getLokiSortComparator(this.schema, preparedQuery));
         }
 
+
+
+
         /**
          * Offset must be used before limit in LokiJS
          * @link https://github.com/techfort/LokiJS/issues/570
@@ -247,7 +251,21 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
             query = query.limit(preparedQuery.limit);
         }
 
-        const foundDocuments = query.data().map(lokiDoc => stripLokiKey(lokiDoc));
+        let foundDocuments = query.data().map((lokiDoc: any) => stripLokiKey(lokiDoc));
+
+
+        /**
+         * LokiJS returned wrong results on some queries
+         * with complex indexes. Therefore we run the query-match
+         * over all result docs to patch this bug.
+         * TODO create an issue at the LokiJS repository.
+         */
+        const queryMatcher = getQueryMatcher(
+            this.schema,
+            preparedQuery as any
+        );
+        foundDocuments = foundDocuments.filter((d: any) => queryMatcher(d));
+
         return {
             documents: foundDocuments
         };
@@ -313,10 +331,10 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         changedDocs = changedDocs.slice(0, limit);
         const lastDoc = lastOfArray(changedDocs);
         return {
-            documents: changedDocs.map(docData => stripLokiKey(docData)),
+            documents: changedDocs.map((docData: any) => stripLokiKey(docData)),
             checkpoint: lastDoc ? {
-                id: lastDoc[this.primaryPath],
-                lwt: lastDoc._meta.lwt
+                id: (lastDoc as any)[this.primaryPath],
+                lwt: (lastDoc as any)._meta.lwt
             } : checkpoint ? checkpoint : {
                 id: '',
                 lwt: 0
@@ -427,7 +445,7 @@ export async function createLokiLocalState<RxDocType>(
     indices.push(primaryKey as string);
 
     const lokiCollectionName = params.collectionName + '-' + params.schema.version;
-    const collectionOptions: Partial<CollectionOptions<RxDocumentData<RxDocType>>> = Object.assign(
+    const collectionOptions: Partial<any> = Object.assign(
         {},
         lokiCollectionName,
         {
@@ -437,7 +455,7 @@ export async function createLokiLocalState<RxDocType>(
         LOKIJS_COLLECTION_DEFAULT_OPTIONS
     );
 
-    const collection: Collection = databaseState.database.addCollection(
+    const collection: any = databaseState.database.addCollection(
         lokiCollectionName,
         collectionOptions as any
     );
@@ -485,7 +503,7 @@ export async function createLokiStorageInstance<RxDocType>(
         databaseSettings
     );
 
-    addRxStorageMultiInstanceSupport(
+    await addRxStorageMultiInstanceSupport(
         RX_STORAGE_NAME_LOKIJS,
         params,
         instance,

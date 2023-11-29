@@ -53,7 +53,7 @@ export declare class RxCollectionBase<InstanceCreationOptions, RxDocumentType = 
     _queryCache: QueryCache;
     $: Observable<RxChangeEvent<RxDocumentType>>;
     checkpoint$: Observable<any>;
-    _changeEventBuffer: ChangeEventBuffer;
+    _changeEventBuffer: ChangeEventBuffer<RxDocumentType>;
     /**
      * When the collection is destroyed,
      * these functions will be called an awaited.

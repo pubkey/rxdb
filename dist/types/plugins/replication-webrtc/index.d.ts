@@ -22,5 +22,6 @@ export declare class RxWebRTCReplicationPool<RxDocType> {
     cancel(): Promise<void>;
 }
 export * from './webrtc-helper.ts';
+export * from './signaling-server.ts';
 export * from './webrtc-types.ts';
 export * from './connection-handler-simple-peer.ts';

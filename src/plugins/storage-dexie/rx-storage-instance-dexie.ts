@@ -380,7 +380,7 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
 }
 
 
-export function createDexieStorageInstance<RxDocType>(
+export async function createDexieStorageInstance<RxDocType>(
     storage: RxStorageDexie,
     params: RxStorageInstanceCreationParams<RxDocType, DexieSettings>,
     settings: DexieSettings
@@ -402,7 +402,7 @@ export function createDexieStorageInstance<RxDocType>(
         settings
     );
 
-    addRxStorageMultiInstanceSupport(
+    await addRxStorageMultiInstanceSupport(
         RX_STORAGE_NAME_DEXIE,
         params,
         instance

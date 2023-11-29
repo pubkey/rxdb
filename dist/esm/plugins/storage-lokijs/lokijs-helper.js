@@ -1,5 +1,5 @@
 import { createLokiLocalState } from "./rx-storage-instance-loki.js";
-import lokijs from 'lokijs';
+import Loki from 'lokijs';
 import { add as unloadAdd } from 'unload';
 import { ensureNotFalsy, flatClone, getFromMapOrCreate, getProperty, promiseWait, randomCouchString } from "../utils/index.js";
 import { LokiSaveQueue } from "./loki-save-queue.js";
@@ -83,7 +83,7 @@ export function getLokiDatabase(databaseName, databaseSettings) {
         autosave: false,
         throttledSaves: false
       });
-      var database = new lokijs(databaseName + '.db', flatClone(useSettings));
+      var database = new Loki(databaseName + '.db', flatClone(useSettings));
       var lokiSaveQueue = new LokiSaveQueue(database, useSettings);
 
       /**

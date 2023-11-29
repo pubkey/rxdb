@@ -4,7 +4,7 @@ import express from 'express';
 import cors from 'cors';
 
 import * as GraphQLServer from './graphql-server.ts';
-import * as SignalingServer from './signaling-server.ts';
+import { startSignalingServerSimplePeer } from '../../plugins/replication-webrtc/index.mjs';
 import { startRemoteStorageServer } from './remote-storage-server.ts';
 import {
     blobToBase64String
@@ -26,7 +26,9 @@ export function startTestServers() {
 
     // we need one graphql server so the browser can sync to it
     GraphQLServer.spawn([], 18000);
-    SignalingServer.startSignalingServer(18006);
+    startSignalingServerSimplePeer({
+        port: 18006
+    });
     startRemoteStorageServer(18007);
 
     /**

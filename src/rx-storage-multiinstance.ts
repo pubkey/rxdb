@@ -137,6 +137,7 @@ export function addRxStorageMultiInstanceSupport<RxDocType>(
             changesFromOtherInstances$.next(msg.eventBulk);
         }
     };
+
     broadcastChannel.addEventListener('message', eventListener);
 
     const oldChangestream$ = instance.changeStream();

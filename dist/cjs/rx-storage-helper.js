@@ -446,7 +446,16 @@ rxJsonSchema) {
        * Ensure it can be structured cloned
        */
       try {
-        structuredClone(writeRow);
+        /**
+         * Notice that structuredClone() is not available
+         * in ReactNative, so we test for JSON.stringify() instead
+         * @link https://github.com/pubkey/rxdb/issues/5046#issuecomment-1827374498
+         */
+        if (typeof structuredClone === 'function') {
+          structuredClone(writeRow);
+        } else {
+          JSON.parse(JSON.stringify(writeRow));
+        }
       } catch (err) {
         throw (0, _rxError.newRxError)('DOC24', {
           collection: storageInstance.collectionName,
@@ -690,7 +699,6 @@ function randomDelayStorage(input) {
         async query(a) {
           await (0, _index.promiseWait)(input.delayTimeBefore());
           var ret = await storageInstance.query(a);
-          await (0, _index.promiseWait)(input.delayTimeAfter());
           return ret;
         },
         async count(a) {

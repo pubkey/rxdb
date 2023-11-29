@@ -27,6 +27,18 @@ Object.keys(_webrtcHelper).forEach(function (key) {
     }
   });
 });
+var _signalingServer = require("./signaling-server.js");
+Object.keys(_signalingServer).forEach(function (key) {
+  if (key === "default" || key === "__esModule") return;
+  if (Object.prototype.hasOwnProperty.call(_exportNames, key)) return;
+  if (key in exports && exports[key] === _signalingServer[key]) return;
+  Object.defineProperty(exports, key, {
+    enumerable: true,
+    get: function () {
+      return _signalingServer[key];
+    }
+  });
+});
 var _webrtcTypes = require("./webrtc-types.js");
 Object.keys(_webrtcTypes).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
