@@ -52,6 +52,7 @@ describe('replication-webrtc.test.ts', () => {
 
     let wrtc: any;
     const signalingServerUrl: string = 'ws://localhost:18006';
+    // const signalingServerUrl: string = 'wss://signaling.rxdb.info/';
     describe('utils', () => {
         describe('.isMasterInWebRTCReplication()', () => {
             new Array(10).fill(0).forEach(() => {
@@ -117,7 +118,10 @@ describe('replication-webrtc.test.ts', () => {
                     secret,
                     // connectionHandlerCreator: getConnectionHandlerWebtorrent([webtorrentTrackerUrl]),
                     // connectionHandlerCreator: getConnectionHandlerP2PCF(),
-                    connectionHandlerCreator: getConnectionHandlerSimplePeer(signalingServerUrl, wrtc),
+                    connectionHandlerCreator: getConnectionHandlerSimplePeer(
+                        signalingServerUrl,
+                        wrtc
+                    ),
                     pull: {},
                     push: {}
                 });
@@ -147,7 +151,7 @@ describe('replication-webrtc.test.ts', () => {
          */
         it('should stream changes over the replication to other collections', async function () {
 
-            if(config.storage.name === 'remote'){
+            if (config.storage.name === 'remote') {
                 /**
                  * TODO this test fails randomly in the ci with the remote storage.
                  * Likely because of the broadcast events when storage instances are opened too fast.

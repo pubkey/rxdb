@@ -48,13 +48,43 @@ function sendMessage(ws: WebSocket, msg: PeerMessage) {
     ws.send(JSON.stringify(msg));
 }
 
+const DEFAULT_SIGNALING_SERVER_HOSTNAME = 'signaling.rxdb.info';
+export const DEFAULT_SIGNALING_SERVER = 'wss://' + DEFAULT_SIGNALING_SERVER_HOSTNAME + '/';
+
+let defaultServerWarningShown = false;
+
 /**
  * Returns a connection handler that uses simple-peer and the signaling server.
  */
 export function getConnectionHandlerSimplePeer(
-    serverUrl: string,
+    /**
+     * If no server is specified, the default signaling server
+     * from signaling.rxdb.info is used.
+     * This server is not reliable and you should use
+     * your own signaling server instead.
+     */
+    serverUrl: string = DEFAULT_SIGNALING_SERVER,
     wrtc?: any
 ): WebRTCConnectionHandlerCreator {
+
+    if (
+        serverUrl.includes(DEFAULT_SIGNALING_SERVER_HOSTNAME) &&
+        !defaultServerWarningShown
+    ) {
+        defaultServerWarningShown = true;
+        console.warn(
+            [
+                'RxDB Warning: You are using the RxDB WebRTC replication plugin',
+                'but you did not specify your own signaling server url.',
+                'By default it will use a signaling server provided by RxDB at ' + DEFAULT_SIGNALING_SERVER,
+                'This server is made for demonstration purposes and tryouts. It is not reliable and might be offline at any time.',
+                'In production you must always',
+                'use your own signaling server instead. Learn how to run your own server at https://rxdb.info/replication-webrtc.html',
+                'Also leave a start at the RxDB github repo 🙏'
+            ].join(' ')
+        );
+    }
+
     const creator: WebRTCConnectionHandlerCreator = async (options) => {
         const socket = new WebSocket(serverUrl);
 

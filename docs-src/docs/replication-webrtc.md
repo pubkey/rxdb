@@ -56,7 +56,11 @@ const replicationPool = await replicateWebRTC(
          * it is pretty simple.
          */
         connectionHandlerCreator: getConnectionHandlerSimplePeer(
-            'wss://example.com:8080',
+            // Set the signaling server url.
+            // You can use the server provided by RxDB for tryouts,
+            // but in production you should use your own server instead.
+            'wss://signaling.rxdb.info/',
+
             // only in Node.js, we need the wrtc library
             // because Node.js does not contain the WebRTC API.
             require('wrtc')
@@ -81,7 +85,8 @@ The WebRTC replication is **always live** because there can not be a one-time sy
 
 For P2P replication to work with the RxDB WebRTC Replication Plugin, a [signaling server](https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API/Signaling_and_video_calling) is required. The signaling server helps peers discover each other and establish connections.
 
-RxDB ships with a default signaling server that can be used with the simple-peer connection handler.
+RxDB ships with a default signaling server that can be used with the simple-peer connection handler. This server is made for demonstration purposes and tryouts. It is not reliable and might be offline at any time.
+In production you must always use your own signaling server instead!
 
 Creating a basic signaling server is straightforward. The provided example uses 'socket.io' for WebSocket communication. However, in production, you'd want to create a more robust signaling server with authentication and additional logic to suit your application's needs.
 
