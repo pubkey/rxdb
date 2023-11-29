@@ -74,7 +74,7 @@ Use the [quickstart](https://rxdb.info/quickstart.html), read the [documentation
 
 
 
-![realtime.gif](docs-src/files/animations/realtime.gif)
+![realtime.gif](docs-src/static/files/animations/realtime.gif)
 
 
 <h2>
@@ -222,7 +222,7 @@ db.heroes
   });
 ```
 
-![reactive.gif](docs-src/files/reactive.gif)
+![reactive.gif](docs-src/static/files/reactive.gif)
 
 </details>
 
@@ -236,7 +236,7 @@ RxDB supports multi tab/window usage out of the box. When data is changed at one
 </p>
 </summary>
 
-![multiwindow.gif](docs-src/files/multiwindow.gif)
+![multiwindow.gif](docs-src/static/files/multiwindow.gif)
 
 </details>
 

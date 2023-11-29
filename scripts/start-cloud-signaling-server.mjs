@@ -7,6 +7,18 @@ import {
     wait
 } from 'async-test-util';
 
+
+/**
+ * This script starts the public signaling server for RxDB at wss://signaling.rxdb.info
+ * which can be used for prototypes and try-outs. You should never
+ * use that in production, instead you should host your own signaling server.
+ *
+ * Letsencrypt certbot setup:
+ * > certbot certonly --standalone --agree-tos --preferred-challenges http -d signaling.rxdb.info
+ *
+ *
+ */
+
 const sslKeyPath = '/etc/letsencrypt/live/signaling.rxdb.info/privkey.pem';
 const sslCertPath = '/etc/letsencrypt/live/signaling.rxdb.info/fullchain.pem';
 
