@@ -334,6 +334,20 @@ export function replicateRxCollection({
   autoStart = true
 }) {
   addRxPlugin(RxDBLeaderElectionPlugin);
+
+  /**
+   * It is a common error to forget to add these config
+   * objects. So we check here because it makes no sense
+   * to start a replication with neither push nor pull.
+   */
+  if (!pull && !push) {
+    throw newRxError('UT3', {
+      collection: collection.name,
+      args: {
+        replicationIdentifier
+      }
+    });
+  }
   var replicationState = new RxReplicationState(replicationIdentifier, collection, deletedField, pull, push, live, retryTime, autoStart);
   startReplicationOnLeaderShip(waitForLeadership, replicationState);
   return replicationState;

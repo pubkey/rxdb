@@ -5,6 +5,7 @@ export type ServerPeer = {
     id: string;
     socket: WebSocket;
     rooms: string[];
+    lastPing: number;
 };
 /**
  * Starts a WebRTC signaling server

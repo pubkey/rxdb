@@ -1,4 +1,5 @@
-import { getFromMapOrCreate, randomCouchString } from "../utils/index.js";
+import { getFromMapOrCreate, promiseWait, randomCouchString } from "../utils/index.js";
+import { SIMPLE_PEER_PING_INTERVAL } from "./connection-handler-simple-peer.js";
 export var PEER_ID_LENGTH = 12;
 /**
  * Starts a WebRTC signaling server
@@ -11,6 +12,32 @@ export async function startSignalingServerSimplePeer(serverOptions) {
   var wss = new WebSocketServer(serverOptions);
   var peerById = new Map();
   var peersByRoom = new Map();
+  var serverClosed = false;
+  wss.on('close', () => {
+    serverClosed = true;
+    peerById.clear();
+    peersByRoom.clear();
+  });
+
+  /**
+   * Clients can disconnect without telling that to the
+   * server. Therefore we have to automatically disconnect clients that
+   * have not send a ping message in the last 2 minutes.
+   */
+  (async () => {
+    var _loop = async function () {
+      await promiseWait(1000 * 20);
+      var minTime = Date.now() - SIMPLE_PEER_PING_INTERVAL;
+      Array.from(peerById.values()).forEach(peer => {
+        if (peer.lastPing < minTime) {
+          disconnectSocket(peer.id, 'no ping for 2 minutes');
+        }
+      });
+    };
+    while (!serverClosed) {
+      await _loop();
+    }
+  })();
   function disconnectSocket(peerId, reason) {
     var peer = peerById.get(peerId);
     if (peer) {
@@ -34,7 +61,8 @@ export async function startSignalingServerSimplePeer(serverOptions) {
     var peer = {
       id: peerId,
       socket: ws,
-      rooms: []
+      rooms: [],
+      lastPing: Date.now()
     };
     peerById.set(peerId, peer);
     sendMessage(ws, {
@@ -50,6 +78,7 @@ export async function startSignalingServerSimplePeer(serverOptions) {
       disconnectSocket(peerId, 'socket disconnected');
     });
     ws.on('message', msgEvent => {
+      peer.lastPing = Date.now();
       var message = JSON.parse(msgEvent.toString());
       var type = message.type;
       switch (type) {
@@ -85,6 +114,8 @@ export async function startSignalingServerSimplePeer(serverOptions) {
           if (receiver) {
             sendMessage(receiver.socket, message);
           }
+          break;
+        case 'ping':
           break;
         default:
           disconnectSocket(peerId, 'unknown message type ' + type);

@@ -1,5 +1,5 @@
 import { Subject } from 'rxjs';
-import { getFromMapOrThrow, PROMISE_RESOLVE_VOID } from "../../plugins/utils/index.js";
+import { getFromMapOrThrow, PROMISE_RESOLVE_VOID, promiseWait } from "../../plugins/utils/index.js";
 import { default as Peer } from 'simple-peer';
 import { newRxError } from "../../rx-error.js";
 function sendMessage(ws, msg) {
@@ -8,6 +8,8 @@ function sendMessage(ws, msg) {
 var DEFAULT_SIGNALING_SERVER_HOSTNAME = 'signaling.rxdb.info';
 export var DEFAULT_SIGNALING_SERVER = 'wss://' + DEFAULT_SIGNALING_SERVER_HOSTNAME + '/';
 var defaultServerWarningShown = false;
+export var SIMPLE_PEER_PING_INTERVAL = 1000 * 60 * 2;
+
 /**
  * Returns a connection handler that uses simple-peer and the signaling server.
  */
@@ -20,7 +22,7 @@ export function getConnectionHandlerSimplePeer({
   webSocketConstructor = webSocketConstructor ? webSocketConstructor : WebSocket;
   if (signalingServerUrl.includes(DEFAULT_SIGNALING_SERVER_HOSTNAME) && !defaultServerWarningShown) {
     defaultServerWarningShown = true;
-    console.warn(['RxDB Warning: You are using the RxDB WebRTC replication plugin', 'but you did not specify your own signaling server url.', 'By default it will use a signaling server provided by RxDB at ' + DEFAULT_SIGNALING_SERVER, 'This server is made for demonstration purposes and tryouts. It is not reliable and might be offline at any time.', 'In production you must always use your own signaling server instead.', 'Learn how to run your own server at https://rxdb.info/replication-webrtc.html', 'Also leave a start at the RxDB github repo 🙏 https://github.com/pubkey/rxdb 🙏'].join(' '));
+    console.warn(['RxDB Warning: You are using the RxDB WebRTC replication plugin', 'but you did not specify your own signaling server url.', 'By default it will use a signaling server provided by RxDB at ' + DEFAULT_SIGNALING_SERVER, 'This server is made for demonstration purposes and tryouts. It is not reliable and might be offline at any time.', 'In production you must always use your own signaling server instead.', 'Learn how to run your own server at https://rxdb.info/replication-webrtc.html', 'Also leave a ⭐ at the RxDB github repo 🙏 https://github.com/pubkey/rxdb 🙏'].join(' '));
   }
   var creator = async options => {
     var socket = new webSocketConstructor(signalingServerUrl);
@@ -30,8 +32,20 @@ export function getConnectionHandlerSimplePeer({
     var response$ = new Subject();
     var error$ = new Subject();
     var peers = new Map();
+    var closed = false;
     var ownPeerId;
     socket.onopen = () => {
+      (async () => {
+        while (true) {
+          await promiseWait(SIMPLE_PEER_PING_INTERVAL / 2);
+          if (closed) {
+            break;
+          }
+          sendMessage(socket, {
+            type: 'ping'
+          });
+        }
+      })();
       socket.onmessage = msgEvent => {
         var msg = JSON.parse(msgEvent.data);
         switch (msg.type) {
@@ -110,6 +124,7 @@ export function getConnectionHandlerSimplePeer({
         await peer.send(JSON.stringify(message));
       },
       destroy() {
+        closed = true;
         socket.close();
         error$.complete();
         connect$.complete();

@@ -19,7 +19,10 @@ export type SimplePeerSignalMessage = {
     receiverPeerId: string;
     data: string;
 };
-export type PeerMessage = SimplePeerInitMessage | SimplePeerJoinMessage | SimplePeerJoinedMessage | SimplePeerSignalMessage;
+export type SimplePeerPingMessage = {
+    type: 'ping';
+};
+export type PeerMessage = SimplePeerInitMessage | SimplePeerJoinMessage | SimplePeerJoinedMessage | SimplePeerSignalMessage | SimplePeerPingMessage;
 export declare const DEFAULT_SIGNALING_SERVER: string;
 export type SimplePeerWrtc = SimplePeerOptions['wrtc'];
 export type SimplePeerConnectionHandlerOptions = {
@@ -33,6 +36,7 @@ export type SimplePeerConnectionHandlerOptions = {
     wrtc?: SimplePeerWrtc;
     webSocketConstructor?: WebSocket;
 };
+export declare const SIMPLE_PEER_PING_INTERVAL: number;
 /**
  * Returns a connection handler that uses simple-peer and the signaling server.
  */
