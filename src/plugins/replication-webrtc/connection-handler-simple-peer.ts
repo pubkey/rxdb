@@ -90,7 +90,7 @@ export function getConnectionHandlerSimplePeer({
                 'This server is made for demonstration purposes and tryouts. It is not reliable and might be offline at any time.',
                 'In production you must always use your own signaling server instead.',
                 'Learn how to run your own server at https://rxdb.info/replication-webrtc.html',
-                'Also leave a start at the RxDB github repo 🙏 https://github.com/pubkey/rxdb 🙏'
+                'Also leave a ⭐ at the RxDB github repo 🙏 https://github.com/pubkey/rxdb 🙏'
             ].join(' ')
         );
     }
