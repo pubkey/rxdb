@@ -67,7 +67,7 @@ const replicationPool = await replicateWebRTC(
             // only in Node.js, we need the WebSocket library
             // because Node.js does not contain the WebSocket API.
             webSocketConstructor: require('ws').WebSocket
-    }),
+        }),
         pull: {},
         push: {}
     }
@@ -91,7 +91,9 @@ const replicationPool = await replicateWebRTC(
             signalingServerUrl: 'wss://example.com:8080',
             wrtc: nodeDatachannelPolyfill,
             webSocketConstructor: WebSocket
-        })
+        }),
+        pull: {},
+        push: {}
         /* ... */
     }
 );
