@@ -571,7 +571,10 @@ describe('replication.test.ts', () => {
                     replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
                     live: false,
                     autoStart: true,
-                    waitForLeadership: false
+                    waitForLeadership: false,
+                    pull: {
+                        handler: getPullHandler(remoteCollection)
+                    }
                 });
                 await replicationState.awaitInitialReplication();
                 assert.ok(
@@ -588,7 +591,10 @@ describe('replication.test.ts', () => {
                     replicationIdentifier: REPLICATION_IDENTIFIER_TEST,
                     live: false,
                     autoStart: false,
-                    waitForLeadership: false
+                    waitForLeadership: false,
+                    pull: {
+                        handler: getPullHandler(remoteCollection)
+                    }
                 });
 
                 await wait(100);
