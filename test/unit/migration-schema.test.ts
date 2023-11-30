@@ -839,7 +839,7 @@ config.parallel('migration-schema.test.ts', function () {
              * It should not have transferred any documents
              */
             let hasTransferred: boolean | string = false;
-            replicationState2.sent$.subscribe((x) => {
+            replicationState2.sent$.subscribe(() => {
                 hasTransferred = 'sent';
             });
             replicationState2.received$.subscribe(() => {
