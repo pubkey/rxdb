@@ -23,7 +23,8 @@ import {
     MigrationStrategy,
     STORAGE_TOKEN_DOCUMENT_ID,
     RxDocumentData,
-    InternalStoreStorageTokenDocType
+    InternalStoreStorageTokenDocType,
+    rxStorageInstanceToReplicationHandler
 } from '../../plugins/core/index.mjs';
 
 import {
@@ -38,6 +39,7 @@ import { RxDBMigrationPlugin } from '../../plugins/migration-schema/index.mjs';
 import { RxDBAttachmentsPlugin } from '../../plugins/attachments/index.mjs';
 import { SimpleHumanAgeDocumentType } from '../helper/schema-objects.ts';
 import { replicateRxCollection } from '../../plugins/replication/index.mjs';
+import { ensureReplicationHasNoErrors } from '../helper/test-util.ts';
 
 
 config.parallel('migration-schema.test.ts', function () {
@@ -766,13 +768,26 @@ config.parallel('migration-schema.test.ts', function () {
                 remoteDb.humans.insert(schemaObjects.simpleHumanAge({ passportId: randomCouchString(schemas.simpleHuman.properties.passportId.maxLength) }))
             ]);
 
+            const helper = rxStorageInstanceToReplicationHandler(
+                remoteDb.humans.storageInstance,
+                remoteDb.humans.conflictHandler,
+                remoteDb.humans.database.token
+            );
             const replicationState = replicateRxCollection({
                 collection: db.humans,
                 replicationIdentifier: 'migrate-replication-state',
                 live: false,
                 autoStart: true,
-                waitForLeadership: false
+                waitForLeadership: false,
+                pull: {
+                    handler: helper.masterChangesSince
+                },
+                push: {
+                    handler: helper.masterWrite
+                }
             });
+            ensureReplicationHasNoErrors(replicationState);
+
             await replicationState.awaitInitialReplication();
             await replicationState.cancel();
             await db.destroy();
@@ -797,6 +812,7 @@ config.parallel('migration-schema.test.ts', function () {
                 2: ensureNoUnknownStrategy,
                 3: ensureNoUnknownStrategy
             };
+
             await db2.addCollections({
                 humans: {
                     schema: schemas.simpleHumanV3,
@@ -809,25 +825,32 @@ config.parallel('migration-schema.test.ts', function () {
                 replicationIdentifier: 'migrate-replication-state',
                 live: false,
                 autoStart: true,
-                waitForLeadership: false
+                waitForLeadership: false,
+                pull: {
+                    handler: helper.masterChangesSince
+                },
+                push: {
+                    handler: helper.masterWrite
+                }
             });
+            ensureReplicationHasNoErrors(replicationState2);
 
             /**
              * It should not have transferred any documents
              */
-            let hasTransferred = false;
-            replicationState2.sent$.subscribe(() => {
-                hasTransferred = true;
+            let hasTransferred: boolean | string = false;
+            replicationState2.sent$.subscribe((x) => {
+                hasTransferred = 'sent';
             });
             replicationState2.received$.subscribe(() => {
-                hasTransferred = true;
+                hasTransferred = 'received';
             });
 
             await replicationState2.awaitInitialReplication();
             await replicationState2.cancel();
 
             if (hasTransferred) {
-                throw new Error('should not have transferred data');
+                throw new Error('should not have transferred data: ' + hasTransferred);
             }
 
             await db2.destroy();
