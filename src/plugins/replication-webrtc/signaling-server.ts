@@ -1,9 +1,11 @@
 import {
     getFromMapOrCreate,
+    promiseWait,
     randomCouchString
 } from '../utils/index.ts';
-import type {
-    PeerMessage
+import {
+    SIMPLE_PEER_PING_INTERVAL,
+    type PeerMessage
 } from './connection-handler-simple-peer.ts';
 import type {
     WebSocket,
@@ -15,6 +17,7 @@ export type ServerPeer = {
     id: string;
     socket: WebSocket;
     rooms: string[];
+    lastPing: number;
 };
 
 
@@ -30,6 +33,32 @@ export async function startSignalingServerSimplePeer(
 
     const peerById = new Map<string, ServerPeer>();
     const peersByRoom = new Map<string, Set<string>>();
+
+    let serverClosed = false;
+    wss.on('close', () => {
+        serverClosed = true
+        peerById.clear();
+        peersByRoom.clear();
+    });
+
+
+    /**
+     * Clients can disconnect without telling that to the
+     * server. Therefore we have to automatically disconnect clients that
+     * have not send a ping message in the last 2 minutes.
+     */
+    (async () => {
+        while (!serverClosed) {
+            await promiseWait(1000 * 20);
+            const minTime = Date.now() - SIMPLE_PEER_PING_INTERVAL;
+            Array.from(peerById.values()).forEach(peer => {
+                if (peer.lastPing < minTime) {
+                    disconnectSocket(peer.id, 'no ping for 2 minutes');
+                }
+            });
+
+        }
+    })();
 
     function disconnectSocket(peerId: string, reason: string) {
         const peer = peerById.get(peerId);
@@ -55,7 +84,8 @@ export async function startSignalingServerSimplePeer(
         const peer: ServerPeer = {
             id: peerId,
             socket: ws,
-            rooms: []
+            rooms: [],
+            lastPing: Date.now()
         };
         peerById.set(peerId, peer);
 
@@ -72,6 +102,7 @@ export async function startSignalingServerSimplePeer(
         });
 
         ws.on('message', msgEvent => {
+            peer.lastPing = Date.now();
             const message = JSON.parse(msgEvent.toString());
             const type = message.type;
             switch (type) {
@@ -126,6 +157,8 @@ export async function startSignalingServerSimplePeer(
                             message
                         );
                     }
+                    break;
+                case 'ping':
                     break;
                 default:
                     disconnectSocket(peerId, 'unknown message type ' + type);

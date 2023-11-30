@@ -1,7 +1,8 @@
 import { Subject } from 'rxjs';
 import {
     getFromMapOrThrow,
-    PROMISE_RESOLVE_VOID
+    PROMISE_RESOLVE_VOID,
+    promiseWait
 } from '../../plugins/utils/index.ts';
 import type {
     WebRTCConnectionHandler,
@@ -39,8 +40,16 @@ export type SimplePeerSignalMessage = {
     receiverPeerId: string;
     data: string;
 };
+export type SimplePeerPingMessage = {
+    type: 'ping';
+};
 
-export type PeerMessage = SimplePeerInitMessage | SimplePeerJoinMessage | SimplePeerJoinedMessage | SimplePeerSignalMessage;
+export type PeerMessage =
+    SimplePeerInitMessage |
+    SimplePeerJoinMessage |
+    SimplePeerJoinedMessage |
+    SimplePeerSignalMessage |
+    SimplePeerPingMessage;
 
 
 function sendMessage(ws: WebSocket, msg: PeerMessage) {
@@ -64,6 +73,8 @@ export type SimplePeerConnectionHandlerOptions = {
     wrtc?: SimplePeerWrtc;
     webSocketConstructor?: WebSocket;
 };
+
+export const SIMPLE_PEER_PING_INTERVAL = 1000 * 60 * 2;
 
 /**
  * Returns a connection handler that uses simple-peer and the signaling server.
@@ -105,9 +116,21 @@ export function getConnectionHandlerSimplePeer({
         const error$ = new Subject<RxError | RxTypeError>();
 
         const peers = new Map<string, SimplePeer>();
+        let closed = false;
 
         let ownPeerId: string;
         socket.onopen = () => {
+
+            (async () => {
+                while (true) {
+                    await promiseWait(SIMPLE_PEER_PING_INTERVAL / 2);
+                    if (closed) {
+                        break;
+                    }
+                    sendMessage(socket, { type: 'ping' });
+                }
+            })();
+
             socket.onmessage = (msgEvent: any) => {
                 const msg: PeerMessage = JSON.parse(msgEvent.data as any);
                 switch (msg.type) {
@@ -195,6 +218,7 @@ export function getConnectionHandlerSimplePeer({
                 await (peer as any).send(JSON.stringify(message));
             },
             destroy() {
+                closed = true;
                 socket.close();
                 error$.complete();
                 connect$.complete();
