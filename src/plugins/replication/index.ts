@@ -469,6 +469,21 @@ export function replicateRxCollection<RxDocType, CheckpointType>(
     }: ReplicationOptions<RxDocType, CheckpointType>
 ): RxReplicationState<RxDocType, CheckpointType> {
     addRxPlugin(RxDBLeaderElectionPlugin);
+
+    /**
+     * It is a common error to forget to add these config
+     * objects. So we check here because it makes no sense
+     * to start a replication with neither push nor pull.
+     */
+    if (!pull && !push) {
+        throw newRxError('UT3', {
+            collection: collection.name,
+            args: {
+                replicationIdentifier
+            }
+        });
+    }
+
     const replicationState = new RxReplicationState<RxDocType, CheckpointType>(
         replicationIdentifier,
         collection,
