@@ -104,11 +104,7 @@ export async function replicateWebRTC<RxDocType>(
             /**
              * TODO ensure both know the correct secret
              */
-
-            console.log('--- newPeer 1');
-
             try {
-
                 const tokenResponse = await sendMessageAndAwaitAnswer(
                     pool.connectionHandler,
                     peer,
@@ -120,7 +116,6 @@ export async function replicateWebRTC<RxDocType>(
                 );
                 peerToken = tokenResponse.result;
             } catch (error: any) {
-                console.log('--- newPeer E');
                 /**
                  * If could not get the tokenResponse,
                  * just ignore that peer.
@@ -130,9 +125,7 @@ export async function replicateWebRTC<RxDocType>(
                 }));
                 return;
             }
-            console.log('--- newPeer 2');
             const isMaster = await isMasterInWebRTCReplication(collection.database.hashFunction, storageToken, peerToken);
-            console.log('--- newPeer isMaster ' + isMaster);
 
             let replicationState: RxWebRTCReplicationState<RxDocType> | undefined;
             if (isMaster) {
