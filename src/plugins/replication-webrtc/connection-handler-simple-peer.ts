@@ -1,5 +1,6 @@
 import { Subject } from 'rxjs';
 import {
+    ensureNotFalsy,
     getFromMapOrThrow,
     PROMISE_RESOLVE_VOID,
     promiseWait
@@ -117,8 +118,25 @@ export function getConnectionHandlerSimplePeer({
         const peers = new Map<string, SimplePeer>();
         let closed = false;
         let ownPeerId: string;
-        let socket: WebSocket;
+        let socket: WebSocket | undefined = undefined;
         createSocket();
+
+
+        /**
+         * Send ping signals to the server.
+         */
+        (async () => {
+            while (true) {
+                await promiseWait(SIMPLE_PEER_PING_INTERVAL / 2);
+                if (closed) {
+                    break;
+                }
+                if (socket) {
+                    sendMessage(socket, { type: 'ping' });
+                }
+            }
+        })();
+
 
         /**
          * @recursive calls it self on socket disconnects
@@ -129,25 +147,15 @@ export function getConnectionHandlerSimplePeer({
             if (closed) {
                 return;
             }
-            socket = new (webSocketConstructor as any)(signalingServerUrl);
+            socket = new (webSocketConstructor as any)(signalingServerUrl) as WebSocket;
             socket.onclose = () => createSocket();
             socket.onopen = () => {
-                (async () => {
-                    while (true) {
-                        await promiseWait(SIMPLE_PEER_PING_INTERVAL / 2);
-                        if (closed) {
-                            break;
-                        }
-                        sendMessage(socket, { type: 'ping' });
-                    }
-                })();
-
-                socket.onmessage = (msgEvent: any) => {
+                ensureNotFalsy(socket).onmessage = (msgEvent: any) => {
                     const msg: PeerMessage = JSON.parse(msgEvent.data as any);
                     switch (msg.type) {
                         case 'init':
                             ownPeerId = msg.yourPeerId;
-                            sendMessage(socket, {
+                            sendMessage(ensureNotFalsy(socket), {
                                 type: 'join',
                                 room: options.topic
                             });
@@ -172,7 +180,7 @@ export function getConnectionHandlerSimplePeer({
                                 peers.set(remotePeerId, newPeer);
 
                                 newPeer.on('signal', (signal: any) => {
-                                    sendMessage(socket, {
+                                    sendMessage(ensureNotFalsy(socket), {
                                         type: 'signal',
                                         senderPeerId: ownPeerId,
                                         receiverPeerId: remotePeerId,
@@ -231,7 +239,7 @@ export function getConnectionHandlerSimplePeer({
             },
             destroy() {
                 closed = true;
-                socket.close();
+                ensureNotFalsy(socket).close();
                 error$.complete();
                 connect$.complete();
                 disconnect$.complete();

@@ -32,7 +32,7 @@ export async function isMasterInWebRTCReplication(
 
 /**
  * Send a message to the peer and await the answer.
- * @ŧhrows with an EmptyErrorImpl if the peer connection
+ * @throws with an EmptyErrorImpl if the peer connection
  * was closed before an answer was received.
  */
 export function sendMessageAndAwaitAnswer(
