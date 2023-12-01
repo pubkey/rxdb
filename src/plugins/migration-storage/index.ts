@@ -24,6 +24,23 @@ export type AfterMigrateBatchHandler = (
     input: AfterMigrateBatchHandlerInput
 ) => any | Promise<any>;
 
+
+export type MigrateStorageParams = {
+    database: RxDatabase;
+    /**
+     * Using the migration plugin requires you
+     * to rename your new old database.
+     * The original name of the v11 database must be provided here.
+     */
+    oldDatabaseName: string;
+    oldStorage: RxStorageOld<any, any>;
+    batchSize?: number;
+    parallel?: boolean;
+    afterMigrateBatch?: AfterMigrateBatchHandler;
+    // to log each step, pass console.log.bind(console) here.
+    logFunction?: (message: string) => void;
+}
+
 /**
  * Migrates collections of RxDB version A and puts them
  * into a RxDatabase that is created with version B.
@@ -31,29 +48,32 @@ export type AfterMigrateBatchHandler = (
  * Do not use it to migrate like rxdb v9 to v14. 
  */
 export async function migrateStorage(
-    database: RxDatabase,
-    /**
-     * Using the migration plugin requires you
-     * to rename your new old database.
-     * The original name of the v11 database must be provided here.
-     */
-    oldDatabaseName: string,
-    oldStorage: RxStorageOld<any, any>,
-    batchSize = 10,
-    afterMigrateBatch?: AfterMigrateBatchHandler,
-    // to log each step, pass console.log.bind(console) here.
-    logFunction?: (message: string) => void
+    params: MigrateStorageParams
 ): Promise<void> {
-    const collections = Object.values(database.collections);
-    for (const collection of collections) {
-        await migrateCollection(
-            collection,
-            oldDatabaseName,
-            oldStorage,
-            batchSize,
-            afterMigrateBatch,
-            logFunction
+    const collections = Object.values(params.database.collections);
+    const batchSize = params.batchSize ? params.batchSize : 10;
+    if (params.parallel) {
+        await Promise.all(
+            collections.map(collection => migrateCollection(
+                collection,
+                params.oldDatabaseName,
+                params.oldStorage,
+                batchSize,
+                params.afterMigrateBatch,
+                params.logFunction
+            ))
         );
+    } else {
+        for (const collection of collections) {
+            await migrateCollection(
+                collection,
+                params.oldDatabaseName,
+                params.oldStorage,
+                batchSize,
+                params.afterMigrateBatch,
+                params.logFunction
+            );
+        }
     }
 }
 

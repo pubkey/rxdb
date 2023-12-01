@@ -111,9 +111,9 @@ testStorages.forEach(storages => {
                 const collectionName = randomCouchString(12);
 
                 // create old database and insert data
-                const oldDbName = name + '-old';
+                const oldDatabaseName = name + '-old';
                 const oldDb = await storages.createRxDatabaseOld({
-                    name: oldDbName,
+                    name: oldDatabaseName,
                     storage: storages.old() as any,
                     multiInstance: false
                 });
@@ -173,13 +173,111 @@ testStorages.forEach(storages => {
                 // migrate
                 const handlerEmitted: AfterMigrateBatchHandlerInput[] = [];
                 const batchesAmount = 4;
-                await migrateStorage(
-                    db,
-                    oldDbName,
-                    storages.old() as any,
-                    docsAmount / batchesAmount,
-                    input => handlerEmitted.push(input)
-                );
+                await migrateStorage({
+                    database: db,
+                    oldDatabaseName,
+                    oldStorage: storages.old() as any,
+                    batchSize: docsAmount / batchesAmount,
+                    parallel: false,
+                    afterMigrateBatch: input => handlerEmitted.push(input)
+                });
+
+                // check new database
+                const newDocs = await col.find().exec();
+                assert.strictEqual(newDocs.length, docsAmount);
+                assert.strictEqual(handlerEmitted.length, batchesAmount);
+                const firstDoc = newDocs[0];
+                const newDocPlain = firstDoc.toJSON(true);
+                assert.ok(newDocPlain._meta.lwt);
+
+                // check attachment
+                if (storages.hasAttachments) {
+                    const attachment = firstDoc.getAttachment('text.txt');
+                    const attachmentData = await ensureNotFalsy(attachment).getStringData();
+                    assert.strictEqual(attachmentData, 'foobar');
+                }
+
+                // check handler output
+                const firstEmit = handlerEmitted[0];
+                assert.deepStrictEqual(firstEmit.writeToNewResult.error, []);
+
+                await db.destroy();
+            });
+            it('should migrate in parallel', async () => {
+                const name = DB_PREFIX + randomCouchString(12);
+                const collectionName = randomCouchString(12);
+
+                // create old database and insert data
+                const oldDatabaseName = name + '-old';
+                const oldDb = await storages.createRxDatabaseOld({
+                    name: oldDatabaseName,
+                    storage: storages.old() as any,
+                    multiInstance: false
+                });
+                await oldDb.addCollections({
+                    [collectionName]: {
+                        schema: human as any
+                    }
+                });
+
+                const oldCol = oldDb[collectionName];
+
+                const docsAmount = 100;
+                const docsData: HumanDocumentType[] = new Array(docsAmount).fill(0).map((_x) => {
+                    return schemaObjects.human(
+
+                    );
+                });
+
+                const insertResult = await oldCol.bulkInsert(docsData);
+
+                if (storages.hasAttachments) {
+                    await Promise.all(
+                        insertResult.success.map(async (doc) => {
+                            await doc.putAttachment({
+                                id: 'text.txt',
+                                data: createBlob(
+                                    'foobar',
+                                    'text/plain'
+                                ),
+                                type: 'text/plain'
+                            });
+                        })
+                    );
+                }
+
+                await oldDb.destroy();
+
+                // create new database
+                const db = await storages.createRxDatabaseNew({
+                    name,
+                    storage: wrappedValidateAjvStorage({
+                        storage: storages.new()
+                    }),
+                    multiInstance: false
+                });
+
+                await db.addCollections({
+                    [collectionName]: {
+                        schema: human
+                    }
+                });
+                const col: RxCollection<HumanDocumentType> = db[collectionName];
+                const emptyDocs = await col.find().exec();
+                assert.strictEqual(emptyDocs.length, 0);
+
+
+                // migrate
+                const handlerEmitted: AfterMigrateBatchHandlerInput[] = [];
+                const batchesAmount = 4;
+                await migrateStorage({
+                    database: db,
+                    oldDatabaseName,
+                    oldStorage: storages.old() as any,
+                    batchSize: docsAmount / batchesAmount,
+                    parallel: true,
+                    afterMigrateBatch: input => handlerEmitted.push(input)
+                });
 
                 // check new database
                 const newDocs = await col.find().exec();
@@ -207,9 +305,9 @@ testStorages.forEach(storages => {
                 const collectionName = randomCouchString(12);
 
                 // create old database and insert data
-                const oldDbName = name + '-old';
+                const oldDatabaseName = name + '-old';
                 const oldDb = await storages.createRxDatabaseNew({
-                    name: oldDbName,
+                    name: oldDatabaseName,
                     storage: storages.new(),
                     multiInstance: false
                 });
@@ -267,13 +365,13 @@ testStorages.forEach(storages => {
                 // migrate
                 const handlerEmitted: AfterMigrateBatchHandlerInput[] = [];
                 const batchesAmount = 4;
-                await migrateStorage(
-                    db,
-                    oldDbName,
-                    storages.new() as any,
-                    docsAmount / batchesAmount,
-                    input => handlerEmitted.push(input)
-                );
+                await migrateStorage({
+                    database: db,
+                    oldDatabaseName,
+                    oldStorage: storages.new() as any,
+                    batchSize: docsAmount / batchesAmount,
+                    afterMigrateBatch: input => handlerEmitted.push(input)
+                });
 
                 // check new database
                 const newDocs = await col.find().exec();
@@ -299,9 +397,9 @@ testStorages.forEach(storages => {
         });
         describe('issues', () => {
             it('migration with multiple collections', async () => {
-                const oldDbName = DB_PREFIX + randomCouchString(12);
+                const oldDatabaseName = DB_PREFIX + randomCouchString(12);
                 const oldDb = await storages.createRxDatabaseOld({
-                    name: oldDbName,
+                    name: oldDatabaseName,
                     storage: storages.old() as any,
                     multiInstance: false
                 });
@@ -340,12 +438,12 @@ testStorages.forEach(storages => {
                     }
                 });
 
-                await migrateStorage(
-                    db,
-                    oldDbName,
-                    storages.old() as any,
-                    1
-                );
+                await migrateStorage({
+                    database: db,
+                    oldDatabaseName,
+                    oldStorage: storages.old() as any,
+                    batchSize: 1
+                });
 
                 // ensure documents exist in new collection
                 await db.col1.findOne().exec(true);
