@@ -107,7 +107,6 @@ export function getConnectionHandlerSimplePeer({
     }
 
     const creator: WebRTCConnectionHandlerCreator = async (options) => {
-        const socket = new (webSocketConstructor as any)(signalingServerUrl);
 
         const connect$ = new Subject<WebRTCPeer>();
         const disconnect$ = new Subject<WebRTCPeer>();
@@ -117,93 +116,106 @@ export function getConnectionHandlerSimplePeer({
 
         const peers = new Map<string, SimplePeer>();
         let closed = false;
-
         let ownPeerId: string;
-        socket.onopen = () => {
+        let socket: WebSocket;
+        createSocket();
 
-            (async () => {
-                while (true) {
-                    await promiseWait(SIMPLE_PEER_PING_INTERVAL / 2);
-                    if (closed) {
-                        break;
+        /**
+         * @recursive calls it self on socket disconnects
+         * so that when the user goes offline and online
+         * again, it will recreate the WebSocket connection.
+         */
+        function createSocket() {
+            if (closed) {
+                return;
+            }
+            const socket: WebSocket = new (webSocketConstructor as any)(signalingServerUrl);
+            socket.onclose = () => createSocket();
+            socket.onopen = () => {
+                (async () => {
+                    while (true) {
+                        await promiseWait(SIMPLE_PEER_PING_INTERVAL / 2);
+                        if (closed) {
+                            break;
+                        }
+                        sendMessage(socket, { type: 'ping' });
                     }
-                    sendMessage(socket, { type: 'ping' });
-                }
-            })();
+                })();
 
-            socket.onmessage = (msgEvent: any) => {
-                const msg: PeerMessage = JSON.parse(msgEvent.data as any);
-                switch (msg.type) {
-                    case 'init':
-                        ownPeerId = msg.yourPeerId;
-                        sendMessage(socket, {
-                            type: 'join',
-                            room: options.topic
-                        });
-                        break;
-                    case 'joined':
-                        /**
-                         * PeerId is created by the signaling server
-                         * to prevent spoofing it.
-                         */
-                        msg.otherPeerIds.forEach(remotePeerId => {
-                            if (
-                                remotePeerId === ownPeerId ||
-                                peers.has(remotePeerId)
-                            ) {
-                                return;
-                            }
-                            const newPeer: SimplePeer = new Peer({
-                                initiator: remotePeerId > ownPeerId,
-                                wrtc,
-                                trickle: true
-                            }) as any;
-                            peers.set(remotePeerId, newPeer);
-
-                            newPeer.on('signal', (signal: any) => {
-                                sendMessage(socket, {
-                                    type: 'signal',
-                                    senderPeerId: ownPeerId,
-                                    receiverPeerId: remotePeerId,
-                                    room: options.topic,
-                                    data: signal
-                                });
+                socket.onmessage = (msgEvent: any) => {
+                    const msg: PeerMessage = JSON.parse(msgEvent.data as any);
+                    switch (msg.type) {
+                        case 'init':
+                            ownPeerId = msg.yourPeerId;
+                            sendMessage(socket, {
+                                type: 'join',
+                                room: options.topic
                             });
-
-                            newPeer.on('data', (messageOrResponse: any) => {
-                                messageOrResponse = JSON.parse(messageOrResponse.toString());
-                                if (messageOrResponse.result) {
-                                    response$.next({
-                                        peer: newPeer as any,
-                                        response: messageOrResponse
-                                    });
-                                } else {
-                                    message$.next({
-                                        peer: newPeer as any,
-                                        message: messageOrResponse
-                                    });
+                            break;
+                        case 'joined':
+                            /**
+                             * PeerId is created by the signaling server
+                             * to prevent spoofing it.
+                             */
+                            msg.otherPeerIds.forEach(remotePeerId => {
+                                if (
+                                    remotePeerId === ownPeerId ||
+                                    peers.has(remotePeerId)
+                                ) {
+                                    return;
                                 }
-                            });
+                                const newPeer: SimplePeer = new Peer({
+                                    initiator: remotePeerId > ownPeerId,
+                                    wrtc,
+                                    trickle: true
+                                }) as any;
+                                peers.set(remotePeerId, newPeer);
 
-                            newPeer.on('error', (error) => {
-                                console.log('CLIENT(' + ownPeerId + ') peer got error:');
-                                console.dir(error);
-                                error$.next(newRxError('RC_WEBRTC_PEER', {
-                                    error
-                                }));
-                            });
+                                newPeer.on('signal', (signal: any) => {
+                                    sendMessage(socket, {
+                                        type: 'signal',
+                                        senderPeerId: ownPeerId,
+                                        receiverPeerId: remotePeerId,
+                                        room: options.topic,
+                                        data: signal
+                                    });
+                                });
 
-                            newPeer.on('connect', () => {
-                                connect$.next(newPeer as any);
-                            });
+                                newPeer.on('data', (messageOrResponse: any) => {
+                                    messageOrResponse = JSON.parse(messageOrResponse.toString());
+                                    if (messageOrResponse.result) {
+                                        response$.next({
+                                            peer: newPeer as any,
+                                            response: messageOrResponse
+                                        });
+                                    } else {
+                                        message$.next({
+                                            peer: newPeer as any,
+                                            message: messageOrResponse
+                                        });
+                                    }
+                                });
 
-                        });
-                        break;
-                    case 'signal':
-                        // console.log('got signal(' + peerId + ') ' + data.from + ' -> ' + data.to);
-                        const peer = getFromMapOrThrow(peers, msg.senderPeerId);
-                        peer.signal(msg.data);
-                        break;
+                                newPeer.on('error', (error) => {
+                                    console.log('CLIENT(' + ownPeerId + ') peer got error:');
+                                    console.dir(error);
+                                    error$.next(newRxError('RC_WEBRTC_PEER', {
+                                        error
+                                    }));
+                                });
+
+                                newPeer.on('connect', () => {
+                                    connect$.next(newPeer as any);
+                                });
+
+                            });
+                            break;
+                        case 'signal':
+                            // console.log('got signal(' + peerId + ') ' + data.from + ' -> ' + data.to);
+                            const peer = getFromMapOrThrow(peers, msg.senderPeerId);
+                            peer.signal(msg.data);
+                            break;
+                    }
                 }
             }
         };
