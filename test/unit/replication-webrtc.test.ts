@@ -30,10 +30,9 @@ describe('replication-webrtc.test.ts', () => {
         return;
     }
 
-    if (config.storage.name === 'lokijs') {
+    if (config.isDeno) {
         /**
-         * TODO for whatever reason this test
-         * randomly does not work in the browser with lokijs
+         * We do not have WebRTC in Deno
          */
         return;
     }
