@@ -105,7 +105,7 @@ The downside of SQLite is that it is lacking many features that are handful when
 </p>
 
 
-[RxDB](https://rxdb.info/) is an offline first, NoSQL database for JavaScript Applications like hybrid apps. Because it is reactive, you can subscribe to all state changes like the result of a query or even a single field of a document. This is great for UI-based realtime applications in a way that makes it easy to develop realtime applications like what you need in Capacitor.
+[RxDB](https://rxdb.info/) is an local first, NoSQL database for JavaScript Applications like hybrid apps. Because it is reactive, you can subscribe to all state changes like the result of a query or even a single field of a document. This is great for UI-based realtime applications in a way that makes it easy to develop realtime applications like what you need in Capacitor.
 
 Because RxDB is made for Web applications, most of the [available RxStorage](./rx-storage.md) plugins can be used to store and query data in a Capacitor app. However it is recommended to use the [SQLite RxStorage](./rx-storage-sqlite.md) because it stores the data on the filesystem of the device, not in the JavaScript runtime (like IndexedDB). Storing data on the filesystem ensures it is persistent and will not be cleaned up by any process. Also the performance of SQLite is [much faster](./rx-storage.md#performance-comparison) compared to IndexedDB, because SQLite does not have to go through a browsers permission layers. For the SQLite binding you should use the [@capacitor-community/sqlite](https://github.com/capacitor-community/sqlite) package.
 

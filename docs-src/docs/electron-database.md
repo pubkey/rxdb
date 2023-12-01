@@ -6,7 +6,7 @@ slug: electron-database.html
 # Electron Database
 
 [Electron](https://www.electronjs.org/) (aka Electron.js) is a framework developed by github which is designed to create desktop applications with the Web technology stack consisting of HTML, CSS and JavaScript.
-Because the desktop application runs on the clients device, it is suitable to use a database that can store and query data locally. This allows to create so called [offline first](./offline-first.md) apps that even work when to user has no internet connection.
+Because the desktop application runs on the clients device, it is suitable to use a database that can store and query data locally. This allows to create so called [local first](./offline-first.md) apps that store data locally and even work when to user has no internet connection.
 While there are many options to store data in Electron, for complex realtime apps, using [RxDB](https://rxdb.info/) is recommended because it is a database made for UI-based client side application, not a server-side database.
 
 <p align="center">

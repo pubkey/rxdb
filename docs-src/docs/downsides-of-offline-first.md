@@ -1,13 +1,13 @@
 ---
-title: Downsides of Offline First
+title: Downsides of Local First / Offline First
 slug: downsides-of-offline-first.html
 ---
 
 
 
-# Downsides of Offline First
+# Downsides of Local First / Offline First
 
-So you have read [all these things](./offline-first.md) about how the offline first paradigm makes it easy to create realtime web applications that even work when the user has no internet connection.
+So you have read [all these things](./offline-first.md) about how the local-first (aka offline-first) paradigm makes it easy to create realtime web applications that even work when the user has no internet connection.
 But there is no free lunch. The offline first paradigm is not the perfect approach for all kinds of apps.
 
 > **You fully understood a technology when you know when not to use it**

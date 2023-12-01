@@ -12,7 +12,7 @@ If you disagree with anything or think that something is missing, make a pull re
 
 ### What to compare with
 
-[RxDB](https://rxdb.info) is an **observable**, **replicating**, **[offline first](./offline-first.md)**, **JavaScript** database. So it makes only sense to list similar projects as alternatives, not just any database or JavaScript store library. However, I will list up some projects that RxDB is often compared with, even if it only makes sense for some use cases.
+[RxDB](https://rxdb.info) is an **observable**, **replicating**, **[local first](./offline-first.md)**, **JavaScript** database. So it makes only sense to list similar projects as alternatives, not just any database or JavaScript store library. However, I will list up some projects that RxDB is often compared with, even if it only makes sense for some use cases.
 
 This list should be seen as an **entrypoint** for your personal evaluation of which tool could work for your project.
 
