@@ -132,6 +132,7 @@ export async function replicateWebRTC<RxDocType>(
             }
             console.log('--- newPeer 2');
             const isMaster = await isMasterInWebRTCReplication(collection.database.hashFunction, storageToken, peerToken);
+            console.log('--- newPeer isMaster ' + isMaster);
 
             let replicationState: RxWebRTCReplicationState<RxDocType> | undefined;
             if (isMaster) {
