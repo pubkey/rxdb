@@ -129,7 +129,7 @@ export function getConnectionHandlerSimplePeer({
             if (closed) {
                 return;
             }
-            const socket: WebSocket = new (webSocketConstructor as any)(signalingServerUrl);
+            socket = new (webSocketConstructor as any)(signalingServerUrl);
             socket.onclose = () => createSocket();
             socket.onopen = () => {
                 (async () => {
