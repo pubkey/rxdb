@@ -31,21 +31,21 @@ const db = await createRxDatabase<RxStylechaseCollections>({
     multiInstance: false
 });
 
-await migrateStorage(
-    db as any,
+await migrateStorage({
+    database: db as any,
     /**
      * Name of the old database,
      * using the storage migration requires that the
      * new database has a different name.
      */
-    'myOldDatabaseName',
-    getRxStorageLoki(), // RxStorage of the old database
-    500, // batch size
-    // 
-    (input: AfterMigrateBatchHandlerInput) => {
+    oldDatabaseName: 'myOldDatabaseName',
+    oldStorage: getRxStorageLoki(), // RxStorage of the old database
+    batchSize: 500, // batch size
+    parallel: false, // <- true if it should migrate all collections in parallel. False (default) if should migrate in serial
+    afterMigrateBatch: (input: AfterMigrateBatchHandlerInput) => {
         console.log('storage migration: batch processed');
     }
-);
+});
 ```
 
 
@@ -70,21 +70,21 @@ import {
     getRxStorageLoki
 } from 'rxdb-old/plugins/storage-loki'; // <- import from the old RxDB version
 
-await migrateStorage(
-    db as any,
+await migrateStorage({
+    database: db as any,
     /**
      * Name of the old database,
      * using the storage migration requires that the
      * new database has a different name.
      */
-    'myOldDatabaseName',
-    getRxStorageLoki(), // RxStorage of the old database
-    500, // batch size
-    // 
-    (input: AfterMigrateBatchHandlerInput) => {
+    oldDatabaseName: 'myOldDatabaseName',
+    oldStorage: getRxStorageLoki(), // RxStorage of the old database
+    batchSize: 500, // batch size
+    parallel: false,
+    afterMigrateBatch: (input: AfterMigrateBatchHandlerInput) => {
         console.log('storage migration: batch processed');
     }
-);
+});
 /* ... */
 ```
 
