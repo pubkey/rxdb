@@ -11,6 +11,12 @@ export async function isMasterInWebRTCReplication(hashFunction, ownStorageToken,
   var isMaster = (await hashFunction([ownStorageToken, otherStorageToken].join('|'))) > (await hashFunction([otherStorageToken, ownStorageToken].join('|')));
   return isMaster;
 }
+
+/**
+ * Send a message to the peer and await the answer.
+ * @throws with an EmptyErrorImpl if the peer connection
+ * was closed before an answer was received.
+ */
 export function sendMessageAndAwaitAnswer(handler, peer, message) {
   var requestId = message.id;
   var answerPromise = firstValueFrom(handler.response$.pipe(filter(d => d.peer === peer), filter(d => d.response.id === requestId), map(d => d.response)));

@@ -8,4 +8,9 @@ import type { WebRTCConnectionHandler, WebRTCMessage, WebRTCPeer, WebRTCResponse
  * for all peers.
  */
 export declare function isMasterInWebRTCReplication(hashFunction: HashFunction, ownStorageToken: string, otherStorageToken: string): Promise<boolean>;
+/**
+ * Send a message to the peer and await the answer.
+ * @throws with an EmptyErrorImpl if the peer connection
+ * was closed before an answer was received.
+ */
 export declare function sendMessageAndAwaitAnswer(handler: WebRTCConnectionHandler, peer: WebRTCPeer, message: WebRTCMessage): Promise<WebRTCResponse>;

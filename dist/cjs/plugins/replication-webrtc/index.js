@@ -27,6 +27,7 @@ Object.keys(_webrtcHelper).forEach(function (key) {
     }
   });
 });
+var _rxError = require("../../rx-error.js");
 var _signalingServer = require("./signaling-server.js");
 Object.keys(_signalingServer).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
@@ -103,15 +104,27 @@ async function replicateWebRTC(options) {
     });
   }));
   var connectSub = pool.connectionHandler.connect$.pipe((0, _rxjs.filter)(() => !pool.canceled)).subscribe(async peer => {
+    var peerToken;
     /**
      * TODO ensure both know the correct secret
      */
-    var tokenResponse = await (0, _webrtcHelper.sendMessageAndAwaitAnswer)(pool.connectionHandler, peer, {
-      id: getRequestId(),
-      method: 'token',
-      params: []
-    });
-    var peerToken = tokenResponse.result;
+    try {
+      var tokenResponse = await (0, _webrtcHelper.sendMessageAndAwaitAnswer)(pool.connectionHandler, peer, {
+        id: getRequestId(),
+        method: 'token',
+        params: []
+      });
+      peerToken = tokenResponse.result;
+    } catch (error) {
+      /**
+       * If could not get the tokenResponse,
+       * just ignore that peer.
+       */
+      pool.error$.next((0, _rxError.newRxError)('RC_WEBRTC_PEER', {
+        error
+      }));
+      return;
+    }
     var isMaster = await (0, _webrtcHelper.isMasterInWebRTCReplication)(collection.database.hashFunction, storageToken, peerToken);
     var replicationState;
     if (isMaster) {

@@ -5,6 +5,7 @@ import { ensureNotFalsy, getFromMapOrThrow, randomCouchString } from "../../plug
 import { RxDBLeaderElectionPlugin } from "../leader-election/index.js";
 import { replicateRxCollection } from "../replication/index.js";
 import { isMasterInWebRTCReplication, sendMessageAndAwaitAnswer } from "./webrtc-helper.js";
+import { newRxError } from "../../rx-error.js";
 export async function replicateWebRTC(options) {
   var collection = options.collection;
   addRxPlugin(RxDBLeaderElectionPlugin);
@@ -45,15 +46,27 @@ export async function replicateWebRTC(options) {
     });
   }));
   var connectSub = pool.connectionHandler.connect$.pipe(filter(() => !pool.canceled)).subscribe(async peer => {
+    var peerToken;
     /**
      * TODO ensure both know the correct secret
      */
-    var tokenResponse = await sendMessageAndAwaitAnswer(pool.connectionHandler, peer, {
-      id: getRequestId(),
-      method: 'token',
-      params: []
-    });
-    var peerToken = tokenResponse.result;
+    try {
+      var tokenResponse = await sendMessageAndAwaitAnswer(pool.connectionHandler, peer, {
+        id: getRequestId(),
+        method: 'token',
+        params: []
+      });
+      peerToken = tokenResponse.result;
+    } catch (error) {
+      /**
+       * If could not get the tokenResponse,
+       * just ignore that peer.
+       */
+      pool.error$.next(newRxError('RC_WEBRTC_PEER', {
+        error
+      }));
+      return;
+    }
     var isMaster = await isMasterInWebRTCReplication(collection.database.hashFunction, storageToken, peerToken);
     var replicationState;
     if (isMaster) {
