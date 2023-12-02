@@ -7,7 +7,6 @@ import fs from 'fs';
 import path from 'path';
 import url from 'url';
 import { wait } from 'async-test-util';
-const __filename = url.fileURLToPath(import.meta.url);
 const __dirname = url.fileURLToPath(new URL('.', import.meta.url));
 
 
