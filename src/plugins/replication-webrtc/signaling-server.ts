@@ -55,7 +55,6 @@ export async function startSignalingServerSimplePeer(
                     disconnectSocket(peer.id, 'no ping for 2 minutes');
                 }
             });
-
         }
     })();
 
