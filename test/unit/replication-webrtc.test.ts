@@ -157,8 +157,7 @@ describe('replication-webrtc.test.ts', () => {
 
             // initial sync
             const topic = randomCouchString(10);
-            const secret = randomCouchString(10);
-            await syncCollections(topic, secret, [c1, c2]);
+            await syncCollections(topic, [c1, c2]);
 
             console.log('--------- 0.5');
 
@@ -192,7 +191,7 @@ describe('replication-webrtc.test.ts', () => {
 
             // add another collection to sync
             const c3 = await humansCollection.create(1, 'ccc');
-            await syncCollections(topic, secret, [c3]);
+            await syncCollections(topic, [c3]);
             await awaitCollectionsInSync([c1, c2, c3]);
 
             console.log('--------- 5');
