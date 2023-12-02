@@ -16,7 +16,7 @@ export const PEER_ID_LENGTH = 12;
 export type ServerPeer = {
     id: string;
     socket: WebSocket;
-    rooms: string[];
+    rooms: Set<string>;
     lastPing: number;
 };
 
@@ -41,7 +41,6 @@ export async function startSignalingServerSimplePeer(
         peersByRoom.clear();
     });
 
-
     /**
      * Clients can disconnect without telling that to the
      * server. Therefore we have to automatically disconnect clients that
@@ -49,7 +48,7 @@ export async function startSignalingServerSimplePeer(
      */
     (async () => {
         while (!serverClosed) {
-            await promiseWait(1000 * 20);
+            await promiseWait(1000 * 5);
             const minTime = Date.now() - SIMPLE_PEER_PING_INTERVAL;
             Array.from(peerById.values()).forEach(peer => {
                 if (peer.lastPing < minTime) {
@@ -61,9 +60,10 @@ export async function startSignalingServerSimplePeer(
     })();
 
     function disconnectSocket(peerId: string, reason: string) {
+        console.log('# disconnect peer ' + peerId + ' reason: ' + reason);
         const peer = peerById.get(peerId);
         if (peer) {
-            peer.socket.close(undefined, reason);
+            peer.socket.close && peer.socket.close(undefined, reason);
             peer.rooms.forEach(roomId => {
                 const room = peersByRoom.get(roomId);
                 room?.delete(peerId);
@@ -84,7 +84,7 @@ export async function startSignalingServerSimplePeer(
         const peer: ServerPeer = {
             id: peerId,
             socket: ws,
-            rooms: [],
+            rooms: new Set(),
             lastPing: Date.now()
         };
         peerById.set(peerId, peer);
@@ -116,9 +116,10 @@ export async function startSignalingServerSimplePeer(
                         return;
                     }
 
-                    if (peer.rooms.includes(peerId)) {
+                    if (peer.rooms.has(peerId)) {
                         return;
                     }
+                    peer.rooms.add(roomId);
 
 
                     const room = getFromMapOrCreate(
