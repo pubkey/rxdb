@@ -4,7 +4,7 @@ export declare const PEER_ID_LENGTH = 12;
 export type ServerPeer = {
     id: string;
     socket: WebSocket;
-    rooms: string[];
+    rooms: Set<string>;
     lastPing: number;
 };
 /**

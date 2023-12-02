@@ -33,7 +33,7 @@ async function startSignalingServerSimplePeer(serverOptions) {
    */
   (async () => {
     var _loop = async function () {
-      await (0, _index.promiseWait)(1000 * 20);
+      await (0, _index.promiseWait)(1000 * 5);
       var minTime = Date.now() - _connectionHandlerSimplePeer.SIMPLE_PEER_PING_INTERVAL;
       Array.from(peerById.values()).forEach(peer => {
         if (peer.lastPing < minTime) {
@@ -46,9 +46,10 @@ async function startSignalingServerSimplePeer(serverOptions) {
     }
   })();
   function disconnectSocket(peerId, reason) {
+    console.log('# disconnect peer ' + peerId + ' reason: ' + reason);
     var peer = peerById.get(peerId);
     if (peer) {
-      peer.socket.close(undefined, reason);
+      peer.socket.close && peer.socket.close(undefined, reason);
       peer.rooms.forEach(roomId => {
         var room = peersByRoom.get(roomId);
         room?.delete(peerId);
@@ -68,7 +69,7 @@ async function startSignalingServerSimplePeer(serverOptions) {
     var peer = {
       id: peerId,
       socket: ws,
-      rooms: [],
+      rooms: new Set(),
       lastPing: Date.now()
     };
     peerById.set(peerId, peer);
@@ -95,9 +96,10 @@ async function startSignalingServerSimplePeer(serverOptions) {
             disconnectSocket(peerId, 'invalid ids');
             return;
           }
-          if (peer.rooms.includes(peerId)) {
+          if (peer.rooms.has(peerId)) {
             return;
           }
+          peer.rooms.add(roomId);
           var room = (0, _index.getFromMapOrCreate)(peersByRoom, message.room, () => new Set());
           room.add(peerId);
 
