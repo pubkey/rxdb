@@ -22,7 +22,10 @@ import {
 
 import { randomString, wait, waitUntil } from 'async-test-util';
 
-describe('replication-webrtc.test.ts', () => {
+describe('replication-webrtc.test.ts', function () {
+    // can take very long in low-budget CI servers
+    this.timeout(1000 * 40);
+
     if (
         !config.storage.hasReplication ||
         !config.storage.hasPersistence

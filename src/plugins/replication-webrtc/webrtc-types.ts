@@ -47,24 +47,24 @@ export type WebRTCConnectionHandlerCreator = (
 ) => Promise<WebRTCConnectionHandler>;
 
 export type WebRTCSyncPushOptions<RxDocType> = Omit<
-ReplicationPushOptions<RxDocType>,
-'handler'
+    ReplicationPushOptions<RxDocType>,
+    'handler'
 > & {};
 
 export type WebRTCSyncPullOptions<RxDocType> = Omit<
-ReplicationPullOptions<RxDocType, WebRTCReplicationCheckpoint>,
-'handler' | 'stream$'
+    ReplicationPullOptions<RxDocType, WebRTCReplicationCheckpoint>,
+    'handler' | 'stream$'
 > & {};
 
 export type SyncOptionsWebRTC<RxDocType> = Omit<
-ReplicationOptions<RxDocType, WebRTCReplicationCheckpoint>,
-'pull' |
-'push' |
-'replicationIdentifier' |
-'deletedField' |
-'live' |
-'autostart' |
-'waitForLeadership'
+    ReplicationOptions<RxDocType, WebRTCReplicationCheckpoint>,
+    'pull' |
+    'push' |
+    'replicationIdentifier' |
+    'deletedField' |
+    'live' |
+    'autostart' |
+    'waitForLeadership'
 > & {
     /**
      * It will only replicate with other instances

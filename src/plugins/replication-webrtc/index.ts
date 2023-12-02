@@ -100,8 +100,6 @@ export async function replicateWebRTC<RxDocType>(
             filter(() => !pool.canceled)
         )
         .subscribe(async (peer) => {
-
-
             if (options.isPeerValid) {
                 const isValid = await options.isPeerValid(peer);
                 if (!isValid) {
@@ -231,7 +229,6 @@ export async function replicateWebRTC<RxDocType>(
  * we use a Pool instead of returning a single replication state.
  */
 export class RxWebRTCReplicationPool<RxDocType> {
-
     peerStates$: BehaviorSubject<Map<WebRTCPeer, WebRTCPeerState<RxDocType>>> = new BehaviorSubject(new Map());
     canceled: boolean = false;
     masterReplicationHandler: RxReplicationHandler<RxDocType, WebRTCReplicationCheckpoint>;
@@ -254,6 +251,7 @@ export class RxWebRTCReplicationPool<RxDocType> {
 
     addPeer(
         peer: WebRTCPeer,
+        // only if isMaster=false it has a replicationState
         replicationState?: RxWebRTCReplicationState<RxDocType>
     ) {
         const peerState: WebRTCPeerState<RxDocType> = {
