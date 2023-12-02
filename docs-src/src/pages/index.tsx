@@ -653,7 +653,7 @@ export default function Home() {
                     Offline First
                   </a>{' '}
                   paradigm where an application must work as well offline as it does
-                  online. This is done by persisting data on the client side and
+                  online. This is done by persisting data locally on the client side and
                   replicating it in the background. RxDB can even be used solely on
                   the client side, with no backend at all.
                 </p>

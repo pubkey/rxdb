@@ -186,6 +186,30 @@ myDocument.done$.subscribe(isDone => {
 });
 ```
 
+
+### Replication
+
+RxDB has multiple [replication plugins](./replication.md) to replicated database state with a server.
+The easiest way to replicate data between your clients devices it the [WebRTC replication plugin](./replication-webrtc.md) that replicates data between devices without a centralized server. This makes it easy to try out replication without having to host anything.
+
+```ts
+import {
+    replicateWebRTC,
+    getConnectionHandlerSimplePeer
+} from 'rxdb/plugins/replication-webrtc';
+replicateWebRTC({
+    collection: myDatabase.todos,
+    connectionHandlerCreator: getConnectionHandlerSimplePeer({}),
+    topic: '', // <- set any app-specific room id here.
+    secret: 'mysecret',
+    pull: {},
+    push: {},
+})
+```
+
+
 ## Next steps
 
-You are now ready to dive deeper into RxDB. Please continue reading the documentation, join the community on our [Discord chat](./chat), and star the [GitHub repo](https://github.com/pubkey/rxdb). If you are using RxDB in a production environment and able to support its continued development, please take a look at the [👑 Premium package](/premium) which includes additional plugins and utilities.
+You are now ready to dive deeper into RxDB. 
+There is a full implementation of the [quickstart guide here](https://github.com/pubkey/rxdb-quickstart) so you can clone that repository and play with the code.
+Also please continue reading the documentation, join the community on our [Discord chat](./chat), and star the [GitHub repo](https://github.com/pubkey/rxdb). If you are using RxDB in a production environment and able to support its continued development, please take a look at the [👑 Premium package](/premium) which includes additional plugins and utilities.
