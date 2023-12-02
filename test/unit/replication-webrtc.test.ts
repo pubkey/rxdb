@@ -108,7 +108,6 @@ describe('replication-webrtc.test.ts', () => {
 
     async function syncCollections<RxDocType>(
         topic: string,
-        secret: string,
         collections: RxCollection<RxDocType>[]
     ): Promise<RxWebRTCReplicationPool<RxDocType>[]> {
         const ret = await Promise.all(
@@ -116,7 +115,6 @@ describe('replication-webrtc.test.ts', () => {
                 const replicationPool = await replicateWebRTC<RxDocType>({
                     collection,
                     topic,
-                    secret,
                     // connectionHandlerCreator: getConnectionHandlerWebtorrent([webtorrentTrackerUrl]),
                     // connectionHandlerCreator: getConnectionHandlerP2PCF(),
                     connectionHandlerCreator: getConnectionHandlerSimplePeer({

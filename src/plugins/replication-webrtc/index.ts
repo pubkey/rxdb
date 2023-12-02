@@ -100,10 +100,16 @@ export async function replicateWebRTC<RxDocType>(
             filter(() => !pool.canceled)
         )
         .subscribe(async (peer) => {
+
+
+            if (options.isPeerValid) {
+                const isValid = await options.isPeerValid(peer);
+                if (!isValid) {
+                    return;
+                }
+            }
+
             let peerToken: string;
-            /**
-             * TODO ensure both know the correct secret
-             */
             try {
                 const tokenResponse = await sendMessageAndAwaitAnswer(
                     pool.connectionHandler,
