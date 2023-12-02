@@ -1,5 +1,6 @@
 import { Observable, Subscription } from 'rxjs';
 import type {
+    MaybePromise,
     ReplicationOptions,
     ReplicationPullOptions,
     ReplicationPushOptions,
@@ -46,33 +47,37 @@ export type WebRTCConnectionHandlerCreator = (
 ) => Promise<WebRTCConnectionHandler>;
 
 export type WebRTCSyncPushOptions<RxDocType> = Omit<
-ReplicationPushOptions<RxDocType>,
-'handler'
+    ReplicationPushOptions<RxDocType>,
+    'handler'
 > & {};
 
 export type WebRTCSyncPullOptions<RxDocType> = Omit<
-ReplicationPullOptions<RxDocType, WebRTCReplicationCheckpoint>,
-'handler' | 'stream$'
+    ReplicationPullOptions<RxDocType, WebRTCReplicationCheckpoint>,
+    'handler' | 'stream$'
 > & {};
 
 export type SyncOptionsWebRTC<RxDocType> = Omit<
-ReplicationOptions<RxDocType, WebRTCReplicationCheckpoint>,
-'pull' |
-'push' |
-'replicationIdentifier' |
-'deletedField' |
-'live' |
-'autostart' |
-'waitForLeadership'
+    ReplicationOptions<RxDocType, WebRTCReplicationCheckpoint>,
+    'pull' |
+    'push' |
+    'replicationIdentifier' |
+    'deletedField' |
+    'live' |
+    'autostart' |
+    'waitForLeadership'
 > & {
     /**
      * It will only replicate with other instances
-     * that use the same topic and
-     * are able to prove that they know the secret.
+     * that use the same topic.
      */
     topic: string;
-    secret: string;
     connectionHandlerCreator: WebRTCConnectionHandlerCreator;
+    /**
+     * Run on new peers so that bad peers can be blocked.
+     * If returns true, the peer is valid and it will replicate.
+     * If returns false, it will drop the peer.
+     */
+    isPeerValid?: (peer: WebRTCPeer) => MaybePromise<boolean>;
     pull?: WebRTCSyncPullOptions<RxDocType>;
     push?: WebRTCSyncPushOptions<RxDocType>;
 };

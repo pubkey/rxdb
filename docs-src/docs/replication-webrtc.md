@@ -5,7 +5,6 @@ slug: replication-webrtc.html
 
 # Peer-to-Peer (P2P) WebRTC Replication with the RxDB JavaScript Database
 
-
 In the world of web and mobile development, data synchronization between clients and servers has always been a critical aspect of building real-time JavaScript applications.
 Traditionally, the synchronization process relies on **centralized servers** to manage and distribute data. However, Peer-to-Peer (P2P) replication with [WebRTC](https://developer.mozilla.org/en-US/docs/Web/API/WebRTC_API) is changing the game by allowing data to flow **directly between clients**, eliminating the need for a central server.
 
@@ -14,8 +13,6 @@ There is no need for a centralized server to store any of the users data like in
 Only a WebRTC signaling server is required to initially exchange the connection data between clients so that they can establish a WebRTC connection.
 The replication itself then runs with the [RxDB replication protocol](./replication.md). Because RxDB is a NoSQL database and because of the simplicity of its replication protocol, setting up a robust P2P replication is way easier compared to SQL server- or client databases.
 
-
-
 ## Understanding P2P Replication
 
 P2P replication is a paradigm shift in data synchronization. Instead of relying on a central server to manage data transfers between clients, it leverages the power of direct peer-to-peer connections. This approach offers several advantages:
@@ -23,8 +20,6 @@ P2P replication is a paradigm shift in data synchronization. Instead of relying 
 - **Reduced Latency:** With no intermediary server, data can move directly between clients, significantly reducing latency and improving real-time interactions.
 - **Improved Scalability:** P2P networks can easily scale as more clients join, without putting additional load on a central server.
 - **Enhanced Privacy:** Data remains within the client devices, reducing privacy concerns associated with centralized data storage.
-
-
 
 ## Using the RxDB WebRTC Replication Plugin
 
@@ -40,7 +35,6 @@ import {
     replicateWebRTC,
     getConnectionHandlerSimplePeer
 } from 'rxdb/plugins/replication-webrtc';
-
 
 const replicationPool = await replicateWebRTC(
     {
@@ -127,6 +121,26 @@ const serverState = await startSignalingServerSimplePeer({
 ```
 
 For custom signaling servers with more complex logic, you can check the [source code of the default one](https://github.com/pubkey/rxdb/blob/master/src/plugins/replication-webrtc/signaling-server.ts).
+
+
+## Peer Validation
+
+By default the replication will replicate with every peer the signaling server tells them about.
+You can prevent invalid peers from replication by passing a custom `isPeerValid()` function that either returns `true` on valid peers and `false` on invalid peers.
+
+```ts
+const replicationPool = await replicateWebRTC(
+    {
+        /* ... */
+        isPeerValid: async (peer) => {
+            return true;
+        }
+        pull: {},
+        push: {}
+        /* ... */
+    }
+);
+```
 
 ## Conflict detection in WebRTC replication
 
