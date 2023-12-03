@@ -39,8 +39,6 @@ export function sendMessageAndAwaitAnswer<PeerType>(
     peer: PeerType,
     message: WebRTCMessage
 ): Promise<WebRTCResponse> {
-
-
     const requestId = message.id;
     const answerPromise = firstValueFrom(
         handler.response$.pipe(
