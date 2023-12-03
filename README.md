@@ -46,6 +46,8 @@
  	  <a href="https://rxdb.info/chat.html"><img src="https://img.shields.io/discord/969553741705539624?label=discord&style=flat-square&color=5a66f6"></a>
 	  &nbsp;
     <a href="https://twitter.com/intent/follow?screen_name=rxdbjs"><img src="https://img.shields.io/badge/twitter-%40rxdbjs-1DA1F2?style=flat-square"></a>
+	  &nbsp;
+    <a href="https://www.linkedin.com/company/rxdb"><img src="https://img.shields.io/badge/linkedin-%40rxdb-0e76a8?style=flat-square"></a>
     &nbsp;
     <a href="https://rxdb.info/newsletter.html"><img src="https://img.shields.io/badge/newsletter-subscribe-e05b29?style=flat-square"></a>
 </p>
