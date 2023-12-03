@@ -3,24 +3,30 @@ import {
     ensureNotFalsy,
     getFromMapOrThrow,
     PROMISE_RESOLVE_VOID,
-    promiseWait
+    promiseWait,
+    randomCouchString
 } from '../../plugins/utils/index.ts';
 import type {
     WebRTCConnectionHandler,
     WebRTCConnectionHandlerCreator,
     WebRTCMessage,
-    WebRTCPeer,
     PeerWithMessage,
-    PeerWithResponse
+    PeerWithResponse,
+    SyncOptionsWebRTC
 } from './webrtc-types.ts';
 
 import {
-    Instance as SimplePeer,
+    Instance as SimplePeerInstance,
     Options as SimplePeerOptions,
     default as Peer
 } from 'simple-peer';
 import type { RxError, RxTypeError } from '../../types/index.d.ts';
 import { newRxError } from '../../rx-error.ts';
+
+export type SimplePeer = SimplePeerInstance & {
+    // add id to make debugging easier
+    id: string;
+};
 
 export type SimplePeerInitMessage = {
     type: 'init';
@@ -84,7 +90,7 @@ export function getConnectionHandlerSimplePeer({
     signalingServerUrl,
     wrtc,
     webSocketConstructor
-}: SimplePeerConnectionHandlerOptions): WebRTCConnectionHandlerCreator {
+}: SimplePeerConnectionHandlerOptions): WebRTCConnectionHandlerCreator<SimplePeer> {
 
     signalingServerUrl = signalingServerUrl ? signalingServerUrl : DEFAULT_SIGNALING_SERVER;
     webSocketConstructor = webSocketConstructor ? webSocketConstructor as any : WebSocket;
@@ -107,12 +113,12 @@ export function getConnectionHandlerSimplePeer({
         );
     }
 
-    const creator: WebRTCConnectionHandlerCreator = async (options) => {
+    const creator: WebRTCConnectionHandlerCreator<SimplePeer> = async (options: SyncOptionsWebRTC<any, SimplePeer>) => {
 
-        const connect$ = new Subject<WebRTCPeer>();
-        const disconnect$ = new Subject<WebRTCPeer>();
-        const message$ = new Subject<PeerWithMessage>();
-        const response$ = new Subject<PeerWithResponse>();
+        const connect$ = new Subject<SimplePeer>();
+        const disconnect$ = new Subject<SimplePeer>();
+        const message$ = new Subject<PeerWithMessage<SimplePeer>>();
+        const response$ = new Subject<PeerWithResponse<SimplePeer>>();
         const error$ = new Subject<RxError | RxTypeError>();
 
         const peers = new Map<string, SimplePeer>();
@@ -165,21 +171,18 @@ export function getConnectionHandlerSimplePeer({
                              * PeerId is created by the signaling server
                              * to prevent spoofing it.
                              */
-                            msg.otherPeerIds.forEach(remotePeerId => {
-                                if (
-                                    remotePeerId === ownPeerId ||
-                                    peers.has(remotePeerId)
-                                ) {
-                                    return;
-                                }
-                                const newPeer: SimplePeer = new Peer({
+                            function createPeerConnection(remotePeerId: string) {
+                                let disconnected = false;
+                                const newSimplePeer: SimplePeer = new Peer({
                                     initiator: remotePeerId > ownPeerId,
                                     wrtc,
                                     trickle: true
                                 }) as any;
-                                peers.set(remotePeerId, newPeer);
+                                newSimplePeer.id = randomCouchString(10);
+                                peers.set(remotePeerId, newSimplePeer);
 
-                                newPeer.on('signal', (signal: any) => {
+
+                                newSimplePeer.on('signal', (signal: any) => {
                                     sendMessage(ensureNotFalsy(socket), {
                                         type: 'signal',
                                         senderPeerId: ownPeerId,
@@ -189,37 +192,57 @@ export function getConnectionHandlerSimplePeer({
                                     });
                                 });
 
-                                newPeer.on('data', (messageOrResponse: any) => {
+                                newSimplePeer.on('data', (messageOrResponse: any) => {
                                     messageOrResponse = JSON.parse(messageOrResponse.toString());
                                     if (messageOrResponse.result) {
                                         response$.next({
-                                            peer: newPeer as any,
+                                            peer: newSimplePeer,
                                             response: messageOrResponse
                                         });
                                     } else {
                                         message$.next({
-                                            peer: newPeer as any,
+                                            peer: newSimplePeer,
                                             message: messageOrResponse
                                         });
                                     }
                                 });
 
-                                newPeer.on('error', (error) => {
-                                    console.log('CLIENT(' + ownPeerId + ') peer got error:');
-                                    console.dir(error);
+                                newSimplePeer.on('error', (error) => {
                                     error$.next(newRxError('RC_WEBRTC_PEER', {
                                         error
                                     }));
+                                    newSimplePeer.destroy();
+                                    if (!disconnected) {
+                                        disconnected = true;
+                                        disconnect$.next(newSimplePeer);
+                                    }
                                 });
 
-                                newPeer.on('connect', () => {
-                                    connect$.next(newPeer as any);
+                                newSimplePeer.on('connect', () => {
+                                    connect$.next(newSimplePeer);
                                 });
+
+                                newSimplePeer.on('close', () => {
+                                    if (!disconnected) {
+                                        disconnected = true;
+                                        disconnect$.next(newSimplePeer);
+                                    }
+                                    createPeerConnection(remotePeerId);
+                                });
+                            }
+                            msg.otherPeerIds.forEach(remotePeerId => {
+                                if (
+                                    remotePeerId === ownPeerId ||
+                                    peers.has(remotePeerId)
+                                ) {
+                                    return;
+                                } else {
+                                    createPeerConnection(remotePeerId);
+                                }
 
                             });
                             break;
                         case 'signal':
-                            // console.log('got signal(' + peerId + ') ' + data.from + ' -> ' + data.to);
                             const peer = getFromMapOrThrow(peers, msg.senderPeerId);
                             peer.signal(msg.data);
                             break;
@@ -228,14 +251,14 @@ export function getConnectionHandlerSimplePeer({
             }
         };
 
-        const handler: WebRTCConnectionHandler = {
+        const handler: WebRTCConnectionHandler<SimplePeer> = {
             error$,
             connect$,
             disconnect$,
             message$,
             response$,
-            async send(peer: WebRTCPeer, message: WebRTCMessage) {
-                await (peer as any).send(JSON.stringify(message));
+            async send(peer: SimplePeer, message: WebRTCMessage) {
+                await peer.send(JSON.stringify(message));
             },
             destroy() {
                 closed = true;
