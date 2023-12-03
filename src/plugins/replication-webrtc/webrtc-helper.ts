@@ -4,7 +4,6 @@ import type {
 import type {
     WebRTCConnectionHandler,
     WebRTCMessage,
-    WebRTCPeer,
     WebRTCResponse
 } from './webrtc-types.ts';
 import { filter, firstValueFrom, map } from 'rxjs';
@@ -35,11 +34,13 @@ export async function isMasterInWebRTCReplication(
  * @throws with an EmptyErrorImpl if the peer connection
  * was closed before an answer was received.
  */
-export function sendMessageAndAwaitAnswer(
-    handler: WebRTCConnectionHandler,
-    peer: WebRTCPeer,
+export function sendMessageAndAwaitAnswer<PeerType>(
+    handler: WebRTCConnectionHandler<PeerType>,
+    peer: PeerType,
     message: WebRTCMessage
 ): Promise<WebRTCResponse> {
+
+
     const requestId = message.id;
     const answerPromise = firstValueFrom(
         handler.response$.pipe(

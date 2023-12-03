@@ -28,7 +28,6 @@ import {
 } from './webrtc-helper.ts';
 import type {
     WebRTCConnectionHandler,
-    WebRTCPeer,
     WebRTCPeerState,
     WebRTCReplicationCheckpoint,
     WebRTCResponse,
@@ -38,9 +37,9 @@ import type {
 import { newRxError } from '../../rx-error.ts';
 
 
-export async function replicateWebRTC<RxDocType>(
-    options: SyncOptionsWebRTC<RxDocType>
-): Promise<RxWebRTCReplicationPool<RxDocType>> {
+export async function replicateWebRTC<RxDocType, PeerType>(
+    options: SyncOptionsWebRTC<RxDocType, PeerType>
+): Promise<RxWebRTCReplicationPool<RxDocType, PeerType>> {
     const collection = options.collection;
     addRxPlugin(RxDBLeaderElectionPlugin);
 
@@ -146,13 +145,13 @@ export async function replicateWebRTC<RxDocType>(
                 pool.subs.push(
                     masterChangeStreamSub,
                     pool.connectionHandler.disconnect$.pipe(
-                        filter(p => p.id === peer.id)
+                        filter(p => p === peer)
                     ).subscribe(() => masterChangeStreamSub.unsubscribe())
                 );
 
                 const messageSub = pool.connectionHandler.message$
                     .pipe(
-                        filter(data => data.peer.id === peer.id),
+                        filter(data => data.peer === peer),
                         filter(data => data.message.method !== 'token')
                     )
                     .subscribe(async (data) => {
@@ -228,8 +227,8 @@ export async function replicateWebRTC<RxDocType>(
  * Because the WebRTC replication runs between many instances,
  * we use a Pool instead of returning a single replication state.
  */
-export class RxWebRTCReplicationPool<RxDocType> {
-    peerStates$: BehaviorSubject<Map<WebRTCPeer, WebRTCPeerState<RxDocType>>> = new BehaviorSubject(new Map());
+export class RxWebRTCReplicationPool<RxDocType, PeerType> {
+    peerStates$: BehaviorSubject<Map<PeerType, WebRTCPeerState<RxDocType, PeerType>>> = new BehaviorSubject(new Map());
     canceled: boolean = false;
     masterReplicationHandler: RxReplicationHandler<RxDocType, WebRTCReplicationCheckpoint>;
     subs: Subscription[] = [];
@@ -238,8 +237,8 @@ export class RxWebRTCReplicationPool<RxDocType> {
 
     constructor(
         public readonly collection: RxCollection<RxDocType>,
-        public readonly options: SyncOptionsWebRTC<RxDocType>,
-        public readonly connectionHandler: WebRTCConnectionHandler
+        public readonly options: SyncOptionsWebRTC<RxDocType, PeerType>,
+        public readonly connectionHandler: WebRTCConnectionHandler<PeerType>
     ) {
         this.collection.onDestroy.push(() => this.cancel());
         this.masterReplicationHandler = rxStorageInstanceToReplicationHandler(
@@ -250,11 +249,11 @@ export class RxWebRTCReplicationPool<RxDocType> {
     }
 
     addPeer(
-        peer: WebRTCPeer,
+        peer: PeerType,
         // only if isMaster=false it has a replicationState
         replicationState?: RxWebRTCReplicationState<RxDocType>
     ) {
-        const peerState: WebRTCPeerState<RxDocType> = {
+        const peerState: WebRTCPeerState<RxDocType, PeerType> = {
             peer,
             replicationState,
             subs: []
@@ -266,7 +265,7 @@ export class RxWebRTCReplicationPool<RxDocType> {
             );
         }
     }
-    removePeer(peer: WebRTCPeer) {
+    removePeer(peer: PeerType) {
         const peerState = getFromMapOrThrow(this.peerStates$.getValue(), peer);
         this.peerStates$.getValue().delete(peer);
         this.peerStates$.next(this.peerStates$.getValue());
