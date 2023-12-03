@@ -1,5 +1,8 @@
 import type { WebRTCConnectionHandlerCreator } from './webrtc-types.ts';
-import { Options as SimplePeerOptions } from 'simple-peer';
+import { Instance as SimplePeerInstance, Options as SimplePeerOptions } from 'simple-peer';
+export type SimplePeer = SimplePeerInstance & {
+    id: string;
+};
 export type SimplePeerInitMessage = {
     type: 'init';
     yourPeerId: string;
@@ -40,4 +43,4 @@ export declare const SIMPLE_PEER_PING_INTERVAL: number;
 /**
  * Returns a connection handler that uses simple-peer and the signaling server.
  */
-export declare function getConnectionHandlerSimplePeer({ signalingServerUrl, wrtc, webSocketConstructor }: SimplePeerConnectionHandlerOptions): WebRTCConnectionHandlerCreator;
+export declare function getConnectionHandlerSimplePeer({ signalingServerUrl, wrtc, webSocketConstructor }: SimplePeerConnectionHandlerOptions): WebRTCConnectionHandlerCreator<SimplePeer>;

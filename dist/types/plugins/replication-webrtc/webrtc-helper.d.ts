@@ -1,5 +1,5 @@
 import type { HashFunction } from '../../types/index.d.ts';
-import type { WebRTCConnectionHandler, WebRTCMessage, WebRTCPeer, WebRTCResponse } from './webrtc-types.ts';
+import type { WebRTCConnectionHandler, WebRTCMessage, WebRTCResponse } from './webrtc-types.ts';
 /**
  * To deterministically define which peer is master and
  * which peer is fork, we compare the storage tokens.
@@ -13,4 +13,4 @@ export declare function isMasterInWebRTCReplication(hashFunction: HashFunction, 
  * @throws with an EmptyErrorImpl if the peer connection
  * was closed before an answer was received.
  */
-export declare function sendMessageAndAwaitAnswer(handler: WebRTCConnectionHandler, peer: WebRTCPeer, message: WebRTCMessage): Promise<WebRTCResponse>;
+export declare function sendMessageAndAwaitAnswer<PeerType>(handler: WebRTCConnectionHandler<PeerType>, peer: PeerType, message: WebRTCMessage): Promise<WebRTCResponse>;

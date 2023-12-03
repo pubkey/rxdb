@@ -1,5 +1,5 @@
 import { Subject } from 'rxjs';
-import { ensureNotFalsy, getFromMapOrThrow, PROMISE_RESOLVE_VOID, promiseWait } from "../../plugins/utils/index.js";
+import { ensureNotFalsy, getFromMapOrThrow, PROMISE_RESOLVE_VOID, promiseWait, randomCouchString } from "../../plugins/utils/index.js";
 import { default as Peer } from 'simple-peer';
 import { newRxError } from "../../rx-error.js";
 function sendMessage(ws, msg) {
@@ -80,17 +80,16 @@ export function getConnectionHandlerSimplePeer({
                * PeerId is created by the signaling server
                * to prevent spoofing it.
                */
-              msg.otherPeerIds.forEach(remotePeerId => {
-                if (remotePeerId === ownPeerId || peers.has(remotePeerId)) {
-                  return;
-                }
-                var newPeer = new Peer({
+              var createPeerConnection = function (remotePeerId) {
+                var disconnected = false;
+                var newSimplePeer = new Peer({
                   initiator: remotePeerId > ownPeerId,
                   wrtc,
                   trickle: true
                 });
-                peers.set(remotePeerId, newPeer);
-                newPeer.on('signal', signal => {
+                newSimplePeer.id = randomCouchString(10);
+                peers.set(remotePeerId, newSimplePeer);
+                newSimplePeer.on('signal', signal => {
                   sendMessage(ensureNotFalsy(socket), {
                     type: 'signal',
                     senderPeerId: ownPeerId,
@@ -99,34 +98,50 @@ export function getConnectionHandlerSimplePeer({
                     data: signal
                   });
                 });
-                newPeer.on('data', messageOrResponse => {
+                newSimplePeer.on('data', messageOrResponse => {
                   messageOrResponse = JSON.parse(messageOrResponse.toString());
                   if (messageOrResponse.result) {
                     response$.next({
-                      peer: newPeer,
+                      peer: newSimplePeer,
                       response: messageOrResponse
                     });
                   } else {
                     message$.next({
-                      peer: newPeer,
+                      peer: newSimplePeer,
                       message: messageOrResponse
                     });
                   }
                 });
-                newPeer.on('error', error => {
-                  console.log('CLIENT(' + ownPeerId + ') peer got error:');
-                  console.dir(error);
+                newSimplePeer.on('error', error => {
                   error$.next(newRxError('RC_WEBRTC_PEER', {
                     error
                   }));
+                  newSimplePeer.destroy();
+                  if (!disconnected) {
+                    disconnected = true;
+                    disconnect$.next(newSimplePeer);
+                  }
                 });
-                newPeer.on('connect', () => {
-                  connect$.next(newPeer);
+                newSimplePeer.on('connect', () => {
+                  connect$.next(newSimplePeer);
                 });
+                newSimplePeer.on('close', () => {
+                  if (!disconnected) {
+                    disconnected = true;
+                    disconnect$.next(newSimplePeer);
+                  }
+                  createPeerConnection(remotePeerId);
+                });
+              };
+              msg.otherPeerIds.forEach(remotePeerId => {
+                if (remotePeerId === ownPeerId || peers.has(remotePeerId)) {
+                  return;
+                } else {
+                  createPeerConnection(remotePeerId);
+                }
               });
               break;
             case 'signal':
-              // console.log('got signal(' + peerId + ') ' + data.from + ' -> ' + data.to);
               var peer = getFromMapOrThrow(peers, msg.senderPeerId);
               peer.signal(msg.data);
               break;

@@ -46,10 +46,13 @@ export async function replicateWebRTC(options) {
     });
   }));
   var connectSub = pool.connectionHandler.connect$.pipe(filter(() => !pool.canceled)).subscribe(async peer => {
+    if (options.isPeerValid) {
+      var isValid = await options.isPeerValid(peer);
+      if (!isValid) {
+        return;
+      }
+    }
     var peerToken;
-    /**
-     * TODO ensure both know the correct secret
-     */
     try {
       var tokenResponse = await sendMessageAndAwaitAnswer(pool.connectionHandler, peer, {
         id: getRequestId(),
@@ -80,8 +83,8 @@ export async function replicateWebRTC(options) {
       });
 
       // clean up the subscription
-      pool.subs.push(masterChangeStreamSub, pool.connectionHandler.disconnect$.pipe(filter(p => p.id === peer.id)).subscribe(() => masterChangeStreamSub.unsubscribe()));
-      var messageSub = pool.connectionHandler.message$.pipe(filter(data => data.peer.id === peer.id), filter(data => data.message.method !== 'token')).subscribe(async data => {
+      pool.subs.push(masterChangeStreamSub, pool.connectionHandler.disconnect$.pipe(filter(p => p === peer)).subscribe(() => masterChangeStreamSub.unsubscribe()));
+      var messageSub = pool.connectionHandler.message$.pipe(filter(data => data.peer === peer), filter(data => data.message.method !== 'token')).subscribe(async data => {
         var {
           peer: msgPeer,
           message
@@ -154,7 +157,9 @@ export var RxWebRTCReplicationPool = /*#__PURE__*/function () {
     this.masterReplicationHandler = rxStorageInstanceToReplicationHandler(collection.storageInstance, collection.conflictHandler, collection.database.token);
   }
   var _proto = RxWebRTCReplicationPool.prototype;
-  _proto.addPeer = function addPeer(peer, replicationState) {
+  _proto.addPeer = function addPeer(peer,
+  // only if isMaster=false it has a replicationState
+  replicationState) {
     var peerState = {
       peer,
       replicationState,

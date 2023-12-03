@@ -88,17 +88,16 @@ function getConnectionHandlerSimplePeer({
                * PeerId is created by the signaling server
                * to prevent spoofing it.
                */
-              msg.otherPeerIds.forEach(remotePeerId => {
-                if (remotePeerId === ownPeerId || peers.has(remotePeerId)) {
-                  return;
-                }
-                var newPeer = new _simplePeer.default({
+              var createPeerConnection = function (remotePeerId) {
+                var disconnected = false;
+                var newSimplePeer = new _simplePeer.default({
                   initiator: remotePeerId > ownPeerId,
                   wrtc,
                   trickle: true
                 });
-                peers.set(remotePeerId, newPeer);
-                newPeer.on('signal', signal => {
+                newSimplePeer.id = (0, _index.randomCouchString)(10);
+                peers.set(remotePeerId, newSimplePeer);
+                newSimplePeer.on('signal', signal => {
                   sendMessage((0, _index.ensureNotFalsy)(socket), {
                     type: 'signal',
                     senderPeerId: ownPeerId,
@@ -107,34 +106,50 @@ function getConnectionHandlerSimplePeer({
                     data: signal
                   });
                 });
-                newPeer.on('data', messageOrResponse => {
+                newSimplePeer.on('data', messageOrResponse => {
                   messageOrResponse = JSON.parse(messageOrResponse.toString());
                   if (messageOrResponse.result) {
                     response$.next({
-                      peer: newPeer,
+                      peer: newSimplePeer,
                       response: messageOrResponse
                     });
                   } else {
                     message$.next({
-                      peer: newPeer,
+                      peer: newSimplePeer,
                       message: messageOrResponse
                     });
                   }
                 });
-                newPeer.on('error', error => {
-                  console.log('CLIENT(' + ownPeerId + ') peer got error:');
-                  console.dir(error);
+                newSimplePeer.on('error', error => {
                   error$.next((0, _rxError.newRxError)('RC_WEBRTC_PEER', {
                     error
                   }));
+                  newSimplePeer.destroy();
+                  if (!disconnected) {
+                    disconnected = true;
+                    disconnect$.next(newSimplePeer);
+                  }
                 });
-                newPeer.on('connect', () => {
-                  connect$.next(newPeer);
+                newSimplePeer.on('connect', () => {
+                  connect$.next(newSimplePeer);
                 });
+                newSimplePeer.on('close', () => {
+                  if (!disconnected) {
+                    disconnected = true;
+                    disconnect$.next(newSimplePeer);
+                  }
+                  createPeerConnection(remotePeerId);
+                });
+              };
+              msg.otherPeerIds.forEach(remotePeerId => {
+                if (remotePeerId === ownPeerId || peers.has(remotePeerId)) {
+                  return;
+                } else {
+                  createPeerConnection(remotePeerId);
+                }
               });
               break;
             case 'signal':
-              // console.log('got signal(' + peerId + ') ' + data.from + ' -> ' + data.to);
               var peer = (0, _index.getFromMapOrThrow)(peers, msg.senderPeerId);
               peer.signal(msg.data);
               break;

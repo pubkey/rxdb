@@ -104,10 +104,13 @@ async function replicateWebRTC(options) {
     });
   }));
   var connectSub = pool.connectionHandler.connect$.pipe((0, _rxjs.filter)(() => !pool.canceled)).subscribe(async peer => {
+    if (options.isPeerValid) {
+      var isValid = await options.isPeerValid(peer);
+      if (!isValid) {
+        return;
+      }
+    }
     var peerToken;
-    /**
-     * TODO ensure both know the correct secret
-     */
     try {
       var tokenResponse = await (0, _webrtcHelper.sendMessageAndAwaitAnswer)(pool.connectionHandler, peer, {
         id: getRequestId(),
@@ -138,8 +141,8 @@ async function replicateWebRTC(options) {
       });
 
       // clean up the subscription
-      pool.subs.push(masterChangeStreamSub, pool.connectionHandler.disconnect$.pipe((0, _rxjs.filter)(p => p.id === peer.id)).subscribe(() => masterChangeStreamSub.unsubscribe()));
-      var messageSub = pool.connectionHandler.message$.pipe((0, _rxjs.filter)(data => data.peer.id === peer.id), (0, _rxjs.filter)(data => data.message.method !== 'token')).subscribe(async data => {
+      pool.subs.push(masterChangeStreamSub, pool.connectionHandler.disconnect$.pipe((0, _rxjs.filter)(p => p === peer)).subscribe(() => masterChangeStreamSub.unsubscribe()));
+      var messageSub = pool.connectionHandler.message$.pipe((0, _rxjs.filter)(data => data.peer === peer), (0, _rxjs.filter)(data => data.message.method !== 'token')).subscribe(async data => {
         var {
           peer: msgPeer,
           message
@@ -212,7 +215,9 @@ var RxWebRTCReplicationPool = exports.RxWebRTCReplicationPool = /*#__PURE__*/fun
     this.masterReplicationHandler = (0, _index.rxStorageInstanceToReplicationHandler)(collection.storageInstance, collection.conflictHandler, collection.database.token);
   }
   var _proto = RxWebRTCReplicationPool.prototype;
-  _proto.addPeer = function addPeer(peer, replicationState) {
+  _proto.addPeer = function addPeer(peer,
+  // only if isMaster=false it has a replicationState
+  replicationState) {
     var peerState = {
       peer,
       replicationState,
