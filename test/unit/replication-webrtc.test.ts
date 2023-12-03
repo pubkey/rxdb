@@ -221,8 +221,6 @@ describe('replication-webrtc.test.ts', function () {
             // otherwise we have strange console errors
             await wait(200);
 
-            process.exit();
-
             // remove one peer
             await c2.database.destroy();
 
