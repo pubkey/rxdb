@@ -28,7 +28,6 @@ import { CLEANUP_INDEX, DENOKV_DOCUMENT_ROOT_PATH, RX_STORAGE_NAME_DENOKV, getDe
 import { getIndexableStringMonad, getStartIndexStringFromLowerBound, changeIndexableStringByOneQuantum } from "../../custom-index.ts";
 import { appendToArray, batchArray, lastOfArray, toArray } from "../utils/utils-array.ts";
 import { ensureNotFalsy } from "../utils/utils-other.ts";
-import { randomCouchString } from "../utils/utils-string.ts";
 import { categorizeBulkWriteRows } from "../../rx-storage-helper.ts";
 import { now } from "../utils/utils-time.ts";
 import { queryDenoKV } from "./denokv-query.ts";

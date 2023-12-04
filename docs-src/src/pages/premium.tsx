@@ -116,7 +116,7 @@ export default function Home() {
                                         <p>
                                             A wrapper around any other storage that creates a synced
                                             in-memory copy which improves performance for the initial page
-                                            load time and write&amp;read operations.
+                                            load time and write &amp; read operations.
                                         </p>
                                     </div>
                                 </div>

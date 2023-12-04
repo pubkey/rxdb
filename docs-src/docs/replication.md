@@ -422,8 +422,6 @@ myRxReplicationState.active$.subscribe(bool => console.dir(bool));
 
 With `awaitInitialReplication()` you can await the initial replication that is done when a full replication cycle was successful finished for the first time. The returned promise will never resolve if you cancel the replication before the initial replication can be done.
 
-**WARNING:** When `multiInstance: true` and `waitForLeadership: true` and another tab is already running the replication, `awaitInitialReplication()` will not resolve until the other tab is closed and the replication starts in this tab.
-
 
 ```ts
 await myRxReplicationState.awaitInitialReplication();
@@ -441,6 +439,41 @@ Returns a `Promise` that resolves when:
 ```ts
 await myRxReplicationState.awaitInSync();
 ```
+
+
+### Warning: `awaitInitialReplication()` and `awaitInSync()` should not be used to block the application
+
+A common mistake in RxDB usage is when developers want to block the app usage until the application is in sync.
+Often they just `await` the promise of `awaitInitialReplication()` or `awaitInSync()` and show a loading spinner until they resolve. This is dangerous and should not be done because:
+- When `multiInstance: true` and `waitForLeadership: true (default)` and another tab is already running the replication, `awaitInitialReplication()` will not resolve until the other tab is closed and the replication starts in this tab.
+- Your app can no longer be started when the device is offline because there the `awaitInitialReplication()` will never resolve and the app cannot be used.
+
+Instead you should store the last in-sync time in a [local document](./rx-local-document.md) and observe its value on all instances.
+
+For example if you want to block clients from using the app if they have not been in sync for the last 24 hours, you could use this code:
+```ts
+
+// update last-in-sync-flag each time replication is in sync
+await myCollection.insertLocal('last-in-sync', { time: 0 }).catch(); // ensure flag exists
+myReplicationState.active$.pipe(
+    mergeMap(async() => {
+        await myReplicationState.awaitInSync();
+        await myCollection.upsertLocal('last-in-sync', { time: Date.now() })
+    })
+);
+
+// observe the flag and toggle loading spinner
+await showLoadingSpinner();
+const oneDay = 1000 * 60 * 60 *24;
+await firstValueFrom(
+    myCollection.getLocal$('last-in-sync').pipe(
+        filter(d => d.get('time') > (Date.now() - oneDay))
+    )
+);
+await hideLoadingSpinner();
+```
+
+
 
 
 ### reSync()
