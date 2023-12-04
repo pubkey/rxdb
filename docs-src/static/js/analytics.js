@@ -140,7 +140,7 @@ window.addEventListener('DOMContentLoaded', function () {
     elemDiv.id = 'fixed-chat-button';
     elemDiv.href = '/chat';
     elemDiv.target = '_blank';
-    elemDiv.innerHTML = 'Community Chat';
+    elemDiv.innerHTML = '💬 Community Chat';
     elemDiv.onclick = function () {
         trigger('join_chat_action', 0.10);
     };
@@ -158,7 +158,7 @@ window.addEventListener('DOMContentLoaded', function () {
         'padding-top: 10px;' +
         'padding-bottom: 5px;' +
         'text-align: center;' +
-        'margin-right: 21px;' +
+        'margin-right: 50px;' +
         'font-weight: bold;' +
         'border-top-left-radius: 9px;' +
         'border-top-right-radius: 9px;' +
@@ -166,6 +166,7 @@ window.addEventListener('DOMContentLoaded', function () {
         '#fixed-chat-button:hover {' +
         'box-shadow: 2px 2px 13px #ca007c, -2px -1px 14px #ff009e;' +
         'text-decoration: underline;' +
+        'z-index: 10;' +
         '}'
         ;
     document.head.appendChild(styleSheet);
@@ -183,22 +184,26 @@ var callToActions = [
     {
         text: 'Follow',
         keyword: '@twitter',
-        url: 'https://twitter.com/intent/user?screen_name=rxdbjs'
+        url: 'https://twitter.com/intent/user?screen_name=rxdbjs',
+        icon: '🐦'
     },
     {
         text: 'Chat',
         keyword: '@discord',
-        url: 'https://rxdb.info/chat'
+        url: 'https://rxdb.info/chat',
+        icon: '💬'
     },
     {
         text: 'Star',
         keyword: '@github',
-        url: 'https://rxdb.info/code'
+        url: 'https://rxdb.info/code',
+        icon: '🐙💻'
     },
     {
-        text: '',
+        text: 'Subscribe',
         keyword: '@newsletter',
-        url: 'https://rxdb.info/newsletter'
+        url: 'https://rxdb.info/newsletter',
+        icon: '📰'
     }
 ];
 function insertAfter(referenceNode, newNode) {
@@ -226,7 +231,8 @@ function setCallToActionOnce() {
     var newElement = document.createElement('a');
     newElement.classList.add('hover-shadow-top');
     newElement.id = callToActionButtonId;
-    newElement.innerHTML = callToAction.text + ' <b>' + callToAction.keyword + '</b>';
+    newElement.innerHTML = callToAction.text + ' <b class="call-to-action-keyword">' + callToAction.keyword + '</b>' +
+        '<b class="call-to-action-icon">' + callToAction.icon + '</b>';
     newElement.href = callToAction.url;
     newElement.target = '_blank';
     newElementWrapper.append(newElement);

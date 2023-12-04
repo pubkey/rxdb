@@ -19,7 +19,7 @@ export default function Home() {
                             <img src="./files/logo/logo_text.svg" alt="RxDB" width={160} />
                         </div>
                     </a>
-                    <h1>RxDB Chat</h1>
+                    <h1>💬 RxDB Chat</h1>
                     <p>
                         <b>You will be redirected in a few seconds.</b>
                     </p>

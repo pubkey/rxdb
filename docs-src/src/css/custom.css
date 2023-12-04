@@ -1867,6 +1867,7 @@ footer a:visited {
   display: flex;
   flex: 1;
   min-width: 0;
+  overflow: hidden;
 }
 
 .call-to-action a {
@@ -1885,4 +1886,18 @@ footer a:visited {
 
 .call-to-action a b {
   color: white;
+}
+
+.call-to-action .call-to-action-icon {
+  display: none;
+}
+
+@media (max-width: 600px) {
+  .call-to-action .call-to-action-icon {
+    display: contents;
+  }
+
+  .call-to-action .call-to-action-keyword {
+    display: none;
+  }
 }
