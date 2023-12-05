@@ -20,8 +20,9 @@ console.log = function (m1, m2, m3) {
 
 
 const plugins = [];
-if (process.env.NODE_ENV === 'disc')
+if (process.env.NODE_ENV === 'disc') {
     plugins.push(new BundleAnalyzerPlugin());
+}
 
 module.exports = {
     mode: 'production',
