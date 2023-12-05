@@ -88,6 +88,7 @@ const sidebars = {
     'query-optimizer',
     'logger',
     'plugins',
+    'performance-tips',
     'third-party-plugins',
     {
       type: 'category',
