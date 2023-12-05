@@ -55,3 +55,37 @@ async function createDb() {
 }
 
 ```
+
+
+## Usage with webpack
+
+In the `webpack.config.js`:
+
+```ts
+module.exports = {
+    entry: './src/index.ts',
+    /* ... */
+    plugins: [
+        // set a global variable that can be accessed during runtime
+        new webpack.DefinePlugin({ MODE: JSON.stringify("production") })
+    ]
+    /* ... */
+};
+```
+
+In your source code:
+
+```ts
+declare var MODE: 'production' | 'development';
+
+async function createDb() {
+    if (MODE === 'development') {
+        await import('rxdb/plugins/dev-mode').then(
+            module => addRxPlugin(module.RxDBDevModePlugin)
+        );
+    }
+    const db = createRxDatabase( /* ... */ );
+    // ...
+}
+
+```
