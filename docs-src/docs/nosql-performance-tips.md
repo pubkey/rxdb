@@ -1,3 +1,8 @@
+---
+title: RxDB NoSQL Performance Tips
+slug: nosql-performance-tips.html
+---
+
 # Performance tips for RxDB and other NoSQL databases
 
 In this guide, you'll find techniques to improve the performance of RxDB operations and queries. Notice that all your performance optimizations should be done with a correct tracking of the metrics, otherwise you might change stuff into the wrong direction.
@@ -103,7 +108,7 @@ const myQuery = myCollection.find({
 ## Try different ordering of index fields
 
 The order of the fields in a compound index is very important for performance. When optimizing index usage, you should try out different orders on the index fields and measure which runs faster. For that it is very important to run tests on real-world data where the distribution of the data is the same as in production.
-For exmaple when there is a query on a user collection with an `age` and a `gender` field, it depends if the index `['gender', 'age']` performance better as `['age', 'gender']` based on the distribution of data:
+For example when there is a query on a user collection with an `age` and a `gender` field, it depends if the index `['gender', 'age']` performance better as `['age', 'gender']` based on the distribution of data:
 
 ```ts
 const query = myCollection
@@ -132,7 +137,7 @@ Notice that RxDB has the [Query Optimizer Plugin](./query-optimizer.md) that can
 
 Having a query where the up-to-date result set is needed more then once, you might want to make the query "hot" by permanently subscribing to it. This ensures that the query result is kept up to date by RxDB ant the [EventReduce algorithm](https://github.com/pubkey/event-reduce) at any time so that at the moment you need the current results, it has them already.
 
-For example when you use RxDB at Node.js for a webserver, you should use an outher "hot" query instead of running the same query again on every request to a route.
+For example when you use RxDB at Node.js for a webserver, you should use an outer "hot" query instead of running the same query again on every request to a route.
 
 
 ```ts
@@ -154,9 +159,9 @@ app.get('/list', (req, res) => {
 
 ## Store parts of your document data as attachment
 
-For in-app databases like RxDB, it does not make sense to partially parse the `JSON` of a document. Instead, always the whole doucment json is parsed and handled. This has a better performance because `JSON.parse()` in JavaScript directly calls a C++ binding which can parse really fast compared to a partial parsing in JavaScript itself. Also by always having the full document, RxDB can de-duplicate memory caches of document across multiple queries.
+For in-app databases like RxDB, it does not make sense to partially parse the `JSON` of a document. Instead, always the whole document json is parsed and handled. This has a better performance because `JSON.parse()` in JavaScript directly calls a C++ binding which can parse really fast compared to a partial parsing in JavaScript itself. Also by always having the full document, RxDB can de-duplicate memory caches of document across multiple queries.
 
-The downside is that very very big documents with a complex structure can increase query time significantly. Documents fields with complex that are mostly not in use, can be move into an [attachment](./rx-attachment.md). This would lead RxDB to not fetch the attachment data each time the document is loaded from disc. Instead only when explicity asked for.
+The downside is that very very big documents with a complex structure can increase query time significantly. Documents fields with complex that are mostly not in use, can be move into an [attachment](./rx-attachment.md). This would lead RxDB to not fetch the attachment data each time the document is loaded from disc. Instead only when explicitly asked for.
 
 ```ts
 const myDocument = await myCollection.insert({/* ... */});
