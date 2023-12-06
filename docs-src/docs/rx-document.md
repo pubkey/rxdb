@@ -66,7 +66,7 @@ All properties of a `RxDocument` are assigned as getters so you can also directl
 ```
 
 ### update()
-Updates the document based on the [mongo-update-syntax](https://docs.mongodb.com/manual/reference/operator/update-field/), based on [modifyjs](https://github.com/lgandecki/modifyjs#implemented).
+Updates the document based on the [mongo-update-syntax](https://docs.mongodb.com/manual/reference/operator/update-field/), based on the [mingo library](https://github.com/kofrasa/mingo#updating-documents).
 
 ```js
 

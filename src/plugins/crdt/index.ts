@@ -24,7 +24,6 @@ import {
     setProperty,
     toArray
 } from '../../plugins/utils/index.ts';
-import modifyjs from 'modifyjs';
 import {
     getQueryMatcher,
     overwritable,
@@ -32,6 +31,7 @@ import {
     RxDocumentWriteData,
     RxError
 } from '../../index.ts';
+import { mingoUpdater } from '../update/mingo-updater.ts';
 
 
 
@@ -157,11 +157,11 @@ function runOperationOnDocument<RxDocType>(
         }
         if (isMatching) {
             if (entryPart.ifMatch) {
-                docData = modifyjs(docData, entryPart.ifMatch);
+                docData = mingoUpdater<WithDeleted<RxDocType>>(docData, entryPart.ifMatch);
             }
         } else {
             if (entryPart.ifNotMatch) {
-                docData = modifyjs(docData, entryPart.ifNotMatch);
+                docData = mingoUpdater<WithDeleted<RxDocType>>(docData, entryPart.ifNotMatch);
             }
         }
     });
