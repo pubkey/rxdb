@@ -795,6 +795,10 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                     type: 'null'
                 }
             },
+            indexes: [
+                // boolean indexing was broken on some storages
+                'boolean'
+            ],
             required: [
                 'id',
                 'nonPrimaryString',

@@ -21,4 +21,7 @@ export type DexieStorageInternals = Promise<{
     dexieTable: DexieTable;
     // contains the attachments data
     dexieAttachmentsTable: DexieTable;
+
+    // these must be transformed because indexeddb does not allow boolean indexing
+    booleanIndexes: string[];
 }>;

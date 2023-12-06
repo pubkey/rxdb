@@ -26,7 +26,7 @@ import {
 import { assertThrows } from 'async-test-util';
 
 /**
- * RxStoragePouch specific tests
+ * RxStorageDexie specific tests
  */
 config.parallel('rx-storage-dexie.test.js', () => {
     if (config.storage.name !== 'dexie') {
@@ -52,6 +52,7 @@ config.parallel('rx-storage-dexie.test.js', () => {
         describe('.fromStorageToDexie()', () => {
             it('should convert unsupported IndexedDB key', () => {
                 const result = fromStorageToDexie<any>(
+                    [],
                     {
                         '|key': 'value',
                         '|objectArray': [{ ['|id']: '1' }],
@@ -81,7 +82,7 @@ config.parallel('rx-storage-dexie.test.js', () => {
         });
         describe('.fromDexieToStorage()', () => {
             it('should revert escaped unsupported IndexedDB key', () => {
-                const result = fromDexieToStorage({
+                const result = fromDexieToStorage([], {
                     '__key': 'value',
                     '__objectArray': [{ ['__id']: '1' }],
                     '__nestedObject': {
@@ -216,34 +217,6 @@ config.parallel('rx-storage-dexie.test.js', () => {
             );
 
             storageInstance.close();
-        });
-        /**
-         * @link https://github.com/w3c/IndexedDB/issues/76
-         */
-        it('should throw the correct error on boolean index', async () => {
-            const storage = config.storage.getStorage();
-
-            let schema = clone(humanSchemaLiteral) as any;
-            schema.properties.bool = {
-                type: 'boolean'
-            };
-            schema.required.push('bool');
-            schema.indexes.push(['bool', 'passportId']);
-            schema = fillWithDefaultSettings(schema);
-
-            await assertThrows(
-                () => storage.createStorageInstance<HumanDocumentType>({
-                    databaseInstanceToken: randomCouchString(10),
-                    databaseName: randomCouchString(10),
-                    collectionName: randomCouchString(12),
-                    schema,
-                    options: {},
-                    multiInstance: false,
-                    devMode: true
-                }),
-                'RxError',
-                'DXE1'
-            );
         });
     });
 });

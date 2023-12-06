@@ -22,7 +22,21 @@ export function mapKeyForKeyRange(k: any) {
     }
 }
 
+function rangeFieldToBooleanSubstitute(
+    booleanIndexes: string[],
+    fieldName: string,
+    value: any
+) {
+    if (booleanIndexes.includes(fieldName)) {
+        const newValue = value ? '1' : '0';
+        return newValue;
+    } else {
+        return value;
+    }
+}
+
 export function getKeyRangeByQueryPlan(
+    booleanIndexes: string[],
     queryPlan: RxQueryPlan,
     IDBKeyRange?: any
 ) {
@@ -34,8 +48,19 @@ export function getKeyRangeByQueryPlan(
         }
     }
 
-    const startKeys = queryPlan.startKeys.map(mapKeyForKeyRange);
-    const endKeys = queryPlan.endKeys.map(mapKeyForKeyRange);
+
+    const startKeys = queryPlan.startKeys
+        .map((v, i) => {
+            const fieldName = queryPlan.index[i];
+            return rangeFieldToBooleanSubstitute(booleanIndexes, fieldName, v);
+        })
+        .map(mapKeyForKeyRange);
+    const endKeys = queryPlan.endKeys
+        .map((v, i) => {
+            const fieldName = queryPlan.index[i];
+            return rangeFieldToBooleanSubstitute(booleanIndexes, fieldName, v);
+        })
+        .map(mapKeyForKeyRange);
 
     startKeys.unshift('0');
     endKeys.unshift('0');
@@ -73,6 +98,7 @@ export async function dexieQuery<RxDocType>(
         );
     }
     const keyRange = getKeyRangeByQueryPlan(
+        state.booleanIndexes,
         queryPlan,
         (state.dexieDb as any)._options.IDBKeyRange
     );
@@ -104,13 +130,15 @@ export async function dexieQuery<RxDocType>(
                     .join('+')
                 + ']';
             index = store.index(indexName);
+
+
             const cursorReq = index.openCursor(keyRange);
             await new Promise<void>(res => {
                 cursorReq.onsuccess = function (e: any) {
                     const cursor = e.target.result;
                     if (cursor) {
                         // We have a record in cursor.value
-                        const docData = fromDexieToStorage<RxDocType>(cursor.value);
+                        const docData = fromDexieToStorage<RxDocType>(state.booleanIndexes, cursor.value);
                         if (
                             !docData._deleted &&
                             (!queryMatcher || queryMatcher(docData))
@@ -183,6 +211,7 @@ export async function dexieCount<RxDocType>(
     const queryPlanFields: string[] = queryPlan.index;
 
     const keyRange = getKeyRangeByQueryPlan(
+        state.booleanIndexes,
         queryPlan,
         (state.dexieDb as any)._options.IDBKeyRange
     );

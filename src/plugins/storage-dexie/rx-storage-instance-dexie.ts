@@ -145,7 +145,7 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
                     ret.success.push(row.document);
                     bulkPutDocs.push(row.document);
                 });
-                bulkPutDocs = bulkPutDocs.map(d => fromStorageToDexie(d));
+                bulkPutDocs = bulkPutDocs.map(d => fromStorageToDexie(state.booleanIndexes, d));
                 if (bulkPutDocs.length > 0) {
                     await state.dexieTable.bulkPut(bulkPutDocs);
                 }
@@ -271,7 +271,7 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
             .above([sinceLwt, sinceId])
             .limit(limit);
         const changedDocuments: RxDocumentData<RxDocType>[] = await query.toArray();
-        let changedDocs = changedDocuments.map(d => fromDexieToStorage<RxDocType>(d));
+        let changedDocs = changedDocuments.map(d => fromDexieToStorage<RxDocType>(state.booleanIndexes, d));
         changedDocs = sortDocumentsByLastWriteTime(this.primaryPath as any, changedDocs);
         changedDocs = changedDocs.slice(0, limit);
 

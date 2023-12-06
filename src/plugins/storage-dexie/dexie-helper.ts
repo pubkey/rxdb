@@ -5,7 +5,7 @@ import type {
 } from '../../types/index.d.ts';
 import { Dexie } from 'dexie';
 import type { DexieSettings } from '../../types/index.d.ts';
-import { flatClone, getFromMapOrCreate, toArray } from '../utils/index.ts';
+import { flatClone, getFromMapOrCreate, getProperty, setProperty, toArray } from '../utils/index.ts';
 import { newRxError } from '../../rx-error.ts';
 import {
     getPrimaryFieldOfPrimaryKey,
@@ -55,7 +55,8 @@ export function getDexieDbWithTables(
                 return {
                     dexieDb,
                     dexieTable: (dexieDb as any)[DEXIE_DOCS_TABLE_NAME],
-                    dexieAttachmentsTable: (dexieDb as any)[DEXIE_ATTACHMENTS_TABLE_NAME]
+                    dexieAttachmentsTable: (dexieDb as any)[DEXIE_ATTACHMENTS_TABLE_NAME],
+                    booleanIndexes: getBooleanIndexes(schema)
                 };
             })();
             DEXIE_STATE_DB_BY_NAME.set(dexieDbName, state);
@@ -76,30 +77,6 @@ export async function closeDexieDb(statePromise: DexieStorageInternals) {
     } else {
         REF_COUNT_PER_DEXIE_DB.set(statePromise, newCount);
     }
-}
-
-export function ensureNoBooleanIndex(schema: RxJsonSchema<any>) {
-    if (!schema.indexes) {
-        return;
-    }
-    const checkedFields = new Set<string>();
-    schema.indexes.forEach(index => {
-        const fields = toArray(index);
-        fields.forEach(field => {
-            if (checkedFields.has(field)) {
-                return;
-            }
-            checkedFields.add(field);
-            const schemaObj = getSchemaByObjectPath(schema, field);
-            if (schemaObj.type === 'boolean') {
-                throw newRxError('DXE1', {
-                    schema,
-                    index,
-                    field
-                });
-            }
-        });
-    });
 }
 
 
@@ -144,22 +121,42 @@ export function dexieReplaceIfStartsWithPipeRevert(str: string): string {
  * So we have to replace true/false with '1'/'0'
  * @param d 
  */
-export function fromStorageToDexie<RxDocType>(d: RxDocumentData<RxDocType>): any {
+export function fromStorageToDexie<RxDocType>(
+    booleanIndexes: string[],
+    d: RxDocumentData<RxDocType>
+): any {
     if (!d) {
         return d;
     }
     d = flatClone(d);
     d = fromStorageToDexieField(d);
     (d as any)._deleted = d._deleted ? '1' : '0';
+
+    booleanIndexes.forEach(idx => {
+        const val = getProperty(d, idx);
+        const newVal = val ? '1' : '0';
+        setProperty(d, idx, newVal);
+    });
+
     return d;
 }
-export function fromDexieToStorage<RxDocType>(d: any): RxDocumentData<RxDocType> {
+export function fromDexieToStorage<RxDocType>(
+    booleanIndexes: string[],
+    d: any
+): RxDocumentData<RxDocType> {
     if (!d) {
         return d;
     }
     d = flatClone(d);
     d = fromDexieToStorageField(d);
     (d as any)._deleted = d._deleted === '1' ? true : false;
+
+    booleanIndexes.forEach(idx => {
+        const val = getProperty(d, idx);
+        const newVal = val === '1' ? true : false;
+        setProperty(d, idx, newVal);
+    });
+
     return d;
 }
 
@@ -267,10 +264,34 @@ export async function getDocsInDb<RxDocType>(
 ): Promise<RxDocumentData<RxDocType>[]> {
     const state = await internals;
     const docsInDb = await state.dexieTable.bulkGet(docIds);
-    return docsInDb.map(d => fromDexieToStorage(d));
+    return docsInDb.map(d => fromDexieToStorage(state.booleanIndexes, d));
 }
 
 
 export function attachmentObjectId(documentId: string, attachmentId: string): string {
     return documentId + '||' + attachmentId;
 }
+
+
+export function getBooleanIndexes(schema: RxJsonSchema<any>): string[] {
+    const checkedFields = new Set<string>();
+    const ret: string[] = [];
+    if (!schema.indexes) {
+        return ret;
+    }
+    schema.indexes.forEach(index => {
+        const fields = toArray(index);
+        fields.forEach(field => {
+            if (checkedFields.has(field)) {
+                return;
+            }
+            checkedFields.add(field);
+            const schemaObj = getSchemaByObjectPath(schema, field);
+            if (schemaObj.type === 'boolean') {
+                ret.push(field);
+            }
+        });
+    });
+    return ret;
+}
+
