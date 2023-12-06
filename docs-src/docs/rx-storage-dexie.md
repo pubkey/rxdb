@@ -14,7 +14,6 @@ For the Dexie based `RxStorage`, we use the [mingo](https://github.com/kofrasa/m
   - Can use [Dexie.js addons](https://dexie.org/docs/Tutorial/Building-Addons).
 
 ## Cons
-  - [It does not support boolean indexes](#boolean-index)
   - Does not use a [Batched Cursor](./slow-indexeddb.md#batched-cursor) or [custom indexes](./slow-indexeddb.md#custom-indexes) which makes queries slower compared to the [IndexedDB RxStorage](./rx-storage-indexeddb.md).
 
 ## Usage
