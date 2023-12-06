@@ -34,9 +34,6 @@ export function getKeyRangeByQueryPlan(
         }
     }
 
-    console.log('.... queryPlan:');
-    console.dir(queryPlan);
-
     const startKeys = queryPlan.startKeys.map(mapKeyForKeyRange);
     const endKeys = queryPlan.endKeys.map(mapKeyForKeyRange);
 
@@ -106,14 +103,7 @@ export async function dexieQuery<RxDocType>(
                     .map(field => dexieReplaceIfStartsWithPipe(field))
                     .join('+')
                 + ']';
-
-            console.log('use index:');
-            console.dir(indexName);
             index = store.index(indexName);
-
-            console.log('XXXXX keyRange:');
-            console.dir(keyRange);
-
             const cursorReq = index.openCursor(keyRange);
             await new Promise<void>(res => {
                 cursorReq.onsuccess = function (e: any) {
@@ -210,10 +200,6 @@ export async function dexieCount<RxDocType>(
                     .map(field => dexieReplaceIfStartsWithPipe(field))
                     .join('+')
                 + ']';
-
-            console.log('XXXXX count keyRange: ' + indexName);
-            console.dir(keyRange);
-
             index = store.index(indexName);
             const request = index.count(keyRange);
             count = await new Promise<number>((res, rej) => {

@@ -51,7 +51,7 @@ config.parallel('rx-storage-dexie.test.js', () => {
         });
         describe('.fromStorageToDexie()', () => {
             it('should convert unsupported IndexedDB key', () => {
-                const result = fromStorageToDexie(
+                const result = fromStorageToDexie<any>(
                     {
                         '|key': 'value',
                         '|objectArray': [{ ['|id']: '1' }],

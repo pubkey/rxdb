@@ -113,10 +113,6 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
             async () => {
                 const docsInDbMap = new Map<string, RxDocumentData<RxDocType>>();
                 const docsInDbWithInternals = await getDocsInDb<RxDocType>(this.internals, documentKeys);
-
-                console.log('docsInDbWithInternals:');
-                console.dir(docsInDbWithInternals);
-
                 docsInDbWithInternals.forEach(docWithDexieInternals => {
                     const doc = docWithDexieInternals;
                     if (doc) {
@@ -124,11 +120,6 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
                     }
                     return doc;
                 });
-
-
-                console.log('docsInDbMap:');
-                console.dir(Array.from(docsInDbMap.values()));
-
 
                 categorized = categorizeBulkWriteRows<RxDocType>(
                     this,
@@ -153,8 +144,6 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
                     bulkPutDocs.push(row.document);
                 });
                 bulkPutDocs = bulkPutDocs.map(d => fromStorageToDexie(d));
-                console.log('bulk put docs:');
-                console.dir(bulkPutDocs);
 
                 await bulkPutDocs.length > 0 ? state.dexieTable.bulkPut(bulkPutDocs) : PROMISE_RESOLVE_VOID;
             });
@@ -181,16 +170,11 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
         const state = await this.internals;
         const ret: RxDocumentData<RxDocType>[] = [];
 
-        console.log('findDocumentsById()');
-
         await state.dexieDb.transaction(
             'r',
             state.dexieTable,
             async () => {
                 const docsInDb = await getDocsInDb<RxDocType>(this.internals, ids);
-
-                console.log('findDocumentsById() pre result');
-                console.dir(docsInDb);
                 docsInDb.forEach(documentInDb => {
                     if (
                         documentInDb &&

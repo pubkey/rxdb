@@ -244,10 +244,6 @@ export function getDexieStoreSchema(
         return part.map(str => dexieReplaceIfStartsWithPipe(str));
     });
 
-
-    console.log('INDEXES:');
-    console.dir(parts);
-
     const dexieSchema = parts.map(part => {
         if (part.length === 1) {
             return part[0];
@@ -255,8 +251,6 @@ export function getDexieStoreSchema(
             return '[' + part.join('+') + ']';
         }
     }).join(', ');
-    console.log('dexieSchema:');
-    console.dir(dexieSchema);
     return dexieSchema;
 }
 
@@ -269,11 +263,6 @@ export async function getDocsInDb<RxDocType>(
     docIds: string[]
 ): Promise<RxDocumentData<RxDocType>[]> {
     const state = await internals;
-
-    console.log('getDocsInDb()');
-    console.dir(docIds);
-
     const docsInDb = await state.dexieTable.bulkGet(docIds);
-    console.dir(docsInDb);
     return docsInDb.map(d => fromDexieToStorage(d));
 }
