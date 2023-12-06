@@ -20,7 +20,7 @@ export function mingoUpdater<T>(
         const updateObject = createUpdater({ cloneMode: "none" });
         updater = (d: T, op: UpdateQuery<T>) => {
             const cloned = clone(d);
-            updateObject(cloned as any, op);
+            updateObject(cloned as any, op as any);
             return cloned;
         }
     }
