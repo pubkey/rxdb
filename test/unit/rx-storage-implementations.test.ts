@@ -564,6 +564,9 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 );
                 assert.deepStrictEqual(undeleteConflictResponse.success, []);
 
+
+                console.log('.........................................................' + docId);
+
                 /**
                  * Doing the un-delete with sending the previous,
                  * should work.
@@ -1907,6 +1910,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     devMode: true
                 });
 
+                console.log('---------- INSERT IT');
+
                 const insertResult = await storageInstance.bulkWrite(
                     [{
                         document: {
@@ -1923,6 +1928,9 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     testContext
                 );
                 const previous = insertResult.success[0];
+
+
+                console.log('---------- DELETE IT');
 
                 await storageInstance.bulkWrite(
                     [{
@@ -1942,6 +1950,10 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 );
 
                 const found = await storageInstance.findDocumentsById(['foobar'], true);
+
+                console.log('foundDeleted:::');
+                console.dir(found[0]);
+
                 const foundDeleted = found[0];
 
                 // even on deleted documents, we must get the other properties.

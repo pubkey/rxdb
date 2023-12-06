@@ -14,7 +14,6 @@ import {
 import { RxStorageDefaultStatics } from '../../rx-storage-statics.ts';
 
 export const DEXIE_DOCS_TABLE_NAME = 'docs';
-export const DEXIE_DELETED_DOCS_TABLE_NAME = 'deleted-docs';
 export const DEXIE_CHANGES_TABLE_NAME = 'changes';
 
 export const RX_STORAGE_NAME_DEXIE = 'dexie';
@@ -29,7 +28,6 @@ export function getDexieDbWithTables(
     settings: DexieSettings,
     schema: RxJsonSchema<any>
 ): DexieStorageInternals {
-    const primaryPath = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
     const dexieDbName = 'rxdb-dexie-' + databaseName + '--' + schema.version + '--' + collectionName;
 
     const state = getFromMapOrCreate(
@@ -48,24 +46,13 @@ export function getDexieDbWithTables(
                 const dexieStoresSettings = {
                     [DEXIE_DOCS_TABLE_NAME]: getDexieStoreSchema(schema),
                     [DEXIE_CHANGES_TABLE_NAME]: '++sequence, id',
-                    /**
-                     * Instead of adding {deleted: false} to every query we run over the document store,
-                     * we move deleted documents into a separate store where they can only be queried
-                     * by primary key.
-                     * This increases performance because it is way easier for the query planner to select
-                     * a good index and we also do not have to add the _deleted field to every index.
-                     *
-                     * We also need the [_meta.lwt+' + primaryPath + '] index for getChangedDocumentsSince()
-                     */
-                    [DEXIE_DELETED_DOCS_TABLE_NAME]: primaryPath + ',_meta.lwt,[_meta.lwt+' + primaryPath + ']'
                 };
 
                 dexieDb.version(1).stores(dexieStoresSettings);
                 await dexieDb.open();
                 return {
                     dexieDb,
-                    dexieTable: (dexieDb as any)[DEXIE_DOCS_TABLE_NAME],
-                    dexieDeletedTable: (dexieDb as any)[DEXIE_DELETED_DOCS_TABLE_NAME]
+                    dexieTable: (dexieDb as any)[DEXIE_DOCS_TABLE_NAME]
                 };
             })();
             DEXIE_STATE_DB_BY_NAME.set(dexieDbName, state);
@@ -148,19 +135,49 @@ export function dexieReplaceIfStartsWithPipeRevert(str: string): string {
     }
 }
 
+
+/**
+ * IndexedDB does not support boolean indexing.
+ * So we have to replace true/false with '1'/'0'
+ * @param d 
+ */
+export function fromStorageToDexie<RxDocType>(d: RxDocumentData<RxDocType>): any {
+    if (!d) {
+        return d;
+    }
+    d = flatClone(d);
+    d = fromStorageToDexieField(d);
+    (d as any)._deleted = d._deleted ? '1' : '0';
+    return d;
+}
+export function fromDexieToStorage<RxDocType>(d: any): RxDocumentData<RxDocType> {
+    if (!d) {
+        return d;
+    }
+    d = flatClone(d);
+    d = fromDexieToStorageField(d);
+    (d as any)._deleted = d._deleted === '1' ? true : false;
+    return d;
+}
+
 /**
  * @recursive
  */
-export function fromStorageToDexie(documentData: RxDocumentData<any>): any {
-    if (!documentData || typeof documentData === 'string' || typeof documentData === 'number' || typeof documentData === 'boolean') {
+export function fromStorageToDexieField(documentData: RxDocumentData<any>): any {
+    if (
+        !documentData ||
+        typeof documentData === 'string' ||
+        typeof documentData === 'number' ||
+        typeof documentData === 'boolean'
+    ) {
         return documentData;
     } else if (Array.isArray(documentData)) {
-        return documentData.map(row => fromStorageToDexie(row));
+        return documentData.map(row => fromStorageToDexieField(row));
     } else if (typeof documentData === 'object') {
         const ret: any = {};
         Object.entries(documentData).forEach(([key, value]) => {
             if (typeof value === 'object') {
-                value = fromStorageToDexie(value);
+                value = fromStorageToDexieField(value);
             }
             ret[dexieReplaceIfStartsWithPipe(key)] = value;
         });
@@ -168,16 +185,16 @@ export function fromStorageToDexie(documentData: RxDocumentData<any>): any {
     }
 }
 
-export function fromDexieToStorage(documentData: any): RxDocumentData<any> {
+export function fromDexieToStorageField(documentData: any): RxDocumentData<any> {
     if (!documentData || typeof documentData === 'string' || typeof documentData === 'number' || typeof documentData === 'boolean') {
         return documentData;
     } else if (Array.isArray(documentData)) {
-        return documentData.map(row => fromDexieToStorage(row));
+        return documentData.map(row => fromDexieToStorageField(row));
     } else if (typeof documentData === 'object') {
         const ret: any = {};
         Object.entries(documentData).forEach(([key, value]) => {
             if (typeof value === 'object' || Array.isArray(documentData)) {
-                value = fromDexieToStorage(value);
+                value = fromDexieToStorageField(value);
             }
             ret[dexieReplaceIfStartsWithPipeRevert(key)] = value;
         });
@@ -201,17 +218,22 @@ export function getDexieStoreSchema(
      */
     const primaryKey = getPrimaryFieldOfPrimaryKey(rxJsonSchema.primaryKey);
     parts.push([primaryKey]);
+    parts.push(['_deleted', primaryKey]);
 
     // add other indexes
     if (rxJsonSchema.indexes) {
         rxJsonSchema.indexes.forEach(index => {
             const arIndex = toArray(index);
+            arIndex.unshift('_deleted');
             parts.push(arIndex);
         });
     }
 
     // we also need the _meta.lwt+primaryKey index for the getChangedDocumentsSince() method.
     parts.push(['_meta.lwt', primaryKey]);
+
+    // and this one for the cleanup()
+    parts.push(['_meta.lwt']);
 
     /**
      * It is not possible to set non-javascript-variable-syntax
@@ -222,13 +244,20 @@ export function getDexieStoreSchema(
         return part.map(str => dexieReplaceIfStartsWithPipe(str));
     });
 
-    return parts.map(part => {
+
+    console.log('INDEXES:');
+    console.dir(parts);
+
+    const dexieSchema = parts.map(part => {
         if (part.length === 1) {
             return part[0];
         } else {
             return '[' + part.join('+') + ']';
         }
     }).join(', ');
+    console.log('dexieSchema:');
+    console.dir(dexieSchema);
+    return dexieSchema;
 }
 
 /**
@@ -240,18 +269,11 @@ export async function getDocsInDb<RxDocType>(
     docIds: string[]
 ): Promise<RxDocumentData<RxDocType>[]> {
     const state = await internals;
-    const [
-        nonDeletedDocsInDb,
-        deletedDocsInDb
-    ] = await Promise.all([
-        state.dexieTable.bulkGet(docIds),
-        state.dexieDeletedTable.bulkGet(docIds)
-    ]);
-    const docsInDb = deletedDocsInDb.slice(0);
-    nonDeletedDocsInDb.forEach((doc, idx) => {
-        if (doc) {
-            docsInDb[idx] = doc;
-        }
-    });
-    return docsInDb;
+
+    console.log('getDocsInDb()');
+    console.dir(docIds);
+
+    const docsInDb = await state.dexieTable.bulkGet(docIds);
+    console.dir(docsInDb);
+    return docsInDb.map(d => fromDexieToStorage(d));
 }

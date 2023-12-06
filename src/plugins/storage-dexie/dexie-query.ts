@@ -34,31 +34,22 @@ export function getKeyRangeByQueryPlan(
         }
     }
 
+    console.log('.... queryPlan:');
+    console.dir(queryPlan);
+
     const startKeys = queryPlan.startKeys.map(mapKeyForKeyRange);
     const endKeys = queryPlan.endKeys.map(mapKeyForKeyRange);
 
-    let ret: any;
-    /**
-     * If index has only one field,
-     * we have to pass the keys directly, not the key arrays.
-     */
-    if (queryPlan.index.length === 1) {
-        const equalKeys = startKeys[0] === endKeys[0];
-        ret = IDBKeyRange.bound(
-            startKeys[0],
-            endKeys[0],
-            equalKeys ? false : !queryPlan.inclusiveStart,
-            equalKeys ? false : !queryPlan.inclusiveEnd
-        );
-    } else {
-        ret = IDBKeyRange.bound(
-            startKeys,
-            endKeys,
-            !queryPlan.inclusiveStart,
-            !queryPlan.inclusiveEnd
-        );
-    }
-    return ret;
+    startKeys.unshift('0');
+    endKeys.unshift('0');
+
+    const keyRange = IDBKeyRange.bound(
+        startKeys,
+        endKeys,
+        !queryPlan.inclusiveStart,
+        !queryPlan.inclusiveEnd
+    );
+    return keyRange;
 }
 
 
@@ -109,31 +100,27 @@ export async function dexieQuery<RxDocType>(
 
             const store = tx.objectStore(DEXIE_DOCS_TABLE_NAME);
             let index: any;
-            if (
-                queryPlanFields.length === 1 &&
-                queryPlanFields[0] === instance.primaryPath
-            ) {
-                index = store;
-            } else {
-                let indexName: string;
-                if (queryPlanFields.length === 1) {
-                    indexName = dexieReplaceIfStartsWithPipe(queryPlanFields[0]);
-                } else {
-                    indexName = '[' +
-                        queryPlanFields
-                            .map(field => dexieReplaceIfStartsWithPipe(field))
-                            .join('+')
-                        + ']';
-                }
-                index = store.index(indexName);
-            }
+            let indexName: string;
+            indexName = '[_deleted+' +
+                queryPlanFields
+                    .map(field => dexieReplaceIfStartsWithPipe(field))
+                    .join('+')
+                + ']';
+
+            console.log('use index:');
+            console.dir(indexName);
+            index = store.index(indexName);
+
+            console.log('XXXXX keyRange:');
+            console.dir(keyRange);
+
             const cursorReq = index.openCursor(keyRange);
             await new Promise<void>(res => {
                 cursorReq.onsuccess = function (e: any) {
                     const cursor = e.target.result;
                     if (cursor) {
                         // We have a record in cursor.value
-                        const docData = fromDexieToStorage(cursor.value);
+                        const docData = fromDexieToStorage<RxDocType>(cursor.value);
                         if (
                             !docData._deleted &&
                             (!queryMatcher || queryMatcher(docData))
@@ -217,25 +204,17 @@ export async function dexieCount<RxDocType>(
             const tx = (dexieTx as any).idbtrans;
             const store = tx.objectStore(DEXIE_DOCS_TABLE_NAME);
             let index: any;
-            if (
-                queryPlanFields.length === 1 &&
-                queryPlanFields[0] === instance.primaryPath
-            ) {
-                index = store;
-            } else {
-                let indexName: string;
-                if (queryPlanFields.length === 1) {
-                    indexName = dexieReplaceIfStartsWithPipe(queryPlanFields[0]);
-                } else {
-                    indexName = '[' +
-                        queryPlanFields
-                            .map(field => dexieReplaceIfStartsWithPipe(field))
-                            .join('+')
-                        + ']';
-                }
-                index = store.index(indexName);
-            }
+            let indexName: string;
+            indexName = '[_deleted+' +
+                queryPlanFields
+                    .map(field => dexieReplaceIfStartsWithPipe(field))
+                    .join('+')
+                + ']';
 
+            console.log('XXXXX count keyRange: ' + indexName);
+            console.dir(keyRange);
+
+            index = store.index(indexName);
             const request = index.count(keyRange);
             count = await new Promise<number>((res, rej) => {
                 request.onsuccess = function () {

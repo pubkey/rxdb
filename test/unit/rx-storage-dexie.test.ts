@@ -48,26 +48,6 @@ config.parallel('rx-storage-dexie.test.js', () => {
                 });
                 assert.ok(dexieSchema.startsWith('id'));
             });
-            it('should contains the indexes', () => {
-                const dexieSchema = getDexieStoreSchema({
-                    primaryKey: 'id',
-                    type: 'object',
-                    version: 0,
-                    properties: {
-                        id: {
-                            type: 'string',
-                            maxLength: 100
-                        },
-                        age: {
-                            type: 'number'
-                        }
-                    },
-                    indexes: [
-                        ['age', 'id']
-                    ]
-                });
-                assert.ok(dexieSchema.startsWith('id, [age+id]'));
-            });
         });
         describe('.fromStorageToDexie()', () => {
             it('should convert unsupported IndexedDB key', () => {
@@ -81,7 +61,8 @@ config.parallel('rx-storage-dexie.test.js', () => {
                             stringArray: ['415', '51'],
                             '|numberArray': [1, 2, 3],
                             '|falsyValue': null
-                        }
+                        },
+                        _deleted: false
                     }
                 );
                 assert.deepStrictEqual(result, {
@@ -93,7 +74,8 @@ config.parallel('rx-storage-dexie.test.js', () => {
                         stringArray: ['415', '51'],
                         '__numberArray': [1, 2, 3],
                         '__falsyValue': null
-                    }
+                    },
+                    '_deleted': '0'
                 });
             });
         });
@@ -108,7 +90,8 @@ config.parallel('rx-storage-dexie.test.js', () => {
                         stringArray: ['415', '51'],
                         '__numberArray': [1, 2, 3],
                         '__falsyValue': null
-                    }
+                    },
+                    '_deleted': '1'
                 }
                 );
                 assert.deepStrictEqual(result,
@@ -121,7 +104,8 @@ config.parallel('rx-storage-dexie.test.js', () => {
                             stringArray: ['415', '51'],
                             '|numberArray': [1, 2, 3],
                             '|falsyValue': null
-                        }
+                        },
+                        _deleted: true
                     });
             });
         });

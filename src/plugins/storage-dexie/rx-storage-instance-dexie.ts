@@ -8,8 +8,7 @@ import {
     RX_META_LWT_MINIMUM,
     sortDocumentsByLastWriteTime,
     lastOfArray,
-    ensureNotFalsy,
-    appendToArray
+    ensureNotFalsy
 } from '../utils/index.ts';
 import type {
     RxStorageInstance,
@@ -111,17 +110,25 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
         await state.dexieDb.transaction(
             'rw',
             state.dexieTable,
-            state.dexieDeletedTable,
             async () => {
                 const docsInDbMap = new Map<string, RxDocumentData<RxDocType>>();
                 const docsInDbWithInternals = await getDocsInDb<RxDocType>(this.internals, documentKeys);
+
+                console.log('docsInDbWithInternals:');
+                console.dir(docsInDbWithInternals);
+
                 docsInDbWithInternals.forEach(docWithDexieInternals => {
-                    const doc = docWithDexieInternals ? fromDexieToStorage(docWithDexieInternals) : docWithDexieInternals;
+                    const doc = docWithDexieInternals;
                     if (doc) {
-                        docsInDbMap.set(doc[this.primaryPath], doc);
+                        docsInDbMap.set((doc as any)[this.primaryPath], doc as any);
                     }
                     return doc;
                 });
+
+
+                console.log('docsInDbMap:');
+                console.dir(Array.from(docsInDbMap.values()));
+
 
                 categorized = categorizeBulkWriteRows<RxDocType>(
                     this,
@@ -136,45 +143,20 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
                  * Batch up the database operations
                  * so we can later run them in bulk.
                  */
-                const bulkPutDocs: any[] = [];
-                const bulkRemoveDocs: string[] = [];
-                const bulkPutDeletedDocs: any[] = [];
-                const bulkRemoveDeletedDocs: string[] = [];
-
+                let bulkPutDocs: any[] = [];
                 categorized.bulkInsertDocs.forEach(row => {
                     ret.success.push(row.document);
                     bulkPutDocs.push(row.document);
                 });
                 categorized.bulkUpdateDocs.forEach(row => {
-                    const docId: string = (row.document as any)[this.primaryPath];
                     ret.success.push(row.document);
-                    if (
-                        row.document._deleted &&
-                        (row.previous && !row.previous._deleted)
-                    ) {
-                        // newly deleted
-                        bulkRemoveDocs.push(docId);
-                        bulkPutDeletedDocs.push(row.document);
-                    } else if (
-                        row.document._deleted &&
-                        row.previous && row.previous._deleted
-                    ) {
-                        // deleted was modified but is still deleted
-                        bulkPutDeletedDocs.push(row.document);
-                    } else if (!row.document._deleted) {
-                        // non-deleted was changed
-                        bulkPutDocs.push(row.document);
-                    } else {
-                        throw newRxError('SNH', { args: { row } });
-                    }
+                    bulkPutDocs.push(row.document);
                 });
+                bulkPutDocs = bulkPutDocs.map(d => fromStorageToDexie(d));
+                console.log('bulk put docs:');
+                console.dir(bulkPutDocs);
 
-                await Promise.all([
-                    bulkPutDocs.length > 0 ? state.dexieTable.bulkPut(bulkPutDocs.map(d => fromStorageToDexie(d))) : PROMISE_RESOLVE_VOID,
-                    bulkRemoveDocs.length > 0 ? state.dexieTable.bulkDelete(bulkRemoveDocs) : PROMISE_RESOLVE_VOID,
-                    bulkPutDeletedDocs.length > 0 ? state.dexieDeletedTable.bulkPut(bulkPutDeletedDocs.map(d => fromStorageToDexie(d))) : PROMISE_RESOLVE_VOID,
-                    bulkRemoveDeletedDocs.length > 0 ? state.dexieDeletedTable.bulkDelete(bulkRemoveDeletedDocs) : PROMISE_RESOLVE_VOID
-                ]);
+                await bulkPutDocs.length > 0 ? state.dexieTable.bulkPut(bulkPutDocs) : PROMISE_RESOLVE_VOID;
             });
 
         categorized = ensureNotFalsy(categorized);
@@ -199,24 +181,22 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
         const state = await this.internals;
         const ret: RxDocumentData<RxDocType>[] = [];
 
+        console.log('findDocumentsById()');
+
         await state.dexieDb.transaction(
             'r',
             state.dexieTable,
-            state.dexieDeletedTable,
             async () => {
-                let docsInDb: RxDocumentData<RxDocType>[];
-                if (deleted) {
-                    docsInDb = await getDocsInDb<RxDocType>(this.internals, ids);
-                } else {
-                    docsInDb = await state.dexieTable.bulkGet(ids);
-                }
-                ids.forEach((id, idx) => {
-                    const documentInDb = docsInDb[idx];
+                const docsInDb = await getDocsInDb<RxDocType>(this.internals, ids);
+
+                console.log('findDocumentsById() pre result');
+                console.dir(docsInDb);
+                docsInDb.forEach(documentInDb => {
                     if (
                         documentInDb &&
                         (!documentInDb._deleted || deleted)
                     ) {
-                        ret.push(fromDexieToStorage(documentInDb));
+                        ret.push(documentInDb);
                     }
                 });
             });
@@ -256,13 +236,8 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
         await state.dexieDb.transaction(
             'r',
             state.dexieTable,
-            state.dexieDeletedTable,
             async (_dexieTx) => {
-                const [nonDeleted, deleted] = await Promise.all([
-                    state.dexieTable.count(),
-                    state.dexieDeletedTable.count()
-                ]);
-                ret.totalCount = nonDeleted + deleted;
+                ret.totalCount = await state.dexieTable.count();
             }
         );
 
@@ -282,22 +257,12 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
         const state = await this.internals;
 
 
-        const [changedDocsNormal, changedDocsDeleted] = await Promise.all(
-            [
-                state.dexieTable,
-                state.dexieDeletedTable
-            ].map(async (table) => {
-                const query = table
-                    .where('[_meta.lwt+' + this.primaryPath + ']')
-                    .above([sinceLwt, sinceId])
-                    .limit(limit);
-                const changedDocuments: RxDocumentData<RxDocType>[] = await query.toArray();
-                return changedDocuments.map(d => fromDexieToStorage(d));
-            })
-        );
-        let changedDocs = changedDocsNormal.slice(0);
-        appendToArray(changedDocs, changedDocsDeleted);
-
+        const query = state.dexieTable
+            .where('[_meta.lwt+' + this.primaryPath + ']')
+            .above([sinceLwt, sinceId])
+            .limit(limit);
+        const changedDocuments: RxDocumentData<RxDocType>[] = await query.toArray();
+        let changedDocs = changedDocuments.map(d => fromDexieToStorage<RxDocType>(d));
         changedDocs = sortDocumentsByLastWriteTime(this.primaryPath as any, changedDocs);
         changedDocs = changedDocs.slice(0, limit);
 
@@ -324,15 +289,23 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
         const state = await this.internals;
         await state.dexieDb.transaction(
             'rw',
-            state.dexieDeletedTable,
+            state.dexieTable,
             async () => {
                 const maxDeletionTime = now() - minimumDeletedTime;
-                const toRemove = await state.dexieDeletedTable
+                /**
+                 * TODO only fetch _deleted=true
+                 */
+                const toRemove = await state.dexieTable
                     .where('_meta.lwt')
                     .below(maxDeletionTime)
                     .toArray();
-                const removeIds: string[] = toRemove.map(doc => doc[this.primaryPath]);
-                await state.dexieDeletedTable.bulkDelete(removeIds);
+                const removeIds: string[] = [];
+                toRemove.forEach(doc => {
+                    if (doc._deleted === '1') {
+                        removeIds.push(doc[this.primaryPath]);
+                    }
+                });
+                await state.dexieTable.bulkDelete(removeIds);
             }
         );
 
@@ -353,10 +326,7 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
     async remove(): Promise<void> {
         ensureNotClosed(this);
         const state = await this.internals;
-        await Promise.all([
-            state.dexieDeletedTable.clear(),
-            state.dexieTable.clear()
-        ]);
+        await state.dexieTable.clear()
         return this.close();
     }
 

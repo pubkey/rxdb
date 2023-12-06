@@ -16,13 +16,7 @@ export type DexieSettings = DexieOptions;
 export type DexieStorageInternals = Promise<{
     dexieDb: Dexie;
     /**
-     * Contains all normal non-deleted documents
+     * Contains all normal documents. Deleted ones and non-deleted ones.
      */
     dexieTable: DexieTable;
-    /**
-     * Contains all docs with _deleted: true
-     * We need this because with dexie it is not possible to use a boolean field as index
-     * which could be used to filter out deleted docs in queries.
-     */
-    dexieDeletedTable: DexieTable;
 }>;
