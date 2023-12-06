@@ -27,7 +27,7 @@ writes are represented as CRDT operations in plain JSON. The CRDT operations are
 ## RxDB CRDT operations
 
 In RxDB, a CRDT operation is defined with NoSQL update operators, like you might know them from [MongoDB update operations](https://www.mongodb.com/docs/manual/reference/operator/update/) or the [RxDB update plugin](./rx-document.md#update).
-To run the operators, RxDB uses the [modifyjs library](https://github.com/lgandecki/modifyjs).
+To run the operators, RxDB uses the [mingo library](https://github.com/kofrasa/mingo#updating-documents).
 
 A CRDT operator example:
 
@@ -47,7 +47,7 @@ const myCRDTOperation = {
 
 ### Operators
 
-At the moment, not all possible operators are implemented in [modifyjs](https://github.com/lgandecki/modifyjs#implemented), if you need additional ones, you should make a pull request there.
+At the moment, not all possible operators are implemented in [mingo](https://github.com/kofrasa/mingo#updating-documents), if you need additional ones, you should make a pull request there.
 
 The following operators can be used at this point in time:
 - `$min`
