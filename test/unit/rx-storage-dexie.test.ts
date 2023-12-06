@@ -23,7 +23,6 @@ import {
     HumanDocumentType,
     humanSchemaLiteral
 } from '../helper/schemas.ts';
-import { assertThrows } from 'async-test-util';
 
 /**
  * RxStorageDexie specific tests
