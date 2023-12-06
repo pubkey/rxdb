@@ -15,6 +15,7 @@ import { RxStorageDefaultStatics } from '../../rx-storage-statics.ts';
 
 export const DEXIE_DOCS_TABLE_NAME = 'docs';
 export const DEXIE_CHANGES_TABLE_NAME = 'changes';
+export const DEXIE_ATTACHMENTS_TABLE_NAME = 'attachments';
 
 export const RX_STORAGE_NAME_DEXIE = 'dexie';
 
@@ -46,13 +47,15 @@ export function getDexieDbWithTables(
                 const dexieStoresSettings = {
                     [DEXIE_DOCS_TABLE_NAME]: getDexieStoreSchema(schema),
                     [DEXIE_CHANGES_TABLE_NAME]: '++sequence, id',
+                    [DEXIE_ATTACHMENTS_TABLE_NAME]: 'id'
                 };
 
                 dexieDb.version(1).stores(dexieStoresSettings);
                 await dexieDb.open();
                 return {
                     dexieDb,
-                    dexieTable: (dexieDb as any)[DEXIE_DOCS_TABLE_NAME]
+                    dexieTable: (dexieDb as any)[DEXIE_DOCS_TABLE_NAME],
+                    dexieAttachmentsTable: (dexieDb as any)[DEXIE_ATTACHMENTS_TABLE_NAME]
                 };
             })();
             DEXIE_STATE_DB_BY_NAME.set(dexieDbName, state);
@@ -265,4 +268,9 @@ export async function getDocsInDb<RxDocType>(
     const state = await internals;
     const docsInDb = await state.dexieTable.bulkGet(docIds);
     return docsInDb.map(d => fromDexieToStorage(d));
+}
+
+
+export function attachmentObjectId(documentId: string, attachmentId: string): string {
+    return documentId + '||' + attachmentId;
 }

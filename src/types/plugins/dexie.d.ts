@@ -19,4 +19,6 @@ export type DexieStorageInternals = Promise<{
      * Contains all normal documents. Deleted ones and non-deleted ones.
      */
     dexieTable: DexieTable;
+    // contains the attachments data
+    dexieAttachmentsTable: DexieTable;
 }>;

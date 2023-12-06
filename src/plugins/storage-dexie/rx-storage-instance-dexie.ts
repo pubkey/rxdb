@@ -35,6 +35,7 @@ import type {
 } from '../../types/plugins/dexie.d.ts';
 import { RxStorageDexie } from './rx-storage-dexie.ts';
 import {
+    attachmentObjectId,
     closeDexieDb,
     fromDexieToStorage,
     fromStorageToDexie,
@@ -110,6 +111,7 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
         await state.dexieDb.transaction(
             'rw',
             state.dexieTable,
+            state.dexieAttachmentsTable,
             async () => {
                 const docsInDbMap = new Map<string, RxDocumentData<RxDocType>>();
                 const docsInDbWithInternals = await getDocsInDb<RxDocType>(this.internals, documentKeys);
@@ -144,8 +146,31 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
                     bulkPutDocs.push(row.document);
                 });
                 bulkPutDocs = bulkPutDocs.map(d => fromStorageToDexie(d));
+                if (bulkPutDocs.length > 0) {
+                    await state.dexieTable.bulkPut(bulkPutDocs);
+                }
 
-                await bulkPutDocs.length > 0 ? state.dexieTable.bulkPut(bulkPutDocs) : PROMISE_RESOLVE_VOID;
+
+
+                // handle attachments
+                const putAttachments: { id: string, data: string }[] = [];
+                categorized.attachmentsAdd.forEach(attachment => {
+                    putAttachments.push({
+                        id: attachmentObjectId(attachment.documentId, attachment.attachmentId),
+                        data: attachment.attachmentData.data
+                    });
+                });
+                categorized.attachmentsUpdate.forEach(attachment => {
+                    putAttachments.push({
+                        id: attachmentObjectId(attachment.documentId, attachment.attachmentId),
+                        data: attachment.attachmentData.data
+                    });
+                });
+                await state.dexieAttachmentsTable.bulkPut(putAttachments);
+                await state.dexieAttachmentsTable.bulkDelete(
+                    categorized.attachmentsRemove.map(attachment => attachmentObjectId(attachment.documentId, attachment.attachmentId))
+                );
+
             });
 
         categorized = ensureNotFalsy(categorized);
@@ -302,9 +327,22 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
         return true;
     }
 
-    getAttachmentData(_documentId: string, _attachmentId: string, _digest: string): Promise<string> {
+    async getAttachmentData(documentId: string, attachmentId: string, _digest: string): Promise<string> {
         ensureNotClosed(this);
-        throw new Error('Attachments are not implemented in the dexie RxStorage. Make a pull request.');
+        const state = await this.internals;
+        const id = attachmentObjectId(documentId, attachmentId);
+        return await state.dexieDb.transaction(
+            'r',
+            state.dexieAttachmentsTable,
+            async () => {
+
+                const attachment = await state.dexieAttachmentsTable.get(id);
+                if (attachment) {
+                    return attachment.data;
+                } else {
+                    throw new Error('attachment missing documentId: ' + documentId + ' attachmentId: ' + attachmentId);
+                }
+            });
     }
 
     async remove(): Promise<void> {
