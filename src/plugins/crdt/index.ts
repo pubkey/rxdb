@@ -157,11 +157,11 @@ function runOperationOnDocument<RxDocType>(
         }
         if (isMatching) {
             if (entryPart.ifMatch) {
-                docData = mingoUpdater(docData, entryPart.ifMatch);
+                docData = mingoUpdater<WithDeleted<RxDocType>>(docData, entryPart.ifMatch);
             }
         } else {
             if (entryPart.ifNotMatch) {
-                docData = mingoUpdater(docData, entryPart.ifNotMatch);
+                docData = mingoUpdater<WithDeleted<RxDocType>>(docData, entryPart.ifNotMatch);
             }
         }
     });
