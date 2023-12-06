@@ -298,7 +298,7 @@ export function setDefaultStorage(storageKey: string) {
                 },
                 hasPersistence: true,
                 hasMultiInstance: true,
-                hasAttachments: false,
+                hasAttachments: true,
                 hasReplication: true
             };
             break;

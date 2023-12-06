@@ -3,7 +3,6 @@ import type {
     RxStorageInstanceCreationParams
 } from '../../types/index.d.ts';
 import {
-    ensureNoBooleanIndex,
     RxStorageDexieStatics,
     RX_STORAGE_NAME_DEXIE
 } from './dexie-helper.ts';
@@ -31,7 +30,6 @@ export class RxStorageDexie implements RxStorage<DexieStorageInternals, DexieSet
         params: RxStorageInstanceCreationParams<RxDocType, DexieSettings>
     ): Promise<RxStorageInstanceDexie<RxDocType>> {
         ensureRxStorageInstanceParamsAreCorrect(params);
-        ensureNoBooleanIndex(params.schema);
         return createDexieStorageInstance(this, params, this.settings);
     }
 }

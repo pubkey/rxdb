@@ -22,7 +22,21 @@ export function mapKeyForKeyRange(k: any) {
     }
 }
 
+function rangeFieldToBooleanSubstitute(
+    booleanIndexes: string[],
+    fieldName: string,
+    value: any
+) {
+    if (booleanIndexes.includes(fieldName)) {
+        const newValue = value ? '1' : '0';
+        return newValue;
+    } else {
+        return value;
+    }
+}
+
 export function getKeyRangeByQueryPlan(
+    booleanIndexes: string[],
     queryPlan: RxQueryPlan,
     IDBKeyRange?: any
 ) {
@@ -34,31 +48,30 @@ export function getKeyRangeByQueryPlan(
         }
     }
 
-    const startKeys = queryPlan.startKeys.map(mapKeyForKeyRange);
-    const endKeys = queryPlan.endKeys.map(mapKeyForKeyRange);
 
-    let ret: any;
-    /**
-     * If index has only one field,
-     * we have to pass the keys directly, not the key arrays.
-     */
-    if (queryPlan.index.length === 1) {
-        const equalKeys = startKeys[0] === endKeys[0];
-        ret = IDBKeyRange.bound(
-            startKeys[0],
-            endKeys[0],
-            equalKeys ? false : !queryPlan.inclusiveStart,
-            equalKeys ? false : !queryPlan.inclusiveEnd
-        );
-    } else {
-        ret = IDBKeyRange.bound(
-            startKeys,
-            endKeys,
-            !queryPlan.inclusiveStart,
-            !queryPlan.inclusiveEnd
-        );
-    }
-    return ret;
+    const startKeys = queryPlan.startKeys
+        .map((v, i) => {
+            const fieldName = queryPlan.index[i];
+            return rangeFieldToBooleanSubstitute(booleanIndexes, fieldName, v);
+        })
+        .map(mapKeyForKeyRange);
+    const endKeys = queryPlan.endKeys
+        .map((v, i) => {
+            const fieldName = queryPlan.index[i];
+            return rangeFieldToBooleanSubstitute(booleanIndexes, fieldName, v);
+        })
+        .map(mapKeyForKeyRange);
+
+    startKeys.unshift('0');
+    endKeys.unshift('0');
+
+    const keyRange = IDBKeyRange.bound(
+        startKeys,
+        endKeys,
+        !queryPlan.inclusiveStart,
+        !queryPlan.inclusiveEnd
+    );
+    return keyRange;
 }
 
 
@@ -85,6 +98,7 @@ export async function dexieQuery<RxDocType>(
         );
     }
     const keyRange = getKeyRangeByQueryPlan(
+        state.booleanIndexes,
         queryPlan,
         (state.dexieDb as any)._options.IDBKeyRange
     );
@@ -109,31 +123,22 @@ export async function dexieQuery<RxDocType>(
 
             const store = tx.objectStore(DEXIE_DOCS_TABLE_NAME);
             let index: any;
-            if (
-                queryPlanFields.length === 1 &&
-                queryPlanFields[0] === instance.primaryPath
-            ) {
-                index = store;
-            } else {
-                let indexName: string;
-                if (queryPlanFields.length === 1) {
-                    indexName = dexieReplaceIfStartsWithPipe(queryPlanFields[0]);
-                } else {
-                    indexName = '[' +
-                        queryPlanFields
-                            .map(field => dexieReplaceIfStartsWithPipe(field))
-                            .join('+')
-                        + ']';
-                }
-                index = store.index(indexName);
-            }
+            let indexName: string;
+            indexName = '[_deleted+' +
+                queryPlanFields
+                    .map(field => dexieReplaceIfStartsWithPipe(field))
+                    .join('+')
+                + ']';
+            index = store.index(indexName);
+
+
             const cursorReq = index.openCursor(keyRange);
             await new Promise<void>(res => {
                 cursorReq.onsuccess = function (e: any) {
                     const cursor = e.target.result;
                     if (cursor) {
                         // We have a record in cursor.value
-                        const docData = fromDexieToStorage(cursor.value);
+                        const docData = fromDexieToStorage<RxDocType>(state.booleanIndexes, cursor.value);
                         if (
                             !docData._deleted &&
                             (!queryMatcher || queryMatcher(docData))
@@ -206,6 +211,7 @@ export async function dexieCount<RxDocType>(
     const queryPlanFields: string[] = queryPlan.index;
 
     const keyRange = getKeyRangeByQueryPlan(
+        state.booleanIndexes,
         queryPlan,
         (state.dexieDb as any)._options.IDBKeyRange
     );
@@ -217,25 +223,13 @@ export async function dexieCount<RxDocType>(
             const tx = (dexieTx as any).idbtrans;
             const store = tx.objectStore(DEXIE_DOCS_TABLE_NAME);
             let index: any;
-            if (
-                queryPlanFields.length === 1 &&
-                queryPlanFields[0] === instance.primaryPath
-            ) {
-                index = store;
-            } else {
-                let indexName: string;
-                if (queryPlanFields.length === 1) {
-                    indexName = dexieReplaceIfStartsWithPipe(queryPlanFields[0]);
-                } else {
-                    indexName = '[' +
-                        queryPlanFields
-                            .map(field => dexieReplaceIfStartsWithPipe(field))
-                            .join('+')
-                        + ']';
-                }
-                index = store.index(indexName);
-            }
-
+            let indexName: string;
+            indexName = '[_deleted+' +
+                queryPlanFields
+                    .map(field => dexieReplaceIfStartsWithPipe(field))
+                    .join('+')
+                + ']';
+            index = store.index(indexName);
             const request = index.count(keyRange);
             count = await new Promise<number>((res, rej) => {
                 request.onsuccess = function () {
