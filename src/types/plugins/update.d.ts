@@ -5,25 +5,19 @@ import type {
 } from 'mingo/updater';
 
 /**
- * TODO use schema-based type. Best is to make a PR to the mingo repo.
+ * We use an own type here, copied from mongoose
  * @link https://github.com/Automattic/mongoose/blob/eb292d2c4cc98ee315f118d6199a83938f06d901/types/index.d.ts#L466
+ * TODO when mingo implements a schema-based type for UpdateExpression, we can use that one.
  */
-export type UpdateQuery<TSchema> = UpdateExpression;
-/*
-{
+export type UpdateQuery<TSchema> = {
     $min?: AnyKeys<TSchema> & AnyObject;
     $max?: AnyKeys<TSchema> & AnyObject;
     $inc?: AnyKeys<TSchema> & AnyObject;
     $set?: AnyKeys<TSchema> & AnyObject;
     $unset?: AnyKeys<TSchema> & AnyObject;
     $push?: AnyKeys<TSchema> & AnyObject;
-    $pushAll?: AnyKeys<TSchema> & AnyObject;
     $addToSet?: AnyKeys<TSchema> & AnyObject;
     $pop?: AnyKeys<TSchema> & AnyObject;
     $pullAll?: AnyKeys<TSchema> & AnyObject;
     $rename?: Record<string, string>;
-
-    // add all other update operators from mingo
-} & UpdateExpression;
-*/
-
+};

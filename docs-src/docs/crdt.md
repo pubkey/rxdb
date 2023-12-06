@@ -56,7 +56,6 @@ The following operators can be used at this point in time:
 - `$set`
 - `$unset`
 - `$push`
-- `$pushAll`
 - `$addToSet`
 - `$pop`
 - `$pullAll`
