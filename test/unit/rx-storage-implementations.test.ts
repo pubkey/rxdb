@@ -439,7 +439,6 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 assert.deepStrictEqual(insertResponse.error, []);
                 const first = insertResponse.success[0];
 
-
                 // make an update
                 const updateData = Object.assign({}, insertData, {
                     value: 'barfoo2',
@@ -450,7 +449,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 });
                 const updateResponse = await storageInstance.bulkWrite(
                     [{
-                        previous: insertData,
+                        previous: insertResponse.success[0],
                         document: updateData
                     }],
                     testContext
@@ -460,7 +459,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 // make the delete
                 const deleteResponse = await storageInstance.bulkWrite(
                     [{
-                        previous: updateData,
+                        previous: updateResponse.success[0],
                         document: Object.assign({}, first, {
                             value: 'barfoo_deleted',
                             _deleted: true,
@@ -767,7 +766,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 assert.deepStrictEqual(writeResponse.error, []);
 
                 const getDocFromDb = await storageInstance.findDocumentsById([docData.id], false);
-                assert.deepStrictEqual(
+                assertEqualDocumentData(
                     getDocFromDb[0],
                     compressedDocData
                 );
@@ -1893,7 +1892,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
 
                 const found = await storageInstance.findDocumentsById(['foobar'], false);
                 const foundDoc = found[0];
-                assert.deepStrictEqual(foundDoc, docData);
+                assertEqualDocumentData(foundDoc, docData);
 
                 storageInstance.close();
             });

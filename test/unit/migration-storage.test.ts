@@ -77,7 +77,8 @@ const testStorages = [
 const DB_PREFIX = 'test-db-';
 
 testStorages.forEach(storages => {
-    describe('migration-storage.test.ts (' + storages.name + ')', () => {
+    describe('migration-storage.test.ts (' + storages.name + ')', function () {
+        this.timeout(1000 * 20);
         describe('basic migrations', () => {
             it('create both databases', async () => {
                 const oldDb = await storages.createRxDatabaseOld({

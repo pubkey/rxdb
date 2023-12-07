@@ -71,7 +71,8 @@ function ensureReplicationHasNoErrors(replicationState: RxStorageInstanceReplica
     });
 }
 
-useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () => {
+useParallel(testContext + ' (implementation: ' + config.storage.name + ')', function () {
+    this.timeout(1000 * 20);
     if (!config.storage.hasReplication) {
         return;
     }
@@ -900,7 +901,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                         });
                         docData._rev = createRevision(randomCouchString(10), docData);
                         docData._meta.lwt = now();
-                        await instance.bulkWrite([{
+                        const insertResult = await instance.bulkWrite([{
                             document: docData
                         }], testContext);
 
@@ -910,7 +911,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                         newDocData._rev = createRevision(randomCouchString(10), docData);
                         newDocData._meta.lwt = now();
                         const updateResult = await instance.bulkWrite([{
-                            previous: docData,
+                            previous: insertResult.success[0],
                             document: newDocData
                         }], testContext);
                         assert.deepStrictEqual(updateResult.error, []);

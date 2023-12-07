@@ -33,7 +33,6 @@ import type {
 import {
     PROMISE_RESOLVE_TRUE,
     appendToArray,
-    arrayFilterNotEmpty,
     createRevision,
     ensureNotFalsy,
     flatClone,
@@ -429,33 +428,14 @@ export function categorizeBulkWriteRows<RxDocType>(
                 }
                 newestRow = updatedRow as any;
             }
-
-            let eventDocumentData: RxDocumentData<RxDocType> | undefined = null as any;
-            let previousEventDocumentData: RxDocumentData<RxDocType> | undefined = null as any;
-            let operation: 'INSERT' | 'UPDATE' | 'DELETE' = null as any;
-
-            if (previousDeleted && !documentDeleted) {
-                operation = 'INSERT';
-                eventDocumentData = hasAttachments ? stripAttachmentsDataFromDocument(document) : document as any;
-            } else if (previous && !previousDeleted && !documentDeleted) {
-                operation = 'UPDATE';
-                eventDocumentData = hasAttachments ? stripAttachmentsDataFromDocument(document) : document as any;
-                previousEventDocumentData = previous;
-            } else if (documentDeleted) {
-                operation = 'DELETE';
-                eventDocumentData = ensureNotFalsy(document) as any;
-                previousEventDocumentData = previous;
-            } else {
-                throw newRxError('SNH', { args: { writeRow } });
+            const event = writeRowToEvent(
+                docId,
+                writeRow,
+                hasAttachments
+            );
+            if (event) {
+                eventBulkEvents.push(event);
             }
-
-            const event = {
-                documentId: docId,
-                documentData: eventDocumentData as RxDocumentData<RxDocType>,
-                previousDocumentData: previousEventDocumentData,
-                operation: operation
-            };
-            eventBulkEvents.push(event);
         }
     }
 
@@ -470,6 +450,47 @@ export function categorizeBulkWriteRows<RxDocType>(
         attachmentsUpdate
     };
 }
+
+export function writeRowToEvent<RxDocType>(
+    docId: string,
+    writeRow: BulkWriteRow<RxDocType>,
+    hasAttachments: boolean
+): RxStorageChangeEvent<RxDocumentData<RxDocType>> | null {
+    const previous = writeRow.previous;
+    const document = writeRow.document;
+    const previousDeleted = previous && previous._deleted;
+    const documentDeleted = writeRow.document._deleted;
+
+    let operation: 'INSERT' | 'UPDATE' | 'DELETE' = null as any;
+    let eventDocumentData;
+    let previousEventDocumentData;
+    if (!previous && !documentDeleted) {
+        operation = 'INSERT';
+        eventDocumentData = hasAttachments ? stripAttachmentsDataFromDocument(document) : document as any;
+    } else if (previousDeleted && !documentDeleted) {
+        operation = 'INSERT';
+        eventDocumentData = hasAttachments ? stripAttachmentsDataFromDocument(document) : document as any;
+    } else if (previous && !previousDeleted && !documentDeleted) {
+        operation = 'UPDATE';
+        eventDocumentData = hasAttachments ? stripAttachmentsDataFromDocument(document) : document as any;
+        previousEventDocumentData = previous;
+    } else if (documentDeleted) {
+        operation = 'DELETE';
+        eventDocumentData = ensureNotFalsy(document) as any;
+        previousEventDocumentData = previous;
+    } else {
+        throw newRxError('SNH', { args: { writeRow } });
+    }
+
+    return {
+        documentId: docId,
+        documentData: eventDocumentData as RxDocumentData<RxDocType>,
+        previousDocumentData: previousEventDocumentData,
+        operation: operation
+    };
+
+}
+
 
 export function stripAttachmentsDataFromRow<RxDocType>(writeRow: BulkWriteRow<RxDocType>): BulkWriteRowProcessed<RxDocType> {
     return {

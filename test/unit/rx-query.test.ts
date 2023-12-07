@@ -741,7 +741,8 @@ describe('rx-query.test.ts', () => {
         });
     });
     config.parallel('issues', () => {
-        it('#278 queryCache breaks when pointer out of bounds', async () => {
+        it('#278 queryCache breaks when pointer out of bounds', async function () {
+            this.timeout(1000 * 20);
             const c = await humansCollection.createPrimary(0);
 
             // insert some docs

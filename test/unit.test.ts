@@ -10,6 +10,7 @@ import './unit/util.test.ts';
 import './unit/custom-index.test.ts';
 import './unit/query-planner.test.ts';
 
+import './unit/rx-storage-denokv.test.ts';
 
 /**
  * Move these tests around so that

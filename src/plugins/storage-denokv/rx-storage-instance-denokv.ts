@@ -45,12 +45,13 @@ import {
 } from "../../custom-index.ts";
 import { appendToArray, batchArray, lastOfArray, toArray } from "../utils/utils-array.ts";
 import { ensureNotFalsy } from "../utils/utils-other.ts";
-import { categorizeBulkWriteRows } from "../../rx-storage-helper.ts";
+import { categorizeBulkWriteRows, writeRowToEvent } from "../../rx-storage-helper.ts";
 import { now } from "../utils/utils-time.ts";
 import { queryDenoKV } from "./denokv-query.ts";
 import { INDEX_MAX } from "../../query-planner.ts";
 import { PROMISE_RESOLVE_VOID } from "../utils/utils-promise.ts";
 import { flatClone } from "../utils/utils-object.ts";
+import { randomCouchString } from '../utils/utils-string.ts';
 
 
 export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
@@ -106,163 +107,109 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
     }
 
     async bulkWrite(documentWrites: BulkWriteRow<RxDocType>[], context: string): Promise<RxStorageBulkWriteResponse<RxDocType>> {
-        console.log('DNEOKV.bulkWrite()');
         const kv = await this.kvPromise;
         const primaryPath = this.primaryPath;
         const ret: RxStorageBulkWriteResponse<RxDocType> = {
             success: [],
             error: []
         };
+        const eventBulk: EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, any> = {
+            id: randomCouchString(10),
+            events: [],
+            checkpoint: null,
+            context,
+            startTime: now(),
+            endTime: 0
+        };
 
-        console.log('BULK WRITE:::');
-        console.log(JSON.stringify(documentWrites, null, 4));
-
-        // TODO remove this check when everything works
+        // TODO remove this check when everything works and denoKV storage is out of beta
         documentWrites.forEach(r => {
             if (r.previous && !r.previous._meta[DENOKV_VERSION_META_FLAG]) {
                 console.error('PREVIOUS DENO META NOT SET:');
                 console.log(JSON.stringify(r, null, 4));
-                const err = new Error('previous deno meta not set');
+                const err = new Error('previous denokv meta not set');
                 console.log(err.stack);
                 throw err;
             }
         });
 
-        const batches = batchArray(documentWrites, ensureNotFalsy(this.settings.batchSize));
 
-        /**
-         * DenoKV does not have transactions
-         * so we use a special writeBlock row to ensure
-         * atomic writes (per document)
-         * and so that we can do bulkWrites
-         */
-        for (const writeBatch of batches) {
-            while (true) {
-                const writeBlockKey = await kv.get([this.keySpace], this.kvOptions);
-                const docsInDB = new Map<string, RxDocumentData<RxDocType>>();
-
-                /**
-                 * TODO the max amount for .getMany() is 10 which is defined by deno itself.
-                 * How can this be increased?
-                 */
-                const readManyBatches = batchArray(writeBatch, 10);
-                await Promise.all(
-                    readManyBatches.map(async (readManyBatch) => {
-                        const docsResult = await kv.getMany(
-                            readManyBatch.map(writeRow => {
-                                const docId: string = writeRow.document[primaryPath] as any;
-                                return [this.keySpace, DENOKV_DOCUMENT_ROOT_PATH, docId];
-                            })
-                        );
-                        docsResult.map((row: any) => {
-                            if (!row.value) {
-                                return;
-                            }
-                            const docData = denoKvRowToDocument<RxDocType>(row);
-                            const docId: string = docData[primaryPath] as any;
-                            docsInDB.set(docId, docData);
-                        });
-                    })
-                );
-                const categorized = categorizeBulkWriteRows<RxDocType>(
-                    this,
-                    this.primaryPath as any,
-                    docsInDB,
-                    writeBatch,
-                    context
-                );
-
+        await Promise.all(
+            documentWrites.map(async (writeRow) => {
+                const docId: string = writeRow.document[primaryPath] as any;
+                const key = [this.keySpace, DENOKV_DOCUMENT_ROOT_PATH, docId];
                 let tx = kv.atomic();
-                tx = tx.set([this.keySpace], ensureNotFalsy(writeBlockKey.value) + 1);
 
-                console.log('WRITE BLOCK KEY:');
-                console.log(JSON.stringify(writeBlockKey, null, 4));
-
-                tx = tx.check(writeBlockKey);
-
-                // INSERTS
-                categorized.bulkInsertDocs.forEach(writeRow => {
-                    const docId: string = writeRow.document[this.primaryPath] as any;
-                    ret.success.push(writeRow.document);
-
-                    // insert document data
-                    tx = tx.set([this.keySpace, DENOKV_DOCUMENT_ROOT_PATH, docId], writeRow.document);
-
-                    // insert secondary indexes
-                    Object.values(this.internals.indexes).forEach(indexMeta => {
-                        const indexString = indexMeta.getIndexableString(writeRow.document as any);
-                        tx = tx.set([this.keySpace, indexMeta.indexId, indexString], docId);
+                // conflict detection
+                if (writeRow.previous) {
+                    tx = tx.check({
+                        key,
+                        versionstamp: writeRow.previous._meta[DENOKV_VERSION_META_FLAG]
                     });
-                });
-                // UPDATES
-                categorized.bulkUpdateDocs.forEach((writeRow: BulkWriteRow<RxDocType>) => {
-                    const docId: string = writeRow.document[this.primaryPath] as any;
+                } else {
+                    tx = tx.check({ key });
+                }
 
-                    // insert document data
-                    tx = tx.set([this.keySpace, DENOKV_DOCUMENT_ROOT_PATH, docId], writeRow.document);
+                // insert document data
+                const kvKey = [this.keySpace, DENOKV_DOCUMENT_ROOT_PATH, docId];
+                tx = tx.set(kvKey, writeRow.document);
 
-                    // insert secondary indexes
-                    Object.values(this.internals.indexes).forEach(indexMeta => {
+                // insert secondary indexes
+                Object.values(this.internals.indexes).forEach(indexMeta => {
+                    if (writeRow.previous) {
+
                         const oldIndexString = indexMeta.getIndexableString(ensureNotFalsy(writeRow.previous));
                         const newIndexString = indexMeta.getIndexableString(writeRow.document as any);
                         if (oldIndexString !== newIndexString) {
                             tx = tx.delete([this.keySpace, indexMeta.indexId, oldIndexString]);
                             tx = tx.set([this.keySpace, indexMeta.indexId, newIndexString], docId);
                         }
-                    });
-                    ret.success.push(writeRow.document as any);
+                    } else {
+                        Object.values(this.internals.indexes).forEach(indexMeta => {
+                            const indexString = indexMeta.getIndexableString(writeRow.document as any);
+                            tx = tx.set([this.keySpace, indexMeta.indexId, indexString], docId);
+                        });
+                    }
                 });
 
                 const txResult = await tx.commit();
-                console.dir(txResult);
-                const newVersionStamp = txResult.versionstamp;
-
-                // if (ret.success.length > 1 && ret.success.length < 10 && txResult.ok) {
-                //     console.log('--------------------------');
-                //     console.dir(txResult);
-                //     ret.success.map(d => d[primaryPath])
-                //     const checkAfterIds = documentWrites.slice(0, 10);
-                //     const docsResult = await kv.getMany(
-                //         checkAfterIds.map(writeRow => {
-                //             const docId: string = writeRow.document[primaryPath] as any;
-                //             return [this.keySpace, DENOKV_DOCUMENT_ROOT_PATH, docId];
-                //         })
-                //     );
-                //     console.log(JSON.stringify(docsResult, null, 4));
-                // }
-
-                ret.success.map(d => {
-                    d = flatClone(d);
-                    d._meta = flatClone(d._meta);
-                    d._meta[DENOKV_VERSION_META_FLAG] = newVersionStamp;
-                })
-
                 if (txResult.ok) {
-                    appendToArray(ret.error, categorized.errors);
-
-                    categorized.eventBulk.events.forEach(ev => {
-                        ev.documentData._meta[DENOKV_VERSION_META_FLAG] = newVersionStamp;
-                        if (ev.previousDocumentData) {
-                            // ev.previousDocumentData._meta[DENOKV_VERSION_META_FLAG] = newVersionStamp;
-                        }
-                    });
-
-                    if (categorized.eventBulk.events.length > 0) {
-                        const lastState = ensureNotFalsy(categorized.newestRow).document;
-                        categorized.eventBulk.checkpoint = {
-                            id: lastState[primaryPath],
-                            lwt: lastState._meta.lwt
-                        };
-                        categorized.eventBulk.endTime = now();
-                        this.changes$.next(categorized.eventBulk);
+                    const newDoc = flatClone(writeRow.document);
+                    newDoc._meta = flatClone(newDoc._meta);
+                    newDoc._meta[DENOKV_VERSION_META_FLAG] = txResult.versionstamp;
+                    ret.success.push(newDoc);
+                    const event = writeRowToEvent(docId, writeRow, false);
+                    if (event) {
+                        event.documentData = newDoc;
+                        eventBulk.events.push(event);
                     }
-                    break;
+                } else {
+                    const docInDb = await kv.get(kvKey);
+                    if (docInDb.value) {
+                        ret.error.push({
+                            status: 409,
+                            isError: true,
+                            writeRow,
+                            documentId: docId,
+                            documentInDb: denoKvRowToDocument(docInDb)
+                        });
+                    } else {
+                        throw new Error('unknown denoKV write error');
+                    }
                 }
-            }
-        }
+            })
+        );
 
-        console.log('DENO.bulkWrite() innerst return:');
-        console.log(JSON.stringify(ret, null, 4));
+        const lastEvent = lastOfArray(eventBulk.events);
+        if (lastEvent) {
+            const lastState = lastEvent.documentData;
+            eventBulk.checkpoint = {
+                id: lastState[primaryPath],
+                lwt: lastState._meta.lwt
+            };
+            eventBulk.endTime = now();
+            this.changes$.next(eventBulk);
+        }
 
         return ret;
     }

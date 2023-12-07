@@ -35,17 +35,16 @@ config.parallel('rx-storage-denokv.test.js', () => {
     describe('ensure correct assumptions of the api', () => {
         it('must be able to detect on-insert conflicts', async () => {
             const kv = await getDenoKV();
-
             const key = [randomCouchString(10)];
 
-            // should work if not exits
+            // should .set() if not exits
             const txResult = await kv.atomic()
                 .check({ key })
                 .set(key, 1)
                 .commit();
             assert.ok(txResult.ok);
 
-            // should error on conflict
+            // should error on conflict because exists already
             const txResult2 = await kv.atomic()
                 .check({ key })
                 .set(key, 1)

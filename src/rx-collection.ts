@@ -339,9 +339,6 @@ export class RxCollectionBase<
             'rx-collection-bulk-insert'
         );
 
-        console.log('BULK INSERT RESULT:');
-        console.log(JSON.stringify(results, null, 4));
-
         // create documents
         const rxDocuments = mapDocumentsDataToCacheDocs<RxDocumentType, OrmMethods>(this._docCache, results.success);
 
