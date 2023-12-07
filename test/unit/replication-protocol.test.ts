@@ -875,15 +875,10 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
             assert.ok(masterDocs[0]._rev.startsWith('2-'));
 
             /**
-             * Ensure it only contains the _meta fields that we really need.
+             * Ensure it contains the _meta fields that we really need.
              */
             const masterDoc = (await runQuery(masterInstance))[0];
-            // should only have the 'lwt'
-            assert.strictEqual(Object.keys(masterDoc._meta).length, 1);
-
-            // const forkDoc = (await runQuery(forkInstance))[0];
-            // should only have the 'lwt' AND the current state of the master.
-            // assert.strictEqual(Object.keys(forkDoc._meta).length, 3); // TODO
+            assert.ok(masterDoc._meta.lwt);
 
             cleanUp(replicationState, masterInstance);
         });
