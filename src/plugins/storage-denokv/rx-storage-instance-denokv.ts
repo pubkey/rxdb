@@ -22,10 +22,27 @@ import type {
 } from '../../types/index.d.ts';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper.ts';
 import { addRxStorageMultiInstanceSupport } from '../../rx-storage-multiinstance.ts';
-import type { DenoKVIndexMeta, DenoKVPreparedQuery, DenoKVSettings, DenoKVStorageInternals } from './denokv-types.ts';
+import type {
+    DenoKVIndexMeta,
+    DenoKVPreparedQuery,
+    DenoKVSettings,
+    DenoKVStorageInternals
+} from './denokv-types.ts';
 import { RxStorageDenoKV } from './index.ts';
-import { CLEANUP_INDEX, DENOKV_DOCUMENT_ROOT_PATH, DENOKV_VERSION_META_FLAG, RX_STORAGE_NAME_DENOKV, denoKvRowToDocument, getDenoGlobal, getDenoKVIndexName } from "./denokv-helper.ts";
-import { getIndexableStringMonad, getStartIndexStringFromLowerBound, changeIndexableStringByOneQuantum } from "../../custom-index.ts";
+import {
+    CLEANUP_INDEX,
+    DENOKV_DOCUMENT_ROOT_PATH,
+    DENOKV_VERSION_META_FLAG,
+    RX_STORAGE_NAME_DENOKV,
+    denoKvRowToDocument,
+    getDenoGlobal,
+    getDenoKVIndexName
+} from "./denokv-helper.ts";
+import {
+    getIndexableStringMonad,
+    getStartIndexStringFromLowerBound,
+    changeIndexableStringByOneQuantum
+} from "../../custom-index.ts";
 import { appendToArray, batchArray, lastOfArray, toArray } from "../utils/utils-array.ts";
 import { ensureNotFalsy } from "../utils/utils-other.ts";
 import { categorizeBulkWriteRows } from "../../rx-storage-helper.ts";
@@ -34,7 +51,6 @@ import { queryDenoKV } from "./denokv-query.ts";
 import { INDEX_MAX } from "../../query-planner.ts";
 import { PROMISE_RESOLVE_VOID } from "../utils/utils-promise.ts";
 import { flatClone } from "../utils/utils-object.ts";
-
 
 
 export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
@@ -98,7 +114,6 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
             error: []
         };
 
-
         console.log('BULK WRITE:::');
         console.log(JSON.stringify(documentWrites, null, 4));
 
@@ -159,6 +174,10 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
 
                 let tx = kv.atomic();
                 tx = tx.set([this.keySpace], ensureNotFalsy(writeBlockKey.value) + 1);
+
+                console.log('WRITE BLOCK KEY:');
+                console.log(JSON.stringify(writeBlockKey, null, 4));
+
                 tx = tx.check(writeBlockKey);
 
                 // INSERTS
@@ -202,8 +221,6 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
                 //     console.log('--------------------------');
                 //     console.dir(txResult);
                 //     ret.success.map(d => d[primaryPath])
-
-
                 //     const checkAfterIds = documentWrites.slice(0, 10);
                 //     const docsResult = await kv.getMany(
                 //         checkAfterIds.map(writeRow => {
@@ -212,7 +229,6 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
                 //         })
                 //     );
                 //     console.log(JSON.stringify(docsResult, null, 4));
-
                 // }
 
                 ret.success.map(d => {

@@ -61,6 +61,7 @@ import {
     EXAMPLE_REVISION_4
 } from '../helper/revisions.ts';
 import { compressObject } from 'jsonschema-key-compression';
+import { assertEqualDocumentData } from '../helper/test-util.ts';
 
 addRxPlugin(RxDBQueryBuilderPlugin);
 
@@ -292,7 +293,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
 
                 assert.deepStrictEqual(writeResponse.error, []);
                 const first = writeResponse.success[0];
-                assert.deepStrictEqual(docData, first);
+                assertEqualDocumentData(docData, first);
                 storageInstance.close();
             });
             it('should error on conflict', async () => {
@@ -815,7 +816,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
 
                 const res2 = await storageInstance.bulkWrite(
                     [{
-                        previous: docData,
+                        previous: res1.success[0],
                         document: clone(newDocData)
                     }],
                     testContext
@@ -832,7 +833,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
 
                 const res3 = await storageInstance.bulkWrite(
                     [{
-                        previous: docData,
+                        previous: res2.success[0],
                         document: clone(newDocData)
                     }],
                     testContext
@@ -936,7 +937,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 updated._rev = EXAMPLE_REVISION_4;
                 const updateResponse = await storageInstance.bulkWrite(
                     [{
-                        previous: docData,
+                        previous: insertResponse.success[0],
                         document: updated
                     }],
                     testContext
