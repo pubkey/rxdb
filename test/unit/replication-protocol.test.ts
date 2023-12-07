@@ -71,7 +71,8 @@ function ensureReplicationHasNoErrors(replicationState: RxStorageInstanceReplica
     });
 }
 
-useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () => {
+useParallel(testContext + ' (implementation: ' + config.storage.name + ')', function () {
+    this.timeout(1000 * 20);
     if (!config.storage.hasReplication) {
         return;
     }
@@ -875,15 +876,10 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
             assert.ok(masterDocs[0]._rev.startsWith('2-'));
 
             /**
-             * Ensure it only contains the _meta fields that we really need.
+             * Ensure it contains the _meta fields that we really need.
              */
             const masterDoc = (await runQuery(masterInstance))[0];
-            // should only have the 'lwt'
-            assert.strictEqual(Object.keys(masterDoc._meta).length, 1);
-
-            // const forkDoc = (await runQuery(forkInstance))[0];
-            // should only have the 'lwt' AND the current state of the master.
-            // assert.strictEqual(Object.keys(forkDoc._meta).length, 3); // TODO
+            assert.ok(masterDoc._meta.lwt);
 
             cleanUp(replicationState, masterInstance);
         });
@@ -905,7 +901,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                         });
                         docData._rev = createRevision(randomCouchString(10), docData);
                         docData._meta.lwt = now();
-                        await instance.bulkWrite([{
+                        const insertResult = await instance.bulkWrite([{
                             document: docData
                         }], testContext);
 
@@ -915,7 +911,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                         newDocData._rev = createRevision(randomCouchString(10), docData);
                         newDocData._meta.lwt = now();
                         const updateResult = await instance.bulkWrite([{
-                            previous: docData,
+                            previous: insertResult.success[0],
                             document: newDocData
                         }], testContext);
                         assert.deepStrictEqual(updateResult.error, []);

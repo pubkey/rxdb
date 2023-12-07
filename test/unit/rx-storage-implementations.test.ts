@@ -61,6 +61,7 @@ import {
     EXAMPLE_REVISION_4
 } from '../helper/revisions.ts';
 import { compressObject } from 'jsonschema-key-compression';
+import { assertEqualDocumentData } from '../helper/test-util.ts';
 
 addRxPlugin(RxDBQueryBuilderPlugin);
 
@@ -292,7 +293,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
 
                 assert.deepStrictEqual(writeResponse.error, []);
                 const first = writeResponse.success[0];
-                assert.deepStrictEqual(docData, first);
+                assertEqualDocumentData(docData, first);
                 storageInstance.close();
             });
             it('should error on conflict', async () => {
@@ -438,7 +439,6 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 assert.deepStrictEqual(insertResponse.error, []);
                 const first = insertResponse.success[0];
 
-
                 // make an update
                 const updateData = Object.assign({}, insertData, {
                     value: 'barfoo2',
@@ -449,7 +449,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 });
                 const updateResponse = await storageInstance.bulkWrite(
                     [{
-                        previous: insertData,
+                        previous: insertResponse.success[0],
                         document: updateData
                     }],
                     testContext
@@ -459,7 +459,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 // make the delete
                 const deleteResponse = await storageInstance.bulkWrite(
                     [{
-                        previous: updateData,
+                        previous: updateResponse.success[0],
                         document: Object.assign({}, first, {
                             value: 'barfoo_deleted',
                             _deleted: true,
@@ -766,7 +766,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 assert.deepStrictEqual(writeResponse.error, []);
 
                 const getDocFromDb = await storageInstance.findDocumentsById([docData.id], false);
-                assert.deepStrictEqual(
+                assertEqualDocumentData(
                     getDocFromDb[0],
                     compressedDocData
                 );
@@ -815,7 +815,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
 
                 const res2 = await storageInstance.bulkWrite(
                     [{
-                        previous: docData,
+                        previous: res1.success[0],
                         document: clone(newDocData)
                     }],
                     testContext
@@ -832,7 +832,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
 
                 const res3 = await storageInstance.bulkWrite(
                     [{
-                        previous: docData,
+                        previous: res2.success[0],
                         document: clone(newDocData)
                     }],
                     testContext
@@ -936,7 +936,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 updated._rev = EXAMPLE_REVISION_4;
                 const updateResponse = await storageInstance.bulkWrite(
                     [{
-                        previous: docData,
+                        previous: insertResponse.success[0],
                         document: updated
                     }],
                     testContext
@@ -1892,7 +1892,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
 
                 const found = await storageInstance.findDocumentsById(['foobar'], false);
                 const foundDoc = found[0];
-                assert.deepStrictEqual(foundDoc, docData);
+                assertEqualDocumentData(foundDoc, docData);
 
                 storageInstance.close();
             });

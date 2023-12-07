@@ -34,3 +34,9 @@ export function getRxStorageDenoKV(
     const storage = new RxStorageDenoKV(settings);
     return storage;
 }
+
+
+export * from './denokv-helper.ts';
+export * from './denokv-types.ts';
+export * from './denokv-query.ts';
+export * from './rx-storage-instance-denokv.ts';

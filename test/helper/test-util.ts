@@ -1,6 +1,6 @@
 import type { Func } from 'mocha';
 import assert from 'assert';
-import { RxCollection, requestIdlePromise } from '../../plugins/core/index.mjs';
+import { RxCollection, RxDocumentData, deepEqual, requestIdlePromise } from '../../plugins/core/index.mjs';
 import { RxReplicationState } from '../../plugins/replication/index.mjs';
 
 export function testMultipleTimes(times: number, title: string, test: Func) {
@@ -47,4 +47,24 @@ export function ensureReplicationHasNoErrors(replicationState: RxReplicationStat
         }
         throw err;
     });
+}
+
+/**
+ * Ensure equal document states by ignoring the _meta value.
+ * This helps in tests with storage implementations
+ * that add additional _meta fields.
+ */
+export function assertEqualDocumentData<RxDocType>(
+    doc1: RxDocumentData<RxDocType>,
+    doc2: RxDocumentData<RxDocType>
+) {
+    const withoutMeta1 = Object.assign({}, doc1, { _meta: {} });
+    const withoutMeta2 = Object.assign({}, doc2, { _meta: {} });
+    if (!deepEqual(withoutMeta1, withoutMeta2)) {
+        console.dir({
+            withoutMeta1,
+            withoutMeta2
+        });
+        throw new Error('assertEqualDocumentData(): Not Equal');
+    }
 }

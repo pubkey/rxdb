@@ -11,7 +11,7 @@ import type {
 import { ensureNotFalsy } from '../../plugins/utils/index.ts';
 import { getQueryMatcher, getSortComparator } from '../../rx-query-helper.ts';
 import { RxStorageInstanceDenoKV } from "./rx-storage-instance-denokv.ts";
-import { DENOKV_DOCUMENT_ROOT_PATH, getDenoKVIndexName } from "./denokv-helper.ts";
+import { DENOKV_DOCUMENT_ROOT_PATH, denoKvRowToDocument, getDenoKVIndexName } from "./denokv-helper.ts";
 import type { DenoKVPreparedQuery } from "./denokv-types.ts";
 
 export async function queryDenoKV<RxDocType>(
@@ -84,7 +84,7 @@ export async function queryDenoKV<RxDocType>(
         if (singleDocResult.value) {
             const docId: string = singleDocResult.value;
             const docDataResult = await kv.get([instance.keySpace, DENOKV_DOCUMENT_ROOT_PATH, docId], instance.kvOptions);
-            const docData = ensureNotFalsy(docDataResult.value);
+            const docData = denoKvRowToDocument<RxDocType>(docDataResult);
             if (!queryMatcher || queryMatcher(docData)) {
                 result.push(docData);
             }
@@ -106,7 +106,7 @@ export async function queryDenoKV<RxDocType>(
     for await (const indexDocEntry of range) {
         const docId = indexDocEntry.value;
         const docDataResult = await kv.get([instance.keySpace, DENOKV_DOCUMENT_ROOT_PATH, docId], instance.kvOptions);
-        const docData = ensureNotFalsy(docDataResult.value);
+        const docData = denoKvRowToDocument<RxDocType>(docDataResult);
         if (!queryMatcher || queryMatcher(docData)) {
             result.push(docData);
         }

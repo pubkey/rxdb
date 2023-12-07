@@ -209,10 +209,13 @@ export function modifierFromPublicToInternal<RxDocType>(
 }
 
 
+/**
+ * From a list of document states,
+ * returns the newest one, based on revision.
+ */
 export function findNewestOfDocumentStates<RxDocType>(
     docs: RxDocumentData<RxDocType>[]
 ): RxDocumentData<RxDocType> {
-
     let newest = docs[0];
     let newestRevisionHeight = parseRevision(newest._rev).height;
     docs.forEach(doc => {
