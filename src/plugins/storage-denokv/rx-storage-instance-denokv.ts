@@ -90,6 +90,7 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
     }
 
     async bulkWrite(documentWrites: BulkWriteRow<RxDocType>[], context: string): Promise<RxStorageBulkWriteResponse<RxDocType>> {
+        console.log('DNEOKV.bulkWrite()');
         const kv = await this.kvPromise;
         const primaryPath = this.primaryPath;
         const ret: RxStorageBulkWriteResponse<RxDocType> = {
@@ -214,7 +215,9 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
 
                 // }
 
-                ret.success.forEach(d => {
+                ret.success.map(d => {
+                    d = flatClone(d);
+                    d._meta = flatClone(d._meta);
                     d._meta[DENOKV_VERSION_META_FLAG] = newVersionStamp;
                 })
 
@@ -241,6 +244,10 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
                 }
             }
         }
+
+        console.log('DENO.bulkWrite() innerst return:');
+        console.log(JSON.stringify(ret, null, 4));
+
         return ret;
     }
     async findDocumentsById(ids: string[], withDeleted: boolean): Promise<RxDocumentData<RxDocType>[]> {

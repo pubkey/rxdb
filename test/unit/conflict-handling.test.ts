@@ -19,6 +19,9 @@ import { HumanDocumentType } from '../helper/schemas.ts';
 config.parallel('conflict-handling.test.js', () => {
     describe('RxStorageInterface', () => {
         it('should resolve the emitted conflict of conflictResultionTasks()', async () => {
+            if (config.storage.name !== 'memory') {
+                return;
+            }
             const db = await createRxDatabase({
                 name: randomCouchString(10),
                 storage: getRxStorageMemory(),

@@ -292,7 +292,11 @@ config.parallel('encryption.test.ts', () => {
             return;
         }
         it('replication state meta should not contain a secret in cleartext', async () => {
-            if (config.storage.hasEncryption) {
+            if (
+                config.storage.hasEncryption ||
+                // this test deeply reaches into the internals of the memory storage
+                config.storage.name !== 'memory'
+            ) {
                 return;
             }
             const clientCollection = await createEncryptedCollection(0, getRxStorageMemory());

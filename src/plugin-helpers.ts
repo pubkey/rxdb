@@ -212,7 +212,13 @@ export function wrapRxStorageInstance<RxDocType>(
                 })
             );
 
+            console.log('--- BEFORE!!');
+            console.log(JSON.stringify(useRows, null, 4));
             const writeResult = await instance.bulkWrite(useRows, context);
+
+            console.log('WRTIE RESULT IN STORAGE WRAPPER:');
+            console.log(JSON.stringify(writeResult, null, 4));
+
             const ret: RxStorageBulkWriteResponse<RxDocType> = {
                 success: [],
                 error: []
