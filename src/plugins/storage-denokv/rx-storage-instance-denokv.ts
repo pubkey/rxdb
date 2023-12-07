@@ -24,7 +24,7 @@ import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper.ts';
 import { addRxStorageMultiInstanceSupport } from '../../rx-storage-multiinstance.ts';
 import type { DenoKVIndexMeta, DenoKVPreparedQuery, DenoKVSettings, DenoKVStorageInternals } from './denokv-types.ts';
 import { RxStorageDenoKV } from './index.ts';
-import { CLEANUP_INDEX, DENOKV_DOCUMENT_ROOT_PATH, RX_STORAGE_NAME_DENOKV, getDenoGlobal, getDenoKVIndexName } from "./denokv-helper.ts";
+import { CLEANUP_INDEX, DENOKV_DOCUMENT_ROOT_PATH, DENOKV_VERSION_META_FLAG, RX_STORAGE_NAME_DENOKV, denoKvRowToDocument, getDenoGlobal, getDenoKVIndexName } from "./denokv-helper.ts";
 import { getIndexableStringMonad, getStartIndexStringFromLowerBound, changeIndexableStringByOneQuantum } from "../../custom-index.ts";
 import { appendToArray, batchArray, lastOfArray, toArray } from "../utils/utils-array.ts";
 import { ensureNotFalsy } from "../utils/utils-other.ts";
@@ -97,6 +97,21 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
             error: []
         };
 
+
+        console.log('BULK WRITE:::');
+        console.log(JSON.stringify(documentWrites, null, 4));
+
+        // TODO remove this check when everything works
+        documentWrites.forEach(r => {
+            if (r.previous && !r.previous._meta[DENOKV_VERSION_META_FLAG]) {
+                console.error('PREVIOUS DENO META NOT SET:');
+                console.log(JSON.stringify(r, null, 4));
+                const err = new Error('previous deno meta not set');
+                console.log(err.stack);
+                throw err;
+            }
+        });
+
         const batches = batchArray(documentWrites, ensureNotFalsy(this.settings.batchSize));
 
         /**
@@ -124,10 +139,10 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
                             })
                         );
                         docsResult.map((row: any) => {
-                            const docData = row.value;
-                            if (!docData) {
+                            if (!row.value) {
                                 return;
                             }
+                            const docData = denoKvRowToDocument<RxDocType>(row);
                             const docId: string = docData[primaryPath] as any;
                             docsInDB.set(docId, docData);
                         });
@@ -179,8 +194,40 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
                 });
 
                 const txResult = await tx.commit();
+                console.dir(txResult);
+                const newVersionStamp = txResult.versionstamp;
+
+                // if (ret.success.length > 1 && ret.success.length < 10 && txResult.ok) {
+                //     console.log('--------------------------');
+                //     console.dir(txResult);
+                //     ret.success.map(d => d[primaryPath])
+
+
+                //     const checkAfterIds = documentWrites.slice(0, 10);
+                //     const docsResult = await kv.getMany(
+                //         checkAfterIds.map(writeRow => {
+                //             const docId: string = writeRow.document[primaryPath] as any;
+                //             return [this.keySpace, DENOKV_DOCUMENT_ROOT_PATH, docId];
+                //         })
+                //     );
+                //     console.log(JSON.stringify(docsResult, null, 4));
+
+                // }
+
+                ret.success.forEach(d => {
+                    d._meta[DENOKV_VERSION_META_FLAG] = newVersionStamp;
+                })
+
                 if (txResult.ok) {
                     appendToArray(ret.error, categorized.errors);
+
+                    categorized.eventBulk.events.forEach(ev => {
+                        ev.documentData._meta[DENOKV_VERSION_META_FLAG] = newVersionStamp;
+                        if (ev.previousDocumentData) {
+                            // ev.previousDocumentData._meta[DENOKV_VERSION_META_FLAG] = newVersionStamp;
+                        }
+                    });
+
                     if (categorized.eventBulk.events.length > 0) {
                         const lastState = ensureNotFalsy(categorized.newestRow).document;
                         categorized.eventBulk.checkpoint = {
@@ -203,7 +250,10 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
             ids.map(async (docId) => {
                 const kvKey = [this.keySpace, DENOKV_DOCUMENT_ROOT_PATH, docId];
                 const findSingleResult = await kv.get(kvKey, this.kvOptions);
-                const docInDb = findSingleResult.value;
+                if (!findSingleResult.value) {
+                    return;
+                }
+                const docInDb = denoKvRowToDocument<RxDocType>(findSingleResult);
                 if (
                     docInDb &&
                     (
@@ -303,7 +353,7 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
                 for (const batch of batches) {
                     const docs = await kv.getMany(batch);
                     docs.forEach((row: any) => {
-                        const docData = row.value;
+                        const docData = denoKvRowToDocument<RxDocType>(row);
                         result.push(docData as any);
                     });
                 }
@@ -371,7 +421,7 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
             if (!docDataResult.value) {
                 continue;
             }
-            const docData = ensureNotFalsy(docDataResult.value);
+            const docData = denoKvRowToDocument<RxDocType>(docDataResult);
             if (
                 !docData._deleted ||
                 docData._meta.lwt > maxDeletionTime

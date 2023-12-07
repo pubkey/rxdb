@@ -424,6 +424,13 @@ export function createRxDocumentConstructor(proto = basePrototype) {
         collection: RxCollection,
         docData: RxDocumentData<any>
     ) {
+
+        // TODO remove this check when everything works
+        if (docData && !docData._meta.denokv) {
+            console.log(JSON.stringify(docData, null, 4));
+            throw new Error('DO NOT CREATE DOC LIKE THIS WITHOUT META.denokv');
+        }
+
         this.collection = collection;
 
         // assume that this is always equal to the doc-data in the database

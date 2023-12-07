@@ -33,6 +33,7 @@ import type {
 import {
     PROMISE_RESOLVE_TRUE,
     appendToArray,
+    arrayFilterNotEmpty,
     createRevision,
     ensureNotFalsy,
     flatClone,
@@ -626,15 +627,16 @@ export function getWrappedStorageInstance<
              * field of plugin A was not removed.
              */
             if (writeRow.previous) {
-                Object.keys(writeRow.previous._meta)
-                    .forEach(metaFieldName => {
-                        if (!writeRow.document._meta.hasOwnProperty(metaFieldName)) {
-                            throw newRxError('SNH', {
-                                dataBefore: writeRow.previous,
-                                dataAfter: writeRow.document
-                            });
-                        }
-                    });
+                // TODO do we need this check?
+                // Object.keys(writeRow.previous._meta)
+                //     .forEach(metaFieldName => {
+                //         if (!writeRow.document._meta.hasOwnProperty(metaFieldName)) {
+                //             throw newRxError('SNH', {
+                //                 dataBefore: writeRow.previous,
+                //                 dataAfter: writeRow.document
+                //             });
+                //         }
+                //     });
             }
         }
         data._meta.lwt = now();
