@@ -25,7 +25,6 @@ import {
     fillWithDefaultSettings,
     fillObjectWithDefaults,
     defaultHashSha256,
-    lastOfArray,
     ensureNotFalsy
 } from '../../plugins/core/index.mjs';
 

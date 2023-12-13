@@ -264,59 +264,6 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
         const attachment = await dbs.attachments.get(attachmentMapKey(documentId, attachmentId));
         return attachment.data;
     }
-    async getChangedDocumentsSince(limit: number, checkpoint?: RxStorageDefaultCheckpoint): Promise<{ documents: RxDocumentData<RxDocType>[]; checkpoint: RxStorageDefaultCheckpoint; }> {
-        const {
-            keySelector,
-            StreamingMode
-        } = require('foundationdb');
-        const dbs = await this.internals.dbsPromise;
-        const index = [
-            '_meta.lwt',
-            this.primaryPath as any
-        ];
-        const indexName = getFoundationDBIndexName(index);
-        const indexMeta = dbs.indexes[indexName];
-        let lowerBoundString = '';
-        if (checkpoint) {
-            const checkpointPartialDoc: any = {
-                [this.primaryPath]: checkpoint.id,
-                _meta: {
-                    lwt: checkpoint.lwt
-                }
-            };
-            lowerBoundString = indexMeta.getIndexableString(checkpointPartialDoc);
-        }
-        const result: RxDocumentData<RxDocType>[] = await dbs.root.doTransaction(async (tx: any) => {
-            const innerResult: RxDocumentData<RxDocType>[] = [];
-            const indexTx = tx.at(indexMeta.db.subspace);
-            const mainTx = tx.at(dbs.main.subspace);
-            const range = await indexTx.getRangeAll(
-                keySelector.firstGreaterThan(lowerBoundString),
-                INDEX_MAX,
-                {
-                    limit,
-                    streamingMode: StreamingMode.Exact
-                }
-            );
-            const docIds = range.map((row: string[]) => row[1]);
-            const docsData: RxDocumentData<RxDocType>[] = await Promise.all(
-                docIds.map((docId: string) => mainTx.get(docId))
-            );
-            appendToArray(innerResult, docsData);
-            return innerResult;
-        });
-        const lastDoc = lastOfArray(result);
-        return {
-            documents: result,
-            checkpoint: lastDoc ? {
-                id: lastDoc[this.primaryPath] as any,
-                lwt: lastDoc._meta.lwt
-            } : checkpoint ? checkpoint : {
-                id: '',
-                lwt: 0
-            }
-        };
-    }
     changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocType>, RxStorageDefaultCheckpoint>> {
         return this.changes$.asObservable();
     }

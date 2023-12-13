@@ -13,8 +13,7 @@ import {
     normalizeMangoQuery,
     INDEX_MAX,
     lastOfArray,
-    INDEX_MIN,
-    getDefaultIndex
+    INDEX_MIN
 } from '../../plugins/core/index.mjs';
 
 
