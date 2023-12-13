@@ -270,27 +270,6 @@ export function getLokiSortComparator<RxDocType>(
 }
 
 
-export function patchLokiJSQuery<RxDocType>(
-    mutateableQuery: FilledMangoQuery<RxDocType>
-) {
-    mutateableQuery = flatClone(mutateableQuery);
-    if (Object.keys(ensureNotFalsy(mutateableQuery.selector)).length > 0) {
-        mutateableQuery.selector = {
-            $and: [
-                {
-                    _deleted: false
-                },
-                mutateableQuery.selector
-            ]
-        } as any;
-    } else {
-        mutateableQuery.selector = {
-            _deleted: false
-        } as any;
-    }
-
-    return mutateableQuery;
-}
 
 export function getLokiLeaderElector(
     databaseInstanceToken: string,
