@@ -868,7 +868,7 @@ jobs:
       - uses: denoland/setup-deno@v1
         with:
           # https://github.com/denoland/deno/releases
-          deno-version: "1.38.0"
+          deno-version: "1.38.5"
       - name: run deno tests
         run: |
           sudo npm i -g cross-env
