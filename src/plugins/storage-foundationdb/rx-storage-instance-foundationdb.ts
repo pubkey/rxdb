@@ -464,7 +464,6 @@ export function createFoundationDBStorageInstance<RxDocType>(
         useIndexes.push([primaryPath]);
         const useIndexesFinal = useIndexes.map(index => {
             const indexAr = toArray(index);
-            indexAr.unshift('_deleted');
             return indexAr;
         });
         // used for `getChangedDocumentsSince()`
