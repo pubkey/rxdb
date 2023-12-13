@@ -153,7 +153,7 @@ export async function dexieQuery<RxDocType>(
                          * because we already have every relevant document.
                          */
                         if (
-                            queryPlan.sortFieldsSameAsIndexFields &&
+                            queryPlan.sortSatisfiedByIndex &&
                             rows.length === skipPlusLimit
                         ) {
                             res();
@@ -172,7 +172,7 @@ export async function dexieQuery<RxDocType>(
     );
 
 
-    if (!queryPlan.sortFieldsSameAsIndexFields) {
+    if (!queryPlan.sortSatisfiedByIndex) {
         const sortComparator = getSortComparator(instance.schema, preparedQuery.query);
         rows = rows.sort(sortComparator);
     }

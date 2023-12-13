@@ -24,7 +24,6 @@ import type {
     RxDocumentData,
     RxReplicationHandler,
     RxReplicationWriteToMasterRow,
-    RxStorage,
     RxStorageInstance,
     RxStorageInstanceReplicationInput,
     RxStorageInstanceReplicationState,
@@ -166,7 +165,6 @@ export async function awaitRxStorageReplicationIdle(
 
 
 export function rxStorageInstanceToReplicationHandler<RxDocType, MasterCheckpointType>(
-    storage: RxStorage<any, any>,
     instance: RxStorageInstance<RxDocType, any, any, MasterCheckpointType>,
     conflictHandler: RxConflictHandler<RxDocType>,
     databaseInstanceToken: string,
@@ -216,7 +214,6 @@ export function rxStorageInstanceToReplicationHandler<RxDocType, MasterCheckpoin
         ) {
             return getChangedDocumentsSince(
                 primaryPath,
-                storage,
                 instance,
                 batchSize,
                 checkpoint

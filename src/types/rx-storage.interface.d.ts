@@ -72,12 +72,12 @@ export interface RxStorage<Internals, InstanceCreationOptions> {
  * so we do not have to do many if-field-exist tests in the internals.
  */
 export type FilledMangoQuery<RxDocType> = Override<
-    MangoQuery<RxDocType>,
+    MangoQuery<RxDocumentData<RxDocType>>,
     {
         /**
          * The selector is required here.
          */
-        selector: MangoQuerySelector<RxDocType>;
+        selector: MangoQuerySelector<RxDocumentData<RxDocType>>;
 
         /**
          * In contrast to the user-provided MangoQuery,
@@ -85,7 +85,7 @@ export type FilledMangoQuery<RxDocType> = Override<
          * RxDB has to ensure that the primary key is always
          * part of the sort params.
          */
-        sort: MangoQuerySortPart<RxDocType>[];
+        sort: MangoQuerySortPart<RxDocumentData<RxDocType>>[];
 
         /**
          * In the normalized mango query,

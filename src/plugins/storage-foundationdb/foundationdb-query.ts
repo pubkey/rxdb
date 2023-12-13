@@ -23,7 +23,7 @@ export async function queryFoundationDB<RxDocType>(
     const limit = query.limit ? query.limit : Infinity;
     const skipPlusLimit = skip + limit;
     const queryPlanFields: string[] = queryPlan.index;
-    const mustManuallyResort = !queryPlan.sortFieldsSameAsIndexFields;
+    const mustManuallyResort = !queryPlan.sortSatisfiedByIndex;
 
 
     let queryMatcher: QueryMatcher<RxDocumentData<RxDocType>> | false = false;

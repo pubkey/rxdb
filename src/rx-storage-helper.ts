@@ -46,6 +46,7 @@ import {
     randomCouchString
 } from './plugins/utils/index.ts';
 import { Observable, filter, map, startWith, switchMap } from 'rxjs';
+import { prepareQuery } from './rx-query.ts';
 
 export const INTERNAL_STORAGE_NAME = '_rxdb_internal';
 export const RX_DATABASE_LOCAL_DOCS_STORAGE_NAME = 'rxdatabase_storage_local';
@@ -865,7 +866,6 @@ export function hasEncryption(jsonSchema: RxJsonSchema<any>): boolean {
 
 export async function getChangedDocumentsSince<RxDocType, CheckpointType>(
     primaryPath: string,
-    storage: RxStorage<any, any>,
     storageInstance: RxStorageInstance<RxDocType, any, any, CheckpointType>,
     limit: number,
     checkpoint?: CheckpointType
@@ -884,7 +884,7 @@ export async function getChangedDocumentsSince<RxDocType, CheckpointType>(
 
     const sinceLwt = checkpoint ? (checkpoint as unknown as RxStorageDefaultCheckpoint).lwt : RX_META_LWT_MINIMUM;
     const sinceId = checkpoint ? (checkpoint as unknown as RxStorageDefaultCheckpoint).id : '';
-    const query = storage.statics.prepareQuery<RxDocumentData<any>>(
+    const query = prepareQuery<RxDocumentData<any>>(
         storageInstance.schema,
         {
             selector: {

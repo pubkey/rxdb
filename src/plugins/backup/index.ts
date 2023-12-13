@@ -146,7 +146,6 @@ export class RxBackupState {
                         await this.database.requestIdlePromise();
                         const changesResult = await getChangedDocumentsSince(
                             collection.schema.primaryPath,
-                            this.database.storage,
                             collection.storageInstance,
                             this.options.batchSize ? this.options.batchSize : 0,
                             lastCheckpoint
