@@ -37,14 +37,11 @@ export async function queryDenoKV<RxDocType>(
 
     const kv = await instance.kvPromise;
 
-
     const indexForName = queryPlanFields.slice(0);
-    indexForName.unshift('_deleted');
     const indexName = getDenoKVIndexName(indexForName);
     const indexMeta = ensureNotFalsy(instance.internals.indexes[indexName]);
 
     let lowerBound: any[] = queryPlan.startKeys;
-    lowerBound = [false].concat(lowerBound);
     let lowerBoundString = getStartIndexStringFromLowerBound(
         instance.schema,
         indexForName,
@@ -56,15 +53,15 @@ export async function queryDenoKV<RxDocType>(
     }
 
     let upperBound: any[] = queryPlan.endKeys;
-    upperBound = [false].concat(upperBound);
     let upperBoundString = getStartIndexStringFromUpperBound(
         instance.schema,
         indexForName,
         upperBound,
         queryPlan.inclusiveEnd
     );
-    if (!queryPlan.inclusiveEnd) {
-        upperBoundString = changeIndexableStringByOneQuantum(upperBoundString, -1);
+
+    if (queryPlan.inclusiveEnd) {
+        upperBoundString = changeIndexableStringByOneQuantum(upperBoundString, +1);
     }
 
 

@@ -258,70 +258,6 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
     getAttachmentData(documentId: string, attachmentId: string, digest: string): Promise<string> {
         throw new Error("Method not implemented.");
     }
-    async getChangedDocumentsSince(limit: number, checkpoint?: RxStorageDefaultCheckpoint | undefined): Promise<{ documents: RxDocumentData<RxDocType>[]; checkpoint: RxStorageDefaultCheckpoint; }> {
-        return this.retryUntilNoWriteInBetween(
-            async () => {
-                const kv = await this.kvPromise;
-                const index = [
-                    '_meta.lwt',
-                    this.primaryPath as any
-                ];
-                const indexName = getDenoKVIndexName(index);
-                const indexMeta = this.internals.indexes[indexName];
-                let lowerBoundString = '';
-                if (checkpoint) {
-                    const checkpointPartialDoc: any = {
-                        [this.primaryPath]: checkpoint.id,
-                        _meta: {
-                            lwt: checkpoint.lwt
-                        }
-                    };
-                    lowerBoundString = indexMeta.getIndexableString(checkpointPartialDoc);
-                    lowerBoundString = changeIndexableStringByOneQuantum(lowerBoundString, 1);
-                }
-
-                const range = kv.list({
-                    start: [this.keySpace, indexMeta.indexId, lowerBoundString],
-                    end: [this.keySpace, indexMeta.indexId, INDEX_MAX]
-                }, {
-                    consistency: this.settings.consistencyLevel,
-                    limit,
-                    batchSize: this.settings.batchSize
-                });
-                const docIds: any[] = [];
-                for await (const row of range) {
-                    const docId = row.value;
-                    docIds.push([this.keySpace, DENOKV_DOCUMENT_ROOT_PATH, docId]);
-                }
-
-                /**
-                 * We have to run in batches because without it says
-                 * "TypeError: too many ranges (max 10)"
-                 */
-                const batches = batchArray(docIds, 10);
-                const result: RxDocumentData<RxDocType>[] = [];
-
-                for (const batch of batches) {
-                    const docs = await kv.getMany(batch);
-                    docs.forEach((row: any) => {
-                        const docData = row.value;
-                        result.push(docData as any);
-                    });
-                }
-
-                const lastDoc = lastOfArray(result);
-                return {
-                    documents: result,
-                    checkpoint: lastDoc ? {
-                        id: lastDoc[this.primaryPath] as any,
-                        lwt: lastDoc._meta.lwt
-                    } : checkpoint ? checkpoint : {
-                        id: '',
-                        lwt: 0
-                    }
-                };
-            });
-    }
     changeStream() {
         return this.changes$.asObservable();
     }
@@ -449,7 +385,6 @@ export async function createDenoKVStorageInstance<RxDocType>(
     useIndexes.push([primaryPath]);
     const useIndexesFinal = useIndexes.map(index => {
         const indexAr = toArray(index);
-        indexAr.unshift('_deleted');
         return indexAr;
     });
     // used for `getChangedDocumentsSince()`

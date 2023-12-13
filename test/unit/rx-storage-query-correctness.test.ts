@@ -144,7 +144,11 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                     assert.deepStrictEqual(resultStaticsIds, queryData.expectedResultDocIds);
                 } catch (err) {
                     console.log('WRONG QUERY RESULTS FROM STATICS: ' + queryData.info);
-                    console.dir(queryData);
+                    console.dir({
+                        queryData,
+                        resultStaticsIds
+                    });
+
                     throw err;
                 }
 
@@ -172,7 +176,10 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                     assert.deepStrictEqual(resultIds, queryData.expectedResultDocIds);
                 } catch (err) {
                     console.log('WRONG QUERY RESULTS FROM RxStorageInstance.query(): ' + queryData.info);
-                    console.dir(queryData);
+                    console.dir({
+                        resultIds,
+                        queryData
+                    });
                     throw err;
                 }
 
@@ -966,7 +973,7 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
         },
         queries: [
             {
-                info: '$eq primary key',
+                info: '$eq primary key 2',
                 query: {
                     selector: {
                         id: {
