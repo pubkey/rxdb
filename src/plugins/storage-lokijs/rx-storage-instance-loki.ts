@@ -220,12 +220,12 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         return ret;
     }
     async query(preparedQueryOriginal: PreparedQuery<RxDocType>): Promise<RxStorageQueryResult<RxDocType>> {
-        let preparedQuery = patchLokiJSQuery(preparedQueryOriginal.query);
         const localState = await mustUseLocalState(this);
         if (!localState) {
-            return requestRemoteInstance(this, 'query', [preparedQuery]);
+            return requestRemoteInstance(this, 'query', [preparedQueryOriginal]);
         }
 
+        let preparedQuery = patchLokiJSQuery(ensureNotFalsy(preparedQueryOriginal.query));
         if (preparedQuery.selector) {
             preparedQuery = flatClone(preparedQuery);
             preparedQuery.selector = transformRegexToRegExp(preparedQuery.selector);

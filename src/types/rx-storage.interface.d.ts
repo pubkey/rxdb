@@ -228,12 +228,6 @@ export interface RxStorageInstance<
      * rx-storage implementation.
      */
     query(
-        /**
-         * Here we get the result of this.prepareQuery()
-         * instead of the plain mango query.
-         * This makes it easier to have good performance
-         * when transformations of the query must be done.
-         */
         preparedQuery: PreparedQuery<RxDocType>
     ): Promise<RxStorageQueryResult<RxDocType>>;
 

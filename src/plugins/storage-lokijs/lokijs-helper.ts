@@ -1,4 +1,7 @@
-import { createLokiLocalState, RxStorageInstanceLoki } from './rx-storage-instance-loki.ts';
+import {
+    createLokiLocalState,
+    RxStorageInstanceLoki
+} from './rx-storage-instance-loki.ts';
 import Loki from 'lokijs';
 import type {
     DeterministicSortComparator,
