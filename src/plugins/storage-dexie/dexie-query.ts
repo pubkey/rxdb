@@ -1,4 +1,4 @@
-import { INDEX_MIN } from '../../query-planner.ts';
+import { INDEX_MAX, INDEX_MIN } from '../../query-planner.ts';
 import { getQueryMatcher, getSortComparator } from '../../rx-query-helper.ts';
 import type {
     PreparedQuery,
@@ -27,8 +27,12 @@ function rangeFieldToBooleanSubstitute(
     fieldName: string,
     value: any
 ) {
+    console.log('rangeFieldToBooleanSubstitute: ' + fieldName);
     if (booleanIndexes.includes(fieldName)) {
-        const newValue = value ? '1' : '0';
+        console.log('xxxx yes');
+        console.dir(value);
+        const newValue = value === INDEX_MAX || value === true ? '1' : '0';
+        console.dir(newValue);
         return newValue;
     } else {
         return value;
@@ -62,8 +66,8 @@ export function getKeyRangeByQueryPlan(
         })
         .map(mapKeyForKeyRange);
 
-    startKeys.unshift('0');
-    endKeys.unshift('0');
+    console.log('xxx new keyrange:');
+    console.dir({ queryPlan, startKeys, endKeys, booleanIndexes });
 
     const keyRange = IDBKeyRange.bound(
         startKeys,
@@ -105,6 +109,14 @@ export async function dexieQuery<RxDocType>(
 
     const queryPlanFields: string[] = queryPlan.index;
 
+
+    console.log('query:: ');
+    console.dir({
+        preparedQuery,
+        schema: instance.schema
+    });
+    console.dir(keyRange);
+
     let rows: any[] = [];
     await state.dexieDb.transaction(
         'r',
@@ -124,11 +136,12 @@ export async function dexieQuery<RxDocType>(
             const store = tx.objectStore(DEXIE_DOCS_TABLE_NAME);
             let index: any;
             let indexName: string;
-            indexName = '[_deleted+' +
+            indexName = '[' +
                 queryPlanFields
                     .map(field => dexieReplaceIfStartsWithPipe(field))
                     .join('+')
                 + ']';
+            console.log('indexName: ' + indexName);
             index = store.index(indexName);
 
 
@@ -139,10 +152,9 @@ export async function dexieQuery<RxDocType>(
                     if (cursor) {
                         // We have a record in cursor.value
                         const docData = fromDexieToStorage<RxDocType>(state.booleanIndexes, cursor.value);
-                        if (
-                            !docData._deleted &&
-                            (!queryMatcher || queryMatcher(docData))
-                        ) {
+                        console.log('curseroror');
+                        console.dir(docData);
+                        if (!queryMatcher || queryMatcher(docData)) {
                             rows.push(docData);
                         }
 
@@ -224,7 +236,7 @@ export async function dexieCount<RxDocType>(
             const store = tx.objectStore(DEXIE_DOCS_TABLE_NAME);
             let index: any;
             let indexName: string;
-            indexName = '[_deleted+' +
+            indexName = '[' +
                 queryPlanFields
                     .map(field => dexieReplaceIfStartsWithPipe(field))
                     .join('+')

@@ -141,6 +141,8 @@ export async function migrateCollection<RxDocType>(
          */
         const queryResult = await oldStorageInstance.query(preparedQuery);
         const docs = queryResult.documents;
+        console.log('resuiltös:');
+        console.dir(docs);
         if (docs.length === 0) {
             /**
              * No more documents to migrate

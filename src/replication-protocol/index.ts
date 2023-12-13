@@ -213,7 +213,6 @@ export function rxStorageInstanceToReplicationHandler<RxDocType, MasterCheckpoin
             batchSize
         ) {
             return getChangedDocumentsSince(
-                primaryPath,
                 instance,
                 batchSize,
                 checkpoint

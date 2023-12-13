@@ -33,7 +33,8 @@ import {
     now,
     getFromMapOrThrow,
     RxCollectionCreator,
-    parseRevision
+    parseRevision,
+    getChangedDocumentsSince
 } from '../../plugins/core/index.mjs';
 
 import { RxDBUpdatePlugin } from '../../plugins/update/index.mjs';
@@ -1085,7 +1086,7 @@ describe('rx-collection.test.ts', () => {
                     /**
                      * Getting the changes in the other database should have an empty result.
                      */
-                    const changesResult = await db2['human-2'].storageInstance.getChangedDocumentsSince(10);
+                    const changesResult = await getChangedDocumentsSince(db2['human-2'].storageInstance, 10);
                     assert.strictEqual(changesResult.documents.length, 0);
 
                     db2.destroy();

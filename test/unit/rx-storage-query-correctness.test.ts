@@ -231,7 +231,8 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
         schema: withIndexes(schemas.human, [
             ['age'],
             ['age', 'firstName'],
-            ['firstName']
+            ['firstName'],
+            ['passportId']
         ]),
         queries: [
             {
@@ -355,7 +356,8 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
         schema: withIndexes(schemas.human, [
             ['age'],
             ['age', 'firstName'],
-            ['firstName']
+            ['firstName'],
+            ['passportId']
         ]),
         queries: [
             {

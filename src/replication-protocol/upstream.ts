@@ -137,7 +137,6 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
             }
 
             const upResult = await getChangedDocumentsSince(
-                state.primaryPath,
                 state.input.forkInstance,
                 state.input.pushBatchSize,
                 lastCheckpoint

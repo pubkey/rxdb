@@ -770,7 +770,7 @@ export function getWrappedStorageInstance<
         },
         getChangedDocumentsSince: !storageInstance.getChangedDocumentsSince ? undefined : (limit: number, checkpoint?: any) => {
             return database.lockedRun(
-                () => ensureNotFalsy(storageInstance.getChangedDocumentsSince)(ensureNotFalsy(limit), checkpoint)
+                () => ((storageInstance as any).getChangedDocumentsSince)(ensureNotFalsy(limit), checkpoint)
             );
         },
         cleanup(minDeletedTime: number) {
@@ -865,7 +865,6 @@ export function hasEncryption(jsonSchema: RxJsonSchema<any>): boolean {
 
 
 export async function getChangedDocumentsSince<RxDocType, CheckpointType>(
-    primaryPath: string,
     storageInstance: RxStorageInstance<RxDocType, any, any, CheckpointType>,
     limit: number,
     checkpoint?: CheckpointType
@@ -882,6 +881,11 @@ export async function getChangedDocumentsSince<RxDocType, CheckpointType>(
         return storageInstance.getChangedDocumentsSince(limit, checkpoint);
     }
 
+
+    console.log('getChangedDocumentsSince:()');
+    console.dir(checkpoint);
+
+    const primaryPath = getPrimaryFieldOfPrimaryKey(storageInstance.schema.primaryKey);
     const sinceLwt = checkpoint ? (checkpoint as unknown as RxStorageDefaultCheckpoint).lwt : RX_META_LWT_MINIMUM;
     const sinceId = checkpoint ? (checkpoint as unknown as RxStorageDefaultCheckpoint).id : '';
     const query = prepareQuery<RxDocumentData<any>>(

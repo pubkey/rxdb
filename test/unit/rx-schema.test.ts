@@ -25,7 +25,8 @@ import {
     fillWithDefaultSettings,
     fillObjectWithDefaults,
     defaultHashSha256,
-    lastOfArray
+    lastOfArray,
+    ensureNotFalsy
 } from '../../plugins/core/index.mjs';
 
 config.parallel('rx-schema.test.ts', () => {
@@ -573,7 +574,7 @@ config.parallel('rx-schema.test.ts', () => {
 
                 console.dir(normalizedSchema);
 
-                normalizedSchema.indexes.forEach(index => {
+                ensureNotFalsy(normalizedSchema.indexes).forEach(index => {
                     assert.ok(index.includes('id'));
                 });
             });
@@ -1001,7 +1002,8 @@ config.parallel('rx-schema.test.ts', () => {
             assert.deepStrictEqual(
                 [
                     ['_deleted', 'properties.name', 'id'],
-                    ['_deleted', 'properties.properties', 'id']
+                    ['_deleted', 'properties.properties', 'id'],
+                    ['_meta.lwt', 'id']
                 ],
                 collections.test.schema.indexes
             );

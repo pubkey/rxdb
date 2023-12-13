@@ -91,17 +91,6 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         public readonly options: Readonly<RxStorageMemoryInstanceCreationOptions>,
         public readonly settings: RxStorageMemorySettings
     ) {
-
-        // TODO remove this check
-        if (schema.indexes) {
-            schema.indexes.forEach(index => {
-                const indexAr = toArray(index);
-                if (indexAr[0] !== '_deleted') {
-                    throw new Error('index does not have deleted field');
-                }
-            });
-        }
-
         OPEN_MEMORY_INSTANCES.add(this);
         this.primaryPath = getPrimaryFieldOfPrimaryKey(this.schema.primaryKey);
     }
@@ -284,6 +273,10 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
     ): Promise<RxStorageQueryResult<RxDocType>> {
         this.ensurePersistence();
 
+
+        console.log('query():');
+        console.dir(preparedQuery);
+
         const queryPlan = preparedQuery.queryPlan;
         const query = preparedQuery.query;
 
@@ -394,66 +387,11 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         });
     }
 
-    getChangedDocumentsSince(
-        limit: number,
-        checkpoint?: RxStorageDefaultCheckpoint
-    ): Promise<{
-        documents: RxDocumentData<RxDocType>[];
-        checkpoint: RxStorageDefaultCheckpoint;
-    }> {
-        this.ensurePersistence();
-        const sinceLwt = checkpoint ? checkpoint.lwt : RX_META_LWT_MINIMUM;
-        const sinceId = checkpoint ? checkpoint.id : '';
-
-        const index = ['_meta.lwt', this.primaryPath as any];
-        const indexName = getMemoryIndexName(index);
-
-        const lowerBoundString = getStartIndexStringFromLowerBound(
-            this.schema,
-            ['_meta.lwt', this.primaryPath as any],
-            [
-                sinceLwt,
-                sinceId
-            ],
-            false
-        );
-
-        const docsWithIndex = this.internals.byIndex[indexName].docsWithIndex;
-        let indexOfLower = boundGT(
-            docsWithIndex,
-            {
-                indexString: lowerBoundString
-            } as any,
-            compareDocsWithIndex
-        );
-
-        // TODO use array.slice() so we do not have to iterate here
-        const rows: RxDocumentData<RxDocType>[] = [];
-        while (rows.length < limit && indexOfLower < docsWithIndex.length) {
-            const currentDoc = docsWithIndex[indexOfLower];
-            rows.push(currentDoc.doc);
-            indexOfLower++;
-        }
-
-        const lastDoc = lastOfArray(rows);
-        return Promise.resolve({
-            documents: rows,
-            checkpoint: lastDoc ? {
-                id: lastDoc[this.primaryPath] as any,
-                lwt: lastDoc._meta.lwt
-            } : checkpoint ? checkpoint : {
-                id: '',
-                lwt: 0
-            }
-        });
-    }
-
     cleanup(minimumDeletedTime: number): Promise<boolean> {
         this.ensurePersistence();
         const maxDeletionTime = now() - minimumDeletedTime;
         const index = ['_deleted', '_meta.lwt', this.primaryPath as any];
         const indexName = getMemoryIndexName(index);
-        console.log('cleanup index name_ ' + indexName);
         const docsWithIndex = this.internals.byIndex[indexName].docsWithIndex;
 
         const lowerBoundString = getStartIndexStringFromLowerBound(

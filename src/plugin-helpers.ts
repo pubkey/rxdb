@@ -19,7 +19,6 @@ import type {
     MaybePromise
 } from './types/index.d.ts';
 import {
-    ensureNotFalsy,
     flatClone,
     getFromMapOrCreate,
     requestIdleCallbackIfAvailable
@@ -274,12 +273,12 @@ export function wrapRxStorageInstance<RxDocType>(
                 });
         },
         getChangedDocumentsSince: !instance.getChangedDocumentsSince ? undefined : (limit, checkpoint) => {
-            return ensureNotFalsy(instance.getChangedDocumentsSince)(limit, checkpoint)
-                .then(async (result) => {
+            return ((instance as any).getChangedDocumentsSince)(limit, checkpoint)
+                .then(async (result: any) => {
                     return {
                         checkpoint: result.checkpoint,
                         documents: await Promise.all(
-                            result.documents.map(d => fromStorage(d))
+                            result.documents.map((d: any) => fromStorage(d))
                         )
                     };
                 });

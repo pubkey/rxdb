@@ -13,7 +13,8 @@ import {
     normalizeMangoQuery,
     INDEX_MAX,
     lastOfArray,
-    INDEX_MIN
+    INDEX_MIN,
+    getDefaultIndex
 } from '../../plugins/core/index.mjs';
 
 
@@ -94,7 +95,7 @@ config.parallel('query-planner.test.js', () => {
                 schema,
                 query
             );
-            assert.deepStrictEqual(queryPlan.index, ['_deleted', 'passportId']);
+            assert.deepStrictEqual(queryPlan.index, ['_meta.lwt', 'passportId']);
         });
         it('should respect the given index', () => {
             const customSetIndex = ['firstName'];
@@ -161,25 +162,6 @@ config.parallel('query-planner.test.js', () => {
 
             assert.strictEqual(lastOfArray(queryPlan.startKeys), INDEX_MAX);
             assert.strictEqual(lastOfArray(queryPlan.endKeys), INDEX_MIN);
-        });
-        it('should use the best plan for an equals comparison', () => {
-            const schema = getHumanSchemaWithIndexes([]);
-            const query = normalizeMangoQuery<HumanDocumentType>(
-                schema,
-                {
-                    selector: {
-                        passportId: 'asdf',
-                        _deleted: false
-                    }
-                }
-            );
-            const queryPlan = getQueryPlan(
-                schema,
-                query
-            );
-            assert.deepStrictEqual(queryPlan.index, ['_deleted', 'passportId']);
-            assert.deepStrictEqual(queryPlan.startKeys[1], 'asdf');
-            assert.deepStrictEqual(queryPlan.endKeys[1], 'asdf');
         });
     });
     describe('.isSelectorSatisfiedByIndex()', () => {
@@ -262,7 +244,7 @@ config.parallel('query-planner.test.js', () => {
                 schema,
                 query
             );
-            assert.deepStrictEqual(queryPlan.index, ['_deleted', 'passportId']);
+            assert.deepStrictEqual(queryPlan.index, ['_meta.lwt', 'passportId']);
         });
         it('should prefer the index that reduces the read-count by having a non-minimal startKey', () => {
             const schema = getHumanSchemaWithIndexes([
@@ -373,6 +355,7 @@ config.parallel('query-planner.test.js', () => {
             assert.deepStrictEqual(queryPlan.index, ['_deleted', 'firstName', 'age', 'passportId']);
         });
         it('should have set sortSatisfiedByIndex=false when order is desc', () => {
+            console.log(',,,,,,,,,,,,,,,,,,,,,,,,');
             const schema = getHumanSchemaWithIndexes([
                 ['firstName', 'age'],
                 ['age', 'firstName']
@@ -396,11 +379,6 @@ config.parallel('query-planner.test.js', () => {
 
             console.dir(queryPlan);
 
-            /**
-             * Because on a 'desc'-sorting no index can be used,
-             * it should use the default index.
-             */
-            assert.deepStrictEqual(queryPlan.index, ['_deleted', 'passportId']);
             assert.strictEqual(queryPlan.sortSatisfiedByIndex, false);
         });
     });

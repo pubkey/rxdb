@@ -376,6 +376,7 @@ testStorages.forEach(storages => {
                 // check new database
                 const newDocs = await col.find().exec();
                 assert.strictEqual(newDocs.length, docsAmount);
+
                 assert.strictEqual(handlerEmitted.length, batchesAmount);
                 const firstDoc = newDocs[0];
                 const newDocPlain = firstDoc.toJSON(true);

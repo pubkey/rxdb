@@ -199,7 +199,12 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
             'r',
             state.dexieTable,
             async () => {
+
+                console.log('find by id ' + deleted);
+                console.dir(ids);
+
                 const docsInDb = await getDocsInDb<RxDocType>(this.internals, ids);
+                console.dir(docsInDb);
                 docsInDb.forEach(documentInDb => {
                     if (
                         documentInDb &&
@@ -208,6 +213,8 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
                         ret.push(documentInDb);
                     }
                 });
+
+                console.dir(ret);
             });
         return ret;
     }
@@ -251,41 +258,6 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
         );
 
         return ret;
-    }
-
-    async getChangedDocumentsSince(
-        limit: number,
-        checkpoint?: RxStorageDefaultCheckpoint
-    ): Promise<{
-        documents: RxDocumentData<RxDocType>[];
-        checkpoint: RxStorageDefaultCheckpoint;
-    }> {
-        ensureNotClosed(this);
-        const sinceLwt = checkpoint ? checkpoint.lwt : RX_META_LWT_MINIMUM;
-        const sinceId = checkpoint ? checkpoint.id : '';
-        const state = await this.internals;
-
-
-        const query = state.dexieTable
-            .where('[_meta.lwt+' + this.primaryPath + ']')
-            .above([sinceLwt, sinceId])
-            .limit(limit);
-        const changedDocuments: RxDocumentData<RxDocType>[] = await query.toArray();
-        let changedDocs = changedDocuments.map(d => fromDexieToStorage<RxDocType>(state.booleanIndexes, d));
-        changedDocs = sortDocumentsByLastWriteTime(this.primaryPath as any, changedDocs);
-        changedDocs = changedDocs.slice(0, limit);
-
-        const lastDoc = lastOfArray(changedDocs);
-        return {
-            documents: changedDocs,
-            checkpoint: lastDoc ? {
-                id: lastDoc[this.primaryPath] as any,
-                lwt: lastDoc._meta.lwt
-            } : checkpoint ? checkpoint : {
-                id: '',
-                lwt: 0
-            }
-        };
     }
 
     changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, RxStorageDefaultCheckpoint>> {

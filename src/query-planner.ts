@@ -1,6 +1,6 @@
 import { countUntilNotMatching } from './plugins/utils/index.ts';
 import { newRxError } from './rx-error.ts';
-import { getPrimaryFieldOfPrimaryKey, getSchemaByObjectPath } from './rx-schema-helper.ts';
+import { getSchemaByObjectPath } from './rx-schema-helper.ts';
 import type {
     FilledMangoQuery,
     MangoQuerySelector,
@@ -35,15 +35,15 @@ export function getQueryPlan<RxDocType>(
     schema: RxJsonSchema<RxDocumentData<RxDocType>>,
     query: FilledMangoQuery<RxDocType>
 ): RxQueryPlan {
-    const primaryPath = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
     const selector = query.selector;
 
     let indexes: string[][] = schema.indexes ? schema.indexes.slice(0) as any : [];
     if (query.index) {
         indexes = [query.index];
-    } else {
-        indexes.push(['_deleted', primaryPath]);
     }
+
+    console.log('.-....................');
+    console.dir({schema, query});
 
     /**
      * Most storages do not support descending indexes
