@@ -1554,7 +1554,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     testContext
                 );
 
-                const preparedQuery = config.storage.getStorage().statics.prepareQuery(
+                const preparedQuery = prepareQuery(
                     storageInstance.schema,
                     {
                         selector: {},
