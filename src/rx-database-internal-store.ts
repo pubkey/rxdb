@@ -210,6 +210,7 @@ export async function ensureStorageTokenDocumentExists<Collections extends Colle
         ) {
             throw newRxError('DM5', {
                 args: {
+                    database: rxDatabase.name,
                     databaseStateVersion: conflictError.documentInDb.data.rxdbVersion,
                     codeVersion: rxDatabase.rxdbVersion
                 }

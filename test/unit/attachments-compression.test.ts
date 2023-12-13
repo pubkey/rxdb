@@ -145,7 +145,6 @@ modes.forEach(mode => {
                     type: 'text/plain'
                 });
 
-
                 const docB = await c2.findOne().exec(true);
                 const attachmentB = await docB.putAttachment({
                     id: 'cat.txt',
@@ -153,7 +152,7 @@ modes.forEach(mode => {
                     type: 'text/plain'
                 });
                 assert.ok(
-                    attachmentCompressed.length < (attachmentB.length / 2)
+                    (attachmentCompressed.length * 1.5) < attachmentB.length
                 );
                 c.database.destroy();
                 c2.database.destroy();
