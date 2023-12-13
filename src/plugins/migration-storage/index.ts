@@ -111,8 +111,10 @@ export async function migrateCollection<RxDocType>(
 
     const plainQuery: FilledMangoQuery<RxDocType> = {
         selector: {
-            _deleted: false
-        },
+            _deleted: {
+                $eq: false
+            }
+        } as any,
         limit: batchSize,
         sort: [{ [primaryPath]: 'asc' } as any],
         skip: 0

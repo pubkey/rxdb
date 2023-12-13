@@ -225,6 +225,9 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
             return requestRemoteInstance(this, 'query', [preparedQueryOriginal]);
         }
 
+        console.log('loki query:');
+        console.dir(preparedQueryOriginal);
+
         let preparedQuery = patchLokiJSQuery(ensureNotFalsy(preparedQueryOriginal.query));
         if (preparedQuery.selector) {
             preparedQuery = flatClone(preparedQuery);
