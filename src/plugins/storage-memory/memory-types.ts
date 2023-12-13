@@ -1,7 +1,6 @@
 import { Subject } from 'rxjs';
 import type {
     CategorizeBulkWriteRowsOutput,
-    DefaultPreparedQuery,
     EventBulk,
     RxAttachmentWriteData,
     RxConflictResultionTask,
@@ -94,5 +93,3 @@ export type DocWithIndexString<RxDocType> = {
     doc: RxDocumentData<RxDocType>;
     indexString: string;
 };
-
-export type MemoryPreparedQuery<DocType> = DefaultPreparedQuery<DocType>;

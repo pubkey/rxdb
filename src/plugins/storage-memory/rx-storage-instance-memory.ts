@@ -13,6 +13,7 @@ import {
 import type {
     BulkWriteRow,
     EventBulk,
+    PreparedQuery,
     QueryMatcher,
     RxConflictResultionTask,
     RxConflictResultionTaskSolution,
@@ -58,7 +59,6 @@ import {
     getMemoryIndexName
 } from './memory-indexes.ts';
 import type {
-    MemoryPreparedQuery,
     MemoryStorageInternals,
     RxStorageMemory,
     RxStorageMemoryInstanceCreationOptions,
@@ -280,7 +280,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
     }
 
     query(
-        preparedQuery: MemoryPreparedQuery<RxDocType>
+        preparedQuery: PreparedQuery<RxDocType>
     ): Promise<RxStorageQueryResult<RxDocType>> {
         this.ensurePersistence();
 
@@ -377,7 +377,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
     }
 
     async count(
-        preparedQuery: MemoryPreparedQuery<RxDocType>
+        preparedQuery: PreparedQuery<RxDocType>
     ): Promise<RxStorageCountResult> {
         this.ensurePersistence();
         const result = await this.query(preparedQuery);

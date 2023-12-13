@@ -1,13 +1,16 @@
 import type {
+    FilledMangoQuery,
     MangoQuerySelector,
     MangoQuerySortPart,
-    RxDocumentData
+    RxDocumentData,
+    RxJsonSchema
 } from '../../types/index.d.ts';
 import {
     Sort as MongoSort
 } from 'mongodb';
 import { flatClone } from '../utils/index.ts';
-import { MongoQuerySelector } from './mongodb-types.ts';
+import { MongoDBPreparedQuery, MongoQuerySelector } from './mongodb-types.ts';
+import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper.ts';
 export const RX_STORAGE_NAME_MONGODB = 'mongodb';
 
 /**
@@ -50,6 +53,22 @@ export function primarySwapMongoDBQuerySelector<RxDocType>(
     }
 }
 
+
+export function prepareMongoDBQuery<RxDocType>(
+    schema: RxJsonSchema<RxDocumentData<RxDocType>>,
+    mutateableQuery: FilledMangoQuery<RxDocType>
+) {
+    const primaryKey = getPrimaryFieldOfPrimaryKey(schema.primaryKey) as any;
+    const preparedQuery: MongoDBPreparedQuery<RxDocType> = {
+        query: mutateableQuery,
+        mongoSelector: primarySwapMongoDBQuerySelector(
+            primaryKey,
+            mutateableQuery.selector
+        ),
+        mongoSort: swapToMongoSort(mutateableQuery.sort)
+    };
+    return preparedQuery;
+};
 
 
 export function swapMongoToRxDoc<RxDocType>(

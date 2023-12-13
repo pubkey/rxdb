@@ -41,12 +41,15 @@ import type {
     RxChangeEvent,
     RxDocumentWriteData,
     RxDocumentData,
-    QueryMatcher
+    QueryMatcher,
+    RxJsonSchema,
+    FilledMangoQuery
 } from './types/index.d.ts';
 import { calculateNewResults } from './event-reduce.ts';
 import { triggerCacheReplacement } from './query-cache.ts';
 import { getQueryMatcher, normalizeMangoQuery } from './rx-query-helper.ts';
 import { RxQuerySingleResult } from './rx-query-single-result.ts';
+import { getQueryPlan } from './query-planner.ts';
 
 let _queryCount = 0;
 const newQueryID = function (): number {
@@ -364,7 +367,7 @@ export class RxQueryBase<
         }
         runPluginHooks('prePrepareQuery', hookInput);
 
-        const value = this.collection.database.storage.statics.prepareQuery(
+        const value = prepareQuery(
             this.collection.schema.jsonSchema,
             hookInput.mangoQuery as any
         );
@@ -623,6 +626,35 @@ function __ensureEqual<RxDocType>(rxQuery: RxQueryBase<RxDocType>): Promise<bool
             });
     }
     return Promise.resolve(ret); // true if results have changed
+}
+
+/**
+ * @returns a format of the query that can be used with the storage
+ * when calling RxStorageInstance().query()
+ */
+export function prepareQuery<RxDocType>(
+    schema: RxJsonSchema<RxDocumentData<RxDocType>>,
+    mutateableQuery: FilledMangoQuery<RxDocType>
+): PreparedQuery<RxDocType> {
+    if (!mutateableQuery.sort) {
+        throw newRxError('SNH', {
+            query: mutateableQuery
+        });
+    }
+
+    /**
+     * Store the query plan together with the
+     * prepared query to save performance.
+     */
+    const queryPlan = getQueryPlan(
+        schema,
+        mutateableQuery
+    );
+
+    return {
+        query: mutateableQuery,
+        queryPlan
+    };
 }
 
 /**

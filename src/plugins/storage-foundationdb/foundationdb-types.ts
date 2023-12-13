@@ -2,7 +2,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 
 import type {
-    DefaultPreparedQuery,
     EventBulk,
     RxAttachmentWriteData,
     RxDocumentData,
@@ -63,8 +62,4 @@ export type FoundationDBStorageInternals<RxDocType> = {
         };
     }>;
 };
-export type RxStorageFoundationDB = RxStorage<FoundationDBStorageInternals<any>, RxStorageFoundationDBInstanceCreationOptions> & {
-};
-
-
-export type FoundationDBPreparedQuery<DocType> = DefaultPreparedQuery<DocType>;
+export type RxStorageFoundationDB = RxStorage<FoundationDBStorageInternals<any>, RxStorageFoundationDBInstanceCreationOptions> & {};

@@ -9,6 +9,7 @@ import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper.ts';
 import type {
     BulkWriteRow,
     EventBulk,
+    PreparedQuery,
     RxConflictResultionTask,
     RxConflictResultionTaskSolution,
     RxDocumentData,
@@ -53,6 +54,7 @@ import { categorizeBulkWriteRows } from '../../rx-storage-helper.ts';
 import {
     MONGO_ID_SUBSTITUTE_FIELDNAME,
     getMongoDBIndexName,
+    prepareMongoDBQuery,
     swapMongoToRxDoc,
     swapRxDocToMongo
 } from './mongodb-helper.ts';
@@ -357,8 +359,10 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
     }
 
     async query(
-        preparedQuery: MongoDBPreparedQuery<RxDocType>
+        originalPreparedQuery: PreparedQuery<RxDocType>
     ): Promise<RxStorageQueryResult<RxDocType>> {
+        const preparedQuery = prepareMongoDBQuery(this.schema, originalPreparedQuery.query);
+
         this.runningOperations.next(this.runningOperations.getValue() + 1);
         await this.writeQueue;
         const mongoCollection = await this.mongoCollectionPromise;
@@ -381,8 +385,9 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
     }
 
     async count(
-        preparedQuery: MongoDBPreparedQuery<RxDocType>
+        originalPreparedQuery: PreparedQuery<RxDocType>
     ): Promise<RxStorageCountResult> {
+        const preparedQuery = prepareMongoDBQuery(this.schema, originalPreparedQuery.query);
         this.runningOperations.next(this.runningOperations.getValue() + 1);
         await this.writeQueue;
         const mongoCollection = await this.mongoCollectionPromise;

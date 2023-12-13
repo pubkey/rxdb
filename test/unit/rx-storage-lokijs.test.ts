@@ -7,6 +7,7 @@ import {
     fillWithDefaultSettings,
     getPseudoSchemaForVersion,
     now,
+    prepareQuery,
     randomCouchString
 } from '../../plugins/core/index.mjs';
 
@@ -386,7 +387,7 @@ describe('rx-storage-lokijs.test.js', () => {
                         })
                     }
                 ], 'loki-test');
-                const preparedQuery = storage.statics.prepareQuery(
+                const preparedQuery = prepareQuery(
                     fillWithDefaultSettings(schemas.human),
                     {
                         selector: {},

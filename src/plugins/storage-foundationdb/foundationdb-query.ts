@@ -3,21 +3,19 @@ import {
     getStartIndexStringFromUpperBound
 } from '../../custom-index.ts';
 import type {
+    PreparedQuery,
     QueryMatcher,
     RxDocumentData,
     RxStorageQueryResult
 } from '../../types/index.d.ts';
 import { ensureNotFalsy, lastOfArray } from '../../plugins/utils/index.ts';
 import { getFoundationDBIndexName } from './foundationdb-helpers.ts';
-import type {
-    FoundationDBPreparedQuery
-} from './foundationdb-types.ts';
 import { RxStorageInstanceFoundationDB } from './rx-storage-instance-foundationdb.ts';
 import { getQueryMatcher, getSortComparator } from '../../rx-query-helper.ts';
 
 export async function queryFoundationDB<RxDocType>(
     instance: RxStorageInstanceFoundationDB<RxDocType>,
-    preparedQuery: FoundationDBPreparedQuery<RxDocType>
+    preparedQuery: PreparedQuery<RxDocType>
 ): Promise<RxStorageQueryResult<RxDocType>> {
     const queryPlan = preparedQuery.queryPlan;
     const query = preparedQuery.query;

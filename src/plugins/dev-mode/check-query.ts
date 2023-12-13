@@ -6,11 +6,12 @@ import type {
     RxJsonSchema,
     RxDocumentData,
     MangoQuerySelector,
-    DefaultPreparedQuery
+    PreparedQuery
 } from '../../types/index.d.ts';
 import { newRxError, newRxTypeError } from '../../rx-error.ts';
 import { RxStorageDexieStatics } from '../storage-dexie/index.ts';
 import { deepEqual } from '../utils/index.ts';
+import { prepareQuery } from '../../rx-query.ts';
 
 /**
  * accidentally passing a non-valid object into the query params
@@ -161,7 +162,7 @@ export function areSelectorsSatisfiedByIndex<RxDocType>(
     schema: RxJsonSchema<RxDocumentData<RxDocType>>,
     query: FilledMangoQuery<RxDocType>
 ): boolean {
-    const preparedQuery: DefaultPreparedQuery<any> = RxStorageDexieStatics.prepareQuery(
+    const preparedQuery: PreparedQuery<any> = prepareQuery(
         schema,
         query
     );

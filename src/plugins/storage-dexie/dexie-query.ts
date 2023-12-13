@@ -1,7 +1,7 @@
 import { INDEX_MIN } from '../../query-planner.ts';
 import { getQueryMatcher, getSortComparator } from '../../rx-query-helper.ts';
 import type {
-    DefaultPreparedQuery,
+    PreparedQuery,
     QueryMatcher,
     RxDocumentData,
     RxQueryPlan,
@@ -80,7 +80,7 @@ export function getKeyRangeByQueryPlan(
  */
 export async function dexieQuery<RxDocType>(
     instance: RxStorageInstanceDexie<RxDocType>,
-    preparedQuery: DefaultPreparedQuery<RxDocType>
+    preparedQuery: PreparedQuery<RxDocType>
 ): Promise<RxStorageQueryResult<RxDocType>> {
     const state = await instance.internals;
     const query = preparedQuery.query;
@@ -204,7 +204,7 @@ export async function dexieQuery<RxDocType>(
 
 export async function dexieCount<RxDocType>(
     instance: RxStorageInstanceDexie<RxDocType>,
-    preparedQuery: DefaultPreparedQuery<RxDocType>
+    preparedQuery: PreparedQuery<RxDocType>
 ): Promise<number> {
     const state = await instance.internals;
     const queryPlan = preparedQuery.queryPlan;

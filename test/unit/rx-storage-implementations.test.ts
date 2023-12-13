@@ -37,7 +37,8 @@ import {
     RxDocumentWriteData,
     RxStorageBulkWriteResponse,
     RxStorageChangeEvent,
-    RxStorageInstance
+    RxStorageInstance,
+    prepareQuery
 } from '../../plugins/core/index.mjs';
 import Ajv from 'ajv';
 import {
@@ -1071,7 +1072,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     sort: [{ value: 'asc' }],
                     skip: 0
                 };
-                const preparedQuery = config.storage.getStorage().statics.prepareQuery(
+                const preparedQuery = prepareQuery(
                     getTestDataSchema(),
                     query
                 );
@@ -1088,7 +1089,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     sort: [{ value: 'asc' }],
                     skip: 0
                 };
-                const preparedQuery = config.storage.getStorage().statics.prepareQuery(
+                const preparedQuery = prepareQuery(
                     deepFreeze(getTestDataSchema()),
                     deepFreeze(query)
                 );
@@ -1441,7 +1442,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     testContext
                 );
 
-                const preparedQuery = config.storage.getStorage().statics.prepareQuery(
+                const preparedQuery = prepareQuery(
                     storageInstance.schema,
                     {
                         selector: {
@@ -1483,7 +1484,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     },
                 ], testContext);
 
-                const preparedQuery = config.storage.getStorage().statics.prepareQuery(
+                const preparedQuery = prepareQuery(
                     storageInstance.schema,
                     {
                         selector: {},
@@ -1659,7 +1660,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 const docs = Object.values(writeResponse.success);
 
                 async function testQuery(query: FilledMangoQuery<RandomDoc>): Promise<void> {
-                    const preparedQuery = config.storage.getStorage().statics.prepareQuery(
+                    const preparedQuery = prepareQuery(
                         storageInstance.schema,
                         query
                     );
@@ -1749,7 +1750,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 ], testContext);
                 assert.deepStrictEqual(insertResult.error, []);
 
-                const preparedQuery = config.storage.getStorage().statics.prepareQuery<NestedDoc>(
+                const preparedQuery = prepareQuery<NestedDoc>(
                     schema,
                     {
                         selector: {
@@ -1802,7 +1803,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     testContext
                 );
 
-                const preparedQuery = config.storage.getStorage().statics.prepareQuery<TestDocType>(
+                const preparedQuery = prepareQuery<TestDocType>(
                     schema,
                     {
                         selector: {},
@@ -1832,7 +1833,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                         multiInstance: false,
                         devMode: true
                     });
-                const preparedQueryAll = config.storage.getStorage().statics.prepareQuery<TestDocType>(
+                const preparedQueryAll = prepareQuery<TestDocType>(
                     schema,
                     {
                         selector: {},
@@ -2745,7 +2746,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
 
                 // check in query() result
                 const queryResult = await storageInstance.query(
-                    config.storage.getStorage().statics.prepareQuery(
+                    prepareQuery(
                         storageInstance.schema,
                         {
                             selector: {},
@@ -3402,7 +3403,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
             }, 10 * 1000, 100);
 
             // find via query
-            const preparedQuery: PreparedQuery<TestDocType> = config.storage.getStorage().statics.prepareQuery<TestDocType>(
+            const preparedQuery: PreparedQuery<TestDocType> = prepareQuery<TestDocType>(
                 instances.b.schema,
                 {
                     selector: {},
@@ -3460,17 +3461,15 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
             // insert a document on A
             await instances.a.bulkWrite([{ document: getWriteData() }], testContext);
 
-            const preparedQuery: PreparedQuery<TestDocType> = config.storage.getStorage()
-                .statics
-                .prepareQuery<TestDocType>(
-                    instances.b.schema,
-                    {
-                        selector: {},
-                        limit: 1,
-                        sort: [{ key: 'asc' }],
-                        skip: 0
-                    }
-                );
+            const preparedQuery: PreparedQuery<TestDocType> = prepareQuery<TestDocType>(
+                instances.b.schema,
+                {
+                    selector: {},
+                    limit: 1,
+                    sort: [{ key: 'asc' }],
+                    skip: 0
+                }
+            );
 
             const queryResultBefore = await instances.b.query(preparedQuery);
             assert.ok(queryResultBefore);
@@ -3544,7 +3543,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 selector: {},
                 sort: [{ key: 'asc' }]
             };
-            const preparedQueryV0 = config.storage.getStorage().statics.prepareQuery(
+            const preparedQueryV0 = prepareQuery(
                 getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                 clone(plainQuery)
             );
@@ -3553,7 +3552,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
             assert.strictEqual(resultV0.documents[0].value, '0');
 
 
-            const preparedQueryV1 = config.storage.getStorage().statics.prepareQuery(
+            const preparedQueryV1 = prepareQuery(
                 getPseudoSchemaForVersion<TestDocType>(1, 'key'),
                 clone(plainQuery)
             );
@@ -3607,7 +3606,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 devMode: true
             });
 
-            const allDocsQuery = config.storage.getStorage().statics.prepareQuery(
+            const allDocsQuery = prepareQuery(
                 schema,
                 {
                     selector: {},
@@ -3676,7 +3675,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
             assert.deepStrictEqual(writeResultOne.error, []);
 
             const docsZero = await storageInstanceZero.query(
-                storage.statics.prepareQuery(
+                prepareQuery(
                     storageInstanceZero.schema,
                     {
                         selector: {},
@@ -3691,7 +3690,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
             assert.strictEqual(docsZero.documents[0].value, 'zero');
 
             const docsOne = await storageInstanceOne.query(
-                storage.statics.prepareQuery(
+                prepareQuery(
                     storageInstanceOne.schema,
                     {
                         selector: {},
