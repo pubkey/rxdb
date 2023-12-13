@@ -273,10 +273,6 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
     ): Promise<RxStorageQueryResult<RxDocType>> {
         this.ensurePersistence();
 
-
-        console.log('query():');
-        console.dir(preparedQuery);
-
         const queryPlan = preparedQuery.queryPlan;
         const query = preparedQuery.query;
 

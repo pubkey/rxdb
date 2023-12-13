@@ -53,12 +53,6 @@ export function getDexieDbWithTables(
                 dexieDb.version(1).stores(dexieStoresSettings);
                 await dexieDb.open();
 
-
-                // if (getBooleanIndexes(schema).length === 0) {
-                //     console.dir(schema);
-                //     throw new Error('not a single boolean index');
-                // }
-
                 return {
                     dexieDb,
                     dexieTable: (dexieDb as any)[DEXIE_DOCS_TABLE_NAME],
@@ -259,10 +253,6 @@ export function getDexieStoreSchema(
     dexieSchemaRows = dexieSchemaRows.filter((elem: any, pos: any, arr: any) => arr.indexOf(elem) === pos); // unique;
     const dexieSchema = dexieSchemaRows.join(', ');
 
-
-    console.log('########################## dexie schema:');
-    console.dir(dexieSchema);
-
     return dexieSchema;
 }
 
@@ -286,9 +276,6 @@ export function attachmentObjectId(documentId: string, attachmentId: string): st
 
 
 export function getBooleanIndexes(schema: RxJsonSchema<any>): string[] {
-
-    console.log('::getBooleanIndexes()');
-    console.dir(schema);
     const checkedFields = new Set<string>();
     const ret: string[] = [];
     if (!schema.indexes) {
@@ -308,7 +295,6 @@ export function getBooleanIndexes(schema: RxJsonSchema<any>): string[] {
         });
     });
     ret.push('_deleted');
-    console.dir(ret);
 
     return uniqueArray(ret);
 }
