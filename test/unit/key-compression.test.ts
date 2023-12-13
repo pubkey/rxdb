@@ -16,6 +16,7 @@ import {
     WrappedRxStorageInstance,
     RxStorageReplicationMeta,
     FilledMangoQuery,
+    prepareQuery,
 } from '../../plugins/core/index.mjs';
 import * as schemaObjects from '../helper/schema-objects.ts';
 import {
@@ -48,19 +49,6 @@ config.parallel('key-compression.test.js', () => {
         });
         return collections.human;
     }
-
-    describe('.getPreparedQuery()', () => {
-        it('transform basic search keys', async () => {
-            const c = await getCollection();
-            const query: any = c.find()
-                .where('firstName').eq('myFirstName')
-                .getPreparedQuery();
-            const jsonString = JSON.stringify(query);
-            assert.ok(!jsonString.includes('firstName'));
-            assert.ok(jsonString.includes('myFirstName'));
-            c.database.destroy();
-        });
-    });
     describe('integration into the RxStorage', () => {
         it('should have saved a compressed document', async () => {
             const c = await getCollection();
@@ -166,7 +154,7 @@ config.parallel('key-compression.test.js', () => {
                 ensureNotFalsy(replicationState.metaInstance) as WrappedRxStorageInstance<any, any, any>
             ).originalStorageInstance;
 
-            const preparedQuery = config.storage.getStorage().statics.prepareQuery(
+            const preparedQuery = prepareQuery(
                 replicationMetaStorage.schema,
                 {
                     selector: {},

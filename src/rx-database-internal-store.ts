@@ -17,7 +17,6 @@ import type {
     RxDocumentData,
     RxJsonSchema,
     RxStorageInstance,
-    RxStorageStatics,
     RxStorageWriteErrorConflict
 } from './types/index.d.ts';
 import {
@@ -27,6 +26,7 @@ import {
     getDefaultRxDocumentMeta,
     randomCouchString
 } from './plugins/utils/index.ts';
+import { prepareQuery } from './rx-query.ts';
 
 export const INTERNAL_CONTEXT_COLLECTION = 'collection';
 export const INTERNAL_CONTEXT_STORAGE_TOKEN = 'storage-token';
@@ -115,10 +115,9 @@ export function getPrimaryKeyOfInternalDocument(
  * with context 'collection'
  */
 export async function getAllCollectionDocuments(
-    storageStatics: RxStorageStatics,
     storageInstance: RxStorageInstance<InternalStoreDocType<any>, any, any>
 ): Promise<RxDocumentData<InternalStoreCollectionDocType>[]> {
-    const getAllQueryPrepared = storageStatics.prepareQuery(
+    const getAllQueryPrepared = prepareQuery(
         storageInstance.schema,
         {
             selector: {
@@ -211,6 +210,7 @@ export async function ensureStorageTokenDocumentExists<Collections extends Colle
         ) {
             throw newRxError('DM5', {
                 args: {
+                    database: rxDatabase.name,
                     databaseStateVersion: conflictError.documentInDb.data.rxdbVersion,
                     codeVersion: rxDatabase.rxdbVersion
                 }

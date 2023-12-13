@@ -13,22 +13,8 @@ import { RX_STORAGE_NAME_MONGODB, primarySwapMongoDBQuerySelector, swapToMongoSo
 import type { MongoDBDatabaseSettings, MongoDBPreparedQuery, MongoDBSettings, MongoDBStorageInternals } from './mongodb-types.ts';
 import { RxStorageInstanceMongoDB, createMongoDBStorageInstance } from './rx-storage-instance-mongodb.ts';
 
+
 export const RxStorageMongoDBStatics: RxStorageStatics = {
-    prepareQuery<RxDocType>(
-        schema: RxJsonSchema<RxDocumentData<RxDocType>>,
-        mutateableQuery: FilledMangoQuery<RxDocType>
-    ) {
-        const primaryKey = getPrimaryFieldOfPrimaryKey(schema.primaryKey) as any;
-        const preparedQuery: MongoDBPreparedQuery<RxDocType> = {
-            query: mutateableQuery,
-            mongoSelector: primarySwapMongoDBQuerySelector(
-                primaryKey,
-                mutateableQuery.selector
-            ),
-            mongoSort: swapToMongoSort(mutateableQuery.sort)
-        };
-        return preparedQuery;
-    },
     checkpointSchema: DEFAULT_CHECKPOINT_SCHEMA
 };
 

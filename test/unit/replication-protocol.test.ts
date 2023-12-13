@@ -33,7 +33,8 @@ import {
     blobToBase64String,
     RxAttachmentWriteData,
     flatClone,
-    requestIdlePromise
+    requestIdlePromise,
+    prepareQuery
 } from '../../plugins/core/index.mjs';
 
 
@@ -235,8 +236,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
         storageInstance: RxStorageInstance<RxDocType, any, any>,
         mangoQuery: MangoQuery<RxDocType> = {}
     ): Promise<RxDocumentData<RxDocType>[]> {
-        const storage = config.storage.getStorage();
-        const preparedQuery = storage.statics.prepareQuery(
+        const preparedQuery = prepareQuery(
             storageInstance.schema,
             normalizeMangoQuery(
                 storageInstance.schema,

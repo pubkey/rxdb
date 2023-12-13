@@ -86,7 +86,6 @@ export async function removeCollectionStorages(
     hashFunction?: HashFunction,
 ) {
     const allCollectionMetaDocs = await getAllCollectionDocuments(
-        storage.statics,
         databaseInternalStorage
     );
     const relevantCollectionMetaDocs = allCollectionMetaDocs

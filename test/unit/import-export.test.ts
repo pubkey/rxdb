@@ -89,7 +89,7 @@ config.parallel('import-export.test.js', () => {
                     if (!config.storage.hasMultiInstance) {
                         return;
                     }
-                    const col = await humansCollection.createMultiInstance('pref1', 5);
+                    const col = await humansCollection.createMultiInstance(randomCouchString(10), 5);
                     const json = await col.exportJSON();
                     const differentSchemaCol = await humansCollection.createNested();
                     await AsyncTestUtil.assertThrows(

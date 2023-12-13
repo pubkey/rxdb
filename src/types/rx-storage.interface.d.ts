@@ -1,7 +1,6 @@
 import type {
     BulkWriteRow,
     EventBulk,
-    PreparedQuery,
     RxDocumentData,
     RxStorageBulkWriteResponse,
     RxStorageChangeEvent,
@@ -114,29 +113,6 @@ export type FilledMangoQuery<RxDocType> = Override<
  */
 export type RxStorageStatics = Readonly<{
     /**
-     * Storages can have some bugs
-     * and behaviors that must be worked around
-     * before querying the db.
-     *
-     * Also some storages do optimizations
-     * and other things related to query planning.
-     *
-     * For performance reason this preparation
-     * runs in a single step so it can be cached
-     * when the query is used multiple times.
-     *
-     * @returns a format of the query that can be used with the storage
-     * when calling RxStorageInstance().query()
-     */
-    prepareQuery<RxDocType>(
-        schema: RxJsonSchema<RxDocumentData<RxDocType>>,
-        /**
-         * a query that can be mutated by the function without side effects.
-         */
-        mutateableQuery: FilledMangoQuery<RxDocType>
-    ): PreparedQuery<RxDocType>;
-
-    /**
      * Contains the JsonSchema that matches the checkpoint
      * of this RxStorage.
      * Used in some plugins like the graphql plugin
@@ -145,7 +121,16 @@ export type RxStorageStatics = Readonly<{
     checkpointSchema: DeepReadonly<JsonSchema>;
 }>;
 
-export type DefaultPreparedQuery<RxDocType> = {
+
+/**
+ * Before sending a query to the storageInstance.query()
+ * we run it through the query planner and do some normalization
+ * stuff. Notice that the queryPlan is a hint for the storage and
+ * it is not required to use it when running queries. Some storages
+ * might use their own query planning instead.
+ */
+export type PreparedQuery<RxDocType> = {
+    // original query from the input
     query: FilledMangoQuery<RxDocType>;
     queryPlan: RxQueryPlan;
 };
@@ -186,7 +171,7 @@ export interface RxStorageInstance<
      * storageInstance by checking the givent context-string. But this would make it impossible
      * to run a replication on the parentStorage itself.
      */
-    readonly underlyingPersistentStorage?: RxStorageInstance<RxDocType, any ,any, any>;
+    readonly underlyingPersistentStorage?: RxStorageInstance<RxDocType, any, any, any>;
 
     /**
      * Writes multiple documents to the storage instance.
@@ -243,12 +228,6 @@ export interface RxStorageInstance<
      * rx-storage implementation.
      */
     query(
-        /**
-         * Here we get the result of this.prepareQuery()
-         * instead of the plain mango query.
-         * This makes it easier to have good performance
-         * when transformations of the query must be done.
-         */
         preparedQuery: PreparedQuery<RxDocType>
     ): Promise<RxStorageQueryResult<RxDocType>>;
 

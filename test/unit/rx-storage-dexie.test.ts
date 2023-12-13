@@ -9,7 +9,8 @@ import {
     normalizeMangoQuery,
     randomCouchString,
     now,
-    createRevision
+    createRevision,
+    prepareQuery
 } from '../../plugins/core/index.mjs';
 
 import {
@@ -161,7 +162,7 @@ config.parallel('rx-storage-dexie.test.js', () => {
             // const hasIndexes = await pouch.getIndexes();
 
             async function analyzeQuery(query: MangoQuery<HumanDocumentType>) {
-                const preparedQuery = storage.statics.prepareQuery(
+                const preparedQuery = prepareQuery(
                     schema,
                     normalizeMangoQuery(schema, query)
                 );
