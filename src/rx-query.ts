@@ -358,11 +358,15 @@ export class RxQueryBase<
                 this.mangoQuery
             )
         };
+        (hookInput.mangoQuery.selector as any)._deleted = { $eq: false };
+        if (hookInput.mangoQuery.index) {
+            hookInput.mangoQuery.index.unshift('_deleted');
+        }
         runPluginHooks('prePrepareQuery', hookInput);
 
         const value = this.collection.database.storage.statics.prepareQuery(
             this.collection.schema.jsonSchema,
-            hookInput.mangoQuery
+            hookInput.mangoQuery as any
         );
 
         this.getPreparedQuery = () => value;

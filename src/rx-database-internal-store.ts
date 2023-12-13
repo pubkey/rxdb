@@ -122,7 +122,8 @@ export async function getAllCollectionDocuments(
         storageInstance.schema,
         {
             selector: {
-                context: INTERNAL_CONTEXT_COLLECTION
+                context: INTERNAL_CONTEXT_COLLECTION,
+                _deleted: false
             },
             sort: [{ id: 'asc' }],
             skip: 0

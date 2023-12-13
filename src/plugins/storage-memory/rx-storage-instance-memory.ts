@@ -35,9 +35,9 @@ import {
     now,
     PROMISE_RESOLVE_TRUE,
     PROMISE_RESOLVE_VOID,
-    promiseWait,
     requestIdlePromiseNoQueue,
-    RX_META_LWT_MINIMUM
+    RX_META_LWT_MINIMUM,
+    toArray
 } from '../../plugins/utils/index.ts';
 import {
     boundGE,
@@ -91,6 +91,17 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         public readonly options: Readonly<RxStorageMemoryInstanceCreationOptions>,
         public readonly settings: RxStorageMemorySettings
     ) {
+
+        // TODO remove this check
+        if (schema.indexes) {
+            schema.indexes.forEach(index => {
+                const indexAr = toArray(index);
+                if (indexAr[0] !== '_deleted') {
+                    throw new Error('index does not have deleted field');
+                }
+            });
+        }
+
         OPEN_MEMORY_INSTANCES.add(this);
         this.primaryPath = getPrimaryFieldOfPrimaryKey(this.schema.primaryKey);
     }
@@ -272,6 +283,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         preparedQuery: MemoryPreparedQuery<RxDocType>
     ): Promise<RxStorageQueryResult<RxDocType>> {
         this.ensurePersistence();
+
         const queryPlan = preparedQuery.queryPlan;
         const query = preparedQuery.query;
 
@@ -288,10 +300,9 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         }
 
         const queryPlanFields: string[] = queryPlan.index;
-        const mustManuallyResort = !queryPlan.sortFieldsSameAsIndexFields;
-        const index: string[] | undefined = ['_deleted'].concat(queryPlanFields);
-        let lowerBound: any[] = queryPlan.startKeys;
-        lowerBound = [false].concat(lowerBound);
+        const mustManuallyResort = !queryPlan.sortSatisfiedByIndex;
+        const index: string[] | undefined = queryPlanFields;
+        const lowerBound: any[] = queryPlan.startKeys;
         const lowerBoundString = getStartIndexStringFromLowerBound(
             this.schema,
             index,
@@ -300,7 +311,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         );
 
         let upperBound: any[] = queryPlan.endKeys;
-        upperBound = [false].concat(upperBound);
+        upperBound = upperBound;
         const upperBoundString = getStartIndexStringFromUpperBound(
             this.schema,
             index,
@@ -309,6 +320,8 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         );
         const indexName = getMemoryIndexName(index);
         const docsWithIndex = this.internals.byIndex[indexName].docsWithIndex;
+
+
 
         let indexOfLower = (queryPlan.inclusiveStart ? boundGE : boundGT)(
             docsWithIndex,
@@ -440,6 +453,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         const maxDeletionTime = now() - minimumDeletedTime;
         const index = ['_deleted', '_meta.lwt', this.primaryPath as any];
         const indexName = getMemoryIndexName(index);
+        console.log('cleanup index name_ ' + indexName);
         const docsWithIndex = this.internals.byIndex[indexName].docsWithIndex;
 
         const lowerBoundString = getStartIndexStringFromLowerBound(

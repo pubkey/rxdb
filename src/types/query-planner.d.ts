@@ -19,9 +19,10 @@ export type RxQueryPlan = {
     index: string[];
     /**
      * If the index does not match the sort params,
-     * we have to resort the query results.
+     * we have to resort the query results manually
+     * after fetching them from the index.
      */
-    sortFieldsSameAsIndexFields: boolean;
+    sortSatisfiedByIndex: boolean;
 
     /**
      * If the whole selector matching is satisfied

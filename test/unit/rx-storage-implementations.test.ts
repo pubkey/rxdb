@@ -1304,7 +1304,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
 
                 storageInstance.close();
             });
-            it('should not match deleted documents', async () => {
+            it('should also match deleted documents', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<{ _id: string; }>({
                     databaseInstanceToken: randomCouchString(10),
                     databaseName: randomCouchString(12),
@@ -1332,7 +1332,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 doc1._deleted = true;
                 assert.strictEqual(
                     queryMatcher(doc1),
-                    false
+                    true
                 );
 
                 storageInstance.close();
@@ -1444,7 +1444,9 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 const preparedQuery = config.storage.getStorage().statics.prepareQuery(
                     storageInstance.schema,
                     {
-                        selector: {},
+                        selector: {
+                            _deleted: false
+                        },
                         sort: [{ key: 'asc' }],
                         skip: 0
                     }
@@ -1499,6 +1501,73 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 assert.strictEqual(allDocs.documents[2].value, 'a');
 
                 storageInstance.close();
+            });
+            /**
+             * Notice that the RxStorage itself runs whatever query you give it,
+             * filtering out deleted documents is done by RxDB, not by the storage.
+             */
+            it('must find deleted documents', async () => {
+                const storageInstance = await config.storage
+                    .getStorage()
+                    .createStorageInstance<{ key: string; value: string; }>({
+                        databaseInstanceToken: randomCouchString(10),
+                        databaseName: randomCouchString(12),
+                        collectionName: randomCouchString(12),
+                        schema: getPseudoSchemaForVersion<{ key: string; value: string; }>(0, 'key'),
+                        options: {},
+                        multiInstance: false,
+                        devMode: true
+                    });
+
+                const writeData = {
+                    key: 'foobar',
+                    value: 'barfoo',
+                    _deleted: false,
+                    _attachments: {},
+                    _rev: EXAMPLE_REVISION_1,
+                    _meta: {
+                        lwt: now()
+                    }
+                };
+
+                const insertResult = await storageInstance.bulkWrite(
+                    [{
+                        document: writeData
+                    }],
+                    testContext
+                );
+
+                // delete it
+                const writeData2 = Object.assign({}, writeData, {
+                    _deleted: true,
+                    _rev: EXAMPLE_REVISION_2,
+                    _meta: {
+                        lwt: now()
+                    }
+                });
+                await storageInstance.bulkWrite(
+                    [{
+                        previous: insertResult.success[0],
+                        document: writeData2
+                    }],
+                    testContext
+                );
+
+                const preparedQuery = config.storage.getStorage().statics.prepareQuery(
+                    storageInstance.schema,
+                    {
+                        selector: {},
+                        sort: [{ key: 'asc' }],
+                        skip: 0
+                    }
+                );
+                const allDocs = await storageInstance.query(preparedQuery);
+                const first = allDocs.documents[0];
+                assert.ok(first);
+                assert.strictEqual(first.value, 'barfoo');
+
+                storageInstance.close();
+
             });
             /**
              * For event-reduce to work,
@@ -1803,7 +1872,9 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     }],
                     testContext
                 );
-                await ensureCountIs(1);
+
+                // must still be 2 because the storage itself also counts deleted docs
+                await ensureCountIs(2);
 
                 storageInstance.close();
             });

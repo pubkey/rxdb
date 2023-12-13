@@ -118,7 +118,9 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                     continue;
                 }
 
-                const normalizedQuery = deepFreeze(normalizeMangoQuery(schema, queryData.query));
+                const queryForStorage = clone(queryData.query) as any;
+                queryForStorage.selector._deleted = false;
+                const normalizedQuery = deepFreeze(normalizeMangoQuery(schema, queryForStorage));
                 const skip = normalizedQuery.skip ? normalizedQuery.skip : 0;
                 const limit = normalizedQuery.limit ? normalizedQuery.limit : Infinity;
                 const skipPlusLimit = skip + limit;

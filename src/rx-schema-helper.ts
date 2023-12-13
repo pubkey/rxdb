@@ -40,6 +40,9 @@ export function getPseudoSchemaForVersion<T = any>(
                 maxLength: 100
             }
         } as any,
+        indexes: [
+            [primaryKey]
+        ],
         required: [primaryKey]
     });
     return pseudoSchema;
@@ -219,18 +222,23 @@ export function fillWithDefaultSettings<T = any>(
     // version is 0 by default
     schemaObj.version = schemaObj.version || 0;
 
-    /**
-     * Append primary key to indexes that do not contain the primaryKey.
-     * All indexes must have the primaryKey to ensure a deterministic sort order.
-     */
     if (schemaObj.indexes) {
         schemaObj.indexes = schemaObj.indexes.map(index => {
             const arIndex = isMaybeReadonlyArray(index) ? index.slice(0) : [index];
+            /**
+             * Append primary key to indexes that do not contain the primaryKey.
+             * All indexes must have the primaryKey to ensure a deterministic sort order.
+             */
             if (!arIndex.includes(primaryPath)) {
-                const modifiedIndex = arIndex.slice(0);
-                modifiedIndex.push(primaryPath);
-                return modifiedIndex;
+                arIndex.push(primaryPath);
             }
+
+            // add _deleted flag to all indexes so we can query only non-deleted fields
+            // in RxDB itself
+            if (arIndex[0] !== '_deleted') {
+                arIndex.unshift('_deleted');
+            }
+
             return arIndex;
         });
     }

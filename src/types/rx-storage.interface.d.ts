@@ -133,7 +133,7 @@ export type RxStorageStatics = Readonly<{
         /**
          * a query that can be mutated by the function without side effects.
          */
-        mutateableQuery: FilledMangoQuery<RxDocType>
+        mutateableQuery: FilledMangoQuery<RxDocumentData<RxDocType>>
     ): PreparedQuery<RxDocType>;
 
     /**

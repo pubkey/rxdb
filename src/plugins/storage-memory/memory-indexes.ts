@@ -13,23 +13,19 @@ export function addIndexesToInternalsState<RxDocType>(
 
     // we need this as default index
     useIndexes.push([
+        '_deleted',
         primaryPath
     ]);
 
     // we need this index for running cleanup()
     useIndexes.push([
+        '_deleted',
         '_meta.lwt',
         primaryPath
     ]);
 
 
     useIndexes.forEach(indexAr => {
-        /**
-         * Running a query will only return non-deleted documents
-         * so all indexes must have the the deleted field as first index field.
-         */
-        indexAr.unshift('_deleted');
-
         state.byIndex[getMemoryIndexName(indexAr)] = {
             index: indexAr,
             docsWithIndex: [],

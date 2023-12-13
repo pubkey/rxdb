@@ -108,7 +108,11 @@ export async function migrateCollection<RxDocType>(
     const preparedQuery = oldStorage.statics.prepareQuery(
         schema as any,
         {
-            selector: {},
+            selector: {
+                _deleted: {
+                    $eq: false
+                }
+            },
             limit: batchSize,
             sort: [{ [primaryPath]: 'asc' } as any],
             skip: 0
