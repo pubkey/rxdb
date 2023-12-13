@@ -8,7 +8,8 @@ import {
     randomCouchString,
     now,
     RxStorage,
-    blobToBase64String
+    blobToBase64String,
+    prepareQuery
 } from '../../index.ts';
 
 export type RxStorageOld<A, B> = RxStorage<A, B> | any;
@@ -105,8 +106,8 @@ export async function migrateCollection<RxDocType>(
         devMode: false
     });
 
-    const preparedQuery = oldStorage.statics.prepareQuery(
-        schema as any,
+    const preparedQuery = prepareQuery(
+        schema,
         {
             selector: {},
             limit: batchSize,

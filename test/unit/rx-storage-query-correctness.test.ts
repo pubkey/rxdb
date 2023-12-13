@@ -14,7 +14,8 @@ import {
     deepFreeze,
     getQueryMatcher,
     getSortComparator,
-    createRxDatabase
+    createRxDatabase,
+    prepareQuery
 } from '../../plugins/core/index.mjs';
 import { EXAMPLE_REVISION_1 } from '../helper/revisions.ts';
 import * as schemas from '../helper/schemas.ts';
@@ -123,7 +124,7 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                 const limit = normalizedQuery.limit ? normalizedQuery.limit : Infinity;
                 const skipPlusLimit = skip + limit;
 
-                const preparedQuery = config.storage.getStorage().statics.prepareQuery<RxDocType>(
+                const preparedQuery = prepareQuery<RxDocType>(
                     schema,
                     normalizedQuery
                 );

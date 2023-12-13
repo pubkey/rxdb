@@ -2,6 +2,7 @@ import { createLokiLocalState, RxStorageInstanceLoki } from './rx-storage-instan
 import Loki from 'lokijs';
 import type {
     DeterministicSortComparator,
+    FilledMangoQuery,
     LokiDatabaseSettings,
     LokiDatabaseState,
     LokiLocalDatabaseState,
@@ -263,6 +264,29 @@ export function getLokiSortComparator<RxDocType>(
         return compareResult as any;
     };
     return fun;
+}
+
+
+export function patchLokiJSQuery<RxDocType>(
+    mutateableQuery: FilledMangoQuery<RxDocType>
+) {
+    mutateableQuery = flatClone(mutateableQuery);
+    if (Object.keys(ensureNotFalsy(mutateableQuery.selector)).length > 0) {
+        mutateableQuery.selector = {
+            $and: [
+                {
+                    _deleted: false
+                },
+                mutateableQuery.selector
+            ]
+        } as any;
+    } else {
+        mutateableQuery.selector = {
+            _deleted: false
+        } as any;
+    }
+
+    return mutateableQuery;
 }
 
 export function getLokiLeaderElector(

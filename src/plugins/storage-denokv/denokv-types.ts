@@ -1,4 +1,4 @@
-import type { DefaultPreparedQuery, RxDocumentData } from "../../types/index.d.ts";
+import type { RxDocumentData } from "../../types/index.d.ts";
 
 export type DenoKVSettings = {
     consistencyLevel: "strong" | "eventual";
@@ -17,6 +17,3 @@ export type DenoKVIndexMeta<RxDocType> = {
     index: string[];
     getIndexableString: (doc: RxDocumentData<RxDocType>) => string;
 };
-
-
-export type DenoKVPreparedQuery<DocType> = DefaultPreparedQuery<DocType>;

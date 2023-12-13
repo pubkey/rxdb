@@ -4,6 +4,7 @@ import {
     getStartIndexStringFromUpperBound
 } from '../../custom-index.ts';
 import type {
+    PreparedQuery,
     QueryMatcher,
     RxDocumentData,
     RxStorageQueryResult
@@ -12,11 +13,10 @@ import { ensureNotFalsy } from '../../plugins/utils/index.ts';
 import { getQueryMatcher, getSortComparator } from '../../rx-query-helper.ts';
 import { RxStorageInstanceDenoKV } from "./rx-storage-instance-denokv.ts";
 import { DENOKV_DOCUMENT_ROOT_PATH, getDenoKVIndexName } from "./denokv-helper.ts";
-import type { DenoKVPreparedQuery } from "./denokv-types.ts";
 
 export async function queryDenoKV<RxDocType>(
     instance: RxStorageInstanceDenoKV<RxDocType>,
-    preparedQuery: DenoKVPreparedQuery<RxDocType>
+    preparedQuery: PreparedQuery<RxDocType>
 ): Promise<RxStorageQueryResult<RxDocType>> {
     const queryPlan = preparedQuery.queryPlan;
     const query = preparedQuery.query;

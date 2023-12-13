@@ -35,7 +35,8 @@ import {
     createBlob,
     RxAttachmentCreator,
     DeepReadonly,
-    requestIdlePromise
+    requestIdlePromise,
+    prepareQuery
 } from '../../plugins/core/index.mjs';
 
 import {
@@ -675,7 +676,7 @@ describe('replication.test.ts', () => {
 
             async function docsInMeta(repState: typeof replicationState1): Promise<number> {
                 const metaInstance = ensureNotFalsy(repState.metaInstance);
-                const prepared = repState.collection.database.storage.statics.prepareQuery(
+                const prepared = prepareQuery(
                     metaInstance.schema,
                     normalizeMangoQuery(
                         metaInstance.schema,
@@ -883,7 +884,7 @@ describe('replication.test.ts', () => {
              * The meta instance should not contain attachments data
              */
             const metaStorage = ensureNotFalsy(replicationState.metaInstance);
-            const preparedQuery = config.storage.getStorage().statics.prepareQuery(
+            const preparedQuery = prepareQuery(
                 metaStorage.schema,
                 normalizeMangoQuery(
                     metaStorage.schema,

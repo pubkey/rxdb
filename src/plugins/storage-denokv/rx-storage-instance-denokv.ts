@@ -18,11 +18,12 @@ import type {
     RxStorageDefaultCheckpoint,
     RxStorageCountResult,
     RxStorageInfoResult,
-    RxConflictResultionTask
+    RxConflictResultionTask,
+    PreparedQuery
 } from '../../types/index.d.ts';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper.ts';
 import { addRxStorageMultiInstanceSupport } from '../../rx-storage-multiinstance.ts';
-import type { DenoKVIndexMeta, DenoKVPreparedQuery, DenoKVSettings, DenoKVStorageInternals } from './denokv-types.ts';
+import type { DenoKVIndexMeta, DenoKVSettings, DenoKVStorageInternals } from './denokv-types.ts';
 import { RxStorageDenoKV } from './index.ts';
 import { CLEANUP_INDEX, DENOKV_DOCUMENT_ROOT_PATH, RX_STORAGE_NAME_DENOKV, getDenoGlobal, getDenoKVIndexName } from "./denokv-helper.ts";
 import { getIndexableStringMonad, getStartIndexStringFromLowerBound, changeIndexableStringByOneQuantum } from "../../custom-index.ts";
@@ -217,12 +218,12 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
         );
         return ret;
     }
-    query(preparedQuery: DenoKVPreparedQuery<RxDocType>): Promise<RxStorageQueryResult<RxDocType>> {
+    query(preparedQuery: PreparedQuery<RxDocType>): Promise<RxStorageQueryResult<RxDocType>> {
         return this.retryUntilNoWriteInBetween(
             () => queryDenoKV(this, preparedQuery)
         );
     }
-    async count(preparedQuery: DenoKVPreparedQuery<RxDocType>): Promise<RxStorageCountResult> {
+    async count(preparedQuery: PreparedQuery<RxDocType>): Promise<RxStorageCountResult> {
         /**
          * At this point in time (end 2023), DenoKV does not support
          * range counts. So we have to run a normal query and use the result set length.

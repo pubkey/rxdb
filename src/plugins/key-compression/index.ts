@@ -33,10 +33,12 @@ import type {
     RxDocumentWriteData
 } from '../../types/index.d.ts';
 import {
+    clone,
     flatClone,
     getFromMapOrCreate,
     isMaybeReadonlyArray
 } from '../../plugins/utils/index.ts';
+import { prepareQuery } from '../../rx-query.ts';
 
 declare type CompressionState = {
     table: CompressionTable;
@@ -139,28 +141,7 @@ export function wrappedKeyCompressionStorage<Internals, InstanceCreationOptions>
     const statics: RxStorageStatics = Object.assign(
         {},
         args.storage.statics,
-        {
-            prepareQuery<RxDocType>(
-                schema: RxJsonSchema<RxDocumentData<RxDocType>>,
-                mutateableQuery: FilledMangoQuery<RxDocType>
-            ): PreparedQuery<RxDocType> {
-                if (schema.keyCompression) {
-                    const compressionState = getCompressionStateByRxJsonSchema(schema);
-                    mutateableQuery = compressQuery(
-                        compressionState.table,
-                        mutateableQuery as any
-                    ) as any;
-                    return args.storage.statics.prepareQuery(
-                        compressionState.compressedSchema,
-                        mutateableQuery
-                    );
-                }
-                return args.storage.statics.prepareQuery(
-                    schema,
-                    mutateableQuery
-                );
-            }
-        }
+        {}
     );
 
     return Object.assign(
@@ -202,12 +183,28 @@ export function wrappedKeyCompressionStorage<Internals, InstanceCreationOptions>
                     )
                 );
 
-                return wrapRxStorageInstance(
+                const wrappedInstance = wrapRxStorageInstance(
                     params.schema,
                     instance,
                     modifyToStorage,
                     modifyFromStorage
                 );
+
+                const queryBefore = wrappedInstance.query.bind(wrappedInstance);
+                wrappedInstance.query = async (preparedQuery: PreparedQuery<RxDocType>) => {
+                    const compressedQuery: FilledMangoQuery<RxDocType> = compressQuery(
+                        compressionState.table,
+                        preparedQuery.query as any
+                    ) as any;
+
+                    const compressedPreparedQuery = prepareQuery(
+                        compressionState.compressedSchema,
+                        compressedQuery
+                    );
+                    return queryBefore(compressedPreparedQuery);
+                }
+
+                return wrappedInstance;
             }
         }
     );

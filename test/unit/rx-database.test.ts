@@ -8,7 +8,8 @@ import {
     randomCouchString,
     RxDatabase,
     isRxDatabaseFirstTimeInstantiated,
-    defaultHashSha256
+    defaultHashSha256,
+    prepareQuery
 } from '../../plugins/core/index.mjs';
 
 import AsyncTestUtil from 'async-test-util';
@@ -273,7 +274,7 @@ config.parallel('rx-database.test.ts', () => {
 
                 async function getStoreDocs(db: RxDatabase) {
                     const result = await db.internalStore.query(
-                        db.storage.statics.prepareQuery(
+                        prepareQuery(
                             db.internalStore.schema,
                             {
                                 selector: {

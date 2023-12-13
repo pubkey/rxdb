@@ -4,6 +4,7 @@ import type {
     BulkWriteRow,
     CategorizeBulkWriteRowsOutput,
     EventBulk,
+    PreparedQuery,
     RxAttachmentWriteData,
     RxConflictResultionTask,
     RxConflictResultionTaskSolution,
@@ -22,7 +23,6 @@ import type {
 import type {
     FoundationDBDatabase,
     FoundationDBIndexMeta,
-    FoundationDBPreparedQuery,
     FoundationDBStorageInternals,
     RxStorageFoundationDB,
     RxStorageFoundationDBInstanceCreationOptions,
@@ -226,11 +226,11 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
             return ret;
         });
     }
-    query(preparedQuery: FoundationDBPreparedQuery<RxDocType>): Promise<RxStorageQueryResult<RxDocType>> {
+    query(preparedQuery: PreparedQuery<RxDocType>): Promise<RxStorageQueryResult<RxDocType>> {
         return queryFoundationDB(this, preparedQuery);
     }
     async count(
-        preparedQuery: FoundationDBPreparedQuery<RxDocType>
+        preparedQuery: PreparedQuery<RxDocType>
     ): Promise<RxStorageCountResult> {
         /**
          * At this point in time (end 2022), FoundationDB does not support

@@ -34,7 +34,8 @@ import type {
     RxConflictResultionTaskSolution,
     RxStorageDefaultCheckpoint,
     RxStorageCountResult,
-    RxStorageInfoResult
+    RxStorageInfoResult,
+    PreparedQuery
 } from '../../types/index.d.ts';
 import {
     closeLokiCollections,
@@ -48,7 +49,8 @@ import {
     mustUseLocalState,
     handleRemoteRequest,
     RX_STORAGE_NAME_LOKIJS,
-    transformRegexToRegExp
+    transformRegexToRegExp,
+    patchLokiJSQuery
 } from './lokijs-helper.ts';
 import type { RxStorageLoki } from './rx-storage-lokijs.ts';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper.ts';
@@ -217,7 +219,8 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         });
         return ret;
     }
-    async query(preparedQuery: MangoQuery<RxDocType>): Promise<RxStorageQueryResult<RxDocType>> {
+    async query(preparedQueryOriginal: PreparedQuery<RxDocType>): Promise<RxStorageQueryResult<RxDocType>> {
+        let preparedQuery = patchLokiJSQuery(preparedQueryOriginal.query);
         const localState = await mustUseLocalState(this);
         if (!localState) {
             return requestRemoteInstance(this, 'query', [preparedQuery]);
@@ -271,7 +274,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         };
     }
     async count(
-        preparedQuery: MangoQuery<RxDocType>
+        preparedQuery: PreparedQuery<RxDocType>
     ): Promise<RxStorageCountResult> {
         const result = await this.query(preparedQuery);
         return {
