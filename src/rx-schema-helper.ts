@@ -251,7 +251,6 @@ export function fillWithDefaultSettings<T = any>(
     });
 
     if (useIndexes.length === 0) {
-        console.log('HAS NONE');
         useIndexes.push(getDefaultIndex(primaryPath));
     }
 

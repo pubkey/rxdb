@@ -881,10 +881,6 @@ export async function getChangedDocumentsSince<RxDocType, CheckpointType>(
         return storageInstance.getChangedDocumentsSince(limit, checkpoint);
     }
 
-
-    console.log('getChangedDocumentsSince:()');
-    console.dir(checkpoint);
-
     const primaryPath = getPrimaryFieldOfPrimaryKey(storageInstance.schema.primaryKey);
     const sinceLwt = checkpoint ? (checkpoint as unknown as RxStorageDefaultCheckpoint).lwt : RX_META_LWT_MINIMUM;
     const sinceId = checkpoint ? (checkpoint as unknown as RxStorageDefaultCheckpoint).id : '';

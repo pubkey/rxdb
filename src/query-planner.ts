@@ -42,9 +42,6 @@ export function getQueryPlan<RxDocType>(
         indexes = [query.index];
     }
 
-    console.log('.-....................');
-    console.dir({schema, query});
-
     /**
      * Most storages do not support descending indexes
      * so having a 'desc' in the sorting, means we always have to re-sort the results.

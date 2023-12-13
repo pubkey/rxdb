@@ -38,12 +38,10 @@ export async function queryFoundationDB<RxDocType>(
 
 
     const indexForName = queryPlanFields.slice(0);
-    indexForName.unshift('_deleted');
     const indexName = getFoundationDBIndexName(indexForName);
     const indexDB = ensureNotFalsy(dbs.indexes[indexName]).db;
 
     let lowerBound: any[] = queryPlan.startKeys;
-    lowerBound = [false].concat(lowerBound);
     const lowerBoundString = getStartIndexStringFromLowerBound(
         instance.schema,
         indexForName,
@@ -52,7 +50,6 @@ export async function queryFoundationDB<RxDocType>(
     );
 
     let upperBound: any[] = queryPlan.endKeys;
-    upperBound = [false].concat(upperBound);
     const upperBoundString = getStartIndexStringFromUpperBound(
         instance.schema,
         indexForName,
