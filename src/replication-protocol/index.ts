@@ -24,6 +24,7 @@ import type {
     RxDocumentData,
     RxReplicationHandler,
     RxReplicationWriteToMasterRow,
+    RxStorage,
     RxStorageInstance,
     RxStorageInstanceReplicationInput,
     RxStorageInstanceReplicationState,
@@ -42,6 +43,7 @@ import { startReplicationDownstream } from './downstream.ts';
 import { docStateToWriteDoc, getUnderlyingPersistentStorage, writeDocToDocState } from './helper.ts';
 import { startReplicationUpstream } from './upstream.ts';
 import { fillWriteDataForAttachmentsChange } from '../plugins/attachments/index.ts';
+import { getChangedDocumentsSince } from '../rx-storage-helper.ts';
 
 
 export * from './checkpoint.ts';
@@ -164,6 +166,7 @@ export async function awaitRxStorageReplicationIdle(
 
 
 export function rxStorageInstanceToReplicationHandler<RxDocType, MasterCheckpointType>(
+    storage: RxStorage<any, any>,
     instance: RxStorageInstance<RxDocType, any, any, MasterCheckpointType>,
     conflictHandler: RxConflictHandler<RxDocType>,
     databaseInstanceToken: string,
@@ -211,7 +214,10 @@ export function rxStorageInstanceToReplicationHandler<RxDocType, MasterCheckpoin
             checkpoint,
             batchSize
         ) {
-            return instance.getChangedDocumentsSince(
+            return getChangedDocumentsSince(
+                primaryPath,
+                storage,
+                instance,
                 batchSize,
                 checkpoint
             ).then(async (result) => {

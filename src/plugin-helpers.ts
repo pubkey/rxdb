@@ -19,6 +19,7 @@ import type {
     MaybePromise
 } from './types/index.d.ts';
 import {
+    ensureNotFalsy,
     flatClone,
     getFromMapOrCreate,
     requestIdleCallbackIfAvailable
@@ -272,8 +273,8 @@ export function wrapRxStorageInstance<RxDocType>(
                     return ret;
                 });
         },
-        getChangedDocumentsSince: (limit, checkpoint) => {
-            return instance.getChangedDocumentsSince(limit, checkpoint)
+        getChangedDocumentsSince: !instance.getChangedDocumentsSince ? undefined : (limit, checkpoint) => {
+            return ensureNotFalsy(instance.getChangedDocumentsSince)(limit, checkpoint)
                 .then(async (result) => {
                     return {
                         checkpoint: result.checkpoint,

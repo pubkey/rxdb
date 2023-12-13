@@ -28,16 +28,19 @@ import type {
     StringKeys,
     RxStorageWriteErrorConflict,
     RxStorageWriteErrorAttachment,
-    RxStorage
+    RxStorage,
+    RxStorageDefaultCheckpoint
 } from './types/index.d.ts';
 import {
     PROMISE_RESOLVE_TRUE,
+    RX_META_LWT_MINIMUM,
     appendToArray,
     createRevision,
     ensureNotFalsy,
     flatClone,
     getDefaultRevision,
     getDefaultRxDocumentMeta,
+    lastOfArray,
     now,
     promiseWait,
     randomCouchString
@@ -764,9 +767,9 @@ export function getWrappedStorageInstance<
                 () => storageInstance.getAttachmentData(documentId, attachmentId, digest)
             );
         },
-        getChangedDocumentsSince(limit: number, checkpoint?: any) {
+        getChangedDocumentsSince: !storageInstance.getChangedDocumentsSince ? undefined : (limit: number, checkpoint?: any) => {
             return database.lockedRun(
-                () => storageInstance.getChangedDocumentsSince(ensureNotFalsy(limit), checkpoint)
+                () => ensureNotFalsy(storageInstance.getChangedDocumentsSince)(ensureNotFalsy(limit), checkpoint)
             );
         },
         cleanup(minDeletedTime: number) {
@@ -859,6 +862,79 @@ export function hasEncryption(jsonSchema: RxJsonSchema<any>): boolean {
     }
 }
 
+
+export async function getChangedDocumentsSince<RxDocType, CheckpointType>(
+    primaryPath: string,
+    storage: RxStorage<any, any>,
+    storageInstance: RxStorageInstance<RxDocType, any, any, CheckpointType>,
+    limit: number,
+    checkpoint?: CheckpointType
+): Promise<{
+    documents: RxDocumentData<RxDocType>[];
+    /**
+     * The checkpoint contains data so that another
+     * call to getChangedDocumentsSince() will continue
+     * from exactly the last document that was returned before.
+     */
+    checkpoint: CheckpointType;
+}> {
+    if (storageInstance.getChangedDocumentsSince) {
+        return storageInstance.getChangedDocumentsSince(limit, checkpoint);
+    }
+
+    const sinceLwt = checkpoint ? (checkpoint as unknown as RxStorageDefaultCheckpoint).lwt : RX_META_LWT_MINIMUM;
+    const sinceId = checkpoint ? (checkpoint as unknown as RxStorageDefaultCheckpoint).id : '';
+    const query = storage.statics.prepareQuery<RxDocumentData<any>>(
+        storageInstance.schema,
+        {
+            selector: {
+                $or: [
+                    {
+                        '_meta.lwt': {
+                            $gt: sinceLwt
+                        }
+                    },
+                    {
+                        '_meta.lwt': {
+                            $eq: sinceLwt
+                        },
+                        [primaryPath]: {
+                            $gt: checkpoint ? sinceId : ''
+                        }
+                    }
+                ],
+                // add this hint for better index usage
+                '_meta.lwt': {
+                    $gte: sinceLwt
+                }
+            },
+            sort: [
+                { '_meta.lwt': 'asc' },
+                { [primaryPath]: 'asc' }
+            ],
+            skip: 0,
+            limit,
+            index: ['_meta.lwt', primaryPath]
+        }
+    );
+
+    const result = await storageInstance.query(query);
+    const documents = result.documents;
+    const lastDoc = lastOfArray(documents);
+
+    return {
+        documents: documents,
+        checkpoint: lastDoc ? {
+            id: (lastDoc as any)[primaryPath],
+            lwt: lastDoc._meta.lwt
+        } as any : checkpoint ? checkpoint : {
+            id: '',
+            lwt: 0
+        }
+    };
+}
+
+
 /**
  * Wraps the storage and simluates
  * delays. Mostly used in tests.
@@ -930,9 +1006,9 @@ export function randomDelayStorage<Internals, InstanceCreationOptions>(
                     return ret;
 
                 },
-                async getChangedDocumentsSince(a, b) {
+                getChangedDocumentsSince: !storageInstance.getChangedDocumentsSince ? undefined : async (a, b) => {
                     await promiseWait(input.delayTimeBefore());
-                    const ret = await storageInstance.getChangedDocumentsSince(a, b);
+                    const ret = await ensureNotFalsy(storageInstance.getChangedDocumentsSince)(a, b);
                     await promiseWait(input.delayTimeAfter());
                     return ret;
 

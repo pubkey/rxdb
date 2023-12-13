@@ -186,7 +186,7 @@ export interface RxStorageInstance<
      * storageInstance by checking the givent context-string. But this would make it impossible
      * to run a replication on the parentStorage itself.
      */
-    readonly underlyingPersistentStorage?: RxStorageInstance<RxDocType, any ,any, any>;
+    readonly underlyingPersistentStorage?: RxStorageInstance<RxDocType, any, any, any>;
 
     /**
      * Writes multiple documents to the storage instance.
@@ -287,8 +287,13 @@ export interface RxStorageInstance<
      * Must never return the same document multiple times in the same call operation.
      * This is used by RxDB to known what has changed since X so these docs can be handled by the backup or the replication
      * plugin.
+     *
+     * Important: This method is optional. If not defined,
+     * RxDB will manually run a query and use the last returned document
+     * for checkpointing. In  the future we might even remove this method completely
+     * and let RxDB do the work instead of the RxStorage.
      */
-    getChangedDocumentsSince(
+    getChangedDocumentsSince?(
         limit: number,
         /**
          * The checkpoint from with to start
