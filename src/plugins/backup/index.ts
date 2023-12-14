@@ -35,6 +35,7 @@ import {
     writeJsonToFile,
     writeToFile
 } from './file-util.ts';
+import { getChangedDocumentsSince } from '../../rx-storage-helper.ts';
 
 
 /**
@@ -143,7 +144,8 @@ export class RxBackupState {
                     let hasMore = true;
                     while (hasMore && !this.isStopped) {
                         await this.database.requestIdlePromise();
-                        const changesResult = await collection.storageInstance.getChangedDocumentsSince(
+                        const changesResult = await getChangedDocumentsSince(
+                            collection.storageInstance,
                             this.options.batchSize ? this.options.batchSize : 0,
                             lastCheckpoint
                         );

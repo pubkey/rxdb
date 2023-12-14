@@ -119,7 +119,9 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                     continue;
                 }
 
-                const normalizedQuery = deepFreeze(normalizeMangoQuery(schema, queryData.query));
+                const queryForStorage = clone(queryData.query) as any;
+                queryForStorage.selector._deleted = false;
+                const normalizedQuery = deepFreeze(normalizeMangoQuery(schema, queryForStorage));
                 const skip = normalizedQuery.skip ? normalizedQuery.skip : 0;
                 const limit = normalizedQuery.limit ? normalizedQuery.limit : Infinity;
                 const skipPlusLimit = skip + limit;
@@ -142,7 +144,11 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                     assert.deepStrictEqual(resultStaticsIds, queryData.expectedResultDocIds);
                 } catch (err) {
                     console.log('WRONG QUERY RESULTS FROM STATICS: ' + queryData.info);
-                    console.dir(queryData);
+                    console.dir({
+                        queryData,
+                        resultStaticsIds
+                    });
+
                     throw err;
                 }
 
@@ -170,7 +176,10 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                     assert.deepStrictEqual(resultIds, queryData.expectedResultDocIds);
                 } catch (err) {
                     console.log('WRONG QUERY RESULTS FROM RxStorageInstance.query(): ' + queryData.info);
-                    console.dir(queryData);
+                    console.dir({
+                        resultIds,
+                        queryData
+                    });
                     throw err;
                 }
 
@@ -229,7 +238,8 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
         schema: withIndexes(schemas.human, [
             ['age'],
             ['age', 'firstName'],
-            ['firstName']
+            ['firstName'],
+            ['passportId']
         ]),
         queries: [
             {
@@ -353,7 +363,8 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
         schema: withIndexes(schemas.human, [
             ['age'],
             ['age', 'firstName'],
-            ['firstName']
+            ['firstName'],
+            ['passportId']
         ]),
         queries: [
             {
@@ -962,7 +973,7 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
         },
         queries: [
             {
-                info: '$eq primary key',
+                info: '$eq primary key 2',
                 query: {
                     selector: {
                         id: {

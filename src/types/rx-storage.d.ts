@@ -188,16 +188,6 @@ export type RxStorageCountResult = {
     mode: 'fast' | 'slow';
 };
 
-export type RxStorageInfoResult = {
-    /**
-     * Contains the total amount of stored documents.
-     * This contains the _deleted and non-_deleted documents.
-     * This is used by RxDB to give the option to show
-     * loading percentage in replication and migration.
-     */
-    totalCount: number;
-};
-
 export type RxStorageInstanceCreationParams<RxDocType, InstanceCreationOptions> = {
 
     /**

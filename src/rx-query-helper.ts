@@ -220,10 +220,6 @@ export function getQueryMatcher<RxDocType>(
 
     const mingoQuery = getMingoQuery(query.selector as any);
     const fun: QueryMatcher<RxDocumentData<RxDocType>> = (doc: RxDocumentData<RxDocType>) => {
-        if (doc._deleted) {
-            return false;
-        }
-
         return mingoQuery.test(doc);
     };
     return fun;

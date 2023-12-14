@@ -1,4 +1,4 @@
-import { INDEX_MIN } from '../../query-planner.ts';
+import { INDEX_MAX, INDEX_MIN } from '../../query-planner.ts';
 import { getQueryMatcher, getSortComparator } from '../../rx-query-helper.ts';
 import type {
     PreparedQuery,
@@ -28,7 +28,7 @@ function rangeFieldToBooleanSubstitute(
     value: any
 ) {
     if (booleanIndexes.includes(fieldName)) {
-        const newValue = value ? '1' : '0';
+        const newValue = value === INDEX_MAX || value === true ? '1' : '0';
         return newValue;
     } else {
         return value;
@@ -61,9 +61,6 @@ export function getKeyRangeByQueryPlan(
             return rangeFieldToBooleanSubstitute(booleanIndexes, fieldName, v);
         })
         .map(mapKeyForKeyRange);
-
-    startKeys.unshift('0');
-    endKeys.unshift('0');
 
     const keyRange = IDBKeyRange.bound(
         startKeys,
@@ -124,7 +121,7 @@ export async function dexieQuery<RxDocType>(
             const store = tx.objectStore(DEXIE_DOCS_TABLE_NAME);
             let index: any;
             let indexName: string;
-            indexName = '[_deleted+' +
+            indexName = '[' +
                 queryPlanFields
                     .map(field => dexieReplaceIfStartsWithPipe(field))
                     .join('+')
@@ -139,10 +136,7 @@ export async function dexieQuery<RxDocType>(
                     if (cursor) {
                         // We have a record in cursor.value
                         const docData = fromDexieToStorage<RxDocType>(state.booleanIndexes, cursor.value);
-                        if (
-                            !docData._deleted &&
-                            (!queryMatcher || queryMatcher(docData))
-                        ) {
+                        if (!queryMatcher || queryMatcher(docData)) {
                             rows.push(docData);
                         }
 
@@ -153,7 +147,7 @@ export async function dexieQuery<RxDocType>(
                          * because we already have every relevant document.
                          */
                         if (
-                            queryPlan.sortFieldsSameAsIndexFields &&
+                            queryPlan.sortSatisfiedByIndex &&
                             rows.length === skipPlusLimit
                         ) {
                             res();
@@ -172,7 +166,7 @@ export async function dexieQuery<RxDocType>(
     );
 
 
-    if (!queryPlan.sortFieldsSameAsIndexFields) {
+    if (!queryPlan.sortSatisfiedByIndex) {
         const sortComparator = getSortComparator(instance.schema, preparedQuery.query);
         rows = rows.sort(sortComparator);
     }
@@ -224,7 +218,7 @@ export async function dexieCount<RxDocType>(
             const store = tx.objectStore(DEXIE_DOCS_TABLE_NAME);
             let index: any;
             let indexName: string;
-            indexName = '[_deleted+' +
+            indexName = '[' +
                 queryPlanFields
                     .map(field => dexieReplaceIfStartsWithPipe(field))
                     .join('+')

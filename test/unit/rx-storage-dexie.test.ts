@@ -52,7 +52,7 @@ config.parallel('rx-storage-dexie.test.js', () => {
         describe('.fromStorageToDexie()', () => {
             it('should convert unsupported IndexedDB key', () => {
                 const result = fromStorageToDexie<any>(
-                    [],
+                    ['_deleted'],
                     {
                         '|key': 'value',
                         '|objectArray': [{ ['|id']: '1' }],
@@ -82,7 +82,7 @@ config.parallel('rx-storage-dexie.test.js', () => {
         });
         describe('.fromDexieToStorage()', () => {
             it('should revert escaped unsupported IndexedDB key', () => {
-                const result = fromDexieToStorage([], {
+                const result = fromDexieToStorage(['_deleted'], {
                     '__key': 'value',
                     '__objectArray': [{ ['__id']: '1' }],
                     '__nestedObject': {
@@ -166,6 +166,8 @@ config.parallel('rx-storage-dexie.test.js', () => {
                     schema,
                     normalizeMangoQuery(schema, query)
                 );
+
+                console.dir(preparedQuery);
                 const queryPlan = preparedQuery.queryPlan;
                 const result = await storageInstance.query(preparedQuery);
                 return {
@@ -188,13 +190,13 @@ config.parallel('rx-storage-dexie.test.js', () => {
                 sort: [
                     { passportId: 'asc' }
                 ],
-                index: ['passportId', 'age']
+                index: ['_deleted', 'passportId', 'age']
             });
 
             // default should use default index
             assert.deepStrictEqual(
                 defaultAnalyzed.queryPlan.index,
-                ['passportId']
+                ['_meta.lwt', 'passportId']
             );
 
             // custom should use the custom index

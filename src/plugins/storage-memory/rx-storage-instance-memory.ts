@@ -23,7 +23,6 @@ import type {
     RxStorageChangeEvent,
     RxStorageCountResult,
     RxStorageDefaultCheckpoint,
-    RxStorageInfoResult,
     RxStorageInstance,
     RxStorageInstanceCreationParams,
     RxStorageQueryResult,
@@ -36,9 +35,9 @@ import {
     now,
     PROMISE_RESOLVE_TRUE,
     PROMISE_RESOLVE_VOID,
-    promiseWait,
     requestIdlePromiseNoQueue,
-    RX_META_LWT_MINIMUM
+    RX_META_LWT_MINIMUM,
+    toArray
 } from '../../plugins/utils/index.ts';
 import {
     boundGE,
@@ -272,6 +271,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         preparedQuery: PreparedQuery<RxDocType>
     ): Promise<RxStorageQueryResult<RxDocType>> {
         this.ensurePersistence();
+
         const queryPlan = preparedQuery.queryPlan;
         const query = preparedQuery.query;
 
@@ -288,10 +288,9 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         }
 
         const queryPlanFields: string[] = queryPlan.index;
-        const mustManuallyResort = !queryPlan.sortFieldsSameAsIndexFields;
-        const index: string[] | undefined = ['_deleted'].concat(queryPlanFields);
-        let lowerBound: any[] = queryPlan.startKeys;
-        lowerBound = [false].concat(lowerBound);
+        const mustManuallyResort = !queryPlan.sortSatisfiedByIndex;
+        const index: string[] | undefined = queryPlanFields;
+        const lowerBound: any[] = queryPlan.startKeys;
         const lowerBoundString = getStartIndexStringFromLowerBound(
             this.schema,
             index,
@@ -300,7 +299,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         );
 
         let upperBound: any[] = queryPlan.endKeys;
-        upperBound = [false].concat(upperBound);
+        upperBound = upperBound;
         const upperBoundString = getStartIndexStringFromUpperBound(
             this.schema,
             index,
@@ -309,6 +308,8 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         );
         const indexName = getMemoryIndexName(index);
         const docsWithIndex = this.internals.byIndex[indexName].docsWithIndex;
+
+
 
         let indexOfLower = (queryPlan.inclusiveStart ? boundGE : boundGT)(
             docsWithIndex,
@@ -372,67 +373,6 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
             count: result.documents.length,
             mode: 'fast'
         };
-    }
-
-    info(): Promise<RxStorageInfoResult> {
-        this.ensurePersistence();
-        return Promise.resolve({
-            totalCount: this.internals.documents.size
-        });
-    }
-
-    getChangedDocumentsSince(
-        limit: number,
-        checkpoint?: RxStorageDefaultCheckpoint
-    ): Promise<{
-        documents: RxDocumentData<RxDocType>[];
-        checkpoint: RxStorageDefaultCheckpoint;
-    }> {
-        this.ensurePersistence();
-        const sinceLwt = checkpoint ? checkpoint.lwt : RX_META_LWT_MINIMUM;
-        const sinceId = checkpoint ? checkpoint.id : '';
-
-        const index = ['_meta.lwt', this.primaryPath as any];
-        const indexName = getMemoryIndexName(index);
-
-        const lowerBoundString = getStartIndexStringFromLowerBound(
-            this.schema,
-            ['_meta.lwt', this.primaryPath as any],
-            [
-                sinceLwt,
-                sinceId
-            ],
-            false
-        );
-
-        const docsWithIndex = this.internals.byIndex[indexName].docsWithIndex;
-        let indexOfLower = boundGT(
-            docsWithIndex,
-            {
-                indexString: lowerBoundString
-            } as any,
-            compareDocsWithIndex
-        );
-
-        // TODO use array.slice() so we do not have to iterate here
-        const rows: RxDocumentData<RxDocType>[] = [];
-        while (rows.length < limit && indexOfLower < docsWithIndex.length) {
-            const currentDoc = docsWithIndex[indexOfLower];
-            rows.push(currentDoc.doc);
-            indexOfLower++;
-        }
-
-        const lastDoc = lastOfArray(rows);
-        return Promise.resolve({
-            documents: rows,
-            checkpoint: lastDoc ? {
-                id: lastDoc[this.primaryPath] as any,
-                lwt: lastDoc._meta.lwt
-            } : checkpoint ? checkpoint : {
-                id: '',
-                lwt: 0
-            }
-        });
     }
 
     cleanup(minimumDeletedTime: number): Promise<boolean> {

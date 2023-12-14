@@ -1,5 +1,6 @@
 import { countUntilNotMatching } from './plugins/utils/index.ts';
-import { getPrimaryFieldOfPrimaryKey } from './rx-schema-helper.ts';
+import { newRxError } from './rx-error.ts';
+import { getSchemaByObjectPath } from './rx-schema-helper.ts';
 import type {
     FilledMangoQuery,
     MangoQuerySelector,
@@ -20,9 +21,8 @@ export const INDEX_MAX = String.fromCharCode(65535);
  * Notice that for IndexedDB IDBKeyRange we have
  * to transform the value back to -Infinity
  * before we can use it in IDBKeyRange.bound.
- *
  */
-export const INDEX_MIN = Number.MIN_VALUE;
+export const INDEX_MIN = Number.MIN_SAFE_INTEGER;
 
 /**
  * Returns the query plan which contains
@@ -35,23 +35,43 @@ export function getQueryPlan<RxDocType>(
     schema: RxJsonSchema<RxDocumentData<RxDocType>>,
     query: FilledMangoQuery<RxDocType>
 ): RxQueryPlan {
-    const primaryPath = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
     const selector = query.selector;
 
     let indexes: string[][] = schema.indexes ? schema.indexes.slice(0) as any : [];
     if (query.index) {
         indexes = [query.index];
-    } else {
-        indexes.push([primaryPath]);
     }
 
-    const optimalSortIndex = query.sort.map(sortField => Object.keys(sortField)[0]);
-    const optimalSortIndexCompareString = optimalSortIndex.join(',');
     /**
      * Most storages do not support descending indexes
      * so having a 'desc' in the sorting, means we always have to re-sort the results.
      */
     const hasDescSorting = !!query.sort.find(sortField => Object.values(sortField)[0] === 'desc');
+
+    /**
+     * Some fields can be part of the selector while not being relevant for sorting
+     * because their selector operators specify that in all cases all matching docs
+     * would have the same value.
+     * For example the boolean field _deleted.
+     * TODO similar thing could be done for enums.
+     */
+    const sortIrrelevevantFields = new Set();
+    Object.keys(selector).forEach(fieldName => {
+        const schemaPart = getSchemaByObjectPath(schema, fieldName);
+        if (
+            schemaPart &&
+            schemaPart.type === 'boolean' &&
+            (selector as any)[fieldName].hasOwnProperty('$eq')
+        ) {
+            sortIrrelevevantFields.add(fieldName);
+        }
+    });
+
+
+    const optimalSortIndex = query.sort.map(sortField => Object.keys(sortField)[0]);
+    const optimalSortIndexCompareString = optimalSortIndex
+        .filter(f => !sortIrrelevevantFields.has(f))
+        .join(',');
 
     let currentBestQuality = -1;
     let currentBestQueryPlan: RxQueryPlan | undefined;
@@ -115,7 +135,7 @@ export function getQueryPlan<RxDocType>(
             endKeys: opts.map(opt => opt.endKey),
             inclusiveEnd,
             inclusiveStart,
-            sortFieldsSameAsIndexFields: !hasDescSorting && optimalSortIndexCompareString === index.join(','),
+            sortSatisfiedByIndex: !hasDescSorting && optimalSortIndexCompareString === index.filter(f => !sortIrrelevevantFields.has(f)).join(','),
             selectorSatisfiedByIndex: isSelectorSatisfiedByIndex(index, query.selector)
         };
         const quality = rateQueryPlan(
@@ -125,8 +145,7 @@ export function getQueryPlan<RxDocType>(
         );
         if (
             (
-                quality > 0 &&
-                quality > currentBestQuality
+                quality >= currentBestQuality
             ) ||
             query.index
         ) {
@@ -136,18 +155,12 @@ export function getQueryPlan<RxDocType>(
     });
 
     /**
-     * No index found, use the default index
+     * In all cases and index must be found
      */
     if (!currentBestQueryPlan) {
-        currentBestQueryPlan = {
-            index: [primaryPath],
-            startKeys: [INDEX_MIN],
-            endKeys: [INDEX_MAX],
-            inclusiveEnd: true,
-            inclusiveStart: true,
-            sortFieldsSameAsIndexFields: !hasDescSorting && optimalSortIndexCompareString === primaryPath,
-            selectorSatisfiedByIndex: isSelectorSatisfiedByIndex([primaryPath], query.selector)
-        };
+        throw newRxError('SNH', {
+            query
+        });
     }
 
     return currentBestQueryPlan;
@@ -156,6 +169,7 @@ export function getQueryPlan<RxDocType>(
 export const LOGICAL_OPERATORS = new Set(['$eq', '$gt', '$gte', '$lt', '$lte']);
 export const LOWER_BOUND_LOGICAL_OPERATORS = new Set(['$eq', '$gt', '$gte']);
 export const UPPER_BOUND_LOGICAL_OPERATORS = new Set(['$eq', '$lt', '$lte']);
+
 
 export function isSelectorSatisfiedByIndex(
     index: string[],
@@ -296,19 +310,8 @@ export function rateQueryPlan<RxDocType>(
     });
     addQuality(equalKeyCount * pointsPerMatchingKey * 1.5);
 
-    const pointsIfNoReSortMustBeDone = queryPlan.sortFieldsSameAsIndexFields ? 5 : 0;
+    const pointsIfNoReSortMustBeDone = queryPlan.sortSatisfiedByIndex ? 5 : 0;
     addQuality(pointsIfNoReSortMustBeDone);
-
-    // console.log('rateQueryPlan() result:');
-    // console.log({
-    //     query,
-    //     queryPlan,
-    //     nonMinKeyCount,
-    //     nonMaxKeyCount,
-    //     equalKeyCount,
-    //     pointsIfNoReSortMustBeDone,
-    //     quality
-    // });
 
     return quality;
 }

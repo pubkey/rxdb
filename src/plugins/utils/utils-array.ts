@@ -145,4 +145,12 @@ export function appendToArray<T>(ar: T[], add: T[] | readonly T[]): void {
     }
 }
 
+/**
+ * @link https://gist.github.com/telekosmos/3b62a31a5c43f40849bb
+ */
+export function uniqueArray(arrArg: string[]): string[] {
+    return arrArg.filter(function (elem, pos, arr) {
+        return arr.indexOf(elem) === pos;
+    });
+}
 

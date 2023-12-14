@@ -1,5 +1,5 @@
 import { firstValueFrom, filter } from 'rxjs';
-import { stackCheckpoints } from '../rx-storage-helper.ts';
+import { getChangedDocumentsSince, stackCheckpoints } from '../rx-storage-helper.ts';
 import type {
     BulkWriteRow,
     BulkWriteRowById,
@@ -136,7 +136,8 @@ export async function startReplicationUpstream<RxDocType, CheckpointType>(
                 await Promise.race(Array.from(promises));
             }
 
-            const upResult = await state.input.forkInstance.getChangedDocumentsSince(
+            const upResult = await getChangedDocumentsSince(
+                state.input.forkInstance,
                 state.input.pushBatchSize,
                 lastCheckpoint
             );

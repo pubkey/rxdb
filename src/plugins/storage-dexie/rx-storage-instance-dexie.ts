@@ -26,8 +26,7 @@ import type {
     RxStorageDefaultCheckpoint,
     CategorizeBulkWriteRowsOutput,
     RxStorageCountResult,
-    PreparedQuery,
-    RxStorageInfoResult
+    PreparedQuery
 } from '../../types/index.d.ts';
 import type {
     DexieSettings,
@@ -235,57 +234,6 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
                 mode: 'slow'
             };
         }
-    }
-
-    async info(): Promise<RxStorageInfoResult> {
-        const state = await this.internals;
-        const ret: RxStorageInfoResult = {
-            totalCount: -1
-        };
-        await state.dexieDb.transaction(
-            'r',
-            state.dexieTable,
-            async (_dexieTx) => {
-                ret.totalCount = await state.dexieTable.count();
-            }
-        );
-
-        return ret;
-    }
-
-    async getChangedDocumentsSince(
-        limit: number,
-        checkpoint?: RxStorageDefaultCheckpoint
-    ): Promise<{
-        documents: RxDocumentData<RxDocType>[];
-        checkpoint: RxStorageDefaultCheckpoint;
-    }> {
-        ensureNotClosed(this);
-        const sinceLwt = checkpoint ? checkpoint.lwt : RX_META_LWT_MINIMUM;
-        const sinceId = checkpoint ? checkpoint.id : '';
-        const state = await this.internals;
-
-
-        const query = state.dexieTable
-            .where('[_meta.lwt+' + this.primaryPath + ']')
-            .above([sinceLwt, sinceId])
-            .limit(limit);
-        const changedDocuments: RxDocumentData<RxDocType>[] = await query.toArray();
-        let changedDocs = changedDocuments.map(d => fromDexieToStorage<RxDocType>(state.booleanIndexes, d));
-        changedDocs = sortDocumentsByLastWriteTime(this.primaryPath as any, changedDocs);
-        changedDocs = changedDocs.slice(0, limit);
-
-        const lastDoc = lastOfArray(changedDocs);
-        return {
-            documents: changedDocs,
-            checkpoint: lastDoc ? {
-                id: lastDoc[this.primaryPath] as any,
-                lwt: lastDoc._meta.lwt
-            } : checkpoint ? checkpoint : {
-                id: '',
-                lwt: 0
-            }
-        };
     }
 
     changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, RxStorageDefaultCheckpoint>> {

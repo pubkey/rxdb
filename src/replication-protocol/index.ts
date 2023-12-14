@@ -42,6 +42,7 @@ import { startReplicationDownstream } from './downstream.ts';
 import { docStateToWriteDoc, getUnderlyingPersistentStorage, writeDocToDocState } from './helper.ts';
 import { startReplicationUpstream } from './upstream.ts';
 import { fillWriteDataForAttachmentsChange } from '../plugins/attachments/index.ts';
+import { getChangedDocumentsSince } from '../rx-storage-helper.ts';
 
 
 export * from './checkpoint.ts';
@@ -211,7 +212,8 @@ export function rxStorageInstanceToReplicationHandler<RxDocType, MasterCheckpoin
             checkpoint,
             batchSize
         ) {
-            return instance.getChangedDocumentsSince(
+            return getChangedDocumentsSince(
+                instance,
                 batchSize,
                 checkpoint
             ).then(async (result) => {
