@@ -17,7 +17,6 @@ import type {
     RxConflictResultionTaskSolution,
     RxStorageDefaultCheckpoint,
     RxStorageCountResult,
-    RxStorageInfoResult,
     RxConflictResultionTask,
     PreparedQuery
 } from '../../types/index.d.ts';
@@ -26,7 +25,7 @@ import { addRxStorageMultiInstanceSupport } from '../../rx-storage-multiinstance
 import type { DenoKVIndexMeta, DenoKVSettings, DenoKVStorageInternals } from './denokv-types.ts';
 import { RxStorageDenoKV } from './index.ts';
 import { CLEANUP_INDEX, DENOKV_DOCUMENT_ROOT_PATH, RX_STORAGE_NAME_DENOKV, getDenoGlobal, getDenoKVIndexName } from "./denokv-helper.ts";
-import { getIndexableStringMonad, getStartIndexStringFromLowerBound, changeIndexableStringByOneQuantum } from "../../custom-index.ts";
+import { getIndexableStringMonad, getStartIndexStringFromLowerBound } from "../../custom-index.ts";
 import { appendToArray, batchArray, lastOfArray, toArray } from "../utils/utils-array.ts";
 import { ensureNotFalsy } from "../utils/utils-other.ts";
 import { categorizeBulkWriteRows } from "../../rx-storage-helper.ts";
@@ -236,24 +235,6 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
             count: result.documents.length,
             mode: 'fast'
         };
-    }
-    async info(): Promise<RxStorageInfoResult> {
-        return this.retryUntilNoWriteInBetween(
-            async () => {
-                const kv = await this.kvPromise;
-                const range = kv.list({
-                    start: [this.keySpace, DENOKV_DOCUMENT_ROOT_PATH],
-                    end: [this.keySpace, DENOKV_DOCUMENT_ROOT_PATH, INDEX_MAX]
-                }, this.kvOptions);
-                let totalCount = 0;
-                for await (const res of range) {
-                    totalCount++;
-                }
-                return {
-                    totalCount
-                };
-            }
-        );
     }
     getAttachmentData(documentId: string, attachmentId: string, digest: string): Promise<string> {
         throw new Error("Method not implemented.");

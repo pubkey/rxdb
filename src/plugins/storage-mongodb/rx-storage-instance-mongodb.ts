@@ -18,7 +18,6 @@ import type {
     RxStorageChangeEvent,
     RxStorageCountResult,
     RxStorageDefaultCheckpoint,
-    RxStorageInfoResult,
     RxStorageInstance,
     RxStorageInstanceCreationParams,
     RxStorageQueryResult,
@@ -396,17 +395,6 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
         return {
             count,
             mode: 'fast'
-        };
-    }
-
-    async info(): Promise<RxStorageInfoResult> {
-        this.runningOperations.next(this.runningOperations.getValue() + 1);
-        await this.writeQueue;
-        const mongoCollection = await this.mongoCollectionPromise;
-        const totalCount = await mongoCollection.countDocuments();
-        this.runningOperations.next(this.runningOperations.getValue() - 1);
-        return {
-            totalCount
         };
     }
 

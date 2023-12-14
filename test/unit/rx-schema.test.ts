@@ -570,9 +570,6 @@ config.parallel('rx-schema.test.ts', () => {
                     ]
                 });
                 const normalizedSchema = normalizeRxJsonSchema(schema);
-
-                console.dir(normalizedSchema);
-
                 ensureNotFalsy(normalizedSchema.indexes).forEach(index => {
                     assert.ok(index.includes('id'));
                 });

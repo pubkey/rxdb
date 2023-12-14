@@ -749,11 +749,6 @@ export function getWrappedStorageInstance<
                 () => storageInstance.count(preparedQuery)
             );
         },
-        info() {
-            return database.lockedRun(
-                () => storageInstance.info()
-            );
-        },
         findDocumentsById(ids, deleted) {
             return database.lockedRun(
                 () => storageInstance.findDocumentsById(ids, deleted)
@@ -988,13 +983,6 @@ export function randomDelayStorage<Internals, InstanceCreationOptions>(
                 async count(a) {
                     await promiseWait(input.delayTimeBefore());
                     const ret = await storageInstance.count(a);
-                    await promiseWait(input.delayTimeAfter());
-                    return ret;
-
-                },
-                async info() {
-                    await promiseWait(input.delayTimeBefore());
-                    const ret = await storageInstance.info();
                     await promiseWait(input.delayTimeAfter());
                     return ret;
 

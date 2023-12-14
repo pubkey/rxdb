@@ -14,7 +14,6 @@ import type {
     RxStorageChangeEvent,
     RxStorageCountResult,
     RxStorageDefaultCheckpoint,
-    RxStorageInfoResult,
     RxStorageInstance,
     RxStorageInstanceCreationParams,
     RxStorageQueryResult,
@@ -242,21 +241,6 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
             count: result.documents.length,
             mode: 'fast'
         };
-    }
-    async info(): Promise<RxStorageInfoResult> {
-        const dbs = await this.internals.dbsPromise;
-        const ret: RxStorageInfoResult = {
-            totalCount: -1
-        };
-        await dbs.root.doTransaction(async (tx: any) => {
-            const mainTx = tx.at(dbs.main.subspace);
-            const range = await mainTx.getRangeAll(
-                '',
-                INDEX_MAX
-            );
-            ret.totalCount = range.length;
-        });
-        return ret;
     }
 
     async getAttachmentData(documentId: string, attachmentId: string, _digest: string): Promise<string> {

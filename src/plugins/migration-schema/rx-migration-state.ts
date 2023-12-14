@@ -66,6 +66,8 @@ import {
     addConnectedStorageToCollection,
     getPrimaryKeyOfInternalDocument
 } from '../../rx-database-internal-store.ts';
+import { prepareQuery } from '../../rx-query.ts';
+import { normalizeMangoQuery } from '../../rx-query-helper.ts';
 
 
 
@@ -451,8 +453,18 @@ export class RxMigrationState {
         let ret = 0;
         await Promise.all(
             storageInstances.map(async (instance) => {
-                const info = await instance.info();
-                ret += info.totalCount;
+
+                const preparedQuery = prepareQuery(
+                    instance.schema,
+                    normalizeMangoQuery(
+                        instance.schema,
+                        {
+                            selector: {}
+                        }
+                    )
+                );
+                const countResult = await instance.count(preparedQuery);
+                ret += countResult.count;
             })
         );
         return ret;
