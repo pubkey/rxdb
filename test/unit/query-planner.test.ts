@@ -354,7 +354,6 @@ config.parallel('query-planner.test.js', () => {
             assert.deepStrictEqual(queryPlan.index, ['_deleted', 'firstName', 'age', 'passportId']);
         });
         it('should have set sortSatisfiedByIndex=false when order is desc', () => {
-            console.log(',,,,,,,,,,,,,,,,,,,,,,,,');
             const schema = getHumanSchemaWithIndexes([
                 ['firstName', 'age'],
                 ['age', 'firstName']
@@ -375,9 +374,6 @@ config.parallel('query-planner.test.js', () => {
                 schema,
                 query
             );
-
-            console.dir(queryPlan);
-
             assert.strictEqual(queryPlan.sortSatisfiedByIndex, false);
         });
     });
