@@ -1,4 +1,5 @@
 import {
+    changeIndexableStringByOneQuantum,
     getStartIndexStringFromLowerBound,
     getStartIndexStringFromUpperBound
 } from '../../custom-index.ts';
@@ -42,7 +43,7 @@ export async function queryFoundationDB<RxDocType>(
     const indexDB = ensureNotFalsy(dbs.indexes[indexName]).db;
 
     let lowerBound: any[] = queryPlan.startKeys;
-    const lowerBoundString = getStartIndexStringFromLowerBound(
+    let lowerBoundString = getStartIndexStringFromLowerBound(
         instance.schema,
         indexForName,
         lowerBound,
@@ -50,7 +51,7 @@ export async function queryFoundationDB<RxDocType>(
     );
 
     let upperBound: any[] = queryPlan.endKeys;
-    const upperBoundString = getStartIndexStringFromUpperBound(
+    let upperBoundString = getStartIndexStringFromUpperBound(
         instance.schema,
         indexForName,
         upperBound,
@@ -79,6 +80,13 @@ export async function queryFoundationDB<RxDocType>(
                 }
             }
             return innerResult;
+        }
+
+        if (!queryPlan.inclusiveStart) {
+            lowerBoundString = changeIndexableStringByOneQuantum(lowerBoundString, 1);
+        }
+        if (queryPlan.inclusiveEnd) {
+            upperBoundString = changeIndexableStringByOneQuantum(upperBoundString, +1);
         }
 
         const range = indexTx.getRangeBatch(
