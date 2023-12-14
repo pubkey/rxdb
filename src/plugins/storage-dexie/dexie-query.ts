@@ -27,12 +27,8 @@ function rangeFieldToBooleanSubstitute(
     fieldName: string,
     value: any
 ) {
-    console.log('rangeFieldToBooleanSubstitute: ' + fieldName);
     if (booleanIndexes.includes(fieldName)) {
-        console.log('xxxx yes');
-        console.dir(value);
         const newValue = value === INDEX_MAX || value === true ? '1' : '0';
-        console.dir(newValue);
         return newValue;
     } else {
         return value;
@@ -65,9 +61,6 @@ export function getKeyRangeByQueryPlan(
             return rangeFieldToBooleanSubstitute(booleanIndexes, fieldName, v);
         })
         .map(mapKeyForKeyRange);
-
-    console.log('xxx new keyrange:');
-    console.dir({ queryPlan, startKeys, endKeys, booleanIndexes });
 
     const keyRange = IDBKeyRange.bound(
         startKeys,
@@ -109,14 +102,6 @@ export async function dexieQuery<RxDocType>(
 
     const queryPlanFields: string[] = queryPlan.index;
 
-
-    console.log('query:: ');
-    console.dir({
-        preparedQuery,
-        schema: instance.schema
-    });
-    console.dir(keyRange);
-
     let rows: any[] = [];
     await state.dexieDb.transaction(
         'r',
@@ -141,7 +126,6 @@ export async function dexieQuery<RxDocType>(
                     .map(field => dexieReplaceIfStartsWithPipe(field))
                     .join('+')
                 + ']';
-            console.log('indexName: ' + indexName);
             index = store.index(indexName);
 
 
@@ -152,8 +136,6 @@ export async function dexieQuery<RxDocType>(
                     if (cursor) {
                         // We have a record in cursor.value
                         const docData = fromDexieToStorage<RxDocType>(state.booleanIndexes, cursor.value);
-                        console.log('curseroror');
-                        console.dir(docData);
                         if (!queryMatcher || queryMatcher(docData)) {
                             rows.push(docData);
                         }

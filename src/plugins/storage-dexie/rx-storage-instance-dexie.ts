@@ -199,12 +199,7 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
             'r',
             state.dexieTable,
             async () => {
-
-                console.log('find by id ' + deleted);
-                console.dir(ids);
-
                 const docsInDb = await getDocsInDb<RxDocType>(this.internals, ids);
-                console.dir(docsInDb);
                 docsInDb.forEach(documentInDb => {
                     if (
                         documentInDb &&
@@ -213,8 +208,6 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
                         ret.push(documentInDb);
                     }
                 });
-
-                console.dir(ret);
             });
         return ret;
     }

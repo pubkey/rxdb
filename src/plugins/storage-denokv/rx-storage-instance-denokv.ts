@@ -387,11 +387,6 @@ export async function createDenoKVStorageInstance<RxDocType>(
         const indexAr = toArray(index);
         return indexAr;
     });
-    // used for `getChangedDocumentsSince()`
-    useIndexesFinal.push([
-        '_meta.lwt',
-        primaryPath
-    ]);
     useIndexesFinal.push(CLEANUP_INDEX);
     useIndexesFinal.forEach((indexAr, indexId) => {
         const indexName = getDenoKVIndexName(indexAr);

@@ -313,16 +313,5 @@ export function rateQueryPlan<RxDocType>(
     const pointsIfNoReSortMustBeDone = queryPlan.sortSatisfiedByIndex ? 5 : 0;
     addQuality(pointsIfNoReSortMustBeDone);
 
-    // console.log('rateQueryPlan() result:');
-    // console.log({
-    //     query,
-    //     queryPlan,
-    //     nonMinKeyCount,
-    //     nonMaxKeyCount,
-    //     equalKeyCount,
-    //     pointsIfNoReSortMustBeDone,
-    //     quality
-    // });
-
     return quality;
 }
