@@ -11,12 +11,6 @@ export function addIndexesToInternalsState<RxDocType>(
     const primaryPath = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
     const useIndexes: string[][] = !schema.indexes ? [] : schema.indexes.map(row => toArray(row)) as any;
 
-    // we need this as default index
-    useIndexes.push([
-        '_deleted',
-        primaryPath
-    ]);
-
     // we need this index for running cleanup()
     useIndexes.push([
         '_deleted',
@@ -32,19 +26,6 @@ export function addIndexesToInternalsState<RxDocType>(
             getIndexableString: getIndexableStringMonad(schema, indexAr)
         };
     });
-
-    // we need this index for the changes()
-    const changesIndex = [
-        '_meta.lwt',
-        primaryPath
-    ];
-    const indexName = getMemoryIndexName(changesIndex);
-    state.byIndex[indexName] = {
-        index: changesIndex,
-        docsWithIndex: [],
-        getIndexableString: getIndexableStringMonad(schema, changesIndex)
-    };
-
 }
 
 
