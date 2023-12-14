@@ -2,7 +2,6 @@ import type { ChangeEvent } from 'event-reduce-js';
 import type { RxChangeEvent } from './rx-change-event.d.ts';
 import type { RxDocumentMeta } from './rx-document.d.ts';
 import type { RxStorageWriteError } from './rx-error.d.ts';
-import type { MangoQuery } from './rx-query.d.ts';
 import type { RxJsonSchema } from './rx-schema.d.ts';
 import type { Override } from './util.d.ts';
 
@@ -169,8 +168,6 @@ export type RxStorageBulkWriteResponse<RxDocType> = {
     error: RxStorageWriteError<RxDocType>[];
 };
 
-export type PreparedQuery<DocType> = MangoQuery<DocType> | any;
-
 /**
  * We return a complex object instead of a single array
  * so we are able to add additional fields in the future.
@@ -189,16 +186,6 @@ export type RxStorageCountResult = {
      * if 'allowSlowCount' is not set.
      */
     mode: 'fast' | 'slow';
-};
-
-export type RxStorageInfoResult = {
-    /**
-     * Contains the total amount of stored documents.
-     * This contains the _deleted and non-_deleted documents.
-     * This is used by RxDB to give the option to show
-     * loading percentage in replication and migration.
-     */
-    totalCount: number;
 };
 
 export type RxStorageInstanceCreationParams<RxDocType, InstanceCreationOptions> = {

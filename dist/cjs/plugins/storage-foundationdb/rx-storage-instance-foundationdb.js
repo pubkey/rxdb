@@ -158,66 +158,10 @@ var RxStorageInstanceFoundationDB = exports.RxStorageInstanceFoundationDB = /*#_
       mode: 'fast'
     };
   };
-  _proto.info = async function info() {
-    var dbs = await this.internals.dbsPromise;
-    var ret = {
-      totalCount: -1
-    };
-    await dbs.root.doTransaction(async tx => {
-      var mainTx = tx.at(dbs.main.subspace);
-      var range = await mainTx.getRangeAll('', _queryPlanner.INDEX_MAX);
-      ret.totalCount = range.length;
-    });
-    return ret;
-  };
   _proto.getAttachmentData = async function getAttachmentData(documentId, attachmentId, _digest) {
     var dbs = await this.internals.dbsPromise;
     var attachment = await dbs.attachments.get((0, _index2.attachmentMapKey)(documentId, attachmentId));
     return attachment.data;
-  };
-  _proto.getChangedDocumentsSince = async function getChangedDocumentsSince(limit, checkpoint) {
-    var {
-      keySelector,
-      StreamingMode
-    } = require('foundationdb');
-    var dbs = await this.internals.dbsPromise;
-    var index = ['_meta.lwt', this.primaryPath];
-    var indexName = (0, _foundationdbHelpers.getFoundationDBIndexName)(index);
-    var indexMeta = dbs.indexes[indexName];
-    var lowerBoundString = '';
-    if (checkpoint) {
-      var checkpointPartialDoc = {
-        [this.primaryPath]: checkpoint.id,
-        _meta: {
-          lwt: checkpoint.lwt
-        }
-      };
-      lowerBoundString = indexMeta.getIndexableString(checkpointPartialDoc);
-    }
-    var result = await dbs.root.doTransaction(async tx => {
-      var innerResult = [];
-      var indexTx = tx.at(indexMeta.db.subspace);
-      var mainTx = tx.at(dbs.main.subspace);
-      var range = await indexTx.getRangeAll(keySelector.firstGreaterThan(lowerBoundString), _queryPlanner.INDEX_MAX, {
-        limit,
-        streamingMode: StreamingMode.Exact
-      });
-      var docIds = range.map(row => row[1]);
-      var docsData = await Promise.all(docIds.map(docId => mainTx.get(docId)));
-      (0, _index.appendToArray)(innerResult, docsData);
-      return innerResult;
-    });
-    var lastDoc = (0, _index.lastOfArray)(result);
-    return {
-      documents: result,
-      checkpoint: lastDoc ? {
-        id: lastDoc[this.primaryPath],
-        lwt: lastDoc._meta.lwt
-      } : checkpoint ? checkpoint : {
-        id: '',
-        lwt: 0
-      }
-    };
   };
   _proto.changeStream = function changeStream() {
     return this.changes$.asObservable();
@@ -317,7 +261,6 @@ function createFoundationDBStorageInstance(storage, params, settings) {
     useIndexes.push([primaryPath]);
     var useIndexesFinal = useIndexes.map(index => {
       var indexAr = (0, _index.toArray)(index);
-      indexAr.unshift('_deleted');
       return indexAr;
     });
     // used for `getChangedDocumentsSince()`

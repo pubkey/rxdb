@@ -124,4 +124,13 @@ export function appendToArray(ar, add) {
     ar.push(element);
   }
 }
+
+/**
+ * @link https://gist.github.com/telekosmos/3b62a31a5c43f40849bb
+ */
+export function uniqueArray(arrArg) {
+  return arrArg.filter(function (elem, pos, arr) {
+    return arr.indexOf(elem) === pos;
+  });
+}
 //# sourceMappingURL=utils-array.js.map

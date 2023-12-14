@@ -1,6 +1,6 @@
 import { newRxError, newRxTypeError } from "../../rx-error.js";
-import { RxStorageDexieStatics } from "../storage-dexie/index.js";
 import { deepEqual } from "../utils/index.js";
+import { prepareQuery } from "../../rx-query.js";
 
 /**
  * accidentally passing a non-valid object into the query params
@@ -113,7 +113,7 @@ export function checkMangoQuery(args) {
   ensureObjectDoesNotContainRegExp(args.mangoQuery);
 }
 export function areSelectorsSatisfiedByIndex(schema, query) {
-  var preparedQuery = RxStorageDexieStatics.prepareQuery(schema, query);
+  var preparedQuery = prepareQuery(schema, query);
   return preparedQuery.queryPlan.selectorSatisfiedByIndex;
 }
 

@@ -30,6 +30,12 @@ export declare function getComposedPrimaryKeyOfDocumentData<RxDocType>(jsonSchem
  */
 export declare function normalizeRxJsonSchema<T>(jsonSchema: RxJsonSchema<T>): RxJsonSchema<T>;
 /**
+ * If the schema does not specify any index,
+ * we add this index so we at least can run RxQuery()
+ * and only select non-deleted fields.
+ */
+export declare function getDefaultIndex(primaryPath: string): string[];
+/**
  * fills the schema-json with default-settings
  * @return cloned schemaObj
  */

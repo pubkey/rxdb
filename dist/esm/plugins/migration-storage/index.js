@@ -1,4 +1,4 @@
-import { createRevision, clone, randomCouchString, blobToBase64String } from "../../index.js";
+import { createRevision, clone, randomCouchString, blobToBase64String, prepareQuery } from "../../index.js";
 /**
  * Migrates collections of RxDB version A and puts them
  * into a RxDatabase that is created with version B.
@@ -37,14 +37,31 @@ logFunction) {
     databaseInstanceToken: oldDatabaseInstanceToken,
     devMode: false
   });
-  var preparedQuery = oldStorage.statics.prepareQuery(schema, {
-    selector: {},
+  var plainQuery = {
+    selector: {
+      _deleted: {
+        $eq: false
+      }
+    },
     limit: batchSize,
     sort: [{
       [primaryPath]: 'asc'
     }],
     skip: 0
-  });
+  };
+
+  /**
+   * In RxDB v15 we removed statics.prepareQuery()
+   * But to be downwards compatible, still use that
+   * when migrating from an old storage.
+   * TODO remove this in the next major version. v16.
+   */
+  var preparedQuery;
+  if (oldStorage.statics.prepareQuery) {
+    preparedQuery = oldStorage.statics.prepareQuery(schema, plainQuery);
+  } else {
+    preparedQuery = prepareQuery(schema, plainQuery);
+  }
   var _loop = async function () {
       log('loop once');
       /**

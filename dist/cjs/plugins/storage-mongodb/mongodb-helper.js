@@ -5,11 +5,13 @@ Object.defineProperty(exports, "__esModule", {
 });
 exports.RX_STORAGE_NAME_MONGODB = exports.MONGO_ID_SUBSTITUTE_FIELDNAME = void 0;
 exports.getMongoDBIndexName = getMongoDBIndexName;
+exports.prepareMongoDBQuery = prepareMongoDBQuery;
 exports.primarySwapMongoDBQuerySelector = primarySwapMongoDBQuerySelector;
 exports.swapMongoToRxDoc = swapMongoToRxDoc;
 exports.swapRxDocToMongo = swapRxDocToMongo;
 exports.swapToMongoSort = swapToMongoSort;
 var _index = require("../utils/index.js");
+var _rxSchemaHelper = require("../../rx-schema-helper.js");
 var RX_STORAGE_NAME_MONGODB = exports.RX_STORAGE_NAME_MONGODB = 'mongodb';
 
 /**
@@ -20,7 +22,6 @@ var RX_STORAGE_NAME_MONGODB = exports.RX_STORAGE_NAME_MONGODB = 'mongodb';
 var MONGO_ID_SUBSTITUTE_FIELDNAME = exports.MONGO_ID_SUBSTITUTE_FIELDNAME = '__id';
 function primarySwapMongoDBQuerySelector(primaryKey, selector) {
   selector = (0, _index.flatClone)(selector);
-  selector._deleted = false;
   if (primaryKey !== '_id') {
     return selector;
   }
@@ -44,6 +45,16 @@ function primarySwapMongoDBQuerySelector(primaryKey, selector) {
     return selector;
   }
 }
+function prepareMongoDBQuery(schema, mutateableQuery) {
+  var primaryKey = (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(schema.primaryKey);
+  var preparedQuery = {
+    query: mutateableQuery,
+    mongoSelector: primarySwapMongoDBQuerySelector(primaryKey, mutateableQuery.selector),
+    mongoSort: swapToMongoSort(mutateableQuery.sort)
+  };
+  return preparedQuery;
+}
+;
 function swapMongoToRxDoc(docData) {
   docData = (0, _index.flatClone)(docData);
   if (docData[MONGO_ID_SUBSTITUTE_FIELDNAME]) {

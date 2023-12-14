@@ -1,5 +1,5 @@
 import { Subject } from 'rxjs';
-import type { CategorizeBulkWriteRowsOutput, DefaultPreparedQuery, EventBulk, RxAttachmentWriteData, RxConflictResultionTask, RxDocumentData, RxJsonSchema, RxStorage, RxStorageChangeEvent, RxStorageDefaultCheckpoint } from '../../types/index.d.ts';
+import type { CategorizeBulkWriteRowsOutput, EventBulk, RxAttachmentWriteData, RxConflictResultionTask, RxDocumentData, RxJsonSchema, RxStorage, RxStorageChangeEvent, RxStorageDefaultCheckpoint } from '../../types/index.d.ts';
 export type RxStorageMemorySettings = {};
 export type RxStorageMemoryInstanceCreationOptions = {};
 export type RxStorageMemory = RxStorage<MemoryStorageInternals<any>, RxStorageMemoryInstanceCreationOptions> & {
@@ -75,4 +75,3 @@ export type DocWithIndexString<RxDocType> = {
     doc: RxDocumentData<RxDocType>;
     indexString: string;
 };
-export type MemoryPreparedQuery<DocType> = DefaultPreparedQuery<DocType>;

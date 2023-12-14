@@ -1,4 +1,4 @@
-import type { FilledMangoQuery, LokiDatabaseSettings, LokiSettings, LokiStorageInternals, RxDocumentData, RxJsonSchema, RxStorage, RxStorageInstanceCreationParams, RxStorageStatics } from '../../types/index.d.ts';
+import type { LokiDatabaseSettings, LokiSettings, LokiStorageInternals, RxStorage, RxStorageInstanceCreationParams, RxStorageStatics } from '../../types/index.d.ts';
 import { RxStorageInstanceLoki } from './rx-storage-instance-loki.ts';
 import type { LeaderElector } from 'broadcast-channel';
 export declare const RxStorageLokiStatics: RxStorageStatics;
@@ -6,7 +6,6 @@ export declare class RxStorageLoki implements RxStorage<LokiStorageInternals, Lo
     databaseSettings: LokiDatabaseSettings;
     name: string;
     statics: Readonly<{
-        prepareQuery<RxDocType>(schema: RxJsonSchema<RxDocumentData<RxDocType>>, mutateableQuery: FilledMangoQuery<RxDocType>): any;
         checkpointSchema: import("../../types/util").DeepReadonlyObject<import("../../types/rx-schema").JsonSchema>;
     }>;
     /**

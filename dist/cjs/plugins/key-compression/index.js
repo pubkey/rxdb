@@ -13,6 +13,7 @@ var _pluginHelpers = require("../../plugin-helpers.js");
 var _rxSchemaHelper = require("../../rx-schema-helper.js");
 var _rxStorageHelper = require("../../rx-storage-helper.js");
 var _index = require("../../plugins/utils/index.js");
+var _rxQuery = require("../../rx-query.js");
 /**
  * this plugin adds the keycompression-capabilities to rxdb
  * if you don't use this, ensure that you set disableKeyCompression to false in your schema
@@ -78,16 +79,7 @@ function getCompressionStateByRxJsonSchema(schema) {
   });
 }
 function wrappedKeyCompressionStorage(args) {
-  var statics = Object.assign({}, args.storage.statics, {
-    prepareQuery(schema, mutateableQuery) {
-      if (schema.keyCompression) {
-        var compressionState = getCompressionStateByRxJsonSchema(schema);
-        mutateableQuery = (0, _jsonschemaKeyCompression.compressQuery)(compressionState.table, mutateableQuery);
-        return args.storage.statics.prepareQuery(compressionState.compressedSchema, mutateableQuery);
-      }
-      return args.storage.statics.prepareQuery(schema, mutateableQuery);
-    }
-  });
+  var statics = Object.assign({}, args.storage.statics, {});
   return Object.assign({}, args.storage, {
     statics,
     async createStorageInstance(params) {
@@ -113,7 +105,14 @@ function wrappedKeyCompressionStorage(args) {
       var instance = await args.storage.createStorageInstance(Object.assign({}, params, {
         schema: childSchema
       }));
-      return (0, _pluginHelpers.wrapRxStorageInstance)(params.schema, instance, modifyToStorage, modifyFromStorage);
+      var wrappedInstance = (0, _pluginHelpers.wrapRxStorageInstance)(params.schema, instance, modifyToStorage, modifyFromStorage);
+      var queryBefore = wrappedInstance.query.bind(wrappedInstance);
+      wrappedInstance.query = async preparedQuery => {
+        var compressedQuery = (0, _jsonschemaKeyCompression.compressQuery)(compressionState.table, preparedQuery.query);
+        var compressedPreparedQuery = (0, _rxQuery.prepareQuery)(compressionState.compressedSchema, compressedQuery);
+        return queryBefore(compressedPreparedQuery);
+      };
+      return wrappedInstance;
     }
   });
 }

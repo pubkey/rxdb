@@ -8,6 +8,7 @@ import { calculateNewResults } from "./event-reduce.js";
 import { triggerCacheReplacement } from "./query-cache.js";
 import { getQueryMatcher, normalizeMangoQuery } from "./rx-query-helper.js";
 import { RxQuerySingleResult } from "./rx-query-single-result.js";
+import { getQueryPlan } from "./query-planner.js";
 var _queryCount = 0;
 var newQueryID = function () {
   return ++_queryCount;
@@ -186,8 +187,14 @@ export var RxQueryBase = /*#__PURE__*/function () {
       // can be mutated by the hooks so we have to deep clone first.
       mangoQuery: normalizeMangoQuery(this.collection.schema.jsonSchema, this.mangoQuery)
     };
+    hookInput.mangoQuery.selector._deleted = {
+      $eq: false
+    };
+    if (hookInput.mangoQuery.index) {
+      hookInput.mangoQuery.index.unshift('_deleted');
+    }
     runPluginHooks('prePrepareQuery', hookInput);
-    var value = this.collection.database.storage.statics.prepareQuery(this.collection.schema.jsonSchema, hookInput.mangoQuery);
+    var value = prepareQuery(this.collection.schema.jsonSchema, hookInput.mangoQuery);
     this.getPreparedQuery = () => value;
     return value;
   }
@@ -476,6 +483,28 @@ function __ensureEqual(rxQuery) {
     });
   }
   return Promise.resolve(ret); // true if results have changed
+}
+
+/**
+ * @returns a format of the query that can be used with the storage
+ * when calling RxStorageInstance().query()
+ */
+export function prepareQuery(schema, mutateableQuery) {
+  if (!mutateableQuery.sort) {
+    throw newRxError('SNH', {
+      query: mutateableQuery
+    });
+  }
+
+  /**
+   * Store the query plan together with the
+   * prepared query to save performance.
+   */
+  var queryPlan = getQueryPlan(schema, mutateableQuery);
+  return {
+    query: mutateableQuery,
+    queryPlan
+  };
 }
 
 /**

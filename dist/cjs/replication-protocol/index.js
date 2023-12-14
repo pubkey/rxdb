@@ -69,6 +69,7 @@ Object.keys(_upstream).forEach(function (key) {
   });
 });
 var _index2 = require("../plugins/attachments/index.js");
+var _rxStorageHelper = require("../rx-storage-helper.js");
 var _metaInstance = require("./meta-instance.js");
 Object.keys(_metaInstance).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
@@ -210,7 +211,7 @@ keepMeta = false) {
       return ret;
     })),
     masterChangesSince(checkpoint, batchSize) {
-      return instance.getChangedDocumentsSince(batchSize, checkpoint).then(async result => {
+      return (0, _rxStorageHelper.getChangedDocumentsSince)(instance, batchSize, checkpoint).then(async result => {
         return {
           checkpoint: result.documents.length > 0 ? result.checkpoint : checkpoint,
           documents: await Promise.all(result.documents.map(async plainDocumentData => {

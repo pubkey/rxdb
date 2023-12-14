@@ -472,7 +472,7 @@ export function createRxDatabase({
 export async function removeRxDatabase(databaseName, storage, password) {
   var databaseInstanceToken = randomCouchString(10);
   var dbInternalsStorageInstance = await createRxDatabaseStorageInstance(databaseInstanceToken, storage, databaseName, {}, false, password);
-  var collectionDocs = await getAllCollectionDocuments(storage.statics, dbInternalsStorageInstance);
+  var collectionDocs = await getAllCollectionDocuments(dbInternalsStorageInstance);
   var collectionNames = new Set();
   collectionDocs.forEach(doc => collectionNames.add(doc.data.name));
   var removedCollectionNames = Array.from(collectionNames);

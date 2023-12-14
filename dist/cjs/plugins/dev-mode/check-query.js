@@ -8,8 +8,8 @@ exports.checkMangoQuery = checkMangoQuery;
 exports.checkQuery = checkQuery;
 exports.ensureObjectDoesNotContainRegExp = ensureObjectDoesNotContainRegExp;
 var _rxError = require("../../rx-error.js");
-var _index = require("../storage-dexie/index.js");
-var _index2 = require("../utils/index.js");
+var _index = require("../utils/index.js");
+var _rxQuery = require("../../rx-query.js");
 /**
  * accidentally passing a non-valid object into the query params
  * is very hard to debug especially when queries are observed
@@ -78,7 +78,7 @@ function checkMangoQuery(args) {
   var schemaIndexes = schema.indexes ? schema.indexes : [];
   var index = args.mangoQuery.index;
   if (index) {
-    var isInSchema = schemaIndexes.find(schemaIndex => (0, _index2.deepEqual)(schemaIndex, index));
+    var isInSchema = schemaIndexes.find(schemaIndex => (0, _index.deepEqual)(schemaIndex, index));
     if (!isInSchema) {
       throw (0, _rxError.newRxError)('QU12', {
         collection: args.rxQuery.collection.name,
@@ -121,7 +121,7 @@ function checkMangoQuery(args) {
   ensureObjectDoesNotContainRegExp(args.mangoQuery);
 }
 function areSelectorsSatisfiedByIndex(schema, query) {
-  var preparedQuery = _index.RxStorageDexieStatics.prepareQuery(schema, query);
+  var preparedQuery = (0, _rxQuery.prepareQuery)(schema, query);
   return preparedQuery.queryPlan.selectorSatisfiedByIndex;
 }
 

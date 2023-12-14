@@ -16,6 +16,7 @@ exports.removeOneFromArrayIfMatches = removeOneFromArrayIfMatches;
 exports.shuffleArray = shuffleArray;
 exports.sumNumberArray = sumNumberArray;
 exports.toArray = toArray;
+exports.uniqueArray = uniqueArray;
 function lastOfArray(ar) {
   return ar[ar.length - 1];
 }
@@ -141,5 +142,14 @@ function appendToArray(ar, add) {
     var element = add[i];
     ar.push(element);
   }
+}
+
+/**
+ * @link https://gist.github.com/telekosmos/3b62a31a5c43f40849bb
+ */
+function uniqueArray(arrArg) {
+  return arrArg.filter(function (elem, pos, arr) {
+    return arr.indexOf(elem) === pos;
+  });
 }
 //# sourceMappingURL=utils-array.js.map

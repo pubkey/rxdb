@@ -1,4 +1,4 @@
-import type { CollectionsOfDatabase, InternalStoreCollectionDocType, InternalStoreDocType, InternalStoreStorageTokenDocType, RxCollection, RxDatabase, RxDocumentData, RxJsonSchema, RxStorageInstance, RxStorageStatics } from './types/index.d.ts';
+import type { CollectionsOfDatabase, InternalStoreCollectionDocType, InternalStoreDocType, InternalStoreStorageTokenDocType, RxCollection, RxDatabase, RxDocumentData, RxJsonSchema, RxStorageInstance } from './types/index.d.ts';
 export declare const INTERNAL_CONTEXT_COLLECTION = "collection";
 export declare const INTERNAL_CONTEXT_STORAGE_TOKEN = "storage-token";
 export declare const INTERNAL_CONTEXT_MIGRATION_STATUS = "rx-migration-status";
@@ -17,7 +17,7 @@ export declare function getPrimaryKeyOfInternalDocument(key: string, context: st
  * Returns all internal documents
  * with context 'collection'
  */
-export declare function getAllCollectionDocuments(storageStatics: RxStorageStatics, storageInstance: RxStorageInstance<InternalStoreDocType<any>, any, any>): Promise<RxDocumentData<InternalStoreCollectionDocType>[]>;
+export declare function getAllCollectionDocuments(storageInstance: RxStorageInstance<InternalStoreDocType<any>, any, any>): Promise<RxDocumentData<InternalStoreCollectionDocType>[]>;
 /**
  * to not confuse multiInstance-messages with other databases that have the same
  * name and adapter, but do not share state with this one (for example in-memory-instances),

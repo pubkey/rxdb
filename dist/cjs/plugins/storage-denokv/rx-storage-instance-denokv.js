@@ -185,81 +185,8 @@ var RxStorageInstanceDenoKV = exports.RxStorageInstanceDenoKV = /*#__PURE__*/fun
       mode: 'fast'
     };
   };
-  _proto.info = async function info() {
-    return this.retryUntilNoWriteInBetween(async () => {
-      var kv = await this.kvPromise;
-      var range = kv.list({
-        start: [this.keySpace, _denokvHelper.DENOKV_DOCUMENT_ROOT_PATH],
-        end: [this.keySpace, _denokvHelper.DENOKV_DOCUMENT_ROOT_PATH, _queryPlanner.INDEX_MAX]
-      }, this.kvOptions);
-      var totalCount = 0;
-      for await (var res of range) {
-        totalCount++;
-      }
-      return {
-        totalCount
-      };
-    });
-  };
   _proto.getAttachmentData = function getAttachmentData(documentId, attachmentId, digest) {
     throw new Error("Method not implemented.");
-  };
-  _proto.getChangedDocumentsSince = async function getChangedDocumentsSince(limit, checkpoint) {
-    return this.retryUntilNoWriteInBetween(async () => {
-      var kv = await this.kvPromise;
-      var index = ['_meta.lwt', this.primaryPath];
-      var indexName = (0, _denokvHelper.getDenoKVIndexName)(index);
-      var indexMeta = this.internals.indexes[indexName];
-      var lowerBoundString = '';
-      if (checkpoint) {
-        var checkpointPartialDoc = {
-          [this.primaryPath]: checkpoint.id,
-          _meta: {
-            lwt: checkpoint.lwt
-          }
-        };
-        lowerBoundString = indexMeta.getIndexableString(checkpointPartialDoc);
-        lowerBoundString = (0, _customIndex.changeIndexableStringByOneQuantum)(lowerBoundString, 1);
-      }
-      var range = kv.list({
-        start: [this.keySpace, indexMeta.indexId, lowerBoundString],
-        end: [this.keySpace, indexMeta.indexId, _queryPlanner.INDEX_MAX]
-      }, {
-        consistency: this.settings.consistencyLevel,
-        limit,
-        batchSize: this.settings.batchSize
-      });
-      var docIds = [];
-      for await (var row of range) {
-        var docId = row.value;
-        docIds.push([this.keySpace, _denokvHelper.DENOKV_DOCUMENT_ROOT_PATH, docId]);
-      }
-
-      /**
-       * We have to run in batches because without it says
-       * "TypeError: too many ranges (max 10)"
-       */
-      var batches = (0, _utilsArray.batchArray)(docIds, 10);
-      var result = [];
-      for (var batch of batches) {
-        var docs = await kv.getMany(batch);
-        docs.forEach(row => {
-          var docData = row.value;
-          result.push(docData);
-        });
-      }
-      var lastDoc = (0, _utilsArray.lastOfArray)(result);
-      return {
-        documents: result,
-        checkpoint: lastDoc ? {
-          id: lastDoc[this.primaryPath],
-          lwt: lastDoc._meta.lwt
-        } : checkpoint ? checkpoint : {
-          id: '',
-          lwt: 0
-        }
-      };
-    });
   };
   _proto.changeStream = function changeStream() {
     return this.changes$.asObservable();
@@ -361,11 +288,8 @@ async function createDenoKVStorageInstance(storage, params, settings) {
   useIndexes.push([primaryPath]);
   var useIndexesFinal = useIndexes.map(index => {
     var indexAr = (0, _utilsArray.toArray)(index);
-    indexAr.unshift('_deleted');
     return indexAr;
   });
-  // used for `getChangedDocumentsSince()`
-  useIndexesFinal.push(['_meta.lwt', primaryPath]);
   useIndexesFinal.push(_denokvHelper.CLEANUP_INDEX);
   useIndexesFinal.forEach((indexAr, indexId) => {
     var indexName = (0, _denokvHelper.getDenoKVIndexName)(indexAr);

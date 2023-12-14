@@ -1,4 +1,4 @@
-import { INDEX_MIN } from "../../query-planner.js";
+import { INDEX_MAX, INDEX_MIN } from "../../query-planner.js";
 import { getQueryMatcher, getSortComparator } from "../../rx-query-helper.js";
 import { dexieReplaceIfStartsWithPipe, DEXIE_DOCS_TABLE_NAME, fromDexieToStorage } from "./dexie-helper.js";
 export function mapKeyForKeyRange(k) {
@@ -8,7 +8,15 @@ export function mapKeyForKeyRange(k) {
     return k;
   }
 }
-export function getKeyRangeByQueryPlan(queryPlan, IDBKeyRange) {
+function rangeFieldToBooleanSubstitute(booleanIndexes, fieldName, value) {
+  if (booleanIndexes.includes(fieldName)) {
+    var newValue = value === INDEX_MAX || value === true ? '1' : '0';
+    return newValue;
+  } else {
+    return value;
+  }
+}
+export function getKeyRangeByQueryPlan(booleanIndexes, queryPlan, IDBKeyRange) {
   if (!IDBKeyRange) {
     if (typeof window === 'undefined') {
       throw new Error('IDBKeyRange missing');
@@ -16,20 +24,16 @@ export function getKeyRangeByQueryPlan(queryPlan, IDBKeyRange) {
       IDBKeyRange = window.IDBKeyRange;
     }
   }
-  var startKeys = queryPlan.startKeys.map(mapKeyForKeyRange);
-  var endKeys = queryPlan.endKeys.map(mapKeyForKeyRange);
-  var ret;
-  /**
-   * If index has only one field,
-   * we have to pass the keys directly, not the key arrays.
-   */
-  if (queryPlan.index.length === 1) {
-    var equalKeys = startKeys[0] === endKeys[0];
-    ret = IDBKeyRange.bound(startKeys[0], endKeys[0], equalKeys ? false : !queryPlan.inclusiveStart, equalKeys ? false : !queryPlan.inclusiveEnd);
-  } else {
-    ret = IDBKeyRange.bound(startKeys, endKeys, !queryPlan.inclusiveStart, !queryPlan.inclusiveEnd);
-  }
-  return ret;
+  var startKeys = queryPlan.startKeys.map((v, i) => {
+    var fieldName = queryPlan.index[i];
+    return rangeFieldToBooleanSubstitute(booleanIndexes, fieldName, v);
+  }).map(mapKeyForKeyRange);
+  var endKeys = queryPlan.endKeys.map((v, i) => {
+    var fieldName = queryPlan.index[i];
+    return rangeFieldToBooleanSubstitute(booleanIndexes, fieldName, v);
+  }).map(mapKeyForKeyRange);
+  var keyRange = IDBKeyRange.bound(startKeys, endKeys, !queryPlan.inclusiveStart, !queryPlan.inclusiveEnd);
+  return keyRange;
 }
 
 /**
@@ -46,7 +50,7 @@ export async function dexieQuery(instance, preparedQuery) {
   if (!queryPlan.selectorSatisfiedByIndex) {
     queryMatcher = getQueryMatcher(instance.schema, preparedQuery.query);
   }
-  var keyRange = getKeyRangeByQueryPlan(queryPlan, state.dexieDb._options.IDBKeyRange);
+  var keyRange = getKeyRangeByQueryPlan(state.booleanIndexes, queryPlan, state.dexieDb._options.IDBKeyRange);
   var queryPlanFields = queryPlan.index;
   var rows = [];
   await state.dexieDb.transaction('r', state.dexieTable, async dexieTx => {
@@ -63,25 +67,17 @@ export async function dexieQuery(instance, preparedQuery) {
 
     var store = tx.objectStore(DEXIE_DOCS_TABLE_NAME);
     var index;
-    if (queryPlanFields.length === 1 && queryPlanFields[0] === instance.primaryPath) {
-      index = store;
-    } else {
-      var indexName;
-      if (queryPlanFields.length === 1) {
-        indexName = dexieReplaceIfStartsWithPipe(queryPlanFields[0]);
-      } else {
-        indexName = '[' + queryPlanFields.map(field => dexieReplaceIfStartsWithPipe(field)).join('+') + ']';
-      }
-      index = store.index(indexName);
-    }
+    var indexName;
+    indexName = '[' + queryPlanFields.map(field => dexieReplaceIfStartsWithPipe(field)).join('+') + ']';
+    index = store.index(indexName);
     var cursorReq = index.openCursor(keyRange);
     await new Promise(res => {
       cursorReq.onsuccess = function (e) {
         var cursor = e.target.result;
         if (cursor) {
           // We have a record in cursor.value
-          var docData = fromDexieToStorage(cursor.value);
-          if (!docData._deleted && (!queryMatcher || queryMatcher(docData))) {
+          var docData = fromDexieToStorage(state.booleanIndexes, cursor.value);
+          if (!queryMatcher || queryMatcher(docData)) {
             rows.push(docData);
           }
 
@@ -91,7 +87,7 @@ export async function dexieQuery(instance, preparedQuery) {
            * we can abort iterating over the cursor
            * because we already have every relevant document.
            */
-          if (queryPlan.sortFieldsSameAsIndexFields && rows.length === skipPlusLimit) {
+          if (queryPlan.sortSatisfiedByIndex && rows.length === skipPlusLimit) {
             res();
           } else {
             cursor.continue();
@@ -103,7 +99,7 @@ export async function dexieQuery(instance, preparedQuery) {
       };
     });
   });
-  if (!queryPlan.sortFieldsSameAsIndexFields) {
+  if (!queryPlan.sortSatisfiedByIndex) {
     var sortComparator = getSortComparator(instance.schema, preparedQuery.query);
     rows = rows.sort(sortComparator);
   }
@@ -133,23 +129,15 @@ export async function dexieCount(instance, preparedQuery) {
   var state = await instance.internals;
   var queryPlan = preparedQuery.queryPlan;
   var queryPlanFields = queryPlan.index;
-  var keyRange = getKeyRangeByQueryPlan(queryPlan, state.dexieDb._options.IDBKeyRange);
+  var keyRange = getKeyRangeByQueryPlan(state.booleanIndexes, queryPlan, state.dexieDb._options.IDBKeyRange);
   var count = -1;
   await state.dexieDb.transaction('r', state.dexieTable, async dexieTx => {
     var tx = dexieTx.idbtrans;
     var store = tx.objectStore(DEXIE_DOCS_TABLE_NAME);
     var index;
-    if (queryPlanFields.length === 1 && queryPlanFields[0] === instance.primaryPath) {
-      index = store;
-    } else {
-      var indexName;
-      if (queryPlanFields.length === 1) {
-        indexName = dexieReplaceIfStartsWithPipe(queryPlanFields[0]);
-      } else {
-        indexName = '[' + queryPlanFields.map(field => dexieReplaceIfStartsWithPipe(field)).join('+') + ']';
-      }
-      index = store.index(indexName);
-    }
+    var indexName;
+    indexName = '[' + queryPlanFields.map(field => dexieReplaceIfStartsWithPipe(field)).join('+') + ']';
+    index = store.index(indexName);
     var request = index.count(keyRange);
     count = await new Promise((res, rej) => {
       request.onsuccess = function () {

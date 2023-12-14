@@ -1,5 +1,5 @@
 import { Subject } from 'rxjs';
-import { flatClone, now, ensureNotFalsy, isMaybeReadonlyArray, getFromMapOrThrow, getSortDocumentsByLastWriteTimeComparator, RX_META_LWT_MINIMUM, lastOfArray } from "../utils/index.js";
+import { flatClone, now, ensureNotFalsy, isMaybeReadonlyArray, getFromMapOrThrow } from "../utils/index.js";
 import { newRxError } from "../../rx-error.js";
 import { closeLokiCollections, getLokiDatabase, OPEN_LOKIJS_STORAGE_INSTANCES, LOKIJS_COLLECTION_DEFAULT_OPTIONS, stripLokiKey, getLokiSortComparator, getLokiLeaderElector, requestRemoteInstance, mustUseLocalState, handleRemoteRequest, RX_STORAGE_NAME_LOKIJS, transformRegexToRegExp } from "./lokijs-helper.js";
 import { getPrimaryFieldOfPrimaryKey } from "../../rx-schema-helper.js";
@@ -35,13 +35,11 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
         close: this.close.bind(this),
         query: this.query.bind(this),
         count: this.count.bind(this),
-        info: this.info.bind(this),
         findDocumentsById: this.findDocumentsById.bind(this),
         collectionName: this.collectionName,
         databaseName: this.databaseName,
         conflictResultionTasks: this.conflictResultionTasks.bind(this),
         getAttachmentData: this.getAttachmentData.bind(this),
-        getChangedDocumentsSince: this.getChangedDocumentsSince.bind(this),
         internals: this.internals,
         options: this.options,
         remove: this.remove.bind(this),
@@ -122,11 +120,12 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
     });
     return ret;
   };
-  _proto.query = async function query(preparedQuery) {
+  _proto.query = async function query(preparedQueryOriginal) {
     var localState = await mustUseLocalState(this);
     if (!localState) {
-      return requestRemoteInstance(this, 'query', [preparedQuery]);
+      return requestRemoteInstance(this, 'query', [preparedQueryOriginal]);
     }
+    var preparedQuery = ensureNotFalsy(preparedQueryOriginal.query);
     if (preparedQuery.selector) {
       preparedQuery = flatClone(preparedQuery);
       preparedQuery.selector = transformRegexToRegExp(preparedQuery.selector);
@@ -169,44 +168,6 @@ export var RxStorageInstanceLoki = /*#__PURE__*/function () {
   };
   _proto.getAttachmentData = function getAttachmentData(_documentId, _attachmentId, _digest) {
     throw new Error('Attachments are not implemented in the lokijs RxStorage. Make a pull request.');
-  };
-  _proto.info = async function info() {
-    var localState = await mustUseLocalState(this);
-    if (!localState) {
-      return requestRemoteInstance(this, 'info', []);
-    }
-    return {
-      totalCount: localState.collection.count()
-    };
-  };
-  _proto.getChangedDocumentsSince = async function getChangedDocumentsSince(limit, checkpoint) {
-    var localState = await mustUseLocalState(this);
-    if (!localState) {
-      return requestRemoteInstance(this, 'getChangedDocumentsSince', [limit, checkpoint]);
-    }
-    var sinceLwt = checkpoint ? checkpoint.lwt : RX_META_LWT_MINIMUM;
-    var query = localState.collection.chain().find({
-      '_meta.lwt': {
-        $gte: sinceLwt
-      }
-    }).sort(getSortDocumentsByLastWriteTimeComparator(this.primaryPath));
-    var changedDocs = query.data();
-    var first = changedDocs[0];
-    if (checkpoint && first && first[this.primaryPath] === checkpoint.id && first._meta.lwt === checkpoint.lwt) {
-      changedDocs.shift();
-    }
-    changedDocs = changedDocs.slice(0, limit);
-    var lastDoc = lastOfArray(changedDocs);
-    return {
-      documents: changedDocs.map(docData => stripLokiKey(docData)),
-      checkpoint: lastDoc ? {
-        id: lastDoc[this.primaryPath],
-        lwt: lastDoc._meta.lwt
-      } : checkpoint ? checkpoint : {
-        id: '',
-        lwt: 0
-      }
-    };
   };
   _proto.changeStream = function changeStream() {
     return this.changes$.asObservable();

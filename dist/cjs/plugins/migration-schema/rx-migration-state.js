@@ -13,6 +13,8 @@ var _broadcastChannel = require("broadcast-channel");
 var _index2 = require("../../replication-protocol/index.js");
 var _overwritable = require("../../overwritable.js");
 var _rxDatabaseInternalStore = require("../../rx-database-internal-store.js");
+var _rxQuery = require("../../rx-query.js");
+var _rxQueryHelper = require("../../rx-query-helper.js");
 var RxMigrationState = exports.RxMigrationState = /*#__PURE__*/function () {
   function RxMigrationState(collection, migrationStrategies, statusDocKey = [collection.name, 'v', collection.schema.version].join('-')) {
     this.started = false;
@@ -278,8 +280,11 @@ var RxMigrationState = exports.RxMigrationState = /*#__PURE__*/function () {
   _proto.countAllDoucments = async function countAllDoucments(storageInstances) {
     var ret = 0;
     await Promise.all(storageInstances.map(async instance => {
-      var info = await instance.info();
-      ret += info.totalCount;
+      var preparedQuery = (0, _rxQuery.prepareQuery)(instance.schema, (0, _rxQueryHelper.normalizeMangoQuery)(instance.schema, {
+        selector: {}
+      }));
+      var countResult = await instance.count(preparedQuery);
+      ret += countResult.count;
     }));
     return ret;
   };

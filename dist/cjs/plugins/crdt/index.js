@@ -1,6 +1,5 @@
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -15,8 +14,8 @@ exports.sortOperationComparator = sortOperationComparator;
 exports.updateCRDT = updateCRDT;
 var _rxError = require("../../rx-error.js");
 var _index = require("../../plugins/utils/index.js");
-var _modifyjs = _interopRequireDefault(require("modifyjs"));
 var _index2 = require("../../index.js");
+var _mingoUpdater = require("../update/mingo-updater.js");
 async function updateCRDT(entry) {
   entry = _index2.overwritable.deepFreezeWhenDevMode(entry);
   var jsonSchema = this.collection.schema.jsonSchema;
@@ -105,11 +104,11 @@ function runOperationOnDocument(storageStatics, schema, docData, operation) {
     }
     if (isMatching) {
       if (entryPart.ifMatch) {
-        docData = (0, _modifyjs.default)(docData, entryPart.ifMatch);
+        docData = (0, _mingoUpdater.mingoUpdater)(docData, entryPart.ifMatch);
       }
     } else {
       if (entryPart.ifNotMatch) {
-        docData = (0, _modifyjs.default)(docData, entryPart.ifNotMatch);
+        docData = (0, _mingoUpdater.mingoUpdater)(docData, entryPart.ifNotMatch);
       }
     }
   });

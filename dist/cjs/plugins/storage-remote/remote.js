@@ -7,6 +7,7 @@ exports.exposeRxStorageRemote = exposeRxStorageRemote;
 var _rxjs = require("rxjs");
 var _index = require("../../plugins/utils/index.js");
 var _storageRemoteHelpers = require("./storage-remote-helpers.js");
+var _rxStorageHelper = require("../../rx-storage-helper.js");
 /**
  * Run this on the 'remote' part,
  * so that RxStorageMessageChannel can connect to it.
@@ -176,7 +177,11 @@ function exposeRxStorageRemote(settings) {
           subs.forEach(sub => sub.unsubscribe());
           return;
         }
-        result = await storageInstance[message.method](message.params[0], message.params[1], message.params[2], message.params[3]);
+        if (message.method === 'getChangedDocumentsSince' && !storageInstance.getChangedDocumentsSince) {
+          result = await (0, _rxStorageHelper.getChangedDocumentsSince)(storageInstance, message.params[0], message.params[1]);
+        } else {
+          result = await storageInstance[message.method](message.params[0], message.params[1], message.params[2], message.params[3]);
+        }
         if (message.method === 'close' || message.method === 'remove') {
           closeThisConnection();
         }

@@ -8,7 +8,6 @@ export declare const INDEX_MAX: string;
  * Notice that for IndexedDB IDBKeyRange we have
  * to transform the value back to -Infinity
  * before we can use it in IDBKeyRange.bound.
- *
  */
 export declare const INDEX_MIN: number;
 /**

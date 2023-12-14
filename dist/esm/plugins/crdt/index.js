@@ -1,7 +1,7 @@
 import { newRxError } from "../../rx-error.js";
 import { clone, deepEqual, ensureNotFalsy, getProperty, now, objectPathMonad, setProperty, toArray } from "../../plugins/utils/index.js";
-import modifyjs from 'modifyjs';
 import { getQueryMatcher, overwritable } from "../../index.js";
+import { mingoUpdater } from "../update/mingo-updater.js";
 export async function updateCRDT(entry) {
   entry = overwritable.deepFreezeWhenDevMode(entry);
   var jsonSchema = this.collection.schema.jsonSchema;
@@ -90,11 +90,11 @@ function runOperationOnDocument(storageStatics, schema, docData, operation) {
     }
     if (isMatching) {
       if (entryPart.ifMatch) {
-        docData = modifyjs(docData, entryPart.ifMatch);
+        docData = mingoUpdater(docData, entryPart.ifMatch);
       }
     } else {
       if (entryPart.ifNotMatch) {
-        docData = modifyjs(docData, entryPart.ifNotMatch);
+        docData = mingoUpdater(docData, entryPart.ifNotMatch);
       }
     }
   });

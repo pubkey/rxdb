@@ -17,7 +17,15 @@ function mapKeyForKeyRange(k) {
     return k;
   }
 }
-function getKeyRangeByQueryPlan(queryPlan, IDBKeyRange) {
+function rangeFieldToBooleanSubstitute(booleanIndexes, fieldName, value) {
+  if (booleanIndexes.includes(fieldName)) {
+    var newValue = value === _queryPlanner.INDEX_MAX || value === true ? '1' : '0';
+    return newValue;
+  } else {
+    return value;
+  }
+}
+function getKeyRangeByQueryPlan(booleanIndexes, queryPlan, IDBKeyRange) {
   if (!IDBKeyRange) {
     if (typeof window === 'undefined') {
       throw new Error('IDBKeyRange missing');
@@ -25,20 +33,16 @@ function getKeyRangeByQueryPlan(queryPlan, IDBKeyRange) {
       IDBKeyRange = window.IDBKeyRange;
     }
   }
-  var startKeys = queryPlan.startKeys.map(mapKeyForKeyRange);
-  var endKeys = queryPlan.endKeys.map(mapKeyForKeyRange);
-  var ret;
-  /**
-   * If index has only one field,
-   * we have to pass the keys directly, not the key arrays.
-   */
-  if (queryPlan.index.length === 1) {
-    var equalKeys = startKeys[0] === endKeys[0];
-    ret = IDBKeyRange.bound(startKeys[0], endKeys[0], equalKeys ? false : !queryPlan.inclusiveStart, equalKeys ? false : !queryPlan.inclusiveEnd);
-  } else {
-    ret = IDBKeyRange.bound(startKeys, endKeys, !queryPlan.inclusiveStart, !queryPlan.inclusiveEnd);
-  }
-  return ret;
+  var startKeys = queryPlan.startKeys.map((v, i) => {
+    var fieldName = queryPlan.index[i];
+    return rangeFieldToBooleanSubstitute(booleanIndexes, fieldName, v);
+  }).map(mapKeyForKeyRange);
+  var endKeys = queryPlan.endKeys.map((v, i) => {
+    var fieldName = queryPlan.index[i];
+    return rangeFieldToBooleanSubstitute(booleanIndexes, fieldName, v);
+  }).map(mapKeyForKeyRange);
+  var keyRange = IDBKeyRange.bound(startKeys, endKeys, !queryPlan.inclusiveStart, !queryPlan.inclusiveEnd);
+  return keyRange;
 }
 
 /**
@@ -55,7 +59,7 @@ async function dexieQuery(instance, preparedQuery) {
   if (!queryPlan.selectorSatisfiedByIndex) {
     queryMatcher = (0, _rxQueryHelper.getQueryMatcher)(instance.schema, preparedQuery.query);
   }
-  var keyRange = getKeyRangeByQueryPlan(queryPlan, state.dexieDb._options.IDBKeyRange);
+  var keyRange = getKeyRangeByQueryPlan(state.booleanIndexes, queryPlan, state.dexieDb._options.IDBKeyRange);
   var queryPlanFields = queryPlan.index;
   var rows = [];
   await state.dexieDb.transaction('r', state.dexieTable, async dexieTx => {
@@ -72,25 +76,17 @@ async function dexieQuery(instance, preparedQuery) {
 
     var store = tx.objectStore(_dexieHelper.DEXIE_DOCS_TABLE_NAME);
     var index;
-    if (queryPlanFields.length === 1 && queryPlanFields[0] === instance.primaryPath) {
-      index = store;
-    } else {
-      var indexName;
-      if (queryPlanFields.length === 1) {
-        indexName = (0, _dexieHelper.dexieReplaceIfStartsWithPipe)(queryPlanFields[0]);
-      } else {
-        indexName = '[' + queryPlanFields.map(field => (0, _dexieHelper.dexieReplaceIfStartsWithPipe)(field)).join('+') + ']';
-      }
-      index = store.index(indexName);
-    }
+    var indexName;
+    indexName = '[' + queryPlanFields.map(field => (0, _dexieHelper.dexieReplaceIfStartsWithPipe)(field)).join('+') + ']';
+    index = store.index(indexName);
     var cursorReq = index.openCursor(keyRange);
     await new Promise(res => {
       cursorReq.onsuccess = function (e) {
         var cursor = e.target.result;
         if (cursor) {
           // We have a record in cursor.value
-          var docData = (0, _dexieHelper.fromDexieToStorage)(cursor.value);
-          if (!docData._deleted && (!queryMatcher || queryMatcher(docData))) {
+          var docData = (0, _dexieHelper.fromDexieToStorage)(state.booleanIndexes, cursor.value);
+          if (!queryMatcher || queryMatcher(docData)) {
             rows.push(docData);
           }
 
@@ -100,7 +96,7 @@ async function dexieQuery(instance, preparedQuery) {
            * we can abort iterating over the cursor
            * because we already have every relevant document.
            */
-          if (queryPlan.sortFieldsSameAsIndexFields && rows.length === skipPlusLimit) {
+          if (queryPlan.sortSatisfiedByIndex && rows.length === skipPlusLimit) {
             res();
           } else {
             cursor.continue();
@@ -112,7 +108,7 @@ async function dexieQuery(instance, preparedQuery) {
       };
     });
   });
-  if (!queryPlan.sortFieldsSameAsIndexFields) {
+  if (!queryPlan.sortSatisfiedByIndex) {
     var sortComparator = (0, _rxQueryHelper.getSortComparator)(instance.schema, preparedQuery.query);
     rows = rows.sort(sortComparator);
   }
@@ -142,23 +138,15 @@ async function dexieCount(instance, preparedQuery) {
   var state = await instance.internals;
   var queryPlan = preparedQuery.queryPlan;
   var queryPlanFields = queryPlan.index;
-  var keyRange = getKeyRangeByQueryPlan(queryPlan, state.dexieDb._options.IDBKeyRange);
+  var keyRange = getKeyRangeByQueryPlan(state.booleanIndexes, queryPlan, state.dexieDb._options.IDBKeyRange);
   var count = -1;
   await state.dexieDb.transaction('r', state.dexieTable, async dexieTx => {
     var tx = dexieTx.idbtrans;
     var store = tx.objectStore(_dexieHelper.DEXIE_DOCS_TABLE_NAME);
     var index;
-    if (queryPlanFields.length === 1 && queryPlanFields[0] === instance.primaryPath) {
-      index = store;
-    } else {
-      var indexName;
-      if (queryPlanFields.length === 1) {
-        indexName = (0, _dexieHelper.dexieReplaceIfStartsWithPipe)(queryPlanFields[0]);
-      } else {
-        indexName = '[' + queryPlanFields.map(field => (0, _dexieHelper.dexieReplaceIfStartsWithPipe)(field)).join('+') + ']';
-      }
-      index = store.index(indexName);
-    }
+    var indexName;
+    indexName = '[' + queryPlanFields.map(field => (0, _dexieHelper.dexieReplaceIfStartsWithPipe)(field)).join('+') + ']';
+    index = store.index(indexName);
     var request = index.count(keyRange);
     count = await new Promise((res, rej) => {
       request.onsuccess = function () {

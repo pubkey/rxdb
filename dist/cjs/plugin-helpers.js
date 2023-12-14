@@ -133,7 +133,6 @@ function wrapRxStorageInstance(originalSchema, instance, modifyToStorage, modify
     schema: originalSchema,
     collectionName: instance.collectionName,
     count: instance.count.bind(instance),
-    info: instance.info.bind(instance),
     remove: instance.remove.bind(instance),
     originalStorageInstance: instance,
     bulkWrite: async (documentWrites, context) => {
@@ -189,7 +188,7 @@ function wrapRxStorageInstance(originalSchema, instance, modifyToStorage, modify
         return ret;
       });
     },
-    getChangedDocumentsSince: (limit, checkpoint) => {
+    getChangedDocumentsSince: !instance.getChangedDocumentsSince ? undefined : (limit, checkpoint) => {
       return instance.getChangedDocumentsSince(limit, checkpoint).then(async result => {
         return {
           checkpoint: result.checkpoint,

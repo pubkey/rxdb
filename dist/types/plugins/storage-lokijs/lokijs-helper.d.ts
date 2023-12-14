@@ -1,5 +1,5 @@
 import { RxStorageInstanceLoki } from './rx-storage-instance-loki.ts';
-import type { DeterministicSortComparator, LokiDatabaseSettings, LokiDatabaseState, LokiLocalDatabaseState, MangoQuery, RxDocumentData, RxJsonSchema } from '../../types/index.d.ts';
+import type { DeterministicSortComparator, FilledMangoQuery, LokiDatabaseSettings, LokiDatabaseState, LokiLocalDatabaseState, RxDocumentData, RxJsonSchema } from '../../types/index.d.ts';
 import { LeaderElector } from 'broadcast-channel';
 export declare const CHANGES_COLLECTION_SUFFIX = "-rxdb-changes";
 export declare const LOKI_BROADCAST_CHANNEL_MESSAGE_TYPE = "rxdb-lokijs-remote-request";
@@ -23,7 +23,7 @@ export declare function closeLokiCollections(databaseName: string, collections: 
  * This function is at lokijs-helper
  * because we need it in multiple places.
  */
-export declare function getLokiSortComparator<RxDocType>(_schema: RxJsonSchema<RxDocumentData<RxDocType>>, query: MangoQuery<RxDocType>): DeterministicSortComparator<RxDocType>;
+export declare function getLokiSortComparator<RxDocType>(_schema: RxJsonSchema<RxDocumentData<RxDocType>>, query: FilledMangoQuery<RxDocType>): DeterministicSortComparator<RxDocType>;
 export declare function getLokiLeaderElector(databaseInstanceToken: string, broadcastChannelRefObject: any, databaseName: string): LeaderElector;
 /**
  * For multi-instance usage, we send requests to the RxStorage

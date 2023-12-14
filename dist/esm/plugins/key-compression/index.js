@@ -9,6 +9,7 @@ import { wrapRxStorageInstance } from "../../plugin-helpers.js";
 import { getPrimaryFieldOfPrimaryKey } from "../../rx-schema-helper.js";
 import { flatCloneDocWithMeta } from "../../rx-storage-helper.js";
 import { flatClone, getFromMapOrCreate, isMaybeReadonlyArray } from "../../plugins/utils/index.js";
+import { prepareQuery } from "../../rx-query.js";
 /**
  * Cache the compression table and the compressed schema
  * by the storage instance for better performance.
@@ -69,16 +70,7 @@ export function getCompressionStateByRxJsonSchema(schema) {
   });
 }
 export function wrappedKeyCompressionStorage(args) {
-  var statics = Object.assign({}, args.storage.statics, {
-    prepareQuery(schema, mutateableQuery) {
-      if (schema.keyCompression) {
-        var compressionState = getCompressionStateByRxJsonSchema(schema);
-        mutateableQuery = compressQuery(compressionState.table, mutateableQuery);
-        return args.storage.statics.prepareQuery(compressionState.compressedSchema, mutateableQuery);
-      }
-      return args.storage.statics.prepareQuery(schema, mutateableQuery);
-    }
-  });
+  var statics = Object.assign({}, args.storage.statics, {});
   return Object.assign({}, args.storage, {
     statics,
     async createStorageInstance(params) {
@@ -104,7 +96,14 @@ export function wrappedKeyCompressionStorage(args) {
       var instance = await args.storage.createStorageInstance(Object.assign({}, params, {
         schema: childSchema
       }));
-      return wrapRxStorageInstance(params.schema, instance, modifyToStorage, modifyFromStorage);
+      var wrappedInstance = wrapRxStorageInstance(params.schema, instance, modifyToStorage, modifyFromStorage);
+      var queryBefore = wrappedInstance.query.bind(wrappedInstance);
+      wrappedInstance.query = async preparedQuery => {
+        var compressedQuery = compressQuery(compressionState.table, preparedQuery.query);
+        var compressedPreparedQuery = prepareQuery(compressionState.compressedSchema, compressedQuery);
+        return queryBefore(compressedPreparedQuery);
+      };
+      return wrappedInstance;
     }
   });
 }

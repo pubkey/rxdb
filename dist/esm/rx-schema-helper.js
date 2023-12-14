@@ -15,6 +15,7 @@ export function getPseudoSchemaForVersion(version, primaryKey) {
         maxLength: 100
       }
     },
+    indexes: [[primaryKey]],
     required: [primaryKey]
   });
   return pseudoSchema;
@@ -104,6 +105,15 @@ export function normalizeRxJsonSchema(jsonSchema) {
 }
 
 /**
+ * If the schema does not specify any index,
+ * we add this index so we at least can run RxQuery()
+ * and only select non-deleted fields.
+ */
+export function getDefaultIndex(primaryPath) {
+  return ['_deleted', primaryPath];
+}
+
+/**
  * fills the schema-json with default-settings
  * @return cloned schemaObj
  */
@@ -164,22 +174,42 @@ export function fillWithDefaultSettings(schemaObj) {
 
   // version is 0 by default
   schemaObj.version = schemaObj.version || 0;
+  var useIndexes = schemaObj.indexes.map(index => {
+    var arIndex = isMaybeReadonlyArray(index) ? index.slice(0) : [index];
+    /**
+     * Append primary key to indexes that do not contain the primaryKey.
+     * All indexes must have the primaryKey to ensure a deterministic sort order.
+     */
+    if (!arIndex.includes(primaryPath)) {
+      arIndex.push(primaryPath);
+    }
 
-  /**
-   * Append primary key to indexes that do not contain the primaryKey.
-   * All indexes must have the primaryKey to ensure a deterministic sort order.
-   */
-  if (schemaObj.indexes) {
-    schemaObj.indexes = schemaObj.indexes.map(index => {
-      var arIndex = isMaybeReadonlyArray(index) ? index.slice(0) : [index];
-      if (!arIndex.includes(primaryPath)) {
-        var modifiedIndex = arIndex.slice(0);
-        modifiedIndex.push(primaryPath);
-        return modifiedIndex;
-      }
-      return arIndex;
-    });
+    // add _deleted flag to all indexes so we can query only non-deleted fields
+    // in RxDB itself
+    if (arIndex[0] !== '_deleted') {
+      arIndex.unshift('_deleted');
+    }
+    return arIndex;
+  });
+  if (useIndexes.length === 0) {
+    useIndexes.push(getDefaultIndex(primaryPath));
   }
+
+  // we need this index for the getChangedDocumentsSince() method
+  useIndexes.push(['_meta.lwt', primaryPath]);
+
+  // make indexes unique
+  var hasIndex = new Set();
+  useIndexes.filter(index => {
+    var indexStr = index.join(',');
+    if (hasIndex.has(indexStr)) {
+      return false;
+    } else {
+      hasIndex.add(indexStr);
+      return true;
+    }
+  });
+  schemaObj.indexes = useIndexes;
   return schemaObj;
 }
 export var RX_META_SCHEMA = {

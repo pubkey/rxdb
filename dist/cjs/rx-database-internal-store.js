@@ -14,6 +14,7 @@ var _rxError = require("./rx-error.js");
 var _rxSchemaHelper = require("./rx-schema-helper.js");
 var _rxStorageHelper = require("./rx-storage-helper.js");
 var _index = require("./plugins/utils/index.js");
+var _rxQuery = require("./rx-query.js");
 var INTERNAL_CONTEXT_COLLECTION = exports.INTERNAL_CONTEXT_COLLECTION = 'collection';
 var INTERNAL_CONTEXT_STORAGE_TOKEN = exports.INTERNAL_CONTEXT_STORAGE_TOKEN = 'storage-token';
 var INTERNAL_CONTEXT_MIGRATION_STATUS = exports.INTERNAL_CONTEXT_MIGRATION_STATUS = 'rx-migration-status';
@@ -79,10 +80,13 @@ function getPrimaryKeyOfInternalDocument(key, context) {
  * Returns all internal documents
  * with context 'collection'
  */
-async function getAllCollectionDocuments(storageStatics, storageInstance) {
-  var getAllQueryPrepared = storageStatics.prepareQuery(storageInstance.schema, {
+async function getAllCollectionDocuments(storageInstance) {
+  var getAllQueryPrepared = (0, _rxQuery.prepareQuery)(storageInstance.schema, {
     selector: {
-      context: INTERNAL_CONTEXT_COLLECTION
+      context: INTERNAL_CONTEXT_COLLECTION,
+      _deleted: {
+        $eq: false
+      }
     },
     sort: [{
       id: 'asc'
@@ -149,6 +153,7 @@ async function ensureStorageTokenDocumentExists(rxDatabase) {
     if (!isDatabaseStateVersionCompatibleWithDatabaseCode(conflictError.documentInDb.data.rxdbVersion, rxDatabase.rxdbVersion)) {
       throw (0, _rxError.newRxError)('DM5', {
         args: {
+          database: rxDatabase.name,
           databaseStateVersion: conflictError.documentInDb.data.rxdbVersion,
           codeVersion: rxDatabase.rxdbVersion
         }

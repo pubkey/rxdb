@@ -9,6 +9,7 @@ exports._getDefaultQuery = _getDefaultQuery;
 exports.createRxQuery = createRxQuery;
 exports.isFindOneByIdQuery = isFindOneByIdQuery;
 exports.isRxQuery = isRxQuery;
+exports.prepareQuery = prepareQuery;
 exports.queryCollection = queryCollection;
 exports.tunnelQueryCache = tunnelQueryCache;
 var _createClass2 = _interopRequireDefault(require("@babel/runtime/helpers/createClass"));
@@ -21,6 +22,7 @@ var _eventReduce = require("./event-reduce.js");
 var _queryCache = require("./query-cache.js");
 var _rxQueryHelper = require("./rx-query-helper.js");
 var _rxQuerySingleResult = require("./rx-query-single-result.js");
+var _queryPlanner = require("./query-planner.js");
 var _queryCount = 0;
 var newQueryID = function () {
   return ++_queryCount;
@@ -199,8 +201,14 @@ var RxQueryBase = exports.RxQueryBase = /*#__PURE__*/function () {
       // can be mutated by the hooks so we have to deep clone first.
       mangoQuery: (0, _rxQueryHelper.normalizeMangoQuery)(this.collection.schema.jsonSchema, this.mangoQuery)
     };
+    hookInput.mangoQuery.selector._deleted = {
+      $eq: false
+    };
+    if (hookInput.mangoQuery.index) {
+      hookInput.mangoQuery.index.unshift('_deleted');
+    }
     (0, _hooks.runPluginHooks)('prePrepareQuery', hookInput);
-    var value = this.collection.database.storage.statics.prepareQuery(this.collection.schema.jsonSchema, hookInput.mangoQuery);
+    var value = prepareQuery(this.collection.schema.jsonSchema, hookInput.mangoQuery);
     this.getPreparedQuery = () => value;
     return value;
   }
@@ -489,6 +497,28 @@ function __ensureEqual(rxQuery) {
     });
   }
   return Promise.resolve(ret); // true if results have changed
+}
+
+/**
+ * @returns a format of the query that can be used with the storage
+ * when calling RxStorageInstance().query()
+ */
+function prepareQuery(schema, mutateableQuery) {
+  if (!mutateableQuery.sort) {
+    throw (0, _rxError.newRxError)('SNH', {
+      query: mutateableQuery
+    });
+  }
+
+  /**
+   * Store the query plan together with the
+   * prepared query to save performance.
+   */
+  var queryPlan = (0, _queryPlanner.getQueryPlan)(schema, mutateableQuery);
+  return {
+    query: mutateableQuery,
+    queryPlan
+  };
 }
 
 /**

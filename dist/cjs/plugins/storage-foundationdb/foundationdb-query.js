@@ -15,21 +15,18 @@ async function queryFoundationDB(instance, preparedQuery) {
   var limit = query.limit ? query.limit : Infinity;
   var skipPlusLimit = skip + limit;
   var queryPlanFields = queryPlan.index;
-  var mustManuallyResort = !queryPlan.sortFieldsSameAsIndexFields;
+  var mustManuallyResort = !queryPlan.sortSatisfiedByIndex;
   var queryMatcher = false;
   if (!queryPlan.selectorSatisfiedByIndex) {
     queryMatcher = (0, _rxQueryHelper.getQueryMatcher)(instance.schema, preparedQuery.query);
   }
   var dbs = await instance.internals.dbsPromise;
   var indexForName = queryPlanFields.slice(0);
-  indexForName.unshift('_deleted');
   var indexName = (0, _foundationdbHelpers.getFoundationDBIndexName)(indexForName);
   var indexDB = (0, _index.ensureNotFalsy)(dbs.indexes[indexName]).db;
   var lowerBound = queryPlan.startKeys;
-  lowerBound = [false].concat(lowerBound);
   var lowerBoundString = (0, _customIndex.getStartIndexStringFromLowerBound)(instance.schema, indexForName, lowerBound, queryPlan.inclusiveStart);
   var upperBound = queryPlan.endKeys;
-  upperBound = [false].concat(upperBound);
   var upperBoundString = (0, _customIndex.getStartIndexStringFromUpperBound)(instance.schema, indexForName, upperBound, queryPlan.inclusiveEnd);
   var result = await dbs.root.doTransaction(async tx => {
     var innerResult = [];
@@ -53,6 +50,12 @@ async function queryFoundationDB(instance, preparedQuery) {
         }
       }
       return innerResult;
+    }
+    if (!queryPlan.inclusiveStart) {
+      lowerBoundString = (0, _customIndex.changeIndexableStringByOneQuantum)(lowerBoundString, 1);
+    }
+    if (queryPlan.inclusiveEnd) {
+      upperBoundString = (0, _customIndex.changeIndexableStringByOneQuantum)(upperBoundString, +1);
     }
     var range = indexTx.getRangeBatch(lowerBoundString, upperBoundString,
     // queryPlan.inclusiveStart ? keySelector.firstGreaterThan(lowerBoundString) : keySelector.firstGreaterOrEqual(lowerBoundString),

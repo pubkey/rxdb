@@ -7,6 +7,8 @@ import { BroadcastChannel, createLeaderElection } from 'broadcast-channel';
 import { META_INSTANCE_SCHEMA_TITLE, awaitRxStorageReplicationFirstInSync, cancelRxStorageReplication, defaultConflictHandler, getRxReplicationMetaInstanceSchema, replicateRxStorageInstance, rxStorageInstanceToReplicationHandler } from "../../replication-protocol/index.js";
 import { overwritable } from "../../overwritable.js";
 import { INTERNAL_CONTEXT_MIGRATION_STATUS, addConnectedStorageToCollection, getPrimaryKeyOfInternalDocument } from "../../rx-database-internal-store.js";
+import { prepareQuery } from "../../rx-query.js";
+import { normalizeMangoQuery } from "../../rx-query-helper.js";
 export var RxMigrationState = /*#__PURE__*/function () {
   function RxMigrationState(collection, migrationStrategies, statusDocKey = [collection.name, 'v', collection.schema.version].join('-')) {
     this.started = false;
@@ -272,8 +274,11 @@ export var RxMigrationState = /*#__PURE__*/function () {
   _proto.countAllDoucments = async function countAllDoucments(storageInstances) {
     var ret = 0;
     await Promise.all(storageInstances.map(async instance => {
-      var info = await instance.info();
-      ret += info.totalCount;
+      var preparedQuery = prepareQuery(instance.schema, normalizeMangoQuery(instance.schema, {
+        selector: {}
+      }));
+      var countResult = await instance.count(preparedQuery);
+      ret += countResult.count;
     }));
     return ret;
   };
