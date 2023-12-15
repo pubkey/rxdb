@@ -5,6 +5,8 @@ If you are a **single developer** and you use RxDB in your **side project**, you
 
 ## Open Tasks
 
+- Fix the flaky tests for tahe "example-supabase" CI task. This randomly fails, it should be fixed either by analyzing+fixing the current problem or updating to the newest supabase version.
+
 - Add a [local search](https://github.com/cmfcmf/docusaurus-search-local) plugin to the docusaurus docs. The search-bar must only appear on the documentation pages, not on the landingpage.
 
 - Update **all** [open PRs from the renovate bot](https://github.com/pubkey/rxdb/pulls?q=is%3Apr+is%3Aopen+by%3A%40renovate) and ensure that the CI is green.
