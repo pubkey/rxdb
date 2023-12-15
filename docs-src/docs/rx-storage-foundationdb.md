@@ -3,9 +3,11 @@ title: FoundationDB RxStorage
 slug: rx-storage-foundationdb.html
 ---
 
-# RxStorage FoundationDB
+# RxDB Database on top of FoundationDB
 
-To use RxDB on the server side, the [FoundationDB](https://www.foundationdb.org/) [RxStorage](./rx-storage.md) provides a way of having a secure, fault-tolerant and performant storage.
+[FoundationDB](https://www.foundationdb.org/) is a distributed key-value store designed to handle large volumes of structured data across clusters of computers while maintaining high levels of performance, scalability, and fault tolerance. While FoundationDB itself only can store and query key-value pairs, it lacks more advanced features like complex queries, encryption and replication.
+
+With the FoundationDB based [RxStorage](./rx-storage.md) of [RxDB](https://rxdb.info/) you can combine the benefits of FoundationDB while having a fully featured, high performance NoSQL database.
 
 ## Installation
 

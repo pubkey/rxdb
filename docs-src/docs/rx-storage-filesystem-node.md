@@ -1,5 +1,5 @@
 ---
-title: 👑 Node.js Filesystem RxStorage
+title: Node.js Filesystem RxStorage 👑
 slug: rx-storage-filesystem-node.html
 ---
 

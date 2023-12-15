@@ -1,5 +1,5 @@
 ---
-title: 👑 Logger
+title: Logger 👑
 slug: logger.html
 ---
 

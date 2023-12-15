@@ -1,5 +1,5 @@
 ---
-title: 👑 SharedWorker RxStorage
+title: SharedWorker RxStorage 👑
 slug: rx-storage-shared-worker.html
 ---
 

@@ -1,5 +1,5 @@
 ---
-title: 👑 Worker RxStorage
+title: Worker RxStorage 👑
 slug: rx-storage-worker.html
 ---
 

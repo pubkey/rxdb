@@ -1,5 +1,5 @@
 ---
-title: 👑 SQLite RxStorage
+title: SQLite RxStorage 👑
 slug: rx-storage-sqlite.html
 ---
 
