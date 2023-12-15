@@ -6,7 +6,7 @@ export function deepFreeze<T>(o: T): T {
     Object.freeze(o);
     Object.getOwnPropertyNames(o).forEach(function (prop) {
         if (
-            (o as any).hasOwnProperty(prop)
+            Object.prototype.hasOwnProperty.call(o as any, prop)
             &&
             (o as any)[prop] !== null
             &&
