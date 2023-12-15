@@ -1672,6 +1672,10 @@ a:hover {
   float: right;
 }
 
+.price-calculator .field .input input[type="number"] {
+  max-width: 140px;
+}
+
 @media (max-width: 800px) {
   .price-calculator .field label {
     width: 30%;
