@@ -30,17 +30,21 @@ export function exposeIpcMainRxStorage<T, D>(
     args.ipcMain.on(
         channelId,
         (event: any, message: any) => {
-            openRenderers.add(event.sender);
+            addOpenRenderer(event.sender);
             if (message) {
                 messages$.next(message);
             }
         }
     );
+    const addOpenRenderer = (renderer: any) => {
+        if (openRenderers.has(renderer)) return;
+        openRenderers.add(renderer);
+        renderer.on('destroyed', () => openRenderers.delete(renderer));
+    };
     const send: RxStorageRemoteExposeSettings['send'] = (msg) => {
         /**
          * TODO we could improve performance
-         * by only sending the message to the 'correct' sender
-         * and removing senders whose browser window is closed.
+         * by only sending the message to the 'correct' sender.
          */
         openRenderers.forEach(sender => {
             sender.send(channelId, msg);
