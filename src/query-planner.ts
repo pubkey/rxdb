@@ -10,7 +10,6 @@ import type {
     RxQueryPlanerOpts
 } from './types/index.d.ts';
 
-
 export const INDEX_MAX = String.fromCharCode(65535);
 
 /**
@@ -61,7 +60,7 @@ export function getQueryPlan<RxDocType>(
         if (
             schemaPart &&
             schemaPart.type === 'boolean' &&
-            (selector as any)[fieldName].hasOwnProperty('$eq')
+            Object.prototype.hasOwnProperty.call((selector as any)[fieldName], '$eq')
         ) {
             sortIrrelevevantFields.add(fieldName);
         }

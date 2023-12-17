@@ -168,7 +168,9 @@
     "@typescript-eslint/no-unnecessary-type-assertion": "off",
     "@typescript-eslint/no-misused-promises": "off",
     "@typescript-eslint/restrict-template-expressions": "off",
-    "no-prototype-builtins": "off",
+
+    // https://github.com/pubkey/rxdb/pull/5391#issuecomment-1859089274
+    "no-prototype-builtins": "error",
     "@typescript-eslint/ban-types": "off",
     "@typescript-eslint/ban-ts-comment": "off",
     "@typescript-eslint/no-unused-vars": [
@@ -383,7 +385,10 @@
         "no-process-env": "off",
         "no-process-exit": "off",
         "no-proto": "off",
-        "no-prototype-builtins": "off",
+
+        // https://github.com/pubkey/rxdb/pull/5391#issuecomment-1859089274
+        "no-prototype-builtins": "error",
+
         "no-restricted-globals": "error",
         "no-restricted-imports": "error",
         "no-restricted-modules": "error",

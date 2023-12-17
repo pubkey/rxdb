@@ -55,7 +55,7 @@ export class RxSchema<RxDocType = any> {
         const values = {} as { [P in keyof RxDocType]: RxDocType[P] };
         Object
             .entries(this.jsonSchema.properties)
-            .filter(([, v]) => (v as any).hasOwnProperty('default'))
+            .filter(([, v]) => Object.prototype.hasOwnProperty.call(v, 'default'))
             .forEach(([k, v]) => (values as any)[k] = (v as any).default);
         return overwriteGetterForCaching(
             this,
