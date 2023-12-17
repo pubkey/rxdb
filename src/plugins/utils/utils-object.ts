@@ -6,16 +6,13 @@ export function deepFreeze<T>(o: T): T {
     Object.freeze(o);
     Object.getOwnPropertyNames(o).forEach(function (prop) {
         if (
-            (o as any).hasOwnProperty(prop)
-            &&
-            (o as any)[prop] !== null
-            &&
+            Object.prototype.hasOwnProperty.call(o, prop) &&
+            (o as any)[prop] !== null &&
             (
                 typeof (o as any)[prop] === 'object'
                 ||
                 typeof (o as any)[prop] === 'function'
-            )
-            &&
+            ) &&
             !Object.isFrozen((o as any)[prop])
         ) {
             deepFreeze((o as any)[prop]);
@@ -83,13 +80,11 @@ export function flattenObject(ob: any) {
     const toReturn: any = {};
 
     for (const i in ob) {
-        if (!ob.hasOwnProperty(i)) continue;
-
+        if (!Object.prototype.hasOwnProperty.call(ob, i)) continue;
         if ((typeof ob[i]) === 'object') {
             const flatObject = flattenObject(ob[i]);
             for (const x in flatObject) {
-                if (!flatObject.hasOwnProperty(x)) continue;
-
+                if (!Object.prototype.hasOwnProperty.call(flatObject, x)) continue;
                 toReturn[i + '.' + x] = flatObject[x];
             }
         } else {
