@@ -180,7 +180,7 @@ export function fillWithDefaultSettings<T = any>(
     schemaObj.additionalProperties = false;
 
     // fill with key-compression-state ()
-    if (!schemaObj.hasOwnProperty('keyCompression')) {
+    if (!Object.prototype.hasOwnProperty.call(schemaObj, 'keyCompression')) {
         schemaObj.keyCompression = false;
     }
 
@@ -334,7 +334,7 @@ export function fillObjectWithDefaults(rxSchema: RxSchema<any>, obj: any): any {
     const defaultKeys = Object.keys(rxSchema.defaultValues);
     for (let i = 0; i < defaultKeys.length; ++i) {
         const key = defaultKeys[i];
-        if (!obj.hasOwnProperty(key) || typeof obj[key] === 'undefined') {
+        if (!Object.prototype.hasOwnProperty.call(obj, key) || typeof obj[key] === 'undefined') {
             obj[key] = rxSchema.defaultValues[key];
         }
     }

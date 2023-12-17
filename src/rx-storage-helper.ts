@@ -632,7 +632,7 @@ export function getWrappedStorageInstance<
             if (writeRow.previous) {
                 Object.keys(writeRow.previous._meta)
                     .forEach(metaFieldName => {
-                        if (!writeRow.document._meta.hasOwnProperty(metaFieldName)) {
+                        if (!Object.prototype.hasOwnProperty.call(writeRow.document._meta, metaFieldName)) {
                             throw newRxError('SNH', {
                                 dataBefore: writeRow.previous,
                                 dataAfter: writeRow.document
