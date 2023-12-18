@@ -64,7 +64,7 @@ logFunction) {
    * TODO remove this in the next major version. v16.
    */
   var preparedQuery;
-  if (oldStorage.statics.prepareQuery) {
+  if (oldStorage.statics && oldStorage.statics.prepareQuery) {
     preparedQuery = oldStorage.statics.prepareQuery(schema, plainQuery);
   } else {
     preparedQuery = (0, _index.prepareQuery)(schema, plainQuery);

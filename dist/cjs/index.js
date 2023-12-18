@@ -179,17 +179,6 @@ Object.keys(_rxStorageHelper).forEach(function (key) {
     }
   });
 });
-var _rxStorageStatics = require("./rx-storage-statics.js");
-Object.keys(_rxStorageStatics).forEach(function (key) {
-  if (key === "default" || key === "__esModule") return;
-  if (key in exports && exports[key] === _rxStorageStatics[key]) return;
-  Object.defineProperty(exports, key, {
-    enumerable: true,
-    get: function () {
-      return _rxStorageStatics[key];
-    }
-  });
-});
 var _index = require("./replication-protocol/index.js");
 Object.keys(_index).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;

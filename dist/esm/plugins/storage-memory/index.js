@@ -1,6 +1,5 @@
 import { ensureRxStorageInstanceParamsAreCorrect } from "../../rx-storage-helper.js";
 import { createMemoryStorageInstance } from "./rx-storage-instance-memory.js";
-import { RxStorageDefaultStatics } from "../../rx-storage-statics.js";
 
 /**
  * Keep the state even when the storage instance is closed.
@@ -11,7 +10,6 @@ var COLLECTION_STATES = new Map();
 export function getRxStorageMemory(settings = {}) {
   var storage = {
     name: 'memory',
-    statics: RxStorageDefaultStatics,
     collectionStates: COLLECTION_STATES,
     createStorageInstance(params) {
       ensureRxStorageInstanceParamsAreCorrect(params);

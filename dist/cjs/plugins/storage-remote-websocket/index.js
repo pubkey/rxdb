@@ -73,7 +73,6 @@ function getRxStorageRemoteWebsocket(options) {
   var identifier = [options.url, 'rx-remote-storage-websocket'].join('');
   var storage = (0, _rxStorageRemote.getRxStorageRemote)({
     identifier,
-    statics: options.statics,
     mode: options.mode,
     async messageChannelCreator() {
       var messages$ = new _rxjs.Subject();

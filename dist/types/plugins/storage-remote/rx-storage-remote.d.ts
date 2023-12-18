@@ -1,9 +1,8 @@
 import { Observable } from 'rxjs';
-import type { BulkWriteRow, EventBulk, RxConflictResultionTask, RxConflictResultionTaskSolution, RxDocumentData, RxJsonSchema, RxStorage, RxStorageBulkWriteResponse, RxStorageChangeEvent, RxStorageCountResult, RxStorageInstance, RxStorageInstanceCreationParams, RxStorageQueryResult, RxStorageStatics } from '../../types/index.d.ts';
+import type { BulkWriteRow, EventBulk, RxConflictResultionTask, RxConflictResultionTaskSolution, RxDocumentData, RxJsonSchema, RxStorage, RxStorageBulkWriteResponse, RxStorageChangeEvent, RxStorageCountResult, RxStorageInstance, RxStorageInstanceCreationParams, RxStorageQueryResult } from '../../types/index.d.ts';
 import type { MessageFromRemote, RemoteMessageChannel, RxStorageRemoteInternals, RxStorageRemoteSettings } from './storage-remote-types.ts';
 export declare class RxStorageRemote implements RxStorage<RxStorageRemoteInternals, any> {
     readonly settings: RxStorageRemoteSettings;
-    readonly statics: RxStorageStatics;
     readonly name: string;
     private seed;
     private lastRequestId;

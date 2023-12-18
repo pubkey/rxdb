@@ -21,13 +21,13 @@ function fillObjectDataBeforeInsert(schema, data) {
   data = (0, _rxSchemaHelper.fillObjectWithDefaults)(schema, data);
   data = (0, _rxSchemaHelper.fillPrimaryKey)(schema.primaryPath, schema.jsonSchema, data);
   data._meta = (0, _index.getDefaultRxDocumentMeta)();
-  if (!data.hasOwnProperty('_deleted')) {
+  if (!Object.prototype.hasOwnProperty.call(data, '_deleted')) {
     data._deleted = false;
   }
-  if (!data.hasOwnProperty('_attachments')) {
+  if (!Object.prototype.hasOwnProperty.call(data, '_attachments')) {
     data._attachments = {};
   }
-  if (!data.hasOwnProperty('_rev')) {
+  if (!Object.prototype.hasOwnProperty.call(data, '_rev')) {
     data._rev = (0, _index.getDefaultRevision)();
   }
   return data;

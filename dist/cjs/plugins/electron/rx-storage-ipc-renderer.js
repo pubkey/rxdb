@@ -12,7 +12,6 @@ function getRxStorageIpcRenderer(settings) {
   var channelId = [_electronHelper.IPC_RENDERER_KEY_PREFIX, settings.key].join('|');
   var storage = (0, _index.getRxStorageRemote)({
     identifier: 'electron-ipc-renderer',
-    statics: settings.statics,
     mode: settings.mode,
     messageChannelCreator() {
       var messages$ = new _rxjs.Subject();

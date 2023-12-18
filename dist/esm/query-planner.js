@@ -44,7 +44,7 @@ export function getQueryPlan(schema, query) {
   var sortIrrelevevantFields = new Set();
   Object.keys(selector).forEach(fieldName => {
     var schemaPart = getSchemaByObjectPath(schema, fieldName);
-    if (schemaPart && schemaPart.type === 'boolean' && selector[fieldName].hasOwnProperty('$eq')) {
+    if (schemaPart && schemaPart.type === 'boolean' && Object.prototype.hasOwnProperty.call(selector[fieldName], '$eq')) {
       sortIrrelevevantFields.add(fieldName);
     }
   });

@@ -17,16 +17,20 @@ function exposeIpcMainRxStorage(args) {
   var messages$ = new _rxjs.Subject();
   var openRenderers = new Set();
   args.ipcMain.on(channelId, (event, message) => {
-    openRenderers.add(event.sender);
+    addOpenRenderer(event.sender);
     if (message) {
       messages$.next(message);
     }
   });
+  var addOpenRenderer = renderer => {
+    if (openRenderers.has(renderer)) return;
+    openRenderers.add(renderer);
+    renderer.on('destroyed', () => openRenderers.delete(renderer));
+  };
   var send = msg => {
     /**
      * TODO we could improve performance
-     * by only sending the message to the 'correct' sender
-     * and removing senders whose browser window is closed.
+     * by only sending the message to the 'correct' sender.
      */
     openRenderers.forEach(sender => {
       sender.send(channelId, msg);

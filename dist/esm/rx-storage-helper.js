@@ -472,7 +472,7 @@ rxJsonSchema) {
        */
       if (writeRow.previous) {
         Object.keys(writeRow.previous._meta).forEach(metaFieldName => {
-          if (!writeRow.document._meta.hasOwnProperty(metaFieldName)) {
+          if (!Object.prototype.hasOwnProperty.call(writeRow.document._meta, metaFieldName)) {
             throw newRxError('SNH', {
               dataBefore: writeRow.previous,
               dataAfter: writeRow.document
@@ -691,7 +691,6 @@ export async function getChangedDocumentsSince(storageInstance, limit, checkpoin
 export function randomDelayStorage(input) {
   var retStorage = {
     name: 'random-delay-' + input.storage.name,
-    statics: input.storage.statics,
     async createStorageInstance(params) {
       await promiseWait(input.delayTimeBefore());
       var storageInstance = await input.storage.createStorageInstance(params);

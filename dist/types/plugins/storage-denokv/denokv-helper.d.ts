@@ -1,7 +1,4 @@
 export declare const RX_STORAGE_NAME_DENOKV = "denokv";
-export declare const RxStorageDenoKVStatics: Readonly<{
-    checkpointSchema: import("../../index.ts").DeepReadonlyObject<import("../../index.ts").JsonSchema>;
-}>;
 export declare function getDenoKVIndexName(index: string[]): string;
 /**
  * Used for non-index rows that contain the document data,
