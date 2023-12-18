@@ -5,7 +5,6 @@ import type {
     RxStorageBulkWriteResponse,
     RxStorageChangeEvent,
     RxStorageCountResult,
-    RxStorageInfoResult,
     RxStorageInstanceCreationParams,
     RxStorageQueryResult
 } from './rx-storage.ts';
@@ -65,12 +64,12 @@ export interface RxStorage<Internals, InstanceCreationOptions> {
  * so we do not have to do many if-field-exist tests in the internals.
  */
 export type FilledMangoQuery<RxDocType> = Override<
-    MangoQuery<RxDocType>,
+    MangoQuery<RxDocumentData<RxDocType>>,
     {
         /**
          * The selector is required here.
          */
-        selector: MangoQuerySelector<RxDocType>;
+        selector: MangoQuerySelector<RxDocumentData<RxDocType>>;
 
         /**
          * In contrast to the user-provided MangoQuery,
@@ -78,7 +77,7 @@ export type FilledMangoQuery<RxDocType> = Override<
          * RxDB has to ensure that the primary key is always
          * part of the sort params.
          */
-        sort: MangoQuerySortPart<RxDocType>[];
+        sort: MangoQuerySortPart<RxDocumentData<RxDocType>>[];
 
         /**
          * In the normalized mango query,
@@ -215,16 +214,6 @@ export interface RxStorageInstance<
         preparedQuery: PreparedQuery<RxDocType>
     ): Promise<RxStorageCountResult>;
 
-
-
-    /**
-     * Returns some info about the storage.
-     * Used in various places. This method is expected to
-     * not really care about performance, so do not
-     * use it in hot paths.
-     */
-    info(): Promise<RxStorageInfoResult>;
-
     /**
      * Returns the plain data of a single attachment.
      */
@@ -241,8 +230,13 @@ export interface RxStorageInstance<
      * Must never return the same document multiple times in the same call operation.
      * This is used by RxDB to known what has changed since X so these docs can be handled by the backup or the replication
      * plugin.
+     *
+     * Important: This method is optional. If not defined,
+     * RxDB will manually run a query and use the last returned document
+     * for checkpointing. In  the future we might even remove this method completely
+     * and let RxDB do the work instead of the RxStorage.
      */
-    getChangedDocumentsSince(
+    getChangedDocumentsSince?(
         limit: number,
         /**
          * The checkpoint from with to start

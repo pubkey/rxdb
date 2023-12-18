@@ -23,7 +23,7 @@ export function getDocumentPrototype(rxCollection) {
       var desc = Object.getOwnPropertyDescriptor(obj, key);
 
       /**
-       * When enumerable is true, it will show on console.dir(instance)
+       * When enumerable is true, it will show on console dir(instance)
        * To not pollute the output, only getters and methods are enumerable
        */
       var enumerable = true;

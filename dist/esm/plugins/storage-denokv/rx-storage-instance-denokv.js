@@ -2,8 +2,8 @@ import { Subject } from 'rxjs';
 import { getPrimaryFieldOfPrimaryKey } from "../../rx-schema-helper.js";
 import { addRxStorageMultiInstanceSupport } from "../../rx-storage-multiinstance.js";
 import { CLEANUP_INDEX, DENOKV_DOCUMENT_ROOT_PATH, RX_STORAGE_NAME_DENOKV, getDenoGlobal, getDenoKVIndexName } from "./denokv-helper.js";
-import { getIndexableStringMonad, getStartIndexStringFromLowerBound, changeIndexableStringByOneQuantum } from "../../custom-index.js";
-import { appendToArray, batchArray, lastOfArray, toArray } from "../utils/utils-array.js";
+import { getIndexableStringMonad, getStartIndexStringFromLowerBound } from "../../custom-index.js";
+import { appendToArray, batchArray, toArray } from "../utils/utils-array.js";
 import { ensureNotFalsy } from "../utils/utils-other.js";
 import { categorizeBulkWriteRows } from "../../rx-storage-helper.js";
 import { now } from "../utils/utils-time.js";
@@ -178,81 +178,8 @@ export var RxStorageInstanceDenoKV = /*#__PURE__*/function () {
       mode: 'fast'
     };
   };
-  _proto.info = async function info() {
-    return this.retryUntilNoWriteInBetween(async () => {
-      var kv = await this.kvPromise;
-      var range = kv.list({
-        start: [this.keySpace, DENOKV_DOCUMENT_ROOT_PATH],
-        end: [this.keySpace, DENOKV_DOCUMENT_ROOT_PATH, INDEX_MAX]
-      }, this.kvOptions);
-      var totalCount = 0;
-      for await (var res of range) {
-        totalCount++;
-      }
-      return {
-        totalCount
-      };
-    });
-  };
   _proto.getAttachmentData = function getAttachmentData(documentId, attachmentId, digest) {
     throw new Error("Method not implemented.");
-  };
-  _proto.getChangedDocumentsSince = async function getChangedDocumentsSince(limit, checkpoint) {
-    return this.retryUntilNoWriteInBetween(async () => {
-      var kv = await this.kvPromise;
-      var index = ['_meta.lwt', this.primaryPath];
-      var indexName = getDenoKVIndexName(index);
-      var indexMeta = this.internals.indexes[indexName];
-      var lowerBoundString = '';
-      if (checkpoint) {
-        var checkpointPartialDoc = {
-          [this.primaryPath]: checkpoint.id,
-          _meta: {
-            lwt: checkpoint.lwt
-          }
-        };
-        lowerBoundString = indexMeta.getIndexableString(checkpointPartialDoc);
-        lowerBoundString = changeIndexableStringByOneQuantum(lowerBoundString, 1);
-      }
-      var range = kv.list({
-        start: [this.keySpace, indexMeta.indexId, lowerBoundString],
-        end: [this.keySpace, indexMeta.indexId, INDEX_MAX]
-      }, {
-        consistency: this.settings.consistencyLevel,
-        limit,
-        batchSize: this.settings.batchSize
-      });
-      var docIds = [];
-      for await (var row of range) {
-        var docId = row.value;
-        docIds.push([this.keySpace, DENOKV_DOCUMENT_ROOT_PATH, docId]);
-      }
-
-      /**
-       * We have to run in batches because without it says
-       * "TypeError: too many ranges (max 10)"
-       */
-      var batches = batchArray(docIds, 10);
-      var result = [];
-      for (var batch of batches) {
-        var docs = await kv.getMany(batch);
-        docs.forEach(row => {
-          var docData = row.value;
-          result.push(docData);
-        });
-      }
-      var lastDoc = lastOfArray(result);
-      return {
-        documents: result,
-        checkpoint: lastDoc ? {
-          id: lastDoc[this.primaryPath],
-          lwt: lastDoc._meta.lwt
-        } : checkpoint ? checkpoint : {
-          id: '',
-          lwt: 0
-        }
-      };
-    });
   };
   _proto.changeStream = function changeStream() {
     return this.changes$.asObservable();
@@ -354,11 +281,8 @@ export async function createDenoKVStorageInstance(storage, params, settings) {
   useIndexes.push([primaryPath]);
   var useIndexesFinal = useIndexes.map(index => {
     var indexAr = toArray(index);
-    indexAr.unshift('_deleted');
     return indexAr;
   });
-  // used for `getChangedDocumentsSince()`
-  useIndexesFinal.push(['_meta.lwt', primaryPath]);
   useIndexesFinal.push(CLEANUP_INDEX);
   useIndexesFinal.forEach((indexAr, indexId) => {
     var indexName = getDenoKVIndexName(indexAr);

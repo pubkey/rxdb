@@ -44,14 +44,31 @@ logFunction) {
     databaseInstanceToken: oldDatabaseInstanceToken,
     devMode: false
   });
-  var preparedQuery = oldStorage.statics.prepareQuery(schema, {
-    selector: {},
+  var plainQuery = {
+    selector: {
+      _deleted: {
+        $eq: false
+      }
+    },
     limit: batchSize,
     sort: [{
       [primaryPath]: 'asc'
     }],
     skip: 0
-  });
+  };
+
+  /**
+   * In RxDB v15 we removed statics.prepareQuery()
+   * But to be downwards compatible, still use that
+   * when migrating from an old storage.
+   * TODO remove this in the next major version. v16.
+   */
+  var preparedQuery;
+  if (oldStorage.statics.prepareQuery) {
+    preparedQuery = oldStorage.statics.prepareQuery(schema, plainQuery);
+  } else {
+    preparedQuery = (0, _index.prepareQuery)(schema, plainQuery);
+  }
   var _loop = async function () {
       log('loop once');
       /**

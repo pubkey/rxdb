@@ -8,7 +8,6 @@ import { RX_STORAGE_NAME_MONGODB } from './mongodb-helper.ts';
 import type { MongoDBDatabaseSettings, MongoDBSettings, MongoDBStorageInternals } from './mongodb-types.ts';
 import { RxStorageInstanceMongoDB, createMongoDBStorageInstance } from './rx-storage-instance-mongodb.ts';
 
-
 export class RxStorageMongoDB implements RxStorage<MongoDBStorageInternals, MongoDBSettings> {
     public name = RX_STORAGE_NAME_MONGODB;
 

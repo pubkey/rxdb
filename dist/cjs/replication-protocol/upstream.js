@@ -80,7 +80,7 @@ async function startReplicationUpstream(state) {
       if (promises.size > 3) {
         await Promise.race(Array.from(promises));
       }
-      var upResult = await state.input.forkInstance.getChangedDocumentsSince(state.input.pushBatchSize, lastCheckpoint);
+      var upResult = await (0, _rxStorageHelper.getChangedDocumentsSince)(state.input.forkInstance, state.input.pushBatchSize, lastCheckpoint);
       if (upResult.documents.length === 0) {
         return 1; // break
       }

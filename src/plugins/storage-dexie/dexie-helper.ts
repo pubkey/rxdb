@@ -5,7 +5,7 @@ import type {
 } from '../../types/index.d.ts';
 import { Dexie } from 'dexie';
 import type { DexieSettings } from '../../types/index.d.ts';
-import { flatClone, getFromMapOrCreate, getProperty, setProperty, toArray } from '../utils/index.ts';
+import { flatClone, getFromMapOrCreate, getProperty, setProperty, toArray, uniqueArray } from '../utils/index.ts';
 import {
     getPrimaryFieldOfPrimaryKey,
     getSchemaByObjectPath
@@ -48,6 +48,7 @@ export function getDexieDbWithTables(
 
                 dexieDb.version(1).stores(dexieStoresSettings);
                 await dexieDb.open();
+
                 return {
                     dexieDb,
                     dexieTable: (dexieDb as any)[DEXIE_DOCS_TABLE_NAME],
@@ -126,7 +127,6 @@ export function fromStorageToDexie<RxDocType>(
     }
     d = flatClone(d);
     d = fromStorageToDexieField(d);
-    (d as any)._deleted = d._deleted ? '1' : '0';
 
     booleanIndexes.forEach(idx => {
         const val = getProperty(d, idx);
@@ -143,9 +143,9 @@ export function fromDexieToStorage<RxDocType>(
     if (!d) {
         return d;
     }
+
     d = flatClone(d);
     d = fromDexieToStorageField(d);
-    (d as any)._deleted = d._deleted === '1' ? true : false;
 
     booleanIndexes.forEach(idx => {
         const val = getProperty(d, idx);
@@ -220,7 +220,6 @@ export function getDexieStoreSchema(
     if (rxJsonSchema.indexes) {
         rxJsonSchema.indexes.forEach(index => {
             const arIndex = toArray(index);
-            arIndex.unshift('_deleted');
             parts.push(arIndex);
         });
     }
@@ -240,13 +239,16 @@ export function getDexieStoreSchema(
         return part.map(str => dexieReplaceIfStartsWithPipe(str));
     });
 
-    const dexieSchema = parts.map(part => {
+    let dexieSchemaRows = parts.map(part => {
         if (part.length === 1) {
             return part[0];
         } else {
             return '[' + part.join('+') + ']';
         }
-    }).join(', ');
+    });
+    dexieSchemaRows = dexieSchemaRows.filter((elem: any, pos: any, arr: any) => arr.indexOf(elem) === pos); // unique;
+    const dexieSchema = dexieSchemaRows.join(', ');
+
     return dexieSchema;
 }
 
@@ -288,6 +290,8 @@ export function getBooleanIndexes(schema: RxJsonSchema<any>): string[] {
             }
         });
     });
-    return ret;
+    ret.push('_deleted');
+
+    return uniqueArray(ret);
 }
 

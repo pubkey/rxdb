@@ -1,5 +1,5 @@
 ---
-title: 👑 IndexedDB RxStorage
+title: IndexedDB RxStorage 👑
 slug: rx-storage-indexeddb.html
 ---
 

@@ -1,5 +1,5 @@
 ---
-title: 👑 OPFS RxStorage
+title: OPFS RxStorage 👑
 slug: rx-storage-opfs.html
 description: Origin Private File System (OPFS) Database with the RxDB OPFS-RxStorage
 ---

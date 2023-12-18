@@ -1,4 +1,5 @@
 import { flatClone } from "../utils/index.js";
+import { getPrimaryFieldOfPrimaryKey } from "../../rx-schema-helper.js";
 export var RX_STORAGE_NAME_MONGODB = 'mongodb';
 
 /**
@@ -9,7 +10,6 @@ export var RX_STORAGE_NAME_MONGODB = 'mongodb';
 export var MONGO_ID_SUBSTITUTE_FIELDNAME = '__id';
 export function primarySwapMongoDBQuerySelector(primaryKey, selector) {
   selector = flatClone(selector);
-  selector._deleted = false;
   if (primaryKey !== '_id') {
     return selector;
   }
@@ -33,6 +33,16 @@ export function primarySwapMongoDBQuerySelector(primaryKey, selector) {
     return selector;
   }
 }
+export function prepareMongoDBQuery(schema, mutateableQuery) {
+  var primaryKey = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
+  var preparedQuery = {
+    query: mutateableQuery,
+    mongoSelector: primarySwapMongoDBQuerySelector(primaryKey, mutateableQuery.selector),
+    mongoSort: swapToMongoSort(mutateableQuery.sort)
+  };
+  return preparedQuery;
+}
+;
 export function swapMongoToRxDoc(docData) {
   docData = flatClone(docData);
   if (docData[MONGO_ID_SUBSTITUTE_FIELDNAME]) {

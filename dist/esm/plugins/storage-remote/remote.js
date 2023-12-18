@@ -1,6 +1,8 @@
 import { filter } from 'rxjs';
 import { deepEqual, ensureNotFalsy } from "../../plugins/utils/index.js";
 import { createAnswer, createErrorAnswer } from "./storage-remote-helpers.js";
+import { getChangedDocumentsSince } from "../../rx-storage-helper.js";
+
 /**
  * Run this on the 'remote' part,
  * so that RxStorageMessageChannel can connect to it.
@@ -170,7 +172,11 @@ export function exposeRxStorageRemote(settings) {
           subs.forEach(sub => sub.unsubscribe());
           return;
         }
-        result = await storageInstance[message.method](message.params[0], message.params[1], message.params[2], message.params[3]);
+        if (message.method === 'getChangedDocumentsSince' && !storageInstance.getChangedDocumentsSince) {
+          result = await getChangedDocumentsSince(storageInstance, message.params[0], message.params[1]);
+        } else {
+          result = await storageInstance[message.method](message.params[0], message.params[1], message.params[2], message.params[3]);
+        }
         if (message.method === 'close' || message.method === 'remove') {
           closeThisConnection();
         }

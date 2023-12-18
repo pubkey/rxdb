@@ -12,6 +12,7 @@ import { startReplicationDownstream } from "./downstream.js";
 import { docStateToWriteDoc, getUnderlyingPersistentStorage, writeDocToDocState } from "./helper.js";
 import { startReplicationUpstream } from "./upstream.js";
 import { fillWriteDataForAttachmentsChange } from "../plugins/attachments/index.js";
+import { getChangedDocumentsSince } from "../rx-storage-helper.js";
 export * from "./checkpoint.js";
 export * from "./downstream.js";
 export * from "./upstream.js";
@@ -129,7 +130,7 @@ keepMeta = false) {
       return ret;
     })),
     masterChangesSince(checkpoint, batchSize) {
-      return instance.getChangedDocumentsSince(batchSize, checkpoint).then(async result => {
+      return getChangedDocumentsSince(instance, batchSize, checkpoint).then(async result => {
         return {
           checkpoint: result.documents.length > 0 ? result.checkpoint : checkpoint,
           documents: await Promise.all(result.documents.map(async plainDocumentData => {

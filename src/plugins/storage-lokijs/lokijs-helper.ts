@@ -10,7 +10,6 @@ import type {
     LokiDatabaseState,
     LokiLocalDatabaseState,
     LokiRemoteResponseBroadcastMessage,
-    MangoQuery,
     MangoQuerySortDirection,
     MangoQuerySortPart,
     RxDocumentData,
@@ -227,7 +226,7 @@ export async function closeLokiCollections(
  */
 export function getLokiSortComparator<RxDocType>(
     _schema: RxJsonSchema<RxDocumentData<RxDocType>>,
-    query: MangoQuery<RxDocType>
+    query: FilledMangoQuery<RxDocType>
 ): DeterministicSortComparator<RxDocType> {
     if (!query.sort) {
         throw newRxError('SNH', { query });

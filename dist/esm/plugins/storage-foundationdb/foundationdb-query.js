@@ -1,4 +1,4 @@
-import { getStartIndexStringFromLowerBound, getStartIndexStringFromUpperBound } from "../../custom-index.js";
+import { changeIndexableStringByOneQuantum, getStartIndexStringFromLowerBound, getStartIndexStringFromUpperBound } from "../../custom-index.js";
 import { ensureNotFalsy, lastOfArray } from "../../plugins/utils/index.js";
 import { getFoundationDBIndexName } from "./foundationdb-helpers.js";
 import { getQueryMatcher, getSortComparator } from "../../rx-query-helper.js";
@@ -9,21 +9,18 @@ export async function queryFoundationDB(instance, preparedQuery) {
   var limit = query.limit ? query.limit : Infinity;
   var skipPlusLimit = skip + limit;
   var queryPlanFields = queryPlan.index;
-  var mustManuallyResort = !queryPlan.sortFieldsSameAsIndexFields;
+  var mustManuallyResort = !queryPlan.sortSatisfiedByIndex;
   var queryMatcher = false;
   if (!queryPlan.selectorSatisfiedByIndex) {
     queryMatcher = getQueryMatcher(instance.schema, preparedQuery.query);
   }
   var dbs = await instance.internals.dbsPromise;
   var indexForName = queryPlanFields.slice(0);
-  indexForName.unshift('_deleted');
   var indexName = getFoundationDBIndexName(indexForName);
   var indexDB = ensureNotFalsy(dbs.indexes[indexName]).db;
   var lowerBound = queryPlan.startKeys;
-  lowerBound = [false].concat(lowerBound);
   var lowerBoundString = getStartIndexStringFromLowerBound(instance.schema, indexForName, lowerBound, queryPlan.inclusiveStart);
   var upperBound = queryPlan.endKeys;
-  upperBound = [false].concat(upperBound);
   var upperBoundString = getStartIndexStringFromUpperBound(instance.schema, indexForName, upperBound, queryPlan.inclusiveEnd);
   var result = await dbs.root.doTransaction(async tx => {
     var innerResult = [];
@@ -47,6 +44,12 @@ export async function queryFoundationDB(instance, preparedQuery) {
         }
       }
       return innerResult;
+    }
+    if (!queryPlan.inclusiveStart) {
+      lowerBoundString = changeIndexableStringByOneQuantum(lowerBoundString, 1);
+    }
+    if (queryPlan.inclusiveEnd) {
+      upperBoundString = changeIndexableStringByOneQuantum(upperBoundString, +1);
     }
     var range = indexTx.getRangeBatch(lowerBoundString, upperBoundString,
     // queryPlan.inclusiveStart ? keySelector.firstGreaterThan(lowerBoundString) : keySelector.firstGreaterOrEqual(lowerBoundString),

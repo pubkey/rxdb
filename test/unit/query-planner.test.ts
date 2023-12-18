@@ -56,7 +56,7 @@ config.parallel('query-planner.test.js', () => {
                     ['age', 'firstName'],
                     ['lastName', 'firstName']
                 ]);
-                const query = normalizeMangoQuery<HumanDocumentType>(
+                const query = normalizeMangoQuery<RxDocumentData<HumanDocumentType>>(
                     schema,
                     {
                         selector: {
@@ -65,13 +65,16 @@ config.parallel('query-planner.test.js', () => {
                             },
                             firstName: {
                                 $gt: ''
-                            }
+                            },
+                            _deleted: false
                         }
                     }
                 );
+
                 assert.deepStrictEqual(
                     query.sort,
                     [
+                        { _deleted: 'asc' },
                         { age: 'asc' },
                         { firstName: 'asc' },
                         { passportId: 'asc' }
@@ -91,7 +94,7 @@ config.parallel('query-planner.test.js', () => {
                 schema,
                 query
             );
-            assert.deepStrictEqual(queryPlan.index, ['passportId']);
+            assert.deepStrictEqual(queryPlan.index, ['_meta.lwt', 'passportId']);
         });
         it('should respect the given index', () => {
             const customSetIndex = ['firstName'];
@@ -110,13 +113,14 @@ config.parallel('query-planner.test.js', () => {
         });
         it('should have the correct start- and end keys', () => {
             const schema = getHumanSchemaWithIndexes([['age']]);
-            const query = normalizeMangoQuery<HumanDocumentType>(
+            const query = normalizeMangoQuery<RxDocumentData<HumanDocumentType>>(
                 schema,
                 {
                     selector: {
                         age: {
                             $gte: 20
-                        }
+                        },
+                        _deleted: false
                     }
                 }
             );
@@ -124,9 +128,10 @@ config.parallel('query-planner.test.js', () => {
                 schema,
                 query
             );
-            assert.deepStrictEqual(queryPlan.index, ['age', 'passportId']);
-            assert.strictEqual(queryPlan.startKeys[0], 20);
-            assert.strictEqual(queryPlan.endKeys[0], INDEX_MAX);
+
+            assert.deepStrictEqual(queryPlan.index, ['_deleted', 'age', 'passportId']);
+            assert.strictEqual(queryPlan.startKeys[1], 20);
+            assert.strictEqual(queryPlan.endKeys[1], INDEX_MAX);
             assert.ok(queryPlan.inclusiveStart);
         });
         it('should have the correct start- and end keys when inclusiveStart and inclusiveEnd are false', () => {
@@ -157,36 +162,19 @@ config.parallel('query-planner.test.js', () => {
             assert.strictEqual(lastOfArray(queryPlan.startKeys), INDEX_MAX);
             assert.strictEqual(lastOfArray(queryPlan.endKeys), INDEX_MIN);
         });
-        it('should use the best plan for an equals comparison', () => {
-            const schema = getHumanSchemaWithIndexes([]);
-            const query = normalizeMangoQuery<HumanDocumentType>(
-                schema,
-                {
-                    selector: {
-                        passportId: 'asdf'
-                    }
-                }
-            );
-            const queryPlan = getQueryPlan(
-                schema,
-                query
-            );
-            assert.deepStrictEqual(queryPlan.index, ['passportId']);
-            assert.deepStrictEqual(queryPlan.startKeys[0], 'asdf');
-            assert.deepStrictEqual(queryPlan.endKeys[0], 'asdf');
-        });
     });
     describe('.isSelectorSatisfiedByIndex()', () => {
         const schema = getHumanSchemaWithIndexes([['age']]);
         it('should be true if satisfied', () => {
-            const query = normalizeMangoQuery<HumanDocumentType>(
+            const query = normalizeMangoQuery<RxDocumentData<HumanDocumentType>>(
                 schema,
                 {
                     selector: {
                         age: {
                             $gt: 10,
                             $lt: 100
-                        }
+                        },
+                        _deleted: false
                     }
                 }
             );
@@ -255,20 +243,21 @@ config.parallel('query-planner.test.js', () => {
                 schema,
                 query
             );
-            assert.deepStrictEqual(queryPlan.index, ['passportId']);
+            assert.deepStrictEqual(queryPlan.index, ['_meta.lwt', 'passportId']);
         });
         it('should prefer the index that reduces the read-count by having a non-minimal startKey', () => {
             const schema = getHumanSchemaWithIndexes([
                 ['firstName', 'age'],
                 ['age', 'firstName']
             ]);
-            const query = normalizeMangoQuery<HumanDocumentType>(
+            const query = normalizeMangoQuery<RxDocumentData<HumanDocumentType>>(
                 schema,
                 {
                     selector: {
                         age: {
                             $eq: 10
-                        }
+                        },
+                        _deleted: false
                     }
                 }
             );
@@ -276,16 +265,19 @@ config.parallel('query-planner.test.js', () => {
                 schema,
                 query
             );
-            assert.deepStrictEqual(queryPlan.index, ['age', 'firstName', 'passportId']);
+            assert.deepStrictEqual(queryPlan.index, ['_deleted', 'age', 'firstName', 'passportId']);
         });
         it('should prefer the index that matches the sort order, if no selector given', () => {
             const schema = getHumanSchemaWithIndexes([
                 ['firstName', 'age'],
                 ['age', 'firstName']
             ]);
-            const query = normalizeMangoQuery<HumanDocumentType>(
+            const query = normalizeMangoQuery<RxDocumentData<HumanDocumentType>>(
                 schema,
                 {
+                    selector: {
+                        _deleted: false
+                    },
                     sort: [
                         { age: 'asc' },
                         { firstName: 'asc' }
@@ -296,14 +288,16 @@ config.parallel('query-planner.test.js', () => {
                 schema,
                 query
             );
-            assert.deepStrictEqual(queryPlan.index, ['age', 'firstName', 'passportId']);
+            assert.deepStrictEqual(queryPlan.index, ['_deleted', 'age', 'firstName', 'passportId']);
+            assert.ok(queryPlan.selectorSatisfiedByIndex);
+            assert.ok(queryPlan.sortSatisfiedByIndex);
         });
         it('should prefer the index that matches the sort order, if selector for both fields is used', () => {
             const schema = getHumanSchemaWithIndexes([
                 ['firstName', 'age'],
                 ['age', 'firstName']
             ]);
-            const query = normalizeMangoQuery<HumanDocumentType>(
+            const query = normalizeMangoQuery<RxDocumentData<HumanDocumentType>>(
                 schema,
                 {
                     selector: {
@@ -312,7 +306,8 @@ config.parallel('query-planner.test.js', () => {
                         },
                         firstName: {
                             $gt: 'aaa'
-                        }
+                        },
+                        _deleted: false
                     },
                     sort: [
                         { age: 'asc' },
@@ -324,14 +319,15 @@ config.parallel('query-planner.test.js', () => {
                 schema,
                 query
             );
-            assert.deepStrictEqual(queryPlan.index, ['age', 'firstName', 'passportId']);
+            assert.deepStrictEqual(queryPlan.index, ['_deleted', 'age', 'firstName', 'passportId']);
+            assert.ok(queryPlan.sortSatisfiedByIndex);
         });
         it('should prefer indexing over the $eq operator over the $gt operator', () => {
             const schema = getHumanSchemaWithIndexes([
                 ['firstName', 'age'],
                 ['age', 'firstName']
             ]);
-            const query = normalizeMangoQuery<HumanDocumentType>(
+            const query = normalizeMangoQuery<RxDocumentData<HumanDocumentType>>(
                 schema,
                 {
                     selector: {
@@ -340,7 +336,8 @@ config.parallel('query-planner.test.js', () => {
                         },
                         firstName: {
                             $eq: 'aaa'
-                        }
+                        },
+                        _deleted: false
                     },
                     sort: [
                         { age: 'asc' },
@@ -352,17 +349,19 @@ config.parallel('query-planner.test.js', () => {
                 schema,
                 query
             );
-            assert.deepStrictEqual(queryPlan.index, ['firstName', 'age', 'passportId']);
+            assert.deepStrictEqual(queryPlan.index, ['_deleted', 'firstName', 'age', 'passportId']);
         });
-        it('should have set sortFieldsSameAsIndexFields: false when order is desc', () => {
+        it('should have set sortSatisfiedByIndex=false when order is desc', () => {
             const schema = getHumanSchemaWithIndexes([
                 ['firstName', 'age'],
                 ['age', 'firstName']
             ]);
-            const query = normalizeMangoQuery<HumanDocumentType>(
+            const query = normalizeMangoQuery<RxDocumentData<HumanDocumentType>>(
                 schema,
                 {
-                    selector: {},
+                    selector: {
+                        _deleted: false
+                    },
                     sort: [
                         { age: 'desc' },
                         { firstName: 'asc' }
@@ -373,13 +372,7 @@ config.parallel('query-planner.test.js', () => {
                 schema,
                 query
             );
-
-            /**
-             * Because on a 'desc'-sorting no index can be used,
-             * it should use the default index.
-             */
-            assert.deepStrictEqual(queryPlan.index, ['passportId']);
-            assert.strictEqual(queryPlan.sortFieldsSameAsIndexFields, false);
+            assert.strictEqual(queryPlan.sortSatisfiedByIndex, false);
         });
     });
 });

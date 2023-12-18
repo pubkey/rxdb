@@ -240,7 +240,8 @@ var RxStorageInstanceMongoDB = exports.RxStorageInstanceMongoDB = /*#__PURE__*/f
     this.runningOperations.next(this.runningOperations.getValue() - 1);
     return result;
   };
-  _proto.query = async function query(preparedQuery) {
+  _proto.query = async function query(originalPreparedQuery) {
+    var preparedQuery = (0, _mongodbHelper.prepareMongoDBQuery)(this.schema, originalPreparedQuery.query);
     this.runningOperations.next(this.runningOperations.getValue() + 1);
     await this.writeQueue;
     var mongoCollection = await this.mongoCollectionPromise;
@@ -260,7 +261,8 @@ var RxStorageInstanceMongoDB = exports.RxStorageInstanceMongoDB = /*#__PURE__*/f
       documents: resultDocs.map(d => (0, _mongodbHelper.swapMongoToRxDoc)(d))
     };
   };
-  _proto.count = async function count(preparedQuery) {
+  _proto.count = async function count(originalPreparedQuery) {
+    var preparedQuery = (0, _mongodbHelper.prepareMongoDBQuery)(this.schema, originalPreparedQuery.query);
     this.runningOperations.next(this.runningOperations.getValue() + 1);
     await this.writeQueue;
     var mongoCollection = await this.mongoCollectionPromise;
@@ -269,52 +271,6 @@ var RxStorageInstanceMongoDB = exports.RxStorageInstanceMongoDB = /*#__PURE__*/f
     return {
       count,
       mode: 'fast'
-    };
-  };
-  _proto.info = async function info() {
-    this.runningOperations.next(this.runningOperations.getValue() + 1);
-    await this.writeQueue;
-    var mongoCollection = await this.mongoCollectionPromise;
-    var totalCount = await mongoCollection.countDocuments();
-    this.runningOperations.next(this.runningOperations.getValue() - 1);
-    return {
-      totalCount
-    };
-  };
-  _proto.getChangedDocumentsSince = async function getChangedDocumentsSince(limit, checkpoint) {
-    this.runningOperations.next(this.runningOperations.getValue() + 1);
-    var mongoCollection = await this.mongoCollectionPromise;
-    var sinceLwt = checkpoint ? checkpoint.lwt : _index.RX_META_LWT_MINIMUM;
-    var plainQuery = {
-      $or: [{
-        '_meta.lwt': {
-          $gt: sinceLwt
-        }
-      }, {
-        '_meta.lwt': {
-          $eq: sinceLwt
-        },
-        [this.inMongoPrimaryPath]: {
-          $gt: checkpoint ? checkpoint.id : ''
-        }
-      }]
-    };
-    var query = mongoCollection.find(plainQuery).sort({
-      '_meta.lwt': 1,
-      [this.inMongoPrimaryPath]: 1
-    }).limit(limit);
-    var documents = await query.toArray();
-    var lastDoc = (0, _index.lastOfArray)(documents);
-    this.runningOperations.next(this.runningOperations.getValue() - 1);
-    return {
-      documents: documents.map(d => (0, _mongodbHelper.swapMongoToRxDoc)(d)),
-      checkpoint: lastDoc ? {
-        id: lastDoc[this.primaryPath],
-        lwt: lastDoc._meta.lwt
-      } : checkpoint ? checkpoint : {
-        id: '',
-        lwt: 0
-      }
     };
   };
   _proto.cleanup = async function cleanup(minimumDeletedTime) {

@@ -1,6 +1,6 @@
 import { BehaviorSubject, Observable } from 'rxjs';
-import type { BulkWriteRow, EventBulk, RxConflictResultionTask, RxConflictResultionTaskSolution, RxDocumentData, RxJsonSchema, RxStorageBulkWriteResponse, RxStorageChangeEvent, RxStorageCountResult, RxStorageDefaultCheckpoint, RxStorageInfoResult, RxStorageInstance, RxStorageInstanceCreationParams, RxStorageQueryResult, StringKeys } from '../../types/index.d.ts';
-import { MongoDBPreparedQuery, MongoDBStorageInternals, RxStorageMongoDBInstanceCreationOptions, RxStorageMongoDBSettings } from './mongodb-types.ts';
+import type { BulkWriteRow, EventBulk, PreparedQuery, RxConflictResultionTask, RxConflictResultionTaskSolution, RxDocumentData, RxJsonSchema, RxStorageBulkWriteResponse, RxStorageChangeEvent, RxStorageCountResult, RxStorageDefaultCheckpoint, RxStorageInstance, RxStorageInstanceCreationParams, RxStorageQueryResult, StringKeys } from '../../types/index.d.ts';
+import { MongoDBStorageInternals, RxStorageMongoDBInstanceCreationOptions, RxStorageMongoDBSettings } from './mongodb-types.ts';
 import { RxStorageMongoDB } from './rx-storage-mongodb.ts';
 import { Db as MongoDatabase, Collection as MongoCollection, MongoClient, ObjectId, ClientSession } from 'mongodb';
 export declare class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<RxDocType, MongoDBStorageInternals, RxStorageMongoDBInstanceCreationOptions, RxStorageDefaultCheckpoint> {
@@ -41,13 +41,8 @@ export declare class RxStorageInstanceMongoDB<RxDocType> implements RxStorageIns
      */
     bulkWrite(documentWrites: BulkWriteRow<RxDocType>[], context: string): Promise<RxStorageBulkWriteResponse<RxDocType>>;
     findDocumentsById(docIds: string[], withDeleted: boolean, session?: ClientSession): Promise<RxDocumentData<RxDocType>[]>;
-    query(preparedQuery: MongoDBPreparedQuery<RxDocType>): Promise<RxStorageQueryResult<RxDocType>>;
-    count(preparedQuery: MongoDBPreparedQuery<RxDocType>): Promise<RxStorageCountResult>;
-    info(): Promise<RxStorageInfoResult>;
-    getChangedDocumentsSince(limit: number, checkpoint?: RxStorageDefaultCheckpoint): Promise<{
-        documents: RxDocumentData<RxDocType>[];
-        checkpoint: RxStorageDefaultCheckpoint;
-    }>;
+    query(originalPreparedQuery: PreparedQuery<RxDocType>): Promise<RxStorageQueryResult<RxDocType>>;
+    count(originalPreparedQuery: PreparedQuery<RxDocType>): Promise<RxStorageCountResult>;
     cleanup(minimumDeletedTime: number): Promise<boolean>;
     getAttachmentData(_documentId: string, _attachmentId: string, _digest: string): Promise<string>;
     changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, RxStorageDefaultCheckpoint>>;

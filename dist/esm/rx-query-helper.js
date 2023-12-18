@@ -185,9 +185,6 @@ export function getQueryMatcher(_schema, query) {
   }
   var mingoQuery = getMingoQuery(query.selector);
   var fun = doc => {
-    if (doc._deleted) {
-      return false;
-    }
     return mingoQuery.test(doc);
   };
   return fun;

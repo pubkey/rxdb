@@ -1,24 +1,8 @@
-import { ensureNotFalsy, flatClone } from "../utils/index.js";
 import { createLokiStorageInstance } from "./rx-storage-instance-loki.js";
 import { RX_STORAGE_NAME_LOKIJS } from "./lokijs-helper.js";
 import { ensureRxStorageInstanceParamsAreCorrect } from "../../rx-storage-helper.js";
 import { DEFAULT_CHECKPOINT_SCHEMA } from "../../rx-schema-helper.js";
 export var RxStorageLokiStatics = {
-  prepareQuery(_schema, mutateableQuery) {
-    mutateableQuery = flatClone(mutateableQuery);
-    if (Object.keys(ensureNotFalsy(mutateableQuery.selector)).length > 0) {
-      mutateableQuery.selector = {
-        $and: [{
-          _deleted: false
-        }, mutateableQuery.selector]
-      };
-    } else {
-      mutateableQuery.selector = {
-        _deleted: false
-      };
-    }
-    return mutateableQuery;
-  },
   checkpointSchema: DEFAULT_CHECKPOINT_SCHEMA
 };
 export var RxStorageLoki = /*#__PURE__*/function () {

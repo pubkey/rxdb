@@ -2,7 +2,7 @@ import { Subject } from 'rxjs';
 import { getStartIndexStringFromLowerBound, getStartIndexStringFromUpperBound } from "../../custom-index.js";
 import { getPrimaryFieldOfPrimaryKey } from "../../rx-schema-helper.js";
 import { categorizeBulkWriteRows } from "../../rx-storage-helper.js";
-import { deepEqual, ensureNotFalsy, lastOfArray, now, PROMISE_RESOLVE_TRUE, PROMISE_RESOLVE_VOID, requestIdlePromiseNoQueue, RX_META_LWT_MINIMUM } from "../../plugins/utils/index.js";
+import { deepEqual, ensureNotFalsy, now, PROMISE_RESOLVE_TRUE, PROMISE_RESOLVE_VOID, requestIdlePromiseNoQueue } from "../../plugins/utils/index.js";
 import { boundGE, boundGT, boundLE, boundLT } from "./binary-search-bounds.js";
 import { attachmentMapKey, compareDocsWithIndex, ensureNotRemoved, getMemoryCollectionKey, putWriteRowToState, removeDocFromState } from "./memory-helper.js";
 import { addIndexesToInternalsState, getMemoryIndexName } from "./memory-indexes.js";
@@ -167,13 +167,12 @@ export var RxStorageInstanceMemory = /*#__PURE__*/function () {
       queryMatcher = getQueryMatcher(this.schema, preparedQuery.query);
     }
     var queryPlanFields = queryPlan.index;
-    var mustManuallyResort = !queryPlan.sortFieldsSameAsIndexFields;
-    var index = ['_deleted'].concat(queryPlanFields);
+    var mustManuallyResort = !queryPlan.sortSatisfiedByIndex;
+    var index = queryPlanFields;
     var lowerBound = queryPlan.startKeys;
-    lowerBound = [false].concat(lowerBound);
     var lowerBoundString = getStartIndexStringFromLowerBound(this.schema, index, lowerBound, queryPlan.inclusiveStart);
     var upperBound = queryPlan.endKeys;
-    upperBound = [false].concat(upperBound);
+    upperBound = upperBound;
     var upperBoundString = getStartIndexStringFromUpperBound(this.schema, index, upperBound, queryPlan.inclusiveEnd);
     var indexName = getMemoryIndexName(index);
     var docsWithIndex = this.internals.byIndex[indexName].docsWithIndex;
@@ -217,43 +216,6 @@ export var RxStorageInstanceMemory = /*#__PURE__*/function () {
       count: result.documents.length,
       mode: 'fast'
     };
-  };
-  _proto.info = function info() {
-    this.ensurePersistence();
-    return Promise.resolve({
-      totalCount: this.internals.documents.size
-    });
-  };
-  _proto.getChangedDocumentsSince = function getChangedDocumentsSince(limit, checkpoint) {
-    this.ensurePersistence();
-    var sinceLwt = checkpoint ? checkpoint.lwt : RX_META_LWT_MINIMUM;
-    var sinceId = checkpoint ? checkpoint.id : '';
-    var index = ['_meta.lwt', this.primaryPath];
-    var indexName = getMemoryIndexName(index);
-    var lowerBoundString = getStartIndexStringFromLowerBound(this.schema, ['_meta.lwt', this.primaryPath], [sinceLwt, sinceId], false);
-    var docsWithIndex = this.internals.byIndex[indexName].docsWithIndex;
-    var indexOfLower = boundGT(docsWithIndex, {
-      indexString: lowerBoundString
-    }, compareDocsWithIndex);
-
-    // TODO use array.slice() so we do not have to iterate here
-    var rows = [];
-    while (rows.length < limit && indexOfLower < docsWithIndex.length) {
-      var currentDoc = docsWithIndex[indexOfLower];
-      rows.push(currentDoc.doc);
-      indexOfLower++;
-    }
-    var lastDoc = lastOfArray(rows);
-    return Promise.resolve({
-      documents: rows,
-      checkpoint: lastDoc ? {
-        id: lastDoc[this.primaryPath],
-        lwt: lastDoc._meta.lwt
-      } : checkpoint ? checkpoint : {
-        id: '',
-        lwt: 0
-      }
-    });
   };
   _proto.cleanup = function cleanup(minimumDeletedTime) {
     this.ensurePersistence();

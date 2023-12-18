@@ -17,7 +17,6 @@ var RxStorageDexie = exports.RxStorageDexie = /*#__PURE__*/function () {
   var _proto = RxStorageDexie.prototype;
   _proto.createStorageInstance = function createStorageInstance(params) {
     (0, _rxStorageHelper.ensureRxStorageInstanceParamsAreCorrect)(params);
-    (0, _dexieHelper.ensureNoBooleanIndex)(params.schema);
     return (0, _rxStorageInstanceDexie.createDexieStorageInstance)(this, params, this.settings);
   };
   return RxStorageDexie;

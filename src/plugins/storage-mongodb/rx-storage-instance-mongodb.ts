@@ -18,7 +18,6 @@ import type {
     RxStorageChangeEvent,
     RxStorageCountResult,
     RxStorageDefaultCheckpoint,
-    RxStorageInfoResult,
     RxStorageInstance,
     RxStorageInstanceCreationParams,
     RxStorageQueryResult,
@@ -29,11 +28,9 @@ import {
     ensureNotFalsy,
     getFromMapOrThrow,
     isMaybeReadonlyArray,
-    lastOfArray,
     now,
     PROMISE_RESOLVE_VOID,
-    requestIdlePromise,
-    RX_META_LWT_MINIMUM
+    requestIdlePromise
 } from '../../plugins/utils/index.ts';
 import {
     MongoDBPreparedQuery,
@@ -396,65 +393,6 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
         return {
             count,
             mode: 'fast'
-        };
-    }
-
-    async info(): Promise<RxStorageInfoResult> {
-        this.runningOperations.next(this.runningOperations.getValue() + 1);
-        await this.writeQueue;
-        const mongoCollection = await this.mongoCollectionPromise;
-        const totalCount = await mongoCollection.countDocuments();
-        this.runningOperations.next(this.runningOperations.getValue() - 1);
-        return {
-            totalCount
-        };
-    }
-
-    async getChangedDocumentsSince(
-        limit: number,
-        checkpoint?: RxStorageDefaultCheckpoint
-    ): Promise<{
-        documents: RxDocumentData<RxDocType>[];
-        checkpoint: RxStorageDefaultCheckpoint;
-    }> {
-        this.runningOperations.next(this.runningOperations.getValue() + 1);
-        const mongoCollection = await this.mongoCollectionPromise;
-        const sinceLwt = checkpoint ? checkpoint.lwt : RX_META_LWT_MINIMUM;
-        const plainQuery = {
-            $or: [
-                {
-                    '_meta.lwt': {
-                        $gt: sinceLwt
-                    }
-                },
-                {
-                    '_meta.lwt': {
-                        $eq: sinceLwt
-                    },
-                    [this.inMongoPrimaryPath]: {
-                        $gt: checkpoint ? checkpoint.id : ''
-                    }
-                }
-            ]
-        };
-        const query = mongoCollection.find(plainQuery)
-            .sort({
-                '_meta.lwt': 1,
-                [this.inMongoPrimaryPath]: 1
-            })
-            .limit(limit);
-        const documents = await query.toArray();
-        const lastDoc = lastOfArray(documents);
-        this.runningOperations.next(this.runningOperations.getValue() - 1);
-        return {
-            documents: documents.map(d => swapMongoToRxDoc(d)),
-            checkpoint: lastDoc ? {
-                id: lastDoc[this.primaryPath],
-                lwt: lastDoc._meta.lwt
-            } : checkpoint ? checkpoint : {
-                id: '',
-                lwt: 0
-            }
         };
     }
 

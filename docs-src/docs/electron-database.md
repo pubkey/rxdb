@@ -1,9 +1,10 @@
 ---
-title: Electron Database
+title: Electron Database - Storage adapters for SQLite, Filesystem and In-Memory
 slug: electron-database.html
+description: SQLite, Filesystem, and In-Memory storage with RxDB for creating robust local-first Electron apps. Perfect for complex, real-time client-side applications
 ---
 
-# Electron Database
+# Electron Database - RxDB with different storage for SQLite, Filesystem and In-Memory
 
 [Electron](https://www.electronjs.org/) (aka Electron.js) is a framework developed by github which is designed to create desktop applications with the Web technology stack consisting of HTML, CSS and JavaScript.
 Because the desktop application runs on the clients device, it is suitable to use a database that can store and query data locally. This allows to create so called [local first](./offline-first.md) apps that store data locally and even work when to user has no internet connection.
@@ -51,6 +52,7 @@ Because of the [flexible storage](https://rxdb.info/rx-storage.html) layer of Rx
 - The [PouchDB RxStorage](./rx-storage-pouchdb.md) with the SQLite adapter mentioned above.
 - The [IndexedDB RxStorage](./rx-storage-indexeddb.md)
 - The [Dexie.js RxStorage](./rx-storage-dexie.md)
+- The [NOde.js Filesystem](./rx-storage-filesystem-node.md)
 
 It is recommended to use the [SQLite RxStorage](./rx-storage-sqlite.md) because it has the best performance and is the easiest to set up. However it is part of the [👑 Premium Plugins](/premium) which must be purchased, so to try out RxDB with Electron, you might want to use one of the other options. To start with RxDB, I would recommend to use the Dexie.js RxStorage in the renderer processes. Because RxDB is able to broadcast the database state between browser tabs, having multiple renderer processes is not a problem like it would be when you use plain IndexedDB without RxDB.
 In production you would always run the RxStorage in the main process with the [RxStorage Electron IpcRenderer & IpcMain](./electron.md#rxstorage-electron-ipcrenderer--ipcmain) plugins.

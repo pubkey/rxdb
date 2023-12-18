@@ -1,9 +1,9 @@
 import { BehaviorSubject, Subject, filter, firstValueFrom } from 'rxjs';
 import { getPrimaryFieldOfPrimaryKey } from "../../rx-schema-helper.js";
-import { ensureNotFalsy, getFromMapOrThrow, isMaybeReadonlyArray, lastOfArray, now, PROMISE_RESOLVE_VOID, requestIdlePromise, RX_META_LWT_MINIMUM } from "../../plugins/utils/index.js";
+import { ensureNotFalsy, getFromMapOrThrow, isMaybeReadonlyArray, now, PROMISE_RESOLVE_VOID, requestIdlePromise } from "../../plugins/utils/index.js";
 import { MongoClient } from 'mongodb';
 import { categorizeBulkWriteRows } from "../../rx-storage-helper.js";
-import { MONGO_ID_SUBSTITUTE_FIELDNAME, getMongoDBIndexName, swapMongoToRxDoc, swapRxDocToMongo } from "./mongodb-helper.js";
+import { MONGO_ID_SUBSTITUTE_FIELDNAME, getMongoDBIndexName, prepareMongoDBQuery, swapMongoToRxDoc, swapRxDocToMongo } from "./mongodb-helper.js";
 export var RxStorageInstanceMongoDB = /*#__PURE__*/function () {
   // public mongoChangeStream?: MongoChangeStream<any, ChangeStreamDocument<any>>;
 
@@ -233,7 +233,8 @@ export var RxStorageInstanceMongoDB = /*#__PURE__*/function () {
     this.runningOperations.next(this.runningOperations.getValue() - 1);
     return result;
   };
-  _proto.query = async function query(preparedQuery) {
+  _proto.query = async function query(originalPreparedQuery) {
+    var preparedQuery = prepareMongoDBQuery(this.schema, originalPreparedQuery.query);
     this.runningOperations.next(this.runningOperations.getValue() + 1);
     await this.writeQueue;
     var mongoCollection = await this.mongoCollectionPromise;
@@ -253,7 +254,8 @@ export var RxStorageInstanceMongoDB = /*#__PURE__*/function () {
       documents: resultDocs.map(d => swapMongoToRxDoc(d))
     };
   };
-  _proto.count = async function count(preparedQuery) {
+  _proto.count = async function count(originalPreparedQuery) {
+    var preparedQuery = prepareMongoDBQuery(this.schema, originalPreparedQuery.query);
     this.runningOperations.next(this.runningOperations.getValue() + 1);
     await this.writeQueue;
     var mongoCollection = await this.mongoCollectionPromise;
@@ -262,52 +264,6 @@ export var RxStorageInstanceMongoDB = /*#__PURE__*/function () {
     return {
       count,
       mode: 'fast'
-    };
-  };
-  _proto.info = async function info() {
-    this.runningOperations.next(this.runningOperations.getValue() + 1);
-    await this.writeQueue;
-    var mongoCollection = await this.mongoCollectionPromise;
-    var totalCount = await mongoCollection.countDocuments();
-    this.runningOperations.next(this.runningOperations.getValue() - 1);
-    return {
-      totalCount
-    };
-  };
-  _proto.getChangedDocumentsSince = async function getChangedDocumentsSince(limit, checkpoint) {
-    this.runningOperations.next(this.runningOperations.getValue() + 1);
-    var mongoCollection = await this.mongoCollectionPromise;
-    var sinceLwt = checkpoint ? checkpoint.lwt : RX_META_LWT_MINIMUM;
-    var plainQuery = {
-      $or: [{
-        '_meta.lwt': {
-          $gt: sinceLwt
-        }
-      }, {
-        '_meta.lwt': {
-          $eq: sinceLwt
-        },
-        [this.inMongoPrimaryPath]: {
-          $gt: checkpoint ? checkpoint.id : ''
-        }
-      }]
-    };
-    var query = mongoCollection.find(plainQuery).sort({
-      '_meta.lwt': 1,
-      [this.inMongoPrimaryPath]: 1
-    }).limit(limit);
-    var documents = await query.toArray();
-    var lastDoc = lastOfArray(documents);
-    this.runningOperations.next(this.runningOperations.getValue() - 1);
-    return {
-      documents: documents.map(d => swapMongoToRxDoc(d)),
-      checkpoint: lastDoc ? {
-        id: lastDoc[this.primaryPath],
-        lwt: lastDoc._meta.lwt
-      } : checkpoint ? checkpoint : {
-        id: '',
-        lwt: 0
-      }
     };
   };
   _proto.cleanup = async function cleanup(minimumDeletedTime) {

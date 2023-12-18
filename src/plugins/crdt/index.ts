@@ -3,6 +3,7 @@ import type {
     CRDTDocumentField,
     CRDTEntry,
     CRDTOperation,
+    FilledMangoQuery,
     HashFunction,
     JsonSchema,
     RxConflictHandler,
@@ -141,8 +142,8 @@ function runOperationOnDocument<RxDocType>(
     entryParts.forEach(entryPart => {
         let isMatching: boolean;
         if (entryPart.selector) {
-            const query = {
-                selector: ensureNotFalsy(entryPart.selector),
+            const query: FilledMangoQuery<RxDocType> = {
+                selector: ensureNotFalsy(entryPart.selector as any),
                 sort: [],
                 skip: 0
             };

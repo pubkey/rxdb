@@ -1,6 +1,7 @@
 ---
 title: React Native Database
 slug: react-native-database.html
+description: Explore React Native database solutions for cross-platform apps - AsyncStorage, SQLite, RxDB, and more. Tailored for iOS, Android, and Windows, ensuring seamless data storage and sync.
 ---
 
 # React Native Database
@@ -124,7 +125,6 @@ There are multiple ways to use RxDB in React Native:
 
 - Use the [memory RxStorage](./rx-storage-memory.md) that stores the data inside of the JavaScript memory without persistence
 - Use the [LokiJS RxStorage](./rx-storage-lokijs.md) with the [react-native-lokijs](https://github.com/cawfree/react-native-lokijs) plugin
-- Use the [PouchDB RxStorage](./rx-storage-pouchdb.md) with the SQLite plugin mentioned above.
 - Use the [SQLite RxStorage](./rx-storage-sqlite.md) with the [react-native-quick-sqlite](https://github.com/ospfranco/react-native-quick-sqlite) plugin.
 
 It is recommended to use the [SQLite RxStorage](./rx-storage-sqlite.md) because it has the best performance and is the easiest to set up. However it is part of the [👑 Premium Plugins](/premium) which must be purchased, so to try out RxDB with React Native, you might want to use one of the other three options.
@@ -178,6 +178,9 @@ await collections.humans.find({
 
 Using the SQLite RxStorage is pretty fast, which is shown in the [performance comparison](./rx-storage.md#performance-comparison).
 To learn more about using RxDB with React Native, you might want to check out [this example project](https://github.com/pubkey/rxdb/tree/master/examples/react-native).
+
+Also RxDB provides many other features like [encryption](./encryption.md) or [compression](./key-compression.md). You can even store binary data as [attachments](./rx-attachment.md) or use RxDB as an ORM in React Native.
+
 
 ### WatermelonDB
 

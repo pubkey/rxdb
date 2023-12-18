@@ -1,6 +1,5 @@
 "use strict";
 
-var _interopRequireDefault = require("@babel/runtime/helpers/interopRequireDefault");
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -8,22 +7,22 @@ exports.RxDBUpdatePlugin = void 0;
 exports.RxQueryUpdate = RxQueryUpdate;
 exports.incrementalUpdate = incrementalUpdate;
 exports.update = update;
-var _modifyjs = _interopRequireDefault(require("modifyjs"));
+var _mingoUpdater = require("./mingo-updater.js");
 /**
  * this plugin allows delta-updates with mongo-like-syntax
- * It's using modifyjs internally
- * @link https://github.com/lgandecki/modifyjs
+ * It's using mingo internally
+ * @link https://github.com/kofrasa/mingo
  */
 
 function incrementalUpdate(updateObj) {
   return this.incrementalModify(docData => {
-    var newDocData = (0, _modifyjs.default)(docData, updateObj);
+    var newDocData = (0, _mingoUpdater.mingoUpdater)(docData, updateObj);
     return newDocData;
   });
 }
 function update(updateObj) {
   var oldDocData = this._data;
-  var newDocData = (0, _modifyjs.default)(oldDocData, updateObj);
+  var newDocData = (0, _mingoUpdater.mingoUpdater)(oldDocData, updateObj);
   return this._saveData(newDocData, oldDocData);
 }
 function RxQueryUpdate(updateObj) {

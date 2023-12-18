@@ -194,7 +194,6 @@ export function wrapRxStorageInstance<RxDocType>(
         schema: originalSchema,
         collectionName: instance.collectionName,
         count: instance.count.bind(instance),
-        info: instance.info.bind(instance),
         remove: instance.remove.bind(instance),
         originalStorageInstance: instance,
         bulkWrite: async (
@@ -272,13 +271,13 @@ export function wrapRxStorageInstance<RxDocType>(
                     return ret;
                 });
         },
-        getChangedDocumentsSince: (limit, checkpoint) => {
-            return instance.getChangedDocumentsSince(limit, checkpoint)
-                .then(async (result) => {
+        getChangedDocumentsSince: !instance.getChangedDocumentsSince ? undefined : (limit, checkpoint) => {
+            return ((instance as any).getChangedDocumentsSince)(limit, checkpoint)
+                .then(async (result: any) => {
                     return {
                         checkpoint: result.checkpoint,
                         documents: await Promise.all(
-                            result.documents.map(d => fromStorage(d))
+                            result.documents.map((d: any) => fromStorage(d))
                         )
                     };
                 });

@@ -1,5 +1,5 @@
 ---
-title: 👑 Memory Synced RxStorage
+title: Memory Synced RxStorage 👑
 slug: rx-storage-memory-synced.html
 ---
 

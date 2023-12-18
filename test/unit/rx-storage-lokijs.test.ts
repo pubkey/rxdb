@@ -467,7 +467,7 @@ describe('rx-storage-lokijs.test.js', () => {
 
             assert.ok(doc._meta);
             assert.strictEqual(doc._meta.lwt, lwtValue);
-            assert.ok(!doc.hasOwnProperty('$lastWriteAt'));
+            assert.ok(!Object.prototype.hasOwnProperty.call(doc, '$lastWriteAt'));
 
             storageInstance2.close();
         });

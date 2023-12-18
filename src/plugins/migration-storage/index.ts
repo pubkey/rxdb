@@ -6,11 +6,11 @@ import {
     BulkWriteRow,
     RxStorageBulkWriteResponse,
     randomCouchString,
-    now,
     RxStorage,
     blobToBase64String,
     prepareQuery,
-    PreparedQuery
+    PreparedQuery,
+    FilledMangoQuery
 } from '../../index.ts';
 
 export type RxStorageOld<A, B> = RxStorage<A, B> | any;
@@ -108,8 +108,12 @@ export async function migrateCollection<RxDocType>(
     });
 
 
-    const plainQuery = {
-        selector: {},
+    const plainQuery: FilledMangoQuery<RxDocType> = {
+        selector: {
+            _deleted: {
+                $eq: false
+            }
+        } as any,
         limit: batchSize,
         sort: [{ [primaryPath]: 'asc' } as any],
         skip: 0

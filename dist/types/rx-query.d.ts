@@ -1,5 +1,5 @@
 import { BehaviorSubject, Observable } from 'rxjs';
-import type { RxCollection, RxDocument, RxQueryOP, RxQuery, MangoQuery, MangoQuerySortPart, MangoQuerySelector, PreparedQuery, RxDocumentWriteData, RxDocumentData, QueryMatcher } from './types/index.d.ts';
+import type { RxCollection, RxDocument, RxQueryOP, RxQuery, MangoQuery, MangoQuerySortPart, MangoQuerySelector, PreparedQuery, RxDocumentWriteData, RxDocumentData, QueryMatcher, RxJsonSchema, FilledMangoQuery } from './types/index.d.ts';
 import { RxQuerySingleResult } from './rx-query-single-result.ts';
 export declare class RxQueryBase<RxDocType, RxQueryResult = RxDocument<RxDocType>[] | RxDocument<RxDocType>> {
     op: RxQueryOP;
@@ -102,6 +102,11 @@ export declare function _getDefaultQuery<RxDocType>(): MangoQuery<RxDocType>;
  */
 export declare function tunnelQueryCache<RxDocumentType, RxQueryResult>(rxQuery: RxQueryBase<RxDocumentType, RxQueryResult>): RxQuery<RxDocumentType, RxQueryResult>;
 export declare function createRxQuery<RxDocType>(op: RxQueryOP, queryObj: MangoQuery<RxDocType>, collection: RxCollection<RxDocType>, other?: any): RxQueryBase<RxDocType, RxDocument<RxDocType> | RxDocument<RxDocType>[]>;
+/**
+ * @returns a format of the query that can be used with the storage
+ * when calling RxStorageInstance().query()
+ */
+export declare function prepareQuery<RxDocType>(schema: RxJsonSchema<RxDocumentData<RxDocType>>, mutateableQuery: FilledMangoQuery<RxDocType>): PreparedQuery<RxDocType>;
 /**
  * Runs the query over the storage instance
  * of the collection.

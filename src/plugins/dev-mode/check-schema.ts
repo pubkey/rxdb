@@ -64,7 +64,7 @@ export function validateFieldsDeep(rxJsonSchema: RxJsonSchema<any>): true {
 
     function checkField(
         fieldName: string,
-        schemaObj: any,
+        schemaObj: JsonSchema<any>,
         path: string
     ) {
         if (
@@ -75,7 +75,7 @@ export function validateFieldsDeep(rxJsonSchema: RxJsonSchema<any>): true {
         ) checkFieldNameRegex(fieldName);
 
         // 'item' only allowed it type=='array'
-        if (schemaObj.hasOwnProperty('item') && schemaObj.type !== 'array') {
+        if (Object.prototype.hasOwnProperty.call(schemaObj, 'item') && schemaObj.type !== 'array') {
             throw newRxError('SC2', {
                 fieldName
             });
@@ -85,14 +85,17 @@ export function validateFieldsDeep(rxJsonSchema: RxJsonSchema<any>): true {
          * required fields cannot be set via 'required: true',
          * but must be set via required: []
          */
-        if (schemaObj.hasOwnProperty('required') && typeof schemaObj.required === 'boolean') {
+        if (
+            Object.prototype.hasOwnProperty.call(schemaObj, 'required') &&
+            typeof schemaObj.required === 'boolean'
+        ) {
             throw newRxError('SC24', {
                 fieldName
             });
         }
 
         // $ref is not allowed
-        if (schemaObj.hasOwnProperty('$ref')) {
+        if (Object.prototype.hasOwnProperty.call(schemaObj, '$ref')) {
             throw newRxError('SC40', {
                 fieldName
             });
@@ -100,7 +103,7 @@ export function validateFieldsDeep(rxJsonSchema: RxJsonSchema<any>): true {
 
 
         // if ref given, must be type=='string', type=='array' with string-items or type==['string','null']
-        if (schemaObj.hasOwnProperty('ref')) {
+        if (Object.prototype.hasOwnProperty.call(schemaObj, 'ref')) {
             if (Array.isArray(schemaObj.type)) {
                 if (schemaObj.type.length > 2 || !schemaObj.type.includes('string') || !schemaObj.type.includes('null')) {
                     throw newRxError('SC4', {
@@ -112,7 +115,11 @@ export function validateFieldsDeep(rxJsonSchema: RxJsonSchema<any>): true {
                     case 'string':
                         break;
                     case 'array':
-                        if (!schemaObj.items || !schemaObj.items.type || schemaObj.items.type !== 'string') {
+                        if (
+                            !schemaObj.items ||
+                            !(schemaObj.items as any).type ||
+                            (schemaObj.items as any).type !== 'string'
+                        ) {
                             throw newRxError('SC3', {
                                 fieldName
                             });
@@ -130,14 +137,7 @@ export function validateFieldsDeep(rxJsonSchema: RxJsonSchema<any>): true {
 
         // nested only
         if (isNested) {
-            if (schemaObj.primary) {
-                throw newRxError('SC6', {
-                    path,
-                    primary: schemaObj.primary
-                });
-            }
-
-            if (schemaObj.default) {
+            if ((schemaObj as any).default) {
                 throw newRxError('SC7', {
                     path
                 });
@@ -282,7 +282,7 @@ export function checkSchema(jsonSchema: RxJsonSchema<any>) {
         });
     }
 
-    if (!jsonSchema.hasOwnProperty('properties')) {
+    if (!Object.prototype.hasOwnProperty.call(jsonSchema, 'properties')) {
         throw newRxError('SC29', {
             schema: jsonSchema
         });
@@ -296,7 +296,7 @@ export function checkSchema(jsonSchema: RxJsonSchema<any>) {
     }
 
     // check version
-    if (!jsonSchema.hasOwnProperty('version') ||
+    if (!Object.prototype.hasOwnProperty.call(jsonSchema, 'version') ||
         typeof jsonSchema.version !== 'number' ||
         jsonSchema.version < 0
     ) {

@@ -1,5 +1,5 @@
 import { firstValueFrom, filter } from 'rxjs';
-import { stackCheckpoints } from "../rx-storage-helper.js";
+import { getChangedDocumentsSince, stackCheckpoints } from "../rx-storage-helper.js";
 import { appendToArray, batchArray, clone, ensureNotFalsy, parseRevision, PROMISE_RESOLVE_FALSE } from "../plugins/utils/index.js";
 import { getLastCheckpointDoc, setCheckpoint } from "./checkpoint.js";
 import { resolveConflictError } from "./conflicts.js";
@@ -75,7 +75,7 @@ export async function startReplicationUpstream(state) {
       if (promises.size > 3) {
         await Promise.race(Array.from(promises));
       }
-      var upResult = await state.input.forkInstance.getChangedDocumentsSince(state.input.pushBatchSize, lastCheckpoint);
+      var upResult = await getChangedDocumentsSince(state.input.forkInstance, state.input.pushBatchSize, lastCheckpoint);
       if (upResult.documents.length === 0) {
         return 1; // break
       }

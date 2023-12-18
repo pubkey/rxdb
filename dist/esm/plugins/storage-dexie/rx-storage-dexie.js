@@ -1,4 +1,4 @@
-import { ensureNoBooleanIndex, RxStorageDexieStatics, RX_STORAGE_NAME_DEXIE } from "./dexie-helper.js";
+import { RxStorageDexieStatics, RX_STORAGE_NAME_DEXIE } from "./dexie-helper.js";
 import { createDexieStorageInstance } from "./rx-storage-instance-dexie.js";
 import { ensureRxStorageInstanceParamsAreCorrect } from "../../rx-storage-helper.js";
 export var RxStorageDexie = /*#__PURE__*/function () {
@@ -10,7 +10,6 @@ export var RxStorageDexie = /*#__PURE__*/function () {
   var _proto = RxStorageDexie.prototype;
   _proto.createStorageInstance = function createStorageInstance(params) {
     ensureRxStorageInstanceParamsAreCorrect(params);
-    ensureNoBooleanIndex(params.schema);
     return createDexieStorageInstance(this, params, this.settings);
   };
   return RxStorageDexie;

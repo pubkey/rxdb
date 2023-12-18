@@ -1,5 +1,6 @@
 import { countUntilNotMatching } from "./plugins/utils/index.js";
-import { getPrimaryFieldOfPrimaryKey } from "./rx-schema-helper.js";
+import { newRxError } from "./rx-error.js";
+import { getSchemaByObjectPath } from "./rx-schema-helper.js";
 export var INDEX_MAX = String.fromCharCode(65535);
 
 /**
@@ -10,9 +11,8 @@ export var INDEX_MAX = String.fromCharCode(65535);
  * Notice that for IndexedDB IDBKeyRange we have
  * to transform the value back to -Infinity
  * before we can use it in IDBKeyRange.bound.
- *
  */
-export var INDEX_MIN = Number.MIN_VALUE;
+export var INDEX_MIN = Number.MIN_SAFE_INTEGER;
 
 /**
  * Returns the query plan which contains
@@ -22,21 +22,34 @@ export var INDEX_MIN = Number.MIN_VALUE;
  * This is used in some storage like Memory, dexie.js and IndexedDB.
  */
 export function getQueryPlan(schema, query) {
-  var primaryPath = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
   var selector = query.selector;
   var indexes = schema.indexes ? schema.indexes.slice(0) : [];
   if (query.index) {
     indexes = [query.index];
-  } else {
-    indexes.push([primaryPath]);
   }
-  var optimalSortIndex = query.sort.map(sortField => Object.keys(sortField)[0]);
-  var optimalSortIndexCompareString = optimalSortIndex.join(',');
+
   /**
    * Most storages do not support descending indexes
    * so having a 'desc' in the sorting, means we always have to re-sort the results.
    */
   var hasDescSorting = !!query.sort.find(sortField => Object.values(sortField)[0] === 'desc');
+
+  /**
+   * Some fields can be part of the selector while not being relevant for sorting
+   * because their selector operators specify that in all cases all matching docs
+   * would have the same value.
+   * For example the boolean field _deleted.
+   * TODO similar thing could be done for enums.
+   */
+  var sortIrrelevevantFields = new Set();
+  Object.keys(selector).forEach(fieldName => {
+    var schemaPart = getSchemaByObjectPath(schema, fieldName);
+    if (schemaPart && schemaPart.type === 'boolean' && selector[fieldName].hasOwnProperty('$eq')) {
+      sortIrrelevevantFields.add(fieldName);
+    }
+  });
+  var optimalSortIndex = query.sort.map(sortField => Object.keys(sortField)[0]);
+  var optimalSortIndexCompareString = optimalSortIndex.filter(f => !sortIrrelevevantFields.has(f)).join(',');
   var currentBestQuality = -1;
   var currentBestQueryPlan;
   indexes.forEach(index => {
@@ -91,29 +104,23 @@ export function getQueryPlan(schema, query) {
       endKeys: opts.map(opt => opt.endKey),
       inclusiveEnd,
       inclusiveStart,
-      sortFieldsSameAsIndexFields: !hasDescSorting && optimalSortIndexCompareString === index.join(','),
+      sortSatisfiedByIndex: !hasDescSorting && optimalSortIndexCompareString === index.filter(f => !sortIrrelevevantFields.has(f)).join(','),
       selectorSatisfiedByIndex: isSelectorSatisfiedByIndex(index, query.selector)
     };
     var quality = rateQueryPlan(schema, query, queryPlan);
-    if (quality > 0 && quality > currentBestQuality || query.index) {
+    if (quality >= currentBestQuality || query.index) {
       currentBestQuality = quality;
       currentBestQueryPlan = queryPlan;
     }
   });
 
   /**
-   * No index found, use the default index
+   * In all cases and index must be found
    */
   if (!currentBestQueryPlan) {
-    currentBestQueryPlan = {
-      index: [primaryPath],
-      startKeys: [INDEX_MIN],
-      endKeys: [INDEX_MAX],
-      inclusiveEnd: true,
-      inclusiveStart: true,
-      sortFieldsSameAsIndexFields: !hasDescSorting && optimalSortIndexCompareString === primaryPath,
-      selectorSatisfiedByIndex: isSelectorSatisfiedByIndex([primaryPath], query.selector)
-    };
+    throw newRxError('SNH', {
+      query
+    });
   }
   return currentBestQueryPlan;
 }
@@ -233,20 +240,8 @@ export function rateQueryPlan(schema, query, queryPlan) {
     }
   });
   addQuality(equalKeyCount * pointsPerMatchingKey * 1.5);
-  var pointsIfNoReSortMustBeDone = queryPlan.sortFieldsSameAsIndexFields ? 5 : 0;
+  var pointsIfNoReSortMustBeDone = queryPlan.sortSatisfiedByIndex ? 5 : 0;
   addQuality(pointsIfNoReSortMustBeDone);
-
-  // console.log('rateQueryPlan() result:');
-  // console.log({
-  //     query,
-  //     queryPlan,
-  //     nonMinKeyCount,
-  //     nonMaxKeyCount,
-  //     equalKeyCount,
-  //     pointsIfNoReSortMustBeDone,
-  //     quality
-  // });
-
   return quality;
 }
 //# sourceMappingURL=query-planner.js.map

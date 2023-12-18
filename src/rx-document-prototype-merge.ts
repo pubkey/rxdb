@@ -43,7 +43,7 @@ export function getDocumentPrototype(
 
 
             /**
-             * When enumerable is true, it will show on console.dir(instance)
+             * When enumerable is true, it will show on console dir(instance)
              * To not pollute the output, only getters and methods are enumerable
              */
             let enumerable = true;

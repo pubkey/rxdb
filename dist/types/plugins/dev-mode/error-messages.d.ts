@@ -164,7 +164,6 @@ export declare const ERROR_MESSAGES: {
     CRDT1: string;
     CRDT2: string;
     CRDT3: string;
-    DXE1: string;
     /**
      * Should never be thrown, use this for
      * null checks etc. so you do not have to increase the

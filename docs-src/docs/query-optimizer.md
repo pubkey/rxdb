@@ -1,5 +1,5 @@
 ---
-title: 👑 Query Optimizer
+title: Query Optimizer 👑
 slug: query-optimizer.html
 ---
 

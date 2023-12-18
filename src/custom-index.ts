@@ -268,6 +268,10 @@ export function getStartIndexStringFromLowerBound(
             case 'boolean':
                 if (bound === null) {
                     str += inclusiveStart ? '0' : INDEX_MAX;
+                } else if (bound === INDEX_MIN) {
+                    str += '0';
+                } else if (bound === INDEX_MAX) {
+                    str += '1';
                 } else {
                     const boolToStr = bound ? '1' : '0';
                     str += boolToStr;

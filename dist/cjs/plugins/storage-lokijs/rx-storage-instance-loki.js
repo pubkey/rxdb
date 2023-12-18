@@ -43,13 +43,11 @@ var RxStorageInstanceLoki = exports.RxStorageInstanceLoki = /*#__PURE__*/functio
         close: this.close.bind(this),
         query: this.query.bind(this),
         count: this.count.bind(this),
-        info: this.info.bind(this),
         findDocumentsById: this.findDocumentsById.bind(this),
         collectionName: this.collectionName,
         databaseName: this.databaseName,
         conflictResultionTasks: this.conflictResultionTasks.bind(this),
         getAttachmentData: this.getAttachmentData.bind(this),
-        getChangedDocumentsSince: this.getChangedDocumentsSince.bind(this),
         internals: this.internals,
         options: this.options,
         remove: this.remove.bind(this),
@@ -130,11 +128,12 @@ var RxStorageInstanceLoki = exports.RxStorageInstanceLoki = /*#__PURE__*/functio
     });
     return ret;
   };
-  _proto.query = async function query(preparedQuery) {
+  _proto.query = async function query(preparedQueryOriginal) {
     var localState = await (0, _lokijsHelper.mustUseLocalState)(this);
     if (!localState) {
-      return (0, _lokijsHelper.requestRemoteInstance)(this, 'query', [preparedQuery]);
+      return (0, _lokijsHelper.requestRemoteInstance)(this, 'query', [preparedQueryOriginal]);
     }
+    var preparedQuery = (0, _index.ensureNotFalsy)(preparedQueryOriginal.query);
     if (preparedQuery.selector) {
       preparedQuery = (0, _index.flatClone)(preparedQuery);
       preparedQuery.selector = (0, _lokijsHelper.transformRegexToRegExp)(preparedQuery.selector);
@@ -177,44 +176,6 @@ var RxStorageInstanceLoki = exports.RxStorageInstanceLoki = /*#__PURE__*/functio
   };
   _proto.getAttachmentData = function getAttachmentData(_documentId, _attachmentId, _digest) {
     throw new Error('Attachments are not implemented in the lokijs RxStorage. Make a pull request.');
-  };
-  _proto.info = async function info() {
-    var localState = await (0, _lokijsHelper.mustUseLocalState)(this);
-    if (!localState) {
-      return (0, _lokijsHelper.requestRemoteInstance)(this, 'info', []);
-    }
-    return {
-      totalCount: localState.collection.count()
-    };
-  };
-  _proto.getChangedDocumentsSince = async function getChangedDocumentsSince(limit, checkpoint) {
-    var localState = await (0, _lokijsHelper.mustUseLocalState)(this);
-    if (!localState) {
-      return (0, _lokijsHelper.requestRemoteInstance)(this, 'getChangedDocumentsSince', [limit, checkpoint]);
-    }
-    var sinceLwt = checkpoint ? checkpoint.lwt : _index.RX_META_LWT_MINIMUM;
-    var query = localState.collection.chain().find({
-      '_meta.lwt': {
-        $gte: sinceLwt
-      }
-    }).sort((0, _index.getSortDocumentsByLastWriteTimeComparator)(this.primaryPath));
-    var changedDocs = query.data();
-    var first = changedDocs[0];
-    if (checkpoint && first && first[this.primaryPath] === checkpoint.id && first._meta.lwt === checkpoint.lwt) {
-      changedDocs.shift();
-    }
-    changedDocs = changedDocs.slice(0, limit);
-    var lastDoc = (0, _index.lastOfArray)(changedDocs);
-    return {
-      documents: changedDocs.map(docData => (0, _lokijsHelper.stripLokiKey)(docData)),
-      checkpoint: lastDoc ? {
-        id: lastDoc[this.primaryPath],
-        lwt: lastDoc._meta.lwt
-      } : checkpoint ? checkpoint : {
-        id: '',
-        lwt: 0
-      }
-    };
   };
   _proto.changeStream = function changeStream() {
     return this.changes$.asObservable();

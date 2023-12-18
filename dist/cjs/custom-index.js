@@ -197,6 +197,10 @@ function getStartIndexStringFromLowerBound(schema, index, lowerBound, inclusiveS
       case 'boolean':
         if (bound === null) {
           str += inclusiveStart ? '0' : _queryPlanner.INDEX_MAX;
+        } else if (bound === _queryPlanner.INDEX_MIN) {
+          str += '0';
+        } else if (bound === _queryPlanner.INDEX_MAX) {
+          str += '1';
         } else {
           var boolToStr = bound ? '1' : '0';
           str += boolToStr;

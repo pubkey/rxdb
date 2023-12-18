@@ -1,5 +1,5 @@
 ---
-title: 👑 Sharding RxStorage
+title: Sharding RxStorage 👑
 slug: rx-storage-sharding.html
 ---
 

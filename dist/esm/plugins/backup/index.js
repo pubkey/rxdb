@@ -3,6 +3,7 @@ import { BehaviorSubject, firstValueFrom, Subject } from 'rxjs';
 import { filter, map } from 'rxjs';
 import { getFromMapOrCreate, PROMISE_RESOLVE_FALSE, PROMISE_RESOLVE_TRUE, PROMISE_RESOLVE_VOID } from "../../plugins/utils/index.js";
 import { clearFolder, deleteFolder, documentFolder, ensureFolderExists, getMeta, prepareFolders, setMeta, writeJsonToFile, writeToFile } from "./file-util.js";
+import { getChangedDocumentsSince } from "../../rx-storage-helper.js";
 
 /**
  * Backups a single documents,
@@ -76,7 +77,7 @@ export var RxBackupState = /*#__PURE__*/function () {
       var hasMore = true;
       var _loop = async function () {
         await _this.database.requestIdlePromise();
-        var changesResult = await collection.storageInstance.getChangedDocumentsSince(_this.options.batchSize ? _this.options.batchSize : 0, lastCheckpoint);
+        var changesResult = await getChangedDocumentsSince(collection.storageInstance, _this.options.batchSize ? _this.options.batchSize : 0, lastCheckpoint);
         lastCheckpoint = changesResult.documents.length > 0 ? changesResult.checkpoint : lastCheckpoint;
         meta.collectionStates[collectionName].checkpoint = lastCheckpoint;
         var docIds = changesResult.documents.map(doc => doc[primaryKey]).filter(id => {

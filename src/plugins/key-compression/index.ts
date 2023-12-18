@@ -32,6 +32,7 @@ import type {
     RxDocumentWriteData
 } from '../../types/index.d.ts';
 import {
+    clone,
     flatClone,
     getFromMapOrCreate,
     isMaybeReadonlyArray

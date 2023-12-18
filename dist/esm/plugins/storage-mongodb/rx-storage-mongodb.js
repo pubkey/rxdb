@@ -1,17 +1,8 @@
 import { ensureRxStorageInstanceParamsAreCorrect } from "../../rx-storage-helper.js";
-import { DEFAULT_CHECKPOINT_SCHEMA, getPrimaryFieldOfPrimaryKey } from "../../rx-schema-helper.js";
-import { RX_STORAGE_NAME_MONGODB, primarySwapMongoDBQuerySelector, swapToMongoSort } from "./mongodb-helper.js";
+import { DEFAULT_CHECKPOINT_SCHEMA } from "../../rx-schema-helper.js";
+import { RX_STORAGE_NAME_MONGODB } from "./mongodb-helper.js";
 import { createMongoDBStorageInstance } from "./rx-storage-instance-mongodb.js";
 export var RxStorageMongoDBStatics = {
-  prepareQuery(schema, mutateableQuery) {
-    var primaryKey = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
-    var preparedQuery = {
-      query: mutateableQuery,
-      mongoSelector: primarySwapMongoDBQuerySelector(primaryKey, mutateableQuery.selector),
-      mongoSort: swapToMongoSort(mutateableQuery.sort)
-    };
-    return preparedQuery;
-  },
   checkpointSchema: DEFAULT_CHECKPOINT_SCHEMA
 };
 export var RxStorageMongoDB = /*#__PURE__*/function () {

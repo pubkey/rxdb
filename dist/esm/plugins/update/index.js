@@ -1,18 +1,19 @@
 /**
  * this plugin allows delta-updates with mongo-like-syntax
- * It's using modifyjs internally
- * @link https://github.com/lgandecki/modifyjs
+ * It's using mingo internally
+ * @link https://github.com/kofrasa/mingo
  */
-import modifyjs from 'modifyjs';
+
+import { mingoUpdater } from "./mingo-updater.js";
 export function incrementalUpdate(updateObj) {
   return this.incrementalModify(docData => {
-    var newDocData = modifyjs(docData, updateObj);
+    var newDocData = mingoUpdater(docData, updateObj);
     return newDocData;
   });
 }
 export function update(updateObj) {
   var oldDocData = this._data;
-  var newDocData = modifyjs(oldDocData, updateObj);
+  var newDocData = mingoUpdater(oldDocData, updateObj);
   return this._saveData(newDocData, oldDocData);
 }
 export function RxQueryUpdate(updateObj) {

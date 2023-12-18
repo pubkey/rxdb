@@ -1,12 +1,10 @@
 import type {
     BulkWriteRow,
     EventBulk,
-    PreparedQuery,
     RxDocumentData,
     RxStorageBulkWriteResponse,
     RxStorageChangeEvent,
     RxStorageCountResult,
-    RxStorageInfoResult,
     RxStorageInstanceCreationParams,
     RxStorageQueryResult
 } from './rx-storage.ts';
@@ -73,12 +71,12 @@ export interface RxStorage<Internals, InstanceCreationOptions> {
  * so we do not have to do many if-field-exist tests in the internals.
  */
 export type FilledMangoQuery<RxDocType> = Override<
-    MangoQuery<RxDocType>,
+    MangoQuery<RxDocumentData<RxDocType>>,
     {
         /**
          * The selector is required here.
          */
-        selector: MangoQuerySelector<RxDocType>;
+        selector: MangoQuerySelector<RxDocumentData<RxDocType>>;
 
         /**
          * In contrast to the user-provided MangoQuery,
@@ -86,7 +84,7 @@ export type FilledMangoQuery<RxDocType> = Override<
          * RxDB has to ensure that the primary key is always
          * part of the sort params.
          */
-        sort: MangoQuerySortPart<RxDocType>[];
+        sort: MangoQuerySortPart<RxDocumentData<RxDocType>>[];
 
         /**
          * In the normalized mango query,
@@ -114,29 +112,6 @@ export type FilledMangoQuery<RxDocType> = Override<
  */
 export type RxStorageStatics = Readonly<{
     /**
-     * Storages can have some bugs
-     * and behaviors that must be worked around
-     * before querying the db.
-     *
-     * Also some storages do optimizations
-     * and other things related to query planning.
-     *
-     * For performance reason this preparation
-     * runs in a single step so it can be cached
-     * when the query is used multiple times.
-     *
-     * @returns a format of the query that can be used with the storage
-     * when calling RxStorageInstance().query()
-     */
-    prepareQuery<RxDocType>(
-        schema: RxJsonSchema<RxDocumentData<RxDocType>>,
-        /**
-         * a query that can be mutated by the function without side effects.
-         */
-        mutateableQuery: FilledMangoQuery<RxDocType>
-    ): PreparedQuery<RxDocType>;
-
-    /**
      * Contains the JsonSchema that matches the checkpoint
      * of this RxStorage.
      * Used in some plugins like the graphql plugin
@@ -145,7 +120,16 @@ export type RxStorageStatics = Readonly<{
     checkpointSchema: DeepReadonly<JsonSchema>;
 }>;
 
-export type DefaultPreparedQuery<RxDocType> = {
+
+/**
+ * Before sending a query to the storageInstance.query()
+ * we run it through the query planner and do some normalization
+ * stuff. Notice that the queryPlan is a hint for the storage and
+ * it is not required to use it when running queries. Some storages
+ * might use their own query planning instead.
+ */
+export type PreparedQuery<RxDocType> = {
+    // original query from the input
     query: FilledMangoQuery<RxDocType>;
     queryPlan: RxQueryPlan;
 };
@@ -186,7 +170,7 @@ export interface RxStorageInstance<
      * storageInstance by checking the givent context-string. But this would make it impossible
      * to run a replication on the parentStorage itself.
      */
-    readonly underlyingPersistentStorage?: RxStorageInstance<RxDocType, any ,any, any>;
+    readonly underlyingPersistentStorage?: RxStorageInstance<RxDocType, any, any, any>;
 
     /**
      * Writes multiple documents to the storage instance.
@@ -243,12 +227,6 @@ export interface RxStorageInstance<
      * rx-storage implementation.
      */
     query(
-        /**
-         * Here we get the result of this.prepareQuery()
-         * instead of the plain mango query.
-         * This makes it easier to have good performance
-         * when transformations of the query must be done.
-         */
         preparedQuery: PreparedQuery<RxDocType>
     ): Promise<RxStorageQueryResult<RxDocType>>;
 
@@ -260,16 +238,6 @@ export interface RxStorageInstance<
     count(
         preparedQuery: PreparedQuery<RxDocType>
     ): Promise<RxStorageCountResult>;
-
-
-
-    /**
-     * Returns some info about the storage.
-     * Used in various places. This method is expected to
-     * not really care about performance, so do not
-     * use it in hot paths.
-     */
-    info(): Promise<RxStorageInfoResult>;
 
     /**
      * Returns the plain data of a single attachment.
@@ -287,8 +255,13 @@ export interface RxStorageInstance<
      * Must never return the same document multiple times in the same call operation.
      * This is used by RxDB to known what has changed since X so these docs can be handled by the backup or the replication
      * plugin.
+     *
+     * Important: This method is optional. If not defined,
+     * RxDB will manually run a query and use the last returned document
+     * for checkpointing. In  the future we might even remove this method completely
+     * and let RxDB do the work instead of the RxStorage.
      */
-    getChangedDocumentsSince(
+    getChangedDocumentsSince?(
         limit: number,
         /**
          * The checkpoint from with to start

@@ -15,27 +15,24 @@ async function queryDenoKV(instance, preparedQuery) {
   var limit = query.limit ? query.limit : Infinity;
   var skipPlusLimit = skip + limit;
   var queryPlanFields = queryPlan.index;
-  var mustManuallyResort = !queryPlan.sortFieldsSameAsIndexFields;
+  var mustManuallyResort = !queryPlan.sortSatisfiedByIndex;
   var queryMatcher = false;
   if (!queryPlan.selectorSatisfiedByIndex) {
     queryMatcher = (0, _rxQueryHelper.getQueryMatcher)(instance.schema, preparedQuery.query);
   }
   var kv = await instance.kvPromise;
   var indexForName = queryPlanFields.slice(0);
-  indexForName.unshift('_deleted');
   var indexName = (0, _denokvHelper.getDenoKVIndexName)(indexForName);
   var indexMeta = (0, _index.ensureNotFalsy)(instance.internals.indexes[indexName]);
   var lowerBound = queryPlan.startKeys;
-  lowerBound = [false].concat(lowerBound);
   var lowerBoundString = (0, _customIndex.getStartIndexStringFromLowerBound)(instance.schema, indexForName, lowerBound, queryPlan.inclusiveStart);
   if (!queryPlan.inclusiveStart) {
     lowerBoundString = (0, _customIndex.changeIndexableStringByOneQuantum)(lowerBoundString, 1);
   }
   var upperBound = queryPlan.endKeys;
-  upperBound = [false].concat(upperBound);
   var upperBoundString = (0, _customIndex.getStartIndexStringFromUpperBound)(instance.schema, indexForName, upperBound, queryPlan.inclusiveEnd);
-  if (!queryPlan.inclusiveEnd) {
-    upperBoundString = (0, _customIndex.changeIndexableStringByOneQuantum)(upperBoundString, -1);
+  if (queryPlan.inclusiveEnd) {
+    upperBoundString = (0, _customIndex.changeIndexableStringByOneQuantum)(upperBoundString, +1);
   }
   var result = [];
 

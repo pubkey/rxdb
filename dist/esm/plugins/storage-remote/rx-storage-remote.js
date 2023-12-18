@@ -150,9 +150,6 @@ export var RxStorageInstanceRemote = /*#__PURE__*/function () {
   _proto2.count = function count(preparedQuery) {
     return this.requestRemote('count', [preparedQuery]);
   };
-  _proto2.info = function info() {
-    return this.requestRemote('info', []);
-  };
   _proto2.getAttachmentData = function getAttachmentData(documentId, attachmentId, digest) {
     return this.requestRemote('getAttachmentData', [documentId, attachmentId, digest]);
   };

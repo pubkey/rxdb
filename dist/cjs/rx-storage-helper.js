@@ -9,6 +9,7 @@ exports.categorizeBulkWriteRows = categorizeBulkWriteRows;
 exports.ensureRxStorageInstanceParamsAreCorrect = ensureRxStorageInstanceParamsAreCorrect;
 exports.flatCloneDocWithMeta = flatCloneDocWithMeta;
 exports.getAttachmentSize = getAttachmentSize;
+exports.getChangedDocumentsSince = getChangedDocumentsSince;
 exports.getSingleDocument = getSingleDocument;
 exports.getWrappedStorageInstance = getWrappedStorageInstance;
 exports.hasEncryption = hasEncryption;
@@ -25,6 +26,7 @@ var _rxError = require("./rx-error.js");
 var _rxSchemaHelper = require("./rx-schema-helper.js");
 var _index = require("./plugins/utils/index.js");
 var _rxjs = require("rxjs");
+var _rxQuery = require("./rx-query.js");
 /**
  * Helper functions for accessing the RxStorage instances.
  */
@@ -568,16 +570,13 @@ rxJsonSchema) {
     count(preparedQuery) {
       return database.lockedRun(() => storageInstance.count(preparedQuery));
     },
-    info() {
-      return database.lockedRun(() => storageInstance.info());
-    },
     findDocumentsById(ids, deleted) {
       return database.lockedRun(() => storageInstance.findDocumentsById(ids, deleted));
     },
     getAttachmentData(documentId, attachmentId, digest) {
       return database.lockedRun(() => storageInstance.getAttachmentData(documentId, attachmentId, digest));
     },
-    getChangedDocumentsSince(limit, checkpoint) {
+    getChangedDocumentsSince: !storageInstance.getChangedDocumentsSince ? undefined : (limit, checkpoint) => {
       return database.lockedRun(() => storageInstance.getChangedDocumentsSince((0, _index.ensureNotFalsy)(limit), checkpoint));
     },
     cleanup(minDeletedTime) {
@@ -658,6 +657,55 @@ function hasEncryption(jsonSchema) {
     return false;
   }
 }
+async function getChangedDocumentsSince(storageInstance, limit, checkpoint) {
+  if (storageInstance.getChangedDocumentsSince) {
+    return storageInstance.getChangedDocumentsSince(limit, checkpoint);
+  }
+  var primaryPath = (0, _rxSchemaHelper.getPrimaryFieldOfPrimaryKey)(storageInstance.schema.primaryKey);
+  var sinceLwt = checkpoint ? checkpoint.lwt : _index.RX_META_LWT_MINIMUM;
+  var sinceId = checkpoint ? checkpoint.id : '';
+  var query = (0, _rxQuery.prepareQuery)(storageInstance.schema, {
+    selector: {
+      $or: [{
+        '_meta.lwt': {
+          $gt: sinceLwt
+        }
+      }, {
+        '_meta.lwt': {
+          $eq: sinceLwt
+        },
+        [primaryPath]: {
+          $gt: checkpoint ? sinceId : ''
+        }
+      }],
+      // add this hint for better index usage
+      '_meta.lwt': {
+        $gte: sinceLwt
+      }
+    },
+    sort: [{
+      '_meta.lwt': 'asc'
+    }, {
+      [primaryPath]: 'asc'
+    }],
+    skip: 0,
+    limit,
+    index: ['_meta.lwt', primaryPath]
+  });
+  var result = await storageInstance.query(query);
+  var documents = result.documents;
+  var lastDoc = (0, _index.lastOfArray)(documents);
+  return {
+    documents: documents,
+    checkpoint: lastDoc ? {
+      id: lastDoc[primaryPath],
+      lwt: lastDoc._meta.lwt
+    } : checkpoint ? checkpoint : {
+      id: '',
+      lwt: 0
+    }
+  };
+}
 
 /**
  * Wraps the storage and simluates
@@ -707,21 +755,15 @@ function randomDelayStorage(input) {
           await (0, _index.promiseWait)(input.delayTimeAfter());
           return ret;
         },
-        async info() {
-          await (0, _index.promiseWait)(input.delayTimeBefore());
-          var ret = await storageInstance.info();
-          await (0, _index.promiseWait)(input.delayTimeAfter());
-          return ret;
-        },
         async getAttachmentData(a, b, c) {
           await (0, _index.promiseWait)(input.delayTimeBefore());
           var ret = await storageInstance.getAttachmentData(a, b, c);
           await (0, _index.promiseWait)(input.delayTimeAfter());
           return ret;
         },
-        async getChangedDocumentsSince(a, b) {
+        getChangedDocumentsSince: !storageInstance.getChangedDocumentsSince ? undefined : async (a, b) => {
           await (0, _index.promiseWait)(input.delayTimeBefore());
-          var ret = await storageInstance.getChangedDocumentsSince(a, b);
+          var ret = await (0, _index.ensureNotFalsy)(storageInstance.getChangedDocumentsSince)(a, b);
           await (0, _index.promiseWait)(input.delayTimeAfter());
           return ret;
         },

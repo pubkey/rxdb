@@ -52,11 +52,11 @@ var RxStorageInstanceDexie = exports.RxStorageInstanceDexie = /*#__PURE__*/funct
     };
     var documentKeys = documentWrites.map(writeRow => writeRow.document[this.primaryPath]);
     var categorized;
-    await state.dexieDb.transaction('rw', state.dexieTable, state.dexieDeletedTable, async () => {
+    await state.dexieDb.transaction('rw', state.dexieTable, state.dexieAttachmentsTable, async () => {
       var docsInDbMap = new Map();
       var docsInDbWithInternals = await (0, _dexieHelper.getDocsInDb)(this.internals, documentKeys);
       docsInDbWithInternals.forEach(docWithDexieInternals => {
-        var doc = docWithDexieInternals ? (0, _dexieHelper.fromDexieToStorage)(docWithDexieInternals) : docWithDexieInternals;
+        var doc = docWithDexieInternals;
         if (doc) {
           docsInDbMap.set(doc[this.primaryPath], doc);
         }
@@ -70,35 +70,35 @@ var RxStorageInstanceDexie = exports.RxStorageInstanceDexie = /*#__PURE__*/funct
        * so we can later run them in bulk.
        */
       var bulkPutDocs = [];
-      var bulkRemoveDocs = [];
-      var bulkPutDeletedDocs = [];
-      var bulkRemoveDeletedDocs = [];
       categorized.bulkInsertDocs.forEach(row => {
         ret.success.push(row.document);
         bulkPutDocs.push(row.document);
       });
       categorized.bulkUpdateDocs.forEach(row => {
-        var docId = row.document[this.primaryPath];
         ret.success.push(row.document);
-        if (row.document._deleted && row.previous && !row.previous._deleted) {
-          // newly deleted
-          bulkRemoveDocs.push(docId);
-          bulkPutDeletedDocs.push(row.document);
-        } else if (row.document._deleted && row.previous && row.previous._deleted) {
-          // deleted was modified but is still deleted
-          bulkPutDeletedDocs.push(row.document);
-        } else if (!row.document._deleted) {
-          // non-deleted was changed
-          bulkPutDocs.push(row.document);
-        } else {
-          throw (0, _rxError.newRxError)('SNH', {
-            args: {
-              row
-            }
-          });
-        }
+        bulkPutDocs.push(row.document);
       });
-      await Promise.all([bulkPutDocs.length > 0 ? state.dexieTable.bulkPut(bulkPutDocs.map(d => (0, _dexieHelper.fromStorageToDexie)(d))) : _index.PROMISE_RESOLVE_VOID, bulkRemoveDocs.length > 0 ? state.dexieTable.bulkDelete(bulkRemoveDocs) : _index.PROMISE_RESOLVE_VOID, bulkPutDeletedDocs.length > 0 ? state.dexieDeletedTable.bulkPut(bulkPutDeletedDocs.map(d => (0, _dexieHelper.fromStorageToDexie)(d))) : _index.PROMISE_RESOLVE_VOID, bulkRemoveDeletedDocs.length > 0 ? state.dexieDeletedTable.bulkDelete(bulkRemoveDeletedDocs) : _index.PROMISE_RESOLVE_VOID]);
+      bulkPutDocs = bulkPutDocs.map(d => (0, _dexieHelper.fromStorageToDexie)(state.booleanIndexes, d));
+      if (bulkPutDocs.length > 0) {
+        await state.dexieTable.bulkPut(bulkPutDocs);
+      }
+
+      // handle attachments
+      var putAttachments = [];
+      categorized.attachmentsAdd.forEach(attachment => {
+        putAttachments.push({
+          id: (0, _dexieHelper.attachmentObjectId)(attachment.documentId, attachment.attachmentId),
+          data: attachment.attachmentData.data
+        });
+      });
+      categorized.attachmentsUpdate.forEach(attachment => {
+        putAttachments.push({
+          id: (0, _dexieHelper.attachmentObjectId)(attachment.documentId, attachment.attachmentId),
+          data: attachment.attachmentData.data
+        });
+      });
+      await state.dexieAttachmentsTable.bulkPut(putAttachments);
+      await state.dexieAttachmentsTable.bulkDelete(categorized.attachmentsRemove.map(attachment => (0, _dexieHelper.attachmentObjectId)(attachment.documentId, attachment.attachmentId)));
     });
     categorized = (0, _index.ensureNotFalsy)(categorized);
     if (categorized.eventBulk.events.length > 0) {
@@ -116,17 +116,11 @@ var RxStorageInstanceDexie = exports.RxStorageInstanceDexie = /*#__PURE__*/funct
     ensureNotClosed(this);
     var state = await this.internals;
     var ret = [];
-    await state.dexieDb.transaction('r', state.dexieTable, state.dexieDeletedTable, async () => {
-      var docsInDb;
-      if (deleted) {
-        docsInDb = await (0, _dexieHelper.getDocsInDb)(this.internals, ids);
-      } else {
-        docsInDb = await state.dexieTable.bulkGet(ids);
-      }
-      ids.forEach((id, idx) => {
-        var documentInDb = docsInDb[idx];
+    await state.dexieDb.transaction('r', state.dexieTable, async () => {
+      var docsInDb = await (0, _dexieHelper.getDocsInDb)(this.internals, ids);
+      docsInDb.forEach(documentInDb => {
         if (documentInDb && (!documentInDb._deleted || deleted)) {
-          ret.push((0, _dexieHelper.fromDexieToStorage)(documentInDb));
+          ret.push(documentInDb);
         }
       });
     });
@@ -151,43 +145,6 @@ var RxStorageInstanceDexie = exports.RxStorageInstanceDexie = /*#__PURE__*/funct
       };
     }
   };
-  _proto.info = async function info() {
-    var state = await this.internals;
-    var ret = {
-      totalCount: -1
-    };
-    await state.dexieDb.transaction('r', state.dexieTable, state.dexieDeletedTable, async _dexieTx => {
-      var [nonDeleted, deleted] = await Promise.all([state.dexieTable.count(), state.dexieDeletedTable.count()]);
-      ret.totalCount = nonDeleted + deleted;
-    });
-    return ret;
-  };
-  _proto.getChangedDocumentsSince = async function getChangedDocumentsSince(limit, checkpoint) {
-    ensureNotClosed(this);
-    var sinceLwt = checkpoint ? checkpoint.lwt : _index.RX_META_LWT_MINIMUM;
-    var sinceId = checkpoint ? checkpoint.id : '';
-    var state = await this.internals;
-    var [changedDocsNormal, changedDocsDeleted] = await Promise.all([state.dexieTable, state.dexieDeletedTable].map(async table => {
-      var query = table.where('[_meta.lwt+' + this.primaryPath + ']').above([sinceLwt, sinceId]).limit(limit);
-      var changedDocuments = await query.toArray();
-      return changedDocuments.map(d => (0, _dexieHelper.fromDexieToStorage)(d));
-    }));
-    var changedDocs = changedDocsNormal.slice(0);
-    (0, _index.appendToArray)(changedDocs, changedDocsDeleted);
-    changedDocs = (0, _index.sortDocumentsByLastWriteTime)(this.primaryPath, changedDocs);
-    changedDocs = changedDocs.slice(0, limit);
-    var lastDoc = (0, _index.lastOfArray)(changedDocs);
-    return {
-      documents: changedDocs,
-      checkpoint: lastDoc ? {
-        id: lastDoc[this.primaryPath],
-        lwt: lastDoc._meta.lwt
-      } : checkpoint ? checkpoint : {
-        id: '',
-        lwt: 0
-      }
-    };
-  };
   _proto.changeStream = function changeStream() {
     ensureNotClosed(this);
     return this.changes$.asObservable();
@@ -195,11 +152,19 @@ var RxStorageInstanceDexie = exports.RxStorageInstanceDexie = /*#__PURE__*/funct
   _proto.cleanup = async function cleanup(minimumDeletedTime) {
     ensureNotClosed(this);
     var state = await this.internals;
-    await state.dexieDb.transaction('rw', state.dexieDeletedTable, async () => {
+    await state.dexieDb.transaction('rw', state.dexieTable, async () => {
       var maxDeletionTime = (0, _index.now)() - minimumDeletedTime;
-      var toRemove = await state.dexieDeletedTable.where('_meta.lwt').below(maxDeletionTime).toArray();
-      var removeIds = toRemove.map(doc => doc[this.primaryPath]);
-      await state.dexieDeletedTable.bulkDelete(removeIds);
+      /**
+       * TODO only fetch _deleted=true
+       */
+      var toRemove = await state.dexieTable.where('_meta.lwt').below(maxDeletionTime).toArray();
+      var removeIds = [];
+      toRemove.forEach(doc => {
+        if (doc._deleted === '1') {
+          removeIds.push(doc[this.primaryPath]);
+        }
+      });
+      await state.dexieTable.bulkDelete(removeIds);
     });
 
     /**
@@ -210,14 +175,23 @@ var RxStorageInstanceDexie = exports.RxStorageInstanceDexie = /*#__PURE__*/funct
      */
     return true;
   };
-  _proto.getAttachmentData = function getAttachmentData(_documentId, _attachmentId, _digest) {
+  _proto.getAttachmentData = async function getAttachmentData(documentId, attachmentId, _digest) {
     ensureNotClosed(this);
-    throw new Error('Attachments are not implemented in the dexie RxStorage. Make a pull request.');
+    var state = await this.internals;
+    var id = (0, _dexieHelper.attachmentObjectId)(documentId, attachmentId);
+    return await state.dexieDb.transaction('r', state.dexieAttachmentsTable, async () => {
+      var attachment = await state.dexieAttachmentsTable.get(id);
+      if (attachment) {
+        return attachment.data;
+      } else {
+        throw new Error('attachment missing documentId: ' + documentId + ' attachmentId: ' + attachmentId);
+      }
+    });
   };
   _proto.remove = async function remove() {
     ensureNotClosed(this);
     var state = await this.internals;
-    await Promise.all([state.dexieDeletedTable.clear(), state.dexieTable.clear()]);
+    await state.dexieTable.clear();
     return this.close();
   };
   _proto.close = function close() {

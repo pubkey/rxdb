@@ -7,10 +7,7 @@ import {
     now,
     ensureNotFalsy,
     isMaybeReadonlyArray,
-    getFromMapOrThrow,
-    getSortDocumentsByLastWriteTimeComparator,
-    RX_META_LWT_MINIMUM,
-    lastOfArray
+    getFromMapOrThrow
 } from '../utils/index.ts';
 import { newRxError } from '../../rx-error.ts';
 import type {
@@ -34,7 +31,6 @@ import type {
     RxConflictResultionTaskSolution,
     RxStorageDefaultCheckpoint,
     RxStorageCountResult,
-    RxStorageInfoResult,
     PreparedQuery
 } from '../../types/index.d.ts';
 import {
@@ -104,13 +100,11 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
                 close: this.close.bind(this),
                 query: this.query.bind(this),
                 count: this.count.bind(this),
-                info: this.info.bind(this),
                 findDocumentsById: this.findDocumentsById.bind(this),
                 collectionName: this.collectionName,
                 databaseName: this.databaseName,
                 conflictResultionTasks: this.conflictResultionTasks.bind(this),
                 getAttachmentData: this.getAttachmentData.bind(this),
-                getChangedDocumentsSince: this.getChangedDocumentsSince.bind(this),
                 internals: this.internals,
                 options: this.options,
                 remove: this.remove.bind(this),
@@ -284,65 +278,6 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
     }
     getAttachmentData(_documentId: string, _attachmentId: string, _digest: string): Promise<string> {
         throw new Error('Attachments are not implemented in the lokijs RxStorage. Make a pull request.');
-    }
-
-
-    async info(): Promise<RxStorageInfoResult> {
-        const localState = await mustUseLocalState(this);
-        if (!localState) {
-            return requestRemoteInstance(this, 'info', []);
-        }
-        return {
-            totalCount: localState.collection.count()
-        };
-    }
-
-
-    async getChangedDocumentsSince(
-        limit: number,
-        checkpoint?: RxStorageDefaultCheckpoint | null
-    ): Promise<{
-        documents: RxDocumentData<RxDocType>[];
-        checkpoint: RxStorageDefaultCheckpoint;
-    }> {
-        const localState = await mustUseLocalState(this);
-        if (!localState) {
-            return requestRemoteInstance(this, 'getChangedDocumentsSince', [limit, checkpoint]);
-        }
-
-        const sinceLwt = checkpoint ? checkpoint.lwt : RX_META_LWT_MINIMUM;
-        const query = localState.collection
-            .chain()
-            .find({
-                '_meta.lwt': {
-                    $gte: sinceLwt
-                }
-            })
-            .sort(getSortDocumentsByLastWriteTimeComparator(this.primaryPath as any));
-        let changedDocs = query.data();
-
-        const first = changedDocs[0];
-        if (
-            checkpoint &&
-            first &&
-            first[this.primaryPath] === checkpoint.id &&
-            first._meta.lwt === checkpoint.lwt
-        ) {
-            changedDocs.shift();
-        }
-
-        changedDocs = changedDocs.slice(0, limit);
-        const lastDoc = lastOfArray(changedDocs);
-        return {
-            documents: changedDocs.map((docData: any) => stripLokiKey(docData)),
-            checkpoint: lastDoc ? {
-                id: (lastDoc as any)[this.primaryPath],
-                lwt: (lastDoc as any)._meta.lwt
-            } : checkpoint ? checkpoint : {
-                id: '',
-                lwt: 0
-            }
-        };
     }
 
     changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, RxStorageDefaultCheckpoint>> {

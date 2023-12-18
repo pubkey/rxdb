@@ -1,6 +1,6 @@
 import { Observable } from 'rxjs';
-import type { RxStorageInstance, RxStorageChangeEvent, RxDocumentData, BulkWriteRow, RxStorageBulkWriteResponse, RxStorageQueryResult, RxJsonSchema, RxStorageInstanceCreationParams, EventBulk, StringKeys, RxConflictResultionTaskSolution, RxStorageDefaultCheckpoint, RxStorageCountResult, RxStorageInfoResult, RxConflictResultionTask } from '../../types/index.d.ts';
-import type { DenoKVPreparedQuery, DenoKVSettings, DenoKVStorageInternals } from './denokv-types.ts';
+import type { RxStorageInstance, RxStorageChangeEvent, RxDocumentData, BulkWriteRow, RxStorageBulkWriteResponse, RxStorageQueryResult, RxJsonSchema, RxStorageInstanceCreationParams, EventBulk, StringKeys, RxConflictResultionTaskSolution, RxStorageDefaultCheckpoint, RxStorageCountResult, RxConflictResultionTask, PreparedQuery } from '../../types/index.d.ts';
+import type { DenoKVSettings, DenoKVStorageInternals } from './denokv-types.ts';
 import { RxStorageDenoKV } from './index.ts';
 export declare class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<RxDocType, DenoKVStorageInternals<RxDocType>, DenoKVSettings, RxStorageDefaultCheckpoint> {
     readonly storage: RxStorageDenoKV;
@@ -29,14 +29,9 @@ export declare class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInst
     retryUntilNoWriteInBetween<T>(fn: () => Promise<T>): Promise<T>;
     bulkWrite(documentWrites: BulkWriteRow<RxDocType>[], context: string): Promise<RxStorageBulkWriteResponse<RxDocType>>;
     findDocumentsById(ids: string[], withDeleted: boolean): Promise<RxDocumentData<RxDocType>[]>;
-    query(preparedQuery: DenoKVPreparedQuery<RxDocType>): Promise<RxStorageQueryResult<RxDocType>>;
-    count(preparedQuery: DenoKVPreparedQuery<RxDocType>): Promise<RxStorageCountResult>;
-    info(): Promise<RxStorageInfoResult>;
+    query(preparedQuery: PreparedQuery<RxDocType>): Promise<RxStorageQueryResult<RxDocType>>;
+    count(preparedQuery: PreparedQuery<RxDocType>): Promise<RxStorageCountResult>;
     getAttachmentData(documentId: string, attachmentId: string, digest: string): Promise<string>;
-    getChangedDocumentsSince(limit: number, checkpoint?: RxStorageDefaultCheckpoint | undefined): Promise<{
-        documents: RxDocumentData<RxDocType>[];
-        checkpoint: RxStorageDefaultCheckpoint;
-    }>;
     changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, RxStorageDefaultCheckpoint>>;
     cleanup(minimumDeletedTime: number): Promise<boolean>;
     close(): Promise<void>;

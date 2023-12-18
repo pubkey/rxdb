@@ -10,6 +10,7 @@ The storage migration plugin can be used to migrate all data from one existing R
 - You want to migration from one [RxStorage](./rx-storage.md) to another one.
 - You want to migrate to a new major RxDB version while keeping the previous saved data. This function only works from the previous major version upwards. Do not use it to migrate like rxdb v9 to v14.
 
+<!-- TODO this was inherited from PouchDB, we should remove this in the future and also migrate deleted documents. -->
 The storage migration **drops deleted documents** and filters them out during the migration.
 
 

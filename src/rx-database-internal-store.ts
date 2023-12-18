@@ -117,11 +117,14 @@ export function getPrimaryKeyOfInternalDocument(
 export async function getAllCollectionDocuments(
     storageInstance: RxStorageInstance<InternalStoreDocType<any>, any, any>
 ): Promise<RxDocumentData<InternalStoreCollectionDocType>[]> {
-    const getAllQueryPrepared = prepareQuery(
+    const getAllQueryPrepared = prepareQuery<InternalStoreDocType<any>>(
         storageInstance.schema,
         {
             selector: {
-                context: INTERNAL_CONTEXT_COLLECTION
+                context: INTERNAL_CONTEXT_COLLECTION,
+                _deleted: {
+                    $eq: false
+                }
             },
             sort: [{ id: 'asc' }],
             skip: 0

@@ -1,4 +1,5 @@
 import {
+    changeIndexableStringByOneQuantum,
     getStartIndexStringFromLowerBound,
     getStartIndexStringFromUpperBound
 } from '../../custom-index.ts';
@@ -23,7 +24,7 @@ export async function queryFoundationDB<RxDocType>(
     const limit = query.limit ? query.limit : Infinity;
     const skipPlusLimit = skip + limit;
     const queryPlanFields: string[] = queryPlan.index;
-    const mustManuallyResort = !queryPlan.sortFieldsSameAsIndexFields;
+    const mustManuallyResort = !queryPlan.sortSatisfiedByIndex;
 
 
     let queryMatcher: QueryMatcher<RxDocumentData<RxDocType>> | false = false;
@@ -38,13 +39,11 @@ export async function queryFoundationDB<RxDocType>(
 
 
     const indexForName = queryPlanFields.slice(0);
-    indexForName.unshift('_deleted');
     const indexName = getFoundationDBIndexName(indexForName);
     const indexDB = ensureNotFalsy(dbs.indexes[indexName]).db;
 
     let lowerBound: any[] = queryPlan.startKeys;
-    lowerBound = [false].concat(lowerBound);
-    const lowerBoundString = getStartIndexStringFromLowerBound(
+    let lowerBoundString = getStartIndexStringFromLowerBound(
         instance.schema,
         indexForName,
         lowerBound,
@@ -52,8 +51,7 @@ export async function queryFoundationDB<RxDocType>(
     );
 
     let upperBound: any[] = queryPlan.endKeys;
-    upperBound = [false].concat(upperBound);
-    const upperBoundString = getStartIndexStringFromUpperBound(
+    let upperBoundString = getStartIndexStringFromUpperBound(
         instance.schema,
         indexForName,
         upperBound,
@@ -82,6 +80,13 @@ export async function queryFoundationDB<RxDocType>(
                 }
             }
             return innerResult;
+        }
+
+        if (!queryPlan.inclusiveStart) {
+            lowerBoundString = changeIndexableStringByOneQuantum(lowerBoundString, 1);
+        }
+        if (queryPlan.inclusiveEnd) {
+            upperBoundString = changeIndexableStringByOneQuantum(upperBoundString, +1);
         }
 
         const range = indexTx.getRangeBatch(

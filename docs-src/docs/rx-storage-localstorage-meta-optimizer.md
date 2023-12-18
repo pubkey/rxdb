@@ -1,5 +1,5 @@
 ---
-title: 👑 RxStorage Localstorage Meta Optimizer
+title: RxStorage Localstorage Meta Optimizer 👑
 slug: rx-storage-localstorage-meta-optimizer.html
 ---
 

@@ -173,13 +173,12 @@ var RxStorageInstanceMemory = exports.RxStorageInstanceMemory = /*#__PURE__*/fun
       queryMatcher = (0, _rxQueryHelper.getQueryMatcher)(this.schema, preparedQuery.query);
     }
     var queryPlanFields = queryPlan.index;
-    var mustManuallyResort = !queryPlan.sortFieldsSameAsIndexFields;
-    var index = ['_deleted'].concat(queryPlanFields);
+    var mustManuallyResort = !queryPlan.sortSatisfiedByIndex;
+    var index = queryPlanFields;
     var lowerBound = queryPlan.startKeys;
-    lowerBound = [false].concat(lowerBound);
     var lowerBoundString = (0, _customIndex.getStartIndexStringFromLowerBound)(this.schema, index, lowerBound, queryPlan.inclusiveStart);
     var upperBound = queryPlan.endKeys;
-    upperBound = [false].concat(upperBound);
+    upperBound = upperBound;
     var upperBoundString = (0, _customIndex.getStartIndexStringFromUpperBound)(this.schema, index, upperBound, queryPlan.inclusiveEnd);
     var indexName = (0, _memoryIndexes.getMemoryIndexName)(index);
     var docsWithIndex = this.internals.byIndex[indexName].docsWithIndex;
@@ -223,43 +222,6 @@ var RxStorageInstanceMemory = exports.RxStorageInstanceMemory = /*#__PURE__*/fun
       count: result.documents.length,
       mode: 'fast'
     };
-  };
-  _proto.info = function info() {
-    this.ensurePersistence();
-    return Promise.resolve({
-      totalCount: this.internals.documents.size
-    });
-  };
-  _proto.getChangedDocumentsSince = function getChangedDocumentsSince(limit, checkpoint) {
-    this.ensurePersistence();
-    var sinceLwt = checkpoint ? checkpoint.lwt : _index.RX_META_LWT_MINIMUM;
-    var sinceId = checkpoint ? checkpoint.id : '';
-    var index = ['_meta.lwt', this.primaryPath];
-    var indexName = (0, _memoryIndexes.getMemoryIndexName)(index);
-    var lowerBoundString = (0, _customIndex.getStartIndexStringFromLowerBound)(this.schema, ['_meta.lwt', this.primaryPath], [sinceLwt, sinceId], false);
-    var docsWithIndex = this.internals.byIndex[indexName].docsWithIndex;
-    var indexOfLower = (0, _binarySearchBounds.boundGT)(docsWithIndex, {
-      indexString: lowerBoundString
-    }, _memoryHelper.compareDocsWithIndex);
-
-    // TODO use array.slice() so we do not have to iterate here
-    var rows = [];
-    while (rows.length < limit && indexOfLower < docsWithIndex.length) {
-      var currentDoc = docsWithIndex[indexOfLower];
-      rows.push(currentDoc.doc);
-      indexOfLower++;
-    }
-    var lastDoc = (0, _index.lastOfArray)(rows);
-    return Promise.resolve({
-      documents: rows,
-      checkpoint: lastDoc ? {
-        id: lastDoc[this.primaryPath],
-        lwt: lastDoc._meta.lwt
-      } : checkpoint ? checkpoint : {
-        id: '',
-        lwt: 0
-      }
-    });
   };
   _proto.cleanup = function cleanup(minimumDeletedTime) {
     this.ensurePersistence();

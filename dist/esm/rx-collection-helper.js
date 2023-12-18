@@ -46,7 +46,7 @@ export async function removeCollectionStorages(storage, databaseInternalStorage,
  * so we do not have to delete the meta documents.
  */
 hashFunction) {
-  var allCollectionMetaDocs = await getAllCollectionDocuments(storage.statics, databaseInternalStorage);
+  var allCollectionMetaDocs = await getAllCollectionDocuments(databaseInternalStorage);
   var relevantCollectionMetaDocs = allCollectionMetaDocs.filter(metaDoc => metaDoc.data.name === collectionName);
   var removeStorages = [];
   relevantCollectionMetaDocs.forEach(metaDoc => {

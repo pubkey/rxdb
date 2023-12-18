@@ -1,6 +1,6 @@
 import { Observable } from 'rxjs';
-import type { BulkWriteRow, EventBulk, RxConflictResultionTask, RxConflictResultionTaskSolution, RxDocumentData, RxJsonSchema, RxStorageBulkWriteResponse, RxStorageChangeEvent, RxStorageCountResult, RxStorageDefaultCheckpoint, RxStorageInfoResult, RxStorageInstance, RxStorageInstanceCreationParams, RxStorageQueryResult, StringKeys } from '../../types/index.d.ts';
-import type { MemoryPreparedQuery, MemoryStorageInternals, RxStorageMemory, RxStorageMemoryInstanceCreationOptions, RxStorageMemorySettings } from './memory-types.ts';
+import type { BulkWriteRow, EventBulk, PreparedQuery, RxConflictResultionTask, RxConflictResultionTaskSolution, RxDocumentData, RxJsonSchema, RxStorageBulkWriteResponse, RxStorageChangeEvent, RxStorageCountResult, RxStorageDefaultCheckpoint, RxStorageInstance, RxStorageInstanceCreationParams, RxStorageQueryResult, StringKeys } from '../../types/index.d.ts';
+import type { MemoryStorageInternals, RxStorageMemory, RxStorageMemoryInstanceCreationOptions, RxStorageMemorySettings } from './memory-types.ts';
 /**
  * Used in tests to ensure everything
  * is closed correctly
@@ -28,13 +28,8 @@ export declare class RxStorageInstanceMemory<RxDocType> implements RxStorageInst
      */
     ensurePersistence(): void;
     findDocumentsById(docIds: string[], withDeleted: boolean): Promise<RxDocumentData<RxDocType>[]>;
-    query(preparedQuery: MemoryPreparedQuery<RxDocType>): Promise<RxStorageQueryResult<RxDocType>>;
-    count(preparedQuery: MemoryPreparedQuery<RxDocType>): Promise<RxStorageCountResult>;
-    info(): Promise<RxStorageInfoResult>;
-    getChangedDocumentsSince(limit: number, checkpoint?: RxStorageDefaultCheckpoint): Promise<{
-        documents: RxDocumentData<RxDocType>[];
-        checkpoint: RxStorageDefaultCheckpoint;
-    }>;
+    query(preparedQuery: PreparedQuery<RxDocType>): Promise<RxStorageQueryResult<RxDocType>>;
+    count(preparedQuery: PreparedQuery<RxDocType>): Promise<RxStorageCountResult>;
     cleanup(minimumDeletedTime: number): Promise<boolean>;
     getAttachmentData(documentId: string, attachmentId: string, digest: string): Promise<string>;
     changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, RxStorageDefaultCheckpoint>>;

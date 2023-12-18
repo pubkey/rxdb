@@ -1919,9 +1919,9 @@ describe('replication-graphql.test.ts', () => {
                 const firstPushRowDoc: HumanWithTimestampDocumentType = output.variables.humanPushRow[0].newDocumentState;
 
                 // should not have added internal properties
-                assert.ok(!firstPushRowDoc.hasOwnProperty('_rev'));
-                assert.ok(!firstPushRowDoc.hasOwnProperty('_attachments'));
-                assert.ok(!firstPushRowDoc.hasOwnProperty('_deleted'));
+                assert.ok(!Object.prototype.hasOwnProperty.call(firstPushRowDoc, '_rev'));
+                assert.ok(!Object.prototype.hasOwnProperty.call(firstPushRowDoc, '_attachments'));
+                assert.ok(!Object.prototype.hasOwnProperty.call(firstPushRowDoc, '_deleted'));
 
                 // build valid output for deleted document
                 const outputDeleted = await builder([{
@@ -1934,9 +1934,9 @@ describe('replication-graphql.test.ts', () => {
 
                 // should not have added internal properties
                 const firstPushRowDocDeleted: HumanWithTimestampDocumentType = outputDeleted.variables.humanPushRow[0].newDocumentState;
-                assert.ok(!firstPushRowDocDeleted.hasOwnProperty('_rev'));
-                assert.ok(!firstPushRowDocDeleted.hasOwnProperty('_attachments'));
-                assert.ok(!firstPushRowDocDeleted.hasOwnProperty('_deleted'));
+                assert.ok(!Object.prototype.hasOwnProperty.call(firstPushRowDocDeleted, '_rev'));
+                assert.ok(!Object.prototype.hasOwnProperty.call(firstPushRowDocDeleted, '_attachments'));
+                assert.ok(!Object.prototype.hasOwnProperty.call(firstPushRowDocDeleted, '_deleted'));
 
                 assert.ok(parsed);
             });

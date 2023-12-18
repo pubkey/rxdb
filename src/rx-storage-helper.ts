@@ -28,21 +28,25 @@ import type {
     StringKeys,
     RxStorageWriteErrorConflict,
     RxStorageWriteErrorAttachment,
-    RxStorage
+    RxStorage,
+    RxStorageDefaultCheckpoint
 } from './types/index.d.ts';
 import {
     PROMISE_RESOLVE_TRUE,
+    RX_META_LWT_MINIMUM,
     appendToArray,
     createRevision,
     ensureNotFalsy,
     flatClone,
     getDefaultRevision,
     getDefaultRxDocumentMeta,
+    lastOfArray,
     now,
     promiseWait,
     randomCouchString
 } from './plugins/utils/index.ts';
 import { Observable, filter, map, startWith, switchMap } from 'rxjs';
+import { prepareQuery } from './rx-query.ts';
 
 export const INTERNAL_STORAGE_NAME = '_rxdb_internal';
 export const RX_DATABASE_LOCAL_DOCS_STORAGE_NAME = 'rxdatabase_storage_local';
@@ -628,7 +632,7 @@ export function getWrappedStorageInstance<
             if (writeRow.previous) {
                 Object.keys(writeRow.previous._meta)
                     .forEach(metaFieldName => {
-                        if (!writeRow.document._meta.hasOwnProperty(metaFieldName)) {
+                        if (!Object.prototype.hasOwnProperty.call(writeRow.document._meta, metaFieldName)) {
                             throw newRxError('SNH', {
                                 dataBefore: writeRow.previous,
                                 dataAfter: writeRow.document
@@ -745,11 +749,6 @@ export function getWrappedStorageInstance<
                 () => storageInstance.count(preparedQuery)
             );
         },
-        info() {
-            return database.lockedRun(
-                () => storageInstance.info()
-            );
-        },
         findDocumentsById(ids, deleted) {
             return database.lockedRun(
                 () => storageInstance.findDocumentsById(ids, deleted)
@@ -764,9 +763,9 @@ export function getWrappedStorageInstance<
                 () => storageInstance.getAttachmentData(documentId, attachmentId, digest)
             );
         },
-        getChangedDocumentsSince(limit: number, checkpoint?: any) {
+        getChangedDocumentsSince: !storageInstance.getChangedDocumentsSince ? undefined : (limit: number, checkpoint?: any) => {
             return database.lockedRun(
-                () => storageInstance.getChangedDocumentsSince(ensureNotFalsy(limit), checkpoint)
+                () => ((storageInstance as any).getChangedDocumentsSince)(ensureNotFalsy(limit), checkpoint)
             );
         },
         cleanup(minDeletedTime: number) {
@@ -859,6 +858,78 @@ export function hasEncryption(jsonSchema: RxJsonSchema<any>): boolean {
     }
 }
 
+
+export async function getChangedDocumentsSince<RxDocType, CheckpointType>(
+    storageInstance: RxStorageInstance<RxDocType, any, any, CheckpointType>,
+    limit: number,
+    checkpoint?: CheckpointType
+): Promise<{
+    documents: RxDocumentData<RxDocType>[];
+    /**
+     * The checkpoint contains data so that another
+     * call to getChangedDocumentsSince() will continue
+     * from exactly the last document that was returned before.
+     */
+    checkpoint: CheckpointType;
+}> {
+    if (storageInstance.getChangedDocumentsSince) {
+        return storageInstance.getChangedDocumentsSince(limit, checkpoint);
+    }
+
+    const primaryPath = getPrimaryFieldOfPrimaryKey(storageInstance.schema.primaryKey);
+    const sinceLwt = checkpoint ? (checkpoint as unknown as RxStorageDefaultCheckpoint).lwt : RX_META_LWT_MINIMUM;
+    const sinceId = checkpoint ? (checkpoint as unknown as RxStorageDefaultCheckpoint).id : '';
+    const query = prepareQuery<RxDocumentData<any>>(
+        storageInstance.schema,
+        {
+            selector: {
+                $or: [
+                    {
+                        '_meta.lwt': {
+                            $gt: sinceLwt
+                        }
+                    },
+                    {
+                        '_meta.lwt': {
+                            $eq: sinceLwt
+                        },
+                        [primaryPath]: {
+                            $gt: checkpoint ? sinceId : ''
+                        }
+                    }
+                ],
+                // add this hint for better index usage
+                '_meta.lwt': {
+                    $gte: sinceLwt
+                }
+            },
+            sort: [
+                { '_meta.lwt': 'asc' },
+                { [primaryPath]: 'asc' }
+            ],
+            skip: 0,
+            limit,
+            index: ['_meta.lwt', primaryPath]
+        }
+    );
+
+    const result = await storageInstance.query(query);
+    const documents = result.documents;
+    const lastDoc = lastOfArray(documents);
+
+    return {
+        documents: documents,
+        checkpoint: lastDoc ? {
+            id: (lastDoc as any)[primaryPath],
+            lwt: lastDoc._meta.lwt
+        } as any : checkpoint ? checkpoint : {
+            id: '',
+            lwt: 0
+        }
+    };
+}
+
+
 /**
  * Wraps the storage and simluates
  * delays. Mostly used in tests.
@@ -915,13 +986,6 @@ export function randomDelayStorage<Internals, InstanceCreationOptions>(
                     return ret;
 
                 },
-                async info() {
-                    await promiseWait(input.delayTimeBefore());
-                    const ret = await storageInstance.info();
-                    await promiseWait(input.delayTimeAfter());
-                    return ret;
-
-                },
                 async getAttachmentData(a, b, c) {
                     await promiseWait(input.delayTimeBefore());
                     const ret = await storageInstance.getAttachmentData(a, b, c);
@@ -929,9 +993,9 @@ export function randomDelayStorage<Internals, InstanceCreationOptions>(
                     return ret;
 
                 },
-                async getChangedDocumentsSince(a, b) {
+                getChangedDocumentsSince: !storageInstance.getChangedDocumentsSince ? undefined : async (a, b) => {
                     await promiseWait(input.delayTimeBefore());
-                    const ret = await storageInstance.getChangedDocumentsSince(a, b);
+                    const ret = await ensureNotFalsy(storageInstance.getChangedDocumentsSince)(a, b);
                     await promiseWait(input.delayTimeAfter());
                     return ret;
 

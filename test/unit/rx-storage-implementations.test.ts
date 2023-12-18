@@ -38,7 +38,8 @@ import {
     RxStorageBulkWriteResponse,
     RxStorageChangeEvent,
     RxStorageInstance,
-    prepareQuery
+    prepareQuery,
+    getChangedDocumentsSince
 } from '../../plugins/core/index.mjs';
 import {
     getCompressionStateByRxJsonSchema
@@ -407,7 +408,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
 
                 storageInstance.close();
             });
-            it('should not find the deleted document', async () => {
+            it('should not find the deleted document when findDocumentsById(false)', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
                     databaseInstanceToken: randomCouchString(10),
                     databaseName: randomCouchString(12),
@@ -1304,7 +1305,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
 
                 storageInstance.close();
             });
-            it('should not match deleted documents', async () => {
+            it('should also match deleted documents', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<{ _id: string; }>({
                     databaseInstanceToken: randomCouchString(10),
                     databaseName: randomCouchString(12),
@@ -1332,7 +1333,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 doc1._deleted = true;
                 assert.strictEqual(
                     queryMatcher(doc1),
-                    false
+                    true
                 );
 
                 storageInstance.close();
@@ -1444,7 +1445,9 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 const preparedQuery = prepareQuery(
                     storageInstance.schema,
                     {
-                        selector: {},
+                        selector: {
+                            _deleted: false
+                        },
                         sort: [{ key: 'asc' }],
                         skip: 0
                     }
@@ -1499,6 +1502,73 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 assert.strictEqual(allDocs.documents[2].value, 'a');
 
                 storageInstance.close();
+            });
+            /**
+             * Notice that the RxStorage itself runs whatever query you give it,
+             * filtering out deleted documents is done by RxDB, not by the storage.
+             */
+            it('must find deleted documents', async () => {
+                const storageInstance = await config.storage
+                    .getStorage()
+                    .createStorageInstance<{ key: string; value: string; }>({
+                        databaseInstanceToken: randomCouchString(10),
+                        databaseName: randomCouchString(12),
+                        collectionName: randomCouchString(12),
+                        schema: getPseudoSchemaForVersion<{ key: string; value: string; }>(0, 'key'),
+                        options: {},
+                        multiInstance: false,
+                        devMode: true
+                    });
+
+                const writeData = {
+                    key: 'foobar',
+                    value: 'barfoo',
+                    _deleted: false,
+                    _attachments: {},
+                    _rev: EXAMPLE_REVISION_1,
+                    _meta: {
+                        lwt: now()
+                    }
+                };
+
+                const insertResult = await storageInstance.bulkWrite(
+                    [{
+                        document: writeData
+                    }],
+                    testContext
+                );
+
+                // delete it
+                const writeData2 = Object.assign({}, writeData, {
+                    _deleted: true,
+                    _rev: EXAMPLE_REVISION_2,
+                    _meta: {
+                        lwt: now()
+                    }
+                });
+                await storageInstance.bulkWrite(
+                    [{
+                        previous: insertResult.success[0],
+                        document: writeData2
+                    }],
+                    testContext
+                );
+
+                const preparedQuery = prepareQuery(
+                    storageInstance.schema,
+                    {
+                        selector: {},
+                        sort: [{ key: 'asc' }],
+                        skip: 0
+                    }
+                );
+                const allDocs = await storageInstance.query(preparedQuery);
+                const first = allDocs.documents[0];
+                assert.ok(first);
+                assert.strictEqual(first.value, 'barfoo');
+
+                storageInstance.close();
+
             });
             /**
              * For event-reduce to work,
@@ -1803,63 +1873,12 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     }],
                     testContext
                 );
-                await ensureCountIs(1);
 
-                storageInstance.close();
-            });
-        });
-        describe('.info()', () => {
-            it('should have the correct total count', async () => {
-                const schema = getTestDataSchema();
-                const storageInstance = await config.storage
-                    .getStorage()
-                    .createStorageInstance<TestDocType>({
-                        databaseInstanceToken: randomCouchString(10),
-                        databaseName: randomCouchString(12),
-                        collectionName: randomCouchString(12),
-                        schema,
-                        options: {},
-                        multiInstance: false,
-                        devMode: true
-                    });
-                async function ensureCountIs(nr: number) {
-                    const result = await storageInstance.info();
-                    assert.strictEqual(result.totalCount, nr);
-                }
-
-                await ensureCountIs(0);
-                await storageInstance.bulkWrite([{ document: getWriteData() }], testContext);
-                await ensureCountIs(1);
-
-                const writeData = getWriteData();
-                const insertResult = await storageInstance.bulkWrite([{ document: writeData }], testContext);
-                await ensureCountIs(2);
-
-                // DELETE
-                const previous = insertResult.success[0];
-                await storageInstance.bulkWrite(
-                    [{
-                        previous,
-                        document: Object.assign({}, writeData, {
-                            _rev: EXAMPLE_REVISION_2,
-                            _deleted: true,
-                            _meta: {
-                                lwt: now()
-                            }
-                        })
-                    }],
-                    testContext
-                );
-
-                /**
-                 * Must still count 2 because totalCount includes _deleted documents
-                 * as long as they did not have been purged by the .cleanup()
-                 */
+                // must still be 2 because the storage itself also counts deleted docs
                 await ensureCountIs(2);
 
                 storageInstance.close();
             });
-
         });
         describe('.findDocumentsById()', () => {
             it('should find the documents', async () => {
@@ -2071,7 +2090,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 });
                 let checkpoint: any;
                 async function getChanges(): Promise<RxDocumentData<{ key: string; }>[]> {
-                    const res = await storageInstance.getChangedDocumentsSince(10, checkpoint);
+                    const res = await getChangedDocumentsSince(storageInstance, 10, checkpoint);
                     if (res.documents.length > 0) {
                         checkpoint = res.checkpoint;
                     }
@@ -2109,7 +2128,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                  * when we work with checkpoints.
                  */
                 const checkpointTest = checkpoint;
-                const emptyResult = await storageInstance.getChangedDocumentsSince(10, checkpointTest);
+                const emptyResult = await getChangedDocumentsSince(storageInstance, 10, checkpointTest);
                 assert.strictEqual(emptyResult.documents.length, 0);
                 assert.deepStrictEqual(emptyResult.checkpoint, checkpointTest);
 
@@ -2135,7 +2154,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
 
 
                 // get only the last change when requesting with empty checkpoint
-                const resTotal = await storageInstance.getChangedDocumentsSince(100);
+                const resTotal = await getChangedDocumentsSince(storageInstance, 100);
                 assert.strictEqual(resTotal.documents.length, 1);
                 assert.strictEqual(resTotal.documents[0].key, 'foobar');
                 assert.strictEqual(resTotal.documents[0]._deleted, true);
@@ -2187,7 +2206,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 }
 
                 // should return both documents when called without checkpoint
-                const resultWithoutCheckpoint = await storageInstance.getChangedDocumentsSince(10);
+                const resultWithoutCheckpoint = await getChangedDocumentsSince(storageInstance, 10);
                 assert.strictEqual(resultWithoutCheckpoint.documents.length, 2);
                 // the foobar-doc must have the latest value
                 const foobarRow = resultWithoutCheckpoint.documents.find(doc => doc.key === 'foobar');
@@ -2203,16 +2222,16 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 assert.deepStrictEqual(insertManyResult.error, []);
 
                 // should return both documents when called without checkpoint
-                const resultManyWithoutCheckpoint = await storageInstance.getChangedDocumentsSince(100);
+                const resultManyWithoutCheckpoint = await getChangedDocumentsSince(storageInstance, 100);
                 assert.strictEqual(resultManyWithoutCheckpoint.documents.length, 12);
 
 
                 // first get 5 and then another 5 and then again.
-                const resultFirstFive = await storageInstance.getChangedDocumentsSince(5);
-                const resultSecondFive = await storageInstance.getChangedDocumentsSince(5, resultFirstFive.checkpoint);
-                const resultThirdFive = await storageInstance.getChangedDocumentsSince(5, resultSecondFive.checkpoint);
+                const resultFirstFive = await getChangedDocumentsSince(storageInstance, 5);
+                const resultSecondFive = await getChangedDocumentsSince(storageInstance, 5, resultFirstFive.checkpoint);
+                const resultThirdFive = await getChangedDocumentsSince(storageInstance, 5, resultSecondFive.checkpoint);
                 assert.strictEqual(resultFirstFive.documents.length + resultSecondFive.documents.length + resultThirdFive.documents.length, 12);
-                const resultFourthFive = await storageInstance.getChangedDocumentsSince(5, resultThirdFive.checkpoint);
+                const resultFourthFive = await getChangedDocumentsSince(storageInstance, 5, resultThirdFive.checkpoint);
                 assert.strictEqual(resultFourthFive.documents.length, 0);
 
 
@@ -2231,7 +2250,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 ], testContext);
                 assert.deepStrictEqual(deleteResult.error, []);
 
-                const resultAfterDelete = await storageInstance.getChangedDocumentsSince(5, resultThirdFive.checkpoint);
+                const resultAfterDelete = await getChangedDocumentsSince(storageInstance, 5, resultThirdFive.checkpoint);
                 assert.strictEqual(resultAfterDelete.documents.length, 1);
                 assert.strictEqual(resultAfterDelete.documents[0]._deleted, true);
 
@@ -2262,7 +2281,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 let fetchRuns = 0;
                 while (Object.keys(docs).length < writeAmount) {
                     fetchRuns++;
-                    const result = await storageInstance.getChangedDocumentsSince(
+                    const result = await getChangedDocumentsSince(
+                        storageInstance,
                         writeAmount / 10,
                         lastCheckpoint
                     );
@@ -2376,7 +2396,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 const lastCheckpoint = stackCheckpoints(
                     emitted.map(ev => ev.checkpoint)
                 );
-                const emptyResult = await storageInstance.getChangedDocumentsSince(
+                const emptyResult = await getChangedDocumentsSince(
+                    storageInstance,
                     100,
                     lastCheckpoint
                 );
@@ -2690,7 +2711,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 assert.strictEqual(firstEventAttachment.length, dataLength);
                 assert.ok(!(firstEventAttachment as any).data);
 
-                const changesResult = await storageInstance.getChangedDocumentsSince(1000);
+                const changesResult = await getChangedDocumentsSince(storageInstance, 1000);
                 const firstChange = changesResult.documents[0];
                 if (!firstChange) {
                     throw new Error('first change missing');

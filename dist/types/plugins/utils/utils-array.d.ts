@@ -40,3 +40,7 @@ export declare function maxOfNumbers(arr: number[]): number;
  * @link https://www.measurethat.net/Benchmarks/Show/4223/0/array-concat-vs-spread-operator-vs-push#latest_results_block
  */
 export declare function appendToArray<T>(ar: T[], add: T[] | readonly T[]): void;
+/**
+ * @link https://gist.github.com/telekosmos/3b62a31a5c43f40849bb
+ */
+export declare function uniqueArray(arrArg: string[]): string[];
