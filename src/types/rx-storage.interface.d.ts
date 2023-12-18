@@ -10,8 +10,6 @@ import type {
     RxStorageQueryResult
 } from './rx-storage.ts';
 import type {
-    DeepReadonly,
-    JsonSchema,
     MangoQuery,
     MangoQuerySelector,
     MangoQuerySortPart,
@@ -51,11 +49,6 @@ export interface RxStorage<Internals, InstanceCreationOptions> {
      * used to detect if plugins do not work so we can throw proper errors.
      */
     readonly name: string;
-
-    /**
-     * Static functions
-     */
-    readonly statics: RxStorageStatics;
 
     /**
      * Creates a storage instance
@@ -102,24 +95,6 @@ export type FilledMangoQuery<RxDocType> = Override<
         skip: number;
     }
 >;
-
-/**
- * Static functions of the RxStorage.
- * Can be used without creating an instance of any kind.
- * These functions are not directly children of RxStorage because
- * we might need them without having to import the whole storage engine.
- * For example when the Worker plugin is used, the main process only needs the
- * static functions, while the worker process needs the whole storage engine.
- */
-export type RxStorageStatics = Readonly<{
-    /**
-     * Contains the JsonSchema that matches the checkpoint
-     * of this RxStorage.
-     * Used in some plugins like the graphql plugin
-     * where it is used to create a GraphQL Schema from the checkpoint.
-     */
-    checkpointSchema: DeepReadonly<JsonSchema>;
-}>;
 
 
 /**

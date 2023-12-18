@@ -91,13 +91,11 @@ import {
     createRxDatabase
 } from 'rxdb';
 import { getRxStorageWorker } from 'rxdb-premium/plugins/storage-worker';
-import { RxStorageOPFSStatics } from 'rxdb-premium/plugins/storage-opfs';
 
 const database = await createRxDatabase({
     name: 'mydatabase',
     storage: getRxStorageWorker(
         {
-            statics: RxStorageOPFSStatics,
             /**
              * This file must be statically served from a webserver.
              * You might want to first copy it somewhere outside of

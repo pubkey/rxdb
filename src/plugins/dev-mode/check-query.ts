@@ -9,7 +9,6 @@ import type {
     PreparedQuery
 } from '../../types/index.d.ts';
 import { newRxError, newRxTypeError } from '../../rx-error.ts';
-import { RxStorageDexieStatics } from '../storage-dexie/index.ts';
 import { deepEqual } from '../utils/index.ts';
 import { prepareQuery } from '../../rx-query.ts';
 

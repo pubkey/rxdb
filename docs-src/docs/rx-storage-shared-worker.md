@@ -21,8 +21,7 @@ In the worker process JavaScript file, you have wrap the original RxStorage with
 
 import { exposeWorkerRxStorage } from 'rxdb-premium/plugins/storage-worker';
 import { 
-    getRxStorageIndexedDB,
-    RxStorageIndexedDBStatics
+    getRxStorageIndexedDB
 } from 'rxdb-premium/plugins/indexeddb';
 
 exposeWorkerRxStorage({
@@ -49,11 +48,6 @@ const database = await createRxDatabase({
     name: 'mydatabase',
     storage: getRxStorageSharedWorker(
         {
-            /**
-             * The static methods of the RxStorage that is also
-             * used inside of the SharedWorker process.
-             */
-            statics: RxStorageIndexedDBStatics,
             /**
              * Contains any value that can be used as parameter
              * to the SharedWorker constructor of thread.js
@@ -89,12 +83,10 @@ import {
     createRxDatabase
 } from 'rxdb';
 import { getRxStorageSharedWorker } from 'rxdb-premium/plugins/storage-worker';
-import { RxStorageLokiStatics } from 'rxdb/plugins/storage-lokijs';
 const database = await createRxDatabase({
     name: 'mydatabase',
     storage: getRxStorageSharedWorker(
         {
-            statics: RxStorageLokiStatics,
             /**
              * Path to where the copied file from node_modules/rxdb-premium/dist/workers
              * is reachable from the webserver.
@@ -115,8 +107,7 @@ When a SharedWorker RxStorage is used, it is recommended to run the replication 
 
 import { exposeSharedWorkerRxStorage } from 'rxdb-premium/plugins/storage-worker';
 import { 
-    getRxStorageIndexedDB,
-    RxStorageIndexedDBStatics
+    getRxStorageIndexedDB
 } from 'rxdb-premium/plugins/storage-indexeddb';
 import {
     createRxDatabase,

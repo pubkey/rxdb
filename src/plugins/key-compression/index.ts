@@ -27,13 +27,11 @@ import type {
     RxStorage,
     RxStorageInstanceCreationParams,
     RxDocumentData,
-    RxStorageStatics,
     FilledMangoQuery,
     PreparedQuery,
     RxDocumentWriteData
 } from '../../types/index.d.ts';
 import {
-    clone,
     flatClone,
     getFromMapOrCreate,
     isMaybeReadonlyArray
@@ -138,17 +136,10 @@ export function wrappedKeyCompressionStorage<Internals, InstanceCreationOptions>
         storage: RxStorage<Internals, InstanceCreationOptions>;
     }
 ): RxStorage<Internals, InstanceCreationOptions> {
-    const statics: RxStorageStatics = Object.assign(
-        {},
-        args.storage.statics,
-        {}
-    );
-
     return Object.assign(
         {},
         args.storage,
         {
-            statics,
             async createStorageInstance<RxDocType>(
                 params: RxStorageInstanceCreationParams<RxDocType, any>
             ) {

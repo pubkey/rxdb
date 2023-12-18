@@ -41,7 +41,6 @@ const db = await createRxDatabase({
     name,
     storage: getRxStorageIpcRenderer({
         key: 'main-storage',
-        statics: getRxStorageMemory().statics,
         ipcRenderer: electron.ipcRenderer
     })
 });

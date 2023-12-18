@@ -88,7 +88,6 @@ export function getRxStorageRemoteWebsocket(
     ].join('');
     const storage = getRxStorageRemote({
         identifier,
-        statics: options.statics,
         mode: options.mode,
         async messageChannelCreator() {
             const messages$ = new Subject<MessageFromRemote>();

@@ -18,11 +18,9 @@ The remote storage communicates over a message channel which has to implement th
 
 ```ts
 // on the client
-import { RxStorageDefaultStatics } from 'rxdb';
 import { getRxStorageRemote } from 'rxdb/plugins/storage-remote';
 const storage = getRxStorageRemote({
     identifier: 'my-id',
-    statics: RxStorageDefaultStatics,
     mode: 'storage',
     messageChannelCreator: () => Promise.resolve({
         messages$: new Subject(),
@@ -79,7 +77,6 @@ const serverBasedOn = await startRxStorageRemoteWebsocketServer({
 import { getRxStorageRemoteWebsocket } from 'rxdb/plugins/storage-remote-websocket';
 const myDb = await createRxDatabase({
     storage: getRxStorageRemoteWebsocket({
-        statics,
         url: 'ws://example.com:8080'
     })
 });
@@ -110,7 +107,6 @@ On the client instance you can then call the `customRequest()` method:
 
 ```ts
 const storage = getRxStorageRemoteWebsocket({
-    statics: RxStorageDefaultStatics,
     url: 'ws://example.com:8080'
 });
 const answer = await storage.customRequest({ bar: 'foo' });

@@ -35,18 +35,11 @@ import {
     createRxDatabase
 } from 'rxdb';
 import { getRxStorageWorker } from 'rxdb-premium/plugins/storage-worker';
-import { RxStorageLokiStatics } from 'rxdb/plugins/storage-lokijs';
-
 
 const database = await createRxDatabase({
     name: 'mydatabase',
     storage: getRxStorageWorker(
         {
-            /**
-             * The static methods of the RxStorage that is also
-             * used inside of the worker process.
-             */
-            statics: RxStorageLokiStatics,
             /**
              * Contains any value that can be used as parameter
              * to the Worker constructor of thread.js
@@ -82,12 +75,10 @@ import {
     createRxDatabase
 } from 'rxdb';
 import { getRxStorageWorker } from 'rxdb-premium/plugins/storage-worker';
-import { RxStorageLokiStatics } from 'rxdb/plugins/storage-lokijs';
 const database = await createRxDatabase({
     name: 'mydatabase',
     storage: getRxStorageWorker(
         {
-            statics: RxStorageLokiStatics,
             /**
              * Path to where the copied file from node_modules/rxdb/dist/workers
              * is reachable from the webserver.
@@ -108,7 +99,6 @@ To reuse the worker instance in more than one `RxDatabase`, you can store the ou
 ```ts
 // Call getRxStorageWorker() exactly once
 const workerStorage = getRxStorageWorker({
-    statics: RxStorageLokiStatics,
     workerInput: 'path/to/worker.js'
 });
 

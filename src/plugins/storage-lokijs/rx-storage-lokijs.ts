@@ -1,13 +1,9 @@
 import type {
-    FilledMangoQuery,
     LokiDatabaseSettings,
     LokiSettings,
     LokiStorageInternals,
-    RxDocumentData,
-    RxJsonSchema,
     RxStorage,
-    RxStorageInstanceCreationParams,
-    RxStorageStatics
+    RxStorageInstanceCreationParams
 } from '../../types/index.d.ts';
 import {
     createLokiStorageInstance,
@@ -17,15 +13,9 @@ import { RX_STORAGE_NAME_LOKIJS } from './lokijs-helper.ts';
 import type { LeaderElector } from 'broadcast-channel';
 
 import { ensureRxStorageInstanceParamsAreCorrect } from '../../rx-storage-helper.ts';
-import { DEFAULT_CHECKPOINT_SCHEMA } from '../../rx-schema-helper.ts';
-
-export const RxStorageLokiStatics: RxStorageStatics = {
-    checkpointSchema: DEFAULT_CHECKPOINT_SCHEMA
-};
 
 export class RxStorageLoki implements RxStorage<LokiStorageInternals, LokiSettings> {
     public name = RX_STORAGE_NAME_LOKIJS;
-    public statics = RxStorageLokiStatics;
 
     /**
      * Create one leader elector by db name.
