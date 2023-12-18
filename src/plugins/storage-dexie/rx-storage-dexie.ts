@@ -3,7 +3,6 @@ import type {
     RxStorageInstanceCreationParams
 } from '../../types/index.d.ts';
 import {
-    RxStorageDexieStatics,
     RX_STORAGE_NAME_DEXIE
 } from './dexie-helper.ts';
 import type {
@@ -20,7 +19,6 @@ import { ensureRxStorageInstanceParamsAreCorrect } from '../../rx-storage-helper
 
 export class RxStorageDexie implements RxStorage<DexieStorageInternals, DexieSettings> {
     public name = RX_STORAGE_NAME_DEXIE;
-    public statics = RxStorageDexieStatics;
 
     constructor(
         public settings: DexieSettings

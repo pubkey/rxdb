@@ -282,7 +282,6 @@ config.parallel('crdt.test.js', () => {
             it('init', () => {
                 conflictHandler = getCRDTConflictHandler<WithCRDTs<schemas.HumanDocumentType>>(
                     defaultHashSha256,
-                    config.storage.getStorage().statics,
                     schema
                 );
             });

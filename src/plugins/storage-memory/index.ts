@@ -9,7 +9,6 @@ import {
     createMemoryStorageInstance,
     RxStorageInstanceMemory
 } from './rx-storage-instance-memory.ts';
-import { RxStorageDefaultStatics } from '../../rx-storage-statics.ts';
 
 /**
  * Keep the state even when the storage instance is closed.
@@ -24,7 +23,6 @@ export function getRxStorageMemory(
 
     const storage: RxStorageMemory = {
         name: 'memory',
-        statics: RxStorageDefaultStatics,
         collectionStates: COLLECTION_STATES,
         createStorageInstance<RxDocType>(
             params: RxStorageInstanceCreationParams<RxDocType, RxStorageMemoryInstanceCreationOptions>

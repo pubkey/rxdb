@@ -3,7 +3,6 @@ import assert from 'assert';
 
 import config from './config.ts';
 import {
-    RxStorageDefaultStatics,
     createRxDatabase,
     fillWithDefaultSettings,
     randomCouchString
@@ -47,7 +46,6 @@ config.parallel('rx-storage-remote.test.ts', () => {
             const colClient = await humansCollections.create(
                 0, undefined, false, false,
                 getRxStorageRemoteWebsocket({
-                    statics: RxStorageDefaultStatics,
                     url: 'ws://localhost:' + port,
                     mode: 'storage'
                 })
@@ -70,7 +68,6 @@ config.parallel('rx-storage-remote.test.ts', () => {
     });
     describe('mode setting with RemoteMessageChannel reuse', () => {
         const getStorage = (port: number) => getRxStorageRemoteWebsocket({
-            statics: RxStorageDefaultStatics,
             url: 'ws://localhost:' + port,
             mode: 'one'
         });
@@ -139,7 +136,6 @@ config.parallel('rx-storage-remote.test.ts', () => {
             assert.ok(server);
 
             const storage = getRxStorageRemoteWebsocket({
-                statics: RxStorageDefaultStatics,
                 url: 'ws://localhost:' + port,
                 mode: 'storage'
             });
@@ -195,7 +191,6 @@ config.parallel('rx-storage-remote.test.ts', () => {
             assert.ok(server);
 
             const storage = getRxStorageRemoteWebsocket({
-                statics: RxStorageDefaultStatics,
                 url: 'ws://localhost:' + port,
                 mode: 'database'
             });
@@ -264,7 +259,6 @@ config.parallel('rx-storage-remote.test.ts', () => {
             assert.ok(server);
 
             const storage = getRxStorageRemoteWebsocket({
-                statics: RxStorageDefaultStatics,
                 url: 'ws://localhost:' + port,
                 mode: 'collection'
             });
@@ -328,7 +322,6 @@ config.parallel('rx-storage-remote.test.ts', () => {
             });
             assert.ok(server);
             const clientStorage = getRxStorageRemoteWebsocket({
-                statics: RxStorageDefaultStatics,
                 url: 'ws://localhost:' + port,
                 mode: 'storage'
             });
@@ -360,7 +353,6 @@ config.parallel('rx-storage-remote.test.ts', () => {
             await Promise.all(
                 new Array(clientsAmount).fill(0).map(async (_v, idx) => {
                     const clientStorage = getRxStorageRemoteWebsocket({
-                        statics: RxStorageDefaultStatics,
                         url: 'ws://localhost:' + port,
                         mode: 'storage'
                     });

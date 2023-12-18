@@ -19,7 +19,6 @@ export * from './rx-query-helper.ts';
 export * from './rx-schema.ts';
 export * from './rx-schema-helper.ts';
 export * from './rx-storage-helper.ts';
-export * from './rx-storage-statics.ts';
 export * from './replication-protocol/index.ts';
 export * from './rx-storage-multiinstance.ts';
 export * from './custom-index.ts';

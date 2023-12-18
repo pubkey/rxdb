@@ -6,7 +6,6 @@ import {
     BulkWriteRow,
     RxStorageBulkWriteResponse,
     randomCouchString,
-    now,
     RxStorage,
     blobToBase64String,
     prepareQuery,
@@ -127,7 +126,7 @@ export async function migrateCollection<RxDocType>(
      * TODO remove this in the next major version. v16.
      */
     let preparedQuery: PreparedQuery<RxDocType>;
-    if (oldStorage.statics.prepareQuery) {
+    if (oldStorage.statics && oldStorage.statics.prepareQuery) {
         preparedQuery = oldStorage.statics.prepareQuery(
             schema,
             plainQuery

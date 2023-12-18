@@ -18,8 +18,7 @@ import type {
     RxStorageCountResult,
     RxStorageInstance,
     RxStorageInstanceCreationParams,
-    RxStorageQueryResult,
-    RxStorageStatics
+    RxStorageQueryResult
 } from '../../types/index.d.ts';
 import {
     randomCouchString
@@ -36,7 +35,6 @@ import { ensureRxStorageInstanceParamsAreCorrect } from '../../rx-storage-helper
 
 
 export class RxStorageRemote implements RxStorage<RxStorageRemoteInternals, any> {
-    public readonly statics: RxStorageStatics;
     public readonly name: string = 'remote';
     private seed: string = randomCouchString(10);
     private lastRequestId: number = 0;
@@ -44,7 +42,6 @@ export class RxStorageRemote implements RxStorage<RxStorageRemoteInternals, any>
     constructor(
         public readonly settings: RxStorageRemoteSettings
     ) {
-        this.statics = settings.statics;
         if (settings.mode === 'one') {
             this.messageChannelIfOneMode = getMessageChannel(
                 settings,

@@ -31,7 +31,6 @@ import {
     ensureNotFalsy,
     randomCouchString,
     RxStorage,
-    RxStorageDefaultStatics,
     RxTestStorage,
     randomDelayStorage
 } from '../../plugins/core/index.mjs';
@@ -369,7 +368,6 @@ export function setDefaultStorage(storageKey: string) {
                 name: storageKey,
                 getStorage: () => {
                     return getRxStorageRemoteWebsocket({
-                        statics: RxStorageDefaultStatics,
                         url: 'ws://localhost:18007',
                         mode: 'storage'
                     });
@@ -377,7 +375,6 @@ export function setDefaultStorage(storageKey: string) {
                 getPerformanceStorage() {
                     return {
                         storage: getRxStorageRemoteWebsocket({
-                            statics: RxStorageDefaultStatics,
                             url: 'ws://localhost:18007',
                             mode: 'storage'
                         }),

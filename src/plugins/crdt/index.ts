@@ -12,7 +12,6 @@ import type {
     RxDocumentData,
     RxJsonSchema,
     RxPlugin,
-    RxStorageStatics,
     WithDeleted
 } from '../../types/index.d.ts';
 import {
@@ -69,7 +68,6 @@ export async function updateCRDT<RxDocType>(
         crdtDocField.hash = await hashCRDTOperations(this.collection.database.hashFunction, crdtDocField);
 
         docData = runOperationOnDocument(
-            this.collection.database.storage.statics,
             this.collection.schema.jsonSchema,
             docData,
             operation
@@ -103,7 +101,6 @@ export async function insertCRDT<RxDocType>(
 
     let insertData: RxDocumentWriteData<RxDocType> = {} as any;
     insertData = runOperationOnDocument(
-        this.database.storage.statics,
         this.schema.jsonSchema,
         insertData as any,
         operation
@@ -137,7 +134,6 @@ export function sortOperationComparator<RxDocType>(a: CRDTOperation<RxDocType>, 
 
 
 function runOperationOnDocument<RxDocType>(
-    storageStatics: RxStorageStatics,
     schema: RxJsonSchema<RxDocumentData<RxDocType>>,
     docData: WithDeleted<RxDocType>,
     operation: CRDTOperation<RxDocType>
@@ -283,7 +279,6 @@ export async function mergeCRDTFields<RxDocType>(
 }
 
 export function rebuildFromCRDT<RxDocType>(
-    storageStatics: RxStorageStatics,
     schema: RxJsonSchema<RxDocumentData<RxDocType>>,
     docData: WithDeleted<RxDocType>,
     crdts: CRDTDocumentField<RxDocType>
@@ -295,7 +290,6 @@ export function rebuildFromCRDT<RxDocType>(
     crdts.operations.forEach(operations => {
         operations.forEach(op => {
             base = runOperationOnDocument(
-                storageStatics,
                 schema,
                 base,
                 op
@@ -308,7 +302,6 @@ export function rebuildFromCRDT<RxDocType>(
 
 export function getCRDTConflictHandler<RxDocType>(
     hashFunction: HashFunction,
-    storageStatics: RxStorageStatics,
     schema: RxJsonSchema<RxDocumentData<RxDocType>>
 ): RxConflictHandler<RxDocType> {
     const crdtOptions = ensureNotFalsy(schema.crdt);
@@ -330,7 +323,6 @@ export function getCRDTConflictHandler<RxDocType>(
 
         const mergedCrdt = await mergeCRDTFields(hashFunction, newDocCrdt, masterDocCrdt);
         const mergedDoc = rebuildFromCRDT(
-            storageStatics,
             schema,
             i.newDocumentState,
             mergedCrdt
@@ -413,7 +405,6 @@ export const RxDBcrdtPlugin: RxPlugin = {
                 }
                 data.conflictHandler = getCRDTConflictHandler(
                     data.database.hashFunction,
-                    data.database.storage.statics,
                     data.schema
                 );
             }
@@ -443,7 +434,6 @@ export const RxDBcrdtPlugin: RxPlugin = {
                                 const crdts = getCrdt(newDocState);
 
                                 const rebuild = rebuildFromCRDT(
-                                    collection.database.storage.statics,
                                     collection.schema.jsonSchema,
                                     newDocState,
                                     crdts

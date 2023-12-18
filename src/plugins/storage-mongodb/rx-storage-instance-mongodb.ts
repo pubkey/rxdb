@@ -28,11 +28,9 @@ import {
     ensureNotFalsy,
     getFromMapOrThrow,
     isMaybeReadonlyArray,
-    lastOfArray,
     now,
     PROMISE_RESOLVE_VOID,
-    requestIdlePromise,
-    RX_META_LWT_MINIMUM
+    requestIdlePromise
 } from '../../plugins/utils/index.ts';
 import {
     MongoDBPreparedQuery,
