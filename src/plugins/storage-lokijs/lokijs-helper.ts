@@ -10,7 +10,6 @@ import type {
     LokiDatabaseState,
     LokiLocalDatabaseState,
     LokiRemoteResponseBroadcastMessage,
-    MangoQuery,
     MangoQuerySortDirection,
     MangoQuerySortPart,
     RxDocumentData,
@@ -268,8 +267,6 @@ export function getLokiSortComparator<RxDocType>(
     };
     return fun;
 }
-
-
 
 export function getLokiLeaderElector(
     databaseInstanceToken: string,

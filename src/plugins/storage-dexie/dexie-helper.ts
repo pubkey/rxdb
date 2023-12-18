@@ -6,20 +6,16 @@ import type {
 import { Dexie } from 'dexie';
 import type { DexieSettings } from '../../types/index.d.ts';
 import { flatClone, getFromMapOrCreate, getProperty, setProperty, toArray, uniqueArray } from '../utils/index.ts';
-import { newRxError } from '../../rx-error.ts';
 import {
     getPrimaryFieldOfPrimaryKey,
     getSchemaByObjectPath
 } from '../../rx-schema-helper.ts';
-import { RxStorageDefaultStatics } from '../../rx-storage-statics.ts';
 
 export const DEXIE_DOCS_TABLE_NAME = 'docs';
 export const DEXIE_CHANGES_TABLE_NAME = 'changes';
 export const DEXIE_ATTACHMENTS_TABLE_NAME = 'attachments';
 
 export const RX_STORAGE_NAME_DEXIE = 'dexie';
-
-export const RxStorageDexieStatics = RxStorageDefaultStatics;
 
 const DEXIE_STATE_DB_BY_NAME: Map<string, DexieStorageInternals> = new Map();
 const REF_COUNT_PER_DEXIE_DB: Map<DexieStorageInternals, number> = new Map();

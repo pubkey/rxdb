@@ -1,5 +1,4 @@
 import { ensureRxStorageInstanceParamsAreCorrect } from '../../rx-storage-helper.ts';
-import { RxStorageDefaultStatics } from '../../rx-storage-statics.ts';
 import type {
     RxStorageInstanceCreationParams
 } from '../../types/index.d.ts';
@@ -31,7 +30,6 @@ export function getRxStorageFoundationDB(
 
     const storage: RxStorageFoundationDB = {
         name: 'foundationdb',
-        statics: RxStorageDefaultStatics,
         createStorageInstance<RxDocType>(
             params: RxStorageInstanceCreationParams<RxDocType, RxStorageFoundationDBInstanceCreationOptions>
         ): Promise<RxStorageInstanceFoundationDB<RxDocType>> {

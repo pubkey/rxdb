@@ -944,7 +944,6 @@ export function randomDelayStorage<Internals, InstanceCreationOptions>(
 
     const retStorage: RxStorage<Internals, InstanceCreationOptions> = {
         name: 'random-delay-' + input.storage.name,
-        statics: input.storage.statics,
         async createStorageInstance(params) {
             await promiseWait(input.delayTimeBefore());
             const storageInstance = await input.storage.createStorageInstance(params);

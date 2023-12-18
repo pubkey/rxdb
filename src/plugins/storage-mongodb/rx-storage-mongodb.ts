@@ -1,26 +1,15 @@
 import type {
-    FilledMangoQuery,
-    RxDocumentData,
-    RxJsonSchema,
     RxStorage,
-    RxStorageInstanceCreationParams,
-    RxStorageStatics
+    RxStorageInstanceCreationParams
 } from '../../types/index.d.ts';
 
 import { ensureRxStorageInstanceParamsAreCorrect } from '../../rx-storage-helper.ts';
-import { DEFAULT_CHECKPOINT_SCHEMA, getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper.ts';
-import { RX_STORAGE_NAME_MONGODB, primarySwapMongoDBQuerySelector, swapToMongoSort } from './mongodb-helper.ts';
-import type { MongoDBDatabaseSettings, MongoDBPreparedQuery, MongoDBSettings, MongoDBStorageInternals } from './mongodb-types.ts';
+import { RX_STORAGE_NAME_MONGODB } from './mongodb-helper.ts';
+import type { MongoDBDatabaseSettings, MongoDBSettings, MongoDBStorageInternals } from './mongodb-types.ts';
 import { RxStorageInstanceMongoDB, createMongoDBStorageInstance } from './rx-storage-instance-mongodb.ts';
-
-
-export const RxStorageMongoDBStatics: RxStorageStatics = {
-    checkpointSchema: DEFAULT_CHECKPOINT_SCHEMA
-};
 
 export class RxStorageMongoDB implements RxStorage<MongoDBStorageInternals, MongoDBSettings> {
     public name = RX_STORAGE_NAME_MONGODB;
-    public statics = RxStorageMongoDBStatics;
 
     constructor(
         public databaseSettings: MongoDBDatabaseSettings

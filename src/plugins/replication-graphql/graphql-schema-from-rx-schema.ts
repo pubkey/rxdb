@@ -21,10 +21,10 @@ export type Prefixes = {
  * all strings are allowed
  */
 export type GraphQLParamType = 'ID' | 'ID!' |
-'String' | 'String!' |
-'Int' | 'Int!' |
-'Float' | 'Float!' |
-string;
+    'String' | 'String!' |
+    'Int' | 'Int!' |
+    'Float' | 'Float!' |
+    string;
 
 export type GraphQLSchemaFromRxSchemaInputSingleCollection = {
     schema: RxJsonSchema<any>;

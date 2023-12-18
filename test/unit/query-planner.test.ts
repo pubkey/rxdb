@@ -315,12 +315,10 @@ config.parallel('query-planner.test.js', () => {
                     ]
                 }
             );
-            console.dir(query);
             const queryPlan = getQueryPlan(
                 schema,
                 query
             );
-            console.dir(queryPlan);
             assert.deepStrictEqual(queryPlan.index, ['_deleted', 'age', 'firstName', 'passportId']);
             assert.ok(queryPlan.sortSatisfiedByIndex);
         });
