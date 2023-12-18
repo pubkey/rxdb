@@ -1,6 +1,7 @@
 ---
 title: RxDB JavaScript Frontend Database - Efficient Data Storage in Frontend Applications
 slug: frontend-database.html
+description: Explore RxDB as simple frontend database - Learn the benefits of offline access, caching, and improved performance in modern web apps, making RxDB a superior choice over traditional SQL databases.
 ---
 
 
@@ -45,7 +46,7 @@ Realtime applications often require immediate updates based on data changes. By 
 Frontend databases, including RxDB, are designed to integrate seamlessly with popular JavaScript frameworks such as [Angular](./angular-database.md), React.js, Vue.js, and Svelte. These databases offer well-defined APIs and support that align with the specific requirements of these frameworks, enabling developers to leverage the full potential of the frontend database within their preferred development environment.
 
 ### Simplified replication of database state
-Replicating database state between the frontend and backend can be challenging, especially when dealing with complex REST routes. Frontend databases, however, provide simpler mechanisms for replicating database state. They offer intuitive replication algorithms that facilitate data synchronization between the frontend and backend, reducing the complexity and potential pitfalls associated with complex REST-based replication.
+Replicating database state between the frontend and backend can be challenging, especially when dealing with complex REST routes. Frontend databases, however, provide simple mechanisms for replicating database state. They offer intuitive replication algorithms that facilitate data synchronization between the frontend and backend, reducing the complexity and potential pitfalls associated with complex REST-based replication.
 
 ### Improved scalability
 Frontend databases offer improved scalability compared to traditional SQL databases. By leveraging the computational capabilities of client devices, the burden on server resources is reduced. Queries and operations are performed locally, minimizing the need for server round-trips and enabling applications to scale more efficiently.
@@ -68,7 +69,6 @@ SQL databases designed for server-side usage tend to have larger build sizes and
 Server-side SQL databases typically come with a significant build size, which can be impractical for browser applications where code size optimization is crucial. Frontend databases, on the other hand, are specifically designed to operate within the constraints of browser environments, ensuring efficient resource utilization and smaller build sizes.
 
 For example the SQLite Webassembly file alone has a size of over 0.8 Megabyte with an additional 0.2 Megabyte in JavaScript code for connection.
-
 
 ## Why RxDB is a good fit for the frontend
 RxDB is a powerful frontend JavaScript database that addresses the limitations of SQL databases and provides an optimal solution for frontend data storage. Let's explore why RxDB is an excellent fit for frontend applications:
