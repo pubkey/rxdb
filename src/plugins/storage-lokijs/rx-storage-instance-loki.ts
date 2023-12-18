@@ -219,7 +219,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
             return requestRemoteInstance(this, 'query', [preparedQueryOriginal]);
         }
 
-        let preparedQuery = patchLokiJSQuery(ensureNotFalsy(preparedQueryOriginal.query));
+        let preparedQuery = ensureNotFalsy(preparedQueryOriginal.query);
         if (preparedQuery.selector) {
             preparedQuery = flatClone(preparedQuery);
             preparedQuery.selector = transformRegexToRegExp(preparedQuery.selector);
