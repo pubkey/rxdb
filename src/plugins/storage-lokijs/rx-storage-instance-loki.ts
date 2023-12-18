@@ -45,8 +45,7 @@ import {
     mustUseLocalState,
     handleRemoteRequest,
     RX_STORAGE_NAME_LOKIJS,
-    transformRegexToRegExp,
-    patchLokiJSQuery
+    transformRegexToRegExp
 } from './lokijs-helper.ts';
 import type { RxStorageLoki } from './rx-storage-lokijs.ts';
 import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper.ts';
