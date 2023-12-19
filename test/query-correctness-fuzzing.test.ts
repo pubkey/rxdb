@@ -5,7 +5,8 @@ import {
     now,
     createRevision,
     prepareQuery,
-    ensureNotFalsy
+    ensureNotFalsy,
+    normalizeMangoQuery
 } from '../plugins/core/index.mjs';
 import * as assert from 'assert';
 import config from './unit/config.ts';
@@ -113,7 +114,8 @@ describe('query-correctness-fuzzing.test.ts', () => {
                             _rev: nextRev,
                             _meta: {
                                 lwt: now()
-                            }
+                            },
+                            _attachments: {}
                         })
                     }], 'randomevent-delete');
                     assert.deepStrictEqual(writeResult.error, []);
@@ -125,7 +127,8 @@ describe('query-correctness-fuzzing.test.ts', () => {
                             _rev: nextRev,
                             _meta: {
                                 lwt: now()
-                            }
+                            },
+                            _attachments: {}
                         })
                     }], 'randomevent');
                     assert.deepStrictEqual(writeResult.error, []);
@@ -157,13 +160,14 @@ describe('query-correctness-fuzzing.test.ts', () => {
                 });
                 query.sort = mingoSort;
                 const correctResult = collection.query(query);
-                query.sort = sort;
+                query.sort = sort as any;
                 query.selector._deleted = { $eq: false };
                 // must have the same result for all indexes
                 for (const index of ensureNotFalsy(schema.indexes)) {
-                    query.index = index;
+                    const useQuery = normalizeMangoQuery(schema, query as any);
+                    useQuery.index = index as any;
                     console.dir('DDDD');
-                    const preparedQuery = prepareQuery(schema, query);
+                    const preparedQuery = prepareQuery(schema, useQuery);
                     console.dir(preparedQuery);
                     const storageResult = await storageInstance.query(preparedQuery);
                     console.dir(correctResult);
