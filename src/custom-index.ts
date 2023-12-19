@@ -283,7 +283,7 @@ export function getStartIndexStringFromLowerBound(
                     schemaPart
                 );
                 if (bound === null || bound === INDEX_MIN) {
-                    const fillChar = inclusiveStart ? '0' : INDEX_MAX;
+                    const fillChar = '0';
                     str += fillChar.repeat(parsedLengths.nonDecimals + parsedLengths.decimals);
                 } else if (bound === INDEX_MAX) {
                     str += getNumberIndexString(
@@ -344,7 +344,7 @@ export function getStartIndexStringFromUpperBound(
                     schemaPart
                 );
                 if (bound === null || bound === INDEX_MAX) {
-                    const fillChar = inclusiveEnd ? '9' : '0';
+                    const fillChar = '9';
                     str += fillChar.repeat(parsedLengths.nonDecimals + parsedLengths.decimals);
                 } else {
                     str += getNumberIndexString(
