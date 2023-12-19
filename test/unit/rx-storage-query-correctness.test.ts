@@ -131,7 +131,6 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                     normalizedQuery
                 );
 
-
                 // Test output of RxStorageStatics
                 const queryMatcher = getQueryMatcher(schema, normalizedQuery);
                 const sortComparator = getSortComparator(schema, normalizedQuery);
@@ -289,6 +288,22 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                 },
                 selectorSatisfiedByIndex: true,
                 expectedResultDocIds: [
+                    'ee'
+                ]
+            },
+            {
+                info: '$gt and $gte on same field',
+                query: {
+                    selector: {
+                        age: {
+                            $gte: 40,
+                            $gt: 19,
+                        },
+                    },
+                    sort: [{ age: 'asc' }]
+                },
+                expectedResultDocIds: [
+                    'dd',
                     'ee'
                 ]
             },

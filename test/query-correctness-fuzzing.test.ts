@@ -129,6 +129,7 @@ describe('query-correctness-fuzzing.test.ts', () => {
                     const writeResult = await storageInstance.bulkWrite([{
                         previous: previous,
                         document: Object.assign({}, changeEvent.doc, {
+                            _deleted: false,
                             _rev: nextRev,
                             _meta: {
                                 lwt: now()
@@ -170,8 +171,9 @@ describe('query-correctness-fuzzing.test.ts', () => {
                 for (const index of ensureNotFalsy(schema.indexes)) {
                     query.index = index;
                     console.dir('DDDD');
-                    console.dir(query);
-                    const storageResult = await storageInstance.query(prepareQuery(schema, query));
+                    const preparedQuery = prepareQuery(schema, query);
+                    console.dir(preparedQuery);
+                    const storageResult = await storageInstance.query(preparedQuery);
                     console.dir(correctResult);
                     console.dir(storageResult);
 

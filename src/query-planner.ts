@@ -174,6 +174,11 @@ export function isSelectorSatisfiedByIndex(
     index: string[],
     selector: MangoQuerySelector<any>
 ): boolean {
+
+    /**
+     * Not satisfied if one or more operators are not part
+     * of the index.
+     */
     const selectorEntries = Object.entries(selector);
     const hasNonMatchingOperator = selectorEntries
         .find(([fieldName, operation]) => {
@@ -196,7 +201,17 @@ export function isSelectorSatisfiedByIndex(
         if (!operation) {
             return false;
         }
-        const hasLowerLogicOp = Object.keys(operation).find(key => LOWER_BOUND_LOGICAL_OPERATORS.has(key));
+
+        /**
+         * If more then one logic op on the same field, we have to selector-match.
+         */
+        const lowerLogicOps = Object.keys(operation).filter(key => LOWER_BOUND_LOGICAL_OPERATORS.has(key));
+        if (lowerLogicOps.length > 1) {
+            return true;
+        }
+
+
+        const hasLowerLogicOp = lowerLogicOps[0];
         if (prevLowerBoundaryField && hasLowerLogicOp) {
             return true;
         } else if (hasLowerLogicOp !== '$eq') {
@@ -214,7 +229,17 @@ export function isSelectorSatisfiedByIndex(
         if (!operation) {
             return false;
         }
-        const hasUpperLogicOp = Object.keys(operation).find(key => UPPER_BOUND_LOGICAL_OPERATORS.has(key));
+
+        /**
+         * If more then one logic op on the same field, we have to selector-match.
+         */
+        const upperLogicOps = Object.keys(operation).filter(key => UPPER_BOUND_LOGICAL_OPERATORS.has(key));
+        if (upperLogicOps.length > 1) {
+            return true;
+        }
+
+
+        const hasUpperLogicOp = upperLogicOps[0];
         if (prevUpperBoundaryField && hasUpperLogicOp) {
             return true;
         } else if (hasUpperLogicOp !== '$eq') {
