@@ -76,7 +76,7 @@ describe('query-correctness-fuzzing.test.ts', () => {
                     },
                     gender: {
                         type: 'string',
-                        enum: ['f', 'm'],
+                        enum: ['f', 'm', 'x'],
                         maxLength: 1
                     },
                     age: {

@@ -174,10 +174,9 @@ export function isSelectorSatisfiedByIndex(
     index: string[],
     selector: MangoQuerySelector<any>
 ): boolean {
-
     /**
-     * Not satisfied if one or more operators are not part
-     * of the index.
+     * Not satisfied if one or more operators are non-logical
+     * operators that can never be satisfied by an index.
      */
     const selectorEntries = Object.entries(selector);
     const hasNonMatchingOperator = selectorEntries
@@ -194,74 +193,139 @@ export function isSelectorSatisfiedByIndex(
         return false;
     }
 
+    /**
+     * Not satisfied if contains $and or $or operations.
+     */
+    if (selector.$and || selector.$or) {
+        return false;
+    }
 
-    let prevLowerBoundaryField: any;
-    const hasMoreThenOneLowerBoundaryField = index.find(fieldName => {
-        const operation = selector[fieldName];
-        if (!operation) {
+
+
+    /**
+     * If the index contains a non-relevant field between
+     * the relevant fields, then the index is not satisfying.
+     */
+    const operatorFieldnames = new Set(Object.keys(selector));
+    for (const fieldName of index) {
+        if (
+            !operatorFieldnames.has(fieldName) &&
+            operatorFieldnames.size > 0
+        ) {
+            return false;
+        }
+        operatorFieldnames.delete(fieldName);
+    }
+
+
+
+    // ensure all lower bound in index
+    const satisfieldLowerBound: string[] = [];
+    for (const [fieldName, operation] of Object.entries(selector)) {
+        if (!index.includes(fieldName)) {
             return false;
         }
 
-        /**
-         * If more then one logic op on the same field, we have to selector-match.
-         */
-        const lowerLogicOps = Object.keys(operation).filter(key => LOWER_BOUND_LOGICAL_OPERATORS.has(key));
+        // If more then one logic op on the same field, we have to selector-match.
+        const lowerLogicOps = Object.keys(operation as any).filter(key => LOWER_BOUND_LOGICAL_OPERATORS.has(key));
         if (lowerLogicOps.length > 1) {
-            return true;
+            return false;
         }
-
 
         const hasLowerLogicOp = lowerLogicOps[0];
-        if (prevLowerBoundaryField && hasLowerLogicOp) {
-            return true;
-        } else if (hasLowerLogicOp !== '$eq') {
-            prevLowerBoundaryField = hasLowerLogicOp;
+        if (hasLowerLogicOp !== '$eq') {
+            if (satisfieldLowerBound.length > 0) {
+                return false;
+            } else {
+                satisfieldLowerBound.push(hasLowerLogicOp);
+            }
         }
-        return false;
-    });
-    if (hasMoreThenOneLowerBoundaryField) {
-        return false;
     }
 
-    let prevUpperBoundaryField: any;
-    const hasMoreThenOneUpperBoundaryField = index.find(fieldName => {
-        const operation = selector[fieldName];
-        if (!operation) {
+    // ensure all upper bound in index
+    const satisfieldUpperBound: string[] = [];
+    for (const [fieldName, operation] of Object.entries(selector)) {
+        if (!index.includes(fieldName)) {
             return false;
         }
 
-        /**
-         * If more then one logic op on the same field, we have to selector-match.
-         */
-        const upperLogicOps = Object.keys(operation).filter(key => UPPER_BOUND_LOGICAL_OPERATORS.has(key));
+        // If more then one logic op on the same field, we have to selector-match.
+        const upperLogicOps = Object.keys(operation as any).filter(key => UPPER_BOUND_LOGICAL_OPERATORS.has(key));
         if (upperLogicOps.length > 1) {
-            return true;
-        }
-
-
-        const hasUpperLogicOp = upperLogicOps[0];
-        if (prevUpperBoundaryField && hasUpperLogicOp) {
-            return true;
-        } else if (hasUpperLogicOp !== '$eq') {
-            prevUpperBoundaryField = hasUpperLogicOp;
-        }
-        return false;
-    });
-    if (hasMoreThenOneUpperBoundaryField) {
-        return false;
-    }
-
-    const selectorFields = new Set(Object.keys(selector));
-    for (const fieldName of index) {
-        if (selectorFields.size === 0) {
-            break;
-        }
-        if (selectorFields.has(fieldName)) {
-            selectorFields.delete(fieldName);
-        } else {
             return false;
         }
+
+        const hasUperLogicOp = upperLogicOps[0];
+        if (hasUperLogicOp !== '$eq') {
+            if (satisfieldUpperBound.length > 0) {
+                return false;
+            } else {
+                satisfieldUpperBound.push(hasUperLogicOp);
+            }
+        }
     }
+
+
+    // let prevLowerBoundaryField: any;
+    // const hasMoreThenOneLowerBoundaryField = index.find(fieldName => {
+    //     const operation = selector[fieldName];
+    //     if (!operation) {
+    //         return false;
+    //     }
+
+
+
+    //     const hasLowerLogicOp = lowerLogicOps[0];
+    //     if (prevLowerBoundaryField && hasLowerLogicOp) {
+    //         return true;
+    //     } else if (hasLowerLogicOp !== '$eq') {
+    //         prevLowerBoundaryField = hasLowerLogicOp;
+    //     }
+    //     return false;
+    // });
+    // if (hasMoreThenOneLowerBoundaryField) {
+    //     return false;
+    // }
+
+    // let prevUpperBoundaryField: any;
+    // const hasMoreThenOneUpperBoundaryField = index.find(fieldName => {
+    //     const operation = selector[fieldName];
+    //     if (!operation) {
+    //         return false;
+    //     }
+
+    //     /**
+    //      * If more then one logic op on the same field, we have to selector-match.
+    //      */
+    //     const upperLogicOps = Object.keys(operation).filter(key => UPPER_BOUND_LOGICAL_OPERATORS.has(key));
+    //     if (upperLogicOps.length > 1) {
+    //         return true;
+    //     }
+
+
+    //     const hasUpperLogicOp = upperLogicOps[0];
+    //     if (prevUpperBoundaryField && hasUpperLogicOp) {
+    //         return true;
+    //     } else if (hasUpperLogicOp !== '$eq') {
+    //         prevUpperBoundaryField = hasUpperLogicOp;
+    //     }
+    //     return false;
+    // });
+    // if (hasMoreThenOneUpperBoundaryField) {
+    //     return false;
+    // }
+
+    // const selectorFields = new Set(Object.keys(selector));
+    // for (const fieldName of index) {
+    //     if (selectorFields.size === 0) {
+    //         break;
+    //     }
+    //     if (selectorFields.has(fieldName)) {
+    //         selectorFields.delete(fieldName);
+    //     } else {
+    //         return false;
+    //     }
+    // }
 
 
     return true;

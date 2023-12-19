@@ -170,7 +170,7 @@ export function normalizeMangoQuery<RxDocType>(
  */
 export function getSortComparator<RxDocType>(
     schema: RxJsonSchema<RxDocumentData<RxDocType>>,
-    query: FilledMangoQuery<RxDocType> | FilledMangoQuery<RxDocumentData<RxDocType>>
+    query: FilledMangoQuery<RxDocType>
 ): DeterministicSortComparator<RxDocType> {
     if (!query.sort) {
         throw newRxError('SNH', { query });
@@ -212,7 +212,7 @@ export function getSortComparator<RxDocType>(
  */
 export function getQueryMatcher<RxDocType>(
     _schema: RxJsonSchema<RxDocType> | RxJsonSchema<RxDocumentData<RxDocType>>,
-    query: FilledMangoQuery<RxDocType> | FilledMangoQuery<RxDocumentData<RxDocType>>
+    query: FilledMangoQuery<RxDocType>
 ): QueryMatcher<RxDocumentData<RxDocType>> {
     if (!query.sort) {
         throw newRxError('SNH', { query });

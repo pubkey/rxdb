@@ -15,7 +15,8 @@ import {
     getQueryMatcher,
     getSortComparator,
     createRxDatabase,
-    prepareQuery
+    prepareQuery,
+    FilledMangoQuery
 } from '../../plugins/core/index.mjs';
 import { EXAMPLE_REVISION_1 } from '../helper/revisions.ts';
 import * as schemas from '../helper/schemas.ts';
@@ -119,8 +120,14 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                     continue;
                 }
 
-                const queryForStorage = clone(queryData.query) as any;
-                queryForStorage.selector._deleted = false;
+                const queryForStorage = clone(queryData.query) as MangoQuery<RxDocType>;
+                if (!queryForStorage.selector) {
+                    queryForStorage.selector = {};
+                }
+                (queryForStorage.selector as any)._deleted = false;
+                if (queryForStorage.index) {
+                    (queryForStorage.index as any).unshift('_deleted');
+                }
                 const normalizedQuery = deepFreeze(normalizeMangoQuery(schema, queryForStorage));
                 const skip = normalizedQuery.skip ? normalizedQuery.skip : 0;
                 const limit = normalizedQuery.limit ? normalizedQuery.limit : Infinity;
@@ -177,7 +184,8 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                     console.log('WRONG QUERY RESULTS FROM RxStorageInstance.query(): ' + queryData.info);
                     console.dir({
                         resultIds,
-                        queryData
+                        queryData,
+                        preparedQuery
                     });
                     throw err;
                 }
@@ -451,7 +459,6 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                     'aa'
                 ]
             },
-            // TODO why does this query not use the age+firstName index?
             {
                 info: 'compare more then one field',
                 query: {
@@ -1202,5 +1209,88 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                 ]
             },
         ]
+    });
+    testCorrectQueries<{
+        _id: string;
+        name: string;
+        gender: string;
+        age: number;
+    }>({
+        testTitle: 'issue: wrong results on complex index',
+        data: [
+            {
+                '_id': 'nogljngyvo',
+                'name': 'cjbovwbzjx',
+                'gender': 'f',
+                'age': 18
+            }
+        ],
+        schema: {
+            primaryKey: '_id',
+            type: 'object',
+            version: 0,
+            properties: {
+                _id: {
+                    type: 'string',
+                    maxLength: 20
+                },
+                name: {
+                    type: 'string',
+                    maxLength: 20
+                },
+                gender: {
+                    type: 'string',
+                    enum: ['f', 'm', 'x'],
+                    maxLength: 1
+                },
+                age: {
+                    type: 'number',
+                    minimum: 0,
+                    maximum: 100,
+                    multipleOf: 1
+                }
+            },
+            indexes: [
+                [
+                    'name',
+                    'gender',
+                    'age',
+                    '_id'
+                ]
+            ]
+        },
+        queries: [
+            {
+                info: 'complex query on index',
+                query: {
+                    'selector': {
+                        'gender': {
+                            '$gt': 'x'
+                        },
+                        'name': {
+                            '$lt': 'hqybnsozrv'
+                        }
+                    },
+                    'sort': [
+                        {
+                            'gender': 'asc'
+                        },
+                        {
+                            'age': 'asc'
+                        },
+                        {
+                            '_id': 'asc'
+                        }
+                    ],
+                    'index': [
+                        'name',
+                        'gender',
+                        'age',
+                        '_id'
+                    ]
+                },
+                expectedResultDocIds: []
+            },
+        ],
     });
 });
