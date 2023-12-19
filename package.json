@@ -441,7 +441,7 @@
     "crypto-js": "4.2.0",
     "custom-idle-queue": "3.0.1",
     "dexie": "4.0.0-alpha.4",
-    "event-reduce-js": "5.2.4",
+    "event-reduce-js": "5.2.6",
     "firebase": "10.7.1",
     "get-graphql-from-jsonschema": "8.1.0",
     "graphql": "15.8.0",
