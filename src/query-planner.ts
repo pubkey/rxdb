@@ -7,6 +7,7 @@ import type {
     RxDocumentData,
     RxJsonSchema,
     RxQueryPlan,
+    RxQueryPlanKey,
     RxQueryPlanerOpts
 } from './types/index.d.ts';
 
@@ -127,15 +128,16 @@ export function getQueryPlan<RxDocType>(
 
             return matcherOpts;
         });
-
+        const startKeys = opts.map(opt => opt.startKey);
+        const endKeys = opts.map(opt => opt.endKey);
         const queryPlan: RxQueryPlan = {
             index,
-            startKeys: opts.map(opt => opt.startKey),
-            endKeys: opts.map(opt => opt.endKey),
+            startKeys,
+            endKeys,
             inclusiveEnd,
             inclusiveStart,
             sortSatisfiedByIndex: !hasDescSorting && optimalSortIndexCompareString === index.filter(f => !sortIrrelevevantFields.has(f)).join(','),
-            selectorSatisfiedByIndex: isSelectorSatisfiedByIndex(index, query.selector)
+            selectorSatisfiedByIndex: isSelectorSatisfiedByIndex(index, query.selector, startKeys, endKeys)
         };
         const quality = rateQueryPlan(
             schema,
@@ -172,8 +174,12 @@ export const UPPER_BOUND_LOGICAL_OPERATORS = new Set(['$eq', '$lt', '$lte']);
 
 export function isSelectorSatisfiedByIndex(
     index: string[],
-    selector: MangoQuerySelector<any>
+    selector: MangoQuerySelector<any>,
+    startKeys: RxQueryPlanKey[],
+    endKeys: RxQueryPlanKey[]
 ): boolean {
+
+
     /**
      * Not satisfied if one or more operators are non-logical
      * operators that can never be satisfied by an index.
@@ -202,25 +208,9 @@ export function isSelectorSatisfiedByIndex(
 
 
 
-    /**
-     * If the index contains a non-relevant field between
-     * the relevant fields, then the index is not satisfying.
-     */
-    const operatorFieldnames = new Set(Object.keys(selector));
-    for (const fieldName of index) {
-        if (
-            !operatorFieldnames.has(fieldName) &&
-            operatorFieldnames.size > 0
-        ) {
-            return false;
-        }
-        operatorFieldnames.delete(fieldName);
-    }
-
-
-
     // ensure all lower bound in index
     const satisfieldLowerBound: string[] = [];
+    const lowerOperatorFieldNames = new Set<string>();
     for (const [fieldName, operation] of Object.entries(selector)) {
         if (!index.includes(fieldName)) {
             return false;
@@ -233,6 +223,9 @@ export function isSelectorSatisfiedByIndex(
         }
 
         const hasLowerLogicOp = lowerLogicOps[0];
+        if (hasLowerLogicOp) {
+            lowerOperatorFieldNames.add(fieldName);
+        }
         if (hasLowerLogicOp !== '$eq') {
             if (satisfieldLowerBound.length > 0) {
                 return false;
@@ -244,6 +237,7 @@ export function isSelectorSatisfiedByIndex(
 
     // ensure all upper bound in index
     const satisfieldUpperBound: string[] = [];
+    const upperOperatorFieldNames = new Set<string>();
     for (const [fieldName, operation] of Object.entries(selector)) {
         if (!index.includes(fieldName)) {
             return false;
@@ -256,6 +250,9 @@ export function isSelectorSatisfiedByIndex(
         }
 
         const hasUperLogicOp = upperLogicOps[0];
+        if (hasUperLogicOp) {
+            upperOperatorFieldNames.add(fieldName);
+        }
         if (hasUperLogicOp !== '$eq') {
             if (satisfieldUpperBound.length > 0) {
                 return false;
@@ -264,6 +261,43 @@ export function isSelectorSatisfiedByIndex(
             }
         }
     }
+
+
+    /**
+     * If the index contains a non-relevant field between
+     * the relevant fields, then the index is not satisfying.
+     */
+    let i = 0;
+    for (const fieldName of index) {
+        for (const set of [
+            lowerOperatorFieldNames,
+            upperOperatorFieldNames
+        ]) {
+            if (
+                !set.has(fieldName) &&
+                set.size > 0
+            ) {
+                return false;
+            }
+            set.delete(fieldName);
+        }
+
+
+        const startKey = startKeys[i];
+        const endKey = endKeys[i];
+
+        if (
+            startKey !== endKey && (
+                lowerOperatorFieldNames.size > 0 &&
+                upperOperatorFieldNames.size > 0
+            )
+        ) {
+            return false;
+        }
+
+        i++;
+    }
+
 
 
     // let prevLowerBoundaryField: any;

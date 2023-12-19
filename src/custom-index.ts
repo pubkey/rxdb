@@ -282,11 +282,7 @@ export function getStartIndexStringFromLowerBound(
                 const parsedLengths = getStringLengthOfIndexNumber(
                     schemaPart
                 );
-
-                console.dir({ parsedLengths });
-
                 if (bound === null || bound === INDEX_MIN) {
-                    console.log('IS MIN');
                     const fillChar = inclusiveStart ? '0' : INDEX_MAX;
                     str += fillChar.repeat(parsedLengths.nonDecimals + parsedLengths.decimals);
                 } else if (bound === INDEX_MAX) {
@@ -295,13 +291,10 @@ export function getStartIndexStringFromLowerBound(
                         parsedLengths.maximum
                     );
                 } else {
-                    console.log('IS MAX');
-                    console.dir(bound);
                     const add = getNumberIndexString(
                         parsedLengths,
                         bound as number
                     );
-                    console.dir(add);
                     str += add;
                 }
                 break;
