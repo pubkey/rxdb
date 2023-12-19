@@ -243,8 +243,7 @@ export function getNumberIndexString(
 export function getStartIndexStringFromLowerBound(
     schema: RxJsonSchema<any>,
     index: string[],
-    lowerBound: (string | boolean | number | null | undefined)[],
-    inclusiveStart: boolean
+    lowerBound: (string | boolean | number | null | undefined)[]
 ): string {
     let str = '';
     index.forEach((fieldName, idx) => {
@@ -267,7 +266,7 @@ export function getStartIndexStringFromLowerBound(
                 break;
             case 'boolean':
                 if (bound === null) {
-                    str += inclusiveStart ? '0' : INDEX_MAX;
+                    str += '0';
                 } else if (bound === INDEX_MIN) {
                     str += '0';
                 } else if (bound === INDEX_MAX) {
@@ -332,7 +331,7 @@ export function getStartIndexStringFromUpperBound(
                 break;
             case 'boolean':
                 if (bound === null) {
-                    str += inclusiveEnd ? '0' : '1';
+                    str += '1';
                 } else {
                     const boolToStr = bound ? '1' : '0';
                     str += boolToStr;

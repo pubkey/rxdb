@@ -280,8 +280,7 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
                  * because 1 is the minimum value for _meta.lwt
                  */
                 1
-            ],
-            false
+            ]
         );
         const upperBoundString = getStartIndexStringFromUpperBound(
             this.schema,

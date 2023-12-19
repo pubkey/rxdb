@@ -45,8 +45,7 @@ export async function queryDenoKV<RxDocType>(
     let lowerBoundString = getStartIndexStringFromLowerBound(
         instance.schema,
         indexForName,
-        lowerBound,
-        queryPlan.inclusiveStart
+        lowerBound
     );
     if (!queryPlan.inclusiveStart) {
         lowerBoundString = changeIndexableStringByOneQuantum(lowerBoundString, 1);

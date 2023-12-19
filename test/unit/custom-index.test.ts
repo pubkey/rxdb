@@ -388,8 +388,7 @@ config.parallel('custom-index.test.ts', () => {
                 [
                     true,
                     30
-                ],
-                false
+                ]
             );
 
             const matchingDocs = docs.filter(doc => {
@@ -479,8 +478,7 @@ config.parallel('custom-index.test.ts', () => {
                 [
                     true,
                     1
-                ],
-                false
+                ]
             );
 
             const doc = getIndexTestDoc();

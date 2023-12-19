@@ -294,8 +294,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         const lowerBoundString = getStartIndexStringFromLowerBound(
             this.schema,
             index,
-            lowerBound,
-            queryPlan.inclusiveStart
+            lowerBound
         );
 
         let upperBound: any[] = queryPlan.endKeys;
@@ -401,8 +400,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
                 true,
                 0,
                 ''
-            ],
-            false
+            ]
         );
 
         let indexOfLower = boundGT(

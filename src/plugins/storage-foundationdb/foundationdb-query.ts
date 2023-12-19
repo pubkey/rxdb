@@ -46,8 +46,7 @@ export async function queryFoundationDB<RxDocType>(
     let lowerBoundString = getStartIndexStringFromLowerBound(
         instance.schema,
         indexForName,
-        lowerBound,
-        queryPlan.inclusiveStart
+        lowerBound
     );
 
     let upperBound: any[] = queryPlan.endKeys;

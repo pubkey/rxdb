@@ -15,8 +15,7 @@ import {
     getQueryMatcher,
     getSortComparator,
     createRxDatabase,
-    prepareQuery,
-    FilledMangoQuery
+    prepareQuery
 } from '../../plugins/core/index.mjs';
 import { EXAMPLE_REVISION_1 } from '../helper/revisions.ts';
 import * as schemas from '../helper/schemas.ts';
