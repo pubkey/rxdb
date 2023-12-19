@@ -1223,6 +1223,12 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                 'name': 'cjbovwbzjx',
                 'gender': 'f',
                 'age': 18
+            },
+            {
+                '_id': 'zmbznyggnu',
+                'name': 'rpjljekeoy',
+                'gender': 'm',
+                'age': 3
             }
         ],
         schema: {
@@ -1255,6 +1261,12 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                     'name',
                     'gender',
                     'age',
+                    '_id'
+                ],
+                [
+                    'gender',
+                    'age',
+                    'name',
                     '_id'
                 ]
             ]
@@ -1290,6 +1302,37 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                     ]
                 },
                 expectedResultDocIds: []
+            },
+            {
+                info: 'complex query on end of index',
+                query: {
+                    'selector': {
+                        'gender': {
+                            '$lt': 'x',
+                            '$lte': 'm'
+                        },
+                    },
+                    'sort': [
+                        {
+                            'age': 'asc'
+                        },
+                        {
+                            'name': 'asc'
+                        },
+                        {
+                            '_id': 'asc'
+                        }
+
+                    ],
+                    'index': [
+                        'gender',
+                        'age',
+                        'name',
+                        '_id'
+
+                    ]
+                },
+                expectedResultDocIds: ['zmbznyggnu', 'nogljngyvo']
             },
         ],
     });

@@ -76,6 +76,10 @@ export function getQueryPlan<RxDocType>(
     let currentBestQuality = -1;
     let currentBestQueryPlan: RxQueryPlan | undefined;
 
+    /**
+     * Calculate one query plan for each index
+     * and then test which of the plans is best.
+     */
     indexes.forEach((index) => {
         let inclusiveEnd = true;
         let inclusiveStart = true;
@@ -128,6 +132,9 @@ export function getQueryPlan<RxDocType>(
 
             return matcherOpts;
         });
+
+
+        console.dir(opts);
         const startKeys = opts.map(opt => opt.startKey);
         const endKeys = opts.map(opt => opt.endKey);
         const queryPlan: RxQueryPlan = {
@@ -377,11 +384,13 @@ export function getMatcherQueryOpts(
             };
         case '$lte':
             return {
-                endKey: operatorValue
+                endKey: operatorValue,
+                inclusiveEnd: true
             };
         case '$gte':
             return {
-                startKey: operatorValue
+                startKey: operatorValue,
+                inclusiveStart: true
             };
         case '$lt':
             return {
