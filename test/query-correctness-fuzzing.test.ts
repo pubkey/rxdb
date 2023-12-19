@@ -139,11 +139,13 @@ describe('query-correctness-fuzzing.test.ts', () => {
             console.log('EEEEEEEEEEEEEEEEEEEEEEEEEEEEE');
             const allStorage = await storageInstance.query(prepareQuery(schema, { selector: { _deleted: { $eq: false } }, skip: 0, sort: [{ _id: 'asc' }] }));
             const allCorrect = collection.query({ selector: {}, sort: ['_id'] });
-            console.dir(allStorage);
-            console.dir(allCorrect);
             allCorrect.forEach((d, idx) => {
                 const correctDoc = allStorage.documents[idx];
-                assert.strictEqual(d._id, correctDoc._id);
+                if (d._id !== correctDoc._id) {
+                    console.dir(allStorage);
+                    console.dir(allCorrect);
+                    throw new Error('State not equal after writes');
+                }
             });
 
 
@@ -168,14 +170,16 @@ describe('query-correctness-fuzzing.test.ts', () => {
                     useQuery.index = index as any;
                     console.dir('DDDD');
                     const preparedQuery = prepareQuery(schema, useQuery);
-                    console.dir(preparedQuery);
                     const storageResult = await storageInstance.query(preparedQuery);
-                    console.dir(correctResult);
-                    console.dir(storageResult);
 
                     storageResult.documents.forEach((d, idx) => {
                         const correctDoc = correctResult[idx];
-                        assert.strictEqual(d._id, correctDoc._id);
+                        if (d._id !== correctDoc._id) {
+                            console.dir(preparedQuery);
+                            console.dir(correctResult);
+                            console.dir(storageResult);
+                            throw new Error('WRONG QUERY RESULT!');
+                        }
                     });
 
                 }

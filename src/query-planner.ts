@@ -133,8 +133,6 @@ export function getQueryPlan<RxDocType>(
             return matcherOpts;
         });
 
-
-        console.dir(opts);
         const startKeys = opts.map(opt => opt.startKey);
         const endKeys = opts.map(opt => opt.endKey);
         const queryPlan: RxQueryPlan = {
