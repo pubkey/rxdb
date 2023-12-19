@@ -19,7 +19,6 @@ export * from "./rx-query-helper.js";
 export * from "./rx-schema.js";
 export * from "./rx-schema-helper.js";
 export * from "./rx-storage-helper.js";
-export * from "./rx-storage-statics.js";
 export * from "./replication-protocol/index.js";
 export * from "./rx-storage-multiinstance.js";
 export * from "./custom-index.js";

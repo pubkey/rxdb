@@ -126,7 +126,7 @@ export function fillWithDefaultSettings(schemaObj) {
   schemaObj.additionalProperties = false;
 
   // fill with key-compression-state ()
-  if (!schemaObj.hasOwnProperty('keyCompression')) {
+  if (!Object.prototype.hasOwnProperty.call(schemaObj, 'keyCompression')) {
     schemaObj.keyCompression = false;
   }
 
@@ -263,7 +263,7 @@ export function fillObjectWithDefaults(rxSchema, obj) {
   var defaultKeys = Object.keys(rxSchema.defaultValues);
   for (var i = 0; i < defaultKeys.length; ++i) {
     var key = defaultKeys[i];
-    if (!obj.hasOwnProperty(key) || typeof obj[key] === 'undefined') {
+    if (!Object.prototype.hasOwnProperty.call(obj, key) || typeof obj[key] === 'undefined') {
       obj[key] = rxSchema.defaultValues[key];
     }
   }

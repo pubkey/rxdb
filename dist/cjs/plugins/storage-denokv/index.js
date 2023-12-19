@@ -11,7 +11,6 @@ var _rxStorageInstanceDenokv = require("./rx-storage-instance-denokv.js");
 var RxStorageDenoKV = exports.RxStorageDenoKV = /*#__PURE__*/function () {
   function RxStorageDenoKV(settings) {
     this.name = _denokvHelper.RX_STORAGE_NAME_DENOKV;
-    this.statics = _denokvHelper.RxStorageDenoKVStatics;
     this.settings = settings;
   }
   var _proto = RxStorageDenoKV.prototype;

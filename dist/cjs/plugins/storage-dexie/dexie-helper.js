@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.RxStorageDexieStatics = exports.RX_STORAGE_NAME_DEXIE = exports.DEXIE_PIPE_SUBSTITUTE = exports.DEXIE_DOCS_TABLE_NAME = exports.DEXIE_CHANGES_TABLE_NAME = exports.DEXIE_ATTACHMENTS_TABLE_NAME = void 0;
+exports.RX_STORAGE_NAME_DEXIE = exports.DEXIE_PIPE_SUBSTITUTE = exports.DEXIE_DOCS_TABLE_NAME = exports.DEXIE_CHANGES_TABLE_NAME = exports.DEXIE_ATTACHMENTS_TABLE_NAME = void 0;
 exports.attachmentObjectId = attachmentObjectId;
 exports.closeDexieDb = closeDexieDb;
 exports.dexieReplaceIfStartsWithPipe = dexieReplaceIfStartsWithPipe;
@@ -19,12 +19,10 @@ exports.getDocsInDb = getDocsInDb;
 var _dexie = require("dexie");
 var _index = require("../utils/index.js");
 var _rxSchemaHelper = require("../../rx-schema-helper.js");
-var _rxStorageStatics = require("../../rx-storage-statics.js");
 var DEXIE_DOCS_TABLE_NAME = exports.DEXIE_DOCS_TABLE_NAME = 'docs';
 var DEXIE_CHANGES_TABLE_NAME = exports.DEXIE_CHANGES_TABLE_NAME = 'changes';
 var DEXIE_ATTACHMENTS_TABLE_NAME = exports.DEXIE_ATTACHMENTS_TABLE_NAME = 'attachments';
 var RX_STORAGE_NAME_DEXIE = exports.RX_STORAGE_NAME_DEXIE = 'dexie';
-var RxStorageDexieStatics = exports.RxStorageDexieStatics = _rxStorageStatics.RxStorageDefaultStatics;
 var DEXIE_STATE_DB_BY_NAME = new Map();
 var REF_COUNT_PER_DEXIE_DB = new Map();
 function getDexieDbWithTables(databaseName, collectionName, settings, schema) {

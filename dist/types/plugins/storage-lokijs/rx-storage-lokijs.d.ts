@@ -1,13 +1,9 @@
-import type { LokiDatabaseSettings, LokiSettings, LokiStorageInternals, RxStorage, RxStorageInstanceCreationParams, RxStorageStatics } from '../../types/index.d.ts';
+import type { LokiDatabaseSettings, LokiSettings, LokiStorageInternals, RxStorage, RxStorageInstanceCreationParams } from '../../types/index.d.ts';
 import { RxStorageInstanceLoki } from './rx-storage-instance-loki.ts';
 import type { LeaderElector } from 'broadcast-channel';
-export declare const RxStorageLokiStatics: RxStorageStatics;
 export declare class RxStorageLoki implements RxStorage<LokiStorageInternals, LokiSettings> {
     databaseSettings: LokiDatabaseSettings;
     name: string;
-    statics: Readonly<{
-        checkpointSchema: import("../../types/util").DeepReadonlyObject<import("../../types/rx-schema").JsonSchema>;
-    }>;
     /**
      * Create one leader elector by db name.
      * This is done inside of the storage, not globally

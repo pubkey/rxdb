@@ -20,7 +20,6 @@ Object.keys(_rxStorageInstanceMemory).forEach(function (key) {
     }
   });
 });
-var _rxStorageStatics = require("../../rx-storage-statics.js");
 var _memoryHelper = require("./memory-helper.js");
 Object.keys(_memoryHelper).forEach(function (key) {
   if (key === "default" || key === "__esModule") return;
@@ -78,7 +77,6 @@ var COLLECTION_STATES = new Map();
 function getRxStorageMemory(settings = {}) {
   var storage = {
     name: 'memory',
-    statics: _rxStorageStatics.RxStorageDefaultStatics,
     collectionStates: COLLECTION_STATES,
     createStorageInstance(params) {
       (0, _rxStorageHelper.ensureRxStorageInstanceParamsAreCorrect)(params);

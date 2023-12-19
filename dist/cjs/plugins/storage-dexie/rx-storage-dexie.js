@@ -11,7 +11,6 @@ var _rxStorageHelper = require("../../rx-storage-helper.js");
 var RxStorageDexie = exports.RxStorageDexie = /*#__PURE__*/function () {
   function RxStorageDexie(settings) {
     this.name = _dexieHelper.RX_STORAGE_NAME_DEXIE;
-    this.statics = _dexieHelper.RxStorageDexieStatics;
     this.settings = settings;
   }
   var _proto = RxStorageDexie.prototype;

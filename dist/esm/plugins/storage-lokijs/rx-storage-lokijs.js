@@ -1,10 +1,6 @@
 import { createLokiStorageInstance } from "./rx-storage-instance-loki.js";
 import { RX_STORAGE_NAME_LOKIJS } from "./lokijs-helper.js";
 import { ensureRxStorageInstanceParamsAreCorrect } from "../../rx-storage-helper.js";
-import { DEFAULT_CHECKPOINT_SCHEMA } from "../../rx-schema-helper.js";
-export var RxStorageLokiStatics = {
-  checkpointSchema: DEFAULT_CHECKPOINT_SCHEMA
-};
 export var RxStorageLoki = /*#__PURE__*/function () {
   /**
    * Create one leader elector by db name.
@@ -14,7 +10,6 @@ export var RxStorageLoki = /*#__PURE__*/function () {
 
   function RxStorageLoki(databaseSettings) {
     this.name = RX_STORAGE_NAME_LOKIJS;
-    this.statics = RxStorageLokiStatics;
     this.leaderElectorByLokiDbName = new Map();
     this.databaseSettings = databaseSettings;
   }

@@ -3,15 +3,11 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.RxStorageLokiStatics = exports.RxStorageLoki = void 0;
+exports.RxStorageLoki = void 0;
 exports.getRxStorageLoki = getRxStorageLoki;
 var _rxStorageInstanceLoki = require("./rx-storage-instance-loki.js");
 var _lokijsHelper = require("./lokijs-helper.js");
 var _rxStorageHelper = require("../../rx-storage-helper.js");
-var _rxSchemaHelper = require("../../rx-schema-helper.js");
-var RxStorageLokiStatics = exports.RxStorageLokiStatics = {
-  checkpointSchema: _rxSchemaHelper.DEFAULT_CHECKPOINT_SCHEMA
-};
 var RxStorageLoki = exports.RxStorageLoki = /*#__PURE__*/function () {
   /**
    * Create one leader elector by db name.
@@ -21,7 +17,6 @@ var RxStorageLoki = exports.RxStorageLoki = /*#__PURE__*/function () {
 
   function RxStorageLoki(databaseSettings) {
     this.name = _lokijsHelper.RX_STORAGE_NAME_LOKIJS;
-    this.statics = RxStorageLokiStatics;
     this.leaderElectorByLokiDbName = new Map();
     this.databaseSettings = databaseSettings;
   }

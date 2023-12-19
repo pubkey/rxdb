@@ -4,9 +4,6 @@ import { RxStorageInstanceDenoKV } from "./rx-storage-instance-denokv.ts";
 export declare class RxStorageDenoKV implements RxStorage<DenoKVStorageInternals<any>, DenoKVSettings> {
     settings: DenoKVSettings;
     name: string;
-    statics: Readonly<{
-        checkpointSchema: import("../../types/util").DeepReadonlyObject<import("../../types/rx-schema").JsonSchema>;
-    }>;
     constructor(settings: DenoKVSettings);
     createStorageInstance<RxDocType>(params: RxStorageInstanceCreationParams<RxDocType, DenoKVSettings>): Promise<RxStorageInstanceDenoKV<RxDocType>>;
 }

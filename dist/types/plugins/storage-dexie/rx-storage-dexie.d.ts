@@ -4,9 +4,6 @@ import { RxStorageInstanceDexie } from './rx-storage-instance-dexie.ts';
 export declare class RxStorageDexie implements RxStorage<DexieStorageInternals, DexieSettings> {
     settings: DexieSettings;
     name: string;
-    statics: Readonly<{
-        checkpointSchema: import("../../types/util").DeepReadonlyObject<import("../../types/rx-schema").JsonSchema>;
-    }>;
     constructor(settings: DexieSettings);
     createStorageInstance<RxDocType>(params: RxStorageInstanceCreationParams<RxDocType, DexieSettings>): Promise<RxStorageInstanceDexie<RxDocType>>;
 }

@@ -70,9 +70,7 @@ export function getCompressionStateByRxJsonSchema(schema) {
   });
 }
 export function wrappedKeyCompressionStorage(args) {
-  var statics = Object.assign({}, args.storage.statics, {});
   return Object.assign({}, args.storage, {
-    statics,
     async createStorageInstance(params) {
       if (!params.schema.keyCompression) {
         return args.storage.createStorageInstance(params);

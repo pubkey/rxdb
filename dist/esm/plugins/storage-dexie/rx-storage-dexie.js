@@ -1,10 +1,9 @@
-import { RxStorageDexieStatics, RX_STORAGE_NAME_DEXIE } from "./dexie-helper.js";
+import { RX_STORAGE_NAME_DEXIE } from "./dexie-helper.js";
 import { createDexieStorageInstance } from "./rx-storage-instance-dexie.js";
 import { ensureRxStorageInstanceParamsAreCorrect } from "../../rx-storage-helper.js";
 export var RxStorageDexie = /*#__PURE__*/function () {
   function RxStorageDexie(settings) {
     this.name = RX_STORAGE_NAME_DEXIE;
-    this.statics = RxStorageDexieStatics;
     this.settings = settings;
   }
   var _proto = RxStorageDexie.prototype;

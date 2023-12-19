@@ -1,7 +1,7 @@
 export function deepFreeze(o) {
   Object.freeze(o);
   Object.getOwnPropertyNames(o).forEach(function (prop) {
-    if (o.hasOwnProperty(prop) && o[prop] !== null && (typeof o[prop] === 'object' || typeof o[prop] === 'function') && !Object.isFrozen(o[prop])) {
+    if (Object.prototype.hasOwnProperty.call(o, prop) && o[prop] !== null && (typeof o[prop] === 'object' || typeof o[prop] === 'function') && !Object.isFrozen(o[prop])) {
       deepFreeze(o[prop]);
     }
   });
@@ -57,11 +57,11 @@ export function getFromObjectOrThrow(obj, key) {
 export function flattenObject(ob) {
   var toReturn = {};
   for (var i in ob) {
-    if (!ob.hasOwnProperty(i)) continue;
+    if (!Object.prototype.hasOwnProperty.call(ob, i)) continue;
     if (typeof ob[i] === 'object') {
       var flatObject = flattenObject(ob[i]);
       for (var x in flatObject) {
-        if (!flatObject.hasOwnProperty(x)) continue;
+        if (!Object.prototype.hasOwnProperty.call(flatObject, x)) continue;
         toReturn[i + '.' + x] = flatObject[x];
       }
     } else {

@@ -107,7 +107,7 @@ var RxSchema = exports.RxSchema = /*#__PURE__*/function () {
     key: "defaultValues",
     get: function () {
       var values = {};
-      Object.entries(this.jsonSchema.properties).filter(([, v]) => v.hasOwnProperty('default')).forEach(([k, v]) => values[k] = v.default);
+      Object.entries(this.jsonSchema.properties).filter(([, v]) => Object.prototype.hasOwnProperty.call(v, 'default')).forEach(([k, v]) => values[k] = v.default);
       return (0, _index.overwriteGetterForCaching)(this, 'defaultValues', values);
     }
 

@@ -1,10 +1,9 @@
 import { ensureRxStorageInstanceParamsAreCorrect } from "../../rx-storage-helper.js";
-import { RX_STORAGE_NAME_DENOKV, RxStorageDenoKVStatics } from "./denokv-helper.js";
+import { RX_STORAGE_NAME_DENOKV } from "./denokv-helper.js";
 import { createDenoKVStorageInstance } from "./rx-storage-instance-denokv.js";
 export var RxStorageDenoKV = /*#__PURE__*/function () {
   function RxStorageDenoKV(settings) {
     this.name = RX_STORAGE_NAME_DENOKV;
-    this.statics = RxStorageDenoKVStatics;
     this.settings = settings;
   }
   var _proto = RxStorageDenoKV.prototype;

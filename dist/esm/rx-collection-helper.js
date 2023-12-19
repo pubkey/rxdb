@@ -14,13 +14,13 @@ export function fillObjectDataBeforeInsert(schema, data) {
   data = fillObjectWithDefaults(schema, data);
   data = fillPrimaryKey(schema.primaryPath, schema.jsonSchema, data);
   data._meta = getDefaultRxDocumentMeta();
-  if (!data.hasOwnProperty('_deleted')) {
+  if (!Object.prototype.hasOwnProperty.call(data, '_deleted')) {
     data._deleted = false;
   }
-  if (!data.hasOwnProperty('_attachments')) {
+  if (!Object.prototype.hasOwnProperty.call(data, '_attachments')) {
     data._attachments = {};
   }
-  if (!data.hasOwnProperty('_rev')) {
+  if (!Object.prototype.hasOwnProperty.call(data, '_rev')) {
     data._rev = getDefaultRevision();
   }
   return data;

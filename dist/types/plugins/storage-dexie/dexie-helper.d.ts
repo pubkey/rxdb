@@ -4,9 +4,6 @@ export declare const DEXIE_DOCS_TABLE_NAME = "docs";
 export declare const DEXIE_CHANGES_TABLE_NAME = "changes";
 export declare const DEXIE_ATTACHMENTS_TABLE_NAME = "attachments";
 export declare const RX_STORAGE_NAME_DEXIE = "dexie";
-export declare const RxStorageDexieStatics: Readonly<{
-    checkpointSchema: import("../../types/util").DeepReadonlyObject<import("../../types/rx-schema").JsonSchema>;
-}>;
 export declare function getDexieDbWithTables(databaseName: string, collectionName: string, settings: DexieSettings, schema: RxJsonSchema<any>): DexieStorageInternals;
 export declare function closeDexieDb(statePromise: DexieStorageInternals): Promise<void>;
 /**

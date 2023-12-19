@@ -1,5 +1,4 @@
 import { ensureRxStorageInstanceParamsAreCorrect } from "../../rx-storage-helper.js";
-import { RxStorageDefaultStatics } from "../../rx-storage-statics.js";
 import { createFoundationDBStorageInstance } from "./rx-storage-instance-foundationdb.js";
 var versionSet;
 export function getRxStorageFoundationDB(settings) {
@@ -14,7 +13,6 @@ export function getRxStorageFoundationDB(settings) {
   }
   var storage = {
     name: 'foundationdb',
-    statics: RxStorageDefaultStatics,
     createStorageInstance(params) {
       ensureRxStorageInstanceParamsAreCorrect(params);
       var useSettings = Object.assign({}, settings, params.options);

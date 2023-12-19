@@ -3,12 +3,10 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.RxStorageDenoKVStatics = exports.RX_STORAGE_NAME_DENOKV = exports.DENOKV_DOCUMENT_ROOT_PATH = exports.CLEANUP_INDEX = void 0;
+exports.RX_STORAGE_NAME_DENOKV = exports.DENOKV_DOCUMENT_ROOT_PATH = exports.CLEANUP_INDEX = void 0;
 exports.getDenoGlobal = getDenoGlobal;
 exports.getDenoKVIndexName = getDenoKVIndexName;
-var _rxStorageStatics = require("../../rx-storage-statics.js");
 var RX_STORAGE_NAME_DENOKV = exports.RX_STORAGE_NAME_DENOKV = 'denokv';
-var RxStorageDenoKVStatics = exports.RxStorageDenoKVStatics = _rxStorageStatics.RxStorageDefaultStatics;
 function getDenoKVIndexName(index) {
   return index.join('|');
 }

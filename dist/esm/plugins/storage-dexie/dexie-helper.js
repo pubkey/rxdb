@@ -1,12 +1,10 @@
 import { Dexie } from 'dexie';
 import { flatClone, getFromMapOrCreate, getProperty, setProperty, toArray, uniqueArray } from "../utils/index.js";
 import { getPrimaryFieldOfPrimaryKey, getSchemaByObjectPath } from "../../rx-schema-helper.js";
-import { RxStorageDefaultStatics } from "../../rx-storage-statics.js";
 export var DEXIE_DOCS_TABLE_NAME = 'docs';
 export var DEXIE_CHANGES_TABLE_NAME = 'changes';
 export var DEXIE_ATTACHMENTS_TABLE_NAME = 'attachments';
 export var RX_STORAGE_NAME_DEXIE = 'dexie';
-export var RxStorageDexieStatics = RxStorageDefaultStatics;
 var DEXIE_STATE_DB_BY_NAME = new Map();
 var REF_COUNT_PER_DEXIE_DB = new Map();
 export function getDexieDbWithTables(databaseName, collectionName, settings, schema) {

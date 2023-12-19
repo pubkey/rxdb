@@ -28,7 +28,7 @@ export async function updateCRDT(entry) {
     var lastAr = [operation];
     crdtDocField.operations.push(lastAr);
     crdtDocField.hash = await hashCRDTOperations(this.collection.database.hashFunction, crdtDocField);
-    docData = runOperationOnDocument(this.collection.database.storage.statics, this.collection.schema.jsonSchema, docData, operation);
+    docData = runOperationOnDocument(this.collection.schema.jsonSchema, docData, operation);
     setProperty(docData, crdtOptions.field, crdtDocField);
     return docData;
   }, RX_CRDT_CONTEXT);
@@ -50,7 +50,7 @@ export async function insertCRDT(entry) {
     time: now()
   };
   var insertData = {};
-  insertData = runOperationOnDocument(this.database.storage.statics, this.schema.jsonSchema, insertData, operation);
+  insertData = runOperationOnDocument(this.schema.jsonSchema, insertData, operation);
   var crdtDocField = {
     operations: [],
     hash: ''
@@ -73,7 +73,7 @@ export async function insertCRDT(entry) {
 export function sortOperationComparator(a, b) {
   return a.creator > b.creator ? 1 : -1;
 }
-function runOperationOnDocument(storageStatics, schema, docData, operation) {
+function runOperationOnDocument(schema, docData, operation) {
   var entryParts = operation.body;
   entryParts.forEach(entryPart => {
     var isMatching;
@@ -194,19 +194,19 @@ export async function mergeCRDTFields(hashFunction, crdtsA, crdtsB) {
   ret.hash = await hashCRDTOperations(hashFunction, ret);
   return ret;
 }
-export function rebuildFromCRDT(storageStatics, schema, docData, crdts) {
+export function rebuildFromCRDT(schema, docData, crdts) {
   var base = {
     _deleted: false
   };
   setProperty(base, ensureNotFalsy(schema.crdt).field, crdts);
   crdts.operations.forEach(operations => {
     operations.forEach(op => {
-      base = runOperationOnDocument(storageStatics, schema, base, op);
+      base = runOperationOnDocument(schema, base, op);
     });
   });
   return base;
 }
-export function getCRDTConflictHandler(hashFunction, storageStatics, schema) {
+export function getCRDTConflictHandler(hashFunction, schema) {
   var crdtOptions = ensureNotFalsy(schema.crdt);
   var crdtField = crdtOptions.field;
   var getCRDTValue = objectPathMonad(crdtField);
@@ -219,7 +219,7 @@ export function getCRDTConflictHandler(hashFunction, storageStatics, schema) {
       });
     }
     var mergedCrdt = await mergeCRDTFields(hashFunction, newDocCrdt, masterDocCrdt);
-    var mergedDoc = rebuildFromCRDT(storageStatics, schema, i.newDocumentState, mergedCrdt);
+    var mergedDoc = rebuildFromCRDT(schema, i.newDocumentState, mergedCrdt);
     return Promise.resolve({
       isEqual: false,
       documentData: mergedDoc
@@ -292,7 +292,7 @@ export var RxDBcrdtPlugin = {
             schema: data.schema
           });
         }
-        data.conflictHandler = getCRDTConflictHandler(data.database.hashFunction, data.database.storage.statics, data.schema);
+        data.conflictHandler = getCRDTConflictHandler(data.database.hashFunction, data.schema);
       }
     },
     createRxCollection: {
@@ -317,7 +317,7 @@ export var RxDBcrdtPlugin = {
             await Promise.all(writes.map(async write => {
               var newDocState = clone(write.document);
               var crdts = getCrdt(newDocState);
-              var rebuild = rebuildFromCRDT(collection.database.storage.statics, collection.schema.jsonSchema, newDocState, crdts);
+              var rebuild = rebuildFromCRDT(collection.schema.jsonSchema, newDocState, crdts);
               function docWithoutMeta(doc) {
                 var ret = {};
                 Object.entries(doc).forEach(([k, v]) => {

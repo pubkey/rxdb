@@ -6,7 +6,6 @@ export function getRxStorageIpcRenderer(settings) {
   var channelId = [IPC_RENDERER_KEY_PREFIX, settings.key].join('|');
   var storage = getRxStorageRemote({
     identifier: 'electron-ipc-renderer',
-    statics: settings.statics,
     mode: settings.mode,
     messageChannelCreator() {
       var messages$ = new Subject();

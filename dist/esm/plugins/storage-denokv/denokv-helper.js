@@ -1,6 +1,4 @@
-import { RxStorageDefaultStatics } from "../../rx-storage-statics.js";
 export var RX_STORAGE_NAME_DENOKV = 'denokv';
-export var RxStorageDenoKVStatics = RxStorageDefaultStatics;
 export function getDenoKVIndexName(index) {
   return index.join('|');
 }

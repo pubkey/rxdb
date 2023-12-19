@@ -15,7 +15,6 @@ var RxStorageRemote = exports.RxStorageRemote = /*#__PURE__*/function () {
     this.seed = (0, _index.randomCouchString)(10);
     this.lastRequestId = 0;
     this.settings = settings;
-    this.statics = settings.statics;
     if (settings.mode === 'one') {
       this.messageChannelIfOneMode = (0, _messageChannelCache.getMessageChannel)(settings, [], true);
     }
