@@ -62,6 +62,11 @@ function getQueryPlan(schema, query) {
   var optimalSortIndexCompareString = optimalSortIndex.filter(f => !sortIrrelevevantFields.has(f)).join(',');
   var currentBestQuality = -1;
   var currentBestQueryPlan;
+
+  /**
+   * Calculate one query plan for each index
+   * and then test which of the plans is best.
+   */
   indexes.forEach(index => {
     var inclusiveEnd = true;
     var inclusiveStart = true;
@@ -108,14 +113,16 @@ function getQueryPlan(schema, query) {
       }
       return matcherOpts;
     });
+    var startKeys = opts.map(opt => opt.startKey);
+    var endKeys = opts.map(opt => opt.endKey);
     var queryPlan = {
       index,
-      startKeys: opts.map(opt => opt.startKey),
-      endKeys: opts.map(opt => opt.endKey),
+      startKeys,
+      endKeys,
       inclusiveEnd,
       inclusiveStart,
       sortSatisfiedByIndex: !hasDescSorting && optimalSortIndexCompareString === index.filter(f => !sortIrrelevevantFields.has(f)).join(','),
-      selectorSatisfiedByIndex: isSelectorSatisfiedByIndex(index, query.selector)
+      selectorSatisfiedByIndex: isSelectorSatisfiedByIndex(index, query.selector, startKeys, endKeys)
     };
     var quality = rateQueryPlan(schema, query, queryPlan);
     if (quality >= currentBestQuality || query.index) {
@@ -137,7 +144,11 @@ function getQueryPlan(schema, query) {
 var LOGICAL_OPERATORS = exports.LOGICAL_OPERATORS = new Set(['$eq', '$gt', '$gte', '$lt', '$lte']);
 var LOWER_BOUND_LOGICAL_OPERATORS = exports.LOWER_BOUND_LOGICAL_OPERATORS = new Set(['$eq', '$gt', '$gte']);
 var UPPER_BOUND_LOGICAL_OPERATORS = exports.UPPER_BOUND_LOGICAL_OPERATORS = new Set(['$eq', '$lt', '$lte']);
-function isSelectorSatisfiedByIndex(index, selector) {
+function isSelectorSatisfiedByIndex(index, selector, startKeys, endKeys) {
+  /**
+   * Not satisfied if one or more operators are non-logical
+   * operators that can never be satisfied by an index.
+   */
   var selectorEntries = Object.entries(selector);
   var hasNonMatchingOperator = selectorEntries.find(([fieldName, operation]) => {
     if (!index.includes(fieldName)) {
@@ -149,50 +160,84 @@ function isSelectorSatisfiedByIndex(index, selector) {
   if (hasNonMatchingOperator) {
     return false;
   }
-  var prevLowerBoundaryField;
-  var hasMoreThenOneLowerBoundaryField = index.find(fieldName => {
-    var operation = selector[fieldName];
-    if (!operation) {
-      return false;
-    }
-    var hasLowerLogicOp = Object.keys(operation).find(key => LOWER_BOUND_LOGICAL_OPERATORS.has(key));
-    if (prevLowerBoundaryField && hasLowerLogicOp) {
-      return true;
-    } else if (hasLowerLogicOp !== '$eq') {
-      prevLowerBoundaryField = hasLowerLogicOp;
-    }
-    return false;
-  });
-  if (hasMoreThenOneLowerBoundaryField) {
+
+  /**
+   * Not satisfied if contains $and or $or operations.
+   */
+  if (selector.$and || selector.$or) {
     return false;
   }
-  var prevUpperBoundaryField;
-  var hasMoreThenOneUpperBoundaryField = index.find(fieldName => {
-    var operation = selector[fieldName];
-    if (!operation) {
+
+  // ensure all lower bound in index
+  var satisfieldLowerBound = [];
+  var lowerOperatorFieldNames = new Set();
+  for (var [fieldName, operation] of Object.entries(selector)) {
+    if (!index.includes(fieldName)) {
       return false;
     }
-    var hasUpperLogicOp = Object.keys(operation).find(key => UPPER_BOUND_LOGICAL_OPERATORS.has(key));
-    if (prevUpperBoundaryField && hasUpperLogicOp) {
-      return true;
-    } else if (hasUpperLogicOp !== '$eq') {
-      prevUpperBoundaryField = hasUpperLogicOp;
+
+    // If more then one logic op on the same field, we have to selector-match.
+    var lowerLogicOps = Object.keys(operation).filter(key => LOWER_BOUND_LOGICAL_OPERATORS.has(key));
+    if (lowerLogicOps.length > 1) {
+      return false;
     }
-    return false;
-  });
-  if (hasMoreThenOneUpperBoundaryField) {
-    return false;
+    var hasLowerLogicOp = lowerLogicOps[0];
+    if (hasLowerLogicOp) {
+      lowerOperatorFieldNames.add(fieldName);
+    }
+    if (hasLowerLogicOp !== '$eq') {
+      if (satisfieldLowerBound.length > 0) {
+        return false;
+      } else {
+        satisfieldLowerBound.push(hasLowerLogicOp);
+      }
+    }
   }
-  var selectorFields = new Set(Object.keys(selector));
-  for (var fieldName of index) {
-    if (selectorFields.size === 0) {
-      break;
-    }
-    if (selectorFields.has(fieldName)) {
-      selectorFields.delete(fieldName);
-    } else {
+
+  // ensure all upper bound in index
+  var satisfieldUpperBound = [];
+  var upperOperatorFieldNames = new Set();
+  for (var [_fieldName, _operation] of Object.entries(selector)) {
+    if (!index.includes(_fieldName)) {
       return false;
     }
+
+    // If more then one logic op on the same field, we have to selector-match.
+    var upperLogicOps = Object.keys(_operation).filter(key => UPPER_BOUND_LOGICAL_OPERATORS.has(key));
+    if (upperLogicOps.length > 1) {
+      return false;
+    }
+    var hasUperLogicOp = upperLogicOps[0];
+    if (hasUperLogicOp) {
+      upperOperatorFieldNames.add(_fieldName);
+    }
+    if (hasUperLogicOp !== '$eq') {
+      if (satisfieldUpperBound.length > 0) {
+        return false;
+      } else {
+        satisfieldUpperBound.push(hasUperLogicOp);
+      }
+    }
+  }
+
+  /**
+   * If the index contains a non-relevant field between
+   * the relevant fields, then the index is not satisfying.
+   */
+  var i = 0;
+  for (var _fieldName2 of index) {
+    for (var set of [lowerOperatorFieldNames, upperOperatorFieldNames]) {
+      if (!set.has(_fieldName2) && set.size > 0) {
+        return false;
+      }
+      set.delete(_fieldName2);
+    }
+    var startKey = startKeys[i];
+    var endKey = endKeys[i];
+    if (startKey !== endKey && lowerOperatorFieldNames.size > 0 && upperOperatorFieldNames.size > 0) {
+      return false;
+    }
+    i++;
   }
   return true;
 }
@@ -201,15 +246,19 @@ function getMatcherQueryOpts(operator, operatorValue) {
     case '$eq':
       return {
         startKey: operatorValue,
-        endKey: operatorValue
+        endKey: operatorValue,
+        inclusiveEnd: true,
+        inclusiveStart: true
       };
     case '$lte':
       return {
-        endKey: operatorValue
+        endKey: operatorValue,
+        inclusiveEnd: true
       };
     case '$gte':
       return {
-        startKey: operatorValue
+        startKey: operatorValue,
+        inclusiveStart: true
       };
     case '$lt':
       return {

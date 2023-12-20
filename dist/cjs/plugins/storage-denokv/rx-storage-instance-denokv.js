@@ -203,8 +203,8 @@ var RxStorageInstanceDenoKV = exports.RxStorageInstanceDenoKV = /*#__PURE__*/fun
      * Do not use 0 here,
      * because 1 is the minimum value for _meta.lwt
      */
-    1], false);
-    var upperBoundString = (0, _customIndex.getStartIndexStringFromLowerBound)(this.schema, index, [true, maxDeletionTime], true);
+    1]);
+    var upperBoundString = (0, _customIndex.getStartIndexStringFromLowerBound)(this.schema, index, [true, maxDeletionTime]);
     var noMoreUndeleted = true;
     var range = kv.list({
       start: [this.keySpace, indexMeta.indexId, lowerBoundString],

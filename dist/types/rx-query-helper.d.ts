@@ -9,10 +9,10 @@ export declare function normalizeMangoQuery<RxDocType>(schema: RxJsonSchema<RxDo
  * which is able to sort documents in the same way
  * a query over the db would do.
  */
-export declare function getSortComparator<RxDocType>(schema: RxJsonSchema<RxDocumentData<RxDocType>>, query: FilledMangoQuery<RxDocType> | FilledMangoQuery<RxDocumentData<RxDocType>>): DeterministicSortComparator<RxDocType>;
+export declare function getSortComparator<RxDocType>(schema: RxJsonSchema<RxDocumentData<RxDocType>>, query: FilledMangoQuery<RxDocType>): DeterministicSortComparator<RxDocType>;
 /**
  * Returns a function
  * that can be used to check if a document
  * matches the query.
  */
-export declare function getQueryMatcher<RxDocType>(_schema: RxJsonSchema<RxDocType> | RxJsonSchema<RxDocumentData<RxDocType>>, query: FilledMangoQuery<RxDocType> | FilledMangoQuery<RxDocumentData<RxDocType>>): QueryMatcher<RxDocumentData<RxDocType>>;
+export declare function getQueryMatcher<RxDocType>(_schema: RxJsonSchema<RxDocType> | RxJsonSchema<RxDocumentData<RxDocType>>, query: FilledMangoQuery<RxDocType>): QueryMatcher<RxDocumentData<RxDocType>>;

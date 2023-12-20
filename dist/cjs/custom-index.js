@@ -178,7 +178,7 @@ function getNumberIndexString(parsedLengths, fieldValue) {
   }
   return str;
 }
-function getStartIndexStringFromLowerBound(schema, index, lowerBound, inclusiveStart) {
+function getStartIndexStringFromLowerBound(schema, index, lowerBound) {
   var str = '';
   index.forEach((fieldName, idx) => {
     var schemaPart = (0, _rxSchemaHelper.getSchemaByObjectPath)(schema, fieldName);
@@ -196,7 +196,7 @@ function getStartIndexStringFromLowerBound(schema, index, lowerBound, inclusiveS
         break;
       case 'boolean':
         if (bound === null) {
-          str += inclusiveStart ? '0' : _queryPlanner.INDEX_MAX;
+          str += '0';
         } else if (bound === _queryPlanner.INDEX_MIN) {
           str += '0';
         } else if (bound === _queryPlanner.INDEX_MAX) {
@@ -210,10 +210,13 @@ function getStartIndexStringFromLowerBound(schema, index, lowerBound, inclusiveS
       case 'integer':
         var parsedLengths = getStringLengthOfIndexNumber(schemaPart);
         if (bound === null || bound === _queryPlanner.INDEX_MIN) {
-          var fillChar = inclusiveStart ? '0' : _queryPlanner.INDEX_MAX;
+          var fillChar = '0';
           str += fillChar.repeat(parsedLengths.nonDecimals + parsedLengths.decimals);
+        } else if (bound === _queryPlanner.INDEX_MAX) {
+          str += getNumberIndexString(parsedLengths, parsedLengths.maximum);
         } else {
-          str += getNumberIndexString(parsedLengths, bound);
+          var add = getNumberIndexString(parsedLengths, bound);
+          str += add;
         }
         break;
       default:
@@ -222,7 +225,7 @@ function getStartIndexStringFromLowerBound(schema, index, lowerBound, inclusiveS
   });
   return str;
 }
-function getStartIndexStringFromUpperBound(schema, index, upperBound, inclusiveEnd) {
+function getStartIndexStringFromUpperBound(schema, index, upperBound) {
   var str = '';
   index.forEach((fieldName, idx) => {
     var schemaPart = (0, _rxSchemaHelper.getSchemaByObjectPath)(schema, fieldName);
@@ -233,13 +236,15 @@ function getStartIndexStringFromUpperBound(schema, index, upperBound, inclusiveE
         var maxLength = (0, _index.ensureNotFalsy)(schemaPart.maxLength);
         if (typeof bound === 'string' && bound !== _queryPlanner.INDEX_MAX) {
           str += bound.padEnd(maxLength, ' ');
+        } else if (bound === _queryPlanner.INDEX_MIN) {
+          str += ''.padEnd(maxLength, ' ');
         } else {
-          str += ''.padEnd(maxLength, inclusiveEnd ? _queryPlanner.INDEX_MAX : ' ');
+          str += ''.padEnd(maxLength, _queryPlanner.INDEX_MAX);
         }
         break;
       case 'boolean':
         if (bound === null) {
-          str += inclusiveEnd ? '0' : '1';
+          str += '1';
         } else {
           var boolToStr = bound ? '1' : '0';
           str += boolToStr;
@@ -249,8 +254,11 @@ function getStartIndexStringFromUpperBound(schema, index, upperBound, inclusiveE
       case 'integer':
         var parsedLengths = getStringLengthOfIndexNumber(schemaPart);
         if (bound === null || bound === _queryPlanner.INDEX_MAX) {
-          var fillChar = inclusiveEnd ? '9' : '0';
+          var fillChar = '9';
           str += fillChar.repeat(parsedLengths.nonDecimals + parsedLengths.decimals);
+        } else if (bound === _queryPlanner.INDEX_MIN) {
+          var _fillChar = '0';
+          str += _fillChar.repeat(parsedLengths.nonDecimals + parsedLengths.decimals);
         } else {
           str += getNumberIndexString(parsedLengths, bound);
         }

@@ -19,9 +19,9 @@ export async function queryFoundationDB(instance, preparedQuery) {
   var indexName = getFoundationDBIndexName(indexForName);
   var indexDB = ensureNotFalsy(dbs.indexes[indexName]).db;
   var lowerBound = queryPlan.startKeys;
-  var lowerBoundString = getStartIndexStringFromLowerBound(instance.schema, indexForName, lowerBound, queryPlan.inclusiveStart);
+  var lowerBoundString = getStartIndexStringFromLowerBound(instance.schema, indexForName, lowerBound);
   var upperBound = queryPlan.endKeys;
-  var upperBoundString = getStartIndexStringFromUpperBound(instance.schema, indexForName, upperBound, queryPlan.inclusiveEnd);
+  var upperBoundString = getStartIndexStringFromUpperBound(instance.schema, indexForName, upperBound);
   var result = await dbs.root.doTransaction(async tx => {
     var innerResult = [];
     var indexTx = tx.at(indexDB.subspace);

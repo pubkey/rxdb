@@ -170,11 +170,25 @@ export var RxStorageInstanceMemory = /*#__PURE__*/function () {
     var mustManuallyResort = !queryPlan.sortSatisfiedByIndex;
     var index = queryPlanFields;
     var lowerBound = queryPlan.startKeys;
-    var lowerBoundString = getStartIndexStringFromLowerBound(this.schema, index, lowerBound, queryPlan.inclusiveStart);
+    var lowerBoundString = getStartIndexStringFromLowerBound(this.schema, index, lowerBound);
     var upperBound = queryPlan.endKeys;
     upperBound = upperBound;
-    var upperBoundString = getStartIndexStringFromUpperBound(this.schema, index, upperBound, queryPlan.inclusiveEnd);
+    var upperBoundString = getStartIndexStringFromUpperBound(this.schema, index, upperBound);
     var indexName = getMemoryIndexName(index);
+
+    // console.log('in memory query:');
+    // console.dir({
+    //     queryPlan,
+    //     lowerBound,
+    //     upperBound,
+    //     lowerBoundString,
+    //     upperBoundString,
+    //     indexName
+    // });
+
+    if (!this.internals.byIndex[indexName]) {
+      throw new Error('index does not exist ' + indexName);
+    }
     var docsWithIndex = this.internals.byIndex[indexName].docsWithIndex;
     var indexOfLower = (queryPlan.inclusiveStart ? boundGE : boundGT)(docsWithIndex, {
       indexString: lowerBoundString
@@ -223,7 +237,7 @@ export var RxStorageInstanceMemory = /*#__PURE__*/function () {
     var index = ['_deleted', '_meta.lwt', this.primaryPath];
     var indexName = getMemoryIndexName(index);
     var docsWithIndex = this.internals.byIndex[indexName].docsWithIndex;
-    var lowerBoundString = getStartIndexStringFromLowerBound(this.schema, index, [true, 0, ''], false);
+    var lowerBoundString = getStartIndexStringFromLowerBound(this.schema, index, [true, 0, '']);
     var indexOfLower = boundGT(docsWithIndex, {
       indexString: lowerBoundString
     }, compareDocsWithIndex);

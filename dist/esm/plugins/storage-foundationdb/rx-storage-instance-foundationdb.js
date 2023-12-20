@@ -182,8 +182,8 @@ export var RxStorageInstanceFoundationDB = /*#__PURE__*/function () {
      * Do not use 0 here,
      * because 1 is the minimum value for _meta.lwt
      */
-    1], false);
-    var upperBoundString = getStartIndexStringFromUpperBound(this.schema, index, [true, maxDeletionTime], true);
+    1]);
+    var upperBoundString = getStartIndexStringFromUpperBound(this.schema, index, [true, maxDeletionTime]);
     var noMoreUndeleted = true;
     await dbs.root.doTransaction(async tx => {
       var batchSize = ensureNotFalsy(this.settings.batchSize);

@@ -19,12 +19,12 @@ export async function queryDenoKV(instance, preparedQuery) {
   var indexName = getDenoKVIndexName(indexForName);
   var indexMeta = ensureNotFalsy(instance.internals.indexes[indexName]);
   var lowerBound = queryPlan.startKeys;
-  var lowerBoundString = getStartIndexStringFromLowerBound(instance.schema, indexForName, lowerBound, queryPlan.inclusiveStart);
+  var lowerBoundString = getStartIndexStringFromLowerBound(instance.schema, indexForName, lowerBound);
   if (!queryPlan.inclusiveStart) {
     lowerBoundString = changeIndexableStringByOneQuantum(lowerBoundString, 1);
   }
   var upperBound = queryPlan.endKeys;
-  var upperBoundString = getStartIndexStringFromUpperBound(instance.schema, indexForName, upperBound, queryPlan.inclusiveEnd);
+  var upperBoundString = getStartIndexStringFromUpperBound(instance.schema, indexForName, upperBound);
   if (queryPlan.inclusiveEnd) {
     upperBoundString = changeIndexableStringByOneQuantum(upperBoundString, +1);
   }

@@ -115,7 +115,6 @@ logFunction) {
 
       // TODO we should throw on non-conflict errors here.
       // if (Object.keys(writeToNewResult.error).length > 0) {
-      //     console.dir(writeToNewResult);
       //     throw new Error('could not write to new storage');
       // }
 

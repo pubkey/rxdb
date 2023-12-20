@@ -176,11 +176,25 @@ var RxStorageInstanceMemory = exports.RxStorageInstanceMemory = /*#__PURE__*/fun
     var mustManuallyResort = !queryPlan.sortSatisfiedByIndex;
     var index = queryPlanFields;
     var lowerBound = queryPlan.startKeys;
-    var lowerBoundString = (0, _customIndex.getStartIndexStringFromLowerBound)(this.schema, index, lowerBound, queryPlan.inclusiveStart);
+    var lowerBoundString = (0, _customIndex.getStartIndexStringFromLowerBound)(this.schema, index, lowerBound);
     var upperBound = queryPlan.endKeys;
     upperBound = upperBound;
-    var upperBoundString = (0, _customIndex.getStartIndexStringFromUpperBound)(this.schema, index, upperBound, queryPlan.inclusiveEnd);
+    var upperBoundString = (0, _customIndex.getStartIndexStringFromUpperBound)(this.schema, index, upperBound);
     var indexName = (0, _memoryIndexes.getMemoryIndexName)(index);
+
+    // console.log('in memory query:');
+    // console.dir({
+    //     queryPlan,
+    //     lowerBound,
+    //     upperBound,
+    //     lowerBoundString,
+    //     upperBoundString,
+    //     indexName
+    // });
+
+    if (!this.internals.byIndex[indexName]) {
+      throw new Error('index does not exist ' + indexName);
+    }
     var docsWithIndex = this.internals.byIndex[indexName].docsWithIndex;
     var indexOfLower = (queryPlan.inclusiveStart ? _binarySearchBounds.boundGE : _binarySearchBounds.boundGT)(docsWithIndex, {
       indexString: lowerBoundString
@@ -229,7 +243,7 @@ var RxStorageInstanceMemory = exports.RxStorageInstanceMemory = /*#__PURE__*/fun
     var index = ['_deleted', '_meta.lwt', this.primaryPath];
     var indexName = (0, _memoryIndexes.getMemoryIndexName)(index);
     var docsWithIndex = this.internals.byIndex[indexName].docsWithIndex;
-    var lowerBoundString = (0, _customIndex.getStartIndexStringFromLowerBound)(this.schema, index, [true, 0, ''], false);
+    var lowerBoundString = (0, _customIndex.getStartIndexStringFromLowerBound)(this.schema, index, [true, 0, '']);
     var indexOfLower = (0, _binarySearchBounds.boundGT)(docsWithIndex, {
       indexString: lowerBoundString
     }, _memoryHelper.compareDocsWithIndex);

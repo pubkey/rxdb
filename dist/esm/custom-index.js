@@ -165,7 +165,7 @@ export function getNumberIndexString(parsedLengths, fieldValue) {
   }
   return str;
 }
-export function getStartIndexStringFromLowerBound(schema, index, lowerBound, inclusiveStart) {
+export function getStartIndexStringFromLowerBound(schema, index, lowerBound) {
   var str = '';
   index.forEach((fieldName, idx) => {
     var schemaPart = getSchemaByObjectPath(schema, fieldName);
@@ -183,7 +183,7 @@ export function getStartIndexStringFromLowerBound(schema, index, lowerBound, inc
         break;
       case 'boolean':
         if (bound === null) {
-          str += inclusiveStart ? '0' : INDEX_MAX;
+          str += '0';
         } else if (bound === INDEX_MIN) {
           str += '0';
         } else if (bound === INDEX_MAX) {
@@ -197,10 +197,13 @@ export function getStartIndexStringFromLowerBound(schema, index, lowerBound, inc
       case 'integer':
         var parsedLengths = getStringLengthOfIndexNumber(schemaPart);
         if (bound === null || bound === INDEX_MIN) {
-          var fillChar = inclusiveStart ? '0' : INDEX_MAX;
+          var fillChar = '0';
           str += fillChar.repeat(parsedLengths.nonDecimals + parsedLengths.decimals);
+        } else if (bound === INDEX_MAX) {
+          str += getNumberIndexString(parsedLengths, parsedLengths.maximum);
         } else {
-          str += getNumberIndexString(parsedLengths, bound);
+          var add = getNumberIndexString(parsedLengths, bound);
+          str += add;
         }
         break;
       default:
@@ -209,7 +212,7 @@ export function getStartIndexStringFromLowerBound(schema, index, lowerBound, inc
   });
   return str;
 }
-export function getStartIndexStringFromUpperBound(schema, index, upperBound, inclusiveEnd) {
+export function getStartIndexStringFromUpperBound(schema, index, upperBound) {
   var str = '';
   index.forEach((fieldName, idx) => {
     var schemaPart = getSchemaByObjectPath(schema, fieldName);
@@ -220,13 +223,15 @@ export function getStartIndexStringFromUpperBound(schema, index, upperBound, inc
         var maxLength = ensureNotFalsy(schemaPart.maxLength);
         if (typeof bound === 'string' && bound !== INDEX_MAX) {
           str += bound.padEnd(maxLength, ' ');
+        } else if (bound === INDEX_MIN) {
+          str += ''.padEnd(maxLength, ' ');
         } else {
-          str += ''.padEnd(maxLength, inclusiveEnd ? INDEX_MAX : ' ');
+          str += ''.padEnd(maxLength, INDEX_MAX);
         }
         break;
       case 'boolean':
         if (bound === null) {
-          str += inclusiveEnd ? '0' : '1';
+          str += '1';
         } else {
           var boolToStr = bound ? '1' : '0';
           str += boolToStr;
@@ -236,8 +241,11 @@ export function getStartIndexStringFromUpperBound(schema, index, upperBound, inc
       case 'integer':
         var parsedLengths = getStringLengthOfIndexNumber(schemaPart);
         if (bound === null || bound === INDEX_MAX) {
-          var fillChar = inclusiveEnd ? '9' : '0';
+          var fillChar = '9';
           str += fillChar.repeat(parsedLengths.nonDecimals + parsedLengths.decimals);
+        } else if (bound === INDEX_MIN) {
+          var _fillChar = '0';
+          str += _fillChar.repeat(parsedLengths.nonDecimals + parsedLengths.decimals);
         } else {
           str += getNumberIndexString(parsedLengths, bound);
         }

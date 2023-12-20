@@ -1,5 +1,5 @@
 import type { Filter as MongoQueryFilter, Sort as MongoSort, TransactionOptions } from 'mongodb';
-import type { FilledMangoQuery } from '../../types/index.d.ts';
+import type { FilledMangoQuery, RxDocumentData } from '../../types/index.d.ts';
 export type MongoQuerySelector<RxDocType> = MongoQueryFilter<RxDocType | any>;
 export type MongoDBDatabaseSettings = {
     /**
@@ -11,7 +11,7 @@ export type MongoDBDatabaseSettings = {
 };
 export type MongoDBPreparedQuery<RxDocType> = {
     query: FilledMangoQuery<RxDocType>;
-    mongoSelector: MongoQuerySelector<RxDocType>;
+    mongoSelector: MongoQuerySelector<RxDocumentData<RxDocType>>;
     mongoSort: MongoSort;
 };
 export type MongoDBSettings = {};
