@@ -22,7 +22,7 @@ import {
 } from 'event-reduce-js/truth-table-generator';
 
 /**
- * Creates random writes, indexes and querys and tests if the results are correct.
+ * Creates random writes, indexes and queries and tests if the results are correct.
  */
 describe('query-correctness-fuzzing.test.ts', () => {
     it('init storage', async () => {
