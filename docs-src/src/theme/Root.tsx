@@ -49,9 +49,10 @@ function addCallToActionButton() {
     }
     const callToActionButtonId = 'rxdb-call-to-action-button';
     function setCallToActionOnce() {
+        console.log('set call to action button');
         const randId = Date.now() % callToActions.length;
         const callToAction = callToActions[randId];
-        const alreadyThere = document.querySelector('#' + callToActionButtonId);
+        const alreadyThere = document.querySelector('.call-to-action');
         if (alreadyThere) {
             alreadyThere.parentNode.removeChild(alreadyThere);
         }
@@ -78,22 +79,7 @@ function addCallToActionButton() {
 
         insertAfter(positionReferenceElement, newElementWrapper);
     }
-    function runSettingCallToActionButton() {
-        setCallToActionOnce();
-        /**
-         * Gitbook does a strange page change handling,
-         * so we have to re-run the function
-         * because listening to history changes did not work.
-         */
-        setInterval(function () {
-            const alreadyThere = document.querySelector('#' + callToActionButtonId);
-            // only add if not exists already, like on a page change.
-            if (!alreadyThere) {
-                setCallToActionOnce();
-            }
-        }, 100);
-    }
-    runSettingCallToActionButton();
+    setCallToActionOnce();
 }
 
 function addCommunityChatButton() {
