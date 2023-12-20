@@ -380,7 +380,8 @@ export function getMatcherQueryOpts(
             return {
                 startKey: operatorValue,
                 endKey: operatorValue,
-                inclusiveEnd: true
+                inclusiveEnd: true,
+                inclusiveStart: true
             };
         case '$lte':
             return {
