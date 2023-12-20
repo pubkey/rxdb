@@ -243,8 +243,7 @@ export function getNumberIndexString(
 export function getStartIndexStringFromLowerBound(
     schema: RxJsonSchema<any>,
     index: string[],
-    lowerBound: (string | boolean | number | null | undefined)[],
-    inclusiveStart: boolean
+    lowerBound: (string | boolean | number | null | undefined)[]
 ): string {
     let str = '';
     index.forEach((fieldName, idx) => {
@@ -267,7 +266,7 @@ export function getStartIndexStringFromLowerBound(
                 break;
             case 'boolean':
                 if (bound === null) {
-                    str += inclusiveStart ? '0' : INDEX_MAX;
+                    str += '0';
                 } else if (bound === INDEX_MIN) {
                     str += '0';
                 } else if (bound === INDEX_MAX) {
@@ -283,13 +282,19 @@ export function getStartIndexStringFromLowerBound(
                     schemaPart
                 );
                 if (bound === null || bound === INDEX_MIN) {
-                    const fillChar = inclusiveStart ? '0' : INDEX_MAX;
+                    const fillChar = '0';
                     str += fillChar.repeat(parsedLengths.nonDecimals + parsedLengths.decimals);
-                } else {
+                } else if (bound === INDEX_MAX) {
                     str += getNumberIndexString(
+                        parsedLengths,
+                        parsedLengths.maximum
+                    );
+                } else {
+                    const add = getNumberIndexString(
                         parsedLengths,
                         bound as number
                     );
+                    str += add;
                 }
                 break;
             default:
@@ -303,8 +308,7 @@ export function getStartIndexStringFromLowerBound(
 export function getStartIndexStringFromUpperBound(
     schema: RxJsonSchema<any>,
     index: string[],
-    upperBound: (string | boolean | number | null | undefined)[],
-    inclusiveEnd: boolean
+    upperBound: (string | boolean | number | null | undefined)[]
 ): string {
     let str = '';
     index.forEach((fieldName, idx) => {
@@ -320,13 +324,15 @@ export function getStartIndexStringFromUpperBound(
                 const maxLength = ensureNotFalsy(schemaPart.maxLength);
                 if (typeof bound === 'string' && bound !== INDEX_MAX) {
                     str += (bound as string).padEnd(maxLength, ' ');
+                } else if (bound === INDEX_MIN) {
+                    str += ''.padEnd(maxLength, ' ');
                 } else {
-                    str += ''.padEnd(maxLength, inclusiveEnd ? INDEX_MAX : ' ');
+                    str += ''.padEnd(maxLength, INDEX_MAX);
                 }
                 break;
             case 'boolean':
                 if (bound === null) {
-                    str += inclusiveEnd ? '0' : '1';
+                    str += '1';
                 } else {
                     const boolToStr = bound ? '1' : '0';
                     str += boolToStr;
@@ -338,7 +344,10 @@ export function getStartIndexStringFromUpperBound(
                     schemaPart
                 );
                 if (bound === null || bound === INDEX_MAX) {
-                    const fillChar = inclusiveEnd ? '9' : '0';
+                    const fillChar = '9';
+                    str += fillChar.repeat(parsedLengths.nonDecimals + parsedLengths.decimals);
+                } else if (bound === INDEX_MIN) {
+                    const fillChar = '0';
                     str += fillChar.repeat(parsedLengths.nonDecimals + parsedLengths.decimals);
                 } else {
                     str += getNumberIndexString(

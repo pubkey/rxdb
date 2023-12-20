@@ -9,10 +9,8 @@ import type {
     RxStorageQueryResult
 } from './rx-storage.ts';
 import type {
-    MangoQuery,
     MangoQuerySelector,
     MangoQuerySortPart,
-    Override,
     RxConflictResultionTask,
     RxConflictResultionTaskSolution,
     RxJsonSchema,
@@ -63,37 +61,36 @@ export interface RxStorage<Internals, InstanceCreationOptions> {
  * User provided mango queries will be filled up by RxDB via normalizeMangoQuery()
  * so we do not have to do many if-field-exist tests in the internals.
  */
-export type FilledMangoQuery<RxDocType> = Override<
-    MangoQuery<RxDocumentData<RxDocType>>,
-    {
-        /**
-         * The selector is required here.
-         */
-        selector: MangoQuerySelector<RxDocumentData<RxDocType>>;
+export type FilledMangoQuery<RxDocType> = {
+    /**
+     * The selector is required here.
+     */
+    selector: MangoQuerySelector<RxDocumentData<RxDocType>>;
 
-        /**
-         * In contrast to the user-provided MangoQuery,
-         * the sorting is required here because
-         * RxDB has to ensure that the primary key is always
-         * part of the sort params.
-         */
-        sort: MangoQuerySortPart<RxDocumentData<RxDocType>>[];
+    /**
+     * In contrast to the user-provided MangoQuery,
+     * the sorting is required here because
+     * RxDB has to ensure that the primary key is always
+     * part of the sort params.
+     */
+    sort: MangoQuerySortPart<RxDocumentData<RxDocType>>[];
 
-        /**
-         * In the normalized mango query,
-         * the index must always be a string[],
-         * never just a string.
-         * This makes it easier to use the query because
-         * we do not have to do an array check.
-         */
-        index?: string[];
+    /**
+     * In the normalized mango query,
+     * the index must always be a string[],
+     * never just a string.
+     * This makes it easier to use the query because
+     * we do not have to do an array check.
+     */
+    index?: string[];
 
-        /**
-         * Skip must be set which defaults to 0
-         */
-        skip: number;
-    }
->;
+    /**
+     * Skip must be set which defaults to 0
+     */
+    skip: number;
+
+    limit?: number;
+};
 
 
 /**

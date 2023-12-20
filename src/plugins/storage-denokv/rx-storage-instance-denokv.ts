@@ -258,8 +258,7 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
                  * because 1 is the minimum value for _meta.lwt
                  */
                 1
-            ],
-            false
+            ]
         );
         const upperBoundString = getStartIndexStringFromLowerBound(
             this.schema,
@@ -267,8 +266,7 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
             [
                 true,
                 maxDeletionTime
-            ],
-            true
+            ]
         );
         let noMoreUndeleted: boolean = true;
 

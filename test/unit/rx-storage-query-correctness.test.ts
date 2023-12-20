@@ -119,8 +119,14 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                     continue;
                 }
 
-                const queryForStorage = clone(queryData.query) as any;
-                queryForStorage.selector._deleted = false;
+                const queryForStorage = clone(queryData.query) as MangoQuery<RxDocType>;
+                if (!queryForStorage.selector) {
+                    queryForStorage.selector = {};
+                }
+                (queryForStorage.selector as any)._deleted = false;
+                if (queryForStorage.index) {
+                    (queryForStorage.index as any).unshift('_deleted');
+                }
                 const normalizedQuery = deepFreeze(normalizeMangoQuery(schema, queryForStorage));
                 const skip = normalizedQuery.skip ? normalizedQuery.skip : 0;
                 const limit = normalizedQuery.limit ? normalizedQuery.limit : Infinity;
@@ -130,7 +136,6 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                     schema,
                     normalizedQuery
                 );
-
 
                 // Test output of RxStorageStatics
                 const queryMatcher = getQueryMatcher(schema, normalizedQuery);
@@ -178,7 +183,8 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                     console.log('WRONG QUERY RESULTS FROM RxStorageInstance.query(): ' + queryData.info);
                     console.dir({
                         resultIds,
-                        queryData
+                        queryData,
+                        preparedQuery
                     });
                     throw err;
                 }
@@ -289,6 +295,22 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                 },
                 selectorSatisfiedByIndex: true,
                 expectedResultDocIds: [
+                    'ee'
+                ]
+            },
+            {
+                info: '$gt and $gte on same field',
+                query: {
+                    selector: {
+                        age: {
+                            $gte: 40,
+                            $gt: 19,
+                        },
+                    },
+                    sort: [{ age: 'asc' }]
+                },
+                expectedResultDocIds: [
+                    'dd',
                     'ee'
                 ]
             },
@@ -436,7 +458,6 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                     'aa'
                 ]
             },
-            // TODO why does this query not use the age+firstName index?
             {
                 info: 'compare more then one field',
                 query: {
@@ -1187,5 +1208,205 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                 ]
             },
         ]
+    });
+    testCorrectQueries<{
+        _id: string;
+        name: string;
+        gender: string;
+        age: number;
+    }>({
+        testTitle: 'issue: wrong results on complex index',
+        data: [
+            {
+                '_id': 'nogljngyvo',
+                'name': 'cjbovwbzjx',
+                'gender': 'f',
+                'age': 18
+            },
+            {
+                '_id': 'zmbznyggnu',
+                'name': 'rpjljekeoy',
+                'gender': 'm',
+                'age': 3
+            },
+            {
+                '_id': 'hauezldqea',
+                'name': 'ckjndqrthh',
+                'gender': 'f',
+                'age': 20
+            },
+            {
+                '_id': 'utarwoqkav',
+                'name': 'thfubuvqwr',
+                'gender': 'm',
+                'age': 12
+            }
+        ],
+        schema: {
+            primaryKey: '_id',
+            type: 'object',
+            version: 0,
+            properties: {
+                _id: {
+                    type: 'string',
+                    maxLength: 20
+                },
+                name: {
+                    type: 'string',
+                    maxLength: 20
+                },
+                gender: {
+                    type: 'string',
+                    enum: ['f', 'm', 'x'],
+                    maxLength: 1
+                },
+                age: {
+                    type: 'number',
+                    minimum: 0,
+                    maximum: 100,
+                    multipleOf: 1
+                }
+            },
+            indexes: [
+                [
+                    'name',
+                    'gender',
+                    'age',
+                    '_id'
+                ],
+                [
+                    'gender',
+                    'age',
+                    'name',
+                    '_id'
+                ],
+                [
+                    'age',
+                    'name',
+                    'gender',
+                    '_id'
+                ]
+            ]
+        },
+        queries: [
+            {
+                info: 'complex query on index',
+                query: {
+                    'selector': {
+                        'gender': {
+                            '$gt': 'x'
+                        },
+                        'name': {
+                            '$lt': 'hqybnsozrv'
+                        }
+                    },
+                    'sort': [
+                        {
+                            'gender': 'asc'
+                        },
+                        {
+                            'age': 'asc'
+                        },
+                        {
+                            '_id': 'asc'
+                        }
+                    ],
+                    'index': [
+                        'name',
+                        'gender',
+                        'age',
+                        '_id'
+                    ]
+                },
+                expectedResultDocIds: []
+            },
+            {
+                info: 'complex query on end of index',
+                query: {
+                    'selector': {
+                        'gender': {
+                            '$lt': 'x',
+                            '$lte': 'm'
+                        },
+                    },
+                    'sort': [
+                        {
+                            'age': 'asc'
+                        },
+                        {
+                            'name': 'asc'
+                        },
+                        {
+                            '_id': 'asc'
+                        }
+
+                    ],
+                    'index': [
+                        'gender',
+                        'age',
+                        'name',
+                        '_id'
+
+                    ]
+                },
+                expectedResultDocIds: ['zmbznyggnu', 'utarwoqkav', 'nogljngyvo', 'hauezldqea']
+            },
+            {
+                info: 'had wrong index string on upper bound',
+                query: {
+                    'selector': {
+                        'age': {
+                            '$gte': 4,
+                            '$lte': 20
+                        },
+                        'gender': {
+                            '$lt': 'm'
+                        },
+
+                    },
+                    'sort': [
+                        {
+                            'name': 'asc'
+                        },
+                        {
+                            '_id': 'asc'
+                        }
+                    ],
+                    'index': [
+                        'age',
+                        'name',
+                        'gender',
+                        '_id'
+                    ]
+                },
+                expectedResultDocIds: ['nogljngyvo', 'hauezldqea']
+            },
+            {
+                info: 'had wrong index string on upper bound for $eq',
+                query: {
+                    'selector': {
+                        'age': {
+                            '$lte': 12
+                        },
+                        'gender': {
+                            '$lt': 'x',
+                            '$eq': 'm'
+                        },
+                    },
+                    'sort': [
+                        {
+                            '_id': 'asc'
+                        }
+                    ],
+                    'index': [
+                        'gender',
+                        'age',
+                        'name',
+                        '_id'
+                    ]
+                },
+                expectedResultDocIds: ['utarwoqkav', 'zmbznyggnu']
+            },
+        ],
     });
 });

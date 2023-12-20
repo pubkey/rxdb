@@ -4,7 +4,7 @@ import type {
     TransactionOptions
 } from 'mongodb';
 import type {
-    FilledMangoQuery
+    FilledMangoQuery, RxDocumentData
 } from '../../types/index.d.ts';
 export type MongoQuerySelector<RxDocType> = MongoQueryFilter<RxDocType | any>;
 export type MongoDBDatabaseSettings = {
@@ -18,7 +18,7 @@ export type MongoDBDatabaseSettings = {
 
 export type MongoDBPreparedQuery<RxDocType> = {
     query: FilledMangoQuery<RxDocType>;
-    mongoSelector: MongoQuerySelector<RxDocType>;
+    mongoSelector: MongoQuerySelector<RxDocumentData<RxDocType>>;
     mongoSort: MongoSort;
 };
 
