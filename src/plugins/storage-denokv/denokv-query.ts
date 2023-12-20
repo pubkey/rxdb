@@ -55,8 +55,7 @@ export async function queryDenoKV<RxDocType>(
     let upperBoundString = getStartIndexStringFromUpperBound(
         instance.schema,
         indexForName,
-        upperBound,
-        queryPlan.inclusiveEnd
+        upperBound
     );
 
     if (queryPlan.inclusiveEnd) {

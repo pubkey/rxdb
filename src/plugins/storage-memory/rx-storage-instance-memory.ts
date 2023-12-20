@@ -302,15 +302,31 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         const upperBoundString = getStartIndexStringFromUpperBound(
             this.schema,
             index,
-            upperBound,
-            queryPlan.inclusiveEnd
+            upperBound
         );
         const indexName = getMemoryIndexName(index);
+
+
+        console.dir({
+            lowerBoundString,
+            upperBoundString,
+        });
+        // console.log('in memory query:');
+        // console.dir({
+        //     queryPlan,
+        //     lowerBound,
+        //     upperBound,
+        //     lowerBoundString,
+        //     upperBoundString,
+        //     indexName
+        // });
 
         if (!this.internals.byIndex[indexName]) {
             throw new Error('index does not exist ' + indexName);
         }
         const docsWithIndex = this.internals.byIndex[indexName].docsWithIndex;
+
+
 
         let indexOfLower = (queryPlan.inclusiveStart ? boundGE : boundGT)(
             docsWithIndex,

@@ -53,8 +53,7 @@ export async function queryFoundationDB<RxDocType>(
     let upperBoundString = getStartIndexStringFromUpperBound(
         instance.schema,
         indexForName,
-        upperBound,
-        queryPlan.inclusiveEnd
+        upperBound
     );
     let result: RxDocumentData<RxDocType>[] = await dbs.root.doTransaction(async (tx: any) => {
         const innerResult: RxDocumentData<RxDocType>[] = [];

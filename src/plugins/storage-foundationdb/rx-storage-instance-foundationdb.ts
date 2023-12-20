@@ -288,8 +288,7 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
             [
                 true,
                 maxDeletionTime
-            ],
-            true
+            ]
         );
         let noMoreUndeleted: boolean = true;
         await dbs.root.doTransaction(async (tx: any) => {

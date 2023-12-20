@@ -50,9 +50,14 @@ describe('query-correctness-fuzzing.test.ts', () => {
             ] as const;
             const sorts = [
                 [{ '_id': 'asc' }],
+                [{ 'gender': 'asc' }, { '_id': 'asc' }],
+                [{ 'name': 'asc' }, { '_id': 'asc' }],
+                [{ 'age': 'asc' }, { '_id': 'asc' }],
+                [{ 'gender': 'asc' }, { 'name': 'asc' }, { '_id': 'asc' }],
                 [{ 'name': 'asc' }, { 'gender': 'asc' }, { '_id': 'asc' }],
                 [{ 'gender': 'asc' }, { 'age': 'asc' }, { '_id': 'asc' }],
                 [{ 'age': 'asc' }, { 'name': 'asc' }, { '_id': 'asc' }],
+                [{ 'age': 'asc' }, { 'gender': 'asc' }, { 'name': 'asc' }, { '_id': 'asc' }],
             ];
             const schemaPlain: RxJsonSchema<Human> = {
                 primaryKey: '_id',
@@ -100,9 +105,7 @@ describe('query-correctness-fuzzing.test.ts', () => {
                     changeEvent
                 );
                 console.log('...........');
-                console.dir(changeEvent);
                 const docs = await storageInstance.findDocumentsById([changeEvent.id], true);
-                console.dir(docs);
                 const previous = docs[0];
                 const nextRev = createRevision(randomCouchString(10), previous);
 
@@ -155,7 +158,6 @@ describe('query-correctness-fuzzing.test.ts', () => {
                 console.log('__________________________');
                 const query = randomQuery();
                 const sort = randomOfArray(sorts);
-                console.dir(query);
                 const mingoSort = sort.map(sortPart => {
                     const dirPrefix = Object.values(sortPart)[0] === 'asc' ? '' : '-';
                     return dirPrefix + Object.keys(sortPart)[0];
@@ -187,10 +189,7 @@ describe('query-correctness-fuzzing.test.ts', () => {
 
 
 
-
-
-            await wait(100);
-            await storageInstance.close();
+            await storageInstance.remove();
         }
 
 

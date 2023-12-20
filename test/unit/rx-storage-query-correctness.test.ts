@@ -1228,6 +1228,12 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                 'name': 'rpjljekeoy',
                 'gender': 'm',
                 'age': 3
+            },
+            {
+                '_id': 'hauezldqea',
+                'name': 'ckjndqrthh',
+                'gender': 'f',
+                'age': 20
             }
         ],
         schema: {
@@ -1266,6 +1272,12 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                     'gender',
                     'age',
                     'name',
+                    '_id'
+                ],
+                [
+                    'age',
+                    'name',
+                    'gender',
                     '_id'
                 ]
             ]
@@ -1331,7 +1343,37 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
 
                     ]
                 },
-                expectedResultDocIds: ['zmbznyggnu', 'nogljngyvo']
+                expectedResultDocIds: ['zmbznyggnu', 'nogljngyvo', 'hauezldqea']
+            },
+            {
+                info: 'had wrong index string on upper bound',
+                query: {
+                    'selector': {
+                        'age': {
+                            '$gte': 4,
+                            '$lte': 20
+                        },
+                        'gender': {
+                            '$lt': 'm'
+                        },
+
+                    },
+                    'sort': [
+                        {
+                            'name': 'asc'
+                        },
+                        {
+                            '_id': 'asc'
+                        }
+                    ],
+                    'index': [
+                        'age',
+                        'name',
+                        'gender',
+                        '_id'
+                    ]
+                },
+                expectedResultDocIds: ['nogljngyvo', 'hauezldqea']
             },
         ],
     });
