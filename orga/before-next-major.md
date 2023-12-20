@@ -16,10 +16,6 @@ RxStorage.bulkwrite(): If all writes suceeed, return "SUCESS" or sth to not have
 # Maybe later (not sure if should be done)
 
 
-## RxStorageInstance.query() should be able to query deleted docs.
-
-Then we can drop getChangesSince(). Also it makes it easier to implement custom indexes without _deleted which will be helpfull for a future RxDB server-module.
-
 ## Do not allow type mixing
 
 In the RxJsonSchema, a property of a document can have multiple types like
