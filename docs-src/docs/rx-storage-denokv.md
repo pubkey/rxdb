@@ -16,7 +16,7 @@ This gives you the benefits and features of the RxDB JavaScript Database, combin
 ## What is DenoKV
 
 [DenoKV](https://deno.com/kv) is a strongly consistent key-value storage, globally replicated for low-latency reads across 35 worldwide regions via [Deno Deploy](https://deno.com/deploy).
-When you release your Deno application on Deno Deploy, it will start a instance on each of the [35 worldwide reagions](https://docs.deno.com/deploy/manual/regions). This edge deployment guarantees minimal latency when serving requests to end users devices around the world. DenoKV is a shared storage which shares its state across all instances.
+When you release your Deno application on Deno Deploy, it will start a instance on each of the [35 worldwide regions](https://docs.deno.com/deploy/manual/regions). This edge deployment guarantees minimal latency when serving requests to end users devices around the world. DenoKV is a shared storage which shares its state across all instances.
 But, because DenoKV is "only" a **Key-Value storage**, it only supports basic CRUD operations on datasets and indexes. Complex features like queries, encryption, compression or client-server replication, are missing. Using RxDB on top of DenoKV fills this gap and makes it easy to build realtime [offline-first](./offline-first.md) application on top of Deno backend.
 
 ## Use cases
