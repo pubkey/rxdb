@@ -31,7 +31,7 @@ jobs:
       
       - name: build docs
         run: |
-          npm run docs:install
+          (cd docs-src && npm install)
           npm run docs:build
 
       - name: Commit files
