@@ -133,6 +133,7 @@ export function getQueryPlan<RxDocType>(
             return matcherOpts;
         });
 
+
         const startKeys = opts.map(opt => opt.startKey);
         const endKeys = opts.map(opt => opt.endKey);
         const queryPlan: RxQueryPlan = {
@@ -378,7 +379,8 @@ export function getMatcherQueryOpts(
         case '$eq':
             return {
                 startKey: operatorValue,
-                endKey: operatorValue
+                endKey: operatorValue,
+                inclusiveEnd: true
             };
         case '$lte':
             return {

@@ -1234,6 +1234,12 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                 'name': 'ckjndqrthh',
                 'gender': 'f',
                 'age': 20
+            },
+            {
+                '_id': 'utarwoqkav',
+                'name': 'thfubuvqwr',
+                'gender': 'm',
+                'age': 12
             }
         ],
         schema: {
@@ -1343,7 +1349,7 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
 
                     ]
                 },
-                expectedResultDocIds: ['zmbznyggnu', 'nogljngyvo', 'hauezldqea']
+                expectedResultDocIds: ['zmbznyggnu', 'utarwoqkav', 'nogljngyvo', 'hauezldqea']
             },
             {
                 info: 'had wrong index string on upper bound',
@@ -1374,6 +1380,32 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                     ]
                 },
                 expectedResultDocIds: ['nogljngyvo', 'hauezldqea']
+            },
+            {
+                info: 'had wrong index string on upper bound for $eq',
+                query: {
+                    'selector': {
+                        'age': {
+                            '$lte': 12
+                        },
+                        'gender': {
+                            '$lt': 'x',
+                            '$eq': 'm'
+                        },
+                    },
+                    'sort': [
+                        {
+                            '_id': 'asc'
+                        }
+                    ],
+                    'index': [
+                        'gender',
+                        'age',
+                        'name',
+                        '_id'
+                    ]
+                },
+                expectedResultDocIds: ['utarwoqkav', 'zmbznyggnu']
             },
         ],
     });
