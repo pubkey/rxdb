@@ -10,7 +10,6 @@ import {
 } from '../plugins/core/index.mjs';
 import * as assert from 'assert';
 import config from './unit/config.ts';
-import { wait } from 'async-test-util';
 import {
     randomOfArray
 } from 'event-reduce-js';
@@ -34,12 +33,15 @@ describe('query-correctness-fuzzing.test.ts', () => {
     it('run tests', async function () {
         this.timeout(1000 * 1000000);
 
+        const runsPerInstance = 5;
         const eventsAmount = 30;
         const queriesAmount = 30;
 
 
+        let totalRuns = 0;
         while (true) {
-            console.log('-----------');
+            totalRuns++;
+            console.log('-----------NEW RUN #' + totalRuns);
             const indexes = [
                 ['_id'],
                 ['name', 'gender', 'age'],
@@ -97,96 +99,104 @@ describe('query-correctness-fuzzing.test.ts', () => {
                 schema
             });
             const collection = mingoCollectionCreator();
-            const procedure = getRandomChangeEvents(eventsAmount);
 
-            for (const changeEvent of procedure) {
-                applyChangeEvent(
-                    collection,
-                    changeEvent
-                );
-                console.log('...........');
-                const docs = await storageInstance.findDocumentsById([changeEvent.id], true);
-                const previous = docs[0];
-                const nextRev = createRevision(randomCouchString(10), previous);
 
-                if (changeEvent.operation === 'DELETE') {
-                    const writeResult = await storageInstance.bulkWrite([{
-                        previous: previous,
-                        document: Object.assign({}, changeEvent.previous, {
-                            _deleted: true,
-                            _rev: nextRev,
-                            _meta: {
-                                lwt: now()
-                            },
-                            _attachments: {}
-                        })
-                    }], 'randomevent-delete');
-                    assert.deepStrictEqual(writeResult.error, []);
-                } else {
-                    const writeResult = await storageInstance.bulkWrite([{
-                        previous: previous,
-                        document: Object.assign({}, changeEvent.doc, {
-                            _deleted: false,
-                            _rev: nextRev,
-                            _meta: {
-                                lwt: now()
-                            },
-                            _attachments: {}
-                        })
-                    }], 'randomevent');
-                    assert.deepStrictEqual(writeResult.error, []);
+            let runs = 0;
+            while (runs < runsPerInstance) {
+                runs++;
+
+                const procedure = getRandomChangeEvents(eventsAmount);
+
+                for (const changeEvent of procedure) {
+                    applyChangeEvent(
+                        collection,
+                        changeEvent
+                    );
+                    console.log('...........');
+                    const docs = await storageInstance.findDocumentsById([changeEvent.id], true);
+                    const previous = docs[0];
+                    const nextRev = createRevision(randomCouchString(10), previous);
+
+                    if (changeEvent.operation === 'DELETE') {
+                        const writeResult = await storageInstance.bulkWrite([{
+                            previous: previous,
+                            document: Object.assign({}, changeEvent.previous, {
+                                _deleted: true,
+                                _rev: nextRev,
+                                _meta: {
+                                    lwt: now()
+                                },
+                                _attachments: {}
+                            })
+                        }], 'randomevent-delete');
+                        assert.deepStrictEqual(writeResult.error, []);
+                    } else {
+                        const writeResult = await storageInstance.bulkWrite([{
+                            previous: previous,
+                            document: Object.assign({}, changeEvent.doc, {
+                                _deleted: false,
+                                _rev: nextRev,
+                                _meta: {
+                                    lwt: now()
+                                },
+                                _attachments: {}
+                            })
+                        }], 'randomevent');
+                        assert.deepStrictEqual(writeResult.error, []);
+                    }
                 }
-            }
 
-            // ensure all docs are equal
-            console.log('EEEEEEEEEEEEEEEEEEEEEEEEEEEEE');
-            const allStorage = await storageInstance.query(prepareQuery(schema, { selector: { _deleted: { $eq: false } }, skip: 0, sort: [{ _id: 'asc' }] }));
-            const allCorrect = collection.query({ selector: {}, sort: ['_id'] });
-            allCorrect.forEach((d, idx) => {
-                const correctDoc = allStorage.documents[idx];
-                if (d._id !== correctDoc._id) {
-                    console.dir(allStorage);
-                    console.dir(allCorrect);
-                    throw new Error('State not equal after writes');
-                }
-            });
-
-
-            let queryC = 0;
-            while (queryC < queriesAmount) {
-                queryC++;
-                console.log('__________________________');
-                const query = randomQuery();
-                const sort = randomOfArray(sorts);
-                const mingoSort = sort.map(sortPart => {
-                    const dirPrefix = Object.values(sortPart)[0] === 'asc' ? '' : '-';
-                    return dirPrefix + Object.keys(sortPart)[0];
+                // ensure all docs are equal
+                console.log('EEEEEEEEEEEEEEEEEEEEEEEEEEEEE');
+                const allStorage = await storageInstance.query(prepareQuery(schema, { selector: { _deleted: { $eq: false } }, skip: 0, sort: [{ _id: 'asc' }] }));
+                const allCorrect = collection.query({ selector: {}, sort: ['_id'] });
+                allCorrect.forEach((d, idx) => {
+                    const correctDoc = allStorage.documents[idx];
+                    if (d._id !== correctDoc._id) {
+                        console.dir(allStorage);
+                        console.dir(allCorrect);
+                        throw new Error('State not equal after writes');
+                    }
                 });
-                query.sort = mingoSort;
-                const correctResult = collection.query(query);
-                query.sort = sort as any;
-                query.selector._deleted = { $eq: false };
-                // must have the same result for all indexes
-                for (const index of ensureNotFalsy(schema.indexes)) {
-                    const useQuery = normalizeMangoQuery(schema, query as any);
-                    useQuery.index = index as any;
-                    console.dir('DDDD');
-                    const preparedQuery = prepareQuery(schema, useQuery);
-                    const storageResult = await storageInstance.query(preparedQuery);
 
-                    storageResult.documents.forEach((d, idx) => {
-                        const correctDoc = correctResult[idx];
-                        if (d._id !== correctDoc._id) {
-                            console.dir(preparedQuery);
-                            console.dir(correctResult);
-                            console.dir(storageResult);
-                            throw new Error('WRONG QUERY RESULT!');
-                        }
+
+                let queryC = 0;
+                while (queryC < queriesAmount) {
+                    queryC++;
+                    console.log('__________________________');
+                    const query = randomQuery();
+                    const sort = randomOfArray(sorts);
+                    const mingoSort = sort.map(sortPart => {
+                        const dirPrefix = Object.values(sortPart)[0] === 'asc' ? '' : '-';
+                        return dirPrefix + Object.keys(sortPart)[0];
                     });
+                    query.sort = mingoSort;
+                    const correctResult = collection.query(query);
+                    query.sort = sort as any;
+                    query.selector._deleted = { $eq: false };
+                    // must have the same result for all indexes
+                    for (const index of ensureNotFalsy(schema.indexes)) {
+                        const useQuery = normalizeMangoQuery(schema, query as any);
+                        useQuery.index = index as any;
+                        const preparedQuery = prepareQuery(schema, useQuery);
+                        const storageResult = await storageInstance.query(preparedQuery);
 
+                        storageResult.documents.forEach((d, idx) => {
+                            const correctDoc = correctResult[idx];
+                            if (d._id !== correctDoc._id) {
+                                console.dir(preparedQuery);
+                                console.dir(correctResult);
+                                console.dir(storageResult);
+                                throw new Error('WRONG QUERY RESULT!');
+                            }
+                        });
+
+                    }
                 }
-            }
 
+                // run cleanup after each run
+                await storageInstance.cleanup(0);
+            }
 
 
             await storageInstance.remove();

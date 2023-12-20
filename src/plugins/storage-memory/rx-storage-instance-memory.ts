@@ -306,11 +306,6 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         );
         const indexName = getMemoryIndexName(index);
 
-
-        console.dir({
-            lowerBoundString,
-            upperBoundString,
-        });
         // console.log('in memory query:');
         // console.dir({
         //     queryPlan,
