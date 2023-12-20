@@ -1,13 +1,11 @@
-| Announcement                                                        |
+<!-- | Announcement                                                        |
 | :--: |
-| &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; [Help testing the RxDB version 15 release](https://github.com/pubkey/rxdb/issues/5155) &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; |
+| &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; [Help testing the RxDB version 15 release](https://github.com/pubkey/rxdb/issues/5155) &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; | -->
 
 
-<!-- 
 | Announcement                                                        |
 | :--: |
-| &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; Version **15.0.0** is now released, read the [ANNOUNCEMENT](https://rxdb.info/releases/15.0.0.html) &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; |
--->
+| &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; Version **15.0.0** is now released, read the [CHANGELOG](https://rxdb.info/releases/15.0.0.html) &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; |
 
 
 <!--
