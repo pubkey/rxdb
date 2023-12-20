@@ -16,7 +16,7 @@ export default function Home() {
                 <div className='redirectBox' style={{ textAlign: 'center' }}>
                     <a href="/">
                         <div className="logo">
-                            <img src="./files/logo/logo_text.svg" alt="RxDB" width={160} />
+                            <img src="/files/logo/logo_text.svg" alt="RxDB" width={160} />
                         </div>
                     </a>
                     <h1>RxDB Newsletter</h1>

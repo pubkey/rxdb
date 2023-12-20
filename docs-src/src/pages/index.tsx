@@ -1,11 +1,6 @@
-import clsx from 'clsx';
-import Link from '@docusaurus/Link';
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import Layout from '@theme/Layout';
-import HomepageFeatures from '@site/src/components/HomepageFeatures';
 
-import Heading from '@theme/Heading';
-import styles from './index.module.css';
 
 import {
   merge,
@@ -318,7 +313,7 @@ export default function Home() {
                       style={{ backgroundColor: 'rgb(141, 32, 137)' }}
                     >
                       <img
-                        src="./files/logo/logo_text.svg"
+                        src="/files/logo/logo_text.svg"
                         className="beating logo animation"
                         alt="RxDB"
                         style={{ animationDuration: '851ms', width: '52%' }}
@@ -344,7 +339,7 @@ export default function Home() {
                   </div>
                 </div>
                 {/* <img
-              src="./files/logo/logo_text.svg"
+              src="/files/logo/logo_text.svg"
               class="tilt-to-mouse"
               id="heartbeat-logo"
               alt="RxDB"

@@ -1,0 +1,141 @@
+import useIsBrowser from '@docusaurus/useIsBrowser';
+import React, { useEffect } from 'react';
+
+// Default implementation, that you can customize
+export default function Root({ children }) {
+    const isBrowser = useIsBrowser();
+    useEffect(() => {
+        if (!isBrowser) {
+            return;
+        }
+        addCommunityChatButton();
+        addCallToActionButton();
+
+    });
+    return <>{children}</>;
+}
+
+
+function addCallToActionButton() {
+
+    const callToActions = [
+        {
+            text: 'Follow',
+            keyword: '@twitter',
+            url: 'https://twitter.com/intent/user?screen_name=rxdbjs',
+            icon: '🐦'
+        },
+        {
+            text: 'Chat',
+            keyword: '@discord',
+            url: 'https://rxdb.info/chat',
+            icon: '💬'
+        },
+        {
+            text: 'Star',
+            keyword: '@github',
+            url: 'https://rxdb.info/code',
+            icon: '🐙💻'
+        },
+        {
+            text: 'Subscribe',
+            keyword: '@newsletter',
+            url: 'https://rxdb.info/newsletter',
+            icon: '📰'
+        }
+    ];
+    function insertAfter(referenceNode, newNode) {
+        referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
+    }
+    const callToActionButtonId = 'rxdb-call-to-action-button';
+    function setCallToActionOnce() {
+        const randId = Date.now() % callToActions.length;
+        const callToAction = callToActions[randId];
+        const alreadyThere = document.querySelector('#' + callToActionButtonId);
+        if (alreadyThere) {
+            alreadyThere.parentNode.removeChild(alreadyThere);
+        }
+
+
+        const positionReferenceElement = document.querySelector('.navbar__items');
+        if (!positionReferenceElement) {
+            // not loaded yet!
+            return;
+        }
+
+        const newElementWrapper = document.createElement('div');
+        newElementWrapper.classList.add('call-to-action');
+
+        const newElement = document.createElement('a');
+        newElement.classList.add('hover-shadow-top');
+        newElement.id = callToActionButtonId;
+        newElement.innerHTML = callToAction.text + ' <b class="call-to-action-keyword">' + callToAction.keyword + '</b>' +
+            '<b class="call-to-action-icon">' + callToAction.icon + '</b>';
+        newElement.href = callToAction.url;
+        newElement.target = '_blank';
+        newElementWrapper.append(newElement);
+
+
+        insertAfter(positionReferenceElement, newElementWrapper);
+    }
+    function runSettingCallToActionButton() {
+        setCallToActionOnce();
+        /**
+         * Gitbook does a strange page change handling,
+         * so we have to re-run the function
+         * because listening to history changes did not work.
+         */
+        setInterval(function () {
+            const alreadyThere = document.querySelector('#' + callToActionButtonId);
+            // only add if not exists already, like on a page change.
+            if (!alreadyThere) {
+                setCallToActionOnce();
+            }
+        }, 100);
+    }
+    runSettingCallToActionButton();
+}
+
+function addCommunityChatButton() {
+    const chatButtonId = 'fixed-chat-button';
+    const elementExists = document.getElementById(chatButtonId);
+    if (elementExists) {
+        return;
+    }
+
+    const elemDiv = document.createElement('a');
+    elemDiv.id = chatButtonId;
+    elemDiv.href = '/chat';
+    elemDiv.target = '_blank';
+    elemDiv.innerHTML = '💬 Community Chat';
+    elemDiv.onclick = function () {
+        trigger('join_chat_action', 0.10);
+    };
+
+    const styleSheet = document.createElement('style');
+    styleSheet.type = 'text/css';
+    styleSheet.innerText = '#' + chatButtonId + ' {' +
+        'color: white;' +
+        'position: fixed;' +
+        'right: 0;' +
+        'bottom: 0;' +
+        'background-color: var(--color-top);' +
+        'padding-left: 17px;' +
+        'padding-right: 17px;' +
+        'padding-top: 10px;' +
+        'padding-bottom: 5px;' +
+        'text-align: center;' +
+        'margin-right: 50px;' +
+        'font-weight: bold;' +
+        'border-top-left-radius: 9px;' +
+        'border-top-right-radius: 9px;' +
+        '}' +
+        '#fixed-chat-button:hover {' +
+        'box-shadow: 2px 2px 13px #ca007c, -2px -1px 14px #ff009e;' +
+        'text-decoration: underline;' +
+        'z-index: 10;' +
+        '}'
+        ;
+    document.head.appendChild(styleSheet);
+    document.body.appendChild(elemDiv);
+}

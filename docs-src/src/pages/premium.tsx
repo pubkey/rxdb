@@ -3,9 +3,13 @@ import Layout from '@theme/Layout';
 import React, { useEffect } from 'react';
 import { ensureNotFalsy, lastOfArray } from '../../../';
 import { AVERAGE_FRONT_END_DEVELOPER_SALARY_BY_COUNTRY } from '../components/salaries';
-import { LicensePeriod, PACKAGE_PRICE, PackageName, PriceCalculationInput, ProjectAmount, calculatePrice } from '../components/price-calculator';
+import {
+    LicensePeriod, PACKAGE_PRICE, PackageName,
+    PriceCalculationInput, ProjectAmount, calculatePrice
+} from '../components/price-calculator';
 import { trigger } from '../components/trigger-event';
 import { getDatabase, hasIndexedDB } from '../components/database';
+import useIsBrowser from '@docusaurus/useIsBrowser';
 
 type FormValueDocData = {
     homeCountry: string;
@@ -16,12 +20,12 @@ type FormValueDocData = {
 };
 const FORM_VALUE_DOCUMENT_ID = 'premium-price-form-value';
 
-export default function Home() {
+export default function Premium() {
     const { siteConfig } = useDocusaurusContext();
-
+    const isBrowser = useIsBrowser();
     useEffect(() => {
         (async () => {
-            if (!hasIndexedDB()) {
+            if (!isBrowser || !hasIndexedDB()) {
                 return;
             }
             const database = await getDatabase();
