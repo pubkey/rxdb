@@ -112,7 +112,6 @@ describe('query-correctness-fuzzing.test.ts', () => {
                         collection,
                         changeEvent
                     );
-                    console.log('...........');
                     const docs = await storageInstance.findDocumentsById([changeEvent.id], true);
                     const previous = docs[0];
                     const nextRev = createRevision(randomCouchString(10), previous);
@@ -147,7 +146,6 @@ describe('query-correctness-fuzzing.test.ts', () => {
                 }
 
                 // ensure all docs are equal
-                console.log('EEEEEEEEEEEEEEEEEEEEEEEEEEEEE');
                 const allStorage = await storageInstance.query(prepareQuery(schema, { selector: { _deleted: { $eq: false } }, skip: 0, sort: [{ _id: 'asc' }] }));
                 const allCorrect = collection.query({ selector: {}, sort: ['_id'] });
                 allCorrect.forEach((d, idx) => {
@@ -163,7 +161,6 @@ describe('query-correctness-fuzzing.test.ts', () => {
                 let queryC = 0;
                 while (queryC < queriesAmount) {
                     queryC++;
-                    console.log('__________________________');
                     const query = randomQuery();
                     const sort = randomOfArray(sorts);
                     const mingoSort = sort.map(sortPart => {
