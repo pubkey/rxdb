@@ -1,5 +1,5 @@
 /**
  * This file is replaced in the 'npm run build:version' script.
  */
-export var RXDB_VERSION = '15.0.0-beta.47';
+export var RXDB_VERSION = '15.0.0';
 //# sourceMappingURL=utils-rxdb-version.js.map

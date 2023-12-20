@@ -5,13 +5,15 @@
 
 <!-- ADD new changes here! -->
 
-🚀 **RxDB v15 is released**
-
-- A list of changes for RxDB v15 can be found [here](https://rxdb.info/releases/15.0.0.html)
-
 <!-- /CHANGELOG NEWEST -->
 
 <!-- RELEASE BELOW -->
+
+### 15.0.0 (20 December 2023)
+
+🚀 **RxDB v15 is released**
+
+- A list of changes for RxDB v15 can be found [here](https://rxdb.info/releases/15.0.0.html)
 
 ### 14.17.1 (24 September 2023)
 
