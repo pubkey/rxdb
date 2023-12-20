@@ -28,6 +28,14 @@ export default function Premium() {
             if (!isBrowser || !hasIndexedDB()) {
                 return;
             }
+
+
+            // enable iframe lazyli
+            const iframe = document.getElementById('request-premium-form');
+            (iframe as any).src = 'https://webforms.pipedrive.com/f/6qflURDWONiPpj67lpG6r45n8feakrtS2AqMRcBf1EuCPRvNcXWdvNH2unFm5EpjW3';
+
+
+            // load previous form data
             const database = await getDatabase();
             const formValueDoc = await database.getLocal<FormValueDocData>(FORM_VALUE_DOCUMENT_ID);
             if (formValueDoc) {
@@ -746,7 +754,6 @@ export default function Premium() {
                             <p></p>
                             <iframe
                                 id="request-premium-form"
-                                src="https://webforms.pipedrive.com/f/6qflURDWONiPpj67lpG6r45n8feakrtS2AqMRcBf1EuCPRvNcXWdvNH2unFm5EpjW3"
                             >
                                 Your browser doesn't support iframes, &lt;a
                                 href="https://webforms.pipedrive.com/f/6qflURDWONiPpj67lpG6r45n8feakrtS2AqMRcBf1EuCPRvNcXWdvNH2unFm5EpjW3"
