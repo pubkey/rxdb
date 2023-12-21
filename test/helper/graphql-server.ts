@@ -356,6 +356,7 @@ export async function spawn(
                                         writeHumans(writeRows: $writeRows) { id }
                                     }
                                 `,
+                                operationName: 'CreateHumans',
                                 variables: {
                                     writeRows: [row]
                                 }

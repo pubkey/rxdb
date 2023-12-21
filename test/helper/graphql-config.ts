@@ -16,6 +16,7 @@ export async function getDocsOnServer<RxDocType>(
                 deleted
             }
         }`,
+        operationName: 'getAll',
         variables: {}
     });
     return response.data.getAll;

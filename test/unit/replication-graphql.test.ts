@@ -101,6 +101,7 @@ describe('replication-graphql.test.ts', () => {
         };
         return Promise.resolve({
             query,
+            operationName: 'FeedForRxDBReplication',
             variables
         });
     };
@@ -122,6 +123,7 @@ describe('replication-graphql.test.ts', () => {
         }`;
         return {
             query,
+            operationName: 'onHumanChanged',
             variables: {
                 headers
             }
@@ -147,6 +149,7 @@ describe('replication-graphql.test.ts', () => {
         };
         return Promise.resolve({
             query,
+            operationName: 'CreateHumans',
             variables
         });
     };
@@ -195,6 +198,7 @@ describe('replication-graphql.test.ts', () => {
                     },
                     {
                         query: '{ info }',
+                        operationName: 'info',
                         variables: {}
                     }
                 );
@@ -508,6 +512,7 @@ describe('replication-graphql.test.ts', () => {
 
                     return {
                         query,
+                        operationName: 'FeedForRxDBReplication',
                         variables
                     };
                 };
