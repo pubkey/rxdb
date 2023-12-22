@@ -63,12 +63,11 @@ export function pullStreamBuilderFromRxSchema(
 
     const ucCollectionName = ucfirst(collectionName);
     const queryName = prefixes.stream + ucCollectionName;
-    const operationName = ucfirst('on' + ucfirst(queryName));
     const outputFields = Object.keys(schema.properties).filter(k => !(input.ignoreOutputKeys as string[]).includes(k));
 
     const headersName = ucCollectionName + 'Input' + prefixes.headers;
 
-    const query = 'subscription ' + operationName + '($headers: ' + headersName + ') {\n' +
+    const query = 'subscription on' + ucfirst(ensureNotFalsy(prefixes.stream)) + '($headers: ' + headersName + ') {\n' +
         SPACING + queryName + '(headers: $headers) {\n' +
         SPACING + SPACING + SPACING + 'documents {\n' +
         SPACING + SPACING + SPACING + SPACING + outputFields.join('\n' + SPACING + SPACING + SPACING + SPACING) + '\n' +
@@ -82,7 +81,6 @@ export function pullStreamBuilderFromRxSchema(
     const builder: RxGraphQLReplicationPullStreamQueryBuilder = (headers: any) => {
         return {
             query,
-            operationName,
             variables: {
                 headers
             }

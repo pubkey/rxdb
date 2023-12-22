@@ -296,7 +296,6 @@ const pullStreamQueryBuilder = (headers) => {
     }`;
     return {
         query,
-        operationName: 'onStream',
         variables: {
             headers
         }
