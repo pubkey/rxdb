@@ -408,7 +408,7 @@ export const basePrototype = {
      * Purge the removed document from the database.
      *
      * This will not wait for the document to be synced with the server,
-     * use remove() if you need to be sure it is deleted and cleanup() to clean up afterwards
+     * use the cleanup plugin to purge all removed documents properly
     */
     purge(this: RxDocument): Promise<void> {
         if (!this.deleted ) {
