@@ -7,7 +7,8 @@ import {
     now,
     ensureNotFalsy,
     isMaybeReadonlyArray,
-    getFromMapOrThrow
+    getFromMapOrThrow,
+    toArray
 } from '../utils/index.ts';
 import { newRxError } from '../../rx-error.ts';
 import type {
@@ -95,6 +96,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
             const copiedSelf: RxStorageInstance<RxDocType, any, any> = {
                 bulkWrite: this.bulkWrite.bind(this),
                 changeStream: this.changeStream.bind(this),
+                purgeDocumentsById: this.purgeDocumentsById.bind(this),
                 cleanup: this.cleanup.bind(this),
                 close: this.close.bind(this),
                 query: this.query.bind(this),
@@ -281,6 +283,25 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
 
     changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, RxStorageDefaultCheckpoint>> {
         return this.changes$.asObservable();
+    }
+
+    async purgeDocumentsById(docIds: string[], forcePurge: boolean = false): Promise<void> {
+        const localState = await mustUseLocalState(this);
+        if (!localState) {
+            return requestRemoteInstance(this, 'purgeDocumentsById', [docIds, forcePurge]);
+        }
+
+        const foundDocuments = localState.collection.find({
+            ...(forcePurge ? {} : { _deleted: true }),
+            [this.primaryPath]: {
+                $in: docIds
+            }
+        }).data();
+        if (foundDocuments.length > 0) {
+            localState.collection.remove(foundDocuments);
+            localState.databaseState.saveQueue.addWrite();
+        }
+
     }
 
     async cleanup(minimumDeletedTime: number): Promise<boolean> {

@@ -260,6 +260,28 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
         });
         return this.close();
     }
+
+    async purgeDocumentsById(docIds: string[], forcePurge: boolean = false): Promise<void> {
+        const dbs = await this.internals.dbsPromise;
+        return dbs.main.doTransaction(async (tx: any) => {
+            const mainTx = tx.at(dbs.main.subspace);
+            await Promise.all(
+                docIds.map(async (docId) => {
+                    const docInDb = await tx.get(docId);
+                    if (
+                        docInDb &&
+                        (
+                            docInDb._deleted ||
+                            forcePurge
+                        )
+                    ) {
+                        mainTx.delete(docId);
+                    }
+                })
+            );
+        });
+    }
+
     async cleanup(minimumDeletedTime: number): Promise<boolean> {
         const {
             keySelector,

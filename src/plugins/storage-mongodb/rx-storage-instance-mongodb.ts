@@ -396,6 +396,16 @@ export class RxStorageInstanceMongoDB<RxDocType> implements RxStorageInstance<
         };
     }
 
+    async purgeDocumentsById(docIds: string[], forcePurge: boolean = false): Promise<void> {
+        this.runningOperations.next(this.runningOperations.getValue() + 1);
+        const mongoCollection = await this.mongoCollectionPromise;
+        await mongoCollection.deleteMany({
+            ...forcePurge ? {} : { _deleted: true }, // if forcePurge=true, we also purge non-deleted documents
+            [this.inMongoPrimaryPath]: docIds
+        });
+        this.runningOperations.next(this.runningOperations.getValue() - 1);
+    }
+
     async cleanup(minimumDeletedTime: number): Promise<boolean> {
         this.runningOperations.next(this.runningOperations.getValue() + 1);
         const mongoCollection = await this.mongoCollectionPromise;

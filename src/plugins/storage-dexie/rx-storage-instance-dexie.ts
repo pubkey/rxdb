@@ -8,7 +8,8 @@ import {
     RX_META_LWT_MINIMUM,
     sortDocumentsByLastWriteTime,
     lastOfArray,
-    ensureNotFalsy
+    ensureNotFalsy,
+    toArray
 } from '../utils/index.ts';
 import type {
     RxStorageInstance,
@@ -239,6 +240,20 @@ export class RxStorageInstanceDexie<RxDocType> implements RxStorageInstance<
     changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, RxStorageDefaultCheckpoint>> {
         ensureNotClosed(this);
         return this.changes$.asObservable();
+    }
+
+    async purgeDocumentsById(docIds: string[], forcePurge: boolean = false): Promise<void> {
+        ensureNotClosed(this);
+        const state = await this.internals;
+        await state.dexieDb.transaction(
+            'rw',
+            state.dexieTable,
+            async () => {
+                const docsInDb = await getDocsInDb<RxDocType>(this.internals, docIds);
+                const docsToDelete = forcePurge ? docsInDb : docsInDb.filter(doc => doc._deleted)
+                const docsToDeleteIds = docsToDelete.map(doc => doc[this.primaryPath]);
+                await state.dexieTable.bulkDelete(docsToDeleteIds);
+            });
     }
 
     async cleanup(minimumDeletedTime: number): Promise<boolean> {

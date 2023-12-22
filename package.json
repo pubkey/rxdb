@@ -359,6 +359,7 @@
     "// test:node:loop": "runs tests in node in a loop. Use this to debug tests that only fail sometimes",
     "test:node:loop": "npm run test:node && npm run test:node:loop",
     "test:node:loop:memory-random-delay": "npm run test:node:memory-random-delay && npm run test:node:loop:memory-random-delay",
+    "test:browser": "npm run test:browser:lokijs && npm run test:browser:dexie && npm run test:browser:memory && npm run test:browser:remote",
     "test:browser:loop": "npm run test:browser && npm run test:browser:loop",
     "test:browser:lokijs": " npm run transpile && cross-env CI=true DEFAULT_STORAGE=lokijs  karma start ./config/karma.conf.cjs --single-run",
     "test:browser:memory": " npm run transpile && cross-env CI=true DEFAULT_STORAGE=memory  karma start ./config/karma.conf.cjs --single-run",

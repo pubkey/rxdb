@@ -387,6 +387,32 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         };
     }
 
+    async purgeDocumentsById(docIds: string[], forcePurge: boolean = false): Promise<void> {
+        this.ensurePersistence();
+        const documentsById = this.internals.documents;
+        if (documentsById.size === 0) {
+            return;
+        }
+        for (let i = 0; i < docIds.length; ++i) {
+            const docId = docIds[i];
+            const docInDb = documentsById.get(docId);
+            if (
+                docInDb &&
+                (
+                    docInDb._deleted ||
+                    forcePurge
+                )
+            ) {
+                removeDocFromState(
+                    this.primaryPath as any,
+                    this.schema,
+                    this.internals,
+                    docInDb
+                );
+            }
+        }
+    }
+
     cleanup(minimumDeletedTime: number): Promise<boolean> {
         this.ensurePersistence();
         const maxDeletionTime = now() - minimumDeletedTime;

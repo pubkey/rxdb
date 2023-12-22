@@ -253,6 +253,9 @@ export class RxStorageInstanceRemote<RxDocType> implements RxStorageInstance<RxD
     changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, any>> {
         return this.changes$.asObservable();
     }
+    purgeDocumentsById(docIds: string[], forcePurge: boolean = false): Promise<void> {
+        return this.requestRemote('purgeDocumentsById', [docIds, forcePurge]);
+    }
     cleanup(minDeletedTime: number): Promise<boolean> {
         return this.requestRemote('cleanup', [minDeletedTime]);
     }

@@ -768,6 +768,11 @@ export function getWrappedStorageInstance<
                 () => ((storageInstance as any).getChangedDocumentsSince)(ensureNotFalsy(limit), checkpoint)
             );
         },
+        purgeDocumentsById(docIds: string[], forcePurge: boolean = false) {
+            return database.lockedRun(
+                () => storageInstance.purgeDocumentsById(docIds, forcePurge)
+            );
+        },
         cleanup(minDeletedTime: number) {
             return database.lockedRun(
                 () => storageInstance.cleanup(minDeletedTime)
@@ -1008,6 +1013,12 @@ export function randomDelayStorage<Internals, InstanceCreationOptions>(
                 },
                 resolveConflictResultionTask(a) {
                     return storageInstance.resolveConflictResultionTask(a);
+                },
+                async purgeDocumentsById(a, b) {
+                    await promiseWait(input.delayTimeBefore());
+                    const ret = await storageInstance.purgeDocumentsById(a, b);
+                    await promiseWait(input.delayTimeAfter());
+                    return ret;
                 },
                 async cleanup(a) {
                     await promiseWait(input.delayTimeBefore());

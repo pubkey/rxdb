@@ -242,6 +242,36 @@ export class RxStorageInstanceDenoKV<RxDocType> implements RxStorageInstance<
     changeStream() {
         return this.changes$.asObservable();
     }
+    async purgeDocumentsById(docIds: string[], forcePurge: boolean = false): Promise<void> {
+        const kv = await this.kvPromise;
+        const tx = kv.atomic();
+        const primaryPath = this.primaryPath;
+        const docsToDeleteId = await Promise.all(
+            docIds.map(async (docId) => {
+                const kvKey = [this.keySpace, DENOKV_DOCUMENT_ROOT_PATH, docId];
+                const findSingleResult = await kv.get(kvKey, this.kvOptions);
+                const docInDb = findSingleResult.value;
+                if (
+                    docInDb &&
+                    (
+                        docInDb._deleted ||
+                        forcePurge
+                    )
+                ) {
+                    return docInDb[primaryPath];
+                }
+            })
+        );
+        tx.deleteMany(
+            docsToDeleteId.map(docId => [this.keySpace, DENOKV_DOCUMENT_ROOT_PATH, docId])
+        );
+        Object.values(this.internals.indexes).forEach(indexMeta => {
+            tx.deleteMany(
+                docsToDeleteId.map(docId => [this.keySpace, indexMeta.indexId, docId])
+            );
+        });
+        await tx.commit();
+    }
     async cleanup(minimumDeletedTime: number): Promise<boolean> {
         const maxDeletionTime = now() - minimumDeletedTime;
         const kv = await this.kvPromise;

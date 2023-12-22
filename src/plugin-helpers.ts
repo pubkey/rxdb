@@ -188,6 +188,7 @@ export function wrapRxStorageInstance<RxDocType>(
     const wrappedInstance: WrappedRxStorageInstance<RxDocType, any, any> = {
         databaseName: instance.databaseName,
         internals: instance.internals,
+        purgeDocumentsById: instance.purgeDocumentsById.bind(instance),
         cleanup: instance.cleanup.bind(instance),
         options: instance.options,
         close: instance.close.bind(instance),

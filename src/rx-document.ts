@@ -370,8 +370,9 @@ export const basePrototype = {
 
     /**
      * Remove the document.
-     * Notice that there is no hard delete,
-     * instead deleted documents get flagged with _deleted=true.
+     *
+     * Notice: The removed documents get flagged with `_deleted=true` so they are not hard-deleted from the storage,
+     * but won't be returned in queries anymore. To hard-delete a document see `purge`.
      */
     remove(this: RxDocument): Promise<RxDocument> {
         const collection = this.collection;
@@ -402,6 +403,21 @@ export const basePrototype = {
             .then(() => {
                 return this.collection._docCache.getCachedRxDocument(removedDocData);
             });
+    },
+    /**
+     * Purge the removed document from the database.
+     *
+     * This will not wait for the document to be synced with the server,
+     * use remove() if you need to be sure it is deleted and cleanup() to clean up afterwards
+    */
+    purge(this: RxDocument, forcePurge: boolean = false): Promise<void> {
+        if (!forcePurge && !this.deleted ) {
+            return Promise.reject(newRxError('DOC25', {
+                document: this,
+                id: this.primary
+            }));
+        }
+        return this.collection.storageInstance.purgeDocumentsById([this.primary], forcePurge);
     },
     incrementalRemove(this: RxDocument): Promise<RxDocument> {
         return this.incrementalModify(async (docData) => {

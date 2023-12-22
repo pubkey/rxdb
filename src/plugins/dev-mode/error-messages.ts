@@ -122,6 +122,7 @@ export const ERROR_MESSAGES = {
     DOC23: 'PrimaryKey must not contain a double-quote ["]',
     DOC24: 'Given document data could not be structured cloned. This happens if you pass non-plain-json data into it, like a Date() or a Function. ' +
         'In vue.js this happens if you use ref() on the document data which transforms it into a Proxy object.',
+    DOC25: 'RxDocument.purge(): Document is not marked as deleted and cannot be purged',
 
     // data-migrator.js
     DM1: 'migrate() Migration has already run',

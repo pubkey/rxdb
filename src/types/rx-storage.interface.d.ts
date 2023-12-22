@@ -266,8 +266,25 @@ export interface RxStorageInstance<
      */
     changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocType>, CheckpointType>>;
 
+     /**
+     * Purge matching documents from the storage.
+     * Only if they have _deleted set to true
+     */
+     purgeDocumentsById(
+       /**
+         * List of primary values
+         * of the documents to purge.
+         */
+       docIds: string[],
+       /**
+        * If set to true, it will force the purge and not check the _deleted flag
+        * @default false
+        */
+       forcePurge: boolean
+    ): Promise<void>;
+
     /**
-     * Runs a cleanup that removes all tompstones
+     * Runs a cleanup that removes all tombstones
      * of documents that have _deleted set to true
      * to free up disc space.
      *
