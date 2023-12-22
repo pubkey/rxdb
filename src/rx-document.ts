@@ -410,14 +410,14 @@ export const basePrototype = {
      * This will not wait for the document to be synced with the server,
      * use remove() if you need to be sure it is deleted and cleanup() to clean up afterwards
     */
-    purge(this: RxDocument, forcePurge: boolean = false): Promise<void> {
-        if (!forcePurge && !this.deleted ) {
+    purge(this: RxDocument): Promise<void> {
+        if (!this.deleted ) {
             return Promise.reject(newRxError('DOC25', {
                 document: this,
                 id: this.primary
             }));
         }
-        return this.collection.storageInstance.purgeDocumentsById([this.primary], forcePurge);
+        return this.collection.storageInstance.purgeDocumentsById([this.primary], false);
     },
     incrementalRemove(this: RxDocument): Promise<RxDocument> {
         return this.incrementalModify(async (docData) => {
