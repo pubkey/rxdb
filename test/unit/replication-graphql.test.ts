@@ -188,6 +188,48 @@ describe('replication-graphql.test.ts', () => {
             it('spawn, reach and close a server', async () => {
                 const server = await SpawnServer.spawn();
                 const res = await graphQLRequest(
+                    fetch,
+                    ensureNotFalsy(server.url.http),
+                    {
+                        headers: {},
+                        credentials: undefined
+                    },
+                    {
+                        query: '{ info }',
+                        variables: {}
+                    }
+                );
+                if (!res.data) {
+                    console.log(JSON.stringify(res, null, 4));
+                    throw new Error('res has error');
+                }
+                assert.strictEqual(res.data.info, 1);
+                server.close();
+            });
+            it('spawn, reach with a custom fetch and close a server', async () => {
+                const server = await SpawnServer.spawn();
+                const customFetch = async (request: Request) => {
+                    /**
+                     * example with axios
+                        return axios({
+                        method: request.method || 'POST',
+                        url: request.url,
+                            data: await request.json(),
+                            headers: { ...request.headers,  Authorization: 'Bearer ' + JWT_BEARER_TOKEN },
+                        })
+                        .then(res => async () => Promise.resolve(res.data))
+                        .catch(err => {
+                            throw err.response.data;
+                        })
+                     */
+                    return await fetch(ensureNotFalsy(request.url), {
+                        method: request.method || 'POST',
+                        headers: request.headers,
+                        body: JSON.stringify(await request.json()),
+                    });
+                };
+                const res = await graphQLRequest(
+                    customFetch,
                     ensureNotFalsy(server.url.http),
                     {
                         headers: {},

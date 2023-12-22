@@ -347,6 +347,7 @@ export async function spawn(
 
 
                         const result = await graphQLRequest(
+                            fetch,
                             httpUrl,
                             clientState,
                             {
