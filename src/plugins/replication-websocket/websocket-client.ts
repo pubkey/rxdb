@@ -38,7 +38,7 @@ export type WebsocketClient = {
 
 
 /**
- * Copied and adapter from the 'reconnecting-websocket' npm module.
+ * Copied and adapted from the 'reconnecting-websocket' npm module.
  * Some bundlers have problems with bundling the isomorphic-ws plugin
  * so we directly check the correctness in RxDB to ensure that we can
  * throw a helpful error.
@@ -102,7 +102,9 @@ export async function createWebSocketClient(url: string): Promise<WebsocketClien
 export async function replicateWithWebsocketServer<RxDocType, CheckpointType>(
     options: WebsocketClientOptions<RxDocType>
 ): Promise<RxReplicationState<RxDocType, CheckpointType>> {
+    console.log('--- A1 ' + options.url);
     const websocketClient = await createWebSocketClient(options.url);
+    console.log('--- A2');
     const wsClient = websocketClient.socket;
     const messages$ = websocketClient.message$;
 
@@ -123,6 +125,7 @@ export async function replicateWithWebsocketServer<RxDocType, CheckpointType>(
                 map(msg => msg.result)
             ),
             async handler(lastPulledCheckpoint: CheckpointType | undefined, batchSize: number) {
+                console.log('client 1');
                 const requestId = getRequestId();
                 const request: WebsocketMessageType = {
                     id: requestId,
@@ -130,7 +133,9 @@ export async function replicateWithWebsocketServer<RxDocType, CheckpointType>(
                     method: 'masterChangesSince',
                     params: [lastPulledCheckpoint, batchSize]
                 };
+                console.log('client 1.1');
                 wsClient.send(JSON.stringify(request));
+                console.log('client 1.2');
                 const result = await firstValueFrom(
                     messages$.pipe(
                         filter(msg => msg.id === requestId),
@@ -150,7 +155,9 @@ export async function replicateWithWebsocketServer<RxDocType, CheckpointType>(
                     method: 'masterWrite',
                     params: [docs]
                 };
+                console.log('client 2');
                 wsClient.send(JSON.stringify(request));
+                console.log('client 2.1');
                 return firstValueFrom(
                     messages$.pipe(
                         filter(msg => msg.id === requestId),

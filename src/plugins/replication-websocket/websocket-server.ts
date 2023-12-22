@@ -1,4 +1,6 @@
 import type {
+    RxCollection,
+    RxDatabase,
     RxReplicationHandler
 } from '../../types/index.d.ts';
 
@@ -59,33 +61,36 @@ export function startSocketServer(options: ServerOptions): WebsocketServerState 
     };
 }
 
+const REPLICATION_HANDLER_BY_COLLECTION: WeakMap<RxCollection, RxReplicationHandler<any, any>> = new Map();
+export function getReplicationHandlerByCollection(
+    database: RxDatabase<any>,
+    collectionName: string
+): RxReplicationHandler<any, any> {
+    if (!database.collections[collectionName]) {
+        throw new Error('collection ' + collectionName + ' does not exist');
+    }
+
+    const handler = getFromMapOrCreate(
+        REPLICATION_HANDLER_BY_COLLECTION,
+        collectionName,
+        () => {
+            const collection = database.collections[collectionName];
+            return rxStorageInstanceToReplicationHandler(
+                collection.storageInstance,
+                collection.conflictHandler,
+                database.token
+            );
+        }
+    );
+    return handler;
+}
+
 export function startWebsocketServer(options: WebsocketServerOptions): WebsocketServerState {
     const { database, ...wsOptions } = options;
     const serverState = startSocketServer(wsOptions);
 
     // auto close when the database gets destroyed
     database.onDestroy.push(() => serverState.close());
-
-    const replicationHandlerByCollection: Map<string, RxReplicationHandler<any, any>> = new Map();
-    function getReplicationHandler(collectionName: string): RxReplicationHandler<any, any> {
-        if (!database.collections[collectionName]) {
-            throw new Error('collection ' + collectionName + ' does not exist');
-        }
-
-        const handler = getFromMapOrCreate(
-            replicationHandlerByCollection,
-            collectionName,
-            () => {
-                const collection = database.collections[collectionName];
-                return rxStorageInstanceToReplicationHandler(
-                    collection.storageInstance,
-                    collection.conflictHandler,
-                    database.token
-                );
-            }
-        );
-        return handler;
-    }
 
     serverState.onConnection$.subscribe(ws => {
         const onCloseHandlers: Function[] = [];
@@ -94,7 +99,7 @@ export function startWebsocketServer(options: WebsocketServerOptions): Websocket
         };
         ws.on('message', async (messageString: string) => {
             const message: WebsocketMessageType = JSON.parse(messageString);
-            const handler = getReplicationHandler(message.collection);
+            const handler = getReplicationHandlerByCollection(database, message.collection);
             const method = handler[message.method];
 
             /**

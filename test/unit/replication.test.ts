@@ -40,7 +40,6 @@ import {
 } from '../../plugins/core/index.mjs';
 
 import {
-    RxReplicationState,
     replicateRxCollection
 } from '../../plugins/replication/index.mjs';
 
@@ -51,6 +50,7 @@ import type {
     RxStorage
 } from '../../plugins/core/index.mjs';
 import { firstValueFrom, Observable, Subject } from 'rxjs';
+import { ensureReplicationHasNoErrors } from '../helper/test-util.ts';
 
 
 type CheckpointType = any;
@@ -120,16 +120,6 @@ describe('replication.test.ts', () => {
             localCollection,
             remoteCollection
         };
-    }
-    function ensureReplicationHasNoErrors(replicationState: RxReplicationState<any, any>) {
-        /**
-         * We do not have to unsubscribe because the observable will cancel anyway.
-         */
-        replicationState.error$.subscribe(err => {
-            console.error('ensureReplicationHasNoErrors() has error:');
-            console.dir(err.toString());
-            throw err;
-        });
     }
     async function ensureEqualState<RxDocType>(
         collectionA: RxCollection<RxDocType>,

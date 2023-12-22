@@ -1,55 +1,28 @@
-import type { RxDatabase, RxCollection } from '../../types';
-import { RxServer } from './rx-server';
-import { RxServerAuthenticationHandler } from './types';
+import { ensureNotFalsy, flatClone } from '../utils/index.ts';
+import { RxServer } from './rx-server.ts';
+import { RxServerOptions } from './types.ts';
 
-import pkg from 'isomorphic-ws';
-const { WebSocketServer } = pkg;
+import Fastify from 'fastify';
+import type {
+    FastifyInstance
+} from 'fastify';
 
-import {
-    App,
-    SSLApp,
-    TemplatedApp
-} from 'uWebSockets.js';
+import * as FSWebsocket from '@fastify/websocket';
 
-const app = App({
-
-    /* There are more SSL options, cut for brevity */
-    key_file_name: 'misc/key.pem',
-    cert_file_name: 'misc/cert.pem',
-
-});
-
-
-export async function startServer<AuthType>(
-    database: RxDatabase,
-    authenticationHandler: RxServerAuthenticationHandler<AuthType>,
-    serverApp?: TemplatedApp
-): Promise<RxServer<AuthType>> {
-    if (!serverApp) {
-        serverApp = App({});
+export async function startRxServer<AuthType>(options: RxServerOptions<AuthType>): Promise<RxServer<AuthType>> {
+    options = flatClone(options);
+    if (!options.serverApp) {
+        options.serverApp = Fastify(options.appOptions);
+        console.log('XXX_');
+        console.dir(!!FSWebsocket.default);
+        options.serverApp.register(FSWebsocket.default);
     }
 
     const server = new RxServer<AuthType>(
-        database,
-        authenticationHandler
+        options.database,
+        options.authenticationHandler,
+        options.serverApp
     );
-
 
     return server;
-}
-
-(async () => {
-    const server = await startServer({} as any, {} as any);
-    server.addReplicationEndpoint(
-        collection: RxCollection,
-
-    );
-
-});
-
-server.addReplicationEndpoint(
-    collection: RxCollection,
-
-) {
-
 }

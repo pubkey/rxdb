@@ -1,6 +1,24 @@
-import { FilledMangoQuery, RxReplicationWriteToMasterRow } from '../../types';
+import type { FilledMangoQuery, RxDatabase, RxReplicationWriteToMasterRow } from '../../types';
 import type { MaybePromise } from '../../types/util';
 import { IncomingHttpHeaders } from 'http';
+import {
+    RouteOptions
+} from 'fastify';
+import type {
+    FastifyInstance,
+    FastifyHttp2Options,
+    FastifyHttp2SecureOptions,
+    FastifyHttpsOptions,
+    FastifyListenOptions
+} from 'fastify';
+
+export type RxServerOptions<AuthType> = {
+    database: RxDatabase;
+    authenticationHandler: RxServerAuthenticationHandler<AuthType>;
+    serverApp?: FastifyInstance;
+    appOptions?: FastifyHttp2SecureOptions<any> | FastifyHttp2Options<any> | FastifyHttpsOptions<any>;
+};
+
 export type RxServerAuthenticationData<AuthType> = {
     data: AuthType;
     validUntil: number;
@@ -46,3 +64,10 @@ export type RxServerChangeValidator<AuthType, RxDocType> = (
     authData: RxServerAuthenticationData<AuthType>,
     change: RxReplicationWriteToMasterRow<RxDocType>
 ) => MaybePromise<boolean>;
+
+
+export interface RxServerEndpoint {
+    type: 'replication';
+    urlPath: string;
+    start: () => Promise<any>;
+};

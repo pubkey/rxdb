@@ -2,65 +2,65 @@ import type {
     RxCollection,
     RxDatabase
 } from '../../types';
+import { ensureNotFalsy } from '../utils/index.ts';
+import { RxServerReplicationEndpoint } from './rx-server-endpoint-replication.ts';
 import type {
     RxServerAuthenticationHandler,
     RxServerChangeValidator,
+    RxServerEndpoint,
     RxServerQueryModifier
-} from './types';
-import {
-    TemplatedApp
-} from 'uWebSockets.js';
+} from './types.ts';
+import type {
+    FastifyInstance,
+    FastifyListenOptions
+} from 'fastify';
 
 export class RxServer<AuthType> {
     public readonly endpoints: RxServerEndpoint[] = [];
+    public started = false;
 
     constructor(
         public readonly database: RxDatabase,
         public readonly authenticationHandler: RxServerAuthenticationHandler<AuthType>,
-        public readonly serverApp: TemplatedApp
-    ) { }
+        public readonly serverApp: FastifyInstance
+    ) {
+        database.onDestroy.push(() => this.close());
+    }
 
-    public addReplicationEndpoint<RxDocType>(
+    public async addReplicationEndpoint<RxDocType>(opts: {
         collection: RxCollection<RxDocType>,
         queryModifier?: RxServerQueryModifier<AuthType, RxDocType>,
         changeValidator?: RxServerChangeValidator<AuthType, RxDocType>
-    ) {
+    }) {
         const endpoint = new RxServerReplicationEndpoint(
             this,
-            collection,
-            queryModifier ? queryModifier : (_a, q) => q,
-            changeValidator ? changeValidator : () => true
+            opts.collection,
+            opts.queryModifier ? opts.queryModifier : (_a, q) => q,
+            opts.changeValidator ? opts.changeValidator : () => true
         );
+        await endpoint.start();
         this.endpoints.push(endpoint);
         return endpoint;
     }
-}
 
-export interface RxServerEndpoint {
-    type: 'replication';
-    urlPath: string;
-};
-
-export class RxServerReplicationEndpoint<AuthType, RxDocType> implements RxServerEndpoint {
-    readonly type = 'replication';
-    readonly urlPath: string;
-    constructor(
-        public readonly server: RxServer<AuthType>,
-        public readonly collection: RxCollection<RxDocType>,
-        public readonly queryModifier: RxServerQueryModifier<AuthType, RxDocType>,
-        public readonly changeValidator: RxServerChangeValidator<AuthType, RxDocType>
-    ) {
-        this.urlPath = [this.type, collection.name, collection.schema.version].join('/');
-
-        this.server.serverApp.ws('/' + this.urlPath, {
-
-            /* For brevity we skip the other events (upgrade, open, ping, pong, close) */
-            message: (ws, message, isBinary) => {
-                /* You can do app.publish('sensors/home/temperature', '22C') kind of pub/sub as well */
-
-                /* Here we echo the message back, using compression if available */
-                let ok = ws.send(message, isBinary, true);
-            }
+    async start(listenOptions: FastifyListenOptions) {
+        if (this.started) {
+            return;
+        }
+        this.started = true;
+        await new Promise((res, rej) => {
+            ensureNotFalsy(this.serverApp).listen(listenOptions, (err, address) => {
+                if (err) {
+                    rej(err);
+                } else {
+                    console.log('STARTED ' + address);
+                    res(address);
+                };
+            });
         });
+    }
+
+    close() {
+
     }
 }

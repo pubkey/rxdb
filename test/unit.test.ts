@@ -11,6 +11,9 @@ import './unit/custom-index.test.ts';
 import './unit/query-planner.test.ts';
 
 
+import './unit/server.test.ts';
+
+
 /**
  * Move these tests around so that
  * when you focus on one part of RxDB,
