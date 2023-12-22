@@ -157,6 +157,10 @@ const config: Config = {
                 href: 'https://twitter.com/intent/user?screen_name=rxdbjs',
               },
               {
+                label: 'LinkedIn',
+                href: 'https://www.linkedin.com/company/rxdb',
+              },
+              {
                 label: 'Stack Overflow',
                 href: 'https://stackoverflow.com/questions/tagged/rxdb',
               },
