@@ -2,23 +2,23 @@ import assert from 'assert';
 import AsyncTestUtil, { wait } from 'async-test-util';
 import { Observable } from 'rxjs';
 
-import config from './config.ts';
-import * as humansCollection from './../helper/humans-collection.ts';
 import * as schemaObjects from '../helper/schema-objects.ts';
 import * as schemas from '../helper/schemas.ts';
+import * as humansCollection from './../helper/humans-collection.ts';
+import config from './config.ts';
 
 import {
+    RxCollection,
+    RxJsonSchema,
+    addRxPlugin,
+    createBlob,
     createRxDatabase,
     createRxSchema,
-    randomCouchString,
-    promiseWait,
+    defaultHashSha256,
     getDocumentOrmPrototype,
     getDocumentPrototype,
-    addRxPlugin,
-    RxCollection,
-    createBlob,
-    defaultHashSha256,
-    RxJsonSchema
+    promiseWait,
+    randomCouchString
 } from '../../plugins/core/index.mjs';
 
 
@@ -1282,6 +1282,69 @@ describe('rx-document.test.js', () => {
             assert.deepStrictEqual(JSON.stringify(myDocument.tags.hello), JSON.stringify(tags.hello), 'myDocument.tags.hello');
             assert.deepStrictEqual(JSON.stringify(myDocument.tags.world), JSON.stringify(tags.world), 'myDocument.tags.world');
             assert.deepStrictEqual(Object.keys(myDocument.tags), Object.keys(tags), 'Object.keys(myDocument.tags)');
+
+            // clean up afterwards
+            db.destroy();
+        });
+         /**
+         * @link https://github.com/pubkey/rxdb/issues/5414
+         */
+         it('#5414 executing insert with undefined value for optional arguments fails', async () => {
+            // create a schema
+            const mySchema = {
+                title: 'example schema',
+                version: 0,
+                description: 'describes an example collection schema',
+                primaryKey: 'name',
+                type: 'object',
+                properties: {
+                    name: {
+                        $comment: 'primary key MUST have a maximum length!',
+                        type: 'string',
+                        maxLength: 100,
+                    },
+                    gender: {
+                        type: 'string',
+                    },
+                },
+                required: ['name'],
+            };
+
+            // generate a random database-name
+            const name = randomCouchString(10);
+
+            // create a database
+            const db = await createRxDatabase({
+                name,
+                /**
+                 * By calling config.storage.getStorage(),
+                 * we can ensure that all variations of RxStorage are tested in the CI.
+                 */
+                storage: config.storage.getStorage(),
+                eventReduce: true,
+                ignoreDuplicate: true
+            });
+            // create a collection
+            const collections = await db.addCollections({
+                mycollection: {
+                    schema: mySchema
+                }
+            });
+
+            // insert a document
+            await collections.mycollection.insert({
+                name: 'test1',
+                gender: undefined,
+            });
+
+            await AsyncTestUtil.assertThrows(
+                  () =>collections.mycollection.insert({
+                        name: 'test1',
+                        gender: undefined,
+                    }),
+                  'RxError',
+                  'SNH'
+              );
 
             // clean up afterwards
             db.destroy();
