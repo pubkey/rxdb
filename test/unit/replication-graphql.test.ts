@@ -101,6 +101,7 @@ describe('replication-graphql.test.ts', () => {
         };
         return Promise.resolve({
             query,
+            operationName: 'FeedForRxDBReplication',
             variables
         });
     };
@@ -122,6 +123,7 @@ describe('replication-graphql.test.ts', () => {
         }`;
         return {
             query,
+            operationName: 'onHumanChanged',
             variables: {
                 headers
             }
@@ -147,6 +149,7 @@ describe('replication-graphql.test.ts', () => {
         };
         return Promise.resolve({
             query,
+            operationName: 'CreateHumans',
             variables
         });
     };
@@ -203,6 +206,27 @@ describe('replication-graphql.test.ts', () => {
                     throw new Error('res has error');
                 }
                 assert.strictEqual(res.data.info, 1);
+                server.close();
+            });
+            it('spawn and throw an unknown operation name', async () => {
+                const server = await SpawnServer.spawn();
+                try {
+                    await graphQLRequest(
+                        ensureNotFalsy(server.url.http),
+                        {
+                            headers: {},
+                            credentials: undefined
+                        },
+                        {
+                            query: '{ info }',
+                            operationName: 'info',
+                            variables: {}
+                        }
+                    );
+                } catch (err: any) {
+                    assert.ok(err.message.includes('Unknown operation named "info".'));
+                }
+
                 server.close();
             });
             it('server.setDocument()', async () => {
@@ -508,6 +532,7 @@ describe('replication-graphql.test.ts', () => {
 
                     return {
                         query,
+                        operationName: 'FeedForRxDBReplication',
                         variables
                     };
                 };
