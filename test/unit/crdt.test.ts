@@ -1,36 +1,36 @@
 import assert from 'assert';
 import AsyncTestUtil, { clone } from 'async-test-util';
 
-import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs';
-import * as schemas from '../helper/schemas.ts';
-import * as schemaObjects from '../helper/schema-objects.ts';
 import {
-    createRxDatabase,
-    randomCouchString,
-    addRxPlugin,
-    RxJsonSchema,
-    ensureNotFalsy,
-    RxCollection,
     CRDTDocumentField,
-    fillWithDefaultSettings,
-    defaultHashSha256,
+    RxCollection,
     RxConflictHandlerOutput,
-    rxStorageInstanceToReplicationHandler,
+    RxJsonSchema,
     RxReplicationWriteToMasterRow,
-    defaultConflictHandler
+    addRxPlugin,
+    createRxDatabase,
+    defaultConflictHandler,
+    defaultHashSha256,
+    ensureNotFalsy,
+    fillWithDefaultSettings,
+    randomCouchString,
+    rxStorageInstanceToReplicationHandler
 } from '../../plugins/core/index.mjs';
+import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs';
+import * as schemaObjects from '../helper/schema-objects.ts';
+import * as schemas from '../helper/schemas.ts';
 
 
 
 import {
-    getCRDTSchemaPart,
     RxDBcrdtPlugin,
-    getCRDTConflictHandler
+    getCRDTConflictHandler,
+    getCRDTSchemaPart
 } from '../../plugins/crdt/index.mjs';
 addRxPlugin(RxDBcrdtPlugin);
-import config from './config.ts';
-import { replicateRxCollection, RxReplicationState } from '../../plugins/replication/index.mjs';
 import { ReplicationPullHandler, ReplicationPushHandler } from '../../plugins/core/index.mjs';
+import { RxReplicationState, replicateRxCollection } from '../../plugins/replication/index.mjs';
+import config from './config.ts';
 
 config.parallel('crdt.test.js', () => {
     type WithCRDTs<RxDocType> = RxDocType & {
@@ -128,6 +128,16 @@ config.parallel('crdt.test.js', () => {
         });
     });
     describe('.insertCRDT()', () => {
+        it('should insert the document with undefined argument', async () => {
+            const collection = await getCRDTCollection();
+            const writeData = schemaObjects.human();
+
+            const doc1 = await collection.insert({...writeData,optional_value:undefined});
+
+            assert.strictEqual(doc1.getLatest().optional_value, undefined);
+
+            collection.database.destroy();
+        });
         it('should insert the document', async () => {
             const collection = await getCRDTCollection();
             const writeData = schemaObjects.human();

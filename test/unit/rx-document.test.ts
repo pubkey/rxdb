@@ -1337,14 +1337,9 @@ describe('rx-document.test.js', () => {
                 gender: undefined,
             });
 
-            await AsyncTestUtil.assertThrows(
-                  () =>collections.mycollection.insert({
-                        name: 'test1',
-                        gender: undefined,
-                    }),
-                  'RxError',
-                  'SNH'
-              );
+            const doc = await collections.mycollection.findOne('test1').exec()
+
+            assert.strictEqual(doc.gender, undefined)
 
             // clean up afterwards
             db.destroy();
