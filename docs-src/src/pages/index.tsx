@@ -1,6 +1,6 @@
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import Layout from '@theme/Layout';
-
+import Head from '@docusaurus/Head';
 
 import {
   merge,
@@ -242,6 +242,10 @@ export default function Home() {
     };
   });
   return (
+      <>
+      <Head>
+          <body className="homepage" />
+      </Head>
     <Layout
       title={`${siteConfig.title}`}
       description="RxDB (short for Reactive Database) is a NoSQL-database for JavaScript Applications like Websites, hybrid Apps, Electron-Apps, Progressive Web Apps and Node.js">
@@ -1163,6 +1167,7 @@ export default function Home() {
         </div>
       </main>
     </Layout >
+    </>
   );
 }
 

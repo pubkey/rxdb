@@ -34,6 +34,11 @@ html[data-theme='dark'] {
   --ifm-navbar-background-color: #171923;
 }
 
+/* Hide Search Field on Homepage */
+.homepage .navbarSearchContainer_Bca1{
+    display:none;
+}
+
 /**
  * Default font size was to big, decrease it here
  */
