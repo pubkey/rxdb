@@ -462,7 +462,7 @@
     "simple-peer": "9.11.1",
     "unload": "2.4.1",
     "util": "0.12.5",
-    "ws": "8.15.1",
+    "ws": "8.16.0",
     "z-schema": "6.0.1"
   },
   "devDependencies": {
