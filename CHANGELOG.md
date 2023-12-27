@@ -3,6 +3,7 @@
 
 <!-- CHANGELOG NEWEST -->
 
+- Add `operationName` to graphQL requests [#5418](https://github.com/pubkey/rxdb/pull/5418)
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

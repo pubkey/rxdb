@@ -157,6 +157,7 @@ const pullQueryBuilder = (checkpoint, limit) => {
     }`;
     return {
         query,
+        operationName: 'PullHuman',
         variables: {
             checkpoint,
             limit
@@ -229,6 +230,7 @@ const pushQueryBuilder = rows => {
     };
     return {
         query,
+        operationName: 'PushHuman',
         variables
     };
 };
