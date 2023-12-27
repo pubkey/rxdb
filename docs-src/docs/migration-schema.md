@@ -14,7 +14,7 @@ With RxDB you can provide migrationStrategies for your collections that automati
 
 # Add the migration plugin
 
-To enable the data migration, you have to add the `migration` plugin.
+To enable the data migration, you have to add the `migration-schema` plugin.
 
 ```ts
 import { addRxPlugin } from 'rxdb';
