@@ -12,7 +12,7 @@ import { removeGraphQLWebSocketRef, getGraphQLWebSocket } from "./graphql-websoc
 import { Subject } from 'rxjs';
 export var RxGraphQLReplicationState = /*#__PURE__*/function (_RxReplicationState) {
   _inheritsLoose(RxGraphQLReplicationState, _RxReplicationState);
-  function RxGraphQLReplicationState(url, clientState, replicationIdentifier, collection, deletedField, pull, push, live, retryTime, autoStart) {
+  function RxGraphQLReplicationState(url, clientState, replicationIdentifier, collection, deletedField, pull, push, live, retryTime, autoStart, customFetch) {
     var _this;
     _this = _RxReplicationState.call(this, replicationIdentifier, collection, deletedField, pull, push, live, retryTime, autoStart) || this;
     _this.url = url;
@@ -25,6 +25,7 @@ export var RxGraphQLReplicationState = /*#__PURE__*/function (_RxReplicationStat
     _this.live = live;
     _this.retryTime = retryTime;
     _this.autoStart = autoStart;
+    _this.customFetch = customFetch;
     return _this;
   }
   var _proto = RxGraphQLReplicationState.prototype;
@@ -35,7 +36,7 @@ export var RxGraphQLReplicationState = /*#__PURE__*/function (_RxReplicationStat
     this.clientState.credentials = credentials;
   };
   _proto.graphQLRequest = function graphQLRequest(queryParams) {
-    return _graphQLRequest(ensureNotFalsy(this.url.http), this.clientState, queryParams);
+    return _graphQLRequest(this.customFetch ?? fetch, ensureNotFalsy(this.url.http), this.clientState, queryParams);
   };
   return RxGraphQLReplicationState;
 }(RxReplicationState);
@@ -49,6 +50,7 @@ export function replicateGraphQL({
   pull,
   push,
   live = true,
+  fetch: customFetch,
   retryTime = 1000 * 5,
   // in ms
   autoStart = true,
@@ -111,7 +113,7 @@ export function replicateGraphQL({
       modifier: push.modifier
     };
   }
-  var graphqlReplicationState = new RxGraphQLReplicationState(url, mutateableClientState, replicationIdentifier, collection, deletedField, replicationPrimitivesPull, replicationPrimitivesPush, live, retryTime, autoStart);
+  var graphqlReplicationState = new RxGraphQLReplicationState(url, mutateableClientState, replicationIdentifier, collection, deletedField, replicationPrimitivesPull, replicationPrimitivesPush, live, retryTime, autoStart, customFetch);
   var mustUseSocket = url.ws && pull && pull.streamQueryBuilder && live;
   var startBefore = graphqlReplicationState.start.bind(graphqlReplicationState);
   graphqlReplicationState.start = () => {

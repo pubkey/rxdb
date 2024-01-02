@@ -9,4 +9,4 @@ export interface GraphQLError {
     path: string[];
 }
 export type GraphQLErrors = Array<GraphQLError>;
-export declare function graphQLRequest(httpUrl: string, clientState: RxGraphQLReplicationClientState, queryParams: RxGraphQLReplicationQueryBuilderResponseObject): Promise<any>;
+export declare function graphQLRequest(fetchRequest: WindowOrWorkerGlobalScope['fetch'], httpUrl: string, clientState: RxGraphQLReplicationClientState, queryParams: RxGraphQLReplicationQueryBuilderResponseObject): Promise<any>;
