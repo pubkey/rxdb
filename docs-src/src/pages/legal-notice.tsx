@@ -2,16 +2,15 @@ import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import Layout from '@theme/Layout';
 import React from 'react';
 
-export default function Home() {
+export default function LegalNotice() {
     const { siteConfig } = useDocusaurusContext();
-
-
 
     return (
         <Layout
             title={`Legal Notice - ${siteConfig.title}`}
             description="RxDB Legal Notice"
         >
+            <meta name="robots" content="noindex"></meta>
             <main>
                 <div className='redirectBox' style={{ textAlign: 'center' }}>
                     <a href="/">
@@ -26,7 +25,7 @@ export default function Home() {
                         Emsdettener Str. 10<br />
                         48268 Greven<br />
                         Email: <br />
-                        <img src="./files/imprint-email.png" />
+                        <img src="/files/imprint-email.png" />
                     </p>
                 </div>
             </main>
