@@ -101,18 +101,18 @@ const config: Config = {
             position: 'right',
           },
           {
-            href: 'code',
+            href: '/code',
             target: '_blank',
             label: 'Code',
             position: 'right',
           },
           {
-            href: 'premium',
+            href: '/premium',
             label: 'Pricing',
             position: 'right',
           },
           {
-            to: 'chat',
+            to: '/chat',
             target: '_blank',
             label: 'Chat',
             position: 'right',
