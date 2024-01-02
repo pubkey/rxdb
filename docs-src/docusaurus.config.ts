@@ -54,14 +54,14 @@ const config: Config = {
         },
         docs: {
           sidebarPath: './sidebars.js',
-          editUrl: 'https://github.com/pubkey/rxdb/tree/main/docs-src/',
+          editUrl: 'https://github.com/pubkey/rxdb/tree/master/docs-src/',
           routeBasePath: '',
           path: './docs',
         },
         // blog: {
         //   showReadingTime: true,
         //   editUrl:
-        //     'https://github.com/pubkey/rxdb/tree/main/docs/',
+        //     'https://github.com/pubkey/rxdb/tree/master/docs/',
         // },
         theme: {
           customCss: './src/css/custom.css',

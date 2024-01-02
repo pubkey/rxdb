@@ -7,6 +7,7 @@ import {
 
 export interface RxGraphQLReplicationQueryBuilderResponseObject {
     query: string;
+    operationName?: string;
     variables: any;
 }
 
