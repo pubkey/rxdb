@@ -254,6 +254,7 @@ describe('replication-graphql.test.ts', () => {
                 const server = await SpawnServer.spawn();
                 try {
                     await graphQLRequest(
+                        fetch,
                         ensureNotFalsy(server.url.http),
                         {
                             headers: {},
