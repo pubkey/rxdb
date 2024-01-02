@@ -557,7 +557,8 @@ body {
   overflow: hidden;
 }
 
-.block.first .inner h2 {
+.block.first .inner h1 {
+  font-size: var(--fontSizes-6xl);
   padding-left: 25px;
 }
 
