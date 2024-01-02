@@ -5,6 +5,7 @@
 
 - Add `operationName` to graphQL requests [#5418](https://github.com/pubkey/rxdb/pull/5418)
 - Custom fetch to support axios for the graphQL replication [#5421](https://github.com/pubkey/rxdb/pull/5421)
+- FIX CRDT not working with undefined fields [#5423](https://github.com/pubkey/rxdb/pull/5423)
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
