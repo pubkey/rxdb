@@ -52,7 +52,8 @@ export class RxGraphQLReplicationState<RxDocType, CheckpointType> extends RxRepl
         public readonly push?: ReplicationPushOptions<RxDocType>,
         public readonly live?: boolean,
         public retryTime?: number,
-        public autoStart?: boolean
+        public autoStart?: boolean,
+        public readonly customFetch?: WindowOrWorkerGlobalScope['fetch']
     ) {
         super(
             replicationIdentifier,
@@ -78,6 +79,7 @@ export class RxGraphQLReplicationState<RxDocType, CheckpointType> extends RxRepl
         queryParams: RxGraphQLReplicationQueryBuilderResponseObject
     ) {
         return graphQLRequest(
+            this.customFetch ?? fetch,
             ensureNotFalsy(this.url.http),
             this.clientState,
             queryParams
@@ -96,6 +98,7 @@ export function replicateGraphQL<RxDocType, CheckpointType>(
         pull,
         push,
         live = true,
+        fetch: customFetch,
         retryTime = 1000 * 5, // in ms
         autoStart = true,
         replicationIdentifier
@@ -187,7 +190,8 @@ export function replicateGraphQL<RxDocType, CheckpointType>(
         replicationPrimitivesPush,
         live,
         retryTime,
-        autoStart
+        autoStart,
+        customFetch
     );
 
     const mustUseSocket = url.ws &&

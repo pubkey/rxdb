@@ -157,6 +157,41 @@ config.parallel('crdt.test.js', () => {
 
             collection.database.destroy();
         });
+        /**
+         * @link https://github.com/pubkey/rxdb/pull/5423
+         */
+        it('should insert the document with undefined argument', async () => {
+
+            let useSchema = clone(schemas.human);
+            useSchema.properties.optional_value = {
+                type: 'string'
+            };
+            useSchema = enableCRDTinSchema(useSchema);
+            const db = await createRxDatabase({
+                name: randomCouchString(10),
+                /**
+                 * Use the validator in tests to ensure we do not write
+                 * broken data.
+                 */
+                storage: wrappedValidateAjvStorage({
+                    storage: config.storage.getStorage(),
+                }),
+                multiInstance: false
+            });
+            await db.addCollections({
+                docs: {
+                    schema: useSchema
+                }
+            });
+            const collection = db.docs;
+
+            const writeData = schemaObjects.human('insert-me');
+            (writeData as any).optional_value = undefined;
+            const doc1 = await collection.insert(writeData);
+            assert.strictEqual(doc1.getLatest().optional_value, undefined);
+
+            collection.database.destroy();
+        });
         it('should respect the if-else logic', async () => {
             const collection = await getCRDTCollection();
             const writeData = schemaObjects.human('foobar', 1);
