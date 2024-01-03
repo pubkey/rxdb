@@ -10,8 +10,12 @@ import {
     randomCouchString,
     now,
     createRevision,
-    prepareQuery
+      prepareQuery,
+      createRxDatabase,
+      RxJsonSchema,
+      RxCollection
 } from '../../plugins/core/index.mjs';
+import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs';
 
 import {
     getDexieStoreSchema,
@@ -24,6 +28,31 @@ import {
     HumanDocumentType,
     humanSchemaLiteral
 } from '../helper/schemas.ts';
+import * as schemas from '../helper/schemas.ts';
+
+async function getCollection<RxDocType = schemas.HumanDocumentType>(
+      schema: RxJsonSchema<RxDocType> = schemas.human as any
+  ): Promise<RxCollection<RxDocType>> {
+      const db = await createRxDatabase({
+          name: randomCouchString(10),
+          /**
+           * Use the validator in tests to ensure we do not write
+           * broken data.
+           */
+          storage: wrappedValidateAjvStorage({
+              storage: config.storage.getStorage(),
+          }),
+          multiInstance: false
+      });
+
+      await db.addCollections({
+          docs: {
+              schema
+          }
+      });
+
+      return db.docs;
+  }
 
 /**
  * RxStorageDexie specific tests
@@ -32,6 +61,18 @@ config.parallel('rx-storage-dexie.test.js', () => {
     if (config.storage.name !== 'dexie') {
         return;
     }
+      
+    describe('.count()', () => {
+      it('should count items when optional_value as index', async () => {
+            const collection = await getCollection();
+            const count = await collection.count({ selector: { firstName: 'xpet' } }).exec()
+            
+            assert.strictEqual(count, 0);
+
+            collection.database.destroy();
+      });
+    });
+      
     describe('helper', () => {
         describe('.getDexieStoreSchema()', () => {
             it('should start with the primary key', () => {

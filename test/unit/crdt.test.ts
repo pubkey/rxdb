@@ -69,6 +69,17 @@ config.parallel('crdt.test.js', () => {
 
         return db.docs;
     }
+      
+    describe('.count()', () => {
+            it('should count items when optional_value as index', async () => {
+                  const collection = await getCRDTCollection();
+                  const count = await collection.count({selector:{firstName:'xpet'}}).exec()
+                  
+                  assert.strictEqual(count, 0);
+
+                  collection.database.destroy();
+            });
+    });
 
     describe('collection creation', () => {
         it('should throw if the wrong conflict handler is set', async () => {
