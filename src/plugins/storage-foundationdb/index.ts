@@ -2,6 +2,7 @@ import { ensureRxStorageInstanceParamsAreCorrect } from '../../rx-storage-helper
 import type {
     RxStorageInstanceCreationParams
 } from '../../types/index.d.ts';
+import { RXDB_VERSION } from '../utils/utils-rxdb-version.ts';
 import type {
     RxStorageFoundationDB,
     RxStorageFoundationDBInstanceCreationOptions,
@@ -30,6 +31,8 @@ export function getRxStorageFoundationDB(
 
     const storage: RxStorageFoundationDB = {
         name: 'foundationdb',
+        rxdbVersion: RXDB_VERSION,
+
         createStorageInstance<RxDocType>(
             params: RxStorageInstanceCreationParams<RxDocType, RxStorageFoundationDBInstanceCreationOptions>
         ): Promise<RxStorageInstanceFoundationDB<RxDocType>> {

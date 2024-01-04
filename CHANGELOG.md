@@ -2,7 +2,7 @@
 # RxDB Changelog
 
 <!-- CHANGELOG NEWEST -->
-
+- FIX(dexie.js) migration from v14 to v15 not working.
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->

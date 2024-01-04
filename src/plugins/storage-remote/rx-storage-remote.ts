@@ -21,6 +21,7 @@ import type {
     RxStorageQueryResult
 } from '../../types/index.d.ts';
 import {
+    RXDB_VERSION,
     randomCouchString
 } from '../../plugins/utils/index.ts';
 import type {
@@ -36,6 +37,8 @@ import { ensureRxStorageInstanceParamsAreCorrect } from '../../rx-storage-helper
 
 export class RxStorageRemote implements RxStorage<RxStorageRemoteInternals, any> {
     public readonly name: string = 'remote';
+    public readonly rxdbVersion = RXDB_VERSION;
+
     private seed: string = randomCouchString(10);
     private lastRequestId: number = 0;
     public messageChannelIfOneMode?: Promise<RemoteMessageChannel>;
