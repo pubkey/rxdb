@@ -52,19 +52,29 @@ export function ensureIsWebsocket(w: typeof IsomorphicWebSocket) {
 }
 
 
-export async function createWebSocketClient(url: string): Promise<WebsocketClient> {
+export async function createWebSocketClient<RxDocType>(options: WebsocketClientOptions<RxDocType>): Promise<WebsocketClient> {
     ensureIsWebsocket(IsomorphicWebSocket);
     const wsClient = new ReconnectingWebSocket(
-        url,
+        options.url,
         [],
         {
             WebSocket: IsomorphicWebSocket
         }
     );
-
     const connected$ = new BehaviorSubject<boolean>(false);
     await new Promise<void>(res => {
         wsClient.onopen = () => {
+
+            if (options.headers) {
+                const authMessage: WebsocketMessageType = {
+                    collection: options.collection.name,
+                    id: randomCouchString(10),
+                    params: [options.headers],
+                    method: 'auth'
+                };
+                wsClient.send(JSON.stringify(authMessage));
+            }
+
             connected$.next(true);
             res();
         };
@@ -90,7 +100,7 @@ export async function createWebSocketClient(url: string): Promise<WebsocketClien
 
 
     return {
-        url,
+        url: options.url,
         socket: wsClient,
         connected$,
         message$,
@@ -103,7 +113,7 @@ export async function replicateWithWebsocketServer<RxDocType, CheckpointType>(
     options: WebsocketClientOptions<RxDocType>
 ): Promise<RxReplicationState<RxDocType, CheckpointType>> {
     console.log('--- A1 ' + options.url);
-    const websocketClient = await createWebSocketClient(options.url);
+    const websocketClient = await createWebSocketClient(options);
     console.log('--- A2');
     const wsClient = websocketClient.socket;
     const messages$ = websocketClient.message$;

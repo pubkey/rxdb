@@ -70,11 +70,11 @@ export function getReplicationHandlerByCollection(
         throw new Error('collection ' + collectionName + ' does not exist');
     }
 
-    const handler = getFromMapOrCreate(
+    const collection = database.collections[collectionName];
+    const handler = getFromMapOrCreate<RxCollection, RxReplicationHandler<any, any>>(
         REPLICATION_HANDLER_BY_COLLECTION,
-        collectionName,
+        collection,
         () => {
-            const collection = database.collections[collectionName];
             return rxStorageInstanceToReplicationHandler(
                 collection.storageInstance,
                 collection.conflictHandler,
@@ -100,6 +100,9 @@ export function startWebsocketServer(options: WebsocketServerOptions): Websocket
         ws.on('message', async (messageString: string) => {
             const message: WebsocketMessageType = JSON.parse(messageString);
             const handler = getReplicationHandlerByCollection(database, message.collection);
+            if (message.method === 'auth') {
+                return;
+            }
             const method = handler[message.method];
 
             /**

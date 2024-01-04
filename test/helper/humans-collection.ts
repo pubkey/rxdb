@@ -2,6 +2,7 @@ import clone from 'clone';
 import * as schemas from './schemas.ts';
 import * as schemaObjects from './schema-objects.ts';
 import config from '../unit/config.ts';
+import assert from 'assert';
 
 import {
     createRxDatabase,
@@ -45,7 +46,8 @@ export async function create(
         const docsData = new Array(size)
             .fill(0)
             .map(() => schemaObjects.human());
-        await collections[collectionName].bulkInsert(docsData);
+        const writeResult = await collections[collectionName].bulkInsert(docsData);
+        assert.deepStrictEqual(writeResult.error, []);
     }
     return collections[collectionName];
 }

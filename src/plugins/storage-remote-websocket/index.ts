@@ -91,7 +91,7 @@ export function getRxStorageRemoteWebsocket(
         mode: options.mode,
         async messageChannelCreator() {
             const messages$ = new Subject<MessageFromRemote>();
-            const websocketClient = await createWebSocketClient(options.url);
+            const websocketClient = await createWebSocketClient(options as any);
             websocketClient.message$.subscribe(msg => messages$.next(msg));
             return {
                 messages$,

@@ -200,6 +200,9 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                     console.dir(queryData);
                     throw err;
                 }
+                const byId = await collection.findByIds(resultFromCollectionIds).exec();
+                resultFromCollectionIds.forEach(id => assert.ok(byId.has(id), 'findById must have same output'));
+
 
                 // Test output of .count()
                 if (

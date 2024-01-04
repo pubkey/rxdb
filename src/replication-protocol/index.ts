@@ -293,6 +293,7 @@ export function rxStorageInstanceToReplicationHandler<RxDocType, MasterCheckpoin
                     writeRows,
                     'replication-master-write'
                 );
+
                 result.error.forEach(err => {
                     if (err.status !== 409) {
                         throw new Error('non conflict error');

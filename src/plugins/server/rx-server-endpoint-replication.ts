@@ -77,16 +77,15 @@ export class RxServerReplicationEndpoint<AuthType, RxDocType> implements RxServe
             });
         });
         websocketServer.on('connection', async (connection, connectionRequest) => {
-            console.log('S: GOT CONNECTION');
-            console.log(JSON.stringify(connectionRequest.headers));
-            console.dir(connectionRequest.url);
-            connection.on('error', () => {
-                console.log('S: error');
-            });
+            // console.log('S: GOT CONNECTION');
+            // console.log(JSON.stringify(connectionRequest.headers));
+            // connection.on('error', () => {
+            //     console.log('S: error');
+            // });
             connection.on('message', async (messagePlain) => {
-                console.log('S: GOT MESSSAGE');
+                // console.log('S: GOT MESSSAGE');
                 const message: RxReplicationEndpointMessageType = JSON.parse(messagePlain.toString());
-                console.dir(message);
+                // console.dir(message);
 
                 let authData = authDataByWebsocket.get(connection);
                 if (!authData && message.method !== 'auth') {
@@ -184,6 +183,8 @@ export class RxServerReplicationEndpoint<AuthType, RxDocType> implements RxServe
                             id: message.id,
                             result: resultWrite
                         };
+                        console.log('response:');
+                        console.dir(responseWrite);
                         connection.send(JSON.stringify(responseWrite));
                         break;
                     default:
@@ -200,6 +201,7 @@ export class RxServerReplicationEndpoint<AuthType, RxDocType> implements RxServe
 
 
 async function closeConnection(connection: WebSocket, code: number, message: string) {
+    console.log('# CLOSE CONNECTION');
     const responseWrite: RxReplicationEndpointResponseType = {
         id: 'error',
         result: {},

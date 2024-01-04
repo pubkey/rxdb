@@ -31,13 +31,11 @@ import type {
 import {
     deepEqual,
     ensureNotFalsy,
-    lastOfArray,
     now,
     PROMISE_RESOLVE_TRUE,
     PROMISE_RESOLVE_VOID,
-    requestIdlePromiseNoQueue,
-    RX_META_LWT_MINIMUM,
-    toArray
+    randomCouchString,
+    requestIdlePromiseNoQueue
 } from '../../plugins/utils/index.ts';
 import {
     boundGE,
@@ -173,7 +171,7 @@ export class RxStorageInstanceMemory<RxDocType> implements RxStorageInstance<
         const primaryPath = this.primaryPath;
 
         const categorized = this.internals.ensurePersistenceTask;
-        delete this.internals.ensurePersistenceTask;
+        this.internals.ensurePersistenceTask = undefined;
 
         /**
          * Do inserts/updates
@@ -508,6 +506,7 @@ export function createMemoryStorageInstance<RxDocType>(
     let internals = storage.collectionStates.get(collectionKey);
     if (!internals) {
         internals = {
+            id: randomCouchString(5),
             schema: params.schema,
             removed: false,
             refCount: 1,
