@@ -1,5 +1,6 @@
 import { ensureRxStorageInstanceParamsAreCorrect } from '../../rx-storage-helper.ts';
 import type { RxStorageInstanceCreationParams } from '../../types/index.d.ts';
+import { RXDB_VERSION } from '../utils/utils-rxdb-version.ts';
 import type {
     RxStorageMemory,
     RxStorageMemoryInstanceCreationOptions,
@@ -23,6 +24,7 @@ export function getRxStorageMemory(
 
     const storage: RxStorageMemory = {
         name: 'memory',
+        rxdbVersion: RXDB_VERSION,
         collectionStates: COLLECTION_STATES,
         createStorageInstance<RxDocType>(
             params: RxStorageInstanceCreationParams<RxDocType, RxStorageMemoryInstanceCreationOptions>

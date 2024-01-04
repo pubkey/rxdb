@@ -13,9 +13,11 @@ import { RX_STORAGE_NAME_LOKIJS } from './lokijs-helper.ts';
 import type { LeaderElector } from 'broadcast-channel';
 
 import { ensureRxStorageInstanceParamsAreCorrect } from '../../rx-storage-helper.ts';
+import { RXDB_VERSION } from '../utils/utils-rxdb-version.ts';
 
 export class RxStorageLoki implements RxStorage<LokiStorageInternals, LokiSettings> {
     public name = RX_STORAGE_NAME_LOKIJS;
+    public readonly rxdbVersion = RXDB_VERSION;
 
     /**
      * Create one leader elector by db name.

@@ -14,12 +14,13 @@ import {
     RxStorageInstanceDexie
 } from './rx-storage-instance-dexie.ts';
 import { ensureRxStorageInstanceParamsAreCorrect } from '../../rx-storage-helper.ts';
+import { RXDB_VERSION } from '../utils/utils-rxdb-version.ts';
 
 
 
 export class RxStorageDexie implements RxStorage<DexieStorageInternals, DexieSettings> {
     public name = RX_STORAGE_NAME_DEXIE;
-
+    public readonly rxdbVersion = RXDB_VERSION;
     constructor(
         public settings: DexieSettings
     ) { }
