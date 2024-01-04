@@ -3,6 +3,7 @@
 
 <!-- CHANGELOG NEWEST -->
 - FIX(dexie.js) migration from v14 to v15 not working.
+- ADD  initialCheckpoint for Couchdb [#5461](https://github.com/pubkey/rxdb/pull/5461)
 <!-- ADD new changes here! -->
 
 <!-- /CHANGELOG NEWEST -->
