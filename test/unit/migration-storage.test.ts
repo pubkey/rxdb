@@ -27,12 +27,18 @@ import {
 } from 'rxdb-old/plugins/attachments';
 addRxPlugin(RxDBAttachmentsPlugin);
 addRxPluginOld(RxDBAttachmentsPluginOld);
-
+import {
+    indexedDB as fakeIndexedDB,
+    IDBKeyRange as fakeIDBKeyRange
+} from 'fake-indexeddb';
 
 
 import {
     getRxStorageLoki as getRxStorageLokiOld
 } from 'rxdb-old/plugins/storage-lokijs';
+import {
+    getRxStorageDexie as getRxStorageDexieOld
+} from 'rxdb-old/plugins/storage-dexie';
 
 import {
     AfterMigrateBatchHandlerInput,
@@ -45,9 +51,8 @@ import config from './config.ts';
 
 
 const testStorages = [
-    // previous RxDB major version to newest version
     {
-        name: 'prev-major to newest',
+        name: 'prev-major to newest (loki)',
         hasAttachments: false,
         hasReplication: true,
         createRxDatabaseOld,
@@ -55,7 +60,18 @@ const testStorages = [
         old: () => getRxStorageLokiOld(),
         new: () => config.storage.getStorage()
     },
-    // newest version to newest version but other storage
+    {
+        name: 'prev-major to newest (dexie)',
+        hasAttachments: false,
+        hasReplication: true,
+        createRxDatabaseOld,
+        createRxDatabaseNew: createRxDatabase,
+        old: () => getRxStorageDexieOld({
+            indexedDB: fakeIndexedDB,
+            IDBKeyRange: fakeIDBKeyRange
+        }),
+        new: () => config.storage.getStorage()
+    },
     {
         name: 'newest to newest',
         hasAttachments: false,
