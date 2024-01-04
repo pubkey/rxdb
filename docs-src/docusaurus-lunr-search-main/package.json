@@ -56,7 +56,7 @@
     "unist-util-is": "^4.0.2"
   },
   "devDependencies": {
-    "mocha": "^8.0.1"
+    "mocha": "^10.0.0"
   },
   "peerDependencies": {
     "@docusaurus/core": "^3.0.0",
