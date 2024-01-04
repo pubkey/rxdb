@@ -1,5 +1,7 @@
 import useDocusaurusContext from '@docusaurus/useDocusaurusContext';
 import Layout from '@theme/Layout';
+import Head from '@docusaurus/Head';
+
 import React, { useEffect } from 'react';
 import { ensureNotFalsy, lastOfArray } from '../../../';
 import { AVERAGE_FRONT_END_DEVELOPER_SALARY_BY_COUNTRY } from '../components/salaries';
@@ -57,6 +59,11 @@ export default function Premium() {
     });
 
     return (
+        <>
+        <Head>
+        <body className="homepage" />
+        </Head>
+
         <Layout
             title={`Premium Plugins - ${siteConfig.title}`}
             description="RxDB plugins for professionals. FAQ, pricing and license"
@@ -768,6 +775,7 @@ export default function Premium() {
                 </div>
             </main>
         </Layout >
+        </>
     );
 }
 function getConverterUrl(price: number) {

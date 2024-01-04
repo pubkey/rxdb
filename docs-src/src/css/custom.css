@@ -34,6 +34,12 @@ html[data-theme='dark'] {
   --ifm-navbar-background-color: #171923;
 }
 
+/* Hide Search Field on Homepage */
+.homepage .navbarSearchContainer_Bca1{
+    display:none;
+}
+
+
 /**
  * Default font size was to big, decrease it here
  */
@@ -350,11 +356,6 @@ body {
   }
 }
 
-@media (max-width: 340px) {
-  .navbar .text {
-    padding-right: 4px;
-  }
-}
 
 .navbar .logo .text {
   font-size: var(--fontSizes-xl);
@@ -1902,7 +1903,20 @@ footer a:visited {
     display: contents;
   }
 
+    .navbar .call-to-action {
+        margin-right:145px;
+
+    }
+
   .call-to-action .call-to-action-keyword {
     display: none;
   }
 }
+@media (max-width: 340px) {
+    .navbar .text {
+        padding-right: 4px;
+    }
+
+
+}
+
