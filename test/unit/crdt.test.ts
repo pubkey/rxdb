@@ -59,7 +59,8 @@ config.parallel('crdt.test.js', () => {
             storage: wrappedValidateAjvStorage({
                 storage: config.storage.getStorage(),
             }),
-            multiInstance: false
+            multiInstance: false,
+            allowSlowCount:true
         });
         await db.addCollections({
             docs: {
@@ -73,9 +74,14 @@ config.parallel('crdt.test.js', () => {
     describe('.count()', () => {
             it('should count items when optional_value as index', async () => {
                   const collection = await getCRDTCollection();
-                  const count = await collection.count({selector:{firstName:'xpet'}}).exec()
                   
-                  assert.strictEqual(count, 0);
+                  await collection.insert({passportId:'any_pet',firstName:'xpet',lastName:'x',age:6,optional_boolean_value:false})
+                  await collection.insert({passportId:'any_pet1',firstName:'xpet',lastName:'x1',age:6,optional_boolean_value:true})
+                  await collection.insert({passportId:'any_pet2',firstName:'xpet1',lastName:'x2',age:6,optional_boolean_value:false})
+
+                  const count = await collection.count({selector:{firstName:'xpet',optional_boolean_value:false}}).exec()
+                  
+                  assert.strictEqual(count, 1);
 
                   collection.database.destroy();
             });

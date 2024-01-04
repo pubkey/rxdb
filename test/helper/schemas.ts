@@ -58,11 +58,18 @@ export const humanSchemaLiteral = overwritable.deepFreezeWhenDevMode({
             multipleOf: 1
         },
         optional_value:{
-            type:'string'
+            type: 'string',
+            maxLength: 100
+          },
+          optional_boolean_value:{
+            type: 'boolean'
+          },
+          optional_number_value:{
+            type: 'number'
         }
     },
     required: ['firstName', 'lastName', 'passportId', 'age'],
-    indexes: ['firstName','optional_value']
+    indexes: ['firstName','optional_boolean_value','optional_number_value']
 } as const);
 const humanSchemaTyped = toTypedRxJsonSchema(humanSchemaLiteral);
 export type HumanDocumentType = ExtractDocumentTypeFromTypedRxJsonSchema<typeof humanSchemaTyped>;
