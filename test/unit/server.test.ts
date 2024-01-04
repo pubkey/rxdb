@@ -31,12 +31,13 @@ config.parallel('server.test.ts', () => {
             const col = await humansCollection.create(0);
             const server = await startRxServer({
                 database: col.database,
-                authenticationHandler
+                authenticationHandler,
+                port,
+                hostname: 'localhost'
             });
             await server.addReplicationEndpoint({
                 collection: col
             });
-            await server.start({ port });
             await col.database.destroy();
         });
     });
@@ -46,12 +47,13 @@ config.parallel('server.test.ts', () => {
             const port = await nextPort();
             const server = await startRxServer({
                 database: col.database,
-                authenticationHandler
+                authenticationHandler,
+                port,
+                hostname: 'localhost'
             });
             const endpoint = await server.addReplicationEndpoint({
                 collection: col
             });
-            await server.start({ port, host: 'localhost' });
 
 
             console.log('--- 1');

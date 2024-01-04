@@ -1,27 +1,30 @@
 import { ensureNotFalsy, flatClone } from '../utils/index.ts';
 import { RxServer } from './rx-server.ts';
 import { RxServerOptions } from './types.ts';
+import express from 'express';
+import {
+    Server as HttpServer
+} from 'http';
 
-import Fastify from 'fastify';
-import type {
-    FastifyInstance
-} from 'fastify';
-
-import * as FSWebsocket from '@fastify/websocket';
 
 export async function startRxServer<AuthType>(options: RxServerOptions<AuthType>): Promise<RxServer<AuthType>> {
     options = flatClone(options);
     if (!options.serverApp) {
-        options.serverApp = Fastify(options.appOptions);
-        console.log('XXX_');
-        console.dir(!!FSWebsocket.default);
-        options.serverApp.register(FSWebsocket.default);
+        const app = express();
+        options.serverApp = app;
     }
+
+    const httpServer: HttpServer = await new Promise((res, rej) => {
+        const ret = ensureNotFalsy(options.serverApp).listen(options.port, options.hostname, () => {
+            res(ret);
+        });
+    });
 
     const server = new RxServer<AuthType>(
         options.database,
         options.authenticationHandler,
-        options.serverApp
+        httpServer,
+        ensureNotFalsy(options.serverApp)
     );
 
     return server;
