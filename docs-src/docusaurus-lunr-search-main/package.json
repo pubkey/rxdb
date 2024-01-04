@@ -41,7 +41,7 @@
   "license": "MIT",
   "dependencies": {
     "autocomplete.js": "^0.37.0",
-    "clsx": "^1.2.1",
+    "clsx": "^2.0.0",
     "gauge": "^5.0.0",
     "hast-util-select": "^4.0.0",
     "hast-util-to-text": "^2.0.0",
