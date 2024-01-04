@@ -321,7 +321,7 @@ export var RxDBcrdtPlugin = {
               function docWithoutMeta(doc) {
                 var ret = {};
                 Object.entries(doc).forEach(([k, v]) => {
-                  if (!k.startsWith('_')) {
+                  if (!k.startsWith('_') && typeof v !== 'undefined') {
                     ret[k] = v;
                   }
                 });

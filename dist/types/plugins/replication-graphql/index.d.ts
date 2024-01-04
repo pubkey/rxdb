@@ -12,14 +12,15 @@ export declare class RxGraphQLReplicationState<RxDocType, CheckpointType> extend
     readonly live?: boolean | undefined;
     retryTime?: number | undefined;
     autoStart?: boolean | undefined;
-    constructor(url: GraphQLServerUrl, clientState: RxGraphQLReplicationClientState, replicationIdentifier: string, collection: RxCollection<RxDocType>, deletedField: string, pull?: ReplicationPullOptions<RxDocType, CheckpointType> | undefined, push?: ReplicationPushOptions<RxDocType> | undefined, live?: boolean | undefined, retryTime?: number | undefined, autoStart?: boolean | undefined);
+    readonly customFetch?: ((input: RequestInfo | URL, init?: RequestInit | undefined) => Promise<Response>) | undefined;
+    constructor(url: GraphQLServerUrl, clientState: RxGraphQLReplicationClientState, replicationIdentifier: string, collection: RxCollection<RxDocType>, deletedField: string, pull?: ReplicationPullOptions<RxDocType, CheckpointType> | undefined, push?: ReplicationPushOptions<RxDocType> | undefined, live?: boolean | undefined, retryTime?: number | undefined, autoStart?: boolean | undefined, customFetch?: ((input: RequestInfo | URL, init?: RequestInit | undefined) => Promise<Response>) | undefined);
     setHeaders(headers: {
         [k: string]: string;
     }): void;
     setCredentials(credentials: RequestCredentials | undefined): void;
     graphQLRequest(queryParams: RxGraphQLReplicationQueryBuilderResponseObject): Promise<any>;
 }
-export declare function replicateGraphQL<RxDocType, CheckpointType>({ collection, url, headers, credentials, deletedField, waitForLeadership, pull, push, live, retryTime, // in ms
+export declare function replicateGraphQL<RxDocType, CheckpointType>({ collection, url, headers, credentials, deletedField, waitForLeadership, pull, push, live, fetch: customFetch, retryTime, // in ms
 autoStart, replicationIdentifier }: SyncOptionsGraphQL<RxDocType, CheckpointType>): RxGraphQLReplicationState<RxDocType, CheckpointType>;
 export * from './helper.ts';
 export * from './graphql-schema-from-rx-schema.ts';

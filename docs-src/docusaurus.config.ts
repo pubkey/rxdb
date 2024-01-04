@@ -54,14 +54,14 @@ const config: Config = {
         },
         docs: {
           sidebarPath: './sidebars.js',
-          editUrl: 'https://github.com/pubkey/rxdb/tree/main/docs-src/',
+          editUrl: 'https://github.com/pubkey/rxdb/tree/master/docs-src/',
           routeBasePath: '',
           path: './docs',
         },
         // blog: {
         //   showReadingTime: true,
         //   editUrl:
-        //     'https://github.com/pubkey/rxdb/tree/main/docs/',
+        //     'https://github.com/pubkey/rxdb/tree/master/docs/',
         // },
         theme: {
           customCss: './src/css/custom.css',
@@ -101,18 +101,18 @@ const config: Config = {
             position: 'right',
           },
           {
-            href: 'code',
+            href: '/code',
             target: '_blank',
             label: 'Code',
             position: 'right',
           },
           {
-            href: 'premium',
+            href: '/premium',
             label: 'Pricing',
             position: 'right',
           },
           {
-            to: 'chat',
+            to: '/chat',
             target: '_blank',
             label: 'Chat',
             position: 'right',
@@ -155,6 +155,10 @@ const config: Config = {
               {
                 label: 'Twitter',
                 href: 'https://twitter.com/intent/user?screen_name=rxdbjs',
+              },
+              {
+                label: 'LinkedIn',
+                href: 'https://www.linkedin.com/company/rxdb',
               },
               {
                 label: 'Stack Overflow',

@@ -4,12 +4,17 @@ import React, { useEffect } from 'react';
 import { ensureNotFalsy, lastOfArray } from '../../../';
 import { AVERAGE_FRONT_END_DEVELOPER_SALARY_BY_COUNTRY } from '../components/salaries';
 import {
-    LicensePeriod, PACKAGE_PRICE, PackageName,
-    PriceCalculationInput, ProjectAmount, calculatePrice
+    LicensePeriod,
+    PACKAGE_PRICE,
+    PackageName,
+    PriceCalculationInput,
+    ProjectAmount,
+    calculatePrice
 } from '../components/price-calculator';
 import { trigger } from '../components/trigger-event';
 import { getDatabase, hasIndexedDB } from '../components/database';
 import useIsBrowser from '@docusaurus/useIsBrowser';
+import BrowserOnly from '@docusaurus/BrowserOnly';
 
 type FormValueDocData = {
     homeCountry: string;
@@ -28,12 +33,6 @@ export default function Premium() {
             if (!isBrowser || !hasIndexedDB()) {
                 return;
             }
-
-
-            // enable iframe lazyli
-            const iframe = document.getElementById('request-premium-form');
-            (iframe as any).src = 'https://webforms.pipedrive.com/f/6qflURDWONiPpj67lpG6r45n8feakrtS2AqMRcBf1EuCPRvNcXWdvNH2unFm5EpjW3';
-
 
             // load previous form data
             const database = await getDatabase();
@@ -752,13 +751,18 @@ export default function Premium() {
                                 Request Premium <b className="underline">Form</b>
                             </h2>
                             <p></p>
-                            <iframe
-                                id="request-premium-form"
-                            >
-                                Your browser doesn't support iframes, &lt;a
-                                href="https://webforms.pipedrive.com/f/6qflURDWONiPpj67lpG6r45n8feakrtS2AqMRcBf1EuCPRvNcXWdvNH2unFm5EpjW3"
-                                rel="nofollow" &gt;go here&lt;/a&gt;
-                            </iframe>
+                            <BrowserOnly fallback={<span>Loading form iframe...</span>}>
+                                {() => <iframe
+                                    id="request-premium-form"
+                                    src="https://webforms.pipedrive.com/f/6qflURDWONiPpj67lpG6r45n8feakrtS2AqMRcBf1EuCPRvNcXWdvNH2unFm5EpjW3"
+                                >
+                                    Your browser doesn't support iframes, <a
+                                        href="https://webforms.pipedrive.com/f/6qflURDWONiPpj67lpG6r45n8feakrtS2AqMRcBf1EuCPRvNcXWdvNH2unFm5EpjW3"
+                                        target="_blank"
+                                        rel="nofollow">go here</a>
+                                </iframe>
+                                }
+                            </BrowserOnly>
                         </div>
                     </div>
                 </div>

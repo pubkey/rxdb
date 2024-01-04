@@ -347,6 +347,7 @@ export async function spawn(
 
 
                         const result = await graphQLRequest(
+                            fetch,
                             httpUrl,
                             clientState,
                             {
@@ -356,6 +357,7 @@ export async function spawn(
                                         writeHumans(writeRows: $writeRows) { id }
                                     }
                                 `,
+                                operationName: 'CreateHumans',
                                 variables: {
                                     writeRows: [row]
                                 }

@@ -54,7 +54,7 @@ By default, the plugin will log all operations and it will also run a `console.t
 ```ts
 const loggingStorage = wrappedLoggerStorage({
     storage: getRxStorageIndexedDB({}),
-    {
+    settings: {
         // can used to prefix all log strings, default=''
         prefix: 'my-prefix',
 

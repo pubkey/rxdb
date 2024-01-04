@@ -7,6 +7,7 @@ import {
 
 export interface RxGraphQLReplicationQueryBuilderResponseObject {
     query: string;
+    operationName?: string;
     variables: any;
 }
 
@@ -73,6 +74,7 @@ export type SyncOptionsGraphQL<RxDocType, CheckpointType> = Omit<
     'pull' | 'push'
 > & {
     url: GraphQLServerUrl;
+    fetch?: WindowOrWorkerGlobalScope['fetch'];
     headers?: { [k: string]: string; }; // send with all requests to the endpoint
     credentials?: RequestCredentials;
     pull?: GraphQLSyncPullOptions<RxDocType, CheckpointType>;

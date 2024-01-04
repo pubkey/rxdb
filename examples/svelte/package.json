@@ -15,7 +15,7 @@
     "@rollup/plugin-node-resolve": "15.2.3",
     "async-test-util": "2.2.1",
     "concurrently": "8.2.2",
-    "rollup": "4.9.1",
+    "rollup": "4.9.2",
     "rollup-plugin-css-only": "4.5.2",
     "rollup-plugin-livereload": "2.0.5",
     "rollup-plugin-node-builtins": "2.1.2",
@@ -24,7 +24,7 @@
     "rxdb": "file:rxdb-local.tgz",
     "rxjs": "7.8.1",
     "svelte": "4.2.8",
-    "testcafe": "3.4.0"
+    "testcafe": "3.5.0"
   },
   "dependencies": {
     "@rollup/plugin-json": "6.1.0",

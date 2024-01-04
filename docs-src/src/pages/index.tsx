@@ -244,17 +244,17 @@ export default function Home() {
   return (
     <Layout
       title={`${siteConfig.title}`}
-      description="RxDB (short for Reactive Database) is a NoSQL-database for JavaScript Applications like Websites, hybrid Apps, Electron-Apps, Progressive Web Apps and Node.js">
+      description="RxDB is a fast, local-first NoSQL-database for JavaScript Applications like Websites, hybrid Apps, Electron-Apps, Progressive Web Apps and Node.js">
       <main>
         <div className="block first centered">
           <div className="content">
             <div className="inner">
               <div className="half">
                 <br />
-                <h2>
+                <h1>
                   The local <b className="underline">Database</b> for{' '}
                   <b className="underline">JavaScript</b> Applications
-                </h2>
+                </h1>
                 <br />
                 <ul className="checked">
                   <li>Realtime Queries</li>
