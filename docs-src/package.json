@@ -24,7 +24,7 @@
     "react-dom": "18.2.0",
     "autocomplete.js": "0.37.0",
     "gauge": "5.0.1",
-    "hast-util-select": "4.0.0",
+    "hast-util-select": "4.0.2",
     "hast-util-to-text": "2.0.0",
     "hogan.js": "3.0.2",
     "lunr": "2.3.8",
