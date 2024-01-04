@@ -16,6 +16,7 @@ import {
       RxCollection
 } from '../../plugins/core/index.mjs';
 import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs';
+import { wrappedKeyCompressionStorage } from '../../plugins/key-compression/index.mjs';
 
 import {
     getDexieStoreSchema,
@@ -39,7 +40,7 @@ async function getCollection<RxDocType = schemas.HumanDocumentType>(
            * Use the validator in tests to ensure we do not write
            * broken data.
            */
-          storage: wrappedValidateAjvStorage({
+          storage: wrappedKeyCompressionStorage({
               storage: config.storage.getStorage(),
           }),
           multiInstance: false,
@@ -48,7 +49,10 @@ async function getCollection<RxDocType = schemas.HumanDocumentType>(
 
       await db.addCollections({
           docs: {
-              schema
+              schema:{
+                  ...schema,
+                  keyCompression:true
+                }
           }
       });
 
@@ -67,12 +71,12 @@ config.parallel('rx-storage-dexie.test.js', () => {
       it('should count items when optional_value as index', async () => {
             const collection = await getCollection();
             
-            await collection.insert({passportId:'any_pet',firstName:'xpet',lastName:'x',age:6,optional_boolean_value:false})
-            await collection.insert({passportId:'any_pet1',firstName:'xpet',lastName:'x1',age:6,optional_boolean_value:true})
-            await collection.insert({passportId:'any_pet2',firstName:'xpet1',lastName:'x2',age:6,optional_boolean_value:false})
+            await collection.insert({passportId:'any_pet',firstName:'xpet',lastName:'x',age:6,optional_value:'u1'})
+            await collection.insert({passportId:'any_pet1',firstName:'xpet',lastName:'x1',age:6,optional_value:'u2'})
+            await collection.insert({passportId:'any_pet2',firstName:'xpet1',lastName:'x2',age:6,optional_value:'u1'})
 
-            const count = await collection.count({selector:{firstName:'xpet',optional_boolean_value:false}}).exec()
-                  
+            const count = await collection.count({selector:{firstName:'xpet',optional_value:'u1'}}).exec()
+            
             assert.strictEqual(count, 1);
 
             collection.database.destroy();
