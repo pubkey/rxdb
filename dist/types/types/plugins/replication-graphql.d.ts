@@ -1,9 +1,13 @@
-import { RxReplicationWriteToMasterRow } from '../replication-protocol';
-import { ById, MaybePromise } from '../util';
-import { ReplicationOptions, ReplicationPullHandlerResult, ReplicationPullOptions, ReplicationPushHandlerResult, ReplicationPushOptions } from './replication';
+import { RxReplicationWriteToMasterRow } from '../replication-protocol.ts';
+import { ById, MaybePromise } from '../util.ts';
+import {
+    ReplicationOptions, ReplicationPullHandlerResult,
+    ReplicationPullOptions, ReplicationPushHandlerResult, ReplicationPushOptions
+} from './replication.ts';
 
 export interface RxGraphQLReplicationQueryBuilderResponseObject {
     query: string;
+    operationName?: string;
     variables: any;
 }
 
@@ -22,12 +26,12 @@ export type RxGraphQLReplicationPushQueryBuilder = (
 
 
 export type RxGraphQLReplicationPullQueryBuilder<CheckpointType> = (
-    latestPulledCheckpoint: CheckpointType | null,
+    latestPulledCheckpoint: CheckpointType | undefined,
     limit: number
 ) => RxGraphQLReplicationQueryBuilderResponse;
 export type GraphQLSyncPullOptions<RxDocType, CheckpointType> = Omit<
-ReplicationPullOptions<RxDocType, CheckpointType>,
-'handler' | 'stream$'
+    ReplicationPullOptions<RxDocType, CheckpointType>,
+    'handler' | 'stream$'
 > & {
     queryBuilder: RxGraphQLReplicationPullQueryBuilder<CheckpointType>;
     streamQueryBuilder?: RxGraphQLReplicationPullStreamQueryBuilder;
@@ -52,8 +56,8 @@ export type RxGraphQLPushResponseModifier<RxDocType> = (
 export type RxGraphQLReplicationPullStreamQueryBuilder = (headers: { [k: string]: string; }) => RxGraphQLReplicationQueryBuilderResponse;
 
 export type GraphQLSyncPushOptions<RxDocType> = Omit<
-ReplicationPushOptions<RxDocType>,
-'handler'
+    ReplicationPushOptions<RxDocType>,
+    'handler'
 > & {
     queryBuilder: RxGraphQLReplicationPushQueryBuilder;
     dataPath?: string;
@@ -66,10 +70,11 @@ export type GraphQLServerUrl = {
 };
 
 export type SyncOptionsGraphQL<RxDocType, CheckpointType> = Omit<
-ReplicationOptions<RxDocType, CheckpointType>,
-'pull' | 'push' | 'replicationIdentifier'
+    ReplicationOptions<RxDocType, CheckpointType>,
+    'pull' | 'push'
 > & {
     url: GraphQLServerUrl;
+    fetch?: WindowOrWorkerGlobalScope['fetch'];
     headers?: { [k: string]: string; }; // send with all requests to the endpoint
     credentials?: RequestCredentials;
     pull?: GraphQLSyncPullOptions<RxDocType, CheckpointType>;

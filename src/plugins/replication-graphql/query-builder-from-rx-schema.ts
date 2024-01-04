@@ -3,14 +3,14 @@ import {
     fillUpOptionals,
     Prefixes,
     SPACING
-} from './graphql-schema-from-rx-schema';
-import { ensureNotFalsy, ucfirst } from '../../plugins/utils';
+} from './graphql-schema-from-rx-schema.ts';
+import { ensureNotFalsy, ucfirst } from '../../plugins/utils/index.ts';
 import type {
     RxGraphQLReplicationPullQueryBuilder,
     RxGraphQLReplicationPullStreamQueryBuilder,
     RxGraphQLReplicationPushQueryBuilder,
     WithDeleted
-} from '../../types';
+} from '../../types/index.d.ts';
 
 export function pullQueryBuilderFromRxSchema(
     collectionName: string,
@@ -22,6 +22,7 @@ export function pullQueryBuilderFromRxSchema(
 
     const ucCollectionName = ucfirst(collectionName);
     const queryName = prefixes.pull + ucCollectionName;
+    const operationName = ucfirst(queryName);
 
     const outputFields = Object.keys(schema.properties).filter(k => !(input.ignoreOutputKeys as string[]).includes(k));
     // outputFields.push(input.deletedField);
@@ -29,7 +30,7 @@ export function pullQueryBuilderFromRxSchema(
     const checkpointInputName = ucCollectionName + 'Input' + prefixes.checkpoint;
 
     const builder: RxGraphQLReplicationPullQueryBuilder<any> = (checkpoint: any, limit: number) => {
-        const query = 'query ' + ucfirst(queryName) + '($checkpoint: ' + checkpointInputName + ', $limit: Int!) {\n' +
+        const query = 'query ' + operationName + '($checkpoint: ' + checkpointInputName + ', $limit: Int!) {\n' +
             SPACING + SPACING + queryName + '(checkpoint: $checkpoint, limit: $limit) {\n' +
             SPACING + SPACING + SPACING + 'documents {\n' +
             SPACING + SPACING + SPACING + SPACING + outputFields.join('\n' + SPACING + SPACING + SPACING + SPACING) + '\n' +
@@ -41,6 +42,7 @@ export function pullQueryBuilderFromRxSchema(
             '}';
         return {
             query,
+            operationName,
             variables: {
                 checkpoint,
                 limit
@@ -60,12 +62,13 @@ export function pullStreamBuilderFromRxSchema(
     const prefixes: Prefixes = input.prefixes as any;
 
     const ucCollectionName = ucfirst(collectionName);
+    const queryName = prefixes.stream + ucCollectionName;
     const outputFields = Object.keys(schema.properties).filter(k => !(input.ignoreOutputKeys as string[]).includes(k));
 
     const headersName = ucCollectionName + 'Input' + prefixes.headers;
 
     const query = 'subscription on' + ucfirst(ensureNotFalsy(prefixes.stream)) + '($headers: ' + headersName + ') {\n' +
-        SPACING + prefixes.stream + ucCollectionName + '(headers: $headers) {\n' +
+        SPACING + queryName + '(headers: $headers) {\n' +
         SPACING + SPACING + SPACING + 'documents {\n' +
         SPACING + SPACING + SPACING + SPACING + outputFields.join('\n' + SPACING + SPACING + SPACING + SPACING) + '\n' +
         SPACING + SPACING + SPACING + '}\n' +
@@ -96,15 +99,15 @@ export function pushQueryBuilderFromRxSchema(
 
     const ucCollectionName = ucfirst(collectionName);
     const queryName = prefixes.push + ucCollectionName;
+    const operationName = ucfirst(queryName);
 
     const variableName = collectionName + prefixes.pushRow;
-
 
     const returnFields: string[] = Object.keys(input.schema.properties);
 
     const builder: RxGraphQLReplicationPushQueryBuilder = (pushRows) => {
         const query = '' +
-            'mutation ' + prefixes.push + ucCollectionName + '($' + variableName + ': [' + ucCollectionName + 'Input' + prefixes.pushRow + '!]) {\n' +
+            'mutation ' + operationName + '($' + variableName + ': [' + ucCollectionName + 'Input' + prefixes.pushRow + '!]) {\n' +
             SPACING + queryName + '(' + variableName + ': $' + variableName + ') {\n' +
             SPACING + SPACING + returnFields.join(',\n' + SPACING + SPACING) + '\n' +
             SPACING + '}\n' +
@@ -137,6 +140,7 @@ export function pushQueryBuilderFromRxSchema(
         };
         return {
             query,
+            operationName,
             variables
         };
     };

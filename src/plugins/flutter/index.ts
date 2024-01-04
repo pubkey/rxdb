@@ -1,6 +1,6 @@
 import type {
     RxDatabase
-} from '../../types';
+} from '../../types/index.d.ts';
 
 export type CreateRxDatabaseFunctionType = (databaseName: string) => Promise<RxDatabase>;
 

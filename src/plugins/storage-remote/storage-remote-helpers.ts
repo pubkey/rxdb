@@ -1,12 +1,12 @@
 import type {
     RxError,
     RxTypeError
-} from '../../types';
-import { errorToPlainJson } from '../../plugins/utils';
+} from '../../types/index.d.ts';
+import { errorToPlainJson } from '../../plugins/utils/index.ts';
 import type {
     MessageFromRemote,
     MessageToRemote
-} from './storage-remote-types';
+} from './storage-remote-types.ts';
 
 export function createErrorAnswer(
     msg: MessageToRemote,

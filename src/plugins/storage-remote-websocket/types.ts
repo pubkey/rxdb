@@ -1,14 +1,14 @@
 import type {
     WebsocketServerState
-} from '../replication-websocket';
+} from '../replication-websocket/index.ts';
 import type { ServerOptions, ClientOptions } from 'ws';
-import type { RxDatabase, RxStorage, RxStorageStatics } from '../../types';
+import type { RxDatabase, RxStorage } from '../../types/index.d.ts';
 import type {
     CustomRequestHandler,
     RxStorageRemoteExposeType,
     RxStorageRemoteSettings
-} from '../storage-remote/storage-remote-types';
-import { RxStorageRemote } from '../storage-remote';
+} from '../storage-remote/storage-remote-types.ts';
+import { RxStorageRemote } from '../storage-remote/index.ts';
 
 export type RxStorageRemoteWebsocketServerOptions = ServerOptions & {
     storage?: RxStorage<any, any>;
@@ -22,7 +22,6 @@ export type RxStorageRemoteWebsocketServerState = {
 };
 
 export type RxStorageRemoteWebsocketClientOptions = ClientOptions & {
-    statics: RxStorageStatics;
     url: string;
     mode: RxStorageRemoteSettings['mode'];
 };

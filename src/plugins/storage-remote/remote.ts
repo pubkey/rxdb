@@ -2,12 +2,12 @@ import { filter, Subscription } from 'rxjs';
 import type {
     RxStorageInstance,
     RxStorageInstanceCreationParams
-} from '../../types';
+} from '../../types/index.d.ts';
 import {
     deepEqual,
     ensureNotFalsy
-} from '../../plugins/utils';
-import { createAnswer, createErrorAnswer } from './storage-remote-helpers';
+} from '../../plugins/utils/index.ts';
+import { createAnswer, createErrorAnswer } from './storage-remote-helpers.ts';
 import type {
     MessageFromRemote,
     MessageToRemote,
@@ -15,7 +15,8 @@ import type {
     RxStorageRemoteExposeSettingsRxDatabase,
     RxStorageRemoteExposeSettingsRxStorage,
     RxStorageRemoteExposeType
-} from './storage-remote-types';
+} from './storage-remote-types.ts';
+import { getChangedDocumentsSince } from '../../rx-storage-helper.ts';
 
 /**
  * Run this on the 'remote' part,
@@ -230,12 +231,21 @@ export function exposeRxStorageRemote(settings: RxStorageRemoteExposeSettings): 
                         subs.forEach(sub => sub.unsubscribe());
                         return;
                     }
-                    result = await (storageInstance as any)[message.method](
-                        message.params[0],
-                        message.params[1],
-                        message.params[2],
-                        message.params[3]
-                    );
+
+                    if (message.method === 'getChangedDocumentsSince' && !storageInstance.getChangedDocumentsSince) {
+                        result = await getChangedDocumentsSince(
+                            storageInstance,
+                            message.params[0],
+                            message.params[1]
+                        );
+                    } else {
+                        result = await (storageInstance as any)[message.method](
+                            message.params[0],
+                            message.params[1],
+                            message.params[2],
+                            message.params[3]
+                        );
+                    }
                     if (
                         message.method === 'close' ||
                         message.method === 'remove'

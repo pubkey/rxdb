@@ -1,4 +1,4 @@
-import type { RxCollectionCreator, RxDatabaseCreator } from '../../types';
+import type { RxCollectionCreator, RxDatabaseCreator } from '../../types/index.d.ts';
 /**
  * if the name of a collection
  * clashes with a property of RxDatabase,

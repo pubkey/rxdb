@@ -1,27 +1,24 @@
 import type {
     RxStorage,
     RxStorageInstanceCreationParams
-} from '../../types';
+} from '../../types/index.d.ts';
 import {
-    ensureNoBooleanIndex,
-    RxStorageDexieStatics,
     RX_STORAGE_NAME_DEXIE
-} from './dexie-helper';
+} from './dexie-helper.ts';
 import type {
     DexieSettings,
     DexieStorageInternals
-} from '../../types/plugins/dexie';
+} from '../../types/plugins/dexie.d.ts';
 import {
     createDexieStorageInstance,
     RxStorageInstanceDexie
-} from './rx-storage-instance-dexie';
-import { ensureRxStorageInstanceParamsAreCorrect } from '../../rx-storage-helper';
+} from './rx-storage-instance-dexie.ts';
+import { ensureRxStorageInstanceParamsAreCorrect } from '../../rx-storage-helper.ts';
 
 
 
 export class RxStorageDexie implements RxStorage<DexieStorageInternals, DexieSettings> {
     public name = RX_STORAGE_NAME_DEXIE;
-    public statics = RxStorageDexieStatics;
 
     constructor(
         public settings: DexieSettings
@@ -31,7 +28,6 @@ export class RxStorageDexie implements RxStorage<DexieStorageInternals, DexieSet
         params: RxStorageInstanceCreationParams<RxDocType, DexieSettings>
     ): Promise<RxStorageInstanceDexie<RxDocType>> {
         ensureRxStorageInstanceParamsAreCorrect(params);
-        ensureNoBooleanIndex(params.schema);
         return createDexieStorageInstance(this, params, this.settings);
     }
 }

@@ -10,15 +10,15 @@
  */
 import assert from 'assert';
 import AsyncTestUtil from 'async-test-util';
-import config from './config';
+import config from './config.ts';
 
 import {
     createRxDatabase,
     randomCouchString
-} from '../../';
+} from '../../plugins/core/index.mjs';
 
 describe('bug-report.test.js', () => {
-    it('should fail because it reproduces the bug', async () => {
+    it('should fail because it reproduces the bug', async function () {
 
         /**
          * If your test should only run in nodejs or only run in the browser,
@@ -121,11 +121,14 @@ describe('bug-report.test.js', () => {
          */
         assert.strictEqual(myDocument.age, 56);
 
+
         // you can also wait for events
         const emitted = [];
         const sub = collectionInOtherTab.mycollection
             .findOne().$
-            .subscribe(doc => emitted.push(doc));
+            .subscribe(doc => {
+                emitted.push(doc);
+            });
         await AsyncTestUtil.waitUntil(() => emitted.length === 1);
 
         // clean up afterwards

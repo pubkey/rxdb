@@ -16,10 +16,10 @@ import {
 } from 'jsonschema-key-compression';
 import {
     overwritable
-} from '../../overwritable';
-import { wrapRxStorageInstance } from '../../plugin-helpers';
-import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
-import { flatCloneDocWithMeta } from '../../rx-storage-helper';
+} from '../../overwritable.ts';
+import { wrapRxStorageInstance } from '../../plugin-helpers.ts';
+import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper.ts';
+import { flatCloneDocWithMeta } from '../../rx-storage-helper.ts';
 
 import type {
     RxJsonSchema,
@@ -27,16 +27,17 @@ import type {
     RxStorage,
     RxStorageInstanceCreationParams,
     RxDocumentData,
-    RxStorageStatics,
     FilledMangoQuery,
     PreparedQuery,
     RxDocumentWriteData
-} from '../../types';
+} from '../../types/index.d.ts';
 import {
+    clone,
     flatClone,
     getFromMapOrCreate,
     isMaybeReadonlyArray
-} from '../../plugins/utils';
+} from '../../plugins/utils/index.ts';
+import { prepareQuery } from '../../rx-query.ts';
 
 declare type CompressionState = {
     table: CompressionTable;
@@ -136,38 +137,10 @@ export function wrappedKeyCompressionStorage<Internals, InstanceCreationOptions>
         storage: RxStorage<Internals, InstanceCreationOptions>;
     }
 ): RxStorage<Internals, InstanceCreationOptions> {
-    const statics: RxStorageStatics = Object.assign(
-        {},
-        args.storage.statics,
-        {
-            prepareQuery<RxDocType>(
-                schema: RxJsonSchema<RxDocumentData<RxDocType>>,
-                mutateableQuery: FilledMangoQuery<RxDocType>
-            ): PreparedQuery<RxDocType> {
-                if (schema.keyCompression) {
-                    const compressionState = getCompressionStateByRxJsonSchema(schema);
-                    mutateableQuery = compressQuery(
-                        compressionState.table,
-                        mutateableQuery as any
-                    ) as any;
-                    return args.storage.statics.prepareQuery(
-                        compressionState.compressedSchema,
-                        mutateableQuery
-                    );
-                }
-                return args.storage.statics.prepareQuery(
-                    schema,
-                    mutateableQuery
-                );
-            }
-        }
-    );
-
     return Object.assign(
         {},
         args.storage,
         {
-            statics,
             async createStorageInstance<RxDocType>(
                 params: RxStorageInstanceCreationParams<RxDocType, any>
             ) {
@@ -202,11 +175,28 @@ export function wrappedKeyCompressionStorage<Internals, InstanceCreationOptions>
                     )
                 );
 
-                return wrapRxStorageInstance(
+                const wrappedInstance = wrapRxStorageInstance(
+                    params.schema,
                     instance,
                     modifyToStorage,
                     modifyFromStorage
                 );
+
+                const queryBefore = wrappedInstance.query.bind(wrappedInstance);
+                wrappedInstance.query = async (preparedQuery: PreparedQuery<RxDocType>) => {
+                    const compressedQuery: FilledMangoQuery<RxDocType> = compressQuery(
+                        compressionState.table,
+                        preparedQuery.query as any
+                    ) as any;
+
+                    const compressedPreparedQuery = prepareQuery(
+                        compressionState.compressedSchema,
+                        compressedQuery
+                    );
+                    return queryBefore(compressedPreparedQuery);
+                }
+
+                return wrappedInstance;
             }
         }
     );

@@ -2,24 +2,20 @@ import type {
     DexieStorageInternals,
     RxDocumentData,
     RxJsonSchema
-} from '../../types';
+} from '../../types/index.d.ts';
 import { Dexie } from 'dexie';
-import { DexieSettings } from '../../types';
-import { flatClone, getFromMapOrCreate, toArray } from '../utils';
-import { newRxError } from '../../rx-error';
+import type { DexieSettings } from '../../types/index.d.ts';
+import { flatClone, getFromMapOrCreate, getProperty, setProperty, toArray, uniqueArray } from '../utils/index.ts';
 import {
     getPrimaryFieldOfPrimaryKey,
     getSchemaByObjectPath
-} from '../../rx-schema-helper';
-import { RxStorageDefaultStatics } from '../../rx-storage-statics';
+} from '../../rx-schema-helper.ts';
 
 export const DEXIE_DOCS_TABLE_NAME = 'docs';
-export const DEXIE_DELETED_DOCS_TABLE_NAME = 'deleted-docs';
 export const DEXIE_CHANGES_TABLE_NAME = 'changes';
+export const DEXIE_ATTACHMENTS_TABLE_NAME = 'attachments';
 
 export const RX_STORAGE_NAME_DEXIE = 'dexie';
-
-export const RxStorageDexieStatics = RxStorageDefaultStatics;
 
 const DEXIE_STATE_DB_BY_NAME: Map<string, DexieStorageInternals> = new Map();
 const REF_COUNT_PER_DEXIE_DB: Map<DexieStorageInternals, number> = new Map();
@@ -29,7 +25,6 @@ export function getDexieDbWithTables(
     settings: DexieSettings,
     schema: RxJsonSchema<any>
 ): DexieStorageInternals {
-    const primaryPath = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
     const dexieDbName = 'rxdb-dexie-' + databaseName + '--' + schema.version + '--' + collectionName;
 
     const state = getFromMapOrCreate(
@@ -48,24 +43,17 @@ export function getDexieDbWithTables(
                 const dexieStoresSettings = {
                     [DEXIE_DOCS_TABLE_NAME]: getDexieStoreSchema(schema),
                     [DEXIE_CHANGES_TABLE_NAME]: '++sequence, id',
-                    /**
-                     * Instead of adding {deleted: false} to every query we run over the document store,
-                     * we move deleted documents into a separate store where they can only be queried
-                     * by primary key.
-                     * This increases performance because it is way easier for the query planner to select
-                     * a good index and we also do not have to add the _deleted field to every index.
-                     *
-                     * We also need the [_meta.lwt+' + primaryPath + '] index for getChangedDocumentsSince()
-                     */
-                    [DEXIE_DELETED_DOCS_TABLE_NAME]: primaryPath + ',_meta.lwt,[_meta.lwt+' + primaryPath + ']'
+                    [DEXIE_ATTACHMENTS_TABLE_NAME]: 'id'
                 };
 
                 dexieDb.version(1).stores(dexieStoresSettings);
                 await dexieDb.open();
+
                 return {
                     dexieDb,
                     dexieTable: (dexieDb as any)[DEXIE_DOCS_TABLE_NAME],
-                    dexieDeletedTable: (dexieDb as any)[DEXIE_DELETED_DOCS_TABLE_NAME]
+                    dexieAttachmentsTable: (dexieDb as any)[DEXIE_ATTACHMENTS_TABLE_NAME],
+                    booleanIndexes: getBooleanIndexes(schema)
                 };
             })();
             DEXIE_STATE_DB_BY_NAME.set(dexieDbName, state);
@@ -86,30 +74,6 @@ export async function closeDexieDb(statePromise: DexieStorageInternals) {
     } else {
         REF_COUNT_PER_DEXIE_DB.set(statePromise, newCount);
     }
-}
-
-export function ensureNoBooleanIndex(schema: RxJsonSchema<any>) {
-    if (!schema.indexes) {
-        return;
-    }
-    const checkedFields = new Set<string>();
-    schema.indexes.forEach(index => {
-        const fields = toArray(index);
-        fields.forEach(field => {
-            if (checkedFields.has(field)) {
-                return;
-            }
-            checkedFields.add(field);
-            const schemaObj = getSchemaByObjectPath(schema, field);
-            if (schemaObj.type === 'boolean') {
-                throw newRxError('DXE1', {
-                    schema,
-                    index,
-                    field
-                });
-            }
-        });
-    });
 }
 
 
@@ -148,19 +112,68 @@ export function dexieReplaceIfStartsWithPipeRevert(str: string): string {
     }
 }
 
+
+/**
+ * IndexedDB does not support boolean indexing.
+ * So we have to replace true/false with '1'/'0'
+ * @param d 
+ */
+export function fromStorageToDexie<RxDocType>(
+    booleanIndexes: string[],
+    d: RxDocumentData<RxDocType>
+): any {
+    if (!d) {
+        return d;
+    }
+    d = flatClone(d);
+    d = fromStorageToDexieField(d);
+
+    booleanIndexes.forEach(idx => {
+        const val = getProperty(d, idx);
+        const newVal = val ? '1' : '0';
+        setProperty(d, idx, newVal);
+    });
+
+    return d;
+}
+export function fromDexieToStorage<RxDocType>(
+    booleanIndexes: string[],
+    d: any
+): RxDocumentData<RxDocType> {
+    if (!d) {
+        return d;
+    }
+
+    d = flatClone(d);
+    d = fromDexieToStorageField(d);
+
+    booleanIndexes.forEach(idx => {
+        const val = getProperty(d, idx);
+        const newVal = val === '1' ? true : false;
+        setProperty(d, idx, newVal);
+    });
+
+    return d;
+}
+
 /**
  * @recursive
  */
-export function fromStorageToDexie(documentData: RxDocumentData<any>): any {
-    if (!documentData || typeof documentData === 'string' || typeof documentData === 'number' || typeof documentData === 'boolean') {
+export function fromStorageToDexieField(documentData: RxDocumentData<any>): any {
+    if (
+        !documentData ||
+        typeof documentData === 'string' ||
+        typeof documentData === 'number' ||
+        typeof documentData === 'boolean'
+    ) {
         return documentData;
     } else if (Array.isArray(documentData)) {
-        return documentData.map(row => fromStorageToDexie(row));
+        return documentData.map(row => fromStorageToDexieField(row));
     } else if (typeof documentData === 'object') {
         const ret: any = {};
         Object.entries(documentData).forEach(([key, value]) => {
             if (typeof value === 'object') {
-                value = fromStorageToDexie(value);
+                value = fromStorageToDexieField(value);
             }
             ret[dexieReplaceIfStartsWithPipe(key)] = value;
         });
@@ -168,16 +181,16 @@ export function fromStorageToDexie(documentData: RxDocumentData<any>): any {
     }
 }
 
-export function fromDexieToStorage(documentData: any): RxDocumentData<any> {
+export function fromDexieToStorageField(documentData: any): RxDocumentData<any> {
     if (!documentData || typeof documentData === 'string' || typeof documentData === 'number' || typeof documentData === 'boolean') {
         return documentData;
     } else if (Array.isArray(documentData)) {
-        return documentData.map(row => fromDexieToStorage(row));
+        return documentData.map(row => fromDexieToStorageField(row));
     } else if (typeof documentData === 'object') {
         const ret: any = {};
         Object.entries(documentData).forEach(([key, value]) => {
             if (typeof value === 'object' || Array.isArray(documentData)) {
-                value = fromDexieToStorage(value);
+                value = fromDexieToStorageField(value);
             }
             ret[dexieReplaceIfStartsWithPipeRevert(key)] = value;
         });
@@ -201,6 +214,7 @@ export function getDexieStoreSchema(
      */
     const primaryKey = getPrimaryFieldOfPrimaryKey(rxJsonSchema.primaryKey);
     parts.push([primaryKey]);
+    parts.push(['_deleted', primaryKey]);
 
     // add other indexes
     if (rxJsonSchema.indexes) {
@@ -213,6 +227,9 @@ export function getDexieStoreSchema(
     // we also need the _meta.lwt+primaryKey index for the getChangedDocumentsSince() method.
     parts.push(['_meta.lwt', primaryKey]);
 
+    // and this one for the cleanup()
+    parts.push(['_meta.lwt']);
+
     /**
      * It is not possible to set non-javascript-variable-syntax
      * keys as IndexedDB indexes. So we have to substitute the pipe-char
@@ -222,13 +239,17 @@ export function getDexieStoreSchema(
         return part.map(str => dexieReplaceIfStartsWithPipe(str));
     });
 
-    return parts.map(part => {
+    let dexieSchemaRows = parts.map(part => {
         if (part.length === 1) {
             return part[0];
         } else {
             return '[' + part.join('+') + ']';
         }
-    }).join(', ');
+    });
+    dexieSchemaRows = dexieSchemaRows.filter((elem: any, pos: any, arr: any) => arr.indexOf(elem) === pos); // unique;
+    const dexieSchema = dexieSchemaRows.join(', ');
+
+    return dexieSchema;
 }
 
 /**
@@ -240,18 +261,37 @@ export async function getDocsInDb<RxDocType>(
     docIds: string[]
 ): Promise<RxDocumentData<RxDocType>[]> {
     const state = await internals;
-    const [
-        nonDeletedDocsInDb,
-        deletedDocsInDb
-    ] = await Promise.all([
-        state.dexieTable.bulkGet(docIds),
-        state.dexieDeletedTable.bulkGet(docIds)
-    ]);
-    const docsInDb = deletedDocsInDb.slice(0);
-    nonDeletedDocsInDb.forEach((doc, idx) => {
-        if (doc) {
-            docsInDb[idx] = doc;
-        }
-    });
-    return docsInDb;
+    const docsInDb = await state.dexieTable.bulkGet(docIds);
+    return docsInDb.map(d => fromDexieToStorage(state.booleanIndexes, d));
 }
+
+
+export function attachmentObjectId(documentId: string, attachmentId: string): string {
+    return documentId + '||' + attachmentId;
+}
+
+
+export function getBooleanIndexes(schema: RxJsonSchema<any>): string[] {
+    const checkedFields = new Set<string>();
+    const ret: string[] = [];
+    if (!schema.indexes) {
+        return ret;
+    }
+    schema.indexes.forEach(index => {
+        const fields = toArray(index);
+        fields.forEach(field => {
+            if (checkedFields.has(field)) {
+                return;
+            }
+            checkedFields.add(field);
+            const schemaObj = getSchemaByObjectPath(schema, field);
+            if (schemaObj.type === 'boolean') {
+                ret.push(field);
+            }
+        });
+    });
+    ret.push('_deleted');
+
+    return uniqueArray(ret);
+}
+

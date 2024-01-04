@@ -1,6 +1,6 @@
 import type {
     RxDocumentData
-} from '../../types';
+} from '../../types/index.d.ts';
 
 export function parseRevision(revision: string): { height: number; hash: string; } {
     const split = revision.split('-');

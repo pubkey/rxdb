@@ -2,18 +2,18 @@ import {
     Observable
 } from 'rxjs';
 
-import {
+import type {
     RxCollection,
-} from './rx-collection';
-import {
+} from './rx-collection.d.ts';
+import type {
     RxAttachment,
     RxAttachmentCreator
-} from './rx-attachment';
-import { RxDocumentData, WithDeleted } from './rx-storage';
-import { RxChangeEvent } from './rx-change-event';
-import { DeepReadonly, MaybePromise, PlainJsonValue } from './util';
-import { UpdateQuery } from './plugins/update';
-import { CRDTEntry } from './plugins/crdt';
+} from './rx-attachment.d.ts';
+import type { RxDocumentData, WithDeleted } from './rx-storage.d.ts';
+import type { RxChangeEvent } from './rx-change-event.d.ts';
+import type { DeepReadonly, MaybePromise, PlainJsonValue } from './util.d.ts';
+import type { UpdateQuery } from './plugins/update.d.ts';
+import type { CRDTEntry } from './plugins/crdt.d.ts';
 
 export type RxDocument<RxDocumentType = {}, OrmMethods = {}> = RxDocumentBase<RxDocumentType, OrmMethods> & RxDocumentType & OrmMethods;
 

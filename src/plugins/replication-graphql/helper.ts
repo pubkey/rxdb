@@ -1,5 +1,5 @@
-import { RxGraphQLReplicationClientState, RxGraphQLReplicationQueryBuilderResponseObject } from '../../types';
-import { ensureNotFalsy } from '../../plugins/utils';
+import type { RxGraphQLReplicationClientState, RxGraphQLReplicationQueryBuilderResponseObject } from '../../types/index.d.ts';
+import { ensureNotFalsy } from '../../plugins/utils/index.ts';
 
 export const GRAPHQL_REPLICATION_PLUGIN_IDENTITY_PREFIX = 'graphql';
 
@@ -16,6 +16,7 @@ export type GraphQLErrors = Array<GraphQLError>;
 
 
 export function graphQLRequest(
+    fetchRequest: WindowOrWorkerGlobalScope['fetch'],
     httpUrl: string,
     clientState: RxGraphQLReplicationClientState,
     queryParams: RxGraphQLReplicationQueryBuilderResponseObject
@@ -33,7 +34,8 @@ export function graphQLRequest(
             credentials: clientState.credentials,
         }
     );
-    return fetch(req)
+    
+    return fetchRequest(req)
         .then((res) => res.json())
         .then((body) => {
             return body;

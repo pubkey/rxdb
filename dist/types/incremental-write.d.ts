@@ -1,4 +1,4 @@
-import type { ModifyFunction, MaybePromise, RxDocumentData, RxDocumentWriteData, RxError, RxStorageInstance, StringKeys } from './types';
+import type { ModifyFunction, MaybePromise, RxDocumentData, RxDocumentWriteData, RxError, RxStorageInstance, StringKeys } from './types/index.d.ts';
 export type IncrementalWriteModifier<RxDocType> = (doc: RxDocumentData<RxDocType>) => MaybePromise<RxDocumentData<RxDocType>> | MaybePromise<RxDocumentWriteData<RxDocType>>;
 type IncrementalWriteQueueItem<RxDocType> = {
     lastKnownDocumentState: RxDocumentData<RxDocType>;

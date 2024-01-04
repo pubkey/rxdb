@@ -4,32 +4,32 @@ import type {
     RxDatabaseCreator,
     RxErrorKey,
     RxDocument
-} from '../../types';
+} from '../../types/index.d.ts';
 
 import {
     ERROR_MESSAGES
-} from './error-messages';
+} from './error-messages.ts';
 import {
     checkSchema
-} from './check-schema';
+} from './check-schema.ts';
 import {
     checkOrmDocumentMethods,
     checkOrmMethods
-} from './check-orm';
-import { checkMigrationStrategies } from './check-migration-strategies';
+} from './check-orm.ts';
+import { checkMigrationStrategies } from './check-migration-strategies.ts';
 import {
     ensureCollectionNameValid,
     ensureDatabaseNameIsValid
-} from './unallowed-properties';
-import { checkMangoQuery, checkQuery } from './check-query';
-import { newRxError } from '../../rx-error';
-import { DeepReadonly } from '../../types/util';
-import { deepFreeze } from '../../plugins/utils';
-import { ensurePrimaryKeyValid } from './check-document';
+} from './unallowed-properties.ts';
+import { checkMangoQuery, checkQuery } from './check-query.ts';
+import { newRxError } from '../../rx-error.ts';
+import { DeepReadonly } from '../../types/util.ts';
+import { deepFreeze } from '../../plugins/utils/index.ts';
+import { ensurePrimaryKeyValid } from './check-document.ts';
 
-export * from './check-schema';
-export * from './unallowed-properties';
-export * from './check-query';
+export * from './check-schema.ts';
+export * from './unallowed-properties.ts';
+export * from './check-query.ts';
 
 
 /**
@@ -60,15 +60,15 @@ export const RxDBDevModePlugin: RxPlugin = {
         console.warn(
             [
                 '-------------- RxDB dev-mode warning -------------------------------',
-                'you are seeing this because you use the RxDB dev-mode plugin https://rxdb.info/dev-mode.html',
+                'you are seeing this because you use the RxDB dev-mode plugin https://rxdb.info/dev-mode.html ',
                 'This is great in development mode, because it will run many checks to ensure',
                 'that you use RxDB correct. If you see this in production mode,',
                 'you did something wrong because the dev-mode plugin will decrease the performance.',
                 '',
                 '🤗 Hint: To get the most out of RxDB, check out the Premium Plugins',
-                'to get access to faster storages and more professional features: https://rxdb.info/premium.html',
-                '',
-                'Also take part in the RxDB User Survey: https://rxdb.info/survey.html',
+                'to get access to faster storages and more professional features: https://rxdb.info/premium',
+                // '',
+                // 'Also take part in the RxDB User Survey: https://rxdb.info/survey.html',
                 '---------------------------------------------------------------------'
             ].join('\n')
         );

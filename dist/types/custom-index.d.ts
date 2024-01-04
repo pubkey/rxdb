@@ -8,8 +8,8 @@
  * which is why the code sometimes looks strange.
  * Run performance tests before and after you touch anything here!
  */
-import type { JsonSchema, RxDocumentData, RxJsonSchema } from './types';
-import { ObjectPathMonadFunction } from './plugins/utils';
+import type { JsonSchema, RxDocumentData, RxJsonSchema } from './types/index.ts';
+import { ObjectPathMonadFunction } from './plugins/utils/index.ts';
 /**
  * Prepare all relevant information
  * outside of the returned function
@@ -48,6 +48,11 @@ export declare function getStringLengthOfIndexNumber(schemaPart: JsonSchema): Pa
 export declare function getIndexStringLength<RxDocType>(schema: RxJsonSchema<RxDocumentData<RxDocType>>, index: string[]): number;
 export declare function getPrimaryKeyFromIndexableString(indexableString: string, primaryKeyLength: number): string;
 export declare function getNumberIndexString(parsedLengths: ParsedLengths, fieldValue: number): string;
-export declare function getStartIndexStringFromLowerBound(schema: RxJsonSchema<any>, index: string[], lowerBound: (string | boolean | number | null | undefined)[], inclusiveStart: boolean): string;
-export declare function getStartIndexStringFromUpperBound(schema: RxJsonSchema<any>, index: string[], upperBound: (string | boolean | number | null | undefined)[], inclusiveEnd: boolean): string;
+export declare function getStartIndexStringFromLowerBound(schema: RxJsonSchema<any>, index: string[], lowerBound: (string | boolean | number | null | undefined)[]): string;
+export declare function getStartIndexStringFromUpperBound(schema: RxJsonSchema<any>, index: string[], upperBound: (string | boolean | number | null | undefined)[]): string;
+/**
+ * Used in storages where it is not possible
+ * to define inclusiveEnd/inclusiveStart
+ */
+export declare function changeIndexableStringByOneQuantum(str: string, direction: 1 | -1): string;
 export {};

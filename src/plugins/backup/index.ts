@@ -1,4 +1,4 @@
-import * as path from 'path';
+import * as path from 'node:path';
 import {
     BehaviorSubject,
     firstValueFrom,
@@ -9,7 +9,7 @@ import {
 import {
     filter,
     map
-} from 'rxjs/operators';
+} from 'rxjs';
 import type {
     BackupOptions,
     RxBackupWriteEvent,
@@ -17,13 +17,13 @@ import type {
     RxDatabase,
     RxDocument,
     RxPlugin
-} from '../../types';
+} from '../../types/index.d.ts';
 import {
     getFromMapOrCreate,
     PROMISE_RESOLVE_FALSE,
     PROMISE_RESOLVE_TRUE,
     PROMISE_RESOLVE_VOID
-} from '../../plugins/utils';
+} from '../../plugins/utils/index.ts';
 import {
     clearFolder,
     deleteFolder,
@@ -34,7 +34,8 @@ import {
     setMeta,
     writeJsonToFile,
     writeToFile
-} from './file-util';
+} from './file-util.ts';
+import { getChangedDocumentsSince } from '../../rx-storage-helper.ts';
 
 
 /**
@@ -143,7 +144,8 @@ export class RxBackupState {
                     let hasMore = true;
                     while (hasMore && !this.isStopped) {
                         await this.database.requestIdlePromise();
-                        const changesResult = await collection.storageInstance.getChangedDocumentsSince(
+                        const changesResult = await getChangedDocumentsSince(
+                            collection.storageInstance,
                             this.options.batchSize ? this.options.batchSize : 0,
                             lastCheckpoint
                         );
@@ -257,7 +259,7 @@ export function backup(
     return backupState;
 }
 
-export * from './file-util';
+export * from './file-util.ts';
 export const RxDBBackupPlugin: RxPlugin = {
     name: 'backup',
     rxdb: true,

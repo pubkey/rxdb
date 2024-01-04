@@ -1,21 +1,18 @@
 import type {
     DeepReadonlyObject
-} from '../../types';
+} from '../../types/index.d.ts';
 
 export function deepFreeze<T>(o: T): T {
     Object.freeze(o);
     Object.getOwnPropertyNames(o).forEach(function (prop) {
         if (
-            (o as any).hasOwnProperty(prop)
-            &&
-            (o as any)[prop] !== null
-            &&
+            Object.prototype.hasOwnProperty.call(o, prop) &&
+            (o as any)[prop] !== null &&
             (
                 typeof (o as any)[prop] === 'object'
                 ||
                 typeof (o as any)[prop] === 'function'
-            )
-            &&
+            ) &&
             !Object.isFrozen((o as any)[prop])
         ) {
             deepFreeze((o as any)[prop]);
@@ -31,7 +28,7 @@ export function deepFreeze<T>(o: T): T {
  * RxDB normally uses the 'dot-prop' npm module.
  * But when performance is really relevant, this is not fast enough.
  * Instead we use a monad that can prepare some stuff up front
- * and we can re-use the generated function.
+ * and we can reuse the generated function.
  */
 export type ObjectPathMonadFunction<T, R = any> = (obj: T) => R;
 export function objectPathMonad<T, R = any>(objectPath: string): ObjectPathMonadFunction<T, R> {
@@ -83,13 +80,11 @@ export function flattenObject(ob: any) {
     const toReturn: any = {};
 
     for (const i in ob) {
-        if (!ob.hasOwnProperty(i)) continue;
-
+        if (!Object.prototype.hasOwnProperty.call(ob, i)) continue;
         if ((typeof ob[i]) === 'object') {
             const flatObject = flattenObject(ob[i]);
             for (const x in flatObject) {
-                if (!flatObject.hasOwnProperty(x)) continue;
-
+                if (!Object.prototype.hasOwnProperty.call(flatObject, x)) continue;
                 toReturn[i + '.' + x] = flatObject[x];
             }
         } else {
@@ -144,10 +139,6 @@ export function sortObject(obj: any, noArraySort = false): any {
     // object
     // array is also of type object
     if (typeof obj === 'object' && !Array.isArray(obj)) {
-        if (obj instanceof RegExp) {
-            return obj;
-        }
-
         const out: any = {};
         Object.keys(obj)
             .sort((a, b) => a.localeCompare(b))
@@ -212,18 +203,5 @@ export function overwriteGetterForCaching<ValueType = any>(
             return value;
         }
     });
-    return value;
-}
-
-
-
-/**
- * used to JSON.stringify() objects that contain a regex
- * @link https://stackoverflow.com/a/33416684 thank you Fabian Jakobs!
- */
-export function stringifyFilter(key: string, value: any) {
-    if (value instanceof RegExp) {
-        return value.toString();
-    }
     return value;
 }

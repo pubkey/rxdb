@@ -5,17 +5,17 @@
 import {
     isObject,
     merge
-} from './mquery-utils';
+} from './mquery-utils.ts';
 import {
     newRxTypeError,
     newRxError
-} from '../../../rx-error';
+} from '../../../rx-error.ts';
 import type {
     MangoQuery,
     MangoQuerySelector,
     MangoQuerySortPart,
     MangoQuerySortDirection
-} from '../../../types';
+} from '../../../types/index.d.ts';
 
 
 declare type MQueryOptions = {
@@ -471,6 +471,7 @@ OTHER_MANGO_OPERATORS.forEach(function ($conditional) {
     (NoSqlQueryBuilderClass.prototype as any)[$conditional] = function () {
         let path;
         let val;
+
         if (1 === arguments.length) {
             this._ensurePath($conditional);
             val = arguments[0];
@@ -483,7 +484,28 @@ OTHER_MANGO_OPERATORS.forEach(function ($conditional) {
         const conds = this._conditions[path] === null || typeof this._conditions[path] === 'object' ?
             this._conditions[path] :
             (this._conditions[path] = {});
-        conds['$' + $conditional] = val;
+
+
+
+        if ($conditional === 'regex') {
+            if (val instanceof RegExp) {
+                throw newRxError('QU16', {
+                    field: path,
+                    query: this._conditions,
+                });
+            }
+            if (typeof val === 'string') {
+                conds['$' + $conditional] = val;
+            } else {
+                conds['$' + $conditional] = val.$regex;
+                if (val.$options) {
+                    conds.$options = val.$options;
+                }
+            }
+        } else {
+            conds['$' + $conditional] = val;
+        }
+
         return this;
     };
 });

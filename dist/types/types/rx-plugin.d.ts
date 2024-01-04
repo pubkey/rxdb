@@ -1,24 +1,26 @@
-import {
+import type {
     RxQuery,
     RxQueryOP,
     MangoQuery
-} from './rx-query';
+} from './rx-query.d.ts';
 import type {
     RxCollection,
     RxCollectionCreator
-} from './rx-collection';
-import {
+} from './rx-collection.d.ts';
+import type {
     RxStorageInstanceCreationParams
-} from './rx-storage';
+} from './rx-storage.d.ts';
 import type {
     DeepReadonly,
     FilledMangoQuery,
     RxDatabase,
     RxDatabaseCreator,
     RxDocument,
-    RxStorage
-} from '../types';
-import type { RxSchema } from '../rx-schema';
+    RxStorage,
+    RxReplicationWriteToMasterRow,
+    WithDeleted
+} from './index.d.ts';
+import type { RxSchema } from '../rx-schema.d.ts';
 
 export type RxPluginPreCreateRxQueryArgs = {
     op: RxQueryOP;
@@ -128,5 +130,13 @@ export interface RxPlugin {
         preCreateRxStorageInstance?: RxPluginHooks<RxStorageInstanceCreationParams<any, any>>;
         preMigrateDocument?: RxPluginHooks<any>;
         postMigrateDocument?: RxPluginHooks<any>;
+        preReplicationMasterWrite?: RxPluginHooks<{
+            rows: RxReplicationWriteToMasterRow<any>[];
+            collection: RxCollection;
+        }>;
+        preReplicationMasterWriteDocumentsHandle?: RxPluginHooks<{
+            result: WithDeleted<any>[];
+            collection: RxCollection;
+        }>;
     };
 }

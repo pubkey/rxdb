@@ -1,9 +1,9 @@
 import assert from 'assert';
 import AsyncTestUtil, { clone } from 'async-test-util';
 
-import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv';
-import * as schemas from '../helper/schemas';
-import * as schemaObjects from '../helper/schema-objects';
+import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs';
+import * as schemas from '../helper/schemas.ts';
+import * as schemaObjects from '../helper/schema-objects.ts';
 import {
     createRxDatabase,
     randomCouchString,
@@ -18,7 +18,7 @@ import {
     rxStorageInstanceToReplicationHandler,
     RxReplicationWriteToMasterRow,
     defaultConflictHandler
-} from '../../';
+} from '../../plugins/core/index.mjs';
 
 
 
@@ -26,11 +26,11 @@ import {
     getCRDTSchemaPart,
     RxDBcrdtPlugin,
     getCRDTConflictHandler
-} from '../../plugins/crdt';
+} from '../../plugins/crdt/index.mjs';
 addRxPlugin(RxDBcrdtPlugin);
-import config from './config';
-import { replicateRxCollection, RxReplicationState } from '../../plugins/replication';
-import { ReplicationPullHandler, ReplicationPushHandler } from '../../src/types';
+import config from './config.ts';
+import { replicateRxCollection, RxReplicationState } from '../../plugins/replication/index.mjs';
+import { ReplicationPullHandler, ReplicationPushHandler } from '../../plugins/core/index.mjs';
 
 config.parallel('crdt.test.js', () => {
     type WithCRDTs<RxDocType> = RxDocType & {
@@ -144,6 +144,41 @@ config.parallel('crdt.test.js', () => {
             });
             assert.ok(doc1 !== doc2);
             assert.strictEqual(doc2.getLatest().firstName, 'foobar');
+
+            collection.database.destroy();
+        });
+        /**
+         * @link https://github.com/pubkey/rxdb/pull/5423
+         */
+        it('should insert the document with undefined argument', async () => {
+
+            let useSchema = clone(schemas.human);
+            useSchema.properties.optional_value = {
+                type: 'string'
+            };
+            useSchema = enableCRDTinSchema(useSchema);
+            const db = await createRxDatabase({
+                name: randomCouchString(10),
+                /**
+                 * Use the validator in tests to ensure we do not write
+                 * broken data.
+                 */
+                storage: wrappedValidateAjvStorage({
+                    storage: config.storage.getStorage(),
+                }),
+                multiInstance: false
+            });
+            await db.addCollections({
+                docs: {
+                    schema: useSchema
+                }
+            });
+            const collection = db.docs;
+
+            const writeData = schemaObjects.human('insert-me');
+            (writeData as any).optional_value = undefined;
+            const doc1 = await collection.insert(writeData);
+            assert.strictEqual(doc1.getLatest().optional_value, undefined);
 
             collection.database.destroy();
         });
@@ -277,11 +312,15 @@ config.parallel('crdt.test.js', () => {
 
     describe('conflict handling', () => {
         const schema = enableCRDTinSchema(fillWithDefaultSettings(schemas.human));
-        const conflictHandler = getCRDTConflictHandler<WithCRDTs<schemas.HumanDocumentType>>(
-            defaultHashSha256,
-            config.storage.getStorage().statics,
-            schema
-        );
+        let conflictHandler: any;
+        describe('init', () => {
+            it('init', () => {
+                conflictHandler = getCRDTConflictHandler<WithCRDTs<schemas.HumanDocumentType>>(
+                    defaultHashSha256,
+                    schema
+                );
+            });
+        });
         describe('.getCRDTConflictHandler()', () => {
             it('should merge 2 inserts correctly', async () => {
                 const writeData = schemaObjects.human();
@@ -313,6 +352,9 @@ config.parallel('crdt.test.js', () => {
             });
         });
         describe('conflicts during replication', () => {
+            if (!config.storage.hasReplication) {
+                return;
+            }
             const REPLICATION_IDENTIFIER_TEST = 'replication-crdt-tests';
             type TestDocType = WithCRDTs<schemas.HumanDocumentType>;
             type CheckpointType = any;

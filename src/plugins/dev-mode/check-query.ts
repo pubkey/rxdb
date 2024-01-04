@@ -6,11 +6,11 @@ import type {
     RxJsonSchema,
     RxDocumentData,
     MangoQuerySelector,
-    DefaultPreparedQuery
-} from '../../types';
-import { newRxError, newRxTypeError } from '../../rx-error';
-import { RxStorageDexieStatics } from '../storage-dexie';
-import { deepEqual } from '../utils';
+    PreparedQuery
+} from '../../types/index.d.ts';
+import { newRxError, newRxTypeError } from '../../rx-error.ts';
+import { deepEqual } from '../utils/index.ts';
+import { prepareQuery } from '../../rx-query.ts';
 
 /**
  * accidentally passing a non-valid object into the query params
@@ -64,6 +64,8 @@ export function checkQuery(args: RxPluginPreCreateRxQueryArgs) {
             }
         );
     }
+
+    ensureObjectDoesNotContainRegExp(args.queryObj);
 }
 
 
@@ -149,6 +151,9 @@ export function checkMangoQuery(args: RxPluginPrePrepareQueryArgs) {
                 }
             });
     }
+
+    // Do not allow RexExp instances
+    ensureObjectDoesNotContainRegExp(args.mangoQuery);
 }
 
 
@@ -156,9 +161,33 @@ export function areSelectorsSatisfiedByIndex<RxDocType>(
     schema: RxJsonSchema<RxDocumentData<RxDocType>>,
     query: FilledMangoQuery<RxDocType>
 ): boolean {
-    const preparedQuery: DefaultPreparedQuery<any> = RxStorageDexieStatics.prepareQuery(
+    const preparedQuery: PreparedQuery<any> = prepareQuery(
         schema,
         query
     );
     return preparedQuery.queryPlan.selectorSatisfiedByIndex;
+}
+
+/**
+ * Ensures that the selector does not contain any RegExp instance.
+ * @recursive
+ */
+export function ensureObjectDoesNotContainRegExp(selector: any) {
+    if (typeof selector !== 'object' || selector === null) {
+        return;
+    }
+    const keys = Object.keys(selector);
+    keys.forEach(key => {
+        const value: any = selector[key];
+        if (value instanceof RegExp) {
+            throw newRxError('QU16', {
+                field: key,
+                query: selector,
+            });
+        } else if (Array.isArray(value)) {
+            value.forEach(item => ensureObjectDoesNotContainRegExp(item));
+        } else {
+            ensureObjectDoesNotContainRegExp(value);
+        }
+    });
 }

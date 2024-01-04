@@ -5,14 +5,13 @@
 import {
     ensureNotFalsy,
     getProperty
-} from '../../plugins/utils';
+} from '../../plugins/utils/index.ts';
 
 import {
-    graphQLRequest,
-    GRAPHQL_REPLICATION_PLUGIN_IDENTITY_PREFIX
-} from './helper';
+    graphQLRequest
+} from './helper.ts';
 
-import { RxDBLeaderElectionPlugin } from '../leader-election';
+import { RxDBLeaderElectionPlugin } from '../leader-election/index.ts';
 import type {
     RxCollection,
     ReplicationPullOptions,
@@ -22,21 +21,21 @@ import type {
     RxReplicationPullStreamItem,
     RxGraphQLReplicationQueryBuilderResponseObject,
     RxGraphQLReplicationClientState
-} from '../../types';
+} from '../../types/index.d.ts';
 import {
     RxReplicationState,
     startReplicationOnLeaderShip
-} from '../replication';
+} from '../replication/index.ts';
 import {
     addRxPlugin,
     SyncOptionsGraphQL,
     WithDeleted
-} from '../../index';
+} from '../../index.ts';
 
 import {
     removeGraphQLWebSocketRef,
     getGraphQLWebSocket
-} from './graphql-websocket';
+} from './graphql-websocket.ts';
 import { Subject } from 'rxjs';
 
 
@@ -46,17 +45,18 @@ export class RxGraphQLReplicationState<RxDocType, CheckpointType> extends RxRepl
     constructor(
         public readonly url: GraphQLServerUrl,
         public readonly clientState: RxGraphQLReplicationClientState,
-        public readonly replicationIdentifierHash: string,
+        public readonly replicationIdentifier: string,
         public readonly collection: RxCollection<RxDocType>,
         public readonly deletedField: string,
         public readonly pull?: ReplicationPullOptions<RxDocType, CheckpointType>,
         public readonly push?: ReplicationPushOptions<RxDocType>,
         public readonly live?: boolean,
         public retryTime?: number,
-        public autoStart?: boolean
+        public autoStart?: boolean,
+        public readonly customFetch?: WindowOrWorkerGlobalScope['fetch']
     ) {
         super(
-            replicationIdentifierHash,
+            replicationIdentifier,
             collection,
             deletedField,
             pull,
@@ -79,6 +79,7 @@ export class RxGraphQLReplicationState<RxDocType, CheckpointType> extends RxRepl
         queryParams: RxGraphQLReplicationQueryBuilderResponseObject
     ) {
         return graphQLRequest(
+            this.customFetch ?? fetch,
             ensureNotFalsy(this.url.http),
             this.clientState,
             queryParams
@@ -97,8 +98,10 @@ export function replicateGraphQL<RxDocType, CheckpointType>(
         pull,
         push,
         live = true,
+        fetch: customFetch,
         retryTime = 1000 * 5, // in ms
         autoStart = true,
+        replicationIdentifier
     }: SyncOptionsGraphQL<RxDocType, CheckpointType>
 ): RxGraphQLReplicationState<RxDocType, CheckpointType> {
     addRxPlugin(RxDBLeaderElectionPlugin);
@@ -119,7 +122,7 @@ export function replicateGraphQL<RxDocType, CheckpointType>(
         const pullBatchSize = pull.batchSize ? pull.batchSize : 20;
         replicationPrimitivesPull = {
             async handler(
-                lastPulledCheckpoint: CheckpointType
+                lastPulledCheckpoint: CheckpointType | undefined
             ) {
                 const pullGraphQL = await pull.queryBuilder(lastPulledCheckpoint, pullBatchSize);
                 const result = await graphqlReplicationState.graphQLRequest(pullGraphQL);
@@ -180,14 +183,15 @@ export function replicateGraphQL<RxDocType, CheckpointType>(
     const graphqlReplicationState = new RxGraphQLReplicationState(
         url,
         mutateableClientState,
-        GRAPHQL_REPLICATION_PLUGIN_IDENTITY_PREFIX + collection.database.hashFunction(url.http ? url.http : url.ws as any),
+        replicationIdentifier,
         collection,
         deletedField,
         replicationPrimitivesPull,
         replicationPrimitivesPush,
         live,
         retryTime,
-        autoStart
+        autoStart,
+        customFetch
     );
 
     const mustUseSocket = url.ws &&
@@ -234,9 +238,11 @@ export function replicateGraphQL<RxDocType, CheckpointType>(
 
     const cancelBefore = graphqlReplicationState.cancel.bind(graphqlReplicationState);
     graphqlReplicationState.cancel = () => {
-        pullStream$.complete();
-        if (mustUseSocket) {
-            removeGraphQLWebSocketRef(ensureNotFalsy(url.ws));
+        if (!graphqlReplicationState.isStopped()) {
+            pullStream$.complete();
+            if (mustUseSocket) {
+                removeGraphQLWebSocketRef(ensureNotFalsy(url.ws));
+            }
         }
         return cancelBefore();
     };
@@ -245,7 +251,7 @@ export function replicateGraphQL<RxDocType, CheckpointType>(
     return graphqlReplicationState;
 }
 
-export * from './helper';
-export * from './graphql-schema-from-rx-schema';
-export * from './query-builder-from-rx-schema';
-export * from './graphql-websocket';
+export * from './helper.ts';
+export * from './graphql-schema-from-rx-schema.ts';
+export * from './query-builder-from-rx-schema.ts';
+export * from './graphql-websocket.ts';

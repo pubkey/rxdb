@@ -1,7 +1,7 @@
 import {
     getDefaultRevision,
     getDefaultRxDocumentMeta
-} from '../../plugins/utils';
+} from '../../plugins/utils/index.ts';
 
 import type {
     RxChangeEvent,
@@ -11,18 +11,18 @@ import type {
     RxDocumentWriteData,
     RxLocalDocument,
     RxLocalDocumentData
-} from '../../types';
+} from '../../types/index.d.ts';
 
 import {
     filter,
     map,
     startWith,
     mergeMap
-} from 'rxjs/operators';
+} from 'rxjs';
 import { Observable } from 'rxjs';
 
-import { getLocalDocStateByParent } from './local-documents-helper';
-import { getSingleDocument, writeSingle } from '../../rx-storage-helper';
+import { getLocalDocStateByParent } from './local-documents-helper.ts';
+import { getSingleDocument, writeSingle } from '../../rx-storage-helper.ts';
 
 
 

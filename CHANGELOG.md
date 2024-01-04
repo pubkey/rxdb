@@ -9,6 +9,66 @@
 
 <!-- RELEASE BELOW -->
 
+### 15.1.0 (2 January 2024)
+
+- Add `operationName` to graphQL requests [#5418](https://github.com/pubkey/rxdb/pull/5418)
+- Custom fetch to support axios for the graphQL replication [#5421](https://github.com/pubkey/rxdb/pull/5421)
+- FIX CRDT not working with undefined fields [#5423](https://github.com/pubkey/rxdb/pull/5423)
+
+### 15.0.0 (20 December 2023)
+
+🚀 **RxDB v15 is released**
+
+- A list of changes for RxDB v15 can be found [here](https://rxdb.info/releases/15.0.0.html)
+
+### 14.17.1 (24 September 2023)
+
+- Ensure the test suite runs in the [bun runtime](https://bun.sh/)
+
+### 14.17.0 (18 September 2023)
+
+- Expose path in validate-z-schema error logs [#4900](https://github.com/pubkey/rxdb/pull/4900)
+- ADD options for the worker storages [#4925](https://github.com/pubkey/rxdb/issues/4925)
+- ADD the [MongoDB RxStorage](https://rxdb.info/rx-storage-mongodb.html)
+
+### 14.16.0 (21 August 2023)
+
+- FIX primaryKey with value "constructor", breaks findOne()
+- FIX Queries with `$lt` selector on primaryKey broken [#4751](https://github.com/pubkey/rxdb/pull/4751)
+- UPDATE [mingo](https://github.com/kofrasa/mingo) to `6.4.4`
+
+### 14.15.1 (27 July 2023)
+
+- FIX using `.count()` with `allowSlowCount: true` can return wrong results.
+
+### 14.15.0 (18 July 2023)
+
+- FIX count() is incorrect [#4755](https://github.com/pubkey/rxdb/issues/4755)
+
+### 14.14.2 (10 July 2023)
+
+- FIX #4804 requestIdlePromise broken in react-native (#4813)
+- FIX #4781 GraphQL Replication Cancel With Database Destroy
+
+### 14.14.1 (23 June 2023)
+
+- Fix returning deleted items in find queries [#4773](https://github.com/pubkey/rxdb/pull/4773)
+
+### 14.14.0 (7 June 2023)
+
+- ADD [NATS replication](https://rxdb.info/replication-nats.html)
+
+### 14.13.0 (2 June 2023)
+
+- Add new hooks in the replication write [#4754](https://github.com/pubkey/rxdb/pull/4754)
+- REFACTOR(docs) [quickstart page](https://rxdb.info/quickstart.html)
+- REFACTOR(docs) [landing page](https://rxdb.info/)
+
+### 14.12.1 (30 May 2023)
+
+- Fix prevent delete _rev from row.doc [#4752](https://github.com/pubkey/rxdb/pull/4752)
+- IMPROVE landingpage hero section [#4753](https://github.com/pubkey/rxdb/pull/4753)
+
 ### 14.12.0 (23 May 2023)
 
 - FIX(couchdb replication) Retries must respect `retryTime` to not cause the UI to stuck [related #4612](https://github.com/pubkey/rxdb/pull/4612)
@@ -327,7 +387,7 @@ Bugfixes:
 
 ### 13.11.0 (19 November 2022)
 
-- ADD [replication-p2p](./docs-src/replication-p2p.md) which can be used to replicate data peer-to-peer without a backend server.
+- ADD [replication-webrtc](./docs-src/replication-webrtc.md) which can be used to replicate data peer-to-peer without a backend server.
 
 ### 13.10.1 (10 November 2022)
 

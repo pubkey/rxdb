@@ -4,19 +4,23 @@ import type {
     RxConflictHandlerOutput,
     RxDocumentData,
     RxStorageInstanceReplicationState
-} from '../types';
+} from '../types/index.d.ts';
 import {
     getDefaultRevision,
     createRevision,
     now,
     flatClone,
     deepEqual
-} from '../plugins/utils';
+} from '../plugins/utils/index.ts';
+import { stripAttachmentsDataFromDocument } from '../rx-storage-helper.ts';
 
 export const defaultConflictHandler: RxConflictHandler<any> = function (
     i: RxConflictHandlerInput<any>,
     _context: string
 ): Promise<RxConflictHandlerOutput<any>> {
+    const newDocumentState = stripAttachmentsDataFromDocument(i.newDocumentState);
+    const realMasterState = stripAttachmentsDataFromDocument(i.realMasterState);
+
     /**
      * If the documents are deep equal,
      * we have no conflict.
@@ -25,8 +29,8 @@ export const defaultConflictHandler: RxConflictHandler<any> = function (
      * for better performance, because deepEqual is expensive.
      */
     if (deepEqual(
-        i.newDocumentState,
-        i.realMasterState
+        newDocumentState,
+        realMasterState
     )) {
         return Promise.resolve({
             isEqual: true
@@ -89,7 +93,7 @@ export async function resolveConflictError<RxDocType>(
         );
         resolvedDoc._meta.lwt = now();
         resolvedDoc._rev = createRevision(
-            state.input.identifier,
+            await state.checkpointKey,
             forkState
         );
         return {

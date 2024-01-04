@@ -6,8 +6,8 @@
 import isMyJsonValid from 'is-my-json-valid';
 import type {
     RxJsonSchema
-} from '../../types';
-import { wrappedValidateStorageFactory } from '../../plugin-helpers';
+} from '../../types/index.d.ts';
+import { wrappedValidateStorageFactory } from '../../plugin-helpers.ts';
 
 
 export function getValidator(

@@ -1,6 +1,6 @@
 import assert from 'assert';
 
-import config from './config';
+import config from './config.ts';
 import {
     RxJsonSchema,
     randomCouchString,
@@ -14,13 +14,11 @@ import {
     deepFreeze,
     getQueryMatcher,
     getSortComparator,
-    createRxDatabase
-} from '../../';
-import {
-    areSelectorsSatisfiedByIndex
-} from '../../plugins/dev-mode';
-import { EXAMPLE_REVISION_1 } from '../helper/revisions';
-import * as schemas from '../helper/schemas';
+    createRxDatabase,
+    prepareQuery
+} from '../../plugins/core/index.mjs';
+import { EXAMPLE_REVISION_1 } from '../helper/revisions.ts';
+import * as schemas from '../helper/schemas.ts';
 import {
     HeroArrayDocumentType,
     human,
@@ -28,12 +26,13 @@ import {
     NestedHumanDocumentType,
     simpleHumanV3,
     SimpleHumanV3DocumentType
-} from '../helper/schema-objects';
-import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv';
+} from '../helper/schema-objects.ts';
+import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs';
 
 const TEST_CONTEXT = 'rx-storage-query-correctness.test.ts';
 config.parallel('rx-storage-query-correctness.test.ts', () => {
     type TestCorrectQueriesInput<RxDocType> = {
+        notRunIfTrue?: () => boolean;
         testTitle: string;
         schema: RxJsonSchema<RxDocType>;
         data: RxDocType[];
@@ -60,6 +59,12 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
     function testCorrectQueries<RxDocType>(
         input: TestCorrectQueriesInput<RxDocType>
     ) {
+
+        if (input.notRunIfTrue && input.notRunIfTrue()) {
+            return;
+        }
+
+
         it(input.testTitle, async () => {
             const schema = fillWithDefaultSettings(clone(input.schema));
             const primaryPath = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
@@ -98,7 +103,8 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                 name: randomCouchString(10),
                 storage: wrappedValidateAjvStorage({
                     storage: config.storage.getStorage()
-                })
+                }),
+                allowSlowCount: true
             });
             const collections = await database.addCollections({
                 test: {
@@ -113,16 +119,23 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                     continue;
                 }
 
-                const normalizedQuery = deepFreeze(normalizeMangoQuery(schema, queryData.query));
+                const queryForStorage = clone(queryData.query) as MangoQuery<RxDocType>;
+                if (!queryForStorage.selector) {
+                    queryForStorage.selector = {};
+                }
+                (queryForStorage.selector as any)._deleted = false;
+                if (queryForStorage.index) {
+                    (queryForStorage.index as any).unshift('_deleted');
+                }
+                const normalizedQuery = deepFreeze(normalizeMangoQuery(schema, queryForStorage));
                 const skip = normalizedQuery.skip ? normalizedQuery.skip : 0;
                 const limit = normalizedQuery.limit ? normalizedQuery.limit : Infinity;
                 const skipPlusLimit = skip + limit;
 
-                const preparedQuery = config.storage.getStorage().statics.prepareQuery<RxDocType>(
+                const preparedQuery = prepareQuery<RxDocType>(
                     schema,
                     normalizedQuery
                 );
-
 
                 // Test output of RxStorageStatics
                 const queryMatcher = getQueryMatcher(schema, normalizedQuery);
@@ -136,7 +149,11 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                     assert.deepStrictEqual(resultStaticsIds, queryData.expectedResultDocIds);
                 } catch (err) {
                     console.log('WRONG QUERY RESULTS FROM STATICS: ' + queryData.info);
-                    console.dir(queryData);
+                    console.dir({
+                        queryData,
+                        resultStaticsIds
+                    });
+
                     throw err;
                 }
 
@@ -163,7 +180,23 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                 try {
                     assert.deepStrictEqual(resultIds, queryData.expectedResultDocIds);
                 } catch (err) {
-                    console.log('WRONG QUERY RESULTS FROM .query(): ' + queryData.info);
+                    console.log('WRONG QUERY RESULTS FROM RxStorageInstance.query(): ' + queryData.info);
+                    console.dir({
+                        resultIds,
+                        queryData,
+                        preparedQuery
+                    });
+                    throw err;
+                }
+
+                // Test output of RxCollection.find()
+                const rxQuery = collection.find(queryData.query);
+                const resultFromCollection = await rxQuery.exec();
+                const resultFromCollectionIds = resultFromCollection.map(d => d.primary);
+                try {
+                    assert.deepStrictEqual(resultFromCollectionIds, queryData.expectedResultDocIds);
+                } catch (err) {
+                    console.log('WRONG QUERY RESULTS FROM RxCollection.find(): ' + queryData.info);
                     console.dir(queryData);
                     throw err;
                 }
@@ -171,8 +204,7 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                 // Test output of .count()
                 if (
                     !queryData.query.limit &&
-                    !queryData.query.skip &&
-                    areSelectorsSatisfiedByIndex(schema, normalizedQuery)
+                    !queryData.query.skip
                 ) {
                     const countResult = await storageInstance.count(preparedQuery);
                     try {
@@ -185,17 +217,6 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                         console.dir(queryData);
                         throw err;
                     }
-                }
-
-                // Test output of RxCollection.find()
-                const resultFromCollection = await collection.find(queryData.query).exec();
-                const resultFromCollectionIds = resultFromCollection.map(d => d.primary);
-                try {
-                    assert.deepStrictEqual(resultFromCollectionIds, queryData.expectedResultDocIds);
-                } catch (err) {
-                    console.log('WRONG QUERY RESULTS FROM RxCollection.find(): ' + queryData.info);
-                    console.dir(queryData);
-                    throw err;
                 }
             }
 
@@ -223,7 +244,8 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
         schema: withIndexes(schemas.human, [
             ['age'],
             ['age', 'firstName'],
-            ['firstName']
+            ['firstName'],
+            ['passportId']
         ]),
         queries: [
             {
@@ -257,6 +279,37 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                 expectedResultDocIds: [
                     'bb',
                     'cc-looong-id',
+                    'dd',
+                    'ee'
+                ]
+            },
+            {
+                info: '$gt on primary key',
+                query: {
+                    selector: {
+                        passportId: {
+                            $gt: 'dd'
+                        }
+                    },
+                    sort: [{ passportId: 'asc' }]
+                },
+                selectorSatisfiedByIndex: true,
+                expectedResultDocIds: [
+                    'ee'
+                ]
+            },
+            {
+                info: '$gt and $gte on same field',
+                query: {
+                    selector: {
+                        age: {
+                            $gte: 40,
+                            $gt: 19,
+                        },
+                    },
+                    sort: [{ age: 'asc' }]
+                },
+                expectedResultDocIds: [
                     'dd',
                     'ee'
                 ]
@@ -332,7 +385,8 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
         schema: withIndexes(schemas.human, [
             ['age'],
             ['age', 'firstName'],
-            ['firstName']
+            ['firstName'],
+            ['passportId']
         ]),
         queries: [
             {
@@ -345,6 +399,7 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                     },
                     sort: [{ age: 'asc' }]
                 },
+                selectorSatisfiedByIndex: true,
                 expectedResultDocIds: [
                     'aa',
                     'bb',
@@ -361,6 +416,7 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                     },
                     sort: [{ age: 'asc' }]
                 },
+                selectorSatisfiedByIndex: true,
                 expectedResultDocIds: [
                     'aa',
                     'bb',
@@ -378,13 +434,30 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                     },
                     sort: [{ passportId: 'asc' }]
                 },
+                selectorSatisfiedByIndex: false,
                 expectedResultDocIds: [
                     'aa',
                     'bb',
                     'cc-looong-id'
                 ]
             },
-            // TODO why does this query not use the age+firstName index?
+            {
+                /**
+                 * @link https://github.com/pubkey/rxdb/pull/4751
+                 */
+                info: '$lt on primaryKey',
+                query: {
+                    selector: {
+                        passportId: {
+                            $lt: 'bb'
+                        }
+                    },
+                    sort: [{ passportId: 'asc' }]
+                },
+                expectedResultDocIds: [
+                    'aa'
+                ]
+            },
             {
                 info: 'compare more then one field',
                 query: {
@@ -706,12 +779,28 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
         testTitle: '$eq operator',
         data: [
             {
+                id: 'zero',
+                nonPrimaryString: 'zero',
+                integer: 0,
+                number: 0,
+                boolean: false,
+                null: 'not-null'
+            },
+            {
                 id: 'one',
                 nonPrimaryString: 'one',
                 integer: 1,
                 number: 1,
                 boolean: true,
                 null: null
+            },
+            {
+                id: 'two',
+                nonPrimaryString: 'two',
+                integer: 2,
+                number: 2,
+                boolean: false,
+                null: 'not-null'
             }
         ],
         schema: {
@@ -739,6 +828,10 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                     type: 'null'
                 }
             },
+            indexes: [
+                // boolean indexing was broken on some storages
+                'boolean'
+            ],
             required: [
                 'id',
                 'nonPrimaryString',
@@ -901,7 +994,7 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
         },
         queries: [
             {
-                info: '$eq primary key',
+                info: '$eq primary key 2',
                 query: {
                     selector: {
                         id: {
@@ -948,6 +1041,107 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                 },
                 expectedResultDocIds: ['one|1|1'],
             },
+        ],
+    });
+    /**
+     * @link https://github.com/pubkey/rxdb/issues/5273
+     */
+    testCorrectQueries<{
+        id: string;
+        hasHighlights: number;
+        lastOpenedAt: number;
+        exists: number;
+    }>({
+        testTitle: 'issue: compound index has wrong range',
+        data: [
+            {
+                id: '1',
+                exists: 1,
+                hasHighlights: 1,
+                lastOpenedAt: 1600000000000
+            },
+            {
+                id: '2',
+                exists: 1,
+                hasHighlights: 1,
+                lastOpenedAt: 1700000000000
+            }
+        ],
+        schema: {
+            version: 0,
+            indexes: [
+                ['exists', 'hasHighlights', 'lastOpenedAt']
+            ],
+            primaryKey: 'id',
+            type: 'object',
+            properties: {
+                id: {
+                    type: 'string',
+                    maxLength: 1
+                },
+                hasHighlights: {
+                    type: 'integer',
+                    minimum: 0,
+                    maximum: 1,
+                    multipleOf: 1
+                },
+                lastOpenedAt: {
+                    type: 'integer',
+                    minimum: 0,
+                    maximum: Number.MAX_SAFE_INTEGER,
+                    multipleOf: 1,
+                },
+                exists: {
+                    type: 'integer',
+                    minimum: 0,
+                    maximum: 1,
+                    multipleOf: 1
+                },
+            },
+            required: ['id', 'hasHighlights', 'lastOpenedAt', 'exists']
+        },
+        queries: [
+            {
+                info: 'multiple operators',
+                query: {
+                    selector: {
+                        exists: 1,
+                        lastOpenedAt: {
+                            $gte: 1600000000000,
+                            $lte: 1650000000000
+                        }
+                    }
+                },
+                selectorSatisfiedByIndex: false,
+                expectedResultDocIds: ['1']
+            },
+            {
+                info: 'multiple operators 2',
+                query: {
+                    selector: {
+                        exists: 1,
+                        lastOpenedAt: {
+                            $gte: 1600000000000
+                        }
+                    }
+                },
+                selectorSatisfiedByIndex: false,
+                expectedResultDocIds: ['1', '2']
+            },
+            {
+                info: 'all operators in index',
+                query: {
+                    selector: {
+                        exists: 1,
+                        hasHighlights: 1,
+                        lastOpenedAt: {
+                            $gte: 1600000000000
+                        }
+                    }
+                },
+                selectorSatisfiedByIndex: true,
+                expectedResultDocIds: ['1', '2']
+            }
         ],
     });
     testCorrectQueries({
@@ -1014,5 +1208,205 @@ config.parallel('rx-storage-query-correctness.test.ts', () => {
                 ]
             },
         ]
+    });
+    testCorrectQueries<{
+        _id: string;
+        name: string;
+        gender: string;
+        age: number;
+    }>({
+        testTitle: 'issue: wrong results on complex index',
+        data: [
+            {
+                '_id': 'nogljngyvo',
+                'name': 'cjbovwbzjx',
+                'gender': 'f',
+                'age': 18
+            },
+            {
+                '_id': 'zmbznyggnu',
+                'name': 'rpjljekeoy',
+                'gender': 'm',
+                'age': 3
+            },
+            {
+                '_id': 'hauezldqea',
+                'name': 'ckjndqrthh',
+                'gender': 'f',
+                'age': 20
+            },
+            {
+                '_id': 'utarwoqkav',
+                'name': 'thfubuvqwr',
+                'gender': 'm',
+                'age': 12
+            }
+        ],
+        schema: {
+            primaryKey: '_id',
+            type: 'object',
+            version: 0,
+            properties: {
+                _id: {
+                    type: 'string',
+                    maxLength: 20
+                },
+                name: {
+                    type: 'string',
+                    maxLength: 20
+                },
+                gender: {
+                    type: 'string',
+                    enum: ['f', 'm', 'x'],
+                    maxLength: 1
+                },
+                age: {
+                    type: 'number',
+                    minimum: 0,
+                    maximum: 100,
+                    multipleOf: 1
+                }
+            },
+            indexes: [
+                [
+                    'name',
+                    'gender',
+                    'age',
+                    '_id'
+                ],
+                [
+                    'gender',
+                    'age',
+                    'name',
+                    '_id'
+                ],
+                [
+                    'age',
+                    'name',
+                    'gender',
+                    '_id'
+                ]
+            ]
+        },
+        queries: [
+            {
+                info: 'complex query on index',
+                query: {
+                    'selector': {
+                        'gender': {
+                            '$gt': 'x'
+                        },
+                        'name': {
+                            '$lt': 'hqybnsozrv'
+                        }
+                    },
+                    'sort': [
+                        {
+                            'gender': 'asc'
+                        },
+                        {
+                            'age': 'asc'
+                        },
+                        {
+                            '_id': 'asc'
+                        }
+                    ],
+                    'index': [
+                        'name',
+                        'gender',
+                        'age',
+                        '_id'
+                    ]
+                },
+                expectedResultDocIds: []
+            },
+            {
+                info: 'complex query on end of index',
+                query: {
+                    'selector': {
+                        'gender': {
+                            '$lt': 'x',
+                            '$lte': 'm'
+                        },
+                    },
+                    'sort': [
+                        {
+                            'age': 'asc'
+                        },
+                        {
+                            'name': 'asc'
+                        },
+                        {
+                            '_id': 'asc'
+                        }
+
+                    ],
+                    'index': [
+                        'gender',
+                        'age',
+                        'name',
+                        '_id'
+
+                    ]
+                },
+                expectedResultDocIds: ['zmbznyggnu', 'utarwoqkav', 'nogljngyvo', 'hauezldqea']
+            },
+            {
+                info: 'had wrong index string on upper bound',
+                query: {
+                    'selector': {
+                        'age': {
+                            '$gte': 4,
+                            '$lte': 20
+                        },
+                        'gender': {
+                            '$lt': 'm'
+                        },
+
+                    },
+                    'sort': [
+                        {
+                            'name': 'asc'
+                        },
+                        {
+                            '_id': 'asc'
+                        }
+                    ],
+                    'index': [
+                        'age',
+                        'name',
+                        'gender',
+                        '_id'
+                    ]
+                },
+                expectedResultDocIds: ['nogljngyvo', 'hauezldqea']
+            },
+            {
+                info: 'had wrong index string on upper bound for $eq',
+                query: {
+                    'selector': {
+                        'age': {
+                            '$lte': 12
+                        },
+                        'gender': {
+                            '$lt': 'x',
+                            '$eq': 'm'
+                        },
+                    },
+                    'sort': [
+                        {
+                            '_id': 'asc'
+                        }
+                    ],
+                    'index': [
+                        'gender',
+                        'age',
+                        'name',
+                        '_id'
+                    ]
+                },
+                expectedResultDocIds: ['utarwoqkav', 'zmbznyggnu']
+            },
+        ],
     });
 });

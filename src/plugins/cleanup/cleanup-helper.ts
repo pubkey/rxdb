@@ -1,6 +1,6 @@
 import type {
     RxCleanupPolicy
-} from '../../types';
+} from '../../types/index.d.ts';
 
 export const DEFAULT_CLEANUP_POLICY: RxCleanupPolicy = {
     minimumDeletedTime: 1000 * 60 * 60 * 24 * 31, // one month

@@ -1,5 +1,5 @@
-import type { DeepReadonly, JsonSchema, PrimaryKey, RxDocumentData, RxJsonSchema, RxStorageDefaultCheckpoint, StringKeys } from './types';
-import type { RxSchema } from './rx-schema';
+import type { DeepReadonly, JsonSchema, PrimaryKey, RxDocumentData, RxJsonSchema, RxStorageDefaultCheckpoint, StringKeys } from './types/index.d.ts';
+import type { RxSchema } from './rx-schema.ts';
 /**
  * Helper function to create a valid RxJsonSchema
  * with a given version.
@@ -29,6 +29,12 @@ export declare function getComposedPrimaryKeyOfDocumentData<RxDocType>(jsonSchem
  * @return RxJsonSchema - ordered and filled
  */
 export declare function normalizeRxJsonSchema<T>(jsonSchema: RxJsonSchema<T>): RxJsonSchema<T>;
+/**
+ * If the schema does not specify any index,
+ * we add this index so we at least can run RxQuery()
+ * and only select non-deleted fields.
+ */
+export declare function getDefaultIndex(primaryPath: string): string[];
 /**
  * fills the schema-json with default-settings
  * @return cloned schemaObj

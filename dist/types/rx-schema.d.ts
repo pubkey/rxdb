@@ -1,4 +1,4 @@
-import type { DeepMutable, DeepReadonly, HashFunction, MaybeReadonly, RxDocumentData, RxJsonSchema, StringKeys } from './types';
+import type { DeepMutable, DeepReadonly, HashFunction, MaybeReadonly, RxDocumentData, RxJsonSchema, StringKeys } from './types/index.d.ts';
 export declare class RxSchema<RxDocType = any> {
     readonly jsonSchema: RxJsonSchema<RxDocumentData<RxDocType>>;
     readonly hashFunction: HashFunction;
@@ -16,7 +16,7 @@ export declare class RxSchema<RxDocType = any> {
      * TODO this should be a pure function that
      * caches the hash in a WeakMap.
      */
-    get hash(): string;
+    get hash(): Promise<string>;
     /**
      * checks if a given change on a document is allowed
      * Ensures that:

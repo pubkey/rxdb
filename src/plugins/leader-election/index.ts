@@ -10,13 +10,13 @@ import {
 import {
     getBroadcastChannelReference,
     removeBroadcastChannelReference
-} from '../../rx-storage-multiinstance';
+} from '../../rx-storage-multiinstance.ts';
 
 import type {
     RxDatabase,
     RxPlugin
-} from '../../types';
-import { PROMISE_RESOLVE_TRUE, getFromMapOrCreate } from '../utils';
+} from '../../types/index.d.ts';
+import { PROMISE_RESOLVE_TRUE, getFromMapOrCreate } from '../utils/index.ts';
 
 const LEADER_ELECTORS_OF_DB: WeakMap<RxDatabase, LeaderElector> = new WeakMap();
 const LEADER_ELECTOR_BY_BROADCAST_CHANNEL: WeakMap<BroadcastChannel, LeaderElector> = new WeakMap();
@@ -41,6 +41,7 @@ export function getForDatabase(this: RxDatabase): LeaderElector {
 
 
     const broadcastChannel = getBroadcastChannelReference(
+        this.storage.name,
         this.token,
         this.name,
         this

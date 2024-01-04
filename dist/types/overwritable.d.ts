@@ -4,7 +4,7 @@
  * An 'overwritable' can be used inside WebWorkers for RxStorage only,
  * and we do not want to have the full RxDB lib bundled in them.
  */
-import type { DeepReadonly } from './types/util';
+import type { DeepReadonly } from './types/util.d.ts';
 export declare const overwritable: {
     /**
      * if this method is overwritten with one

@@ -1,4 +1,4 @@
-import type { MaybePromise, MaybeReadonly } from '../../types';
+import type { MaybePromise, MaybeReadonly } from '../../types/index.d.ts';
 export declare function lastOfArray<T>(ar: T[]): T | undefined;
 /**
  * shuffle the given array
@@ -18,6 +18,7 @@ export declare function removeOneFromArrayIfMatches<T>(ar: T[], condition: (x: T
  * returns true if the supplied argument is either an Array<T> or a Readonly<Array<T>>
  */
 export declare function isMaybeReadonlyArray(x: any): x is MaybeReadonly<any[]>;
+export declare function isOneItemOfArrayInOtherArray<T>(ar1: T[], ar2: T[]): boolean;
 /**
  * Use this in array.filter() to remove all empty slots
  * and have the correct typings afterwards.
@@ -39,3 +40,7 @@ export declare function maxOfNumbers(arr: number[]): number;
  * @link https://www.measurethat.net/Benchmarks/Show/4223/0/array-concat-vs-spread-operator-vs-push#latest_results_block
  */
 export declare function appendToArray<T>(ar: T[], add: T[] | readonly T[]): void;
+/**
+ * @link https://gist.github.com/telekosmos/3b62a31a5c43f40849bb
+ */
+export declare function uniqueArray(arrArg: string[]): string[];

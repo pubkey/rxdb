@@ -2,11 +2,11 @@ import {
     PROMISE_RESOLVE_VOID,
     getFromMapOrCreate,
     getFromMapOrThrow
-} from '../utils';
+} from '../utils/index.ts';
 import {
     RemoteMessageChannel,
     RxStorageRemoteSettings
-} from './storage-remote-types';
+} from './storage-remote-types.ts';
 
 export type RemoteMessageChannelCacheItem = {
     identifier: string;

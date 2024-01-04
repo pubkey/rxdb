@@ -6,7 +6,7 @@ import {
     ExtractDocumentTypeFromTypedRxJsonSchema,
     overwritable,
     flatClone
-} from '../../';
+} from '../../plugins/core/index.mjs';
 import {
     SimpleHumanV3DocumentType,
     HumanWithSubOtherDocumentType,
@@ -28,7 +28,7 @@ import {
     NostringIndexDocumentType,
     NoIndexHumanDocumentType,
     HumanWithCompositePrimary
-} from './schema-objects';
+} from './schema-objects.ts';
 
 
 export const humanSchemaLiteral = overwritable.deepFreezeWhenDevMode({
@@ -715,7 +715,7 @@ export const primaryHumanLiteral = overwritable.deepFreezeWhenDevMode({
         },
         lastName: {
             type: 'string',
-            maxLength: 1000
+            maxLength: 500
         },
         age: {
             type: 'integer',
@@ -953,16 +953,16 @@ export function averageSchema(): RxJsonSchema<AverageSchemaDocumentType> {
         properties: {
             id: {
                 type: 'string',
-                maxLength: 100
+                maxLength: 12
             },
             var1: {
                 type: 'string',
-                maxLength: 100
+                maxLength: 12
             },
             var2: {
                 type: 'number',
                 minimum: 0,
-                maximum: 1000000,
+                maximum: 50000,
                 multipleOf: 1
             },
             deep: {
@@ -970,10 +970,11 @@ export function averageSchema(): RxJsonSchema<AverageSchemaDocumentType> {
                 properties: {
                     deep1: {
                         type: 'string',
-                        maxLength: 100
+                        maxLength: 10
                     },
                     deep2: {
-                        type: 'string'
+                        type: 'string',
+                        maxLength: 10
                     }
                 }
             },

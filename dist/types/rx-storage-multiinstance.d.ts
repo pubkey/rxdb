@@ -13,7 +13,7 @@
  * Do not use this if the storage anyway broadcasts the events like when using MongoDB
  * or in the future W3C might introduce a way to listen to IndexedDB changes.
  */
-import type { EventBulk, RxStorageInstance, RxStorageInstanceCreationParams } from './types';
+import type { EventBulk, RxStorageInstance, RxStorageInstanceCreationParams } from './types/index.d.ts';
 import { BroadcastChannel } from 'broadcast-channel';
 /**
  * The broadcast-channel is reused by the databaseInstanceToken.
@@ -45,7 +45,7 @@ export type RxStorageMultiInstanceBroadcastType = {
     databaseName: string;
     eventBulk: EventBulk<any, any>;
 };
-export declare function getBroadcastChannelReference(databaseInstanceToken: string, databaseName: string, refObject: any): BroadcastChannel<RxStorageMultiInstanceBroadcastType>;
+export declare function getBroadcastChannelReference(storageName: string, databaseInstanceToken: string, databaseName: string, refObject: any): BroadcastChannel<RxStorageMultiInstanceBroadcastType>;
 export declare function removeBroadcastChannelReference(databaseInstanceToken: string, refObject: any): Promise<void> | undefined;
 export declare function addRxStorageMultiInstanceSupport<RxDocType>(storageName: string, instanceCreationParams: RxStorageInstanceCreationParams<RxDocType, any>, instance: RxStorageInstance<RxDocType, any, any>, 
 /**

@@ -1,17 +1,20 @@
-import { createLokiLocalState, RxStorageInstanceLoki } from './rx-storage-instance-loki';
-import lokijs, { Collection } from 'lokijs';
+import {
+    createLokiLocalState,
+    RxStorageInstanceLoki
+} from './rx-storage-instance-loki.ts';
+import Loki from 'lokijs';
 import type {
     DeterministicSortComparator,
+    FilledMangoQuery,
     LokiDatabaseSettings,
     LokiDatabaseState,
     LokiLocalDatabaseState,
     LokiRemoteResponseBroadcastMessage,
-    MangoQuery,
     MangoQuerySortDirection,
     MangoQuerySortPart,
     RxDocumentData,
     RxJsonSchema
-} from '../../types';
+} from '../../types/index.d.ts';
 import {
     add as unloadAdd,
     AddReturn
@@ -23,16 +26,16 @@ import {
     getProperty,
     promiseWait,
     randomCouchString
-} from '../utils';
-import { LokiSaveQueue } from './loki-save-queue';
-import { newRxError } from '../../rx-error';
+} from '../utils/index.ts';
+import { LokiSaveQueue } from './loki-save-queue.ts';
+import { newRxError } from '../../rx-error.ts';
 import {
     LeaderElector,
     OnMessageHandler
 } from 'broadcast-channel';
-import { getBroadcastChannelReference } from '../../rx-storage-multiinstance';
-import { getLeaderElectorByBroadcastChannel } from '../leader-election';
-import { overwritable } from '../../overwritable';
+import { getBroadcastChannelReference } from '../../rx-storage-multiinstance.ts';
+import { getLeaderElectorByBroadcastChannel } from '../leader-election/index.ts';
+import { overwritable } from '../../overwritable.ts';
 
 export const CHANGES_COLLECTION_SUFFIX = '-rxdb-changes';
 export const LOKI_BROADCAST_CHANNEL_MESSAGE_TYPE = 'rxdb-lokijs-remote-request';
@@ -72,7 +75,7 @@ export function stripLokiKey<T>(docData: RxDocumentData<T> & { $loki?: number; }
 export const OPEN_LOKIJS_STORAGE_INSTANCES: Set<RxStorageInstanceLoki<any>> = new Set();
 
 
-export const LOKIJS_COLLECTION_DEFAULT_OPTIONS: Partial<CollectionOptions<any>> = {
+export const LOKIJS_COLLECTION_DEFAULT_OPTIONS: Partial<any> = {
     disableChangesApi: true,
     disableMeta: true,
     disableDeltaChangesApi: true,
@@ -124,7 +127,7 @@ export function getLokiDatabase(
                         throttledSaves: false
                     }
                 );
-                const database = new lokijs(
+                const database = new Loki(
                     databaseName + '.db',
                     flatClone(useSettings)
                 );
@@ -189,7 +192,7 @@ export function getLokiDatabase(
 
 export async function closeLokiCollections(
     databaseName: string,
-    collections: Collection[]
+    collections: any[]
 ) {
     const databaseState = await LOKI_DATABASE_STATE_BY_NAME.get(databaseName);
     if (!databaseState) {
@@ -206,7 +209,7 @@ export async function closeLokiCollections(
         LOKI_DATABASE_STATE_BY_NAME.delete(databaseName);
         databaseState.unloads.forEach(u => u.remove());
         await new Promise<void>((res, rej) => {
-            databaseState.database.close(err => {
+            databaseState.database.close((err: any) => {
                 if (err) {
                     rej(err);
                 } else {
@@ -223,7 +226,7 @@ export async function closeLokiCollections(
  */
 export function getLokiSortComparator<RxDocType>(
     _schema: RxJsonSchema<RxDocumentData<RxDocType>>,
-    query: MangoQuery<RxDocType>
+    query: FilledMangoQuery<RxDocType>
 ): DeterministicSortComparator<RxDocType> {
     if (!query.sort) {
         throw newRxError('SNH', { query });
@@ -271,6 +274,7 @@ export function getLokiLeaderElector(
     databaseName: string
 ): LeaderElector {
     const broadcastChannel = getBroadcastChannelReference(
+        RX_STORAGE_NAME_LOKIJS,
         databaseInstanceToken,
         databaseName,
         broadcastChannelRefObject
@@ -465,13 +469,13 @@ export async function mustUseLocalState(
          * This must never happen because when RxDB closes a collection or database,
          * all tasks must be cleared so that no more calls are made the the storage.
          */
-        throw newRxError('SNH', {
-            args: {
+        throw new Error('already closed ' + JSON.stringify(
+            {
                 instanceClosed: instance.closed,
                 databaseName: instance.databaseName,
                 collectionName: instance.collectionName
             }
-        });
+        ));
     }
 
 

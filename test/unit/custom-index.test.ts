@@ -18,11 +18,11 @@ import {
     getIndexStringLength,
     getPrimaryKeyFromIndexableString,
     ensureNotFalsy
-} from '../../';
-import { EXAMPLE_REVISION_1 } from '../helper/revisions';
-import * as schemas from '../helper/schemas';
-import * as schemaObjects from '../helper/schema-objects';
-import config from './config';
+} from '../../plugins/core/index.mjs';
+import { EXAMPLE_REVISION_1 } from '../helper/revisions.ts';
+import * as schemas from '../helper/schemas.ts';
+import * as schemaObjects from '../helper/schema-objects.ts';
+import config from './config.ts';
 
 config.parallel('custom-index.test.ts', () => {
 
@@ -74,7 +74,7 @@ config.parallel('custom-index.test.ts', () => {
             _deleted: false,
             _attachments: {},
             _meta: {
-                lwt: new Date().getTime()
+                lwt: Date.now()
             },
             _rev: EXAMPLE_REVISION_1
         }, partial);
@@ -335,7 +335,7 @@ config.parallel('custom-index.test.ts', () => {
                     _deleted: false,
                     _attachments: {},
                     _meta: {
-                        lwt: new Date().getTime()
+                        lwt: Date.now()
                     },
                     _rev: EXAMPLE_REVISION_1
                 },
@@ -345,7 +345,7 @@ config.parallel('custom-index.test.ts', () => {
                     _deleted: false,
                     _attachments: {},
                     _meta: {
-                        lwt: new Date().getTime()
+                        lwt: Date.now()
                     },
                     _rev: EXAMPLE_REVISION_1
                 }
@@ -388,8 +388,7 @@ config.parallel('custom-index.test.ts', () => {
                 [
                     true,
                     30
-                ],
-                false
+                ]
             );
 
             const matchingDocs = docs.filter(doc => {
@@ -417,8 +416,7 @@ config.parallel('custom-index.test.ts', () => {
                 [
                     false,
                     30
-                ],
-                false
+                ]
             );
             const matchingDocs = docs.filter(doc => {
                 const isIndexStr = getIndexableStringMonad(
@@ -442,8 +440,7 @@ config.parallel('custom-index.test.ts', () => {
                 index,
                 [
                     undefined
-                ],
-                true
+                ]
             );
             const matchingDocs = docs.filter(doc => {
                 const isIndexStr = getIndexableStringMonad(
@@ -479,8 +476,7 @@ config.parallel('custom-index.test.ts', () => {
                 [
                     true,
                     1
-                ],
-                false
+                ]
             );
 
             const doc = getIndexTestDoc();
@@ -497,8 +493,7 @@ config.parallel('custom-index.test.ts', () => {
                 [
                     true,
                     now() + 1000 * 10
-                ],
-                false
+                ]
             );
             assert.ok(upperBoundString.startsWith('1'));
             assert.ok(docIndexString < upperBoundString);
@@ -508,8 +503,7 @@ config.parallel('custom-index.test.ts', () => {
                 [
                     true,
                     now() + 1000 * 100
-                ],
-                false
+                ]
             );
             assert.ok(upperBoundString2 > upperBoundString);
         });

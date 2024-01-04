@@ -5,29 +5,29 @@
  */
 import {
     RxSchema
-} from './rx-schema';
+} from './rx-schema.ts';
 import {
     basePrototype as RxDocumentPrototype
-} from './rx-document';
+} from './rx-document.ts';
 import {
     RxQueryBase
-} from './rx-query';
+} from './rx-query.ts';
 import {
     RxCollectionBase
-} from './rx-collection';
+} from './rx-collection.ts';
 import {
     RxDatabaseBase
-} from './rx-database';
+} from './rx-database.ts';
 import type {
     RxPlugin
-} from './types';
+} from './types/index.d.ts';
 
-import { overwritable } from './overwritable';
+import { overwritable } from './overwritable.ts';
 import {
     HOOKS,
     runPluginHooks
-} from './hooks';
-import { newRxError, newRxTypeError } from './rx-error';
+} from './hooks.ts';
+import { newRxError, newRxTypeError } from './rx-error.ts';
 
 /**
  * prototypes that can be manipulated with a plugin

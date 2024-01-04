@@ -1,23 +1,22 @@
 import {
+    changeIndexableStringByOneQuantum,
     getStartIndexStringFromLowerBound,
     getStartIndexStringFromUpperBound
-} from '../../custom-index';
+} from '../../custom-index.ts';
 import type {
+    PreparedQuery,
     QueryMatcher,
     RxDocumentData,
     RxStorageQueryResult
-} from '../../types';
-import { ensureNotFalsy } from '../../plugins/utils';
-import { getFoundationDBIndexName } from './foundationdb-helpers';
-import type {
-    FoundationDBPreparedQuery
-} from './foundationdb-types';
-import { RxStorageInstanceFoundationDB } from './rx-storage-instance-foundationdb';
-import { getQueryMatcher, getSortComparator } from '../../rx-query-helper';
+} from '../../types/index.d.ts';
+import { ensureNotFalsy, lastOfArray } from '../../plugins/utils/index.ts';
+import { getFoundationDBIndexName } from './foundationdb-helpers.ts';
+import { RxStorageInstanceFoundationDB } from './rx-storage-instance-foundationdb.ts';
+import { getQueryMatcher, getSortComparator } from '../../rx-query-helper.ts';
 
 export async function queryFoundationDB<RxDocType>(
     instance: RxStorageInstanceFoundationDB<RxDocType>,
-    preparedQuery: FoundationDBPreparedQuery<RxDocType>
+    preparedQuery: PreparedQuery<RxDocType>
 ): Promise<RxStorageQueryResult<RxDocType>> {
     const queryPlan = preparedQuery.queryPlan;
     const query = preparedQuery.query;
@@ -25,7 +24,7 @@ export async function queryFoundationDB<RxDocType>(
     const limit = query.limit ? query.limit : Infinity;
     const skipPlusLimit = skip + limit;
     const queryPlanFields: string[] = queryPlan.index;
-    const mustManuallyResort = !queryPlan.sortFieldsSameAsIndexFields;
+    const mustManuallyResort = !queryPlan.sortSatisfiedByIndex;
 
 
     let queryMatcher: QueryMatcher<RxDocumentData<RxDocType>> | false = false;
@@ -40,35 +39,59 @@ export async function queryFoundationDB<RxDocType>(
 
 
     const indexForName = queryPlanFields.slice(0);
-    indexForName.unshift('_deleted');
     const indexName = getFoundationDBIndexName(indexForName);
     const indexDB = ensureNotFalsy(dbs.indexes[indexName]).db;
 
     let lowerBound: any[] = queryPlan.startKeys;
-    lowerBound = [false].concat(lowerBound);
-    const lowerBoundString = getStartIndexStringFromLowerBound(
+    let lowerBoundString = getStartIndexStringFromLowerBound(
         instance.schema,
         indexForName,
-        lowerBound,
-        queryPlan.inclusiveStart
+        lowerBound
     );
 
     let upperBound: any[] = queryPlan.endKeys;
-    upperBound = [false].concat(upperBound);
-    const upperBoundString = getStartIndexStringFromUpperBound(
+    let upperBoundString = getStartIndexStringFromUpperBound(
         instance.schema,
         indexForName,
-        upperBound,
-        queryPlan.inclusiveEnd
+        upperBound
     );
-    let result = await dbs.root.doTransaction(async (tx: any) => {
+    let result: RxDocumentData<RxDocType>[] = await dbs.root.doTransaction(async (tx: any) => {
         const innerResult: RxDocumentData<RxDocType>[] = [];
         const indexTx = tx.at(indexDB.subspace);
         const mainTx = tx.at(dbs.main.subspace);
 
+
+        /**
+         * TODO for whatever reason the keySelectors like firstGreaterThan etc.
+         * do not work properly. So we have to hack here to find the correct
+         * document in case lowerBoundString===upperBoundString.
+         * This likely must be fixed in the foundationdb library.
+         * When it is fixed, we do not need this if-case and instead
+         * can rely on .getRangeBatch() in all cases.
+         */
+        if (lowerBoundString === upperBoundString) {
+            const docId: string = await indexTx.get(lowerBoundString);
+            if (docId) {
+                const docData = await mainTx.get(docId);
+                if (!queryMatcher || queryMatcher(docData)) {
+                    innerResult.push(docData);
+                }
+            }
+            return innerResult;
+        }
+
+        if (!queryPlan.inclusiveStart) {
+            lowerBoundString = changeIndexableStringByOneQuantum(lowerBoundString, 1);
+        }
+        if (queryPlan.inclusiveEnd) {
+            upperBoundString = changeIndexableStringByOneQuantum(upperBoundString, +1);
+        }
+
         const range = indexTx.getRangeBatch(
             lowerBoundString,
             upperBoundString,
+            // queryPlan.inclusiveStart ? keySelector.firstGreaterThan(lowerBoundString) : keySelector.firstGreaterOrEqual(lowerBoundString),
+            // queryPlan.inclusiveEnd ? keySelector.lastLessOrEqual(upperBoundString) : keySelector.lastLessThan(upperBoundString),
             {
                 // TODO these options seem to be broken in the foundationdb node bindings
                 // limit: instance.settings.batchSize,
@@ -82,8 +105,30 @@ export async function queryFoundationDB<RxDocType>(
                 done = true;
                 break;
             }
-            const docIds = next.value.map((row: string[]) => row[1]);
+            const rows: [string, string] = next.value;
+
+            if (!queryPlan.inclusiveStart) {
+                const firstRow = rows[0];
+                if (
+                    firstRow &&
+                    firstRow[0] === lowerBoundString
+                ) {
+                    rows.shift();
+                }
+            }
+            if (!queryPlan.inclusiveEnd) {
+                const lastRow = lastOfArray(rows);
+                if (
+                    lastRow &&
+                    lastRow[0] === upperBoundString
+                ) {
+                    rows.pop();
+                }
+            }
+
+            const docIds = rows.map(row => row[1]);
             const docsData: RxDocumentData<RxDocType>[] = await Promise.all(docIds.map((docId: string) => mainTx.get(docId)));
+
             docsData.forEach((docData) => {
                 if (!done) {
                     if (!queryMatcher || queryMatcher(docData)) {

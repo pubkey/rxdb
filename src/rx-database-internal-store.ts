@@ -1,12 +1,12 @@
 import {
     isBulkWriteConflictError,
     newRxError
-} from './rx-error';
+} from './rx-error.ts';
 import {
     fillWithDefaultSettings,
     getComposedPrimaryKeyOfDocumentData
-} from './rx-schema-helper';
-import { getSingleDocument, writeSingle } from './rx-storage-helper';
+} from './rx-schema-helper.ts';
+import { getSingleDocument, writeSingle } from './rx-storage-helper.ts';
 import type {
     CollectionsOfDatabase,
     InternalStoreCollectionDocType,
@@ -16,21 +16,21 @@ import type {
     RxDatabase,
     RxDocumentData,
     RxJsonSchema,
-    RxStorageWriteError,
     RxStorageInstance,
-    RxStorageStatics,
     RxStorageWriteErrorConflict
-} from './types';
+} from './types/index.d.ts';
 import {
     clone,
     ensureNotFalsy,
     getDefaultRevision,
     getDefaultRxDocumentMeta,
     randomCouchString
-} from './plugins/utils';
+} from './plugins/utils/index.ts';
+import { prepareQuery } from './rx-query.ts';
 
 export const INTERNAL_CONTEXT_COLLECTION = 'collection';
 export const INTERNAL_CONTEXT_STORAGE_TOKEN = 'storage-token';
+export const INTERNAL_CONTEXT_MIGRATION_STATUS = 'rx-migration-status';
 
 /**
  * Do not change the title,
@@ -67,6 +67,7 @@ export const INTERNAL_STORE_SCHEMA: RxJsonSchema<RxDocumentData<InternalStoreDoc
             enum: [
                 INTERNAL_CONTEXT_COLLECTION,
                 INTERNAL_CONTEXT_STORAGE_TOKEN,
+                INTERNAL_CONTEXT_MIGRATION_STATUS,
                 'OTHER'
             ]
         },
@@ -114,14 +115,16 @@ export function getPrimaryKeyOfInternalDocument(
  * with context 'collection'
  */
 export async function getAllCollectionDocuments(
-    storageStatics: RxStorageStatics,
     storageInstance: RxStorageInstance<InternalStoreDocType<any>, any, any>
 ): Promise<RxDocumentData<InternalStoreCollectionDocType>[]> {
-    const getAllQueryPrepared = storageStatics.prepareQuery(
+    const getAllQueryPrepared = prepareQuery<InternalStoreDocType<any>>(
         storageInstance.schema,
         {
             selector: {
-                context: INTERNAL_CONTEXT_COLLECTION
+                context: INTERNAL_CONTEXT_COLLECTION,
+                _deleted: {
+                    $eq: false
+                }
             },
             sort: [{ id: 'asc' }],
             skip: 0
@@ -156,7 +159,7 @@ export async function ensureStorageTokenDocumentExists<Collections extends Colle
     const storageToken = randomCouchString(10);
 
     const passwordHash = rxDatabase.password ?
-        rxDatabase.hashFunction(JSON.stringify(rxDatabase.password)) :
+        await rxDatabase.hashFunction(JSON.stringify(rxDatabase.password)) :
         undefined;
 
     const docData: RxDocumentData<InternalStoreStorageTokenDocType> = {
@@ -164,6 +167,7 @@ export async function ensureStorageTokenDocumentExists<Collections extends Colle
         context: INTERNAL_CONTEXT_STORAGE_TOKEN,
         key: STORAGE_TOKEN_DOCUMENT_KEY,
         data: {
+            rxdbVersion: rxDatabase.rxdbVersion,
             token: storageToken,
             /**
              * We add the instance token here
@@ -185,8 +189,8 @@ export async function ensureStorageTokenDocumentExists<Collections extends Colle
         [{ document: docData }],
         'internal-add-storage-token'
     );
-    if (writeResult.success[STORAGE_TOKEN_DOCUMENT_ID]) {
-        return writeResult.success[STORAGE_TOKEN_DOCUMENT_ID];
+    if (writeResult.success[0]) {
+        return writeResult.success[0];
     }
 
     /**
@@ -194,13 +198,27 @@ export async function ensureStorageTokenDocumentExists<Collections extends Colle
      * it means another instance already inserted the storage token.
      * So we get that token from the database and return that one.
      */
-    const error = ensureNotFalsy(writeResult.error[STORAGE_TOKEN_DOCUMENT_ID]);
+    const error = ensureNotFalsy(writeResult.error[0]);
     if (
         error.isError &&
-        (error as RxStorageWriteError<InternalStoreStorageTokenDocType>).status === 409
+        isBulkWriteConflictError(error)
     ) {
         const conflictError = (error as RxStorageWriteErrorConflict<InternalStoreStorageTokenDocType>);
 
+        if (
+            !isDatabaseStateVersionCompatibleWithDatabaseCode(
+                conflictError.documentInDb.data.rxdbVersion,
+                rxDatabase.rxdbVersion
+            )
+        ) {
+            throw newRxError('DM5', {
+                args: {
+                    database: rxDatabase.name,
+                    databaseStateVersion: conflictError.documentInDb.data.rxdbVersion,
+                    codeVersion: rxDatabase.rxdbVersion
+                }
+            });
+        }
 
         if (
             passwordHash &&
@@ -219,6 +237,30 @@ export async function ensureStorageTokenDocumentExists<Collections extends Colle
 }
 
 
+export function isDatabaseStateVersionCompatibleWithDatabaseCode(
+    databaseStateVersion: string,
+    codeVersion: string
+): boolean {
+    if (!databaseStateVersion) {
+        return false;
+    }
+
+    if (
+        codeVersion.includes('beta') &&
+        codeVersion !== databaseStateVersion
+    ) {
+        return false;
+    }
+
+    const stateMajor = databaseStateVersion.split('.')[0];
+    const codeMajor = codeVersion.split('.')[0];
+    if (stateMajor !== codeMajor) {
+        return false;
+    }
+    return true;
+}
+
+
 
 
 
@@ -227,6 +269,19 @@ export async function addConnectedStorageToCollection(
     storageCollectionName: string,
     schema: RxJsonSchema<any>
 ) {
+
+    if (collection.schema.version !== schema.version) {
+        throw newRxError('SNH', {
+            schema,
+            version: collection.schema.version,
+            name: collection.name,
+            collection,
+            args: {
+                storageCollectionName
+            }
+        });
+    }
+
     const collectionNameWithVersion = _collectionNamePrimary(collection.name, collection.schema.jsonSchema);
     const collectionDocId = getPrimaryKeyOfInternalDocument(
         collectionNameWithVersion,
@@ -239,13 +294,6 @@ export async function addConnectedStorageToCollection(
             collectionDocId
         );
         const saveData: RxDocumentData<InternalStoreCollectionDocType> = clone(ensureNotFalsy(collectionDoc));
-        /**
-         * Add array if not exist for backwards compatibility
-         * TODO remove this in 2023
-         */
-        if (!saveData.data.connectedStorages) {
-            saveData.data.connectedStorages = [];
-        }
 
         // do nothing if already in array
         const alreadyThere = saveData.data.connectedStorages

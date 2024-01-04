@@ -1,9 +1,9 @@
 import { getGraphqlSchemaFromJsonSchema } from 'get-graphql-from-jsonschema';
 
-import { fillWithDefaultSettings } from '../../rx-schema-helper';
+import { fillWithDefaultSettings } from '../../rx-schema-helper.ts';
 
-import { RxJsonSchema } from '../../types';
-import { clone, ensureNotFalsy, flatClone, ucfirst } from '../../plugins/utils';
+import type { RxJsonSchema } from '../../types/index.d.ts';
+import { clone, ensureNotFalsy, flatClone, ucfirst } from '../../plugins/utils/index.ts';
 
 export type Prefixes = {
     push?: string;
@@ -21,10 +21,10 @@ export type Prefixes = {
  * all strings are allowed
  */
 export type GraphQLParamType = 'ID' | 'ID!' |
-'String' | 'String!' |
-'Int' | 'Int!' |
-'Float' | 'Float!' |
-string;
+    'String' | 'String!' |
+    'Int' | 'Int!' |
+    'Float' | 'Float!' |
+    string;
 
 export type GraphQLSchemaFromRxSchemaInputSingleCollection = {
     schema: RxJsonSchema<any>;

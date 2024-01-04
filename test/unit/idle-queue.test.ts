@@ -1,8 +1,8 @@
 import assert from 'assert';
-import config from './config';
+import config from './config.ts';
 import AsyncTestUtil from 'async-test-util';
-import * as humansCollection from '../helper/humans-collection';
-import * as schemaObjects from '../helper/schema-objects';
+import * as humansCollection from '../helper/humans-collection.ts';
+import * as schemaObjects from '../helper/schema-objects.ts';
 
 config.parallel('idle-queue.test.js', () => {
     describe('integration', () => {

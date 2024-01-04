@@ -12,7 +12,7 @@ import type {
     RxDatabase,
     RxReplicationHandler,
     StringKeys
-} from '../../types';
+} from '../../types/index.d.ts';
 
 export type WebsocketServerOptions = {
     database: RxDatabase<any, any, any>;
@@ -25,6 +25,7 @@ export type WebsocketServerState = {
 };
 
 export type WebsocketClientOptions<RxDocType> = {
+    replicationIdentifier: string;
     collection: RxCollection<RxDocType>;
     url: string;
     batchSize?: number;

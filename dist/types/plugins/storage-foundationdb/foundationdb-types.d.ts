@@ -1,4 +1,4 @@
-import type { DefaultPreparedQuery, EventBulk, RxAttachmentWriteData, RxDocumentData, RxStorage, RxStorageChangeEvent, RxStorageDefaultCheckpoint } from '../../types';
+import type { EventBulk, RxAttachmentWriteData, RxDocumentData, RxStorage, RxStorageChangeEvent, RxStorageDefaultCheckpoint } from '../../types/index.d.ts';
 export type RxStorageFoundationDBSettings = {
     /**
      * Version of the API of the foundationDB server.
@@ -44,4 +44,3 @@ export type FoundationDBStorageInternals<RxDocType> = {
     }>;
 };
 export type RxStorageFoundationDB = RxStorage<FoundationDBStorageInternals<any>, RxStorageFoundationDBInstanceCreationOptions> & {};
-export type FoundationDBPreparedQuery<DocType> = DefaultPreparedQuery<DocType>;

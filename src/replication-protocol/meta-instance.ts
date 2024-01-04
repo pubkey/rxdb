@@ -2,8 +2,8 @@ import {
     fillWithDefaultSettings,
     getComposedPrimaryKeyOfDocumentData,
     getLengthOfPrimaryKey
-} from '../rx-schema-helper';
-import { flatCloneDocWithMeta } from '../rx-storage-helper';
+} from '../rx-schema-helper.ts';
+import { flatCloneDocWithMeta } from '../rx-storage-helper.ts';
 import type {
     BulkWriteRow,
     ById,
@@ -12,17 +12,24 @@ import type {
     RxStorageInstanceReplicationState,
     RxStorageReplicationMeta,
     WithDeleted
-} from '../types';
-import { getDefaultRevision, createRevision, now } from '../plugins/utils';
+} from '../types/index.d.ts';
+import {
+    getDefaultRevision,
+    createRevision,
+    now
+} from '../plugins/utils/index.ts';
 
 
-export function getRxReplicationMetaInstanceSchema(
-    replicatedDocumentsSchema: RxJsonSchema<RxDocumentData<any>>,
+export const META_INSTANCE_SCHEMA_TITLE = 'RxReplicationProtocolMetaData';
+
+export function getRxReplicationMetaInstanceSchema<RxDocType, CheckpointType>(
+    replicatedDocumentsSchema: RxJsonSchema<RxDocumentData<RxDocType>>,
     encrypted: boolean
-): RxJsonSchema<RxDocumentData<RxStorageReplicationMeta>> {
+): RxJsonSchema<RxDocumentData<RxStorageReplicationMeta<RxDocType, CheckpointType>>> {
     const parentPrimaryKeyLength = getLengthOfPrimaryKey(replicatedDocumentsSchema);
 
-    const baseSchema: RxJsonSchema<RxStorageReplicationMeta> = {
+    const baseSchema: RxJsonSchema<RxStorageReplicationMeta<RxDocType, CheckpointType>> = {
+        title: META_INSTANCE_SCHEMA_TITLE,
         primaryKey: {
             key: 'id',
             fields: [
@@ -32,7 +39,7 @@ export function getRxReplicationMetaInstanceSchema(
             separator: '|'
         },
         type: 'object',
-        version: 0,
+        version: replicatedDocumentsSchema.version,
         additionalProperties: false,
         properties: {
             id: {
@@ -52,27 +59,35 @@ export function getRxReplicationMetaInstanceSchema(
             },
             itemId: {
                 type: 'string',
-                maxLength: parentPrimaryKeyLength
+                /**
+                 * ensure that all values of RxStorageReplicationDirection ('DOWN' has 4 chars) fit into it
+                 * because checkpoints use the itemId field for that.
+                 */
+                maxLength: parentPrimaryKeyLength > 4 ? parentPrimaryKeyLength : 4
             },
-            data: {
+            checkpointData: {
                 type: 'object',
                 additionalProperties: true
+            },
+            docData: {
+                type: 'object',
+                properties: replicatedDocumentsSchema.properties
             },
             isResolvedConflict: {
                 type: 'string'
             }
         },
+        keyCompression: replicatedDocumentsSchema.keyCompression,
         required: [
             'id',
             'isCheckpoint',
-            'itemId',
-            'data'
+            'itemId'
         ]
     };
     if (encrypted) {
-        baseSchema.encrypted = ['data'];
+        baseSchema.encrypted = ['docData'];
     }
-    const metaInstanceSchema: RxJsonSchema<RxDocumentData<RxStorageReplicationMeta>> = fillWithDefaultSettings(baseSchema);
+    const metaInstanceSchema: RxJsonSchema<RxDocumentData<RxStorageReplicationMeta<RxDocType, CheckpointType>>> = fillWithDefaultSettings(baseSchema);
     return metaInstanceSchema;
 }
 
@@ -87,7 +102,7 @@ export function getAssumedMasterState<RxDocType>(
     docIds: string[]
 ): Promise<ById<{
     docData: WithDeleted<RxDocType>;
-    metaDocument: RxDocumentData<RxStorageReplicationMeta>;
+    metaDocument: RxDocumentData<RxStorageReplicationMeta<RxDocType, any>>;
 }>> {
     return state.input.metaInstance.findDocumentsById(
         docIds.map(docId => {
@@ -105,14 +120,14 @@ export function getAssumedMasterState<RxDocType>(
         const ret: {
             [docId: string]: {
                 docData: RxDocumentData<RxDocType>;
-                metaDocument: RxDocumentData<RxStorageReplicationMeta>;
+                metaDocument: RxDocumentData<RxStorageReplicationMeta<RxDocType, any>>;
             };
         } = {};
         Object
             .values(metaDocs)
             .forEach((metaDoc) => {
                 ret[metaDoc.itemId] = {
-                    docData: metaDoc.data,
+                    docData: metaDoc.docData,
                     metaDocument: metaDoc
                 };
             });
@@ -122,20 +137,20 @@ export function getAssumedMasterState<RxDocType>(
 }
 
 
-export function getMetaWriteRow<RxDocType>(
+export async function getMetaWriteRow<RxDocType>(
     state: RxStorageInstanceReplicationState<RxDocType>,
     newMasterDocState: WithDeleted<RxDocType>,
-    previous?: RxDocumentData<RxStorageReplicationMeta>,
+    previous?: RxDocumentData<RxStorageReplicationMeta<RxDocType, any>>,
     isResolvedConflict?: string
-): BulkWriteRow<RxStorageReplicationMeta> {
+): Promise<BulkWriteRow<RxStorageReplicationMeta<RxDocType, any>>> {
     const docId: string = (newMasterDocState as any)[state.primaryPath];
-    const newMeta: RxDocumentData<RxStorageReplicationMeta> = previous ? flatCloneDocWithMeta(
+    const newMeta: RxDocumentData<RxStorageReplicationMeta<RxDocType, any>> = previous ? flatCloneDocWithMeta(
         previous
     ) : {
         id: '',
         isCheckpoint: '0',
         itemId: docId,
-        data: newMasterDocState,
+        docData: newMasterDocState,
         _attachments: {},
         _deleted: false,
         _rev: getDefaultRevision(),
@@ -143,7 +158,7 @@ export function getMetaWriteRow<RxDocType>(
             lwt: 0
         }
     };
-    newMeta.data = newMasterDocState;
+    newMeta.docData = newMasterDocState;
     newMeta.isResolvedConflict = isResolvedConflict;
     newMeta._meta.lwt = now();
     newMeta.id = getComposedPrimaryKeyOfDocumentData(
@@ -151,7 +166,7 @@ export function getMetaWriteRow<RxDocType>(
         newMeta
     );
     newMeta._rev = createRevision(
-        state.input.identifier,
+        await state.checkpointKey,
         previous
     );
     return {

@@ -6,13 +6,13 @@ import type {
     RxQuery,
     RxCacheReplacementPolicy,
     RxCollection
-} from './types';
+} from './types/index.d.ts';
 import {
     getFromMapOrCreate,
     nextTick,
     now,
     requestIdlePromise
-} from './plugins/utils';
+} from './plugins/utils/index.ts';
 
 export class QueryCache {
     public _map: Map<string, RxQuery> = new Map();

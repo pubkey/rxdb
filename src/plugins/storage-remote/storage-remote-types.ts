@@ -5,9 +5,8 @@ import type {
     RxDatabase,
     RxStorage,
     RxStorageInstance,
-    RxStorageInstanceCreationParams,
-    RxStorageStatics
-} from '../../types';
+    RxStorageInstanceCreationParams
+} from '../../types/index.d.ts';
 
 
 
@@ -48,7 +47,6 @@ export type RemoteMessageChannel = {
 
 export type RxStorageRemoteSettings = {
     identifier: string;
-    statics: RxStorageStatics;
     /**
      * There are different modes
      * that determine how many message channels are used.

@@ -9,7 +9,7 @@ import {
  * So you have to import the rxjs patch to ensure changedetection works correctly.
  * @link https://www.bennadel.com/blog/3448-binding-rxjs-observable-sources-outside-of-the-ngzone-in-angular-6-0-2.htm
  */
- import 'zone.js/dist/zone-patch-rxjs';
+ import 'zone.js/plugins/zone-patch-rxjs';
  
  @Component({
   selector: 'app-root',

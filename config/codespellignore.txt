@@ -2,3 +2,4 @@ statics
 falsy
 nin
 shouldBe
+Guage

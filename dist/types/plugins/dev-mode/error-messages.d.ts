@@ -25,6 +25,7 @@ export declare const ERROR_MESSAGES: {
     QU13: string;
     QU14: string;
     QU15: string;
+    QU16: string;
     MQ1: string;
     MQ2: string;
     MQ3: string;
@@ -42,6 +43,7 @@ export declare const ERROR_MESSAGES: {
     DB8: string;
     DB11: string;
     DB12: string;
+    DB13: string;
     COL1: string;
     COL2: string;
     COL3: string;
@@ -84,9 +86,12 @@ export declare const ERROR_MESSAGES: {
     DOC21: string;
     DOC22: string;
     DOC23: string;
+    DOC24: string;
     DM1: string;
     DM2: string;
     DM3: string;
+    DM4: string;
+    DM5: string;
     AT1: string;
     EN1: string;
     EN2: string;
@@ -112,7 +117,7 @@ export declare const ERROR_MESSAGES: {
     RC_STREAM: string;
     RC_PUSH: string;
     RC_PUSH_NO_AR: string;
-    RC_P2P_PEER: string;
+    RC_WEBRTC_PEER: string;
     RC_COUCHDB_1: string;
     RC_COUCHDB_2: string;
     SC1: string;
@@ -150,6 +155,7 @@ export declare const ERROR_MESSAGES: {
     SC37: string;
     SC38: string;
     SC39: string;
+    SC40: string;
     VD1: string;
     VD2: string;
     S1: string;
@@ -158,7 +164,6 @@ export declare const ERROR_MESSAGES: {
     CRDT1: string;
     CRDT2: string;
     CRDT3: string;
-    DXE1: string;
     /**
      * Should never be thrown, use this for
      * null checks etc. so you do not have to increase the

@@ -4,6 +4,7 @@ test_tmp/
 tmp/
 dist/
 package.json
+plugins/
 examples/angular
 examples/electron
 examples/electron-remote
@@ -12,7 +13,6 @@ examples/ionic2
 examples/flutter
 examples/node
 examples/react-native
-examples/vanilla
 examples/vue
 examples/svelte
 examples/react/build
@@ -20,5 +20,7 @@ examples/supabase/
 examples/vite-vanilla-ts
 node_modules
 docs
-docs-src/files/logo/js.build.js
+docs-src/static/files/logo/js.build.js
 docs-src/_book/
+docs-src/build/
+docs-src/docusaurus-lunr-search-main

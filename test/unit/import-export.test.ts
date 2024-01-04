@@ -3,20 +3,20 @@
  */
 import assert from 'assert';
 
-import * as schemas from './../helper/schemas';
-import * as schemaObjects from './../helper/schema-objects';
-import * as humansCollection from './../helper/humans-collection';
+import * as schemas from './../helper/schemas.ts';
+import * as schemaObjects from './../helper/schema-objects.ts';
+import * as humansCollection from './../helper/humans-collection.ts';
 
 import {
     createRxDatabase,
     RxCollection,
     randomCouchString,
     createBlob
-} from '../../';
+} from '../../plugins/core/index.mjs';
 
 import AsyncTestUtil from 'async-test-util';
-import config, { getEncryptedStorage, getPassword } from './config';
-import { HumanDocumentType } from './../helper/schemas';
+import config, { getEncryptedStorage, getPassword } from './config.ts';
+import { HumanDocumentType } from './../helper/schemas.ts';
 
 config.parallel('import-export.test.js', () => {
     describe('Collection', () => {
@@ -89,7 +89,7 @@ config.parallel('import-export.test.js', () => {
                     if (!config.storage.hasMultiInstance) {
                         return;
                     }
-                    const col = await humansCollection.createMultiInstance('pref1', 5);
+                    const col = await humansCollection.createMultiInstance(randomCouchString(10), 5);
                     const json = await col.exportJSON();
                     const differentSchemaCol = await humansCollection.createNested();
                     await AsyncTestUtil.assertThrows(

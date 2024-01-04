@@ -1,10 +1,9 @@
 import type { ChangeEvent } from 'event-reduce-js';
-import { RxChangeEvent } from './rx-change-event';
-import { RxDocumentMeta } from './rx-document';
-import { RxStorageWriteError } from './rx-error';
-import { MangoQuery } from './rx-query';
-import { RxJsonSchema } from './rx-schema';
-import { ById, Override, StringKeys } from './util';
+import type { RxChangeEvent } from './rx-change-event.d.ts';
+import type { RxDocumentMeta } from './rx-document.d.ts';
+import type { RxStorageWriteError } from './rx-error.d.ts';
+import type { RxJsonSchema } from './rx-schema.d.ts';
+import type { Override } from './util.d.ts';
 
 /**
  * The document data how it comes out of the storage instance.
@@ -68,6 +67,17 @@ export type RxDocumentWriteData<T> = T & Override<RxDocumentData<{}>, {
 export type WithDeleted<DocType> = DocType & {
     _deleted: boolean;
 };
+export type WithDeletedAndAttachments<DocType> = DocType & {
+    _deleted: boolean;
+
+    /**
+     * Here the _attachments might exist
+     * or might not, depending one the use case.
+     */
+    _attachments?: {
+        [attachmentId: string]: RxAttachmentData | RxAttachmentWriteData;
+    };
+};
 
 /**
  * Send to the bulkWrite() method of a storage instance.
@@ -102,7 +112,7 @@ export type BulkWriteRowProcessed<RxDocType> = BulkWriteRow<RxDocType> & {
 };
 
 
-export type RxAttachmentDataBase = {
+export type RxAttachmentData = {
     /**
      * Size of the attachments data
      */
@@ -111,21 +121,9 @@ export type RxAttachmentDataBase = {
      * Content type like 'plain/text'
      */
     type: string;
-};
-
-
-/**
- * Meta data of the attachment
- * how it is send to, or comes out of the RxStorage implementation.
- */
-export type RxAttachmentData = RxAttachmentDataBase & {
     /**
      * The hash of the attachments content.
-     * It is NOT calculated by RxDB, instead it is calculated
-     * by the RxStorage.
-     * There is no way to pre-calculate the hash from the outside because
-     * the RxStorage might hash a compressed binary or do a different base64 transformation
-     * before hashing.
+     * It is calculated by RxDB, and send to the storage.
      * The only guarantee is that the digest will change when the attachments data changes.
      * @link https://github.com/pouchdb/pouchdb/issues/3156#issuecomment-66831010
      * @link https://github.com/pubkey/rxdb/pull/4107
@@ -137,7 +135,7 @@ export type RxAttachmentData = RxAttachmentDataBase & {
  * Data which is needed for new attachments
  * that are send from RxDB to the RxStorage implementation.
  */
-export type RxAttachmentWriteData = RxAttachmentDataBase & {
+export type RxAttachmentWriteData = RxAttachmentData & {
     /**
      * The data of the attachment. As string in base64 format.
      * In the past we used Blob internally but it created many
@@ -152,23 +150,23 @@ export type RxAttachmentWriteData = RxAttachmentDataBase & {
 };
 
 
-
-
+/**
+ * The returned data from RxStorageInstance.bulkWrite()
+ * For better performance, we do NOT use an indexed object,
+ * but only plain arrays. Because most of the time
+ * RxDB anyway only need the array data and we can save performance
+ * by not indexing the results.
+ */
 export type RxStorageBulkWriteResponse<RxDocType> = {
     /**
-     * A map that is indexed by the documentId
      * contains all succeeded writes.
      */
-    success: RxDocumentDataById<RxDocType>;
-
+    success: RxDocumentData<RxDocType>[];
     /**
-     * A map that is indexed by the documentId
      * contains all errored writes.
      */
-    error: ById<RxStorageWriteError<RxDocType>>;
+    error: RxStorageWriteError<RxDocType>[];
 };
-
-export type PreparedQuery<DocType> = MangoQuery<DocType> | any;
 
 /**
  * We return a complex object instead of a single array
@@ -274,6 +272,16 @@ export type EventBulk<EventType, CheckpointType> = {
      * that caused this EventBulk.
      */
     context: string;
+
+    /**
+     * Unix timestamp in milliseconds of when the operation was triggered
+     * and when it was finished.
+     * This is optional because we do not have this time
+     * for events that come from the internal storage instance changestream.
+     * TODO do we even need this values?
+     */
+    startTime: number;
+    endTime: number;
 };
 
 export type ChangeStreamEvent<DocType> = ChangeEvent<RxDocumentData<DocType>> & {
@@ -304,17 +312,14 @@ export type RxStorageDefaultCheckpoint = {
 
 
 
+
 export type CategorizeBulkWriteRowsOutput<RxDocType> = {
+
+    // TODO only needs the document, not the row.
     bulkInsertDocs: BulkWriteRowProcessed<RxDocType>[];
     bulkUpdateDocs: BulkWriteRowProcessed<RxDocType>[];
-    /**
-     * Ids of all documents that are changed
-     * and so their change must be written into the
-     * sequences table so that they can be fetched via
-     * RxStorageInstance().getChangedDocumentsSince().
-     */
-    changedDocumentIds: RxDocType[StringKeys<RxDocType>][];
-    errors: ById<RxStorageWriteError<RxDocType>>;
+
+    errors: RxStorageWriteError<RxDocType>[];
     eventBulk: EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, any>;
     attachmentsAdd: {
         documentId: string;

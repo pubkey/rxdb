@@ -16,6 +16,12 @@ Future<dynamic> patchJavaScriptRuntime(FlutterQjs engine) async {
   await engine.evaluate('process = {};');
   await engine.evaluate('window = {};');
   await engine.evaluate('console = {};');
+
+  await engine.evaluate('BigInt = {};');
+  await engine.evaluate('BigInt64Array = {};');
+  await engine.evaluate('BigUint64Array = {};');
+
+
   final setToGlobalObject =
       await engine.evaluate("(key, val) => { this[key] = val; }");
   await setToGlobalObject.invoke([
@@ -120,32 +126,25 @@ Future<RxDatabase> getRxDatabase(String jsFilePath, String databaseName) async {
 class RxChangeEvent<RxDocType> {
   String operation;
   dynamic previousDocumentData;
-  String eventId;
   String documentId;
   String? collectionName;
   bool isLocal;
-  num? startTime;
-  num? endTime;
   RxChangeEvent(
       this.operation,
       this.previousDocumentData,
-      this.eventId,
       this.documentId,
       this.collectionName,
-      this.isLocal,
-      this.startTime,
-      this.endTime);
+      this.isLocal
+  );
 
   static RxChangeEvent<RxDocType> fromJSON<RxDocType>(dynamic json) {
     RxChangeEvent<RxDocType> ret = RxChangeEvent<RxDocType>(
         json['operation'],
         json['previousDocumentData'],
-        json['eventId'],
         json['documentId'],
         json['collectionName'],
-        json['isLocal'],
-        json['startTime'],
-        json['endTime']);
+        json['isLocal']
+    );
     return ret;
   }
 }

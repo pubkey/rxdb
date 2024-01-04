@@ -1,5 +1,5 @@
-import type { RxDocumentData, StringKeys, WithDeleted } from '../../types';
-import { URLQueryParams } from './couchdb-types';
+import type { RxDocumentData, StringKeys, WithDeleted } from '../../types/index.d.ts';
+import { URLQueryParams } from './couchdb-types.ts';
 export declare const COUCHDB_NEW_REPLICATION_PLUGIN_IDENTITY_PREFIX = "couchdb";
 export declare function mergeUrlQueryParams(params: URLQueryParams): string;
 export declare function couchDBDocToRxDocData<RxDocType>(primaryPath: string, couchDocData: any): WithDeleted<RxDocType>;

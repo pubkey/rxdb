@@ -4,14 +4,11 @@ import {
     RxStorageRemote,
     RxStorageRemoteSettings,
     MessageFromRemote
-} from '../storage-remote';
-import type {
-    RxStorageStatics
-} from '../../types';
+} from '../storage-remote/index.ts';
 import {
     IPC_RENDERER_KEY_PREFIX
-} from './electron-helper';
-import { PROMISE_RESOLVE_VOID } from '../utils';
+} from './electron-helper.ts';
+import { PROMISE_RESOLVE_VOID } from '../utils/index.ts';
 
 export type RxStorageIpcRendererSettings = {
     /**
@@ -20,7 +17,6 @@ export type RxStorageIpcRendererSettings = {
      * up when you use more then one storage.
      */
     key: string;
-    statics: RxStorageStatics;
     ipcRenderer: any;
     mode: RxStorageRemoteSettings['mode'];
 };
@@ -36,7 +32,6 @@ export function getRxStorageIpcRenderer(
 
     const storage = getRxStorageRemote({
         identifier: 'electron-ipc-renderer',
-        statics: settings.statics,
         mode: settings.mode,
         messageChannelCreator() {
             const messages$ = new Subject<MessageFromRemote>();

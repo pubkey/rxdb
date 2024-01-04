@@ -1,12 +1,13 @@
 import assert from 'assert';
 import {
     assertThrows,
-    clone
+    clone,
+    deepEqual
 } from 'async-test-util';
 
-import config from './config';
-import * as schemas from '../helper/schemas';
-import * as schemaObjects from '../helper/schema-objects';
+import config from './config.ts';
+import * as schemas from '../helper/schemas.ts';
+import * as schemaObjects from '../helper/schema-objects.ts';
 import {
     createRxDatabase,
     randomCouchString,
@@ -16,13 +17,23 @@ import {
     now,
     RxDocumentData,
     RxStorageInstance,
-    BulkWriteRow
-} from '../../';
+    BulkWriteRow,
+    RxStorage
+} from '../../plugins/core/index.mjs';
 
-import { wrappedValidateZSchemaStorage } from '../../plugins/validate-z-schema';
-import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv';
+import { wrappedValidateZSchemaStorage } from '../../plugins/validate-z-schema/index.mjs';
+import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs';
+
+
+/**
+ * The is-my-json-valid seems to be dead.
+ * If this ever changes, reopen this PR for fix:
+ * @link https://github.com/pubkey/rxdb/pull/3935
+ */
 // import { wrappedValidateIsMyJsonValidStorage } from '../../plugins/validate-is-my-json-valid';
-import { EXAMPLE_REVISION_1 } from '../helper/revisions';
+
+
+import { EXAMPLE_REVISION_1 } from '../helper/revisions.ts';
 
 const validationImplementations: {
     key: string;
@@ -56,7 +67,7 @@ validationImplementations.forEach(
             writeRows: BulkWriteRow<RxDocType>[],
         ) {
             const result = await instance.bulkWrite(writeRows, testContext);
-            assert.deepStrictEqual(result.error, {});
+            assert.deepStrictEqual(result.error, []);
         }
         async function assertBulkWriteValidationError<RxDocType>(
             instance: RxStorageInstance<RxDocType, any, any>,
@@ -64,8 +75,8 @@ validationImplementations.forEach(
             errorMustContain?: string
         ) {
             const result = await instance.bulkWrite(writeRows, testContext);
-            assert.deepStrictEqual(result.success, {});
-            const errors = Object.values(result.error);
+            assert.deepStrictEqual(result.success, []);
+            const errors = result.error;
             errors.forEach(err => {
                 assert.strictEqual(err.status, 422);
                 if (errorMustContain) {
@@ -80,8 +91,13 @@ validationImplementations.forEach(
             });
         }
 
-        const storage = validationImplementation.implementation({
-            storage: config.storage.getStorage()
+        let storage: RxStorage<any, any>;
+        describe('init', () => {
+            it('create storage', () => {
+                storage = validationImplementation.implementation({
+                    storage: config.storage.getStorage()
+                });
+            });
         });
         describe('RxStorageInstance', () => {
             function getRxStorageInstance<RxDocType>(schema: RxJsonSchema<RxDocType>) {
@@ -383,7 +399,7 @@ validationImplementations.forEach(
                     const result = await instance.bulkWrite([{
                         document: toRxDocumentData(obj)
                     }], testContext);
-                    const err = result.error['foobar'];
+                    const err = result.error[0];
                     const message = (err as any).validationErrors[0].message;
                     assert.ok(message.includes('dditional'));
                     await instance.close();
@@ -399,7 +415,7 @@ validationImplementations.forEach(
                     const result = await instance.bulkWrite([{
                         document: toRxDocumentData(obj) as any
                     }], testContext);
-                    const err = result.error['foobar'];
+                    const err = result.error[0];
                     const deepParam = (err as any).validationErrors[0];
                     assert.ok(
                         JSON.stringify(deepParam).includes('age')
@@ -714,6 +730,88 @@ validationImplementations.forEach(
 
 
                 // clean up afterwards
+                db.destroy();
+            });
+            it('#5197 can\'t get data for object field defined with additionalProperties', async () => {
+                const mySchema: RxJsonSchema<any> = {
+                    version: 0,
+                    primaryKey: 'passportId',
+                    type: 'object',
+                    properties: {
+                        passportId: {
+                            type: 'string',
+                            maxLength: 100
+                        },
+                        firstName: {
+                            type: 'string'
+                        },
+                        lastName: {
+                            type: 'string'
+                        },
+                        age: {
+                            type: 'integer',
+                            minimum: 0,
+                            maximum: 150
+                        },
+                        tags: {
+                            type: 'object',
+                            additionalProperties: {
+                                properties: {
+                                    created: {
+                                        type: 'integer',
+                                    },
+                                    name: {
+                                        type: 'string',
+                                    },
+                                },
+                                required: ['created', 'name'],
+                            },
+                        },
+                    },
+                };
+
+                const name = randomCouchString(10);
+                const db = await createRxDatabase({
+                    name,
+                    storage: config.storage.getStorage(),
+                    eventReduce: true,
+                    ignoreDuplicate: true
+                });
+                // create a collection
+                const collections = await db.addCollections({
+                    mycollection: {
+                        schema: mySchema
+                    }
+                });
+
+                const tags = {
+                    hello: {
+                        created: 1,
+                        name: 'hello',
+                    },
+                    world: {
+                        created: 2,
+                        name: 'world',
+                    }
+                };
+
+                // insert a document
+                await collections.mycollection.insert({
+                    passportId: 'foobar',
+                    firstName: 'Bob',
+                    lastName: 'Kelso',
+                    age: 56,
+                    tags,
+                });
+
+                const myDocument = await collections.mycollection
+                    .findOne()
+                    .exec();
+
+                assert.deepStrictEqual(myDocument.toJSON().tags, tags);
+                assert.ok(deepEqual(myDocument.get('tags'), tags));
+                assert.deepStrictEqual(myDocument.tags, tags);
+
                 db.destroy();
             });
         });

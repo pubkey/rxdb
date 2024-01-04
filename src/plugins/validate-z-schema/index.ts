@@ -4,8 +4,8 @@
  * @link https://github.com/zaggino/z-schema
  */
 import ZSchema from 'z-schema';
-import type { RxJsonSchema } from '../../types';
-import { wrappedValidateStorageFactory } from '../../plugin-helpers';
+import type { RxJsonSchema } from '../../types/index.d.ts';
+import { wrappedValidateStorageFactory } from '../../plugin-helpers.ts';
 
 
 export function getValidator(
@@ -26,11 +26,13 @@ export function getValidator(
             const formattedZSchemaErrors = (errors as any).map(({
                 title,
                 description,
-                message
+                message,
+                path
             }: any) => ({
                 title,
                 description,
-                message
+                message,
+                path
             }));
             return formattedZSchemaErrors;
         } else {

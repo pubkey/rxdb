@@ -933,7 +933,7 @@ AFTER:
 }
 
 
-## 25. Juli 2022
+## 25. July 2022
 Do not use md5 as default hashing method.
 
 BEFORE:
@@ -1214,7 +1214,7 @@ BEFORE:
 
 
 
-## 4 April 2023 - improve OPFS strorage performance 
+## 4 April 2023 - improve OPFS storage performance 
 
 #### (time-to-first-insert)
 
@@ -1397,3 +1397,407 @@ AFTER1: (faster event keys)
 32
 31
 
+
+
+
+## bulkWrite() return arrays instead of indexed-objects
+24 september 2023
+> npm run test:performance:memory:node
+
+BEFORE:
+{
+    "description": "memory",
+    "platform": "node",
+    "collectionsAmount": 4,
+    "docsAmount": 1200,
+    "time-to-first-insert": 1.42,
+    "insert-documents-200": 3.22,
+    "find-by-ids": 0.3,
+    "find-by-query": 2.05,
+    "find-by-query-parallel-4": 2.26,
+    "count": 0.33
+}
+{
+    "description": "memory",
+    "platform": "node",
+    "collectionsAmount": 4,
+    "docsAmount": 1200,
+    "time-to-first-insert": 1.44,
+    "insert-documents-200": 3.14,
+    "find-by-ids": 0.27,
+    "find-by-query": 2,
+    "find-by-query-parallel-4": 2.23,
+    "count": 0.29
+}
+{
+    "description": "memory",
+    "platform": "node",
+    "collectionsAmount": 4,
+    "docsAmount": 1200,
+    "time-to-first-insert": 1.41,
+    "insert-documents-200": 3.17,
+    "find-by-ids": 0.31,
+    "find-by-query": 2.08,
+    "find-by-query-parallel-4": 2.32,
+    "count": 0.34
+}
+
+
+
+AFTER:
+{
+    "description": "memory",
+    "platform": "node",
+    "collectionsAmount": 4,
+    "docsAmount": 1200,
+    "time-to-first-insert": 1.36,
+    "insert-documents-200": 2.77,
+    "find-by-ids": 0.86,
+    "find-by-query": 1.91,
+    "find-by-query-parallel-4": 2.12,
+    "count": 0.28
+}
+{
+    "description": "memory",
+    "platform": "node",
+    "collectionsAmount": 4,
+    "docsAmount": 1200,
+    "time-to-first-insert": 1.4,
+    "insert-documents-200": 2.8,
+    "find-by-ids": 0.85,
+    "find-by-query": 2.01,
+    "find-by-query-parallel-4": 2.23,
+    "count": 0.29
+}
+
+AFTER2: (lazy writes)
+
+{
+    "description": "memory",
+    "platform": "node",
+    "collectionsAmount": 4,
+    "docsAmount": 1200,
+    "time-to-first-insert": 1.53,
+    "insert-documents-200": 0.97,
+    "find-by-ids": 0.95,
+    "find-by-query": 2.05,
+    "find-by-query-parallel-4": 2.39,
+    "count": 0.35
+}
+{
+    "description": "memory",
+    "platform": "node",
+    "collectionsAmount": 4,
+    "docsAmount": 1200,
+    "time-to-first-insert": 1.49,
+    "insert-documents-200": 1.11,
+    "find-by-ids": 0.13,
+    "find-by-query": 2.09,
+    "find-by-query-parallel-4": 2.51,
+    "count": 0.42
+}
+
+
+{
+    "description": "memory",
+    "platform": "node",
+    "collectionsAmount": 4,
+    "docsAmount": 1200,
+    "time-to-first-insert": 2.04,
+    "insert-documents-200": 1.85,
+    "find-by-ids": 0.24,
+    "find-by-query": 4.44,
+    "find-by-query-parallel-4": 4.29,
+    "count": 0.44
+}
+{
+    "description": "memory",
+    "platform": "node",
+    "collectionsAmount": 4,
+    "docsAmount": 1200,
+    "time-to-first-insert": 2.71,
+    "insert-documents-200": 1.53,
+    "find-by-ids": 0.14,
+    "find-by-query": 2.73,
+    "find-by-query-parallel-4": 2.74,
+    "count": 0.72
+}
+
+
+## Improve property access time (04 October 2023)
+
+> npm run test:performance:memory:node
+
+BEFORE:
+"property-access": 6.97
+"property-access": 7.21
+
+AFTER:
+"property-access": 4.71
+"property-access": 5.14
+"property-access": 5.07
+"property-access": 4.56
+
+
+
+
+## Deno vs Node
+tested the memory storage
+
+deno:
+{
+    "description": "memory",
+    "collectionsAmount": 4,
+    "docsAmount": 1200,
+    "time-to-first-insert": 1.4,
+    "insert-documents-200": 0.92,
+    "find-by-ids": 0.11,
+    "find-by-query": 1.97,
+    "find-by-query-parallel-4": 2.36,
+    "count": 0.34,
+    "property-access": 4.89
+}
+{
+    "description": "memory",
+    "collectionsAmount": 4,
+    "docsAmount": 1200,
+    "time-to-first-insert": 1.93,
+    "insert-documents-200": 0.96,
+    "find-by-ids": 0.13,
+    "find-by-query": 2.05,
+    "find-by-query-parallel-4": 2.5,
+    "count": 0.43,
+    "property-access": 5.72
+}
+
+
+Node:
+{
+    "description": "memory",
+    "platform": "node",
+    "collectionsAmount": 4,
+    "docsAmount": 1200,
+    "time-to-first-insert": 1.55,
+    "insert-documents-200": 0.95,
+    "find-by-ids": 0.13,
+    "find-by-query": 2,
+    "find-by-query-parallel-4": 2.36,
+    "count": 0.37,
+    "property-access": 4.8
+}
+{
+    "description": "memory",
+    "platform": "node",
+    "collectionsAmount": 4,
+    "docsAmount": 1200,
+    "time-to-first-insert": 1.49,
+    "insert-documents-200": 0.95,
+    "find-by-ids": 0.14,
+    "find-by-query": 2.4,
+    "find-by-query-parallel-4": 2.4,
+    "count": 0.36,
+    "property-access": 6.01
+}
+
+
+## indexeddb 
+08.11.2023
+
+BEFORE:
+16.07
+16.36
+15.97
+15.45
+
+AFTER:
+
+
+
+
+
+--- memory query
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX START 5273.516776999459
+__ensureEqual 1 5273.764967000112
+__ensureEqual 2 5273.826345998794
+__ensureEqual 3 5273.86046099849
+query collection 5273.905810998753
+getprepared query 1 5273.937525998801
+getprepared query 2 5273.996019998565
+getprepared query 3 5274.101761000231
+query collection -> query storage 5274.139894999564
+--------------------------
+{
+    "query": {
+        "selector": {},
+        "sort": [
+            {
+                "var2": "asc"
+            },
+            {
+                "var1": "asc"
+            },
+            {
+                "id": "asc"
+            }
+        ],
+        "skip": 0
+    },
+    "queryPlan": {
+        "index": [
+            "var2",
+            "var1",
+            "id"
+        ],
+        "startKeys": [
+            5e-324,
+            5e-324,
+            5e-324
+        ],
+        "endKeys": [
+            "￿",
+            "￿",
+            "￿"
+        ],
+        "inclusiveEnd": true,
+        "inclusiveStart": true,
+        "sortFieldsSameAsIndexFields": true,
+        "selectorSatisfiedByIndex": true
+    }
+}
+0 - 5274.287611998618
+1 - 5274.379308998585
+2 - 5274.433486999944
+3 - 5274.472461000085
+4 - 5274.764843000099
+5 - 5274.79949099943
+6 - 5274.832651998848
+__ensureEqual 3.5 5274.88329000026
+__ensureEqual 3.51 5274.914865000173
+__ensureEqual 3.52 5274.944271000102
+_setResultData 1 - 5274.9826020002365
+_setResultData 2 - 5275.014417998493
+_setResultData 3 - 5276.716801999137
+_setResultData 4 - 5277.9068539999425
+__ensureEqual 3.53 5277.988210000098
+__ensureEqual 3.6 5278.026985999197
+XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX END 5278.41909699887
+
+
+
+## indexeddb parallel queries
+
+BEFORE:
+57.83
+55.93
+55.3
+
+
+AFTER (reuse readonly transactions):
+44.17
+
+## indexeddb single query
+
+BEFORE:
+31.81
+31.63
+
+AFTER (pre-trigger tx creation):
+30.55
+
+
+## idb other improvements
+
+BEFORE:
+{
+    "description": "",
+    "platform": "indexeddb",
+    "collectionsAmount": 4,
+    "docsAmount": 1200,
+    "time-to-first-insert": 25.53,
+    "insert-documents-200": 7.5,
+    "find-by-ids": 47.77,
+    "find-by-query": 52.1,
+    "find-by-query-parallel-4": 38.3,
+    "count": 5.48,
+    "property-access": 5.27
+}
+{
+    "description": "",
+    "platform": "indexeddb",
+    "collectionsAmount": 4,
+    "docsAmount": 1200,
+    "time-to-first-insert": 25,
+    "insert-documents-200": 7.51,
+    "find-by-ids": 48.22,
+    "find-by-query": 51.7,
+    "find-by-query-parallel-4": 38.6,
+    "count": 5.33,
+    "property-access": 5.17
+}
+
+
+AFTER: (index option multiEntry=false)
+
+{
+    "description": "",
+    "platform": "indexeddb",
+    "collectionsAmount": 4,
+    "docsAmount": 1200,
+    "time-to-first-insert": 26.47,
+    "insert-documents-200": 7.4,
+    "find-by-ids": 44.58,
+    "find-by-query": 50.4,
+    "find-by-query-parallel-4": 39,
+    "count": 5.57,
+    "property-access": 5.3
+}
+{
+    "description": "",
+    "platform": "indexeddb",
+    "collectionsAmount": 4,
+    "docsAmount": 1200,
+    "time-to-first-insert": 24.93,
+    "insert-documents-200": 7.6,
+    "find-by-ids": 45.4,
+    "find-by-query": 49.3,
+    "find-by-query-parallel-4": 38.23,
+    "count": 5.35,
+    "property-access": 5.2
+}
+
+
+AFTER: fix wal cleanup promiseWait()
+"time-to-first-insert": 23.75
+
+
+BEFORE TX REUSED ON WRITES:
+"time-to-first-insert": 23.55
+
+LOG LOG: 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX START 11813.5'
+LOG LOG: 'ON UPDATE NEEDED test-db-performance-swhqajxkzi'
+LOG LOG: 'bulk write START internal-add-storage-token | 11826.40000000596'
+LOG LOG: 'storage-token|storageToken'
+LOG LOG: '# CREATE TX _rxdb_internal'
+LOG LOG: 'VVV ADD COLLECTIONS 11827.59999999404'
+LOG LOG: 'bulk write START rx-database-add-collection | 11829.5'
+LOG LOG: 'collection|sgphpgdqib_0-0, collection|anaymauczp_1-0, collection|fdrkxvqgbj_2-0, collection|pmoyfsfzeo_3-0'
+LOG LOG: '# CREATE TX _rxdb_internal'
+LOG LOG: 'bulk write DONE internal-add-storage-token | 11832.09999999404'
+LOG LOG: 'bulk write DONE rx-database-add-collection | 11837.09999999404'
+LOG LOG: 'ON UPDATE NEEDED test-db-performance-swhqajxkzi'
+LOG LOG: 'VVV START FIRST INSERT 11868.5'
+LOG LOG: 'bulk write START rx-collection-bulk-insert | 11869.09999999404'
+LOG LOG: 'kfigwywaxwil'
+LOG LOG: '# CREATE TX sgphpgdqib_0'
+LOG LOG: 'bulk write DONE rx-collection-bulk-insert | 11872.300000011921'
+LOG LOG: 'VVV END FIRST INSERT 11873.200000017881'
+LOG LOG: '- CLEANUP WAL ON IDLE!'
+LOG LOG: '# CREATE TX _rxdb_internal'
+LOG LOG: '# CREATE TX _rxdb_internal'
+LOG LOG: '# CREATE TX _rxdb_internal'
+LOG LOG: '# CREATE TX anaymauczp_1'
+LOG LOG: '# CREATE TX fdrkxvqgbj_2'
+LOG LOG: '# CREATE TX pmoyfsfzeo_3'
+LOG LOG: '# CREATE TX sgphpgdqib_0'
+LOG LOG: '# CREATE TX _rxdb_internal'
+LOG LOG: 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX DONE 11988.700000017881'

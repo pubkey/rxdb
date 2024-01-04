@@ -11,21 +11,21 @@
 
 import {
     getSchemaByObjectPath
-} from './rx-schema-helper';
+} from './rx-schema-helper.ts';
 import type {
     JsonSchema,
     RxDocumentData,
     RxJsonSchema
-} from './types';
+} from './types/index.ts';
 import {
     ensureNotFalsy,
     objectPathMonad,
     ObjectPathMonadFunction
-} from './plugins/utils';
+} from './plugins/utils/index.ts';
 import {
     INDEX_MAX,
     INDEX_MIN
-} from './query-planner';
+} from './query-planner.ts';
 
 
 /**
@@ -243,8 +243,7 @@ export function getNumberIndexString(
 export function getStartIndexStringFromLowerBound(
     schema: RxJsonSchema<any>,
     index: string[],
-    lowerBound: (string | boolean | number | null | undefined)[],
-    inclusiveStart: boolean
+    lowerBound: (string | boolean | number | null | undefined)[]
 ): string {
     let str = '';
     index.forEach((fieldName, idx) => {
@@ -267,7 +266,11 @@ export function getStartIndexStringFromLowerBound(
                 break;
             case 'boolean':
                 if (bound === null) {
-                    str += inclusiveStart ? '0' : INDEX_MAX;
+                    str += '0';
+                } else if (bound === INDEX_MIN) {
+                    str += '0';
+                } else if (bound === INDEX_MAX) {
+                    str += '1';
                 } else {
                     const boolToStr = bound ? '1' : '0';
                     str += boolToStr;
@@ -279,7 +282,72 @@ export function getStartIndexStringFromLowerBound(
                     schemaPart
                 );
                 if (bound === null || bound === INDEX_MIN) {
-                    const fillChar = inclusiveStart ? '0' : INDEX_MAX;
+                    const fillChar = '0';
+                    str += fillChar.repeat(parsedLengths.nonDecimals + parsedLengths.decimals);
+                } else if (bound === INDEX_MAX) {
+                    str += getNumberIndexString(
+                        parsedLengths,
+                        parsedLengths.maximum
+                    );
+                } else {
+                    const add = getNumberIndexString(
+                        parsedLengths,
+                        bound as number
+                    );
+                    str += add;
+                }
+                break;
+            default:
+                throw new Error('unknown index type ' + type);
+        }
+    });
+    return str;
+}
+
+
+export function getStartIndexStringFromUpperBound(
+    schema: RxJsonSchema<any>,
+    index: string[],
+    upperBound: (string | boolean | number | null | undefined)[]
+): string {
+    let str = '';
+    index.forEach((fieldName, idx) => {
+        const schemaPart = getSchemaByObjectPath(
+            schema,
+            fieldName
+        );
+        const bound = upperBound[idx];
+        const type = schemaPart.type;
+
+        switch (type) {
+            case 'string':
+                const maxLength = ensureNotFalsy(schemaPart.maxLength);
+                if (typeof bound === 'string' && bound !== INDEX_MAX) {
+                    str += (bound as string).padEnd(maxLength, ' ');
+                } else if (bound === INDEX_MIN) {
+                    str += ''.padEnd(maxLength, ' ');
+                } else {
+                    str += ''.padEnd(maxLength, INDEX_MAX);
+                }
+                break;
+            case 'boolean':
+                if (bound === null) {
+                    str += '1';
+                } else {
+                    const boolToStr = bound ? '1' : '0';
+                    str += boolToStr;
+                }
+                break;
+            case 'number':
+            case 'integer':
+                const parsedLengths = getStringLengthOfIndexNumber(
+                    schemaPart
+                );
+                if (bound === null || bound === INDEX_MAX) {
+                    const fillChar = '9';
+                    str += fillChar.repeat(parsedLengths.nonDecimals + parsedLengths.decimals);
+                } else if (bound === INDEX_MIN) {
+                    const fillChar = '0';
                     str += fillChar.repeat(parsedLengths.nonDecimals + parsedLengths.decimals);
                 } else {
                     str += getNumberIndexString(
@@ -295,57 +363,14 @@ export function getStartIndexStringFromLowerBound(
     return str;
 }
 
-
-export function getStartIndexStringFromUpperBound(
-    schema: RxJsonSchema<any>,
-    index: string[],
-    upperBound: (string | boolean | number | null | undefined)[],
-    inclusiveEnd: boolean
-): string {
-    let str = '';
-    index.forEach((fieldName, idx) => {
-        const schemaPart = getSchemaByObjectPath(
-            schema,
-            fieldName
-        );
-        const bound = upperBound[idx];
-        const type = schemaPart.type;
-
-        switch (type) {
-            case 'string':
-                const maxLength = ensureNotFalsy(schemaPart.maxLength);
-                if (typeof bound === 'string') {
-                    str += (bound as string).padEnd(maxLength, inclusiveEnd ? INDEX_MAX : ' ');
-                } else {
-                    str += ''.padEnd(maxLength, inclusiveEnd ? INDEX_MAX : ' ');
-                }
-                break;
-            case 'boolean':
-                if (bound === null) {
-                    str += inclusiveEnd ? '0' : '1';
-                } else {
-                    const boolToStr = bound ? '1' : '0';
-                    str += boolToStr;
-                }
-                break;
-            case 'number':
-            case 'integer':
-                const parsedLengths = getStringLengthOfIndexNumber(
-                    schemaPart
-                );
-                if (bound === null || bound === INDEX_MAX) {
-                    const fillChar = inclusiveEnd ? '9' : '0';
-                    str += fillChar.repeat(parsedLengths.nonDecimals + parsedLengths.decimals);
-                } else {
-                    str += getNumberIndexString(
-                        parsedLengths,
-                        bound as number
-                    );
-                }
-                break;
-            default:
-                throw new Error('unknown index type ' + type);
-        }
-    });
-    return str;
+/**
+ * Used in storages where it is not possible
+ * to define inclusiveEnd/inclusiveStart
+ */
+export function changeIndexableStringByOneQuantum(str: string, direction: 1 | -1): string {
+    const lastChar = str.slice(-1);
+    let charCode = lastChar.charCodeAt(0);
+    charCode = charCode + direction;
+    const withoutLastChar = str.slice(0, -1);
+    return withoutLastChar + String.fromCharCode(charCode);
 }

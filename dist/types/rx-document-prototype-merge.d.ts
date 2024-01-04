@@ -6,7 +6,7 @@
  * adding them to a new object.
  * In the future we should do this by chaining the __proto__ objects
  */
-import type { RxCollection, RxDocument, RxDocumentData } from './types';
+import type { RxCollection, RxDocument, RxDocumentData } from './types/index.d.ts';
 export declare function getDocumentPrototype(rxCollection: RxCollection): any;
 export declare function getRxDocumentConstructor<RxDocType, ORM>(rxCollection: RxCollection<RxDocType, ORM>): any;
 /**

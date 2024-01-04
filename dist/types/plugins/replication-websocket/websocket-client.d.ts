@@ -1,12 +1,11 @@
-import { RxReplicationState } from '../replication';
-import { WebsocketClientOptions } from './websocket-types';
-import ReconnectingWebSocket from 'reconnecting-websocket';
+import { RxReplicationState } from '../replication/index.ts';
+import { WebsocketClientOptions } from './websocket-types.ts';
 import IsomorphicWebSocket from 'isomorphic-ws';
 import { Subject, BehaviorSubject } from 'rxjs';
-import { RxError } from '../../types';
+import type { RxError } from '../../types/index.d.ts';
 export type WebsocketClient = {
     url: string;
-    socket: ReconnectingWebSocket;
+    socket: any;
     connected$: BehaviorSubject<boolean>;
     message$: Subject<any>;
     error$: Subject<RxError>;

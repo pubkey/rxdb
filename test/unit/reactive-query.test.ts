@@ -1,11 +1,11 @@
 import assert from 'assert';
 import clone from 'clone';
-import config from './config';
+import config from './config.ts';
 
 
-import * as schemaObjects from '../helper/schema-objects';
-import * as schemas from '../helper/schemas';
-import * as humansCollection from '../helper/humans-collection';
+import * as schemaObjects from '../helper/schema-objects.ts';
+import * as schemas from '../helper/schemas.ts';
+import * as humansCollection from '../helper/humans-collection.ts';
 
 import AsyncTestUtil, { wait, waitUntil } from 'async-test-util';
 import {
@@ -13,15 +13,20 @@ import {
     RxDocument,
     isRxDocument,
     promiseWait,
-    randomCouchString
-} from '../../';
+    randomCouchString,
+    addRxPlugin
+} from '../../plugins/core/index.mjs';
+
+import { RxDBQueryBuilderPlugin } from '../../plugins/query-builder/index.mjs';
+addRxPlugin(RxDBQueryBuilderPlugin);
+
 
 import {
     filter,
     map,
     first
 } from 'rxjs/operators';
-import { HumanDocumentType } from '../helper/schemas';
+import { HumanDocumentType } from '../helper/schemas.ts';
 
 config.parallel('reactive-query.test.js', () => {
     config.parallel('positive', () => {
@@ -167,6 +172,28 @@ config.parallel('reactive-query.test.js', () => {
             );
 
             sub.unsubscribe();
+            c.database.destroy();
+        });
+        it('doing insert after subscribe should end with the correct results', async () => {
+            if (config.storage.name === 'foundationdb') {
+                // TODO randomly fails in foundationdb
+                return;
+            }
+
+            const c = await humansCollection.create(1);
+            let result = [];
+            c.insert(schemaObjects.human()); // do not await here!
+            c.find().$.subscribe(r => {
+                result = r;
+            });
+
+            await c.insert(schemaObjects.human());
+            await waitUntil(() => result.length === 3);
+
+            // should still have correct results after some time
+            await wait(50);
+            assert.strictEqual(result.length, 3);
+
             c.database.destroy();
         });
     });

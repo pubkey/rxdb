@@ -1,8 +1,9 @@
-import { newRxError } from '../../rx-error';
+import { newRxError } from '../../rx-error.ts';
 import type {
     CRDTDocumentField,
     CRDTEntry,
     CRDTOperation,
+    FilledMangoQuery,
     HashFunction,
     JsonSchema,
     RxConflictHandler,
@@ -11,9 +12,8 @@ import type {
     RxDocumentData,
     RxJsonSchema,
     RxPlugin,
-    RxStorageStatics,
     WithDeleted
-} from '../../types';
+} from '../../types/index.d.ts';
 import {
     clone,
     deepEqual,
@@ -23,15 +23,15 @@ import {
     objectPathMonad,
     setProperty,
     toArray
-} from '../../plugins/utils';
-import modifyjs from 'modifyjs';
+} from '../../plugins/utils/index.ts';
 import {
     getQueryMatcher,
     overwritable,
     RxCollection,
     RxDocumentWriteData,
     RxError
-} from '../..';
+} from '../../index.ts';
+import { mingoUpdater } from '../update/mingo-updater.ts';
 
 
 
@@ -51,7 +51,7 @@ export async function updateCRDT<RxDocType>(
     const crdtOptions = ensureNotFalsy(jsonSchema.crdt);
     const storageToken = await this.collection.database.storageToken;
 
-    return this.incrementalModify((docData) => {
+    return this.incrementalModify(async (docData) => {
         const crdtDocField: CRDTDocumentField<RxDocType> = clone(getProperty(docData as any, crdtOptions.field));
         const operation: CRDTOperation<RxDocType> = {
             body: toArray(entry),
@@ -65,10 +65,9 @@ export async function updateCRDT<RxDocType>(
          */
         const lastAr: CRDTOperation<RxDocType>[] = [operation];
         crdtDocField.operations.push(lastAr);
-        crdtDocField.hash = hashCRDTOperations(this.collection.database.hashFunction, crdtDocField);
+        crdtDocField.hash = await hashCRDTOperations(this.collection.database.hashFunction, crdtDocField);
 
         docData = runOperationOnDocument(
-            this.collection.database.storage.statics,
             this.collection.schema.jsonSchema,
             docData,
             operation
@@ -102,7 +101,6 @@ export async function insertCRDT<RxDocType>(
 
     let insertData: RxDocumentWriteData<RxDocType> = {} as any;
     insertData = runOperationOnDocument(
-        this.database.storage.statics,
         this.schema.jsonSchema,
         insertData as any,
         operation
@@ -115,7 +113,7 @@ export async function insertCRDT<RxDocType>(
 
     const lastAr: CRDTOperation<RxDocType>[] = [operation];
     crdtDocField.operations.push(lastAr);
-    crdtDocField.hash = hashCRDTOperations(this.database.hashFunction, crdtDocField);
+    crdtDocField.hash = await hashCRDTOperations(this.database.hashFunction, crdtDocField);
 
     const result = await this.insert(insertData).catch(async (err: RxError) => {
         if (err.code === 'CONFLICT') {
@@ -136,7 +134,6 @@ export function sortOperationComparator<RxDocType>(a: CRDTOperation<RxDocType>, 
 
 
 function runOperationOnDocument<RxDocType>(
-    storageStatics: RxStorageStatics,
     schema: RxJsonSchema<RxDocumentData<RxDocType>>,
     docData: WithDeleted<RxDocType>,
     operation: CRDTOperation<RxDocType>
@@ -145,8 +142,8 @@ function runOperationOnDocument<RxDocType>(
     entryParts.forEach(entryPart => {
         let isMatching: boolean;
         if (entryPart.selector) {
-            const query = {
-                selector: ensureNotFalsy(entryPart.selector),
+            const query: FilledMangoQuery<RxDocType> = {
+                selector: ensureNotFalsy(entryPart.selector as any),
                 sort: [],
                 skip: 0
             };
@@ -157,25 +154,25 @@ function runOperationOnDocument<RxDocType>(
         }
         if (isMatching) {
             if (entryPart.ifMatch) {
-                docData = modifyjs(docData, entryPart.ifMatch);
+                docData = mingoUpdater<WithDeleted<RxDocType>>(docData, entryPart.ifMatch);
             }
         } else {
             if (entryPart.ifNotMatch) {
-                docData = modifyjs(docData, entryPart.ifNotMatch);
+                docData = mingoUpdater<WithDeleted<RxDocType>>(docData, entryPart.ifNotMatch);
             }
         }
     });
     return docData;
 }
 
-export function hashCRDTOperations(
+export async function hashCRDTOperations(
     hashFunction: HashFunction,
     crdts: CRDTDocumentField<any>
-): string {
+): Promise<string> {
     const hashObj = crdts.operations.map((operations) => {
         return operations.map(op => op.creator);
     });
-    const hash = hashFunction(JSON.stringify(hashObj));
+    const hash = await hashFunction(JSON.stringify(hashObj));
     return hash;
 }
 
@@ -241,11 +238,11 @@ export function getCRDTSchemaPart<RxDocType>(): JsonSchema<CRDTDocumentField<RxD
 }
 
 
-export function mergeCRDTFields<RxDocType>(
+export async function mergeCRDTFields<RxDocType>(
     hashFunction: HashFunction,
     crdtsA: CRDTDocumentField<RxDocType>,
     crdtsB: CRDTDocumentField<RxDocType>
-): CRDTDocumentField<RxDocType> {
+): Promise<CRDTDocumentField<RxDocType>> {
 
     // the value with most operations must be A to
     // ensure we not miss out rows when iterating over both fields.
@@ -277,12 +274,11 @@ export function mergeCRDTFields<RxDocType>(
     });
 
 
-    ret.hash = hashCRDTOperations(hashFunction, ret);
+    ret.hash = await hashCRDTOperations(hashFunction, ret);
     return ret;
 }
 
 export function rebuildFromCRDT<RxDocType>(
-    storageStatics: RxStorageStatics,
     schema: RxJsonSchema<RxDocumentData<RxDocType>>,
     docData: WithDeleted<RxDocType>,
     crdts: CRDTDocumentField<RxDocType>
@@ -294,7 +290,6 @@ export function rebuildFromCRDT<RxDocType>(
     crdts.operations.forEach(operations => {
         operations.forEach(op => {
             base = runOperationOnDocument(
-                storageStatics,
                 schema,
                 base,
                 op
@@ -307,14 +302,13 @@ export function rebuildFromCRDT<RxDocType>(
 
 export function getCRDTConflictHandler<RxDocType>(
     hashFunction: HashFunction,
-    storageStatics: RxStorageStatics,
     schema: RxJsonSchema<RxDocumentData<RxDocType>>
 ): RxConflictHandler<RxDocType> {
     const crdtOptions = ensureNotFalsy(schema.crdt);
     const crdtField = crdtOptions.field;
     const getCRDTValue = objectPathMonad<WithDeleted<RxDocType>, CRDTDocumentField<RxDocType>>(crdtField);
 
-    const conflictHandler: RxConflictHandler<RxDocType> = (
+    const conflictHandler: RxConflictHandler<RxDocType> = async (
         i: RxConflictHandlerInput<RxDocType>,
         _context: string
     ) => {
@@ -327,9 +321,8 @@ export function getCRDTConflictHandler<RxDocType>(
             });
         }
 
-        const mergedCrdt = mergeCRDTFields(hashFunction, newDocCrdt, masterDocCrdt);
+        const mergedCrdt = await mergeCRDTFields(hashFunction, newDocCrdt, masterDocCrdt);
         const mergedDoc = rebuildFromCRDT(
-            storageStatics,
             schema,
             i.newDocumentState,
             mergedCrdt
@@ -412,7 +405,6 @@ export const RxDBcrdtPlugin: RxPlugin = {
                 }
                 data.conflictHandler = getCRDTConflictHandler(
                     data.database.hashFunction,
-                    data.database.storage.statics,
                     data.schema
                 );
             }
@@ -434,41 +426,45 @@ export const RxDBcrdtPlugin: RxPlugin = {
                  */
                 if (overwritable.isDevMode()) {
                     const bulkWriteBefore = collection.storageInstance.bulkWrite.bind(collection.storageInstance);
-                    collection.storageInstance.bulkWrite = function (writes, context) {
+                    collection.storageInstance.bulkWrite = async function (writes, context) {
 
-                        writes.forEach(write => {
-                            const newDocState: typeof write.document = clone(write.document);
-                            const crdts = getCrdt(newDocState);
+                        await Promise.all(
+                            writes.map(async (write) => {
+                                const newDocState: typeof write.document = clone(write.document);
+                                const crdts = getCrdt(newDocState);
 
-                            const rebuild = rebuildFromCRDT(
-                                collection.database.storage.statics,
-                                collection.schema.jsonSchema,
-                                newDocState,
-                                crdts
-                            );
+                                const rebuild = rebuildFromCRDT(
+                                    collection.schema.jsonSchema,
+                                    newDocState,
+                                    crdts
+                                );
 
-                            function docWithoutMeta(doc: any) {
-                                const ret: any = {};
-                                Object.entries(doc).forEach(([k, v]) => {
-                                    if (!k.startsWith('_')) {
-                                        ret[k] = v;
-                                    }
-                                });
-                                return ret;
-                            }
-                            if (!deepEqual(docWithoutMeta(newDocState), docWithoutMeta(rebuild))) {
-                                throw newRxError('SNH', {
-                                    document: newDocState
-                                });
-                            }
-                            const recalculatedHash = hashCRDTOperations(collection.database.hashFunction, crdts);
-                            if (crdts.hash !== recalculatedHash) {
-                                throw newRxError('SNH', {
-                                    document: newDocState,
-                                    args: { hash: crdts.hash, recalculatedHash }
-                                });
-                            }
-                        });
+                                function docWithoutMeta(doc: any) {
+                                    const ret: any = {};
+                                    Object.entries(doc).forEach(([k, v]) => {
+                                        if (
+                                            !k.startsWith('_') &&
+                                            typeof v !== 'undefined'
+                                        ) {
+                                            ret[k] = v;
+                                        }
+                                    });
+                                    return ret;
+                                }
+                                if (!deepEqual(docWithoutMeta(newDocState), docWithoutMeta(rebuild))) {
+                                    throw newRxError('SNH', {
+                                        document: newDocState
+                                    });
+                                }
+                                const recalculatedHash = await hashCRDTOperations(collection.database.hashFunction, crdts);
+                                if (crdts.hash !== recalculatedHash) {
+                                    throw newRxError('SNH', {
+                                        document: newDocState,
+                                        args: { hash: crdts.hash, recalculatedHash }
+                                    });
+                                }
+                            })
+                        );
 
                         return bulkWriteBefore(writes, context);
                     };
@@ -478,35 +474,37 @@ export const RxDBcrdtPlugin: RxPlugin = {
                 const bulkInsertBefore = collection.bulkInsert.bind(collection);
                 collection.bulkInsert = async function (docsData: any[]) {
                     const storageToken = await collection.database.storageToken;
-                    const useDocsData = docsData.map(docData => {
-                        const setMe: Partial<RxDocumentData<any>> = {};
-                        Object.entries(docData).forEach(([key, value]) => {
-                            if (
-                                !key.startsWith('_') &&
-                                key !== crdtField
-                            ) {
-                                setMe[key] = value;
-                            }
-                        });
+                    const useDocsData = await Promise.all(
+                        docsData.map(async (docData) => {
+                            const setMe: Partial<RxDocumentData<any>> = {};
+                            Object.entries(docData).forEach(([key, value]) => {
+                                if (
+                                    !key.startsWith('_') &&
+                                    key !== crdtField
+                                ) {
+                                    setMe[key] = value;
+                                }
+                            });
 
-                        const crdtOperations: CRDTDocumentField<any> = {
-                            operations: [
-                                [{
-                                    creator: storageToken,
-                                    body: [{
-                                        ifMatch: {
-                                            $set: setMe
-                                        }
-                                    }],
-                                    time: now()
-                                }]
-                            ],
-                            hash: ''
-                        };
-                        crdtOperations.hash = hashCRDTOperations(collection.database.hashFunction, crdtOperations);
-                        setProperty(docData, crdtOptions.field, crdtOperations);
-                        return docData;
-                    });
+                            const crdtOperations: CRDTDocumentField<any> = {
+                                operations: [
+                                    [{
+                                        creator: storageToken,
+                                        body: [{
+                                            ifMatch: {
+                                                $set: setMe
+                                            }
+                                        }],
+                                        time: now()
+                                    }]
+                                ],
+                                hash: ''
+                            };
+                            crdtOperations.hash = await hashCRDTOperations(collection.database.hashFunction, crdtOperations);
+                            setProperty(docData, crdtOptions.field, crdtOperations);
+                            return docData;
+                        })
+                    );
                     return bulkInsertBefore(useDocsData);
                 };
             }

@@ -1,18 +1,17 @@
-import { ensureRxStorageInstanceParamsAreCorrect } from '../../rx-storage-helper';
-import { RxStorageDefaultStatics } from '../../rx-storage-statics';
+import { ensureRxStorageInstanceParamsAreCorrect } from '../../rx-storage-helper.ts';
 import type {
     RxStorageInstanceCreationParams
-} from '../../types';
+} from '../../types/index.d.ts';
 import type {
     RxStorageFoundationDB,
     RxStorageFoundationDBInstanceCreationOptions,
     RxStorageFoundationDBSettings
-} from './foundationdb-types';
+} from './foundationdb-types.ts';
 
 import {
     createFoundationDBStorageInstance,
     RxStorageInstanceFoundationDB
-} from './rx-storage-instance-foundationdb';
+} from './rx-storage-instance-foundationdb.ts';
 
 
 let versionSet: undefined | number;
@@ -31,7 +30,6 @@ export function getRxStorageFoundationDB(
 
     const storage: RxStorageFoundationDB = {
         name: 'foundationdb',
-        statics: RxStorageDefaultStatics,
         createStorageInstance<RxDocType>(
             params: RxStorageInstanceCreationParams<RxDocType, RxStorageFoundationDBInstanceCreationOptions>
         ): Promise<RxStorageInstanceFoundationDB<RxDocType>> {
@@ -52,5 +50,5 @@ export function getRxStorageFoundationDB(
 }
 
 
-export * from './foundationdb-types';
-export * from './foundationdb-helpers';
+export * from './foundationdb-types.ts';
+export * from './foundationdb-helpers.ts';

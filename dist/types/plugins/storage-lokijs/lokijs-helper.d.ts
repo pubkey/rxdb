@@ -1,6 +1,5 @@
-import { RxStorageInstanceLoki } from './rx-storage-instance-loki';
-import { Collection } from 'lokijs';
-import type { DeterministicSortComparator, LokiDatabaseSettings, LokiDatabaseState, LokiLocalDatabaseState, MangoQuery, RxDocumentData, RxJsonSchema } from '../../types';
+import { RxStorageInstanceLoki } from './rx-storage-instance-loki.ts';
+import type { DeterministicSortComparator, FilledMangoQuery, LokiDatabaseSettings, LokiDatabaseState, LokiLocalDatabaseState, RxDocumentData, RxJsonSchema } from '../../types/index.d.ts';
 import { LeaderElector } from 'broadcast-channel';
 export declare const CHANGES_COLLECTION_SUFFIX = "-rxdb-changes";
 export declare const LOKI_BROADCAST_CHANNEL_MESSAGE_TYPE = "rxdb-lokijs-remote-request";
@@ -17,14 +16,14 @@ export declare function stripLokiKey<T>(docData: RxDocumentData<T> & {
  * Used to check in tests if all instances have been cleaned up.
  */
 export declare const OPEN_LOKIJS_STORAGE_INSTANCES: Set<RxStorageInstanceLoki<any>>;
-export declare const LOKIJS_COLLECTION_DEFAULT_OPTIONS: Partial<CollectionOptions<any>>;
+export declare const LOKIJS_COLLECTION_DEFAULT_OPTIONS: Partial<any>;
 export declare function getLokiDatabase(databaseName: string, databaseSettings: LokiDatabaseSettings): Promise<LokiDatabaseState>;
-export declare function closeLokiCollections(databaseName: string, collections: Collection[]): Promise<void>;
+export declare function closeLokiCollections(databaseName: string, collections: any[]): Promise<void>;
 /**
  * This function is at lokijs-helper
  * because we need it in multiple places.
  */
-export declare function getLokiSortComparator<RxDocType>(_schema: RxJsonSchema<RxDocumentData<RxDocType>>, query: MangoQuery<RxDocType>): DeterministicSortComparator<RxDocType>;
+export declare function getLokiSortComparator<RxDocType>(_schema: RxJsonSchema<RxDocumentData<RxDocType>>, query: FilledMangoQuery<RxDocType>): DeterministicSortComparator<RxDocType>;
 export declare function getLokiLeaderElector(databaseInstanceToken: string, broadcastChannelRefObject: any, databaseName: string): LeaderElector;
 /**
  * For multi-instance usage, we send requests to the RxStorage

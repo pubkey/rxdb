@@ -1,13 +1,10 @@
 import type { LeaderElector } from 'broadcast-channel';
-import type {
-    Collection
-} from 'lokijs';
 import { AddReturn } from 'unload';
-import { LokiSaveQueue } from '../../plugins/storage-lokijs/loki-save-queue';
+import { LokiSaveQueue } from '../../plugins/storage-lokijs/loki-save-queue.ts';
 
-export type LokiDatabaseSettings = Partial<LokiConstructorOptions & LokiConfigOptions> & {};
+export type LokiDatabaseSettings = any;
 
-export type LokiCollectionSettings = Partial<CollectionOptions<any>>;
+export type LokiCollectionSettings = Partial<any>;
 
 export type LokiSettings = {
     database?: LokiDatabaseSettings;
@@ -41,13 +38,13 @@ export type LokiRemoteResponseBroadcastMessage = {
 };
 
 export type LokiDatabaseState = {
-    database: Loki;
+    database: any;
     databaseSettings: LokiDatabaseSettings;
     saveQueue: LokiSaveQueue;
 
     // all known collections of the database
     collections: {
-        [collectionName: string]: Collection;
+        [collectionName: string]: any;
     };
 
     /**
@@ -59,5 +56,5 @@ export type LokiDatabaseState = {
 
 export type LokiLocalDatabaseState = {
     databaseState: LokiDatabaseState;
-    collection: Collection<any>;
+    collection: any;
 };

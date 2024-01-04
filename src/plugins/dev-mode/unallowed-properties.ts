@@ -1,7 +1,7 @@
-import type { RxCollectionCreator, RxDatabaseCreator } from '../../types';
-import { newRxError, newRxTypeError } from '../../rx-error';
-import { rxDatabaseProperties } from './entity-properties';
-import { isFolderPath } from '../../plugins/utils';
+import type { RxCollectionCreator, RxDatabaseCreator } from '../../types/index.d.ts';
+import { newRxError, newRxTypeError } from '../../rx-error.ts';
+import { rxDatabaseProperties } from './entity-properties.ts';
+import { isFolderPath } from '../../plugins/utils/index.ts';
 
 /**
  * if the name of a collection
@@ -22,6 +22,12 @@ export function ensureCollectionNameValid(
 export function ensureDatabaseNameIsValid(args: RxDatabaseCreator<any, any>) {
 
     validateDatabaseName(args.name);
+
+    if(args.name.includes('$')){
+        throw newRxError('DB13', {
+            name: args.name,
+        });
+    }
 
     /**
      * The server-plugin has problems when a path with and ending slash is given

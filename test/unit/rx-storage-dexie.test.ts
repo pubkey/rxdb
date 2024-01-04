@@ -1,6 +1,6 @@
 import assert from 'assert';
 
-import config from './config';
+import config from './config.ts';
 import {
     clone,
     ensureNotFalsy,
@@ -9,24 +9,24 @@ import {
     normalizeMangoQuery,
     randomCouchString,
     now,
-    createRevision
-} from '../../';
+    createRevision,
+    prepareQuery
+} from '../../plugins/core/index.mjs';
 
 import {
     getDexieStoreSchema,
     fromDexieToStorage,
     fromStorageToDexie
-} from '../../plugins/storage-dexie';
+} from '../../plugins/storage-dexie/index.mjs';
 
-import * as schemaObjects from '../helper/schema-objects';
+import * as schemaObjects from '../helper/schema-objects.ts';
 import {
     HumanDocumentType,
     humanSchemaLiteral
-} from '../helper/schemas';
-import { assertThrows } from 'async-test-util';
+} from '../helper/schemas.ts';
 
 /**
- * RxStoragePouch specific tests
+ * RxStorageDexie specific tests
  */
 config.parallel('rx-storage-dexie.test.js', () => {
     if (config.storage.name !== 'dexie') {
@@ -48,30 +48,11 @@ config.parallel('rx-storage-dexie.test.js', () => {
                 });
                 assert.ok(dexieSchema.startsWith('id'));
             });
-            it('should contains the indexes', () => {
-                const dexieSchema = getDexieStoreSchema({
-                    primaryKey: 'id',
-                    type: 'object',
-                    version: 0,
-                    properties: {
-                        id: {
-                            type: 'string',
-                            maxLength: 100
-                        },
-                        age: {
-                            type: 'number'
-                        }
-                    },
-                    indexes: [
-                        ['age', 'id']
-                    ]
-                });
-                assert.ok(dexieSchema.startsWith('id, [age+id]'));
-            });
         });
         describe('.fromStorageToDexie()', () => {
             it('should convert unsupported IndexedDB key', () => {
-                const result = fromStorageToDexie(
+                const result = fromStorageToDexie<any>(
+                    ['_deleted'],
                     {
                         '|key': 'value',
                         '|objectArray': [{ ['|id']: '1' }],
@@ -81,7 +62,8 @@ config.parallel('rx-storage-dexie.test.js', () => {
                             stringArray: ['415', '51'],
                             '|numberArray': [1, 2, 3],
                             '|falsyValue': null
-                        }
+                        },
+                        _deleted: false
                     }
                 );
                 assert.deepStrictEqual(result, {
@@ -93,13 +75,14 @@ config.parallel('rx-storage-dexie.test.js', () => {
                         stringArray: ['415', '51'],
                         '__numberArray': [1, 2, 3],
                         '__falsyValue': null
-                    }
+                    },
+                    '_deleted': '0'
                 });
             });
         });
         describe('.fromDexieToStorage()', () => {
             it('should revert escaped unsupported IndexedDB key', () => {
-                const result = fromDexieToStorage({
+                const result = fromDexieToStorage(['_deleted'], {
                     '__key': 'value',
                     '__objectArray': [{ ['__id']: '1' }],
                     '__nestedObject': {
@@ -108,7 +91,8 @@ config.parallel('rx-storage-dexie.test.js', () => {
                         stringArray: ['415', '51'],
                         '__numberArray': [1, 2, 3],
                         '__falsyValue': null
-                    }
+                    },
+                    '_deleted': '1'
                 }
                 );
                 assert.deepStrictEqual(result,
@@ -121,7 +105,8 @@ config.parallel('rx-storage-dexie.test.js', () => {
                             stringArray: ['415', '51'],
                             '|numberArray': [1, 2, 3],
                             '|falsyValue': null
-                        }
+                        },
+                        _deleted: true
                     });
             });
         });
@@ -177,10 +162,12 @@ config.parallel('rx-storage-dexie.test.js', () => {
             // const hasIndexes = await pouch.getIndexes();
 
             async function analyzeQuery(query: MangoQuery<HumanDocumentType>) {
-                const preparedQuery = storage.statics.prepareQuery(
+                const preparedQuery = prepareQuery(
                     schema,
                     normalizeMangoQuery(schema, query)
                 );
+
+                console.dir(preparedQuery);
                 const queryPlan = preparedQuery.queryPlan;
                 const result = await storageInstance.query(preparedQuery);
                 return {
@@ -203,13 +190,13 @@ config.parallel('rx-storage-dexie.test.js', () => {
                 sort: [
                     { passportId: 'asc' }
                 ],
-                index: ['passportId', 'age']
+                index: ['_deleted', 'passportId', 'age']
             });
 
             // default should use default index
             assert.deepStrictEqual(
                 defaultAnalyzed.queryPlan.index,
-                ['passportId']
+                ['_meta.lwt', 'passportId']
             );
 
             // custom should use the custom index
@@ -232,34 +219,6 @@ config.parallel('rx-storage-dexie.test.js', () => {
             );
 
             storageInstance.close();
-        });
-        /**
-         * @link https://github.com/w3c/IndexedDB/issues/76
-         */
-        it('should throw the correct error on boolean index', async () => {
-            const storage = config.storage.getStorage();
-
-            let schema = clone(humanSchemaLiteral) as any;
-            schema.properties.bool = {
-                type: 'boolean'
-            };
-            schema.required.push('bool');
-            schema.indexes.push(['bool', 'passportId']);
-            schema = fillWithDefaultSettings(schema);
-
-            await assertThrows(
-                () => storage.createStorageInstance<HumanDocumentType>({
-                    databaseInstanceToken: randomCouchString(10),
-                    databaseName: randomCouchString(10),
-                    collectionName: randomCouchString(12),
-                    schema,
-                    options: {},
-                    multiInstance: false,
-                    devMode: true
-                }),
-                'RxError',
-                'DXE1'
-            );
         });
     });
 });

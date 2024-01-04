@@ -1,6 +1,6 @@
 import type { Observable } from 'rxjs';
 import type { ServerOptions, ClientOptions, WebSocketServer, WebSocket } from 'ws';
-import type { RxCollection, RxDatabase, RxReplicationHandler, StringKeys } from '../../types';
+import type { RxCollection, RxDatabase, RxReplicationHandler, StringKeys } from '../../types/index.d.ts';
 export type WebsocketServerOptions = {
     database: RxDatabase<any, any, any>;
 } & ServerOptions;
@@ -10,6 +10,7 @@ export type WebsocketServerState = {
     onConnection$: Observable<WebSocket>;
 };
 export type WebsocketClientOptions<RxDocType> = {
+    replicationIdentifier: string;
     collection: RxCollection<RxDocType>;
     url: string;
     batchSize?: number;

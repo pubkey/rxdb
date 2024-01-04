@@ -1,27 +1,21 @@
 import type {
     BulkWriteRow,
     EventBulk,
-    PreparedQuery,
     RxDocumentData,
-    RxDocumentDataById,
     RxStorageBulkWriteResponse,
     RxStorageChangeEvent,
     RxStorageCountResult,
     RxStorageInstanceCreationParams,
     RxStorageQueryResult
-} from './rx-storage';
+} from './rx-storage.ts';
 import type {
-    DeepReadonly,
-    JsonSchema,
-    MangoQuery,
     MangoQuerySelector,
     MangoQuerySortPart,
-    Override,
     RxConflictResultionTask,
     RxConflictResultionTaskSolution,
     RxJsonSchema,
     RxQueryPlan
-} from './';
+} from './index.d.ts';
 import type {
     Observable
 } from 'rxjs';
@@ -54,11 +48,6 @@ export interface RxStorage<Internals, InstanceCreationOptions> {
     readonly name: string;
 
     /**
-     * Static functions
-     */
-    readonly statics: RxStorageStatics;
-
-    /**
      * Creates a storage instance
      * that can contain the NoSQL documents of a collection.
      */
@@ -72,80 +61,47 @@ export interface RxStorage<Internals, InstanceCreationOptions> {
  * User provided mango queries will be filled up by RxDB via normalizeMangoQuery()
  * so we do not have to do many if-field-exist tests in the internals.
  */
-export type FilledMangoQuery<RxDocType> = Override<
-    MangoQuery<RxDocType>,
-    {
-        /**
-             * The selector is required here.
-             */
-        selector: MangoQuerySelector<RxDocType>;
+export type FilledMangoQuery<RxDocType> = {
+    /**
+     * The selector is required here.
+     */
+    selector: MangoQuerySelector<RxDocumentData<RxDocType>>;
 
-        /**
-             * In contrast to the user-provided MangoQuery,
-             * the sorting is required here because
-             * RxDB has to ensure that the primary key is always
-             * part of the sort params.
-             */
-        sort: MangoQuerySortPart<RxDocType>[];
+    /**
+     * In contrast to the user-provided MangoQuery,
+     * the sorting is required here because
+     * RxDB has to ensure that the primary key is always
+     * part of the sort params.
+     */
+    sort: MangoQuerySortPart<RxDocumentData<RxDocType>>[];
 
-        /**
-             * In the normalized mango query,
-             * the index must always be a string[],
-             * never just a string.
-             * This makes it easier to use the query because
-             * we do not have to do an array check.
-             */
-        index?: string[];
+    /**
+     * In the normalized mango query,
+     * the index must always be a string[],
+     * never just a string.
+     * This makes it easier to use the query because
+     * we do not have to do an array check.
+     */
+    index?: string[];
 
-        /**
-             * Skip must be set which defaults to 0
-             */
-        skip: number;
-    }
->;
+    /**
+     * Skip must be set which defaults to 0
+     */
+    skip: number;
+
+    limit?: number;
+};
+
 
 /**
- * Static functions of the RxStorage.
- * Can be used without creating an instance of any kind.
- * These functions are not directly children of RxStorage because
- * we might need them without having to import the whole storage engine.
- * For example when the Worker plugin is used, the main process only needs the
- * static functions, while the worker process needs the whole storage engine.
+ * Before sending a query to the storageInstance.query()
+ * we run it through the query planner and do some normalization
+ * stuff. Notice that the queryPlan is a hint for the storage and
+ * it is not required to use it when running queries. Some storages
+ * might use their own query planning instead.
  */
-export type RxStorageStatics = Readonly<{
-    /**
-     * Storages can have some bugs
-     * and behaviors that must be worked around
-     * before querying the db.
-     *
-     * Also some storages do optimizations
-     * and other things related to query planning.
-     *
-     * For performance reason this preparation
-     * runs in a single step so it can be cached
-     * when the query is used multiple times.
-     *
-     * @returns a format of the query that can be used with the storage
-     * when calling RxStorageInstance().query()
-     */
-    prepareQuery<RxDocType>(
-        schema: RxJsonSchema<RxDocumentData<RxDocType>>,
-        /**
-         * a query that can be mutated by the function without side effects.
-         */
-        mutateableQuery: FilledMangoQuery<RxDocType>
-    ): PreparedQuery<RxDocType>;
-
-    /**
-     * Contains the JsonSchema that matches the checkpoint
-     * of this RxStorage.
-     * Used in some plugins like the graphql plugin
-     * where it is used to create a GraphQL Schema from the checkpoint.
-     */
-    checkpointSchema: DeepReadonly<JsonSchema>;
-}>;
-
-export type DefaultPreparedQuery<RxDocType> = {
+export type PreparedQuery<RxDocType> = {
+    // original query from the input
     query: FilledMangoQuery<RxDocType>;
     queryPlan: RxQueryPlan;
 };
@@ -177,6 +133,18 @@ export interface RxStorageInstance<
     readonly collectionName: string;
 
     /**
+     * (Optional) reference to the underlying persistent storage instance.
+     * If set, things like replication will run on that storageInstance instead of the parent.
+     * This is mostly used in things like the memory-synced storage where we want to
+     * run replications and migrations on the persistent storage instead of the in-memory storage.
+     *
+     * Having this is the least hacky option. The only other option would be to toggle all calls to the
+     * storageInstance by checking the givent context-string. But this would make it impossible
+     * to run a replication on the parentStorage itself.
+     */
+    readonly underlyingPersistentStorage?: RxStorageInstance<RxDocType, any, any, any>;
+
+    /**
      * Writes multiple documents to the storage instance.
      * The write for each single document is atomic, there
      * is no transaction around all documents.
@@ -196,12 +164,7 @@ export interface RxStorageInstance<
          * comes from operation Y.
          */
         context: string
-    ): Promise<
-        /**
-             * returns the response, split into success and error lists.
-             */
-        RxStorageBulkWriteResponse<RxDocType>
-    >;
+    ): Promise<RxStorageBulkWriteResponse<RxDocType>>;
 
     /**
      * Get Multiple documents by their primary value.
@@ -217,7 +180,16 @@ export interface RxStorageInstance<
          * If set to true, deleted documents will also be returned.
          */
         withDeleted: boolean
-    ): Promise<RxDocumentDataById<RxDocType>>;
+
+    ): Promise<
+        /**
+         * For better performance, we return an array
+         * instead of an indexed object because most consumers
+         * of this anyway have to fill a Map() instance or
+         * even do only need the list at all.
+         */
+        RxDocumentData<RxDocType>[]
+    >;
 
     /**
      * Runs a NoSQL 'mango' query over the storage
@@ -227,12 +199,6 @@ export interface RxStorageInstance<
      * rx-storage implementation.
      */
     query(
-        /**
-         * Here we get the result of this.prepareQuery()
-         * instead of the plain mango query.
-         * This makes it easier to have good performance
-         * when transformations of the query must be done.
-         */
         preparedQuery: PreparedQuery<RxDocType>
     ): Promise<RxStorageQueryResult<RxDocType>>;
 
@@ -261,8 +227,13 @@ export interface RxStorageInstance<
      * Must never return the same document multiple times in the same call operation.
      * This is used by RxDB to known what has changed since X so these docs can be handled by the backup or the replication
      * plugin.
+     *
+     * Important: This method is optional. If not defined,
+     * RxDB will manually run a query and use the last returned document
+     * for checkpointing. In  the future we might even remove this method completely
+     * and let RxDB do the work instead of the RxStorage.
      */
-    getChangedDocumentsSince(
+    getChangedDocumentsSince?(
         limit: number,
         /**
          * The checkpoint from with to start

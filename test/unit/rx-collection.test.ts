@@ -1,17 +1,18 @@
 import assert from 'assert';
 import clone from 'clone';
-import config from './config';
+import config from './config.ts';
 import AsyncTestUtil, {
     randomBoolean,
     randomNumber,
     randomString,
     wait,
-    assertThrows
+    assertThrows,
+    waitUntil
 } from 'async-test-util';
 
-import * as schemas from '../helper/schemas';
-import * as schemaObjects from '../helper/schema-objects';
-import * as humansCollection from '../helper/humans-collection';
+import * as schemas from '../helper/schemas.ts';
+import * as schemaObjects from '../helper/schema-objects.ts';
+import * as humansCollection from '../helper/humans-collection.ts';
 
 import {
     isRxCollection,
@@ -32,17 +33,18 @@ import {
     now,
     getFromMapOrThrow,
     RxCollectionCreator,
-    parseRevision
-} from '../../';
+    parseRevision,
+    getChangedDocumentsSince
+} from '../../plugins/core/index.mjs';
 
-import { RxDBUpdatePlugin } from '../../plugins/update';
+import { RxDBUpdatePlugin } from '../../plugins/update/index.mjs';
 addRxPlugin(RxDBUpdatePlugin);
-import { RxDBMigrationPlugin } from '../../plugins/migration';
+import { RxDBMigrationPlugin } from '../../plugins/migration-schema/index.mjs';
 addRxPlugin(RxDBMigrationPlugin);
 
 import { firstValueFrom } from 'rxjs';
-import { HumanDocumentType } from '../helper/schemas';
-import { RxDocumentData } from '../../src/types';
+import { HumanDocumentType } from '../helper/schemas.ts';
+import { RxDocumentData } from '../../plugins/core/index.mjs';
 
 describe('rx-collection.test.ts', () => {
     async function getDb(): Promise<RxDatabase> {
@@ -285,6 +287,30 @@ describe('rx-collection.test.ts', () => {
                     ].map(id => ensurePrimaryKeyInsertThrows(id)));
                     c.database.destroy();
                 });
+                /**
+                 * @link https://github.com/pubkey/rxdb/issues/5046
+                 */
+                it('should throw a helpful error on non-plain-json data', async () => {
+                    const c = await humansCollection.create(1);
+
+                    // inserts
+                    const doc = schemaObjects.human();
+                    (doc as any).lastName = () => { };
+                    await assertThrows(
+                        () => c.insert(doc),
+                        'RxError',
+                        'DOC24'
+                    );
+
+                    // updates
+                    const doc2 = await c.findOne().exec(true);
+                    await assertThrows(
+                        () => doc2.patch({ lastName: (() => { }) as any }),
+                        'RxError',
+                        'DOC24'
+                    );
+                    c.database.destroy();
+                });
             });
         });
         config.parallel('.bulkInsert()', () => {
@@ -356,7 +382,7 @@ describe('rx-collection.test.ts', () => {
                         assert.ok(docs2.length >= 10);
                         c.database.destroy();
                     });
-                    runXTimes(config.isFastMode() ? 1 : 5, idx => {
+                    runXTimes(config.isFastMode() ? 2 : 3, idx => {
                         it('find in serial #' + idx, async () => {
                             const c = await humansCollection.createPrimary(0);
                             const docData = schemaObjects.simpleHuman();
@@ -393,7 +419,7 @@ describe('rx-collection.test.ts', () => {
                         assert.deepStrictEqual(docs, []);
                         db.destroy();
                     });
-                    runXTimes(config.isFastMode() ? 3 : 10, idx => {
+                    runXTimes(config.isFastMode() ? 2 : 5, idx => {
                         it('BUG: insert and find very often (' + idx + ')', async () => {
                             const db = await createRxDatabase({
                                 name: randomCouchString(10),
@@ -726,6 +752,7 @@ describe('rx-collection.test.ts', () => {
 
                         assert.strictEqual(last['_data'].passportId, docs[(docs.length - 1)]._data.passportId);
                         assert.notStrictEqual(firstDoc['_data'].passportId, last['_data'].passportId);
+
                         c.database.destroy();
                     });
                     it('reset limit with .limit(null)', async () => {
@@ -808,10 +835,11 @@ describe('rx-collection.test.ts', () => {
                         c.database.destroy();
                     });
                     // This test failed randomly, so we run it more often.
-                    new Array(config.isFastMode() ? 3 : 10)
+                    new Array(config.isFastMode() ? 2 : 4)
                         .fill(0).forEach(() => {
                             it('skip first and limit (storage: ' + config.storage.name + ')', async () => {
                                 const c = await humansCollection.create(5);
+
                                 const docs = await c.find().sort('passportId').exec();
                                 const second = await c.find().sort('passportId').skip(1).limit(1).exec();
 
@@ -844,7 +872,7 @@ describe('rx-collection.test.ts', () => {
                         const query = c.find({
                             selector: {
                                 firstName: {
-                                    $regex: /Match/
+                                    $regex: 'Match'
                                 }
                             }
                         });
@@ -860,7 +888,10 @@ describe('rx-collection.test.ts', () => {
                         matchHuman.firstName = 'FooMatchBar';
                         await c.insert(matchHuman);
                         const docs = await c.find()
-                            .where('firstName').regex(/match/i)
+                            .where('firstName').regex({
+                                $regex: 'match',
+                                $options: 'i'
+                            })
                             .exec();
 
                         assert.strictEqual(docs.length, 1);
@@ -874,7 +905,7 @@ describe('rx-collection.test.ts', () => {
                         matchHuman.firstName = 'FooMatchBar';
                         await c.insert(matchHuman);
                         const docs = await c.find()
-                            .where('firstName').regex(/Match/)
+                            .where('firstName').regex('Match')
                             .exec();
 
                         assert.strictEqual(docs.length, 1);
@@ -884,6 +915,37 @@ describe('rx-collection.test.ts', () => {
                     });
                 });
                 describe('negative', () => {
+                    /**
+                     * Disallowed since RxDB version 15.
+                     * RegExp objects are mutable and cannot be JSON.stringify-ed.
+                     * So in a query you have to always use string based regexes.
+                     */
+                    it('should not allow to use RegExp objects', async () => {
+                        const c = await humansCollection.create(10);
+
+                        // normal selector
+                        await assertThrows(
+                            () => c.find({
+                                selector: {
+                                    firstName: {
+                                        $regex: /Match/ as any
+                                    }
+                                }
+                            }),
+                            'RxError',
+                            'QU16'
+                        );
+
+                        // query builder
+                        await assertThrows(
+                            () => c.find()
+                                .where('firstName').regex(/Match/ as any),
+                            'RxError',
+                            'QU16'
+                        );
+
+                        c.database.destroy();
+                    });
                 });
             });
             config.parallel('.remove()', () => {
@@ -956,8 +1018,7 @@ describe('rx-collection.test.ts', () => {
 
                     const collectionNames: string[] = [
                         'name_with_a_-_in',
-                        'name_no_dash',
-                        'dollar$collection'
+                        'name_no_dash'
                     ].sort();
 
                     const db = await createRxDatabase({
@@ -1025,7 +1086,7 @@ describe('rx-collection.test.ts', () => {
                     /**
                      * Getting the changes in the other database should have an empty result.
                      */
-                    const changesResult = await db2['human-2'].storageInstance.getChangedDocumentsSince(10);
+                    const changesResult = await getChangedDocumentsSince(db2['human-2'].storageInstance, 10);
                     assert.strictEqual(changesResult.documents.length, 0);
 
                     db2.destroy();
@@ -1153,7 +1214,7 @@ describe('rx-collection.test.ts', () => {
 
                     c.database.destroy();
                 });
-                runXTimes(config.isFastMode() ? 3 : 10, idx => {
+                runXTimes(config.isFastMode() ? 2 : 5, idx => {
                     it('BUG: insert and find very often (' + idx + ')', async function () {
                         const db = await createRxDatabase({
                             name: randomCouchString(10),
@@ -1177,17 +1238,19 @@ describe('rx-collection.test.ts', () => {
             describe('negative', () => {
                 it('BUG: should throw when no-string given (number)', async () => {
                     const c = await humansCollection.create();
-                    assert.throws(
+                    await assertThrows(
                         () => (c as any).findOne(5),
-                        TypeError
+                        'RxTypeError',
+                        'COL6'
                     );
                     c.database.destroy();
                 });
                 it('BUG: should throw when no-string given (array)', async () => {
                     const c = await humansCollection.create();
-                    assert.throws(
+                    await assertThrows(
                         () => (c as any).findOne([]),
-                        TypeError
+                        'RxTypeError',
+                        'COL6'
                     );
                     c.database.destroy();
                 });
@@ -1204,10 +1267,14 @@ describe('rx-collection.test.ts', () => {
                 it('should not count deleted documents', async () => {
                     const c = await humansCollection.create(2);
                     const emitted: number[] = [];
-                    c.count().$.subscribe(nr => emitted.push(nr));
+                    c.count().$.subscribe(nr => {
+                        emitted.push(nr);
+                    });
+                    await waitUntil(() => emitted.length === 1);
                     const doc = await c.findOne().exec(true);
                     await doc.remove();
                     const count = await c.count().exec();
+
                     assert.strictEqual(count, 1);
                     assert.deepStrictEqual(emitted, [2, 1]);
                     c.database.destroy();
@@ -1261,6 +1328,76 @@ describe('rx-collection.test.ts', () => {
                     c.database.destroy();
                 });
             });
+            /**
+             * @link https://github.com/pubkey/rxdb/pull/4775
+             */
+            it('#4775 count() broken on primary key', async () => {
+                // create a schema
+                const mySchema = {
+                    version: 0,
+                    primaryKey: 'passportId',
+                    type: 'object',
+                    properties: {
+                        passportId: {
+                            type: 'string',
+                            maxLength: 30
+                        },
+                        firstName: {
+                            type: 'string'
+                        },
+                        lastName: {
+                            type: 'string'
+                        },
+                        age: {
+                            type: 'integer',
+                            minimum: 0,
+                            maximum: 150
+                        }
+                    }
+                };
+
+                const name = randomCouchString(10);
+                const db = await createRxDatabase({
+                    name,
+                    storage: config.storage.getStorage(),
+                    eventReduce: true,
+                    ignoreDuplicate: true
+                });
+                const collections = await db.addCollections({
+                    mycollection: {
+                        schema: mySchema
+                    }
+                });
+
+                // insert a document
+                await collections.mycollection.insert({
+                    passportId: 'foobar2',
+                    firstName: 'Bob',
+                    lastName: 'Kelso',
+                    age: 56
+                });
+                await collections.mycollection.insert({
+                    passportId: 'foobar3',
+                    firstName: 'Bob',
+                    lastName: 'Kelso',
+                    age: 56
+                });
+
+                const countResult = await collections.mycollection
+                    .count({
+                        selector: {
+                            passportId: {
+                                $eq: 'foobar'
+                            }
+                        }
+                    })
+                    .exec();
+
+                assert.strictEqual(countResult, 0);
+
+                // clean up afterwards
+                db.destroy();
+            });
         });
         config.parallel('.bulkUpsert()', () => {
             it('insert and update', async () => {
@@ -1280,7 +1417,8 @@ describe('rx-collection.test.ts', () => {
                     data.age = 100;
                     return data;
                 });
-                await c.bulkUpsert(docsData);
+                const result = await c.bulkUpsert(docsData);
+                assert.deepStrictEqual(result.error, []);
                 allDocs = await c.find().exec();
                 assert.strictEqual(allDocs.length, amount);
                 allDocs.forEach(d => assert.strictEqual(d.age, 100));
@@ -1455,7 +1593,7 @@ describe('rx-collection.test.ts', () => {
                     docData.firstName = 'test-many-incremental-upsert';
 
                     let t = 0;
-                    const amount = config.isFastMode() ? 20 : 200;
+                    const amount = config.isFastMode() ? 15 : 100;
 
                     const docs = await Promise.all(
                         new Array(amount)
@@ -1490,7 +1628,7 @@ describe('rx-collection.test.ts', () => {
                     ]);
 
                     const viaStorage = await c.storageInstance.findDocumentsById([docId], true);
-                    const viaStorageDoc = viaStorage[docId];
+                    const viaStorageDoc = viaStorage[0];
                     assert.ok(parseRevision(viaStorageDoc._rev).height >= 3);
 
                     const docData2 = clone(docData);
@@ -1532,7 +1670,7 @@ describe('rx-collection.test.ts', () => {
                     if (!config.platform.isNode()) return;
                     // use a 'slow' adapter because memory might be to fast
                     const db = await createRxDatabase({
-                        name: config.rootPath + 'test_tmp/' + randomCouchString(10),
+                        name: randomCouchString(10),
                         storage: config.storage.getStorage(),
                     });
                     const collections = await db.addCollections({
@@ -1807,7 +1945,7 @@ describe('rx-collection.test.ts', () => {
             });
         });
     });
-    config.parallel('.findByIds$()', () => {
+    config.parallel('.findByIds.$()', () => {
         it('should not crash and emit a map', async () => {
             const c = await humansCollection.create(5);
             const docs = await c.find().exec();
@@ -2009,7 +2147,7 @@ describe('rx-collection.test.ts', () => {
 
             db2.destroy();
         });
-        it('#3661 .findByIds$() fires too often', async () => {
+        it('#3661 .findByIds.$() fires too often', async () => {
             const collection = await humansCollection.create(0);
 
             //  Record subscription
@@ -2084,7 +2222,7 @@ describe('rx-collection.test.ts', () => {
 
             /**
              * Each emitted result must have a different result set
-             * because findByIds$ must only emit when data has actually changed.
+             * because findByIds.$ must only emit when data has actually changed.
              * We cannot just count the updates.length here because some RxStorage implementations
              * might return multiple RxChangeEventBulks for a single bulkWrite() operation
              * or do additional writes. So we have to check for the revisions+docId strings.

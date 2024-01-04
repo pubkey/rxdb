@@ -1,11 +1,11 @@
 import assert from 'assert';
 import AsyncTestUtil from 'async-test-util';
-import config from './config';
+import config from './config.ts';
 import clone from 'clone';
 
-import * as humansCollection from './../helper/humans-collection';
-import * as schemaObjects from '../helper/schema-objects';
-import * as schemas from './../helper/schemas';
+import * as humansCollection from './../helper/humans-collection.ts';
+import * as schemaObjects from '../helper/schema-objects.ts';
+import * as schemas from './../helper/schemas.ts';
 
 import {
     isRxQuery,
@@ -14,7 +14,8 @@ import {
     promiseWait,
     randomCouchString,
     ensureNotFalsy,
-} from '../../';
+    deepFreeze
+} from '../../plugins/core/index.mjs';
 
 import { firstValueFrom } from 'rxjs';
 
@@ -111,7 +112,7 @@ describe('rx-query.test.ts', () => {
         it('ISSUE #190: should contain the regex', async () => {
             const col = await humansCollection.create(0);
             const queryWithoutRegex = col.find();
-            const queryWithRegex = queryWithoutRegex.where('color').regex(new RegExp(/foobar/g));
+            const queryWithRegex = queryWithoutRegex.where('color').regex('foobar');
             const queryString = queryWithRegex.toString();
 
             assert.ok(queryString.includes('foobar'));
@@ -385,20 +386,20 @@ describe('rx-query.test.ts', () => {
                 fired.push(res);
             });
 
-            await AsyncTestUtil.waitUntil(() => fired.length === 1);
+            await AsyncTestUtil.waitUntil(() => fired.length === 1, 1000);
 
             assert.strictEqual(query._execOverDatabaseCount, 1);
             assert.strictEqual(query._latestChangeEvent, 2);
 
             const addObj = schemaObjects.human();
-            addObj.passportId = 'zzzzzzzz';
+            addObj.passportId = schemaObjects.TEST_DATA_CHARSET_LAST_SORTED.repeat(10);
             await col.insert(addObj);
             assert.strictEqual(query.collection._changeEventBuffer.counter, 3);
 
-            await AsyncTestUtil.waitUntil(() => query._latestChangeEvent === 3);
+            await AsyncTestUtil.waitUntil(() => query._latestChangeEvent === 3, 1000);
             assert.strictEqual(query._latestChangeEvent, 3);
 
-            await AsyncTestUtil.waitUntil(() => fired.length === 2);
+            await AsyncTestUtil.waitUntil(() => fired.length === 2, 1000);
             assert.strictEqual(fired[1].pop().passportId, addObj.passportId);
             sub1.unsubscribe();
             col.database.destroy();
@@ -443,7 +444,7 @@ describe('rx-query.test.ts', () => {
             }
             // use a 'slow' adapter because memory might be to fast
             const db = await createRxDatabase({
-                name: config.rootPath + 'test_tmp/' + randomCouchString(10),
+                name: randomCouchString(10),
                 storage: config.storage.getStorage(),
             });
             const cols = await db.addCollections({
@@ -809,7 +810,7 @@ describe('rx-query.test.ts', () => {
                         properties: {
                             title: {
                                 type: 'string',
-                                maxLength: 1000
+                                maxLength: 100
                             },
                         },
                     }
@@ -904,7 +905,6 @@ describe('rx-query.test.ts', () => {
             });
 
 
-            /* eslint-disable */
             const selector = {
                 $and: [{
                     event_id: {
@@ -931,7 +931,6 @@ describe('rx-query.test.ts', () => {
                 }
                 ]
             };
-            /* eslint-enable */
 
             const resultDocs1 = await collection
                 .find({
@@ -1096,10 +1095,12 @@ describe('rx-query.test.ts', () => {
             assert.strictEqual(allDocs.length, 2);
 
             // test 1 with RegExp object
-            const regexp = new RegExp('^Doe$', 'i');
             const result1 = await collection.find({
                 selector: {
-                    lastName: { $regex: regexp }
+                    lastName: {
+                        $regex: '^Doe$',
+                        $options: 'i'
+                    }
                 }
             }).exec();
 
@@ -1167,9 +1168,57 @@ describe('rx-query.test.ts', () => {
 
             collection.database.destroy();
         });
+        it('should not mutate the query input', async () => {
+            const db = await createRxDatabase({
+                name: randomCouchString(10),
+                storage: config.storage.getStorage(),
+                eventReduce: false
+            });
+            const schema = clone(schemas.human);
+            schema.keyCompression = false;
+
+            const cols = await db.addCollections({
+                humans: {
+                    schema
+                }
+            });
+            const c = cols.humans;
+
+
+
+            const docDataMatching = schemaObjects.human('docMatching');
+            docDataMatching.age = 42;
+            await c.insert(docDataMatching);
+
+            const docDataNotMatching = schemaObjects.human('docNotMatching');
+            docDataNotMatching.age = 99;
+            await c.insert(docDataNotMatching);
+
+            /**
+             * Deep freeze the params so that it will throw
+             * at the first place it is mutated.
+             */
+            const queryParams = deepFreeze({
+                selector: {
+                    age: 42
+                }
+            });
+            const queryMatching = c.find(queryParams);
+            const queryMatchingOne = c.findOne(queryParams);
+            if (queryMatching.mangoQuery.limit) {
+                throw new Error('queryMatching must not have a limit ' + JSON.stringify(queryMatching.mangoQuery));
+            }
+            const res1 = await queryMatching.exec();
+            const resOne1 = await queryMatchingOne.exec();
+            assert.strictEqual(res1.length, 1);
+            assert.ok(resOne1);
+            assert.strictEqual(resOne1.age, 42);
+            db.destroy();
+        });
         /**
         * via gitter @sfordjasiri 27.8.2020 10:27
         */
+
         it('gitter: mutating find-params causes different results', async () => {
             const db = await createRxDatabase({
                 name: randomCouchString(10),
@@ -1186,13 +1235,16 @@ describe('rx-query.test.ts', () => {
             });
             const c = cols.humans;
 
-            const docDataMatching = schemaObjects.human();
+
+
+            const docDataMatching = schemaObjects.human('docMatching');
             docDataMatching.age = 42;
             await c.insert(docDataMatching);
 
-            const docDataNotMatching = schemaObjects.human();
+            const docDataNotMatching = schemaObjects.human('docNotMatching');
             docDataNotMatching.age = 99;
             await c.insert(docDataNotMatching);
+
 
             const queryParams = {
                 selector: {
@@ -1201,7 +1253,9 @@ describe('rx-query.test.ts', () => {
             };
             const queryMatching = c.find(queryParams);
             const queryMatchingOne = c.findOne(queryParams);
-
+            if (queryMatching.mangoQuery.limit) {
+                throw new Error('queryMatching must not have a limit ' + JSON.stringify(queryMatching.mangoQuery));
+            }
             const res1 = await queryMatching.exec();
             const resOne1 = await queryMatchingOne.exec();
             assert.strictEqual(res1.length, 1);
@@ -1211,7 +1265,7 @@ describe('rx-query.test.ts', () => {
             queryParams.selector.age = 0;
 
             // trigger a write so the results are not cached
-            const addData = schemaObjects.human();
+            const addData = schemaObjects.human('a-trigger-write');
             addData.age = 55;
             await c.insert(addData);
 
@@ -1224,6 +1278,7 @@ describe('rx-query.test.ts', () => {
 
             db.destroy();
         });
+
         it('#3498 RxQuery returns outdated result in second subscription', async () => {
             const schema = {
                 version: 0,
@@ -1324,6 +1379,58 @@ describe('rx-query.test.ts', () => {
             assert.strictEqual(newQ.other[key], data);
 
             col.database.destroy();
+        });
+        it('#4773 should not return deleted documents when queried by a primary key', async () => {
+            const c = await humansCollection.create();
+            const docData = schemaObjects.human();
+            await c.insert(docData);
+            const doc = await c.findOne(docData.passportId).exec();
+            assert.ok(doc);
+            await c.findOne(docData.passportId).remove();
+            const doc2 = await c.findOne(docData.passportId).exec();
+            assert.strictEqual(doc2, null);
+            const doc3 = await c.findOne({ selector: { passportId: { $eq: [docData.passportId] } } }).exec();
+            assert.strictEqual(doc3, null);
+            const docs = await c.find({ selector: { passportId: docData.passportId } }).exec();
+            assert.strictEqual(docs.length, 0);
+            c.database.destroy();
+        });
+        it('primaryKey with value "constructor", breaks .findOne()', async () => {
+            const mySchema = {
+                version: 0,
+                primaryKey: 'passportId',
+                type: 'object',
+                properties: {
+                    passportId: {
+                        type: 'string',
+                        maxLength: 100
+                    }
+                }
+            };
+            const db = await createRxDatabase({
+                name: randomCouchString(10),
+                storage: config.storage.getStorage(),
+                eventReduce: true,
+                ignoreDuplicate: true
+            });
+
+            // create a collection
+            const collections = await db.addCollections({
+                mycollection: {
+                    schema: mySchema
+                }
+            });
+            const collection = collections.mycollection;
+
+            let has = await collection.findOne('constructor').exec();
+            assert.ok(!has);
+            has = await collection.findOne('toString').exec();
+            assert.ok(!has);
+
+            const byId = await collection.findByIds(['constructor']).exec();
+            assert.ok(!byId.has('constructor'));
+
+            db.destroy();
         });
     });
 });

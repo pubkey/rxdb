@@ -129,3 +129,7 @@ myQuery.$().listen((newResults) {
 
 - First you have to bundle the JavaScript by running `npm run install && npm run build` in the [/javascript](/javascript) directory. You have to rerun this command each time you change the JavaScript code.
 - In your terminal, execute `flutter run` to start the example application.
+
+
+
+- Read more about using RxDB as [Flutter Database](https://rxdb.info/articles/flutter-database.html)

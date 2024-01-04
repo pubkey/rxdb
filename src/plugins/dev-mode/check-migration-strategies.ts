@@ -1,6 +1,6 @@
-import type { RxJsonSchema, NumberFunctionMap } from '../../types';
-import { newRxTypeError, newRxError } from '../../rx-error';
-import { getPreviousVersions } from '../../rx-schema';
+import type { RxJsonSchema, NumberFunctionMap } from '../../types/index.d.ts';
+import { newRxTypeError, newRxError } from '../../rx-error.ts';
+import { getPreviousVersions } from '../../rx-schema.ts';
 
 
 /**

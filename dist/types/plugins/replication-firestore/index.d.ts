@@ -1,8 +1,8 @@
-import type { RxCollection, ReplicationPullOptions, ReplicationPushOptions } from '../../types';
-import { RxReplicationState } from '../replication';
-import type { FirestoreCheckpointType, FirestoreOptions, SyncOptionsFirestore } from './firestore-types';
-export * from './firestore-helper';
-export * from './firestore-types';
+import type { RxCollection, ReplicationPullOptions, ReplicationPushOptions } from '../../types/index.d.ts';
+import { RxReplicationState } from '../replication/index.ts';
+import type { FirestoreCheckpointType, FirestoreOptions, SyncOptionsFirestore } from './firestore-types.ts';
+export * from './firestore-helper.ts';
+export * from './firestore-types.ts';
 export declare class RxFirestoreReplicationState<RxDocType> extends RxReplicationState<RxDocType, FirestoreCheckpointType> {
     readonly firestore: FirestoreOptions<RxDocType>;
     readonly replicationIdentifierHash: string;

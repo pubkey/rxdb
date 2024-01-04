@@ -1,6 +1,6 @@
-import {
+import type {
     RxDocument
-} from './rx-document';
+} from './rx-document.d.ts';
 
 declare type Buffer = any;
 

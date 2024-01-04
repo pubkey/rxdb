@@ -1,9 +1,9 @@
 import assert from 'assert';
-import config, { getEncryptedStorage, getPassword } from './config';
+import config, { getEncryptedStorage, getPassword } from './config.ts';
 import AsyncTestUtil from 'async-test-util';
 
-import * as schemas from '../helper/schemas';
-import * as schemaObjects from '../helper/schema-objects';
+import * as schemas from '../helper/schemas.ts';
+import * as schemaObjects from '../helper/schema-objects.ts';
 
 import {
     createRxDatabase,
@@ -17,21 +17,21 @@ import {
     ensureNoStartupErrors,
     ensureNotFalsy,
     getComposedPrimaryKeyOfDocumentData,
-    getFromMapOrThrow
-} from '../../';
+    getFromMapOrThrow,
+    RxStorage,
+    WrappedRxStorageInstance
+} from '../../plugins/core/index.mjs';
 
 import {
     encryptString,
     decryptString
-} from '../../plugins/encryption-crypto-js';
-import { replicateRxCollection } from '../../plugins/replication';
-import { getPullHandler, getPushHandler } from './replication.test';
-import { getRxStorageMemory, RxStorageInstanceMemory } from '../../plugins/storage-memory';
+} from '../../plugins/encryption-crypto-js/index.mjs';
+import { replicateRxCollection } from '../../plugins/replication/index.mjs';
+import { getPullHandler, getPushHandler } from './replication.test.ts';
+import { getRxStorageMemory } from '../../plugins/storage-memory/index.mjs';
 
 
 config.parallel('encryption.test.ts', () => {
-    const storage = getEncryptedStorage();
-
     async function createEncryptedCollection(
         amount: number = 10,
         useStorage?: typeof storage
@@ -64,6 +64,12 @@ config.parallel('encryption.test.ts', () => {
 
         return collections.encryptedhuman;
     }
+    let storage: RxStorage<any, any>;
+    describe('init', () => {
+        it('create storage', () => {
+            storage = getEncryptedStorage();
+        });
+    });
     describe('basics', () => {
         describe('.encryptString()', () => {
             it('string', () => {
@@ -151,6 +157,9 @@ config.parallel('encryption.test.ts', () => {
             db2.destroy();
         });
         it('prevent 2 instances with different passwords on same adapter', async () => {
+            if (!config.storage.hasPersistence) {
+                return;
+            }
             const name = randomCouchString(10);
             const db = await createRxDatabase({
                 name,
@@ -279,6 +288,9 @@ config.parallel('encryption.test.ts', () => {
         });
     });
     describe('replication', () => {
+        if (!config.storage.hasReplication) {
+            return;
+        }
         it('replication state meta should not contain a secret in cleartext', async () => {
             if (config.storage.hasEncryption) {
                 return;
@@ -294,7 +306,7 @@ config.parallel('encryption.test.ts', () => {
                 replicationIdentifier: randomCouchString(10),
                 live: true,
                 pull: {
-                    handler: getPullHandler(remoteCollection as any)
+                    handler: getPullHandler<schemaObjects.EncryptedHumanDocumentType>(remoteCollection as any)
                 },
                 push: {
                     handler: getPushHandler(remoteCollection as any)
@@ -304,7 +316,10 @@ config.parallel('encryption.test.ts', () => {
             const replicatedDoc = await clientCollection.findOne(human.passportId).exec(true);
             assert.strictEqual(replicatedDoc.secret, secret);
 
-            const metaInstance: RxStorageInstanceMemory<any> = ensureNotFalsy(replicationState.metaInstance) as any;
+            const metaInstance = (
+                ensureNotFalsy(replicationState.metaInstance) as WrappedRxStorageInstance<any, any, any>
+            ).originalStorageInstance;
+
             const metaDocId = getComposedPrimaryKeyOfDocumentData(
                 metaInstance.schema,
                 {
@@ -316,8 +331,13 @@ config.parallel('encryption.test.ts', () => {
             const asString = JSON.stringify(metaDoc);
             assert.ok(!asString.includes(secret));
 
-            clientCollection.database.destroy();
-            remoteCollection.database.destroy();
+
+            /**
+             * Removing encrypted databases was broken,
+             * so remove instead of destroy here.
+             */
+            await clientCollection.database.remove();
+            await remoteCollection.database.remove();
         });
     });
     describe('ISSUES', () => {
@@ -335,6 +355,7 @@ config.parallel('encryption.test.ts', () => {
                 storage,
                 password
             });
+            await db1.storageToken;
             await db1.destroy();
 
             // 2. reopen with wrong password
@@ -344,6 +365,7 @@ config.parallel('encryption.test.ts', () => {
                 storage,
                 password: await getPassword()
             });
+            await db2.storageToken;
 
             await AsyncTestUtil.assertThrows(
                 () => ensureNoStartupErrors(db2),

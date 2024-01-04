@@ -1,7 +1,7 @@
-import type { RxCleanupPolicy, RxCollection } from '../../types';
-import { PROMISE_RESOLVE_TRUE } from '../../plugins/utils';
-import { REPLICATION_STATE_BY_COLLECTION } from '../replication';
-import { DEFAULT_CLEANUP_POLICY } from './cleanup-helper';
+import type { RxCleanupPolicy, RxCollection } from '../../types/index.d.ts';
+import { PROMISE_RESOLVE_TRUE } from '../../plugins/utils/index.ts';
+import { REPLICATION_STATE_BY_COLLECTION } from '../replication/index.ts';
+import { DEFAULT_CLEANUP_POLICY } from './cleanup-helper.ts';
 
 /**
  * Even on multiple databases,

@@ -21,7 +21,7 @@ import type {
     RxStorageChangeEvent,
     RxStorageInstance,
     RxStorageInstanceCreationParams
-} from './types';
+} from './types/index.d.ts';
 
 import {
     BroadcastChannel
@@ -61,6 +61,7 @@ export type RxStorageMultiInstanceBroadcastType = {
 };
 
 export function getBroadcastChannelReference(
+    storageName: string,
     databaseInstanceToken: string,
     databaseName: string,
     refObject: any
@@ -73,7 +74,7 @@ export function getBroadcastChannelReference(
              * in the BroadcastChannel name because different instances must end with the same
              * channel name to be able to broadcast messages between each other.
              */
-            bc: new BroadcastChannel('RxDB:' + databaseName),
+            bc: new BroadcastChannel(['RxDB:', storageName, databaseName].join('|')),
             refs: new Set<any>()
         };
         BROADCAST_CHANNEL_BY_TOKEN.set(databaseInstanceToken, state);
@@ -117,6 +118,7 @@ export function addRxStorageMultiInstanceSupport<RxDocType>(
     const broadcastChannel = providedBroadcastChannel ?
         providedBroadcastChannel :
         getBroadcastChannelReference(
+            storageName,
             instanceCreationParams.databaseInstanceToken,
             instance.databaseName,
             instance
@@ -135,6 +137,7 @@ export function addRxStorageMultiInstanceSupport<RxDocType>(
             changesFromOtherInstances$.next(msg.eventBulk);
         }
     };
+
     broadcastChannel.addEventListener('message', eventListener);
 
     const oldChangestream$ = instance.changeStream();

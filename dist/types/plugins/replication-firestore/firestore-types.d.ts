@@ -1,4 +1,4 @@
-import type { MaybePromise, ReplicationOptions, ReplicationPullOptions, ReplicationPushOptions, WithDeleted } from '../../types';
+import type { MaybePromise, ReplicationOptions, ReplicationPullOptions, ReplicationPushOptions, WithDeleted } from '../../types/index.d.ts';
 import type { CollectionReference, Firestore, QueryFieldFilterConstraint, QuerySnapshot } from 'firebase/firestore';
 export type FirestoreCheckpointType = {
     id: string;
@@ -26,7 +26,7 @@ export type FirestoreSyncPullOptions<RxDocType> = Omit<ReplicationPullOptions<Rx
 export type FirestoreSyncPushOptions<RxDocType> = Omit<ReplicationPushOptions<RxDocType>, 'handler'> & {
     filter?(item: WithDeleted<RxDocType>): MaybePromise<boolean>;
 };
-export type SyncOptionsFirestore<RxDocType> = Omit<ReplicationOptions<RxDocType, any>, 'pull' | 'push' | 'replicationIdentifier'> & {
+export type SyncOptionsFirestore<RxDocType> = Omit<ReplicationOptions<RxDocType, any>, 'pull' | 'push'> & {
     firestore: FirestoreOptions<RxDocType>;
     /**
      * In firestore it is not possible to read out

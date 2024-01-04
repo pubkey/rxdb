@@ -1,5 +1,6 @@
 import { BehaviorSubject, Observable } from 'rxjs';
-import type { RxCollection, RxDocument, RxQueryOP, RxQuery, MangoQuery, MangoQuerySortPart, MangoQuerySelector, PreparedQuery, RxDocumentWriteData, RxDocumentData, QueryMatcher } from './types';
+import type { RxCollection, RxDocument, RxQueryOP, RxQuery, MangoQuery, MangoQuerySortPart, MangoQuerySelector, PreparedQuery, RxDocumentWriteData, RxDocumentData, QueryMatcher, RxJsonSchema, FilledMangoQuery } from './types/index.d.ts';
+import { RxQuerySingleResult } from './rx-query-single-result.ts';
 export declare class RxQueryBase<RxDocType, RxQueryResult = RxDocument<RxDocType>[] | RxDocument<RxDocType>> {
     op: RxQueryOP;
     mangoQuery: Readonly<MangoQuery<RxDocType>>;
@@ -19,19 +20,7 @@ export declare class RxQueryBase<RxDocType, RxQueryResult = RxDocument<RxDocType
      * Contains the current result state
      * or null if query has not run yet.
      */
-    _result: {
-        docsData: RxDocumentData<RxDocType>[];
-        docsDataMap: Map<string, RxDocType>;
-        docsMap: Map<string, RxDocument<RxDocType>>;
-        docs: RxDocument<RxDocType>[];
-        count: number;
-        /**
-         * Time at which the current _result state was created.
-         * Used to determine if the result set has changed since X
-         * so that we do not emit the same result multiple times on subscription.
-         */
-        time: number;
-    } | null;
+    _result: RxQuerySingleResult<RxDocType> | null;
     constructor(op: RxQueryOP, mangoQuery: Readonly<MangoQuery<RxDocType>>, collection: RxCollection<RxDocType>, other?: any);
     get $(): BehaviorSubject<RxQueryResult>;
     _latestChangeEvent: -1 | number;
@@ -113,6 +102,11 @@ export declare function _getDefaultQuery<RxDocType>(): MangoQuery<RxDocType>;
  */
 export declare function tunnelQueryCache<RxDocumentType, RxQueryResult>(rxQuery: RxQueryBase<RxDocumentType, RxQueryResult>): RxQuery<RxDocumentType, RxQueryResult>;
 export declare function createRxQuery<RxDocType>(op: RxQueryOP, queryObj: MangoQuery<RxDocType>, collection: RxCollection<RxDocType>, other?: any): RxQueryBase<RxDocType, RxDocument<RxDocType> | RxDocument<RxDocType>[]>;
+/**
+ * @returns a format of the query that can be used with the storage
+ * when calling RxStorageInstance().query()
+ */
+export declare function prepareQuery<RxDocType>(schema: RxJsonSchema<RxDocumentData<RxDocType>>, mutateableQuery: FilledMangoQuery<RxDocType>): PreparedQuery<RxDocType>;
 /**
  * Runs the query over the storage instance
  * of the collection.

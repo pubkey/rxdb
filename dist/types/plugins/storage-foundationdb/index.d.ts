@@ -1,4 +1,4 @@
-import type { RxStorageFoundationDB, RxStorageFoundationDBSettings } from './foundationdb-types';
+import type { RxStorageFoundationDB, RxStorageFoundationDBSettings } from './foundationdb-types.ts';
 export declare function getRxStorageFoundationDB(settings: RxStorageFoundationDBSettings): RxStorageFoundationDB;
-export * from './foundationdb-types';
-export * from './foundationdb-helpers';
+export * from './foundationdb-types.ts';
+export * from './foundationdb-helpers.ts';

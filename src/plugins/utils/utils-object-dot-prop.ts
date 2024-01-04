@@ -182,9 +182,24 @@ function assertNotStringIndex(object: any, key: string | number) {
     }
 }
 
+/**
+ * TODO we need some performance tests and improvements here.
+ */
 export function getProperty(object: any, path: string | string[], value?: any) {
     if (Array.isArray(path)) {
         path = path.join('.');
+    }
+
+    /**
+     * Performance shortcut.
+     * In most cases we just have a simple property name
+     * so we can directly return it.
+     */
+    if (
+        !path.includes('.') &&
+        !path.includes('[')
+    ) {
+        return object[path];
     }
 
     if (!isObject(object as any) || typeof path !== 'string') {

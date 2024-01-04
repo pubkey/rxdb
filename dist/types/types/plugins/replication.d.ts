@@ -7,7 +7,7 @@ import type {
     RxReplicationPullStreamItem,
     RxReplicationWriteToMasterRow,
     WithDeleted
-} from '../../types';
+} from '../../types/index.d.ts';
 
 
 export type InternalStoreReplicationPushDocType = InternalStoreDocType<{
@@ -18,14 +18,14 @@ export type InternalStoreReplicationPullDocType<RxDocType> = InternalStoreDocTyp
 }>;
 
 export type ReplicationPullHandlerResult<RxDocType, CheckpointType> = {
-    checkpoint: CheckpointType;
+    checkpoint: CheckpointType | null;
     documents: WithDeleted<RxDocType>[];
 };
 
 export type ReplicationPushHandlerResult<RxDocType> = RxDocType[];
 
 export type ReplicationPullHandler<RxDocType, CheckpointType> = (
-    lastPulledCheckpoint: CheckpointType,
+    lastPulledCheckpoint: CheckpointType | undefined,
     batchSize: number
 ) => Promise<ReplicationPullHandlerResult<RxDocType, CheckpointType>>;
 export type ReplicationPullOptions<RxDocType, CheckpointType> = {
@@ -91,7 +91,7 @@ export type ReplicationPushOptions<RxDocType> = {
      * A modifier that runs on all pushed documents before
      * they are send into the push handler.
      */
-    modifier?: (docData: WithDeleted<RxDocType>) => MaybePromise<any>;
+    modifier?: (docData: WithDeleted<RxDocType>) => MaybePromise<any | null>;
 
     /**
      * How many local changes to process at once.

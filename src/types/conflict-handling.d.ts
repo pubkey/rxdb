@@ -1,4 +1,4 @@
-import { WithDeleted } from './rx-storage';
+import type { WithDeleted } from './rx-storage.d.ts';
 
 /**
  * Notice that the conflict handler input/output

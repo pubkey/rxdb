@@ -1,4 +1,4 @@
-import type { LokiDatabaseSettings } from '../../types';
+import type { LokiDatabaseSettings } from '../../types/index.d.ts';
 /**
  * The autosave feature of lokijs has strange behaviors
  * and often runs a save in critical moments when other
@@ -7,7 +7,7 @@ import type { LokiDatabaseSettings } from '../../types';
  * only run loki.saveDatabase() when nothing else is running.
  */
 export declare class LokiSaveQueue {
-    readonly lokiDatabase: Loki;
+    readonly lokiDatabase: any;
     readonly databaseSettings: LokiDatabaseSettings;
     writesSinceLastRun: number;
     /**
@@ -16,7 +16,7 @@ export declare class LokiSaveQueue {
      */
     saveQueue: Promise<void>;
     saveQueueC: number;
-    constructor(lokiDatabase: Loki, databaseSettings: LokiDatabaseSettings);
+    constructor(lokiDatabase: any, databaseSettings: LokiDatabaseSettings);
     addWrite(): void;
     run(): Promise<void>;
 }

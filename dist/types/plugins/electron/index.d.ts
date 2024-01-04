@@ -1,2 +1,2 @@
-export * from './rx-storage-ipc-renderer';
-export * from './rx-storage-ipc-main';
+export * from './rx-storage-ipc-renderer.ts';
+export * from './rx-storage-ipc-main.ts';

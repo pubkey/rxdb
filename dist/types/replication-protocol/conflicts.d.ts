@@ -1,4 +1,4 @@
-import type { RxConflictHandler, RxConflictHandlerInput, RxConflictHandlerOutput, RxDocumentData, RxStorageInstanceReplicationState } from '../types';
+import type { RxConflictHandler, RxConflictHandlerInput, RxConflictHandlerOutput, RxDocumentData, RxStorageInstanceReplicationState } from '../types/index.d.ts';
 export declare const defaultConflictHandler: RxConflictHandler<any>;
 /**
  * Resolves a conflict error or determines that the given document states are equal.

@@ -1,7 +1,7 @@
 import {
     isBulkWriteConflictError,
     rxStorageWriteErrorToRxError
-} from './rx-error';
+} from './rx-error.ts';
 import type {
     ModifyFunction,
     BulkWriteRow,
@@ -13,7 +13,7 @@ import type {
     RxStorageInstance,
     StringKeys,
     WithDeleted
-} from './types';
+} from './types/index.d.ts';
 import {
     clone,
     ensureNotFalsy,
@@ -21,7 +21,7 @@ import {
     getFromMapOrThrow,
     parseRevision,
     stripMetaDataFromDocument
-} from './plugins/utils';
+} from './plugins/utils/index.ts';
 
 
 
@@ -136,23 +136,22 @@ export class IncrementalWriteQueue<RxDocType> {
         );
         const writeResult: RxStorageBulkWriteResponse<RxDocType> = writeRows.length > 0 ?
             await this.storageInstance.bulkWrite(writeRows, 'incremental-write') :
-            { error: {}, success: {} };
+            { error: [], success: [] };
 
         // process success
         await Promise.all(
-            Array
-                .from(Object.entries(writeResult.success))
-                .map(([docId, result]) => {
-                    this.postWrite(result);
-                    const items = getFromMapOrThrow(itemsById, docId);
-                    items.forEach(item => item.resolve(result));
-                })
+            writeResult.success.map(result => {
+                const docId = result[this.primaryPath] as string;
+                this.postWrite(result);
+                const items = getFromMapOrThrow(itemsById, docId);
+                items.forEach(item => item.resolve(result));
+            })
         );
 
         // process errors
-        Array
-            .from(Object.entries(writeResult.error))
-            .forEach(([docId, error]) => {
+        writeResult.error
+            .forEach(error => {
+                const docId = error.documentId;
                 const items = getFromMapOrThrow(itemsById, docId);
                 const isConflict = isBulkWriteConflictError<RxDocType>(error);
                 if (isConflict) {

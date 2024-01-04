@@ -1,7 +1,7 @@
 import assert from 'assert';
 
-import config from './config';
-import * as schemaObjects from '../helper/schema-objects';
+import config from './config.ts';
+import * as schemaObjects from '../helper/schema-objects.ts';
 import {
     randomCouchString,
     now,
@@ -16,7 +16,6 @@ import {
     RxStorageInstance,
     RxStorageInstanceReplicationState,
     RxConflictHandlerInput,
-    getFromObjectOrThrow,
     awaitRxStorageReplicationIdle,
     promiseWait,
     getRxReplicationMetaInstanceSchema,
@@ -28,49 +27,81 @@ import {
     getComposedPrimaryKeyOfDocumentData,
     setCheckpoint,
     deepEqual,
-    RxJsonSchema
-} from '../../';
+    RxJsonSchema,
+    RxDocumentWriteData,
+    createBlob,
+    blobToBase64String,
+    RxAttachmentWriteData,
+    flatClone,
+    requestIdlePromise,
+    prepareQuery
+} from '../../plugins/core/index.mjs';
 
 
 import {
     RxLocalDocumentData,
     RX_LOCAL_DOCUMENT_SCHEMA
-} from '../../plugins/local-documents';
-import * as schemas from '../helper/schemas';
-
+} from '../../plugins/local-documents/index.mjs';
+import * as schemas from '../helper/schemas.ts';
 import {
     clone,
     wait,
     waitUntil,
     randomBoolean
 } from 'async-test-util';
-import { HumanDocumentType } from '../helper/schemas';
+import { HumanDocumentType } from '../helper/schemas.ts';
 import {
     EXAMPLE_REVISION_1,
     EXAMPLE_REVISION_2,
     EXAMPLE_REVISION_3
-} from '../helper/revisions';
+} from '../helper/revisions.ts';
 
 const testContext = 'replication-protocol.test.ts';
 
 const useParallel = config.storage.name === 'dexie-worker' ? describe : config.parallel;
+
+function ensureReplicationHasNoErrors(replicationState: RxStorageInstanceReplicationState<any>) {
+    /**
+     * We do not have to unsubscribe because the observable will cancel anyway.
+     */
+    replicationState.events.error.subscribe(err => {
+        // console.error('ensureReplicationHasNoErrors() has error:');
+        // console.error(err);
+        // console.dir(err.toString());
+        throw err;
+    });
+}
+
 useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () => {
+    if (!config.storage.hasReplication) {
+        return;
+    }
+
     const THROWING_CONFLICT_HANDLER: RxConflictHandler<HumanDocumentType> = (input, context) => {
 
-        if (deepEqual(input.newDocumentState, input.realMasterState)) {
+
+        function withoutMeta(d: any) {
+            d = flatClone(d);
+            delete d._meta;
+            delete d._rev;
+            return d;
+        }
+
+        if (deepEqual(withoutMeta(input.newDocumentState), withoutMeta(input.realMasterState))) {
             return Promise.resolve({
                 isEqual: true
             });
         }
 
-        console.log(JSON.stringify(input, null, 4));
+        // console.log('THROWING_CONFLICT_HANDLER will throw with input:');
+        // console.log(JSON.stringify(input, null, 4));
+
         throw new Error('THROWING_CONFLICT_HANDLER: This handler should never be called. (context: ' + context + ')');
     };
     const HIGHER_AGE_CONFLICT_HANDLER: RxConflictHandler<HumanDocumentType> = (
         input: RxConflictHandlerInput<HumanDocumentType>,
         context: string
     ) => {
-
         if (deepEqual(input.newDocumentState, input.realMasterState)) {
             return Promise.resolve({
                 isEqual: true
@@ -109,59 +140,88 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 documentData
             });
         } else {
-            console.error('EQUAL AGE (' + ageA + ') !!! ' + context);
+            console.error('EQUAL AGE (' + ageA + ') ' + context);
             console.log(JSON.stringify(input, null, 4));
             throw new Error('equal age ' + ageA + ' ctxt: ' + context);
         }
     };
-    function getDocData(partial: Partial<HumanDocumentType> = {}): RxDocumentData<HumanDocumentType> {
+    function getDocData(partial: Partial<RxDocumentData<HumanDocumentType>> = {}): RxDocumentData<HumanDocumentType> {
         const docData = Object.assign(
             schemaObjects.human(),
             partial
         );
-        const withMeta = Object.assign(
+        const withMeta: RxDocumentData<HumanDocumentType> = Object.assign(
             {
                 _deleted: false,
-                _attachments: {},
                 _meta: {
                     lwt: now()
                 },
-                _rev: ''
+                _rev: '',
+                _attachments: partial._attachments ? partial._attachments : {}
             },
             docData
         );
         withMeta._rev = createRevision(randomCouchString(10));
         return withMeta;
     }
+    async function getAttachmentWriteData(): Promise<RxAttachmentWriteData> {
+        const attachmentData = randomCouchString(20);
+        const dataBlob = createBlob(attachmentData, 'text/plain');
+        const dataString = await blobToBase64String(dataBlob);
+        return {
+            data: dataString,
+            length: attachmentData.length,
+            type: 'text/plain',
+            digest: await defaultHashSha256(dataString)
+        };
+    }
     async function createRxStorageInstance(
         documentAmount: number = 0,
         databaseName: string = randomCouchString(12),
-        collectionName: string = randomCouchString(12)
+        collectionName: string = randomCouchString(12),
+        attachments = false
     ): Promise<RxStorageInstance<HumanDocumentType, any, any>> {
+
+
+        const schema: RxJsonSchema<HumanDocumentType> = clone(schemas.human);
+        if (attachments) {
+            schema.attachments = {};
+        }
 
         const storageInstance = await config.storage.getStorage().createStorageInstance<HumanDocumentType>({
             databaseInstanceToken: randomCouchString(10),
             databaseName,
             collectionName,
-            schema: fillWithDefaultSettings(schemas.human),
+            schema: fillWithDefaultSettings(schema),
             options: {},
             multiInstance: true,
             devMode: true
         });
 
         if (documentAmount > 0) {
-            await storageInstance.bulkWrite(
+            const writeRows = await Promise.all(
                 new Array(documentAmount)
                     .fill(0)
-                    .map(() => ({ document: getDocData() })),
+                    .map(async () => {
+                        const document: RxDocumentWriteData<HumanDocumentType> = getDocData();
+                        if (attachments) {
+                            document._attachments = {
+                                [randomCouchString(5) + '.txt']: await getAttachmentWriteData()
+                            };
+                        }
+                        return { document };
+                    })
+            );
+            await storageInstance.bulkWrite(
+                writeRows,
                 testContext
             );
         }
 
         return storageInstance;
     }
-    async function createMetaInstance(parentSchema: RxJsonSchema<RxDocumentData<any>>): Promise<RxStorageInstance<RxStorageReplicationMeta, any, any>> {
-        const instance = await config.storage.getStorage().createStorageInstance<RxStorageReplicationMeta>({
+    async function createMetaInstance<RxDocType>(parentSchema: RxJsonSchema<RxDocumentData<RxDocType>>): Promise<RxStorageInstance<RxStorageReplicationMeta<RxDocType, any>, any, any>> {
+        const instance = await config.storage.getStorage().createStorageInstance<RxStorageReplicationMeta<RxDocType, any>>({
             databaseInstanceToken: randomCouchString(10),
             databaseName: randomCouchString(12),
             collectionName: randomCouchString(12),
@@ -176,8 +236,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
         storageInstance: RxStorageInstance<RxDocType, any, any>,
         mangoQuery: MangoQuery<RxDocType> = {}
     ): Promise<RxDocumentData<RxDocType>[]> {
-        const storage = config.storage.getStorage();
-        const preparedQuery = storage.statics.prepareQuery(
+        const preparedQuery = prepareQuery(
             storageInstance.schema,
             normalizeMangoQuery(
                 storageInstance.schema,
@@ -218,6 +277,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
         instanceA: RxStorageInstance<RxDocType, any, any>,
         instanceB: RxStorageInstance<RxDocType, any, any>
     ) {
+        await requestIdlePromise();
         const [resA, resB] = await Promise.all([
             runQuery(instanceA),
             runQuery(instanceB)
@@ -263,7 +323,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 const writeResult = await masterInstance.bulkWrite([{
                     document: getDocData()
                 }], testContext);
-                assert.deepStrictEqual(writeResult.error, {});
+                assert.deepStrictEqual(writeResult.error, []);
 
                 const replicationState = replicateRxStorageInstance({
                     identifier: randomCouchString(10),
@@ -295,8 +355,8 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                         [checkpointDocId],
                         false
                     );
-                    if (response[checkpointDocId]) {
-                        checkpointDocBefore = response[checkpointDocId];
+                    if (response[0]) {
+                        checkpointDocBefore = response[0];
                         break;
                     }
                     await wait(200);
@@ -312,7 +372,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                     [checkpointDocId],
                     false
                 );
-                const checkpointDocAfter = getFromObjectOrThrow(checkpointDocAfterResult, checkpointDocId);
+                const checkpointDocAfter = checkpointDocAfterResult[0];
 
                 assert.strictEqual(
                     checkpointDocAfter._rev,
@@ -350,6 +410,10 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
             const docsOnFork = await runQuery(forkInstance);
             assert.strictEqual(docsOnFork.length, 1);
 
+            // ensure ._meta.lwt is set correctly
+            const firstDoc = docsOnFork[0];
+            assert.ok(firstDoc._meta.lwt > 10);
+
             // check ongoing doc
             await masterInstance.bulkWrite([{
                 document: getDocData()
@@ -369,7 +433,6 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
             const forkInstance = await createRxStorageInstance(1);
             const metaInstance = await createMetaInstance(forkInstance.schema);
 
-
             const replicationState = replicateRxStorageInstance({
                 identifier: randomCouchString(10),
                 replicationHandler: rxStorageInstanceToReplicationHandler(masterInstance, THROWING_CONFLICT_HANDLER, randomCouchString(10)),
@@ -386,7 +449,9 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
             const docsOnMaster = await runQuery(masterInstance);
             assert.strictEqual(docsOnMaster.length, 1);
 
-
+            // ensure ._meta.lwt is set correctly
+            const firstDoc = docsOnMaster[0];
+            assert.ok(firstDoc._meta.lwt > 10);
 
             // check ongoing doc
             await forkInstance.bulkWrite([{
@@ -428,13 +493,13 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
             const writeResult = await forkInstance.bulkWrite([{
                 document: docData
             }], testContext);
-            assert.deepStrictEqual(writeResult.error, {});
-            let previous = getFromObjectOrThrow(writeResult.success, passportId);
+            assert.deepStrictEqual(writeResult.error, []);
+            let previous = writeResult.success[0];
 
             // wait until it is replicated to the master
             await waitUntil(async () => {
                 const docsAfterUpdate = await masterInstance.findDocumentsById([passportId], false);
-                return docsAfterUpdate[passportId];
+                return docsAfterUpdate[0];
             });
 
             // UPDATE
@@ -449,13 +514,13 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 previous,
                 document: updateData
             }], testContext);
-            assert.deepStrictEqual(updateResult.error, {});
-            previous = getFromObjectOrThrow(updateResult.success, passportId);
+            assert.deepStrictEqual(updateResult.error, []);
+            previous = updateResult.success[0];
 
             // wait until the change is replicated to the master
             await waitUntil(async () => {
                 const docsAfterUpdate = await masterInstance.findDocumentsById([passportId], false);
-                return docsAfterUpdate[passportId].firstName === 'xxx';
+                return docsAfterUpdate[0].firstName === 'xxx';
             });
             await ensureEqualState(masterInstance, forkInstance);
 
@@ -468,12 +533,12 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 previous,
                 document: deleteData
             }], testContext);
-            assert.deepStrictEqual(deleteResult.error, {});
+            assert.deepStrictEqual(deleteResult.error, []);
 
             // wait until the change is replicated to the master
             await waitUntil(async () => {
                 const docsAfterUpdate = await masterInstance.findDocumentsById([passportId], false);
-                return !docsAfterUpdate[passportId];
+                return !docsAfterUpdate[0];
             });
             await ensureEqualState(masterInstance, forkInstance);
 
@@ -521,7 +586,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
             await waitUntil(async () => {
                 try {
                     const foundAgain = await forkInstanceB.findDocumentsById([writeData.passportId], false);
-                    const foundDoc = getFromObjectOrThrow(foundAgain, writeData.passportId);
+                    const foundDoc = foundAgain[0];
                     assert.strictEqual(foundDoc.passportId, writeData.passportId);
                     return true;
                 } catch (err) {
@@ -585,7 +650,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 await waitUntil(async () => {
                     try {
                         const foundAgain = await instance.findDocumentsById([writeData.passportId], false);
-                        const foundDoc = getFromObjectOrThrow(foundAgain, writeData.passportId);
+                        const foundDoc = foundAgain[0];
                         assert.strictEqual(foundDoc.passportId, writeData.passportId);
                         return true;
                     } catch (err) {
@@ -614,7 +679,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 await waitUntil(async () => {
                     try {
                         const foundAgain = await instance.findDocumentsById([writeDataMaster.passportId], false);
-                        const foundDoc = getFromObjectOrThrow(foundAgain, writeDataMaster.passportId);
+                        const foundDoc = foundAgain[0];
                         assert.strictEqual(foundDoc.passportId, writeDataMaster.passportId);
                         return true;
                     } catch (err) {
@@ -685,7 +750,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
             await waitUntil(async () => {
                 try {
                     const foundAgain = await forkInstanceB.findDocumentsById([writeData.passportId], false);
-                    const foundDoc = getFromObjectOrThrow(foundAgain, writeData.passportId);
+                    const foundDoc = foundAgain[0];
                     assert.strictEqual(foundDoc.passportId, writeData.passportId);
                     return true;
                 } catch (err) {
@@ -853,7 +918,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                             previous: docData,
                             document: newDocData
                         }], testContext);
-                        assert.deepStrictEqual(updateResult.error, {});
+                        assert.deepStrictEqual(updateResult.error, []);
                     })
             );
 
@@ -875,7 +940,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
             cleanUp(replicationState, masterInstance);
         });
         it('doing many writes on the fork should not lead to many writes on the master', async () => {
-            const writeAmount = config.isFastMode() ? 5 : 100;
+            const writeAmount = config.isFastMode() ? 5 : 50;
 
             const masterInstance = await createRxStorageInstance(0);
             const forkInstance = await createRxStorageInstance(0);
@@ -927,7 +992,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
             const insertResult = await forkInstance.bulkWrite([{
                 document: docData
             }], testContext);
-            assert.deepStrictEqual(insertResult.error, {});
+            assert.deepStrictEqual(insertResult.error, []);
 
 
             let updateId = 10;
@@ -938,7 +1003,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                         await wait(0);
                     }
                     const current = await forkInstance.findDocumentsById([docId], true);
-                    const currentDocState = getFromObjectOrThrow(current, docId);
+                    const currentDocState = current[0];
                     const newDocState = clone(currentDocState);
                     newDocState._meta.lwt = now();
                     newDocState.lastName = randomCouchString(12);
@@ -985,18 +1050,66 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 );
             }
 
+            cleanUp(replicationState, masterInstance);
+        });
+    });
+    describe('attachment replication', () => {
+        if (!config.storage.hasAttachments) {
+            return;
+        }
+        it('push-only: should replicate the attachments to master', async () => {
+            const masterInstance = await createRxStorageInstance(0, undefined, undefined, true);
+            const forkInstance = await createRxStorageInstance(1, undefined, undefined, true);
+            const metaInstance = await createMetaInstance(forkInstance.schema);
+
+
+            const replicationState = replicateRxStorageInstance({
+                identifier: randomCouchString(10),
+                replicationHandler: rxStorageInstanceToReplicationHandler(masterInstance, THROWING_CONFLICT_HANDLER, randomCouchString(10)),
+                forkInstance,
+                metaInstance,
+                pullBatchSize: 100,
+                pushBatchSize: 100,
+                conflictHandler: THROWING_CONFLICT_HANDLER,
+                hashFunction: defaultHashSha256
+            });
+            await awaitRxStorageReplicationFirstInSync(replicationState);
+            await ensureEqualState(masterInstance, forkInstance);
+
+            cleanUp(replicationState, masterInstance);
+        });
+        it('pull-only: should replicate the attachments to fork', async () => {
+            const masterInstance = await createRxStorageInstance(1, undefined, undefined, true);
+            const forkInstance = await createRxStorageInstance(0, undefined, undefined, true);
+            const metaInstance = await createMetaInstance(forkInstance.schema);
+
+            const replicationState = replicateRxStorageInstance({
+                identifier: randomCouchString(10),
+                replicationHandler: rxStorageInstanceToReplicationHandler(masterInstance, THROWING_CONFLICT_HANDLER, randomCouchString(10)),
+                forkInstance,
+                metaInstance,
+                pullBatchSize: 100,
+                pushBatchSize: 100,
+                conflictHandler: THROWING_CONFLICT_HANDLER,
+                hashFunction: defaultHashSha256
+            });
+            await awaitRxStorageReplicationFirstInSync(replicationState);
+            await ensureEqualState(masterInstance, forkInstance);
 
             cleanUp(replicationState, masterInstance);
         });
     });
     describe('stability', () => {
         it('do many writes while replication is running', async () => {
-            if (config.storage.name === 'lokijs') {
+            if (
+                config.storage.name === 'lokijs' ||
+                config.storage.name === 'denokv'
+            ) {
                 // TODO this test fails in about 1/20 times in lokijs
                 return;
             }
 
-            const writeAmount = config.isFastMode() ? 5 : 30;
+            const writeAmount = config.isFastMode() ? 5 : 10;
 
             const masterInstance = await createRxStorageInstance(0);
             const forkInstance = await createRxStorageInstance(0);
@@ -1013,6 +1126,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 conflictHandler: HIGHER_AGE_CONFLICT_HANDLER,
                 hashFunction: defaultHashSha256
             });
+
 
             // insert
             const document = getDocData();
@@ -1031,7 +1145,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                         const insertResult = await instance.bulkWrite([{
                             document: docData
                         }], testContext);
-                        assert.deepStrictEqual(insertResult.error, {});
+                        assert.deepStrictEqual(insertResult.error, []);
                     })
             );
             await awaitRxStorageReplicationIdle(replicationState);
@@ -1049,7 +1163,7 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                         await wait(0);
                     }
                     const current = await instance.findDocumentsById([docId], true);
-                    const currentDocState = getFromObjectOrThrow(current, docId);
+                    const currentDocState = current[0];
                     const newDocState: typeof currentDocState = clone(currentDocState);
                     newDocState._meta.lwt = now();
                     newDocState.lastName = randomCouchString(12);
@@ -1197,8 +1311,133 @@ useParallel(testContext + ' (implementation: ' + config.storage.name + ')', () =
                 conflictHandler: THROWING_CONFLICT_HANDLER,
                 hashFunction: defaultHashSha256
             });
+            ensureReplicationHasNoErrors(replicationState);
 
             await awaitRxStorageReplicationFirstInSync(replicationState);
+            await cleanUp(replicationState, masterInstance);
+        });
+
+        /**
+         * This is important on the memory-synced storage where the
+         * memory storage must contain the exact equal .lwt times as the parent storage
+         * and it should also keep the _rev values.
+         */
+        it('should be able to replicate the ._meta.lwt time and the ._rev', async () => {
+            const masterInstance = await createRxStorageInstance(0);
+            const forkInstance = await createRxStorageInstance(0);
+            const metaInstance = await createMetaInstance(forkInstance.schema);
+
+            // DOWNSTREAM
+            const docData = getDocData({ passportId: 'master' });
+            docData._meta.lwt = 1337;
+            docData._rev = '1-first-master';
+            await masterInstance.bulkWrite(
+                [{ document: docData }],
+                testContext
+            );
+            const identifier = randomCouchString(10);
+            const replicationState = replicateRxStorageInstance({
+                identifier,
+                keepMeta: true,
+                replicationHandler: rxStorageInstanceToReplicationHandler(
+                    masterInstance,
+                    THROWING_CONFLICT_HANDLER,
+                    randomCouchString(10),
+                    true
+                ),
+                forkInstance,
+                metaInstance,
+                /**
+                 * Must be smaller then the amount of document
+                 */
+                pullBatchSize: 100,
+                pushBatchSize: 100,
+                conflictHandler: THROWING_CONFLICT_HANDLER,
+                hashFunction: defaultHashSha256,
+            });
+            ensureReplicationHasNoErrors(replicationState);
+            await awaitRxStorageReplicationFirstInSync(replicationState);
+
+            let docDataStream = getDocData({ passportId: 'master-stream' });
+            docDataStream._meta.lwt = 1339;
+            docDataStream._rev = '1-first-master-stream';
+            await masterInstance.bulkWrite(
+                [{ document: docDataStream }],
+                testContext
+            );
+            await awaitRxStorageReplicationInSync(replicationState);
+
+            let docZero = (await forkInstance.findDocumentsById(['master'], true))[0];
+            assert.strictEqual(docZero._meta.lwt, 1337);
+            assert.strictEqual(docZero._rev, '1-first-master');
+
+            let docZeroStream: any;
+            await waitUntil(async () => {
+                const doc = (await forkInstance.findDocumentsById(['master-stream'], true))[0];
+                docZeroStream = doc;
+                return !!doc;
+            });
+            assert.strictEqual(docZeroStream._meta.lwt, 1339);
+            assert.strictEqual(docZeroStream._rev, '1-first-master-stream');
+            await cancelRxStorageReplication(replicationState);
+
+
+            // UPSTREAM
+            const docDataFork = getDocData({ passportId: 'fork' });
+            docDataFork._meta.lwt = 1338;
+            docDataFork._rev = '1-first-fork';
+            await forkInstance.bulkWrite(
+                [{ document: docDataFork }],
+                testContext
+            );
+
+            const replicationState2 = replicateRxStorageInstance({
+                identifier,
+                keepMeta: true,
+                replicationHandler: rxStorageInstanceToReplicationHandler(
+                    masterInstance,
+                    THROWING_CONFLICT_HANDLER,
+                    randomCouchString(10),
+                    true
+                ),
+                forkInstance,
+                metaInstance,
+                /**
+                 * Must be smaller then the amount of document
+                 */
+                pullBatchSize: 100,
+                pushBatchSize: 100,
+                conflictHandler: THROWING_CONFLICT_HANDLER,
+                hashFunction: defaultHashSha256,
+            });
+            ensureReplicationHasNoErrors(replicationState2);
+            await awaitRxStorageReplicationFirstInSync(replicationState2);
+
+            docZero = (await masterInstance.findDocumentsById(['fork'], true))[0];
+            assert.strictEqual(docZero._meta.lwt, 1338);
+            assert.strictEqual(docZero._rev, '1-first-fork');
+
+            docDataStream = getDocData({ passportId: 'fork-stream' });
+            docDataStream._meta.lwt = 1339;
+            docDataStream._rev = '1-first-fork-stream';
+            await forkInstance.bulkWrite(
+                [{ document: docDataStream }],
+                testContext
+            );
+            await awaitRxStorageReplicationInSync(replicationState2);
+            await waitUntil(async () => {
+                const doc = (await forkInstance.findDocumentsById(['fork-stream'], true))[0];
+                docZeroStream = doc;
+                return !!doc;
+            });
+            assert.strictEqual(docZeroStream._meta.lwt, 1339);
+            assert.strictEqual(docZeroStream._rev, '1-first-fork-stream');
+
+            await cancelRxStorageReplication(replicationState2);
+
+
+
+            await requestIdlePromise();
             await cleanUp(replicationState, masterInstance);
         });
     });

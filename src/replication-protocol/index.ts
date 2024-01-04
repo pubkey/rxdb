@@ -10,53 +10,62 @@ import {
     combineLatest,
     filter,
     firstValueFrom,
-    map,
+    mergeMap,
     Subject
 } from 'rxjs';
 import {
     getPrimaryFieldOfPrimaryKey
-} from '../rx-schema-helper';
+} from '../rx-schema-helper.ts';
 import type {
     BulkWriteRow,
     ById,
     DocumentsWithCheckpoint,
     RxConflictHandler,
+    RxDocumentData,
     RxReplicationHandler,
     RxReplicationWriteToMasterRow,
     RxStorageInstance,
     RxStorageInstanceReplicationInput,
     RxStorageInstanceReplicationState,
     WithDeleted
-} from '../types';
+} from '../types/index.d.ts';
 import {
+    clone,
     ensureNotFalsy,
+    flatClone,
     PROMISE_RESOLVE_VOID
-} from '../plugins/utils';
+} from '../plugins/utils/index.ts';
 import {
     getCheckpointKey
-} from './checkpoint';
-import { startReplicationDownstream } from './downstream';
-import { docStateToWriteDoc, writeDocToDocState } from './helper';
-import { startReplicationUpstream } from './upstream';
+} from './checkpoint.ts';
+import { startReplicationDownstream } from './downstream.ts';
+import { docStateToWriteDoc, getUnderlyingPersistentStorage, writeDocToDocState } from './helper.ts';
+import { startReplicationUpstream } from './upstream.ts';
+import { fillWriteDataForAttachmentsChange } from '../plugins/attachments/index.ts';
+import { getChangedDocumentsSince } from '../rx-storage-helper.ts';
 
 
-export * from './checkpoint';
-export * from './downstream';
-export * from './upstream';
-export * from './meta-instance';
-export * from './conflicts';
-export * from './helper';
+export * from './checkpoint.ts';
+export * from './downstream.ts';
+export * from './upstream.ts';
+export * from './meta-instance.ts';
+export * from './conflicts.ts';
+export * from './helper.ts';
 
 
 export function replicateRxStorageInstance<RxDocType>(
     input: RxStorageInstanceReplicationInput<RxDocType>
 ): RxStorageInstanceReplicationState<RxDocType> {
-    const checkpointKey = getCheckpointKey(input);
+    input = flatClone(input);
+    input.forkInstance = getUnderlyingPersistentStorage(input.forkInstance);
+    input.metaInstance = getUnderlyingPersistentStorage(input.metaInstance);
+    const checkpointKeyPromise = getCheckpointKey(input);
     const state: RxStorageInstanceReplicationState<RxDocType> = {
         primaryPath: getPrimaryFieldOfPrimaryKey(input.forkInstance.schema.primaryKey),
+        hasAttachments: !!input.forkInstance.schema.attachments,
         input,
-        checkpointKey,
-        downstreamBulkWriteFlag: 'replication-downstream-' + checkpointKey,
+        checkpointKey: checkpointKeyPromise,
+        downstreamBulkWriteFlag: checkpointKeyPromise.then(checkpointKey => 'replication-downstream-' + checkpointKey),
         events: {
             canceled: new BehaviorSubject<boolean>(false),
             active: {
@@ -158,17 +167,43 @@ export async function awaitRxStorageReplicationIdle(
 export function rxStorageInstanceToReplicationHandler<RxDocType, MasterCheckpointType>(
     instance: RxStorageInstance<RxDocType, any, any, MasterCheckpointType>,
     conflictHandler: RxConflictHandler<RxDocType>,
-    databaseInstanceToken: string
+    databaseInstanceToken: string,
+    /**
+     * If set to true,
+     * the _meta.lwt from the pushed documents is kept.
+     * (Used in the migration to ensure checkpoints are still valid)
+     */
+    keepMeta: boolean = false
 ): RxReplicationHandler<RxDocType, MasterCheckpointType> {
+    instance = getUnderlyingPersistentStorage(instance);
+
+    const hasAttachments = !!instance.schema.attachments;
     const primaryPath = getPrimaryFieldOfPrimaryKey(instance.schema.primaryKey);
     const replicationHandler: RxReplicationHandler<RxDocType, MasterCheckpointType> = {
         masterChangeStream$: instance.changeStream().pipe(
-            map(eventBulk => {
+            mergeMap(async (eventBulk) => {
                 const ret: DocumentsWithCheckpoint<RxDocType, MasterCheckpointType> = {
                     checkpoint: eventBulk.checkpoint,
-                    documents: eventBulk.events.map(event => {
-                        return writeDocToDocState(ensureNotFalsy(event.documentData) as any);
-                    })
+                    documents: await Promise.all(
+                        eventBulk.events.map(async (event) => {
+                            let docData = writeDocToDocState(event.documentData, hasAttachments, keepMeta);
+                            if (hasAttachments) {
+                                docData = await fillWriteDataForAttachmentsChange(
+                                    primaryPath,
+                                    instance,
+                                    clone(docData),
+                                    /**
+                                     * Notice that the master never knows
+                                     * the client state of the document.
+                                     * Therefore we always send all attachments data.
+                                     */
+                                    undefined
+                                );
+                            }
+
+                            return docData;
+                        })
+                    )
                 };
                 return ret;
             })
@@ -177,13 +212,32 @@ export function rxStorageInstanceToReplicationHandler<RxDocType, MasterCheckpoin
             checkpoint,
             batchSize
         ) {
-            return instance.getChangedDocumentsSince(
+            return getChangedDocumentsSince(
+                instance,
                 batchSize,
                 checkpoint
-            ).then(result => {
+            ).then(async (result) => {
                 return {
                     checkpoint: result.documents.length > 0 ? result.checkpoint : checkpoint,
-                    documents: result.documents.map(d => writeDocToDocState(d))
+                    documents: await Promise.all(
+                        result.documents.map(async (plainDocumentData) => {
+                            let docData = writeDocToDocState(plainDocumentData, hasAttachments, keepMeta);
+                            if (hasAttachments) {
+                                docData = await fillWriteDataForAttachmentsChange(
+                                    primaryPath,
+                                    instance,
+                                    clone(docData),
+                                    /**
+                                     * Notice the the master never knows
+                                     * the client state of the document.
+                                     * Therefore we always send all attachments data.
+                                     */
+                                    undefined
+                                );
+                            }
+                            return docData;
+                        })
+                    )
                 };
             });
         },
@@ -197,58 +251,57 @@ export function rxStorageInstanceToReplicationHandler<RxDocType, MasterCheckpoin
             });
             const ids = Object.keys(rowById);
 
-            const masterDocsState = await instance.findDocumentsById(
+            const masterDocsStateList = await instance.findDocumentsById(
                 ids,
                 true
             );
+            const masterDocsState = new Map<string, RxDocumentData<RxDocType>>();
+            masterDocsStateList.forEach(doc => masterDocsState.set((doc as any)[primaryPath], doc));
             const conflicts: WithDeleted<RxDocType>[] = [];
             const writeRows: BulkWriteRow<RxDocType>[] = [];
             await Promise.all(
                 Object.entries(rowById)
                     .map(async ([id, row]) => {
-                        const masterState = masterDocsState[id];
+                        const masterState = masterDocsState.get(id);
                         if (!masterState) {
                             writeRows.push({
-                                document: docStateToWriteDoc(databaseInstanceToken, row.newDocumentState)
+                                document: docStateToWriteDoc(databaseInstanceToken, hasAttachments, keepMeta, row.newDocumentState)
                             });
                         } else if (
                             masterState &&
                             !row.assumedMasterState
                         ) {
-                            conflicts.push(writeDocToDocState(masterState));
+                            conflicts.push(writeDocToDocState(masterState, hasAttachments, keepMeta));
                         } else if (
                             (await conflictHandler({
-                                realMasterState: writeDocToDocState(masterState),
+                                realMasterState: writeDocToDocState(masterState, hasAttachments, keepMeta),
                                 newDocumentState: ensureNotFalsy(row.assumedMasterState)
                             }, 'rxStorageInstanceToReplicationHandler-masterWrite')).isEqual === true
                         ) {
                             writeRows.push({
                                 previous: masterState,
-                                document: docStateToWriteDoc(databaseInstanceToken, row.newDocumentState, masterState)
+                                document: docStateToWriteDoc(databaseInstanceToken, hasAttachments, keepMeta, row.newDocumentState, masterState)
                             });
                         } else {
-                            conflicts.push(writeDocToDocState(masterState));
+                            conflicts.push(writeDocToDocState(masterState, hasAttachments, keepMeta));
                         }
                     })
             );
-
 
             if (writeRows.length > 0) {
                 const result = await instance.bulkWrite(
                     writeRows,
                     'replication-master-write'
                 );
-                Object
-                    .values(result.error)
-                    .forEach(err => {
-                        if (err.status !== 409) {
-                            throw new Error('non conflict error');
-                        } else {
-                            conflicts.push(
-                                writeDocToDocState(ensureNotFalsy(err.documentInDb))
-                            );
-                        }
-                    });
+                result.error.forEach(err => {
+                    if (err.status !== 409) {
+                        throw new Error('non conflict error');
+                    } else {
+                        conflicts.push(
+                            writeDocToDocState(ensureNotFalsy(err.documentInDb), hasAttachments, keepMeta)
+                        );
+                    }
+                });
             }
             return conflicts;
         }
@@ -258,7 +311,7 @@ export function rxStorageInstanceToReplicationHandler<RxDocType, MasterCheckpoin
 }
 
 
-export function cancelRxStorageReplication(
+export async function cancelRxStorageReplication(
     replicationState: RxStorageInstanceReplicationState<any>
 ) {
     replicationState.events.canceled.next(true);
@@ -268,4 +321,5 @@ export function cancelRxStorageReplication(
     replicationState.events.processed.down.complete();
     replicationState.events.resolvedConflicts.complete();
     replicationState.events.canceled.complete();
+    await replicationState.checkpointQueue;
 }

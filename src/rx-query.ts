@@ -14,21 +14,21 @@ import {
 } from 'rxjs/operators';
 import {
     sortObject,
-    stringifyFilter,
     pluginMissing,
     overwriteGetterForCaching,
     now,
     PROMISE_RESOLVE_FALSE,
     RXJS_SHARE_REPLAY_DEFAULTS,
     ensureNotFalsy,
-    areRxDocumentArraysEqual
-} from './plugins/utils';
+    areRxDocumentArraysEqual,
+    appendToArray
+} from './plugins/utils/index.ts';
 import {
     newRxError
-} from './rx-error';
+} from './rx-error.ts';
 import {
     runPluginHooks
-} from './hooks';
+} from './hooks.ts';
 import type {
     RxCollection,
     RxDocument,
@@ -41,11 +41,15 @@ import type {
     RxChangeEvent,
     RxDocumentWriteData,
     RxDocumentData,
-    QueryMatcher
-} from './types';
-import { calculateNewResults } from './event-reduce';
-import { triggerCacheReplacement } from './query-cache';
-import { getQueryMatcher, normalizeMangoQuery } from './rx-query-helper';
+    QueryMatcher,
+    RxJsonSchema,
+    FilledMangoQuery
+} from './types/index.d.ts';
+import { calculateNewResults } from './event-reduce.ts';
+import { triggerCacheReplacement } from './query-cache.ts';
+import { getQueryMatcher, normalizeMangoQuery } from './rx-query-helper.ts';
+import { RxQuerySingleResult } from './rx-query-single-result.ts';
+import { getQueryPlan } from './query-planner.ts';
 
 let _queryCount = 0;
 const newQueryID = function (): number {
@@ -81,20 +85,7 @@ export class RxQueryBase<
      * Contains the current result state
      * or null if query has not run yet.
      */
-    public _result: {
-        docsData: RxDocumentData<RxDocType>[];
-        // A key->document map, used in the event reduce optimization.
-        docsDataMap: Map<string, RxDocType>;
-        docsMap: Map<string, RxDocument<RxDocType>>;
-        docs: RxDocument<RxDocType>[];
-        count: number;
-        /**
-         * Time at which the current _result state was created.
-         * Used to determine if the result set has changed since X
-         * so that we do not emit the same result multiple times on subscription.
-         */
-        time: number;
-    } | null = null;
+    public _result: RxQuerySingleResult<RxDocType> | null = null;
 
 
     constructor(
@@ -152,13 +143,13 @@ export class RxQueryBase<
                         return useResult.count;
                     } else if (this.op === 'findOne') {
                         // findOne()-queries emit RxDocument or null
-                        return useResult.docs.length === 0 ? null : useResult.docs[0];
+                        return useResult.documents.length === 0 ? null : useResult.documents[0];
                     } else if (this.op === 'findByIds') {
                         return useResult.docsMap;
                     } else {
                         // find()-queries emit RxDocument[]
                         // Flat copy the array so it won't matter if the user modifies it.
-                        return useResult.docs.slice(0);
+                        return useResult.documents.slice(0);
                     }
                 })
             );
@@ -206,44 +197,23 @@ export class RxQueryBase<
      * @param newResultData json-docs that were received from the storage
      */
     _setResultData(newResultData: RxDocumentData<RxDocType>[] | number | Map<string, RxDocumentData<RxDocType>>): void {
-
         if (typeof newResultData === 'number') {
-            this._result = {
-                docsData: [],
-                docsMap: new Map(),
-                docsDataMap: new Map(),
-                count: newResultData,
-                docs: [],
-                time: now()
-            };
+            this._result = new RxQuerySingleResult<RxDocType>(
+                this.collection,
+                [],
+                newResultData
+            );
             return;
         } else if (newResultData instanceof Map) {
             newResultData = Array.from((newResultData as Map<string, RxDocumentData<RxDocType>>).values());
         }
 
-        const docsDataMap = new Map();
-        const docsMap = new Map();
-        const docs = newResultData.map(docData => this.collection._docCache.getCachedRxDocument(docData));
-
-        /**
-         * Instead of using the newResultData in the result cache,
-         * we directly use the objects that are stored in the RxDocument
-         * to ensure we do not store the same data twice and fill up the memory.
-         */
-        const docsData = docs.map(doc => {
-            docsDataMap.set(doc.primary, doc._data);
-            docsMap.set(doc.primary, doc);
-            return doc._data;
-        });
-
-        this._result = {
-            docsData,
-            docsMap,
-            docsDataMap,
-            count: docsData.length,
-            docs,
-            time: now()
-        };
+        const newQueryResult = new RxQuerySingleResult<RxDocType>(
+            this.collection,
+            newResultData,
+            newResultData.length
+        );
+        this._result = newQueryResult;
     }
 
     /**
@@ -287,7 +257,7 @@ export class RxQueryBase<
             // everything which was not in docCache must be fetched from the storage
             if (mustBeQueried.length > 0) {
                 const docs = await this.collection.storageInstance.findDocumentsById(mustBeQueried, false);
-                Object.values(docs).forEach(docData => {
+                docs.forEach(docData => {
                     const doc = this.collection._docCache.getCachedRxDocument(docData);
                     ret.set(doc.primary, doc);
                 });
@@ -372,7 +342,7 @@ export class RxQueryBase<
             query: this.mangoQuery,
             other: this.other
         }, true);
-        const value = JSON.stringify(stringObj, stringifyFilter);
+        const value = JSON.stringify(stringObj);
         this.toString = () => value;
         return value;
     }
@@ -391,11 +361,15 @@ export class RxQueryBase<
                 this.mangoQuery
             )
         };
+        (hookInput.mangoQuery.selector as any)._deleted = { $eq: false };
+        if (hookInput.mangoQuery.index) {
+            hookInput.mangoQuery.index.unshift('_deleted');
+        }
         runPluginHooks('prePrepareQuery', hookInput);
 
-        const value = this.collection.database.storage.statics.prepareQuery(
+        const value = prepareQuery(
             this.collection.schema.jsonSchema,
-            hookInput.mangoQuery
+            hookInput.mangoQuery as any
         );
 
         this.getPreparedQuery = () => value;
@@ -573,7 +547,7 @@ function __ensureEqual<RxDocType>(rxQuery: RxQueryBase<RxDocType>): Promise<bool
         } else {
             rxQuery._latestChangeEvent = rxQuery.asRxQuery.collection._changeEventBuffer.counter;
 
-            const runChangeEvents: RxChangeEvent<any>[] = rxQuery.asRxQuery.collection
+            const runChangeEvents: RxChangeEvent<RxDocType>[] = rxQuery.asRxQuery.collection
                 ._changeEventBuffer
                 .reduceByLastOfDoc(missedChangeEvents);
 
@@ -614,15 +588,17 @@ function __ensureEqual<RxDocType>(rxQuery: RxQueryBase<RxDocType>): Promise<bool
         }
     }
 
-
-
     // oh no we have to re-execute the whole query over the database
     if (mustReExec) {
-        // counter can change while _execOverDatabase() is running so we save it here
-        const latestAfter: number = (rxQuery as any).collection._changeEventBuffer.counter;
         return rxQuery._execOverDatabase()
             .then(newResultData => {
-                rxQuery._latestChangeEvent = latestAfter;
+
+                /**
+                 * The RxStorage is defined to always first emit events and then return
+                 * on bulkWrite() calls. So here we have to use the counter AFTER the execOverDatabase()
+                 * has been run, not the one from before.
+                 */
+                rxQuery._latestChangeEvent = rxQuery.collection._changeEventBuffer.counter;
 
                 // A count query needs a different has-changed check.
                 if (typeof newResultData === 'number') {
@@ -653,6 +629,35 @@ function __ensureEqual<RxDocType>(rxQuery: RxQueryBase<RxDocType>): Promise<bool
 }
 
 /**
+ * @returns a format of the query that can be used with the storage
+ * when calling RxStorageInstance().query()
+ */
+export function prepareQuery<RxDocType>(
+    schema: RxJsonSchema<RxDocumentData<RxDocType>>,
+    mutateableQuery: FilledMangoQuery<RxDocType>
+): PreparedQuery<RxDocType> {
+    if (!mutateableQuery.sort) {
+        throw newRxError('SNH', {
+            query: mutateableQuery
+        });
+    }
+
+    /**
+     * Store the query plan together with the
+     * prepared query to save performance.
+     */
+    const queryPlan = getQueryPlan(
+        schema,
+        mutateableQuery
+    );
+
+    return {
+        query: mutateableQuery,
+        queryPlan
+    };
+}
+
+/**
  * Runs the query over the storage instance
  * of the collection.
  * Does some optimizations to ensure findById is used
@@ -677,17 +682,19 @@ export async function queryCollection<RxDocType>(
                 // first try to fill from docCache
                 const docData = rxQuery.collection._docCache.getLatestDocumentDataIfExists(docId);
                 if (docData) {
-                    docs.push(docData);
+                    if (!docData._deleted) {
+                        docs.push(docData);
+                    }
                     return false;
                 } else {
                     return true;
                 }
             });
             // otherwise get from storage
-            const docsMap = await collection.storageInstance.findDocumentsById(docIds, false);
-            Object.values(docsMap).forEach(docData => {
-                docs.push(docData);
-            });
+            if (docIds.length > 0) {
+                const docsFromStorage = await collection.storageInstance.findDocumentsById(docIds, false);
+                appendToArray(docs, docsFromStorage);
+            }
         } else {
             const docId = rxQuery.isFindOneByIdQuery;
 
@@ -695,10 +702,12 @@ export async function queryCollection<RxDocType>(
             let docData = rxQuery.collection._docCache.getLatestDocumentDataIfExists(docId);
             if (!docData) {
                 // otherwise get from storage
-                const docsMap = await collection.storageInstance.findDocumentsById([docId], false);
-                docData = docsMap[docId];
+                const fromStorageList = await collection.storageInstance.findDocumentsById([docId], false);
+                if (fromStorageList[0]) {
+                    docData = fromStorageList[0];
+                }
             }
-            if (docData) {
+            if (docData && !docData._deleted) {
                 docs.push(docData);
             }
         }

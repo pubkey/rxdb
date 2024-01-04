@@ -1,8 +1,8 @@
-import type { RxPlugin } from '../../types';
-import { DeepReadonly } from '../../types/util';
-export * from './check-schema';
-export * from './unallowed-properties';
-export * from './check-query';
+import type { RxPlugin } from '../../types/index.d.ts';
+import { DeepReadonly } from '../../types/util.ts';
+export * from './check-schema.ts';
+export * from './unallowed-properties.ts';
+export * from './check-query.ts';
 /**
  * Deep freezes and object when in dev-mode.
  * Deep-Freezing has the same performance as deep-cloning, so we only do that in dev-mode.

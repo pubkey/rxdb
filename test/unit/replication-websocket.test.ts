@@ -2,20 +2,23 @@ import assert from 'assert';
 import {
     wait, waitUntil
 } from 'async-test-util';
-import config from './config';
-import * as schemaObjects from '../helper/schema-objects';
-import * as humansCollection from '../helper/humans-collection';
+import config from './config.ts';
+import * as schemaObjects from '../helper/schema-objects.ts';
+import * as humansCollection from '../helper/humans-collection.ts';
 import {
     startWebsocketServer,
     replicateWithWebsocketServer
-} from '../../plugins/replication-websocket';
+} from '../../plugins/replication-websocket/index.mjs';
 import {
-    RxCollection
-} from '../../';
-import { nextPort } from '../helper/port-manager';
-import { humanWithTimestamp } from '../helper/schemas';
+    RxCollection, randomCouchString
+} from '../../plugins/core/index.mjs';
+import { nextPort } from '../helper/port-manager.ts';
+import { humanWithTimestamp } from '../helper/schemas.ts';
 
 config.parallel('replication-websocket.test.ts', () => {
+    if (!config.storage.hasReplication) {
+        return;
+    }
     if (!config.platform.isNode()) {
         // creating a server only works on node.js
         return;
@@ -60,6 +63,7 @@ config.parallel('replication-websocket.test.ts', () => {
         });
 
         const replicationState = await replicateWithWebsocketServer({
+            replicationIdentifier: randomCouchString(10),
             collection: localCollection,
             url: portAndUrl.url
         });
@@ -97,6 +101,7 @@ config.parallel('replication-websocket.test.ts', () => {
         });
 
         const replicationState = await replicateWithWebsocketServer({
+            replicationIdentifier: randomCouchString(10),
             collection: localCollection,
             url: portAndUrl.url
         });
@@ -158,6 +163,7 @@ config.parallel('replication-websocket.test.ts', () => {
         });
 
         const replicationState = await replicateWithWebsocketServer({
+            replicationIdentifier: randomCouchString(10),
             collection: localCollection,
             url: portAndUrl.url
         });
@@ -252,6 +258,7 @@ config.parallel('replication-websocket.test.ts', () => {
         });
 
         const replicationState1 = await replicateWithWebsocketServer({
+            replicationIdentifier: randomCouchString(10),
             collection: localDatabase.humans,
             url: portAndUrl.url
         });
@@ -260,6 +267,7 @@ config.parallel('replication-websocket.test.ts', () => {
             console.log(JSON.stringify(err, null, 4));
         });
         const replicationState2 = await replicateWithWebsocketServer({
+            replicationIdentifier: randomCouchString(10),
             collection: localDatabase.humans2,
             url: portAndUrl.url
         });
@@ -360,11 +368,13 @@ config.parallel('replication-websocket.test.ts', () => {
         });
 
         const replicationState1 = await replicateWithWebsocketServer({
+            replicationIdentifier: randomCouchString(10),
             collection: clientOneCollection,
             url: portAndUrl.url
         });
 
         const replicationState2 = await replicateWithWebsocketServer({
+            replicationIdentifier: randomCouchString(10),
             collection: clientTwoCollection,
             url: portAndUrl.url
         });

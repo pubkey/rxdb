@@ -1,9 +1,9 @@
-import { ById, ReplicationOptions, ReplicationPullOptions, ReplicationPushOptions } from '../../types';
+import type { ById, ReplicationOptions, ReplicationPullOptions, ReplicationPushOptions } from '../../types/index.d.ts';
 export type CouchDBCheckpointType = {
     sequence: number;
 };
 export type FetchMethodType = typeof fetch;
-export type SyncOptionsCouchDB<RxDocType> = Omit<ReplicationOptions<RxDocType, any>, 'pull' | 'push' | 'replicationIdentifier'> & {
+export type SyncOptionsCouchDB<RxDocType> = Omit<ReplicationOptions<RxDocType, any>, 'pull' | 'push'> & {
     url: string;
     /**
      * Here you can set a custom fetch method

@@ -1,20 +1,19 @@
-import { getComposedPrimaryKeyOfDocumentData } from '../rx-schema-helper';
-import { stackCheckpoints } from '../rx-storage-helper';
+import { getComposedPrimaryKeyOfDocumentData } from '../rx-schema-helper.ts';
+import { stackCheckpoints } from '../rx-storage-helper.ts';
 import type {
     RxDocumentData,
     RxStorageInstanceReplicationInput,
     RxStorageInstanceReplicationState,
     RxStorageReplicationDirection,
     RxStorageReplicationMeta
-} from '../types';
+} from '../types/index.d.ts';
 import {
     createRevision,
     ensureNotFalsy,
     getDefaultRevision,
     getDefaultRxDocumentMeta,
-    getFromObjectOrThrow,
     now
-} from '../plugins/utils';
+} from '../plugins/utils/index.ts';
 
 export async function getLastCheckpointDoc<RxDocType, CheckpointType>(
     state: RxStorageInstanceReplicationState<RxDocType>,
@@ -34,10 +33,10 @@ export async function getLastCheckpointDoc<RxDocType, CheckpointType>(
         false
     );
 
-    const checkpointDoc = checkpointResult[checkpointDocId];
+    const checkpointDoc = checkpointResult[0];
     state.lastCheckpointDoc[direction] = checkpointDoc;
     if (checkpointDoc) {
-        return checkpointDoc.data;
+        return checkpointDoc.checkpointData;
     } else {
         return undefined;
     }
@@ -53,96 +52,99 @@ export async function setCheckpoint<RxDocType, CheckpointType>(
     direction: RxStorageReplicationDirection,
     checkpoint: CheckpointType
 ) {
-    let previousCheckpointDoc = state.lastCheckpointDoc[direction];
-    if (
-        checkpoint &&
-        /**
-         * If the replication is already canceled,
-         * we do not write a checkpoint
-         * because that could mean we write a checkpoint
-         * for data that has been fetched from the master
-         * but not been written to the child.
-         */
-        !state.events.canceled.getValue() &&
-        /**
-         * Only write checkpoint if it is different from before
-         * to have less writes to the storage.
-         */
-        (
-            !previousCheckpointDoc ||
-            JSON.stringify(previousCheckpointDoc.data) !== JSON.stringify(checkpoint)
-        )
-    ) {
-        const newDoc: RxDocumentData<RxStorageReplicationMeta> = {
-            id: '',
-            isCheckpoint: '1',
-            itemId: direction,
-            _deleted: false,
-            _attachments: {},
-            data: checkpoint,
-            _meta: getDefaultRxDocumentMeta(),
-            _rev: getDefaultRevision()
-        };
-        newDoc.id = getComposedPrimaryKeyOfDocumentData(
-            state.input.metaInstance.schema,
-            newDoc
-        );
-        while (true) {
+    state.checkpointQueue = state.checkpointQueue.then(async () => {
+        let previousCheckpointDoc = state.lastCheckpointDoc[direction];
+        if (
+            checkpoint &&
             /**
-             * Instead of just storing the new checkpoint,
-             * we have to stack up the checkpoint with the previous one.
-             * This is required for plugins like the sharding RxStorage
-             * where the changeStream events only contain a Partial of the
-             * checkpoint.
+             * If the replication is already canceled,
+             * we do not write a checkpoint
+             * because that could mean we write a checkpoint
+             * for data that has been fetched from the master
+             * but not been written to the child.
              */
-            if (previousCheckpointDoc) {
-                newDoc.data = stackCheckpoints([
-                    previousCheckpointDoc.data,
-                    newDoc.data
-                ]);
-            }
-            newDoc._meta.lwt = now();
-            newDoc._rev = createRevision(
-                state.input.identifier,
-                previousCheckpointDoc
+            !state.events.canceled.getValue() &&
+            /**
+             * Only write checkpoint if it is different from before
+             * to have less writes to the storage.
+             */
+            (
+                !previousCheckpointDoc ||
+                JSON.stringify(previousCheckpointDoc.checkpointData) !== JSON.stringify(checkpoint)
+            )
+        ) {
+            const newDoc: RxDocumentData<RxStorageReplicationMeta<RxDocType, CheckpointType>> = {
+                id: '',
+                isCheckpoint: '1',
+                itemId: direction,
+                _deleted: false,
+                _attachments: {},
+                checkpointData: checkpoint,
+                _meta: getDefaultRxDocumentMeta(),
+                _rev: getDefaultRevision()
+            };
+            newDoc.id = getComposedPrimaryKeyOfDocumentData(
+                state.input.metaInstance.schema,
+                newDoc
             );
-            const result = await state.input.metaInstance.bulkWrite([{
-                previous: previousCheckpointDoc,
-                document: newDoc
-            }], 'replication-set-checkpoint');
+            while (!state.events.canceled.getValue()) {
+                /**
+                 * Instead of just storing the new checkpoint,
+                 * we have to stack up the checkpoint with the previous one.
+                 * This is required for plugins like the sharding RxStorage
+                 * where the changeStream events only contain a Partial of the
+                 * checkpoint.
+                 */
+                if (previousCheckpointDoc) {
+                    newDoc.checkpointData = stackCheckpoints([
+                        previousCheckpointDoc.checkpointData,
+                        newDoc.checkpointData
+                    ]);
+                }
+                newDoc._meta.lwt = now();
+                newDoc._rev = createRevision(
+                    await state.checkpointKey,
+                    previousCheckpointDoc
+                );
 
-            if (result.success[newDoc.id]) {
-                state.lastCheckpointDoc[direction] = getFromObjectOrThrow(
-                    result.success,
-                    newDoc.id
-                );
-                return;
-            } else {
-                const error = getFromObjectOrThrow(
-                    result.error,
-                    newDoc.id
-                );
-                if (error.status !== 409) {
-                    throw error;
+                if (state.events.canceled.getValue()) {
+                    return;
+                }
+
+                const result = await state.input.metaInstance.bulkWrite([{
+                    previous: previousCheckpointDoc,
+                    document: newDoc
+                }], 'replication-set-checkpoint');
+
+                const sucessDoc = result.success[0];
+                if (sucessDoc) {
+                    state.lastCheckpointDoc[direction] = sucessDoc;
+                    return;
                 } else {
-                    previousCheckpointDoc = ensureNotFalsy(error.documentInDb);
-                    newDoc._rev = createRevision(
-                        state.input.identifier,
-                        previousCheckpointDoc
-                    );
+                    const error = result.error[0];
+                    if (error.status !== 409) {
+                        throw error;
+                    } else {
+                        previousCheckpointDoc = ensureNotFalsy(error.documentInDb);
+                        newDoc._rev = createRevision(
+                            await state.checkpointKey,
+                            previousCheckpointDoc
+                        );
+                    }
                 }
             }
         }
-    }
+    });
+    await state.checkpointQueue;
 }
 
-export function getCheckpointKey<RxDocType>(
+export async function getCheckpointKey<RxDocType>(
     input: RxStorageInstanceReplicationInput<RxDocType>
-): string {
-    const hash = input.hashFunction([
+): Promise<string> {
+    const hash = await input.hashFunction([
         input.identifier,
         input.forkInstance.databaseName,
         input.forkInstance.collectionName
     ].join('||'));
-    return 'rx-storage-replication-' + hash;
+    return 'rx_storage_replication_' + hash;
 }

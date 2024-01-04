@@ -1,9 +1,9 @@
 import {
     createRxDatabase
-} from '../';
+} from '../plugins/core/index.mjs';
 import {
     getRxStorageMemory,
-} from '../plugins/storage-memory';
+} from '../plugins/storage-memory/index.mjs';
 
 function run() {
     createRxDatabase({

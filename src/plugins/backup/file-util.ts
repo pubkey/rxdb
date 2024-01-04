@@ -1,11 +1,11 @@
-import * as fs from 'fs';
-import * as path from 'path';
-import {
+import * as fs from 'node:fs';
+import * as path from 'node:path';
+import type {
     BackupMetaFileContent,
     BackupOptions,
     RxDatabase
-} from '../../types';
-import { blobToString, now } from '../../plugins/utils';
+} from '../../types/index.d.ts';
+import { blobToString, now } from '../../plugins/utils/index.ts';
 
 /**
  * ensure that the given folder exists

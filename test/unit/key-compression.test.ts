@@ -2,7 +2,7 @@
  * this test is for the keycompression-capabilities of rxdb
  */
 import assert from 'assert';
-import config from './config';
+import config from './config.ts';
 
 
 import {
@@ -12,12 +12,21 @@ import {
     RxJsonSchema,
     RxCollection,
     RxStorageInstance,
-} from '../../';
-import * as schemaObjects from '../helper/schema-objects';
+    ensureNotFalsy,
+    WrappedRxStorageInstance,
+    RxStorageReplicationMeta,
+    FilledMangoQuery,
+    prepareQuery,
+} from '../../plugins/core/index.mjs';
+import * as schemaObjects from '../helper/schema-objects.ts';
 import {
     wrappedKeyCompressionStorage
-} from '../../plugins/key-compression';
-import { HumanDocumentType, human, enableKeyCompression } from '../helper/schemas';
+} from '../../plugins/key-compression/index.mjs';
+import { HumanDocumentType, human, enableKeyCompression } from '../helper/schemas.ts';
+import { getPullHandler, getPushHandler } from './replication.test.ts';
+import { replicateRxCollection } from '../../plugins/replication/index.mjs';
+import { ensureReplicationHasNoErrors } from '../helper/test-util.ts';
+import { SimpleHumanDocumentType } from '../helper/schema-objects.ts';
 
 
 config.parallel('key-compression.test.js', () => {
@@ -40,19 +49,6 @@ config.parallel('key-compression.test.js', () => {
         });
         return collections.human;
     }
-
-    describe('.getPreparedQuery()', () => {
-        it('transform basic search keys', async () => {
-            const c = await getCollection();
-            const query: any = c.find()
-                .where('firstName').eq('myFirstName')
-                .getPreparedQuery();
-            const jsonString = JSON.stringify(query);
-            assert.ok(!jsonString.includes('firstName'));
-            assert.ok(jsonString.includes('myFirstName'));
-            c.database.destroy();
-        });
-    });
     describe('integration into the RxStorage', () => {
         it('should have saved a compressed document', async () => {
             const c = await getCollection();
@@ -66,7 +62,7 @@ config.parallel('key-compression.test.js', () => {
                 .originalStorageInstance;
 
             const storageDocs = await internalInstance.findDocumentsById([docData.passportId], true);
-            const storageDoc = storageDocs[docData.passportId];
+            const storageDoc = storageDocs[0];
             Object.keys(storageDoc)
                 .filter(key => !key.startsWith('_'))
                 .filter(key => key !== c.schema.primaryPath)
@@ -79,6 +75,13 @@ config.parallel('key-compression.test.js', () => {
             assert.ok(storageDoc._meta);
             assert.strictEqual((storageDoc as any)[c.schema.primaryPath], docData.passportId);
             assert.strictEqual((storageDoc as any)['|a'], docData.firstName);
+            c.database.destroy();
+        });
+        it('storage.schema should contain non-compressed schema', async () => {
+            const c = await getCollection();
+            const storageSchema = c.storageInstance.schema;
+            assert.ok(storageSchema.properties.firstName);
+
             c.database.destroy();
         });
     });
@@ -118,6 +121,56 @@ config.parallel('key-compression.test.js', () => {
             assert.strictEqual(doc.passportId, 'bbb');
 
             col.database.destroy();
+        });
+    });
+    describe('replication', () => {
+        if (!config.storage.hasReplication) {
+            return;
+        }
+        it('replication state should contain key-compressed document data', async () => {
+            const col = await getCollection();
+            await col.bulkInsert([
+                schemaObjects.simpleHuman(),
+                schemaObjects.simpleHuman()
+            ]);
+            const remoteCollection = await getCollection();
+
+
+            const replicationState = replicateRxCollection({
+                collection: col,
+                replicationIdentifier: randomCouchString(10),
+                live: true,
+                pull: {
+                    handler: getPullHandler(remoteCollection)
+                },
+                push: {
+                    handler: getPushHandler(remoteCollection)
+                }
+            });
+            ensureReplicationHasNoErrors(replicationState);
+            await replicationState.awaitInSync();
+
+            const replicationMetaStorage: RxStorageInstance<RxStorageReplicationMeta<SimpleHumanDocumentType, any>, any, any> = (
+                ensureNotFalsy(replicationState.metaInstance) as WrappedRxStorageInstance<any, any, any>
+            ).originalStorageInstance;
+
+            const preparedQuery = prepareQuery(
+                replicationMetaStorage.schema,
+                {
+                    selector: {},
+                    skip: 0,
+                    sort: [{ id: 'asc' }]
+                } as FilledMangoQuery<SimpleHumanDocumentType>
+            );
+            const metaDocs = await replicationMetaStorage.query(preparedQuery);
+
+
+            assert.ok(
+                JSON.stringify(metaDocs).includes('firstName') === false
+            );
+
+            col.database.destroy();
+            remoteCollection.database.destroy();
         });
     });
     describe('issues', () => {

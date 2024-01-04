@@ -1,8 +1,6 @@
 /**
- * this test checks the integration with couchdb
- * run 'npm run test:couchdb' to use it
- * You need a running couchdb-instance on port 5984
- * Run 'npm run couch:start' to spawn a docker-container
+ * this test checks the integration with firestore
+ * You need a running firebase backend
  */
 import assert from 'assert';
 
@@ -10,13 +8,14 @@ import {
     randomCouchString,
     RxCollection,
     ensureNotFalsy,
-    WithDeleted
-} from '../';
+    WithDeleted,
+    createRxDatabase
+} from '../plugins/core/index.mjs';
 
 import * as firebase from 'firebase/app';
 
-import * as humansCollection from './helper/humans-collection';
-import * as schemaObjects from './helper/schema-objects';
+import * as humansCollection from './helper/humans-collection.ts';
+import * as schemaObjects from './helper/schema-objects.ts';
 
 
 import {
@@ -31,16 +30,18 @@ import {
     serverTimestamp,
     where,
     orderBy,
-    limit
+    limit,
+    getDoc
 } from 'firebase/firestore';
 import {
     FirestoreOptions,
     replicateFirestore,
     RxFirestoreReplicationState,
     SyncOptionsFirestore
-} from '../plugins/replication-firestore';
-import { ensureCollectionsHaveEqualState, ensureReplicationHasNoErrors } from './helper/test-util';
-import { HumanDocumentType } from './helper/schemas';
+} from '../plugins/replication-firestore/index.mjs';
+import { ensureCollectionsHaveEqualState, ensureReplicationHasNoErrors } from './helper/test-util.ts';
+import { HumanDocumentType } from './helper/schemas.ts';
+import config from './unit/config.ts';
 
 
 /**
@@ -48,7 +49,8 @@ import { HumanDocumentType } from './helper/schemas';
  * do not run in the normal test suite
  * because it is too slow to setup the firestore backend emulators.
  */
-describe('replication-firestore.test.js', () => {
+describe('replication-firestore.test.js', function () {
+    this.timeout(1000 * 20);
     /**
      * Use a low batchSize in all tests
      * to make it easier to test boundaries.
@@ -81,6 +83,7 @@ describe('replication-firestore.test.js', () => {
     }
     async function syncOnce(collection: RxCollection, firestoreState: FirestoreOptions<any>, options?: Pick<SyncOptionsFirestore<any>, 'pull' | 'push'>) {
         const replicationState = replicateFirestore({
+            replicationIdentifier: firestoreState.projectId,
             collection,
             firestore: firestoreState,
             live: false,
@@ -95,6 +98,7 @@ describe('replication-firestore.test.js', () => {
         firestoreState: FirestoreOptions<RxDocType>
     ): RxFirestoreReplicationState<RxDocType> {
         const replicationState = replicateFirestore({
+            replicationIdentifier: randomCouchString(10),
             collection,
             firestore: firestoreState,
             pull: {
@@ -139,7 +143,7 @@ describe('replication-firestore.test.js', () => {
                 orderBy('serverTimestamp', 'asc'),
                 limit(10)
             );
-            const queryResult = await getDocs<TestDocType>(newerQuery as any);
+            const queryResult = await getDocs<TestDocType, any>(newerQuery as any);
             assert.strictEqual(queryResult.docs.length, 1);
             assert.strictEqual(
                 ensureNotFalsy(queryResult.docs[0]).data().id,
@@ -326,6 +330,100 @@ describe('replication-firestore.test.js', () => {
             assert.strictEqual(docsOnServer[0].id, 'replicated');
 
             collection.database.destroy();
+        });
+    });
+    describe('issues', () => {
+        it('#4698 adding items quickly does not send them to the server', async () => {
+            const mySchema = {
+                version: 0,
+                primaryKey: 'passportId',
+                type: 'object',
+                properties: {
+                    passportId: {
+                        type: 'string',
+                        maxLength: 100
+                    },
+                    firstName: {
+                        type: 'string'
+                    },
+                    lastName: {
+                        type: 'string'
+                    },
+                    age: {
+                        type: 'integer',
+                        minimum: 0,
+                        maximum: 150
+                    }
+                }
+            };
+
+            /**
+             * Always generate a random database-name
+             * to ensure that different test runs do not affect each other.
+             */
+            const name = randomCouchString(10);
+
+            // create a database
+            const db = await createRxDatabase({
+                name,
+                /**
+                 * By calling config.storage.getStorage(),
+                 * we can ensure that all variations of RxStorage are tested in the CI.
+                 */
+                storage: config.storage.getStorage(),
+                eventReduce: true,
+                ignoreDuplicate: true
+            });
+
+            // create a collection
+            const collections = await db.addCollections({
+                mycollection: {
+                    schema: mySchema
+                }
+            });
+
+            const firestoreState = getFirestoreState();
+
+            const replicationState = replicateFirestore({
+                replicationIdentifier: firestoreState.projectId,
+                firestore: firestoreState,
+                collection: db.collections.mycollection,
+                pull: {},
+                push: {},
+                live: true,
+            });
+            replicationState.sent$.subscribe(x => {
+                console.log('# send:');
+                console.dir(x);
+            });
+            ensureReplicationHasNoErrors(replicationState);
+
+            // insert a document
+            const doc = await collections.mycollection.insert({
+                passportId: 'foobar',
+                firstName: 'Bob',
+                lastName: 'Kelso',
+                age: 56
+            });
+            await replicationState.awaitInitialReplication();
+
+            await doc.incrementalPatch({ age: 60 });
+            await doc.incrementalPatch({ age: 30 });
+            await replicationState.awaitInSync();
+
+            // ensure correct local value
+            const myDocument = await collections.mycollection.findOne({ selector: { passportId: 'foobar' } }).exec();
+            assert.strictEqual(myDocument.age, 30);
+
+
+            // ensure correct remote value
+            const docRef = DocRef(firestoreState.collection, 'foobar');
+            const docSnap = ensureNotFalsy(await getDoc(docRef));
+
+            assert.strictEqual(ensureNotFalsy(docSnap.data()).age, 30);
+
+            // clean up afterwards
+            db.destroy();
         });
     });
 });

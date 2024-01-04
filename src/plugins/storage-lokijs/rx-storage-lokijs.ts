@@ -1,57 +1,21 @@
 import type {
-    FilledMangoQuery,
     LokiDatabaseSettings,
     LokiSettings,
     LokiStorageInternals,
-    RxDocumentData,
-    RxJsonSchema,
     RxStorage,
-    RxStorageInstanceCreationParams,
-    RxStorageStatics
-} from '../../types';
-import {
-    ensureNotFalsy,
-    flatClone
-} from '../utils';
+    RxStorageInstanceCreationParams
+} from '../../types/index.d.ts';
 import {
     createLokiStorageInstance,
     RxStorageInstanceLoki
-} from './rx-storage-instance-loki';
-import { RX_STORAGE_NAME_LOKIJS } from './lokijs-helper';
+} from './rx-storage-instance-loki.ts';
+import { RX_STORAGE_NAME_LOKIJS } from './lokijs-helper.ts';
 import type { LeaderElector } from 'broadcast-channel';
 
-import { ensureRxStorageInstanceParamsAreCorrect } from '../../rx-storage-helper';
-import { DEFAULT_CHECKPOINT_SCHEMA } from '../../rx-schema-helper';
-
-export const RxStorageLokiStatics: RxStorageStatics = {
-    prepareQuery<RxDocType>(
-        _schema: RxJsonSchema<RxDocumentData<RxDocType>>,
-        mutateableQuery: FilledMangoQuery<RxDocType>
-    ) {
-        mutateableQuery = flatClone(mutateableQuery);
-        if (Object.keys(ensureNotFalsy(mutateableQuery.selector)).length > 0) {
-            mutateableQuery.selector = {
-                $and: [
-                    {
-                        _deleted: false
-                    },
-                    mutateableQuery.selector
-                ]
-            } as any;
-        } else {
-            mutateableQuery.selector = {
-                _deleted: false
-            } as any;
-        }
-
-        return mutateableQuery;
-    },
-    checkpointSchema: DEFAULT_CHECKPOINT_SCHEMA
-};
+import { ensureRxStorageInstanceParamsAreCorrect } from '../../rx-storage-helper.ts';
 
 export class RxStorageLoki implements RxStorage<LokiStorageInternals, LokiSettings> {
     public name = RX_STORAGE_NAME_LOKIJS;
-    public statics = RxStorageLokiStatics;
 
     /**
      * Create one leader elector by db name.

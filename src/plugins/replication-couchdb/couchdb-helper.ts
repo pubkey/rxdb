@@ -2,9 +2,9 @@ import type {
     RxDocumentData,
     StringKeys,
     WithDeleted
-} from '../../types';
-import { b64EncodeUnicode, flatClone } from '../../plugins/utils';
-import { URLQueryParams } from './couchdb-types';
+} from '../../types/index.d.ts';
+import { b64EncodeUnicode, flatClone } from '../../plugins/utils/index.ts';
+import { URLQueryParams } from './couchdb-types.ts';
 
 
 export const COUCHDB_NEW_REPLICATION_PLUGIN_IDENTITY_PREFIX = 'couchdb';
@@ -39,7 +39,7 @@ export function couchSwapIdToPrimary<T>(
     docData: any
 ): any {
     if (primaryKey === '_id' || docData[primaryKey]) {
-        return docData;
+        return flatClone(docData);
     }
     docData = flatClone(docData);
     docData[primaryKey] = docData._id;
@@ -94,7 +94,7 @@ export function getFetchWithCouchDBAuthorization(username: string, password: str
             options.headers = {};
         }
         (options as any).headers['Authorization'] = 'Basic ' + b64EncodeUnicode(username + ':' + password);
-        return fetch(url, options);
+        return fetch(url as any, options);
     };
     return ret;
 }

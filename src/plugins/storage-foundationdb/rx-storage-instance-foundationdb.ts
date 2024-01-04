@@ -1,14 +1,14 @@
 import { Observable, Subject } from 'rxjs';
-import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
+import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper.ts';
 import type {
     BulkWriteRow,
     CategorizeBulkWriteRowsOutput,
     EventBulk,
+    PreparedQuery,
     RxAttachmentWriteData,
     RxConflictResultionTask,
     RxConflictResultionTaskSolution,
     RxDocumentData,
-    RxDocumentDataById,
     RxJsonSchema,
     RxStorageBulkWriteResponse,
     RxStorageChangeEvent,
@@ -18,16 +18,15 @@ import type {
     RxStorageInstanceCreationParams,
     RxStorageQueryResult,
     StringKeys
-} from '../../types';
+} from '../../types/index.d.ts';
 import type {
     FoundationDBDatabase,
     FoundationDBIndexMeta,
-    FoundationDBPreparedQuery,
     FoundationDBStorageInternals,
     RxStorageFoundationDB,
     RxStorageFoundationDBInstanceCreationOptions,
     RxStorageFoundationDBSettings
-} from './foundationdb-types';
+} from './foundationdb-types.ts';
 // import {
 //     open as foundationDBOpen,
 //     directory as foundationDBDirectory,
@@ -37,18 +36,18 @@ import type {
 // } from 'foundationdb';
 import {
     categorizeBulkWriteRows
-} from '../../rx-storage-helper';
+} from '../../rx-storage-helper.ts';
 import {
 
     CLEANUP_INDEX,
     FOUNDATION_DB_WRITE_BATCH_SIZE,
     getFoundationDBIndexName
-} from './foundationdb-helpers';
+} from './foundationdb-helpers.ts';
 import {
     getIndexableStringMonad,
     getStartIndexStringFromLowerBound,
     getStartIndexStringFromUpperBound
-} from '../../custom-index';
+} from '../../custom-index.ts';
 import {
     appendToArray,
     batchArray,
@@ -57,10 +56,10 @@ import {
     now,
     PROMISE_RESOLVE_VOID,
     toArray
-} from '../../plugins/utils';
-import { queryFoundationDB } from './foundationdb-query';
-import { INDEX_MAX } from '../../query-planner';
-import { attachmentMapKey } from '../storage-memory';
+} from '../../plugins/utils/index.ts';
+import { queryFoundationDB } from './foundationdb-query.ts';
+import { INDEX_MAX } from '../../query-planner.ts';
+import { attachmentMapKey } from '../storage-memory/index.ts';
 
 export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstance<
     RxDocType,
@@ -70,7 +69,7 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
 > {
     public readonly primaryPath: StringKeys<RxDocumentData<RxDocType>>;
 
-    public closed = false;
+    public closed?: Promise<void>;
     private changes$: Subject<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, RxStorageDefaultCheckpoint>> = new Subject();
 
     constructor(
@@ -91,8 +90,8 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
     ): Promise<RxStorageBulkWriteResponse<RxDocType>> {
         const dbs = await this.internals.dbsPromise;
         const ret: RxStorageBulkWriteResponse<RxDocType> = {
-            success: {},
-            error: {}
+            success: [],
+            error: []
         };
 
         /**
@@ -119,8 +118,6 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
                             docsInDB.set(id, doc);
                         })
                     );
-
-
                     categorized = categorizeBulkWriteRows<RxDocType>(
                         this,
                         this.primaryPath as any,
@@ -128,15 +125,12 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
                         writeBatch,
                         context
                     );
-
-                    Object.keys(categorized.errors).forEach(errorKey => {
-                        ret.error[errorKey] = ensureNotFalsy(categorized).errors[errorKey];
-                    });
+                    appendToArray(ret.error, categorized.errors);
 
                     // INSERTS
                     categorized.bulkInsertDocs.forEach(writeRow => {
                         const docId: string = writeRow.document[this.primaryPath] as any;
-                        ret.success[docId] = writeRow.document as any;
+                        ret.success.push(writeRow.document);
 
                         // insert document data
                         mainTx.set(docId, writeRow.document);
@@ -165,7 +159,7 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
                                 indexTx.set(newIndexString, docId);
                             }
                         });
-                        ret.success[docId] = writeRow.document as any;
+                        ret.success.push(writeRow.document as any);
                     });
 
                     // attachments
@@ -200,6 +194,7 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
                         id: lastState[this.primaryPath],
                         lwt: lastState._meta.lwt
                     };
+                    categorized.eventBulk.endTime = now();
                     this.changes$.next(categorized.eventBulk);
                 }
             })
@@ -209,10 +204,10 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
         return ret;
     }
 
-    async findDocumentsById(ids: string[], withDeleted: boolean): Promise<RxDocumentDataById<RxDocType>> {
+    async findDocumentsById(ids: string[], withDeleted: boolean): Promise<RxDocumentData<RxDocType>[]> {
         const dbs = await this.internals.dbsPromise;
         return dbs.main.doTransaction(async (tx: any) => {
-            const ret: RxDocumentDataById<RxDocType> = {};
+            const ret: RxDocumentData<RxDocType>[] = [];
             await Promise.all(
                 ids.map(async (docId) => {
                     const docInDb = await tx.get(docId);
@@ -223,18 +218,18 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
                             withDeleted
                         )
                     ) {
-                        ret[docId] = docInDb;
+                        ret.push(docInDb);
                     }
                 })
             );
             return ret;
         });
     }
-    query(preparedQuery: FoundationDBPreparedQuery<RxDocType>): Promise<RxStorageQueryResult<RxDocType>> {
+    query(preparedQuery: PreparedQuery<RxDocType>): Promise<RxStorageQueryResult<RxDocType>> {
         return queryFoundationDB(this, preparedQuery);
     }
     async count(
-        preparedQuery: FoundationDBPreparedQuery<RxDocType>
+        preparedQuery: PreparedQuery<RxDocType>
     ): Promise<RxStorageCountResult> {
         /**
          * At this point in time (end 2022), FoundationDB does not support
@@ -247,63 +242,11 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
             mode: 'fast'
         };
     }
+
     async getAttachmentData(documentId: string, attachmentId: string, _digest: string): Promise<string> {
         const dbs = await this.internals.dbsPromise;
         const attachment = await dbs.attachments.get(attachmentMapKey(documentId, attachmentId));
         return attachment.data;
-    }
-    async getChangedDocumentsSince(limit: number, checkpoint?: RxStorageDefaultCheckpoint): Promise<{ documents: RxDocumentData<RxDocType>[]; checkpoint: RxStorageDefaultCheckpoint; }> {
-        const {
-            keySelector,
-            StreamingMode
-        } = require('foundationdb');
-        const dbs = await this.internals.dbsPromise;
-        const index = [
-            '_meta.lwt',
-            this.primaryPath as any
-        ];
-        const indexName = getFoundationDBIndexName(index);
-        const indexMeta = dbs.indexes[indexName];
-        let lowerBoundString = '';
-        if (checkpoint) {
-            const checkpointPartialDoc: any = {
-                [this.primaryPath]: checkpoint.id,
-                _meta: {
-                    lwt: checkpoint.lwt
-                }
-            };
-            lowerBoundString = indexMeta.getIndexableString(checkpointPartialDoc);
-        }
-        const result: RxDocumentData<RxDocType>[] = await dbs.root.doTransaction(async (tx: any) => {
-            const innerResult: RxDocumentData<RxDocType>[] = [];
-            const indexTx = tx.at(indexMeta.db.subspace);
-            const mainTx = tx.at(dbs.main.subspace);
-            const range = await indexTx.getRangeAll(
-                keySelector.firstGreaterThan(lowerBoundString),
-                INDEX_MAX,
-                {
-                    limit,
-                    streamingMode: StreamingMode.Exact
-                }
-            );
-            const docIds = range.map((row: string[]) => row[1]);
-            const docsData: RxDocumentData<RxDocType>[] = await Promise.all(
-                docIds.map((docId: string) => mainTx.get(docId))
-            );
-            appendToArray(innerResult, docsData);
-            return innerResult;
-        });
-        const lastDoc = lastOfArray(result);
-        return {
-            documents: result,
-            checkpoint: lastDoc ? {
-                id: lastDoc[this.primaryPath] as any,
-                lwt: lastDoc._meta.lwt
-            } : checkpoint ? checkpoint : {
-                id: '',
-                lwt: 0
-            }
-        };
     }
     changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocType>, RxStorageDefaultCheckpoint>> {
         return this.changes$.asObservable();
@@ -337,8 +280,7 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
                  * because 1 is the minimum value for _meta.lwt
                  */
                 1
-            ],
-            false
+            ]
         );
         const upperBoundString = getStartIndexStringFromUpperBound(
             this.schema,
@@ -346,8 +288,7 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
             [
                 true,
                 maxDeletionTime
-            ],
-            true
+            ]
         );
         let noMoreUndeleted: boolean = true;
         await dbs.root.doTransaction(async (tx: any) => {
@@ -393,16 +334,17 @@ export class RxStorageInstanceFoundationDB<RxDocType> implements RxStorageInstan
 
     async close() {
         if (this.closed) {
-            return Promise.reject(new Error('already closed'));
+            return this.closed;
         }
-        this.closed = true;
-        this.changes$.complete();
+        this.closed = (async () => {
+            this.changes$.complete();
+            const dbs = await this.internals.dbsPromise;
+            await dbs.root.close();
 
-        const dbs = await this.internals.dbsPromise;
-        dbs.root.close();
-
-        // TODO shouldn't we close the index databases?
-        // Object.values(dbs.indexes).forEach(db => db.close());
+            // TODO shouldn't we close the index databases?
+            // Object.values(dbs.indexes).forEach(db => db.close());
+        })();
+        return this.closed;
     }
 }
 
@@ -451,7 +393,6 @@ export function createFoundationDBStorageInstance<RxDocType>(
         useIndexes.push([primaryPath]);
         const useIndexesFinal = useIndexes.map(index => {
             const indexAr = toArray(index);
-            indexAr.unshift('_deleted');
             return indexAr;
         });
         // used for `getChangedDocumentsSince()`

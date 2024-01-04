@@ -1,5 +1,5 @@
-import { LOGICAL_OPERATORS } from './query-planner';
-import { getPrimaryFieldOfPrimaryKey } from './rx-schema-helper';
+import { LOGICAL_OPERATORS } from './query-planner.ts';
+import { getPrimaryFieldOfPrimaryKey } from './rx-schema-helper.ts';
 import type {
     DeterministicSortComparator,
     FilledMangoQuery,
@@ -8,22 +8,21 @@ import type {
     QueryMatcher,
     RxDocumentData,
     RxJsonSchema
-} from './types';
+} from './types/index.d.ts';
 import {
     clone,
     firstPropertyNameOfObject,
     toArray,
     isMaybeReadonlyArray,
-    parseRegex,
     flatClone,
     objectPathMonad,
     ObjectPathMonadFunction
-} from './plugins/utils';
+} from './plugins/utils/index.ts';
 import {
-    DEFAULT_COMPARATOR as mingoSortComparator
+    compare as mingoSortComparator
 } from 'mingo/util';
-import { newRxError } from './rx-error';
-import { getMingoQuery } from './rx-query-mingo';
+import { newRxError } from './rx-error.ts';
+import { getMingoQuery } from './rx-query-mingo.ts';
 
 /**
  * Normalize the query to ensure we have all fields set
@@ -36,10 +35,6 @@ export function normalizeMangoQuery<RxDocType>(
     const primaryKey: string = getPrimaryFieldOfPrimaryKey(schema.primaryKey);
     mangoQuery = flatClone(mangoQuery);
 
-    // regex normalization must run before deep clone because deep clone cannot clone RegExp
-    if (mangoQuery.selector) {
-        mangoQuery.selector = normalizeQueryRegex(mangoQuery.selector);
-    }
     const normalizedMangoQuery: FilledMangoQuery<RxDocType> = clone(mangoQuery) as any;
     if (typeof normalizedMangoQuery.skip !== 'number') {
         normalizedMangoQuery.skip = 0;
@@ -169,45 +164,13 @@ export function normalizeMangoQuery<RxDocType>(
 }
 
 /**
- * @recursive
- * @mutates the input so that we do not have to deep clone
- */
-export function normalizeQueryRegex(
-    selector: any
-): any {
-    if (typeof selector !== 'object' || selector === null) {
-        return selector;
-    }
-
-    const keys = Object.keys(selector);
-    const ret: any = {};
-    keys.forEach(key => {
-        const value: any = selector[key];
-        if (
-            key === '$regex' &&
-            value instanceof RegExp
-        ) {
-            const parsed = parseRegex(value);
-            ret.$regex = parsed.pattern;
-            ret.$options = parsed.flags;
-        } else if (Array.isArray(value)) {
-            ret[key] = value.map(item => normalizeQueryRegex(item));
-        } else {
-            ret[key] = normalizeQueryRegex(value);
-        }
-    });
-    return ret;
-}
-
-
-/**
  * Returns the sort-comparator,
  * which is able to sort documents in the same way
  * a query over the db would do.
  */
 export function getSortComparator<RxDocType>(
-    schema: RxJsonSchema<RxDocumentData<RxDocType>> | RxJsonSchema<RxDocumentData<RxDocType>>,
-    query: FilledMangoQuery<RxDocType> | FilledMangoQuery<RxDocumentData<RxDocType>>
+    schema: RxJsonSchema<RxDocumentData<RxDocType>>,
+    query: FilledMangoQuery<RxDocType>
 ): DeterministicSortComparator<RxDocType> {
     if (!query.sort) {
         throw newRxError('SNH', { query });
@@ -249,7 +212,7 @@ export function getSortComparator<RxDocType>(
  */
 export function getQueryMatcher<RxDocType>(
     _schema: RxJsonSchema<RxDocType> | RxJsonSchema<RxDocumentData<RxDocType>>,
-    query: FilledMangoQuery<RxDocType> | FilledMangoQuery<RxDocumentData<RxDocType>>
+    query: FilledMangoQuery<RxDocType>
 ): QueryMatcher<RxDocumentData<RxDocType>> {
     if (!query.sort) {
         throw newRxError('SNH', { query });
@@ -257,16 +220,7 @@ export function getQueryMatcher<RxDocType>(
 
     const mingoQuery = getMingoQuery(query.selector as any);
     const fun: QueryMatcher<RxDocumentData<RxDocType>> = (doc: RxDocumentData<RxDocType>) => {
-        if (doc._deleted) {
-            return false;
-        }
-        const cursor = mingoQuery.find([doc]);
-        const next = cursor.next();
-        if (next) {
-            return true;
-        } else {
-            return false;
-        }
+        return mingoQuery.test(doc);
     };
     return fun;
 }

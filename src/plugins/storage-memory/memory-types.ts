@@ -1,14 +1,15 @@
 import { Subject } from 'rxjs';
 import type {
-    DefaultPreparedQuery,
+    CategorizeBulkWriteRowsOutput,
     EventBulk,
     RxAttachmentWriteData,
     RxConflictResultionTask,
     RxDocumentData,
+    RxJsonSchema,
     RxStorage,
     RxStorageChangeEvent,
     RxStorageDefaultCheckpoint
-} from '../../types';
+} from '../../types/index.d.ts';
 
 export type RxStorageMemorySettings = {};
 export type RxStorageMemoryInstanceCreationOptions = {};
@@ -30,8 +31,16 @@ export type MemoryStorageInternalsByIndex<RxDocType> = {
  * that have been created with the same [databaseName+collectionName] combination.
  */
 export type MemoryStorageInternals<RxDocType> = {
+
     /**
-     * We re-use the memory state when multiple instances
+     * Schema of the first instance created with the given settings.
+     * Used to ensure that the same storage is not re-created with
+     * a different schema.
+     */
+    schema: RxJsonSchema<RxDocumentData<RxDocType>>;
+
+    /**
+     * We reuse the memory state when multiple instances
      * are created with the same params.
      * If refCount becomes 0, we can delete the state.
      */
@@ -65,6 +74,12 @@ export type MemoryStorageInternals<RxDocType> = {
     };
 
     /**
+     * We need these to do lazy writes.
+     */
+    ensurePersistenceTask?: CategorizeBulkWriteRowsOutput<RxDocType>;
+    ensurePersistenceIdlePromise?: Promise<void>;
+
+    /**
      * To easier test the conflict resolution,
      * the memory storage exposes the conflict resolution task subject
      * so that we can inject own tasks during tests.
@@ -78,5 +93,3 @@ export type DocWithIndexString<RxDocType> = {
     doc: RxDocumentData<RxDocType>;
     indexString: string;
 };
-
-export type MemoryPreparedQuery<DocType> = DefaultPreparedQuery<DocType>;

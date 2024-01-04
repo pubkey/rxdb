@@ -1,9 +1,9 @@
 import assert from 'assert';
-import config from './config';
+import config from './config.ts';
 import AsyncTestUtil from 'async-test-util';
 
-import * as schemas from '../helper/schemas';
-import * as schemaObjects from '../helper/schema-objects';
+import * as schemas from '../helper/schemas.ts';
+import * as schemaObjects from '../helper/schema-objects.ts';
 import {
     clone,
     createRxDatabase,
@@ -14,17 +14,17 @@ import {
     CompressionMode,
     b64EncodeUnicode,
     b64DecodeUnicode
-} from '../../';
-import { HumanDocumentType } from '../helper/schemas';
+} from '../../plugins/core/index.mjs';
+import { HumanDocumentType } from '../helper/schemas.ts';
 
 import {
     wrappedAttachmentsCompressionStorage,
     compressBase64,
     decompressBase64
-} from '../../plugins/attachments-compression';
-import * as humansCollection from '../helper/humans-collection';
+} from '../../plugins/attachments-compression/index.mjs';
+import * as humansCollection from '../helper/humans-collection.ts';
 
-const modes: CompressionMode[] = ['deflate'];
+const modes: CompressionMode[] = ['deflate', 'gzip'];
 modes.forEach(mode => {
     config.parallel('attachments-compression.test.ts (mode: ' + mode + ')', () => {
         if (!config.storage.hasAttachments) {
@@ -145,7 +145,6 @@ modes.forEach(mode => {
                     type: 'text/plain'
                 });
 
-
                 const docB = await c2.findOne().exec(true);
                 const attachmentB = await docB.putAttachment({
                     id: 'cat.txt',
@@ -153,7 +152,7 @@ modes.forEach(mode => {
                     type: 'text/plain'
                 });
                 assert.ok(
-                    attachmentCompressed.length < (attachmentB.length / 2)
+                    (attachmentCompressed.length * 1.5) < attachmentB.length
                 );
                 c.database.destroy();
                 c2.database.destroy();

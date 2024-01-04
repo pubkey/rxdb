@@ -14,15 +14,15 @@ import type {
     RxChangeEvent,
     StringKeys,
     RxDocumentData
-} from './types';
-import { rxChangeEventToEventReduceChangeEvent } from './rx-change-event';
+} from './types/index.d.ts';
+import { rxChangeEventToEventReduceChangeEvent } from './rx-change-event.ts';
 import {
     arrayFilterNotEmpty,
     clone,
     ensureNotFalsy,
     getFromMapOrCreate
-} from './plugins/utils';
-import { getQueryMatcher, getSortComparator, normalizeMangoQuery } from './rx-query-helper';
+} from './plugins/utils/index.ts';
+import { getQueryMatcher, getSortComparator, normalizeMangoQuery } from './rx-query-helper.ts';
 
 export type EventReduceResultNeg = {
     runFullQueryAgain: true;
@@ -130,6 +130,7 @@ export function calculateNewResults<RxDocumentType>(
     const eventReduceEvents: ChangeEvent<RxDocumentType>[] = rxChangeEvents
         .map(cE => rxChangeEventToEventReduceChangeEvent(cE))
         .filter(arrayFilterNotEmpty);
+
     const foundNonOptimizeable = eventReduceEvents.find(eventReduceEvent => {
         const stateResolveFunctionInput: StateResolveFunctionInput<RxDocumentType> = {
             queryParams,

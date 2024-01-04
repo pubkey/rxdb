@@ -7,12 +7,9 @@ import {
     now,
     ensureNotFalsy,
     isMaybeReadonlyArray,
-    getFromMapOrThrow,
-    getSortDocumentsByLastWriteTimeComparator,
-    RX_META_LWT_MINIMUM,
-    lastOfArray
-} from '../utils';
-import { newRxError } from '../../rx-error';
+    getFromMapOrThrow
+} from '../utils/index.ts';
+import { newRxError } from '../../rx-error.ts';
 import type {
     RxStorageInstance,
     LokiSettings,
@@ -29,13 +26,13 @@ import type {
     LokiLocalDatabaseState,
     EventBulk,
     StringKeys,
-    RxDocumentDataById,
     DeepReadonly,
     RxConflictResultionTask,
     RxConflictResultionTaskSolution,
     RxStorageDefaultCheckpoint,
-    RxStorageCountResult
-} from '../../types';
+    RxStorageCountResult,
+    PreparedQuery
+} from '../../types/index.d.ts';
 import {
     closeLokiCollections,
     getLokiDatabase,
@@ -49,14 +46,15 @@ import {
     handleRemoteRequest,
     RX_STORAGE_NAME_LOKIJS,
     transformRegexToRegExp
-} from './lokijs-helper';
-import type {
-    Collection
-} from 'lokijs';
-import type { RxStorageLoki } from './rx-storage-lokijs';
-import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper';
-import { categorizeBulkWriteRows } from '../../rx-storage-helper';
-import { addRxStorageMultiInstanceSupport, removeBroadcastChannelReference } from '../../rx-storage-multiinstance';
+} from './lokijs-helper.ts';
+import type { RxStorageLoki } from './rx-storage-lokijs.ts';
+import { getPrimaryFieldOfPrimaryKey } from '../../rx-schema-helper.ts';
+import { categorizeBulkWriteRows } from '../../rx-storage-helper.ts';
+import {
+    addRxStorageMultiInstanceSupport,
+    removeBroadcastChannelReference
+} from '../../rx-storage-multiinstance.ts';
+import { getQueryMatcher } from '../../rx-query-helper.ts';
 
 let instanceId = now();
 
@@ -71,7 +69,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
     private changes$: Subject<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, RxStorageDefaultCheckpoint>> = new Subject();
     public readonly instanceId = instanceId++;
 
-    public closed = false;
+    public closed?: Promise<void>;
 
     constructor(
         public readonly databaseInstanceToken: string,
@@ -106,7 +104,6 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
                 databaseName: this.databaseName,
                 conflictResultionTasks: this.conflictResultionTasks.bind(this),
                 getAttachmentData: this.getAttachmentData.bind(this),
-                getChangedDocumentsSince: this.getChangedDocumentsSince.bind(this),
                 internals: this.internals,
                 options: this.options,
                 remove: this.remove.bind(this),
@@ -139,8 +136,8 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         }
 
         const ret: RxStorageBulkWriteResponse<RxDocType> = {
-            success: {},
-            error: {}
+            success: [],
+            error: []
         };
 
         const docsInDb: Map<RxDocumentData<RxDocType>[StringKeys<RxDocType>], RxDocumentData<RxDocType>> = new Map();
@@ -167,9 +164,8 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
         ret.error = categorized.errors;
 
         categorized.bulkInsertDocs.forEach(writeRow => {
-            const docId = writeRow.document[this.primaryPath];
             localState.collection.insert(flatClone(writeRow.document));
-            ret.success[docId as any] = writeRow.document;
+            ret.success.push(writeRow.document);
         });
         categorized.bulkUpdateDocs.forEach(writeRow => {
             const docId = writeRow.document[this.primaryPath];
@@ -182,7 +178,7 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
                 }
             );
             localState.collection.update(writeDoc);
-            ret.success[docId as any] = writeRow.document;
+            ret.success.push(writeRow.document);
         });
         localState.databaseState.saveQueue.addWrite();
 
@@ -192,35 +188,37 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
                 id: lastState[this.primaryPath],
                 lwt: lastState._meta.lwt
             };
+            categorized.eventBulk.endTime = now();
             this.changes$.next(categorized.eventBulk);
         }
 
         return ret;
     }
-    async findDocumentsById(ids: string[], deleted: boolean): Promise<RxDocumentDataById<RxDocType>> {
+    async findDocumentsById(ids: string[], deleted: boolean): Promise<RxDocumentData<RxDocType>[]> {
         const localState = await mustUseLocalState(this);
         if (!localState) {
             return requestRemoteInstance(this, 'findDocumentsById', [ids, deleted]);
         }
 
-        const ret: RxDocumentDataById<RxDocType> = {};
+        const ret: RxDocumentData<RxDocType>[] = [];
         ids.forEach(id => {
             const documentInDb = localState.collection.by(this.primaryPath, id);
             if (
                 documentInDb &&
                 (!documentInDb._deleted || deleted)
             ) {
-                ret[id] = stripLokiKey(documentInDb);
+                ret.push(stripLokiKey(documentInDb));
             }
         });
         return ret;
     }
-    async query(preparedQuery: MangoQuery<RxDocType>): Promise<RxStorageQueryResult<RxDocType>> {
+    async query(preparedQueryOriginal: PreparedQuery<RxDocType>): Promise<RxStorageQueryResult<RxDocType>> {
         const localState = await mustUseLocalState(this);
         if (!localState) {
-            return requestRemoteInstance(this, 'query', [preparedQuery]);
+            return requestRemoteInstance(this, 'query', [preparedQueryOriginal]);
         }
 
+        let preparedQuery = ensureNotFalsy(preparedQueryOriginal.query);
         if (preparedQuery.selector) {
             preparedQuery = flatClone(preparedQuery);
             preparedQuery.selector = transformRegexToRegExp(preparedQuery.selector);
@@ -234,6 +232,9 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
             query = query.sort(getLokiSortComparator(this.schema, preparedQuery));
         }
 
+
+
+
         /**
          * Offset must be used before limit in LokiJS
          * @link https://github.com/techfort/LokiJS/issues/570
@@ -246,13 +247,27 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
             query = query.limit(preparedQuery.limit);
         }
 
-        const foundDocuments = query.data().map(lokiDoc => stripLokiKey(lokiDoc));
+        let foundDocuments = query.data().map((lokiDoc: any) => stripLokiKey(lokiDoc));
+
+
+        /**
+         * LokiJS returned wrong results on some queries
+         * with complex indexes. Therefore we run the query-match
+         * over all result docs to patch this bug.
+         * TODO create an issue at the LokiJS repository.
+         */
+        const queryMatcher = getQueryMatcher(
+            this.schema,
+            preparedQuery as any
+        );
+        foundDocuments = foundDocuments.filter((d: any) => queryMatcher(d));
+
         return {
             documents: foundDocuments
         };
     }
     async count(
-        preparedQuery: MangoQuery<RxDocType>
+        preparedQuery: PreparedQuery<RxDocType>
     ): Promise<RxStorageCountResult> {
         const result = await this.query(preparedQuery);
         return {
@@ -262,54 +277,6 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
     }
     getAttachmentData(_documentId: string, _attachmentId: string, _digest: string): Promise<string> {
         throw new Error('Attachments are not implemented in the lokijs RxStorage. Make a pull request.');
-    }
-
-
-    async getChangedDocumentsSince(
-        limit: number,
-        checkpoint?: RxStorageDefaultCheckpoint | null
-    ): Promise<{
-        documents: RxDocumentData<RxDocType>[];
-        checkpoint: RxStorageDefaultCheckpoint;
-    }> {
-        const localState = await mustUseLocalState(this);
-        if (!localState) {
-            return requestRemoteInstance(this, 'getChangedDocumentsSince', [limit, checkpoint]);
-        }
-
-        const sinceLwt = checkpoint ? checkpoint.lwt : RX_META_LWT_MINIMUM;
-        const query = localState.collection
-            .chain()
-            .find({
-                '_meta.lwt': {
-                    $gte: sinceLwt
-                }
-            })
-            .sort(getSortDocumentsByLastWriteTimeComparator(this.primaryPath as any));
-        let changedDocs = query.data();
-
-        const first = changedDocs[0];
-        if (
-            checkpoint &&
-            first &&
-            first[this.primaryPath] === checkpoint.id &&
-            first._meta.lwt === checkpoint.lwt
-        ) {
-            changedDocs.shift();
-        }
-
-        changedDocs = changedDocs.slice(0, limit);
-        const lastDoc = lastOfArray(changedDocs);
-        return {
-            documents: changedDocs.map(docData => stripLokiKey(docData)),
-            checkpoint: lastDoc ? {
-                id: lastDoc[this.primaryPath],
-                lwt: lastDoc._meta.lwt
-            } : checkpoint ? checkpoint : {
-                id: '',
-                lwt: 0
-            }
-        };
     }
 
     changeStream(): Observable<EventBulk<RxStorageChangeEvent<RxDocumentData<RxDocType>>, RxStorageDefaultCheckpoint>> {
@@ -343,26 +310,27 @@ export class RxStorageInstanceLoki<RxDocType> implements RxStorageInstance<
 
     async close(): Promise<void> {
         if (this.closed) {
-            return Promise.reject(new Error('already closed'));
+            return this.closed;
         }
-        this.closed = true;
-        this.changes$.complete();
-        OPEN_LOKIJS_STORAGE_INSTANCES.delete(this);
-
-        if (this.internals.localState) {
-            const localState = await this.internals.localState;
-            const dbState = await getLokiDatabase(
-                this.databaseName,
-                this.databaseSettings
-            );
-            await dbState.saveQueue.run();
-            await closeLokiCollections(
-                this.databaseName,
-                [
-                    localState.collection
-                ]
-            );
-        }
+        this.closed = (async () => {
+            this.changes$.complete();
+            OPEN_LOKIJS_STORAGE_INSTANCES.delete(this);
+            if (this.internals.localState) {
+                const localState = await this.internals.localState;
+                const dbState = await getLokiDatabase(
+                    this.databaseName,
+                    this.databaseSettings
+                );
+                await dbState.saveQueue.run();
+                await closeLokiCollections(
+                    this.databaseName,
+                    [
+                        localState.collection
+                    ]
+                );
+            }
+        })();
+        return this.closed;
     }
     async remove(): Promise<void> {
         const localState = await mustUseLocalState(this);
@@ -414,7 +382,7 @@ export async function createLokiLocalState<RxDocType>(
     indices.push(primaryKey as string);
 
     const lokiCollectionName = params.collectionName + '-' + params.schema.version;
-    const collectionOptions: Partial<CollectionOptions<RxDocumentData<RxDocType>>> = Object.assign(
+    const collectionOptions: Partial<any> = Object.assign(
         {},
         lokiCollectionName,
         {
@@ -424,7 +392,7 @@ export async function createLokiLocalState<RxDocType>(
         LOKIJS_COLLECTION_DEFAULT_OPTIONS
     );
 
-    const collection: Collection = databaseState.database.addCollection(
+    const collection: any = databaseState.database.addCollection(
         lokiCollectionName,
         collectionOptions as any
     );
@@ -472,7 +440,7 @@ export async function createLokiStorageInstance<RxDocType>(
         databaseSettings
     );
 
-    addRxStorageMultiInstanceSupport(
+    await addRxStorageMultiInstanceSupport(
         RX_STORAGE_NAME_LOKIJS,
         params,
         instance,

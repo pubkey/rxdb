@@ -1,22 +1,22 @@
 /**
  * this plugin allows delta-updates with mongo-like-syntax
- * It's using modifyjs internally
- * @link https://github.com/lgandecki/modifyjs
+ * It's using mingo internally
+ * @link https://github.com/kofrasa/mingo
  */
-import modifyjs from 'modifyjs';
 import type {
     RxDocument,
     RxQuery,
     RxPlugin,
     UpdateQuery
-} from '../../types';
+} from '../../types/index.d.ts';
+import { mingoUpdater } from './mingo-updater.ts';
 
 export function incrementalUpdate<RxDocType>(
     this: RxDocument<RxDocType>,
     updateObj: UpdateQuery<RxDocType>
 ): Promise<RxDocument<RxDocType>> {
     return this.incrementalModify((docData) => {
-        const newDocData = modifyjs(docData, updateObj);
+        const newDocData = mingoUpdater<RxDocType>(docData, updateObj);
         return newDocData;
     });
 }
@@ -26,7 +26,7 @@ export function update<RxDocType>(
     updateObj: UpdateQuery<RxDocType>
 ): Promise<RxDocument<RxDocType>> {
     const oldDocData = this._data;
-    const newDocData = modifyjs(oldDocData, updateObj);
+    const newDocData = mingoUpdater(oldDocData, updateObj);
     return this._saveData(newDocData, oldDocData);
 }
 

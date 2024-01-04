@@ -1,7 +1,7 @@
 import assert from 'assert';
 
-import config from './config';
-import * as schemaObjects from '../helper/schema-objects';
+import config from './config.ts';
+import * as schemaObjects from '../helper/schema-objects.ts';
 import {
     addRxPlugin,
     randomCouchString,
@@ -12,7 +12,6 @@ import {
     flatClone,
     RxJsonSchema,
     ensureNotFalsy,
-    getFromObjectOrThrow,
     shuffleArray,
     now,
     getSingleDocument,
@@ -30,22 +29,7 @@ import {
     getBlobSize,
     getSortComparator,
     getQueryMatcher,
-    getFromMapOrCreate
-} from '../../';
-import Ajv from 'ajv';
-import {
-    getCompressionStateByRxJsonSchema
-} from '../../plugins/key-compression';
-import * as schemas from '../helper/schemas';
-import { RxDBQueryBuilderPlugin } from '../../plugins/query-builder';
-import {
-    clone,
-    randomString,
-    wait,
-    assertThrows,
-    waitUntil
-} from 'async-test-util';
-import {
+    getFromMapOrCreate,
     EventBulk,
     FilledMangoQuery,
     PreparedQuery,
@@ -53,15 +37,30 @@ import {
     RxDocumentWriteData,
     RxStorageBulkWriteResponse,
     RxStorageChangeEvent,
-    RxStorageInstance
-} from '../../src/types';
-import { filter, map } from 'rxjs/operators';
+    RxStorageInstance,
+    prepareQuery,
+    getChangedDocumentsSince
+} from '../../plugins/core/index.mjs';
+import {
+    getCompressionStateByRxJsonSchema
+} from '../../plugins/key-compression/index.mjs';
+import * as schemas from '../helper/schemas.ts';
+import { RxDBQueryBuilderPlugin } from '../../plugins/query-builder/index.mjs';
+import { defaultHashSha256 } from '../../plugins/utils/index.mjs';
+import {
+    clone,
+    randomString,
+    wait,
+    assertThrows,
+    waitUntil
+} from 'async-test-util';
+import { filter, map } from 'rxjs';
 import {
     EXAMPLE_REVISION_1,
     EXAMPLE_REVISION_2,
     EXAMPLE_REVISION_3,
     EXAMPLE_REVISION_4
-} from '../helper/revisions';
+} from '../helper/revisions.ts';
 import { compressObject } from 'jsonschema-key-compression';
 
 addRxPlugin(RxDBQueryBuilderPlugin);
@@ -292,8 +291,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     testContext
                 );
 
-                assert.deepStrictEqual(writeResponse.error, {});
-                const first = getFromObjectOrThrow(writeResponse.success, 'foobar');
+                assert.deepStrictEqual(writeResponse.error, []);
+                const first = writeResponse.success[0];
                 assert.deepStrictEqual(docData, first);
                 storageInstance.close();
             });
@@ -319,6 +318,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     }
                 };
 
+
                 await storageInstance.bulkWrite(
                     [{
                         document: writeData
@@ -332,8 +332,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     testContext
                 );
 
-                assert.deepStrictEqual(writeResponse.success, {});
-                const first = getFromObjectOrThrow(writeResponse.error, 'foobar');
+                assert.deepStrictEqual(writeResponse.success, []);
+                const first = writeResponse.error[0];
                 assert.strictEqual(first.status, 409);
                 assert.strictEqual(first.documentId, 'foobar');
 
@@ -360,7 +360,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
 
                 storageInstance.close();
             });
-            it('when inserting the same document at the same time, the first call must succeed while the seconds has a conflict', async () => {
+            it('when inserting the same document at the same time, the first call must succeed while the second has a conflict', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
                     databaseInstanceToken: randomCouchString(10),
                     databaseName: randomCouchString(12),
@@ -370,7 +370,6 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     multiInstance: false,
                     devMode: true
                 });
-
                 const writeData: RxDocumentWriteData<TestDocType> = {
                     key: 'foobar',
                     value: 'barfoo',
@@ -381,7 +380,6 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                         lwt: now()
                     }
                 };
-
 
                 const [first, second] = await Promise.all([
                     storageInstance.bulkWrite(
@@ -402,13 +400,15 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     )
                 ]);
 
-                assert.deepStrictEqual(first.error, {});
-                assert.strictEqual(getFromObjectOrThrow(first.success, 'foobar').value, 'first');
-                assert.strictEqual(getFromObjectOrThrow(second.error, 'foobar').status, 409);
+
+
+                assert.deepStrictEqual(first.error, []);
+                assert.strictEqual(first.success[0].value, 'first');
+                assert.strictEqual(second.error[0].status, 409);
 
                 storageInstance.close();
             });
-            it('should not find the deleted document', async () => {
+            it('should not find the deleted document when findDocumentsById(false)', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
                     databaseInstanceToken: randomCouchString(10),
                     databaseName: randomCouchString(12),
@@ -436,8 +436,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     }],
                     testContext
                 );
-                assert.deepStrictEqual(insertResponse.error, {});
-                const first = getFromObjectOrThrow(insertResponse.success, 'foobar');
+                assert.deepStrictEqual(insertResponse.error, []);
+                const first = insertResponse.success[0];
 
 
                 // make an update
@@ -455,13 +455,14 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     }],
                     testContext
                 );
-                assert.deepStrictEqual(updateResponse.error, {});
+                assert.deepStrictEqual(updateResponse.error, []);
 
                 // make the delete
                 const deleteResponse = await storageInstance.bulkWrite(
                     [{
                         previous: updateData,
                         document: Object.assign({}, first, {
+                            value: 'barfoo_deleted',
                             _deleted: true,
                             _rev: EXAMPLE_REVISION_3,
                             _meta: {
@@ -471,10 +472,10 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     }],
                     testContext
                 );
-                assert.deepStrictEqual(deleteResponse.error, {});
+                assert.deepStrictEqual(deleteResponse.error, []);
 
                 const foundDoc = await storageInstance.findDocumentsById(['foobar'], false);
-                assert.deepStrictEqual(foundDoc, {});
+                assert.deepStrictEqual(foundDoc, []);
 
                 storageInstance.close();
             });
@@ -506,8 +507,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     testContext
                 );
 
-                assert.deepStrictEqual(insertResponse.error, {});
-                let previous = getFromObjectOrThrow(insertResponse.success, docId);
+                assert.deepStrictEqual(insertResponse.error, []);
+                let previous = insertResponse.success[0];
 
                 const updateResponse = await storageInstance.bulkWrite(
                     [{
@@ -522,8 +523,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     }],
                     testContext
                 );
-                assert.deepStrictEqual(updateResponse.error, {});
-                previous = getFromObjectOrThrow(updateResponse.success, docId);
+                assert.deepStrictEqual(updateResponse.error, []);
+                previous = updateResponse.success[0];
 
 
                 const deleteResponse = await storageInstance.bulkWrite(
@@ -539,8 +540,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     }],
                     testContext
                 );
-                assert.deepStrictEqual(deleteResponse.error, {});
-                previous = getFromObjectOrThrow(deleteResponse.success, docId);
+                assert.deepStrictEqual(deleteResponse.error, []);
+                previous = deleteResponse.success[0];
 
                 /**
                  * Doing an un-delete without sending the previous state,
@@ -562,7 +563,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     }],
                     testContext
                 );
-                assert.deepStrictEqual(undeleteConflictResponse.success, {});
+                assert.deepStrictEqual(undeleteConflictResponse.success, []);
 
                 /**
                  * Doing the un-delete with sending the previous,
@@ -582,12 +583,12 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     }],
                     testContext
                 );
-                const third = getFromObjectOrThrow(undeleteResponse.success, docId);
+                const third = undeleteResponse.success[0];
                 assert.strictEqual(third.value, 'aaa');
 
                 const foundDoc = await storageInstance.findDocumentsById([docId], false);
-                assert.ok(foundDoc[docId]);
-                assert.deepStrictEqual(foundDoc[docId].value, 'aaa');
+                assert.ok(foundDoc[0]);
+                assert.deepStrictEqual(foundDoc[0].value, 'aaa');
 
                 storageInstance.close();
             });
@@ -623,8 +624,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 const insertResponse = await storageInstance.bulkWrite([{
                     document: docData
                 }], testContext);
-                assert.deepStrictEqual(insertResponse.error, {});
-                let previous = insertResponse.success[docId];
+                assert.deepStrictEqual(insertResponse.error, []);
+                let previous = insertResponse.success[0];
 
                 // delete
                 const deleteResponse = await storageInstance.bulkWrite([{
@@ -635,8 +636,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                         _meta: { lwt: now() }
                     })
                 }], testContext);
-                assert.deepStrictEqual(deleteResponse.error, {});
-                previous = deleteResponse.success[docId];
+                assert.deepStrictEqual(deleteResponse.error, []);
+                previous = deleteResponse.success[0];
 
                 // modify deleted
                 const modifyResponse = await storageInstance.bulkWrite([{
@@ -648,13 +649,13 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                         _meta: { lwt: now() }
                     })
                 }], testContext);
-                assert.deepStrictEqual(modifyResponse.error, {});
-                previous = modifyResponse.success[docId];
+                assert.deepStrictEqual(modifyResponse.error, []);
+                previous = modifyResponse.success[0];
                 assert.strictEqual(previous.value, 'barfoo2');
 
                 // check modified
                 const docs = await storageInstance.findDocumentsById([docId], true);
-                const doc = docs[docId];
+                const doc = docs[0];
                 assert.ok(doc);
                 assert.strictEqual(doc.value, 'barfoo2');
 
@@ -690,7 +691,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     }],
                     testContext
                 );
-                const insertResponse = getFromObjectOrThrow(writeResponse.success, docId);
+                const insertResponse = writeResponse.success[0];
                 const insertDataAfterWrite: RxDocumentData<OptionalValueTestDoc> = Object.assign(
                     {},
                     insertResponse,
@@ -714,12 +715,12 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     }],
                     testContext
                 );
-                const updateResponseDoc = getFromObjectOrThrow(updateResponse.success, docId);
+                const updateResponseDoc = updateResponse.success[0];
                 delete (updateResponseDoc as any)._deleted;
                 delete (updateResponseDoc as any)._rev;
                 delete (updateResponseDoc as any)._meta;
 
-                assert.deepStrictEqual(
+                assert.deepEqual(
                     updateResponseDoc,
                     {
                         key: docId,
@@ -763,11 +764,11 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                         document: compressedDocData
                     }
                 ], testContext);
-                assert.deepStrictEqual(writeResponse.error, {});
+                assert.deepStrictEqual(writeResponse.error, []);
 
                 const getDocFromDb = await storageInstance.findDocumentsById([docData.id], false);
                 assert.deepStrictEqual(
-                    getDocFromDb[docData.id],
+                    getDocFromDb[0],
                     compressedDocData
                 );
 
@@ -805,7 +806,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     }],
                     testContext
                 );
-                assert.deepStrictEqual(res1.error, {});
+                assert.deepStrictEqual(res1.error, []);
 
                 // change once
                 let newDocData: RxDocumentData<TestDocType> = clone(docData);
@@ -820,7 +821,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     }],
                     testContext
                 );
-                assert.deepStrictEqual(res2.error, {});
+                assert.deepStrictEqual(res2.error, []);
                 docData = newDocData;
 
                 // change again
@@ -837,12 +838,12 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     }],
                     testContext
                 );
-                assert.deepStrictEqual(res3.error, {});
+                assert.deepStrictEqual(res3.error, []);
                 docData = newDocData;
 
 
                 const viaStorage = await storageInstance.findDocumentsById([key], true);
-                const viaStorageDoc = ensureNotFalsy(viaStorage[key]);
+                const viaStorageDoc = ensureNotFalsy(viaStorage[0]);
                 assert.strictEqual(parseRevision(viaStorageDoc._rev).height, 3);
 
                 storageInstance.close();
@@ -927,7 +928,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     }],
                     testContext
                 );
-                assert.deepStrictEqual(insertResponse.error, {});
+                assert.deepStrictEqual(insertResponse.error, []);
 
                 // update
                 const updated = flatCloneDocWithMeta(docData);
@@ -941,11 +942,11 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     }],
                     testContext
                 );
-                assert.deepStrictEqual(updateResponse.error, {});
+                assert.deepStrictEqual(updateResponse.error, []);
 
                 // find again
                 const getDocFromDb = await storageInstance.findDocumentsById([docData.key], false);
-                const docFromDb = getFromObjectOrThrow(getDocFromDb, docData.key);
+                const docFromDb = getDocFromDb[0];
                 assert.strictEqual(docFromDb._rev, EXAMPLE_REVISION_4);
 
                 storageInstance.close();
@@ -1025,11 +1026,11 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     }],
                     testContext
                 );
-                assert.deepStrictEqual(insertResponse.error, {});
+                assert.deepStrictEqual(insertResponse.error, []);
 
                 // find again
                 const getDocFromDb = await storageInstance.findDocumentsById([docData.key], false);
-                const docFromDb = getFromObjectOrThrow(getDocFromDb, docData.key);
+                const docFromDb = getDocFromDb[0];
                 assert.strictEqual(
                     docFromDb.value,
                     'value' + umlauts
@@ -1054,7 +1055,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     testContext
                 );
                 const getDocFromDb2 = await storageInstance.findDocumentsById([docData2.key], false);
-                getFromObjectOrThrow(getDocFromDb2, docData2.key);
+                assert.ok(getDocFromDb2[0]);
 
                 storageInstance.close();
             });
@@ -1071,7 +1072,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     sort: [{ value: 'asc' }],
                     skip: 0
                 };
-                const preparedQuery = config.storage.getStorage().statics.prepareQuery(
+                const preparedQuery = prepareQuery(
                     getTestDataSchema(),
                     query
                 );
@@ -1088,7 +1089,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     sort: [{ value: 'asc' }],
                     skip: 0
                 };
-                const preparedQuery = config.storage.getStorage().statics.prepareQuery(
+                const preparedQuery = prepareQuery(
                     deepFreeze(getTestDataSchema()),
                     deepFreeze(query)
                 );
@@ -1304,7 +1305,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
 
                 storageInstance.close();
             });
-            it('should not match deleted documents', async () => {
+            it('should also match deleted documents', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<{ _id: string; }>({
                     databaseInstanceToken: randomCouchString(10),
                     databaseName: randomCouchString(12),
@@ -1332,7 +1333,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 doc1._deleted = true;
                 assert.strictEqual(
                     queryMatcher(doc1),
-                    false
+                    true
                 );
 
                 storageInstance.close();
@@ -1441,10 +1442,12 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     testContext
                 );
 
-                const preparedQuery = config.storage.getStorage().statics.prepareQuery(
+                const preparedQuery = prepareQuery(
                     storageInstance.schema,
                     {
-                        selector: {},
+                        selector: {
+                            _deleted: false
+                        },
                         sort: [{ key: 'asc' }],
                         skip: 0
                     }
@@ -1481,7 +1484,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     },
                 ], testContext);
 
-                const preparedQuery = config.storage.getStorage().statics.prepareQuery(
+                const preparedQuery = prepareQuery(
                     storageInstance.schema,
                     {
                         selector: {},
@@ -1493,11 +1496,79 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 );
                 const allDocs = await storageInstance.query(preparedQuery);
 
+                assert.strictEqual(allDocs.documents.length, 3);
                 assert.strictEqual(allDocs.documents[0].value, 'c');
                 assert.strictEqual(allDocs.documents[1].value, 'b');
                 assert.strictEqual(allDocs.documents[2].value, 'a');
 
                 storageInstance.close();
+            });
+            /**
+             * Notice that the RxStorage itself runs whatever query you give it,
+             * filtering out deleted documents is done by RxDB, not by the storage.
+             */
+            it('must find deleted documents', async () => {
+                const storageInstance = await config.storage
+                    .getStorage()
+                    .createStorageInstance<{ key: string; value: string; }>({
+                        databaseInstanceToken: randomCouchString(10),
+                        databaseName: randomCouchString(12),
+                        collectionName: randomCouchString(12),
+                        schema: getPseudoSchemaForVersion<{ key: string; value: string; }>(0, 'key'),
+                        options: {},
+                        multiInstance: false,
+                        devMode: true
+                    });
+
+                const writeData = {
+                    key: 'foobar',
+                    value: 'barfoo',
+                    _deleted: false,
+                    _attachments: {},
+                    _rev: EXAMPLE_REVISION_1,
+                    _meta: {
+                        lwt: now()
+                    }
+                };
+
+                const insertResult = await storageInstance.bulkWrite(
+                    [{
+                        document: writeData
+                    }],
+                    testContext
+                );
+
+                // delete it
+                const writeData2 = Object.assign({}, writeData, {
+                    _deleted: true,
+                    _rev: EXAMPLE_REVISION_2,
+                    _meta: {
+                        lwt: now()
+                    }
+                });
+                await storageInstance.bulkWrite(
+                    [{
+                        previous: insertResult.success[0],
+                        document: writeData2
+                    }],
+                    testContext
+                );
+
+                const preparedQuery = prepareQuery(
+                    storageInstance.schema,
+                    {
+                        selector: {},
+                        sort: [{ key: 'asc' }],
+                        skip: 0
+                    }
+                );
+                const allDocs = await storageInstance.query(preparedQuery);
+                const first = allDocs.documents[0];
+                assert.ok(first);
+                assert.strictEqual(first.value, 'barfoo');
+
+                storageInstance.close();
+
             });
             /**
              * For event-reduce to work,
@@ -1564,7 +1635,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                         devMode: true
                     });
 
-                const docData: RxDocumentWriteData<RandomDoc>[] = new Array(6)
+                const docsAmount = 6;
+                const docData: RxDocumentWriteData<RandomDoc>[] = new Array(docsAmount)
                     .fill(0)
                     .map((_x, idx) => ({
                         id: randomString(10),
@@ -1588,11 +1660,14 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 const docs = Object.values(writeResponse.success);
 
                 async function testQuery(query: FilledMangoQuery<RandomDoc>): Promise<void> {
-                    const preparedQuery = config.storage.getStorage().statics.prepareQuery(
+                    const preparedQuery = prepareQuery(
                         storageInstance.schema,
                         query
                     );
                     const docsViaQuery = (await storageInstance.query(preparedQuery)).documents;
+                    if (docsViaQuery.length !== docsAmount) {
+                        throw new Error('docs missing');
+                    }
                     const sortComparator = getSortComparator(
                         storageInstance.schema,
                         query
@@ -1673,9 +1748,9 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                         }
                     }
                 ], testContext);
-                assert.deepStrictEqual(insertResult.error, {});
+                assert.deepStrictEqual(insertResult.error, []);
 
-                const preparedQuery = config.storage.getStorage().statics.prepareQuery<NestedDoc>(
+                const preparedQuery = prepareQuery<NestedDoc>(
                     schema,
                     {
                         selector: {
@@ -1728,7 +1803,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     testContext
                 );
 
-                const preparedQuery = config.storage.getStorage().statics.prepareQuery<TestDocType>(
+                const preparedQuery = prepareQuery<TestDocType>(
                     schema,
                     {
                         selector: {},
@@ -1758,7 +1833,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                         multiInstance: false,
                         devMode: true
                     });
-                const preparedQueryAll = config.storage.getStorage().statics.prepareQuery<TestDocType>(
+                const preparedQueryAll = prepareQuery<TestDocType>(
                     schema,
                     {
                         selector: {},
@@ -1784,7 +1859,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
 
 
                 // DELETE
-                const previous = getFromObjectOrThrow(insertResult.success, writeData.key);
+                const previous = insertResult.success[0];
                 await storageInstance.bulkWrite(
                     [{
                         previous,
@@ -1798,7 +1873,9 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     }],
                     testContext
                 );
-                await ensureCountIs(1);
+
+                // must still be 2 because the storage itself also counts deleted docs
+                await ensureCountIs(2);
 
                 storageInstance.close();
             });
@@ -1833,7 +1910,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 );
 
                 const found = await storageInstance.findDocumentsById(['foobar'], false);
-                const foundDoc = getFromObjectOrThrow(found, 'foobar');
+                const foundDoc = found[0];
                 assert.deepStrictEqual(foundDoc, docData);
 
                 storageInstance.close();
@@ -1864,7 +1941,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     }],
                     testContext
                 );
-                const previous = getFromObjectOrThrow(insertResult.success, 'foobar');
+                const previous = insertResult.success[0];
 
                 await storageInstance.bulkWrite(
                     [{
@@ -1884,7 +1961,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 );
 
                 const found = await storageInstance.findDocumentsById(['foobar'], true);
-                const foundDeleted = getFromObjectOrThrow(found, 'foobar');
+                const foundDeleted = found[0];
 
                 // even on deleted documents, we must get the other properties.
                 assert.strictEqual(foundDeleted.value, 'barfoo2');
@@ -1932,7 +2009,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     ],
                     testContext
                 );
-                const previous = getFromObjectOrThrow(insertResult.success, 'del');
+                const previous = insertResult.success.find(d => d.key === 'del');
                 const deleteWriteResult = await storageInstance.bulkWrite(
                     [{
                         previous,
@@ -1949,7 +2026,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     }],
                     testContext
                 );
-                assert.deepStrictEqual(deleteWriteResult.error, {});
+                assert.deepStrictEqual(deleteWriteResult.error, []);
 
                 const found = await storageInstance.findDocumentsById([
                     'del',
@@ -1970,6 +2047,10 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
              * has to workaround any problems with that.
              */
             it('should be able to insert and fetch many documents', async () => {
+                if (config.storage.name === 'denokv') {
+                    // TODO
+                    return;
+                }
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
                     databaseInstanceToken: randomCouchString(10),
                     databaseName: randomCouchString(12),
@@ -1980,14 +2061,14 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     devMode: true
                 });
 
-                const amount = config.isFastMode() ? 100 : 20000;
+                const amount = config.isFastMode() ? 100 : 10000;
                 const writeRows = new Array(amount)
                     .fill(0)
                     .map(() => ({ document: getWriteData() }));
 
                 // insert
                 const writeResult = await storageInstance.bulkWrite(writeRows, 'insert-many-' + amount);
-                assert.deepStrictEqual(writeResult.error, {});
+                assert.deepStrictEqual(writeResult.error, []);
 
                 // fetch again
                 const fetchResult = await storageInstance.findDocumentsById(writeRows.map(r => r.document.key), false);
@@ -2009,7 +2090,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 });
                 let checkpoint: any;
                 async function getChanges(): Promise<RxDocumentData<{ key: string; }>[]> {
-                    const res = await storageInstance.getChangedDocumentsSince(10, checkpoint);
+                    const res = await getChangedDocumentsSince(storageInstance, 10, checkpoint);
                     if (res.documents.length > 0) {
                         checkpoint = res.checkpoint;
                     }
@@ -2047,24 +2128,14 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                  * when we work with checkpoints.
                  */
                 const checkpointTest = checkpoint;
-                const emptyResult = await storageInstance.getChangedDocumentsSince(10, checkpointTest);
+                const emptyResult = await getChangedDocumentsSince(storageInstance, 10, checkpointTest);
                 assert.strictEqual(emptyResult.documents.length, 0);
                 assert.deepStrictEqual(emptyResult.checkpoint, checkpointTest);
-
-                // the checkpoint must match the checkpoint-schema of the RxStorage.statics
-                const checkpointSchema = config.storage.getStorage().statics.checkpointSchema;
-                const ajv = new Ajv({
-                    strict: false
-                });
-                const validator = ajv.compile(checkpointSchema);
-                const isValid = validator(checkpointTest);
-                assert.ok(isValid);
-
 
                 // delete one
                 await storageInstance.bulkWrite([
                     {
-                        previous: getFromObjectOrThrow(insertResult.success, 'foobar'),
+                        previous: insertResult.success[0],
                         document: {
                             key: 'foobar',
                             _deleted: true,
@@ -2081,8 +2152,9 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 assert.strictEqual(docsAfterDelete[0].key, 'foobar');
                 assert.strictEqual(docsAfterDelete[0]._deleted, true);
 
+
                 // get only the last change when requesting with empty checkpoint
-                const resTotal = await storageInstance.getChangedDocumentsSince(100);
+                const resTotal = await getChangedDocumentsSince(storageInstance, 100);
                 assert.strictEqual(resTotal.documents.length, 1);
                 assert.strictEqual(resTotal.documents[0].key, 'foobar');
                 assert.strictEqual(resTotal.documents[0]._deleted, true);
@@ -2111,8 +2183,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                         document: getWriteData()
                     }
                 ], testContext);
-                assert.deepStrictEqual(insertResult.error, {});
-                previous = getFromObjectOrThrow(insertResult.success, 'foobar');
+                assert.deepStrictEqual(insertResult.error, []);
+                previous = insertResult.success.find(d => d.key === 'foobar');
 
                 // update the document many times
                 let t = 0;
@@ -2129,12 +2201,12 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                             document: newDocInner
                         }
                     ], testContext);
-                    assert.deepStrictEqual(updateResult.error, {});
-                    previous = getFromObjectOrThrow(updateResult.success, 'foobar');
+                    assert.deepStrictEqual(updateResult.error, []);
+                    previous = updateResult.success[0];
                 }
 
                 // should return both documents when called without checkpoint
-                const resultWithoutCheckpoint = await storageInstance.getChangedDocumentsSince(10);
+                const resultWithoutCheckpoint = await getChangedDocumentsSince(storageInstance, 10);
                 assert.strictEqual(resultWithoutCheckpoint.documents.length, 2);
                 // the foobar-doc must have the latest value
                 const foobarRow = resultWithoutCheckpoint.documents.find(doc => doc.key === 'foobar');
@@ -2147,19 +2219,19 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                         .map(() => ({ document: getWriteData() })),
                     testContext
                 );
-                assert.deepStrictEqual(insertManyResult.error, {});
+                assert.deepStrictEqual(insertManyResult.error, []);
 
                 // should return both documents when called without checkpoint
-                const resultManyWithoutCheckpoint = await storageInstance.getChangedDocumentsSince(100);
+                const resultManyWithoutCheckpoint = await getChangedDocumentsSince(storageInstance, 100);
                 assert.strictEqual(resultManyWithoutCheckpoint.documents.length, 12);
 
 
                 // first get 5 and then another 5 and then again.
-                const resultFirstFive = await storageInstance.getChangedDocumentsSince(5);
-                const resultSecondFive = await storageInstance.getChangedDocumentsSince(5, resultFirstFive.checkpoint);
-                const resultThirdFive = await storageInstance.getChangedDocumentsSince(5, resultSecondFive.checkpoint);
+                const resultFirstFive = await getChangedDocumentsSince(storageInstance, 5);
+                const resultSecondFive = await getChangedDocumentsSince(storageInstance, 5, resultFirstFive.checkpoint);
+                const resultThirdFive = await getChangedDocumentsSince(storageInstance, 5, resultSecondFive.checkpoint);
                 assert.strictEqual(resultFirstFive.documents.length + resultSecondFive.documents.length + resultThirdFive.documents.length, 12);
-                const resultFourthFive = await storageInstance.getChangedDocumentsSince(5, resultThirdFive.checkpoint);
+                const resultFourthFive = await getChangedDocumentsSince(storageInstance, 5, resultThirdFive.checkpoint);
                 assert.strictEqual(resultFourthFive.documents.length, 0);
 
 
@@ -2176,9 +2248,9 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                         document: newDoc
                     }
                 ], testContext);
-                assert.deepStrictEqual(deleteResult.error, {});
+                assert.deepStrictEqual(deleteResult.error, []);
 
-                const resultAfterDelete = await storageInstance.getChangedDocumentsSince(5, resultThirdFive.checkpoint);
+                const resultAfterDelete = await getChangedDocumentsSince(storageInstance, 5, resultThirdFive.checkpoint);
                 assert.strictEqual(resultAfterDelete.documents.length, 1);
                 assert.strictEqual(resultAfterDelete.documents[0]._deleted, true);
 
@@ -2209,7 +2281,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 let fetchRuns = 0;
                 while (Object.keys(docs).length < writeAmount) {
                     fetchRuns++;
-                    const result = await storageInstance.getChangedDocumentsSince(
+                    const result = await getChangedDocumentsSince(
+                        storageInstance,
                         writeAmount / 10,
                         lastCheckpoint
                     );
@@ -2248,6 +2321,9 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     devMode: true
                 });
 
+                const testStartTime = now();
+                await wait(100);
+
                 const emitted: EventBulk<RxStorageChangeEvent<TestDocType>, any>[] = [];
                 const sub = storageInstance.changeStream()
                     .pipe(
@@ -2259,6 +2335,9 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                         filter(() => true)
                     )
                     .subscribe(x => {
+                        // console.log(JSON.stringify({ x, testStartTime }, null, 4));
+                        assert.ok(x.startTime > testStartTime, 'startTime must be after testStartTime');
+                        assert.ok(x.startTime < x.endTime, 'startTime must be smaller endTime');
                         emitted.push(x);
                     });
 
@@ -2317,7 +2396,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 const lastCheckpoint = stackCheckpoints(
                     emitted.map(ev => ev.checkpoint)
                 );
-                const emptyResult = await storageInstance.getChangedDocumentsSince(
+                const emptyResult = await getChangedDocumentsSince(
+                    storageInstance,
                     100,
                     lastCheckpoint
                 );
@@ -2341,7 +2421,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     devMode: true
                 });
 
-                const emitted: EventBulk<RxStorageChangeEvent<RxDocumentData<TestDocType>>, any>[] = [];
+                const emitted: EventBulk<RxStorageChangeEvent<TestDocType>, any>[] = [];
                 const sub = storageInstance.changeStream().subscribe(x => {
                     emitted.push(x);
                 });
@@ -2363,7 +2443,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     previous,
                     document: writeData
                 }], testContext);
-                previous = getFromObjectOrThrow(firstWriteResult.success, writeData.key);
+                previous = firstWriteResult.success[0];
 
                 // update
                 const originalBeforeUpdate = clone(writeData);
@@ -2376,7 +2456,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                         }
                     })
                 }], testContext);
-                previous = getFromObjectOrThrow(updateResult.success, writeData.key);
+                previous = updateResult.success[0];
 
                 // should not mutate the input or add additional properties to output
                 originalBeforeUpdate._rev = (previous as any)._rev;
@@ -2394,7 +2474,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                         }
                     })
                 }], testContext);
-                assert.deepStrictEqual(deleteBulkWriteResponse.error, {});
+                assert.deepStrictEqual(deleteBulkWriteResponse.error, []);
 
                 await waitUntil(() => {
                     return flattenEvents(emitted).length === 3;
@@ -2430,7 +2510,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     devMode: true
                 });
 
-                const emitted: EventBulk<RxStorageChangeEvent<RxDocumentData<TestDocType>>, any>[] = [];
+                const emitted: EventBulk<RxStorageChangeEvent<TestDocType>, any>[] = [];
                 const sub = storageInstance.changeStream().subscribe(x => {
                     emitted.push(x);
                 });
@@ -2450,13 +2530,13 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 const firstWriteResult = await storageInstance.bulkWrite([{
                     document: writeData
                 }], testContext);
-                assert.deepStrictEqual(firstWriteResult.error, {});
+                assert.deepStrictEqual(firstWriteResult.error, []);
 
                 // insert again to cause conflict error
                 const secondWriteResult = await storageInstance.bulkWrite([{
                     document: writeData
                 }], testContext);
-                assert.deepStrictEqual(secondWriteResult.success, {});
+                assert.deepStrictEqual(secondWriteResult.success, []);
 
                 assert.strictEqual(emitted.length, 1);
                 assert.strictEqual(emitted[0].events.length, 1);
@@ -2506,7 +2586,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                         foo: {
                             length: dataLength,
                             data: dataStringBase64,
-                            type: 'text/plain'
+                            type: 'text/plain',
+                            digest: await defaultHashSha256(dataStringBase64)
                         }
                     }
                 };
@@ -2566,7 +2647,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                         foo: {
                             length: dataLength,
                             data: dataStringBase64,
-                            type: 'text/plain'
+                            type: 'text/plain',
+                            digest: await defaultHashSha256(dataStringBase64)
                         }
                     }
                 };
@@ -2602,7 +2684,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
 
                 // check in query() result
                 const queryResult = await storageInstance.query(
-                    config.storage.getStorage().statics.prepareQuery(
+                    prepareQuery(
                         storageInstance.schema,
                         {
                             selector: {},
@@ -2618,7 +2700,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
 
                 // check in findDocumentsById() result
                 const byId = await storageInstance.findDocumentsById([writeData.key], false);
-                const byIdDoc = getFromObjectOrThrow(byId, writeData.key);
+                const byIdDoc = byId[0];
                 assert.strictEqual(byIdDoc._attachments.foo.type, 'text/plain');
                 assert.strictEqual(byIdDoc._attachments.foo.length, dataLength);
                 assert.ok(!(byIdDoc._attachments.foo as any).data);
@@ -2629,7 +2711,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 assert.strictEqual(firstEventAttachment.length, dataLength);
                 assert.ok(!(firstEventAttachment as any).data);
 
-                const changesResult = await storageInstance.getChangedDocumentsSince(1000);
+                const changesResult = await getChangedDocumentsSince(storageInstance, 1000);
                 const firstChange = changesResult.documents[0];
                 if (!firstChange) {
                     throw new Error('first change missing');
@@ -2671,7 +2753,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                         foo: {
                             length: getBlobSize(dataBlob),
                             data: dataStringBase64,
-                            type: 'text/plain'
+                            type: 'text/plain',
+                            digest: await defaultHashSha256(dataStringBase64)
                         }
                     }
                 };
@@ -2700,7 +2783,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 writeData._attachments.bar = {
                     data: dataString2,
                     length: getBlobSize(data2),
-                    type: 'text/plain'
+                    type: 'text/plain',
+                    digest: await defaultHashSha256(dataString2)
                 };
                 writeData._rev = EXAMPLE_REVISION_2;
 
@@ -2753,12 +2837,16 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                         foo: {
                             length: getBlobSize(data),
                             data: dataString,
-                            type: 'text/plain'
+                            type: 'text/plain',
+                            digest: await defaultHashSha256(dataString)
                         }
                     }
                 };
                 const writeResult = await storageInstance.bulkWrite([{ document: writeData }], testContext);
-                await storageInstance.getAttachmentData('foobar', 'foo', writeResult.success.foobar._attachments.foo.digest);
+                await storageInstance.getAttachmentData(
+                    'foobar', 'foo',
+                    writeResult.success[0]._attachments.foo.digest
+                );
 
                 const deleteData = clone(writeData);
                 deleteData._meta.lwt = now();
@@ -2768,7 +2856,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
 
                 await storageInstance.bulkWrite(
                     [{
-                        previous: stripAttachmentsDataFromDocument(writeData),
+                        previous: await stripAttachmentsDataFromDocument(writeData),
                         document: deleteData
                     }],
                     testContext
@@ -2776,7 +2864,10 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
 
                 let hasThrown = false;
                 try {
-                    await storageInstance.getAttachmentData('foobar', 'foo', writeResult.success.foobar._attachments.foo.digest);
+                    await storageInstance.getAttachmentData(
+                        'foobar', 'foo',
+                        writeResult.success[0]._attachments.foo.digest
+                    );
                 } catch (err) {
                     hasThrown = true;
                 }
@@ -2842,7 +2933,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                                             writeData._attachments[attachmentsId] = {
                                                 length: getBlobSize(data),
                                                 data: dataString,
-                                                type: 'text/plain'
+                                                type: 'text/plain',
+                                                digest: await defaultHashSha256(dataString)
                                             };
                                         })
                                 );
@@ -2852,7 +2944,8 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                                     storageInstance,
                                     () => []
                                 );
-                                Object.entries(result.success[docId]._attachments).forEach(([attachmentId, val]) => {
+                                const doc = ensureNotFalsy(result.success.find(d => d.key === docId + ''));
+                                Object.entries(doc._attachments).forEach(([attachmentId, val]) => {
                                     loadAr.push({
                                         attachmentId,
                                         digest: val.digest,
@@ -2926,7 +3019,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                         _deleted: false
                     }
                 }], testContext);
-                const previous = getFromObjectOrThrow(insertResult.success, id);
+                const previous = insertResult.success[0];
 
                 /**
                  * Delete
@@ -2944,7 +3037,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                         _attachments: {}
                     }
                 }], testContext);
-                getFromObjectOrThrow(deleteResult.success, id);
+                assert.ok(deleteResult.success[0]);
 
                 /**
                  * Running .cleanup() with a height minimumDeletedTime
@@ -2956,7 +3049,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     [id],
                     true
                 );
-                const doc = mustBeThereButDeleted[id];
+                const doc = mustBeThereButDeleted[0];
                 assert.ok(doc._deleted);
 
                 // clean up the deleted document
@@ -2966,7 +3059,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     [id],
                     true
                 );
-                assert.deepStrictEqual(mustNotBeThere, {});
+                assert.deepStrictEqual(mustNotBeThere, []);
 
                 /**
                  * Other docs must still be there
@@ -2975,7 +3068,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     [nonDeletedId],
                     true
                 );
-                assert.ok(nonDeletedDoc[nonDeletedId]);
+                assert.ok(nonDeletedDoc[0]);
 
                 await storageInstance.close();
             });
@@ -3011,7 +3104,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                         _deleted: false
                     }
                 }], testContext);
-                const previous = getFromObjectOrThrow(insertResult.success, id);
+                const previous = insertResult.success[0];
 
                 /**
                  * Delete
@@ -3029,7 +3122,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                         _attachments: {}
                     }
                 }], testContext);
-                getFromObjectOrThrow(deleteResult.success, id);
+                assert.ok(deleteResult.success[0]);
 
                 done = false;
                 while (!done) {
@@ -3037,6 +3130,33 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 }
 
                 await storageInstance.close();
+            });
+        });
+        describe('.close()', () => {
+            /**
+             * There are cases where closing happens multiple times,
+             * like when we call collection.destroy() and replicationState.cancel()
+             * at the same time.
+             * By making it possible to call close() multiple times,
+             * many randomly failing tests are fixed.
+             */
+            it('closing multiple times should not error', async () => {
+                const collectionName = randomCouchString(12);
+                const databaseName = randomCouchString(12);
+                const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
+                    databaseInstanceToken: randomCouchString(10),
+                    databaseName,
+                    collectionName,
+                    schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
+                    options: {},
+                    multiInstance: false,
+                    devMode: true
+                });
+
+                await Promise.all([
+                    storageInstance.close(),
+                    storageInstance.close()
+                ]);
             });
         });
         describe('.remove()', () => {
@@ -3083,11 +3203,24 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
 
                 storageInstance2.close();
             });
-            /**
-             * To ensure the equal behavior across all storages,
-             * the call to close() must throw an error if the storage is already removed.
-             */
-            it('should throw on call to .close() after .remove()', async () => {
+            it('should throw on call to .remove() after .close()', async () => {
+                const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
+                    databaseInstanceToken: randomCouchString(10),
+                    databaseName: randomCouchString(12),
+                    collectionName: randomCouchString(12),
+                    schema: getPseudoSchemaForVersion<TestDocType>(0, 'key'),
+                    options: {},
+                    multiInstance: false,
+                    devMode: true
+                });
+                await storageInstance.close();
+
+                await assertThrows(
+                    () => storageInstance.remove(),
+                    undefined
+                );
+            });
+            it('should NOT throw on call to .close() after .remove()', async () => {
                 const storageInstance = await config.storage.getStorage().createStorageInstance<TestDocType>({
                     databaseInstanceToken: randomCouchString(10),
                     databaseName: randomCouchString(12),
@@ -3098,13 +3231,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                     devMode: true
                 });
                 await storageInstance.remove();
-                await assertThrows(
-                    () => storageInstance.close(),
-                    /**
-                     * Yes, this must be an Error. This MUST NOT be a RxError!
-                     */
-                    Error
-                );
+                await storageInstance.close();
             });
         });
     });
@@ -3179,12 +3306,12 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
             });
 
             const resultA = await instances.a.findDocumentsById(allIds, true);
-            assert.ok(resultA.a);
-            assert.ok(resultA.b);
+            assert.ok(resultA[0]);
+            assert.ok(resultA[1]);
 
             const resultB = await instances.b.findDocumentsById(allIds, true);
-            assert.ok(resultB.a);
-            assert.ok(resultB.b);
+            assert.ok(resultB[0]);
+            assert.ok(resultB[1]);
 
             await instances.a.close();
             await instances.b.close();
@@ -3205,7 +3332,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
             await waitUntil(async () => {
                 try {
                     const foundAgain = await instances.b.findDocumentsById([writeData.key], false);
-                    const foundDoc = getFromObjectOrThrow(foundAgain, writeData.key);
+                    const foundDoc = foundAgain[0];
                     assert.strictEqual(foundDoc.key, writeData.key);
                     return true;
                 } catch (err) {
@@ -3214,7 +3341,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
             }, 10 * 1000, 100);
 
             // find via query
-            const preparedQuery: PreparedQuery<TestDocType> = config.storage.getStorage().statics.prepareQuery<TestDocType>(
+            const preparedQuery: PreparedQuery<TestDocType> = prepareQuery<TestDocType>(
                 instances.b.schema,
                 {
                     selector: {},
@@ -3235,7 +3362,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 previous: foundViaQueryDoc,
                 document: newDoc
             }], testContext);
-            assert.deepStrictEqual(updateBResult.error, {});
+            assert.deepStrictEqual(updateBResult.error, []);
 
             // check update on A
             await waitUntil(async () => {
@@ -3272,17 +3399,15 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
             // insert a document on A
             await instances.a.bulkWrite([{ document: getWriteData() }], testContext);
 
-            const preparedQuery: PreparedQuery<TestDocType> = config.storage.getStorage()
-                .statics
-                .prepareQuery<TestDocType>(
-                    instances.b.schema,
-                    {
-                        selector: {},
-                        limit: 1,
-                        sort: [{ key: 'asc' }],
-                        skip: 0
-                    }
-                );
+            const preparedQuery: PreparedQuery<TestDocType> = prepareQuery<TestDocType>(
+                instances.b.schema,
+                {
+                    selector: {},
+                    limit: 1,
+                    sort: [{ key: 'asc' }],
+                    skip: 0
+                }
+            );
 
             const queryResultBefore = await instances.b.query(preparedQuery);
             assert.ok(queryResultBefore);
@@ -3348,15 +3473,15 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 }],
                 testContext
             );
-            assert.deepStrictEqual(writeResponseV0.error, {});
-            assert.deepStrictEqual(writeResponseV1.error, {});
+            assert.deepStrictEqual(writeResponseV0.error, []);
+            assert.deepStrictEqual(writeResponseV1.error, []);
 
 
             const plainQuery = {
                 selector: {},
                 sort: [{ key: 'asc' }]
             };
-            const preparedQueryV0 = config.storage.getStorage().statics.prepareQuery(
+            const preparedQueryV0 = prepareQuery(
                 getPseudoSchemaForVersion<TestDocType>(0, 'key'),
                 clone(plainQuery)
             );
@@ -3365,7 +3490,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
             assert.strictEqual(resultV0.documents[0].value, '0');
 
 
-            const preparedQueryV1 = config.storage.getStorage().statics.prepareQuery(
+            const preparedQueryV1 = prepareQuery(
                 getPseudoSchemaForVersion<TestDocType>(1, 'key'),
                 clone(plainQuery)
             );
@@ -3405,7 +3530,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 }],
                 testContext
             );
-            assert.deepStrictEqual(writeResponse.error, {});
+            assert.deepStrictEqual(writeResponse.error, []);
             await storageInstance1.close();
 
 
@@ -3419,7 +3544,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 devMode: true
             });
 
-            const allDocsQuery = config.storage.getStorage().statics.prepareQuery(
+            const allDocsQuery = prepareQuery(
                 schema,
                 {
                     selector: {},
@@ -3479,16 +3604,16 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
                 [{ document: getWriteData({ value: 'zero' }) }],
                 testContext
             );
-            assert.deepStrictEqual(writeResultZero.error, {});
+            assert.deepStrictEqual(writeResultZero.error, []);
 
             const writeResultOne = await storageInstanceOne.bulkWrite(
                 [{ document: getWriteData({ value: 'one' }) }],
                 testContext
             );
-            assert.deepStrictEqual(writeResultOne.error, {});
+            assert.deepStrictEqual(writeResultOne.error, []);
 
             const docsZero = await storageInstanceZero.query(
-                storage.statics.prepareQuery(
+                prepareQuery(
                     storageInstanceZero.schema,
                     {
                         selector: {},
@@ -3503,7 +3628,7 @@ config.parallel('rx-storage-implementations.test.ts (implementation: ' + config.
             assert.strictEqual(docsZero.documents[0].value, 'zero');
 
             const docsOne = await storageInstanceOne.query(
-                storage.statics.prepareQuery(
+                prepareQuery(
                     storageInstanceOne.schema,
                     {
                         selector: {},

@@ -1,7 +1,7 @@
 /**
  * here we use custom errors with the additional field 'parameters'
  */
-import type { RxErrorParameters, RxErrorKey, RxStorageWriteError, RxStorageWriteErrorConflict } from './types';
+import type { RxErrorParameters, RxErrorKey, RxStorageWriteError, RxStorageWriteErrorConflict } from './types/index.d.ts';
 export declare class RxError extends Error {
     code: RxErrorKey;
     message: string;

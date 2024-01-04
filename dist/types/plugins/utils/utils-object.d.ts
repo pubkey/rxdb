@@ -1,11 +1,11 @@
-import type { DeepReadonlyObject } from '../../types';
+import type { DeepReadonlyObject } from '../../types/index.d.ts';
 export declare function deepFreeze<T>(o: T): T;
 /**
  * To get specific nested path values from objects,
  * RxDB normally uses the 'dot-prop' npm module.
  * But when performance is really relevant, this is not fast enough.
  * Instead we use a monad that can prepare some stuff up front
- * and we can re-use the generated function.
+ * and we can reuse the generated function.
  */
 export type ObjectPathMonadFunction<T, R = any> = (obj: T) => R;
 export declare function objectPathMonad<T, R = any>(objectPath: string): ObjectPathMonadFunction<T, R>;
@@ -51,9 +51,4 @@ export declare const clone: typeof deepClone;
  * Mostly used for caching stuff on the first run
  */
 export declare function overwriteGetterForCaching<ValueType = any>(obj: any, getterName: string, value: ValueType): ValueType;
-/**
- * used to JSON.stringify() objects that contain a regex
- * @link https://stackoverflow.com/a/33416684 thank you Fabian Jakobs!
- */
-export declare function stringifyFilter(key: string, value: any): any;
 export {};

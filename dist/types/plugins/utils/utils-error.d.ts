@@ -1,4 +1,4 @@
-import type { PlainJsonError, RxError, RxTypeError } from '../../types';
+import type { PlainJsonError, RxError, RxTypeError } from '../../types/index.d.ts';
 /**
  * Returns an error that indicates that a plugin is missing
  * We do not throw a RxError because this should not be handled

@@ -1,0 +1,60 @@
+{
+  "name": "rxdb",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "docusaurus": "docusaurus",
+    "start": "docusaurus start",
+    "build": "docusaurus build",
+    "swizzle": "docusaurus swizzle",
+    "deploy": "docusaurus deploy",
+    "clear": "docusaurus clear",
+    "serve": "docusaurus serve",
+    "write-translations": "docusaurus write-translations",
+    "write-heading-ids": "docusaurus write-heading-ids"
+  },
+  "dependencies": {
+    "@docusaurus/core": "3.0.1",
+    "@docusaurus/plugin-google-gtag": "3.0.1",
+    "@docusaurus/preset-classic": "3.0.1",
+    "@mdx-js/react": "3.0.0",
+    "clsx": "2.1.0",
+    "prism-react-renderer": "2.3.1",
+    "react": "18.2.0",
+    "react-dom": "18.2.0",
+    "autocomplete.js": "0.37.0",
+    "gauge": "3.0.0",
+    "hast-util-select": "4.0.0",
+    "hast-util-to-text": "2.0.0",
+    "hogan.js": "3.0.2",
+    "lunr": "2.3.8",
+    "lunr-languages": "1.4.0",
+    "mark.js": "8.11.1",
+    "minimatch": "3.0.4",
+    "rehype-parse": "7.0.1",
+    "to-vfile": "6.1.0",
+    "unified": "9.0.0",
+    "unist-util-is": "4.0.2"
+  },
+  "devDependencies": {
+    "@docusaurus/module-type-aliases": "3.0.1",
+    "@docusaurus/tsconfig": "3.0.1",
+    "@docusaurus/types": "3.0.1",
+    "typescript": "5.3.3"
+  },
+  "browserslist": {
+    "production": [
+      ">0.5%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 3 chrome version",
+      "last 3 firefox version",
+      "last 5 safari version"
+    ]
+  },
+  "engines": {
+    "node": ">=18.0"
+  }
+}

@@ -1,29 +1,75 @@
 /// <reference path="../../node_modules/@types/mocha/index.d.ts" />
-const {
+import {
     detect
-} = require('detect-browser');
+} from 'detect-browser';
 import {
     enforceOptions as broadcastChannelEnforceOptions
 } from 'broadcast-channel';
-import * as path from 'path';
+import * as path from 'node:path';
+import url from 'node:url';
+import events from 'node:events';
+
 import parallel from 'mocha.parallel';
-import { randomCouchString, RxStorage, RxStorageDefaultStatics, RxTestStorage } from '../../';
-import { getRxStorageLoki } from '../../plugins/storage-lokijs';
+
+
+
+import { getRxStorageLoki } from '../../plugins/storage-lokijs/index.mjs';
 import {
     getRxStorageDexie
-} from '../../plugins/storage-dexie';
-import { getRxStorageRemoteWebsocket } from '../../plugins/storage-remote-websocket';
-import { getRxStorageMemory } from '../../plugins/storage-memory';
-import { CUSTOM_STORAGE } from './custom-storage';
-import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv';
-import { isPromise } from 'async-test-util';
+} from '../../plugins/storage-dexie/index.mjs';
+import { getRxStorageRemoteWebsocket } from '../../plugins/storage-remote-websocket/index.mjs';
+import { getRxStorageMemory } from '../../plugins/storage-memory/index.mjs';
+import { getRxStorageDenoKV } from '../../plugins/storage-denokv/index.mjs';
+import { CUSTOM_STORAGE } from './custom-storage.ts';
+import { wrappedValidateAjvStorage } from '../../plugins/validate-ajv/index.mjs';
+import { isPromise, randomNumber } from 'async-test-util';
 
 import {
     wrappedKeyEncryptionCryptoJsStorage
-} from '../../plugins/encryption-crypto-js';
+} from '../../plugins/encryption-crypto-js/index.mjs';
+import {
+    ensureNotFalsy,
+    randomCouchString,
+    RxStorage,
+    RxTestStorage,
+    randomDelayStorage
+} from '../../plugins/core/index.mjs';
+
+import {
+    indexedDB as fakeIndexedDB,
+    IDBKeyRange as fakeIDBKeyRange
+} from 'fake-indexeddb';
+import LokiFsStructuredAdapter from 'lokijs/src/loki-fs-structured-adapter.js';
+import LokiIncrementalIndexedDBAdapter from 'lokijs/src/incremental-indexeddb-adapter.js';
+
+import { createRequire } from 'node:module';
+
+function nodeRequire(filePath: string) {
+    const require = createRequire(import.meta.url);
+    return require(filePath);
+}
 
 
-export const ENV_VARIABLES = detect().name === 'node' ? process.env : (window as any).__karma__.config.env;
+declare const Deno: any;
+const isDeno = typeof window !== 'undefined' && 'Deno' in window;
+const isBun = typeof process !== 'undefined' && !!process.versions.bun;
+
+function getEnvVariables() {
+    if (isDeno) {
+        const ret: any = {};
+        [
+            'DEFAULT_STORAGE',
+            'NODE_ENV'
+        ].forEach(k => {
+            ret[k] = Deno.env.get(k);
+        });
+        return ret;
+    }
+
+    return isBun || ensureNotFalsy(detect()).name === 'node' ? process.env : (window as any).__karma__.config.env;
+}
+export const ENV_VARIABLES = getEnvVariables();
+
 
 function isFastMode(): boolean {
     try {
@@ -71,6 +117,8 @@ try {
 
 
 const config: {
+    isDeno: boolean;
+    isBun: boolean;
     platform: any;
     parallel: typeof useParallel;
     rootPath: string;
@@ -78,8 +126,10 @@ const config: {
     storage: RxTestStorage;
     isNotOneOfTheseStorages: (names: string[]) => boolean;
 } = {
+    isDeno,
+    isBun,
     platform: Object.assign({}, detect(), {
-        isNode: () => detect().name === 'node'
+        isNode: () => ensureNotFalsy(detect()).name === 'node'
     }),
     parallel: useParallel,
     rootPath: '',
@@ -118,7 +168,8 @@ export function setDefaultStorage(storageKey: string) {
                 },
                 hasPersistence: true,
                 hasMultiInstance: false,
-                hasAttachments: true
+                hasAttachments: true,
+                hasReplication: true
             };
             break;
         /**
@@ -139,19 +190,56 @@ export function setDefaultStorage(storageKey: string) {
                         })
                     };
                 },
-                hasPersistence: false,
+                hasPersistence: true,
                 hasMultiInstance: false,
-                hasAttachments: true
+                hasAttachments: true,
+                hasReplication: true
             };
             break;
-        case 'lokijs':
+        /**
+         * We run the tests once with random delays
+         * on reads and writes. Used to easier detect flaky tests.
+         */
+        case 'memory-random-delay':
+
+            const delayFn = () => randomNumber(10, 50);
+            // const delayFn = () => 150;
+
+            config.storage = {
+                name: storageKey,
+                getStorage: () => randomDelayStorage({
+                    storage: getRxStorageDexie({
+                        indexedDB: fakeIndexedDB,
+                        IDBKeyRange: fakeIDBKeyRange
+                    }),
+                    delayTimeBefore: delayFn,
+                    delayTimeAfter: delayFn
+                }),
+                getPerformanceStorage() {
+                    return {
+                        description: 'memory-random-delay',
+                        storage: randomDelayStorage({
+                            storage: getRxStorageDexie({
+                                indexedDB: fakeIndexedDB,
+                                IDBKeyRange: fakeIDBKeyRange
+                            }),
+                            delayTimeBefore: delayFn,
+                            delayTimeAfter: delayFn
+                        })
+                    };
+                },
+                hasPersistence: true,
+                hasMultiInstance: true,
+                hasAttachments: false,
+                hasReplication: true
+            };
+            break; case 'lokijs':
             config.storage = {
                 name: storageKey,
                 getStorage: () => getRxStorageLoki(),
                 getPerformanceStorage() {
                     if (config.platform.name === 'node') {
                         // Node.js
-                        const LokiFsStructuredAdapter = require('lokijs/src/loki-fs-structured-adapter.js');
                         return {
                             storage: getRxStorageLoki({
                                 adapter: new LokiFsStructuredAdapter()
@@ -160,7 +248,6 @@ export function setDefaultStorage(storageKey: string) {
                         };
                     } else {
                         // browser
-                        const LokiIncrementalIndexedDBAdapter = require('lokijs/src/incremental-indexeddb-adapter');
                         return {
                             storage: getRxStorageLoki({
                                 adapter: new LokiIncrementalIndexedDBAdapter()
@@ -171,18 +258,22 @@ export function setDefaultStorage(storageKey: string) {
                 },
                 hasPersistence: true,
                 hasMultiInstance: true,
-                hasAttachments: false
+                hasAttachments: false,
+                hasReplication: true
             };
             break;
         case 'dexie':
             config.storage = {
                 name: storageKey,
                 getStorage: () => {
-                    if (config.platform.name === 'node' || config.isFastMode()) {
-                        const { indexedDB, IDBKeyRange } = require('fake-indexeddb');
+                    if (
+                        config.platform.name === 'node' ||
+                        isDeno ||
+                        config.isFastMode()
+                    ) {
                         return getRxStorageDexie({
-                            indexedDB,
-                            IDBKeyRange
+                            indexedDB: fakeIndexedDB,
+                            IDBKeyRange: fakeIDBKeyRange
                         });
                     } else {
                         return getRxStorageDexie({});
@@ -190,7 +281,6 @@ export function setDefaultStorage(storageKey: string) {
                 },
                 getPerformanceStorage() {
                     if (config.platform.name === 'node') {
-                        const { indexedDB, IDBKeyRange } = require('fake-indexeddb');
                         return {
                             storage: getRxStorageDexie({
                                 indexedDB,
@@ -207,33 +297,70 @@ export function setDefaultStorage(storageKey: string) {
                 },
                 hasPersistence: true,
                 hasMultiInstance: true,
-                hasAttachments: false
+                hasAttachments: true,
+                hasReplication: true
             };
             break;
         case 'foundationdb':
-            const foundationDBAPIVersion = 620;
+            const foundationDBAPIVersion = 630;
 
-            // use a dynamic import so it does not break browser bundling
-            const { getRxStorageFoundationDB } = require('../../plugins/storage-foundationdb' + '');
 
+            let getStorageFnFoundation: any;
             config.storage = {
+                async init() {
+                    // use a dynamic import so it does not break browser bundling
+                    const { getRxStorageFoundationDB } = await nodeRequire('../../plugins/storage-foundationdb/index.cjs');
+                    getStorageFnFoundation = getRxStorageFoundationDB;
+                },
                 name: storageKey,
                 getStorage: () => {
-                    return getRxStorageFoundationDB({
+                    return getStorageFnFoundation({
                         apiVersion: foundationDBAPIVersion
                     });
                 },
                 getPerformanceStorage() {
                     return {
                         description: 'foundationdb-native',
-                        storage: getRxStorageFoundationDB({
+                        storage: getStorageFnFoundation({
                             apiVersion: foundationDBAPIVersion
                         })
                     };
                 },
                 hasPersistence: true,
                 hasMultiInstance: false,
-                hasAttachments: true
+                hasAttachments: true,
+                hasReplication: true
+            };
+            break;
+        case 'mongodb':
+
+            // use a dynamic import so it does not break browser bundling
+
+            const mongoConnectionString = 'mongodb://localhost:27017';
+            let getStorageFnMongo: any;
+            config.storage = {
+                async init() {
+                    const { getRxStorageMongoDB } = await nodeRequire('../../plugins/storage-mongodb/index.cjs');
+                    getStorageFnMongo = getRxStorageMongoDB;
+                },
+                name: storageKey,
+                getStorage: () => {
+                    return getStorageFnMongo({
+                        connection: mongoConnectionString
+                    });
+                },
+                getPerformanceStorage() {
+                    return {
+                        description: 'mongodb-native',
+                        storage: getStorageFnMongo({
+                            connection: mongoConnectionString
+                        })
+                    };
+                },
+                hasPersistence: true,
+                hasMultiInstance: false,
+                hasAttachments: false,
+                hasReplication: true
             };
             break;
         case 'remote':
@@ -241,7 +368,6 @@ export function setDefaultStorage(storageKey: string) {
                 name: storageKey,
                 getStorage: () => {
                     return getRxStorageRemoteWebsocket({
-                        statics: RxStorageDefaultStatics,
                         url: 'ws://localhost:18007',
                         mode: 'storage'
                     });
@@ -249,7 +375,6 @@ export function setDefaultStorage(storageKey: string) {
                 getPerformanceStorage() {
                     return {
                         storage: getRxStorageRemoteWebsocket({
-                            statics: RxStorageDefaultStatics,
                             url: 'ws://localhost:18007',
                             mode: 'storage'
                         }),
@@ -258,7 +383,24 @@ export function setDefaultStorage(storageKey: string) {
                 },
                 hasPersistence: true,
                 hasMultiInstance: true,
-                hasAttachments: true
+                hasAttachments: true,
+                hasReplication: true
+            };
+            break;
+        case 'denokv':
+            config.storage = {
+                name: storageKey,
+                getStorage: () => getRxStorageDenoKV(),
+                getPerformanceStorage() {
+                    return {
+                        description: 'denokv',
+                        storage: getRxStorageDenoKV()
+                    };
+                },
+                hasPersistence: true,
+                hasMultiInstance: true,
+                hasAttachments: false,
+                hasReplication: true
             };
             break;
         default:
@@ -286,9 +428,15 @@ export function getPassword(): Promise<string> {
     }
 }
 
+
 if (config.platform.name === 'node') {
     process.setMaxListeners(100);
-    require('events').EventEmitter.defaultMaxListeners = 100;
+
+    events.EventEmitter.defaultMaxListeners = 100;
+
+    const __filename = url.fileURLToPath(import.meta.url);
+    const __dirname = path.dirname(__filename);
+
     config.rootPath = path.join(__dirname, '../../');
     console.log('rootPath: ' + config.rootPath);
 

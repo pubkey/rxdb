@@ -1,5 +1,7 @@
 <!--
-  # STOP: It is very unlikely that you want to create an issue.
+  # NOTICE: Issues are not a way to contact the maintainer, they are community driven.
+
+  If you need help from the maintainer, read this:
 
   ## Have you found a bug?
   -> Create a pull request where you tried to reproduce the problem or at least have shown that you tried to do so.

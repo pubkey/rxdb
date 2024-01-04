@@ -1,20 +1,20 @@
 import assert from 'assert';
 import { wait, waitUntil } from 'async-test-util';
 
-import config from './config';
-import * as schemas from '../helper/schemas';
-import * as schemaObjects from '../helper/schema-objects';
+import config from './config.ts';
+import * as schemas from '../helper/schemas.ts';
+import * as schemaObjects from '../helper/schema-objects.ts';
 import {
     createRxDatabase,
     randomCouchString,
     addRxPlugin,
     RxCollection
-} from '../../';
+} from '../../plugins/core/index.mjs';
 
-import { HumanDocumentType } from '../helper/schemas';
-import { replicateRxCollection } from '../../plugins/replication';
+import { HumanDocumentType } from '../helper/schemas.ts';
+import { replicateRxCollection } from '../../plugins/replication/index.mjs';
 
-import { RxDBCleanupPlugin } from '../../plugins/cleanup';
+import { RxDBCleanupPlugin } from '../../plugins/cleanup/index.mjs';
 addRxPlugin(RxDBCleanupPlugin);
 
 config.parallel('cleanup.test.js', () => {
@@ -48,14 +48,17 @@ config.parallel('cleanup.test.js', () => {
                 ],
                 true
             );
-            assert.ok(deletedDocInStorage[notDeleted.primary]);
-            const deletedDocStillInStorage = !!deletedDocInStorage[doc.primary];
+            assert.ok(deletedDocInStorage.find(d => d[collection.schema.primaryPath] === notDeleted.primary));
+            const deletedDocStillInStorage = !!deletedDocInStorage.find(d => d[collection.schema.primaryPath] === doc.primary);
             return !deletedDocStillInStorage;
         });
 
         db.destroy();
     });
     it('should pause the cleanup when a replication is not in sync', async () => {
+        if (!config.storage.hasReplication) {
+            return;
+        }
         const db = await createRxDatabase({
             name: randomCouchString(10),
             storage: config.storage.getStorage(),
@@ -100,7 +103,35 @@ config.parallel('cleanup.test.js', () => {
             [doc.primary],
             true
         );
-        assert.ok(deletedDocInStorage[doc.primary]);
+        assert.ok(deletedDocInStorage[0]);
+
+        db.destroy();
+    });
+    it('should work by manually calling RxCollection.cleanup()', async () => {
+        const db = await createRxDatabase({
+            name: randomCouchString(10),
+            storage: config.storage.getStorage()
+        });
+        const cols = await db.addCollections({
+            humans: {
+                schema: schemas.human
+            }
+        });
+        const collection: RxCollection<HumanDocumentType> = cols.humans;
+        const notDeleted = await collection.insert(schemaObjects.human());
+        const doc = await collection.insert(schemaObjects.human());
+        await doc.remove();
+
+
+        await collection.cleanup(0);
+        const deletedDocInStorage = await collection.storageInstance.findDocumentsById(
+            [
+                doc.primary,
+                notDeleted.primary
+            ],
+            true
+        );
+        assert.strictEqual(deletedDocInStorage.length, 1);
 
         db.destroy();
     });

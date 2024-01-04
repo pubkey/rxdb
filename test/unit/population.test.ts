@@ -1,8 +1,8 @@
 import assert from 'assert';
-import config from './config';
+import config from './config.ts';
 import { faker } from '@faker-js/faker';
 
-import * as humansCollection from '../helper/humans-collection';
+import * as humansCollection from '../helper/humans-collection.ts';
 
 import {
     createRxDatabase,
@@ -11,7 +11,7 @@ import {
     createRxSchema,
     RxJsonSchema,
     defaultHashSha256,
-} from '../../';
+} from '../../plugins/core/index.mjs';
 
 
 config.parallel('population.test.js', () => {
@@ -134,8 +134,7 @@ config.parallel('population.test.js', () => {
                                 ref: 'human'
                             }
                         }
-                    }, defaultHashSha256),
-                    Error
+                    }, defaultHashSha256)
                 );
             });
             it('throw if ref-type is no string (array)', () => {
@@ -156,8 +155,7 @@ config.parallel('population.test.js', () => {
                                 }
                             }
                         }
-                    }, defaultHashSha256),
-                    Error
+                    }, defaultHashSha256)
                 );
             });
         });
@@ -212,7 +210,7 @@ config.parallel('population.test.js', () => {
                     .fill(0)
                     .map(() => {
                         return {
-                            name: faker.name.firstName() + randomCouchString(5),
+                            name: faker.person.firstName() + randomCouchString(5),
                             friends: []
                         };
                     });

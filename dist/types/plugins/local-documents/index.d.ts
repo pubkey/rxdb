@@ -1,6 +1,6 @@
-import type { RxPlugin } from '../../types';
-export * from './local-documents-helper';
-export * from './local-documents';
-export * from './rx-local-document';
-export type { LocalDocumentParent, LocalDocumentState, RxLocalDocument, RxLocalDocumentData } from '../../types/plugins/local-documents';
+import type { RxPlugin } from '../../types/index.d.ts';
+export * from './local-documents-helper.ts';
+export * from './local-documents.ts';
+export * from './rx-local-document.ts';
+export type { LocalDocumentParent, LocalDocumentState, RxLocalDocument, RxLocalDocumentData } from '../../types/plugins/local-documents.d.ts';
 export declare const RxDBLocalDocumentsPlugin: RxPlugin;

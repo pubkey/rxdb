@@ -1,4 +1,4 @@
-import { newRxError } from './rx-error';
+import { newRxError } from './rx-error.ts';
 import type {
     CompositePrimaryKey,
     DeepReadonly,
@@ -8,7 +8,7 @@ import type {
     RxJsonSchema,
     RxStorageDefaultCheckpoint,
     StringKeys
-} from './types';
+} from './types/index.d.ts';
 import {
     appendToArray,
     ensureNotFalsy,
@@ -19,8 +19,8 @@ import {
     RX_META_LWT_MINIMUM,
     sortObject,
     trimDots
-} from './plugins/utils';
-import type { RxSchema } from './rx-schema';
+} from './plugins/utils/index.ts';
+import type { RxSchema } from './rx-schema.ts';
 
 /**
  * Helper function to create a valid RxJsonSchema
@@ -40,6 +40,9 @@ export function getPseudoSchemaForVersion<T = any>(
                 maxLength: 100
             }
         } as any,
+        indexes: [
+            [primaryKey]
+        ],
         required: [primaryKey]
     });
     return pseudoSchema;
@@ -154,6 +157,15 @@ export function normalizeRxJsonSchema<T>(jsonSchema: RxJsonSchema<T>): RxJsonSch
 }
 
 /**
+ * If the schema does not specify any index,
+ * we add this index so we at least can run RxQuery()
+ * and only select non-deleted fields.
+ */
+export function getDefaultIndex(primaryPath: string) {
+    return ['_deleted', primaryPath];
+}
+
+/**
  * fills the schema-json with default-settings
  * @return cloned schemaObj
  */
@@ -168,7 +180,7 @@ export function fillWithDefaultSettings<T = any>(
     schemaObj.additionalProperties = false;
 
     // fill with key-compression-state ()
-    if (!schemaObj.hasOwnProperty('keyCompression')) {
+    if (!Object.prototype.hasOwnProperty.call(schemaObj, 'keyCompression')) {
         schemaObj.keyCompression = false;
     }
 
@@ -219,21 +231,45 @@ export function fillWithDefaultSettings<T = any>(
     // version is 0 by default
     schemaObj.version = schemaObj.version || 0;
 
-    /**
-     * Append primary key to indexes that do not contain the primaryKey.
-     * All indexes must have the primaryKey to ensure a deterministic sort order.
-     */
-    if (schemaObj.indexes) {
-        schemaObj.indexes = schemaObj.indexes.map(index => {
-            const arIndex = isMaybeReadonlyArray(index) ? index.slice(0) : [index];
-            if (!arIndex.includes(primaryPath)) {
-                const modifiedIndex = arIndex.slice(0);
-                modifiedIndex.push(primaryPath);
-                return modifiedIndex;
-            }
-            return arIndex;
-        });
+    const useIndexes: string[][] = schemaObj.indexes.map(index => {
+        const arIndex = isMaybeReadonlyArray(index) ? index.slice(0) : [index];
+        /**
+         * Append primary key to indexes that do not contain the primaryKey.
+         * All indexes must have the primaryKey to ensure a deterministic sort order.
+         */
+        if (!arIndex.includes(primaryPath)) {
+            arIndex.push(primaryPath);
+        }
+
+        // add _deleted flag to all indexes so we can query only non-deleted fields
+        // in RxDB itself
+        if (arIndex[0] !== '_deleted') {
+            arIndex.unshift('_deleted');
+        }
+
+        return arIndex;
+    });
+
+    if (useIndexes.length === 0) {
+        useIndexes.push(getDefaultIndex(primaryPath));
     }
+
+    // we need this index for the getChangedDocumentsSince() method
+    useIndexes.push(['_meta.lwt', primaryPath]);
+
+    // make indexes unique
+    const hasIndex = new Set<string>();
+    useIndexes.filter(index => {
+        const indexStr = index.join(',');
+        if (hasIndex.has(indexStr)) {
+            return false;
+        } else {
+            hasIndex.add(indexStr);
+            return true;
+        }
+    });
+
+    schemaObj.indexes = useIndexes;
 
     return schemaObj as any;
 }
@@ -298,7 +334,7 @@ export function fillObjectWithDefaults(rxSchema: RxSchema<any>, obj: any): any {
     const defaultKeys = Object.keys(rxSchema.defaultValues);
     for (let i = 0; i < defaultKeys.length; ++i) {
         const key = defaultKeys[i];
-        if (!obj.hasOwnProperty(key) || typeof obj[key] === 'undefined') {
+        if (!Object.prototype.hasOwnProperty.call(obj, key) || typeof obj[key] === 'undefined') {
             obj[key] = rxSchema.defaultValues[key];
         }
     }

@@ -18,6 +18,8 @@ ISSUE_TEMPLATE.md
 PULL_REQUEST_TEMPLATE.md
 pouch__all_dbs__/
 config.json
+.nvmrc
+release-body.md
 
 perf.md
 log.txt

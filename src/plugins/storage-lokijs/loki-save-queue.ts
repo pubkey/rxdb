@@ -1,8 +1,8 @@
-import type { LokiDatabaseSettings } from '../../types';
+import type { LokiDatabaseSettings } from '../../types/index.d.ts';
 import {
     PROMISE_RESOLVE_VOID,
     requestIdlePromise
-} from '../utils';
+} from '../utils/index.ts';
 
 /**
  * The autosave feature of lokijs has strange behaviors
@@ -23,7 +23,7 @@ export class LokiSaveQueue {
     public saveQueueC = 0;
 
     constructor(
-        public readonly lokiDatabase: Loki,
+        public readonly lokiDatabase: any,
         public readonly databaseSettings: LokiDatabaseSettings
     ) {
 
@@ -75,7 +75,7 @@ export class LokiSaveQueue {
                 const writeAmount = this.writesSinceLastRun;
                 this.writesSinceLastRun = 0;
                 return new Promise<void>((res, rej) => {
-                    this.lokiDatabase.saveDatabase(err => {
+                    this.lokiDatabase.saveDatabase((err: any) => {
                         if (err) {
                             this.writesSinceLastRun = this.writesSinceLastRun + writeAmount;
                             rej(err);

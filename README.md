@@ -1,7 +1,18 @@
+<!-- | Announcement                                                        |
+| :--: |
+| &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; [Help testing the RxDB version 15 release](https://github.com/pubkey/rxdb/issues/5155) &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; | -->
+
+
+| Announcement                                                        |
+| :--: |
+| &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; Version **15.0.0** is now released, read the [CHANGELOG](https://rxdb.info/releases/15.0.0.html) &emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp;&emsp; |
+
+
+<!--
 | Announcement                                                        |
 | :--: |
 | Please take part in the [RxDB user survey 2023](https://rxdb.info/survey.html). This will help me to better plan the steps for the next major release. (takes about 2 minutes)
-
+-->
 
 <br />
 
@@ -9,11 +20,11 @@
 
 <p align="center">
   <a href="https://rxdb.info/">
-    <img src="./docs-src/files/logo/logo_text.svg" width="380px" alt="JavaScript Database" />
+    <img src="./docs-src/static/files/logo/logo_text.svg" width="380px" alt="JavaScript Database" />
   </a>
   <br />
   <br />
-  <h3 align="center">A fast, offline-first, reactive Database for JavaScript Applications</h3>
+  <h3 align="center">A fast, local-first, reactive Database for JavaScript Applications</h3>
 </p>
 
 
@@ -33,6 +44,8 @@
  	  <a href="https://rxdb.info/chat.html"><img src="https://img.shields.io/discord/969553741705539624?label=discord&style=flat-square&color=5a66f6"></a>
 	  &nbsp;
     <a href="https://twitter.com/intent/follow?screen_name=rxdbjs"><img src="https://img.shields.io/badge/twitter-%40rxdbjs-1DA1F2?style=flat-square"></a>
+	  &nbsp;
+    <a href="https://www.linkedin.com/company/rxdb"><img src="https://img.shields.io/badge/linkedin-%40rxdb-0e76a8?style=flat-square"></a>
     &nbsp;
     <a href="https://rxdb.info/newsletter.html"><img src="https://img.shields.io/badge/newsletter-subscribe-e05b29?style=flat-square"></a>
 </p>
@@ -41,45 +54,44 @@
 <br />
 
 <h2>
-  <img height="16" width="16" src="./docs-src/files/logo/logo.svg">&nbsp;&nbsp;What is RxDB?
+  <img height="16" width="16" src="./docs-src/static/files/logo/logo.svg">&nbsp;&nbsp;What is RxDB?
 </h2>
 
 <p align="justify">
-  RxDB (short for <b>R</b>eactive <b>D</b>ata<b>b</b>ase) is an <a href="https://rxdb.info/offline-first.html">offline-first</a>, NoSQL-database for JavaScript Applications like Websites, hybrid Apps, Electron-Apps, Progressive Web Apps and Node.js.
+  RxDB (short for <b>R</b>eactive <b>D</b>ata<b>b</b>ase) is a <a href="https://rxdb.info/offline-first.html">local-first</a>, NoSQL-database for JavaScript Applications like Websites, hybrid Apps, Electron-Apps, Progressive Web Apps, Deno and <a href="https://rxdb.info/nodejs-database.html">Node.js</a>.
   Reactive means that you can not only query the current state, but <b>subscribe</b> to all state changes like the result of a query or even a single field of a document.
   This is great for UI-based <b>realtime</b> applications in a way that makes it easy to develop and also has great performance benefits but can also be used to create fast backends in Node.js.<br />
-  RxDB provides an easy to implement <a href="https://rxdb.info/replication.html">protocol</a> for realtime <b>replication</b> with your existing infrastructure or any compliant CouchDB endpoint.<br />
+  RxDB provides an easy to implement <a href="https://rxdb.info/replication.html">protocol</a> for realtime <b>replication</b> with your existing infrastructure or one of the plugins for <a href="https://rxdb.info/replication-graphql.html">GraphQL</a>, <a href="https://rxdb.info/replication-couchdb.html">CouchDB</a>, <a href="https://rxdb.info/replication-websocket.html">Websocket</a>, <a href="https://rxdb.info/replication-webrtc.html">WebRTC</a>, <a href="https://rxdb.info/replication-firestore.html">Firestore</a>, <a href="https://rxdb.info/replication-nats.html">NATS</a>.<br />
   RxDB is based on a storage interface that enables you to swap out the underlying storage engine. This increases <b>code reuse</b> because you can use the same database code for different JavaScript environments by just switching out the storage settings.
 </p>
 
 Use the [quickstart](https://rxdb.info/quickstart.html), read the [documentation](https://rxdb.info/install.html) or explore the [example projects](https://github.com/pubkey/rxdb/tree/master/examples).
 
 <h2>
-  <img height="16" width="16" src="./docs-src/files/icons/with-gradient/multiplayer.svg">&nbsp;&nbsp;Multiplayer realtime applications
-  <img height="36" src="./docs-src/files/icons/with-gradient/text/made-easy.svg">
+  <img height="16" width="16" src="./docs-src/static/files/icons/with-gradient/multiplayer.svg">&nbsp;&nbsp;Multiplayer realtime applications
+  <img height="36" src="./docs-src/static/files/icons/with-gradient/text/made-easy.svg">
 </h2>
 
 
 
-![realtime.gif](docs-src/files/animations/realtime.gif)
+![realtime.gif](docs-src/static/files/animations/realtime.gif)
 
 
 <h2>
-  <img height="16" width="16" src="./docs-src/files/icons/with-gradient/replication.svg">&nbsp;&nbsp;Replicate with your <b style="color: #e6008d;">existing infrastructure</b>
+  <img height="16" width="16" src="./docs-src/static/files/icons/with-gradient/replication.svg">&nbsp;&nbsp;Replicate with your <b style="color: #e6008d;">existing infrastructure</b>
 </h2>
 
 RxDB provides an easy to implement, <b>battle-tested</b> <a href="https://rxdb.info/replication.html"> replication protocol</a> for realtime sync with your existing infrastructure.<br />
-There are also plugins to replicate with any <a href="/replication-couchdb.html">CouchDB</a> endpoint or over <a href="https://rxdb.info/replication-graphql.html">GraphQL</a> and REST or even <a href="https://rxdb.info/replication-p2p.html">P2P</a>.
-
+There are also plugins to easily replicate with <a href="https://rxdb.info/replication-graphql.html">GraphQL</a>, <a href="https://rxdb.info/replication-couchdb.html">CouchDB</a>, <a href="https://rxdb.info/replication-websocket.html">Websocket</a>, <a href="https://rxdb.info/replication-webrtc.html">WebRTC</a>, <a href="https://rxdb.info/replication-firestore.html">Firestore</a> or <a href="https://rxdb.info/replication-nats.html">NATS</a>.
 
 
 <h2>
-  <img height="16" width="16" src="./docs-src/files/icons/with-gradient/storage-layer.svg">&nbsp;&nbsp;<b style="color: #8D2089;">Flexible</b> storage layer
+  <img height="16" width="16" src="./docs-src/static/files/icons/with-gradient/storage-layer.svg">&nbsp;&nbsp;<b style="color: #8D2089;">Flexible</b> storage layer
 </h2>
 
 RxDB is based on a [storage interface](https://rxdb.info/rx-storage.html) that enables you to swap out the underlying storage engine. This increases **code reuse** because the same database code can be used in different JavaScript environments by just switching out the storage settings.
 
-You can use RxDB on top of [IndexedDB](https://rxdb.info/rx-storage-indexeddb.html), [OPFS](https://rxdb.info/rx-storage-opfs.html), [LokiJS](https://rxdb.info/rx-storage-lokijs.html), [Dexie.js](https://rxdb.info/rx-storage-dexie.html), [in-memory](https://rxdb.info/rx-storage-memory.html), [SQLite](https://rxdb.info/rx-storage-sqlite.html), in a [WebWorker](https://rxdb.info/rx-storage-worker.html) thread and even on top of [FoundationDB](https://rxdb.info/rx-storage-foundationdb.html).
+You can use RxDB on top of [IndexedDB](https://rxdb.info/rx-storage-indexeddb.html), [OPFS](https://rxdb.info/rx-storage-opfs.html), [LokiJS](https://rxdb.info/rx-storage-lokijs.html), [Dexie.js](https://rxdb.info/rx-storage-dexie.html), [in-memory](https://rxdb.info/rx-storage-memory.html), [SQLite](https://rxdb.info/rx-storage-sqlite.html), in a [WebWorker](https://rxdb.info/rx-storage-worker.html) thread and even on top of [FoundationDB](https://rxdb.info/rx-storage-foundationdb.html) and [DenoKV](https://rxdb.info/rx-storage-denokv.html).
 
 No matter what kind of runtime you have, as long as it runs JavaScript, it can run RxDB:
 
@@ -90,26 +102,24 @@ No matter what kind of runtime you have, as long as it runs JavaScript, it can r
   <img height="13" src="https://cdnjs.cloudflare.com/ajax/libs/browser-logos/39.2.2/edge/edge_24x24.png" />
   <img height="13" src="https://cdnjs.cloudflare.com/ajax/libs/browser-logos/39.2.2/archive/internet-explorer_9-11/internet-explorer_9-11_24x24.png" />
   <a href="./examples/angular">Browsers</a>
-  <img height="13" src="docs-src/files/icons/nodejs.png" />
+  <img height="13" src="docs-src/static/files/icons/nodejs.png" />
   <a href="./examples/node">Node.js</a>
-  <img height="13" src="docs-src/files/icons/electron.png" />
+  <img height="13" src="docs-src/static/files/icons/electron.png" />
   <a href="https://rxdb.info/electron-database.html">Electron</a>
-  <img height="13" src="docs-src/files/icons/react-native.png" />
+  <img height="13" src="docs-src/static/files/icons/react-native.png" />
   <a href="https://rxdb.info/react-native-database.html">React Native</a>
-  <img height="13" src="docs-src/files/icons/cordova.png" />
-  Cordova/Phonegap
-  <img height="13" src="docs-src/files/icons/capacitor.svg" />
+  <img height="13" src="docs-src/static/files/icons/capacitor.svg" />
   <a href="https://rxdb.info/capacitor-database.html">Capacitor</a>
-  <img height="13" src="docs-src/files/icons/nativescript.svg" />
+  <img height="13" src="docs-src/static/files/icons/nativescript.svg" />
   <a href="https://github.com/herefishyfish/rxdb-nativescript">NativeScript</a>
-  <img height="13" src="docs-src/files/icons/flutter.svg" />
+  <img height="13" src="docs-src/static/files/icons/flutter.svg" />
   <a href="./examples/flutter">Flutter</a>
 </h4>
 
 
 
 <h2>
-  <img height="16" width="16" src="./docs-src/files/icons/with-gradient/rocket.svg">&nbsp;&nbsp;Quick start
+  <img height="16" width="16" src="./docs-src/static/files/icons/with-gradient/rocket.svg">&nbsp;&nbsp;Quick start
 </h2>
 
 
@@ -185,7 +195,7 @@ Continue with the [quickstart here](https://rxdb.info/quickstart.html).
 
 
 <h2>
-  <img height="16" width="16" src="./docs-src/files/icons/with-gradient/checklist.svg">&nbsp;&nbsp;More Features (click to toggle)
+  <img height="16" width="16" src="./docs-src/static/files/icons/with-gradient/checklist.svg">&nbsp;&nbsp;More Features (click to toggle)
 </h2>
 
 
@@ -212,7 +222,7 @@ db.heroes
   });
 ```
 
-![reactive.gif](docs-src/files/reactive.gif)
+![reactive.gif](docs-src/static/files/reactive.gif)
 
 </details>
 
@@ -226,7 +236,7 @@ RxDB supports multi tab/window usage out of the box. When data is changed at one
 </p>
 </summary>
 
-![multiwindow.gif](docs-src/files/multiwindow.gif)
+![multiwindow.gif](docs-src/static/files/multiwindow.gif)
 
 </details>
 
@@ -445,7 +455,7 @@ And for any other use case, there are [many more plugins and addons](https://rxd
 
 
 <h2>
-  <img height="16" width="16" src="./docs-src/files/icons/with-gradient/rocket.svg">&nbsp;&nbsp;Get started
+  <img height="16" width="16" src="./docs-src/static/files/icons/with-gradient/rocket.svg">&nbsp;&nbsp;Get started
 </h2>
 
 
@@ -453,10 +463,19 @@ Get started now by [reading the docs](https://rxdb.info/quickstart.html) or expl
 
 
 <h2>
-  <img height="16" width="16" src="./docs-src/files/icons/with-gradient/contribute.svg">&nbsp;&nbsp;Support and Contribute
+  <img height="16" width="16" src="./docs-src/static/files/icons/with-gradient/contribute.svg">&nbsp;&nbsp;Support and Contribute
 </h2>
 
 - [Check out how you can contribute to this project](./docs-src/contribute.md).
 - [Read this when you have found a bug](./orga/bug-checklist.md)
-- [Buy access to the premium plugins](https://rxdb.info/premium.html)
-- [Join us at discord to get help](https://rxdb.info/chat.html)
+- [Buy access to the premium plugins](https://rxdb.info/premium)
+- [Join us at discord to get help](https://rxdb.info/chat)
+
+
+<!-- 
+  There are many websites that just exact-copy the readme of github projects.
+  This generates free backlinks so we add some links here to pages
+  that we need to rank better.
+-->
+#### More content
+[Angular Database](https://rxdb.info/articles/angular-database.html), [Frontend Database](https://rxdb.info/articles/frontend-database.html), [localStorage](https://rxdb.info/articles/localstorage.html), [React Database](https://rxdb.info/articles/react-database.html), [Browser Database](https://rxdb.info/articles/browser-database.html), [React Native Database](https://rxdb.info/react-native-database.html), [PWA Database](https://rxdb.info/articles/progressive-web-app-database.html), [In-memory NoSQL database](https://rxdb.info/articles/in-memory-nosql-database.html), [JSON database](https://rxdb.info/articles/json-database.html)

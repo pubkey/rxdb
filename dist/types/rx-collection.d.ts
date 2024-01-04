@@ -1,12 +1,12 @@
-import type { DataMigrator } from './plugins/migration';
-import { DocumentCache } from './doc-cache';
-import { QueryCache } from './query-cache';
-import { ChangeEventBuffer } from './change-event-buffer';
+import type { RxMigrationState } from './plugins/migration-schema/index.ts';
+import { DocumentCache } from './doc-cache.ts';
+import { QueryCache } from './query-cache.ts';
+import { ChangeEventBuffer } from './change-event-buffer.ts';
 import { Subscription, Observable } from 'rxjs';
-import type { KeyFunctionMap, MigrationState, RxCollection, RxDatabase, RxQuery, RxDocument, RxDumpCollection, RxDumpCollectionAny, MangoQuery, MangoQueryNoLimit, RxCacheReplacementPolicy, RxStorageWriteError, RxChangeEvent, RxChangeEventInsert, RxChangeEventUpdate, RxChangeEventDelete, RxStorageInstance, CollectionsOfDatabase, RxConflictHandler, MaybePromise, CRDTEntry, MangoQuerySelectorAndIndex } from './types';
-import { RxSchema } from './rx-schema';
-import { WrappedRxStorageInstance } from './rx-storage-helper';
-import { IncrementalWriteQueue } from './incremental-write';
+import type { KeyFunctionMap, RxCollection, RxDatabase, RxQuery, RxDocument, RxDumpCollection, RxDumpCollectionAny, MangoQuery, MangoQueryNoLimit, RxCacheReplacementPolicy, RxStorageWriteError, RxChangeEvent, RxChangeEventInsert, RxChangeEventUpdate, RxChangeEventDelete, RxStorageInstance, CollectionsOfDatabase, RxConflictHandler, MaybePromise, CRDTEntry, MangoQuerySelectorAndIndex, MigrationStrategies } from './types/index.d.ts';
+import { RxSchema } from './rx-schema.ts';
+import { WrappedRxStorageInstance } from './rx-storage-helper.ts';
+import { IncrementalWriteQueue } from './incremental-write.ts';
 declare const HOOKS_WHEN: readonly ["pre", "post"];
 type HookWhenType = typeof HOOKS_WHEN[number];
 declare const HOOKS_KEYS: readonly ["insert", "save", "remove", "create"];
@@ -21,7 +21,7 @@ export declare class RxCollectionBase<InstanceCreationOptions, RxDocumentType = 
     schema: RxSchema<RxDocumentType>;
     internalStorageInstance: RxStorageInstance<RxDocumentType, any, InstanceCreationOptions>;
     instanceCreationOptions: InstanceCreationOptions;
-    migrationStrategies: KeyFunctionMap;
+    migrationStrategies: MigrationStrategies;
     methods: KeyFunctionMap;
     attachments: KeyFunctionMap;
     options: any;
@@ -34,7 +34,7 @@ export declare class RxCollectionBase<InstanceCreationOptions, RxDocumentType = 
     storageInstance: WrappedRxStorageInstance<RxDocumentType, any, InstanceCreationOptions>;
     readonly timeouts: Set<ReturnType<typeof setTimeout>>;
     incrementalWriteQueue: IncrementalWriteQueue<RxDocumentType>;
-    constructor(database: RxDatabase<CollectionsOfDatabase, any, InstanceCreationOptions>, name: string, schema: RxSchema<RxDocumentType>, internalStorageInstance: RxStorageInstance<RxDocumentType, any, InstanceCreationOptions>, instanceCreationOptions?: InstanceCreationOptions, migrationStrategies?: KeyFunctionMap, methods?: KeyFunctionMap, attachments?: KeyFunctionMap, options?: any, cacheReplacementPolicy?: RxCacheReplacementPolicy, statics?: KeyFunctionMap, conflictHandler?: RxConflictHandler<RxDocumentType>);
+    constructor(database: RxDatabase<CollectionsOfDatabase, any, InstanceCreationOptions>, name: string, schema: RxSchema<RxDocumentType>, internalStorageInstance: RxStorageInstance<RxDocumentType, any, InstanceCreationOptions>, instanceCreationOptions?: InstanceCreationOptions, migrationStrategies?: MigrationStrategies, methods?: KeyFunctionMap, attachments?: KeyFunctionMap, options?: any, cacheReplacementPolicy?: RxCacheReplacementPolicy, statics?: KeyFunctionMap, conflictHandler?: RxConflictHandler<RxDocumentType>);
     get insert$(): Observable<RxChangeEventInsert<RxDocumentType>>;
     get update$(): Observable<RxChangeEventUpdate<RxDocumentType>>;
     get remove$(): Observable<RxChangeEventDelete<RxDocumentType>>;
@@ -53,7 +53,7 @@ export declare class RxCollectionBase<InstanceCreationOptions, RxDocumentType = 
     _queryCache: QueryCache;
     $: Observable<RxChangeEvent<RxDocumentType>>;
     checkpoint$: Observable<any>;
-    _changeEventBuffer: ChangeEventBuffer;
+    _changeEventBuffer: ChangeEventBuffer<RxDocumentType>;
     /**
      * When the collection is destroyed,
      * these functions will be called an awaited.
@@ -63,9 +63,14 @@ export declare class RxCollectionBase<InstanceCreationOptions, RxDocumentType = 
     onDestroy: (() => MaybePromise<any>)[];
     destroyed: boolean;
     prepare(): Promise<void>;
+    /**
+     * Manually call the cleanup function of the storage.
+     * @link https://rxdb.info/cleanup.html
+     */
+    cleanup(_minimumDeletedTime?: number): Promise<boolean>;
     migrationNeeded(): Promise<boolean>;
-    getDataMigrator(): DataMigrator;
-    migrate(batchSize?: number): Observable<MigrationState>;
+    getMigrationState(): RxMigrationState;
+    startMigration(batchSize?: number): Promise<void>;
     migratePromise(batchSize?: number): Promise<any>;
     insert(json: RxDocumentType | RxDocument): Promise<RxDocument<RxDocumentType, OrmMethods>>;
     bulkInsert(docsData: RxDocumentType[]): Promise<{
@@ -79,7 +84,10 @@ export declare class RxCollectionBase<InstanceCreationOptions, RxDocumentType = 
     /**
      * same as bulkInsert but overwrites existing document with same primary
      */
-    bulkUpsert(docsData: Partial<RxDocumentType>[]): Promise<RxDocument<RxDocumentType, OrmMethods>[]>;
+    bulkUpsert(docsData: Partial<RxDocumentType>[]): Promise<{
+        success: RxDocument<RxDocumentType, OrmMethods>[];
+        error: RxStorageWriteError<RxDocumentType>[];
+    }>;
     /**
      * same as insert but overwrites existing document with same primary
      */

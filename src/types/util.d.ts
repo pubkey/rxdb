@@ -1,4 +1,4 @@
-import { RxStorage } from './rx-storage.interface';
+import type { RxStorage } from './rx-storage.interface.d.ts';
 
 export type MaybePromise<T> = Promise<T> | T;
 
@@ -70,6 +70,8 @@ export type ById<T> = {
  * configuration values.
  */
 export type RxTestStorage = {
+    // can be used to setup async stuff
+    readonly init?: () => any;
     // TODO remove name here, it can be read out already via getStorage().name
     readonly name: string;
     readonly getStorage: () => RxStorage<any, any>;
@@ -93,6 +95,14 @@ export type RxTestStorage = {
     readonly hasPersistence: boolean;
     readonly hasMultiInstance: boolean;
     readonly hasAttachments: boolean;
+
+    /**
+     * Some storages likes the memory-synced storage,
+     * are not able to provide a replication while guaranteeing
+     * data integrity.
+     */
+    readonly hasReplication: boolean;
+
     /**
      * To make it possible to test alternative encryption plugins,
      * you can specify hasEncryption to signal
@@ -107,7 +117,10 @@ export type RxTestStorage = {
 };
 
 
-export type HashFunction = (input: string) => string;
+/**
+ * Must be async to support async hashing like from the WebCrypto API.
+ */
+export type HashFunction = (input: string) => Promise<string>;
 
 
 export declare type QueryMatcher<DocType> = (doc: DocType) => boolean;
