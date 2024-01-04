@@ -93,13 +93,16 @@ function getFilePaths(routesPaths, outDir, baseUrl, options = {}) {
             meta.excludedCount++
             return
         }
-
-        // if we have exclude routes, skip if this route matches any of them
-         if (excludeRoutes.some((excludePattern) => minimatch(route, excludePattern))) {
+    // if we have exclude routes, skip if this route matches any of them
+    if( route.split('/').some(r=> excludeRoutes.includes(r))){
+          meta.excludedCount++
+          return
+    }
+       /*   if (excludeRoutes.some((excludePattern) => minimatch(route, excludePattern))) {
 
             meta.excludedCount++
             return
-        }
+        } */
 
         files.push({
             path: filePath,

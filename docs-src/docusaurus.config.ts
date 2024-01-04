@@ -35,7 +35,7 @@ const config: Config = {
     locales: ['en'],
   },
     plugins: [['./docusaurus-lunr-search-main/src/', {
-        excludeRoutes:['**blog**', '**releases**']
+        excludeRoutes:['blog', 'releases']
     }]],
 
   scripts: [
