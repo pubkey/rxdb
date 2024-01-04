@@ -136,7 +136,8 @@ export function replicateCouchDB<RxDocType>(
             },
             batchSize: ensureNotFalsy(options.pull).batchSize,
             modifier: ensureNotFalsy(options.pull).modifier,
-            stream$: pullStream$.asObservable()
+            stream$: pullStream$.asObservable(),
+            initialCheckpoint: options.pull.initialCheckpoint
         };
     }
 
@@ -251,7 +252,8 @@ export function replicateCouchDB<RxDocType>(
                 return conflicts;
             },
             batchSize: options.push.batchSize,
-            modifier: options.push.modifier
+            modifier: options.push.modifier,
+            initialCheckpoint: options.push.initialCheckpoint
         };
     }
 
