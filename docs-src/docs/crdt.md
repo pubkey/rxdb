@@ -83,7 +83,7 @@ import {
 
 // add the CRDT plugin to RxDB
 import { addRxPlugin } from 'rxdb';
-addRxPlugin(RxDDcrdtPlugin);
+addRxPlugin(RxDBcrdtPlugin);
 
 // create a database
 import { createRxDatabase } from 'rxdb';
