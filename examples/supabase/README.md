@@ -3,21 +3,18 @@
 This is an example of how to use RxDB on the client and replicate with a [Supabase](https://github.com/supabase/supabase) server in **realtime** so that the data can still be used on the client when the user goes **offline**.
 
 ## Try it out
+
 1. Clone the whole [RxDB-repo](https://github.com/pubkey/rxdb) via `git clone https://github.com/pubkey/rxdb.git`
 2. Build the RxDB base project `cd rxdb && npm install && npm run build`
 3. Go into this folder `cd examples/supabase`
-    - Fetch the supabase docker containers via `sh init-supabase.sh`.
-    - Run supabase via `sh start-supabase.sh` (leave this terminal open)
-    - Run `sh import-dump.sh` to import the default table that is used for this example.
 4. Install the frontend libraries via `npm run preinstall && npm install`
-5. Run the frontend via `npm run dev`
+5. Start supabase `npm run supabase:start`.
+6. Run the frontend via `npm run dev`
 
-- Open the supabase dashboard at [http://localhost:3000/](http://localhost:3000/)
-- Open the frontend at [http://localhost:8888/](http://localhost:8888/)
-
+-   Open the supabase dashboard at [http://127.0.0.1:54323/](http://127.0.0.1:54323/)
+-   Open the frontend at [http://localhost:8888/](http://localhost:8888/)
 
 ## Supabase Replication
-
 
 For the replication, the RxDB [replication protocol](../../docs-src/replication.md) is used which allows a two-way, realtime replication with the supabase server.
 To be compatible with the protocol, the pull- and push-handler have been implemented accordingly. Also a `pull.stream$` is implemented with the supabase [changestream](https://supabase.com/docs/reference/javascript/subscribe).
@@ -36,8 +33,7 @@ To ensure this field is updated on each write, we add the `preInsert`, `preRemov
 
 In the [conflictHandler](./src/conflict-handler.ts) we can compare the `replicationRevision` of two documents to detect if there is a conflict. The current `conflictHandler` drops the local state on conflict and uses the master/server state of the document. You can change the handler to project any additional logic like merging fields or cherry picking the new document state depending on some conditions.
 
-
 ## TODOs
 
-- The `pull.stream$` currently only processes one document after another instead of processing change-bulks which would be much faster. But atm there is no way to tell supabase to fetch the changes in bulks.
-- The `push.handler` has a `batchSize` of `1` which makes the replication easier to implement. For better performance we could use a supabase [rpc](https://supabase.com/docs/reference/javascript/rpc) call instead.
+-   The `pull.stream$` currently only processes one document after another instead of processing change-bulks which would be much faster. But atm there is no way to tell supabase to fetch the changes in bulks.
+-   The `push.handler` has a `batchSize` of `1` which makes the replication easier to implement. For better performance we could use a supabase [rpc](https://supabase.com/docs/reference/javascript/rpc) call instead.

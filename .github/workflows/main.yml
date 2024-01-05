@@ -590,18 +590,10 @@ jobs:
         run: |
           npm run preinstall
           npm install --legacy-peer-deps
-      - name: init supabase docker-compose
-        working-directory: ./examples/supabase
-        run: |
-          sh init-supabase.sh
-
+      
       - name: start supabase
-        working-directory: ./examples/supabase/supabase/docker
-        run: docker-compose up -d
-
-      - name: import database dump
         working-directory: ./examples/supabase
-        run: sh import-dump.sh
+        run: npm run start:supabase
 
       - name: build
         working-directory: ./examples/supabase
