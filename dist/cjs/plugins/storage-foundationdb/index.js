@@ -8,6 +8,7 @@ var _exportNames = {
 };
 exports.getRxStorageFoundationDB = getRxStorageFoundationDB;
 var _rxStorageHelper = require("../../rx-storage-helper.js");
+var _utilsRxdbVersion = require("../utils/utils-rxdb-version.js");
 var _rxStorageInstanceFoundationdb = require("./rx-storage-instance-foundationdb.js");
 var _foundationdbTypes = require("./foundationdb-types.js");
 Object.keys(_foundationdbTypes).forEach(function (key) {
@@ -46,6 +47,7 @@ function getRxStorageFoundationDB(settings) {
   }
   var storage = {
     name: 'foundationdb',
+    rxdbVersion: _utilsRxdbVersion.RXDB_VERSION,
     createStorageInstance(params) {
       (0, _rxStorageHelper.ensureRxStorageInstanceParamsAreCorrect)(params);
       var useSettings = Object.assign({}, settings, params.options);

@@ -12,6 +12,7 @@ var _rxStorageHelper = require("../../rx-storage-helper.js");
 var RxStorageRemote = exports.RxStorageRemote = /*#__PURE__*/function () {
   function RxStorageRemote(settings) {
     this.name = 'remote';
+    this.rxdbVersion = _index.RXDB_VERSION;
     this.seed = (0, _index.randomCouchString)(10);
     this.lastRequestId = 0;
     this.settings = settings;

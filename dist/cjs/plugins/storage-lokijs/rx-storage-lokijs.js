@@ -8,6 +8,7 @@ exports.getRxStorageLoki = getRxStorageLoki;
 var _rxStorageInstanceLoki = require("./rx-storage-instance-loki.js");
 var _lokijsHelper = require("./lokijs-helper.js");
 var _rxStorageHelper = require("../../rx-storage-helper.js");
+var _utilsRxdbVersion = require("../utils/utils-rxdb-version.js");
 var RxStorageLoki = exports.RxStorageLoki = /*#__PURE__*/function () {
   /**
    * Create one leader elector by db name.
@@ -17,6 +18,7 @@ var RxStorageLoki = exports.RxStorageLoki = /*#__PURE__*/function () {
 
   function RxStorageLoki(databaseSettings) {
     this.name = _lokijsHelper.RX_STORAGE_NAME_LOKIJS;
+    this.rxdbVersion = _utilsRxdbVersion.RXDB_VERSION;
     this.leaderElectorByLokiDbName = new Map();
     this.databaseSettings = databaseSettings;
   }

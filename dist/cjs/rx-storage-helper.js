@@ -714,6 +714,7 @@ async function getChangedDocumentsSince(storageInstance, limit, checkpoint) {
 function randomDelayStorage(input) {
   var retStorage = {
     name: 'random-delay-' + input.storage.name,
+    rxdbVersion: _index.RXDB_VERSION,
     async createStorageInstance(params) {
       await (0, _index.promiseWait)(input.delayTimeBefore());
       var storageInstance = await input.storage.createStorageInstance(params);

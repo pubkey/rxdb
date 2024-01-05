@@ -1,10 +1,11 @@
 import { firstValueFrom, filter, Subject } from 'rxjs';
-import { randomCouchString } from "../../plugins/utils/index.js";
+import { RXDB_VERSION, randomCouchString } from "../../plugins/utils/index.js";
 import { closeMessageChannel, getMessageChannel } from "./message-channel-cache.js";
 import { ensureRxStorageInstanceParamsAreCorrect } from "../../rx-storage-helper.js";
 export var RxStorageRemote = /*#__PURE__*/function () {
   function RxStorageRemote(settings) {
     this.name = 'remote';
+    this.rxdbVersion = RXDB_VERSION;
     this.seed = randomCouchString(10);
     this.lastRequestId = 0;
     this.settings = settings;

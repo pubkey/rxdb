@@ -1,4 +1,5 @@
 import { ensureRxStorageInstanceParamsAreCorrect } from "../../rx-storage-helper.js";
+import { RXDB_VERSION } from "../utils/utils-rxdb-version.js";
 import { createMemoryStorageInstance } from "./rx-storage-instance-memory.js";
 
 /**
@@ -10,6 +11,7 @@ var COLLECTION_STATES = new Map();
 export function getRxStorageMemory(settings = {}) {
   var storage = {
     name: 'memory',
+    rxdbVersion: RXDB_VERSION,
     collectionStates: COLLECTION_STATES,
     createStorageInstance(params) {
       ensureRxStorageInstanceParamsAreCorrect(params);
