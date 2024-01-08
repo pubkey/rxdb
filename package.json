@@ -430,7 +430,7 @@
     "rxjs": "^7.8.0"
   },
   "dependencies": {
-    "@babel/runtime": "7.23.7",
+    "@babel/runtime": "7.23.8",
     "@types/clone": "2.1.4",
     "@types/cors": "2.8.17",
     "@types/express": "4.17.21",
@@ -480,7 +480,7 @@
     "@babel/plugin-transform-template-literals": "7.23.3",
     "@babel/plugin-transform-typescript": "7.23.6",
     "@babel/polyfill": "7.12.1",
-    "@babel/preset-env": "7.23.7",
+    "@babel/preset-env": "7.23.8",
     "@babel/preset-typescript": "7.23.3",
     "@babel/types": "7.23.6",
     "@faker-js/faker": "8.3.1",
