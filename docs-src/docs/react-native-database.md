@@ -144,6 +144,7 @@ import { open } from 'react-native-quick-sqlite';
 
 // create database
 const myRxDatabase = await createRxDatabase({
+    // Instead of a simple name, you can use a folder path to determine the database location 
     name: 'exampledb',
     multiInstance: false, // <- Set this to false when using RxDB in React Native
     storage: getRxStorageSQLite({
@@ -224,6 +225,6 @@ To get started with Firestore in React Native, it is recommended to use the [Rea
 
 ## Follow up
 
-- Check out the [RxDB React Native example](https://github.com/pubkey/rxdb/tree/master/examples/react-native)
+- A good way to learn using RxDB database with React Native is to check out the [RxDB React Native example](https://github.com/pubkey/rxdb/tree/master/examples/react-native) and use that as a tutorial.
 - If you haven't done so yet, you should start learning about RxDB with the [Quickstart Tutorial](./quickstart.md).
 - There is a followup list of other [client side database alternatives](./alternatives.md) that might work with React Native.

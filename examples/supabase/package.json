@@ -26,8 +26,8 @@
     "rxjs": "7.8.1"
   },
   "devDependencies": {
-    "local-web-server": "5.3.0",
     "supabase": "1.127.4",
+    "local-web-server": "5.3.1",
     "concurrently": "8.2.2",
     "async-test-util": "2.2.1",
     "css-loader": "6.8.1",
