@@ -593,7 +593,7 @@ jobs:
       
       - name: start supabase
         working-directory: ./examples/supabase
-        run: npm run start:supabase
+        run: npm run supabase:start
 
       - name: build
         working-directory: ./examples/supabase
