@@ -219,6 +219,11 @@ The Apollo GraphQL platform is made to transfer data between a server to UI appl
 While it is has different caching features for offline usage, compared to RxDB it is not fully offline first because caching alone does not mean your application is fully usable when the user is offline.
 
 
+### Replicache 
+
+Replicache is a client-side sync framework for building realtime, collaborative, local-first web apps. It claims to work with most backend stacks. In contrast to other local first tools, replicache does not work like a local database. Instead it runs on so called `mutators` that unify behavior on the client and server side. So instead of implementing and calling REST routes on both sides of your stack, you will implement mutators that define a specific delta behavior based on the input data. To observe data in replicache, there are `subscriptions` that notify your frontend application about changes to the state.
+Replicache can be used in most frontend technologies like browsers, react/remix, vercle and react native. While replicache can be installed and used from npm, the replicache source code is not open source and the replicache github repo does not allow you to inspect or debug it. Still you can use replicache for in non-commercial projects, or for companies with < $200k revenue (ARR) and < $500k in funding.
+
 # Read further
 
 - [Offline First Database Comparison](https://github.com/pubkey/client-side-databases)
